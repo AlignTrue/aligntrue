@@ -7,6 +7,8 @@
     "dev": "pnpm --filter @aligntrue/web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "verify": "pnpm --filter @aligntrue/testkit test",
+    "testkit:verify": "pnpm verify",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist",
