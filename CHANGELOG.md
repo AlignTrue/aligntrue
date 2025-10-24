@@ -123,6 +123,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Deferred Sigstore signing (trigger: external requests or 3+ authorship disputes)
   - Deferred full governance with disputes/SLAs (trigger: first dispute or 10+ active contributors)
 
+- **Shared UI package and design system** (Stage 2.0)
+  - New `packages/ui` package with minimal design tokens system
+  - `src/styles/tokens.css` - CSS custom properties for colors (neutral, primary), typography (sans, mono), spacing (4px scale), and border radius
+  - `src/components/BrandLogo.tsx` - Text-based placeholder logo component (can be swapped for SVG later)
+  - `src/tailwind-preset.ts` - Tailwind configuration preset referencing design tokens
+  - Comprehensive README with usage examples and token documentation
+
+- **Next.js catalog site infrastructure** (Stage 2.0)
+  - `apps/web` configured to consume `@aligntrue/ui` package
+  - Tailwind v4 setup with shared design system preset
+  - BrandLogo component integrated in layout header
+  - Homepage placeholder for catalog interface
+  - Metadata updated: title "AlignTrue", description "AI-native rules and alignment platform"
+
+- **Vercel deployment configuration** (Stage 2.0)
+  - `apps/web/vercel.json` - Basic deployment configuration with region selection (iad1)
+  - Next.js configured for hybrid rendering mode (static-first with server features available)
+  - Build command uses Turbopack for fast compilation
+  - Documented approach in next.config.ts comments
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout
