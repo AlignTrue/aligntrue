@@ -48,6 +48,3 @@ next-env.d.ts
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
 logs/
-
-# basealigns (temporary, will move to aligns repo)
-basealigns/

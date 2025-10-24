@@ -315,6 +315,20 @@ The canonical JSON Schema (draft 2020-12) is published at:
 
 All tooling must validate against this schema before processing.
 
+## Implementation
+
+Reference implementation of canonicalization and validation is provided in the `@aligntrue/schema` package:
+
+- **Canonicalization**: `packages/schema/src/canonicalize.ts`
+- **Validation**: `packages/schema/src/validator.ts`
+- **API Documentation**: `packages/schema/README.md`
+
+The implementation includes:
+- JCS canonicalization via the `canonicalize` npm package (RFC 8785 compliant)
+- SHA-256 hashing with Node.js crypto module
+- Ajv-based JSON Schema validation in strict mode
+- CLI tools for validation and hash computation
+
 ## References
 
 - JCS (RFC 8785): https://www.rfc-editor.org/rfc/rfc8785

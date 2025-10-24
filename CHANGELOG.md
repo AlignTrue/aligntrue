@@ -39,6 +39,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Stage 1.2.5 for moving basealigns to AlignTrue/aligns repository
   - Clarified pack ID mapping and cross-repository workflow
 
+- **Canonicalization and hashing utilities** (Stage 1.0)
+  - Implemented JCS (RFC 8785) canonicalization in `packages/schema/src/canonicalize.ts`
+  - SHA-256 integrity hashing for Align packs
+  - Deterministic hash computation: identical inputs → identical outputs
+  - Computed and updated integrity hashes for all 11 basealigns
+
+- **Schema validation** (Stage 1.0)
+  - Ajv-based validator in strict mode at `packages/schema/src/validator.ts`
+  - Schema validation against `packages/schema/schema/align.schema.json`
+  - Integrity validation with hash verification
+  - Support for `<computed>` placeholder during authoring
+
+- **Test coverage** (Stage 1.0)
+  - 55 tests covering canonicalization edge cases and validation scenarios
+  - Stability tests: same input produces same hash across multiple runs
+  - Unicode, floating point, key ordering, and nested structure tests
+  - All 5 check types validated: file_presence, path_convention, manifest_policy, regex, command_runner
+
+- **CLI tools** (Stage 1.0)
+  - `pnpm validate <file>` - validate Align pack schema and integrity
+  - Hash computation script for bulk processing
+  - Detailed validation output with error messages and hash display
+
+- **GitHub Actions CI** (Stage 1.0)
+  - Automated validation workflow at `.github/workflows/validate-aligns.yml`
+  - Runs on push/PR to main and develop branches
+  - Tests schema package with Node 20 and pnpm 9
+  - Build, test, and typecheck gates
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout

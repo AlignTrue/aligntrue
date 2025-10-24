@@ -18,16 +18,20 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate": "node --import tsx --no-warnings scripts/validate-align.ts"
   },
   "dependencies": {
     "ajv": "^8.12.0",
-    "ajv-formats": "^2.1.1"
+    "ajv-formats": "^2.1.1",
+    "canonicalize": "^2.1.0",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
+    "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^2.0.0"
   }
 }
-
