@@ -86,6 +86,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 47 tests covering all check types, emitters, and engine orchestration
   - Comprehensive API documentation in `packages/checks/README.md`
 
+- **Starter packs quality review** (Stage 1.2)
+  - Reviewed all 11 packs in AlignTrue/aligns for scope clarity and objective checks
+  - Validated pack structure matches Align Spec v1 requirements
+  - Confirmed integrity hashes are computed and deterministic
+  - All packs exceed Phase 1 minimum of 8 curated packs
+  - 43 total machine-checkable rules across all packs (100% objective validation)
+  - Check type distribution: command_runner (42%), regex (40%), file_presence (12%), path_convention (2%)
+
+- **Basealigns migration** (Stage 1.2.5)
+  - Completed migration of 11 packs to AlignTrue/aligns repository
+  - Pack IDs properly namespaced under packs/base/* and packs/stacks/*
+  - Cross-repository CI validation workflow established
+  - Base packs (8): base-global, base-testing, base-docs, base-security, base-debugging, base-tdd, base-rule-authoring, base-typescript
+  - Stack packs (3): nextjs-app-router, web-quality, vercel-deployments
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout
