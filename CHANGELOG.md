@@ -74,6 +74,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All 11 basealigns now pass schema validation
   - Re-computed integrity hashes for fixed files
 
+- **Checks v1 runner engine** (Stage 1.1)
+  - New `packages/checks` package with check runner for all 5 check types
+  - Check runners: `file_presence`, `path_convention`, `manifest_policy`, `regex`, `command_runner`
+  - SARIF 2.1.0 emitter for CI and editor integration
+  - JSON findings emitter for scripting and programmatic consumption
+  - Abstract `FileProvider` interface for testability and extensibility
+  - `DiskFileProvider` implementation for local file system access
+  - Gated command execution with explicit `allowExec` flag and timeout enforcement
+  - CLI script: `pnpm run-checks <align-file> <target-dir> [--allow-exec] [--format sarif|json]`
+  - 47 tests covering all check types, emitters, and engine orchestration
+  - Comprehensive API documentation in `packages/checks/README.md`
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout
