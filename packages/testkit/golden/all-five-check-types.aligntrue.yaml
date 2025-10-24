@@ -1,0 +1,63 @@
+# All five check types pack
+# Tests: one rule of each check type (file_presence, path_convention, manifest_policy, regex, command_runner)
+
+id: "packs/testkit/all-five-check-types"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Contains one rule of each check type"
+tags: ["testkit", "check-types"]
+deps: []
+scope:
+  applies_to: ["*"]
+rules:
+  - id: "check-file-presence"
+    severity: "MUST"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: "**/*.test.ts"
+      evidence: "Test files required"
+
+  - id: "check-path-convention"
+    severity: "SHOULD"
+    check:
+      type: "path_convention"
+      inputs:
+        pattern: "^[a-z0-9-]+$"
+        include: ["src/**"]
+        message: "Use kebab-case"
+      evidence: "Path convention violated"
+
+  - id: "check-manifest-policy"
+    severity: "MUST"
+    check:
+      type: "manifest_policy"
+      inputs:
+        manifest: "package.json"
+        lockfile: "pnpm-lock.yaml"
+        require_pinned: true
+      evidence: "Dependencies not pinned"
+
+  - id: "check-regex"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.ts"]
+        pattern: "\\bTODO\\b"
+        allow: false
+      evidence: "TODO found"
+
+  - id: "check-command-runner"
+    severity: "MAY"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "npm test"
+        timeout_ms: 30000
+      evidence: "Tests failed"
+integrity:
+  algo: "jcs-sha256"
+  value: "53b0dabb769871e679ccd9361aec63500334acf8ae1d1e0fff59f15e25f1712a"
+

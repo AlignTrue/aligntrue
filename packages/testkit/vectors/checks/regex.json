@@ -1,0 +1,145 @@
+[
+  {
+    "name": "passes-when-forbidden-pattern-not-found",
+    "description": "Verifies that check passes when forbidden pattern is not found (allow=false)",
+    "check_type": "regex",
+    "rule": {
+      "id": "test-regex-no-todo",
+      "severity": "SHOULD",
+      "check": {
+        "type": "regex",
+        "inputs": {
+          "include": ["**/*.ts"],
+          "pattern": "\\bTODO\\b",
+          "allow": false
+        },
+        "evidence": "TODO present in file"
+      }
+    },
+    "file_tree": {
+      "src/foo.ts": "const x = 42;",
+      "src/bar.ts": "function test() {}"
+    },
+    "expected_findings": []
+  },
+  {
+    "name": "fails-when-forbidden-pattern-found",
+    "description": "Verifies that check fails when forbidden pattern is found",
+    "check_type": "regex",
+    "rule": {
+      "id": "test-regex-no-todo",
+      "severity": "SHOULD",
+      "check": {
+        "type": "regex",
+        "inputs": {
+          "include": ["**/*.ts"],
+          "pattern": "\\bTODO\\b",
+          "allow": false
+        },
+        "evidence": "TODO present in file"
+      }
+    },
+    "file_tree": {
+      "src/foo.ts": "const x = 42; // TODO: fix this",
+      "src/bar.ts": "function test() {}"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-regex-no-todo",
+        "severity": "SHOULD",
+        "message": "TODO present in file",
+        "file": "src/foo.ts",
+        "line": 1
+      }
+    ]
+  },
+  {
+    "name": "reports-multiple-occurrences",
+    "description": "Verifies that multiple pattern occurrences are reported with line numbers",
+    "check_type": "regex",
+    "rule": {
+      "id": "test-regex-multiple",
+      "severity": "SHOULD",
+      "check": {
+        "type": "regex",
+        "inputs": {
+          "include": ["**/*.ts"],
+          "pattern": "\\bTODO\\b",
+          "allow": false
+        },
+        "evidence": "TODO present in file"
+      }
+    },
+    "file_tree": {
+      "src/multi.ts": "line 1\n// TODO: item 1\nline 3\n// TODO: item 2\nline 5"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-regex-multiple",
+        "severity": "SHOULD",
+        "message": "TODO present in file",
+        "file": "src/multi.ts",
+        "line": 2
+      },
+      {
+        "rule_id": "test-regex-multiple",
+        "severity": "SHOULD",
+        "message": "TODO present in file",
+        "file": "src/multi.ts",
+        "line": 4
+      }
+    ]
+  },
+  {
+    "name": "passes-when-required-pattern-found",
+    "description": "Verifies that check passes when required pattern is found (allow=true)",
+    "check_type": "regex",
+    "rule": {
+      "id": "test-regex-require-describe",
+      "severity": "MUST",
+      "check": {
+        "type": "regex",
+        "inputs": {
+          "include": ["**/*.test.ts"],
+          "pattern": "describe\\(",
+          "allow": true
+        },
+        "evidence": "Test file must contain describe block"
+      }
+    },
+    "file_tree": {
+      "src/foo.test.ts": "describe(\"test\", () => {})"
+    },
+    "expected_findings": []
+  },
+  {
+    "name": "fails-when-required-pattern-missing",
+    "description": "Verifies that check fails when required pattern is missing (allow=true)",
+    "check_type": "regex",
+    "rule": {
+      "id": "test-regex-require-describe",
+      "severity": "MUST",
+      "check": {
+        "type": "regex",
+        "inputs": {
+          "include": ["**/*.test.ts"],
+          "pattern": "describe\\(",
+          "allow": true
+        },
+        "evidence": "Test file must contain describe block"
+      }
+    },
+    "file_tree": {
+      "src/foo.test.ts": "it(\"test\", () => {})"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-regex-require-describe",
+        "severity": "MUST",
+        "message": "Test file must contain describe block",
+        "file": "src/foo.test.ts"
+      }
+    ]
+  }
+]
+

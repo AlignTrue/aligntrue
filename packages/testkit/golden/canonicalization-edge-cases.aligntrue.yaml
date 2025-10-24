@@ -1,0 +1,40 @@
+# Canonicalization edge cases pack
+# Tests: unicode, floating point, nested structures, key ordering
+
+id: "packs/testkit/canonicalization-edge-cases"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Tests canonicalization edge cases: unicode, floats, nesting"
+tags: ["testkit", "canonicalization"]
+deps: []
+scope:
+  applies_to: ["*"]
+  # Unicode in scope field
+  description: "Tests 世界 🌍 unicode handling"
+rules:
+  - id: "edge-case-rule"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        # Nested structure with mixed types
+        include: ["**/*.ts"]
+        pattern: "test"
+        allow: true
+        # Floating point numbers
+        threshold: 0.5
+        max_value: 1.5e10
+      evidence: "Edge case test"
+    autofix:
+      # Empty string edge case
+      hint: ""
+# Key ordering test - these will be sorted alphabetically in canonical form
+metadata:
+  z_last: "value"
+  a_first: "value"
+  m_middle: "value"
+integrity:
+  algo: "jcs-sha256"
+  value: "4e7bbc74fb40efeae0c717be76f207f7729b2ad57714e33b5e8dfa3dc4bc1cdd"
+

@@ -101,6 +101,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Base packs (8): base-global, base-testing, base-docs, base-security, base-debugging, base-tdd, base-rule-authoring, base-typescript
   - Stack packs (3): nextjs-app-router, web-quality, vercel-deployments
 
+- **Conformance Testkit v1** (Stage 1.3)
+  - New `packages/testkit` package with JSON vectors and TypeScript runner
+  - 17 canonicalization vectors covering edge cases: unicode, floats, key ordering, nested structures, YAML anchors, empty values, scientific notation
+  - 18 check runner vectors across all 5 check types: file_presence (4), path_convention (3), manifest_policy (3), regex (5), command_runner (3)
+  - 5 synthetic golden packs with inline documentation and computed integrity hashes
+  - Integration vectors file referencing 11 production packs from AlignTrue/aligns
+  - `pnpm verify` command runs full conformance suite (40 total test vectors)
+  - CI verification step added to `.github/workflows/validate-aligns.yml`
+  - Comprehensive README with usage examples for external implementations
+  - Helper scripts for hash computation: `compute-vector-hashes.ts` and `compute-golden-hashes.ts`
+  - All 12 conformance test cases pass
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout

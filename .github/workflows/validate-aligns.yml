@@ -50,4 +50,7 @@ jobs:
       
       - name: Type check
         run: pnpm --filter @aligntrue/schema typecheck
+      
+      - name: Run conformance testkit
+        run: pnpm verify
 

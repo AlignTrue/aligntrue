@@ -1,0 +1,107 @@
+[
+  {
+    "name": "passes-when-files-exist",
+    "description": "Verifies that check passes when files matching pattern exist",
+    "check_type": "file_presence",
+    "rule": {
+      "id": "test-file-presence",
+      "severity": "MUST",
+      "check": {
+        "type": "file_presence",
+        "inputs": {
+          "pattern": "**/*.test.ts"
+        },
+        "evidence": "Missing test file"
+      }
+    },
+    "file_tree": {
+      "src/foo.test.ts": "test content",
+      "src/bar.test.ts": "test content"
+    },
+    "expected_findings": []
+  },
+  {
+    "name": "fails-when-no-files-match",
+    "description": "Verifies that check fails when no files match the pattern",
+    "check_type": "file_presence",
+    "rule": {
+      "id": "test-file-presence",
+      "severity": "MUST",
+      "check": {
+        "type": "file_presence",
+        "inputs": {
+          "pattern": "**/*.test.ts"
+        },
+        "evidence": "Missing test file"
+      }
+    },
+    "file_tree": {
+      "src/foo.ts": "source content"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-file-presence",
+        "severity": "MUST",
+        "message": "No files found matching pattern **/*.test.ts"
+      }
+    ]
+  },
+  {
+    "name": "checks-changed-files",
+    "description": "Verifies that check validates changed source files have corresponding test files",
+    "check_type": "file_presence",
+    "rule": {
+      "id": "test-file-presence-changed",
+      "severity": "MUST",
+      "check": {
+        "type": "file_presence",
+        "inputs": {
+          "pattern": "**/*.test.ts",
+          "must_exist_for_changed_sources": true
+        },
+        "evidence": "Missing test file for changed source"
+      }
+    },
+    "file_tree": {
+      "src/foo.ts": "source",
+      "src/foo.test.ts": "test",
+      "src/bar.ts": "source without test"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-file-presence-changed",
+        "severity": "MUST",
+        "message": "Missing test file for changed source",
+        "file": "src/bar.ts"
+      }
+    ]
+  },
+  {
+    "name": "includes-autofix-hint",
+    "description": "Verifies that autofix hints are included in findings",
+    "check_type": "file_presence",
+    "rule": {
+      "id": "test-file-presence-autofix",
+      "severity": "MUST",
+      "check": {
+        "type": "file_presence",
+        "inputs": {
+          "pattern": "**/*.test.ts"
+        },
+        "evidence": "Missing test file"
+      },
+      "autofix": {
+        "hint": "Run: npm test -- --init"
+      }
+    },
+    "file_tree": {},
+    "expected_findings": [
+      {
+        "rule_id": "test-file-presence-autofix",
+        "severity": "MUST",
+        "message": "No files found matching pattern **/*.test.ts"
+      }
+    ]
+  }
+]
+

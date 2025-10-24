@@ -1,0 +1,86 @@
+[
+  {
+    "name": "passes-when-dependencies-pinned",
+    "description": "Verifies that check passes when all dependencies are pinned to exact versions",
+    "check_type": "manifest_policy",
+    "rule": {
+      "id": "test-manifest-pinned",
+      "severity": "MUST",
+      "check": {
+        "type": "manifest_policy",
+        "inputs": {
+          "manifest": "package.json",
+          "lockfile": "pnpm-lock.yaml",
+          "require_pinned": true
+        },
+        "evidence": "New dependency is not pinned in lockfile"
+      }
+    },
+    "file_tree": {
+      "package.json": "{\"dependencies\":{\"lodash\":\"4.17.21\",\"react\":\"18.2.0\"}}",
+      "pnpm-lock.yaml": "lockfile content"
+    },
+    "expected_findings": []
+  },
+  {
+    "name": "fails-with-caret-ranges",
+    "description": "Verifies that check fails when dependencies use caret (^) version ranges",
+    "check_type": "manifest_policy",
+    "rule": {
+      "id": "test-manifest-pinned",
+      "severity": "MUST",
+      "check": {
+        "type": "manifest_policy",
+        "inputs": {
+          "manifest": "package.json",
+          "lockfile": "pnpm-lock.yaml",
+          "require_pinned": true
+        },
+        "evidence": "New dependency is not pinned in lockfile"
+      }
+    },
+    "file_tree": {
+      "package.json": "{\"dependencies\":{\"lodash\":\"^4.17.21\",\"react\":\"18.2.0\"}}",
+      "pnpm-lock.yaml": "lockfile content"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-manifest-pinned",
+        "severity": "MUST",
+        "message": "Dependency lodash@^4.17.21 uses version range instead of exact version",
+        "file": "package.json"
+      }
+    ]
+  },
+  {
+    "name": "fails-with-tilde-ranges",
+    "description": "Verifies that check fails when dependencies use tilde (~) version ranges",
+    "check_type": "manifest_policy",
+    "rule": {
+      "id": "test-manifest-pinned",
+      "severity": "MUST",
+      "check": {
+        "type": "manifest_policy",
+        "inputs": {
+          "manifest": "package.json",
+          "lockfile": "pnpm-lock.yaml",
+          "require_pinned": true
+        },
+        "evidence": "New dependency is not pinned in lockfile"
+      }
+    },
+    "file_tree": {
+      "package.json": "{\"devDependencies\":{\"vitest\":\"~1.2.0\"}}",
+      "pnpm-lock.yaml": "lockfile content"
+    },
+    "expected_findings": [
+      {
+        "rule_id": "test-manifest-pinned",
+        "severity": "MUST",
+        "message": "Dependency vitest@~1.2.0 uses version range instead of exact version",
+        "file": "package.json"
+      }
+    ]
+  }
+]
+

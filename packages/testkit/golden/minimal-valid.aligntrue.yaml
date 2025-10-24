@@ -1,0 +1,24 @@
+# Minimal valid Align pack
+# Tests: absolute minimum required fields for a valid pack
+
+id: "packs/testkit/minimal-valid"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Minimal valid pack for conformance testing"
+tags: ["testkit"]
+deps: []
+scope:
+  applies_to: ["*"]
+rules:
+  - id: "minimal-rule"
+    severity: "SHOULD"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: "**/*.ts"
+      evidence: "TypeScript files required"
+integrity:
+  algo: "jcs-sha256"
+  value: "400ec737c2812418acddadc51f5609df4ff78c0c7d8e0aed9bf39d2f3cdf1795"
+
