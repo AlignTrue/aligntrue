@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aligntrue.com/schema/align-v1.schema.json",
+  "title": "Align Pack v1",
+  "description": "Schema for AlignTrue Align packs (Spec v1)",
+  "type": "object",
+  "required": ["id", "version", "profile", "spec_version", "summary", "tags", "deps", "scope", "rules", "integrity"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^packs/[a-z0-9-]+(/[a-z0-9-]+)*$",
+      "description": "Unique pack identifier, kebab-case namespaced path"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9.-]+)?(\\+[a-z0-9.-]+)?$",
+      "description": "Semantic version"
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["align"],
+      "description": "Document profile type"
+    },
+    "spec_version": {
+      "type": "string",
+      "enum": ["1"],
+      "description": "Align Spec version"
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Brief one-line description"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "minItems": 1,
+      "description": "Categorization tags"
+    },
+    "deps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pack dependencies with optional version constraints"
+    },
+    "scope": {
+      "type": "object",
+      "required": ["applies_to"],
+      "properties": {
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Contexts where this pack applies"
+        },
+        "includes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to include"
+        },
+        "excludes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to exclude"
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["algo", "value"],
+      "properties": {
+        "algo": {
+          "type": "string",
+          "enum": ["jcs-sha256"]
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^([a-f0-9]{64}|<computed>)$",
+          "description": "Hex-encoded SHA-256 hash"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["id", "severity", "check"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Unique rule ID within pack"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["MUST", "SHOULD", "MAY"]
+        },
+        "check": {
+          "$ref": "#/$defs/check"
+        },
+        "autofix": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "required": ["type", "inputs", "evidence"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["file_presence", "path_convention", "manifest_policy", "regex", "command_runner"]
+        },
+        "inputs": {
+          "type": "object"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "file_presence"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "type": "object",
+                "required": ["pattern"],
+                "properties": {
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "must_exist_for_changed_sources": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "path_convention"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "type": "object",
+                "required": ["pattern", "include", "message"],
+                "properties": {
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "manifest_policy"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "type": "object",
+                "required": ["manifest", "lockfile"],
+                "properties": {
+                  "manifest": {
+                    "type": "string"
+                  },
+                  "lockfile": {
+                    "type": "string"
+                  },
+                  "require_pinned": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "regex"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "type": "object",
+                "required": ["include", "pattern", "allow"],
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "allow": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "command_runner"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "type": "object",
+                "required": ["command"],
+                "properties": {
+                  "command": {
+                    "type": "string"
+                  },
+                  "working_dir": {
+                    "type": "string"
+                  },
+                  "timeout_ms": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "expect_exit_code": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+

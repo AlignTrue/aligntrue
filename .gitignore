@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,14 +11,16 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
+*.lcov
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
+dist
 
 # misc
 .DS_Store
@@ -42,3 +44,10 @@ next-env.d.ts
 
 # cursor
 .cursor/
+
+# temp items (AI-generated artifacts, prefixed with temp-)
+temp-*
+logs/
+
+# basealigns (temporary, will move to aligns repo)
+basealigns/

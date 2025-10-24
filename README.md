@@ -1,7 +1,62 @@
-AlignTrue — Alignment-as-Code
+# AlignTrue
 
-AlignTrue defines a new layer in software: Alignment-as-Code — the open, deterministic rules system that keeps humans and AI agents aligned to the same truth. It turns organizational intent into small, machine-checkable rule packs (“Aligns”) that can be verified, versioned, and exported into any agent or workflow. Enforcement stays local, governance stays transparent, and drift is measurable.
+AI-native rules and alignment platform. Turn small, composable YAML rules (Aligns) into deterministic bundles and agent-ready exports.
 
-AlignTrue is vendor-neutral, cryptographically signed, and designed to make alignment portable — from solo devs to global teams.
+## Workspace Structure
 
-Your code has Git. Your behavior has AlignTrue.
+This is a pnpm monorepo with the following packages:
+
+```
+aligntrue/
+├── apps/
+│   ├── web/          # Next.js catalog site (aligntrue.com)
+│   └── docs/         # Nextra documentation site (/docs)
+├── packages/
+│   ├── schema/       # JSON Schema, canonicalization, hashing
+│   ├── cli/          # Node CLI (aligntrue/aln)
+│   └── mcp/          # MCP server (Phase 2+)
+└── basealigns/       # Temporary: base aligns (will move to aligns repo)
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+
+### Installation
+
+```bash
+pnpm install
+```
+
+### Development
+
+```bash
+# Start web app dev server
+pnpm dev
+
+# Build all packages
+pnpm build
+
+# Run all tests
+pnpm test
+
+# Type check all packages
+pnpm typecheck
+```
+
+## Repositories
+
+- **AlignTrue/aligntrue** (MIT, this repo): Web catalog, CLI, schema packages
+- **AlignTrue/aligns** (CC0): Public rules registry
+- **AlignTrue/cloud** (private): Commercial features (future)
+
+## Documentation
+
+See `apps/docs/` for full documentation (will be available at aligntrue.com/docs).
+
+## License
+
+MIT (see LICENSE file)
