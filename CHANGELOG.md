@@ -113,6 +113,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Helper scripts for hash computation: `compute-vector-hashes.ts` and `compute-golden-hashes.ts`
   - All 12 conformance test cases pass
 
+- **Registry governance** (Stage 1.4)
+  - POLICY.md with minimal viable governance: namespacing rules, verified authorship (GitHub org), contribution requirements, quality bar, yanking process
+  - CONTRIBUTING.md public contribution guide with 3-step quickstart, testing instructions, and PR checklist
+  - Template pack specification documented at `temp-template-pack-spec.yaml` (to be created in AlignTrue/aligns as `packs/templates/starter.aligntrue.yaml`)
+  - Template includes all 5 check types with inline documentation and best practice guidance
+  - "Potential future features" section added to long_term.mdc with implementation triggers for deferred features
+  - Pattern for documenting deferred features added to global.mdc "Deferring features" section
+  - Deferred Sigstore signing (trigger: external requests or 3+ authorship disputes)
+  - Deferred full governance with disputes/SLAs (trigger: first dispute or 10+ active contributors)
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout
