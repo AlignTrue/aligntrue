@@ -1,0 +1,48 @@
+# Severity levels pack
+# Tests: rules with MUST, SHOULD, and MAY severity levels
+
+id: "packs/testkit/severity-levels"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Tests all three severity levels"
+tags: ["testkit", "severity"]
+deps: []
+scope:
+  applies_to: ["*"]
+rules:
+  - id: "must-level"
+    severity: "MUST"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: "**/*.test.ts"
+      evidence: "MUST: Tests are required"
+    autofix:
+      hint: "Add test files"
+
+  - id: "should-level"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.ts"]
+        pattern: "\\bconsole\\.log\\b"
+        allow: false
+      evidence: "SHOULD: Avoid console.log"
+    autofix:
+      hint: "Remove or replace with proper logging"
+
+  - id: "may-level"
+    severity: "MAY"
+    check:
+      type: "path_convention"
+      inputs:
+        pattern: "^[a-z0-9-]+$"
+        include: ["src/**"]
+        message: "MAY: Consider using kebab-case"
+      evidence: "MAY: Kebab-case recommended"
+integrity:
+  algo: "jcs-sha256"
+  value: "7a3c5a9cbf58879e7a7bfd93860981344101e2d26cfc5f197ccaf8b210f7742b"
+

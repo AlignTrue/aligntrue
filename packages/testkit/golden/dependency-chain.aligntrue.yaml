@@ -1,0 +1,29 @@
+# Dependency chain pack
+# Tests: deps field with pack dependencies
+
+id: "packs/testkit/dependency-chain"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Tests dependency chain handling"
+tags: ["testkit", "dependencies"]
+# This pack depends on other packs
+deps:
+  - "packs/base/base-global@^1.0.0"
+  - "packs/testkit/minimal-valid@1.0.0"
+scope:
+  applies_to: ["backend", "frontend"]
+rules:
+  - id: "inherited-rule"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.ts"]
+        pattern: "deprecated"
+        allow: false
+      evidence: "Deprecated code found"
+integrity:
+  algo: "jcs-sha256"
+  value: "ac468cc9c7cbeb6daf400aaba3aa6bf24a6f2c97eab2be1e327a7cf5e6488028"
+
