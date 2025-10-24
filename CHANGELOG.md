@@ -68,6 +68,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tests schema package with Node 20 and pnpm 9
   - Build, test, and typecheck gates
 
+- **Basealigns validation fixes** (Stage 1.0)
+  - Fixed `typescript.yaml` - Changed from invalid `manifest_policy` to `command_runner` for tsconfig.json validation
+  - Fixed `web_quality.yaml` - Changed from invalid `manifest_policy` to `command_runner` for ESLint plugin check
+  - All 11 basealigns now pass schema validation
+  - Re-computed integrity hashes for fixed files
+
 ### Changed
 
 - **Repository structure** reorganized from boilerplate Next.js to workspace layout
