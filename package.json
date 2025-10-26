@@ -4,14 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @aligntrue/web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "verify": "pnpm --filter @aligntrue/testkit test",
     "testkit:verify": "pnpm verify",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist archive/*/node_modules archive/*/.next archive/*/dist",
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete"
   },
   "devDependencies": {
