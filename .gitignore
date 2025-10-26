@@ -48,3 +48,11 @@ next-env.d.ts
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
 logs/
+
+# temp docs
+REARCHITECTURE_COMPLETE.md
+docs/architecture-decisions.md
+docs/implementation-summary.md
+docs/refactor-plan.md
+docs/ux-guidelines.md
+docs/ux-messaging-updates.md
