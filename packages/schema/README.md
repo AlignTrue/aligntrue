@@ -4,12 +4,23 @@ JSON Schema validation, canonicalization, and integrity hashing for AlignTrue Al
 
 ## Overview
 
-This package provides the core validation and canonicalization utilities for Align Spec v1:
+This package provides the core validation and canonicalization utilities for Align Spec v2-preview:
 
 - **JSON Schema validation** using Ajv in strict mode
-- **JCS (RFC 8785) canonicalization** for deterministic hashing
+- **JCS (RFC 8785) canonicalization** for lockfile and catalog publishing only
 - **SHA-256 integrity hashing** with verification
 - **TypeScript types** for Align pack structure
+
+## Canonicalization Strategy
+
+**Important:** Canonicalization is ONLY performed at boundaries where determinism is required:
+
+- **Lockfile generation** (`aligntrue lock` in team mode)
+- **Catalog publishing** (`aligntrue publish` in Phase 4)
+
+**NOT used during:** init, sync, export, import, or normal file operations.
+
+**Why:** Solo developers don't need canonicalization overhead for local files. Team mode only needs determinism for lockfile-based drift detection. Running canonicalization on every operation adds unnecessary cost.
 
 ## Installation
 
@@ -255,9 +266,15 @@ The same Align pack content will always produce the same hash, regardless of:
 - YAML anchors vs explicit duplication
 - Machine or environment
 
+## Pre-1.0 Policy
+
+This package validates against IR spec v2-preview. The schema may iterate freely before 1.0 stable release. See `docs/pre-1.0-policy.md` for details on schema evolution and migration triggers.
+
 ## References
 
-- [Align Spec v1](../../spec/align-spec-v1.md)
+- [Align Spec v2-preview (CLI-first)](../../spec/align-spec-v2-cli-first.md)
+- [Align Spec v1 (superseded)](../../spec/align-spec-v1.md)
+- [Pre-1.0 Policy](../../docs/pre-1.0-policy.md)
 - [JCS (RFC 8785)](https://www.rfc-editor.org/rfc/rfc8785)
 - [JSON Schema 2020-12](https://json-schema.org/draft/2020-12/)
 
