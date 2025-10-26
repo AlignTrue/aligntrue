@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aligntrue/core": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1"

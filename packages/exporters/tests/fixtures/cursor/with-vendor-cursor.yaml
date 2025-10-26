@@ -1,0 +1,16 @@
+id: test-pack-vendor
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: testing.require-tests
+    severity: warn
+    applies_to:
+      - "**/*.ts"
+    guidance: |
+      All features must have tests.
+    vendor:
+      cursor:
+        ai_hint: "Suggest test scaffolding with vitest"
+        session_metadata:
+          created: "2024-01-01"
+

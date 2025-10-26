@@ -122,6 +122,9 @@ importers:
 
   packages/exporters:
     dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../core
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema

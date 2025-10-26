@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cursor Exporter with Snapshot Tests** (Phase 1, Week 2, Step 11) - Completed 2025-10-26
+  - Complete Cursor .mdc exporter implementation (270 lines)
+  - Scope-based file organization: one .mdc per scope (default → aligntrue.mdc)
+  - Vendor.cursor metadata extracted to YAML frontmatter
+  - Comprehensive fidelity tracking with unmapped field analysis
+  - Deterministic SHA-256 content hash from canonical IR input
+  - Multiple rules concatenated as markdown sections with headers
+  - Atomic file writes using AtomicFileWriter from @aligntrue/core
+  - 18 comprehensive tests with 5 snapshot validations (100% pass rate)
+  - Test fixtures: single-rule, multiple-rules, vendor-cursor, mixed-vendor, all-severities
+  - Golden .mdc outputs validated via Vitest snapshots
+  - Dry-run mode support for preview without side effects
+  - Footer generation with content hash and fidelity notes
+  - Scope-to-filename conversion (slashes → hyphens)
+  - Cross-agent vendor field tracking (vscode, copilot, etc.)
+
 - **Adapter Registry with Hybrid Manifests** (Phase 1, Week 2, Step 10) - Completed 2025-10-26
   - Hybrid manifest system: declarative `manifest.json` + optional TypeScript handlers
   - Community-scalable adapter contributions without core code changes
