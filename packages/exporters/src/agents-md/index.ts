@@ -1,19 +1,25 @@
 /**
- * AGENTS.md universal formatter
+ * AGENTS.md exporter
+ * Exports AlignTrue rules to universal AGENTS.md format
  */
 
-import type { Exporter, ExportOptions, ExportResult } from '../types.js';
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult } from '../types.js'
 
-export class AgentsMdExporter implements Exporter {
-  name = 'agents-md';
-  version = '1.0.0';
+export class AgentsMdExporter implements ExporterPlugin {
+  name = 'agents-md'
+  version = '1.0.0'
   
-  async export(ir: unknown, options: ExportOptions): Promise<ExportResult> {
-    throw new Error('Not implemented');
+  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
+    // Step 12 will implement this
+    throw new Error('AgentsMdExporter.export() not yet implemented (Step 12)')
   }
 }
 
-export function formatAgentsMd(ir: unknown, version: string): string {
-  throw new Error('Not implemented');
+/**
+ * Format AGENTS.md with versioned structure
+ * @param version - Format version (e.g., 'v1')
+ */
+export function formatAgentsMd(version: string = 'v1'): string {
+  // Step 12 will implement this
+  throw new Error('formatAgentsMd() not yet implemented (Step 12)')
 }
-

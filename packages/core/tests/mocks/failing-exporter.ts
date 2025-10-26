@@ -7,7 +7,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult
-} from '../../src/sync/engine.js'
+} from '@aligntrue/exporters'
 
 /**
  * Exporter that always fails for testing error handling

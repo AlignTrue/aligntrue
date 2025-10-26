@@ -12,31 +12,16 @@ import { loadIR } from './ir-loader.js'
 import { AtomicFileWriter } from './file-operations.js'
 import { ConflictDetector, type Conflict } from './conflict-detector.js'
 
-// Re-export types from exporters package
-export interface ExporterPlugin {
-  name: string
-  version: string
-  export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult>
-}
+// Import types from exporters package
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult
+} from '@aligntrue/exporters'
 
-export interface ScopedExportRequest {
-  scope: ResolvedScope
-  rules: AlignRule[]
-  outputPath: string
-}
-
-export interface ExportOptions {
-  outputDir: string
-  dryRun?: boolean
-  backup?: boolean
-}
-
-export interface ExportResult {
-  success: boolean
-  filesWritten: string[]
-  fidelityNotes?: string[]
-  contentHash: string
-}
+// Re-export for convenience
+export type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult }
 
 /**
  * Options for sync operations

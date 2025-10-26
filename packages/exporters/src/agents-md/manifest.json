@@ -1,0 +1,13 @@
+{
+  "name": "agents-md",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to universal AGENTS.md format",
+  "outputs": ["AGENTS.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Versioned format (v1 initially)",
+    "Severity mapped to markdown emphasis"
+  ]
+}
+

@@ -60,11 +60,18 @@ export interface ExporterPlugin {
 }
 
 /**
- * Legacy exporter interface (deprecated in favor of ExporterPlugin)
+ * Adapter manifest metadata
+ * 
+ * Declarative manifest.json file that describes an adapter's capabilities,
+ * outputs, and optional handler for community-scalable contributions.
  */
-export interface Exporter {
-  name: string;
-  version: string;
-  export(ir: unknown, options: ExportOptions): Promise<ExportResult>;
+export interface AdapterManifest {
+  name: string              // Adapter name (lowercase alphanumeric with hyphens)
+  version: string           // Semantic version (e.g., 1.0.0)
+  description: string       // Human-readable description
+  outputs: string[]         // File patterns produced (e.g., [".cursor/rules/*.mdc"])
+  handler?: string          // Optional: relative path to TypeScript handler
+  license?: string          // License identifier (default: MIT)
+  fidelityNotes?: string[]  // Optional: semantic mapping limitations
 }
 

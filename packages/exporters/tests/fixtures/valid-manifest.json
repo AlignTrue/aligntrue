@@ -1,0 +1,13 @@
+{
+  "name": "test-adapter",
+  "version": "1.0.0",
+  "description": "Test adapter for unit tests",
+  "outputs": [".test/*.txt"],
+  "handler": "./mock-handler.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Test note 1",
+    "Test note 2"
+  ]
+}
+

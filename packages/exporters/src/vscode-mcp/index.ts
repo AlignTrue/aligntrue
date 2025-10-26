@@ -1,15 +1,24 @@
 /**
  * VS Code MCP config exporter
+ * Exports AlignTrue rules to .vscode/mcp.json format
  */
 
-import type { Exporter, ExportOptions, ExportResult } from '../types.js';
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult } from '../types.js'
 
-export class VsCodeMcpExporter implements Exporter {
-  name = 'vscode-mcp';
-  version = '1.0.0';
+export class VsCodeMcpExporter implements ExporterPlugin {
+  name = 'vscode-mcp'
+  version = '1.0.0'
   
-  async export(ir: unknown, options: ExportOptions): Promise<ExportResult> {
-    throw new Error('Not implemented');
+  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
+    // Step 13 will implement this
+    throw new Error('VsCodeMcpExporter.export() not yet implemented (Step 13)')
   }
 }
 
+/**
+ * Generate MCP configuration JSON
+ */
+export function generateMcpConfig(): object {
+  // Step 13 will implement this
+  throw new Error('generateMcpConfig() not yet implemented (Step 13)')
+}

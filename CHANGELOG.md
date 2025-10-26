@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Adapter Registry with Hybrid Manifests** (Phase 1, Week 2, Step 10) - Completed 2025-10-26
+  - Hybrid manifest system: declarative `manifest.json` + optional TypeScript handlers
+  - Community-scalable adapter contributions without core code changes
+  - JSON Schema validation for manifest files (draft 2020-12)
+  - Dynamic handler loading with ESM imports
+  - Manifest.json created for all 3 P1 exporters (cursor, agents-md, vscode-mcp)
+  - Migrated from legacy `Exporter` interface to `ExporterPlugin` (breaking change, pre-1.0)
+  - Sync engine imports ExporterPlugin types from @aligntrue/exporters package
+  - 46 comprehensive tests (26 registry + 20 schema validation)
+  - Comprehensive README with adapter creation guide, API reference, fidelity notes documentation
+  - CONTRIBUTING.md with adapter requirements, testing guidelines, PR checklist
+  - Adapter discovery in directories (finds all manifest.json files)
+  - Programmatic and manifest-based registration modes
+  - Mock adapter fixtures for testing handler loading
+  - Cross-package type sharing (ExporterPlugin now canonical in exporters package)
+
 - **Two-Way Sync Engine Skeleton** (Phase 1, Week 1, Step 9) - Completed 2025-10-26
   - Core sync orchestration in `packages/core/src/sync/engine.ts`
   - IR→agent sync (default direction) with scope resolution integration

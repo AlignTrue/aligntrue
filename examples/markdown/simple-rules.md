@@ -21,7 +21,7 @@ rules:
     vendor:
       cursor:
         ai_hint: "Suggest test scaffolding with vitest"
-  
+
   - id: docs-update-readme
     severity: info
     applies_to:
@@ -34,6 +34,7 @@ rules:
     vendor:
       cursor:
         ai_hint: "Remind to update README when features change"
+
 ```
 
 ## Testing Rules
