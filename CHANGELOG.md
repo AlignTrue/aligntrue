@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **AGENTS.md Exporter with V1 Format** (Phase 1, Week 2, Step 12) - Completed 2025-10-26
+  - Universal AGENTS.md exporter for multiple AI agents (Claude, Copilot, Aider, etc.)
+  - Single root-level AGENTS.md file with merged scopes (not per-scope files)
+  - V1 format with version marker in header
+  - Plain text severity labels: ERROR, WARN, INFO (not emoji or markdown styling)
+  - Scope paths included in rule metadata sections
+  - No vendor namespace extraction (universal format serves all agents equally)
+  - Deterministic SHA-256 content hash from canonical IR
+  - Comprehensive fidelity tracking for unmapped fields and vendor metadata
+  - 23 comprehensive tests with 5 snapshot validations (100% pass rate)
+  - Test fixtures: single-rule, multiple-rules, multiple-scopes, with-vendor-fields, all-severities
+  - Golden outputs validated via Vitest snapshots
+  - Atomic file writes using AtomicFileWriter from @aligntrue/core
+  - State management for accumulating rules across scope calls
+  - CLI: `aligntrue sync` generates AGENTS.md automatically alongside Cursor .mdc files
+  - Total exporters package tests: 87 passing (up from 63)
+
 - **Cursor Exporter with Snapshot Tests** (Phase 1, Week 2, Step 11) - Completed 2025-10-26
   - Complete Cursor .mdc exporter implementation (270 lines)
   - Scope-based file organization: one .mdc per scope (default → aligntrue.mdc)
@@ -310,7 +327,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **EditorConfig** for consistent formatting across editors
 - **Development workflow** documented with setup and troubleshooting
 
-## [0.1.0] - 2025-01-01
+## [0.1.0]
 
 ### Added
 
