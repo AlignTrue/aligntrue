@@ -23,7 +23,9 @@
     "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24",
+    "js-yaml": "^4.1.0",
     "typescript": "^5",
     "vitest": "^4.0.3"
   },
@@ -31,4 +33,3 @@
     "node": ">=20"
   }
 }
-

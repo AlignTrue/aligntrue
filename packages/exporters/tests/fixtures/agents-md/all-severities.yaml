@@ -1,0 +1,23 @@
+id: test-pack
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: security.no-secrets
+    severity: error
+    applies_to:
+      - "**/*"
+    guidance: |
+      Never commit secrets or API keys to version control.
+  - id: testing.require-tests
+    severity: warn
+    applies_to:
+      - "src/**/*.ts"
+    guidance: |
+      All features should have tests.
+  - id: style.prefer-const
+    severity: info
+    applies_to:
+      - "**/*.ts"
+    guidance: |
+      Use const instead of let when variables are not reassigned.
+

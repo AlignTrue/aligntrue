@@ -1,0 +1,17 @@
+id: test-pack
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: backend.api-tests
+    severity: error
+    applies_to:
+      - "backend/api/**/*.ts"
+    guidance: |
+      All API endpoints must have integration tests.
+  - id: frontend.component-tests
+    severity: warn
+    applies_to:
+      - "apps/web/components/**/*.tsx"
+    guidance: |
+      All React components should have unit tests.
+
