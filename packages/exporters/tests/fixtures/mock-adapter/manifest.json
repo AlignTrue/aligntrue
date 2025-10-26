@@ -1,0 +1,9 @@
+{
+  "name": "mock-adapter",
+  "version": "2.0.0",
+  "description": "Mock adapter for handler loading tests",
+  "outputs": [".mock/*.txt"],
+  "handler": "./index.ts",
+  "license": "MIT"
+}
+

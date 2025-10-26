@@ -7,7 +7,7 @@ import type {
   ScopedExportRequest, 
   ExportOptions, 
   ExportResult 
-} from '../../src/sync/engine.js'
+} from '@aligntrue/exporters'
 
 /**
  * Mock exporter that tracks calls and returns configurable results

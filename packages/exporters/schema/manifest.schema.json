@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aligntrue.com/schemas/adapter-manifest.json",
+  "title": "AlignTrue Adapter Manifest",
+  "description": "Manifest file for AlignTrue adapter/exporter plugins",
+  "type": "object",
+  "required": ["name", "version", "description", "outputs"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Adapter name (lowercase alphanumeric with hyphens)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Human-readable description of the adapter"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "File patterns produced by this adapter (e.g., .cursor/rules/*.mdc)"
+    },
+    "handler": {
+      "type": "string",
+      "description": "Optional: relative path to TypeScript handler (e.g., ./index.ts)"
+    },
+    "license": {
+      "type": "string",
+      "default": "MIT",
+      "description": "License identifier (e.g., MIT, Apache-2.0)"
+    },
+    "fidelityNotes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional: list of semantic mapping limitations or caveats"
+    }
+  },
+  "additionalProperties": false
+}
+
