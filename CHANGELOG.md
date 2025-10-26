@@ -35,6 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Git history preserved using `git mv` for easy recovery
   - See `archive/README.md` for recovery plan
 
+- **Package scaffolds created** (Phase 1, Week 1, Step 2) - Completed 2025-10-26
+  - `packages/core/` - Config management, sync engine, bundle/lockfile, scope resolution
+  - `packages/markdown-parser/` - Literate MD → IR conversion with fenced block extraction
+  - `packages/sources/` - Multi-source pulling (local, catalog, git, url) with caching
+  - `packages/exporters/` - Agent exports (Cursor, AGENTS.md, VS Code MCP config)
+  - `packages/cli/` - Rebuilt with fresh structure aligned to IR-first architecture
+  - All packages include TypeScript stub interfaces defining architectural contracts
+  - Workspace integrity verified with successful pnpm install and typecheck
+  - Total 5 packages ready for implementation (15k token estimate)
+
 ### Documentation
 
 - **Failure isolation strategy** documented in `docs/refactor-plan.md`

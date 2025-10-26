@@ -1,18 +1,9 @@
 {
-  "name": "@aligntrue/cli",
+  "name": "@aligntrue/sources",
   "version": "0.1.0",
   "type": "module",
-  "bin": {
-    "aligntrue": "./dist/index.js",
-    "aln": "./dist/index.js"
-  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -20,10 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
-    "@aligntrue/markdown-parser": "workspace:*",
-    "@aligntrue/sources": "workspace:*",
-    "@aligntrue/exporters": "workspace:*",
     "@aligntrue/schema": "workspace:*"
   },
   "devDependencies": {
