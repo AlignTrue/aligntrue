@@ -20,6 +20,11 @@
       "const": "1",
       "description": "Align Spec version identifier"
     },
+    "source_format": {
+      "type": "string",
+      "enum": ["markdown", "yaml"],
+      "description": "Source format of the align document. Optional metadata field for tracking authoring method."
+    },
     "summary": {
       "type": "string",
       "maxLength": 200,
