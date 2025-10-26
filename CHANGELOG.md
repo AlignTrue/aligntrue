@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Config Parser with JSON Schema Validation** (Phase 1, Week 1, Step 8) - Completed 2025-10-26
+  - Strict config location: .aligntrue/config.yaml only
+  - JSON Schema validation following align.schema.json pattern
+  - Solo/team/enterprise mode support with mode-specific defaults
+  - Default exporters: ['cursor', 'agents-md'] for immediate multi-agent support
+  - Unknown field warnings (non-blocking) for pre-1.0 flexibility
+  - YAML parsing with helpful error messages (line numbers on parse errors)
+  - Integration with existing scope/path/glob validation from Step 5
+  - 43 comprehensive tests covering loading, validation, defaults, warnings
+  - Error messages point to exact config issues with actionable fixes
+  - Mode-specific defaults reduce solo dev friction without compromising team mode power
+  - Cross-field validation warns about unusual configurations (e.g., solo mode + lockfile)
+  - Source type validation with type-specific required fields
+  - Comprehensive README with config examples, troubleshooting, and API reference
+
 - **Hierarchical Scopes System** (Phase 1, Week 1, Step 5) - Completed 2025-10-26
   - Path-based scope resolution with include/exclude glob patterns
   - Merge order support: [root, path, local] for rule precedence

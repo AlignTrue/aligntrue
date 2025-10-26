@@ -85,10 +85,22 @@ importers:
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.17.1)
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.1.0
       micromatch:
         specifier: ^4.0.8
         version: 4.0.8
     devDependencies:
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/micromatch':
         specifier: ^4.0.9
         version: 4.0.10

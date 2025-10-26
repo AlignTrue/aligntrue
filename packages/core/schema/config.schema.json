@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aligntrue.com/schema/config-v1.schema.json",
+  "title": "AlignTrue Config v1",
+  "description": "Configuration schema for AlignTrue CLI (solo/team/enterprise modes)",
+  "type": "object",
+  "required": ["version", "mode"],
+  "additionalProperties": true,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Config version identifier (e.g., '1' or semver '1.0.0')"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["solo", "team", "enterprise"],
+      "description": "Operating mode: solo (default, no lockfile), team (lockfile+bundle), enterprise (all features)"
+    },
+    "modules": {
+      "type": "object",
+      "description": "Module feature flags (opt-in per module)",
+      "additionalProperties": false,
+      "properties": {
+        "lockfile": {
+          "type": "boolean",
+          "description": "Enable lockfile generation for reproducibility (auto-enabled in team mode)"
+        },
+        "bundle": {
+          "type": "boolean",
+          "description": "Enable bundle generation for multi-source merging (auto-enabled in team mode)"
+        },
+        "checks": {
+          "type": "boolean",
+          "description": "Enable machine-checkable rules engine (default: true)"
+        },
+        "mcp": {
+          "type": "boolean",
+          "description": "Enable MCP server for editor integration (Phase 2+)"
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "description": "Git integration settings",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["ignore", "commit", "branch"],
+          "description": "Git integration mode: ignore (no tracking), commit (auto-commit), branch (dedicated branch)"
+        },
+        "per_adapter": {
+          "type": "object",
+          "description": "Override git mode per exporter adapter",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["ignore", "commit", "branch"]
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "Source providers for rules (local files, catalog, git repos, URLs)",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["local", "catalog", "git", "url"],
+            "description": "Source provider type"
+          },
+          "path": {
+            "type": "string",
+            "description": "Local file path (required for type: local)"
+          },
+          "url": {
+            "type": "string",
+            "description": "Remote URL (required for type: git or url)"
+          },
+          "id": {
+            "type": "string",
+            "description": "Catalog pack ID (required for type: catalog)"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version constraint for catalog packs (e.g., '^1.0.0')"
+          }
+        }
+      }
+    },
+    "exporters": {
+      "type": "array",
+      "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents-md')",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "description": "Hierarchical scopes for monorepo path-based rule application",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path from workspace root (e.g., 'packages/frontend')"
+          },
+          "include": {
+            "type": "array",
+            "description": "Glob patterns to include within this scope",
+            "items": {
+              "type": "string"
+            }
+          },
+          "exclude": {
+            "type": "array",
+            "description": "Glob patterns to exclude from this scope",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rulesets": {
+            "type": "array",
+            "description": "Rule IDs or pack references to apply in this scope",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "merge": {
+      "type": "object",
+      "description": "Merge strategy configuration for multi-source rules",
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["deep"],
+          "description": "Merge strategy: deep (property-level merge by rule ID)"
+        },
+        "order": {
+          "type": "array",
+          "description": "Merge order (precedence): root < path < local",
+          "items": {
+            "type": "string",
+            "enum": ["root", "path", "local"]
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
+
