@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
