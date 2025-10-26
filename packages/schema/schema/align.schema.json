@@ -2,34 +2,40 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aligntrue.com/schema/align-v1.schema.json",
   "title": "Align Pack v1",
-  "description": "Schema for AlignTrue Align packs (Spec v1)",
+  "description": "Schema for AlignTrue Align packs (Spec v1, CLI-first)",
   "type": "object",
-  "required": ["id", "version", "profile", "spec_version", "summary", "tags", "deps", "scope", "rules", "integrity"],
+  "required": ["id", "version", "spec_version", "rules"],
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^packs/[a-z0-9-]+(/[a-z0-9-]+)*$",
-      "description": "Unique pack identifier, kebab-case namespaced path"
+      "description": "Pack identifier. Solo mode: simple names (e.g., 'my-rules'). Team mode: project-scoped (e.g., 'mycompany/backend'). Catalog mode: pack namespacing (e.g., 'packs/mycompany/backend')."
     },
     "version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9.-]+)?(\\+[a-z0-9.-]+)?$",
-      "description": "Semantic version"
-    },
-    "profile": {
-      "type": "string",
-      "enum": ["align"],
-      "description": "Document profile type"
+      "description": "Semantic version (MAJOR.MINOR.PATCH)"
     },
     "spec_version": {
       "type": "string",
-      "enum": ["1"],
-      "description": "Align Spec version"
+      "const": "1",
+      "description": "Align Spec version identifier"
     },
     "summary": {
       "type": "string",
       "maxLength": 200,
-      "description": "Brief one-line description"
+      "description": "One-line description. Optional in solo mode, required in team/catalog modes."
+    },
+    "owner": {
+      "type": "string",
+      "description": "Owner identifier (e.g., 'mycompany/platform' or 'john-smith'). Required in team/catalog modes."
+    },
+    "source": {
+      "type": "string",
+      "description": "Source repository URL or identifier (e.g., 'github.com/mycompany/rules'). Required in team/catalog modes."
+    },
+    "source_sha": {
+      "type": "string",
+      "description": "Git commit SHA or content hash for reproducibility. Required in team/catalog modes."
     },
     "tags": {
       "type": "array",
@@ -37,19 +43,17 @@
         "type": "string",
         "pattern": "^[a-z0-9-]+$"
       },
-      "minItems": 1,
-      "description": "Categorization tags"
+      "description": "Categorization tags (catalog mode, Phase 4)"
     },
     "deps": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Pack dependencies with optional version constraints"
+      "description": "Pack dependencies with optional version constraints (catalog mode, Phase 4)"
     },
     "scope": {
       "type": "object",
-      "required": ["applies_to"],
       "properties": {
         "applies_to": {
           "type": "array",
@@ -73,7 +77,8 @@
           },
           "description": "Glob patterns to exclude"
         }
-      }
+      },
+      "description": "Scope definition (catalog mode, Phase 4)"
     },
     "rules": {
       "type": "array",
@@ -92,8 +97,8 @@
         },
         "value": {
           "type": "string",
-          "pattern": "^([a-f0-9]{64}|<computed>)$",
-          "description": "Hex-encoded SHA-256 hash"
+          "pattern": "^([a-f0-9]{64}|<computed>|<pending>)$",
+          "description": "Hex-encoded SHA-256 hash. Optional in solo mode, required in catalog mode."
         }
       }
     }
@@ -101,33 +106,46 @@
   "$defs": {
     "rule": {
       "type": "object",
-      "required": ["id", "severity", "check"],
+      "required": ["id", "severity", "applies_to"],
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[a-z0-9-]+$",
-          "description": "Unique rule ID within pack"
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Rule identifier within pack (kebab-case)"
         },
         "severity": {
           "type": "string",
-          "enum": ["MUST", "SHOULD", "MAY"]
+          "enum": ["error", "warn", "info"],
+          "description": "Severity level: error (blocking), warn (should fix), info (advisory)"
+        },
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Glob patterns defining which files this rule applies to"
+        },
+        "guidance": {
+          "type": "string",
+          "description": "Human-readable explanation in Markdown format"
         },
         "check": {
           "$ref": "#/$defs/check"
         },
         "autofix": {
+          "$ref": "#/$defs/autofix"
+        },
+        "vendor": {
           "type": "object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            }
-          }
+          "description": "Agent-specific metadata for lossless round-trips. Use _meta.volatile to exclude fields from hashing.",
+          "additionalProperties": true
         }
       }
     },
     "check": {
       "type": "object",
-      "required": ["type", "inputs", "evidence"],
+      "required": ["type", "inputs"],
       "properties": {
         "type": {
           "type": "string",
@@ -153,13 +171,14 @@
             "properties": {
               "inputs": {
                 "type": "object",
-                "required": ["pattern"],
+                "required": ["paths"],
                 "properties": {
-                  "pattern": {
-                    "type": "string"
-                  },
-                  "must_exist_for_changed_sources": {
-                    "type": "boolean"
+                  "paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
                   }
                 }
               }
@@ -178,18 +197,16 @@
             "properties": {
               "inputs": {
                 "type": "object",
-                "required": ["pattern", "include", "message"],
+                "required": ["include", "pattern"],
                 "properties": {
-                  "pattern": {
-                    "type": "string"
-                  },
                   "include": {
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "minItems": 1
                   },
-                  "message": {
+                  "pattern": {
                     "type": "string"
                   }
                 }
@@ -243,7 +260,8 @@
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "minItems": 1
                   },
                   "pattern": {
                     "type": "string"
@@ -277,11 +295,10 @@
                     "type": "string"
                   },
                   "timeout_ms": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "number"
                   },
                   "expect_exit_code": {
-                    "type": "integer"
+                    "type": "number"
                   }
                 }
               }
@@ -289,7 +306,16 @@
           }
         }
       ]
+    },
+    "autofix": {
+      "type": "object",
+      "required": ["hint"],
+      "properties": {
+        "hint": {
+          "type": "string",
+          "description": "Human-readable hint for fixing the violation"
+        }
+      }
     }
   }
 }
-
