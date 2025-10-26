@@ -23,3 +23,8 @@ export {
   type AlignIntegrity,
 } from './validator.js'
 
+// Re-export scope types for cross-package consistency
+// Note: AlignScope is the IR-level scope (applies_to patterns in packs)
+// For config-level scopes, see @aligntrue/core/scope
+export type { AlignScope as AlignIRScope } from './validator.js'
+

@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Hierarchical Scopes System** (Phase 1, Week 1, Step 5) - Completed 2025-10-26
+  - Path-based scope resolution with include/exclude glob patterns
+  - Merge order support: [root, path, local] for rule precedence
+  - Deep merge of rules by ID with property-level overrides
+  - Windows path normalization for cross-platform compatibility
+  - Exporter integration interface (ScopedExportRequest contract)
+  - 40 comprehensive tests covering resolution, glob matching, merge order, and edge cases
+  - Validates glob patterns and paths in config to prevent runtime errors
+  - Foundation for per-scope exporter execution in Week 2 (steps 11-13)
+  - Config validation includes scope path traversal checks and merge order validation
+  - Helper functions: normalizePath, validateScopePath, validateGlobPatterns, validateMergeOrder
+  - File-to-scope matching with last-wins semantics for overlapping scopes
+  - Vendor bag deep merge preserves agent-specific metadata across rule overrides
+
+- **Literate Markdown Parser** (Phase 1, Week 1, Step 4) - Completed 2025-10-26
+  - Extract fenced ```aligntrue blocks from markdown files
+  - One block per section rule enforced with clear error messages
+  - Guidance prose preserved from markdown context before blocks
+  - CLI commands: `aligntrue md lint|format|compile` for standalone validation
+  - Whitespace normalization before hashing (tabs→spaces, trim trailing, consistent EOF)
+  - Schema validation with markdown line number mapping in error messages
+  - 35 tests covering parser, IR builder, validator components
+  - Example markdown files in `examples/markdown/`
+  - Comprehensive README with usage examples and API documentation
+  - `source_format` field added to schema (optional: 'markdown' or 'yaml')
+
 - **IR Schema v1** (Phase 1, Week 1, Step 3) - Completed 2025-10-26
   - Complete schema redesigned for CLI-first/solo developers (catalog-first v1 never shipped)
   - Solo mode: 4 required fields (id, version, spec_version: "1", rules)

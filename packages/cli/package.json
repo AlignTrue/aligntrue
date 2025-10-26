@@ -24,7 +24,8 @@
     "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/sources": "workspace:*",
     "@aligntrue/exporters": "workspace:*",
-    "@aligntrue/schema": "workspace:*"
+    "@aligntrue/schema": "workspace:*",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@types/node": "^24",
