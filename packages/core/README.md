@@ -1,15 +1,15 @@
 # @aligntrue/core
 
-Configuration management, sync engine, bundle/lockfile operations, and scope resolution for AlignTrue.
+Core sync orchestration, configuration management, and scope resolution for AlignTrue.
 
-## Features
+## Overview
 
-- **Config management** - Parse and validate `.aligntrue/config.yaml` with JSON Schema
-- **Mode support** - Solo/team/enterprise modes with automatic defaults
-- **Two-way sync** - IR ↔ agent synchronization with conflict detection
-- **Scope resolution** - Hierarchical path-based scopes with merge rules
-- **Bundle operations** - Dependency merge (team mode)
-- **Lockfile operations** - Hash tracking with off/soft/strict modes
+This package provides the core functionality for AlignTrue's two-way sync engine:
+- **Configuration management** - Load and validate `.aligntrue/config.yaml`
+- **Scope resolution** - Path-based rule scoping for monorepos
+- **Sync engine** - Orchestrate IR→agent (default) and agent→IR (with --accept-agent) sync
+- **Conflict detection** - Identify field-level differences between IR and agent state
+- **Atomic file operations** - Temp file + rename pattern with checksum tracking
 
 ## Installation
 
@@ -19,219 +19,329 @@ pnpm add @aligntrue/core
 
 ## Usage
 
-### Loading Configuration
+### Sync Engine
 
 ```typescript
-import { loadConfig } from '@aligntrue/core/config';
+import { SyncEngine } from '@aligntrue/core'
 
-// Load from default path (.aligntrue/config.yaml)
-const config = await loadConfig();
+const engine = new SyncEngine()
 
-// Load from custom path
-const config = await loadConfig('path/to/config.yaml');
+// Register exporters
+engine.registerExporter(cursorExporter)
+engine.registerExporter(agentsMdExporter)
+
+// Sync IR to agents (default direction)
+const result = await engine.syncToAgents('.aligntrue/rules.md', {
+  configPath: '.aligntrue/config.yaml',
+  dryRun: false,
+  backup: true,
+})
+
+if (result.success) {
+  console.log(`Wrote ${result.written.length} files`)
+} else {
+  console.error('Sync failed:', result.warnings)
+}
 ```
 
-### Configuration File Structure
+### Configuration
 
-Create `.aligntrue/config.yaml` in your project root:
+Load and validate configuration:
 
-```yaml
-# Minimal configuration (required fields only)
-version: "1"
-mode: solo
+```typescript
+import { loadConfig } from '@aligntrue/core'
+
+const config = await loadConfig('.aligntrue/config.yaml')
+console.log(`Mode: ${config.mode}`)
+console.log(`Exporters: ${config.exporters.join(', ')}`)
 ```
 
-### Full Configuration Example
+Example config structure:
 
 ```yaml
-# .aligntrue/config.yaml
 version: "1"
-mode: solo  # or 'team' or 'enterprise'
-
-# Optional: Module feature flags
-modules:
-  lockfile: false  # Enable lockfile generation (auto-enabled in team mode)
-  bundle: false    # Enable bundle generation (auto-enabled in team mode)
-  checks: true     # Enable machine-checkable rules engine
-  mcp: false       # Enable MCP server (Phase 2+)
-
-# Optional: Git integration
-git:
-  mode: ignore  # or 'commit' or 'branch'
-  per_adapter:
-    cursor: ignore  # Override for specific adapter
-
-# Optional: Customize exporters (default: ['cursor', 'agents-md'])
+mode: solo              # solo | team | enterprise
 exporters:
   - cursor
   - agents-md
-
-# Optional: Customize sources (default: local .aligntrue/rules.md)
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-  - type: catalog
-    id: packs/base/testing
-    version: "^1.0.0"
-
-# Optional: Configure scopes for monorepos
-scopes:
-  - path: packages/frontend
-    include: ["src/**/*.tsx"]
-    exclude: ["**/*.test.tsx"]
-    rulesets: ["react-rules"]
-  - path: packages/backend
-    include: ["src/**/*.ts"]
-    rulesets: ["node-rules"]
-
-# Optional: Merge strategy
-merge:
-  strategy: deep
-  order: [root, path, local]  # Precedence order
-```
-
-## Mode-Specific Defaults
-
-### Solo Mode (Default)
-Best for individual developers. Minimal ceremony, no lockfile/bundle overhead.
-
-**Defaults:**
-- `modules.lockfile: false`
-- `modules.bundle: false`
-- `modules.checks: true`
-- `modules.mcp: false`
-- `git.mode: 'ignore'`
-- `exporters: ['cursor', 'agents-md']`
-- `sources: [{ type: 'local', path: '.aligntrue/rules.md' }]`
-
-### Team Mode
-For teams needing reproducibility and drift detection.
-
-**Defaults:**
-- `modules.lockfile: true` (enables lockfile)
-- `modules.bundle: true` (enables bundle)
-- `modules.checks: true`
-- `git.mode: 'ignore'`
-- All other defaults same as solo
-
-### Enterprise Mode
-All features enabled for maximum control.
-
-**Defaults:**
-- All modules enabled
-- `git.mode: 'commit'`
-
-## Source Types
-
-### Local
-```yaml
 sources:
   - type: local
     path: .aligntrue/rules.md
 ```
 
-### Catalog
-```yaml
-sources:
-  - type: catalog
-    id: packs/base/testing
-    version: "^1.0.0"  # Optional semver constraint
+### Scope Resolution
+
+```typescript
+import { resolveScopes } from '@aligntrue/core'
+
+const config = {
+  scopes: [
+    {
+      path: 'apps/web',
+      include: ['**/*.ts', '**/*.tsx'],
+      exclude: ['**/*.test.ts'],
+    },
+  ],
+  merge: {
+    order: ['root', 'path', 'local'],
+  },
+}
+
+const resolved = resolveScopes('/workspace', config)
 ```
 
-### Git
-```yaml
-sources:
-  - type: git
-    url: https://github.com/org/rules.git
-```
+### Conflict Detection
 
-### URL
-```yaml
-sources:
-  - type: url
-    url: https://example.com/rules.yaml
-```
+```typescript
+import { ConflictDetector } from '@aligntrue/core'
 
-## Validation
+const detector = new ConflictDetector()
 
-Config files are validated against a JSON Schema. Errors include:
-- Field path (e.g., `modules.lockfile`)
-- Expected type/value
-- Actionable fix suggestions
+const conflicts = detector.detectConflicts('cursor', irRules, agentRules)
 
-### Example Error
-
+if (conflicts.hasConflicts) {
+  for (const conflict of conflicts.conflicts) {
+    console.log(`Conflict in ${conflict.ruleId}:`)
+    console.log(`  Field: ${conflict.field}`)
+    console.log(`  IR: ${JSON.stringify(conflict.irValue)}`)
+    console.log(`  Agent: ${JSON.stringify(conflict.agentValue)}`)
+  }
+}
 ```
-Invalid config in .aligntrue/config.yaml:
-  - mode: must be equal to one of the allowed values. Allowed values: solo, team, enterprise
-  See config.schema.json for full specification.
-```
-
-## Troubleshooting
-
-### Config file not found
-```
-Error: Config file not found: .aligntrue/config.yaml
-  Run 'aligntrue init' to create one.
-```
-**Fix:** Run `aligntrue init` or create the config file manually.
-
-### Invalid YAML syntax
-```
-Invalid YAML in .aligntrue/config.yaml at line 5, column 3
-  bad indentation
-  Check for syntax errors (indentation, quotes, colons).
-```
-**Fix:** Check YAML indentation and syntax. Use a YAML validator.
-
-### Unknown fields warning
-```
-Warning: Unknown config field "unknownField" in .aligntrue/config.yaml
-  This field will be ignored. Valid fields: version, mode, modules, git, sources, exporters, scopes, merge
-```
-**Fix:** This is a warning, not an error. Remove the unknown field or check documentation for correct field names.
-
-### Mode/module inconsistency
-```
-Warning: Solo mode with lockfile enabled is unusual.
-  Consider using 'mode: team' if you need lockfile features.
-```
-**Fix:** Either change `mode: team` or set `modules.lockfile: false`.
 
 ## API Reference
 
-### `loadConfig(configPath?: string): Promise<AlignTrueConfig>`
-Load and validate config file with defaults applied.
+### SyncEngine
 
-**Parameters:**
-- `configPath` (optional): Path to config file. Defaults to `.aligntrue/config.yaml`
+Main sync orchestration class.
 
-**Returns:** Validated config with mode-specific defaults applied
+**Methods:**
+- `registerExporter(exporter: ExporterPlugin)` - Register an exporter plugin
+- `syncToAgents(irPath, options)` - Sync IR to agents (returns SyncResult)
+- `syncFromAgent(agent, irPath, options)` - Sync from agent to IR (TODO: Step 17)
+- `detectConflicts(agent, irRules, agentRules)` - Detect conflicts
+- `clear()` - Clear internal state
 
-**Throws:** 
-- If file not found
-- If YAML parsing fails
-- If schema validation fails
-- If enhanced validation fails (scopes, paths, etc.)
+**SyncOptions:**
+- `configPath?: string` - Path to config file
+- `dryRun?: boolean` - Preview without writing
+- `backup?: boolean` - Create backups before overwrite
+- `acceptAgent?: string` - Accept agent changes (pullback)
+- `force?: boolean` - Ignore overwrite protection
 
-### `validateConfig(config: AlignTrueConfig, configPath?: string): Promise<void>`
-Validate config structure and cross-field constraints.
+**SyncResult:**
+- `success: boolean` - Whether sync succeeded
+- `written: string[]` - Files written
+- `warnings?: string[]` - Warnings and errors
+- `conflicts?: Conflict[]` - Detected conflicts
+- `exportResults?: Map<string, ExportResult>` - Per-exporter results
 
-**Parameters:**
-- `config`: Config object to validate
-- `configPath` (optional): Path for error messages
+### Configuration
 
-**Throws:** If validation fails
+**`loadConfig(configPath?)`**
 
-### `applyDefaults(config: AlignTrueConfig): AlignTrueConfig`
-Apply mode-specific defaults to config.
+Loads and validates `.aligntrue/config.yaml`.
 
-**Parameters:**
-- `config`: Config object (may be incomplete)
+Returns: `AlignTrueConfig`
 
-**Returns:** Config with defaults filled in
+**Mode-specific defaults:**
+- **Solo:** lockfile off, bundle off, checks on, mcp off, git ignore
+- **Team:** lockfile on, bundle on, checks on, mcp off, git ignore
+- **Enterprise:** all on, git commit
 
-## Package Status
+### Scope Resolution
 
-✅ **Phase 1, Week 1, Step 8** - Config parser complete (43 tests passing)
+**`resolveScopes(workspacePath, config)`**
 
+Resolves scopes with path normalization and validation.
+
+**`applyScopeMerge(rulesByLevel, order)`**
+
+Merges rules according to precedence order.
+
+### Conflict Detection
+
+**ConflictDetector**
+
+Detects field-level conflicts between IR and agent state.
+
+- Compares core fields: severity, applies_to, guidance
+- Compares vendor bags (ignores volatile fields)
+- Returns structured diffs
+
+### File Operations
+
+**AtomicFileWriter**
+
+Atomic file writes with temp + rename pattern.
+
+**Methods:**
+- `write(path, content)` - Write atomically
+- `rollback()` - Restore from backups
+- `trackFile(path)` - Track file checksum
+- `getChecksum(path)` - Get checksum record
+- `clear()` - Clear tracking
+
+**Helper functions:**
+- `computeFileChecksum(path)` - SHA-256 of file
+- `computeContentChecksum(content)` - SHA-256 of content
+- `ensureDirectoryExists(path)` - Create directory if needed
+
+### IR Loader
+
+**`loadIR(sourcePath)`**
+
+Loads IR from markdown or YAML file.
+
+- Auto-detects format (.md, .markdown, .yaml, .yml)
+- Validates against schema
+- Returns `AlignPack`
+
+## Exports
+
+```typescript
+// Sync engine
+export { SyncEngine, syncToAgents, syncFromAgent, registerExporter }
+export type { SyncOptions, SyncResult }
+
+// Configuration
+export { loadConfig, validateConfig, applyDefaults }
+export type { AlignTrueConfig, AlignTrueMode }
+
+// Scope resolution
+export { 
+  resolveScopes, 
+  applyScopeMerge, 
+  groupRulesByLevel,
+  normalizePath, 
+  validateScopePath, 
+  validateGlobPatterns, 
+  validateMergeOrder 
+}
+export type { Scope, ResolvedScope, MergeOrder, ScopeConfig, ScopedRules }
+
+// Conflict detection
+export { ConflictDetector }
+export type { Conflict, ConflictDetectionResult }
+
+// File operations
+export { 
+  AtomicFileWriter, 
+  computeFileChecksum, 
+  computeContentChecksum, 
+  ensureDirectoryExists 
+}
+export type { ChecksumRecord }
+
+// IR loading
+export { loadIR }
+
+// Bundle and lockfile (stubs for team mode)
+export { createBundle }
+export { readLockfile, writeLockfile, verifyLockfile }
+export type { Lockfile, LockfileMode }
+
+// Exporter types
+export type { 
+  ExporterPlugin, 
+  ScopedExportRequest, 
+  ExportOptions, 
+  ExportResult 
+}
+```
+
+## Integration Points
+
+### With markdown-parser
+- Uses `parseMarkdown` and `buildIR` to convert markdown to IR
+- Handles fenced ```aligntrue blocks
+
+### With schema
+- Uses `validateAlignSchema` for IR validation
+- Uses types: `AlignPack`, `AlignRule`
+
+### With exporters
+- Provides `ExporterPlugin` interface
+- Calls exporters with `ScopedExportRequest`
+
+## Testing
+
+Run tests:
+
+```bash
+pnpm test
+```
+
+Run tests in watch mode:
+
+```bash
+pnpm test:watch
+```
+
+Mock exporters available in `tests/mocks/`:
+- `MockExporter` - Configurable mock for testing
+- `FailingExporter` - Always fails for error path testing
+
+## Sync Behavior
+
+### Default Direction: IR → Agents
+
+By default, sync reads from IR (`.aligntrue/rules.md` or `.aligntrue.yaml`) and writes to agent-specific formats:
+
+```typescript
+await engine.syncToAgents('.aligntrue/rules.md')
+```
+
+### Pullback Direction: Agent → IR
+
+With `--accept-agent`, sync reads from agent format and updates IR:
+
+```typescript
+await engine.syncFromAgent('cursor', '.aligntrue/rules.md', {
+  acceptAgent: 'cursor'
+})
+```
+
+**Note:** Agent→IR sync not yet implemented (Coming in Step 17).
+
+### Conflict Detection
+
+Conflicts are detected but not automatically resolved. The engine returns structured conflict records with diffs. Resolution UI will be added in Step 14.
+
+```typescript
+const conflicts = engine.detectConflicts('cursor', irRules, agentRules)
+
+for (const conflict of conflicts) {
+  console.log(conflict.diff)  // Readable diff
+}
+```
+
+### Vendor Bags & Volatile Fields
+
+Agent-specific metadata stored in `vendor.<agent>` namespace:
+
+```yaml
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    vendor:
+      cursor:
+        ai_hint: "Suggest using vitest"
+        session_id: "abc123"  # volatile
+      _meta:
+        volatile: ["cursor.session_id"]
+```
+
+Volatile fields excluded from conflict detection and hashing.
+
+## Next Steps
+
+**Step 10:** Implement adapter registry with hybrid manifests  
+**Steps 11-13:** Implement actual exporters (Cursor, AGENTS.md, MCP)  
+**Step 14:** Complete two-way sync with conflict resolution UI  
+**Step 23:** Full CLI integration
+
+---
+
+For full architecture details, see `docs/architecture-decisions.md`.

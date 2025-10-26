@@ -82,6 +82,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@aligntrue/markdown-parser':
+        specifier: workspace:*
+        version: link:../markdown-parser
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
