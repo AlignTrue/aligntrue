@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Documentation consistency** - Aligned `long_term.mdc` with CLI-first rearchitecture
+  - Windows support now correctly documented as Phase 1 (not P2.1)
+  - Removed conflicting "Windows support" deferred feature section
+  - Added explicit Phase 1 Windows deliverables callout
+  - Fixes caught in external review before implementation
+
+### Changed
+
+- **ARCHITECTURAL PIVOT: Catalog-first → CLI-first**
+  - Completed competitive gap analysis identifying solo dev adoption as critical path
+  - Pivoted from catalog-first to CLI-first architecture for faster adoption
+  - Markdown-first authoring (`.aligntrue/rules.md`) instead of YAML-only
+  - Lockfile and bundle now opt-in (team mode) instead of required
+  - Multi-agent support in Phase 1 (Cursor + AGENTS.md) instead of Phase 4
+  - Windows support first-class in Phase 1 (path normalization, CI matrix, cross-platform determinism)
+  - Documentation: `docs/architecture-decisions.md`, `docs/refactor-plan.md`, `docs/implementation-summary.md`
+  - Competitive analysis: `competitive-gap-analysis.md`
+
+- **Components archived** (deferred to later phases) - Completed 2025-10-26
+  - `apps/web/` → `archive/apps-web/` - Catalog website deferred to Phase 4
+  - `apps/docs/` → `archive/apps-docs/` - Documentation site consolidated into README + CLI help
+  - `packages/mcp/` → `archive/mcp-v1/` - MCP server deferred to Phase 2
+  - Workspace configuration updated to exclude archived packages
+  - Git history preserved using `git mv` for easy recovery
+  - See `archive/README.md` for recovery plan
+
+### Documentation
+
+- **Failure isolation strategy** documented in `docs/refactor-plan.md`
+  - Each component (markdown parser, IR, exporters, sync) fails independently
+  - Clear fallback paths prevent cascade failures
+  - Core commands work even if exporters are broken
+
 ### Added
 
 - **Workspace structure** reorganized into proper pnpm monorepo layout
