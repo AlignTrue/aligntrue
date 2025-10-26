@@ -9,7 +9,7 @@ export async function migrate(): Promise<void> {
   console.log(`
 ⚠️  Migration tooling not yet available
 
-AlignTrue is in preview (spec_version: "2-preview").
+AlignTrue is in pre-1.0 status (spec_version: "1").
 Schema may change between releases without automated migration tooling.
 
 Migration framework will be added when we reach:

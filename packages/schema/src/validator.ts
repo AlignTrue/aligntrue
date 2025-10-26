@@ -45,26 +45,107 @@ export interface ValidationError {
  */
 export interface IntegrityResult {
   valid: boolean
-  storedHash?: string
-  computedHash?: string
-  error?: string
+  storedHash?: string | undefined
+  computedHash?: string | undefined
+  error?: string | undefined
+}
+
+/**
+ * Options for mode-dependent validation
+ */
+export interface ValidationOptions {
+  mode?: 'solo' | 'team' | 'catalog'
+  requireIntegrity?: boolean
 }
 
 /**
  * Validate an Align pack against the JSON Schema
  * 
  * @param obj - Parsed Align pack object
+ * @param options - Validation options for mode-dependent rules
  * @returns ValidationResult with errors if invalid
  */
-export function validateAlignSchema(obj: unknown): ValidationResult {
+export function validateAlignSchema(obj: unknown, options?: ValidationOptions): ValidationResult {
   const valid = validateFn(obj)
   
-  if (valid) {
-    return { valid: true }
+  if (!valid) {
+    const errors = formatValidationErrors(validateFn.errors || [])
+    return { valid: false, errors }
   }
   
-  const errors = formatValidationErrors(validateFn.errors || [])
-  return { valid: false, errors }
+  // Mode-specific validation
+  const modeErrors: ValidationError[] = []
+  const mode = options?.mode || 'solo'
+  const pack = obj as Record<string, unknown>
+  
+  if (mode === 'team') {
+    // Team mode requires summary
+    if (!pack['summary']) {
+      modeErrors.push({
+        path: '/summary',
+        message: 'summary is required in team mode'
+      })
+    }
+    // Provenance fields required when source is specified
+    if (pack['source'] && !pack['owner']) {
+      modeErrors.push({
+        path: '/owner',
+        message: 'owner is required when source is specified in team mode'
+      })
+    }
+    if (pack['source'] && !pack['source_sha']) {
+      modeErrors.push({
+        path: '/source_sha',
+        message: 'source_sha is required when source is specified in team mode'
+      })
+    }
+  }
+  
+  if (mode === 'catalog') {
+    // Catalog mode requires all team fields plus distribution metadata
+    if (!pack['summary']) {
+      modeErrors.push({
+        path: '/summary',
+        message: 'summary is required in catalog mode'
+      })
+    }
+    if (!pack['owner']) {
+      modeErrors.push({
+        path: '/owner',
+        message: 'owner is required in catalog mode'
+      })
+    }
+    if (!pack['source']) {
+      modeErrors.push({
+        path: '/source',
+        message: 'source is required in catalog mode'
+      })
+    }
+    if (!pack['source_sha']) {
+      modeErrors.push({
+        path: '/source_sha',
+        message: 'source_sha is required in catalog mode'
+      })
+    }
+    if (!pack['tags'] || (Array.isArray(pack['tags']) && pack['tags'].length === 0)) {
+      modeErrors.push({
+        path: '/tags',
+        message: 'tags are required in catalog mode'
+      })
+    }
+    if (!pack['integrity'] && (options?.requireIntegrity !== false)) {
+      modeErrors.push({
+        path: '/integrity',
+        message: 'integrity is required in catalog mode'
+      })
+    }
+  }
+  
+  if (modeErrors.length > 0) {
+    return { valid: false, errors: modeErrors }
+  }
+  
+  return { valid: true }
 }
 
 /**
@@ -93,22 +174,24 @@ export function validateAlignIntegrity(alignYaml: string): IntegrityResult {
     // Parse to extract stored hash
     const obj = parseYamlToJson(alignYaml) as Record<string, unknown>
     
+    // If no integrity field, it's valid (solo mode doesn't require it)
     if (!obj['integrity'] || typeof obj['integrity'] !== 'object') {
       return {
-        valid: false,
-        error: 'Missing integrity field',
+        valid: true,
+        storedHash: undefined,
+        computedHash: undefined,
       }
     }
     
     const integrity = obj['integrity'] as Record<string, unknown>
     const storedHash = integrity['value'] as string
     
-    // Allow <computed> placeholder during authoring
-    if (storedHash === '<computed>') {
+    // Allow <computed> and <pending> placeholders during authoring
+    if (storedHash === '<computed>' || storedHash === '<pending>') {
       return {
         valid: true,
         storedHash,
-        computedHash: '<computed>',
+        computedHash: storedHash,
       }
     }
     
@@ -145,37 +228,47 @@ export function validateAlign(alignYaml: string): {
   return { schema, integrity }
 }
 
-// Export types for Align pack structure based on schema
+// Export types for Align pack structure based on schema (v1)
 export interface AlignPack {
   id: string
   version: string
-  profile: 'align'
   spec_version: '1'
-  summary: string
-  tags: string[]
-  deps: string[]
-  scope: AlignScope
+  summary?: string
+  
+  // Team mode provenance
+  owner?: string
+  source?: string
+  source_sha?: string
+  
+  // Catalog mode (Phase 4)
+  tags?: string[]
+  deps?: string[]
+  scope?: AlignScope
+  
   rules: AlignRule[]
-  integrity: AlignIntegrity
+  integrity?: AlignIntegrity
 }
 
 export interface AlignScope {
-  applies_to: string[]
+  applies_to?: string[]
   includes?: string[]
   excludes?: string[]
 }
 
 export interface AlignRule {
   id: string
-  severity: 'MUST' | 'SHOULD' | 'MAY'
-  check: AlignCheck
+  severity: 'error' | 'warn' | 'info'
+  applies_to: string[]
+  guidance?: string
+  check?: AlignCheck
   autofix?: AlignAutofix
+  vendor?: Record<string, any>  // Agent-specific metadata
 }
 
 export interface AlignCheck {
   type: 'file_presence' | 'path_convention' | 'manifest_policy' | 'regex' | 'command_runner'
   inputs: Record<string, unknown>
-  evidence: string
+  evidence?: string
 }
 
 export interface AlignAutofix {
