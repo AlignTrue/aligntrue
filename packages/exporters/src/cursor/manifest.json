@@ -1,0 +1,13 @@
+{
+  "name": "cursor",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Cursor .mdc format",
+  "outputs": [".cursor/rules/*.mdc"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Session metadata stored in vendor.cursor namespace",
+    "AI hints preserved in vendor.cursor.ai_hint"
+  ]
+}
+

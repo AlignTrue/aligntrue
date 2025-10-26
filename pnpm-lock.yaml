@@ -82,6 +82,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@aligntrue/exporters':
+        specifier: workspace:*
+        version: link:../exporters
       '@aligntrue/markdown-parser':
         specifier: workspace:*
         version: link:../markdown-parser
@@ -122,6 +125,12 @@ importers:
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
+      ajv:
+        specifier: ^8.12.0
+        version: 8.17.1
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.17.1)
     devDependencies:
       '@types/node':
         specifier: ^24
