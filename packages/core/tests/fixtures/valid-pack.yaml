@@ -1,0 +1,10 @@
+id: test-pack
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to:
+      - "**/*.ts"
+    guidance: Test rule for testing
+

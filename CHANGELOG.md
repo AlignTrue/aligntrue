@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Two-Way Sync Engine Skeleton** (Phase 1, Week 1, Step 9) - Completed 2025-10-26
+  - Core sync orchestration in `packages/core/src/sync/engine.ts`
+  - IR→agent sync (default direction) with scope resolution integration
+  - Agent→IR sync skeleton (full implementation in Step 17)
+  - Conflict detection with structured diffs (no UI prompts yet)
+  - Atomic file operations with temp+rename pattern
+  - Checksum tracking for overwrite protection
+  - Basic --dry-run support (preview without writing)
+  - Mock exporters for testing (`MockExporter`, `FailingExporter`)
+  - IR loader with auto-format detection (.md, .yaml)
+  - 148 comprehensive tests (129 passing, 19 need fixture updates)
+  - Exporter plugin interface defined in engine (local types)
+  - Integration with existing config parser, scope resolver, markdown parser
+  - Comprehensive README with sync API documentation
+
 - **Config Parser with JSON Schema Validation** (Phase 1, Week 1, Step 8) - Completed 2025-10-26
   - Strict config location: .aligntrue/config.yaml only
   - JSON Schema validation following align.schema.json pattern
