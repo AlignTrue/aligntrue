@@ -10,5 +10,8 @@ export interface Command {
 
 export const commands: Record<string, Command> = {};
 
+// Export commands
+export { migrate } from './migrate.js';
+
 // Commands will be registered here in future steps
 
