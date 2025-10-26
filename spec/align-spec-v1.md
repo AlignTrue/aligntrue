@@ -1,8 +1,11 @@
 # Align Spec v1
 
 **Version:** 1.0.0  
-**Status:** Draft  
-**Date:** 2025-10-24
+**Status:** ⚠️ Superseded by v2-preview  
+**Date:** 2025-10-24  
+**Superseded:** 2025-10-26
+
+> **Note:** This spec was designed for catalog-first distribution. It has been superseded by [Align Spec v2-preview (CLI-First)](./align-spec-v2-cli-first.md), which is optimized for solo developers using CLI workflows. See the new spec for current implementation.
 
 ## Overview
 
