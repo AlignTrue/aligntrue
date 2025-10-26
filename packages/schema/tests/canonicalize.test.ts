@@ -147,22 +147,17 @@ describe('computeHash', () => {
 
 describe('computeAlignHash', () => {
   const minimalAlign = `
-id: "packs/test/minimal"
+id: "test-minimal"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Test pack"
-tags: ["test"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "test-rule"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.test.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
+        paths: ["**/*.test.ts"]
       evidence: "Missing tests"
 integrity:
   algo: "jcs-sha256"
@@ -184,7 +179,7 @@ integrity:
   })
 
   it('produces different hashes for different content', () => {
-    const align2 = minimalAlign.replace('Test pack', 'Different pack')
+    const align2 = minimalAlign.replace('test-minimal', 'test-modified')
     const hash1 = computeAlignHash(minimalAlign)
     const hash2 = computeAlignHash(align2)
     
@@ -201,47 +196,48 @@ integrity:
     expect(hash1).toBe(hash2)
   })
 
-  it('throws if integrity field is missing', () => {
-    const invalidAlign = `
-id: "packs/test/invalid"
+  it('handles pack without integrity field (solo mode)', () => {
+    const soloAlign = `
+id: "test-solo"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
+rules:
+  - id: "test-rule"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
 `
-    expect(() => computeAlignHash(invalidAlign)).toThrow('missing integrity field')
+    // Should not throw - integrity is optional in solo mode
+    const hash = computeAlignHash(soloAlign)
+    expect(hash).toHaveLength(64)
   })
 
   it('handles key ordering in YAML', () => {
     // Different key ordering in YAML should produce same hash
     const align1 = `
-id: "packs/test/order"
+id: "test-order"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
 summary: "Test"
-tags: ["test"]
-deps: []
-scope:
-  applies_to: ["*"]
-rules: []
+rules:
+  - id: "test-rule"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
 integrity:
   algo: "jcs-sha256"
   value: "<computed>"
 `
     const align2 = `
-profile: "align"
-id: "packs/test/order"
 spec_version: "1"
 version: "1.0.0"
-tags: ["test"]
+id: "test-order"
 summary: "Test"
-rules: []
-deps: []
-scope:
-  applies_to: ["*"]
 integrity:
   algo: "jcs-sha256"
   value: "<computed>"
+rules:
+  - id: "test-rule"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
 `
     const hash1 = computeAlignHash(align1)
     const hash2 = computeAlignHash(align2)
@@ -252,22 +248,17 @@ integrity:
 
 describe('verifyAlignHash', () => {
   const alignWithHash = `
-id: "packs/test/verified"
+id: "test-verified"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Test pack"
-tags: ["test"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "test-rule"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.test.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
+        paths: ["**/*.test.ts"]
       evidence: "Missing tests"
 integrity:
   algo: "jcs-sha256"
@@ -289,21 +280,261 @@ integrity:
   })
 })
 
+describe('vendor bag canonicalization', () => {
+  it('includes vendor fields by default', () => {
+    const pack = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { ai_hint: 'test' },
+          aider: { priority: 'high' }
+        }
+      }]
+    }
+    
+    const hash1 = computeAlignHash(pack)
+    const hash2 = computeAlignHash(pack)
+    expect(hash1).toBe(hash2)
+    expect(hash1).toHaveLength(64)
+  })
+  
+  it('excludes vendor.*.volatile fields from hash', () => {
+    const packWithVolatile = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test',
+            session_id: 'xyz'
+          },
+          _meta: {
+            volatile: ['cursor.session_id']
+          }
+        }
+      }]
+    }
+    
+    const packWithDifferentVolatile = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test',
+            session_id: 'abc'  // different value
+          },
+          _meta: {
+            volatile: ['cursor.session_id']
+          }
+        }
+      }]
+    }
+    
+    const hash1 = computeAlignHash(packWithVolatile)
+    const hash2 = computeAlignHash(packWithDifferentVolatile)
+    expect(hash1).toBe(hash2)  // Hashes match despite different session_id
+  })
+  
+  it('includes non-volatile vendor fields in hash', () => {
+    const pack1 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test1',
+            session_id: 'xyz'
+          },
+          _meta: {
+            volatile: ['cursor.session_id']
+          }
+        }
+      }]
+    }
+    
+    const pack2 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test2',  // different non-volatile value
+            session_id: 'xyz'
+          },
+          _meta: {
+            volatile: ['cursor.session_id']
+          }
+        }
+      }]
+    }
+    
+    const hash1 = computeAlignHash(pack1)
+    const hash2 = computeAlignHash(pack2)
+    expect(hash1).not.toBe(hash2)  // Hashes differ due to ai_hint change
+  })
+  
+  it('handles multiple volatile fields', () => {
+    const pack1 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test',
+            session_id: 'xyz',
+            timestamp: '2025-10-26T12:00:00Z'
+          },
+          _meta: {
+            volatile: ['cursor.session_id', 'cursor.timestamp']
+          }
+        }
+      }]
+    }
+    
+    const pack2 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { 
+            ai_hint: 'test',
+            session_id: 'abc',  // different
+            timestamp: '2025-10-26T14:00:00Z'  // different
+          },
+          _meta: {
+            volatile: ['cursor.session_id', 'cursor.timestamp']
+          }
+        }
+      }]
+    }
+    
+    const hash1 = computeAlignHash(pack1)
+    const hash2 = computeAlignHash(pack2)
+    expect(hash1).toBe(hash2)  // Both volatile fields excluded
+  })
+  
+  it('handles volatile fields in multiple rules', () => {
+    const pack1 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [
+        {
+          id: 'rule-1',
+          severity: 'warn',
+          applies_to: ['**/*.ts'],
+          vendor: {
+            cursor: { session_id: 'xyz' },
+            _meta: { volatile: ['cursor.session_id'] }
+          }
+        },
+        {
+          id: 'rule-2',
+          severity: 'error',
+          applies_to: ['**/*.js'],
+          vendor: {
+            aider: { context_id: '123' },
+            _meta: { volatile: ['aider.context_id'] }
+          }
+        }
+      ]
+    }
+    
+    const pack2 = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [
+        {
+          id: 'rule-1',
+          severity: 'warn',
+          applies_to: ['**/*.ts'],
+          vendor: {
+            cursor: { session_id: 'abc' },  // different
+            _meta: { volatile: ['cursor.session_id'] }
+          }
+        },
+        {
+          id: 'rule-2',
+          severity: 'error',
+          applies_to: ['**/*.js'],
+          vendor: {
+            aider: { context_id: '456' },  // different
+            _meta: { volatile: ['aider.context_id'] }
+          }
+        }
+      ]
+    }
+    
+    const hash1 = computeAlignHash(pack1)
+    const hash2 = computeAlignHash(pack2)
+    expect(hash1).toBe(hash2)  // All volatile fields across rules excluded
+  })
+  
+  it('handles vendor bag without volatile fields', () => {
+    const pack = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { ai_hint: 'test' },
+          aider: { priority: 'high' }
+          // No _meta.volatile
+        }
+      }]
+    }
+    
+    const hash = computeAlignHash(pack)
+    expect(hash).toHaveLength(64)
+    expect(hash).toMatch(/^[a-f0-9]{64}$/)
+  })
+})
+
 describe('Stability and determinism', () => {
   it('produces identical hash across multiple runs', () => {
     const align = `
-id: "packs/base/base-testing"
+id: "base-testing"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
 summary: "Testing baseline with deterministic tests"
-tags: ["testing", "determinism"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "no-sleeps"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.test.ts"]
     check:
       type: "regex"
       inputs:
@@ -324,36 +555,35 @@ integrity:
 
   it('handles complex nested structures deterministically', () => {
     const align = `
-id: "packs/test/complex"
+id: "test-complex"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
 summary: "Complex structure test"
 tags: ["test", "complex", "nested"]
-deps: ["packs/base/base-global@^1.0.0"]
+deps: ["base-global@^1.0.0"]
 scope:
   applies_to: ["backend", "frontend"]
   includes: ["src/**/*.ts"]
   excludes: ["**/*.test.ts", "node_modules/**"]
 rules:
   - id: "rule-1"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
-        must_exist_for_changed_sources: true
+        paths: ["**/*.test.ts"]
       evidence: "Missing test"
     autofix:
       hint: "Add test file"
   - id: "rule-2"
-    severity: "SHOULD"
+    severity: "warn"
+    applies_to: ["src/**"]
     check:
       type: "path_convention"
       inputs:
         pattern: "^[a-z0-9-]+$"
         include: ["src/**"]
-        message: "Use kebab-case"
       evidence: "Bad file name"
 integrity:
   algo: "jcs-sha256"

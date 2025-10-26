@@ -6,55 +6,59 @@ import {
 } from '../src/validator.js'
 import { computeAlignHash } from '../src/canonicalize.js'
 
-describe('validateAlignSchema', () => {
-  const validAlign = {
-    id: 'packs/test/valid',
+describe('validateAlignSchema (v1)', () => {
+  const validSoloPack = {
+    id: 'test-valid',
     version: '1.0.0',
-    profile: 'align',
     spec_version: '1',
-    summary: 'Valid test pack',
-    tags: ['test'],
-    deps: [],
-    scope: {
-      applies_to: ['*'],
-    },
     rules: [
       {
         id: 'test-rule',
-        severity: 'MUST',
+        severity: 'warn',
+        applies_to: ['**/*.test.ts'],
         check: {
           type: 'file_presence',
           inputs: {
-            pattern: '**/*.test.ts',
+            paths: ['**/*.test.ts'],
           },
           evidence: 'Missing test file',
         },
       },
     ],
-    integrity: {
-      algo: 'jcs-sha256',
-      value: '<computed>',
-    },
+  }
+  
+  const validTeamPack = {
+    id: 'team-pack',
+    version: '1.0.0',
+    spec_version: '1',
+    summary: 'Team pack',
+    owner: 'mycompany/platform',
+    source: 'github.com/mycompany/rules',
+    source_sha: 'abc123def456',
+    rules: [
+      {
+        id: 'test-rule',
+        severity: 'error',
+        applies_to: ['**/*.ts'],
+      },
+    ],
   }
 
-  it('validates a correct Align pack', () => {
-    const result = validateAlignSchema(validAlign)
+  it('validates a minimal solo pack', () => {
+    const result = validateAlignSchema(validSoloPack)
+    expect(result.valid).toBe(true)
+    expect(result.errors).toBeUndefined()
+  })
+  
+  it('validates a team pack with provenance', () => {
+    const result = validateAlignSchema(validTeamPack, { mode: 'team' })
     expect(result.valid).toBe(true)
     expect(result.errors).toBeUndefined()
   })
 
-  it('rejects pack with missing required field', () => {
-    const invalid = { ...validAlign }
-    delete (invalid as Record<string, unknown>).summary
-    
-    const result = validateAlignSchema(invalid)
-    expect(result.valid).toBe(false)
-    expect(result.errors).toBeDefined()
-    expect(result.errors?.some(e => e.message.includes('required'))).toBe(true)
-  })
-
-  it('rejects pack with invalid id pattern', () => {
-    const invalid = { ...validAlign, id: 'invalid_id_with_underscores' }
+  it('rejects pack with missing required field (id)', () => {
+    const invalid = { ...validSoloPack }
+    delete (invalid as Record<string, unknown>).id
     
     const result = validateAlignSchema(invalid)
     expect(result.valid).toBe(false)
@@ -62,15 +66,7 @@ describe('validateAlignSchema', () => {
   })
 
   it('rejects pack with invalid version format', () => {
-    const invalid = { ...validAlign, version: 'not-semver' }
-    
-    const result = validateAlignSchema(invalid)
-    expect(result.valid).toBe(false)
-    expect(result.errors).toBeDefined()
-  })
-
-  it('rejects pack with wrong profile value', () => {
-    const invalid = { ...validAlign, profile: 'wrong' }
+    const invalid = { ...validSoloPack, version: 'not-semver' }
     
     const result = validateAlignSchema(invalid)
     expect(result.valid).toBe(false)
@@ -78,7 +74,7 @@ describe('validateAlignSchema', () => {
   })
 
   it('rejects pack with wrong spec_version', () => {
-    const invalid = { ...validAlign, spec_version: '2' }
+    const invalid = { ...validSoloPack, spec_version: '0' }
     
     const result = validateAlignSchema(invalid)
     expect(result.valid).toBe(false)
@@ -86,31 +82,7 @@ describe('validateAlignSchema', () => {
   })
 
   it('rejects pack with summary too long', () => {
-    const invalid = { ...validAlign, summary: 'x'.repeat(201) }
-    
-    const result = validateAlignSchema(invalid)
-    expect(result.valid).toBe(false)
-    expect(result.errors).toBeDefined()
-  })
-
-  it('rejects pack with invalid tag format', () => {
-    const invalid = { ...validAlign, tags: ['Valid-Tag', 'Invalid_Tag'] }
-    
-    const result = validateAlignSchema(invalid)
-    expect(result.valid).toBe(false)
-    expect(result.errors).toBeDefined()
-  })
-
-  it('rejects pack with empty tags array', () => {
-    const invalid = { ...validAlign, tags: [] }
-    
-    const result = validateAlignSchema(invalid)
-    expect(result.valid).toBe(false)
-    expect(result.errors).toBeDefined()
-  })
-
-  it('rejects pack with missing scope.applies_to', () => {
-    const invalid = { ...validAlign, scope: {} }
+    const invalid = { ...validTeamPack, summary: 'x'.repeat(201) }
     
     const result = validateAlignSchema(invalid)
     expect(result.valid).toBe(false)
@@ -118,7 +90,7 @@ describe('validateAlignSchema', () => {
   })
 
   it('rejects pack with empty rules array', () => {
-    const invalid = { ...validAlign, rules: [] }
+    const invalid = { ...validSoloPack, rules: [] }
     
     const result = validateAlignSchema(invalid)
     expect(result.valid).toBe(false)
@@ -127,10 +99,10 @@ describe('validateAlignSchema', () => {
 
   it('rejects rule with invalid severity', () => {
     const invalid = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
-          ...validAlign.rules[0],
+          ...validSoloPack.rules[0],
           severity: 'CRITICAL',
         },
       ],
@@ -143,11 +115,12 @@ describe('validateAlignSchema', () => {
 
   it('rejects rule with invalid check type', () => {
     const invalid = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
+          applies_to: ['**/*.ts'],
           check: {
             type: 'unknown_check_type',
             inputs: {},
@@ -164,16 +137,16 @@ describe('validateAlignSchema', () => {
 
   it('validates file_presence check with required fields', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test',
-          severity: 'MUST',
+          severity: 'error',
+          applies_to: ['**/*.ts'],
           check: {
             type: 'file_presence',
             inputs: {
-              pattern: '**/*.test.ts',
-              must_exist_for_changed_sources: true,
+              paths: ['**/*.test.ts'],
             },
             evidence: 'Missing test',
           },
@@ -187,17 +160,17 @@ describe('validateAlignSchema', () => {
 
   it('validates path_convention check with required fields', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test',
-          severity: 'SHOULD',
+          severity: 'warn',
+          applies_to: ['src/**'],
           check: {
             type: 'path_convention',
             inputs: {
               pattern: '^[a-z0-9-]+$',
               include: ['src/**'],
-              message: 'Use kebab-case',
             },
             evidence: 'Bad file name',
           },
@@ -211,11 +184,12 @@ describe('validateAlignSchema', () => {
 
   it('validates manifest_policy check with required fields', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test',
-          severity: 'MUST',
+          severity: 'error',
+          applies_to: ['package.json'],
           check: {
             type: 'manifest_policy',
             inputs: {
@@ -235,11 +209,12 @@ describe('validateAlignSchema', () => {
 
   it('validates regex check with required fields', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test',
-          severity: 'SHOULD',
+          severity: 'warn',
+          applies_to: ['**/*.ts'],
           check: {
             type: 'regex',
             inputs: {
@@ -259,11 +234,12 @@ describe('validateAlignSchema', () => {
 
   it('validates command_runner check with required fields', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       rules: [
         {
           id: 'test',
-          severity: 'MUST',
+          severity: 'error',
+          applies_to: ['**/*.ts'],
           check: {
             type: 'command_runner',
             inputs: {
@@ -283,7 +259,7 @@ describe('validateAlignSchema', () => {
 
   it('rejects integrity with wrong algo', () => {
     const invalid = {
-      ...validAlign,
+      ...validSoloPack,
       integrity: {
         algo: 'sha256',
         value: '<computed>',
@@ -297,7 +273,7 @@ describe('validateAlignSchema', () => {
 
   it('rejects integrity with invalid hash format', () => {
     const invalid = {
-      ...validAlign,
+      ...validSoloPack,
       integrity: {
         algo: 'jcs-sha256',
         value: 'not-a-valid-hash',
@@ -311,7 +287,7 @@ describe('validateAlignSchema', () => {
 
   it('accepts integrity with valid hex hash', () => {
     const align = {
-      ...validAlign,
+      ...validSoloPack,
       integrity: {
         algo: 'jcs-sha256',
         value: 'a'.repeat(64),
@@ -325,22 +301,17 @@ describe('validateAlignSchema', () => {
 
 describe('validateAlignIntegrity', () => {
   const validAlignYaml = `
-id: "packs/test/integrity"
+id: "test-integrity"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Test pack"
-tags: ["test"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "test-rule"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.test.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
+        paths: ["**/*.test.ts"]
       evidence: "Missing tests"
 integrity:
   algo: "jcs-sha256"
@@ -376,16 +347,20 @@ integrity:
     expect(result.computedHash).toBe('<computed>')
   })
 
-  it('returns error for missing integrity field', () => {
-    const invalidYaml = `
-id: "packs/test/no-integrity"
+  it('handles pack without integrity field (solo mode)', () => {
+    const soloYaml = `
+id: "test-solo"
 version: "1.0.0"
-profile: "align"
+spec_version: "1"
+rules:
+  - id: "test-rule"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
 `
     
-    const result = validateAlignIntegrity(invalidYaml)
-    expect(result.valid).toBe(false)
-    expect(result.error).toContain('Missing integrity field')
+    // Solo mode doesn't require integrity, so should compute hash successfully
+    const result = validateAlignIntegrity(soloYaml)
+    expect(result.valid).toBe(true)
   })
 
   it('handles parse errors gracefully', () => {
@@ -399,22 +374,18 @@ profile: "align"
 
 describe('validateAlign', () => {
   const validAlignYaml = `
-id: "packs/test/combined"
+id: "test-combined"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
 summary: "Test pack for combined validation"
-tags: ["test"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "test-rule"
-    severity: "MUST"
+    severity: "error"
+    applies_to: ["**/*.test.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
+        paths: ["**/*.test.ts"]
       evidence: "Missing tests"
 integrity:
   algo: "jcs-sha256"
@@ -431,7 +402,7 @@ integrity:
   })
 
   it('detects schema errors', () => {
-    const invalidYaml = validAlignYaml.replace('profile: "align"', 'profile: "wrong"')
+    const invalidYaml = validAlignYaml.replace('spec_version: "1"', 'spec_version: "1"')
     
     const result = validateAlign(invalidYaml)
     expect(result.schema.valid).toBe(false)
@@ -453,6 +424,211 @@ integrity:
     const result = validateAlign(alignWithPlaceholder)
     expect(result.schema.valid).toBe(true)
     expect(result.integrity.valid).toBe(true)
+  })
+})
+
+describe('provenance fields validation', () => {
+  it('accepts pack with full provenance in team mode', () => {
+    const pack = {
+      id: 'team-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      summary: 'Team pack',
+      owner: 'mycompany/platform',
+      source: 'github.com/mycompany/rules',
+      source_sha: 'abc123def456',
+      rules: [{
+        id: 'test-rule',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }]
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'team' })
+    expect(result.valid).toBe(true)
+  })
+  
+  it('allows missing provenance in solo mode', () => {
+    const pack = {
+      id: 'solo-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts']
+      }]
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'solo' })
+    expect(result.valid).toBe(true)
+  })
+  
+  it('requires summary in team mode', () => {
+    const pack = {
+      id: 'team-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      owner: 'mycompany/platform',
+      source: 'github.com/mycompany/rules',
+      source_sha: 'abc123',
+      rules: [{
+        id: 'test',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }]
+      // missing summary
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'team' })
+    expect(result.valid).toBe(false)
+    expect(result.errors?.some(e => e.path === '/summary')).toBe(true)
+  })
+  
+  it('requires owner when source is specified in team mode', () => {
+    const pack = {
+      id: 'team-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      summary: 'Test',
+      source: 'github.com/test/rules',
+      source_sha: 'abc123',
+      // missing owner
+      rules: [{
+        id: 'test',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }]
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'team' })
+    expect(result.valid).toBe(false)
+    expect(result.errors?.some(e => e.path === '/owner')).toBe(true)
+  })
+  
+  it('requires source_sha when source is specified in team mode', () => {
+    const pack = {
+      id: 'team-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      summary: 'Test',
+      owner: 'mycompany/platform',
+      source: 'github.com/test/rules',
+      // missing source_sha
+      rules: [{
+        id: 'test',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }]
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'team' })
+    expect(result.valid).toBe(false)
+    expect(result.errors?.some(e => e.path === '/source_sha')).toBe(true)
+  })
+})
+
+describe('mode-dependent validation', () => {
+  it('solo mode: minimal fields only', () => {
+    const pack = {
+      id: 'solo',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test',
+        severity: 'info',
+        applies_to: ['**/*.ts']
+      }]
+    }
+    
+    const result = validateAlignSchema(pack, { mode: 'solo' })
+    expect(result.valid).toBe(true)
+  })
+  
+  it('catalog mode: requires all distribution metadata', () => {
+    const incompletePack = {
+      id: 'catalog-pack',
+      version: '1.0.0',
+      spec_version: '1',
+      summary: 'Test',
+      rules: [{
+        id: 'test',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }]
+      // missing: owner, source, source_sha, tags, integrity
+    }
+    
+    const result = validateAlignSchema(incompletePack, { mode: 'catalog' })
+    expect(result.valid).toBe(false)
+    expect(result.errors?.length).toBeGreaterThan(0)
+  })
+  
+  it('catalog mode: validates complete pack', () => {
+    const completePack = {
+      id: 'packs/test/catalog',
+      version: '1.0.0',
+      spec_version: '1',
+      summary: 'Test catalog pack',
+      owner: 'test/team',
+      source: 'github.com/test/rules',
+      source_sha: 'abc123',
+      tags: ['test'],
+      rules: [{
+        id: 'test',
+        severity: 'error',
+        applies_to: ['**/*.ts']
+      }],
+      integrity: {
+        algo: 'jcs-sha256',
+        value: '<computed>'
+      }
+    }
+    
+    const result = validateAlignSchema(completePack, { mode: 'catalog' })
+    expect(result.valid).toBe(true)
+  })
+})
+
+describe('vendor bags in validation', () => {
+  it('accepts rules with vendor metadata', () => {
+    const pack = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { ai_hint: 'test' },
+          aider: { priority: 'high' }
+        }
+      }]
+    }
+    
+    const result = validateAlignSchema(pack)
+    expect(result.valid).toBe(true)
+  })
+  
+  it('accepts vendor._meta.volatile field', () => {
+    const pack = {
+      id: 'test',
+      version: '1.0.0',
+      spec_version: '1',
+      rules: [{
+        id: 'test-rule',
+        severity: 'warn',
+        applies_to: ['**/*.ts'],
+        vendor: {
+          cursor: { session_id: 'xyz' },
+          _meta: { volatile: ['cursor.session_id'] }
+        }
+      }]
+    }
+    
+    const result = validateAlignSchema(pack)
+    expect(result.valid).toBe(true)
   })
 })
 

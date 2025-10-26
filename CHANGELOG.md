@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **IR Schema v1** (Phase 1, Week 1, Step 3) - Completed 2025-10-26
+  - Complete schema redesigned for CLI-first/solo developers (catalog-first v1 never shipped)
+  - Solo mode: 4 required fields (id, version, spec_version: "1", rules)
+  - Team mode: adds provenance (owner, source, source_sha)
+  - Catalog mode: adds distribution metadata (tags, integrity, etc.)
+  - Vendor bags support: `vendor.<agent>` namespace for lossless round-trips
+  - Vendor.volatile exclusion: `vendor.*.volatile` fields excluded from canonical hashing
+  - Mode-dependent validation: solo/team/catalog with progressive requirements
+  - Severity levels: `error`/`warn`/`info` (replaced MUST/SHOULD/MAY)
+  - New JSON Schema: `packages/schema/schema/align.schema.json`
+  - Updated TypeScript types matching v2-preview spec
+  - Canonicalization boundaries: only at lock/publish, not load/save
+  - Comprehensive test coverage: 67 tests including vendor.volatile (6 tests) and provenance validation (5 tests)
+
 ### Fixed
 
 - **Documentation consistency** - Aligned `long_term.mdc` with CLI-first rearchitecture
