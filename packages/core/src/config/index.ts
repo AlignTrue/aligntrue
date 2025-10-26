@@ -3,6 +3,12 @@
  * Handles solo/team/enterprise modes and module flags
  */
 
+import { readFileSync, existsSync } from 'fs'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import * as yaml from 'js-yaml'
+import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv'
+import addFormats from 'ajv-formats'
 import { 
   validateScopePath, 
   validateGlobPatterns, 
@@ -29,6 +35,8 @@ export interface AlignTrueConfig {
     type: 'local' | 'catalog' | 'git' | 'url';
     path?: string;
     url?: string;
+    id?: string;
+    version?: string;
   }>;
   exporters?: string[];
   scopes?: Array<{
@@ -43,18 +51,205 @@ export interface AlignTrueConfig {
   };
 }
 
-export async function loadConfig(configPath: string): Promise<AlignTrueConfig> {
-  throw new Error('Not implemented');
+/**
+ * Validation result from schema validation
+ */
+interface SchemaValidationResult {
+  valid: boolean;
+  errors?: Array<{
+    path: string;
+    message: string;
+    keyword?: string;
+    params?: Record<string, unknown>;
+  }>;
+}
+
+// Load JSON Schema and initialize Ajv
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const schemaPath = resolve(__dirname, '../../schema/config.schema.json')
+const configSchema = JSON.parse(readFileSync(schemaPath, 'utf8'))
+
+const ajv = new Ajv({
+  strict: true,
+  allErrors: true,
+  verbose: true,
+  validateSchema: false, // Avoid metaschema validation issues
+})
+addFormats(ajv)
+
+const validateSchemaFn: ValidateFunction = ajv.compile(configSchema)
+
+/**
+ * Validate config against JSON Schema
+ */
+function validateConfigSchema(config: unknown): SchemaValidationResult {
+  const valid = validateSchemaFn(config)
+  
+  if (valid) {
+    return { valid: true }
+  }
+  
+  const errors = (validateSchemaFn.errors || []).map((err: ErrorObject) => {
+    const path = err.instancePath || '(root)'
+    let message = err.message || 'Validation error'
+    
+    // Enhance error messages with more context
+    if (err.keyword === 'enum') {
+      const allowedValues = (err.params as { allowedValues?: unknown[] }).allowedValues || []
+      message = `${message}. Allowed values: ${allowedValues.join(', ')}`
+    } else if (err.keyword === 'required') {
+      const missingProperty = (err.params as { missingProperty?: string }).missingProperty
+      message = `Missing required field: ${missingProperty}`
+    } else if (err.keyword === 'type') {
+      const expectedType = (err.params as { type?: string }).type
+      message = `Expected type ${expectedType}`
+    }
+    
+    return {
+      path: path.replace(/^\//, '').replace(/\//g, '.') || '(root)',
+      message,
+      keyword: err.keyword,
+      params: err.params as Record<string, unknown>,
+    }
+  })
+  
+  return { valid: false, errors }
+}
+
+/**
+ * Format validation errors for user display
+ */
+function formatValidationErrors(errors: SchemaValidationResult['errors']): string {
+  if (!errors || errors.length === 0) {
+    return 'Unknown validation error'
+  }
+  
+  return errors
+    .map(err => `  - ${err.path}: ${err.message}`)
+    .join('\n')
+}
+
+/**
+ * Apply mode-specific defaults to config
+ */
+export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
+  const result: AlignTrueConfig = { ...config }
+  
+  // Initialize modules if not present
+  if (!result.modules) {
+    result.modules = {}
+  }
+  
+  // Apply mode-specific module defaults
+  if (config.mode === 'solo') {
+    result.modules.lockfile = result.modules.lockfile ?? false
+    result.modules.bundle = result.modules.bundle ?? false
+    result.modules.checks = result.modules.checks ?? true
+    result.modules.mcp = result.modules.mcp ?? false
+  } else if (config.mode === 'team') {
+    result.modules.lockfile = result.modules.lockfile ?? true
+    result.modules.bundle = result.modules.bundle ?? true
+    result.modules.checks = result.modules.checks ?? true
+    result.modules.mcp = result.modules.mcp ?? false
+  } else if (config.mode === 'enterprise') {
+    result.modules.lockfile = result.modules.lockfile ?? true
+    result.modules.bundle = result.modules.bundle ?? true
+    result.modules.checks = result.modules.checks ?? true
+    result.modules.mcp = result.modules.mcp ?? true
+  }
+  
+  // Apply git defaults
+  if (!result.git) {
+    result.git = {}
+  }
+  if (config.mode === 'solo' || config.mode === 'team') {
+    result.git.mode = result.git.mode ?? 'ignore'
+  } else if (config.mode === 'enterprise') {
+    result.git.mode = result.git.mode ?? 'commit'
+  }
+  
+  // Apply exporter defaults
+  if (!result.exporters || result.exporters.length === 0) {
+    result.exporters = ['cursor', 'agents-md']
+  }
+  
+  // Apply source defaults
+  if (!result.sources || result.sources.length === 0) {
+    result.sources = [{ type: 'local', path: '.aligntrue/rules.md' }]
+  }
+  
+  return result
+}
+
+/**
+ * Check for unknown fields and emit warnings
+ */
+function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
+  const knownFields = new Set([
+    'version', 'mode', 'modules', 'git', 'sources', 'exporters', 'scopes', 'merge'
+  ])
+  
+  for (const key of Object.keys(config)) {
+    if (!knownFields.has(key)) {
+      console.warn(
+        `Warning: Unknown config field "${key}" in ${configPath}\n` +
+        `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(', ')}`
+      )
+    }
+  }
 }
 
 /**
  * Validate configuration structure and values
  */
-export async function validateConfig(config: AlignTrueConfig): Promise<void> {
+export async function validateConfig(config: AlignTrueConfig, configPath?: string): Promise<void> {
   // Validate mode
   const validModes: AlignTrueMode[] = ['solo', 'team', 'enterprise']
   if (!validModes.includes(config.mode)) {
     throw new Error(`Invalid mode "${config.mode}": must be one of ${validModes.join(', ')}`)
+  }
+  
+  // Check for unknown fields (warnings only)
+  if (configPath) {
+    checkUnknownFields(config as unknown as Record<string, unknown>, configPath)
+  }
+  
+  // Validate module flags if present
+  if (config.modules) {
+    for (const [key, value] of Object.entries(config.modules)) {
+      if (typeof value !== 'boolean' && value !== undefined) {
+        throw new Error(`Invalid modules.${key}: must be boolean, got ${typeof value}`)
+      }
+    }
+  }
+  
+  // Validate sources array if present
+  if (config.sources && Array.isArray(config.sources)) {
+    for (let i = 0; i < config.sources.length; i++) {
+      const source = config.sources[i]
+      if (!source || typeof source !== 'object') {
+        throw new Error(`Invalid source at index ${i}: must be an object`)
+      }
+      
+      // Type-specific validation
+      if (source.type === 'local' && !source.path) {
+        throw new Error(`Invalid source at index ${i}: "path" is required for type "local"`)
+      } else if ((source.type === 'git' || source.type === 'url') && !source.url) {
+        throw new Error(`Invalid source at index ${i}: "url" is required for type "${source.type}"`)
+      } else if (source.type === 'catalog' && !source.id) {
+        throw new Error(`Invalid source at index ${i}: "id" is required for type "catalog"`)
+      }
+    }
+  }
+  
+  // Validate exporters array if present
+  if (config.exporters && Array.isArray(config.exporters)) {
+    for (let i = 0; i < config.exporters.length; i++) {
+      const exporter = config.exporters[i]
+      if (typeof exporter !== 'string' || exporter.trim() === '') {
+        throw new Error(`Invalid exporter at index ${i}: must be non-empty string`)
+      }
+    }
   }
   
   // Validate scopes array if present
@@ -100,6 +295,11 @@ export async function validateConfig(config: AlignTrueConfig): Promise<void> {
         }
       }
     }
+    
+    // Warn if scopes defined but empty
+    if (config.scopes.length === 0) {
+      console.warn(`Warning: "scopes" array is defined but empty. Consider removing it or adding scope definitions.`)
+    }
   }
   
   // Validate merge order if present
@@ -118,5 +318,82 @@ export async function validateConfig(config: AlignTrueConfig): Promise<void> {
       throw new Error(`Invalid git mode "${config.git.mode}": must be one of ${validGitModes.join(', ')}`)
     }
   }
+  
+  // Cross-field validation: warn about mode/module inconsistencies
+  if (config.mode === 'solo' && config.modules?.lockfile === true) {
+    console.warn(
+      `Warning: Solo mode with lockfile enabled is unusual.\n` +
+      `  Consider using 'mode: team' if you need lockfile features.`
+    )
+  }
+  
+  if (config.mode === 'solo' && config.modules?.bundle === true) {
+    console.warn(
+      `Warning: Solo mode with bundle enabled is unusual.\n` +
+      `  Consider using 'mode: team' if you need bundle features.`
+    )
+  }
 }
 
+/**
+ * Load and parse config file
+ */
+export async function loadConfig(configPath?: string): Promise<AlignTrueConfig> {
+  const path = configPath || '.aligntrue/config.yaml'
+  
+  // Check file exists
+  if (!existsSync(path)) {
+    throw new Error(
+      `Config file not found: ${path}\n` +
+      `  Run 'aligntrue init' to create one.`
+    )
+  }
+  
+  // Parse YAML
+  let content: string
+  let config: unknown
+  
+  try {
+    content = readFileSync(path, 'utf8')
+  } catch (err) {
+    throw new Error(
+      `Failed to read config file: ${path}\n` +
+      `  ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
+  
+  try {
+    config = yaml.load(content)
+  } catch (err) {
+    const yamlErr = err as { mark?: { line?: number; column?: number } }
+    const location = yamlErr.mark 
+      ? ` at line ${yamlErr.mark.line! + 1}, column ${yamlErr.mark.column! + 1}`
+      : ''
+    
+    throw new Error(
+      `Invalid YAML in ${path}${location}\n` +
+      `  ${err instanceof Error ? err.message : String(err)}\n` +
+      `  Check for syntax errors (indentation, quotes, colons).`
+    )
+  }
+  
+  // Validate against JSON Schema
+  const schemaValidation = validateConfigSchema(config)
+  if (!schemaValidation.valid) {
+    throw new Error(
+      `Invalid config in ${path}:\n${formatValidationErrors(schemaValidation.errors)}\n` +
+      `  See config.schema.json for full specification.`
+    )
+  }
+  
+  // Cast to config type (safe after schema validation)
+  const typedConfig = config as AlignTrueConfig
+  
+  // Apply defaults
+  const configWithDefaults = applyDefaults(typedConfig)
+  
+  // Run enhanced validation (scopes, paths, cross-field checks)
+  await validateConfig(configWithDefaults, path)
+  
+  return configWithDefaults
+}
