@@ -45,6 +45,12 @@ next-env.d.ts
 # cursor
 .cursor/
 
+# aligntrue local data (user-specific, never commit)
+.aligntrue/telemetry.json
+.aligntrue/telemetry-events.json
+.aligntrue/privacy-consent.json
+.aligntrue/.cache/
+
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
 logs/

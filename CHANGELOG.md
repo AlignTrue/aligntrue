@@ -11,7 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
 - Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
 - Positioned AlignTrue as complementary to Ruler (AlignTrue for rules, Ruler for MCP servers)
-- Added `docs/PRIVACY.md` - Complete privacy and telemetry documentation
+- **Privacy-focused network consent** (Phase 2 planning) - 2025-10-27
+  - Enhanced `docs/PRIVACY.md` with comprehensive "Network Operations" section
+  - Clarifies offline-first approach: zero network calls by default
+  - Documents catalog and git sources as explicit opt-in requiring consent
+  - Outlines Phase 2 consent flow: pre-flight analysis, first-time prompts, consent storage
+  - Added planned `aligntrue privacy audit|revoke` commands for transparency
+  - Added `--offline` mode specification for Phase 2
+  - Updated `.gitignore` to exclude `.aligntrue/privacy-consent.json` and other local data
+  - Updated `long_term.mdc` Phase 2 scope with privacy consent system deliverables
+  - Reinforces trust through transparency: developers see and approve what connects where
 
 ### Added
 
