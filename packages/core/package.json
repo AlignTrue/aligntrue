@@ -35,7 +35,7 @@
     "@types/micromatch": "^4.0.9",
     "@types/node": "^24",
     "typescript": "^5",
-    "vitest": "^4.0.3"
+    "vitest": "^4.0.4"
   },
   "engines": {
     "node": ">=20"

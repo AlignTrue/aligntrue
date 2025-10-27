@@ -28,7 +28,7 @@
     "@types/node": "^24",
     "js-yaml": "^4.1.0",
     "typescript": "^5",
-    "vitest": "^4.0.3"
+    "vitest": "^4.0.4"
   },
   "engines": {
     "node": ">=20"
