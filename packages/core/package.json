@@ -24,7 +24,7 @@
     "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",
-    "@clack/prompts": "^0.7.0",
+    "@clack/prompts": "^0.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.1.0",
