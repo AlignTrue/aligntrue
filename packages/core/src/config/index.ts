@@ -239,6 +239,15 @@ export async function validateConfig(config: AlignTrueConfig, configPath?: strin
       } else if (source.type === 'catalog' && !source.id) {
         throw new Error(`Invalid source at index ${i}: "id" is required for type "catalog"`)
       }
+      
+      // Security: Validate local source paths for traversal attacks
+      if (source.type === 'local' && source.path) {
+        try {
+          validateScopePath(source.path)
+        } catch (err) {
+          throw new Error(`Invalid source at index ${i}: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      }
     }
   }
   

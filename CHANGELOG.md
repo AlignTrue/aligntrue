@@ -14,6 +14,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Security Posture Validation** (Phase 1, Week 3, Step 20) - Completed 2025-10-27
+  - Comprehensive security testing: 35 new tests covering path traversal, atomic writes, checksum protection
+  - Path validation prevents directory traversal (.. and absolute paths rejected)
+  - Atomic writes with temp+rename prevent partial state
+  - Checksum-based overwrite protection detects manual edits
+  - Security documentation: `packages/core/docs/SECURITY.md` (security guarantees, boundaries, threat model)
+  - Exporter safety expectations documented (trust-based contract)
+  - Critical path validation for sources and outputs
+  - Test files: `path-traversal.test.ts` (22 tests), `atomic-writes.test.ts` (12 tests)
+  - Source path validation: 8 tests in `config.test.ts`
+  - All atomic write guarantees tested: no partial writes, backup/rollback, temp file cleanup
+  - All path validation enforced: scopes, local sources, output directories
+  - Cache path validation documented for Step 27 implementation
+  - Decision 16 in `architecture-decisions.md` marked complete with implementation details
+  - Trust-based exporter safety (Phase 1): no network calls, no arbitrary writes, no command execution
+  - Runtime enforcement deferred to Phase 2+ (sandboxing, signing, audit logging)
+  - Total core package tests: ~228 passing (193 existing + 35 new security tests)
+
 - **Multi-Agent Exporter Support** (Phase 1, Week 2, Step 14+) - Completed 2025-10-27
   - Added comprehensive support for 28 AI coding agents and tools
   - 40 new exporters implemented (15 unique formats + 25 shared handlers)

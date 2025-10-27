@@ -11,6 +11,7 @@ import { resolveScopes, applyScopeMerge, groupRulesByLevel } from '../scope.js'
 import { loadIR } from './ir-loader.js'
 import { AtomicFileWriter } from './file-operations.js'
 import { ConflictDetector, type Conflict } from './conflict-detector.js'
+import { posix } from 'path'
 
 // Import types from exporters package
 import type {
@@ -182,10 +183,20 @@ export class SyncEngine {
 
         // Call each exporter with scoped rules
         for (const exporter of activeExporters) {
+          const outputPath = `.${exporter.name}/${scope.path === '.' ? 'root' : scope.path}`
+          
+          // Security: Validate output paths don't escape workspace
+          if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
+            warnings.push(
+              `Skipped ${exporter.name} for scope ${scope.path}: invalid output path "${outputPath}"`
+            )
+            continue
+          }
+          
           const request: ScopedExportRequest = {
             scope,
             rules: scopedRules,
-            outputPath: `.${exporter.name}/${scope.path === '.' ? 'root' : scope.path}`,
+            outputPath,
           }
 
           const exportOptions: ExportOptions = {
