@@ -22,6 +22,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `long_term.mdc` Phase 2 scope with privacy consent system deliverables
   - Reinforces trust through transparency: developers see and approve what connects where
 
+### Fixed
+
+- **Checks Package IR v1 Compatibility** (Phase 1, Tech Debt) - Completed 2025-10-27
+  - Updated severity mapping from MUST/SHOULD/MAY to error/warn/info (IR schema v1)
+  - Added type guards for optional `check` property on AlignRule
+  - Fixed 33 TypeScript build errors across 7 source files
+  - All 5 check runners updated (command-runner, file-presence, manifest-policy, path-convention, regex)
+  - SARIF emitter defensive against missing check properties
+  - Updated 47 test cases to use new severity values
+  - Fixes CI build failures on both Linux and Windows
+  - Unblocks 5 dependabot PRs
+  - Files modified:
+    - `packages/checks/src/types.ts` - Updated severity type and added hasCheck guard
+    - `packages/checks/src/engine.ts` - Added type guard before runCheck
+    - `packages/checks/src/runners/*.ts` - Updated all 5 runners
+    - `packages/checks/src/sarif.ts` - Updated severity mapping function
+    - `packages/checks/tests/*.ts` - Updated test fixtures
+  - All 47 tests passing (100% pass rate)
+
 ### Added
 
 - **Windows CI Matrix** (Phase 1, Stage 3, Step 28) - Completed 2025-10-27

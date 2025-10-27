@@ -11,7 +11,7 @@ describe('emitJson', () => {
   const createCheckResult = (overrides: Partial<CheckResult> = {}): CheckResult => ({
     rule: {
       id: 'test-rule',
-      severity: 'MUST',
+      severity: 'error',
       check: {
         type: 'file_presence',
         inputs: {},
@@ -56,7 +56,7 @@ describe('emitJson', () => {
           {
             packId: 'test/pack',
             ruleId: 'rule-1',
-            severity: 'MUST',
+            severity: 'error',
             evidence: 'Evidence 1',
             message: 'Finding 1',
             location: { path: 'file1.ts' },
@@ -69,7 +69,7 @@ describe('emitJson', () => {
           {
             packId: 'test/pack',
             ruleId: 'rule-2',
-            severity: 'SHOULD',
+            severity: 'warn',
             evidence: 'Evidence 2',
             message: 'Finding 2',
             location: { path: 'file2.ts' },
@@ -115,7 +115,7 @@ describe('emitJson', () => {
           {
             packId: 'packs/base/testing',
             ruleId: 'require-tests',
-            severity: 'MUST',
+            severity: 'error',
             evidence: 'Missing test file',
             message: 'Test file not found for src/foo.ts',
             location: { path: 'src/foo.ts', line: 1 },
@@ -130,7 +130,7 @@ describe('emitJson', () => {
 
     expect(finding.packId).toBe('packs/base/testing')
     expect(finding.ruleId).toBe('require-tests')
-    expect(finding.severity).toBe('MUST')
+    expect(finding.severity).toBe('error')
     expect(finding.evidence).toBe('Missing test file')
     expect(finding.message).toBe('Test file not found for src/foo.ts')
     expect(finding.location.path).toBe('src/foo.ts')

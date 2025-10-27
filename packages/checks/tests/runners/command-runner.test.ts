@@ -14,7 +14,7 @@ import type { CheckContext } from '../../src/types.js'
 describe('runCommandRunnerCheck', () => {
   const createRule = (overrides = {}): AlignRule => ({
     id: 'test-command',
-    severity: 'MUST',
+    severity: 'error',
     check: {
       type: 'command_runner',
       inputs: {

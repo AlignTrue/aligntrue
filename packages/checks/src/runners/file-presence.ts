@@ -4,6 +4,7 @@
 
 import type { AlignRule } from '@aligntrue/schema'
 import type { CheckResult, CheckContext } from '../types.js'
+import { hasCheck } from '../types.js'
 
 /**
  * Run file_presence check
@@ -17,7 +18,18 @@ export async function runFilePresenceCheck(
   context: CheckContext
 ): Promise<CheckResult> {
   const { fileProvider, changedFiles } = context
-  const { inputs, evidence } = rule.check
+
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: false,
+      findings: [],
+      error: 'Rule does not have a check property',
+    }
+  }
+
+  const { inputs, evidence = 'Check failed' } = rule.check
 
   if (rule.check.type !== 'file_presence') {
     return {
@@ -50,7 +62,7 @@ export async function runFilePresenceCheck(
               evidence,
               message: `No files found matching pattern: ${pattern}`,
               location: { path: '.' },
-              ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+              ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
             },
           ],
         }
@@ -84,7 +96,7 @@ export async function runFilePresenceCheck(
           evidence,
           message: `${evidence}: ${changedFile}`,
           location: { path: changedFile },
-          ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+          ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
         })
       }
     }

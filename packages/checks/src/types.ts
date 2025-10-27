@@ -103,9 +103,9 @@ export interface Finding {
   ruleId: string
 
   /**
-   * Severity level from the rule
+   * Severity level from the rule (IR schema v1)
    */
-  severity: 'MUST' | 'SHOULD' | 'MAY'
+  severity: 'error' | 'warn' | 'info'
 
   /**
    * Evidence message from the check
@@ -248,4 +248,13 @@ export type CheckRunner = (
   packId: string,
   context: CheckContext
 ) => Promise<CheckResult>
+
+/**
+ * Type guard to check if a rule has a check property
+ * @param rule - Rule to check
+ * @returns True if rule has a check property
+ */
+export function hasCheck(rule: AlignRule): rule is AlignRule & { check: NonNullable<AlignRule['check']> } {
+  return rule.check !== undefined && rule.check !== null
+}
 

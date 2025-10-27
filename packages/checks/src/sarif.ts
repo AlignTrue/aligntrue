@@ -6,6 +6,7 @@
  */
 
 import type { CheckResult } from './types.js'
+import { hasCheck } from './types.js'
 
 /**
  * SARIF 2.1.0 log format
@@ -80,10 +81,15 @@ export function emitSarif(results: CheckResult[], toolVersion: string = '0.1.0')
 
     // Add rule definition if not already present
     if (!rulesMap.has(ruleId)) {
+      // Use check evidence if available, otherwise use rule ID as description
+      const description = hasCheck(result.rule) 
+        ? (result.rule.check.evidence || result.rule.id)
+        : result.rule.id
+      
       rulesMap.set(ruleId, {
         id: ruleId,
         shortDescription: {
-          text: result.rule.check.evidence,
+          text: description,
         },
       })
     }
@@ -139,15 +145,15 @@ export function emitSarif(results: CheckResult[], toolVersion: string = '0.1.0')
 }
 
 /**
- * Map severity to SARIF level
+ * Map severity to SARIF level (IR schema v1)
  */
-function severityToLevel(severity: 'MUST' | 'SHOULD' | 'MAY'): 'error' | 'warning' | 'note' {
+function severityToLevel(severity: 'error' | 'warn' | 'info'): 'error' | 'warning' | 'note' {
   switch (severity) {
-    case 'MUST':
+    case 'error':
       return 'error'
-    case 'SHOULD':
+    case 'warn':
       return 'warning'
-    case 'MAY':
+    case 'info':
       return 'note'
   }
 }

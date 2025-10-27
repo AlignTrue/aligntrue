@@ -39,7 +39,7 @@ describe('runChecks', () => {
       rules: [
         {
           id: 'require-tests',
-          severity: 'MUST',
+          severity: 'error',
           check: {
             type: 'file_presence',
             inputs: { pattern: '**/*.test.ts' },
@@ -48,7 +48,7 @@ describe('runChecks', () => {
         },
         {
           id: 'pinned-deps',
-          severity: 'MUST',
+          severity: 'error',
           check: {
             type: 'manifest_policy',
             inputs: {
@@ -79,7 +79,7 @@ describe('runChecks', () => {
       rules: [
         {
           id: 'kebab-case',
-          severity: 'SHOULD',
+          severity: 'warn',
           check: {
             type: 'path_convention',
             inputs: {
@@ -92,7 +92,7 @@ describe('runChecks', () => {
         },
         {
           id: 'no-todos',
-          severity: 'SHOULD',
+          severity: 'warn',
           check: {
             type: 'regex',
             inputs: {
@@ -120,7 +120,7 @@ describe('runChecks', () => {
       rules: [
         {
           id: 'typecheck',
-          severity: 'MUST',
+          severity: 'error',
           check: {
             type: 'command_runner',
             inputs: {
@@ -162,7 +162,7 @@ describe('runChecks', () => {
       rules: [
         {
           id: 'require-tests',
-          severity: 'MUST',
+          severity: 'error',
           check: {
             type: 'file_presence',
             inputs: {
@@ -199,7 +199,7 @@ describe('runChecks', () => {
       rules: [
         {
           id: 'unknown-check',
-          severity: 'MUST',
+          severity: 'error',
           check: {
             // @ts-expect-error - testing unknown type
             type: 'unknown_type',

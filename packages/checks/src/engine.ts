@@ -4,6 +4,7 @@
 
 import type { AlignPack } from '@aligntrue/schema'
 import type { CheckResult, CheckContext, RunChecksOptions } from './types.js'
+import { hasCheck } from './types.js'
 import { DiskFileProvider } from './providers/disk.js'
 import { runFilePresenceCheck } from './runners/file-presence.js'
 import { runPathConventionCheck } from './runners/path-convention.js'
@@ -54,6 +55,16 @@ async function runCheck(
   packId: string,
   context: CheckContext
 ): Promise<CheckResult> {
+  // Skip rules without checks
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: true,
+      findings: [],
+    }
+  }
+
   const checkType = rule.check.type
 
   switch (checkType) {

@@ -11,7 +11,7 @@ import type { CheckContext } from '../../src/types.js'
 describe('runManifestPolicyCheck', () => {
   const createRule = (overrides = {}): AlignRule => ({
     id: 'test-manifest-policy',
-    severity: 'MUST',
+    severity: 'error',
     check: {
       type: 'manifest_policy',
       inputs: {
