@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdirSync, writeFileSync, readFileSync, existsSync, unlinkSync, rmSync } from 'fs'
 import { join } from 'path'
-import { AtomicFileWriter, computeFileChecksum } from '../../src/sync/file-operations.js'
+import { AtomicFileWriter, computeFileChecksum } from '@aligntrue/file-utils'
 
 describe('Atomic Write Security', () => {
   const testDir = join(process.cwd(), 'temp-atomic-test')

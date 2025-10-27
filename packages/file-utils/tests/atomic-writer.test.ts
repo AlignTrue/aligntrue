@@ -10,9 +10,9 @@ import {
   computeFileChecksum,
   computeContentChecksum,
   ensureDirectoryExists,
-} from '@aligntrue/file-utils'
+} from '../src/atomic-writer.js'
 
-const TEST_DIR = join(process.cwd(), 'packages/core/tests/sync/temp-file-ops')
+const TEST_DIR = join(process.cwd(), 'packages/file-utils/tests/temp-file-ops')
 
 describe('File Operations', () => {
   beforeEach(() => {

@@ -85,12 +85,15 @@ importers:
 
   packages/core:
     dependencies:
-      '@aligntrue/exporters':
+      '@aligntrue/file-utils':
         specifier: workspace:*
-        version: link:../exporters
+        version: link:../file-utils
       '@aligntrue/markdown-parser':
         specifier: workspace:*
         version: link:../markdown-parser
+      '@aligntrue/plugin-contracts':
+        specifier: workspace:*
+        version: link:../plugin-contracts
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
@@ -128,9 +131,12 @@ importers:
 
   packages/exporters:
     dependencies:
-      '@aligntrue/core':
+      '@aligntrue/file-utils':
         specifier: workspace:*
-        version: link:../core
+        version: link:../file-utils
+      '@aligntrue/plugin-contracts':
+        specifier: workspace:*
+        version: link:../plugin-contracts
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
@@ -157,6 +163,18 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
 
+  packages/file-utils:
+    devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.9.1
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.3
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
+
   packages/markdown-parser:
     dependencies:
       '@aligntrue/schema':
@@ -175,6 +193,19 @@ importers:
       vitest:
         specifier: ^4.0.3
         version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
+
+  packages/plugin-contracts:
+    dependencies:
+      '@aligntrue/schema':
+        specifier: workspace:*
+        version: link:../schema
+    devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.9.1
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
   packages/schema:
     dependencies:

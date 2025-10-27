@@ -9,7 +9,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import Ajv from 'ajv'
 import type { AnySchemaObject } from 'ajv'
 import addFormats from 'ajv-formats'
-import type { ExporterPlugin, AdapterManifest } from './types.js'
+import type { ExporterPlugin, AdapterManifest } from '@aligntrue/plugin-contracts'
 
 // Determine schema path
 const __filename = fileURLToPath(import.meta.url)
