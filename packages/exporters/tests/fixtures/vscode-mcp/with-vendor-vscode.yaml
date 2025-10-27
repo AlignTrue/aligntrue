@@ -1,0 +1,14 @@
+rules:
+  - id: formatting.use-prettier
+    severity: warn
+    applies_to:
+      - "**/*.ts"
+      - "**/*.tsx"
+    guidance: |
+      Use Prettier for consistent code formatting.
+    vendor:
+      vscode:
+        workbench_setting: "editor.formatOnSave"
+        diagnostic_code: "format-001"
+        quick_fix_available: true
+

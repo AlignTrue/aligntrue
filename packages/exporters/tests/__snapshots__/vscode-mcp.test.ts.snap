@@ -1,0 +1,141 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`VsCodeMcpExporter > Snapshot tests > all severities golden JSON output 1`] = `
+{
+  "content_hash": "3bb7fad1e4aefa4ce0f308049806ca563f9a4a3d2d68816c7be08d2f6de2bf97",
+  "generated_by": "AlignTrue",
+  "rules": [
+    {
+      "applies_to": [
+        "**/*",
+      ],
+      "guidance": "Never commit secrets or API keys to version control.
+",
+      "id": "security.no-secrets",
+      "severity": "error",
+    },
+    {
+      "applies_to": [
+        "src/**/*.ts",
+      ],
+      "guidance": "All features should have tests.
+",
+      "id": "testing.require-tests",
+      "severity": "warn",
+    },
+    {
+      "applies_to": [
+        "**/*.ts",
+      ],
+      "guidance": "Use const instead of let when variables are not reassigned.
+",
+      "id": "style.prefer-const",
+      "severity": "info",
+    },
+  ],
+  "version": "v1",
+}
+`;
+
+exports[`VsCodeMcpExporter > Snapshot tests > mixed vendor fields golden output 1`] = `
+{
+  "content_hash": "e0ee9308e58a893339bcf8a3cc55a876f74418ebda3daec04a150ff5f914e66f",
+  "fidelity_notes": [
+    "Vendor-specific metadata for other agents not extracted to MCP config: copilot, cursor",
+  ],
+  "generated_by": "AlignTrue",
+  "rules": [
+    {
+      "applies_to": [
+        "**/*.ts",
+      ],
+      "code_action_kind": "quickfix",
+      "diagnostic_severity": "Warning",
+      "guidance": "Use ESLint for consistent code quality.
+",
+      "id": "linting.use-eslint",
+      "severity": "warn",
+    },
+  ],
+  "version": "v1",
+}
+`;
+
+exports[`VsCodeMcpExporter > Snapshot tests > multiple rules golden JSON output 1`] = `
+{
+  "content_hash": "eb940cfe4e31eb4c1784648b635fa145f02988b0c03f758a27821247063bfe12",
+  "generated_by": "AlignTrue",
+  "rules": [
+    {
+      "applies_to": [
+        "**/*",
+      ],
+      "guidance": "Never commit secrets or API keys to version control.
+",
+      "id": "security.no-secrets",
+      "severity": "error",
+    },
+    {
+      "applies_to": [
+        "**/*.ts",
+      ],
+      "guidance": "All features should have tests.
+",
+      "id": "testing.require-tests",
+      "severity": "warn",
+    },
+    {
+      "applies_to": [
+        "README.md",
+      ],
+      "guidance": "Keep README updated with significant changes.
+",
+      "id": "docs.update-readme",
+      "severity": "info",
+    },
+  ],
+  "version": "v1",
+}
+`;
+
+exports[`VsCodeMcpExporter > Snapshot tests > single rule golden JSON output 1`] = `
+{
+  "content_hash": "23acca0213552e11e91da6c376d84e0935e38d35dafe889b7004918806c50b1d",
+  "generated_by": "AlignTrue",
+  "rules": [
+    {
+      "applies_to": [
+        "**/*.ts",
+      ],
+      "guidance": "All features must have tests to ensure reliability.
+",
+      "id": "testing.require-tests",
+      "severity": "warn",
+    },
+  ],
+  "version": "v1",
+}
+`;
+
+exports[`VsCodeMcpExporter > Snapshot tests > with vendor.vscode extracted golden output 1`] = `
+{
+  "content_hash": "de029f9c6a977e4f105dd0603840b5ca85ce473e922f0d0b51f4b0e6b238b073",
+  "generated_by": "AlignTrue",
+  "rules": [
+    {
+      "applies_to": [
+        "**/*.ts",
+        "**/*.tsx",
+      ],
+      "diagnostic_code": "format-001",
+      "guidance": "Use Prettier for consistent code formatting.
+",
+      "id": "formatting.use-prettier",
+      "quick_fix_available": true,
+      "severity": "warn",
+      "workbench_setting": "editor.formatOnSave",
+    },
+  ],
+  "version": "v1",
+}
+`;
