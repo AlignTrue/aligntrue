@@ -166,10 +166,160 @@ Options:
   2. Set lockfile.mode: soft in config for warnings only
 ```
 
+### `aligntrue team enable`
+
+Upgrade your project to team mode for lockfile-based collaboration.
+
+**Features:**
+- Enables lockfile generation for reproducibility
+- Enables bundle generation for multi-source merging
+- Drift detection with soft/strict validation modes
+- Git-based collaboration workflows
+
+**Usage:**
+```bash
+aligntrue team enable
+```
+
+**What it does:**
+1. Updates `.aligntrue/config.yaml` to set `mode: team`
+2. Enables `modules.lockfile: true` and `modules.bundle: true`
+3. Shows next steps for lockfile generation
+4. Team members can now clone and get identical outputs
+
+**Example output:**
+```
+┌  Team Mode Enable
+│
+◇  Changes to .aligntrue/config.yaml:
+│    - mode: solo → team
+│    - modules.lockfile: false → true
+│    - modules.bundle: false → true
+│
+◇  Enable team mode?
+│  Yes
+│
+└  ✓ Team mode enabled
+
+Next steps:
+  1. Run: aligntrue sync
+  2. Lockfile will be generated automatically
+  3. Commit both config.yaml and .aligntrue.lock.json
+
+Team members can now:
+  - Clone the repo and run aligntrue sync
+  - Get identical rule outputs (deterministic)
+  - Detect drift with lockfile validation
+```
+
+**Already in team mode:**
+```
+✓ Already in team mode
+
+Team mode features active:
+  - Lockfile: enabled
+  - Bundle: enabled
+```
+
+### `aligntrue telemetry`
+
+Manage anonymous telemetry collection settings.
+
+**Features:**
+- Opt-in only (disabled by default)
+- Anonymous usage data (no code, no paths, no PII)
+- Collects: command names, export targets, content hashes
+
+**Usage:**
+```bash
+aligntrue telemetry on|off|status
+```
+
+**Subcommands:**
+- `on` - Enable telemetry collection
+- `off` - Disable telemetry collection
+- `status` - Show current telemetry status
+
+**Examples:**
+
+Enable telemetry:
+```bash
+aligntrue telemetry on
+```
+
+Check status:
+```bash
+aligntrue telemetry status
+# Output: Telemetry: enabled
+```
+
+Disable telemetry:
+```bash
+aligntrue telemetry off
+```
+
+**What we collect (when enabled):**
+- Command name (init, sync, etc.)
+- Export targets used (cursor, agents-md, etc.)
+- Align content hashes (no code, no paths, no PII)
+
+**What we never collect:**
+- Repository names or paths
+- Rule content or guidance text
+- File paths or directory structures
+- Any personally identifiable information
+
+### `aligntrue scopes`
+
+List configured scopes for monorepo path-based rule application.
+
+**Features:**
+- Shows all configured scopes from config.yaml
+- Displays include/exclude patterns
+- Shows ruleset overrides per scope
+- Fast read-only operation
+
+**Usage:**
+```bash
+aligntrue scopes
+```
+
+**Example output:**
+```
+Scopes configured in .aligntrue/config.yaml:
+
+  packages/frontend
+    Include: *.ts, *.tsx
+    Exclude: **/*.test.ts
+
+  packages/backend
+    Include: *.ts
+    Exclude: **/*.spec.ts
+
+Total: 2 scopes
+```
+
+**No scopes configured:**
+```
+No scopes configured (applies rules to entire workspace)
+
+To add scopes, edit .aligntrue/config.yaml:
+
+scopes:
+  - path: packages/frontend
+    include:
+      - "*.ts"
+      - "*.tsx"
+    exclude:
+      - "**/*.test.ts"
+
+See: docs/guides/scopes.md (when available)
+```
+
 ### Other Commands
 
-- `aligntrue check` - Validate rules and configuration (Step 25)
-- `aligntrue import` - Import rules from agent configs (Step 17)
+- `aligntrue check` - Validate rules and configuration (coming soon)
+- `aligntrue import` - Import rules from agent configs (coming soon)
 - `aligntrue md` - Markdown validation and formatting (Step 4 ✓)
 - `aligntrue migrate` - Migration status (Step 24 ✓)
 
