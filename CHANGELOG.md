@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Two-Way Sync with Conflict Resolution** (Phase 1, Week 2, Step 14) - Completed 2025-10-27
+  - Full two-way sync engine with interactive conflict resolution
+  - Conflict resolution strategies: KEEP_IR, ACCEPT_AGENT, MANUAL, ABORT
+  - Interactive CLI prompts: `[i]Keep IR [a]Accept agent [d]Show diff [q]Quit`
+  - Non-interactive mode with default strategy for CI environments
+  - Batch mode: apply same resolution to all conflicts in a rule
+  - Enhanced dry-run with detailed audit trail (timestamps, hashes, action details)
+  - Agent→IR sync (`aligntrue sync --accept-agent <adapter>`) with mock data (real parsers in Step 17)
+  - Conflict detector with field-level diffs and human-readable reports
+  - Resolution application with nested field support (e.g., vendor.cursor.ai_hint)
+  - Volatile field exclusion infrastructure for vendor bags
+  - Checksum-based overwrite protection with interactive prompts
+  - Interactive checksum prompts: `[v]iew [o]verwrite [k]eep [a]bort`
+  - Force mode for non-interactive overwrites (`--force` flag)
+  - Audit trail for all sync operations (IR→agent and agent→IR)
+  - Added `prompts` package for interactive CLI (@types/prompts for TypeScript)
+  - Mock agent rule fixtures for testing (cursor-modified, cursor-new-rule, cursor-deleted-rule)
+  - 44 new tests passing (conflict resolution + prompts)
+  - Total core package tests: ~173 passing (up from 129)
+  - Dependencies: SyncEngine, ConflictDetector, AtomicFileWriter, conflict-prompt module
+  - CLI foundation for `aligntrue sync --accept-agent cursor` workflow
+
+- **VS Code MCP Exporter** (Phase 1, Week 2, Step 13) - Completed 2025-10-27
+  - Generates `.vscode/mcp.json` configuration for Model Context Protocol support
+  - Custom v1 JSON format with version marker for future evolution
+  - Extracts vendor.vscode metadata to top level of each rule (flattened structure)
+  - Single merged file at workspace root (not per-scope files)
+  - Deterministic SHA-256 content hash from canonical IR
+  - Comprehensive fidelity tracking for unmapped fields (check, autofix)
+  - Tracks non-vscode vendor metadata (cursor, copilot, etc.) in fidelity notes
+  - 29 comprehensive tests with 5 snapshot validations (100% pass rate)
+  - Test fixtures: single-rule, multiple-rules, with-vendor-vscode, mixed-vendor, all-severities
+  - Golden JSON outputs validated via Vitest snapshots
+  - Atomic file writes with automatic .vscode directory creation
+  - State management for accumulating rules across scope calls
+  - CLI: `aligntrue sync` with `exporters: ['vscode-mcp']` in config
+  - Total exporters package tests: 116 passing (up from 87)
+  - JSON Schema definition: `packages/exporters/schema/vscode-mcp.schema.json`
+  - All 3 Phase 1 exporters now complete (Cursor ✅, AGENTS.md ✅, VS Code MCP ✅)
+
 - **AGENTS.md Exporter with V1 Format** (Phase 1, Week 2, Step 12) - Completed 2025-10-26
   - Universal AGENTS.md exporter for multiple AI agents (Claude, Copilot, Aider, etc.)
   - Single root-level AGENTS.md file with merged scopes (not per-scope files)

@@ -84,12 +84,40 @@ export interface ChecksumRecord {
 export class AtomicFileWriter {
   private checksums: Map<string, ChecksumRecord> = new Map()
   private backups: Map<string, string> = new Map()
+  private checksumHandler?: (
+    filePath: string,
+    lastChecksum: string,
+    currentChecksum: string,
+    interactive: boolean,
+    force: boolean
+  ) => Promise<'overwrite' | 'keep' | 'abort'>
+
+  /**
+   * Set custom checksum mismatch handler (for interactive prompts)
+   */
+  setChecksumHandler(
+    handler: (
+      filePath: string,
+      lastChecksum: string,
+      currentChecksum: string,
+      interactive: boolean,
+      force: boolean
+    ) => Promise<'overwrite' | 'keep' | 'abort'>
+  ): void {
+    this.checksumHandler = handler
+  }
 
   /**
    * Write content to a file atomically
    * Uses temp file + rename for atomicity
    */
-  write(filePath: string, content: string): void {
+  async write(
+    filePath: string,
+    content: string,
+    options: { interactive?: boolean; force?: boolean } = {}
+  ): Promise<void> {
+    const { interactive = false, force = false } = options
+
     // Ensure parent directory exists
     const dir = dirname(filePath)
     ensureDirectoryExists(dir)
@@ -100,12 +128,40 @@ export class AtomicFileWriter {
       const currentChecksum = computeFileChecksum(filePath)
 
       if (lastChecksum !== currentChecksum) {
-        throw new Error(
-          `File has been manually edited: ${filePath}\n` +
-          `  Last known checksum: ${lastChecksum.slice(0, 16)}...\n` +
-          `  Current checksum:    ${currentChecksum.slice(0, 16)}...\n` +
-          `  Use --force to overwrite or resolve conflicts manually.`
-        )
+        // Use custom handler if available, otherwise throw
+        if (this.checksumHandler) {
+          const decision = await this.checksumHandler(
+            filePath,
+            lastChecksum,
+            currentChecksum,
+            interactive,
+            force
+          )
+
+          if (decision === 'keep') {
+            // Skip writing this file
+            return
+          }
+
+          if (decision === 'abort') {
+            throw new Error(
+              `File has been manually edited: ${filePath}\n` +
+              `  Last known checksum: ${lastChecksum.slice(0, 16)}...\n` +
+              `  Current checksum:    ${currentChecksum.slice(0, 16)}...\n` +
+              `  Sync aborted by user.`
+            )
+          }
+
+          // 'overwrite' falls through to normal write
+        } else {
+          // No handler, throw error (old behavior)
+          throw new Error(
+            `File has been manually edited: ${filePath}\n` +
+            `  Last known checksum: ${lastChecksum.slice(0, 16)}...\n` +
+            `  Current checksum:    ${currentChecksum.slice(0, 16)}...\n` +
+            `  Use --force to overwrite or resolve conflicts manually.`
+          )
+        }
       }
     }
 

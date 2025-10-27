@@ -1,0 +1,16 @@
+rules:
+  - id: linting.use-eslint
+    severity: warn
+    applies_to:
+      - "**/*.ts"
+    guidance: |
+      Use ESLint for consistent code quality.
+    vendor:
+      vscode:
+        diagnostic_severity: "Warning"
+        code_action_kind: "quickfix"
+      cursor:
+        show_inline: true
+      copilot:
+        context_priority: "high"
+

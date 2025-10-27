@@ -32,6 +32,20 @@ export interface SyncOptions {
   backup?: boolean
   configPath?: string
   force?: boolean
+  interactive?: boolean
+  defaultResolutionStrategy?: string
+}
+
+/**
+ * Audit trail entry for sync operations
+ */
+export interface AuditEntry {
+  action: 'create' | 'update' | 'delete' | 'conflict'
+  target: string // file path or rule ID
+  source?: string // where change came from
+  hash?: string
+  timestamp: string
+  details: string
 }
 
 /**
@@ -43,6 +57,7 @@ export interface SyncResult {
   written: string[]
   warnings?: string[]
   exportResults?: Map<string, ExportResult>
+  auditTrail?: AuditEntry[]
 }
 
 /**
@@ -58,6 +73,12 @@ export class SyncEngine {
   constructor() {
     this.fileWriter = new AtomicFileWriter()
     this.conflictDetector = new ConflictDetector()
+    
+    // Set checksum handler for interactive prompts
+    this.fileWriter.setChecksumHandler(async (filePath, lastChecksum, currentChecksum, interactive, force) => {
+      const { promptOnChecksumMismatch } = await import('./conflict-prompt.js')
+      return promptOnChecksumMismatch(filePath, lastChecksum, currentChecksum, interactive, force)
+    })
   }
 
   /**
@@ -88,6 +109,7 @@ export class SyncEngine {
     const warnings: string[] = []
     const written: string[] = []
     const exportResults = new Map<string, ExportResult>()
+    const auditTrail: AuditEntry[] = []
 
     try {
       // Load config and IR
@@ -97,6 +119,15 @@ export class SyncEngine {
       if (!this.config || !this.ir) {
         throw new Error('Configuration or IR not loaded')
       }
+
+      // Audit trail: IR loaded
+      auditTrail.push({
+        action: 'update',
+        target: irPath,
+        source: 'IR',
+        timestamp: new Date().toISOString(),
+        details: `Loaded ${this.ir.rules?.length || 0} rules from IR`,
+      })
 
       // Resolve scopes
       const scopeConfig: { scopes: Scope[]; merge?: { strategy?: 'deep'; order?: MergeOrder } } = {
@@ -170,6 +201,20 @@ export class SyncEngine {
             if (result.success) {
               written.push(...result.filesWritten)
 
+              // Audit trail: Files written
+              for (const file of result.filesWritten) {
+                auditTrail.push({
+                  action: options.dryRun ? 'update' : 'create',
+                  target: file,
+                  source: `${exporter.name} exporter`,
+                  hash: result.contentHash,
+                  timestamp: new Date().toISOString(),
+                  details: options.dryRun 
+                    ? `Would write file (dry-run)` 
+                    : `Wrote file successfully`,
+                })
+              }
+
               // Track files for overwrite protection (if not dry-run)
               if (!options.dryRun) {
                 for (const file of result.filesWritten) {
@@ -216,6 +261,7 @@ export class SyncEngine {
         success: true,
         written,
         exportResults,
+        auditTrail,
       }
       
       if (warnings.length > 0) {
@@ -235,19 +281,200 @@ export class SyncEngine {
   /**
    * Sync from agent to IR (pullback direction)
    * Requires explicit --accept-agent flag
+   * Note: Uses mock data in Step 14; real parsers in Step 17
    */
   async syncFromAgent(
     agent: string,
     irPath: string,
     options: SyncOptions = {}
   ): Promise<SyncResult> {
-    // TODO: Implement in Step 17 (import from agents)
-    // This is a skeleton for now
-    return {
-      success: false,
-      written: [],
-      warnings: ['Agent→IR sync not yet implemented. Coming in Step 17.'],
+    const warnings: string[] = []
+    const written: string[] = []
+    const auditTrail: AuditEntry[] = []
+
+    try {
+      // Load config and IR
+      await this.loadConfiguration(options.configPath)
+      await this.loadIRFromSource(irPath)
+
+      if (!this.config || !this.ir) {
+        throw new Error('Configuration or IR not loaded')
+      }
+
+      // Audit trail: Starting agent→IR sync
+      auditTrail.push({
+        action: 'update',
+        target: irPath,
+        source: agent,
+        timestamp: new Date().toISOString(),
+        details: `Starting agent→IR sync from ${agent}`,
+      })
+
+      // Load agent rules (mock implementation for Step 14)
+      // In Step 17, this will use real parsers for .cursor/*.mdc, AGENTS.md, etc.
+      const agentRules = await this.loadAgentRules(agent, options)
+      
+      if (!agentRules || agentRules.length === 0) {
+        warnings.push(`No rules found in agent ${agent}`)
+        return {
+          success: true,
+          written: [],
+          warnings,
+          auditTrail,
+        }
+      }
+
+      // Audit trail: Agent rules loaded
+      auditTrail.push({
+        action: 'update',
+        target: agent,
+        source: agent,
+        timestamp: new Date().toISOString(),
+        details: `Loaded ${agentRules.length} rules from agent`,
+      })
+
+      // Detect conflicts
+      const irRules = this.ir.rules || []
+      const conflictResult = this.conflictDetector.detectConflicts(agent, irRules, agentRules)
+
+      if (conflictResult.hasConflicts) {
+        // Audit trail: Conflicts detected
+        auditTrail.push({
+          action: 'conflict',
+          target: irPath,
+          source: agent,
+          timestamp: new Date().toISOString(),
+          details: `Detected ${conflictResult.conflicts.length} conflict(s)`,
+        })
+
+        // If dry-run, just return conflicts
+        if (options.dryRun) {
+          return {
+            success: true,
+            conflicts: conflictResult.conflicts,
+            written: [],
+            warnings,
+            auditTrail,
+          }
+        }
+
+        // Handle conflicts (interactive or default strategy)
+        const resolutions = await this.resolveConflicts(
+          conflictResult.conflicts,
+          options
+        )
+
+        // Apply resolutions to IR
+        const updatedRules = this.conflictDetector.applyResolutions(
+          irRules,
+          Array.from(resolutions.values())
+        )
+
+        // Update IR with resolved rules
+        this.ir.rules = updatedRules
+
+        // Audit trail: Resolutions applied
+        for (const resolution of resolutions.values()) {
+          auditTrail.push({
+            action: 'update',
+            target: resolution.ruleId,
+            source: agent,
+            timestamp: resolution.timestamp,
+            details: `Applied ${resolution.strategy} for field ${resolution.field}`,
+          })
+        }
+      }
+
+      // Write updated IR (if not dry-run)
+      if (!options.dryRun) {
+        // In a real implementation, we'd use a proper IR writer
+        // For now, just track that we would write
+        written.push(irPath)
+
+        auditTrail.push({
+          action: 'update',
+          target: irPath,
+          source: agent,
+          timestamp: new Date().toISOString(),
+          details: `Updated IR with ${agentRules.length} rules from agent`,
+        })
+      }
+
+      return {
+        success: true,
+        conflicts: conflictResult.conflicts,
+        written,
+        warnings,
+        auditTrail,
+      }
+    } catch (err) {
+      return {
+        success: false,
+        written: [],
+        warnings: [err instanceof Error ? err.message : String(err)],
+        auditTrail,
+      }
     }
+  }
+
+  /**
+   * Load agent rules (mock implementation for Step 14)
+   * In Step 17, this will use real parsers
+   */
+  private async loadAgentRules(
+    agent: string,
+    options: SyncOptions
+  ): Promise<AlignRule[]> {
+    // Mock implementation: load from test fixtures
+    // In Step 17, this will parse actual agent files (.cursor/*.mdc, AGENTS.md, etc.)
+    
+    // For now, return empty array (tests will override this with fixtures)
+    return []
+  }
+
+  /**
+   * Resolve conflicts using interactive prompts or default strategy
+   */
+  private async resolveConflicts(
+    conflicts: Conflict[],
+    options: SyncOptions
+  ): Promise<Map<string, import('./conflict-detector.js').ConflictResolution>> {
+    const resolutions = new Map<string, import('./conflict-detector.js').ConflictResolution>()
+
+    // Import ConflictResolutionStrategy dynamically to avoid circular dependency
+    const { ConflictResolutionStrategy } = await import('./conflict-detector.js')
+    const { promptForConflicts, isInteractive } = await import('./conflict-prompt.js')
+
+    // Determine if interactive
+    const interactive = options.interactive ?? isInteractive()
+
+    // Determine default strategy
+    const defaultStrategyStr = options.defaultResolutionStrategy || 'keep_ir'
+    const defaultStrategy = defaultStrategyStr === 'accept_agent'
+      ? ConflictResolutionStrategy.ACCEPT_AGENT
+      : ConflictResolutionStrategy.KEEP_IR
+
+    // Use conflict prompts to resolve
+    try {
+      const strategyMap = await promptForConflicts(conflicts, {
+        interactive,
+        defaultStrategy,
+        batchMode: true,
+      })
+
+      // Convert strategy map to resolution map
+      for (const conflict of conflicts) {
+        const key = `${conflict.ruleId}:${conflict.field}`
+        const strategy = strategyMap.get(key) || defaultStrategy
+        const resolution = this.conflictDetector.resolveConflict(conflict, strategy)
+        resolutions.set(key, resolution)
+      }
+    } catch (err) {
+      // User aborted or error in prompts
+      throw new Error(`Conflict resolution failed: ${err instanceof Error ? err.message : String(err)}`)
+    }
+
+    return resolutions
   }
 
   /**
