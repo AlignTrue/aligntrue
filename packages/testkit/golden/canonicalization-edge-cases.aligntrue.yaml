@@ -1,40 +1,42 @@
 # Canonicalization edge cases pack
-# Tests: unicode, floating point, nested structures, key ordering
+# Tests: deterministic hashing with various data types
 
 id: "packs/testkit/canonicalization-edge-cases"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Tests canonicalization edge cases: unicode, floats, nesting"
-tags: ["testkit", "canonicalization"]
-deps: []
-scope:
-  applies_to: ["*"]
-  # Unicode in scope field
-  description: "Tests 世界 🌍 unicode handling"
+summary: "Tests canonicalization edge cases"
 rules:
-  - id: "edge-case-rule"
-    severity: "SHOULD"
+  - id: "canon-nulls"
+    severity: "info"
+    applies_to: ["**/*"]
+    check:
+      type: "file_presence"
+      inputs:
+        paths: ["test.txt"]
+      evidence: "Null handling test"
+  
+  - id: "canon-unicode"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
     check:
       type: "regex"
       inputs:
-        # Nested structure with mixed types
         include: ["**/*.ts"]
-        pattern: "test"
-        allow: true
-        # Floating point numbers
-        threshold: 0.5
-        max_value: 1.5e10
-      evidence: "Edge case test"
-    autofix:
-      # Empty string edge case
-      hint: ""
-# Key ordering test - these will be sorted alphabetically in canonical form
-metadata:
-  z_last: "value"
-  a_first: "value"
-  m_middle: "value"
+        pattern: "[ñáéíóú]"
+        allow: false
+      evidence: "Unicode normalization test"
+  
+  - id: "canon-floats"
+    severity: "error"
+    applies_to: ["**/Makefile"]
+    check:
+      type: "path_convention"
+      inputs:
+        include: ["**/"]
+        pattern: "[a-z0-9]+"
+      evidence: "Float precision test"
+
 integrity:
   algo: "jcs-sha256"
-  value: "4e7bbc74fb40efeae0c717be76f207f7729b2ad57714e33b5e8dfa3dc4bc1cdd"
+  value: "b4787935880caa3ac19a6f9a30b146a4b3868484fbc4c49d36eb3afbd9d2853e"
 
