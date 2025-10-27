@@ -1,0 +1,13 @@
+{
+  "name": "junie",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Junie .junie/guidelines.md format",
+  "outputs": [".junie/guidelines.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented",
+    "Autofix hints not represented"
+  ]
+}
+

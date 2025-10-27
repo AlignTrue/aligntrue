@@ -1,0 +1,14 @@
+{
+  "name": "kiro",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Kiro .kiro/steering/ directory format",
+  "outputs": [".kiro/steering/*.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Scope-based file organization (one .md per scope)",
+    "Machine-checkable rules (check) not represented",
+    "Autofix hints not represented"
+  ]
+}
+

@@ -1,0 +1,13 @@
+{
+  "name": "zed-config",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Zed .zed/settings.json configuration format (project root only)",
+  "outputs": [".zed/settings.json"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Settings file location: project root only, never $HOME",
+    "Complements AGENTS.md exporter"
+  ]
+}
+

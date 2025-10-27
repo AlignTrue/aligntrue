@@ -1,0 +1,13 @@
+{
+  "name": "jules",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to AGENTS.md format (Jules compatible)",
+  "outputs": ["AGENTS.md"],
+  "handler": "../agents-md/index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Uses universal AGENTS.md format",
+    "Machine-checkable rules (check) not represented in AGENTS.md format"
+  ]
+}
+

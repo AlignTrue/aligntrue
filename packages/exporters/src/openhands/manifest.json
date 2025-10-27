@@ -1,0 +1,13 @@
+{
+  "name": "openhands",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Open Hands .openhands/microagents/repo.md format",
+  "outputs": [".openhands/microagents/repo.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented",
+    "Autofix hints not represented"
+  ]
+}
+

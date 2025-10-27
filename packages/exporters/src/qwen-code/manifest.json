@@ -1,0 +1,13 @@
+{
+  "name": "qwen-code",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to AGENTS.md format (Qwen Code compatible)",
+  "outputs": ["AGENTS.md"],
+  "handler": "../agents-md/index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Uses universal AGENTS.md format",
+    "Qwen Code also uses .qwen/settings.json (separate exporter)"
+  ]
+}
+
