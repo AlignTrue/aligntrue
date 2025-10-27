@@ -11,6 +11,7 @@ export interface Command {
 export const commands: Record<string, Command> = {};
 
 // Export commands
+export { init } from './init.js'
 export { migrate } from './migrate.js'
 export { md } from './md.js'
 
