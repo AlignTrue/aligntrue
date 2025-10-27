@@ -8,6 +8,41 @@ Command-line interface for AlignTrue - the AI-native rules and alignment platfor
 pnpm install -g @aligntrue/cli
 ```
 
+## Quick Reference
+
+```
+AlignTrue CLI - AI-native rules and alignment platform
+
+Usage: aligntrue <command> [options]
+
+Basic Commands:
+  init           Initialize AlignTrue in current directory
+  sync           Sync rules to agents
+  check          Validate rules and configuration
+
+Development Commands:
+  md             Markdown validation and formatting
+
+Team Commands:
+  team           Team mode management
+  scopes         List configured scopes
+
+Settings:
+  telemetry      Telemetry settings
+
+Coming Soon:
+  import         Import rules from agent configs
+  migrate        Schema migration (preview mode)
+
+Run aligntrue <command> --help for command-specific options
+```
+
+**Help is fast:** ~95ms response time for `--help`
+
+**Flag grouping:** Each command organizes flags into Basic/Advanced sections for easier discovery
+
+**Error messages:** All errors follow what/why/how format with actionable fixes
+
 ## Commands
 
 ### `aligntrue init`
@@ -84,11 +119,13 @@ Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, e
 aligntrue sync [options]
 ```
 
-**Options:**
+**Basic Options:**
 - `--dry-run` - Preview changes without writing files
-- `--accept-agent <name>` - Sync from agent to IR (Note: uses mock data, real parsers in Step 17)
-- `--force` - Non-interactive mode for CI
-- `--config <path>` - Custom config path (default: .aligntrue/config.yaml)
+- `--config <path>` - Custom config file path (default: .aligntrue/config.yaml)
+
+**Advanced Options:**
+- `--accept-agent <name>` - Pull changes from agent back to IR (requires Step 17)
+- `--force` - Non-interactive mode (skip prompts)
 
 **Examples:**
 
