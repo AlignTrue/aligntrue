@@ -431,12 +431,46 @@ rules:
 
 Volatile fields excluded from conflict detection and hashing.
 
+## Cross-Platform Support
+
+AlignTrue is tested on both Linux and Windows via GitHub Actions CI matrix:
+
+- **Path normalization:** All paths normalized to forward slashes internally via `normalizePath()` helper
+- **Windows CI validation:** 165+ tests pass on both ubuntu-latest and windows-latest runners
+- **Deterministic behavior:** Same inputs produce same outputs on all platforms (canonical hashing, sorted keys)
+- **Atomic writes:** Temp+rename pattern works reliably on Windows NTFS and Unix filesystems
+- **CI workflow:** `.github/workflows/ci.yml` runs full test suite on both platforms
+
+Path normalization automatically handles:
+- Windows backslashes (C:\foo\bar → /foo/bar)
+- Mixed separators (foo/bar\baz → /foo/bar/baz)
+- Redundant separators (foo//bar → /foo/bar)
+- Trailing slashes (foo/ → /foo)
+
+**Testing locally on Windows:**
+
+```bash
+# Clone repo
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue
+
+# Install dependencies
+pnpm install
+
+# Run tests (should pass on Windows)
+pnpm test
+
+# Build all packages
+pnpm build
+```
+
 ## Next Steps
 
-**Step 10:** Implement adapter registry with hybrid manifests  
-**Steps 11-13:** Implement actual exporters (Cursor, AGENTS.md, MCP)  
-**Step 14:** Complete two-way sync with conflict resolution UI  
-**Step 23:** Full CLI integration
+**Step 10:** Implement adapter registry with hybrid manifests ✅  
+**Steps 11-13:** Implement actual exporters (Cursor, AGENTS.md, MCP) ✅  
+**Step 14:** Complete two-way sync with conflict resolution UI ✅  
+**Step 23:** Full CLI integration ✅  
+**Step 28:** Windows CI matrix validation ✅
 
 ---
 

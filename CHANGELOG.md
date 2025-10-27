@@ -24,6 +24,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Windows CI Matrix** (Phase 1, Stage 3, Step 28) - Completed 2025-10-27
+  - GitHub Actions matrix with ubuntu-latest and windows-latest runners
+  - Cross-platform validation: 165+ tests passing on both Linux and Windows
+  - Validates path normalization works correctly across platforms
+  - Confirms deterministic behavior (same inputs → same outputs on all platforms)
+  - Node 20 on both platforms
+  - Comprehensive workspace testing (all packages: schema, markdown-parser, core, sources, exporters, cli, checks, testkit)
+  - Parallel matrix jobs with OS-specific pnpm cache keys
+  - Fast-fail disabled to see results on both platforms
+  - Files created:
+    - `.github/workflows/ci.yml` (comprehensive CI workflow, ~70 lines)
+  - Removed: `.github/workflows/validate-aligns.yml` (superseded by ci.yml)
+  - Decision 14 in architecture-decisions.md now validated
+
 - **CLI Check Command** (Phase 1, Stage 3, Step 27a) - Completed 2025-10-27
   - `aligntrue check --ci` for automated validation in CI/CD pipelines
   - Schema validation: loads and validates `.aligntrue/rules.md` against JSON Schema
