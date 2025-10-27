@@ -389,6 +389,185 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 **Next:**
 - Step 14: Complete two-way sync engine with precedence and conflict resolution
 
+---
+
+## Security Expectations
+
+**Status:** Trust-based contract (Phase 1)  
+**See also:** `packages/core/docs/SECURITY.md`
+
+### Guidelines for Exporter Implementations
+
+All exporters (community-contributed or official) must follow these security and safety guidelines:
+
+#### 1. No Network Calls During Export
+
+Exporters must be deterministic and work offline.
+
+**❌ Don't do this:**
+```typescript
+async export(request, options) {
+  await fetch('https://api.example.com/track')  // Violation
+  // ...
+}
+```
+
+**✅ Do this:**
+```typescript
+async export(request, options) {
+  // Only work with local data
+  const output = generateOutput(request.rules)
+  return { success: true, filesWritten: [...] }
+}
+```
+
+**Rationale:** Network calls introduce:
+- Non-determinism (network failures)
+- Privacy concerns (data leakage)
+- Security risks (MITM attacks)
+- Offline workflow breakage
+
+---
+
+#### 2. Only Write Files via Provided Mechanisms
+
+Use the output mechanisms provided by the framework. Don't write directly to arbitrary paths.
+
+**❌ Don't do this:**
+```typescript
+import { writeFileSync } from 'fs'
+writeFileSync('/tmp/output.txt', content)  // Violation
+```
+
+**✅ Do this:**
+```typescript
+// Use options.outputDir as base for all writes
+const outputPath = join(options.outputDir, '.cursor/rules.mdc')
+// Return file paths for atomic write handling
+return {
+  success: true,
+  filesWritten: [outputPath],
+  content: generatedContent
+}
+```
+
+**Rationale:** Framework provides:
+- Atomic writes (temp+rename pattern)
+- Path validation (no directory traversal)
+- Backup/rollback on errors
+- Checksum tracking
+
+**See:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter`
+
+---
+
+#### 3. Don't Execute External Commands
+
+Exporters must not execute shell commands or external programs.
+
+**❌ Don't do this:**
+```typescript
+import { execSync } from 'child_process'
+execSync('npm install something')     // Violation
+execSync('git commit -m "Update"')    // Violation
+```
+
+**✅ Do this:**
+```typescript
+// Pure transformation only
+function transformRules(rules: AlignRule[]): string {
+  return rules.map(formatRule).join('\n')
+}
+```
+
+**Rationale:** Command execution introduces:
+- Security risks (arbitrary code execution)
+- Non-determinism (environment-dependent)
+- Side effects (unintended system changes)
+
+---
+
+#### 4. Respect outputDir Boundaries
+
+All output paths must be relative to `options.outputDir`. Never write outside the workspace.
+
+**❌ Don't do this:**
+```typescript
+const outputPath = '../../../etc/passwd'  // Violation
+const outputPath = '/tmp/malicious.txt'   // Violation
+```
+
+**✅ Do this:**
+```typescript
+// Always use join() with outputDir
+const outputPath = join(options.outputDir, '.cursor/rules.mdc')
+```
+
+**Enforcement:** Sync engine validates output paths before calling exporters.  
+**See:** `packages/core/src/sync/engine.ts` - output path validation
+
+---
+
+#### 5. Document Unsafe Operations in Fidelity Notes
+
+If an exporter cannot support a feature safely, document the limitation in `fidelityNotes`:
+
+```typescript
+const fidelityNotes: string[] = []
+
+if (rule.autofix?.command) {
+  fidelityNotes.push(
+    'Autofix commands not executed for security - stored as metadata only'
+  )
+}
+
+if (rule.check?.type === 'command_runner') {
+  fidelityNotes.push(
+    'Command runner checks not executed - validation deferred to CLI'
+  )
+}
+
+return {
+  success: true,
+  fidelityNotes,
+  // ...
+}
+```
+
+**Purpose:** Transparency about what features are supported vs. preserved as metadata.
+
+---
+
+### Runtime Enforcement (Future)
+
+**Phase 1:** Trust-based expectations with documentation and code review.
+
+**Phase 2+:** Runtime sandboxing may be added:
+- Block network access (no `fetch`, `http`, `https`)
+- Block file system access outside workspace
+- Block `child_process` and `exec` family
+- Use Node.js VM or worker threads for isolation
+
+**See:** `packages/core/docs/SECURITY.md` - "Future Enhancements"
+
+---
+
+### Security Testing Checklist
+
+When contributing an exporter:
+
+- [ ] No `fetch()`, `http.request()`, or network calls
+- [ ] No `execSync()`, `spawn()`, or command execution
+- [ ] All file writes use `join(options.outputDir, relativePath)`
+- [ ] No absolute paths or `..` in output paths
+- [ ] Fidelity notes document any unsupported features
+- [ ] Tests include error paths and invalid inputs
+- [ ] No external dependencies beyond framework types
+
+**Code review will validate these requirements.**
+
+---
+
 ## Contributing
 
 See `CONTRIBUTING.md` for adapter contribution guidelines.

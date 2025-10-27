@@ -598,6 +598,112 @@ exporters:
   })
 })
 
+describe('Source Path Security Validation', () => {
+  it('rejects traversal in local source paths with ../', async () => {
+    const configPath = writeConfig('traversal-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: ../../etc/passwd
+`)
+    
+    await expect(loadConfig(configPath)).rejects.toThrow(/parent directory traversal/)
+  })
+
+  it('accepts valid relative local source paths', async () => {
+    const configPath = writeConfig('valid-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: .aligntrue/rules.md
+`)
+    
+    const config = await loadConfig(configPath)
+    expect(config.sources[0].path).toBe('.aligntrue/rules.md')
+  })
+
+  it('rejects absolute local source paths', async () => {
+    const configPath = writeConfig('absolute-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: /tmp/malicious.md
+`)
+    
+    await expect(loadConfig(configPath)).rejects.toThrow(/absolute paths not allowed/)
+  })
+
+  it('accepts nested relative paths in sources', async () => {
+    const configPath = writeConfig('nested-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: apps/web/.aligntrue/rules.md
+`)
+    
+    const config = await loadConfig(configPath)
+    expect(config.sources[0].path).toBe('apps/web/.aligntrue/rules.md')
+  })
+
+  it('rejects mixed traversal in source paths', async () => {
+    const configPath = writeConfig('mixed-traversal.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: src/../../outside/rules.md
+`)
+    
+    await expect(loadConfig(configPath)).rejects.toThrow(/parent directory traversal/)
+  })
+
+  it('accepts git sources with URLs (no path validation)', async () => {
+    const configPath = writeConfig('git-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: git
+    url: https://github.com/AlignTrue/aligns.git
+    ref: main
+`)
+    
+    const config = await loadConfig(configPath)
+    expect(config.sources[0].url).toBe('https://github.com/AlignTrue/aligns.git')
+  })
+
+  it('accepts catalog sources with IDs (no path validation)', async () => {
+    const configPath = writeConfig('catalog-source.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: catalog
+    id: packs.base.global
+    version: "1.0.0"
+`)
+    
+    const config = await loadConfig(configPath)
+    expect(config.sources[0].id).toBe('packs.base.global')
+  })
+
+  it('validates each source in array independently', async () => {
+    const configPath = writeConfig('multiple-sources.yaml', `
+version: "1"
+mode: solo
+sources:
+  - type: local
+    path: .aligntrue/rules.md
+  - type: local
+    path: ../../malicious.md
+`)
+    
+    await expect(loadConfig(configPath)).rejects.toThrow(/parent directory traversal/)
+  })
+})
+
 describe('Warning for Empty Scopes', () => {
   it('warns if scopes defined but empty', async () => {
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
