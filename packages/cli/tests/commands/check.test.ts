@@ -18,7 +18,10 @@ vi.mock('@aligntrue/core', () => ({
 }))
 
 vi.mock('@aligntrue/schema', () => ({
-  validateAlign: vi.fn(),
+  validateAlign: vi.fn(() => ({
+    schema: { valid: true, errors: [] },
+    integrity: { valid: true }
+  })),
   parseYamlToJson: vi.fn(),
 }))
 
@@ -105,7 +108,10 @@ describe('check command', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
       vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
-      vi.mocked(schema.validateAlign).mockReturnValue({ valid: true })
+      vi.mocked(schema.validateAlign).mockReturnValue({
+        schema: { valid: true },
+        integrity: { valid: true }
+      })
       
       try {
         await check(['--ci', '--config', 'custom.yaml'])
@@ -180,11 +186,14 @@ describe('check command', () => {
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"')
       vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1' })
       vi.mocked(schema.validateAlign).mockReturnValue({
-        valid: false,
-        errors: [
-          { path: 'spec_version', message: 'Missing required field' },
-          { path: 'rules', message: 'Missing required field' },
-        ],
+        schema: {
+          valid: false,
+          errors: [
+            { path: 'spec_version', message: 'Missing required field' },
+            { path: 'rules', message: 'Missing required field' },
+          ],
+        },
+        integrity: { valid: true }
       })
       
       try {
@@ -203,7 +212,10 @@ describe('check command', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
       vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
-      vi.mocked(schema.validateAlign).mockReturnValue({ valid: true })
+      vi.mocked(schema.validateAlign).mockReturnValue({
+        schema: { valid: true },
+        integrity: { valid: true }
+      })
       
       try {
         await check(['--ci'])
@@ -228,7 +240,10 @@ describe('check command', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
       vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
-      vi.mocked(schema.validateAlign).mockReturnValue({ valid: true })
+      vi.mocked(schema.validateAlign).mockReturnValue({
+        schema: { valid: true },
+        integrity: { valid: true }
+      })
     })
 
     it('skips lockfile validation in solo mode', async () => {
@@ -257,7 +272,10 @@ describe('check command', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
       vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
-      vi.mocked(schema.validateAlign).mockReturnValue({ valid: true })
+      vi.mocked(schema.validateAlign).mockReturnValue({
+        schema: { valid: true },
+        integrity: { valid: true }
+      })
     })
 
     it('exits with code 1 when lockfile missing in team mode', async () => {
@@ -293,8 +311,10 @@ describe('check command', () => {
       vi.mocked(core.validateLockfile).mockReturnValue({
         valid: false,
         mismatches: [
-          { ruleId: 'test.rule', storedHash: 'abc123', computedHash: 'def456' },
+          { rule_id: 'test.rule', expected_hash: 'abc123', actual_hash: 'def456' },
         ],
+        newRules: [],
+        deletedRules: [],
       })
       
       try {
@@ -320,7 +340,9 @@ describe('check command', () => {
       vi.mocked(core.readLockfile).mockReturnValue(mockLockfile)
       vi.mocked(core.validateLockfile).mockReturnValue({
         valid: false,
+        mismatches: [],
         newRules: ['test.rule.new'],
+        deletedRules: [],
       })
       
       try {
@@ -348,6 +370,8 @@ describe('check command', () => {
       vi.mocked(core.readLockfile).mockReturnValue(mockLockfile)
       vi.mocked(core.validateLockfile).mockReturnValue({
         valid: false,
+        mismatches: [],
+        newRules: [],
         deletedRules: ['test.rule.deleted'],
       })
       
@@ -374,7 +398,12 @@ describe('check command', () => {
       }
       
       vi.mocked(core.readLockfile).mockReturnValue(mockLockfile)
-      vi.mocked(core.validateLockfile).mockReturnValue({ valid: true })
+      vi.mocked(core.validateLockfile).mockReturnValue({
+        valid: true,
+        mismatches: [],
+        newRules: [],
+        deletedRules: [],
+      })
       
       try {
         await check(['--ci'])
