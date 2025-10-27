@@ -8,6 +8,11 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import * as yaml from 'yaml'
 
+// Mock telemetry collector (init command calls recordEvent)
+vi.mock('@aligntrue/core/telemetry/collector.js', () => ({
+  recordEvent: vi.fn(),
+}))
+
 // Note: Full integration tests will mock @clack/prompts
 // For now, we test the utilities and template generation
 

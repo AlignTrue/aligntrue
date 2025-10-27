@@ -10,6 +10,9 @@ import { SyncEngine } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { canonicalizeJson } from '@aligntrue/schema'
+import { createHash } from 'node:crypto'
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url)
@@ -255,6 +258,24 @@ Run: aligntrue init`)
         result.auditTrail.forEach(entry => {
           clack.log.info(`  [${entry.action}] ${entry.target}: ${entry.details}`)
         })
+      }
+
+      // Record telemetry event on success
+      try {
+        const exportTargets = adapters.map(a => a.name).join(',')
+        const ruleHashes = result.ir?.rules.map(rule => {
+          const canonical = canonicalizeJson(rule)
+          return createHash('sha256').update(canonical).digest('hex').substring(0, 8)
+        }) || []
+        
+        recordEvent({
+          command_name: 'sync',
+          export_target: exportTargets,
+          align_hashes_used: ruleHashes,
+        })
+      } catch (telemetryError) {
+        // Telemetry errors should not fail the sync command
+        // Silently continue
       }
 
       clack.outro(parsed.dryRun ? '✓ Preview complete' : '✓ Sync complete')

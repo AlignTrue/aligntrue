@@ -316,6 +316,66 @@ scopes:
 See: docs/guides/scopes.md (when available)
 ```
 
+### Telemetry Commands
+
+AlignTrue includes optional, anonymous telemetry to help improve the product.
+
+#### `aligntrue telemetry on`
+
+Enable anonymous telemetry collection:
+
+```bash
+aligntrue telemetry on
+```
+
+**What we collect:**
+- Command names (init, sync, etc.)
+- Export targets used (cursor, agents-md, etc.)
+- Rule content hashes (SHA-256, no actual content)
+
+**What we never collect:**
+- File paths or repository names
+- Rule content or code
+- Personally identifiable information (PII)
+
+**Storage:** Local only in Phase 1 (`.aligntrue/telemetry-events.json`), with optional sending in Phase 2+ after explicit consent.
+
+See [docs/PRIVACY.md](../../docs/PRIVACY.md) for complete details.
+
+#### `aligntrue telemetry off`
+
+Disable telemetry collection:
+
+```bash
+aligntrue telemetry off
+```
+
+Stops recording new events. Existing events remain in `.aligntrue/telemetry-events.json` until you delete the file.
+
+#### `aligntrue telemetry status`
+
+Check current telemetry status:
+
+```bash
+aligntrue telemetry status
+```
+
+**Output when enabled:**
+```
+Telemetry: enabled
+
+Collecting anonymous usage data.
+To disable: aligntrue telemetry off
+```
+
+**Output when disabled:**
+```
+Telemetry: disabled
+
+No usage data is being collected.
+To enable: aligntrue telemetry on
+```
+
 ### Other Commands
 
 - `aligntrue check` - Validate rules and configuration (coming soon)

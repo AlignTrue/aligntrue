@@ -25,7 +25,7 @@ export function generateLockfile(pack: AlignPack, mode: 'team' | 'enterprise'): 
     entries.push({
       rule_id: rule.id,
       content_hash: hash,
-      source: pack.source,
+      ...(pack.source && { source: pack.source }),
     })
     ruleHashes.push(hash)
   }

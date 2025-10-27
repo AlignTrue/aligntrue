@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { parseMarkdown, buildIR, validateMarkdown, normalizeWhitespace } from '@aligntrue/markdown-parser'
 import { stringify as stringifyYaml } from 'yaml'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 export async function md(args: string[]): Promise<void> {
   if (args.length === 0 || args[0] === '--help') {
@@ -52,6 +53,7 @@ async function mdLint(file: string): Promise<void> {
 
     if (result.valid) {
       console.log(`✓ ${file} is valid`)
+      recordEvent({ command_name: 'md-lint', align_hashes_used: [] })
       process.exit(0)
     } else {
       console.error(`✗ ${file} has errors:\n`)
@@ -118,6 +120,7 @@ async function mdFormat(file: string, checkOnly: boolean): Promise<void> {
       console.log(`✓ ${file} already formatted`)
     }
     
+    recordEvent({ command_name: 'md-format', align_hashes_used: [] })
     process.exit(0)
   } catch (err) {
     console.error(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -167,6 +170,7 @@ async function mdCompile(file: string, outputFile: string): Promise<void> {
       console.log(`✓ Compiled ${file} → ${outputFile}`)
     }
 
+    recordEvent({ command_name: 'md-compile', align_hashes_used: [] })
     process.exit(0)
   } catch (err) {
     console.error(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)

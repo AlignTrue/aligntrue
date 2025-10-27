@@ -11,6 +11,11 @@ vi.mock('fs', () => ({
   existsSync: vi.fn(),
 }))
 
+// Mock telemetry collector
+vi.mock('@aligntrue/core/telemetry/collector.js', () => ({
+  recordEvent: vi.fn(),
+}))
+
 // Mock @aligntrue/core
 vi.mock('@aligntrue/core', () => ({
   loadConfig: vi.fn(),
