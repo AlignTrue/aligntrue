@@ -11,7 +11,7 @@ import type { CheckContext } from '../../src/types.js'
 describe('runPathConventionCheck', () => {
   const createRule = (overrides = {}): AlignRule => ({
     id: 'test-path-convention',
-    severity: 'SHOULD',
+    severity: 'warn',
     check: {
       type: 'path_convention',
       inputs: {

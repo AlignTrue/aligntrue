@@ -4,6 +4,7 @@
 
 import type { AlignRule } from '@aligntrue/schema'
 import type { CheckResult, CheckContext } from '../types.js'
+import { hasCheck } from '../types.js'
 
 /**
  * Run regex check
@@ -17,7 +18,18 @@ export async function runRegexCheck(
   context: CheckContext
 ): Promise<CheckResult> {
   const { fileProvider } = context
-  const { inputs, evidence } = rule.check
+
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: false,
+      findings: [],
+      error: 'Rule does not have a check property',
+    }
+  }
+
+  const { inputs, evidence = 'Check failed' } = rule.check
 
   if (rule.check.type !== 'regex') {
     return {
@@ -55,7 +67,7 @@ export async function runRegexCheck(
             evidence,
             message: `${evidence}: ${file} (expected to match /${pattern}/)`,
             location: { path: file },
-            ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+            ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
           })
         } else if (!allow && matchArray.length > 0) {
           // Pattern MUST NOT match but does
@@ -71,7 +83,7 @@ export async function runRegexCheck(
               evidence,
               message: `${evidence}: ${file}:${lineNumber} (found "${match[0]}")`,
               location: { path: file, line: lineNumber },
-              ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+              ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
             })
           }
         }

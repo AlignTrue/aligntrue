@@ -4,6 +4,7 @@
 
 import type { AlignRule } from '@aligntrue/schema'
 import type { CheckResult, CheckContext } from '../types.js'
+import { hasCheck } from '../types.js'
 
 /**
  * Run path_convention check
@@ -16,7 +17,18 @@ export async function runPathConventionCheck(
   context: CheckContext
 ): Promise<CheckResult> {
   const { fileProvider } = context
-  const { inputs, evidence } = rule.check
+
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: false,
+      findings: [],
+      error: 'Rule does not have a check property',
+    }
+  }
+
+  const { inputs, evidence = 'Check failed' } = rule.check
 
   if (rule.check.type !== 'path_convention') {
     return {
@@ -52,7 +64,7 @@ export async function runPathConventionCheck(
             evidence,
             message: `${message}: ${file} (expected pattern: ${pattern})`,
             location: { path: file },
-            ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+            ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
           })
         }
       }
