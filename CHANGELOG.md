@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- **Core User Documentation** (Phase 1, Stage 3, Step 30) - Completed 2025-10-27
+  - Created `docs/quickstart.md` - <60 second solo dev onboarding, zero jargon
+  - Created `docs/commands.md` - Consolidated command reference for all 6 CLI commands
+  - Created `docs/troubleshooting.md` - Actionable fixes for installation, init, sync, check, and platform issues
+  - Created `docs/extending-aligntrue.md` - High-level adapter contribution guide with exporter patterns
+  - Created `docs/sync-behavior.md` - Two-way sync contract, conflict resolution, and precedence rules
+  - Solo dev focus: clear examples, progressive disclosure, "simple by default, powerful when needed"
+  - All 5 files ready for standalone use and future docs site integration (Phase 4)
+  - Comprehensive coverage: quickstart, commands, troubleshooting, extending, sync behavior
+  - Real terminal output examples throughout documentation
+  - Links between docs for easy navigation
+  - Step 30 and 30a (adapter contrib + sync behavior docs) complete
+
 ### Changed
 
 - **CLI Help and Error Polish** (Phase 1, Stage 3, Step 29) - Completed 2025-10-27
