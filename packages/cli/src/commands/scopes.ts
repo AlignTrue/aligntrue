@@ -4,6 +4,7 @@
 
 import { loadConfig } from '@aligntrue/core'
 import { existsSync } from 'fs'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 export async function scopes(args: string[]): Promise<void> {
   if (args.length > 0 && args[0] === '--help') {
@@ -76,6 +77,10 @@ export async function scopes(args: string[]): Promise<void> {
     }
 
     console.log(`Total: ${config.scopes.length} scope${config.scopes.length === 1 ? '' : 's'}`)
+    
+    // Record telemetry event
+    recordEvent({ command_name: 'scopes', align_hashes_used: [] })
+    
     process.exit(0)
 
   } catch (err) {

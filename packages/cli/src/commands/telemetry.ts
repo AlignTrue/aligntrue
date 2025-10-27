@@ -5,9 +5,11 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 interface TelemetryConfig {
   enabled: boolean;
+  uuid?: string;
 }
 
 const TELEMETRY_PATH = '.aligntrue/telemetry.json'
@@ -54,6 +56,7 @@ export async function telemetry(args: string[]): Promise<void> {
 async function telemetryOn(): Promise<void> {
   try {
     writeTelemetryConfig({ enabled: true })
+    recordEvent({ command_name: 'telemetry-on', align_hashes_used: [] })
     console.log('✓ Telemetry enabled')
     console.log('\nThank you for helping improve AlignTrue!')
     console.log('We collect only anonymous usage data:')
@@ -71,6 +74,7 @@ async function telemetryOn(): Promise<void> {
 
 async function telemetryOff(): Promise<void> {
   try {
+    recordEvent({ command_name: 'telemetry-off', align_hashes_used: [] })
     writeTelemetryConfig({ enabled: false })
     console.log('✓ Telemetry disabled')
     console.log('\nNo usage data will be collected.')
@@ -86,6 +90,7 @@ async function telemetryOff(): Promise<void> {
 async function telemetryStatus(): Promise<void> {
   try {
     const config = readTelemetryConfig()
+    recordEvent({ command_name: 'telemetry-status', align_hashes_used: [] })
     
     console.log(`Telemetry: ${config.enabled ? 'enabled' : 'disabled'}`)
     

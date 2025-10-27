@@ -9,6 +9,16 @@ import * as clack from '@clack/prompts'
 // Mock dependencies
 vi.mock('fs')
 vi.mock('@clack/prompts')
+vi.mock('@aligntrue/core/telemetry/collector.js', () => ({
+  recordEvent: vi.fn(),
+}))
+vi.mock('@aligntrue/schema', () => ({
+  canonicalizeJson: vi.fn((obj) => {
+    if (obj === undefined) return '{}'
+    return JSON.stringify(obj)
+  }),
+  validateAlign: vi.fn(),
+}))
 vi.mock('@aligntrue/core', () => {
   const mockEngine = {
     registerExporter: vi.fn(),

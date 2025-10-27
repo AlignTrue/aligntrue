@@ -7,6 +7,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
 import { stringify as stringifyYaml } from 'yaml'
 import * as clack from '@clack/prompts'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 export async function team(args: string[]): Promise<void> {
   if (args.length === 0 || args[0] === '--help') {
@@ -98,6 +99,9 @@ async function teamEnable(): Promise<void> {
     
     // Rename atomically
     writeFileSync(configPath, yamlContent, 'utf-8')
+
+    // Record telemetry event
+    recordEvent({ command_name: 'team-enable', align_hashes_used: [] })
 
     clack.outro('✓ Team mode enabled')
     

@@ -11,8 +11,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
 - Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
 - Positioned AlignTrue as complementary to Ruler (AlignTrue for rules, Ruler for MCP servers)
+- Added `docs/PRIVACY.md` - Complete privacy and telemetry documentation
 
 ### Added
+
+- **Telemetry Infrastructure** (Phase 1, Stage 3, Step 26) - Completed 2025-10-27
+  - Event collection with anonymous UUID generation
+  - Records: command_name, export_target, align_hashes_used
+  - Never collects: file paths, repo names, code, PII
+  - Local storage: `.aligntrue/telemetry-events.json` (Phase 1 local-only)
+  - Automatic rotation after 1000 events (keeps most recent)
+  - Privacy validation: rejects events with paths, code snippets, or suspicious content
+  - Integration across all 6 CLI commands (init, sync, team, telemetry, scopes, md)
+  - Telemetry errors do not fail commands (wrapped in try-catch)
+  - 34 comprehensive tests in core package (UUID, events, rotation, privacy)
+  - Phase 2+ TODO: Add opt-in sending flow with explicit consent and clear privacy messaging
+  - Privacy guarantees documented in `docs/PRIVACY.md`
+  - CLI README updated with telemetry section and examples
+  - Files created:
+    - `packages/core/src/telemetry/collector.ts` (234 lines)
+    - `packages/core/tests/telemetry/collector.test.ts` (326 lines, 34 tests)
+    - `docs/PRIVACY.md` (comprehensive privacy documentation)
+  - Updated: All CLI commands now record telemetry events when enabled
+  - Total tests: 116 passing (34 core telemetry + 82 CLI)
+  - Fixed: exactOptionalPropertyTypes TypeScript errors in lockfile and telemetry modules
 
 - **CLI Team/Telemetry/Scopes Commands** (Phase 1, Stage 3, Step 25) - Completed 2025-10-27
   - Three new command groups for team mode, telemetry, and scopes management

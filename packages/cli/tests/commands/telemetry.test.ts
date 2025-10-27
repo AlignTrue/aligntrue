@@ -12,6 +12,12 @@ vi.mock('fs', () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
+  statSync: vi.fn(),
+}))
+
+// Mock telemetry collector
+vi.mock('@aligntrue/core/telemetry/collector.js', () => ({
+  recordEvent: vi.fn(),
 }))
 
 describe('telemetry command', () => {
