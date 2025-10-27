@@ -45,7 +45,7 @@ export function validateLockfile(lockfile: Lockfile, currentPack: AlignPack): Va
           rule_id: rule.id,
           expected_hash: lockfileEntry.content_hash,
           actual_hash: currentHash,
-          source: lockfileEntry.source,
+          ...(lockfileEntry.source && { source: lockfileEntry.source }),
         })
       }
     }

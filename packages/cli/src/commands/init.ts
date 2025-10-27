@@ -10,6 +10,7 @@ import * as yaml from 'yaml'
 import { detectContext, getContextDescription } from '../utils/detect-context.js'
 import { detectAgents, getAgentDisplayName } from '../utils/detect-agents.js'
 import { getStarterTemplate } from '../templates/starter-rules.js'
+import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 /**
  * Init command implementation
@@ -204,6 +205,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`)
   } else {
     clack.outro('\nNext steps:\n  1. Edit rules: .aligntrue/rules.md\n  2. Run sync: aligntrue sync')
   }
+
+  // Record telemetry event
+  recordEvent({ command_name: 'init', align_hashes_used: [] })
 
   // TODO: Add catalog source option when catalog is ready (Phase 2+)
   // Prompt: "Start with: [Template] [From catalog] [Import existing]"

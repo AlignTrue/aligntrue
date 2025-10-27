@@ -10,7 +10,8 @@
     "./sync": "./dist/sync/index.js",
     "./scope": "./dist/scope.js",
     "./bundle": "./dist/bundle.js",
-    "./lockfile": "./dist/lockfile.js"
+    "./lockfile": "./dist/lockfile.js",
+    "./telemetry/collector.js": "./dist/telemetry/collector.js"
   },
   "scripts": {
     "build": "tsc",
