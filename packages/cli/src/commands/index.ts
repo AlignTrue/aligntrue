@@ -14,6 +14,7 @@ export const commands: Record<string, Command> = {};
 export { init } from './init.js'
 export { migrate } from './migrate.js'
 export { md } from './md.js'
+export { sync } from './sync.js'
 
 // Commands will be registered here in future steps
 

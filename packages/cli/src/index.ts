@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, migrate, md } from './commands/index.js';
+import { init, migrate, md, sync } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -39,6 +39,11 @@ async function main() {
   
   if (command === 'md') {
     await md(commandArgs);
+    return;
+  }
+  
+  if (command === 'sync') {
+    await sync(commandArgs);
     return;
   }
   
