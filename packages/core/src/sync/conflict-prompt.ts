@@ -3,7 +3,7 @@
  * Supports both TTY (interactive) and non-TTY (CI) environments
  */
 
-import prompts from 'prompts'
+import * as clack from '@clack/prompts'
 import type { Conflict } from './conflict-detector.js'
 import { ConflictResolutionStrategy } from './conflict-detector.js'
 
@@ -56,20 +56,27 @@ export async function promptForResolution(
   console.log(``)
 
   // Prompt for resolution
-  const response = await prompts({
-    type: 'select',
-    name: 'choice',
+  const choice = await clack.select({
     message: 'How do you want to resolve this conflict?',
-    choices: [
-      { title: 'Keep IR version (discard agent changes)', value: 'keep_ir' },
-      { title: 'Accept agent version (overwrite IR)', value: 'accept_agent' },
-      { title: 'Show detailed diff', value: 'show_diff' },
-      { title: 'Quit without changes', value: 'quit' },
+    options: [
+      { value: 'keep_ir', label: 'Keep IR version (discard agent changes)' },
+      { value: 'accept_agent', label: 'Accept agent version (overwrite IR)' },
+      { value: 'show_diff', label: 'Show detailed diff' },
+      { value: 'quit', label: 'Quit without changes' },
     ],
   })
 
+  // Handle cancellation (Ctrl+C)
+  if (clack.isCancel(choice)) {
+    clack.cancel('Conflict resolution cancelled')
+    return {
+      strategy: ConflictResolutionStrategy.ABORT,
+      applyToAll: false,
+    }
+  }
+
   // Handle show diff option
-  if (response.choice === 'show_diff') {
+  if (choice === 'show_diff') {
     console.log(`\n--- Detailed Diff ---`)
     console.log(conflict.diff)
     console.log(``)
@@ -78,7 +85,7 @@ export async function promptForResolution(
   }
 
   // Handle quit
-  if (response.choice === 'quit' || response.choice === undefined) {
+  if (choice === 'quit') {
     return {
       strategy: ConflictResolutionStrategy.ABORT,
       applyToAll: false,
@@ -91,18 +98,21 @@ export async function promptForResolution(
     accept_agent: ConflictResolutionStrategy.ACCEPT_AGENT,
   }
 
-  const strategy = strategyMap[response.choice] || ConflictResolutionStrategy.KEEP_IR
+  const strategy = strategyMap[choice as string] || ConflictResolutionStrategy.KEEP_IR
 
   // Ask if user wants to apply to all
   let applyToAll = false
   if (options.batchMode) {
-    const batchResponse = await prompts({
-      type: 'confirm',
-      name: 'batch',
+    const batchConfirm = await clack.confirm({
       message: 'Apply this choice to all remaining conflicts for this rule?',
-      initial: false,
+      initialValue: false,
     })
-    applyToAll = batchResponse.batch ?? false
+    
+    if (clack.isCancel(batchConfirm)) {
+      applyToAll = false
+    } else {
+      applyToAll = batchConfirm
+    }
   }
 
   return {
@@ -189,20 +199,24 @@ export async function promptOnChecksumMismatch(
   console.log(`Current checksum:    ${currentChecksum.slice(0, 16)}...`)
   console.log(``)
 
-  const response = await prompts({
-    type: 'select',
-    name: 'choice',
+  const choice = await clack.select({
     message: 'How do you want to proceed?',
-    choices: [
-      { title: 'View diff', value: 'view' },
-      { title: 'Overwrite manual changes', value: 'overwrite' },
-      { title: 'Keep manual changes (skip sync)', value: 'keep' },
-      { title: 'Abort sync', value: 'abort' },
+    options: [
+      { value: 'view', label: 'View diff' },
+      { value: 'overwrite', label: 'Overwrite manual changes' },
+      { value: 'keep', label: 'Keep manual changes (skip sync)' },
+      { value: 'abort', label: 'Abort sync' },
     ],
   })
 
+  // Handle cancellation
+  if (clack.isCancel(choice)) {
+    clack.cancel('Sync cancelled')
+    return 'abort'
+  }
+
   // Handle view diff
-  if (response.choice === 'view') {
+  if (choice === 'view') {
     // In a real implementation, we'd show the actual diff here
     console.log(`\nDiff not yet implemented (requires file content comparison)`)
     console.log(`Last checksum: ${lastChecksum}`)
@@ -212,11 +226,6 @@ export async function promptOnChecksumMismatch(
     return promptOnChecksumMismatch(filePath, lastChecksum, currentChecksum, interactive, force)
   }
 
-  // Handle undefined (user cancelled)
-  if (response.choice === undefined) {
-    return 'abort'
-  }
-
-  return response.choice as 'overwrite' | 'keep' | 'abort'
+  return choice as 'overwrite' | 'keep' | 'abort'
 }
 
