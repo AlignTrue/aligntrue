@@ -7,7 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
+- Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
+- Positioned AlignTrue as complementary to Ruler (AlignTrue for rules, Ruler for MCP servers)
+
 ### Added
+
+- **Multi-Agent Exporter Support** (Phase 1, Week 2, Step 14+) - Completed 2025-10-27
+  - Added comprehensive support for 28 AI coding agents and tools
+  - 40 new exporters implemented (15 unique formats + 25 shared handlers)
+  - **Unique Format Exporters (15 new):**
+    - `claude-md` - CLAUDE.md markdown format
+    - `crush-md` - CRUSH.md markdown format
+    - `warp-md` - WARP.md markdown format
+    - `cline` - .clinerules plain text format
+    - `goose` - .goosehints plain text format
+    - `firebender` - firebender.json configuration
+    - `amazonq` - .amazonq/rules/*.md directory-based
+    - `augmentcode` - .augment/rules/*.md directory-based
+    - `kilocode` - .kilocode/rules/*.md directory-based
+    - `kiro` - .kiro/steering/*.md directory-based
+    - `firebase-studio` - .idx/airules.md format
+    - `junie` - .junie/guidelines.md format
+    - `trae-ai` - .trae/rules/project_rules.md format
+    - `openhands` - .openhands/microagents/repo.md format
+    - `aider-config` - .aider.conf.yml YAML configuration
+  - **MCP Config Exporters (7 new, 1 existing):**
+    - `cursor-mcp` - .cursor/mcp.json
+    - `root-mcp` - .mcp.json (Claude Code, Aider)
+    - `windsurf-mcp` - .windsurf/mcp_config.json
+    - `amazonq-mcp` - .amazonq/mcp.json
+    - `firebase-mcp` - .idx/mcp.json
+    - `kilocode-mcp` - .kilocode/mcp.json
+    - `roocode-mcp` - .roo/mcp.json
+  - **Other Config Exporters (7 new):**
+    - `crush-config` - .crush.json
+    - `opencode-config` - opencode.json
+    - `gemini-config` - .gemini/settings.json
+    - `qwen-config` - .qwen/settings.json
+    - `zed-config` - .zed/settings.json
+    - `codex-config` - .codex/config.toml
+    - `openhands-config` - config.toml
+  - **AGENTS.md-Compatible Agents (11 manifests, shared handler):**
+    - Copilot, Jules, Amp, OpenAI Codex, Windsurf, Aider, Gemini CLI
+    - Qwen Code, Roo Code, Zed, Open Code
+  - All exporters follow ExporterPlugin interface
+  - Hybrid manifest system: one manifest per agent for discoverability
+  - Dual-output support for agents requiring both rules + config files
+  - Comprehensive fidelity tracking and vendor metadata extraction
+  - Documentation: `packages/exporters/docs/DUAL_OUTPUT_CONFIGURATION.md`
+  - All 40 exporters compile successfully with TypeScript strict mode
+  - Full manifest validation against JSON Schema
+  - CLI: `aligntrue adapters list` shows all 28 agents
 
 - **Two-Way Sync with Conflict Resolution** (Phase 1, Week 2, Step 14) - Completed 2025-10-27
   - Full two-way sync engine with interactive conflict resolution

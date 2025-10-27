@@ -1,0 +1,13 @@
+{
+  "name": "firebase-studio",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Firebase Studio .idx/airules.md format",
+  "outputs": [".idx/airules.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in .idx/airules.md format",
+    "Autofix hints not represented in .idx/airules.md format"
+  ]
+}
+

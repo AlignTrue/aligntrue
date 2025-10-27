@@ -1,0 +1,13 @@
+{
+  "name": "goose",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Goose .goosehints format",
+  "outputs": [".goosehints"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in .goosehints format",
+    "Autofix hints not represented in .goosehints format"
+  ]
+}
+

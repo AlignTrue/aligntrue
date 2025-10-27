@@ -1,0 +1,14 @@
+{
+  "name": "kilocode",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Kilo Code .kilocode/rules/ directory format",
+  "outputs": [".kilocode/rules/*.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Scope-based file organization (one .md per scope)",
+    "Machine-checkable rules (check) not represented",
+    "Autofix hints not represented"
+  ]
+}
+

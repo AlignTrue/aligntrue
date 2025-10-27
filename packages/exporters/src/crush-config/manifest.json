@@ -1,0 +1,13 @@
+{
+  "name": "crush-config",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Crush .crush.json configuration format",
+  "outputs": [".crush.json"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in .crush.json format",
+    "Complements CRUSH.md exporter"
+  ]
+}
+

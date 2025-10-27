@@ -1,0 +1,13 @@
+{
+  "name": "openhands-config",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Open Hands config.toml configuration format",
+  "outputs": ["config.toml"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "TOML format (basic implementation, may require refinement)",
+    "Complements .openhands/microagents/repo.md exporter"
+  ]
+}
+
