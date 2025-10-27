@@ -1,29 +1,31 @@
 # Dependency chain pack
-# Tests: deps field with pack dependencies
+# Tests: rules that depend on each other
 
 id: "packs/testkit/dependency-chain"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Tests dependency chain handling"
-tags: ["testkit", "dependencies"]
-# This pack depends on other packs
-deps:
-  - "packs/base/base-global@^1.0.0"
-  - "packs/testkit/minimal-valid@1.0.0"
-scope:
-  applies_to: ["backend", "frontend"]
+summary: "Tests rule dependencies"
 rules:
-  - id: "inherited-rule"
-    severity: "SHOULD"
+  - id: "deps-nodejs"
+    severity: "error"
+    applies_to: ["**/*.ts"]
     check:
-      type: "regex"
+      type: "file_presence"
       inputs:
-        include: ["**/*.ts"]
-        pattern: "deprecated"
-        allow: false
-      evidence: "Deprecated code found"
+        paths: ["package.json"]
+      evidence: "Node.js project detected"
+  
+  - id: "deps-pnpm"
+    severity: "warn"
+    applies_to: ["**/package.json"]
+    check:
+      type: "path_convention"
+      inputs:
+        include: ["**/"]
+        pattern: "pnpm-lock"
+      evidence: "pnpm lock file recommended"
+
 integrity:
   algo: "jcs-sha256"
-  value: "ac468cc9c7cbeb6daf400aaba3aa6bf24a6f2c97eab2be1e327a7cf5e6488028"
+  value: "415a2501fa4e20c5b33b515b72a33213c7c670843f7840c8c9fc920d9292121c"
 
