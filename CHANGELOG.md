@@ -24,6 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CLI TypeScript Errors** (Phase 1, Stage 3) - Completed 2025-10-27
+  - Fixed type errors in `packages/cli/src/commands/check.ts`
+    - Config argument parsing with exactOptionalPropertyTypes
+    - Schema validation return type handling
+    - Lockfile validation type cast
+    - Mismatch property names (rule_id, expected_hash, actual_hash)
+  - Fixed type errors in `packages/cli/src/commands/sync.ts`
+    - Simplified telemetry collection to avoid unavailable variables
+    - Removed dependency on alignPack which doesn't exist in sync result
+  - All 11 packages now build successfully with zero TypeScript errors
+  - CLI commands ready for Stage 3 polish and integration testing
+
 - **Circular Dependency Resolution** (Phase 1, Architecture) - Completed 2025-10-27
   - Created `@aligntrue/plugin-contracts` package for all plugin interface definitions
   - Created `@aligntrue/file-utils` package for shared infrastructure utilities

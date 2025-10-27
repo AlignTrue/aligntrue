@@ -38,7 +38,10 @@ function parseArgs(args: string[]): CheckArgs {
     } else if (arg === '--ci') {
       parsed.ci = true
     } else if (arg === '--config') {
-      parsed.config = args[++i]
+      const nextArg = args[++i]
+      if (nextArg) {
+        parsed.config = nextArg
+      }
     }
   }
 
@@ -135,12 +138,12 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Validate against schema
-    const schemaValidation = validateAlign(alignData)
-    if (!schemaValidation.valid) {
+    const schemaResult = validateAlign(alignData as string)
+    if (!schemaResult.schema.valid) {
       console.error('✗ Schema validation failed\n')
       console.error(`  Errors in ${rulesPath}:`)
       
-      for (const error of schemaValidation.errors || []) {
+      for (const error of schemaResult.schema.errors || []) {
         console.error(`    - ${error.path}: ${error.message}`)
       }
       
@@ -167,7 +170,12 @@ export async function check(args: string[]): Promise<void> {
       // Load and validate lockfile
       try {
         const lockfile = readLockfile(lockfilePath)
-        const validation: LockfileValidationResult = validateLockfile(lockfile, alignData)
+        if (!lockfile) {
+          console.error('✗ Lockfile validation failed\n')
+          console.error('  Failed to read lockfile\n')
+          process.exit(2)
+        }
+        const validation = validateLockfile(lockfile, alignData as any)
         
         if (!validation.valid) {
           lockfileValid = false
@@ -177,9 +185,9 @@ export async function check(args: string[]): Promise<void> {
           if (validation.mismatches && validation.mismatches.length > 0) {
             console.error('  Hash mismatches:')
             for (const mismatch of validation.mismatches) {
-              console.error(`    - ${mismatch.ruleId}`)
-              console.error(`      Expected: ${mismatch.storedHash}`)
-              console.error(`      Actual:   ${mismatch.computedHash}`)
+              console.error(`    - ${mismatch.rule_id}`)
+              console.error(`      Expected: ${mismatch.expected_hash}`)
+              console.error(`      Actual:   ${mismatch.actual_hash}`)
             }
           }
           
