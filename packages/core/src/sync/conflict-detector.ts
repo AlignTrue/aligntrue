@@ -52,7 +52,12 @@ export interface ConflictDetectionResult {
 function isVolatileField(field: string, volatileFields: string[] = []): boolean {
   return volatileFields.some(pattern => {
     // Support wildcards like "cursor.session_id" or "*.volatile_field"
-    const regex = new RegExp(`^${pattern.replace('*', '.*')}$`)
+    // Escape regex special characters EXCEPT '*' which we want to replace with '.*'
+    const escapedPattern = pattern
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')  // Escape regex metacharacters
+      .replace(/\*/g, '.*')                     // Then replace * with .*
+    
+    const regex = new RegExp(`^${escapedPattern}$`)
     return regex.test(field)
   })
 }
@@ -349,14 +354,23 @@ export class ConflictDetector {
 
   /**
    * Set a nested field value (e.g., vendor.cursor.ai_hint)
+   * Protected against prototype pollution attacks
    */
   private setNestedField(obj: Record<string, unknown>, path: string, value: unknown): void {
+    // Reject dangerous prototype keys to prevent prototype pollution
+    const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+    
     const parts = path.split('.')
     let current: Record<string, unknown> = obj
 
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i]
       if (!part) continue // Skip empty parts
+      
+      // Security: Prevent prototype pollution
+      if (DANGEROUS_KEYS.has(part)) {
+        throw new Error(`Security: Invalid path component '${part}' - cannot modify object prototype`)
+      }
       
       if (!(part in current)) {
         current[part] = {}
@@ -366,6 +380,10 @@ export class ConflictDetector {
 
     const lastPart = parts[parts.length - 1]
     if (lastPart) {
+      // Security: Prevent prototype pollution
+      if (DANGEROUS_KEYS.has(lastPart)) {
+        throw new Error(`Security: Invalid path component '${lastPart}' - cannot modify object prototype`)
+      }
       current[lastPart] = value
     }
   }

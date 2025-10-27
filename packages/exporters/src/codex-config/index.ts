@@ -49,6 +49,19 @@ export class CodexConfigExporter implements ExporterPlugin {
     return { success: true, filesWritten: dryRun ? [] : [outputPath], contentHash }
   }
 
+  /**
+   * Escape string for TOML format
+   * Handles all special characters per TOML spec
+   */
+  private escapeTomlString(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')  // Escape backslash first
+      .replace(/"/g, '\\"')    // Escape quotes
+      .replace(/\n/g, '\\n')   // Escape newlines
+      .replace(/\r/g, '\\r')   // Escape carriage returns
+      .replace(/\t/g, '\\t')   // Escape tabs
+  }
+
   private generateTomlContent(): string {
     const lines: string[] = []
     
@@ -62,12 +75,12 @@ export class CodexConfigExporter implements ExporterPlugin {
     
     this.state.allRules.forEach(({ rule, scopePath }) => {
       lines.push(`[[rules]]`)
-      lines.push(`id = "${rule.id}"`)
-      lines.push(`severity = "${rule.severity}"`)
-      lines.push(`guidance = "${(rule.guidance || '').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`)
-      lines.push(`scope = "${scopePath}"`)
+      lines.push(`id = "${this.escapeTomlString(rule.id)}"`)
+      lines.push(`severity = "${this.escapeTomlString(rule.severity)}"`)
+      lines.push(`guidance = "${this.escapeTomlString(rule.guidance || '')}"`)
+      lines.push(`scope = "${this.escapeTomlString(scopePath)}"`)
       if (rule.applies_to && rule.applies_to.length > 0) {
-        lines.push(`applies_to = [${rule.applies_to.map(p => `"${p}"`).join(', ')}]`)
+        lines.push(`applies_to = [${rule.applies_to.map(p => `"${this.escapeTomlString(p)}"`).join(', ')}]`)
       }
       lines.push('')
     })
