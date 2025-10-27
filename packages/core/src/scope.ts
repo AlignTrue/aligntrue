@@ -5,6 +5,7 @@
 import { posix } from 'path'
 import micromatch from 'micromatch'
 import type { AlignPack, AlignRule } from '@aligntrue/schema'
+import type { ResolvedScope } from '@aligntrue/plugin-contracts'
 
 /**
  * Scope definition with path-based includes/excludes
@@ -16,13 +17,8 @@ export interface Scope {
   rulesets?: string[]   // Rule IDs to apply (optional, for filtering)
 }
 
-/**
- * Resolved scope with normalized paths
- */
-export interface ResolvedScope extends Scope {
-  normalizedPath: string  // Forward-slash normalized path
-  isDefault: boolean      // True if this is a default scope (path: ".")
-}
+// Re-export ResolvedScope from plugin-contracts for convenience
+export type { ResolvedScope }
 
 /**
  * Merge order for rule precedence

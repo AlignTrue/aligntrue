@@ -9,7 +9,7 @@ import type { ResolvedScope, Scope, MergeOrder } from '../scope.js'
 import { loadConfig } from '../config/index.js'
 import { resolveScopes, applyScopeMerge, groupRulesByLevel } from '../scope.js'
 import { loadIR } from './ir-loader.js'
-import { AtomicFileWriter } from './file-operations.js'
+import { AtomicFileWriter } from '@aligntrue/file-utils'
 import { ConflictDetector, type Conflict } from './conflict-detector.js'
 import { posix, resolve as resolvePath } from 'path'
 import {
@@ -21,13 +21,13 @@ import {
   type Lockfile,
 } from '../lockfile/index.js'
 
-// Import types from exporters package
+// Import types from plugin-contracts package
 import type {
   ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult
-} from '@aligntrue/exporters'
+} from '@aligntrue/plugin-contracts'
 
 // Re-export for convenience
 export type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult }

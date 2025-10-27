@@ -8,7 +8,7 @@ import { mkdirSync } from 'fs'
 import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/core'
+import { AtomicFileWriter } from '@aligntrue/file-utils'
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>

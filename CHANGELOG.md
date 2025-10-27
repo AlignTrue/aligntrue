@@ -24,6 +24,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Circular Dependency Resolution** (Phase 1, Architecture) - Completed 2025-10-27
+  - Created `@aligntrue/plugin-contracts` package for all plugin interface definitions
+  - Created `@aligntrue/file-utils` package for shared infrastructure utilities
+  - Broke circular dependency between core and exporters packages that was blocking CI builds
+  - Established clean architectural layers: schema → plugin-contracts → file-utils → core/exporters
+  - Updated 32 exporter implementations with new import paths
+  - All core and exporters packages build successfully after refactor
+  - Fixes CI build failures on Linux and Windows
+  - Unblocks 5 dependabot PRs
+  - Scalable foundation for future plugin types (importers, MCP, source providers)
+  - Files created:
+    - `packages/plugin-contracts/` - ExporterPlugin, ScopedExportRequest, AdapterManifest types
+    - `packages/file-utils/` - AtomicFileWriter class and file operation utilities
+  - Files modified:
+    - `packages/core/package.json` - Replaced @aligntrue/exporters with plugin-contracts and file-utils
+    - `packages/core/src/sync/engine.ts` - Import plugin types from plugin-contracts
+    - `packages/core/src/scope.ts` - Import ResolvedScope from plugin-contracts
+    - `packages/exporters/package.json` - Replaced @aligntrue/core with file-utils and plugin-contracts
+    - `packages/exporters/src/types.ts` - Now re-exports from plugin-contracts
+    - `packages/exporters/src/registry.ts` - Import types from plugin-contracts
+    - `packages/exporters/src/*/index.ts` - All 32 exporters updated to import from new packages
+
 - **Checks Package IR v1 Compatibility** (Phase 1, Tech Debt) - Completed 2025-10-27
   - Updated severity mapping from MUST/SHOULD/MAY to error/warn/info (IR schema v1)
   - Added type guards for optional `check` property on AlignRule
