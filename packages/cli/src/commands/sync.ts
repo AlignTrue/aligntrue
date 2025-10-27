@@ -262,16 +262,13 @@ Run: aligntrue init`)
 
       // Record telemetry event on success
       try {
-        const exportTargets = adapters.map(a => a.name).join(',')
-        const ruleHashes = result.ir?.rules.map(rule => {
-          const canonical = canonicalizeJson(rule)
-          return createHash('sha256').update(canonical).digest('hex').substring(0, 8)
-        }) || []
+        const loadedAdapters = registry.list().map(name => registry.get(name)!).filter(Boolean)
+        const exportTargets = loadedAdapters.map(a => a.name).join(',')
         
         recordEvent({
           command_name: 'sync',
           export_target: exportTargets,
-          align_hashes_used: ruleHashes,
+          align_hashes_used: [], // Rule hashes would require loading the IR file again
         })
       } catch (telemetryError) {
         // Telemetry errors should not fail the sync command
