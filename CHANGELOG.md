@@ -14,6 +14,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Lockfile with Hash Modes** (Phase 1, Stage 3, Step 21) - Completed 2025-10-27
+  - Three hash modes: off (solo default), soft (team default), strict
+  - Per-rule SHA-256 hashes for granular drift detection
+  - Bundle hash for quick validation of entire pack
+  - Excludes `vendor.*.volatile` fields from hashing
+  - Atomic writes (temp+rename) prevent partial lockfile state
+  - Config: `lockfile.mode` setting in `.aligntrue/config.yaml`
+  - Lockfile location: `.aligntrue.lock.json` at workspace root
+  - Auto-generated during `aligntrue sync` when `mode: team` and `modules.lockfile: true`
+  - Validation: Validates before sync, regenerates after successful sync
+  - Mode behaviors:
+    - **off**: No validation, always succeed
+    - **soft**: Warn to stderr on mismatch, exit 0 (allows iteration)
+    - **strict**: Error to stderr on mismatch, abort sync, exit 1 (prevents divergence)
+  - 65 comprehensive tests (100% pass rate)
+  - Integration with sync engine: validates on team mode sync, generates after successful sync
+  - Lockfile format: JSON with version, generated_at, mode, rules array, bundle_hash
+  - Per-rule entries include: rule_id, content_hash, source (optional provenance)
+  - CLI: `aligntrue lock` command to regenerate lockfile (future step)
+  - Documentation: comprehensive README section with examples and mode table
+  - Deterministic output: sorted JSON keys, consistent formatting
+
 - **Security Posture Validation** (Phase 1, Week 3, Step 20) - Completed 2025-10-27
   - Comprehensive security testing: 35 new tests covering path traversal, atomic writes, checksum protection
   - Path validation prevents directory traversal (.. and absolute paths rejected)

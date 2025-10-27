@@ -10,6 +10,7 @@ This package provides the core functionality for AlignTrue's two-way sync engine
 - **Sync engine** - Orchestrate IR→agent (default) and agent→IR (with --accept-agent) sync
 - **Conflict detection** - Identify field-level differences between IR and agent state
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
+- **Lockfile with hash modes** - Drift detection with off/soft/strict enforcement (team mode)
 
 ## Installation
 
@@ -89,6 +90,75 @@ const config = {
 
 const resolved = resolveScopes('/workspace', config)
 ```
+
+### Lockfile Management
+
+Lockfiles provide hash-based drift detection for team mode:
+
+```typescript
+import { 
+  generateLockfile, 
+  validateLockfile, 
+  enforceLockfile,
+  readLockfile,
+  writeLockfile 
+} from '@aligntrue/core'
+
+// Generate lockfile from IR
+const lockfile = generateLockfile(alignPack, 'team')
+writeLockfile('.aligntrue.lock.json', lockfile)
+
+// Validate on subsequent syncs
+const existingLockfile = readLockfile('.aligntrue.lock.json')
+if (existingLockfile) {
+  const validation = validateLockfile(existingLockfile, currentPack)
+  const enforcement = enforceLockfile('soft', validation)
+  
+  if (!enforcement.success) {
+    console.error('Lockfile validation failed')
+    process.exit(enforcement.exitCode)
+  }
+}
+```
+
+**Lockfile modes:**
+- `off` - No validation (solo mode default)
+- `soft` - Warn on mismatch, continue sync, exit 0 (team mode default)
+- `strict` - Error on mismatch, abort sync, exit 1
+
+**Configuration:**
+```yaml
+version: "1"
+mode: team
+modules:
+  lockfile: true
+lockfile:
+  mode: soft  # or 'strict' or 'off'
+```
+
+**Lockfile format:**
+```json
+{
+  "version": "1",
+  "generated_at": "2025-10-27T10:00:00.000Z",
+  "mode": "team",
+  "bundle_hash": "abc123...",
+  "rules": [
+    {
+      "rule_id": "test.rule.one",
+      "content_hash": "def456...",
+      "source": "https://github.com/org/aligns"
+    }
+  ]
+}
+```
+
+**Key features:**
+- Per-rule SHA-256 hashes for granular drift detection
+- Bundle hash for quick validation of entire pack
+- Excludes `vendor.*.volatile` fields from hashing
+- Atomic writes (temp+rename) prevent partial state
+- Sorted JSON keys for deterministic output
 
 ### Conflict Detection
 
