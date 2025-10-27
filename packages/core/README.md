@@ -267,21 +267,15 @@ Detects field-level conflicts between IR and agent state.
 
 ### File Operations
 
-**AtomicFileWriter**
+**NOTE:** File operation utilities have been moved to `@aligntrue/file-utils` package to break circular dependencies.
 
-Atomic file writes with temp + rename pattern.
-
-**Methods:**
-- `write(path, content)` - Write atomically
-- `rollback()` - Restore from backups
-- `trackFile(path)` - Track file checksum
-- `getChecksum(path)` - Get checksum record
-- `clear()` - Clear tracking
-
-**Helper functions:**
+See the `@aligntrue/file-utils` package for documentation on:
+- `AtomicFileWriter` - Atomic file writes with temp + rename pattern
 - `computeFileChecksum(path)` - SHA-256 of file
 - `computeContentChecksum(content)` - SHA-256 of content
 - `ensureDirectoryExists(path)` - Create directory if needed
+
+The core package imports these from `@aligntrue/file-utils`.
 
 ### IR Loader
 
@@ -320,14 +314,9 @@ export type { Scope, ResolvedScope, MergeOrder, ScopeConfig, ScopedRules }
 export { ConflictDetector }
 export type { Conflict, ConflictDetectionResult }
 
-// File operations
-export { 
-  AtomicFileWriter, 
-  computeFileChecksum, 
-  computeContentChecksum, 
-  ensureDirectoryExists 
-}
-export type { ChecksumRecord }
+// File operations (imported from @aligntrue/file-utils)
+// Note: These are re-exported for convenience but live in @aligntrue/file-utils
+// import { AtomicFileWriter } from '@aligntrue/file-utils'
 
 // IR loading
 export { loadIR }
@@ -337,7 +326,7 @@ export { createBundle }
 export { readLockfile, writeLockfile, verifyLockfile }
 export type { Lockfile, LockfileMode }
 
-// Exporter types
+// Exporter types (imported from @aligntrue/plugin-contracts)
 export type { 
   ExporterPlugin, 
   ScopedExportRequest, 
@@ -356,9 +345,14 @@ export type {
 - Uses `validateAlignSchema` for IR validation
 - Uses types: `AlignPack`, `AlignRule`
 
-### With exporters
-- Provides `ExporterPlugin` interface
+### With plugin-contracts
+- Imports `ExporterPlugin` interface from `@aligntrue/plugin-contracts`
+- Re-exports plugin types for convenience
 - Calls exporters with `ScopedExportRequest`
+
+### With file-utils
+- Imports `AtomicFileWriter` from `@aligntrue/file-utils`
+- Uses atomic writes for safe file operations
 
 ## Testing
 

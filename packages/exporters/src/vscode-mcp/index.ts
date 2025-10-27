@@ -8,10 +8,10 @@
 
 import { join, dirname } from 'path'
 import { mkdirSync } from 'fs'
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '@aligntrue/plugin-contracts'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/core'
+import { AtomicFileWriter } from '@aligntrue/file-utils'
 
 /**
  * State for collecting all scopes before generating single merged file

@@ -7,7 +7,7 @@ import { join } from 'path'
 import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/core'
+import { AtomicFileWriter } from '@aligntrue/file-utils'
 
 export class KiloCodeExporter implements ExporterPlugin {
   name = 'kilocode'

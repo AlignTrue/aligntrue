@@ -2,6 +2,10 @@
 
 Agent-specific exporters for AlignTrue with hybrid manifest + handler registry.
 
+## Architecture Note
+
+This package implements the `ExporterPlugin` interface defined in `@aligntrue/plugin-contracts` and uses `AtomicFileWriter` from `@aligntrue/file-utils`. Plugin contracts are defined separately to avoid circular dependencies between core and exporters packages.
+
 ## Features
 
 - **Hybrid Registry** - Declarative `manifest.json` + optional TypeScript handlers
@@ -211,7 +215,9 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult
-} from '@aligntrue/exporters'
+} from '@aligntrue/plugin-contracts'
+import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 
 export class MyAdapterExporter implements ExporterPlugin {
   name = 'my-adapter'
