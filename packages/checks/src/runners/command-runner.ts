@@ -5,6 +5,7 @@
 import { spawn } from 'child_process'
 import type { AlignRule } from '@aligntrue/schema'
 import type { CheckResult, CheckContext } from '../types.js'
+import { hasCheck } from '../types.js'
 
 /**
  * Run command_runner check
@@ -18,7 +19,18 @@ export async function runCommandRunnerCheck(
   context: CheckContext
 ): Promise<CheckResult> {
   const { executionConfig, workingDir } = context
-  const { inputs, evidence } = rule.check
+
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: false,
+      findings: [],
+      error: 'Rule does not have a check property',
+    }
+  }
+
+  const { inputs, evidence = 'Check failed' } = rule.check
 
   if (rule.check.type !== 'command_runner') {
     return {
@@ -49,7 +61,7 @@ export async function runCommandRunnerCheck(
           evidence,
           message: `Command execution not allowed: "${command}" (use --allow-exec to enable)`,
           location: { path: '.' },
-          ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+          ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
         },
       ],
     }
@@ -79,7 +91,7 @@ export async function runCommandRunnerCheck(
           evidence,
           message: `${evidence}: command "${command}" exited with code ${exitCode} (expected ${expectExitCode})`,
           location: { path: '.' },
-          ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+          ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
         },
       ],
     }

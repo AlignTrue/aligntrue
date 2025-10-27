@@ -11,7 +11,7 @@ describe('emitSarif', () => {
   const createCheckResult = (overrides: Partial<CheckResult> = {}): CheckResult => ({
     rule: {
       id: 'test-rule',
-      severity: 'MUST',
+      severity: 'error',
       check: {
         type: 'file_presence',
         inputs: {},
@@ -34,11 +34,11 @@ describe('emitSarif', () => {
     expect(sarif.runs[0].tool.driver.name).toBe('AlignTrue Checks')
   })
 
-  it('maps severity MUST to error level', () => {
+  it('maps severity error to error level', () => {
     const result = createCheckResult({
       rule: {
         id: 'test-rule',
-        severity: 'MUST',
+        severity: 'error',
         check: {
           type: 'file_presence',
           inputs: {},
@@ -49,7 +49,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Missing required file',
           message: 'File not found: test.txt',
           location: { path: 'test.txt' },
@@ -61,11 +61,11 @@ describe('emitSarif', () => {
     expect(sarif.runs[0].results[0].level).toBe('error')
   })
 
-  it('maps severity SHOULD to warning level', () => {
+  it('maps severity warn to warning level', () => {
     const result = createCheckResult({
       rule: {
         id: 'test-rule',
-        severity: 'SHOULD',
+        severity: 'warn',
         check: {
           type: 'regex',
           inputs: {},
@@ -76,7 +76,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'SHOULD',
+          severity: 'warn',
           evidence: 'TODO found',
           message: 'TODO: fix this',
           location: { path: 'src/foo.ts', line: 10 },
@@ -88,11 +88,11 @@ describe('emitSarif', () => {
     expect(sarif.runs[0].results[0].level).toBe('warning')
   })
 
-  it('maps severity MAY to note level', () => {
+  it('maps severity info to note level', () => {
     const result = createCheckResult({
       rule: {
         id: 'test-rule',
-        severity: 'MAY',
+        severity: 'info',
         check: {
           type: 'file_presence',
           inputs: {},
@@ -103,7 +103,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MAY',
+          severity: 'info',
           evidence: 'Optional file missing',
           message: 'Consider adding README',
           location: { path: '.' },
@@ -120,7 +120,7 @@ describe('emitSarif', () => {
       packId: 'packs/base/testing',
       rule: {
         id: 'require-tests',
-        severity: 'MUST',
+        severity: 'error',
         check: {
           type: 'file_presence',
           inputs: {},
@@ -131,7 +131,7 @@ describe('emitSarif', () => {
         {
           packId: 'packs/base/testing',
           ruleId: 'require-tests',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Missing tests',
           message: 'No test files found',
           location: { path: '.' },
@@ -149,7 +149,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Issue found',
           message: 'Problem at line 42',
           location: { path: 'src/foo.ts', line: 42, column: 10 },
@@ -171,7 +171,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Issue found',
           message: 'File-level issue',
           location: { path: 'package.json' },
@@ -189,7 +189,7 @@ describe('emitSarif', () => {
     const result = createCheckResult({
       rule: {
         id: 'test-rule',
-        severity: 'MUST',
+        severity: 'error',
         check: {
           type: 'file_presence',
           inputs: {},
@@ -200,7 +200,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Test evidence message',
           message: 'Finding message',
           location: { path: '.' },
@@ -222,7 +222,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Evidence',
           message: 'Finding 1',
           location: { path: 'file1.ts' },
@@ -235,7 +235,7 @@ describe('emitSarif', () => {
         {
           packId: 'test/pack',
           ruleId: 'test-rule',
-          severity: 'MUST',
+          severity: 'error',
           evidence: 'Evidence',
           message: 'Finding 2',
           location: { path: 'file2.ts' },

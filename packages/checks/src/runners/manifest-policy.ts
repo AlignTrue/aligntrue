@@ -4,6 +4,7 @@
 
 import type { AlignRule } from '@aligntrue/schema'
 import type { CheckResult, CheckContext } from '../types.js'
+import { hasCheck } from '../types.js'
 
 /**
  * Run manifest_policy check
@@ -17,7 +18,18 @@ export async function runManifestPolicyCheck(
   context: CheckContext
 ): Promise<CheckResult> {
   const { fileProvider } = context
-  const { inputs, evidence } = rule.check
+
+  if (!hasCheck(rule)) {
+    return {
+      rule,
+      packId,
+      pass: false,
+      findings: [],
+      error: 'Rule does not have a check property',
+    }
+  }
+
+  const { inputs, evidence = 'Check failed' } = rule.check
 
   if (rule.check.type !== 'manifest_policy') {
     return {
@@ -45,14 +57,14 @@ export async function runManifestPolicyCheck(
         pass: false,
         findings: [
           {
-            packId,
-            ruleId: rule.id,
-            severity: rule.severity,
-            evidence,
-            message: `Manifest file not found: ${manifestPath}`,
-            location: { path: manifestPath },
-            ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
-          },
+          packId,
+          ruleId: rule.id,
+          severity: rule.severity,
+          evidence,
+          message: `Manifest file not found: ${manifestPath}`,
+          location: { path: manifestPath },
+          ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
+        },
         ],
       }
     }
@@ -64,14 +76,14 @@ export async function runManifestPolicyCheck(
         pass: false,
         findings: [
           {
-            packId,
-            ruleId: rule.id,
-            severity: rule.severity,
-            evidence,
-            message: `Lockfile not found: ${lockfilePath} (required when require_pinned is true)`,
-            location: { path: lockfilePath },
-            ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
-          },
+          packId,
+          ruleId: rule.id,
+          severity: rule.severity,
+          evidence,
+          message: `Lockfile not found: ${lockfilePath} (required when require_pinned is true)`,
+          location: { path: lockfilePath },
+          ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
+        },
         ],
       }
     }
@@ -99,7 +111,7 @@ export async function runManifestPolicyCheck(
               evidence,
               message: `Unpinned dependency: ${name}@${version} in ${depType}`,
               location: { path: manifestPath },
-              ...(rule.autofix?.hint ? { autofixHint: rule.autofix.hint } : {}),
+              ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
             })
           }
         }

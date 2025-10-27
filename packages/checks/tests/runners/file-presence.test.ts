@@ -11,7 +11,7 @@ import type { CheckContext } from '../../src/types.js'
 describe('runFilePresenceCheck', () => {
   const createRule = (overrides = {}): AlignRule => ({
     id: 'test-file-presence',
-    severity: 'MUST',
+    severity: 'error',
     check: {
       type: 'file_presence',
       inputs: {

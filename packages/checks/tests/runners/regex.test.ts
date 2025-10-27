@@ -11,7 +11,7 @@ import type { CheckContext } from '../../src/types.js'
 describe('runRegexCheck', () => {
   const createRule = (overrides = {}): AlignRule => ({
     id: 'test-regex',
-    severity: 'SHOULD',
+    severity: 'warn',
     check: {
       type: 'regex',
       inputs: {
