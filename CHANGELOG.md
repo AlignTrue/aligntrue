@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Catalog Source Provider** (Phase 1, Stage 3, Step 27) - Completed 2025-10-27
+  - Fetch Align packs from AlignTrue/aligns GitHub repository
+  - Two-step fetch: catalog/index.json validation, then pack YAML
+  - Local cache in `.aligntrue/.cache/catalog/` with indefinite TTL
+  - Offline fallback: uses cache when network unavailable
+  - Force refresh support with `forceRefresh: true` option
+  - Security: pack ID validation prevents path traversal
+  - Atomic cache writes prevent partial state
+  - 33 comprehensive tests with mocked network calls (100% pass rate)
+  - Config: `type: catalog, id: "packs/base/base-global"`
+  - GitHub raw URLs: `https://raw.githubusercontent.com/AlignTrue/aligns/main/`
+  - Cache behavior:
+    - First fetch: downloads from GitHub, caches locally
+    - Subsequent fetches: returns from cache (no network call)
+    - Force refresh: bypasses cache, downloads fresh
+    - Network error: falls back to cache with warning
+  - Pack ID format: `packs/<category>/<pack-name>`
+  - Examples: `packs/base/base-global`, `packs/stacks/nextjs-app-router`
+  - Files created:
+    - `packages/sources/src/providers/catalog.ts` (466 lines)
+    - `packages/sources/tests/catalog-provider.test.ts` (835 lines, 33 tests)
+  - Updated: `packages/sources/src/providers/index.ts` with factory
+  - Updated: `packages/sources/README.md` with comprehensive documentation
+  - Updated: `packages/core/README.md` with catalog source examples
+  - Total sources package tests: ~34 passing (1 existing + 33 new catalog tests)
+
 - **Telemetry Infrastructure** (Phase 1, Stage 3, Step 26) - Completed 2025-10-27
   - Event collection with anonymous UUID generation
   - Records: command_name, export_target, align_hashes_used
