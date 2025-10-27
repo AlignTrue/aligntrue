@@ -52,19 +52,19 @@ function parseArgs(args: string[]): CheckArgs {
  * Show help text for check command
  */
 function showHelp(): void {
-  console.log('aligntrue check - Validate rules and configuration\n')
   console.log('Usage: aligntrue check [options]\n')
+  console.log('Validate rules and configuration (non-interactive)\n')
   console.log('Options:')
-  console.log('  --ci           CI mode: non-interactive validation with clear exit codes')
-  console.log('  --config PATH  Path to config file (default: .aligntrue/config.yaml)')
-  console.log('  --help, -h     Show this help message\n')
-  console.log('Exit codes:')
-  console.log('  0  Validation passed')
-  console.log('  1  Validation failed (schema or lockfile errors)')
-  console.log('  2  System error (missing files, config issues)\n')
+  console.log('  --ci                   CI mode (strict validation, non-zero exit on errors)')
+  console.log('  --config <path>        Custom config file path (default: .aligntrue/config.yaml)')
+  console.log('  --help, -h             Show this help message\n')
   console.log('Examples:')
-  console.log('  aligntrue check --ci              # Validate in CI mode')
-  console.log('  aligntrue check --config custom   # Use custom config path')
+  console.log('  aligntrue check --ci')
+  console.log('  aligntrue check --ci --config .aligntrue/config.yaml\n')
+  console.log('Exit Codes:')
+  console.log('  0  All validations passed')
+  console.log('  1  Validation failed (schema or lockfile errors)')
+  console.log('  2  System error (missing files, invalid config)')
 }
 
 /**

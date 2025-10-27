@@ -59,27 +59,27 @@ function parseArgs(args: string[]): SyncArgs {
  * Show help text for sync command
  */
 function showHelp(): void {
-  console.log(`
-AlignTrue Sync - Sync rules to agents
+  console.log(`Usage: aligntrue sync [options]
 
-Usage: aligntrue sync [options]
+Sync rules from IR to configured agents (default direction)
 
-Options:
+Basic Options:
   --dry-run              Preview changes without writing files
-  --accept-agent <name>  Sync from agent to IR (Note: uses mock data, real parsers in Step 17)
-  --force                Non-interactive mode for CI
-  --config <path>        Custom config path (default: .aligntrue/config.yaml)
+  --config <path>        Custom config file path (default: .aligntrue/config.yaml)
+
+Advanced Options:
+  --accept-agent <name>  Pull changes from agent back to IR (requires Step 17)
+  --force                Non-interactive mode (skip prompts)
   --help, -h             Show this help message
 
 Examples:
-  aligntrue sync                          # Default IR→agent sync
-  aligntrue sync --dry-run                # Preview changes
-  aligntrue sync --accept-agent cursor    # Import from Cursor (mock data)
-  aligntrue sync --force                  # Non-interactive for CI
+  aligntrue sync
+  aligntrue sync --dry-run
+  aligntrue sync --config custom/config.yaml
 
 Description:
-  Loads your rules from .aligntrue/rules.md (or config source), resolves scopes,
-  and syncs to configured agent exporters (Cursor, AGENTS.md, etc.).
+  Loads rules from .aligntrue/rules.md (or configured source), resolves scopes,
+  and syncs to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).
 
   In team mode with lockfile enabled, validates lockfile before syncing.
 
@@ -107,11 +107,11 @@ export async function sync(args: string[]): Promise<void> {
 
   // Step 1: Check if AlignTrue is initialized
   if (!existsSync(configPath)) {
-    clack.outro(`✗ AlignTrue not initialized
+    clack.outro(`✗ Config file not found
 
-Config file not found: ${configPath}
-
-Run: aligntrue init`)
+What: ${configPath} does not exist
+Why: AlignTrue needs configuration to know which agents to sync
+Fix: Run 'aligntrue init' to create initial configuration`)
     process.exit(1)
   }
 
@@ -136,10 +136,13 @@ Run: aligntrue init`)
   const absoluteSourcePath = resolve(cwd, sourcePath)
 
   if (!existsSync(absoluteSourcePath)) {
-    clack.log.error(`Source file not found: ${sourcePath}`)
-    clack.log.info('Check your config.yaml sources section')
-    clack.log.info('Default source: .aligntrue/rules.md')
-    clack.outro('✗ Sync failed')
+    clack.outro(`✗ Source file not found
+
+What: ${sourcePath} does not exist
+Why: AlignTrue needs rules to sync to agents
+Fix: Create rules file or update sources in .aligntrue/config.yaml
+
+Expected path: ${absoluteSourcePath}`)
     process.exit(1)
   }
 

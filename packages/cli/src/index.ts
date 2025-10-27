@@ -12,17 +12,27 @@ async function main() {
   if (args.length === 0 || args[0] === '--help') {
     console.log('AlignTrue CLI - AI-native rules and alignment platform\n');
     console.log('Usage: aligntrue <command> [options]\n');
-    console.log('Commands:');
+    
+    console.log('Basic Commands:');
     console.log('  init           Initialize AlignTrue in current directory');
     console.log('  sync           Sync rules to agents');
-    console.log('  md             Markdown validation and formatting');
+    console.log('  check          Validate rules and configuration\n');
+    
+    console.log('Development Commands:');
+    console.log('  md             Markdown validation and formatting\n');
+    
+    console.log('Team Commands:');
     console.log('  team           Team mode management');
-    console.log('  telemetry      Telemetry settings');
-    console.log('  scopes         List configured scopes');
-    console.log('  check          Validate rules and configuration');
-    console.log('  import         Import rules from agent configs (coming soon)');
-    console.log('  migrate        Migration status (preview mode)');
-    console.log('\nRun aligntrue <command> --help for command-specific help');
+    console.log('  scopes         List configured scopes\n');
+    
+    console.log('Settings:');
+    console.log('  telemetry      Telemetry settings\n');
+    
+    console.log('Coming Soon:');
+    console.log('  import         Import rules from agent configs');
+    console.log('  migrate        Schema migration (preview mode)');
+    
+    console.log('\nRun aligntrue <command> --help for command-specific options');
     process.exit(0);
   }
   
