@@ -24,6 +24,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CLI Check Command** (Phase 1, Stage 3, Step 27a) - Completed 2025-10-27
+  - `aligntrue check --ci` for automated validation in CI/CD pipelines
+  - Schema validation: loads and validates `.aligntrue/rules.md` against JSON Schema
+  - Lockfile validation: validates `.aligntrue.lock.json` in team mode (strict mode)
+  - Non-interactive mode with clear exit codes (0=pass, 1=fail, 2=error)
+  - Comprehensive error messages with actionable fixes
+  - Pre-commit hook snippet with manual and Husky installation instructions
+  - GitHub Actions workflow example for automated validation
+  - GitLab CI, CircleCI, and Jenkins integration examples
+  - Troubleshooting guide for common CI issues
+  - 15 comprehensive tests covering all validation scenarios (100% pass rate)
+  - Complete CI integration documentation in CLI README (~125 lines)
+  - Files created:
+    - `packages/cli/src/commands/check.ts` (220 lines)
+    - `packages/cli/tests/commands/check.test.ts` (15 tests, 397 lines)
+  - Updated CLI entry point with check command routing
+  - Total CLI tests: 97 passing (82 existing + 15 new check tests)
+
 - **Catalog Source Provider** (Phase 1, Stage 3, Step 27) - Completed 2025-10-27
   - Fetch Align packs from AlignTrue/aligns GitHub repository
   - Two-step fetch: catalog/index.json validation, then pack YAML

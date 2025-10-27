@@ -18,4 +18,5 @@ export { sync } from './sync.js'
 export { team } from './team.js'
 export { telemetry } from './telemetry.js'
 export { scopes } from './scopes.js'
+export { check } from './check.js'
 
