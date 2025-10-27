@@ -1,0 +1,166 @@
+# Quickstart Guide
+
+Get AlignTrue running in under 60 seconds. No prior knowledge required.
+
+## Prerequisites
+
+- **Node.js 20+** - [Download](https://nodejs.org/)
+- **pnpm** - `npm install -g pnpm`
+
+## Installation
+
+```bash
+# Add to your project
+pnpm add -D @aligntrue/cli
+
+# Or use without installing
+npx @aligntrue/cli init
+```
+
+## Quick Start
+
+### 1. Initialize Your Project
+
+```bash
+aligntrue init
+```
+
+AlignTrue automatically detects AI coding agents in your workspace (Cursor, GitHub Copilot, Claude Code, etc.) and creates:
+
+- `.aligntrue/config.yaml` - Configuration with detected agents enabled
+- `.aligntrue/rules.md` - Starter template with 5 example rules
+
+**Example output:**
+
+```
+◇ Detected 2 AI coding agents:
+│  • Cursor (.cursor/)
+│  • GitHub Copilot (AGENTS.md)
+│
+◇ Project ID: my-awesome-project
+│
+◆ Created 2 files:
+│  • .aligntrue/config.yaml
+│  • .aligntrue/rules.md
+│
+◇ Run sync now? Yes
+```
+
+### 2. Edit Your Rules
+
+Open `.aligntrue/rules.md` and customize the starter rules:
+
+```markdown
+# My Project Rules
+
+## Global Standards
+
+```aligntrue
+id: my-project.global.code-style
+version: "1.0.0"
+spec_version: "1"
+rules:
+  - id: use-typescript-strict
+    summary: Use TypeScript strict mode in all files
+    severity: error
+    applies_to:
+      patterns: ["**/*.ts", "**/*.tsx"]
+    guidance: |
+      Enable strict mode in tsconfig.json for better type safety.
+```
+```
+
+The starter template includes examples for:
+
+- Code style enforcement
+- Testing requirements
+- Documentation standards
+- Security practices
+- AI-specific hints (optional)
+
+### 3. Sync to Your Agents
+
+```bash
+aligntrue sync
+```
+
+This generates agent-specific files from your rules:
+
+**Example output:**
+
+```
+◇ Loading configuration...
+◇ Parsing rules...
+◇ Syncing to 2 agents...
+│
+◆ Files written:
+│  • .cursor/rules/aligntrue.mdc (3 rules)
+│  • AGENTS.md (3 rules)
+│
+◇ Sync complete! No conflicts detected.
+```
+
+## What You Get
+
+After running `aligntrue sync`, you'll have:
+
+### For Cursor
+
+- `.cursor/rules/aligntrue.mdc` - Rules in Cursor's native format with YAML frontmatter
+
+### For GitHub Copilot, Claude Code, Aider, and others
+
+- `AGENTS.md` - Universal markdown format readable by multiple agents
+
+### For VS Code with MCP
+
+- `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
+
+### Other Agents
+
+AlignTrue supports 28+ AI coding agents. Enable additional agents in `.aligntrue/config.yaml`:
+
+```yaml
+exporters:
+  - cursor
+  - agents-md
+  - windsurf
+  - claude-md
+  - cline
+  # ... and 23 more
+```
+
+See `aligntrue adapters list` for the complete list.
+
+## Next Steps
+
+### Learn More Commands
+
+- `aligntrue sync --dry-run` - Preview changes without writing files
+- `aligntrue check` - Validate rules (great for CI)
+- `aligntrue md lint` - Check markdown syntax
+
+See [Command Reference](commands.md) for all available commands.
+
+### Explore Examples
+
+Check `examples/markdown/` in the AlignTrue repository for more rule examples.
+
+### Troubleshooting
+
+Run into issues? See [Troubleshooting Guide](troubleshooting.md) for common solutions.
+
+### Advanced Features
+
+When your project grows, explore:
+
+- **Team Mode** - Shared rules with lockfile validation (`aligntrue team enable`)
+- **Hierarchical Scopes** - Different rules for different directories
+- **Custom Exporters** - Add support for new agents ([Extending Guide](extending-aligntrue.md))
+
+---
+
+**That's it!** You now have consistent AI rules across all your coding agents.
+
+Edit `.aligntrue/rules.md` whenever you want to update your rules, then run `aligntrue sync` to push changes to your agents.
+
