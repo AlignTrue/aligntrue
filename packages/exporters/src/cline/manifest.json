@@ -1,0 +1,14 @@
+{
+  "name": "cline",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Cline .clinerules format",
+  "outputs": [".clinerules"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in .clinerules format",
+    "Autofix hints not represented in .clinerules format",
+    "Plain text format, no structured metadata"
+  ]
+}
+

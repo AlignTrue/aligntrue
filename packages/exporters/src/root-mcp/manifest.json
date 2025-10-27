@@ -1,0 +1,14 @@
+{
+  "name": "root-mcp",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to root-level .mcp.json MCP configuration format (used by Claude Code, Aider)",
+  "outputs": [".mcp.json"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Universal MCP format (no agent-specific vendor extraction)",
+    "Machine-checkable rules (check) not represented in MCP config format",
+    "Autofix hints not represented in MCP config format"
+  ]
+}
+

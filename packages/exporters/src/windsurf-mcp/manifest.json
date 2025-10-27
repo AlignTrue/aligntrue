@@ -1,0 +1,14 @@
+{
+  "name": "windsurf-mcp",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Windsurf .windsurf/mcp_config.json MCP configuration format",
+  "outputs": [".windsurf/mcp_config.json"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Extracts vendor.windsurf fields to top level",
+    "Machine-checkable rules (check) not represented in MCP config format",
+    "Autofix hints not represented in MCP config format"
+  ]
+}
+

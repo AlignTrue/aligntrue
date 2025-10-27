@@ -1,0 +1,13 @@
+{
+  "name": "zed-md",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to AGENTS.md format (Zed compatible)",
+  "outputs": ["AGENTS.md"],
+  "handler": "../agents-md/index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Uses universal AGENTS.md format",
+    "Zed also uses .zed/settings.json (separate exporter)"
+  ]
+}
+

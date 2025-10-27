@@ -1,0 +1,13 @@
+{
+  "name": "aider-md",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to AGENTS.md format (Aider compatible)",
+  "outputs": ["AGENTS.md"],
+  "handler": "../agents-md/index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Uses universal AGENTS.md format",
+    "Aider also uses .aider.conf.yml and .mcp.json (separate exporters)"
+  ]
+}
+
