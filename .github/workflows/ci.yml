@@ -1,4 +1,4 @@
-name: Validate Aligns
+name: CI
 
 on:
   push:
@@ -10,9 +10,14 @@ permissions:
   contents: read
 
 jobs:
-  validate:
-    name: Validate Schema Package
-    runs-on: ubuntu-latest
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['20']
     
     steps:
       - name: Checkout code
@@ -21,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -42,15 +47,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
-      - name: Build schema package
-        run: pnpm --filter @aligntrue/schema build
+      - name: Build all packages
+        run: pnpm build
       
-      - name: Run schema tests
-        run: pnpm --filter @aligntrue/schema test
+      - name: Type check all packages
+        run: pnpm typecheck
       
-      - name: Type check
-        run: pnpm --filter @aligntrue/schema typecheck
+      - name: Run all tests
+        run: pnpm test
       
       - name: Run conformance testkit
         run: pnpm verify
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Tests failed on one or more platforms"
+            exit 1
+          fi
+          echo "All tests passed on all platforms"
 
