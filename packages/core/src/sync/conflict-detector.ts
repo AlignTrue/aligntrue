@@ -6,6 +6,16 @@
 import type { AlignRule } from '@aligntrue/schema'
 
 /**
+ * Conflict resolution strategy
+ */
+export enum ConflictResolutionStrategy {
+  KEEP_IR = 'keep_ir',
+  ACCEPT_AGENT = 'accept_agent',
+  MANUAL = 'manual',
+  ABORT = 'abort'
+}
+
+/**
  * Conflict record with field-level differences
  */
 export interface Conflict {
@@ -15,6 +25,17 @@ export interface Conflict {
   irValue: unknown
   agentValue: unknown
   diff: string
+}
+
+/**
+ * Resolution applied to a conflict
+ */
+export interface ConflictResolution {
+  ruleId: string
+  field: string
+  strategy: ConflictResolutionStrategy
+  appliedValue: unknown
+  timestamp: string
 }
 
 /**
@@ -260,6 +281,138 @@ export class ConflictDetector {
       hasConflicts: conflicts.length > 0,
       conflicts,
     }
+  }
+
+  /**
+   * Resolve a conflict by applying the specified strategy
+   */
+  resolveConflict(
+    conflict: Conflict,
+    strategy: ConflictResolutionStrategy
+  ): ConflictResolution {
+    let appliedValue: unknown
+
+    switch (strategy) {
+      case ConflictResolutionStrategy.KEEP_IR:
+        appliedValue = conflict.irValue
+        break
+      case ConflictResolutionStrategy.ACCEPT_AGENT:
+        appliedValue = conflict.agentValue
+        break
+      case ConflictResolutionStrategy.MANUAL:
+        // Manual means the value will be set by the caller
+        appliedValue = conflict.irValue // default to IR
+        break
+      case ConflictResolutionStrategy.ABORT:
+        throw new Error(`Resolution aborted for rule ${conflict.ruleId}, field ${conflict.field}`)
+      default:
+        throw new Error(`Unknown resolution strategy: ${strategy}`)
+    }
+
+    return {
+      ruleId: conflict.ruleId,
+      field: conflict.field,
+      strategy,
+      appliedValue,
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  /**
+   * Apply resolutions to IR rules, returning updated rules
+   */
+  applyResolutions(
+    irRules: AlignRule[],
+    resolutions: ConflictResolution[]
+  ): AlignRule[] {
+    // Create a mutable copy of rules
+    const updatedRules = irRules.map(rule => ({ ...rule }))
+    const ruleMap = new Map(updatedRules.map(r => [r.id, r]))
+
+    for (const resolution of resolutions) {
+      const rule = ruleMap.get(resolution.ruleId)
+      if (!rule) {
+        continue // Rule doesn't exist, skip
+      }
+
+      // Handle nested fields (e.g., vendor.cursor.ai_hint)
+      if (resolution.field.includes('.')) {
+        this.setNestedField(rule, resolution.field, resolution.appliedValue)
+      } else {
+        // Simple field assignment
+        (rule as Record<string, unknown>)[resolution.field] = resolution.appliedValue
+      }
+    }
+
+    return Array.from(ruleMap.values())
+  }
+
+  /**
+   * Set a nested field value (e.g., vendor.cursor.ai_hint)
+   */
+  private setNestedField(obj: Record<string, unknown>, path: string, value: unknown): void {
+    const parts = path.split('.')
+    let current: Record<string, unknown> = obj
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i]
+      if (!part) continue // Skip empty parts
+      
+      if (!(part in current)) {
+        current[part] = {}
+      }
+      current = current[part] as Record<string, unknown>
+    }
+
+    const lastPart = parts[parts.length - 1]
+    if (lastPart) {
+      current[lastPart] = value
+    }
+  }
+
+  /**
+   * Generate a human-readable conflict report
+   */
+  generateConflictReport(conflicts: Conflict[]): string {
+    if (conflicts.length === 0) {
+      return 'No conflicts detected.'
+    }
+
+    const lines: string[] = []
+    lines.push(`⚠️  ${conflicts.length} conflict(s) detected:\n`)
+
+    // Group conflicts by rule ID
+    const groupedConflicts = new Map<string, Conflict[]>()
+    for (const conflict of conflicts) {
+      if (!groupedConflicts.has(conflict.ruleId)) {
+        groupedConflicts.set(conflict.ruleId, [])
+      }
+      groupedConflicts.get(conflict.ruleId)!.push(conflict)
+    }
+
+    for (const [ruleId, ruleConflicts] of groupedConflicts) {
+      lines.push(`Rule: ${ruleId}`)
+      const firstConflict = ruleConflicts[0]
+      if (firstConflict) {
+        lines.push(`Agent: ${firstConflict.agent}`)
+      }
+      lines.push('')
+
+      for (const conflict of ruleConflicts) {
+        lines.push(`  Field: ${conflict.field}`)
+        lines.push(`  IR value:    ${JSON.stringify(conflict.irValue)}`)
+        lines.push(`  Agent value: ${JSON.stringify(conflict.agentValue)}`)
+        lines.push('')
+      }
+    }
+
+    lines.push('Choose how to resolve:')
+    lines.push('  [i] Keep IR version (discard agent changes)')
+    lines.push('  [a] Accept agent version (overwrite IR)')
+    lines.push('  [d] Show detailed diff')
+    lines.push('  [q] Quit without changes')
+
+    return lines.join('\n')
   }
 }
 

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aligntrue.com/schemas/vscode-mcp-v1.json",
+  "title": "VS Code MCP Configuration",
+  "description": "AlignTrue exporter format for VS Code MCP (Model Context Protocol) configuration",
+  "type": "object",
+  "required": ["version", "rules"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "v1",
+      "description": "Format version marker for future evolution"
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "Tool that generated this configuration"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of canonical IR for drift detection"
+    },
+    "rules": {
+      "type": "array",
+      "description": "Array of rule objects with extracted vendor.vscode metadata",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "guidance"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique rule identifier"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["error", "warn", "info"],
+            "description": "Rule severity level"
+          },
+          "guidance": {
+            "type": "string",
+            "description": "Human-readable guidance text"
+          },
+          "scope": {
+            "type": "string",
+            "description": "Scope path this rule applies to"
+          },
+          "applies_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "File patterns this rule applies to"
+          }
+        },
+        "additionalProperties": true,
+        "description": "Rule object with vendor.vscode fields flattened to top level"
+      }
+    },
+    "fidelity_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Notes about unmapped or vendor-specific fields"
+    }
+  },
+  "additionalProperties": false
+}
+

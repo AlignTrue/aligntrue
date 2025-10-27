@@ -1,0 +1,9 @@
+# Mock agent rules with one rule deleted
+rules:
+  - id: testing.require-tests
+    severity: warn
+    guidance: All features should have tests.
+    applies_to: ["**/*.ts"]
+  
+  # style.no-any deleted from agent
+
