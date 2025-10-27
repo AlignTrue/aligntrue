@@ -2,6 +2,15 @@
 
 AlignTrue respects your privacy and operates with transparency.
 
+## Privacy-First by Default
+
+AlignTrue operates **offline-first** and respects your privacy:
+- **No network calls by default** - Local rules only, zero external requests
+- **Telemetry opt-in** - Disabled by default, must explicitly enable
+- **Transparent network operations** - You approve what connects where
+- **Anonymous when enabled** - Uses randomly generated UUID, not tied to identity
+- **Local-first storage** - Data stays on your machine in Phase 1
+
 ## Telemetry Overview
 
 Telemetry in AlignTrue is:
@@ -139,22 +148,128 @@ If you have questions about privacy or telemetry:
 - **GitHub Issues**: [AlignTrue/aligntrue/issues](https://github.com/AlignTrue/aligntrue/issues)
 - **Documentation**: [docs/](https://github.com/AlignTrue/aligntrue/tree/main/docs)
 
+## Network Operations
+
+AlignTrue operates **offline-first** and only makes network calls when explicitly configured.
+
+### Default (No Network) ✅
+
+By default, AlignTrue makes **zero network requests**:
+- ✅ Local rules (`.aligntrue/rules.md`)
+- ✅ Telemetry storage (local-only in Phase 1)
+- ✅ All sync operations
+- ✅ All exporter outputs
+- ✅ Validation and checks
+- ✅ Init, migrate, and other commands
+
+### Requires Network (Explicit Opt-In) 🌐
+
+Network calls only occur when you explicitly configure these sources:
+
+#### Catalog Sources
+```yaml
+sources:
+  - type: catalog
+    id: packs/base/base-global
+```
+- Fetches from `https://raw.githubusercontent.com/AlignTrue/aligns`
+- **First-time consent:** AlignTrue asks permission before first fetch
+- Shows what will be fetched and from where
+- Stores consent in `.aligntrue/privacy-consent.json`
+- Can be revoked at any time
+
+#### Git Sources
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules
+```
+- Fetches from specified repository
+- **First-time consent:** Same consent flow as catalog
+- Clear disclosure of external repository URL
+
+#### Telemetry Sending (Phase 2+)
+- Separate opt-in required (beyond enabling telemetry)
+- Explicit consent with clear disclosure
+- Shows exactly what data will be sent
+- Revocable at any time
+
+### First-Time Consent (Phase 2+)
+
+When you add a network source, AlignTrue will:
+1. **Analyze** what network operations are needed
+2. **Show** clear description of each operation and why
+3. **Prompt** for permission before proceeding
+4. **Store** consent in `.aligntrue/privacy-consent.json` (git-ignored)
+5. **Allow** revocation at any time
+
+Example consent prompt:
+```
+⚠️  Network operations required:
+
+  - Fetch rules from AlignTrue catalog (GitHub)
+    Why: Source: packs/base/base-global
+    Endpoint: https://raw.githubusercontent.com/AlignTrue/aligns
+
+Allow these network operations? (y/n)
+```
+
+### Privacy Controls (Phase 2+)
+
+#### Audit Consents
+```bash
+aligntrue privacy audit
+```
+Shows all granted consents with timestamps and details.
+
+#### Revoke Consent
+```bash
+aligntrue privacy revoke catalog-fetch
+```
+Removes consent; future syncs will prompt again.
+
+#### Offline Mode
+```bash
+aligntrue sync --offline
+```
+Skips all network operations, uses cache only, fails gracefully if network required.
+
+### Viewing Your Data
+
+All locally stored data is in plain JSON:
+
+**Telemetry events:**
+```bash
+cat .aligntrue/telemetry-events.json | jq .
+```
+
+**Privacy consents (Phase 2+):**
+```bash
+cat .aligntrue/privacy-consent.json | jq .
+```
+
+**Catalog cache:**
+```bash
+ls .aligntrue/.cache/catalog/
+```
+
 ## Compliance
 
-AlignTrue's telemetry approach is designed to be compliant with:
+AlignTrue's privacy approach is designed to be compliant with:
 - GDPR (General Data Protection Regulation)
 - CCPA (California Consumer Privacy Act)
 - Enterprise privacy policies
 
 Because we:
 - Collect no PII
-- Provide explicit opt-in
-- Store locally by default
-- Allow complete deletion
-- Disclose clearly what is collected
+- Provide explicit opt-in for all network operations
+- Store locally by default with no external requests
+- Allow complete deletion and consent revocation
+- Disclose clearly what is collected and when
+- Give users full control over their data
 
 ---
 
 **Last Updated**: 2025-10-27  
-**Policy Version**: 1.0 (Phase 1 - Local-only)
+**Policy Version**: 1.0 (Phase 1 - Local-only, Phase 2+ network consent)
 
