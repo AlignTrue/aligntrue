@@ -376,9 +376,52 @@ No usage data is being collected.
 To enable: aligntrue telemetry on
 ```
 
+### `aligntrue check`
+
+Validate rules and configuration for CI/CD pipelines and pre-commit hooks.
+
+#### `aligntrue check --ci`
+
+Non-interactive validation with clear exit codes:
+
+```bash
+aligntrue check --ci
+```
+
+**What it validates:**
+- IR schema (loads and validates `.aligntrue/rules.md` against JSON Schema)
+- Lockfile drift (team mode only, validates `.aligntrue.lock.json` matches current rules)
+
+**Exit codes:**
+- `0` - Validation passed
+- `1` - Validation failed (schema or lockfile errors)
+- `2` - System error (missing files, config issues)
+
+**Options:**
+- `--ci` - CI mode (required)
+- `--config <path>` - Custom config path (default: `.aligntrue/config.yaml`)
+
+**Example output (success):**
+```
+✓ Validation passed
+
+  Schema: .aligntrue/rules.md is valid
+  Lockfile: .aligntrue.lock.json matches current rules
+```
+
+**Example output (failure):**
+```
+✗ Schema validation failed
+
+  Errors in .aligntrue/rules.md:
+    - spec_version: Missing required field
+    - rules[0].id: Missing required field
+  
+  Fix the errors above and run 'aligntrue check --ci' again.
+```
+
 ### Other Commands
 
-- `aligntrue check` - Validate rules and configuration (coming soon)
 - `aligntrue import` - Import rules from agent configs (coming soon)
 - `aligntrue md` - Markdown validation and formatting (Step 4 ✓)
 - `aligntrue migrate` - Migration status (Step 24 ✓)
@@ -391,6 +434,132 @@ aligntrue init
 # Edit .aligntrue/rules.md
 aligntrue sync
 ```
+
+## CI Integration
+
+AlignTrue integrates seamlessly with CI/CD pipelines and pre-commit hooks using the `aligntrue check --ci` command.
+
+### Pre-commit Hooks
+
+Validate rules before committing to prevent broken configurations from entering version control.
+
+#### Manual Installation
+
+Create a pre-commit hook:
+
+```bash
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/sh
+# AlignTrue validation
+
+echo "Running AlignTrue validation..."
+pnpm aligntrue check --ci
+
+if [ $? -ne 0 ]; then
+  echo "❌ AlignTrue validation failed. Fix errors and try again."
+  exit 1
+fi
+EOF
+
+chmod +x .git/hooks/pre-commit
+```
+
+#### With Husky
+
+If you're using [Husky](https://typicode.github.io/husky/):
+
+```bash
+npx husky add .husky/pre-commit "pnpm aligntrue check --ci"
+```
+
+### GitHub Actions
+
+Validate rules on every pull request and push to main branches:
+
+```yaml
+# .github/workflows/aligntrue.yml
+name: AlignTrue Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - name: Validate AlignTrue rules
+        run: pnpm aligntrue check --ci
+```
+
+### Other CI Systems
+
+The `aligntrue check --ci` command works in any CI environment. Just ensure AlignTrue is installed and run the command:
+
+- **GitLab CI**: Add to `.gitlab-ci.yml`
+  ```yaml
+  aligntrue:
+    script:
+      - pnpm install
+      - pnpm aligntrue check --ci
+  ```
+
+- **CircleCI**: Add to `.circleci/config.yml`
+  ```yaml
+  - run:
+      name: Validate AlignTrue
+      command: pnpm aligntrue check --ci
+  ```
+
+- **Jenkins**: Add to `Jenkinsfile`
+  ```groovy
+  sh 'pnpm aligntrue check --ci'
+  ```
+
+### Exit Codes
+
+Understanding exit codes helps with CI integration:
+
+- `0` - Validation passed (continue pipeline)
+- `1` - Validation failed (fail pipeline, fixable by user)
+- `2` - System error (fail pipeline, configuration issue)
+
+### Troubleshooting
+
+**"Config not found"**  
+Run `aligntrue init` before the check command, or add init to your CI setup:
+```bash
+- run: pnpm aligntrue init --non-interactive  # Future enhancement
+- run: pnpm aligntrue check --ci
+```
+
+**"Lockfile drift"**  
+Lockfile doesn't match current rules. Run `aligntrue sync` locally to regenerate the lockfile, then commit:
+```bash
+pnpm aligntrue sync
+git add .aligntrue.lock.json
+git commit -m "chore: update lockfile"
+```
+
+**"Schema validation failed"**  
+Fix the errors listed in the output. Common issues:
+- Missing required fields (`id`, `spec_version`, `rules`)
+- Invalid severity values (must be `error`, `warn`, or `info`)
+- Malformed YAML syntax
 
 ## Agent Detection
 
