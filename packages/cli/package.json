@@ -25,6 +25,7 @@
     "@aligntrue/sources": "workspace:*",
     "@aligntrue/exporters": "workspace:*",
     "@aligntrue/schema": "workspace:*",
+    "@clack/prompts": "^0.7.0",
     "yaml": "^2.6.1"
   },
   "devDependencies": {

@@ -22,17 +22,16 @@
     "@aligntrue/exporters": "workspace:*",
     "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/schema": "workspace:*",
+    "@clack/prompts": "^0.7.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.1.0",
-    "micromatch": "^4.0.8",
-    "prompts": "^2.4.2"
+    "micromatch": "^4.0.8"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/micromatch": "^4.0.9",
     "@types/node": "^24",
-    "@types/prompts": "^2.4.9",
     "typescript": "^5",
     "vitest": "^4.0.3"
   },

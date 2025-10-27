@@ -14,6 +14,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CLI Init Command** (Phase 1, Stage 3, Step 22) - Completed 2025-10-27
+  - Full `aligntrue init` command with intelligent context detection
+  - Auto-detection of all 28 AI coding agents by checking output paths
+  - Smart agent selection: auto-enable if ≤3 detected, prompt if >3
+  - Comprehensive starter template with 5 educational example rules
+  - Context-aware flows: fresh-start, import-cursor, import-agents, already-initialized
+  - Team join scenario with helpful guidance instead of bare error
+  - Interactive prompts with @clack/prompts for beautiful CLI UX
+  - Auto-sync prompt at end: "Run sync now? [Y/n]"
+  - Solo mode default configuration generation
+  - 24 comprehensive tests covering all scenarios (100% pass rate)
+  - Complete CLI README documentation with examples and scenarios
+  - Migrated from `prompts` to `@clack/prompts` across all packages
+  - Updated conflict resolution prompts to use Clack API
+  - Agent detection utility: `detect-agents.ts` with 28 agent patterns
+  - Context detection utility: `detect-context.ts` for smart flow selection
+  - Starter template generator: 5 rules showing all major features
+  - Catalog integration TODO added for Phase 2+
+  - Terminology: uses "rules" in all user-facing output
+  - Files created:
+    - `packages/cli/src/commands/init.ts` (main command, 200 lines)
+    - `packages/cli/src/utils/detect-agents.ts` (agent detection, 147 lines)
+    - `packages/cli/src/utils/detect-context.ts` (context detection, 84 lines)
+    - `packages/cli/src/templates/starter-rules.ts` (template generator, 139 lines)
+    - `packages/cli/tests/commands/init.test.ts` (24 tests, 100% coverage)
+  - Dependencies: Added `@clack/prompts@^0.7.0` to CLI and core packages
+
 - **Lockfile with Hash Modes** (Phase 1, Stage 3, Step 21) - Completed 2025-10-27
   - Three hash modes: off (solo default), soft (team default), strict
   - Per-rule SHA-256 hashes for granular drift detection
