@@ -97,12 +97,13 @@ mode: invalid_mode
       const markdown = `# Test Pack
 
 \`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 \`\`\`
 `
@@ -113,12 +114,13 @@ rules:
     })
 
     it('loads IR from YAML', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 `
       const irPath = join(TEST_DIR, 'rules.yaml')
@@ -128,11 +130,11 @@ rules:
     })
 
     it('fails on invalid IR', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: invalid_severity
 `
       const irPath = join(TEST_DIR, 'invalid.yaml')
@@ -151,12 +153,13 @@ exporters:
   - test-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 \`\`\`
 `
@@ -190,7 +193,7 @@ exporters:
   - test-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -225,7 +228,7 @@ exporters:
   - exporter2
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -265,12 +268,13 @@ scopes:
       - "**/*.ts"
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 \`\`\`
 `
@@ -302,7 +306,7 @@ exporters:
   - test-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -336,7 +340,7 @@ exporters:
   - test-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -372,7 +376,7 @@ exporters:
   - missing-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -402,7 +406,7 @@ exporters:
   - failing-exporter
 `
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -465,7 +469,7 @@ rules: []
   describe('clear', () => {
     it('clears internal state', async () => {
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
