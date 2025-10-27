@@ -27,6 +27,9 @@ export interface AlignTrueConfig {
     checks?: boolean;
     mcp?: boolean;
   };
+  lockfile?: {
+    mode?: 'off' | 'soft' | 'strict';
+  };
   git?: {
     mode?: 'ignore' | 'commit' | 'branch';
     per_adapter?: Record<string, 'ignore' | 'commit' | 'branch'>;
@@ -158,6 +161,17 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.modules.mcp = result.modules.mcp ?? true
   }
   
+  // Apply lockfile defaults
+  if (!result.lockfile) {
+    result.lockfile = {}
+  }
+  // Default to 'soft' mode for team/enterprise when lockfile enabled
+  if (result.modules.lockfile) {
+    result.lockfile.mode = result.lockfile.mode ?? 'soft'
+  } else {
+    result.lockfile.mode = result.lockfile.mode ?? 'off'
+  }
+  
   // Apply git defaults
   if (!result.git) {
     result.git = {}
@@ -186,7 +200,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
  */
 function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'git', 'sources', 'exporters', 'scopes', 'merge'
+    'version', 'mode', 'modules', 'lockfile', 'git', 'sources', 'exporters', 'scopes', 'merge'
   ])
   
   for (const key of Object.keys(config)) {

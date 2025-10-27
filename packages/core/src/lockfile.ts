@@ -1,25 +1,25 @@
 /**
  * Lockfile operations with hash modes (off/soft/strict)
+ * 
+ * @deprecated Import from './lockfile/index.js' instead
+ * This file exists for backward compatibility during refactor
  */
 
-export type LockfileMode = 'off' | 'soft' | 'strict';
+export type {
+  Lockfile,
+  LockfileEntry,
+  LockfileMode,
+  Mismatch,
+  ValidationResult,
+  EnforcementResult,
+} from './lockfile/index.js'
 
-export interface Lockfile {
-  version: string;
-  mode: LockfileMode;
-  hashes: Record<string, string>;
-  generated: string;
-}
-
-export async function readLockfile(path: string): Promise<Lockfile | null> {
-  throw new Error('Not implemented');
-}
-
-export async function writeLockfile(path: string, lockfile: Lockfile): Promise<void> {
-  throw new Error('Not implemented');
-}
-
-export async function verifyLockfile(path: string, mode: LockfileMode): Promise<boolean> {
-  throw new Error('Not implemented');
-}
-
+export {
+  generateLockfile,
+  hashRule,
+  validateLockfile,
+  formatValidationResult,
+  enforceLockfile,
+  readLockfile,
+  writeLockfile,
+} from './lockfile/index.js'

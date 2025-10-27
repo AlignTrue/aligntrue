@@ -11,7 +11,15 @@ import { resolveScopes, applyScopeMerge, groupRulesByLevel } from '../scope.js'
 import { loadIR } from './ir-loader.js'
 import { AtomicFileWriter } from './file-operations.js'
 import { ConflictDetector, type Conflict } from './conflict-detector.js'
-import { posix } from 'path'
+import { posix, resolve as resolvePath } from 'path'
+import {
+  readLockfile,
+  writeLockfile,
+  validateLockfile,
+  enforceLockfile,
+  generateLockfile,
+  type Lockfile,
+} from '../lockfile/index.js'
 
 // Import types from exporters package
 import type {
@@ -129,6 +137,49 @@ export class SyncEngine {
         timestamp: new Date().toISOString(),
         details: `Loaded ${this.ir.rules?.length || 0} rules from IR`,
       })
+
+      // Lockfile validation (if team mode)
+      const lockfilePath = resolvePath(process.cwd(), '.aligntrue.lock.json')
+      const lockfileMode = this.config.lockfile?.mode || 'off'
+      const isTeamMode = this.config.mode === 'team' || this.config.mode === 'enterprise'
+      
+      if (isTeamMode && this.config.modules?.lockfile) {
+        const existingLockfile = readLockfile(lockfilePath)
+        
+        if (existingLockfile) {
+          // Validate lockfile against current IR
+          const validation = validateLockfile(existingLockfile, this.ir)
+          const enforcement = enforceLockfile(lockfileMode, validation)
+          
+          // Audit trail: Lockfile validation
+          auditTrail.push({
+            action: validation.valid ? 'update' : 'conflict',
+            target: lockfilePath,
+            source: 'lockfile',
+            timestamp: new Date().toISOString(),
+            details: enforcement.message || 'Lockfile validation completed',
+          })
+          
+          // Abort sync if strict mode failed
+          if (!enforcement.success) {
+            return {
+              success: false,
+              written: [],
+              warnings: [enforcement.message || 'Lockfile validation failed in strict mode'],
+              auditTrail,
+            }
+          }
+        } else {
+          // No lockfile exists - will be generated after sync
+          auditTrail.push({
+            action: 'create',
+            target: lockfilePath,
+            source: 'lockfile',
+            timestamp: new Date().toISOString(),
+            details: 'No existing lockfile found, will generate after sync',
+          })
+        }
+      }
 
       // Resolve scopes
       const scopeConfig: { scopes: Scope[]; merge?: { strategy?: 'deep'; order?: MergeOrder } } = {
@@ -265,6 +316,29 @@ export class SyncEngine {
               `  ${err instanceof Error ? err.message : String(err)}`
             )
           }
+        }
+      }
+
+      // Generate/update lockfile after successful sync (if team mode and not dry-run)
+      if (isTeamMode && this.config.modules?.lockfile && !options.dryRun) {
+        try {
+          const lockfile = generateLockfile(this.ir, this.config.mode as 'team' | 'enterprise')
+          writeLockfile(lockfilePath, lockfile)
+          written.push(lockfilePath)
+          
+          // Audit trail: Lockfile generated
+          auditTrail.push({
+            action: 'update',
+            target: lockfilePath,
+            source: 'lockfile',
+            hash: lockfile.bundle_hash,
+            timestamp: new Date().toISOString(),
+            details: `Generated lockfile with ${lockfile.rules.length} rule hashes`,
+          })
+        } catch (err) {
+          warnings.push(
+            `Failed to generate lockfile: ${err instanceof Error ? err.message : String(err)}`
+          )
         }
       }
 
