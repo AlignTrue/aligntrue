@@ -1,48 +1,42 @@
 # Severity levels pack
-# Tests: rules with MUST, SHOULD, and MAY severity levels
+# Tests: all three severity levels (error, warn, info)
 
 id: "packs/testkit/severity-levels"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Tests all three severity levels"
-tags: ["testkit", "severity"]
-deps: []
-scope:
-  applies_to: ["*"]
+summary: "Tests all severity levels"
 rules:
-  - id: "must-level"
-    severity: "MUST"
+  - id: "severity-error"
+    severity: "error"
+    applies_to: ["**/*.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
-      evidence: "MUST: Tests are required"
-    autofix:
-      hint: "Add test files"
-
-  - id: "should-level"
-    severity: "SHOULD"
-    check:
-      type: "regex"
-      inputs:
-        include: ["**/*.ts"]
-        pattern: "\\bconsole\\.log\\b"
-        allow: false
-      evidence: "SHOULD: Avoid console.log"
-    autofix:
-      hint: "Remove or replace with proper logging"
-
-  - id: "may-level"
-    severity: "MAY"
+        paths: ["tsconfig.json"]
+      evidence: "TypeScript config must exist"
+  
+  - id: "severity-warn"
+    severity: "warn"
+    applies_to: ["**/*.js"]
     check:
       type: "path_convention"
       inputs:
-        pattern: "^[a-z0-9-]+$"
-        include: ["src/**"]
-        message: "MAY: Consider using kebab-case"
-      evidence: "MAY: Kebab-case recommended"
+        include: ["**/*.js"]
+        pattern: "^[a-z0-9-]+\\.js$"
+      evidence: "JavaScript files should use kebab-case"
+  
+  - id: "severity-info"
+    severity: "info"
+    applies_to: ["**/*.md"]
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.md"]
+        pattern: "^# "
+        allow: true
+      evidence: "Markdown documentation is helpful"
+
 integrity:
   algo: "jcs-sha256"
-  value: "7a3c5a9cbf58879e7a7bfd93860981344101e2d26cfc5f197ccaf8b210f7742b"
+  value: "026c3ebbf83dbd5440bf7f7798ec103b337fdb45b903a9ca1bd378c6b89622bf"
 

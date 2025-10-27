@@ -1,63 +1,63 @@
 # All five check types pack
-# Tests: one rule of each check type (file_presence, path_convention, manifest_policy, regex, command_runner)
+# Tests: complete coverage of all check types
 
 id: "packs/testkit/all-five-check-types"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
-summary: "Contains one rule of each check type"
-tags: ["testkit", "check-types"]
-deps: []
-scope:
-  applies_to: ["*"]
+summary: "Tests all five check types"
 rules:
-  - id: "check-file-presence"
-    severity: "MUST"
+  - id: "checks-file-presence"
+    severity: "error"
+    applies_to: ["**/*.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.test.ts"
-      evidence: "Test files required"
-
-  - id: "check-path-convention"
-    severity: "SHOULD"
+        paths: ["package.json"]
+      evidence: "Root package.json required"
+  
+  - id: "checks-path-convention"
+    severity: "warn"
+    applies_to: ["src/**/*.ts"]
     check:
       type: "path_convention"
       inputs:
-        pattern: "^[a-z0-9-]+$"
         include: ["src/**"]
-        message: "Use kebab-case"
-      evidence: "Path convention violated"
-
-  - id: "check-manifest-policy"
-    severity: "MUST"
+        pattern: "^[a-z0-9-]+\\.ts$"
+      evidence: "File names must be lowercase with hyphens"
+  
+  - id: "checks-manifest-policy"
+    severity: "warn"
+    applies_to: ["**/package.json"]
     check:
       type: "manifest_policy"
       inputs:
         manifest: "package.json"
         lockfile: "pnpm-lock.yaml"
         require_pinned: true
-      evidence: "Dependencies not pinned"
-
-  - id: "check-regex"
-    severity: "SHOULD"
+      evidence: "Package.json must match standard schema"
+  
+  - id: "checks-regex"
+    severity: "info"
+    applies_to: ["**/*.md"]
     check:
       type: "regex"
       inputs:
-        include: ["**/*.ts"]
-        pattern: "\\bTODO\\b"
-        allow: false
-      evidence: "TODO found"
-
-  - id: "check-command-runner"
-    severity: "MAY"
+        include: ["**/*.md"]
+        pattern: "^# "
+        allow: true
+      evidence: "Markdown files should start with h1"
+  
+  - id: "checks-command-runner"
+    severity: "warn"
+    applies_to: ["**/Makefile"]
     check:
       type: "command_runner"
       inputs:
-        command: "npm test"
-        timeout_ms: 30000
-      evidence: "Tests failed"
+        command: "make --version"
+        timeout_ms: 5000
+      evidence: "Make must be installed"
+
 integrity:
   algo: "jcs-sha256"
-  value: "53b0dabb769871e679ccd9361aec63500334acf8ae1d1e0fff59f15e25f1712a"
+  value: "fa79b5db200186cd77874884663172d53ec6275deea896b41c5ded1bc012b7b3"
 

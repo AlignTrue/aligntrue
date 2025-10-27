@@ -3,22 +3,18 @@
 
 id: "packs/testkit/minimal-valid"
 version: "1.0.0"
-profile: "align"
 spec_version: "1"
 summary: "Minimal valid pack for conformance testing"
-tags: ["testkit"]
-deps: []
-scope:
-  applies_to: ["*"]
 rules:
   - id: "minimal-rule"
-    severity: "SHOULD"
+    severity: "warn"
+    applies_to: ["**/*.ts"]
     check:
       type: "file_presence"
       inputs:
-        pattern: "**/*.ts"
-      evidence: "TypeScript files required"
+        paths: ["package.json"]
+      evidence: "Package must exist"
 integrity:
   algo: "jcs-sha256"
-  value: "400ec737c2812418acddadc51f5609df4ff78c0c7d8e0aed9bf39d2f3cdf1795"
+  value: "7a6a91a9e592432dddfc7ed17c19bf2bf975d57c07b052522af34962fd592f19"
 
