@@ -14,6 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CLI Sync Command** (Phase 1, Stage 3, Step 23) - Completed 2025-10-27
+  - Full `aligntrue sync` command with IR→agent sync
+  - Flags: --dry-run (preview), --accept-agent (pullback with mock data), --force (non-interactive), --config (custom path)
+  - Dynamic exporter loading from registry using discoverAdapters and loadAdapter
+  - Progress indicators with @clack/prompts spinners (loading, syncing, writing)
+  - Comprehensive error messages with actionable fixes
+  - Lockfile validation in team mode (soft/strict enforcement)
+  - Audit trail output showing all sync operations (visible in --dry-run)
+  - Config validation: checks for .aligntrue/config.yaml, suggests init if missing
+  - Source validation: checks for rules file, shows path and config tips
+  - Exporter discovery: finds all manifests, loads handlers, registers with engine
+  - Mock data warning: --accept-agent shows clear notice about Step 17 implementation
+  - Success output: shows files written, warnings, conflicts with counts
+  - Failure handling: lockfile drift suggestions, exporter config tips
+  - 23 comprehensive tests (100% coverage)
+  - Files created:
+    - `packages/cli/src/commands/sync.ts` (main command, 297 lines)
+    - `packages/cli/tests/commands/sync.test.ts` (23 tests, 397 lines)
+  - Integration with existing SyncEngine (Steps 9+14), config parser (Step 8), exporters (Steps 10-13)
+  - CLI README fully updated with sync documentation, examples, troubleshooting
+
 - **CLI Init Command** (Phase 1, Stage 3, Step 22) - Completed 2025-10-27
   - Full `aligntrue init` command with intelligent context detection
   - Auto-detection of all 28 AI coding agents by checking output paths

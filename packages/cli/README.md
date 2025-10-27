@@ -67,9 +67,107 @@ aligntrue init
      2. Run sync: aligntrue sync
 ```
 
+### `aligntrue sync`
+
+Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).
+
+**Features:**
+- Default: IR → agents sync (rules.md to agent config files)
+- Pullback: agents → IR sync with `--accept-agent` flag
+- Preview changes with `--dry-run` before writing
+- Non-interactive mode for CI with `--force`
+- Lockfile validation in team mode (soft/strict enforcement)
+- Comprehensive error messages with actionable fixes
+
+**Usage:**
+```bash
+aligntrue sync [options]
+```
+
+**Options:**
+- `--dry-run` - Preview changes without writing files
+- `--accept-agent <name>` - Sync from agent to IR (Note: uses mock data, real parsers in Step 17)
+- `--force` - Non-interactive mode for CI
+- `--config <path>` - Custom config path (default: .aligntrue/config.yaml)
+
+**Examples:**
+
+Default sync (IR → agents):
+```bash
+aligntrue sync
+```
+
+Preview changes:
+```bash
+aligntrue sync --dry-run
+```
+
+Import from Cursor (mock data):
+```bash
+aligntrue sync --accept-agent cursor
+```
+
+Non-interactive for CI:
+```bash
+aligntrue sync --force
+```
+
+**What it does:**
+1. Loads `.aligntrue/config.yaml` configuration
+2. Validates source file exists (default: `.aligntrue/rules.md`)
+3. Discovers and loads exporters from registry
+4. Resolves hierarchical scopes (if configured)
+5. Validates lockfile (team mode only)
+6. Syncs IR to agent config files
+7. Shows files written, warnings, conflicts
+
+**Output example:**
+```
+┌  AlignTrue Sync
+│
+◇  Configuration loaded
+│
+◇  Loaded 2 exporters
+│  ✓ Active: cursor, agents-md
+│
+◇  Sync complete
+│  ✓ Wrote 2 files
+│    .cursor/rules/aligntrue.mdc
+│    AGENTS.md
+│
+└  ✓ Sync complete
+```
+
+**Troubleshooting:**
+
+**Config not found:**
+```
+✗ AlignTrue not initialized
+Run: aligntrue init
+```
+
+**Source file not found:**
+```
+✗ Source file not found: .aligntrue/rules.md
+Check your config.yaml sources section
+```
+
+**Exporter not found:**
+```
+⚠ Exporter not found: my-exporter
+Check exporters list in config.yaml
+```
+
+**Lockfile drift (team mode):**
+```
+✗ Lockfile validation failed in strict mode
+Options:
+  1. Review changes and update lockfile: aligntrue lock
+  2. Set lockfile.mode: soft in config for warnings only
+```
+
 ### Other Commands
 
-- `aligntrue sync` - Sync rules to agents (Step 23)
 - `aligntrue check` - Validate rules and configuration (Step 25)
 - `aligntrue import` - Import rules from agent configs (Step 17)
 - `aligntrue md` - Markdown validation and formatting (Step 4 ✓)
