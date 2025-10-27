@@ -10,13 +10,14 @@ import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 export async function md(args: string[]): Promise<void> {
   if (args.length === 0 || args[0] === '--help') {
     console.log('Usage: aligntrue md <subcommand> <file> [options]\n')
+    console.log('Validate and compile literate markdown files\n')
     console.log('Subcommands:')
     console.log('  lint <file>       Validate markdown aligntrue blocks')
     console.log('  format <file>     Normalize whitespace in aligntrue blocks')
-    console.log('  compile <file>    Convert markdown to aligntrue.yaml')
-    console.log('\nOptions:')
-    console.log('  --check           Dry-run mode (format only)')
-    console.log('  --output <file>   Output file (compile only)')
+    console.log('  compile <file>    Convert markdown to aligntrue.yaml\n')
+    console.log('Options:')
+    console.log('  --check           Dry-run mode (format only, no writes)')
+    console.log('  --output <file>   Output file path (compile only, default: aligntrue.yaml)')
     process.exit(0)
   }
 

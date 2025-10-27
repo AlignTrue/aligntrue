@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **CLI Help and Error Polish** (Phase 1, Stage 3, Step 29) - Completed 2025-10-27
+  - Reorganized main help into sections (Basic, Development, Team, Settings)
+  - Standardized command help with Basic/Advanced flag grouping
+  - Comprehensive error message review across all 6 commands
+  - Validated all errors follow what/why/how format with actionable fixes
+  - Ensured fast help output (~95ms for --help, well under 1s requirement)
+  - Validated exit code consistency (0=ok, 1=validation, 2=system error)
+  - Updated CLI README with new help organization examples
+  - Professional CLI UX ready for golden repo testing (Step 32)
+  - Files updated:
+    - `packages/cli/src/index.ts` - Main help with 4 sections
+    - `packages/cli/src/commands/sync.ts` - Flag grouping + improved errors
+    - `packages/cli/src/commands/check.ts` - Flag grouping + exit codes
+    - `packages/cli/src/commands/md.ts` - Flag grouping
+    - `packages/cli/README.md` - Quick reference section + flag documentation
+
 ### Documentation
 - Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
 - Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
