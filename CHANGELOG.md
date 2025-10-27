@@ -14,6 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CLI Team/Telemetry/Scopes Commands** (Phase 1, Stage 3, Step 25) - Completed 2025-10-27
+  - Three new command groups for team mode, telemetry, and scopes management
+  - **Team Enable Command:**
+    - `aligntrue team enable` - Upgrade project to team mode
+    - Updates config.yaml to set mode: team
+    - Enables lockfile and bundle modules automatically
+    - Interactive confirmation with @clack/prompts
+    - Idempotent (handles already-team-mode gracefully)
+    - Shows next steps for lockfile generation
+    - 11 comprehensive tests (100% pass rate)
+  - **Telemetry Commands:**
+    - `aligntrue telemetry on|off|status` - Manage telemetry settings
+    - Simple JSON file storage (.aligntrue/telemetry.json)
+    - Opt-in only (disabled by default)
+    - Atomic writes for safety (temp+rename pattern)
+    - Clear messaging about what we collect (commands, targets, hashes)
+    - Clear messaging about what we never collect (code, paths, PII)
+    - 16 comprehensive tests (100% pass rate)
+  - **Scopes Command:**
+    - `aligntrue scopes` - List configured scopes from config
+    - Displays path, include/exclude patterns, rulesets
+    - Fast read-only operation (no file scanning)
+    - Helpful message when no scopes configured
+    - 11 comprehensive tests (100% pass rate)
+  - Files created:
+    - `packages/cli/src/commands/team.ts` (123 lines)
+    - `packages/cli/src/commands/telemetry.ts` (137 lines)
+    - `packages/cli/src/commands/scopes.ts` (92 lines)
+    - `packages/cli/tests/commands/team.test.ts` (213 lines, 11 tests)
+    - `packages/cli/tests/commands/telemetry.test.ts` (182 lines, 16 tests)
+    - `packages/cli/tests/commands/scopes.test.ts` (216 lines, 11 tests)
+  - Updated CLI entry point with command routing
+  - Comprehensive CLI README documentation with examples and output samples
+  - Total CLI tests: 82 passing (24 init + 20 sync + 16 telemetry + 11 scopes + 11 team)
+
 - **CLI Sync Command** (Phase 1, Stage 3, Step 23) - Completed 2025-10-27
   - Full `aligntrue sync` command with IR→agent sync
   - Flags: --dry-run (preview), --accept-agent (pullback with mock data), --force (non-interactive), --config (custom path)
