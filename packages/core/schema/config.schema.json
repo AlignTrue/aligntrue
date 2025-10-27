@@ -39,6 +39,18 @@
         }
       }
     },
+    "lockfile": {
+      "type": "object",
+      "description": "Lockfile-specific configuration",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["off", "soft", "strict"],
+          "description": "Lockfile validation mode: off (no validation), soft (warn on mismatch), strict (error on mismatch)"
+        }
+      }
+    },
     "git": {
       "type": "object",
       "description": "Git integration settings",

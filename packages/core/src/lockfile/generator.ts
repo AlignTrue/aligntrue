@@ -1,0 +1,64 @@
+/**
+ * Lockfile generator with per-rule and bundle hashing
+ */
+
+import type { AlignPack, AlignRule } from '@aligntrue/schema'
+import { canonicalizeJson, computeHash } from '@aligntrue/schema'
+import type { Lockfile, LockfileEntry } from './types.js'
+
+/**
+ * Generate lockfile from an AlignPack bundle
+ * 
+ * Uses canonical JSON (JCS) with vendor.volatile fields excluded
+ * 
+ * @param pack - AlignPack to generate lockfile from
+ * @param mode - Config mode (team or enterprise)
+ * @returns Lockfile with per-rule and bundle hashes
+ */
+export function generateLockfile(pack: AlignPack, mode: 'team' | 'enterprise'): Lockfile {
+  const entries: LockfileEntry[] = []
+  const ruleHashes: string[] = []
+  
+  // Generate per-rule hashes
+  for (const rule of pack.rules || []) {
+    const hash = hashRule(rule)
+    entries.push({
+      rule_id: rule.id,
+      content_hash: hash,
+      source: pack.source,
+    })
+    ruleHashes.push(hash)
+  }
+  
+  // Sort entries by rule_id for determinism
+  entries.sort((a, b) => a.rule_id.localeCompare(b.rule_id))
+  
+  // Generate bundle hash from sorted rule hashes
+  const bundleHash = computeBundleHash(ruleHashes.sort())
+  
+  return {
+    version: '1',
+    generated_at: new Date().toISOString(),
+    mode,
+    rules: entries,
+    bundle_hash: bundleHash,
+  }
+}
+
+/**
+ * Hash a single rule using canonical JSON (excludes vendor.volatile)
+ */
+export function hashRule(rule: AlignRule): string {
+  // Canonicalize with volatile field exclusion
+  const canonical = canonicalizeJson(rule, true)
+  return computeHash(canonical)
+}
+
+/**
+ * Compute bundle hash from sorted rule hashes
+ */
+function computeBundleHash(sortedHashes: string[]): string {
+  const combined = sortedHashes.join('\n')
+  return computeHash(combined)
+}
+
