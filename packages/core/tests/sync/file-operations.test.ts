@@ -52,7 +52,7 @@ describe('File Operations', () => {
   })
 
   describe('computeFileChecksum', () => {
-    it('computes SHA-256 checksum of file', () => {
+    it('computes SHA-256 checksum of file', async () => {
       const path = join(TEST_DIR, 'test.txt')
       writeFileSync(path, 'test content', 'utf8')
 
@@ -61,7 +61,7 @@ describe('File Operations', () => {
       expect(checksum).toMatch(/^[a-f0-9]{64}$/)
     })
 
-    it('produces consistent checksums', () => {
+    it('produces consistent checksums', async () => {
       const path = join(TEST_DIR, 'test.txt')
       writeFileSync(path, 'test content', 'utf8')
 
@@ -71,7 +71,7 @@ describe('File Operations', () => {
       expect(checksum1).toBe(checksum2)
     })
 
-    it('fails on non-existent file', () => {
+    it('fails on non-existent file', async () => {
       const path = join(TEST_DIR, 'nonexistent.txt')
 
       expect(() => computeFileChecksum(path)).toThrow(/not found/)
@@ -79,20 +79,20 @@ describe('File Operations', () => {
   })
 
   describe('computeContentChecksum', () => {
-    it('computes SHA-256 checksum of content', () => {
+    it('computes SHA-256 checksum of content', async () => {
       const checksum = computeContentChecksum('test content')
 
       expect(checksum).toMatch(/^[a-f0-9]{64}$/)
     })
 
-    it('produces consistent checksums', () => {
+    it('produces consistent checksums', async () => {
       const checksum1 = computeContentChecksum('test content')
       const checksum2 = computeContentChecksum('test content')
 
       expect(checksum1).toBe(checksum2)
     })
 
-    it('produces different checksums for different content', () => {
+    it('produces different checksums for different content', async () => {
       const checksum1 = computeContentChecksum('content 1')
       const checksum2 = computeContentChecksum('content 2')
 
@@ -101,7 +101,7 @@ describe('File Operations', () => {
   })
 
   describe('ensureDirectoryExists', () => {
-    it('creates directory if it does not exist', () => {
+    it('creates directory if it does not exist', async () => {
       const dir = join(TEST_DIR, 'new-dir')
 
       ensureDirectoryExists(dir)
@@ -109,7 +109,7 @@ describe('File Operations', () => {
       expect(existsSync(dir)).toBe(true)
     })
 
-    it('does nothing if directory already exists', () => {
+    it('does nothing if directory already exists', async () => {
       const dir = join(TEST_DIR, 'existing-dir')
       mkdirSync(dir, { recursive: true })
 
@@ -118,7 +118,7 @@ describe('File Operations', () => {
       expect(existsSync(dir)).toBe(true)
     })
 
-    it('creates nested directories', () => {
+    it('creates nested directories', async () => {
       const dir = join(TEST_DIR, 'nested/deep/dir')
 
       ensureDirectoryExists(dir)
@@ -126,7 +126,7 @@ describe('File Operations', () => {
       expect(existsSync(dir)).toBe(true)
     })
 
-    it('fails if path is a file', () => {
+    it('fails if path is a file', async () => {
       const path = join(TEST_DIR, 'file.txt')
       writeFileSync(path, 'content', 'utf8')
 
@@ -136,27 +136,27 @@ describe('File Operations', () => {
 
   describe('AtomicFileWriter', () => {
     describe('write', () => {
-      it('writes content to file', () => {
+      it('writes content to file', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
 
-        writer.write(path, 'test content')
+        await writer.write(path, 'test content')
 
         expect(existsSync(path)).toBe(true)
         expect(readFileSync(path, 'utf8')).toBe('test content')
       })
 
-      it('creates parent directories', () => {
+      it('creates parent directories', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'nested/dir/test.txt')
 
-        writer.write(path, 'test content')
+        await writer.write(path, 'test content')
 
         expect(existsSync(path)).toBe(true)
         expect(readFileSync(path, 'utf8')).toBe('test content')
       })
 
-      it('overwrites existing file', () => {
+      it('overwrites existing file', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'existing.txt')
         writeFileSync(path, 'old content', 'utf8')
@@ -164,37 +164,37 @@ describe('File Operations', () => {
         // Track the file first
         writer.trackFile(path)
 
-        writer.write(path, 'new content')
+        await writer.write(path, 'new content')
 
         expect(readFileSync(path, 'utf8')).toBe('new content')
       })
 
-      it('tracks checksum after write', () => {
+      it('tracks checksum after write', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
 
-        writer.write(path, 'test content')
+        await writer.write(path, 'test content')
 
         const record = writer.getChecksum(path)
         expect(record).toBeDefined()
         expect(record!.checksum).toMatch(/^[a-f0-9]{64}$/)
       })
 
-      it('creates backup before overwrite', () => {
+      it('creates backup before overwrite', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'existing.txt')
         const backupPath = `${path}.backup`
         writeFileSync(path, 'original content', 'utf8')
         writer.trackFile(path)
 
-        writer.write(path, 'new content')
+        await writer.write(path, 'new content')
 
         // Backup should be cleaned up after successful write
         expect(existsSync(backupPath)).toBe(false)
         expect(readFileSync(path, 'utf8')).toBe('new content')
       })
 
-      it('detects manual edits (overwrite protection)', () => {
+      it('detects manual edits (overwrite protection)', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'manual-edit.txt')
         writeFileSync(path, 'original', 'utf8')
@@ -204,16 +204,17 @@ describe('File Operations', () => {
         // Manually edit the file
         writeFileSync(path, 'manually edited', 'utf8')
 
-        // Should detect the edit
-        expect(() => writer.write(path, 'new content')).toThrow(/manually edited/)
+        // Should detect the edit and throw when no handler is provided
+        // (non-interactive mode without checksumHandler)
+        await expect(writer.write(path, 'new content')).rejects.toThrow(/manually edited/)
       })
 
-      it('uses temp file + rename for atomicity', () => {
+      it('uses temp file + rename for atomicity', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
         const tempPath = `${path}.tmp`
 
-        writer.write(path, 'test content')
+        await writer.write(path, 'test content')
 
         // Temp file should not exist after successful write
         expect(existsSync(tempPath)).toBe(false)
@@ -222,13 +223,13 @@ describe('File Operations', () => {
     })
 
     describe('rollback', () => {
-      it('restores from backup on rollback', () => {
+      it('restores from backup on rollback', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
         writeFileSync(path, 'original', 'utf8')
         writer.trackFile(path)
 
-        writer.write(path, 'new content')
+        await writer.write(path, 'new content')
         
         // Manually create a backup (simulating partial write)
         const backupPath = `${path}.backup`
@@ -236,13 +237,13 @@ describe('File Operations', () => {
         
         // Clear checksums to avoid manual edit detection
         writer.clear()
-        writer.write(path, 'another change')
+        await writer.write(path, 'another change')
 
         // Actually we need to test this differently - rollback happens during write failure
         expect(readFileSync(path, 'utf8')).toBe('another change')
       })
 
-      it('clears backups after rollback', () => {
+      it('clears backups after rollback', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
         writeFileSync(path, 'original', 'utf8')
@@ -255,7 +256,7 @@ describe('File Operations', () => {
     })
 
     describe('trackFile', () => {
-      it('tracks existing file checksum', () => {
+      it('tracks existing file checksum', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'existing.txt')
         writeFileSync(path, 'content', 'utf8')
@@ -269,7 +270,7 @@ describe('File Operations', () => {
         expect(record!.timestamp).toBeDefined()
       })
 
-      it('fails on non-existent file', () => {
+      it('fails on non-existent file', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'nonexistent.txt')
 
@@ -278,7 +279,7 @@ describe('File Operations', () => {
     })
 
     describe('clear', () => {
-      it('clears tracked checksums', () => {
+      it('clears tracked checksums', async () => {
         const writer = new AtomicFileWriter()
         const path = join(TEST_DIR, 'test.txt')
         writeFileSync(path, 'content', 'utf8')

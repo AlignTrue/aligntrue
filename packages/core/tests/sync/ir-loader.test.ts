@@ -45,12 +45,13 @@ describe('IR Loader', () => {
 Some guidance here.
 
 \`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 \`\`\`
 `
@@ -59,25 +60,25 @@ rules:
 
       const ir = await loadIR(path)
 
-      expect(ir.id).toBe('test.pack')
+      expect(ir.id).toBe('test-pack')
       expect(ir.version).toBe('1.0.0')
       expect(ir.spec_version).toBe('1')
       expect(ir.rules).toHaveLength(1)
-      expect(ir.rules![0].id).toBe('test.rule')
+      expect(ir.rules![0].id).toBe('test-rule')
     })
 
     it('fails on invalid markdown (multiple blocks)', async () => {
       const markdown = `# Test
 
 \`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
 \`\`\`
 
 \`\`\`aligntrue
-id: test.pack2
+id: test-pack2
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -86,14 +87,14 @@ rules: []
       const path = join(TEST_DIR, 'invalid-markdown.md')
       writeFileSync(path, markdown, 'utf8')
 
-      await expect(loadIR(path)).rejects.toThrow('multiple')
+      await expect(loadIR(path)).rejects.toThrow(/only one block|Only one block/i)
     })
 
     it('surfaces markdown line numbers in errors', async () => {
       const markdown = `# Test Rules
 
 \`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -110,12 +111,13 @@ rules:
 
   describe('Load from YAML', () => {
     it('loads valid YAML', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
+    applies_to: ["**/*.ts"]
     guidance: Test rule
 `
       const path = join(TEST_DIR, 'valid.yaml')
@@ -123,19 +125,19 @@ rules:
 
       const ir = await loadIR(path)
 
-      expect(ir.id).toBe('test.pack')
+      expect(ir.id).toBe('test-pack')
       expect(ir.version).toBe('1.0.0')
       expect(ir.spec_version).toBe('1')
       expect(ir.rules).toHaveLength(1)
-      expect(ir.rules![0].id).toBe('test.rule')
+      expect(ir.rules![0].id).toBe('test-rule')
     })
 
     it('fails on invalid YAML syntax', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: warn
     guidance: "unclosed string
 `
@@ -146,7 +148,7 @@ rules:
     })
 
     it('surfaces YAML line numbers in errors', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -163,7 +165,7 @@ rules:
   describe('Format auto-detection', () => {
     it('detects .md extension', async () => {
       const markdown = `\`\`\`aligntrue
-id: test.pack
+id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -173,11 +175,11 @@ rules: []
       writeFileSync(path, markdown, 'utf8')
 
       const ir = await loadIR(path)
-      expect(ir.id).toBe('test.pack')
+      expect(ir.id).toBe('test-pack')
     })
 
     it('detects .yaml extension', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules: []
@@ -186,7 +188,7 @@ rules: []
       writeFileSync(path, yaml, 'utf8')
 
       const ir = await loadIR(path)
-      expect(ir.id).toBe('test.pack')
+      expect(ir.id).toBe('test-pack')
     })
 
     it('rejects unsupported extensions', async () => {
@@ -205,11 +207,11 @@ rules: []
     })
 
     it('fails on invalid IR schema', async () => {
-      const yaml = `id: test.pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test-rule
     severity: invalid_severity
 `
       const path = join(TEST_DIR, 'invalid-yaml.yaml')
