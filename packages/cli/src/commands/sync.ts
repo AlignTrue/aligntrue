@@ -146,10 +146,32 @@ Expected path: ${absoluteSourcePath}`)
     process.exit(1)
   }
 
-  // Step 4: Check for --accept-agent flag (mock data warning)
+  // Step 4: Auto-pull logic (solo mode)
+  let shouldAutoPull = false
+  let autoPullAgent: string | undefined
+
+  if (config.sync?.auto_pull && !parsed.acceptAgent) {
+    // Auto-pull enabled and user didn't manually specify agent
+    autoPullAgent = config.sync.primary_agent
+    
+    if (autoPullAgent) {
+      // Check if primary agent's file exists
+      const { canImportFromAgent, getImportSourcePath } = await import('@aligntrue/core')
+      
+      if (canImportFromAgent(autoPullAgent)) {
+        const agentSourcePath = getImportSourcePath(autoPullAgent, cwd)
+        
+        if (existsSync(agentSourcePath)) {
+          shouldAutoPull = true
+          clack.log.info(`Auto-pull enabled: pulling from ${autoPullAgent}`)
+        }
+      }
+    }
+  }
+
+  // Step 5: Check for --accept-agent flag
   if (parsed.acceptAgent) {
-    clack.log.warn('⚠ Using mock data for agent import (real parsers coming in Step 17)')
-    clack.log.info(`Attempting to sync from: ${parsed.acceptAgent}`)
+    clack.log.info(`Manual import from: ${parsed.acceptAgent}`)
   }
 
   // Step 5: Discover and load exporters
@@ -200,9 +222,7 @@ Expected path: ${absoluteSourcePath}`)
     process.exit(1)
   }
 
-  // Step 6: Execute sync
-  spinner.start(parsed.dryRun ? 'Previewing changes' : 'Syncing to agents')
-
+  // Step 6: Execute sync (with auto-pull if enabled)
   try {
     const syncOptions: any = {
       configPath,
@@ -216,11 +236,34 @@ Expected path: ${absoluteSourcePath}`)
     }
 
     let result
+    
+    // First: Auto-pull from primary agent (if enabled)
+    if (shouldAutoPull && autoPullAgent) {
+      spinner.start(`Auto-pulling from ${autoPullAgent}`)
+      
+      const pullResult = await engine.syncFromAgent(autoPullAgent, absoluteSourcePath, {
+        ...syncOptions,
+        interactive: false, // Auto-pull is non-interactive
+        defaultResolutionStrategy: config.sync?.on_conflict || 'accept_agent',
+      })
+      
+      spinner.stop(`Auto-pull complete from ${autoPullAgent}`)
+      
+      if (!pullResult.success) {
+        clack.log.warn(`Auto-pull failed: ${pullResult.warnings?.[0] || 'Unknown error'}`)
+      } else if (pullResult.written && pullResult.written.length > 0) {
+        clack.log.success(`Updated IR from ${autoPullAgent}`)
+      }
+    }
+    
+    // Then: Execute requested sync operation
     if (parsed.acceptAgent) {
-      // Agent → IR sync (pullback)
+      // Manual agent → IR sync (pullback)
+      spinner.start(parsed.dryRun ? 'Previewing import' : `Importing from ${parsed.acceptAgent}`)
       result = await engine.syncFromAgent(parsed.acceptAgent, absoluteSourcePath, syncOptions)
     } else {
       // IR → agents sync (default)
+      spinner.start(parsed.dryRun ? 'Previewing changes' : 'Syncing to agents')
       result = await engine.syncToAgents(absoluteSourcePath, syncOptions)
     }
 

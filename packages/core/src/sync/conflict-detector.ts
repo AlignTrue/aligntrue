@@ -4,6 +4,7 @@
  */
 
 import type { AlignRule } from '@aligntrue/schema'
+import type { AlignTrueConfig } from '../config/index.js'
 
 /**
  * Conflict resolution strategy
@@ -448,5 +449,33 @@ export class ConflictDetector {
 
     return lines.join('\n')
   }
+}
+
+/**
+ * Determine if solo mode fast path should be used
+ * Solo mode with auto-pull skips conflict detection entirely
+ */
+export function shouldUseSoloFastPath(config: AlignTrueConfig, agentName: string): boolean {
+  // Only for solo mode
+  if (config.mode !== 'solo') {
+    return false
+  }
+  
+  // Only if auto_pull is enabled
+  if (!config.sync?.auto_pull) {
+    return false
+  }
+  
+  // Only if this is the primary agent
+  if (config.sync?.primary_agent && config.sync.primary_agent !== agentName) {
+    return false
+  }
+  
+  // Only if on_conflict is set to accept_agent
+  if (config.sync?.on_conflict !== 'accept_agent') {
+    return false
+  }
+  
+  return true
 }
 
