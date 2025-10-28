@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/cli",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "type": "module",
   "bin": {
     "aligntrue": "./dist/index.js",
@@ -37,8 +37,7 @@
     "node": ">=20"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }
 

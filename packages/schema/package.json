@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/schema",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,6 @@
     "vitest": "^4.0.4"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

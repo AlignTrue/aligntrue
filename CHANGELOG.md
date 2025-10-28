@@ -7,7 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-alpha.2] - 2025-10-28
+
+### Added
+
+- **Second npm publish** on `next` tag (fixed alpha release)
+- Successfully published 10 @aligntrue/* packages to npm:
+  - `@aligntrue/cli` - Command-line interface
+  - `@aligntrue/core` - Core sync engine
+  - `@aligntrue/schema` - JSON Schema validation
+  - `@aligntrue/exporters` - Agent-specific exporters (32 adapters)
+  - `@aligntrue/markdown-parser` - Literate markdown parser
+  - `@aligntrue/sources` - Multi-source rule pulling
+  - `@aligntrue/plugin-contracts` - Plugin interfaces
+  - `@aligntrue/file-utils` - Safe file operations
+  - `@aligntrue/checks` - Check runner engine
+  - `@aligntrue/testkit` - Conformance tests
+
+### Fixed
+
+- **Republished with correct dependencies** - Used `pnpm publish` instead of `npm publish` to properly resolve `workspace:*` dependencies to version numbers
+- **Packages now installable** - All dependencies correctly resolved to `0.1.0-alpha.2`
+- **Working npm workflow** - Verified `npm install -g @aligntrue/cli@next` works correctly
+- **CLI fully functional** - Tested `init`, `sync`, and other commands from npm install
+
+### Note
+
+The `aligntrue` shim package will be published after 24-hour npm restriction period.  
+Until then, use `@aligntrue/cli@next` directly.
+
+### Installation
+
+```bash
+# Install CLI (recommended)
+npm install -g @aligntrue/cli@next
+
+# Or use npx
+npx @aligntrue/cli@next init
+```
+
+This is an **alpha release** on the `next` tag. The API is not stable and may change.  
+Not recommended for production use.
+
+For stable releases, wait for `0.1.0` on the `latest` tag.
+
 ## [0.1.0-alpha.1] - 2025-10-28
+
+### Note
+
+This version was unpublished due to broken dependencies (`workspace:*` not resolved).  
+Use `0.1.0-alpha.2` instead.
 
 ### Added
 
