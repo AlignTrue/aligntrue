@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/testkit",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "description": "Conformance testkit for Align Spec v1 implementations",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,5 +42,12 @@
     "testkit",
     "validation"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }
