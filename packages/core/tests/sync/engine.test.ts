@@ -484,9 +484,9 @@ rules:
 
       const result = await engine.syncFromAgent('cursor', rulesPath, { configPath })
 
-      // Should succeed with warning about no agent rules (Step 17 will provide real parsers)
-      expect(result.success).toBe(true)
-      expect(result.warnings?.[0]).toContain('No rules found in agent')
+      // Should fail because .cursor/rules directory doesn't exist in test environment
+      expect(result.success).toBe(false)
+      expect(result.warnings?.[0]).toContain('.cursor/rules directory not found')
     })
   })
 

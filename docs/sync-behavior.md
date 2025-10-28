@@ -65,7 +65,39 @@ aligntrue sync --force
 
 ### Agent → IR (Pullback)
 
-**When:** `aligntrue sync --accept-agent <name>` (explicit opt-in)
+**When:** 
+- **Solo mode (auto-pull):** Automatically before every `aligntrue sync` (default)
+- **Team mode (manual):** `aligntrue sync --accept-agent <name>` (explicit opt-in)
+
+**Solo Mode Auto-Pull:**
+
+Solo developers editing native agent formats (`.cursor/*.mdc`, `AGENTS.md`) benefit from automatic pull on sync:
+
+```bash
+# Edit native format
+vi .cursor/rules/aligntrue-starter.mdc
+
+# Auto-pull happens automatically
+aligntrue sync
+# ◇ Auto-pull: pulling from cursor
+# ✓ Updated IR from cursor
+# ✓ Synced to: AGENTS.md
+```
+
+**Configuration:**
+
+```yaml
+# .aligntrue/config.yaml
+exporters:
+  - cursor
+  - agents-md
+
+# Auto-enabled for solo mode
+sync:
+  auto_pull: true  # Default for solo mode
+  primary_agent: cursor  # Auto-detected from exporters
+  on_conflict: accept_agent  # Default for solo mode
+```
 
 **Flow:**
 
@@ -77,7 +109,7 @@ Agent files → Parse → Detect conflicts → Resolve → .aligntrue/rules.md
 
 1. Load existing IR from `.aligntrue/rules.md`
 2. Parse agent files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-3. Detect conflicts (field-level comparison)
+3. Detect conflicts (field-level comparison in team mode, auto-accept in solo mode)
 4. Prompt for resolution (interactive mode)
 5. Apply changes to IR
 6. Write updated `.aligntrue/rules.md`

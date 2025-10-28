@@ -10,6 +10,8 @@ import * as yaml from 'yaml'
 import { detectContext, getContextDescription } from '../utils/detect-context.js'
 import { detectAgents, getAgentDisplayName } from '../utils/detect-agents.js'
 import { getStarterTemplate } from '../templates/starter-rules.js'
+import { generateCursorStarter, getCursorStarterPath } from '../templates/cursor-starter.js'
+import { generateAgentsMdStarter, getAgentsMdStarterPath } from '../templates/agents-md-starter.js'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 /**
@@ -134,14 +136,36 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`)
 
   const projectId = projectIdResponse as string
 
-  // Step 7: Confirm file creation
+  // Step 7: Determine primary agent and template format
+  const primaryAgent = selectedAgents[0] || 'cursor'
+  const useNativeFormat = ['cursor', 'copilot', 'claude-code', 'aider', 'agents-md'].includes(primaryAgent)
+  
+  let nativeTemplatePath: string | null = null
+  let nativeTemplate: string | null = null
+  
+  if (useNativeFormat) {
+    if (primaryAgent === 'cursor') {
+      nativeTemplatePath = getCursorStarterPath()
+      nativeTemplate = generateCursorStarter()
+    } else {
+      // For all other agents, use AGENTS.md format
+      nativeTemplatePath = getAgentsMdStarterPath()
+      nativeTemplate = generateAgentsMdStarter()
+    }
+  }
+
+  // Step 8: Confirm file creation
   const aligntrueDir = join(cwd, '.aligntrue')
   const configPath = join(aligntrueDir, 'config.yaml')
-  const rulesPath = join(aligntrueDir, 'rules.md')
 
   clack.log.info('\nWill create:')
-  clack.log.info(`  - .aligntrue/config.yaml`)
-  clack.log.info(`  - .aligntrue/rules.md`)
+  clack.log.info(`  - .aligntrue/config.yaml (minimal solo config)`)
+  
+  if (nativeTemplatePath && nativeTemplate) {
+    clack.log.info(`  - ${nativeTemplatePath} (5 starter rules in native format)`)
+  } else {
+    clack.log.info(`  - .aligntrue/rules.md (IR format)`)
+  }
 
   const confirmCreate = await clack.confirm({
     message: 'Continue?',
@@ -153,7 +177,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`)
     process.exit(0)
   }
 
-  // Step 8: Create files
+  // Step 9: Create files
   spinner.start('Creating files')
 
   // Create .aligntrue/ directory
@@ -161,29 +185,40 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`)
     mkdirSync(aligntrueDir, { recursive: true })
   }
 
-  // Generate config
+  // Generate minimal config (solo mode defaults)
   const config = {
-    version: '1',
-    mode: 'solo',
-    sources: [
-      {
-        type: 'local',
-        path: '.aligntrue/rules.md',
-      },
-    ],
     exporters: selectedAgents.length > 0 ? selectedAgents : ['cursor', 'agents-md'],
   }
 
   writeFileSync(configPath, yaml.stringify(config), 'utf-8')
 
-  // Generate starter template
-  const template = getStarterTemplate(projectId)
-  writeFileSync(rulesPath, template, 'utf-8')
+  // Create native format template or IR fallback
+  const createdFiles: string[] = ['.aligntrue/config.yaml']
+  
+  if (nativeTemplatePath && nativeTemplate) {
+    // Create native format starter
+    const nativeFullPath = join(cwd, nativeTemplatePath)
+    const nativeDir = join(cwd, nativeTemplatePath.substring(0, nativeTemplatePath.lastIndexOf('/')))
+    
+    if (!existsSync(nativeDir)) {
+      mkdirSync(nativeDir, { recursive: true })
+    }
+    
+    writeFileSync(nativeFullPath, nativeTemplate, 'utf-8')
+    createdFiles.push(nativeTemplatePath)
+  } else {
+    // Fallback to IR format
+    const rulesPath = join(aligntrueDir, 'rules.md')
+    const template = getStarterTemplate(projectId)
+    writeFileSync(rulesPath, template, 'utf-8')
+    createdFiles.push('.aligntrue/rules.md')
+  }
 
   spinner.stop('Files created')
 
-  clack.log.success('✓ Created .aligntrue/config.yaml')
-  clack.log.success('✓ Created .aligntrue/rules.md')
+  createdFiles.forEach(file => {
+    clack.log.success(`✓ Created ${file}`)
+  })
 
   // Step 9: Prompt to run sync
   const runSync = await clack.confirm({
@@ -191,19 +226,27 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`)
     initialValue: true,
   })
 
+  const editPath = nativeTemplatePath || '.aligntrue/rules.md'
+  
   if (clack.isCancel(runSync)) {
-    clack.outro('\nNext steps:\n  1. Edit rules: .aligntrue/rules.md\n  2. Run sync: aligntrue sync')
+    clack.outro(`\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`)
     process.exit(0)
   }
 
   if (runSync) {
     clack.log.info('\nRunning sync...')
-    // TODO: Import and call sync command here in Step 23
-    // For now, just tell user to run it manually
-    clack.log.warn('Sync command not yet implemented (Step 23)')
-    clack.outro('\nNext steps:\n  1. Edit rules: .aligntrue/rules.md\n  2. Run sync: aligntrue sync (coming in Step 23)')
+    
+    try {
+      // Import and run sync command
+      const { sync } = await import('./sync.js')
+      await sync([])
+    } catch (error) {
+      clack.log.error(`Sync failed: ${error instanceof Error ? error.message : String(error)}`)
+      clack.outro(`\n✗ Sync failed but files created successfully\n\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`)
+      process.exit(1)
+    }
   } else {
-    clack.outro('\nNext steps:\n  1. Edit rules: .aligntrue/rules.md\n  2. Run sync: aligntrue sync')
+    clack.outro(`\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`)
   }
 
   // Record telemetry event

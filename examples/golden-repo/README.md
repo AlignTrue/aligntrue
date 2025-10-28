@@ -4,11 +4,21 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 
 ## What's Inside
 
-- **`.aligntrue/config.yaml`** - Configuration for solo mode with 3 exporters
+- **`.aligntrue/config.yaml`** - Minimal solo mode configuration (2 lines)
 - **`.aligntrue/rules.md`** - 5 example rules covering common development practices
 - **`.cursor/rules/aligntrue.mdc`** - Generated Cursor rules (with content hash)
 - **`AGENTS.md`** - Universal format for Claude, Copilot, Aider, and more
 - **`.vscode/mcp.json`** - VS Code MCP configuration
+
+## Solo Developer Workflow
+
+This repository demonstrates the **native-format-first workflow** for solo developers:
+
+1. **Edit rules in your preferred format** (`.cursor/*.mdc`, `AGENTS.md`, or `.aligntrue/rules.md`)
+2. **Save changes**
+3. **Run sync** (auto-pulls from primary agent, pushes to all others)
+
+No YAML knowledge required! The IR format (`.aligntrue/rules.md`) is generated automatically.
 
 ## Quick Start
 

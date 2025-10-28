@@ -167,6 +167,21 @@ Check `examples/markdown/` in the AlignTrue repository for more rule examples.
 
 Run into issues? See [Troubleshooting Guide](troubleshooting.md) for common solutions.
 
+### Auto-Sync on Save (Optional)
+
+Want rules to sync automatically when you save? Set up a file watcher:
+
+```bash
+# Quick option (VS Code)
+# Add to .vscode/tasks.json - see file-watcher-setup.md
+
+# Universal option (any editor)
+npm install -g nodemon
+nodemon --watch .cursor/rules --watch AGENTS.md --exec "aligntrue sync"
+```
+
+**Full guide:** See [File Watcher Setup](file-watcher-setup.md) for platform-specific instructions (VS Code, macOS, Linux, Windows).
+
 ### Advanced Features
 
 When your project grows, explore:
@@ -179,5 +194,8 @@ When your project grows, explore:
 
 **That's it!** You now have consistent AI rules across all your coding agents.
 
-Edit `.aligntrue/rules.md` whenever you want to update your rules, then run `aligntrue sync` to push changes to your agents.
+**Workflow:**
+1. Edit rules in your preferred format (`.cursor/*.mdc`, `AGENTS.md`, or `.aligntrue/rules.md`)
+2. Save changes
+3. Run `aligntrue sync` (or set up auto-sync)
 

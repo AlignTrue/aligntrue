@@ -4,7 +4,7 @@
   "title": "AlignTrue Config v1",
   "description": "Configuration schema for AlignTrue CLI (solo/team/enterprise modes)",
   "type": "object",
-  "required": ["version", "mode"],
+  "required": [],
   "additionalProperties": true,
   "properties": {
     "version": {
@@ -68,6 +68,26 @@
             "type": "string",
             "enum": ["ignore", "commit", "branch"]
           }
+        }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "description": "Sync behavior configuration",
+      "additionalProperties": false,
+      "properties": {
+        "auto_pull": {
+          "type": "boolean",
+          "description": "Automatically pull changes from primary agent on sync (default: true for solo, false for team)"
+        },
+        "primary_agent": {
+          "type": "string",
+          "description": "Primary agent to auto-pull from (e.g., 'cursor', 'copilot')"
+        },
+        "on_conflict": {
+          "type": "string",
+          "enum": ["prompt", "keep_ir", "accept_agent"],
+          "description": "Conflict resolution strategy: prompt (interactive), keep_ir (default), accept_agent (auto-accept)"
         }
       }
     },
