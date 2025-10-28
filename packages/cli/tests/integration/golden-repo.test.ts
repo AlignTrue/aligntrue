@@ -82,30 +82,39 @@ describe('Golden Repository Workflows', () => {
     expect(initialHashMatch).toBeTruthy()
     const initialHash = initialHashMatch![1]
 
-    // Edit rules: add new rule before closing fence
-    const rulesPath = join(projectDir, '.aligntrue/rules.md')
-    const rulesContent = await fs.readFile(rulesPath, 'utf8')
-    const updatedRules = rulesContent.replace(
-      /```\s*$/,
-      `  - id: new-rule
-    severity: info
-    applies_to: ["**/*.ts"]
-    guidance: New rule added
-\`\`\``
-    )
-    await fs.writeFile(rulesPath, updatedRules)
+    // Edit native format (Cursor .mdc) - this is the solo dev workflow
+    const cursorPath = join(projectDir, '.cursor/rules/aligntrue.mdc')
+    const cursorContent = await fs.readFile(cursorPath, 'utf8')
+    const updatedCursor = cursorContent.replace(
+      /Content Hash:/,
+      `## Rule: new-rule
 
-    // Sync again
+**Severity:** INFO  
+**Applies to:** \`**/*.ts\`
+
+New rule added via native format editing
+
+---
+
+Content Hash:`
+    )
+    await fs.writeFile(cursorPath, updatedCursor)
+
+    // Sync again - auto-pull will pull from Cursor, then sync to other agents
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})
 
     // Verify hash changed
-    const updatedCursor = await fs.readFile(join(projectDir, '.cursor/rules/aligntrue.mdc'), 'utf8')
-    const updatedHashMatch = updatedCursor.match(/Content Hash: ([a-f0-9]{64})/)
-    expect(updatedHashMatch).toBeTruthy()
-    const updatedHash = updatedHashMatch![1]
+    const finalCursor = await fs.readFile(cursorPath, 'utf8')
+    const finalHashMatch = finalCursor.match(/Content Hash: ([a-f0-9]{64})/)
+    expect(finalHashMatch).toBeTruthy()
+    const finalHash = finalHashMatch![1]
 
-    expect(updatedHash).not.toBe(initialHash)
-    expect(updatedCursor).toContain('new-rule')
+    expect(finalHash).not.toBe(initialHash)
+    expect(finalCursor).toContain('new-rule')
+    
+    // Verify AGENTS.md also has the new rule
+    const agentsMd = await fs.readFile(join(projectDir, 'AGENTS.md'), 'utf8')
+    expect(agentsMd).toContain('new-rule')
   })
 
   it('Multi-exporter validation generates all 3 outputs with correct format', async () => {
@@ -138,30 +147,41 @@ describe('Golden Repository Workflows', () => {
     expect(mcpJson.content_hash).toMatch(/^[a-f0-9]{64}$/)
   })
 
-  it('Conflict detection identifies manual edits with force overwrite', async () => {
+  it('Auto-pull pulls manual Cursor edits into IR and syncs to other agents', async () => {
     // Setup
-    const projectDir = join(testDir, 'conflict-project')
+    const projectDir = join(testDir, 'auto-pull-project')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
 
     // Initial sync
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})
 
-    // Manually edit Cursor output
+    // Manually edit Cursor output (simulating native-format editing)
+    // Change guidance text rather than rule ID (to avoid schema validation issues)
     const cursorPath = join(projectDir, '.cursor/rules/aligntrue.mdc')
     const cursorContent = await fs.readFile(cursorPath, 'utf8')
-    const modifiedCursor = cursorContent.replace('testing-require-tests', 'testing-require-tests-MODIFIED')
+    const modifiedCursor = cursorContent.replace(
+      'Every new feature must include unit tests',
+      'Every new feature must include comprehensive unit tests'
+    )
     await fs.writeFile(cursorPath, modifiedCursor)
 
-    // Regular sync with --force should overwrite manual changes (IR→agent direction)
+    // Sync with --force (non-interactive) - auto-pull will pull the edit from Cursor
     execSync(`node ${CLI_PATH} sync --force`, {
       cwd: projectDir,
       stdio: 'pipe',
     })
 
-    // Verify manual edit was overwritten
-    const restoredCursor = await fs.readFile(cursorPath, 'utf8')
-    expect(restoredCursor).toContain('testing-require-tests')
-    expect(restoredCursor).not.toContain('testing-require-tests-MODIFIED')
+    // Verify edit was preserved in Cursor (auto-pull accepted it)
+    const finalCursor = await fs.readFile(cursorPath, 'utf8')
+    expect(finalCursor).toContain('comprehensive unit tests')
+    
+    // Verify edit was synced to IR
+    const rulesContent = await fs.readFile(join(projectDir, '.aligntrue/rules.md'), 'utf8')
+    expect(rulesContent).toContain('comprehensive unit tests')
+    
+    // Verify edit was synced to other agents
+    const agentsMd = await fs.readFile(join(projectDir, 'AGENTS.md'), 'utf8')
+    expect(agentsMd).toContain('comprehensive unit tests')
   })
 
   it('Dry-run mode shows audit trail without writing files', async () => {
