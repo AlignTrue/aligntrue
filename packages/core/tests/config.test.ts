@@ -668,7 +668,6 @@ mode: solo
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligns.git
-    ref: main
 `)
     
     const config = await loadConfig(configPath)

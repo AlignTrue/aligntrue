@@ -86,13 +86,27 @@ function getVolatileFields(rule: AlignRule): string[] {
 
 /**
  * Deep equality check for values
+ * Note: undefined !== null !== []
  */
 function deepEquals(a: unknown, b: unknown): boolean {
   if (a === b) return true
-  if (a == null || b == null) return false
+  
+  // Treat undefined and null as different values
+  if (a === undefined || b === undefined) return false
+  if (a === null || b === null) return a === b
+  
   if (typeof a !== typeof b) return false
 
   if (typeof a === 'object' && typeof b === 'object') {
+    // Handle arrays
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return false
+      return a.every((val, idx) => deepEquals(val, b[idx]))
+    }
+    
+    // Handle objects
+    if (Array.isArray(a) !== Array.isArray(b)) return false
+    
     const aKeys = Object.keys(a as object).sort()
     const bKeys = Object.keys(b as object).sort()
 
@@ -171,9 +185,11 @@ function compareVendorBags(
 
       for (const subKey of new Set([...Object.keys(irObj), ...Object.keys(agentObj)])) {
         const fullSubField = `${fullField}.${subKey}`
+        // Check volatile with both full path and vendor-relative path
+        const vendorRelativePath = fullSubField.replace(/^vendor\./, '')
 
         // Skip volatile fields
-        if (isVolatileField(fullSubField, volatileFields)) {
+        if (isVolatileField(fullSubField, volatileFields) || isVolatileField(vendorRelativePath, volatileFields)) {
           continue
         }
 
@@ -238,7 +254,7 @@ export class ConflictDetector {
       const volatileFields = getVolatileFields(irRule)
 
       // Compare core fields (excluding vendor bags initially)
-      const coreFields = ['severity', 'applies_to', 'guidance'] as const
+      const coreFields = ['severity', 'applies_to', 'guidance', 'tags'] as const
 
       for (const field of coreFields) {
         const irValue = irRule[field]
