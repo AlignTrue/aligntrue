@@ -1,0 +1,48 @@
+{
+  "name": "aligntrue",
+  "version": "0.1.0-alpha.1",
+  "description": "AlignTrue CLI shim - AI alignment rules for developers",
+  "type": "module",
+  "bin": {
+    "aligntrue": "./dist/index.js",
+    "at": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aligntrue/cli": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "aligntrue",
+    "ai",
+    "alignment",
+    "rules",
+    "cursor",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlignTrue/aligntrue.git",
+    "directory": "packages/aligntrue"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
+
