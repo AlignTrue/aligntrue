@@ -42,7 +42,7 @@ async function main() {
   
   // Handle implemented commands
   if (command === 'init') {
-    await init();
+    await init(commandArgs);
     return;
   }
   
