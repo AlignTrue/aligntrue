@@ -9,13 +9,12 @@ This is a pnpm monorepo with the following packages:
 ```
 aligntrue/
 ├── apps/
-│   ├── web/          # Next.js catalog site (aligntrue.com)
+│   ├── web/          # Next.js catalog site (aligntrue.ai)
 │   └── docs/         # Nextra documentation site (/docs)
 ├── packages/
 │   ├── schema/       # JSON Schema, canonicalization, hashing
 │   ├── cli/          # Node CLI (aligntrue/aln)
 │   └── mcp/          # MCP server (Phase 2+)
-└── basealigns/       # Temporary: base aligns (will move to aligns repo)
 ```
 
 ## Getting Started
@@ -55,17 +54,12 @@ pnpm typecheck
 
 ## Documentation
 
-**Core Guides:**
-- [MCP Scope & Boundaries](docs/mcp-scope.md) - What AlignTrue does vs doesn't do for MCP
-- [AlignTrue vs Ruler](docs/aligntrue-vs-ruler.md) - When to use each tool
-- [Architecture Decisions](docs/architecture-decisions.md) - Design rationale and technical decisions
-
 **Project Documentation:**
 - [Contributing Guide](CONTRIBUTING.md)
 - [Development Guide](DEVELOPMENT.md)
 - [Security Policy](SECURITY.md)
 
-Full documentation will be available at aligntrue.com/docs (Phase 4).
+Full documentation will be available at aligntrue.com/docs.
 
 ## License
 
