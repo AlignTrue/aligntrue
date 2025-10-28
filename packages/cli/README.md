@@ -18,6 +18,7 @@ Usage: aligntrue <command> [options]
 Basic Commands:
   init           Initialize AlignTrue in current directory
   sync           Sync rules to agents
+  import         Import rules from agent configs
   check          Validate rules and configuration
 
 Development Commands:
@@ -31,7 +32,6 @@ Settings:
   telemetry      Telemetry settings
 
 Coming Soon:
-  import         Import rules from agent configs
   migrate        Schema migration (preview mode)
 
 Run aligntrue <command> --help for command-specific options
@@ -100,6 +100,110 @@ aligntrue init
 └  Next steps:
      1. Edit rules: .aligntrue/rules.md
      2. Run sync: aligntrue sync
+```
+
+### `aligntrue import`
+
+Analyze and import rules from agent-specific formats with coverage analysis.
+
+**Features:**
+- Import from Cursor `.mdc` files or `AGENTS.md` universal format
+- Field-level coverage analysis showing IR mapping
+- Confidence calculation (high/medium/low) based on coverage percentage
+- Vendor metadata preservation for round-trip fidelity
+- Optional write to IR file with `--write` flag
+
+**Usage:**
+```bash
+aligntrue import <agent> [options]
+```
+
+**Arguments:**
+- `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
+
+**Options:**
+- `--coverage` - Show import coverage report (default: true)
+- `--no-coverage` - Skip coverage report
+- `--write` - Write imported rules to .aligntrue/rules.md
+- `--dry-run` - Preview without writing files
+- `--help, -h` - Show help message
+
+**Examples:**
+
+Analyze Cursor rules with coverage:
+```bash
+aligntrue import cursor
+```
+
+Import from AGENTS.md:
+```bash
+aligntrue import agents-md
+```
+
+Import and write to IR file:
+```bash
+aligntrue import cursor --write
+```
+
+Preview import without writing:
+```bash
+aligntrue import cursor --write --dry-run
+```
+
+**Coverage Report Example:**
+```
+Import Coverage Report: cursor
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Imported: 5 rules from .cursor/rules/*.mdc
+
+Field Mapping:
+✓ id              ← Rule header (## Rule: <id>)
+✓ severity        ← **Severity:** metadata
+✓ applies_to      ← **Applies to:** patterns
+✓ guidance        ← Markdown prose
+✓ vendor          ← YAML frontmatter → vendor.cursor
+
+⚠ Unmapped Fields (preserved in vendor.*):
+  • check          → vendor.cursor.check (not in .mdc format)
+  • tags           → vendor.cursor.tags (not in .mdc format)
+
+Coverage: 71% (5/7 IR fields mapped)
+Confidence: Medium (70-89% coverage)
+
+✓ Vendor metadata preserved for round-trip fidelity
+```
+
+**Supported Agents:**
+- **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
+- **agents-md** - `AGENTS.md` universal markdown format
+- **copilot** - AGENTS.md format (alias)
+- **claude-code** - AGENTS.md format (alias)
+- **aider** - AGENTS.md format (alias)
+
+**Coverage Calculation:**
+- **High confidence** (≥90%): Most IR fields mapped from agent format
+- **Medium confidence** (70-89%): Core fields mapped, some fields unmapped
+- **Low confidence** (<70%): Significant field gaps, review carefully
+
+**Troubleshooting:**
+
+**Agent not found:**
+```
+✗ Agent format not found: .cursor/rules/
+Expected: .cursor/rules/ directory with .mdc files
+```
+
+**Unsupported agent:**
+```
+✗ Import not supported for agent: xyz
+Supported agents: cursor, agents-md, copilot, claude-code, aider
+```
+
+**No rules found:**
+```
+⚠ No rules found in agent format
+Check that .mdc files contain valid rules with ## Rule: headers
 ```
 
 ### `aligntrue sync`

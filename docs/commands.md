@@ -51,6 +51,83 @@ aligntrue init
 
 ---
 
+### `aligntrue import`
+
+Analyze and import rules from agent-specific formats with coverage analysis.
+
+**Usage:**
+
+```bash
+aligntrue import <agent> [options]
+```
+
+**Arguments:**
+
+- `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
+
+**Flags:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--coverage` | Show import coverage report | `true` |
+| `--no-coverage` | Skip coverage report | `false` |
+| `--write` | Write imported rules to `.aligntrue/rules.md` | `false` |
+| `--dry-run` | Preview without writing files | `false` |
+
+**What it does:**
+
+1. Loads rules from agent-specific format (`.cursor/rules/*.mdc` or `AGENTS.md`)
+2. Parses agent format to IR (Intermediate Representation)
+3. Generates coverage report showing field-level mapping
+4. Calculates coverage percentage and confidence level
+5. Optionally writes rules to `.aligntrue/rules.md`
+
+**Coverage Report:**
+
+The coverage report shows:
+- **Rules imported** - Number of rules found in agent format
+- **Field mapping** - Which IR fields are mapped from agent format
+- **Unmapped fields** - Fields that cannot be mapped (preserved in `vendor.*`)
+- **Coverage percentage** - (mapped fields / total IR fields) × 100
+- **Confidence level** - high (≥90%), medium (70-89%), low (<70%)
+- **Vendor preservation** - Whether agent-specific metadata is preserved
+
+**Examples:**
+
+```bash
+# Analyze Cursor rules
+aligntrue import cursor
+
+# Import from AGENTS.md
+aligntrue import agents-md
+
+# Import and write to IR file
+aligntrue import cursor --write
+
+# Preview import without writing
+aligntrue import cursor --write --dry-run
+
+# Skip coverage report
+aligntrue import cursor --no-coverage
+```
+
+**Supported Agents:**
+
+- **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
+- **agents-md** - `AGENTS.md` universal markdown format
+- **copilot** - AGENTS.md format (alias)
+- **claude-code** - AGENTS.md format (alias)
+- **aider** - AGENTS.md format (alias)
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Error (agent not found, no rules, unsupported agent)
+
+**See also:** [Sync Behavior](sync-behavior.md) for two-way sync details.
+
+---
+
 ### `aligntrue sync`
 
 Sync rules from `.aligntrue/rules.md` to your AI coding agents.
