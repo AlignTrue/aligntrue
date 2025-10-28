@@ -84,7 +84,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Stage 3.5 deferred features documented with clear implementation triggers
   - Phase 1 acceptance criteria met, ready for alpha release
   - Updated phase1_refactor.mdc with accurate completion tracking
-  - Created STEP_33_COMPLETE.md with comprehensive validation summary
 
 ### Added
 
@@ -106,7 +105,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `examples/golden-repo/test-golden-repo.sh` - Validation script
     - `packages/cli/tests/integration/golden-repo.test.ts` - 5 workflow tests
     - `packages/cli/tests/integration/performance.test.ts` - 3 benchmark tests
-    - `STEP_32_COMPLETE.md` - Detailed completion summary
 
 ### Fixed
 
@@ -161,7 +159,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
 - Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
-- Positioned AlignTrue as complementary to Ruler (AlignTrue for rules, Ruler for MCP servers)
 - **Privacy-focused network consent** (Phase 2 planning) - 2025-10-27
   - Enhanced `docs/PRIVACY.md` with comprehensive "Network Operations" section
   - Clarifies offline-first approach: zero network calls by default
@@ -653,7 +650,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Lockfile and bundle now opt-in (team mode) instead of required
   - Multi-agent support in Phase 1 (Cursor + AGENTS.md) instead of Phase 4
   - Windows support first-class in Phase 1 (path normalization, CI matrix, cross-platform determinism)
-  - Documentation: `docs/architecture-decisions.md`, `docs/refactor-plan.md`, `docs/implementation-summary.md`
   - Competitive analysis: `competitive-gap-analysis.md`
 
 - **Components archived** (deferred to later phases) - Completed 2025-10-26
@@ -674,12 +670,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Workspace integrity verified with successful pnpm install and typecheck
   - Total 5 packages ready for implementation (15k token estimate)
 
-### Documentation
-
-- **Failure isolation strategy** documented in `docs/refactor-plan.md`
-  - Each component (markdown parser, IR, exporters, sync) fails independently
-  - Clear fallback paths prevent cascade failures
-  - Core commands work even if exporters are broken
 
 ### Added
 

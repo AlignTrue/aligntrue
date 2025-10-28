@@ -431,8 +431,8 @@ Before releasing new features:
 
 ## References
 
-**Architecture Decisions:** `docs/architecture-decisions.md` - Decision 16 (Security Posture)  
-**Implementation Plan:** `docs/refactor-plan.md` - Stage 3, Step 20  
+**Architecture Decisions:** `.internal_docs/architecture-decisions.md` - Decision 16 (Security Posture)
+**Implementation Plan:** `.internal_docs/refactor-plan.md` - Stage 3, Step 20  
 **Test Patterns:** `packages/core/tests/security/`  
 **Exporter Guidelines:** `packages/exporters/README.md` - Security Expectations section
 

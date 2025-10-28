@@ -468,4 +468,4 @@ pnpm build
 
 ---
 
-For full architecture details, see `docs/architecture-decisions.md`.
+For full architecture details, see `.internal_docs/architecture-decisions.md`.

@@ -142,7 +142,7 @@ archive/
 
 ## Questions?
 
-See `docs/architecture-decisions.md` and `docs/refactor-plan.md` for full context on the architectural pivot.
+See `.internal_docs/architecture-decisions.md` and `.internal_docs/refactor-plan.md` for full context on the architectural pivot.
 
 **TL;DR:** We're not deleting this work, just deferring it. CLI-first adoption is more important right now.
 
