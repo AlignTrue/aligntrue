@@ -1,6 +1,6 @@
 {
   "name": "aligntrue",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "AlignTrue CLI shim - AI alignment rules for developers",
   "type": "module",
   "bin": {
@@ -21,8 +21,7 @@
     "@aligntrue/cli": "workspace:*"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "engines": {
     "node": ">=20.0.0"
