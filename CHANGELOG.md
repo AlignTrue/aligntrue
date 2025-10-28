@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] - 2025-10-28
+
+### Added
+
+- **First npm publish** on `next` tag (experimental alpha release)
+- Published all 8 @aligntrue/* packages to npm
+- `aligntrue` shim package for simple install experience
+- Solo mode CLI with <60 second setup
+- Three exporters: Cursor (.mdc), AGENTS.md, VS Code MCP config
+- IR-first architecture with literate markdown authoring
+- Hierarchical scopes for monorepos
+- Two-way sync with explicit precedence
+
+### Installation
+
+```bash
+# Install CLI (recommended)
+npm install -g @aligntrue/cli@next
+
+# Or use shim
+npm install -g aligntrue@next
+
+# Or use npx
+npx @aligntrue/cli@next init
+```
+
+### Note
+
+This is an **alpha release** on the `next` tag. The API is not stable and may change.
+Not recommended for production use. Published to claim namespace and enable testing.
+
+For stable releases, wait for `0.1.0` on the `latest` tag.
+
 ### Added
 
 - **Solo UX Improvements - Phases 1-3** - Completed 2025-10-28

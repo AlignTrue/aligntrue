@@ -17,14 +17,36 @@ aligntrue/
 │   └── mcp/          # MCP server (Phase 2+)
 ```
 
-## Getting Started
+## Installation
+
+### Alpha Release (Current)
+
+AlignTrue is currently in alpha on the `next` tag:
+
+```bash
+# Install globally
+npm install -g @aligntrue/cli@next
+
+# Or use npx (no install)
+npx @aligntrue/cli@next init
+```
+
+### Stable Release (Coming Soon)
+
+Once we release `0.1.0` on the `latest` tag:
+
+```bash
+npm install -g aligntrue
+```
+
+## Development Setup
 
 ### Prerequisites
 
 - Node.js 20+
 - pnpm 9+
 
-### Installation
+### Workspace Installation
 
 ```bash
 pnpm install

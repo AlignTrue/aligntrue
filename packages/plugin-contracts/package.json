@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/plugin-contracts",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -23,6 +23,12 @@
   "devDependencies": {
     "@types/node": "^24",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
-
