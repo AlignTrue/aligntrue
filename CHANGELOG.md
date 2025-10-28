@@ -7,7 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Integration Testing + Golden Repository** (Phase 1, Stage 3, Step 32) - Completed 2025-10-28
+  - Created golden repository in `examples/golden-repo/` demonstrating <60 second setup
+  - Golden repo includes 5 practical rules (testing, code review, docs, security, TypeScript)
+  - Three exporter outputs generated in <5 seconds: Cursor .mdc, AGENTS.md, VS Code MCP config
+  - Created 8 integration tests (5 workflow + 3 performance) with 100% pass rate
+  - Integration tests validate: fresh init, edit→sync, multi-exporter, conflict detection, dry-run
+  - Performance tests validate: init <10s, sync <5s, help <100ms
+  - Golden repo validation script with 7 automated checks
+  - Updated CI workflow to run integration tests and validate golden repo on Linux + Windows
+  - Updated `docs/quickstart.md` with "Try the Golden Repository" section
+  - All 786 tests passing (100% pass rate: 778 unit + 8 integration)
+  - Files created:
+    - `examples/golden-repo/.aligntrue/config.yaml` - Solo mode config
+    - `examples/golden-repo/.aligntrue/rules.md` - 5 example rules
+    - `examples/golden-repo/README.md` - Complete walkthrough
+    - `examples/golden-repo/test-golden-repo.sh` - Validation script
+    - `packages/cli/tests/integration/golden-repo.test.ts` - 5 workflow tests
+    - `packages/cli/tests/integration/performance.test.ts` - 3 benchmark tests
+    - `STEP_32_COMPLETE.md` - Detailed completion summary
+
+### Fixed
+
+- **Schema Type Sync** - Added missing `tags` field to AlignRule TypeScript interface
+  - Schema (`align.schema.json`) included `tags` but TypeScript interface was missing it
+  - Fixed compilation error in `conflict-detector.ts`
+  - Rebuilt all packages to resolve IR loading issues
+
 ### Documentation
+
+- **Step 31 Skip Decision** (Phase 1, Stage 3) - Completed 2025-10-28
+  - Skipped "Convert examples to literate markdown" (Step 31)
+  - Original purpose (ship example packs) doesn't apply to CLI-first architecture
+  - User education already covered: Step 30 docs (quickstart, commands, troubleshooting, extending, sync-behavior)
+  - Starter template provided by `aligntrue init` command
+  - Production packs live in AlignTrue/aligns (no duplication needed)
+  - Principle: "If we're not clear on the purpose, it's probably not needed"
+  - 10k tokens reallocated to Steps 32-33 for golden repo testing and test fixes
+  - Decision record: `STEP_31_SKIPPED.md`
 
 - **Core User Documentation** (Phase 1, Stage 3, Step 30) - Completed 2025-10-27
   - Created `docs/quickstart.md` - <60 second solo dev onboarding, zero jargon

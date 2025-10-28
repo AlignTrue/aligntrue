@@ -2,6 +2,23 @@
 
 Get AlignTrue running in under 60 seconds. No prior knowledge required.
 
+## Try the Golden Repository
+
+The fastest way to see AlignTrue in action is to explore the golden repository - a complete, working example with 5 practical rules.
+
+```bash
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue/examples/golden-repo
+node ../../packages/cli/dist/index.js sync
+```
+
+This generates three outputs in under 5 seconds:
+- `.cursor/rules/aligntrue.mdc` - Cursor rules with content hash
+- `AGENTS.md` - Universal format for Claude, Copilot, Aider
+- `.vscode/mcp.json` - VS Code MCP configuration
+
+**Learn more:** See `examples/golden-repo/README.md` for a detailed walkthrough.
+
 ## Prerequisites
 
 - **Node.js 20+** - [Download](https://nodejs.org/)

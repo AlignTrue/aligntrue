@@ -58,6 +58,16 @@ jobs:
       
       - name: Run conformance testkit
         run: pnpm verify
+      
+      - name: Run integration tests
+        run: pnpm -C packages/cli test tests/integration
+      
+      - name: Validate golden repository
+        shell: bash
+        run: |
+          cd examples/golden-repo
+          chmod +x test-golden-repo.sh
+          ./test-golden-repo.sh
 
   summary:
     name: CI Summary

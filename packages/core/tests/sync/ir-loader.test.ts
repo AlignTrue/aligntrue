@@ -74,14 +74,22 @@ rules:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 
 \`\`\`aligntrue
 id: test-pack2
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule2
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule 2
 \`\`\`
 `
       const path = join(TEST_DIR, 'invalid-markdown.md')
@@ -168,7 +176,11 @@ rules:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const path = join(TEST_DIR, 'valid.md')
@@ -182,7 +194,11 @@ rules: []
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 `
       const path = join(TEST_DIR, 'valid.yaml')
       writeFileSync(path, yaml, 'utf8')

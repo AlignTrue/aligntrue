@@ -260,6 +260,7 @@ export interface AlignRule {
   severity: 'error' | 'warn' | 'info'
   applies_to: string[]
   guidance?: string
+  tags?: string[]
   check?: AlignCheck
   autofix?: AlignAutofix
   vendor?: Record<string, any>  // Agent-specific metadata
