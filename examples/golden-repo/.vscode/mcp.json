@@ -1,12 +1,12 @@
 {
   "version": "v1",
   "generated_by": "AlignTrue",
-  "content_hash": "46f9a2e312b382a80c3b6f9bac1881aaa2ec9009135d4d736f22987091f07b66",
+  "content_hash": "5c7032b2c0cb68f9dbfae127ef0910bf6b0ae53a7423fe7a9480b754fc035496",
   "rules": [
     {
       "id": "testing-require-tests",
       "severity": "error",
-      "guidance": "Every new feature must include unit tests. Test files should be co-located\nwith source files using the .test.ts or .spec.ts naming convention.\n\nExamples:\n- src/utils/parser.ts → src/utils/parser.test.ts\n- src/components/Button.tsx → src/components/Button.test.tsx\n",
+      "guidance": "Every new feature must include unit tests. Test files should be co-located\nwith source files using the .test.ts or .spec.ts naming convention.\n\nExamples:\n- src/utils/parser.ts → src/utils/parser.test.ts\n- src/components/Button.tsx → src/components/Button.test.tsx",
       "applies_to": [
         "src/**/*.ts",
         "src/**/*.tsx"
@@ -15,7 +15,7 @@
     {
       "id": "code-review-no-todos",
       "severity": "warn",
-      "guidance": "TODO comments should be converted to GitHub issues before merging.\nThey often get forgotten in the codebase.\n\nInstead of: // TODO: refactor this\nDo: Create issue, then // Issue #123: refactor this\n",
+      "guidance": "TODO comments should be converted to GitHub issues before merging.\nThey often get forgotten in the codebase.\n\nInstead of: // TODO: refactor this\nDo: Create issue, then // Issue #123: refactor this",
       "applies_to": [
         "**/*.ts",
         "**/*.tsx",
@@ -26,7 +26,7 @@
     {
       "id": "docs-public-api",
       "severity": "info",
-      "guidance": "Public API exports should include JSDoc comments explaining their purpose\nand usage. This helps with IDE intellisense and documentation generation.\n",
+      "guidance": "Public API exports should include JSDoc comments explaining their purpose\nand usage. This helps with IDE intellisense and documentation generation.",
       "applies_to": [
         "src/**/index.ts"
       ]
@@ -34,7 +34,7 @@
     {
       "id": "security-no-secrets",
       "severity": "error",
-      "guidance": "Never commit API keys, passwords, or tokens to version control.\nUse environment variables or secure secret management instead.\n\nCommon patterns to avoid:\n- API_KEY = \"sk_live_...\"\n- password: \"mypassword123\"\n- token: \"ghp_...\"\n",
+      "guidance": "Never commit API keys, passwords, or tokens to version control.\nUse environment variables or secure secret management instead.\n\nCommon patterns to avoid:\n- API_KEY = \"sk_live_...\"\n- password: \"mypassword123\"\n- token: \"ghp_...\"",
       "applies_to": [
         "**/*.ts",
         "**/*.js",
@@ -45,7 +45,7 @@
     {
       "id": "typescript-no-any",
       "severity": "warn",
-      "guidance": "Avoid using 'any' type as it defeats TypeScript's type safety.\nUse 'unknown' for truly unknown types, or define proper interfaces.\n",
+      "guidance": "Avoid using 'any' type as it defeats TypeScript's type safety.\nUse 'unknown' for truly unknown types, or define proper interfaces.",
       "applies_to": [
         "**/*.ts",
         "**/*.tsx"

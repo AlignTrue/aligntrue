@@ -209,9 +209,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sync = {}
   }
   
-  // Solo mode: auto_pull on by default, accept_agent on conflict
+  // Solo mode: auto_pull ON by default (enables native-format editing), accept_agent on conflict
   if (config.mode === 'solo') {
-    result.sync.auto_pull = result.sync.auto_pull ?? true
+    result.sync.auto_pull = result.sync.auto_pull ?? true  // ON for solo (Phase 2 intent)
     result.sync.on_conflict = result.sync.on_conflict ?? 'accept_agent'
     // Auto-detect primary_agent if not set (first exporter that supports import)
     if (!result.sync.primary_agent && result.exporters && result.exporters.length > 0) {

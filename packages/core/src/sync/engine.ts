@@ -438,8 +438,23 @@ export class SyncEngine {
         // Write updated IR if not dry-run
         if (!options.dryRun) {
           const { writeFile } = await import('fs/promises')
+          const { extname } = await import('path')
           const yaml = await import('js-yaml')
-          await writeFile(irPath, yaml.dump(this.ir), 'utf-8')
+          
+          // Detect source format and preserve it
+          const ext = extname(irPath).toLowerCase()
+          let content: string
+          
+          if (ext === '.md' || ext === '.markdown') {
+            // Preserve markdown format with fenced blocks
+            const yamlContent = yaml.dump(this.ir, { lineWidth: -1 })
+            content = `# AlignTrue Rules\n\n\`\`\`aligntrue\n${yamlContent}\`\`\`\n`
+          } else {
+            // Write as YAML
+            content = yaml.dump(this.ir)
+          }
+          
+          await writeFile(irPath, content, 'utf-8')
           written.push(irPath)
         }
         

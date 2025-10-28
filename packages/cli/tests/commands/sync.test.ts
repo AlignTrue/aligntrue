@@ -268,10 +268,10 @@ describe('sync command', () => {
       })
     })
 
-    it('syncs from agent to IR with mock data warning', async () => {
+    it('syncs from agent to IR', async () => {
       await sync(['--accept-agent', 'cursor'])
       
-      expect(clack.log.warn).toHaveBeenCalledWith(expect.stringContaining('mock data'))
+      // Step 17 complete - real parsers implemented, no mock data warning needed
       expect(mockSyncEngine.syncFromAgent).toHaveBeenCalledWith(
         'cursor',
         expect.any(String),
