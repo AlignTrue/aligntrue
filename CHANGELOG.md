@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Import Coverage Report Command** (Phase 2, Stage 1, Step 3) - Completed 2025-10-28
+  - New `aligntrue import <agent> --coverage` command for import analysis
+  - Field-level mapping report: shows IR fields ← agent format sources
+  - Coverage calculation: percentage, confidence level (high/medium/low)
+  - Tracks vendor.* preservation for round-trip fidelity
+  - Cursor parser: 71% coverage (5/7 IR fields), confidence: medium
+  - AGENTS.md parser: 71% coverage (5/7 IR fields), confidence: medium
+  - 26 new tests for coverage analysis and CLI command (15 coverage + 11 import)
+  - Updated CLI help and command documentation
+  - Validates Phase 2 Steps 1-2 already complete (from Phase 1 Solo UX)
+  - Files created:
+    - `packages/markdown-parser/src/coverage.ts` - Coverage analysis module (234 lines)
+    - `packages/cli/src/commands/import.ts` - Import command (295 lines)
+    - `packages/markdown-parser/tests/coverage.test.ts` - Coverage tests (15 tests)
+    - `packages/cli/tests/commands/import.test.ts` - Command tests (11 tests)
+  - Integration with existing parsers from Steps 1-2 (Phase 1)
+
 ### Changed
 
 - **Phase 2 Roadmap Streamlined** - 2025-10-28

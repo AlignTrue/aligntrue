@@ -6,3 +6,6 @@ export * from './validator.js'
 export * from './parsers/cursor.js'
 export * from './parsers/agents-md.js'
 
+// Coverage analysis
+export * from './coverage.js'
+

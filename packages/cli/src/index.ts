@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, migrate, md, sync, team, telemetry, scopes, check, config } from './commands/index.js';
+import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -16,6 +16,7 @@ async function main() {
     console.log('Basic Commands:');
     console.log('  init           Initialize AlignTrue in current directory');
     console.log('  sync           Sync rules to agents');
+    console.log('  import         Import rules from agent configs');
     console.log('  check          Validate rules and configuration\n');
     
     console.log('Development Commands:');
@@ -30,7 +31,6 @@ async function main() {
     console.log('  telemetry      Telemetry settings\n');
     
     console.log('Coming Soon:');
-    console.log('  import         Import rules from agent configs');
     console.log('  migrate        Schema migration (preview mode)');
     
     console.log('\nRun aligntrue <command> --help for command-specific options');
@@ -43,6 +43,11 @@ async function main() {
   // Handle implemented commands
   if (command === 'init') {
     await init(commandArgs);
+    return;
+  }
+  
+  if (command === 'import') {
+    await importCommand(commandArgs);
     return;
   }
   
