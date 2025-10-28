@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, migrate, md, sync, team, telemetry, scopes, check } from './commands/index.js';
+import { init, migrate, md, sync, team, telemetry, scopes, check, config } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -26,6 +26,7 @@ async function main() {
     console.log('  scopes         List configured scopes\n');
     
     console.log('Settings:');
+    console.log('  config         View or edit configuration');
     console.log('  telemetry      Telemetry settings\n');
     
     console.log('Coming Soon:');
@@ -77,6 +78,11 @@ async function main() {
   
   if (command === 'check') {
     await check(commandArgs);
+    return;
+  }
+  
+  if (command === 'config') {
+    await config(commandArgs);
     return;
   }
   

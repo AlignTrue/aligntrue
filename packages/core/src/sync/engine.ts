@@ -418,7 +418,40 @@ export class SyncEngine {
         details: `Loaded ${agentRules.length} rules from agent`,
       })
 
-      // Detect conflicts
+      // Check if we should use solo mode fast path
+      const { shouldUseSoloFastPath } = await import('./conflict-detector.js')
+      const useFastPath = this.config && shouldUseSoloFastPath(this.config, agent)
+      
+      // Solo mode fast path: skip conflict detection, directly accept agent rules
+      if (useFastPath) {
+        auditTrail.push({
+          action: 'update',
+          target: irPath,
+          source: agent,
+          timestamp: new Date().toISOString(),
+          details: `Solo mode fast path: accepting all changes from ${agent}`,
+        })
+        
+        // Directly update IR with agent rules
+        this.ir.rules = agentRules
+        
+        // Write updated IR if not dry-run
+        if (!options.dryRun) {
+          const { writeFile } = await import('fs/promises')
+          const yaml = await import('js-yaml')
+          await writeFile(irPath, yaml.dump(this.ir), 'utf-8')
+          written.push(irPath)
+        }
+        
+        return {
+          success: true,
+          written,
+          warnings,
+          auditTrail,
+        }
+      }
+      
+      // Team mode: full conflict detection
       const irRules = this.ir.rules || []
       const conflictResult = this.conflictDetector.detectConflicts(agent, irRules, agentRules)
 
@@ -510,11 +543,14 @@ export class SyncEngine {
     agent: string,
     options: SyncOptions
   ): Promise<AlignRule[]> {
-    // Mock implementation: load from test fixtures
-    // In Step 17, this will parse actual agent files (.cursor/*.mdc, AGENTS.md, etc.)
+    // Import from agent-specific format using parsers
+    const { importFromAgent, canImportFromAgent } = await import('./import.js')
     
-    // For now, return empty array (tests will override this with fixtures)
-    return []
+    if (!canImportFromAgent(agent)) {
+      throw new Error(`Agent ${agent} does not support import`)
+    }
+    
+    return await importFromAgent(agent, process.cwd())
   }
 
   /**

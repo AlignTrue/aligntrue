@@ -11,6 +11,7 @@ export { SyncEngine } from './engine.js'
 export { ConflictDetector } from './conflict-detector.js'
 export { AtomicFileWriter, computeFileChecksum, computeContentChecksum, ensureDirectoryExists } from './file-operations.js'
 export { loadIR } from './ir-loader.js'
+export { importFromAgent, canImportFromAgent, getImportSourcePath } from './import.js'
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine()

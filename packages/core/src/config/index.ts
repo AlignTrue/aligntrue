@@ -19,7 +19,7 @@ import {
 export type AlignTrueMode = 'solo' | 'team' | 'enterprise';
 
 export interface AlignTrueConfig {
-  version: string;
+  version: string | undefined;
   mode: AlignTrueMode;
   modules?: {
     lockfile?: boolean;
@@ -33,6 +33,11 @@ export interface AlignTrueConfig {
   git?: {
     mode?: 'ignore' | 'commit' | 'branch';
     per_adapter?: Record<string, 'ignore' | 'commit' | 'branch'>;
+  };
+  sync?: {
+    auto_pull?: boolean;
+    primary_agent?: string;
+    on_conflict?: 'prompt' | 'keep_ir' | 'accept_agent';
   };
   sources?: Array<{
     type: 'local' | 'catalog' | 'git' | 'url';
@@ -138,13 +143,30 @@ function formatValidationErrors(errors: SchemaValidationResult['errors']): strin
 export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   const result: AlignTrueConfig = { ...config }
   
+  // Auto-detect mode if not specified
+  if (!result.mode) {
+    // If only exporters configured (minimal config), default to solo
+    if (result.exporters && result.exporters.length > 0 && !result.modules?.lockfile && !result.modules?.bundle) {
+      result.mode = 'solo'
+    } else if (result.modules?.lockfile || result.modules?.bundle) {
+      result.mode = 'team'
+    } else {
+      result.mode = 'solo' // Default to solo
+    }
+  }
+  
+  // Auto-set version if not specified
+  if (!result.version) {
+    result.version = '1'
+  }
+  
   // Initialize modules if not present
   if (!result.modules) {
     result.modules = {}
   }
   
   // Apply mode-specific module defaults
-  if (config.mode === 'solo') {
+  if (result.mode === 'solo') {
     result.modules.lockfile = result.modules.lockfile ?? false
     result.modules.bundle = result.modules.bundle ?? false
     result.modules.checks = result.modules.checks ?? true
@@ -182,6 +204,29 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.git.mode = result.git.mode ?? 'commit'
   }
   
+  // Apply sync defaults
+  if (!result.sync) {
+    result.sync = {}
+  }
+  
+  // Solo mode: auto_pull on by default, accept_agent on conflict
+  if (config.mode === 'solo') {
+    result.sync.auto_pull = result.sync.auto_pull ?? true
+    result.sync.on_conflict = result.sync.on_conflict ?? 'accept_agent'
+    // Auto-detect primary_agent if not set (first exporter that supports import)
+    if (!result.sync.primary_agent && result.exporters && result.exporters.length > 0) {
+      const importableAgents = ['cursor', 'copilot', 'claude-code', 'aider', 'agents-md']
+      const detected = result.exporters.find(e => importableAgents.includes(e.toLowerCase()))
+      if (detected) {
+        result.sync.primary_agent = detected
+      }
+    }
+  } else {
+    // Team/enterprise mode: auto_pull off by default, prompt on conflict
+    result.sync.auto_pull = result.sync.auto_pull ?? false
+    result.sync.on_conflict = result.sync.on_conflict ?? 'prompt'
+  }
+  
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
     result.exporters = ['cursor', 'agents-md']
@@ -200,7 +245,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
  */
 function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'lockfile', 'git', 'sources', 'exporters', 'scopes', 'merge'
+    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge'
   ])
   
   for (const key of Object.keys(config)) {
