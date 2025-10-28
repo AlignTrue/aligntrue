@@ -58,11 +58,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 22 comprehensive integration tests covering native format workflows
     - Updated golden repository README with solo workflow documentation
     - All integration tests passing (100% pass rate)
+  - **Non-Interactive Init** (Perception Test Gap Fix):
+    - Added `--non-interactive` / `-y` flag for CI/automation
+    - Added `--project-id` and `--exporters` CLI arguments
+    - Comprehensive help text with examples
+    - Tested and working (creates files, runs sync automatically)
   - All 429 tests passing (351 core + 56 parser + 22 integration, 100% pass rate)
   - Config schema updated with new sync section
   - CLI sync command enhanced with auto-pull logic
   - Zero YAML interaction required for solo developers
   - Complete solo UX transformation: <60s setup, native formats, auto-sync, zero friction
+  - Non-interactive mode enables CI/automation workflows
 
 ### Documentation
 
