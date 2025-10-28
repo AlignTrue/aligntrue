@@ -55,28 +55,5 @@ next-env.d.ts
 temp-*
 logs/
 
-# temp docs
-REARCHITECTURE_COMPLETE.md
-docs/architecture-decisions.md
-docs/implementation-summary.md
-docs/refactor-plan.md
-docs/ux-guidelines.md
-docs/ux-messaging-updates.md
-STEP_2.5_COMPLETE.md
-docs/package-audit.md
-docs/pre-1.0-policy.md
-STEP_*_COMPLETE.md
-STEP_*_*.md
-c-review.md
-mcp-scope.md
-mcp-decision-summary.md
-MULTI_AGENT_SUPPORT_COMPLETE.md
-MULTI_AGENT_IMPLEMENTATION_COMPLETE.md
-DUAL_OUTPUT_CONFIGURATION.md
-PRE_STAGE_3_CLEANUP_COMPLETE.md
-PERCEPTION_*.md
-PERCEPTION_*.txt
-SOLO_UX_*.md
-AI_QA_PLAYBOOK.md
-NPM_PUBLISH_PLAN.md
-NON_INTERACTIVE_COMPLETE.md
+# internal docs (moved temporary documentation)
+.internal_docs/

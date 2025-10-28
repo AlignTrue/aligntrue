@@ -22,7 +22,7 @@ For now:
 • Follow migration guides for each release
 • Pin CLI version if you need stability
 
-See: docs/pre-1.0-policy.md for details
+See: .internal_docs/pre-1.0-policy.md for details
 
 Current approach: Manual updates with clear guides
 Future approach: Automated migrations with --write safeguard
