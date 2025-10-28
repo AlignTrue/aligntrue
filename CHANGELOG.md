@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Phase 2 Roadmap Streamlined** - 2025-10-28
+  - **Migration framework removed from Phase 2** - deferred to conditional "When Breaking Changes" section
+  - Migration tooling only built post-1.0 if breaking schema change required
+  - Reduced Phase 2 scope from 200k to 115k tokens (2 stages instead of 3)
+  - Phase 2 starting immediately (no adoption trigger requirement)
+  - Private development through Phase 4 before public launch
+  - Focus on import functionality for onboarding existing users
+  - Updated `.cursor/rules/phase2_implementation.mdc` with streamlined plan
+  - Updated `.cursor/rules/long_term.mdc` with conditional migration section
+  - Created `docs/pre-1.0-policy.md` documenting schema evolution approach
+
+### Documentation
+
+- **Phase 2 Implementation Plan Created** - 2025-10-28
+  - Created comprehensive execution plan in `.cursor/rules/phase2_implementation.mdc`
+  - 2-stage roadmap: Import & Multi-Agent, Privacy & Polish
+  - Total estimated effort: ~115k tokens across 13 steps
+  - Key deliverables:
+    - Import parsers for Cursor .mdc and AGENTS.md (≥70% coverage)
+    - Git source provider for sharing rules across repositories
+    - Privacy consent system with pre-flight analysis and offline mode
+    - 2-3 additional exporters based on community demand
+    - Performance guardrails (.gitignore respect, file size/depth caps)
+    - Markdown round-trip conversion (lossless)
+  - Strategically placed deferred Phase 1 features (Steps 17, 17a, 18, 19, 25a, 16a)
+  - Updated all references: `long_term.mdc`, `global.mdc`, `me.mdc`, `no_premature_backwards_compatibility.mdc`
+  - Phase 2 starting immediately after Phase 1 alpha
+
 ## [0.1.0-alpha.2] - 2025-10-28
 
 ### Added
