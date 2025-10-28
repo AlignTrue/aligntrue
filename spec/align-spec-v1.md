@@ -573,7 +573,7 @@ AGENTS.md                # Universal agent format
 
 **Breaking changes allowed:** Yes, until 1.0 stable
 
-**Migration policy:** See `docs/pre-1.0-policy.md`
+**Migration policy:** Schema may iterate freely before 1.0 stable release
 
 **Migration framework:** Will be added when we have:
 - 50+ active repos using AlignTrue, OR
@@ -587,8 +587,6 @@ AGENTS.md                # Universal agent format
 ## References
 
 - [Align Spec v1](./align-spec-v1.md) - Catalog-first design (superseded)
-- [Pre-1.0 Policy](../docs/pre-1.0-policy.md) - Breaking change expectations
-- [Package Audit](../docs/package-audit.md) - Why v2 redesign was needed
 - [JCS (RFC 8785)](https://www.rfc-editor.org/rfc/rfc8785) - Canonicalization algorithm
 - [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) - Check output format
 

@@ -455,6 +455,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   // TODO: Add catalog source option when catalog is ready (Phase 2+)
   // Prompt: "Start with: [Template] [From catalog] [Import existing]"
   // If catalog: fetch base-global, base-testing, etc.
-  // See: docs/refactor-plan.md Phase 2, catalog source provider
+  // See: .internal_docs/refactor-plan.md Phase 2, catalog source provider
 }
 

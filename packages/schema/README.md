@@ -268,13 +268,13 @@ The same Align pack content will always produce the same hash, regardless of:
 
 ## Pre-1.0 Policy
 
-This package validates against IR spec v2-preview. The schema may iterate freely before 1.0 stable release. See `docs/pre-1.0-policy.md` for details on schema evolution and migration triggers.
+This package validates against IR spec v2-preview. The schema may iterate freely before 1.0 stable release. See `.internal_docs/pre-1.0-policy.md` for details on schema evolution and migration triggers.
 
 ## References
 
 - [Align Spec v2-preview (CLI-first)](../../spec/align-spec-v2-cli-first.md)
 - [Align Spec v1 (superseded)](../../spec/align-spec-v1.md)
-- [Pre-1.0 Policy](../../docs/pre-1.0-policy.md)
+- [Pre-1.0 Policy](../../.internal_docs/pre-1.0-policy.md)
 - [JCS (RFC 8785)](https://www.rfc-editor.org/rfc/rfc8785)
 - [JSON Schema 2020-12](https://json-schema.org/draft/2020-12/)
 
