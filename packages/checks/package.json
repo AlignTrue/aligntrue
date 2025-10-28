@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/checks",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Check runner engine for AlignTrue Align packs",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,7 +37,6 @@
     "node": ">=20.0.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/file-utils",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -28,7 +28,6 @@
     "node": ">=20"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }
