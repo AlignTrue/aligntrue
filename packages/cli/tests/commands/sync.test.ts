@@ -111,8 +111,8 @@ describe('sync command', () => {
   describe('--help flag', () => {
     it('shows help text and exits', async () => {
       await expect(sync(['--help'])).rejects.toThrow('process.exit(0)')
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('AlignTrue Sync'))
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Usage:'))
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Usage: aligntrue sync'))
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Sync rules from IR'))
     })
   })
 
@@ -121,7 +121,7 @@ describe('sync command', () => {
       mockExistsSync.mockReturnValue(false)
       
       await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.outro).toHaveBeenCalledWith(expect.stringContaining('not initialized'))
+      expect(clack.outro).toHaveBeenCalledWith(expect.stringContaining('Config file not found'))
     })
 
     it('fails if config loading fails', async () => {
@@ -146,7 +146,7 @@ describe('sync command', () => {
       })
       
       await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.log.error).toHaveBeenCalledWith(expect.stringContaining('Source file not found'))
+      expect(clack.outro).toHaveBeenCalledWith(expect.stringContaining('Source file not found'))
     })
   })
 

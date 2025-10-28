@@ -49,7 +49,21 @@ export async function loadIR(sourcePath: string): Promise<AlignPack> {
         throw new Error(`Markdown parsing errors:\n${errorList}`)
       }
       
-      ir = buildIR(parseResult.blocks)
+      const buildResult = buildIR(parseResult.blocks)
+      
+      // Check for IR build errors
+      if (buildResult.errors.length > 0) {
+        const errorList = buildResult.errors
+          .map(err => `  - Line ${err.line}: ${err.message}${err.section ? ` (section: ${err.section})` : ''}`)
+          .join('\n')
+        throw new Error(`IR build errors:\n${errorList}`)
+      }
+      
+      if (!buildResult.document) {
+        throw new Error('Failed to build IR document from markdown blocks')
+      }
+      
+      ir = buildResult.document
     } catch (err) {
       throw new Error(
         `Failed to parse markdown in ${sourcePath}\n` +

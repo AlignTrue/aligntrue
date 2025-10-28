@@ -12,17 +12,25 @@ import {
 } from '../../src/sync/conflict-prompt.js'
 import { ConflictResolutionStrategy, type Conflict } from '../../src/sync/conflict-detector.js'
 
-// Mock the prompts library
-vi.mock('prompts', () => ({
-  default: vi.fn(),
+// Mock @clack/prompts
+vi.mock('@clack/prompts', () => ({
+  select: vi.fn(),
+  confirm: vi.fn(),
+  isCancel: vi.fn(),
+  cancel: vi.fn(),
 }))
 
 describe('ConflictPrompt', () => {
-  let mockPrompts: ReturnType<typeof vi.fn>
+  let mockSelect: ReturnType<typeof vi.fn>
+  let mockConfirm: ReturnType<typeof vi.fn>
+  let mockIsCancel: ReturnType<typeof vi.fn>
 
   beforeEach(async () => {
-    const prompts = await import('prompts')
-    mockPrompts = prompts.default as ReturnType<typeof vi.fn>
+    const clack = await import('@clack/prompts')
+    mockSelect = clack.select as ReturnType<typeof vi.fn>
+    mockConfirm = clack.confirm as ReturnType<typeof vi.fn>
+    mockIsCancel = clack.isCancel as ReturnType<typeof vi.fn>
+    mockIsCancel.mockReturnValue(false) // Default: not cancelled
   })
 
   afterEach(() => {
@@ -75,11 +83,11 @@ describe('ConflictPrompt', () => {
 
       expect(result.strategy).toBe(ConflictResolutionStrategy.KEEP_IR)
       expect(result.applyToAll).toBe(false)
-      expect(mockPrompts).not.toHaveBeenCalled()
+      expect(mockSelect).not.toHaveBeenCalled()
     })
 
     it('prompts user in interactive mode (keep IR)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'keep_ir' })
+      mockSelect.mockResolvedValueOnce('keep_ir')
 
       const options: PromptOptions = {
         interactive: true,
@@ -90,11 +98,11 @@ describe('ConflictPrompt', () => {
       const result = await promptForResolution(conflict, options)
 
       expect(result.strategy).toBe(ConflictResolutionStrategy.KEEP_IR)
-      expect(mockPrompts).toHaveBeenCalledTimes(1)
+      expect(mockSelect).toHaveBeenCalledTimes(1)
     })
 
     it('prompts user in interactive mode (accept agent)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'accept_agent' })
+      mockSelect.mockResolvedValueOnce('accept_agent')
 
       const options: PromptOptions = {
         interactive: true,
@@ -108,7 +116,7 @@ describe('ConflictPrompt', () => {
     })
 
     it('handles quit option', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'quit' })
+      mockSelect.mockResolvedValueOnce('quit')
 
       const options: PromptOptions = {
         interactive: true,
@@ -123,7 +131,9 @@ describe('ConflictPrompt', () => {
     })
 
     it('handles cancelled prompt (undefined)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: undefined })
+      const cancelSymbol = Symbol('cancel')
+      mockSelect.mockResolvedValueOnce(cancelSymbol)
+      mockIsCancel.mockReturnValueOnce(true)
 
       const options: PromptOptions = {
         interactive: true,
@@ -137,9 +147,8 @@ describe('ConflictPrompt', () => {
     })
 
     it('prompts for batch mode when enabled', async () => {
-      mockPrompts
-        .mockResolvedValueOnce({ choice: 'keep_ir' })
-        .mockResolvedValueOnce({ batch: true })
+      mockSelect.mockResolvedValueOnce('keep_ir')
+      mockConfirm.mockResolvedValueOnce(true)
 
       const options: PromptOptions = {
         interactive: true,
@@ -151,7 +160,8 @@ describe('ConflictPrompt', () => {
 
       expect(result.strategy).toBe(ConflictResolutionStrategy.KEEP_IR)
       expect(result.applyToAll).toBe(true)
-      expect(mockPrompts).toHaveBeenCalledTimes(2)
+      expect(mockSelect).toHaveBeenCalledTimes(1)
+      expect(mockConfirm).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -176,9 +186,9 @@ describe('ConflictPrompt', () => {
         },
       ]
 
-      mockPrompts
-        .mockResolvedValueOnce({ choice: 'keep_ir' })
-        .mockResolvedValueOnce({ choice: 'accept_agent' })
+      mockSelect
+        .mockResolvedValueOnce('keep_ir')
+        .mockResolvedValueOnce('accept_agent')
 
       const options: PromptOptions = {
         interactive: true,
@@ -222,12 +232,15 @@ describe('ConflictPrompt', () => {
       ]
 
       // First conflict: keep_ir with batch mode
-      mockPrompts
-        .mockResolvedValueOnce({ choice: 'keep_ir' })
-        .mockResolvedValueOnce({ batch: true })
+      mockSelect
+        .mockResolvedValueOnce('keep_ir')
+      mockConfirm
+        .mockResolvedValueOnce(true)
         // Third conflict (different rule)
-        .mockResolvedValueOnce({ choice: 'accept_agent' })
-        .mockResolvedValueOnce({ batch: false })
+      mockSelect
+        .mockResolvedValueOnce('accept_agent')
+      mockConfirm
+        .mockResolvedValueOnce(false)
 
       const options: PromptOptions = {
         interactive: true,
@@ -257,7 +270,7 @@ describe('ConflictPrompt', () => {
         },
       ]
 
-      mockPrompts.mockResolvedValueOnce({ choice: 'quit' })
+      mockSelect.mockResolvedValueOnce('quit')
 
       const options: PromptOptions = {
         interactive: true,
@@ -290,7 +303,7 @@ describe('ConflictPrompt', () => {
 
       expect(resolutions.size).toBe(1)
       expect(resolutions.get('testing.require-tests:severity')).toBe(ConflictResolutionStrategy.ACCEPT_AGENT)
-      expect(mockPrompts).not.toHaveBeenCalled()
+      expect(mockSelect).not.toHaveBeenCalled()
     })
   })
 
@@ -309,7 +322,7 @@ describe('ConflictPrompt', () => {
       )
 
       expect(result).toBe('overwrite')
-      expect(mockPrompts).not.toHaveBeenCalled()
+      expect(mockSelect).not.toHaveBeenCalled()
     })
 
     it('returns abort in non-interactive mode without force', async () => {
@@ -322,11 +335,11 @@ describe('ConflictPrompt', () => {
       )
 
       expect(result).toBe('abort')
-      expect(mockPrompts).not.toHaveBeenCalled()
+      expect(mockSelect).not.toHaveBeenCalled()
     })
 
     it('prompts user in interactive mode (overwrite)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'overwrite' })
+      mockSelect.mockResolvedValueOnce('overwrite')
 
       const result = await promptOnChecksumMismatch(
         filePath,
@@ -337,11 +350,11 @@ describe('ConflictPrompt', () => {
       )
 
       expect(result).toBe('overwrite')
-      expect(mockPrompts).toHaveBeenCalledTimes(1)
+      expect(mockSelect).toHaveBeenCalledTimes(1)
     })
 
     it('prompts user in interactive mode (keep)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'keep' })
+      mockSelect.mockResolvedValueOnce('keep')
 
       const result = await promptOnChecksumMismatch(
         filePath,
@@ -355,7 +368,7 @@ describe('ConflictPrompt', () => {
     })
 
     it('prompts user in interactive mode (abort)', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: 'abort' })
+      mockSelect.mockResolvedValueOnce('abort')
 
       const result = await promptOnChecksumMismatch(
         filePath,
@@ -369,7 +382,9 @@ describe('ConflictPrompt', () => {
     })
 
     it('handles cancelled prompt as abort', async () => {
-      mockPrompts.mockResolvedValueOnce({ choice: undefined })
+      const cancelSymbol = Symbol('cancel')
+      mockSelect.mockResolvedValueOnce(cancelSymbol)
+      mockIsCancel.mockReturnValueOnce(true)
 
       const result = await promptOnChecksumMismatch(
         filePath,

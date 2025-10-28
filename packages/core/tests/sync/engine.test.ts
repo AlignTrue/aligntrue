@@ -182,7 +182,7 @@ rules:
       expect(result.success).toBe(true)
       expect(mockExporter.getCallCount()).toBe(1)
       expect(mockExporter.lastRequest?.rules).toHaveLength(1)
-      expect(mockExporter.lastRequest?.rules[0].id).toBe('test.rule')
+      expect(mockExporter.lastRequest?.rules[0].id).toBe('test-rule')
     })
 
     it('supports dry-run mode', async () => {
@@ -196,7 +196,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -231,7 +235,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -309,7 +317,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -343,7 +355,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -379,7 +395,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -409,7 +429,11 @@ exporters:
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const configPath = join(CONFIG_DIR, 'config.yaml')
@@ -433,11 +457,36 @@ rules: []
   })
 
   describe('syncFromAgent', () => {
-    it('returns not implemented error', async () => {
-      const result = await engine.syncFromAgent('cursor', join(TEST_DIR, 'rules.md'))
+    it('loads agent rules with mock implementation', async () => {
+      // Setup: create config and rules files
+      const config = `version: "1"
+mode: solo
+sources:
+  - type: local
+    path: rules.md
+exporters: ['cursor']
+`
+      const rules = `\`\`\`aligntrue
+id: test-pack
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
+\`\`\`
+`
+      const configPath = join(CONFIG_DIR, 'config.yaml')
+      const rulesPath = join(TEST_DIR, 'rules.md')
+      writeFileSync(configPath, config, 'utf8')
+      writeFileSync(rulesPath, rules, 'utf8')
 
-      expect(result.success).toBe(false)
-      expect(result.warnings?.[0]).toContain('not yet implemented')
+      const result = await engine.syncFromAgent('cursor', rulesPath, { configPath })
+
+      // Should succeed with warning about no agent rules (Step 17 will provide real parsers)
+      expect(result.success).toBe(true)
+      expect(result.warnings?.[0]).toContain('No rules found in agent')
     })
   })
 
@@ -472,7 +521,11 @@ rules: []
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules: []
+rules:
+  - id: test-rule
+    severity: warn
+    applies_to: ["**/*.ts"]
+    guidance: Test rule
 \`\`\`
 `
       const irPath = join(TEST_DIR, 'rules.md')
