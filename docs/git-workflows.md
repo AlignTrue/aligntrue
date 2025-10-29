@@ -319,6 +319,172 @@ aligntrue pull https://github.com/yourorg/rules --offline
 
 See [Privacy guide](PRIVACY.md) for full consent documentation.
 
+## Vendoring workflows
+
+Vendor rule packs with git submodules or subtrees for offline use and version control.
+
+### Why vendor?
+
+- **Offline development** - Work without network access
+- **Version control** - Lock rules to specific commits
+- **Team review** - Rules changes appear in diffs
+- **Security** - Audit vendored code in your repo
+
+### Git submodule workflow
+
+**Setup:**
+
+```bash
+# Add submodule
+git submodule add https://github.com/org/rules vendor/aligntrue-rules
+
+# Link with AlignTrue
+aligntrue link https://github.com/org/rules --path vendor/aligntrue-rules
+
+# Commit changes
+git add .gitmodules vendor/aligntrue-rules .aligntrue.lock.json
+git commit -m "feat: Vendor org rules"
+```
+
+**Team members:**
+
+```bash
+# After git pull
+git submodule init
+git submodule update
+```
+
+**Update vendored rules:**
+
+```bash
+cd vendor/aligntrue-rules
+git pull origin main
+cd ../..
+git add vendor/aligntrue-rules
+git commit -m "chore: Update org rules to latest"
+```
+
+### Git subtree workflow
+
+**Setup:**
+
+```bash
+# Add subtree
+git subtree add --prefix vendor/aligntrue-rules https://github.com/org/rules main --squash
+
+# Link with AlignTrue
+aligntrue link https://github.com/org/rules --path vendor/aligntrue-rules
+
+# Commit changes
+git add vendor/aligntrue-rules .aligntrue.lock.json
+git commit -m "feat: Vendor org rules via subtree"
+```
+
+**Update vendored rules:**
+
+```bash
+git subtree pull --prefix vendor/aligntrue-rules https://github.com/org/rules main --squash
+```
+
+### Submodule vs Subtree
+
+| Aspect     | Submodule                         | Subtree               |
+| ---------- | --------------------------------- | --------------------- |
+| Complexity | Requires `git submodule` commands | Just `git pull`       |
+| History    | Separate history                  | Merged into main repo |
+| Team setup | `git submodule init && update`    | No extra steps        |
+| Disk space | Efficient (pointer)               | Full copy in repo     |
+| Updates    | `git submodule update`            | `git subtree pull`    |
+
+**Recommendation:** Subtrees for simplicity, submodules for space efficiency.
+
+### When to vendor vs pull
+
+**Use vendoring (`aligntrue link`)** for:
+
+- Production dependencies requiring version control
+- Offline development workflows
+- Team review of rule changes in PRs
+- Security-sensitive environments needing code audits
+
+**Use pull (`aligntrue pull`)** for:
+
+- Quick exploration and experimentation
+- Testing rules before vendoring
+- Sharing rules via URL (temporary)
+- CI/CD with network access
+
+### Team vendoring workflow
+
+**Initial setup (team lead):**
+
+```bash
+# 1. Add submodule
+git submodule add https://github.com/yourorg/team-rules vendor/team-rules
+
+# 2. Link with AlignTrue
+aligntrue link https://github.com/yourorg/team-rules --path vendor/team-rules
+
+# 3. Commit
+git add .gitmodules vendor/team-rules .aligntrue.lock.json
+git commit -m "feat: Vendor team rules"
+git push
+```
+
+**Team member setup:**
+
+```bash
+# 1. Pull changes
+git pull
+
+# 2. Initialize submodule
+git submodule init
+git submodule update
+
+# 3. Verify
+aligntrue sync --dry-run
+```
+
+**Update workflow (any team member):**
+
+```bash
+# 1. Update submodule
+cd vendor/team-rules
+git pull origin main
+cd ../..
+
+# 2. Test locally
+aligntrue sync --dry-run
+
+# 3. Commit and PR
+git add vendor/team-rules
+git commit -m "chore: Update team rules to latest"
+git push
+# Create PR for team review
+```
+
+### Team mode behavior
+
+When team mode is enabled, `aligntrue link` warns if source not in allow list (but doesn't block):
+
+```
+⚠️  Team mode warning: Source not in allow list
+  Repository: https://github.com/org/rules
+  Add with: aligntrue team approve https://github.com/org/rules
+```
+
+This is non-blocking because:
+
+- Vendoring is an explicit manual action
+- Team reviews PR containing vendor changes
+- More flexible than strict allow list enforcement
+
+To add source to allow list after vendoring:
+
+```bash
+aligntrue team approve https://github.com/org/rules
+```
+
 ## Troubleshooting
 
 ### Network errors

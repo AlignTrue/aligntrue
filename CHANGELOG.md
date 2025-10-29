@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 5: Link Command Complete** - Completed 2025-10-29
+  - `aligntrue link` command for vendoring packs from git repositories
+  - Git submodule and subtree detection with workflow guidance (detect and inform only, no automatic conversion)
+  - Allow list warnings in team mode (non-blocking) with clear approval suggestions
+  - Error on duplicate vendoring with explicit removal instructions and re-link guidance
+  - Lockfile provenance tracking: vendor_path and vendor_type fields for drift detection (Session 6)
+  - Validates pack integrity (`.aligntrue.yaml` required at repository root with valid profile.id)
+  - User-specified vendor location (default: `vendor/<repo-name>`) respects git submodule/subtree paths
+  - Git-only support (no local directory paths) with URL format validation
+  - 22 new tests: help/validation (3), basic operations (4), error cases (3), team mode (2), submodule detection (3), subtree detection (3), manual operations (2), edge cases (3)
+  - Test count: 1424 → 1446 passing (+22 tests, 100% pass rate)
+  - Files created: cli/src/commands/link.ts (~330 lines), tests/commands/link.test.ts (~880 lines, 22 tests)
+  - Files modified: commands/index.ts (+1 export), index.ts (+4 lines), lockfile/types.ts (+2 fields), schema/validator.ts (+2 fields), lockfile/generator.ts (+2 lines), commands.md (+103 lines), git-workflows.md (+164 lines vendoring section)
+  - Documentation: Added link command section to commands.md, comprehensive vendoring workflows section to git-workflows.md (submodule vs subtree comparison, team workflows, when to vendor vs pull)
+  - Key decisions: Git-only (no local paths), warn on allow list (team mode), user-specified location, error on duplicate, detect-and-inform only (no conversion)
+  - Integration: Uses Phase 2 GitProvider, respects privacy consent, integrates with Session 3 team validation
+  - Known limitations: No automatic submodule/subtree conversion (manual git operations required first), lockfile provenance fields prepared for Session 6 drift detection
+
 - **Phase 3, Session 4: Pull Command Complete** - Completed 2025-10-29
   - `aligntrue pull` command for ad-hoc git-based rule pulling (try-before-commit workflow)
   - Flags: `--save` (add to config), `--ref` (branch/tag/commit), `--sync` (run sync after), `--dry-run` (preview), `--offline` (cache only)
