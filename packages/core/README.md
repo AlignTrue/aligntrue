@@ -205,6 +205,46 @@ if (conflicts.hasConflicts) {
 }
 ```
 
+## Performance Configuration
+
+Control resource limits and ignore patterns to prevent resource exhaustion:
+
+```yaml
+performance:
+  max_file_size_mb: 10        # Default: 10MB
+  max_directory_depth: 10     # Default: 10 levels
+  ignore_patterns:            # Additional patterns beyond .gitignore
+    - "*.tmp"
+    - ".DS_Store"
+```
+
+**Behavior:**
+
+- **Solo mode:** Warnings logged to stderr, operations continue
+- **Team mode:** Errors abort operations (use `--force` to override)
+- **Git operations:** Respects `.gitignore` in cloned repositories
+
+**Usage:**
+
+```typescript
+import { checkFileSize, createIgnoreFilter } from '@aligntrue/core/performance'
+
+// Check file size before reading
+checkFileSize('/path/to/file.yaml', 10, 'team', false)
+
+// Create ignore filter from .gitignore
+const filter = createIgnoreFilter('./.gitignore', ['*.tmp', '.DS_Store'])
+if (filter('node_modules/pkg/index.js')) {
+  console.log('File should be ignored')
+}
+```
+
+**When limits are exceeded:**
+
+- Solo mode: Logs warning, continues operation
+- Team mode: Throws error, aborts operation
+- `--force` flag: Bypasses all checks
+
 ## API Reference
 
 ### SyncEngine

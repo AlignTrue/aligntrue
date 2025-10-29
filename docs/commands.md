@@ -145,7 +145,7 @@ aligntrue sync [options]
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--dry-run` | Preview changes without writing files | `false` |
-| `--force` | Skip interactive prompts (for CI) | `false` |
+| `--force` | Override performance limits and safety checks | `false` |
 | `--accept-agent <name>` | Pull changes from agent back to IR (mock data in Phase 1) | - |
 | `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 

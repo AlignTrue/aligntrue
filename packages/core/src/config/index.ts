@@ -18,6 +18,12 @@ import {
 
 export type AlignTrueMode = 'solo' | 'team' | 'enterprise';
 
+export interface PerformanceConfig {
+  max_file_size_mb?: number;
+  max_directory_depth?: number;
+  ignore_patterns?: string[];
+}
+
 export interface AlignTrueConfig {
   version: string | undefined;
   mode: AlignTrueMode;
@@ -57,6 +63,7 @@ export interface AlignTrueConfig {
     strategy?: 'deep';
     order?: MergeOrder;
   };
+  performance?: PerformanceConfig;
 }
 
 /**
@@ -237,6 +244,14 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sources = [{ type: 'local', path: '.aligntrue/rules.md' }]
   }
   
+  // Apply performance defaults
+  if (!result.performance) {
+    result.performance = {}
+  }
+  result.performance.max_file_size_mb = result.performance.max_file_size_mb ?? 10
+  result.performance.max_directory_depth = result.performance.max_directory_depth ?? 10
+  result.performance.ignore_patterns = result.performance.ignore_patterns ?? []
+  
   return result
 }
 
@@ -245,7 +260,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
  */
 function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge'
+    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance'
   ])
   
   for (const key of Object.keys(config)) {

@@ -116,6 +116,9 @@ importers:
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
+      ignore:
+        specifier: ^5.3.0
+        version: 5.3.2
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0

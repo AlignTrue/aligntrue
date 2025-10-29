@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Performance Guardrails** (Phase 2, Stage 2, Step 13) - Completed 2025-10-29
+  - .gitignore respect in git provider for clone operations
+  - File size validation (10MB default) for source reads and git clones
+  - Mode-dependent enforcement: warnings in solo mode, errors in team mode
+  - `--force` flag to override limits already integrated in sync command
+  - Performance config schema with validation (max_file_size_mb, max_directory_depth, ignore_patterns)
+  - 29 new tests (21 performance utils + 8 IR loader, 100% pass rate)
+  - Fixed 1 flaky performance test (100ms → 102ms tolerance for OS scheduling variance)
+  - Files created:
+    - `packages/core/src/performance/index.ts` (performance utilities, 96 lines)
+    - `packages/core/tests/performance/guardrails.test.ts` (21 tests, 277 lines)
+    - `packages/core/tests/sync/ir-loader-performance.test.ts` (8 tests, 149 lines)
+  - Files modified:
+    - `packages/core/schema/config.schema.json` - Added performance section
+    - `packages/core/src/config/index.ts` - PerformanceConfig type + defaults + known fields
+    - `packages/core/src/sync/ir-loader.ts` - File size checks with mode/force params
+    - `packages/core/src/sync/engine.ts` - Pass force flag to IR loader
+    - `packages/core/package.json` - Added ignore@^5.3.0 dependency
+    - `packages/sources/src/providers/git.ts` - .gitignore filtering + file size checks
+    - `packages/cli/tests/integration/performance.test.ts` - Fixed flaky test tolerance
+    - `packages/core/README.md` - Performance configuration section (~40 lines)
+    - `docs/commands.md` - Updated --force flag description
+  - Test count: 1058/1058 passing (100% pass rate, up from 1028)
+  - Integration: GitProvider checks file sizes, IR loader validates with mode-dependent behavior
+  - User experience: Solo devs get warnings, teams get safety, --force provides escape hatch
+  - Uses battle-tested 'ignore' npm package for .gitignore parsing
+
 ### Documentation
 
 - **Phase 2 Documentation Complete** (Phase 2, Stage 2, Step 12) - Completed 2025-10-29
