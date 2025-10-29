@@ -187,6 +187,29 @@
         "autofix": {
           "$ref": "#/$defs/autofix"
         },
+        "mode": {
+          "type": "string",
+          "enum": ["always", "manual", "intelligent", "files"],
+          "description": "Execution mode: always (apply to all edits), manual (user selects), intelligent (relevance-based), files (glob-matched)"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Optional display name for the rule"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Description for intelligent mode relevance detection and user guidance. Persisted for all modes (some agents use it universally)."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "description": "Categorization tags for filtering and organization"
+        },
         "vendor": {
           "type": "object",
           "description": "Agent-specific metadata for lossless round-trips. Use _meta.volatile to exclude fields from hashing.",

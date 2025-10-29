@@ -88,40 +88,78 @@ export class CursorExporter implements ExporterPlugin {
    * Generate YAML frontmatter from scope and rules
    */
   private generateFrontmatter(scope: ResolvedScope, rules: AlignRule[]): string {
+    // Use first rule's mode (file-level in Cursor)
+    const firstRule = rules[0]
+    if (!firstRule) {
+      return ''
+    }
+
     const lines: string[] = ['---']
 
-    // Add description
-    const scopeDesc = scope.isDefault 
-      ? 'AlignTrue rules (default scope)' 
-      : `AlignTrue rules for ${scope.path}`
-    lines.push(`description: ${scopeDesc}`)
+    // Map mode enum back to Cursor boolean fields
+    if (firstRule.mode === 'always') {
+      lines.push('alwaysApply: true')
+    } else if (firstRule.mode === 'intelligent') {
+      lines.push('intelligent: true')
+      if (firstRule.description) {
+        lines.push(`description: ${firstRule.description}`)
+      }
+    }
 
-    // Add globs if present
-    if (scope.include && scope.include.length > 0) {
+    // Export globs for any mode when applies_to has specific patterns (not just default **/*)
+    // Globs define "where" rules apply (filter), mode defines "when" they trigger
+    const hasSpecificGlobs = firstRule.applies_to && 
+      firstRule.applies_to.length > 0 && 
+      !(firstRule.applies_to.length === 1 && firstRule.applies_to[0] === '**/*')
+
+    if (hasSpecificGlobs) {
       lines.push('globs:')
-      scope.include.forEach(pattern => {
+      firstRule.applies_to.forEach(pattern => {
         lines.push(`  - "${pattern}"`)
       })
     }
 
-    // Add alwaysApply for default scope
-    if (scope.isDefault) {
-      lines.push('alwaysApply: true')
+    // Export title and tags if present
+    if (firstRule.title) {
+      lines.push(`title: ${firstRule.title}`)
+    }
+    if (firstRule.tags && firstRule.tags.length > 0) {
+      lines.push('tags:')
+      firstRule.tags.forEach(tag => {
+        lines.push(`  - ${tag}`)
+      })
     }
 
-    // Extract vendor.cursor metadata from all rules
-    const cursorMetadata: Record<string, any> = {}
+    // Restore any unknown fields from vendor.cursor._unknown
+    if (firstRule.vendor?.['cursor']?.['_unknown']) {
+      const unknown = firstRule.vendor['cursor']['_unknown'] as Record<string, any>
+      Object.entries(unknown).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          lines.push(`${key}: ${value}`)
+        } else if (Array.isArray(value)) {
+          lines.push(`${key}:`)
+          value.forEach(item => {
+            lines.push(`  - ${typeof item === 'string' ? item : JSON.stringify(item)}`)
+          })
+        } else {
+          lines.push(`${key}: ${JSON.stringify(value)}`)
+        }
+      })
+    }
+
+    // Extract per-rule vendor.cursor metadata (excluding _unknown)
+    const cursorPerRuleMetadata: Record<string, any> = {}
     rules.forEach(rule => {
-      const vendorCursor = this.extractVendorCursor(rule)
+      const vendorCursor = this.extractPerRuleVendorCursor(rule)
       if (Object.keys(vendorCursor).length > 0) {
-        cursorMetadata[rule.id] = vendorCursor
+        cursorPerRuleMetadata[rule.id] = vendorCursor
       }
     })
 
-    // Add cursor metadata if present
-    if (Object.keys(cursorMetadata).length > 0) {
+    // Add cursor per-rule metadata if present
+    if (Object.keys(cursorPerRuleMetadata).length > 0) {
       lines.push('cursor:')
-      Object.entries(cursorMetadata).forEach(([ruleId, metadata]) => {
+      Object.entries(cursorPerRuleMetadata).forEach(([ruleId, metadata]) => {
         lines.push(`  ${ruleId}:`)
         Object.entries(metadata).forEach(([key, value]) => {
           if (typeof value === 'string') {
@@ -176,20 +214,22 @@ export class CursorExporter implements ExporterPlugin {
   }
 
   /**
-   * Extract vendor.cursor metadata from a rule
+   * Extract per-rule vendor.cursor metadata from a rule
+   * Excludes file-level fields (alwaysApply, intelligent, description, globs) and _unknown
    */
-  private extractVendorCursor(rule: AlignRule): Record<string, any> {
+  private extractPerRuleVendorCursor(rule: AlignRule): Record<string, any> {
     if (!rule.vendor || !rule.vendor['cursor']) {
       return {}
     }
 
     const cursor = rule.vendor['cursor'] as Record<string, any>
     const metadata: Record<string, any> = {}
+    const excludedFields = new Set(['alwaysApply', 'intelligent', 'description', 'globs', '_meta', '_unknown'])
 
-    // Extract all cursor-specific fields
+    // Extract cursor-specific fields that are not file-level or _unknown
     Object.entries(cursor).forEach(([key, value]) => {
-      // Skip volatile metadata marker
-      if (key === '_meta') return
+      // Skip excluded fields
+      if (excludedFields.has(key)) return
       metadata[key] = value
     })
 

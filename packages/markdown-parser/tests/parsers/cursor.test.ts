@@ -253,6 +253,8 @@ Content Hash: abc123
       id: 'typescript.no.any',
       severity: 'warn',
       applies_to: ['**/*.ts', '**/*.tsx'],
+      mode: 'always',
+      description: 'AlignTrue rules (default scope)',
     })
     expect(rules[1].vendor).toEqual({
       cursor: {
@@ -315,6 +317,158 @@ Second version.
     expect(rules).toHaveLength(1)
     expect(rules[0].severity).toBe('warn')
     expect(rules[0].guidance).toBe('Second version.')
+  })
+})
+
+describe('Cursor mode preservation', () => {
+  it('should map alwaysApply to mode: "always"', () => {
+    const content = `---
+description: Test rules
+alwaysApply: true
+---
+## Rule: test.rule.id
+
+**Severity:** error
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].mode).toBe('always')
+  })
+
+  it('should map intelligent to mode: "intelligent" with description', () => {
+    const content = `---
+intelligent: true
+description: "Smart rules"
+---
+## Rule: test.rule.id
+
+**Severity:** warn
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].mode).toBe('intelligent')
+    expect(rules[0].description).toBe('Smart rules')
+  })
+
+  it('should map globs to mode: "files" and applies_to', () => {
+    const content = `---
+globs:
+  - "src/**/*.ts"
+  - "tests/**/*.test.ts"
+---
+## Rule: test.rule.id
+
+**Severity:** info
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].mode).toBe('files')
+    expect(rules[0].applies_to).toEqual([
+      'src/**/*.ts',
+      'tests/**/*.test.ts'
+    ])
+  })
+
+  it('should store file-level metadata in ALL rules', () => {
+    const content = `---
+alwaysApply: true
+description: "Shared metadata"
+---
+## Rule: first.rule.id
+
+**Severity:** error
+
+First rule.
+
+## Rule: second.rule.id
+
+**Severity:** warn
+
+Second rule.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules).toHaveLength(2)
+    expect(rules[0].mode).toBe('always')
+    expect(rules[0].description).toBe('Shared metadata')
+    expect(rules[1].mode).toBe('always')
+    expect(rules[1].description).toBe('Shared metadata')
+  })
+
+  it('should pass-through unknown frontmatter fields to vendor.cursor._unknown', () => {
+    const content = `---
+alwaysApply: true
+customField: "custom value"
+futureFeature: 42
+---
+## Rule: test.rule.id
+
+**Severity:** error
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].vendor?.cursor?._unknown?.customField).toBe('custom value')
+    expect(rules[0].vendor?.cursor?._unknown?.futureFeature).toBe(42)
+  })
+
+  it('should merge file-level schema fields and per-rule vendor metadata', () => {
+    const content = `---
+alwaysApply: true
+description: "File-level desc"
+cursor:
+  test.rule.id:
+    ai_hint: "Per-rule hint"
+    quick_fix: true
+---
+## Rule: test.rule.id
+
+**Severity:** error
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].mode).toBe('always')
+    expect(rules[0].description).toBe('File-level desc')
+    expect(rules[0].vendor?.cursor).toEqual({
+      ai_hint: 'Per-rule hint',
+      quick_fix: true,
+    })
+  })
+
+  it('should handle intelligent mode priority over alwaysApply', () => {
+    const content = `---
+description: "Production rules"
+alwaysApply: false
+intelligent: true
+---
+## Rule: test.rule.id
+
+**Severity:** warn
+
+Test guidance.
+`
+    const { rules } = parseCursorMdc(content)
+    // Intelligent takes priority over alwaysApply in mode detection
+    expect(rules[0].mode).toBe('intelligent')
+    expect(rules[0].description).toBe('Production rules')
+  })
+
+  it('should default to mode: "manual" when no mode specified', () => {
+    const content = `---
+description: "Manual rules"
+---
+## Rule: test.rule.id
+
+**Severity:** warn
+
+Test.
+`
+    const { rules } = parseCursorMdc(content)
+    expect(rules[0].mode).toBe('manual')
+    expect(rules[0].description).toBe('Manual rules')
   })
 })
 

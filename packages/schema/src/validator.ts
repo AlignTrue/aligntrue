@@ -275,6 +275,9 @@ export interface AlignRule {
   severity: 'error' | 'warn' | 'info'
   applies_to: string[]
   guidance?: string
+  mode?: 'always' | 'manual' | 'intelligent' | 'files'
+  title?: string
+  description?: string
   tags?: string[]
   check?: AlignCheck
   autofix?: AlignAutofix
