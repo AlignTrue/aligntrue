@@ -32,6 +32,20 @@ vi.mock('@aligntrue/core', () => {
     SyncEngine: vi.fn(function(this: any) {
       return mockEngine
     }),
+    getAlignTruePaths: vi.fn((cwd = process.cwd()) => ({
+      config: `${cwd}/.aligntrue/config.yaml`,
+      rules: `${cwd}/.aligntrue/rules.md`,
+      lockfile: `${cwd}/.aligntrue.lock.json`,
+      bundle: `${cwd}/.aligntrue.bundle.yaml`,
+      cursorRules: (scope: string) => `${cwd}/.cursor/rules/${scope}.mdc`,
+      agentsMd: () => `${cwd}/AGENTS.md`,
+      vscodeMcp: () => `${cwd}/.vscode/mcp.json`,
+      cache: (type: string) => `${cwd}/.aligntrue/.cache/${type}`,
+      privacyConsent: () => `${cwd}/.aligntrue/privacy-consent.json`,
+      telemetryEvents: () => `${cwd}/.aligntrue/telemetry-events.json`,
+      aligntrueDir: `${cwd}/.aligntrue`,
+      exporterOutput: (exporterName: string, filename: string) => `${cwd}/${filename}`,
+    })),
     __mockEngine: mockEngine, // Export for test access
   }
 })

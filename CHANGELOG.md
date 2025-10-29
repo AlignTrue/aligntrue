@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Stage 1.5a: Path Utilities Extension** (Phase 2, Stage 1.5) - Completed 2025-10-29
+  - Extended centralized path utilities to sources package providers
+  - Replaced hardcoded cache paths with getCacheDir() helper for catalog and git providers
+  - Updated config loading and saving functions to support optional cwd parameter
+  - Updated sync command tests to mock getAlignTruePaths() function
+  - Test count: 1082/1082 passing (maintained 100% pass rate)
+  - Files modified:
+    - packages/sources/src/providers/index.ts - Use getCacheDir() for catalog/git cache directories
+    - packages/core/src/config/index.ts - Import paths module, add cwd parameters to loadConfig/saveConfig
+    - packages/cli/tests/commands/sync.test.ts - Mock getAlignTruePaths in test suite
+  - Integration: Catalog and git providers now use consistent getCacheDir() helper
+  - Minimal scope: Only 3 files changed (26 additions, 17 deletions), no changes needed to core/sources/schema source files (already clean)
+  - Remaining work: Stage 1.5b (YAML library review, ~5k tokens), Stage 1.5c (CLI framework - optional)
+
 - **Stage 1.5: Foundation Cleanup** (Phase 2, Stage 1.5) - Completed 2025-10-29
   - Centralized path utilities in @aligntrue/core for consistent file path generation
   - getAlignTruePaths() helper reduces duplication across CLI and exporters
