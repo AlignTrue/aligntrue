@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 3: Team Mode Polish** - Completed 2025-10-29
+  - `aligntrue team status` dashboard showing lockfile mode, allow list count, drift status, team configuration
+  - Enhanced `aligntrue team enable` output with clear next steps and collaboration guidance
+  - Team-specific validation rules (stricter than solo mode) with enhanced error messages and suggestions
+  - Lockfile validation integration with allow list (checks sources in team mode, detects drift from approved versions)
+  - Optional `base_hash` field in lockfile schema (Phase 3.5 prep) captured from git sources (source_sha)
+  - 59 new tests: 10 team status + 27 team validation + 17 lockfile validation + 5 base_hash
+  - Test count: 1328 → 1387 passing (+59 tests, 100% pass rate)
+  - Files created: core/src/team/validation.ts (~150 lines), tests/team/validation.test.ts (~425 lines, 27 tests)
+  - Files modified: team.ts (+124 lines status), validator.ts (+245 lines), types.ts (+5 lines), generator.ts (+10 lines)
+  - No team member detection (deferred), allow list integration complete, drift detection foundation for Session 6
+
 - **Phase 3, Session 2: Allow List Foundation** - Completed 2025-10-29
   - `.aligntrue/allow.yaml` for team-approved rule sources with `id@profile@version` or `sha256:...` formats
   - Git-based source resolution architecture (Phase 3: prep, Phase 4: catalog+git)

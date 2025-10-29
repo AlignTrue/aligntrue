@@ -237,6 +237,274 @@ describe("team command", () => {
     });
   });
 
+  describe("status subcommand", () => {
+    it("shows team mode status with all features", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+      const { parseAllowList } = await import("@aligntrue/core/team/allow.js");
+
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        if (path === ".aligntrue/config.yaml") return true;
+        if (path === ".aligntrue.lock.json") return true;
+        if (path === ".aligntrue/allow.yaml") return true;
+        return false;
+      });
+
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true, bundle: true },
+        lockfile: { mode: "strict" },
+        exporters: ["cursor", "agents-md"],
+        sources: [
+          { type: "local", path: ".aligntrue/rules.md" },
+          { type: "git", url: "https://github.com/example/rules.git" },
+        ],
+      });
+
+      vi.mocked(parseAllowList).mockReturnValue({
+        sources: [
+          { type: "hash", value: "sha256:abc123...", comment: "Base rules" },
+          { type: "id", value: "base-global@aligntrue/catalog@v1.0.0" },
+        ],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith("Team Mode Status");
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Mode: team"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Lockfile: strict"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Allow List: 2 sources approved"),
+      );
+    });
+
+    it("shows solo mode message when not in team mode", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "solo",
+        modules: { lockfile: false, bundle: false },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith("Mode: solo");
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("This project is in solo mode"),
+      );
+    });
+
+    it("shows lockfile disabled when not configured", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        if (path === ".aligntrue/config.yaml") return true;
+        return false;
+      });
+
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: false },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Lockfile: disabled"),
+      );
+    });
+
+    it("shows lockfile not generated yet when file missing", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        if (path === ".aligntrue/config.yaml") return true;
+        if (path === ".aligntrue.lock.json") return false;
+        return false;
+      });
+
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        lockfile: { mode: "soft" },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("not generated yet"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Run 'aligntrue sync' to generate"),
+      );
+    });
+
+    it("shows allow list not configured when missing", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        if (path === ".aligntrue/config.yaml") return true;
+        if (path === ".aligntrue/allow.yaml") return false;
+        return false;
+      });
+
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Allow List: not configured"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("aligntrue team approve"),
+      );
+    });
+
+    it("handles parse error in allow list gracefully", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+      const { parseAllowList } = await import("@aligntrue/core/team/allow.js");
+
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        if (path === ".aligntrue/config.yaml") return true;
+        if (path === ".aligntrue/allow.yaml") return true;
+        return false;
+      });
+
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      vi.mocked(parseAllowList).mockImplementation(() => {
+        throw new Error("Invalid YAML");
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("exists but failed to parse"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid YAML"),
+      );
+    });
+
+    it("shows sources section when configured", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        exporters: ["cursor"],
+        sources: [
+          { type: "local", path: ".aligntrue/rules.md" },
+          { type: "git", url: "https://github.com/example/rules.git" },
+          { type: "catalog", id: "base-global", version: "v1.0.0" },
+        ],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Sources: 3 configured"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("local:.aligntrue/rules.md"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("git:https://github.com/example/rules.git"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("catalog:base-global@v1.0.0"),
+      );
+    });
+
+    it("shows exporters section when configured", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        exporters: ["cursor", "agents-md", "vscode-mcp"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Exporters: 3 configured"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("cursor"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("agents-md"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("vscode-mcp"),
+      );
+    });
+
+    it("fails when config not found", async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(1)");
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Config file not found"),
+      );
+    });
+
+    it("shows placeholder for drift status (Session 6)", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "team",
+        modules: { lockfile: true },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Drift Status: Run 'aligntrue drift'"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Session 6"),
+      );
+    });
+  });
+
   describe("invalid subcommand", () => {
     it("shows error for unknown subcommand", async () => {
       await expect(team(["unknown"])).rejects.toThrow("process.exit(1)");
