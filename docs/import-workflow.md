@@ -256,6 +256,90 @@ vendor:
 
 These fields round-trip when exporting back to the same agent format.
 
+### Cursor mode preservation
+
+**Critical for Cursor users:** AlignTrue captures ALL Cursor execution mode settings during import and restores them during export, ensuring zero loss of functionality.
+
+**What gets preserved:**
+
+- **`alwaysApply`** - Rule always active (file-level setting)
+- **`intelligent`** - AI decides when to apply (file-level setting)
+- **`description`** - Human-readable description (file-level setting)
+- **`globs`** - File patterns for specific_files mode (file-level setting)
+- **Per-rule metadata** - `ai_hint`, `quick_fix`, custom fields
+
+**Example import:**
+
+Original Cursor `.mdc` file:
+```markdown
+---
+description: "Production TypeScript rules"
+alwaysApply: true
+intelligent: false
+globs:
+  - "src/**/*.ts"
+  - "lib/**/*.js"
+cursor:
+  typescript.no-any:
+    ai_hint: "Suggest specific types based on context"
+    quick_fix: true
+---
+
+## Rule: typescript.no-any
+
+**Severity:** warn
+
+Avoid 'any' type...
+```
+
+Imported to AlignTrue IR (`.aligntrue/rules.md`):
+```yaml
+id: my-project
+version: "1.0.0"
+rules:
+  - id: typescript.no-any
+    severity: warn
+    guidance: "Avoid 'any' type..."
+    vendor:
+      cursor:
+        # File-level fields captured
+        description: "Production TypeScript rules"
+        alwaysApply: true
+        intelligent: false
+        globs:
+          - "src/**/*.ts"
+          - "lib/**/*.js"
+        # Per-rule metadata captured
+        ai_hint: "Suggest specific types based on context"
+        quick_fix: true
+```
+
+Exported back to Cursor (round-trip):
+```markdown
+---
+description: Production TypeScript rules
+globs:
+  - "src/**/*.ts"
+  - "lib/**/*.js"
+alwaysApply: true
+intelligent: false
+cursor:
+  typescript.no-any:
+    ai_hint: "Suggest specific types based on context"
+    quick_fix: true
+---
+
+## Rule: typescript.no-any
+
+**Severity:** warn
+
+Avoid 'any' type...
+```
+
+**Result:** Identical to original - zero configuration loss!
+
+**Future-proof:** Unknown Cursor fields are pass-through preserved, so when Cursor adds new features, AlignTrue won't lose them during round-trips.
+
 ## Import vs fresh start decision framework
 
 | Scenario | Recommendation | Why |

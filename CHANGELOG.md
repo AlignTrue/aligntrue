@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Globs Export for All Modes** (Phase 2, Stage 1, Step 1b fix) - Completed 2025-10-29
+  - Fixed Cursor exporter to export globs with ANY execution mode, not just 'files' mode
+  - Globs are filters that define "where" rules apply, mode defines "when" they trigger
+  - Enables intelligent mode + globs (AI relevance on scoped files)
+  - Enables always mode + globs (auto-apply to scoped files)
+  - Enables manual mode + globs (manual invocation on scoped files)
+  - Only exports globs when applies_to has specific patterns (not default **/*) 
+  - 3 new tests validate globs export for intelligent/always modes and default suppression
+  - 4 snapshot tests updated to reflect correct behavior
+  - Files modified:
+    - `packages/exporters/src/cursor/index.ts` - Globs export logic decoupled from mode check (10 lines)
+    - `packages/exporters/tests/cursor.test.ts` - 3 new comprehensive tests (60 lines added)
+  - Test count: 27/27 passing in cursor exporter (up from 24, 100% pass rate)
+  - Matches Cursor's actual behavior where globs scope rules across all execution modes
+
+### Added
+
+- **Schema Refinement for Mode Fields** (Phase 2, Stage 1, Step 1b) - Completed 2025-10-29
+  - Migrated execution mode metadata from vendor.cursor to core schema fields
+  - Added mode enum: "always", "manual", "intelligent", "files"
+  - Added title, description, and tags fields to AlignRule schema
+  - Normalized mode detection: alwaysApply → "always", intelligent → "intelligent", globs → "files", default → "manual"
+  - Cursor parser maps frontmatter to schema fields with unknown field safety net (vendor.cursor._unknown)
+  - Cursor exporter reads schema fields and generates correct frontmatter
+  - applies_to and globs mirror each other (single concept, bidirectional mapping)
+  - Round-trip fidelity maintained: import → export → import produces identical schema fields
+  - 13 parser tests updated to validate schema fields instead of vendor.cursor
+  - 6 exporter tests updated to test mode enum export and unknown field restoration
+  - 5 snapshot tests updated for new frontmatter format
+  - Files modified:
+    - `packages/schema/schema/align.schema.json` - Added mode/title/description/tags fields (25 lines)
+    - `packages/schema/src/validator.ts` - Updated AlignRule interface (4 lines)
+    - `packages/markdown-parser/src/parsers/cursor.ts` - Schema field mapping logic (30 lines modified)
+    - `packages/exporters/src/cursor/index.ts` - Schema field export logic (40 lines modified)
+    - `packages/markdown-parser/tests/parsers/cursor.test.ts` - Updated mode preservation tests (50 lines modified)
+    - `packages/exporters/tests/cursor.test.ts` - Updated round-trip tests (40 lines modified)
+  - Test count: 1073/1073 passing (100% pass rate, maintained from Step 1a)
+  - Zero vendor.cursor redundancy: clean migration to schema fields with safety net for unknown fields
+  - Future-proof: unknown Cursor fields preserved in vendor.cursor._unknown to prevent data loss
+
+- **Cursor Mode Preservation** (Phase 2, Stage 1, Step 1a) - Completed 2025-10-29
+  - Capture ALL Cursor frontmatter fields in vendor.cursor namespace
+  - File-level fields (alwaysApply, intelligent, description, globs) stored in every rule
+  - Exporter reads from vendor.cursor as source of truth (overrides generated defaults)
+  - Pass-through unknown fields for future Cursor features (future-proof)
+  - Round-trip fidelity: import → export → import preserves identical metadata
+  - 15 new tests (7 parser + 6 exporter + 2 updated, 100% pass rate)
+  - Files modified:
+    - `packages/markdown-parser/src/parsers/cursor.ts` - File-level frontmatter capture (62 lines added)
+    - `packages/exporters/src/cursor/index.ts` - vendor.cursor override logic (53 lines modified)
+    - `packages/markdown-parser/tests/parsers/cursor.test.ts` - Mode preservation tests (140 lines added, 7 new tests)
+    - `packages/exporters/tests/cursor.test.ts` - Round-trip tests (160 lines added, 6 new tests)
+    - `docs/import-workflow.md` - Cursor mode preservation section (~85 lines added)
+    - `packages/markdown-parser/README.md` - Agent format parsers section (~48 lines added)
+  - Integration: Cursor users won't lose execution mode settings during round-trips
+  - Test count: 1073/1073 passing (100% pass rate, up from 1058)
+  - Zero configuration loss: alwaysApply, intelligent, description, globs preserved
+  - Per-rule vs file-level separation: proper frontmatter structure maintained
+
 ### Added
 
 - **Performance Guardrails** (Phase 2, Stage 2, Step 13) - Completed 2025-10-29

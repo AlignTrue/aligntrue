@@ -17,15 +17,31 @@ export interface CursorParseResult {
 export function parseCursorMdc(content: string): CursorParseResult {
   const rules: AlignRule[] = []
   const vendorMetadata: Record<string, any> = {}
+  const fileLevelMetadata: Record<string, any> = {}
 
   // Extract frontmatter
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/)
   if (frontmatterMatch && frontmatterMatch[1]) {
     const frontmatter = parseYaml(frontmatterMatch[1]) as Record<string, any>
     
-    // Extract vendor.cursor metadata from frontmatter
-    if (frontmatter && frontmatter['cursor']) {
-      Object.assign(vendorMetadata, frontmatter['cursor'])
+    if (frontmatter) {
+      // Capture file-level Cursor execution mode fields
+      if ('alwaysApply' in frontmatter) fileLevelMetadata['alwaysApply'] = frontmatter['alwaysApply']
+      if ('intelligent' in frontmatter) fileLevelMetadata['intelligent'] = frontmatter['intelligent']
+      if ('description' in frontmatter) fileLevelMetadata['description'] = frontmatter['description']
+      if ('globs' in frontmatter) fileLevelMetadata['globs'] = frontmatter['globs']
+      
+      // Capture any other Cursor-specific fields (future-proof)
+      Object.keys(frontmatter).forEach(key => {
+        if (!['cursor', 'alwaysApply', 'intelligent', 'description', 'globs'].includes(key)) {
+          fileLevelMetadata[key] = frontmatter[key]
+        }
+      })
+      
+      // Extract per-rule vendor.cursor metadata from frontmatter
+      if (frontmatter['cursor']) {
+        Object.assign(vendorMetadata, frontmatter['cursor'])
+      }
     }
   }
 
@@ -38,7 +54,7 @@ export function parseCursorMdc(content: string): CursorParseResult {
       const ruleId = match[1].trim()
       const ruleBody = match[2].trim()
 
-      const rule = parseRuleSection(ruleId, ruleBody, vendorMetadata)
+      const rule = parseRuleSection(ruleId, ruleBody, fileLevelMetadata, vendorMetadata)
       if (rule) {
         rules.push(rule)
       }
@@ -72,7 +88,8 @@ function normalizeRuleId(id: string): { normalized: string; converted: boolean }
 function parseRuleSection(
   ruleId: string,
   body: string,
-  globalVendorMetadata: Record<string, any>
+  fileLevelMetadata: Record<string, any>,
+  perRuleMetadata: Record<string, any>
 ): AlignRule | null {
   // Normalize rule ID
   const { normalized, converted } = normalizeRuleId(ruleId)
@@ -108,17 +125,42 @@ function parseRuleSection(
   guidance = guidance.replace(/\*\*Applies to:\*\*\n(?:- `[^`]+`\n?)+\n?/, '')
   guidance = guidance.trim()
 
-  // Build rule
+  // Map Cursor frontmatter to core schema fields
+  const mode: 'always' | 'manual' | 'intelligent' | 'files' = 
+    fileLevelMetadata['alwaysApply'] ? 'always' :
+    fileLevelMetadata['intelligent'] ? 'intelligent' :
+    fileLevelMetadata['globs'] ? 'files' :
+    'manual'
+
+  // Build rule with schema fields
   const rule: AlignRule = {
     id: normalized,
     severity,
-    applies_to: applies_to.length > 0 ? applies_to : ['**/*'],
+    applies_to: applies_to.length > 0 ? applies_to : (fileLevelMetadata['globs'] || ['**/*']),
+    mode,
+    ...(fileLevelMetadata['description'] && { description: fileLevelMetadata['description'] }),
+    ...(fileLevelMetadata['title'] && { title: fileLevelMetadata['title'] }),
+    ...(fileLevelMetadata['tags'] && { tags: fileLevelMetadata['tags'] }),
     ...(guidance && { guidance }),
-    ...(globalVendorMetadata[ruleId] && {
-      vendor: {
-        cursor: globalVendorMetadata[ruleId]
+  }
+
+  // Safety: preserve unknown Cursor fields
+  const knownFields = ['alwaysApply', 'intelligent', 'globs', 'description', 'title', 'tags']
+  const unknownFields = Object.keys(fileLevelMetadata).filter(k => !knownFields.includes(k))
+  const hasPerRuleMetadata = perRuleMetadata[ruleId]
+  
+  if (unknownFields.length > 0 || hasPerRuleMetadata) {
+    const unknownObj = unknownFields.reduce((acc, k) => {
+      acc[k] = fileLevelMetadata[k]
+      return acc
+    }, {} as Record<string, any>)
+    
+    rule.vendor = {
+      cursor: {
+        ...(unknownFields.length > 0 && { _unknown: unknownObj }),
+        ...(hasPerRuleMetadata ? perRuleMetadata[ruleId] : {}),
       }
-    }),
+    }
   }
 
   return rule
