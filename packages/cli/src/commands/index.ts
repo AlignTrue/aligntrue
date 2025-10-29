@@ -23,4 +23,5 @@ export { check } from './check.js'
 export { config } from './config.js'
 export { adapters } from './adapters.js'
 export { privacyCommand as privacy } from './privacy.js'
+export { backupCommand as backup } from './backup.js'
 

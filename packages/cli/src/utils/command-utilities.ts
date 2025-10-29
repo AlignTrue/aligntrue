@@ -111,13 +111,17 @@ export function parseCommonArgs(args: string[], definitions: ArgDefinition[] = [
     // Set default values
     if (def.defaultValue !== undefined) {
       const key = def.flag.replace(/^--/, '')
-      flags[key] = def.defaultValue
+      const value = def.defaultValue
+      if (typeof value === 'string' || typeof value === 'boolean') {
+        flags[key] = value
+      }
     }
   }
 
   // Parse arguments
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
+    if (!arg) continue
     
     // Check for help flag
     if (arg === '--help' || arg === '-h') {

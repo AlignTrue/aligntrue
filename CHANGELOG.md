@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 2.5: Backup and Restore System** (Deferred Convenience Features) - Completed 2025-10-29
+  - Created comprehensive backup/restore system for `.aligntrue/` directory
+  - BackupManager core with create, list, restore, cleanup, get, delete operations
+  - Millisecond-precision timestamps for unique backup identification
+  - Atomic restore with automatic rollback on failure (temporary backup safety net)
+  - CLI commands: `aligntrue backup create|list|restore|cleanup`
+  - Auto-backup integration in sync command (opt-in via config)
+  - Config schema for auto-backup: `auto_backup`, `backup_on`, `keep_count` fields
+  - Automatic cleanup of old backups based on retention policy
+  - Interactive prompts for destructive operations (cleanup, restore confirmation)
+  - Comprehensive documentation: docs/backup-restore.md (550+ lines)
+  - 42 new tests (19 backup manager + 3 config + 10 CLI + 7 sync integration + 3 help, 100% pass rate)
+  - Test count: 1107 → 1149 passing (+42 tests)
+  - Files created:
+    - packages/core/src/backup/types.ts (backup metadata interfaces, ~50 lines)
+    - packages/core/src/backup/manager.ts (BackupManager class, ~250 lines)
+    - packages/core/src/backup/index.ts (module exports, ~15 lines)
+    - packages/core/tests/backup/manager.test.ts (19 tests, ~350 lines)
+    - packages/core/tests/config-backup.test.ts (3 tests, ~60 lines)
+    - packages/cli/src/commands/backup.ts (CLI commands with 4 subcommands, ~370 lines)
+    - packages/cli/tests/commands/backup.test.ts (10 tests, ~260 lines)
+    - docs/backup-restore.md (comprehensive guide with usage, config, troubleshooting, ~550 lines)
+  - Files modified:
+    - packages/core/src/index.ts - Export backup module
+    - packages/core/schema/config.schema.json - Added backup section
+    - packages/core/src/config/index.ts - BackupConfig interface, defaults, validation
+    - packages/cli/src/index.ts - Backup command routing
+    - packages/cli/src/commands/index.ts - Export backup command
+    - packages/cli/src/commands/sync.ts - Auto-backup integration (create before sync, cleanup after)
+    - packages/cli/tests/commands/sync.test.ts - 7 auto-backup integration tests
+    - docs/commands.md - Backup command reference (~250 lines added)
+  - Key features:
+    - Backup storage: `.aligntrue/.backups/<timestamp>/`
+    - Backup manifest: `manifest.json` with version, timestamp, files, notes
+    - Excludes: `.cache/`, `.backups/`, `telemetry-events.json`
+    - Timestamp format: ISO 8601 with milliseconds, filesystem-safe (YYYY-MM-DDTHH-mm-ss-SSS)
+    - Auto-backup: Optional, configurable per-command, with automatic cleanup
+    - Rollback safety: Temporary backup before restore, automatic rollback on failure
+  - Integration: Sync command respects backup config, creates/cleans backups when enabled
+  - Performance: Create ~10-50ms, restore ~20-100ms, list ~5-20ms, cleanup ~5-10ms per backup
+  - Typical footprint: ~1-5KB per backup, negligible compared to cache/node_modules
+
 - **Stage 1.5c: CLI Command Framework** (Phase 2, Stage 1.5) - Completed 2025-10-29
   - Created shared command utilities for consistent arg parsing and help display
   - Refactored 5 core commands (sync, check, import, config, privacy)

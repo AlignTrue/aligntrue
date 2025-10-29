@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config, adapters, privacy } from './commands/index.js';
+import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config, adapters, privacy, backup } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -100,6 +100,11 @@ async function main() {
   
   if (command === 'privacy') {
     await privacy(commandArgs);
+    return;
+  }
+  
+  if (command === 'backup') {
+    await backup(commandArgs);
     return;
   }
   
