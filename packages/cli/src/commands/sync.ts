@@ -4,9 +4,9 @@
  */
 
 import { existsSync } from 'fs'
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 import * as clack from '@clack/prompts'
-import { SyncEngine, type AlignTrueConfig } from '@aligntrue/core'
+import { SyncEngine, type AlignTrueConfig, getAlignTruePaths } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -106,7 +106,8 @@ export async function sync(args: string[]): Promise<void> {
   clack.intro('AlignTrue Sync')
 
   const cwd = process.cwd()
-  const configPath = parsed.config || join(cwd, '.aligntrue', 'config.yaml')
+  const paths = getAlignTruePaths(cwd)
+  const configPath = parsed.config || paths.config
 
   // Step 1: Check if AlignTrue is initialized
   if (!existsSync(configPath)) {
@@ -121,7 +122,7 @@ export async function sync(args: string[]): Promise<void> {
   spinner.stop('Configuration loaded')
 
   // Step 3: Validate source path
-  const sourcePath = config.sources?.[0]?.path || '.aligntrue/rules.md'
+  const sourcePath = config.sources?.[0]?.path || paths.rules
   const absoluteSourcePath = resolve(cwd, sourcePath)
 
   if (!existsSync(absoluteSourcePath)) {

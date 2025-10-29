@@ -6,12 +6,13 @@
  * Target: VS Code with Model Context Protocol (MCP) support
  */
 
-import { join, dirname } from 'path'
+import { dirname } from 'path'
 import { mkdirSync } from 'fs'
 import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '@aligntrue/plugin-contracts'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { getAlignTruePaths } from '@aligntrue/core'
 
 /**
  * State for collecting all scopes before generating single merged file
@@ -76,7 +77,8 @@ export class VsCodeMcpExporter implements ExporterPlugin {
     this.state.seenScopes.add(scopePath)
 
     // Generate .vscode/mcp.json with all accumulated rules
-    const outputPath = join(outputDir, '.vscode', 'mcp.json')
+    const paths = getAlignTruePaths(outputDir)
+    const outputPath = paths.vscodeMcp()
     
     // Generate MCP config JSON
     const mcpConfig = this.generateMcpConfig()

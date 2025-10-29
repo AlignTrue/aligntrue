@@ -6,11 +6,11 @@
  * Target agents: Claude, Copilot, Aider, and other AGENTS.md-compatible tools
  */
 
-import { join } from 'path'
 import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '@aligntrue/plugin-contracts'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { getAlignTruePaths } from '@aligntrue/core'
 import { 
   extractModeConfig, 
   applyRulePrioritization, 
@@ -64,7 +64,8 @@ export class AgentsMdExporter implements ExporterPlugin {
     // a different pattern. For now, we generate immediately for each call.
     // This matches the test expectations where each test case is independent.
     
-    const outputPath = join(outputDir, 'AGENTS.md')
+    const paths = getAlignTruePaths(outputDir)
+    const outputPath = paths.agentsMd()
     
     // Get mode hints from config (default to metadata_only)
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(this.name, config)

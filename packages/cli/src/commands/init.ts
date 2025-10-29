@@ -4,9 +4,10 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync, renameSync } from 'fs'
-import { join } from 'path'
+import { dirname } from 'path'
 import * as clack from '@clack/prompts'
 import * as yaml from 'yaml'
+import { getAlignTruePaths } from '@aligntrue/core'
 import { detectContext, getContextDescription } from '../utils/detect-context.js'
 import { detectAgents, getAgentDisplayName } from '../utils/detect-agents.js'
 import { getStarterTemplate } from '../templates/starter-rules.js'
@@ -313,8 +314,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   }
 
   // Step 8: Confirm file creation
-  const aligntrueDir = join(cwd, '.aligntrue')
-  const configPath = join(aligntrueDir, 'config.yaml')
+  const paths = getAlignTruePaths(cwd)
+  const aligntrueDir = paths.aligntrueDir
+  const configPath = paths.config
 
   if (nonInteractive) {
     console.log('\nCreating files:')
@@ -370,8 +372,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   
   if (nativeTemplatePath && nativeTemplate) {
     // Create native format starter
-    const nativeFullPath = join(cwd, nativeTemplatePath)
-    const nativeDir = join(cwd, nativeTemplatePath.substring(0, nativeTemplatePath.lastIndexOf('/')))
+    const nativeFullPath = `${cwd}/${nativeTemplatePath}`
+    const nativeDir = dirname(nativeFullPath)
     
     if (!existsSync(nativeDir)) {
       mkdirSync(nativeDir, { recursive: true })
@@ -384,7 +386,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
     createdFiles.push(nativeTemplatePath)
   } else {
     // Fallback to IR format
-    const rulesPath = join(aligntrueDir, 'rules.md')
+    const rulesPath = paths.rules
     const template = getStarterTemplate(projectId)
     
     // Write IR template atomically (temp + rename)
