@@ -146,17 +146,18 @@ export function validateTeamSources(
     for (const source of config.sources) {
       // For git sources, check URL
       if (source.type === "git" && source.url) {
+        const sourceUrl = source.url; // Extract to help TypeScript narrowing
         const urlInList = allowList.sources.some(
           (s) =>
-            s.value === source.url ||
-            s.value.includes(source.url) ||
-            source.url.includes(s.value),
+            s.value === sourceUrl ||
+            s.value.includes(sourceUrl) ||
+            sourceUrl.includes(s.value),
         );
         if (!urlInList) {
           errors.push({
             type: "warning",
-            message: `Source not in allow list: git:${source.url}`,
-            suggestion: `Run: aligntrue team approve git:${source.url}`,
+            message: `Source not in allow list: git:${sourceUrl}`,
+            suggestion: `Run: aligntrue team approve git:${sourceUrl}`,
             field: "sources",
           });
         }
