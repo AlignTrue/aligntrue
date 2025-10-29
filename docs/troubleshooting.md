@@ -1,8 +1,8 @@
-# Troubleshooting Guide
+# Troubleshooting guide
 
 Common issues and actionable solutions organized by workflow stage.
 
-## Installation Issues
+## Installation issues
 
 ### Node version mismatch
 
@@ -60,7 +60,7 @@ npx @aligntrue/cli init
 
 ---
 
-## Init Issues
+## Init issues
 
 ### Already initialized
 
@@ -163,7 +163,7 @@ sudo aligntrue init  # Not recommended
 
 ---
 
-## Sync Issues
+## Sync issues
 
 ### Config not found
 
@@ -368,7 +368,7 @@ sources:
 
 ---
 
-## Check Issues (CI)
+## Check issues (CI)
 
 ### Schema validation failures
 
@@ -500,7 +500,7 @@ All validations passed. Safe to merge.
 
 ---
 
-## Platform-Specific Issues
+## Platform-specific issues
 
 ### Windows path separators
 
@@ -563,7 +563,7 @@ aligntrue sync
 
 ---
 
-## Getting More Help
+## Getting more help
 
 ### Enable verbose logging
 

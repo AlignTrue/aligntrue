@@ -1,4 +1,4 @@
-# Development Guide
+# Development guide
 
 ## Prerequisites
 
@@ -11,9 +11,9 @@ Install pnpm if you don't have it:
 npm install -g pnpm@9
 ```
 
-## Getting Started
+## Getting started
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 ```bash
 pnpm install
@@ -21,7 +21,7 @@ pnpm install
 
 This will install dependencies for all workspace packages.
 
-### 2. Development Commands
+### 2. Development commands
 
 #### Run the web app locally
 
@@ -65,7 +65,7 @@ pnpm clean
 pnpm clean-temp
 ```
 
-## Workspace Structure
+## Workspace structure
 
 ```
 aligntrue/
@@ -79,7 +79,7 @@ aligntrue/
 └── basealigns/       # Temporary: will move to aligns repo
 ```
 
-## Working on Packages
+## Working on packages
 
 ### packages/schema
 
@@ -111,7 +111,7 @@ pnpm dev           # Start dev server
 pnpm build         # Production build
 ```
 
-## Code Quality
+## Code quality
 
 ### TypeScript
 
@@ -134,7 +134,7 @@ EditorConfig is configured at the root. Use:
 - Keep tests fast (<1s per test)
 - Make tests deterministic (no real time, network, or randomness)
 
-## Common Tasks
+## Common tasks
 
 ### Add a new package
 
@@ -197,7 +197,7 @@ All must pass before merge.
 
 See `CONTRIBUTING.md` for contribution guidelines.
 
-## Phase 1 Status
+## Phase 1 status
 
 We are currently in Phase 1 preparation:
 

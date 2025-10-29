@@ -1,8 +1,8 @@
-# Quickstart Guide
+# Quickstart guide
 
 Get AlignTrue running in under 60 seconds. No prior knowledge required.
 
-## Try the Golden Repository
+## Try the golden repository
 
 The fastest way to see AlignTrue in action is to explore the golden repository - a complete, working example with 5 practical rules.
 
@@ -34,9 +34,9 @@ pnpm add -D @aligntrue/cli
 npx @aligntrue/cli init
 ```
 
-## Quick Start
+## Quick start
 
-### 1. Initialize Your Project
+### 1. Initialize your project
 
 ```bash
 aligntrue init
@@ -63,7 +63,7 @@ AlignTrue automatically detects AI coding agents in your workspace (Cursor, GitH
 ◇ Run sync now? Yes
 ```
 
-### 2. Edit Your Rules
+### 2. Edit your rules
 
 Open `.aligntrue/rules.md` and customize the starter rules:
 
@@ -95,7 +95,7 @@ The starter template includes examples for:
 - Security practices
 - AI-specific hints (optional)
 
-### 3. Sync to Your Agents
+### 3. Sync to your agents
 
 ```bash
 aligntrue sync
@@ -117,7 +117,7 @@ This generates agent-specific files from your rules:
 ◇ Sync complete! No conflicts detected.
 ```
 
-## What You Get
+## What you get
 
 After running `aligntrue sync`, you'll have:
 
@@ -133,7 +133,7 @@ After running `aligntrue sync`, you'll have:
 
 - `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
 
-### Other Agents
+### Other agents
 
 AlignTrue supports 28+ AI coding agents. Enable additional agents in `.aligntrue/config.yaml`:
 
@@ -149,9 +149,9 @@ exporters:
 
 See `aligntrue adapters list` for the complete list.
 
-## Next Steps
+## Next steps
 
-### Learn More Commands
+### Learn more commands
 
 - `aligntrue sync --dry-run` - Preview changes without writing files
 - `aligntrue check` - Validate rules (great for CI)
@@ -159,7 +159,7 @@ See `aligntrue adapters list` for the complete list.
 
 See [Command Reference](commands.md) for all available commands.
 
-### Explore Examples
+### Explore examples
 
 Check `examples/markdown/` in the AlignTrue repository for more rule examples.
 
@@ -167,7 +167,7 @@ Check `examples/markdown/` in the AlignTrue repository for more rule examples.
 
 Run into issues? See [Troubleshooting Guide](troubleshooting.md) for common solutions.
 
-### Auto-Sync on Save (Optional)
+### Auto-sync on save (optional)
 
 Want rules to sync automatically when you save? Set up a file watcher:
 
@@ -182,7 +182,7 @@ nodemon --watch .cursor/rules --watch AGENTS.md --exec "aligntrue sync"
 
 **Full guide:** See [File Watcher Setup](file-watcher-setup.md) for platform-specific instructions (VS Code, macOS, Linux, Windows).
 
-### Advanced Features
+### Advanced features
 
 When your project grows, explore:
 

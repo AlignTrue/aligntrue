@@ -1,8 +1,8 @@
-# Privacy & Telemetry
+# Privacy & telemetry
 
 AlignTrue respects your privacy and operates with transparency.
 
-## Privacy-First by Default
+## Privacy-first by default
 
 AlignTrue operates **offline-first** and respects your privacy:
 - **No network calls by default** - Local rules only, zero external requests
@@ -11,7 +11,7 @@ AlignTrue operates **offline-first** and respects your privacy:
 - **Anonymous when enabled** - Uses randomly generated UUID, not tied to identity
 - **Local-first storage** - Data stays on your machine in Phase 1
 
-## Telemetry Overview
+## Telemetry overview
 
 Telemetry in AlignTrue is:
 - **Opt-in only** - Disabled by default
@@ -19,7 +19,7 @@ Telemetry in AlignTrue is:
 - **Local-first** - Stored locally in Phase 1, with optional sending in Phase 2+
 - **Minimal** - Only collects aggregate usage data, never your code or files
 
-## What We Collect
+## What we collect
 
 When telemetry is enabled, we collect:
 
@@ -27,7 +27,7 @@ When telemetry is enabled, we collect:
 2. **Export targets** - Which agent exporters you use (e.g., `cursor`, `agents-md`)
 3. **Rule content hashes** - SHA-256 hashes of your rules (for understanding usage patterns, not content)
 
-### Example Event
+### Example event
 
 ```json
 {
@@ -39,7 +39,7 @@ When telemetry is enabled, we collect:
 }
 ```
 
-## What We Never Collect
+## What we never collect
 
 We explicitly **never** collect:
 
@@ -52,7 +52,7 @@ We explicitly **never** collect:
 - ❌ IP addresses (Phase 2+ when sending is added)
 - ❌ Any personally identifiable information (PII)
 
-## Privacy Guarantees
+## Privacy guarantees
 
 ### Validation
 
@@ -61,7 +61,7 @@ AlignTrue validates every telemetry event before recording:
 - Rejects events containing code keywords (`function`, `const`, `let`, etc.)
 - Rejects suspiciously long strings that might contain code
 
-### Local Storage (Phase 1)
+### Local storage (Phase 1)
 
 In Phase 1, all telemetry is stored **locally only**:
 - Location: `.aligntrue/telemetry-events.json`
@@ -69,7 +69,7 @@ In Phase 1, all telemetry is stored **locally only**:
 - Deletion: Simply remove the file to delete all events
 - Network: No data sent anywhere
 
-### Future Sending (Phase 2+)
+### Future sending (Phase 2+)
 
 When we add the ability to send telemetry to our servers in Phase 2+:
 
@@ -79,7 +79,7 @@ When we add the ability to send telemetry to our servers in Phase 2+:
 4. **Revocable** - You can stop sending at any time
 5. **Transparency** - Full visibility into what was sent
 
-## Data Retention
+## Data retention
 
 ### Local (Phase 1)
 
@@ -96,7 +96,7 @@ When sending is implemented:
 - You can request deletion via `aligntrue telemetry delete`
 - UUIDs can be rotated to start fresh
 
-## How Telemetry Helps
+## How telemetry helps
 
 Anonymous usage data helps us:
 
@@ -105,9 +105,9 @@ Anonymous usage data helps us:
 3. **Optimize performance** - See where users spend the most time
 4. **Support decisions** - Decide which agents to prioritize for new features
 
-## Enabling/Disabling
+## Enabling/disabling
 
-### Enable Telemetry
+### Enable telemetry
 
 ```bash
 aligntrue telemetry on
@@ -115,7 +115,7 @@ aligntrue telemetry on
 
 This generates a one-time anonymous UUID and begins recording events locally.
 
-### Disable Telemetry
+### Disable telemetry
 
 ```bash
 aligntrue telemetry off
@@ -123,7 +123,7 @@ aligntrue telemetry off
 
 This stops recording new events. Existing events remain in the file until you delete it.
 
-### Check Status
+### Check status
 
 ```bash
 aligntrue telemetry status
@@ -131,7 +131,7 @@ aligntrue telemetry status
 
 Shows current telemetry state (enabled/disabled).
 
-## Viewing Your Data
+## Viewing your data
 
 To see what data has been collected locally:
 
@@ -141,18 +141,18 @@ cat .aligntrue/telemetry-events.json | jq .
 
 This shows the exact events that have been recorded.
 
-## Questions or Concerns
+## Questions or concerns
 
 If you have questions about privacy or telemetry:
 
 - **GitHub Issues**: [AlignTrue/aligntrue/issues](https://github.com/AlignTrue/aligntrue/issues)
 - **Documentation**: [docs/](https://github.com/AlignTrue/aligntrue/tree/main/docs)
 
-## Network Operations
+## Network operations
 
 AlignTrue operates **offline-first** and only makes network calls when explicitly configured.
 
-### Default (No Network) ✅
+### Default (no network) ✅
 
 By default, AlignTrue makes **zero network requests**:
 - ✅ Local rules (`.aligntrue/rules.md`)
@@ -162,11 +162,11 @@ By default, AlignTrue makes **zero network requests**:
 - ✅ Validation and checks
 - ✅ Init, migrate, and other commands
 
-### Requires Network (Explicit Opt-In) 🌐
+### Requires network (explicit opt-in) 🌐
 
 Network calls only occur when you explicitly configure these sources:
 
-#### Catalog Sources
+#### Catalog sources
 ```yaml
 sources:
   - type: catalog
@@ -178,7 +178,7 @@ sources:
 - Stores consent in `.aligntrue/privacy-consent.json`
 - Can be revoked at any time
 
-#### Git Sources
+#### Git sources
 ```yaml
 sources:
   - type: git
@@ -188,13 +188,13 @@ sources:
 - **First-time consent:** Same consent flow as catalog
 - Clear disclosure of external repository URL
 
-#### Telemetry Sending (Phase 2+)
+#### Telemetry sending (Phase 2+)
 - Separate opt-in required (beyond enabling telemetry)
 - Explicit consent with clear disclosure
 - Shows exactly what data will be sent
 - Revocable at any time
 
-### First-Time Consent (Phase 2+)
+### First-time consent (Phase 2+)
 
 When you add a network source, AlignTrue will:
 1. **Analyze** what network operations are needed
@@ -214,7 +214,7 @@ Example consent prompt:
 Allow these network operations? (y/n)
 ```
 
-### Privacy Controls (Phase 2+)
+### Privacy controls (Phase 2+)
 
 #### Audit Consents
 ```bash
@@ -234,7 +234,7 @@ aligntrue sync --offline
 ```
 Skips all network operations, uses cache only, fails gracefully if network required.
 
-### Viewing Your Data
+### Viewing your data
 
 All locally stored data is in plain JSON:
 
