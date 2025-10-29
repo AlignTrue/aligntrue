@@ -13,97 +13,39 @@ import {
 } from '@aligntrue/markdown-parser'
 import { writeFile } from 'fs/promises'
 import type { AlignRule } from '@aligntrue/schema'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 /**
- * Import command arguments
+ * Argument definitions for import command
  */
-interface ImportArgs {
-  agent?: string
-  coverage: boolean
-  write: boolean
-  dryRun: boolean
-  help: boolean
-}
-
-/**
- * Parse command line arguments
- */
-function parseArgs(args: string[]): ImportArgs {
-  const parsed: ImportArgs = {
-    coverage: true, // default to showing coverage
-    write: false,
-    dryRun: false,
-    help: false,
-  }
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (!arg) continue
-
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (arg === '--coverage') {
-      parsed.coverage = true
-    } else if (arg === '--no-coverage') {
-      parsed.coverage = false
-    } else if (arg === '--write') {
-      parsed.write = true
-    } else if (arg === '--dry-run') {
-      parsed.dryRun = true
-    } else if (!arg.startsWith('-')) {
-      parsed.agent = arg
-    }
-  }
-
-  return parsed
-}
-
-/**
- * Show help text
- */
-function showHelp(): void {
-  console.log(`
-aligntrue import - Analyze and import rules from agent formats
-
-Usage:
-  aligntrue import <agent> [options]
-
-Arguments:
-  agent              Agent format to analyze (cursor, agents-md)
-
-Options:
-  --coverage         Show import coverage report (default: true)
-  --no-coverage      Skip coverage report
-  --write            Write imported rules to .aligntrue/rules.md
-  --dry-run          Preview without writing files
-  --help, -h         Show this help message
-
-Examples:
-  # Analyze Cursor .mdc files and show coverage
-  aligntrue import cursor
-
-  # Import from AGENTS.md with coverage report
-  aligntrue import agents-md
-
-  # Import and write to IR file
-  aligntrue import cursor --write
-
-  # Preview import without writing
-  aligntrue import cursor --write --dry-run
-
-Supported Agents:
-  cursor             .cursor/rules/*.mdc files
-  agents-md          AGENTS.md universal format
-  copilot            AGENTS.md format (alias)
-  claude-code        AGENTS.md format (alias)
-  aider              AGENTS.md format (alias)
-
-Notes:
-  - Coverage report shows field-level mapping from agent format to IR
-  - Import preserves vendor.* metadata for round-trip fidelity
-  - Use --write to update .aligntrue/rules.md with imported rules
-`)
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: '--coverage',
+    hasValue: false,
+    description: 'Show import coverage report (default: true)',
+  },
+  {
+    flag: '--no-coverage',
+    hasValue: false,
+    description: 'Skip coverage report',
+  },
+  {
+    flag: '--write',
+    hasValue: false,
+    description: 'Write imported rules to .aligntrue/rules.md',
+  },
+  {
+    flag: '--dry-run',
+    hasValue: false,
+    description: 'Preview without writing files',
+  },
+  {
+    flag: '--help',
+    alias: '-h',
+    hasValue: false,
+    description: 'Show this help message',
+  },
+]
 
 /**
  * Generate coverage report for imported rules
@@ -187,15 +129,49 @@ async function writeToIRFile(rules: AlignRule[], dryRun: boolean): Promise<void>
  * Import command entry point
  */
 export async function importCommand(args: string[]): Promise<void> {
-  const parsed = parseArgs(args)
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
 
-  // Show help
-  if (parsed.help || !parsed.agent) {
-    showHelp()
+  // Extract agent from positional args
+  const agent = parsed.positional[0]
+
+  // Show help if requested or no agent specified
+  if (parsed.help || !agent) {
+    showStandardHelp({
+      name: 'import',
+      description: 'Analyze and import rules from agent formats',
+      usage: 'aligntrue import <agent> [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue import cursor',
+        'aligntrue import agents-md',
+        'aligntrue import cursor --write',
+        'aligntrue import cursor --write --dry-run',
+      ],
+      notes: [
+        'Arguments:',
+        '  agent              Agent format to analyze (cursor, agents-md)',
+        '',
+        'Supported Agents:',
+        '  cursor             .cursor/rules/*.mdc files',
+        '  agents-md          AGENTS.md universal format',
+        '  copilot            AGENTS.md format (alias)',
+        '  claude-code        AGENTS.md format (alias)',
+        '  aider              AGENTS.md format (alias)',
+        '',
+        'Notes:',
+        '  - Coverage report shows field-level mapping from agent format to IR',
+        '  - Import preserves vendor.* metadata for round-trip fidelity',
+        '  - Use --write to update .aligntrue/rules.md with imported rules',
+      ],
+    })
     process.exit(parsed.help ? 0 : 1)
   }
 
-  const agent = parsed.agent!
+  // Extract flags
+  const showCoverage = parsed.flags['no-coverage'] ? false : true // Default: true
+  const write = parsed.flags['write'] as boolean | undefined || false
+  const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
+
   const workspaceRoot = process.cwd()
 
   clack.intro('Import from agent format')
@@ -241,7 +217,7 @@ export async function importCommand(args: string[]): Promise<void> {
   }
 
   // Step 4: Generate and display coverage report
-  if (parsed.coverage) {
+  if (showCoverage) {
     try {
       const report = generateCoverageReport(agent, rules)
       const formatted = formatCoverageReport(report)
@@ -255,9 +231,9 @@ export async function importCommand(args: string[]): Promise<void> {
   }
 
   // Step 5: Write to IR file if requested
-  if (parsed.write) {
+  if (write) {
     try {
-      await writeToIRFile(rules, parsed.dryRun)
+      await writeToIRFile(rules, dryRun)
     } catch (error) {
       clack.log.error(`Failed to write IR file: ${error instanceof Error ? error.message : String(error)}`)
       process.exit(1)

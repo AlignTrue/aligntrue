@@ -5,15 +5,52 @@
 import * as clack from '@clack/prompts';
 import { createConsentManager } from '@aligntrue/core';
 import { exitWithError } from '../utils/error-formatter.js';
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js';
+
+/**
+ * Argument definitions for privacy command
+ */
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: '--all',
+    hasValue: false,
+    description: 'Revoke all consents (for revoke subcommand)',
+  },
+  {
+    flag: '--help',
+    alias: '-h',
+    hasValue: false,
+    description: 'Show this help message',
+  },
+]
 
 /**
  * Privacy command router
  */
 export async function privacyCommand(args: string[]): Promise<void> {
-  const subcommand = args[0];
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+  const subcommand = parsed.positional[0];
 
-  if (!subcommand || subcommand === '--help' || subcommand === '-h') {
-    showHelp();
+  if (!subcommand || parsed.help) {
+    showStandardHelp({
+      name: 'privacy',
+      description: 'Privacy consent management',
+      usage: 'aligntrue privacy <subcommand> [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue privacy audit',
+        'aligntrue privacy revoke catalog',
+        'aligntrue privacy revoke git',
+        'aligntrue privacy revoke --all',
+      ],
+      notes: [
+        'Subcommands:',
+        '  audit              List all consents with timestamps',
+        '  revoke <operation> Revoke specific consent (catalog/git)',
+        '  revoke --all       Revoke all consents',
+      ],
+    });
+    process.exit(0);
     return;
   }
 
@@ -22,7 +59,7 @@ export async function privacyCommand(args: string[]): Promise<void> {
       await auditCommand();
       break;
     case 'revoke':
-      await revokeCommand(args.slice(1));
+      await revokeCommand(parsed.positional.slice(1), parsed.flags['all'] as boolean | undefined);
       break;
     default:
       exitWithError({
@@ -32,29 +69,6 @@ export async function privacyCommand(args: string[]): Promise<void> {
         code: 'ERR_UNKNOWN_COMMAND',
       });
   }
-}
-
-/**
- * Show privacy command help
- */
-function showHelp(): void {
-  console.log(`
-Privacy consent management
-
-Usage:
-  aligntrue privacy audit              List all consents with timestamps
-  aligntrue privacy revoke <operation> Revoke specific consent (catalog/git)
-  aligntrue privacy revoke --all       Revoke all consents
-
-Examples:
-  aligntrue privacy audit              # List all granted consents
-  aligntrue privacy revoke catalog     # Revoke catalog consent
-  aligntrue privacy revoke git         # Revoke git consent
-  aligntrue privacy revoke --all       # Revoke everything
-
-Options:
-  -h, --help                           Show this help message
-`);
 }
 
 /**
@@ -99,11 +113,11 @@ async function auditCommand(): Promise<void> {
 /**
  * Revoke command - revoke consent
  */
-async function revokeCommand(args: string[]): Promise<void> {
+async function revokeCommand(operations: string[], all?: boolean): Promise<void> {
   const manager = createConsentManager();
 
   // Handle --all flag
-  if (args[0] === '--all') {
+  if (all) {
     const consents = manager.listConsents();
 
     if (consents.length === 0) {
@@ -129,7 +143,7 @@ async function revokeCommand(args: string[]): Promise<void> {
   }
 
   // Revoke specific operation
-  const operation = args[0];
+  const operation = operations[0];
 
   if (!operation) {
     exitWithError({

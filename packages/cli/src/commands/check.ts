@@ -17,82 +17,87 @@ import { parseYamlToJson } from '@aligntrue/schema'
 import { tryLoadConfig } from '../utils/config-loader.js'
 import { exitWithError } from '../utils/error-formatter.js'
 import { CommonErrors as Errors } from '../utils/common-errors.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 /**
- * Parse command-line arguments for check command
+ * Argument definitions for check command
  */
-interface CheckArgs {
-  ci: boolean
-  config?: string
-  help: boolean
-}
-
-function parseArgs(args: string[]): CheckArgs {
-  const parsed: CheckArgs = {
-    ci: false,
-    help: false,
-  }
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (arg === '--ci') {
-      parsed.ci = true
-    } else if (arg === '--config') {
-      const nextArg = args[++i]
-      if (nextArg) {
-        parsed.config = nextArg
-      }
-    }
-  }
-
-  return parsed
-}
-
-/**
- * Show help text for check command
- */
-function showHelp(): void {
-  console.log('Usage: aligntrue check [options]\n')
-  console.log('Validate rules and configuration (non-interactive)\n')
-  console.log('Options:')
-  console.log('  --ci                   CI mode (strict validation, non-zero exit on errors)')
-  console.log('  --config <path>        Custom config file path (default: .aligntrue/config.yaml)')
-  console.log('  --help, -h             Show this help message\n')
-  console.log('Examples:')
-  console.log('  aligntrue check --ci')
-  console.log('  aligntrue check --ci --config .aligntrue/config.yaml\n')
-  console.log('Exit Codes:')
-  console.log('  0  All validations passed')
-  console.log('  1  Validation failed (schema or lockfile errors)')
-  console.log('  2  System error (missing files, invalid config)')
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: '--ci',
+    hasValue: false,
+    description: 'CI mode (strict validation, non-zero exit on errors)',
+  },
+  {
+    flag: '--config',
+    alias: '-c',
+    hasValue: true,
+    description: 'Custom config file path (default: .aligntrue/config.yaml)',
+  },
+  {
+    flag: '--help',
+    alias: '-h',
+    hasValue: false,
+    description: 'Show this help message',
+  },
+]
 
 /**
  * Check command implementation
  */
 export async function check(args: string[]): Promise<void> {
-  const parsed = parseArgs(args)
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
   
   // Show help if requested
   if (parsed.help) {
-    showHelp()
+    showStandardHelp({
+      name: 'check',
+      description: 'Validate rules and configuration (non-interactive)',
+      usage: 'aligntrue check [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue check --ci',
+        'aligntrue check --ci --config .aligntrue/config.yaml',
+      ],
+      notes: [
+        'Exit Codes:',
+        '  0  All validations passed',
+        '  1  Validation failed (schema or lockfile errors)',
+        '  2  System error (missing files, invalid config)',
+      ],
+    })
     process.exit(0)
   }
 
+  // Extract flags
+  const ci = parsed.flags['ci'] as boolean | undefined || false
+  const configPath = (parsed.flags['config'] as string | undefined) || '.aligntrue/config.yaml'
+
   // CI mode is required for now (other modes deferred)
-  if (!parsed.ci) {
+  if (!ci) {
     console.error('Error: --ci flag is required\n')
     console.error('Run: aligntrue check --ci\n')
-    showHelp()
+    showStandardHelp({
+      name: 'check',
+      description: 'Validate rules and configuration (non-interactive)',
+      usage: 'aligntrue check [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue check --ci',
+        'aligntrue check --ci --config .aligntrue/config.yaml',
+      ],
+      notes: [
+        'Exit Codes:',
+        '  0  All validations passed',
+        '  1  Validation failed (schema or lockfile errors)',
+        '  2  System error (missing files, invalid config)',
+      ],
+    })
     process.exit(2)
   }
 
   try {
     // Step 1: Load config (with standardized error handling)
-    const configPath = parsed.config || '.aligntrue/config.yaml'
     const config: AlignTrueConfig = await tryLoadConfig(configPath)
 
     // Step 2: Validate IR schema

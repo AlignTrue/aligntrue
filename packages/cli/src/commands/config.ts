@@ -6,66 +6,52 @@ import { existsSync } from 'fs'
 import * as clack from '@clack/prompts'
 import { spawn } from 'child_process'
 import { getAlignTruePaths } from '@aligntrue/core'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 /**
- * Parse command-line arguments for config command
+ * Argument definitions for config command
  */
-interface ConfigArgs {
-  subcommand?: 'show' | 'edit'
-  help: boolean
-}
-
-function parseArgs(args: string[]): ConfigArgs {
-  const parsed: ConfigArgs = {
-    help: false,
-  }
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (!parsed.subcommand && (arg === 'show' || arg === 'edit')) {
-      parsed.subcommand = arg
-    }
-  }
-
-  return parsed
-}
-
-/**
- * Show help text for config command
- */
-function showHelp(): void {
-  console.log(`Usage: aligntrue config <subcommand>
-
-Display or edit configuration
-
-Subcommands:
-  show    Display active configuration with mode and effective settings
-  edit    Open config file in default editor
-
-Examples:
-  aligntrue config show
-  aligntrue config edit
-
-Description:
-  The 'show' command displays your active mode (solo/team/enterprise) and
-  effective configuration including defaults.
-  
-  The 'edit' command opens .aligntrue/config.yaml in your default editor.
-`)
-  process.exit(0)
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: '--help',
+    alias: '-h',
+    hasValue: false,
+    description: 'Show this help message',
+  },
+]
 
 /**
  * Config command implementation
  */
 export async function config(args: string[]): Promise<void> {
-  const parsed = parseArgs(args)
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
   
-  if (parsed.help || !parsed.subcommand) {
-    showHelp()
+  // Extract subcommand from positional args
+  const subcommand = parsed.positional[0] as 'show' | 'edit' | undefined
+  
+  if (parsed.help || !subcommand) {
+    showStandardHelp({
+      name: 'config',
+      description: 'Display or edit configuration',
+      usage: 'aligntrue config <subcommand>',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue config show',
+        'aligntrue config edit',
+      ],
+      notes: [
+        'Subcommands:',
+        '  show    Display active configuration with mode and effective settings',
+        '  edit    Open config file in default editor',
+        '',
+        'Description:',
+        '  The show command displays your active mode (solo/team/enterprise) and',
+        '  effective configuration including defaults.',
+        '',
+        '  The edit command opens .aligntrue/config.yaml in your default editor.',
+      ],
+    })
+    process.exit(0)
     return
   }
 
@@ -80,9 +66,9 @@ export async function config(args: string[]): Promise<void> {
     process.exit(1)
   }
 
-  if (parsed.subcommand === 'show') {
+  if (subcommand === 'show') {
     await showConfig(configPath)
-  } else if (parsed.subcommand === 'edit') {
+  } else if (subcommand === 'edit') {
     await editConfig(configPath)
   }
 }
