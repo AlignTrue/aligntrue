@@ -26,12 +26,21 @@ vi.mock('@aligntrue/core', () => {
     syncToAgents: vi.fn(),
     syncFromAgent: vi.fn(),
   }
+  const mockBackupManager = {
+    createBackup: vi.fn(),
+    listBackups: vi.fn(),
+    restoreBackup: vi.fn(),
+    cleanupOldBackups: vi.fn(),
+    getBackup: vi.fn(),
+    deleteBackup: vi.fn(),
+  }
   return {
     loadConfig: vi.fn(),
     loadIR: vi.fn(() => ({ rules: [] })),
     SyncEngine: vi.fn(function(this: any) {
       return mockEngine
     }),
+    BackupManager: mockBackupManager,
     getAlignTruePaths: vi.fn((cwd = process.cwd()) => ({
       config: `${cwd}/.aligntrue/config.yaml`,
       rules: `${cwd}/.aligntrue/rules.md`,
@@ -47,6 +56,7 @@ vi.mock('@aligntrue/core', () => {
       exporterOutput: (exporterName: string, filename: string) => `${cwd}/${filename}`,
     })),
     __mockEngine: mockEngine, // Export for test access
+    __mockBackupManager: mockBackupManager, // Export for test access
   }
 })
 vi.mock('@aligntrue/exporters', () => {
@@ -540,6 +550,249 @@ describe('sync command', () => {
         String(call[0]).includes('Provenance:')
       )
       expect(provenanceCalls).toHaveLength(0)
+    })
+  })
+
+  describe('auto-backup integration', () => {
+    let mockBackupManager: any
+
+    beforeEach(async () => {
+      // Get mocked backup manager from @aligntrue/core mock
+      const coreModule = await import('@aligntrue/core') as any
+      mockBackupManager = coreModule.__mockBackupManager
+      
+      // Reset all mock functions
+      mockBackupManager.createBackup.mockReset()
+      mockBackupManager.cleanupOldBackups.mockReset()
+    })
+
+    it('creates backup before sync when auto_backup enabled', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['sync'],
+          keep_count: 10,
+        },
+      })
+
+      mockBackupManager.createBackup.mockReturnValue({
+        timestamp: '2025-10-29T12-00-00-000',
+        path: '/path/to/backup',
+        manifest: {
+          version: '1',
+          timestamp: '2025-10-29T12:00:00.000Z',
+          files: ['.aligntrue/config.yaml', '.aligntrue/rules.md'],
+          created_by: 'sync',
+          notes: 'Auto-backup before sync',
+        },
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      expect(mockBackupManager.createBackup).toHaveBeenCalledWith({
+        cwd: process.cwd(),
+        created_by: 'sync',
+        notes: 'Auto-backup before sync',
+      })
+      expect(clack.spinner().stop).toHaveBeenCalledWith('Backup created: 2025-10-29T12-00-00-000')
+      expect(clack.log.info).toHaveBeenCalledWith(
+        'Restore with: aligntrue backup restore --to 2025-10-29T12-00-00-000'
+      )
+    })
+
+    it('skips backup in dry-run mode', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['sync'],
+        },
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: [],
+        warnings: [],
+      })
+
+      await sync(['--dry-run'])
+
+      expect(mockBackupManager.createBackup).not.toHaveBeenCalled()
+    })
+
+    it('skips backup when auto_backup disabled', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: false,
+        },
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      expect(mockBackupManager.createBackup).not.toHaveBeenCalled()
+    })
+
+    it('skips backup when sync not in backup_on array', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['import'], // Only import, not sync
+        },
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      expect(mockBackupManager.createBackup).not.toHaveBeenCalled()
+    })
+
+    it('continues sync even if backup fails', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['sync'],
+        },
+      })
+
+      mockBackupManager.createBackup.mockImplementation(() => {
+        throw new Error('Backup failed')
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      expect(mockBackupManager.createBackup).toHaveBeenCalled()
+      expect(clack.log.warn).toHaveBeenCalledWith('Failed to create backup: Backup failed')
+      expect(clack.log.warn).toHaveBeenCalledWith('Continuing with sync...')
+      expect(mockSyncEngine.syncToAgents).toHaveBeenCalled()
+    })
+
+    it('cleans up old backups after successful sync', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['sync'],
+          keep_count: 5,
+        },
+      })
+
+      mockBackupManager.createBackup.mockReturnValue({
+        timestamp: '2025-10-29T12-00-00-000',
+        path: '/path/to/backup',
+        manifest: {
+          version: '1',
+          timestamp: '2025-10-29T12:00:00.000Z',
+          files: ['.aligntrue/config.yaml'],
+          created_by: 'sync',
+          notes: 'Auto-backup before sync',
+        },
+      })
+
+      mockBackupManager.cleanupOldBackups.mockReturnValue(3)
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      expect(mockBackupManager.cleanupOldBackups).toHaveBeenCalledWith({ cwd: process.cwd(), keepCount: 5 })
+      expect(clack.log.info).toHaveBeenCalledWith('Cleaned up 3 old backups')
+    })
+
+    it('silently continues if cleanup fails', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+        backup: {
+          auto_backup: true,
+          backup_on: ['sync'],
+          keep_count: 5,
+        },
+      })
+
+      mockBackupManager.createBackup.mockReturnValue({
+        timestamp: '2025-10-29T12-00-00-000',
+        path: '/path/to/backup',
+        manifest: {
+          version: '1',
+          timestamp: '2025-10-29T12:00:00.000Z',
+          files: ['.aligntrue/config.yaml'],
+          created_by: 'sync',
+          notes: 'Auto-backup before sync',
+        },
+      })
+
+      mockBackupManager.cleanupOldBackups.mockImplementation(() => {
+        throw new Error('Cleanup failed')
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+      })
+
+      await sync([])
+
+      // Should not throw and should not log cleanup errors
+      expect(mockSyncEngine.syncToAgents).toHaveBeenCalled()
     })
   })
 })

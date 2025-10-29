@@ -6,7 +6,7 @@
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 import * as clack from '@clack/prompts'
-import { SyncEngine, type AlignTrueConfig, getAlignTruePaths } from '@aligntrue/core'
+import { SyncEngine, type AlignTrueConfig, getAlignTruePaths, BackupManager } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -228,7 +228,28 @@ export async function sync(args: string[]): Promise<void> {
     ))
   }
 
-  // Step 6: Execute sync (with auto-pull if enabled)
+  // Step 6: Auto-backup (if configured and not dry-run)
+  if (!dryRun && config.backup?.auto_backup) {
+    const backupOn = config.backup.backup_on || ['sync']
+    if (backupOn.includes('sync')) {
+      spinner.start('Creating backup')
+      try {
+        const backup = BackupManager.createBackup({
+          cwd,
+          created_by: 'sync',
+          notes: 'Auto-backup before sync',
+        })
+        spinner.stop(`Backup created: ${backup.timestamp}`)
+        clack.log.info(`Restore with: aligntrue backup restore --to ${backup.timestamp}`)
+      } catch (error) {
+        spinner.stop('Backup failed')
+        clack.log.warn(`Failed to create backup: ${error instanceof Error ? error.message : String(error)}`)
+        clack.log.warn('Continuing with sync...')
+      }
+    }
+  }
+
+  // Step 7: Execute sync (with auto-pull if enabled)
   try {
     const syncOptions: {
       configPath: string
@@ -281,7 +302,20 @@ export async function sync(args: string[]): Promise<void> {
 
     spinner.stop(dryRun ? 'Preview complete' : 'Sync complete')
 
-    // Step 7: Display results
+    // Step 8: Auto-cleanup old backups (if configured and not dry-run)
+    if (!dryRun && config.backup?.auto_backup) {
+      const keepCount = config.backup.keep_count ?? 10
+      try {
+        const removed = BackupManager.cleanupOldBackups({ cwd, keepCount })
+        if (removed > 0) {
+          clack.log.info(`Cleaned up ${removed} old backup${removed !== 1 ? 's' : ''}`)
+        }
+      } catch (error) {
+        // Silent failure on cleanup - not critical
+      }
+    }
+
+    // Step 9: Display results
     if (result.success) {
       if (dryRun) {
         clack.log.info('Dry-run mode: no files written')

@@ -250,6 +250,31 @@
           "description": "Maximum token budget for mode hints across all rules (default: 1600)"
         }
       }
+    },
+    "backup": {
+      "type": "object",
+      "description": "Backup and restore configuration",
+      "additionalProperties": false,
+      "properties": {
+        "auto_backup": {
+          "type": "boolean",
+          "description": "Automatically create backup before destructive operations (default: false)"
+        },
+        "keep_count": {
+          "type": "number",
+          "description": "Number of backups to keep (older backups auto-deleted, default: 10)",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "backup_on": {
+          "type": "array",
+          "description": "Commands that trigger auto-backup (default: ['sync'])",
+          "items": {
+            "type": "string",
+            "enum": ["sync", "restore", "import"]
+          }
+        }
+      }
     }
   }
 }
