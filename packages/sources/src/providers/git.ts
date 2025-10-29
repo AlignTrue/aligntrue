@@ -264,6 +264,31 @@ export class GitProvider implements SourceProvider {
   }
 
   /**
+   * Get the current commit SHA from the cloned repository
+   * Must be called after fetch() to ensure repository exists
+   */
+  async getCommitSha(): Promise<string> {
+    if (!existsSync(this.repoDir)) {
+      throw new Error(
+        `Repository not cloned yet. Call fetch() first.\n` +
+        `  URL: ${this.url}`
+      )
+    }
+
+    const git = simpleGit(this.repoDir)
+    try {
+      const sha = await git.revparse(['HEAD'])
+      return sha.trim()
+    } catch (error) {
+      throw new Error(
+        `Failed to get commit SHA from repository\n` +
+        `  URL: ${this.url}\n` +
+        `  ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
+  }
+
+  /**
    * Read rules file from cloned repository
    */
   private readRulesFile(): string {

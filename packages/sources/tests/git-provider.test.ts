@@ -746,3 +746,123 @@ describe('GitProvider - Edge Cases', () => {
   })
 })
 
+describe('GitProvider - Commit SHA Capture', () => {
+  beforeEach(() => {
+    // Clean up test cache
+    if (existsSync(TEST_CACHE_DIR)) {
+      rmSync(TEST_CACHE_DIR, { recursive: true, force: true })
+    }
+  })
+
+  afterEach(() => {
+    // Clean up test cache
+    if (existsSync(TEST_CACHE_DIR)) {
+      rmSync(TEST_CACHE_DIR, { recursive: true, force: true })
+    }
+    vi.clearAllMocks()
+  })
+
+  it('captures commit SHA after fetch', async () => {
+    const provider = new GitProvider({
+      type: 'git',
+      url: TEST_REPO_URL,
+    }, TEST_CACHE_DIR)
+
+    const git = simpleGit()
+    vi.mocked(git.clone).mockResolvedValueOnce(undefined as any)
+    vi.mocked(git.revparse).mockResolvedValueOnce('abc123def456789')
+
+    // Create mock cache
+    const repoHash = provider['repoHash']
+    const repoDir = join(TEST_CACHE_DIR, repoHash)
+    mkdirSync(repoDir, { recursive: true })
+    writeFileSync(join(repoDir, '.aligntrue.yaml'), mockRulesYaml, 'utf-8')
+
+    await provider.fetch()
+    const sha = await provider.getCommitSha()
+
+    expect(sha).toBe('abc123def456789')
+    expect(git.revparse).toHaveBeenCalledWith(['HEAD'])
+  })
+
+  it('trims whitespace from commit SHA', async () => {
+    const provider = new GitProvider({
+      type: 'git',
+      url: TEST_REPO_URL,
+    }, TEST_CACHE_DIR)
+
+    const git = simpleGit()
+    vi.mocked(git.clone).mockResolvedValueOnce(undefined as any)
+    vi.mocked(git.revparse).mockResolvedValueOnce('  abc123def  \n')
+
+    // Create mock cache
+    const repoHash = provider['repoHash']
+    const repoDir = join(TEST_CACHE_DIR, repoHash)
+    mkdirSync(repoDir, { recursive: true })
+    writeFileSync(join(repoDir, '.aligntrue.yaml'), mockRulesYaml, 'utf-8')
+
+    await provider.fetch()
+    const sha = await provider.getCommitSha()
+
+    expect(sha).toBe('abc123def')
+  })
+
+  it('throws error when getting SHA before fetch', async () => {
+    const provider = new GitProvider({
+      type: 'git',
+      url: TEST_REPO_URL,
+    }, TEST_CACHE_DIR)
+
+    await expect(provider.getCommitSha()).rejects.toThrow(
+      'Repository not cloned yet'
+    )
+  })
+
+  it('provides helpful error when git revparse fails', async () => {
+    const provider = new GitProvider({
+      type: 'git',
+      url: TEST_REPO_URL,
+    }, TEST_CACHE_DIR)
+
+    const git = simpleGit()
+    vi.mocked(git.clone).mockResolvedValueOnce(undefined as any)
+    vi.mocked(git.revparse).mockRejectedValueOnce(
+      new Error('fatal: not a git repository')
+    )
+
+    // Create mock cache
+    const repoHash = provider['repoHash']
+    const repoDir = join(TEST_CACHE_DIR, repoHash)
+    mkdirSync(repoDir, { recursive: true })
+    writeFileSync(join(repoDir, '.aligntrue.yaml'), mockRulesYaml, 'utf-8')
+
+    await provider.fetch()
+
+    await expect(provider.getCommitSha()).rejects.toThrow(
+      'Failed to get commit SHA from repository'
+    )
+  })
+
+  it('gets SHA from cached repository', async () => {
+    const provider = new GitProvider({
+      type: 'git',
+      url: TEST_REPO_URL,
+    }, TEST_CACHE_DIR)
+
+    const git = simpleGit()
+    vi.mocked(git.revparse).mockResolvedValueOnce('cached123')
+
+    // Create mock cache (simulate previous fetch)
+    const repoHash = provider['repoHash']
+    const repoDir = join(TEST_CACHE_DIR, repoHash)
+    mkdirSync(repoDir, { recursive: true })
+    writeFileSync(join(repoDir, '.aligntrue.yaml'), mockRulesYaml, 'utf-8')
+
+    // Fetch uses cache
+    await provider.fetch()
+    const sha = await provider.getCommitSha()
+
+    expect(sha).toBe('cached123')
+  })
+})
+
