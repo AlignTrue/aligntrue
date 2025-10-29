@@ -6,7 +6,7 @@ version: "1.0.0"
 spec_version: "1"
 summary: "Tests canonicalization edge cases"
 rules:
-  - id: "canon-nulls"
+  - id: "canon.example.nulls"
     severity: "info"
     applies_to: ["**/*"]
     check:
@@ -15,7 +15,7 @@ rules:
         paths: ["test.txt"]
       evidence: "Null handling test"
   
-  - id: "canon-unicode"
+  - id: "canon.example.unicode"
     severity: "warn"
     applies_to: ["**/*.ts"]
     check:
@@ -26,7 +26,7 @@ rules:
         allow: false
       evidence: "Unicode normalization test"
   
-  - id: "canon-floats"
+  - id: "canon.example.floats"
     severity: "error"
     applies_to: ["**/Makefile"]
     check:
@@ -38,5 +38,5 @@ rules:
 
 integrity:
   algo: "jcs-sha256"
-  value: "b4787935880caa3ac19a6f9a30b146a4b3868484fbc4c49d36eb3afbd9d2853e"
+  value: "840dd6266c46666b0933e3fe238a55f338509fa1bbca87b53ff949e5dcbbc85b"
 

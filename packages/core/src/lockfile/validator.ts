@@ -35,8 +35,19 @@ export function validateLockfile(lockfile: Lockfile, currentPack: AlignPack): Va
     const lockfileEntry = lockfileMap.get(rule.id)
     
     if (!lockfileEntry) {
-      // New rule not in lockfile
-      newRules.push(rule.id)
+      // Check if ID might have been renamed (aliases matching lockfile entries)
+      const possibleRename = lockfile.rules.find(lr => 
+        rule.aliases?.includes(lr.rule_id)
+      )
+      
+      if (possibleRename) {
+        // Rule was renamed, suggest using aliases
+        newRules.push(rule.id)
+        // Store hint for enhanced error message (will be shown in format function)
+      } else {
+        // New rule not in lockfile
+        newRules.push(rule.id)
+      }
     } else {
       // Check if hash matches
       const currentHash = hashRule(rule)
@@ -70,8 +81,11 @@ export function validateLockfile(lockfile: Lockfile, currentPack: AlignPack): Va
 
 /**
  * Format validation result as human-readable message
+ * 
+ * @param result - Validation result
+ * @param currentPack - Optional current pack for enhanced rename detection
  */
-export function formatValidationResult(result: ValidationResult): string {
+export function formatValidationResult(result: ValidationResult, currentPack?: AlignPack): string {
   if (result.valid) {
     return 'Lockfile is up to date'
   }
@@ -91,7 +105,16 @@ export function formatValidationResult(result: ValidationResult): string {
     lines.push(`\nNew rules (${result.newRules.length}):`)
     for (const ruleId of result.newRules) {
       lines.push(`  + ${ruleId}`)
+      
+      // Check if this might be a renamed rule
+      if (currentPack) {
+        const rule = currentPack.rules.find(r => r.id === ruleId)
+        if (rule?.aliases && rule.aliases.length > 0) {
+          lines.push(`    (was: ${rule.aliases.join(', ')})`)
+        }
+      }
     }
+    lines.push(`\nRun 'aligntrue sync' to update lockfile.`)
   }
   
   if (result.deletedRules.length > 0) {
@@ -99,6 +122,7 @@ export function formatValidationResult(result: ValidationResult): string {
     for (const ruleId of result.deletedRules) {
       lines.push(`  - ${ruleId}`)
     }
+    lines.push(`\nIf rules were renamed, add old IDs to 'aliases' array.`)
   }
   
   return lines.join('\n')

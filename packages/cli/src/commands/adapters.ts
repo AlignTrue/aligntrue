@@ -2,7 +2,7 @@
  * Adapter management commands
  */
 
-import { loadConfig, saveConfig } from '@aligntrue/core'
+import { loadConfig, saveConfig, type AlignTrueConfig } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -81,7 +81,7 @@ interface AdapterInfo {
  */
 async function discoverAndCategorize(): Promise<{
   adapters: AdapterInfo[]
-  config: any
+  config: AlignTrueConfig
 }> {
   const configPath = '.aligntrue/config.yaml'
 
@@ -318,13 +318,14 @@ async function enableAdapters(args: string[]): Promise<void> {
  * Disable adapter
  */
 async function disableAdapter(args: string[]): Promise<void> {
-  if (args.length === 0) {
+  const adapterName = args[0]
+  
+  if (!adapterName) {
     console.error('✗ Missing adapter name')
     console.error('  Usage: aligntrue adapters disable <adapter>')
     process.exit(1)
   }
 
-  const adapterName = args[0]
   const { config } = await discoverAndCategorize()
 
   const currentExporters = config.exporters || []

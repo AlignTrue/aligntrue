@@ -6,7 +6,7 @@ version: "1.0.0"
 spec_version: "1"
 summary: "Tests rule dependencies"
 rules:
-  - id: "deps-nodejs"
+  - id: "deps.example.nodejs"
     severity: "error"
     applies_to: ["**/*.ts"]
     check:
@@ -15,7 +15,7 @@ rules:
         paths: ["package.json"]
       evidence: "Node.js project detected"
   
-  - id: "deps-pnpm"
+  - id: "deps.example.pnpm"
     severity: "warn"
     applies_to: ["**/package.json"]
     check:
@@ -27,5 +27,5 @@ rules:
 
 integrity:
   algo: "jcs-sha256"
-  value: "415a2501fa4e20c5b33b515b72a33213c7c670843f7840c8c9fc920d9292121c"
+  value: "fca3c8d6bdae0a082ed6974a10c66c95de99e6262a01676b69b9238f13760100"
 

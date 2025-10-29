@@ -49,7 +49,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -64,7 +64,7 @@ rules:
       expect(ir.version).toBe('1.0.0')
       expect(ir.spec_version).toBe('1')
       expect(ir.rules).toHaveLength(1)
-      expect(ir.rules![0].id).toBe('test-rule')
+      expect(ir.rules![0].id).toBe('testing.example.rule')
     })
 
     it('fails on invalid markdown (multiple blocks)', async () => {
@@ -75,7 +75,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -86,7 +86,7 @@ id: test-pack2
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule2
+  - id: testing.example.rule2
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule 2
@@ -123,7 +123,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -137,7 +137,7 @@ rules:
       expect(ir.version).toBe('1.0.0')
       expect(ir.spec_version).toBe('1')
       expect(ir.rules).toHaveLength(1)
-      expect(ir.rules![0].id).toBe('test-rule')
+      expect(ir.rules![0].id).toBe('testing.example.rule')
     })
 
     it('fails on invalid YAML syntax', async () => {
@@ -145,7 +145,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     guidance: "unclosed string
 `
@@ -177,7 +177,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -195,7 +195,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -227,7 +227,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: invalid_severity
 `
       const path = join(TEST_DIR, 'invalid-yaml.yaml')

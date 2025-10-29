@@ -40,6 +40,24 @@ export function parseAgentsMd(content: string): AgentsMdParseResult {
 }
 
 /**
+ * Normalize rule ID to dot notation
+ */
+function normalizeRuleId(id: string): { normalized: string; converted: boolean } {
+  // If already dot notation, return as-is
+  if (/^[a-z0-9]+(\.[a-z0-9-]+){2,}$/.test(id)) {
+    return { normalized: id, converted: false }
+  }
+  
+  // Convert kebab-case to dot notation (must have at least 2 hyphens for 3 segments)
+  if (/^[a-z0-9]+(-[a-z0-9]+){2,}$/.test(id)) {
+    return { normalized: id.replace(/-/g, '.'), converted: true }
+  }
+  
+  // Return as-is if doesn't match either pattern (will fail schema validation)
+  return { normalized: id, converted: false }
+}
+
+/**
  * Parse individual rule section from AGENTS.md format
  */
 function parseAgentsMdRuleSection(ruleName: string, body: string): AlignRule | null {
@@ -48,12 +66,18 @@ function parseAgentsMdRuleSection(ruleName: string, body: string): AlignRule | n
   if (!idMatch) {
     console.warn(`AGENTS.md parser: No ID found for rule ${ruleName}, using name as ID`)
   }
-  const id = (idMatch && idMatch[1]) ? idMatch[1].trim() : ruleName
+  const rawId = (idMatch && idMatch[1]) ? idMatch[1].trim() : ruleName
+  
+  // Normalize rule ID
+  const { normalized, converted } = normalizeRuleId(rawId)
+  if (converted) {
+    console.log(`  ℹ Converted rule ID: ${rawId} → ${normalized}`)
+  }
 
   // Extract severity (required, mapped from ERROR/WARN/INFO → error/warn/info)
   const severityMatch = body.match(/\*\*Severity:\*\*\s+(ERROR|WARN|INFO)/i)
   if (!severityMatch || !severityMatch[1]) {
-    console.warn(`AGENTS.md parser: No severity found for rule ${id}`)
+    console.warn(`AGENTS.md parser: No severity found for rule ${normalized}`)
     return null
   }
   const severityText = severityMatch[1].toUpperCase()
@@ -81,7 +105,7 @@ function parseAgentsMdRuleSection(ruleName: string, body: string): AlignRule | n
 
   // Build rule
   const rule: AlignRule = {
-    id,
+    id: normalized,
     severity,
     applies_to: applies_to.length > 0 ? applies_to : ['**/*'],
     ...(guidance && { guidance }),

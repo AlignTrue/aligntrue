@@ -67,7 +67,7 @@ describe('importFromAgent', () => {
 description: Test rules
 alwaysApply: true
 ---
-## Rule: test-rule
+## Rule: testing-example-rule
 
 **Severity:** error
 
@@ -83,7 +83,7 @@ This is test guidance.
 
       expect(rules).toHaveLength(1)
       expect(rules[0]).toMatchObject({
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'error',
         applies_to: ['**/*.ts'],
         guidance: 'This is test guidance.',
@@ -96,7 +96,7 @@ This is test guidance.
 
       await writeFile(join(cursorDir, 'file1.mdc'), `---
 ---
-## Rule: rule-one
+## Rule: testing-example-one
 
 **Severity:** error
 
@@ -105,7 +105,7 @@ Guidance one.
 
       await writeFile(join(cursorDir, 'file2.mdc'), `---
 ---
-## Rule: rule-two
+## Rule: testing-example-two
 
 **Severity:** warn
 
@@ -115,7 +115,7 @@ Guidance two.
       const rules = await importFromAgent('cursor', tmpDir)
 
       expect(rules).toHaveLength(2)
-      expect(rules.map(r => r.id).sort()).toEqual(['rule-one', 'rule-two'])
+      expect(rules.map(r => r.id).sort()).toEqual(['testing.example.one', 'testing.example.two'])
     })
 
     it('should throw if .cursor/rules directory not found', async () => {
@@ -140,9 +140,9 @@ Guidance two.
 
 **Version:** v1
 
-## Rule: test-rule
+## Rule: testing-example-rule
 
-**ID:** test-rule
+**ID:** testing-example-rule
 **Severity:** ERROR
 **Scope:** **/*.ts
 
@@ -155,7 +155,7 @@ This is test guidance.
 
       expect(rules).toHaveLength(1)
       expect(rules[0]).toMatchObject({
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'error',
         applies_to: ['**/*.ts'],
         guidance: 'This is test guidance.',

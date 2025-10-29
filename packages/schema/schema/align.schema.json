@@ -115,8 +115,16 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-          "description": "Rule identifier within pack (kebab-case)"
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+){2,}$",
+          "description": "Rule identifier with dot notation (min 3 segments): category.subcategory.rule-name"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "description": "Previous IDs for this rule (backwards compatibility after renames)"
         },
         "severity": {
           "type": "string",

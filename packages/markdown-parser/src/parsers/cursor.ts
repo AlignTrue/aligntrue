@@ -49,6 +49,24 @@ export function parseCursorMdc(content: string): CursorParseResult {
 }
 
 /**
+ * Normalize rule ID to dot notation
+ */
+function normalizeRuleId(id: string): { normalized: string; converted: boolean } {
+  // If already dot notation, return as-is
+  if (/^[a-z0-9]+(\.[a-z0-9-]+){2,}$/.test(id)) {
+    return { normalized: id, converted: false }
+  }
+  
+  // Convert kebab-case to dot notation (must have at least 2 hyphens for 3 segments)
+  if (/^[a-z0-9]+(-[a-z0-9]+){2,}$/.test(id)) {
+    return { normalized: id.replace(/-/g, '.'), converted: true }
+  }
+  
+  // Return as-is if doesn't match either pattern (will fail schema validation)
+  return { normalized: id, converted: false }
+}
+
+/**
  * Parse individual rule section
  */
 function parseRuleSection(
@@ -56,10 +74,16 @@ function parseRuleSection(
   body: string,
   globalVendorMetadata: Record<string, any>
 ): AlignRule | null {
+  // Normalize rule ID
+  const { normalized, converted } = normalizeRuleId(ruleId)
+  if (converted) {
+    console.log(`  ℹ Converted rule ID: ${ruleId} → ${normalized}`)
+  }
+  
   // Extract severity (required)
   const severityMatch = body.match(/\*\*Severity:\*\*\s+(error|warn|info)/i)
   if (!severityMatch || !severityMatch[1]) {
-    console.warn(`Cursor parser: No severity found for rule ${ruleId}`)
+    console.warn(`Cursor parser: No severity found for rule ${normalized}`)
     return null
   }
   const severity = severityMatch[1].toLowerCase() as 'error' | 'warn' | 'info'
@@ -86,7 +110,7 @@ function parseRuleSection(
 
   // Build rule
   const rule: AlignRule = {
-    id: ruleId,
+    id: normalized,
     severity,
     applies_to: applies_to.length > 0 ? applies_to : ['**/*'],
     ...(guidance && { guidance }),
