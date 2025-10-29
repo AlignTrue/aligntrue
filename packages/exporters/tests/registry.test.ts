@@ -12,6 +12,8 @@ import type {
 } from "../src/types.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
+import { mkdirSync, rmSync } from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -255,10 +257,16 @@ describe("ExporterRegistry", () => {
 
     it("returns empty array if no manifests found", () => {
       // Create a temp directory with no manifests
-      const emptyDir = join(fixturesDir, "..");
-      const manifests = registry.discoverAdapters(emptyDir);
-      // Might find some, but won't error
-      expect(Array.isArray(manifests)).toBe(true);
+      const emptyDir = join(tmpdir(), "empty-manifest-test");
+      mkdirSync(emptyDir, { recursive: true });
+      try {
+        const manifests = registry.discoverAdapters(emptyDir);
+        // Should return empty array
+        expect(manifests).toEqual([]);
+      } finally {
+        // Clean up
+        rmSync(emptyDir, { recursive: true, force: true });
+      }
     });
   });
 
