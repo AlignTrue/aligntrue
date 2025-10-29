@@ -11,17 +11,17 @@ export interface Command {
 export const commands: Record<string, Command> = {};
 
 // Export commands
-export { init } from './init.js'
-export { importCommand } from './import.js'
-export { migrate } from './migrate.js'
-export { md } from './md.js'
-export { sync } from './sync.js'
-export { team } from './team.js'
-export { telemetry } from './telemetry.js'
-export { scopes } from './scopes.js'
-export { check } from './check.js'
-export { config } from './config.js'
-export { adapters } from './adapters.js'
-export { privacyCommand as privacy } from './privacy.js'
-export { backupCommand as backup } from './backup.js'
-
+export { init } from "./init.js";
+export { importCommand } from "./import.js";
+export { migrate } from "./migrate.js";
+export { md } from "./md.js";
+export { sync } from "./sync.js";
+export { team } from "./team.js";
+export { telemetry } from "./telemetry.js";
+export { scopes } from "./scopes.js";
+export { check } from "./check.js";
+export { config } from "./config.js";
+export { adapters } from "./adapters.js";
+export { privacyCommand as privacy } from "./privacy.js";
+export { backupCommand as backup } from "./backup.js";
+export { pull } from "./pull.js";
