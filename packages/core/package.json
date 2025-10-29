@@ -12,7 +12,8 @@
     "./bundle": "./dist/bundle.js",
     "./lockfile": "./dist/lockfile.js",
     "./performance": "./dist/performance/index.js",
-    "./telemetry/collector.js": "./dist/telemetry/collector.js"
+    "./telemetry/collector.js": "./dist/telemetry/collector.js",
+    "./team/allow.js": "./dist/team/allow.js"
   },
   "scripts": {
     "build": "tsc",
@@ -46,4 +47,3 @@
     "access": "public"
   }
 }
-

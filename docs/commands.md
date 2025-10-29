@@ -67,12 +67,12 @@ aligntrue import <agent> [options]
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--coverage` | Show import coverage report | `true` |
-| `--no-coverage` | Skip coverage report | `false` |
-| `--write` | Write imported rules to `.aligntrue/rules.md` | `false` |
-| `--dry-run` | Preview without writing files | `false` |
+| Flag            | Description                                   | Default |
+| --------------- | --------------------------------------------- | ------- |
+| `--coverage`    | Show import coverage report                   | `true`  |
+| `--no-coverage` | Skip coverage report                          | `false` |
+| `--write`       | Write imported rules to `.aligntrue/rules.md` | `false` |
+| `--dry-run`     | Preview without writing files                 | `false` |
 
 **What it does:**
 
@@ -85,6 +85,7 @@ aligntrue import <agent> [options]
 **Coverage Report:**
 
 The coverage report shows:
+
 - **Rules imported** - Number of rules found in agent format
 - **Field mapping** - Which IR fields are mapped from agent format
 - **Unmapped fields** - Fields that cannot be mapped (preserved in `vendor.*`)
@@ -142,12 +143,12 @@ aligntrue sync [options]
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--dry-run` | Preview changes without writing files | `false` |
-| `--force` | Override performance limits and safety checks | `false` |
-| `--accept-agent <name>` | Pull changes from agent back to IR (mock data in Phase 1) | - |
-| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
+| Flag                    | Description                                               | Default                  |
+| ----------------------- | --------------------------------------------------------- | ------------------------ |
+| `--dry-run`             | Preview changes without writing files                     | `false`                  |
+| `--force`               | Override performance limits and safety checks             | `false`                  |
+| `--accept-agent <name>` | Pull changes from agent back to IR (mock data in Phase 1) | -                        |
+| `--config <path>`       | Custom config file path                                   | `.aligntrue/config.yaml` |
 
 **What it does:**
 
@@ -216,10 +217,10 @@ aligntrue check [options]
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--ci` | CI mode (non-interactive, strict exit codes) | `false` |
-| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
+| Flag              | Description                                  | Default                  |
+| ----------------- | -------------------------------------------- | ------------------------ |
+| `--ci`            | CI mode (non-interactive, strict exit codes) | `false`                  |
+| `--config <path>` | Custom config file path                      | `.aligntrue/config.yaml` |
 
 **What it validates:**
 
@@ -294,9 +295,9 @@ aligntrue backup create [--notes "description"]
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--notes <text>` | Optional description for the backup | (none) |
+| Flag             | Description                         | Default |
+| ---------------- | ----------------------------------- | ------- |
+| `--notes <text>` | Optional description for the backup | (none)  |
 
 **What it does:**
 
@@ -380,8 +381,8 @@ aligntrue backup restore --to <timestamp>
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag               | Description               | Default     |
+| ------------------ | ------------------------- | ----------- |
 | `--to <timestamp>` | Specific backup timestamp | Most recent |
 
 **What it does:**
@@ -395,6 +396,7 @@ aligntrue backup restore --to <timestamp>
 **Rollback behavior:**
 
 If restore fails:
+
 - Automatically restores from temporary backup
 - Original state preserved
 - Error message displayed
@@ -439,8 +441,8 @@ aligntrue backup cleanup --keep 5
 
 **Flags:**
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag              | Description               | Default           |
+| ----------------- | ------------------------- | ----------------- |
 | `--keep <number>` | Number of backups to keep | From config or 10 |
 
 **What it does:**
@@ -480,14 +482,14 @@ Enable automatic backups before destructive operations in `.aligntrue/config.yam
 ```yaml
 backup:
   # Enable auto-backup before operations
-  auto_backup: false  # Set to true to enable
-  
+  auto_backup: false # Set to true to enable
+
   # Commands that trigger auto-backup
   backup_on:
     - sync
     - import
     - restore
-  
+
   # Number of backups to keep (older ones auto-deleted)
   keep_count: 10
 ```
@@ -495,6 +497,7 @@ backup:
 **Auto-backup workflow:**
 
 When enabled, AlignTrue automatically:
+
 1. Creates backup before operation
 2. Displays backup timestamp
 3. Executes operation
@@ -850,7 +853,7 @@ aligntrue md generate aligntrue.yaml --output rules.md --preserve-style
 
 **Output format:**
 
-```markdown
+````markdown
 # AlignTrue Rules
 
 ```aligntrue
@@ -862,7 +865,9 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
 ```
-```
+````
+
+````
 
 ---
 
@@ -878,7 +883,7 @@ Upgrade project to team mode with lockfile validation.
 
 ```bash
 aligntrue team enable
-```
+````
 
 **What it does:**
 
@@ -925,7 +930,7 @@ modules:
   lockfile: true
   bundle: true
 lockfile:
-  mode: soft  # Warn on drift, don't block
+  mode: soft # Warn on drift, don't block
 ```
 
 **See also:** [Sync Behavior](sync-behavior.md#lockfile-behavior-team-mode) for lockfile modes.
@@ -981,6 +986,46 @@ Configured scopes (2):
 ## Settings commands
 
 Manage AlignTrue settings and preferences.
+
+### `aligntrue team enable|approve|list-allowed|remove`
+
+Manage team mode and approved rule sources. See [Team Mode Guide](team-mode.md) for complete workflows.
+
+**Usage:**
+
+```bash
+aligntrue team enable                           # Enable team mode
+aligntrue team approve <source> [<source2>...]  # Approve source(s)
+aligntrue team list-allowed                     # List approved sources
+aligntrue team remove <source> [<source2>...]   # Remove source(s)
+```
+
+**Key concepts:**
+
+- **Team mode**: Enables lockfile, bundle, and allow list validation
+- **Allow list**: `.aligntrue/allow.yaml` with approved rule sources
+- **Source formats**: `id@profile@version` or `sha256:...`
+
+**Example workflow:**
+
+```bash
+# Enable team mode
+aligntrue team enable
+
+# Approve sources
+aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+
+# List approved
+aligntrue team list-allowed
+
+# Sync (validates against allow list)
+aligntrue sync
+
+# Bypass validation (emergency only)
+aligntrue sync --force
+```
+
+---
 
 ### `aligntrue telemetry on|off|status`
 
@@ -1122,7 +1167,8 @@ aligntrue sync --offline
 
 Offline mode bypasses consent checks entirely (no network = no consent needed).
 
-**See also:** 
+**See also:**
+
 - [Privacy Policy](../PRIVACY.md) - Complete privacy details
 - [Sync command](#aligntrue-sync) - Offline flag documentation
 
@@ -1155,9 +1201,11 @@ AlignTrue uses standardized error codes for consistent debugging and support. Al
 - **Error codes** - Reference for support
 
 ### System errors (exit code 2)
+
 These errors indicate missing files, permissions, or system issues:
 
 - `ERR_CONFIG_NOT_FOUND` - Configuration file missing
+
   ```
   ✗ Config file not found
 
@@ -1169,6 +1217,7 @@ These errors indicate missing files, permissions, or system issues:
   ```
 
 - `ERR_RULES_NOT_FOUND` - Rules file missing
+
   ```
   ✗ Rules file not found
 
@@ -1180,6 +1229,7 @@ These errors indicate missing files, permissions, or system issues:
   ```
 
 - `ERR_FILE_WRITE_FAILED` - File I/O error
+
   ```
   ✗ File write failed
 
@@ -1194,9 +1244,11 @@ These errors indicate missing files, permissions, or system issues:
   ```
 
 ### Validation errors (exit code 1)
+
 These errors indicate invalid configuration, rules, or data:
 
 - `ERR_VALIDATION_FAILED` - Schema or rule validation failed
+
   ```
   ✗ Validation failed
 
@@ -1212,6 +1264,7 @@ These errors indicate invalid configuration, rules, or data:
   ```
 
 - `ERR_SYNC_FAILED` - Sync operation failed
+
   ```
   ✗ Sync failed
 
@@ -1223,6 +1276,7 @@ These errors indicate invalid configuration, rules, or data:
   ```
 
 - `ERR_LOCKFILE_VALIDATION_FAILED` - Lockfile drift detected
+
   ```
   ✗ Lockfile validation failed
 
@@ -1239,6 +1293,7 @@ These errors indicate invalid configuration, rules, or data:
 ### Specific errors
 
 - `ERR_ADAPTER_NOT_FOUND` - Adapter not available
+
   ```
   ✗ Adapter not found
 
@@ -1250,6 +1305,7 @@ These errors indicate invalid configuration, rules, or data:
   ```
 
 - `ERR_MISSING_ARGUMENT` - Required CLI argument missing
+
   ```
   ✗ Missing required argument
 
@@ -1261,6 +1317,7 @@ These errors indicate invalid configuration, rules, or data:
   ```
 
 - `ERR_OPERATION_FAILED` - Generic operation failure
+
   ```
   ✗ [Operation] failed
 
@@ -1289,4 +1346,3 @@ If you encounter an error:
 - [Troubleshooting](troubleshooting.md) - Common issues and fixes
 - [Sync Behavior](sync-behavior.md) - Two-way sync contract
 - [Extending AlignTrue](extending-aligntrue.md) - Add new exporters
-

@@ -13,6 +13,7 @@ node ../../packages/cli/dist/index.js sync
 ```
 
 This generates three outputs in under 5 seconds:
+
 - `.cursor/rules/aligntrue.mdc` - Cursor rules with content hash
 - `AGENTS.md` - Universal format for Claude, Copilot, Aider
 - `.vscode/mcp.json` - VS Code MCP configuration
@@ -67,7 +68,7 @@ AlignTrue automatically detects AI coding agents in your workspace (Cursor, GitH
 
 Open `.aligntrue/rules.md` and customize the starter rules:
 
-```markdown
+````markdown
 # My Project Rules
 
 ## Global Standards
@@ -85,7 +86,9 @@ rules:
     guidance: |
       Enable strict mode in tsconfig.json for better type safety.
 ```
-```
+````
+
+````
 
 The starter template includes examples for:
 
@@ -99,7 +102,7 @@ The starter template includes examples for:
 
 ```bash
 aligntrue sync
-```
+````
 
 This generates agent-specific files from your rules:
 
@@ -200,16 +203,47 @@ nodemon --watch .cursor/rules --watch AGENTS.md --exec "aligntrue sync"
 
 When your project grows, explore:
 
-- **Team Mode** - Shared rules with lockfile validation (`aligntrue team enable`)
+- **Team Mode** - Shared rules with lockfile validation (see below)
 - **Hierarchical Scopes** - Different rules for different directories
 - **Custom Exporters** - Add support for new agents ([Extending Guide](extending-aligntrue.md))
+
+### Team mode (5-minute setup)
+
+Enable team mode for collaborative rule management with lockfiles and allow lists.
+
+**For repository owners:**
+
+```bash
+# 1. Enable team mode
+aligntrue team enable
+
+# 2. Approve rule sources
+aligntrue team approve sha256:abc123...
+
+# 3. Sync to generate lockfile
+aligntrue sync
+
+# 4. Commit team files
+git add .aligntrue/
+git commit -m "Enable AlignTrue team mode"
+```
+
+**For team members:**
+
+```bash
+# Clone and sync (validated against allow list)
+git clone <repo> && cd <repo>
+aligntrue sync
+```
+
+**See:** [Team Mode Guide](team-mode.md) for complete workflows.
 
 ---
 
 **That's it!** You now have consistent AI rules across all your coding agents.
 
 **Workflow:**
+
 1. Edit rules in your preferred format (`.cursor/*.mdc`, `AGENTS.md`, or `.aligntrue/rules.md`)
 2. Save changes
 3. Run `aligntrue sync` (or set up auto-sync)
-
