@@ -213,6 +213,43 @@
           "description": "Additional ignore patterns beyond .gitignore (glob format)"
         }
       }
+    },
+    "export": {
+      "type": "object",
+      "description": "Export behavior configuration for mode hints and token caps",
+      "additionalProperties": true,
+      "properties": {
+        "mode_hints": {
+          "type": "object",
+          "description": "Control how execution mode metadata is exported to non-Cursor formats",
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "type": "string",
+              "enum": ["off", "metadata_only", "hints", "native"],
+              "description": "Default mode hints behavior: off (no markers), metadata_only (JSON markers only), hints (markers + visible intent), native (exporter-specific)"
+            },
+            "overrides": {
+              "type": "object",
+              "description": "Per-exporter overrides for mode hints behavior",
+              "additionalProperties": {
+                "type": "string",
+                "enum": ["off", "metadata_only", "hints", "native"]
+              }
+            }
+          }
+        },
+        "max_hint_blocks": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Maximum number of rules to include mode hints for (default: 20)"
+        },
+        "max_hint_tokens": {
+          "type": "number",
+          "minimum": 100,
+          "description": "Maximum token budget for mode hints across all rules (default: 1600)"
+        }
+      }
     }
   }
 }

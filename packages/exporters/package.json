@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aligntrue/core": "workspace:*",
     "@aligntrue/file-utils": "workspace:*",
     "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",

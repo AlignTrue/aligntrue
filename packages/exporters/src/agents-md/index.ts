@@ -11,6 +11,13 @@ import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, 
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { 
+  extractModeConfig, 
+  applyRulePrioritization, 
+  generateSessionPreface,
+  wrapRuleWithMarkers,
+  shouldIncludeRule
+} from '../utils/index.js'
 
 /**
  * State for collecting all scopes before generating single merged file
@@ -32,7 +39,7 @@ export class AgentsMdExporter implements ExporterPlugin {
 
   async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
     const { scope, rules } = request
-    const { outputDir, dryRun = false } = options
+    const { outputDir, dryRun = false, config } = options
 
     // Validate inputs
     if (!rules || rules.length === 0) {
@@ -59,8 +66,11 @@ export class AgentsMdExporter implements ExporterPlugin {
     
     const outputPath = join(outputDir, 'AGENTS.md')
     
+    // Get mode hints from config (default to metadata_only)
+    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(this.name, config)
+    
     // Generate AGENTS.md content with all accumulated rules
-    const content = this.generateAgentsMdContent()
+    const { content, warnings } = this.generateAgentsMdContent(modeHints, maxBlocks, maxTokens)
     
     // Compute content hash from canonical IR of all rules
     const allRulesIR = this.state.allRules.map(({ rule }) => rule)
@@ -85,6 +95,10 @@ export class AgentsMdExporter implements ExporterPlugin {
     if (fidelityNotes.length > 0) {
       result.fidelityNotes = fidelityNotes
     }
+    
+    if (warnings.length > 0) {
+      result.warnings = warnings
+    }
 
     return result
   }
@@ -102,11 +116,16 @@ export class AgentsMdExporter implements ExporterPlugin {
   }
 
   /**
-   * Generate complete AGENTS.md content
+   * Generate complete AGENTS.md content with mode hints and caps
    */
-  private generateAgentsMdContent(): string {
+  private generateAgentsMdContent(modeHints: string, maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
     const header = this.generateHeader()
-    const ruleSections = this.generateRuleSections()
+    
+    // Add session preface for hints mode
+    const prefaceLines = generateSessionPreface(modeHints)
+    const sessionPreface = prefaceLines.length > 0 ? '\n' + prefaceLines.join('\n') : ''
+    
+    const { content: ruleSections, warnings } = this.generateRuleSections(modeHints, maxBlocks, maxTokens)
     
     // Compute content hash for footer
     const allRulesIR = this.state.allRules.map(({ rule }) => rule)
@@ -115,7 +134,10 @@ export class AgentsMdExporter implements ExporterPlugin {
     const fidelityNotes = this.computeFidelityNotes(allRulesIR)
     const footer = this.generateFooter(contentHash, fidelityNotes)
 
-    return `${header}\n\n${ruleSections}\n${footer}`
+    return {
+      content: `${header}${sessionPreface}\n\n${ruleSections}\n${footer}`,
+      warnings
+    }
   }
 
   /**
@@ -136,22 +158,33 @@ export class AgentsMdExporter implements ExporterPlugin {
 
   /**
    * Generate all rule sections with metadata
+   * Applies token caps and mode hints
    */
-  private generateRuleSections(): string {
+  private generateRuleSections(modeHints: string, maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
     const sections: string[] = []
 
+    // Apply prioritization using shared utility
+    const allRules = this.state.allRules.map(({ rule }) => rule)
+    const { includedIds, warnings } = applyRulePrioritization(allRules, modeHints, maxBlocks, maxTokens)
+
     this.state.allRules.forEach(({ rule, scopePath }) => {
-      const section = this.generateRuleSection(rule, scopePath)
+      // Skip dropped rules
+      if (!shouldIncludeRule(rule.id, includedIds)) {
+        return
+      }
+      
+      const section = this.generateRuleSection(rule, scopePath, modeHints)
       sections.push(section)
     })
 
-    return sections.join('\n---\n\n')
+    return { content: sections.join('\n---\n\n'), warnings }
   }
 
   /**
    * Generate single rule section with ID, severity, scope, and guidance
+   * Wraps content with mode markers based on config
    */
-  private generateRuleSection(rule: AlignRule, scopePath: string): string {
+  private generateRuleSection(rule: AlignRule, scopePath: string, modeHints: string): string {
     const lines: string[] = []
 
     // Rule header
@@ -179,7 +212,10 @@ export class AgentsMdExporter implements ExporterPlugin {
       lines.push(rule.guidance.trim())
     }
 
-    return lines.join('\n')
+    const ruleContent = lines.join('\n')
+    
+    // Apply mode markers using shared utility
+    return wrapRuleWithMarkers(rule, ruleContent, modeHints)
   }
 
   /**

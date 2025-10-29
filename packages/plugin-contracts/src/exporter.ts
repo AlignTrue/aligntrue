@@ -44,6 +44,7 @@ export interface ExportOptions {
   outputDir: string;
   dryRun?: boolean;
   backup?: boolean;
+  config?: any;  // Optional AlignTrue config for mode hints and caps
 }
 
 /**
@@ -54,6 +55,7 @@ export interface ExportResult {
   filesWritten: string[];
   fidelityNotes?: string[];
   contentHash: string;
+  warnings?: string[];  // Optional warnings (e.g., dropped rules due to caps)
 }
 
 /**
