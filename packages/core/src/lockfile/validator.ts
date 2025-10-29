@@ -56,7 +56,10 @@ export function validateLockfile(lockfile: Lockfile, currentPack: AlignPack): Va
           rule_id: rule.id,
           expected_hash: lockfileEntry.content_hash,
           actual_hash: currentHash,
+          // Include full provenance for context
+          ...(lockfileEntry.owner && { owner: lockfileEntry.owner }),
           ...(lockfileEntry.source && { source: lockfileEntry.source }),
+          ...(lockfileEntry.source_sha && { source_sha: lockfileEntry.source_sha }),
         })
       }
     }
@@ -80,6 +83,17 @@ export function validateLockfile(lockfile: Lockfile, currentPack: AlignPack): Va
 }
 
 /**
+ * Format provenance fields for display
+ */
+function formatProvenance(mismatch: Mismatch): string {
+  const parts: string[] = []
+  if (mismatch.owner) parts.push(`owner=${mismatch.owner}`)
+  if (mismatch.source) parts.push(`source=${mismatch.source}`)
+  if (mismatch.source_sha) parts.push(`sha=${mismatch.source_sha.slice(0, 7)}`)
+  return parts.length > 0 ? ` (${parts.join(', ')})` : ''
+}
+
+/**
  * Format validation result as human-readable message
  * 
  * @param result - Validation result
@@ -96,8 +110,11 @@ export function formatValidationResult(result: ValidationResult, currentPack?: A
     lines.push(`\nModified rules (${result.mismatches.length}):`)
     for (const mismatch of result.mismatches) {
       lines.push(`  - ${mismatch.rule_id}`)
-      lines.push(`    Expected: ${mismatch.expected_hash.slice(0, 12)}...`)
+      lines.push(`    Expected: ${mismatch.expected_hash.slice(0, 12)}...${formatProvenance(mismatch)}`)
       lines.push(`    Actual:   ${mismatch.actual_hash.slice(0, 12)}...`)
+      if (formatProvenance(mismatch)) {
+        lines.push(`    Rule content changed - review before proceeding`)
+      }
     }
   }
   

@@ -329,6 +329,27 @@ export async function sync(args: string[]): Promise<void> {
         })
       }
 
+      // Show provenance in dry-run
+      if (parsed.dryRun && result.auditTrail) {
+        const provenanceEntries = result.auditTrail.filter(e => e.provenance && 
+          (e.provenance.owner || e.provenance.source || e.provenance.source_sha))
+        
+        if (provenanceEntries.length > 0) {
+          clack.log.info('\nProvenance:')
+          provenanceEntries.forEach(entry => {
+            const p = entry.provenance!
+            const parts: string[] = []
+            if (p.owner) parts.push(`owner=${p.owner}`)
+            if (p.source) parts.push(`source=${p.source}`)
+            if (p.source_sha) parts.push(`sha=${p.source_sha.slice(0, 7)}`)
+            
+            if (parts.length > 0) {
+              clack.log.message(`  ${entry.target}: ${parts.join(', ')}`)
+            }
+          })
+        }
+      }
+
       // Record telemetry event on success
       try {
         const loadedAdapters = registry.list().map(name => registry.get(name)!).filter(Boolean)

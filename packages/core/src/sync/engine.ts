@@ -55,6 +55,12 @@ export interface AuditEntry {
   hash?: string
   timestamp: string
   details: string
+  // Full provenance tracking
+  provenance?: {
+    owner?: string
+    source?: string
+    source_sha?: string
+  }
 }
 
 /**
@@ -129,13 +135,18 @@ export class SyncEngine {
         throw new Error('Configuration or IR not loaded')
       }
 
-      // Audit trail: IR loaded
+      // Audit trail: IR loaded with provenance
       auditTrail.push({
         action: 'update',
         target: irPath,
         source: 'IR',
         timestamp: new Date().toISOString(),
         details: `Loaded ${this.ir.rules?.length || 0} rules from IR`,
+        provenance: {
+          ...(this.ir.owner && { owner: this.ir.owner }),
+          ...(this.ir.source && { source: this.ir.source }),
+          ...(this.ir.source_sha && { source_sha: this.ir.source_sha }),
+        },
       })
 
       // Lockfile validation (if team mode)

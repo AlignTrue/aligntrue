@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Provenance Enhancements** (Phase 2, Stage 1, Step 8) - Completed 2025-10-29
+  - Expanded lockfile entries to include full provenance: owner, source, source_sha
+  - Display provenance in `aligntrue sync --dry-run` output
+  - Enhanced lockfile validation errors with provenance context
+  - Git provider captures commit SHA with `getCommitSha()` method
+  - Provenance tracked in sync engine audit trail
+  - 42 new tests (20 lockfile + 2 CLI + 5 git provider + 15 updates)
+  - Files created:
+    - `packages/core/tests/lockfile/provenance.test.ts` (20 tests, 344 lines)
+  - Files modified:
+    - `packages/core/src/lockfile/types.ts` - Added owner/source_sha to LockfileEntry and Mismatch
+    - `packages/core/src/lockfile/generator.ts` - Extract all three provenance fields from pack
+    - `packages/core/src/lockfile/validator.ts` - Include provenance in mismatch errors with formatProvenance()
+    - `packages/core/src/sync/engine.ts` - Added provenance to AuditEntry interface
+    - `packages/cli/src/commands/sync.ts` - Display provenance section in dry-run mode
+    - `packages/sources/src/providers/git.ts` - Added getCommitSha() method
+    - `packages/cli/tests/commands/sync.test.ts` - Added 2 provenance display tests
+    - `packages/sources/tests/git-provider.test.ts` - Added 5 commit SHA capture tests
+  - Test count: 965/965 passing (923 → 965, 100% pass rate)
+  - Provenance display format: `owner=X, source=Y, sha=Z` (7-char SHA truncation)
+  - Solo mode works without provenance (backward compatible)
+  - Team mode tracks full provenance for trust and reproducibility
+  - Structured output suitable for piping to PR comment tools
+
 - **UX Polish: Config Validation & Error Formatting** - Completed 2025-10-29
   - Unified config loading with `loadConfigWithValidation()` utility
   - Standardized error formatting with `CLIError` interface and `exitWithError()` function

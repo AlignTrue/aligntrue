@@ -19,13 +19,15 @@ export function generateLockfile(pack: AlignPack, mode: 'team' | 'enterprise'): 
   const entries: LockfileEntry[] = []
   const ruleHashes: string[] = []
   
-  // Generate per-rule hashes
+  // Generate per-rule hashes with full provenance
   for (const rule of pack.rules || []) {
     const hash = hashRule(rule)
     entries.push({
       rule_id: rule.id,
       content_hash: hash,
+      ...(pack.owner && { owner: pack.owner }),
       ...(pack.source && { source: pack.source }),
+      ...(pack.source_sha && { source_sha: pack.source_sha }),
     })
     ruleHashes.push(hash)
   }

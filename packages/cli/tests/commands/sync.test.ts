@@ -446,5 +446,87 @@ describe('sync command', () => {
       expect(mockSyncEngine.syncToAgents).toHaveBeenCalled()
     })
   })
+
+  describe('provenance display', () => {
+    it('displays provenance in dry-run mode when present', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'team',
+        exporters: ['cursor', 'agents-md'],
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor', 'agents-md'])
+
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc', 'AGENTS.md'],
+        warnings: [],
+        auditTrail: [
+          {
+            action: 'update',
+            target: '.aligntrue/rules.md',
+            source: 'IR',
+            timestamp: '2025-10-29T12:00:00.000Z',
+            details: 'Loaded 5 rules from IR',
+            provenance: {
+              owner: 'aligntrue',
+              source: 'github.com/AlignTrue/aligns',
+              source_sha: 'abc123def456',
+            },
+          },
+        ],
+      })
+
+      await sync(['--dry-run'])
+
+      expect(clack.log.info).toHaveBeenCalledWith('\nProvenance:')
+      expect(clack.log.message).toHaveBeenCalledWith(
+        expect.stringContaining('owner=aligntrue')
+      )
+      expect(clack.log.message).toHaveBeenCalledWith(
+        expect.stringContaining('source=github.com/AlignTrue/aligns')
+      )
+      expect(clack.log.message).toHaveBeenCalledWith(
+        expect.stringContaining('sha=abc123d')
+      )
+    })
+
+    it('skips provenance display when not present', async () => {
+      mockExistsSync.mockReturnValue(true)
+      mockLoadConfig.mockReturnValue({
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor'],
+      })
+
+      mockRegistry.list = vi.fn(() => ['cursor'])
+
+      mockSyncEngine.syncToAgents.mockResolvedValue({
+        success: true,
+        written: ['.cursor/rules/aligntrue.mdc'],
+        warnings: [],
+        auditTrail: [
+          {
+            action: 'update',
+            target: '.aligntrue/rules.md',
+            source: 'IR',
+            timestamp: '2025-10-29T12:00:00.000Z',
+            details: 'Loaded 3 rules from IR',
+            // No provenance
+          },
+        ],
+      })
+
+      await sync(['--dry-run'])
+
+      // Provenance section should not be displayed
+      const calls = vi.mocked(clack.log.info).mock.calls
+      const provenanceCalls = calls.filter(call =>
+        String(call[0]).includes('Provenance:')
+      )
+      expect(provenanceCalls).toHaveLength(0)
+    })
+  })
 })
 

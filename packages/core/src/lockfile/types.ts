@@ -5,7 +5,10 @@
 export interface LockfileEntry {
   rule_id: string
   content_hash: string  // SHA-256 of canonical IR (vendor.volatile excluded)
-  source?: string       // optional provenance
+  // Full provenance tracking
+  owner?: string
+  source?: string
+  source_sha?: string
 }
 
 export interface Lockfile {
@@ -22,7 +25,10 @@ export interface Mismatch {
   rule_id: string
   expected_hash: string
   actual_hash: string
+  // Full provenance for context in errors
+  owner?: string
   source?: string
+  source_sha?: string
 }
 
 export interface ValidationResult {
