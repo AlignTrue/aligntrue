@@ -14,7 +14,7 @@ import {tmpdir} from 'os'
  */
 
 const GOLDEN_REPO_SOURCE = join(__dirname, '../../../..', 'examples/golden-repo')
-const CLI_PATH = join(__dirname, '../../dist/index.js')
+const CLI_PATH = join(__dirname, '../../../..', 'packages/cli/dist/index.js')
 
 let testDir: string
 
@@ -84,6 +84,18 @@ rules:
     // Setup golden repo
     const projectDir = join(testDir, 'sync-speed')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
+
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
 
     // Warm up (first run may be slower due to Node loading)
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})

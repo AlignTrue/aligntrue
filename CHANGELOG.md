@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Rule ID Validation** (Phase 2, Stage 1, Step 7) - Completed 2025-10-29
+  - Enforced dot notation pattern: `category.subcategory.rule-name` (min 3 segments)
+  - Added `aliases` array field for backwards compatibility after renames
+  - `validateRuleId()` function with helpful error messages and suggestions
+  - Auto-conversion in import parsers: kebab-case → dot notation with info messages
+  - CLI validation in `sync` and `check` commands with actionable errors
+  - Lockfile validator detects ID changes and suggests using aliases array
+  - 18 new rule ID validation tests (comprehensive edge case coverage)
+  - Updated all test fixtures: 85 schema, 71 markdown-parser, 357 core, 12 testkit, 116 exporter tests
+  - Updated golden repository with proper dot notation IDs
+  - Test count: 948/948 passing (100% pass rate)
+  - Files created:
+    - `packages/schema/tests/rule-id-validation.test.ts` (18 tests, 120 lines)
+  - Files modified:
+    - `packages/schema/schema/align.schema.json` - Dot notation pattern + aliases field
+    - `packages/schema/src/validator.ts` - validateRuleId() function + AlignRule.aliases
+    - `packages/schema/src/index.ts` - Export validateRuleId
+    - `packages/core/src/lockfile/validator.ts` - Enhanced with alias detection
+    - `packages/cli/src/commands/sync.ts` - Added rule ID validation step
+    - `packages/cli/src/commands/check.ts` - Added rule ID validation step
+    - `packages/markdown-parser/src/parsers/cursor.ts` - Auto-conversion logic
+    - `packages/markdown-parser/src/parsers/agents-md.ts` - Auto-conversion logic
+    - `examples/golden-repo/.aligntrue/rules.md` - Updated to dot notation
+    - All test fixtures across 5 packages updated to dot notation
+  - Zero overhead for solo devs (just validation, no lockfile requirement)
+  - Teams get change detection via lockfile with helpful alias suggestions
+
 - **Adapters Command** (Phase 2, Stage 1, Step 6) - Completed 2025-10-29
   - `aligntrue adapters list` - Show all 43 available adapters with install status
   - `aligntrue adapters enable <adapter>` - Add adapter to config exporters

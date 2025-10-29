@@ -12,7 +12,7 @@ import {tmpdir} from 'os'
  */
 
 const GOLDEN_REPO_SOURCE = join(__dirname, '../../../..', 'examples/golden-repo')
-const CLI_PATH = join(__dirname, '../../dist/index.js')
+const CLI_PATH = join(__dirname, '../../../..', 'packages/cli/dist/index.js')
 
 let testDir: string
 
@@ -39,6 +39,18 @@ describe('Golden Repository Workflows', () => {
 
     // Copy golden repo files (simulates user setup)
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
+
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
 
     // Run sync
     execSync(`node ${CLI_PATH} sync`, {
@@ -73,6 +85,18 @@ describe('Golden Repository Workflows', () => {
     const projectDir = join(testDir, 'edit-project')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
 
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
+
     // Initial sync
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})
 
@@ -85,11 +109,11 @@ describe('Golden Repository Workflows', () => {
     // Edit native format (Cursor .mdc) - this is the solo dev workflow
     const cursorPath = join(projectDir, '.cursor/rules/aligntrue.mdc')
     const cursorContent = await fs.readFile(cursorPath, 'utf8')
-    const updatedCursor = cursorContent.replace(
-      /Content Hash:/,
-      `## Rule: new-rule
+      const updatedCursor = cursorContent.replace(
+        /Content Hash:/,
+        `## Rule: testing.example.newrule
 
-**Severity:** INFO  
+**Severity:** INFO
 **Applies to:** \`**/*.ts\`
 
 New rule added via native format editing
@@ -97,7 +121,7 @@ New rule added via native format editing
 ---
 
 Content Hash:`
-    )
+      )
     await fs.writeFile(cursorPath, updatedCursor)
 
     // Sync again - auto-pull will pull from Cursor, then sync to other agents
@@ -110,17 +134,29 @@ Content Hash:`
     const finalHash = finalHashMatch![1]
 
     expect(finalHash).not.toBe(initialHash)
-    expect(finalCursor).toContain('new-rule')
-    
+    expect(finalCursor).toContain('testing.example.newrule')
+
     // Verify AGENTS.md also has the new rule
     const agentsMd = await fs.readFile(join(projectDir, 'AGENTS.md'), 'utf8')
-    expect(agentsMd).toContain('new-rule')
+    expect(agentsMd).toContain('testing.example.newrule')
   })
 
   it('Multi-exporter validation generates all 3 outputs with correct format', async () => {
     // Setup
     const projectDir = join(testDir, 'multi-exporter')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
+
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
 
     // Sync
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})
@@ -151,6 +187,18 @@ Content Hash:`
     // Setup
     const projectDir = join(testDir, 'auto-pull-project')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
+
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
 
     // Initial sync
     execSync(`node ${CLI_PATH} sync`, {cwd: projectDir, stdio: 'pipe'})
@@ -188,6 +236,18 @@ Content Hash:`
     // Setup
     const projectDir = join(testDir, 'dry-run-project')
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, {recursive: true})
+
+    // Also copy hidden directories that fs.cp might miss
+    const hiddenDirs = ['.aligntrue', '.cursor', '.vscode']
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir)
+      const dstDir = join(projectDir, dir)
+      try {
+        await fs.cp(srcDir, dstDir, {recursive: true})
+      } catch (err) {
+        // Directory might not exist, continue
+      }
+    }
 
     // Remove outputs if they exist
     await fs.rm(join(projectDir, '.cursor'), {recursive: true, force: true})
