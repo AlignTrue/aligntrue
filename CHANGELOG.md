@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 4: Pull Command Complete** - Completed 2025-10-29
+  - `aligntrue pull` command for ad-hoc git-based rule pulling (try-before-commit workflow)
+  - Flags: `--save` (add to config), `--ref` (branch/tag/commit), `--sync` (run sync after), `--dry-run` (preview), `--offline` (cache only)
+  - Privacy consent integration with interactive prompts (first use only, persistent consent)
+  - Pull to temp by default; `--save` adds git source to config permanently
+  - `--sync` requires `--save` (enforces logical dependency: cannot sync temporary pulls)
+  - Flag validation: `--dry-run` excludes `--save` and `--sync`, ref format validated
+  - Comprehensive git-workflows.md guide (~360 lines) covering ad-hoc workflows, team sharing, CI/CD patterns
+  - Updated commands.md with full pull command section (~135 lines) including examples and workflows
+  - Cross-references between git-workflows.md (ad-hoc) and git-sources.md (config-based permanent sources)
+  - 37 new tests in pull.test.ts (~550 lines): help/validation (7), basic pull (5), flags (5), privacy consent (6), error handling (7), integration (4), edge cases (3)
+  - Test count: 1387 → 1424 passing (+37 tests, 100% pass rate)
+  - Files created: cli/src/commands/pull.ts (~390 lines), tests/commands/pull.test.ts (~550 lines, 37 tests), docs/git-workflows.md (~360 lines)
+  - Files modified: cli/src/commands/index.ts (+1 export), cli/src/index.ts (+3 lines routing), docs/commands.md (+135 lines)
+  - Key decisions: Default temp location (try-before-commit), consent check before pull (not during GitProvider), separate docs for ad-hoc vs config workflows
+  - Integration: Uses Phase 2 GitProvider and ConsentManager, respects mode and performance config, passes consent to GitProvider
+  - Known limitations: None blocking Session 5
+
 - **Phase 3, Session 3: Team Mode Polish** - Completed 2025-10-29
   - `aligntrue team status` dashboard showing lockfile mode, allow list count, drift status, team configuration
   - Enhanced `aligntrue team enable` output with clear next steps and collaboration guidance
@@ -81,6 +99,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Accounts for Husky, lint-staged, commitlint startup overhead
   - Still enforces reasonable performance expectations
   - Test suite remains at 219 tests with good coverage
+
+### Fixed
+
+- **Windows compatibility** for core package tests (2025-10-29)
+  - Path separator normalization in import tests (forward slashes for cross-platform consistency)
+  - Backup manager now normalizes paths in manifest (subdir/file.txt format on all platforms)
+  - Lockfile write error test uses platform-specific invalid paths for reliable failure testing
 - **Updated DEVELOPMENT.md** with testing workflows and quality guardrails (2025-10-29)
   - Added Quick start section with `pnpm bootstrap`
   - Comprehensive "Running tests locally" section
