@@ -211,7 +211,7 @@ The consent check happens when a provider attempts a network operation. If conse
 
 ### Privacy controls (Phase 2 - Implemented)
 
-#### Audit Consents
+#### Audit consents
 ```bash
 aligntrue privacy audit
 ```
@@ -227,7 +227,7 @@ Privacy Consents
 Use 'aligntrue privacy revoke <operation>' to revoke
 ```
 
-#### Revoke Consent
+#### Revoke consent
 ```bash
 aligntrue privacy revoke catalog    # Revoke specific operation
 aligntrue privacy revoke git        # Revoke git consent
@@ -235,7 +235,7 @@ aligntrue privacy revoke --all      # Revoke everything
 ```
 Removes consent; future syncs will prompt again when network is needed.
 
-#### Offline Mode
+#### Offline mode
 ```bash
 aligntrue sync --offline
 ```

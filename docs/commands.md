@@ -1146,7 +1146,7 @@ aligntrue sync --help
 
 ---
 
-## Error Codes
+## Error codes
 
 AlignTrue uses standardized error codes for consistent debugging and support. All errors include:
 
@@ -1154,7 +1154,7 @@ AlignTrue uses standardized error codes for consistent debugging and support. Al
 - **Actionable hints** - Next steps to fix
 - **Error codes** - Reference for support
 
-### System Errors (Exit Code 2)
+### System errors (exit code 2)
 These errors indicate missing files, permissions, or system issues:
 
 - `ERR_CONFIG_NOT_FOUND` - Configuration file missing
@@ -1193,7 +1193,7 @@ These errors indicate missing files, permissions, or system issues:
   Error code: ERR_FILE_WRITE_FAILED
   ```
 
-### Validation Errors (Exit Code 1)
+### Validation errors (exit code 1)
 These errors indicate invalid configuration, rules, or data:
 
 - `ERR_VALIDATION_FAILED` - Schema or rule validation failed
@@ -1236,7 +1236,7 @@ These errors indicate invalid configuration, rules, or data:
   Error code: ERR_LOCKFILE_VALIDATION_FAILED
   ```
 
-### Specific Errors
+### Specific errors
 
 - `ERR_ADAPTER_NOT_FOUND` - Adapter not available
   ```
@@ -1269,7 +1269,7 @@ These errors indicate invalid configuration, rules, or data:
   Error code: ERR_OPERATION_FAILED
   ```
 
-### Getting Help
+### Getting help
 
 If you encounter an error:
 
