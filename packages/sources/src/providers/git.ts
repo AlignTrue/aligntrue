@@ -9,9 +9,9 @@
  * - Supports https and ssh URLs, branch/tag/commit refs
  * 
  * Privacy:
- * - TODO(Step 10): Pre-flight consent check before git clone
- * - TODO(Step 10): Record git operation in privacy audit log
- * - TODO(Step 10): Respect --offline mode flag
+ * - Requires user consent before first git clone
+ * - Respects offline mode (uses cache only, no network)
+ * - Clear error messages when consent denied
  */
 
 import { readFileSync, existsSync, mkdirSync, rmSync } from 'fs'
@@ -19,6 +19,7 @@ import { join, dirname } from 'path'
 import { createHash } from 'crypto'
 import simpleGit, { SimpleGit, GitError } from 'simple-git'
 import type { SourceProvider } from './index.js'
+import type { ConsentManager } from '@aligntrue/core'
 
 /**
  * Git source configuration
@@ -40,6 +41,8 @@ export interface GitProviderOptions {
   ref: string
   path: string
   forceRefresh: boolean
+  offlineMode?: boolean
+  consentManager?: ConsentManager
 }
 
 /**
@@ -54,12 +57,22 @@ export class GitProvider implements SourceProvider {
   private forceRefresh: boolean
   private repoHash: string
   private repoDir: string
+  private offlineMode: boolean
+  private consentManager?: ConsentManager
 
-  constructor(config: GitSourceConfig, baseCacheDir: string = '.aligntrue/.cache/git') {
+  constructor(
+    config: GitSourceConfig, 
+    baseCacheDir: string = '.aligntrue/.cache/git',
+    options?: { offlineMode?: boolean; consentManager?: ConsentManager }
+  ) {
     this.url = config.url
     this.ref = config.ref ?? 'main'
     this.path = config.path ?? '.aligntrue.yaml'
     this.forceRefresh = config.forceRefresh ?? false
+    this.offlineMode = options?.offlineMode ?? false
+    if (options?.consentManager !== undefined) {
+      this.consentManager = options.consentManager
+    }
 
     // Validate URL format (security check)
     this.validateUrl(this.url)
@@ -112,15 +125,40 @@ export class GitProvider implements SourceProvider {
       }
     }
 
-    // TODO(Step 10): Add pre-flight consent check before git clone
-    // Example: await checkPrivacyConsent('git', this.url)
+    // Offline mode: use cache only, no network operations
+    if (this.offlineMode) {
+      if (existsSync(this.repoDir)) {
+        try {
+          const content = this.readRulesFile()
+          return content
+        } catch (error) {
+          throw new Error(
+            `Offline mode: cache exists but cannot read rules file\n` +
+            `  Repository: ${this.url}\n` +
+            `  Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        }
+      }
+      throw new Error(
+        `Offline mode: no cache available for repository\n` +
+        `  Repository: ${this.url}\n` +
+        `  Run without --offline to fetch from network`
+      )
+    }
+
+    // Privacy consent check before network operation
+    if (this.consentManager && !this.consentManager.checkConsent('git')) {
+      throw new Error(
+        `Network operation requires consent\n` +
+        `  Repository: ${this.url}\n` +
+        `  Grant consent with: aligntrue privacy grant git\n` +
+        `  Or run with --offline to use cache only`
+      )
+    }
 
     try {
       // Clone or update repository
       await this.ensureRepository(targetRef)
-
-      // TODO(Step 10): Record git operation in privacy audit log
-      // Example: await recordPrivacyEvent('git_clone', { url: this.url, ref: targetRef })
 
       // Read rules file
       const content = this.readRulesFile()

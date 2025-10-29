@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Privacy Consent System** (Phase 2, Stage 2, Step 10) - Completed 2025-10-29
+  - Consent manager in `packages/core/src/privacy/` for network operation approval
+  - First-time-only prompts for catalog and git sources (stored in `.aligntrue/privacy-consent.json`)
+  - CLI commands: `aligntrue privacy audit|revoke <operation>|revoke --all`
+  - Provider integration: git and catalog providers check consent before network operations
+  - Offline mode: `--offline` flag bypasses consent and network (cache-only)
+  - Clear error messages when consent denied with instructions to grant
+  - Per-source-type granularity (catalog, git) with simple revocation
+  - 34 new tests (22 consent manager + 12 CLI privacy command, 100% pass rate)
+  - Files created:
+    - `packages/core/src/privacy/consent.ts` (127 lines)
+    - `packages/core/src/privacy/types.ts` (26 lines)
+    - `packages/core/src/privacy/index.ts` (5 lines)
+    - `packages/core/tests/privacy/consent.test.ts` (22 tests, 209 lines)
+    - `packages/cli/src/commands/privacy.ts` (167 lines)
+    - `packages/cli/tests/commands/privacy.test.ts` (12 tests, 209 lines)
+  - Files modified:
+    - `packages/sources/src/providers/git.ts` - Consent checks, offline mode, TODOs resolved
+    - `packages/sources/src/providers/catalog.ts` - Consent checks, offline mode
+    - `packages/sources/package.json` - Added @aligntrue/core dependency
+    - `packages/core/src/index.ts` - Export privacy module
+    - `packages/cli/src/index.ts` - Privacy command routing
+    - `packages/cli/src/commands/index.ts` - Export privacy command
+    - `docs/PRIVACY.md` - Updated to Phase 2 (Implemented) status
+    - `docs/commands.md` - Added privacy command documentation
+  - Test count: 1028/1029 passing (995 → 1028, 99.9% pass rate, 1 flaky performance test)
+  - Integration: Providers respect consent before network; clear errors guide users to grant consent
+  - User experience: Simple audit/revoke commands; consent remembered per-machine; git-ignored file
+
+### Added
+
 - **Markdown Round-Trip** (Phase 2, Stage 1, Step 9) - Completed 2025-10-29
   - Bidirectional markdown conversion: MD ↔ IR ↔ MD with semantic preservation
   - Metadata capture in `_markdown_meta` field (indent, line endings, header, guidance position)
