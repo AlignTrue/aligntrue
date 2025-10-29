@@ -393,7 +393,7 @@ aligntrue import cursor
 
 Version: 1.0
 
-## Code Quality
+## Code quality
 
 ### ERROR: Use TypeScript strict mode
 

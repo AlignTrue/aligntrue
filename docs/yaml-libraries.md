@@ -10,7 +10,7 @@ AlignTrue uses two different YAML libraries across its packages: `yaml` and `js-
 
 ---
 
-## Package Usage Overview
+## Package usage overview
 
 | Package | Library | Version | Files | Use Case |
 |---------|---------|---------|-------|----------|
@@ -25,7 +25,7 @@ AlignTrue uses two different YAML libraries across its packages: `yaml` and `js-
 
 ---
 
-## Key API Differences
+## Key API differences
 
 ### `yaml` Package (Modern API)
 
@@ -87,7 +87,7 @@ const obj = yaml.load(yamlString, { schema: yaml.JSON_SCHEMA })
 
 ## Rationale for Dual-Library Approach
 
-### Why Not Consolidate?
+### Why not consolidate?
 
 We evaluated consolidating to a single library during Phase 2, Stage 1.5b (October 2025). Here's why we decided to keep both:
 
@@ -147,7 +147,7 @@ Both are:
 
 ---
 
-## Usage Guidelines
+## Usage guidelines
 
 ### When to Use `yaml` Package
 
@@ -256,9 +256,9 @@ export function parseYamlToJson(yaml: string): unknown {
 
 ---
 
-## Future Considerations
+## Future considerations
 
-### When Might We Consolidate?
+### When might we consolidate?
 
 We would revisit this decision if any of these occur:
 
@@ -282,7 +282,7 @@ We would revisit this decision if any of these occur:
    - If one library becomes unmaintained
    - If ecosystem shifts dramatically
 
-### How Would We Consolidate?
+### How would we consolidate?
 
 If we decide to consolidate in the future:
 
@@ -302,7 +302,7 @@ If we decide to consolidate in the future:
 
 ---
 
-## Decision Record
+## Decision record
 
 **Decision**: Keep both `yaml` and `js-yaml` libraries
 
@@ -340,9 +340,9 @@ If we decide to consolidate in the future:
 
 ---
 
-## For Contributors
+## For contributors
 
-### Adding New Code
+### Adding new code
 
 **Rule of thumb**: Follow the pattern of the package you're working in.
 
@@ -362,7 +362,7 @@ When in doubt, check with maintainers or follow the pattern of the most similar 
 
 ---
 
-## See Also
+## See also
 
 - `packages/cli/README.md` - CLI YAML usage notes
 - `packages/core/README.md` - Core config loading patterns
