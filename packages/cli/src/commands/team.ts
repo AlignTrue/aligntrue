@@ -3,7 +3,7 @@
  */
 
 import { loadConfig } from '@aligntrue/core'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs'
 import { dirname } from 'path'
 import { stringify as stringifyYaml } from 'yaml'
 import * as clack from '@clack/prompts'
@@ -97,8 +97,8 @@ async function teamEnable(): Promise<void> {
     // Write to temp file first
     writeFileSync(tempPath, yamlContent, 'utf-8')
     
-    // Rename atomically
-    writeFileSync(configPath, yamlContent, 'utf-8')
+    // Atomic rename (OS-level guarantee)
+    renameSync(tempPath, configPath)
 
     // Record telemetry event
     recordEvent({ command_name: 'team-enable', align_hashes_used: [] })

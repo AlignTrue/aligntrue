@@ -13,6 +13,7 @@ vi.mock('fs', () => ({
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
   statSync: vi.fn(),
+  renameSync: vi.fn(),
 }))
 
 // Mock telemetry collector
@@ -56,15 +57,23 @@ describe('telemetry command', () => {
 
     it('creates telemetry file with enabled: true', async () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {})
+      vi.mocked(fs.renameSync).mockImplementation(() => {})
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any)
 
       await expect(telemetry(['on'])).rejects.toThrow('process.exit')
       
+      // Should write to temp file
       const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(
-        call => call[0] === '.aligntrue/telemetry.json'
+        call => call[0] === '.aligntrue/telemetry.json.tmp'
       )
       expect(writeCall).toBeDefined()
       expect(writeCall?.[1]).toContain('"enabled": true')
+      
+      // Should rename atomically
+      expect(fs.renameSync).toHaveBeenCalledWith(
+        '.aligntrue/telemetry.json.tmp',
+        '.aligntrue/telemetry.json'
+      )
     })
 
     it('handles write error', async () => {
@@ -90,15 +99,23 @@ describe('telemetry command', () => {
 
     it('creates telemetry file with enabled: false', async () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {})
+      vi.mocked(fs.renameSync).mockImplementation(() => {})
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any)
 
       await expect(telemetry(['off'])).rejects.toThrow('process.exit')
       
+      // Should write to temp file
       const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(
-        call => call[0] === '.aligntrue/telemetry.json'
+        call => call[0] === '.aligntrue/telemetry.json.tmp'
       )
       expect(writeCall).toBeDefined()
       expect(writeCall?.[1]).toContain('"enabled": false')
+      
+      // Should rename atomically
+      expect(fs.renameSync).toHaveBeenCalledWith(
+        '.aligntrue/telemetry.json.tmp',
+        '.aligntrue/telemetry.json'
+      )
     })
 
     it('handles write error', async () => {

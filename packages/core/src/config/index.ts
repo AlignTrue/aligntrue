@@ -3,7 +3,7 @@
  * Handles solo/team/enterprise modes and module flags
  */
 
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync, existsSync, writeFileSync, mkdirSync, renameSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import * as yaml from 'js-yaml'
@@ -464,4 +464,22 @@ export async function loadConfig(configPath?: string): Promise<AlignTrueConfig> 
   await validateConfig(configWithDefaults, path)
   
   return configWithDefaults
+}
+
+/**
+ * Save config to file with atomic write
+ */
+export async function saveConfig(config: AlignTrueConfig, configPath?: string): Promise<void> {
+  const path = configPath || '.aligntrue/config.yaml'
+  const yamlContent = yaml.dump(config)
+  const tempPath = `${path}.tmp`
+  
+  // Ensure directory exists
+  mkdirSync(dirname(path), { recursive: true })
+  
+  // Write to temp file first
+  writeFileSync(tempPath, yamlContent, 'utf-8')
+  
+  // Rename atomically (overwrites destination)
+  renameSync(tempPath, path)
 }

@@ -265,7 +265,188 @@ aligntrue check --ci
 
 ## Development commands
 
-Tools for working with markdown rules and validating syntax.
+Tools for working with markdown rules, managing adapters, and validating syntax.
+
+### `aligntrue adapters`
+
+Manage exporters (adapters) in your configuration. View, enable, and disable adapters for 43 supported AI coding agents.
+
+**Usage:**
+
+```bash
+aligntrue adapters <subcommand>
+```
+
+**Subcommands:**
+
+- `list` - Show all available adapters with install status
+- `enable <adapter>` - Enable an adapter in config
+- `enable --interactive` - Choose adapters with multiselect UI
+- `disable <adapter>` - Disable an adapter in config
+
+---
+
+#### `aligntrue adapters list`
+
+Show all 43 discovered adapters with their current install status.
+
+**Usage:**
+
+```bash
+aligntrue adapters list
+```
+
+**Status indicators:**
+
+- `✓` **Installed** - Enabled in your `.aligntrue/config.yaml`
+- `-` **Available** - Discovered but not enabled
+- `❌` **Invalid** - In config but not found (shows warning, non-blocking)
+
+**Example output:**
+
+```
+Available Adapters (44 total):
+
+✓ cursor                  Export AlignTrue rules to Cursor .mdc format
+                          Outputs: .cursor/rules/*.mdc
+
+✓ agents-md               Export AlignTrue rules to universal AGENTS.md format
+                          Outputs: AGENTS.md
+
+- claude-md               Export AlignTrue rules to Claude CLAUDE.md format
+                          Outputs: CLAUDE.md
+
+- vscode-mcp              Export AlignTrue rules to VS Code MCP configuration
+                          Outputs: .vscode/mcp.json
+
+- windsurf-mcp            Export AlignTrue rules to Windsurf MCP configuration
+                          Outputs: .windsurf/mcp_config.json
+
+❌ nonexistent-adapter     (Not found in available adapters)
+
+Summary:
+  ✓ Installed: 2
+  - Available: 41
+  ❌ Invalid: 1
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config not found
+
+---
+
+#### `aligntrue adapters enable`
+
+Enable one or more adapters by adding them to your config.
+
+**Single adapter:**
+
+```bash
+aligntrue adapters enable <adapter>
+```
+
+**Interactive mode:**
+
+```bash
+aligntrue adapters enable --interactive
+# or
+aligntrue adapters enable -i
+```
+
+**What it does:**
+
+1. Validates adapter exists in discovered manifests
+2. Checks if already enabled (shows friendly message, exits 0)
+3. Adds to `config.exporters` array (sorted alphabetically)
+4. Saves config atomically (temp + rename)
+5. Shows success message and next steps
+
+**Interactive mode features:**
+
+- Visual multiselect UI powered by @clack/prompts
+- Pre-selects currently enabled adapters
+- Toggle any available adapter
+- Shows adapter descriptions and output paths
+- Cancel-safe (Ctrl+C exits cleanly)
+
+**Examples:**
+
+```bash
+# Enable a single adapter
+aligntrue adapters enable claude-md
+
+# Enable multiple adapters interactively
+aligntrue adapters enable --interactive
+
+# Already enabled (idempotent)
+aligntrue adapters enable cursor
+# Output: ✓ Adapter already enabled: cursor
+```
+
+**Example output:**
+
+```
+✓ Enabled adapter: claude-md
+
+Next step:
+  Run: aligntrue sync
+```
+
+**Exit codes:**
+
+- `0` - Success (or already enabled)
+- `1` - Adapter not found, config error, or invalid adapter
+
+---
+
+#### `aligntrue adapters disable`
+
+Disable an adapter by removing it from your config.
+
+**Usage:**
+
+```bash
+aligntrue adapters disable <adapter>
+```
+
+**Safety features:**
+
+- Cannot disable last adapter (at least one must be configured)
+- Validates adapter is currently enabled
+- Shows clear error messages with actionable fixes
+
+**Examples:**
+
+```bash
+# Disable an adapter
+aligntrue adapters disable claude-md
+
+# Cannot disable last adapter
+aligntrue adapters disable cursor
+# Error: Cannot disable last adapter
+#   At least one exporter must be configured
+#   Enable another adapter first: aligntrue adapters enable <adapter>
+
+# Not enabled
+aligntrue adapters disable nonexistent
+# Error: Adapter not enabled: nonexistent
+#   Run: aligntrue adapters list
+```
+
+**Example output:**
+
+```
+✓ Disabled adapter: claude-md
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Adapter not enabled, last adapter, or config error
+
+---
 
 ### `aligntrue md lint`
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { writeFileSync, mkdirSync, rmSync, existsSync } from 'fs'
+import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { loadConfig, validateConfig, applyDefaults, type AlignTrueConfig } from '../src/config/index.js'
+import { loadConfig, validateConfig, applyDefaults, saveConfig, type AlignTrueConfig } from '../src/config/index.js'
 
 const TEST_DIR = join(process.cwd(), 'temp-config-test')
 
@@ -727,6 +727,122 @@ scopes: []
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('empty')
     )
+  })
+})
+
+describe('Config Saving', () => {
+  it('saves config with atomic write', async () => {
+    const configPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      exporters: ['cursor', 'agents-md']
+    }
+    
+    await saveConfig(config, configPath)
+    
+    expect(existsSync(configPath)).toBe(true)
+    const content = readFileSync(configPath, 'utf-8')
+    expect(content).toContain('version')
+    expect(content).toContain('cursor')
+    expect(content).toContain('agents-md')
+  })
+
+  it('creates directory if not exists', async () => {
+    const configPath = join(TEST_DIR, 'nested', 'deep', 'config.yaml')
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      exporters: ['cursor']
+    }
+    
+    await saveConfig(config, configPath)
+    
+    expect(existsSync(configPath)).toBe(true)
+  })
+
+  it('overwrites existing config', async () => {
+    const configPath = join(TEST_DIR, 'config.yaml')
+    
+    // Write first config
+    const config1: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      exporters: ['cursor']
+    }
+    await saveConfig(config1, configPath)
+    
+    // Write second config
+    const config2: AlignTrueConfig = {
+      version: '1',
+      mode: 'team',
+      exporters: ['agents-md']
+    }
+    await saveConfig(config2, configPath)
+    
+    const content = readFileSync(configPath, 'utf-8')
+    expect(content).toContain('team')
+    expect(content).toContain('agents-md')
+    expect(content).not.toContain('cursor')
+  })
+
+  it('produces valid YAML', async () => {
+    const configPath = join(TEST_DIR, 'config.yaml')
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true
+      },
+      exporters: ['cursor', 'agents-md'],
+      sources: [
+        { type: 'local', path: '.aligntrue/rules.md' }
+      ]
+    }
+    
+    await saveConfig(config, configPath)
+    
+    // Should be able to load it back
+    const loaded = await loadConfig(configPath)
+    expect(loaded.mode).toBe('solo')
+    expect(loaded.exporters).toContain('cursor')
+    expect(loaded.exporters).toContain('agents-md')
+  })
+
+  it('uses default path if not specified', async () => {
+    const originalCwd = process.cwd()
+    process.chdir(TEST_DIR)
+    
+    try {
+      const config: AlignTrueConfig = {
+        version: '1',
+        mode: 'solo',
+        exporters: ['cursor']
+      }
+      
+      await saveConfig(config)
+      
+      const defaultPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+      expect(existsSync(defaultPath)).toBe(true)
+    } finally {
+      process.chdir(originalCwd)
+    }
+  })
+
+  it('cleans up temp file after successful write', async () => {
+    const configPath = join(TEST_DIR, 'config.yaml')
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      exporters: ['cursor']
+    }
+    
+    await saveConfig(config, configPath)
+    
+    const tempPath = `${configPath}.tmp`
+    expect(existsSync(tempPath)).toBe(false)
   })
 })
 

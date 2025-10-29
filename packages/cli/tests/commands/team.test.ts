@@ -14,6 +14,7 @@ vi.mock('fs', () => ({
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
   statSync: vi.fn(),
+  renameSync: vi.fn(),
 }))
 
 // Mock telemetry collector
@@ -167,16 +168,17 @@ describe('team command', () => {
       // Should create directory
       expect(fs.mkdirSync).toHaveBeenCalled()
       
-      // Should write files (temp first, then final)
+      // Should write to temp file
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writeCalls = vi.mocked(fs.writeFileSync).mock.calls
-      
-      // First call is temp file
       expect(writeCalls[0]?.[0]).toBe('.aligntrue/config.yaml.tmp')
+      expect(writeCalls[0]?.[1]).toContain('mode: team')
       
-      // Second call is final file
-      expect(writeCalls[1]?.[0]).toBe('.aligntrue/config.yaml')
-      expect(writeCalls[1]?.[1]).toContain('mode: team')
+      // Should rename atomically (temp → final)
+      expect(fs.renameSync).toHaveBeenCalledWith(
+        '.aligntrue/config.yaml.tmp',
+        '.aligntrue/config.yaml'
+      )
     })
 
     it('handles load config error', async () => {
