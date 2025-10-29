@@ -5,23 +5,38 @@
 import { loadConfig } from '@aligntrue/core'
 import { existsSync } from 'fs'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
+
+const ARG_DEFINITIONS: ArgDefinition[] = []
 
 export async function scopes(args: string[]): Promise<void> {
-  if (args.length > 0 && args[0] === '--help') {
-    console.log('Usage: aligntrue scopes\n')
-    console.log('List configured scopes from .aligntrue/config.yaml\n')
-    console.log('Scopes define path-based rule application in monorepos.')
-    console.log('Each scope can specify include/exclude patterns and rule overrides.\n')
-    console.log('Example output:')
-    console.log('  Scopes configured in .aligntrue/config.yaml:')
-    console.log('')
-    console.log('    packages/frontend')
-    console.log('      Include: *.ts, *.tsx')
-    console.log('      Exclude: **/*.test.ts')
-    console.log('')
-    console.log('    packages/backend')
-    console.log('      Include: *.ts')
-    console.log('      Exclude: **/*.spec.ts')
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help) {
+    showStandardHelp({
+      name: 'scopes',
+      description: 'List configured scopes from .aligntrue/config.yaml',
+      usage: 'aligntrue scopes',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue scopes',
+      ],
+      notes: [
+        'Scopes define path-based rule application in monorepos.',
+        'Each scope can specify include/exclude patterns and rule overrides.',
+        '',
+        'Example output:',
+        '  Scopes configured in .aligntrue/config.yaml:',
+        '',
+        '    packages/frontend',
+        '      Include: *.ts, *.tsx',
+        '      Exclude: **/*.test.ts',
+        '',
+        '    packages/backend',
+        '      Include: *.ts',
+        '      Exclude: **/*.spec.ts',
+      ],
+    })
     process.exit(0)
   }
 

@@ -8,21 +8,34 @@ import { stringify as stringifyYaml } from 'yaml'
 import * as clack from '@clack/prompts'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 import { tryLoadConfig } from '../utils/config-loader.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
+
+const ARG_DEFINITIONS: ArgDefinition[] = []
 
 export async function team(args: string[]): Promise<void> {
-  if (args.length === 0 || args[0] === '--help') {
-    console.log('Usage: aligntrue team <subcommand>\n')
-    console.log('Subcommands:')
-    console.log('  enable         Upgrade to team mode (enables lockfile + bundle)\n')
-    console.log('Team mode features:')
-    console.log('  - Lockfile generation for reproducibility')
-    console.log('  - Bundle generation for multi-source merging')
-    console.log('  - Drift detection with soft/strict validation')
-    console.log('  - Git-based collaboration workflows')
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help || parsed.positional.length === 0) {
+    showStandardHelp({
+      name: 'team',
+      description: 'Manage team mode for collaborative rule management',
+      usage: 'aligntrue team <subcommand>',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue team enable',
+      ],
+      notes: [
+        'Team mode features:',
+        '  - Lockfile generation for reproducibility',
+        '  - Bundle generation for multi-source merging',
+        '  - Drift detection with soft/strict validation',
+        '  - Git-based collaboration workflows',
+      ],
+    })
     process.exit(0)
   }
 
-  const subcommand = args[0]
+  const subcommand = parsed.positional[0]
 
   switch (subcommand) {
     case 'enable':

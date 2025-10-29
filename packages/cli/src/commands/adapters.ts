@@ -10,6 +10,7 @@ import { existsSync } from 'fs'
 import * as clack from '@clack/prompts'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 import { tryLoadConfig } from '../utils/config-loader.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 // Import AdapterManifest type from exporters package
 type AdapterManifest = {
@@ -37,32 +38,47 @@ if (__dirname.includes('/dist/')) {
   exportersPath = join(__dirname, '../../../exporters/src')
 }
 
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: '--interactive', alias: '-i', hasValue: false, description: 'Choose adapters with multiselect UI (enable only)' },
+]
+
 export async function adapters(args: string[]): Promise<void> {
-  if (args.length === 0 || args[0] === '--help') {
-    console.log('Usage: aligntrue adapters <subcommand>\n')
-    console.log('Subcommands:')
-    console.log('  list                      Show all available adapters')
-    console.log('  enable <adapter>          Enable an adapter in config')
-    console.log('  enable --interactive      Choose adapters with multiselect')
-    console.log('  disable <adapter>         Disable an adapter in config\n')
-    console.log('Adapter Status:')
-    console.log('  ✓ installed   - Enabled in config')
-    console.log('  - available   - Discovered but not enabled')
-    console.log('  ❌ invalid     - In config but not found')
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help || parsed.positional.length === 0) {
+    showStandardHelp({
+      name: 'adapters',
+      description: 'Manage exporter adapters for AI coding agents',
+      usage: 'aligntrue adapters <subcommand> [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue adapters list',
+        'aligntrue adapters enable cursor',
+        'aligntrue adapters enable --interactive',
+        'aligntrue adapters disable cursor',
+      ],
+      notes: [
+        'Adapter Status:',
+        '  ✓ installed   - Enabled in config',
+        '  - available   - Discovered but not enabled',
+        '  ❌ invalid     - In config but not found',
+      ],
+    })
     process.exit(0)
   }
 
-  const subcommand = args[0]
+  const subcommand = parsed.positional[0]
+  const subArgs = parsed.positional.slice(1)
 
   switch (subcommand) {
     case 'list':
       await listAdapters()
       break
     case 'enable':
-      await enableAdapters(args.slice(1))
+      await enableAdapters(subArgs, parsed.flags['interactive'] as boolean | undefined)
       break
     case 'disable':
-      await disableAdapter(args.slice(1))
+      await disableAdapter(subArgs)
       break
     default:
       console.error(`Unknown subcommand: ${subcommand}`)
@@ -199,8 +215,7 @@ async function listAdapters(): Promise<void> {
 /**
  * Enable adapter(s)
  */
-async function enableAdapters(args: string[]): Promise<void> {
-  const interactive = args.includes('--interactive') || args.includes('-i')
+async function enableAdapters(args: string[], interactive?: boolean): Promise<void> {
   const { adapters, config } = await discoverAndCategorize()
 
   let adaptersToEnable: string[] = []

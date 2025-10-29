@@ -7,7 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Phase 3 Implementation Plan** - Reorganized into efficient Plan Sessions (2025-10-29)
+  - Restructured from 46 granular steps into 10 cohesive Plan Sessions
+  - Optimized for Cursor Plan mode with Sonnet 4.5 Thinking + Sonnet 4.5 execution
+  - Plan Sessions range 15-29k tokens (sweet spot: 20-25k tokens)
+  - Grouped related work for better architectural coherence and testing
+  - **Stage 1: Team Core (Sessions 1-3, ~67k tokens)**
+    - Session 1: CLI Framework Migration (23k tokens) - All 8 commands at once
+    - Session 2: Allow List Foundation (25k tokens) - Schema through docs
+    - Session 3: Team Mode Polish (19k tokens) - UX, validation, lockfile prep
+  - **Stage 2: Git Workflows & Drift (Sessions 4-8, ~102k tokens)**
+    - Session 4: Pull Command Complete (25k tokens) - Core + flags + privacy + docs
+    - Session 5: Link Command Complete (17k tokens) - Vendoring workflows
+    - Session 6: Drift Detection System (27k tokens) - Command + logic + formatting
+    - Session 7: Severity Remapping (15k tokens) - Policy system with guardrails
+    - Session 8: Auto-Update Flow (18k tokens) - Detection + UPDATE_NOTES.md
+  - **Stage 3: Onboarding & Polish (Sessions 9-10, ~53k tokens)**
+    - Session 9: Onboarding System (24k tokens) - Command + integrations + plugs
+    - Session 10: Test Standardization & Polish (29k tokens) - Final production readiness
+  - Usage: "Do Phase 3, Plan Session X" where X is 1-10
+  - Benefits: Fewer context switches, better testing, natural feature boundaries
+  - Legacy 46-step breakdown preserved for detailed reference
+  - Files updated:
+    - .cursor/rules/phase3_implementation.mdc (major reorganization)
+
 ### Added
+
+- **Phase 3, Session 1: CLI Framework Migration** - Completed 2025-10-29
+  - Migrated 7 remaining CLI commands to shared command framework for consistency
+  - Commands migrated: adapters, team, telemetry, md, scopes, migrate, init
+  - All 13 commands now use `parseCommonArgs()` and `showStandardHelp()` utilities
+  - Comprehensive troubleshooting and pattern documentation in COMMAND-FRAMEWORK.md (~170 lines)
+  - Command pattern examples: simple, subcommands, interactive, complex
+  - Files modified: 7 command files (~280 lines), 2 test files (~5 lines)
+  - Test coverage: 219/219 CLI tests passing (100% pass rate, 1148/1149 total)
+  - Known limitations: md and migrate commands have no tests yet (planned for future sessions)
+  - Next: Plan Session 2 - Allow List Foundation
 
 - **Phase 2.5: Backup and Restore System** (Deferred Convenience Features) - Completed 2025-10-29
   - Created comprehensive backup/restore system for `.aligntrue/` directory
