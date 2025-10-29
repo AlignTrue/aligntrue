@@ -1,0 +1,7 @@
+set -e
+echo "🔍 Running pre-push checks..."
+pnpm typecheck
+pnpm test
+pnpm build
+echo "✅ All pre-push checks passed"
+
