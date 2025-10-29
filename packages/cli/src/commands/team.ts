@@ -40,6 +40,7 @@ export async function team(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue team enable",
+        "aligntrue team status",
         "aligntrue team approve base-global@aligntrue/catalog@v1.0.0",
         "aligntrue team list-allowed",
         "aligntrue team remove sha256:abc123...",
@@ -62,6 +63,9 @@ export async function team(args: string[]): Promise<void> {
     case "enable":
       await teamEnable();
       break;
+    case "status":
+      await teamStatus();
+      break;
     case "approve":
       await teamApprove(parsed.positional.slice(1));
       break;
@@ -75,6 +79,135 @@ export async function team(args: string[]): Promise<void> {
       console.error(`Unknown subcommand: ${subcommand}`);
       console.error("Run: aligntrue team --help");
       process.exit(1);
+  }
+}
+
+/**
+ * Show team mode status dashboard
+ */
+async function teamStatus(): Promise<void> {
+  const configPath = ".aligntrue/config.yaml";
+
+  // Check if config exists
+  if (!existsSync(configPath)) {
+    console.error("✗ Config file not found: .aligntrue/config.yaml");
+    console.error("  Run: aligntrue init");
+    process.exit(1);
+  }
+
+  try {
+    // Load config
+    const config = await tryLoadConfig(configPath);
+
+    // Check if in team mode
+    if (config.mode !== "team") {
+      console.log("Mode: solo");
+      console.log("\n💡 This project is in solo mode");
+      console.log("   To enable team features, run:");
+      console.log("   aligntrue team enable");
+      process.exit(0);
+    }
+
+    // Team mode - show full status
+    console.log("Team Mode Status");
+    console.log("================\n");
+
+    // Mode
+    console.log(`Mode: ${config.mode}`);
+
+    // Lockfile status
+    const lockfileEnabled = config.modules?.lockfile ?? false;
+    const lockfileMode = config.lockfile?.mode ?? "off";
+    if (lockfileEnabled) {
+      console.log(`Lockfile: ${lockfileMode}`);
+      const lockfilePath = ".aligntrue.lock.json";
+      const lockfileExists = existsSync(lockfilePath);
+      if (lockfileExists) {
+        console.log(`  File: ${lockfilePath} (exists)`);
+      } else {
+        console.log(`  File: ${lockfilePath} (not generated yet)`);
+        console.log("  💡 Run 'aligntrue sync' to generate");
+      }
+    } else {
+      console.log("Lockfile: disabled");
+      console.log("  💡 Enable in config: modules.lockfile: true");
+    }
+
+    // Allow list status
+    const allowListExists = existsSync(ALLOW_LIST_PATH);
+    if (allowListExists) {
+      try {
+        const allowList = parseAllowList(ALLOW_LIST_PATH);
+        const count = allowList.sources.length;
+        console.log(
+          `Allow List: ${count} source${count !== 1 ? "s" : ""} approved`,
+        );
+        console.log(`  File: ${ALLOW_LIST_PATH}`);
+      } catch (err) {
+        console.log("Allow List: exists but failed to parse");
+        console.log(
+          `  Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    } else {
+      console.log("Allow List: not configured");
+      console.log("  💡 Run 'aligntrue team approve <source>' to create");
+    }
+
+    // Drift status (placeholder for Session 6)
+    console.log("Drift Status: Run 'aligntrue drift' to check (Session 6)");
+
+    // Team members (placeholder - no git detection)
+    console.log("Team Members: (configure in .aligntrue/config.yaml)");
+
+    // Configuration section
+    console.log("\nConfiguration");
+    console.log("=============\n");
+    console.log(`Config: ${configPath}`);
+
+    if (lockfileEnabled) {
+      console.log("Lockfile: .aligntrue.lock.json");
+    }
+
+    if (allowListExists) {
+      console.log(`Allow List: ${ALLOW_LIST_PATH}`);
+    }
+
+    // Sources
+    if (config.sources && config.sources.length > 0) {
+      console.log(`\nSources: ${config.sources.length} configured`);
+      config.sources.forEach((source, idx) => {
+        const sourceStr =
+          source.type === "local"
+            ? `local:${source.path}`
+            : source.type === "git"
+              ? `git:${source.url}`
+              : source.type === "catalog"
+                ? `catalog:${source.id}@${source.version}`
+                : source.type;
+        console.log(`  ${idx + 1}. ${sourceStr}`);
+      });
+    }
+
+    // Exporters
+    if (config.exporters && config.exporters.length > 0) {
+      console.log(`\nExporters: ${config.exporters.length} configured`);
+      config.exporters.forEach((exporter) => {
+        console.log(`  - ${exporter}`);
+      });
+    }
+
+    // Record telemetry
+    recordEvent({ command_name: "team-status", align_hashes_used: [] });
+
+    process.exit(0);
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("process.exit")) {
+      throw err;
+    }
+    console.error("✗ Failed to get team status");
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
   }
 }
 
@@ -154,14 +287,21 @@ async function teamEnable(): Promise<void> {
 
     clack.outro("✓ Team mode enabled");
 
-    console.log("\nNext steps:");
+    console.log("\n📋 Next steps:");
     console.log("  1. Run: aligntrue sync");
-    console.log("  2. Lockfile will be generated automatically");
-    console.log("  3. Commit both config.yaml and .aligntrue.lock.json");
-    console.log("\nTeam members can now:");
-    console.log("  - Clone the repo and run aligntrue sync");
-    console.log("  - Get identical rule outputs (deterministic)");
-    console.log("  - Detect drift with lockfile validation");
+    console.log("     → Generates lockfile for reproducibility");
+    console.log("  2. Run: aligntrue team status");
+    console.log("     → Check team mode configuration");
+    console.log("  3. Commit files to version control:");
+    console.log("     - .aligntrue/config.yaml");
+    console.log("     - .aligntrue.lock.json");
+    console.log("\n👥 Team collaboration:");
+    console.log("  - Team members clone repo and run: aligntrue sync");
+    console.log("  - Lockfile ensures identical outputs (deterministic)");
+    console.log("  - Drift detection catches configuration divergence");
+    console.log(
+      "\n💡 Tip: Use 'aligntrue team approve' to create an allow list",
+    );
     process.exit(0);
   } catch (err) {
     // Re-throw process.exit errors (for testing)
