@@ -16,90 +16,75 @@ import { createHash } from 'node:crypto'
 import { loadConfigWithValidation } from '../utils/config-loader.js'
 import { exitWithError } from '../utils/error-formatter.js'
 import { CommonErrors as Errors } from '../utils/common-errors.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 /**
- * Parse command-line arguments for sync command
+ * Argument definitions for sync command
  */
-interface SyncArgs {
-  dryRun: boolean
-  acceptAgent?: string | undefined
-  force: boolean
-  config?: string | undefined
-  help: boolean
-}
-
-function parseArgs(args: string[]): SyncArgs {
-  const parsed: SyncArgs = {
-    dryRun: false,
-    force: false,
-    help: false,
-  }
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (arg === '--dry-run') {
-      parsed.dryRun = true
-    } else if (arg === '--force') {
-      parsed.force = true
-    } else if (arg === '--accept-agent') {
-      parsed.acceptAgent = args[++i]
-    } else if (arg === '--config') {
-      parsed.config = args[++i]
-    }
-  }
-
-  return parsed
-}
-
-/**
- * Show help text for sync command
- */
-function showHelp(): void {
-  console.log(`Usage: aligntrue sync [options]
-
-Sync rules from IR to configured agents (default direction)
-
-Basic Options:
-  --dry-run              Preview changes without writing files
-  --config <path>        Custom config file path (default: .aligntrue/config.yaml)
-
-Advanced Options:
-  --accept-agent <name>  Pull changes from agent back to IR (requires Step 17)
-  --force                Non-interactive mode (skip prompts)
-  --help, -h             Show this help message
-
-Examples:
-  aligntrue sync
-  aligntrue sync --dry-run
-  aligntrue sync --config custom/config.yaml
-
-Description:
-  Loads rules from .aligntrue/rules.md (or configured source), resolves scopes,
-  and syncs to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).
-
-  In team mode with lockfile enabled, validates lockfile before syncing.
-
-  Default direction: IR → agents (rules.md to agent config files)
-  Pullback direction: agents → IR (with --accept-agent flag)
-`)
-  process.exit(0)
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: '--dry-run',
+    hasValue: false,
+    description: 'Preview changes without writing files',
+  },
+  {
+    flag: '--config',
+    alias: '-c',
+    hasValue: true,
+    description: 'Custom config file path (default: .aligntrue/config.yaml)',
+  },
+  {
+    flag: '--accept-agent',
+    hasValue: true,
+    description: 'Pull changes from agent back to IR',
+  },
+  {
+    flag: '--force',
+    hasValue: false,
+    description: 'Non-interactive mode (skip prompts)',
+  },
+  {
+    flag: '--help',
+    alias: '-h',
+    hasValue: false,
+    description: 'Show this help message',
+  },
+]
 
 /**
  * Sync command implementation
  */
 export async function sync(args: string[]): Promise<void> {
-  const parsed = parseArgs(args)
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
   
   if (parsed.help) {
-    showHelp()
+    showStandardHelp({
+      name: 'sync',
+      description: 'Sync rules from IR to configured agents (default direction)',
+      usage: 'aligntrue sync [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue sync',
+        'aligntrue sync --dry-run',
+        'aligntrue sync --config custom/config.yaml',
+        'aligntrue sync --accept-agent cursor',
+      ],
+      notes: [
+        'Description:',
+        '  Loads rules from .aligntrue/rules.md (or configured source), resolves scopes,',
+        '  and syncs to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).',
+        '',
+        '  In team mode with lockfile enabled, validates lockfile before syncing.',
+        '',
+        '  Default direction: IR → agents (rules.md to agent config files)',
+        '  Pullback direction: agents → IR (with --accept-agent flag)',
+      ],
+    })
+    process.exit(0)
     return
   }
 
@@ -107,7 +92,7 @@ export async function sync(args: string[]): Promise<void> {
 
   const cwd = process.cwd()
   const paths = getAlignTruePaths(cwd)
-  const configPath = parsed.config || paths.config
+  const configPath = (parsed.flags['config'] as string | undefined) || paths.config
 
   // Step 1: Check if AlignTrue is initialized
   if (!existsSync(configPath)) {
@@ -135,8 +120,11 @@ export async function sync(args: string[]): Promise<void> {
   // Step 4: Auto-pull logic (solo mode)
   let shouldAutoPull = false
   let autoPullAgent: string | undefined
+  const acceptAgent = parsed.flags['accept-agent'] as string | undefined
+  const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
+  const force = parsed.flags['force'] as boolean | undefined || false
 
-  if (config.sync?.auto_pull && !parsed.acceptAgent) {
+  if (config.sync?.auto_pull && !acceptAgent) {
     // Auto-pull enabled and user didn't manually specify agent
     autoPullAgent = config.sync.primary_agent
     
@@ -156,8 +144,8 @@ export async function sync(args: string[]): Promise<void> {
   }
 
   // Step 5: Check for --accept-agent flag
-  if (parsed.acceptAgent) {
-    clack.log.info(`Manual import from: ${parsed.acceptAgent}`)
+  if (acceptAgent) {
+    clack.log.info(`Manual import from: ${acceptAgent}`)
   }
 
   // Step 5: Discover and load exporters
@@ -250,13 +238,13 @@ export async function sync(args: string[]): Promise<void> {
       acceptAgent?: string
     } = {
       configPath,
-      dryRun: parsed.dryRun,
-      force: parsed.force,
-      interactive: !parsed.force,
+      dryRun: dryRun,
+      force: force,
+      interactive: !force,
     }
     
-    if (parsed.acceptAgent !== undefined) {
-      syncOptions.acceptAgent = parsed.acceptAgent
+    if (acceptAgent !== undefined) {
+      syncOptions.acceptAgent = acceptAgent
     }
 
     let result
@@ -281,27 +269,27 @@ export async function sync(args: string[]): Promise<void> {
     }
     
     // Then: Execute requested sync operation
-    if (parsed.acceptAgent) {
+    if (acceptAgent) {
       // Manual agent → IR sync (pullback)
-      spinner.start(parsed.dryRun ? 'Previewing import' : `Importing from ${parsed.acceptAgent}`)
-      result = await engine.syncFromAgent(parsed.acceptAgent, absoluteSourcePath, syncOptions)
+      spinner.start(dryRun ? 'Previewing import' : `Importing from ${acceptAgent}`)
+      result = await engine.syncFromAgent(acceptAgent, absoluteSourcePath, syncOptions)
     } else {
       // IR → agents sync (default)
-      spinner.start(parsed.dryRun ? 'Previewing changes' : 'Syncing to agents')
+      spinner.start(dryRun ? 'Previewing changes' : 'Syncing to agents')
       result = await engine.syncToAgents(absoluteSourcePath, syncOptions)
     }
 
-    spinner.stop(parsed.dryRun ? 'Preview complete' : 'Sync complete')
+    spinner.stop(dryRun ? 'Preview complete' : 'Sync complete')
 
     // Step 7: Display results
     if (result.success) {
-      if (parsed.dryRun) {
+      if (dryRun) {
         clack.log.info('Dry-run mode: no files written')
       }
 
       // Show written files
       if (result.written && result.written.length > 0) {
-        clack.log.success(`${parsed.dryRun ? 'Would write' : 'Wrote'} ${result.written.length} file${result.written.length !== 1 ? 's' : ''}`)
+        clack.log.success(`${dryRun ? 'Would write' : 'Wrote'} ${result.written.length} file${result.written.length !== 1 ? 's' : ''}`)
         result.written.forEach(file => {
           clack.log.info(`  ${file}`)
         })
@@ -323,7 +311,7 @@ export async function sync(args: string[]): Promise<void> {
       }
 
       // Show audit trail in dry-run
-      if (parsed.dryRun && result.auditTrail && result.auditTrail.length > 0) {
+      if (dryRun && result.auditTrail && result.auditTrail.length > 0) {
         clack.log.info('\nAudit trail:')
         result.auditTrail.forEach(entry => {
           clack.log.info(`  [${entry.action}] ${entry.target}: ${entry.details}`)
@@ -331,7 +319,7 @@ export async function sync(args: string[]): Promise<void> {
       }
 
       // Show provenance in dry-run
-      if (parsed.dryRun && result.auditTrail) {
+      if (dryRun && result.auditTrail) {
         const provenanceEntries = result.auditTrail.filter(e => e.provenance && 
           (e.provenance.owner || e.provenance.source || e.provenance.source_sha))
         
@@ -366,7 +354,7 @@ export async function sync(args: string[]): Promise<void> {
         // Silently continue
       }
 
-      clack.outro(parsed.dryRun ? '✓ Preview complete' : '✓ Sync complete')
+      clack.outro(dryRun ? '✓ Preview complete' : '✓ Sync complete')
     } else {
       // Sync failed
       clack.log.error('Sync failed')

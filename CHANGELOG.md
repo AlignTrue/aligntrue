@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Stage 1.5c: CLI Command Framework** (Phase 2, Stage 1.5) - Completed 2025-10-29
+  - Created shared command utilities for consistent arg parsing and help display
+  - Refactored 5 core commands (sync, check, import, config, privacy)
+  - parseCommonArgs() extracts flags and positional args with type-safe handling
+  - showStandardHelp() displays consistent help format across all commands
+  - executeWithLifecycle() optional wrapper for intro/outro/telemetry
+  - Added optional test utilities (mockCommandArgs, expectStandardHelp, captureCommandOutput)
+  - 25 new utility tests (18 command-utilities + 7 test-helpers, 100% pass rate)
+  - Test count: 1082 → 1107 passing (+25 tests)
+  - Files created:
+    - packages/cli/src/utils/command-utilities.ts (~200 lines)
+    - packages/cli/tests/utils/command-test-helpers.ts (~150 lines)
+    - packages/cli/tests/utils/command-utilities.test.ts (18 tests, ~250 lines)
+    - packages/cli/tests/utils/command-test-helpers.test.ts (7 tests, ~120 lines)
+    - packages/cli/COMMAND-FRAMEWORK.md (~200 lines migration guide)
+  - Files modified:
+    - 5 command files (sync, check, import, config, privacy) - Standardized patterns
+    - packages/cli/README.md - Added Command Development section
+    - .cursor/rules/long_term.mdc - Added Phase 3 migration tasks
+  - Remaining commands (8): Migrate when touched in Phase 3 (adapters, team, telemetry, md, scopes, migrate, init)
+  - Foundation ready for Phase 3 command additions with consistent patterns
+
+- **Stage 1.5b: YAML Library Review** (Phase 2, Stage 1.5) - Completed 2025-10-29
+  - Analyzed YAML library usage across all packages (completed 2025-10-29)
+  - Documented architectural rationale for dual-library approach
+  - Created comprehensive YAML libraries documentation (docs/yaml-libraries.md)
+  - Updated package READMEs with YAML usage notes
+  - Decision: Keep both libraries - different use cases, zero risk, well documented
+  - Key findings:
+    - 'yaml' package: CLI and markdown-parser (8 files) - user-facing YAML operations
+    - 'js-yaml' package: core, exporters, schema (6 files) - internal operations
+    - No consolidation benefit: both stable, API differences matter, 1082 tests at risk
+  - Files created:
+    - docs/yaml-libraries.md (comprehensive rationale, ~200 lines)
+  - Files modified:
+    - packages/core/README.md - js-yaml usage note
+    - packages/markdown-parser/README.md - yaml usage note
+    - packages/cli/README.md - yaml usage note
+  - Test count: 1082/1082 passing (maintained 100% pass rate)
+  - Zero code changes: documentation-only, zero risk to stability
+
 - **Stage 1.5a: Path Utilities Extension** (Phase 2, Stage 1.5) - Completed 2025-10-29
   - Extended centralized path utilities to sources package providers
   - Replaced hardcoded cache paths with getCacheDir() helper for catalog and git providers
