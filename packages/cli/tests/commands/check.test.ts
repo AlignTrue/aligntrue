@@ -6,6 +6,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as fs from 'fs'
 
 // Mock modules before importing the command
+vi.mock('@clack/prompts')
+
 vi.mock('fs', () => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
@@ -31,6 +33,7 @@ vi.mock('@aligntrue/schema', () => ({
 const { check } = await import('../../src/commands/check.js')
 const core = await import('@aligntrue/core')
 const schema = await import('@aligntrue/schema')
+const clack = await import('@clack/prompts')
 
 describe('check command', () => {
   let exitSpy: ReturnType<typeof vi.spyOn>
@@ -41,6 +44,11 @@ describe('check command', () => {
     exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never)
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    
+    // Setup clack mocks
+    vi.mocked(clack.log).error = vi.fn()
+    vi.mocked(clack.log).success = vi.fn()
+    vi.mocked(clack.outro).mockImplementation(() => {})
     
     // Reset all mocks
     vi.resetAllMocks()
@@ -146,7 +154,7 @@ describe('check command', () => {
         // Expected: process.exit throws in tests
       }
       
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Rules file not found'))
+      expect(clack.log.error).toHaveBeenCalledWith('Rules file not found')
       expect(exitSpy).toHaveBeenCalledWith(2)
     })
 
@@ -162,7 +170,7 @@ describe('check command', () => {
         // Expected: process.exit throws in tests
       }
       
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to read rules file'))
+      expect(clack.log.error).toHaveBeenCalledWith('File write failed')
       expect(exitSpy).toHaveBeenCalledWith(2)
     })
 
@@ -204,7 +212,7 @@ describe('check command', () => {
         // Expected: process.exit throws in tests
       }
       
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Schema validation failed'))
+      expect(clack.log.error).toHaveBeenCalledWith('Validation failed')
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('spec_version'))
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('rules'))
       expect(exitSpy).toHaveBeenCalledWith(1)
