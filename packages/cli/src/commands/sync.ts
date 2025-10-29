@@ -13,6 +13,9 @@ import { fileURLToPath } from 'url'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 import { canonicalizeJson } from '@aligntrue/schema'
 import { createHash } from 'node:crypto'
+import { loadConfigWithValidation } from '../utils/config-loader.js'
+import { exitWithError } from '../utils/error-formatter.js'
+import { CommonErrors as Errors } from '../utils/common-errors.js'
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url)
@@ -107,43 +110,25 @@ export async function sync(args: string[]): Promise<void> {
 
   // Step 1: Check if AlignTrue is initialized
   if (!existsSync(configPath)) {
-    clack.outro(`✗ Config file not found
-
-What: ${configPath} does not exist
-Why: AlignTrue needs configuration to know which agents to sync
-Fix: Run 'aligntrue init' to create initial configuration`)
-    process.exit(1)
+    exitWithError(Errors.configNotFound(configPath), 2)
   }
 
-  // Step 2: Load config
+  // Step 2: Load config (with standardized error handling)
   const spinner = clack.spinner()
   spinner.start('Loading configuration')
 
-  let config: AlignTrueConfig
-  try {
-    const { loadConfig } = await import('@aligntrue/core')
-    config = await loadConfig(configPath)
-    spinner.stop('Configuration loaded')
-  } catch (error) {
-    spinner.stop('Configuration load failed')
-    clack.log.error(`Failed to load config: ${error instanceof Error ? error.message : String(error)}`)
-    clack.outro('✗ Sync failed')
-    process.exit(1)
-  }
+  const config: AlignTrueConfig = await loadConfigWithValidation(configPath)
+  spinner.stop('Configuration loaded')
 
   // Step 3: Validate source path
   const sourcePath = config.sources?.[0]?.path || '.aligntrue/rules.md'
   const absoluteSourcePath = resolve(cwd, sourcePath)
 
   if (!existsSync(absoluteSourcePath)) {
-    clack.outro(`✗ Source file not found
-
-What: ${sourcePath} does not exist
-Why: AlignTrue needs rules to sync to agents
-Fix: Create rules file or update sources in .aligntrue/config.yaml
-
-Expected path: ${absoluteSourcePath}`)
-    process.exit(1)
+    exitWithError({
+      ...Errors.rulesNotFound(sourcePath),
+      details: [`Expected path: ${absoluteSourcePath}`]
+    }, 2)
   }
 
   // Step 4: Auto-pull logic (solo mode)
@@ -217,9 +202,9 @@ Expected path: ${absoluteSourcePath}`)
     }
   } catch (error) {
     spinner.stop('Exporter loading failed')
-    clack.log.error(`Failed to load exporters: ${error instanceof Error ? error.message : String(error)}`)
-    clack.outro('✗ Sync failed')
-    process.exit(1)
+    exitWithError(Errors.syncFailed(
+      `Failed to load exporters: ${error instanceof Error ? error.message : String(error)}`
+    ))
   }
 
   // Step 5.5: Load and validate rule IDs in IR
@@ -235,22 +220,23 @@ Expected path: ${absoluteSourcePath}`)
       const validation = validateRuleId(rule.id)
       if (!validation.valid) {
         spinner.stop('Validation failed')
-        clack.log.error(`Invalid rule ID: ${rule.id}`)
-        clack.log.error(`  ${validation.error}`)
+        const details = [
+          `Invalid rule ID: ${rule.id}`,
+          `Error: ${validation.error}`
+        ]
         if (validation.suggestion) {
-          clack.log.info(`  ${validation.suggestion}`)
+          details.push(`Suggestion: ${validation.suggestion}`)
         }
-        clack.outro('✗ Sync failed')
-        process.exit(2)
+        exitWithError(Errors.validationFailed(details), 2)
       }
     }
     
     spinner.stop('Rules validated')
   } catch (error) {
     spinner.stop('Validation failed')
-    clack.log.error(`Failed to load or validate rules: ${error instanceof Error ? error.message : String(error)}`)
-    clack.outro('✗ Sync failed')
-    process.exit(1)
+    exitWithError(Errors.syncFailed(
+      `Failed to load or validate rules: ${error instanceof Error ? error.message : String(error)}`
+    ))
   }
 
   // Step 6: Execute sync (with auto-pull if enabled)

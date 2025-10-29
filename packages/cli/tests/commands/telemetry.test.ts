@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { telemetry } from '../../src/commands/telemetry.js'
 import * as fs from 'fs'
+import * as clack from '@clack/prompts'
 
 // Mock filesystem
 vi.mock('fs', () => ({
@@ -21,6 +22,9 @@ vi.mock('@aligntrue/core/telemetry/collector.js', () => ({
   recordEvent: vi.fn(),
 }))
 
+// Mock clack
+vi.mock('@clack/prompts')
+
 describe('telemetry command', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -30,6 +34,10 @@ describe('telemetry command', () => {
     vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
       throw new Error(`process.exit(${code})`)
     })
+    
+    // Setup clack mocks
+    vi.mocked(clack.log).error = vi.fn()
+    vi.mocked(clack.outro).mockImplementation(() => {})
   })
 
   describe('help', () => {
@@ -82,7 +90,7 @@ describe('telemetry command', () => {
       })
 
       await expect(telemetry(['on'])).rejects.toThrow('process.exit(1)')
-      expect(console.error).toHaveBeenCalledWith('✗ Failed to enable telemetry')
+      expect(clack.log.error).toHaveBeenCalledWith('Enable telemetry failed')
     })
   })
 
@@ -124,7 +132,7 @@ describe('telemetry command', () => {
       })
 
       await expect(telemetry(['off'])).rejects.toThrow('process.exit(1)')
-      expect(console.error).toHaveBeenCalledWith('✗ Failed to disable telemetry')
+      expect(clack.log.error).toHaveBeenCalledWith('Disable telemetry failed')
     })
   })
 
@@ -172,7 +180,7 @@ describe('telemetry command', () => {
       })
 
       await expect(telemetry(['status'])).rejects.toThrow('process.exit(1)')
-      expect(console.error).toHaveBeenCalledWith('✗ Failed to read telemetry status')
+      expect(clack.log.error).toHaveBeenCalledWith('Read telemetry status failed')
     })
   })
 

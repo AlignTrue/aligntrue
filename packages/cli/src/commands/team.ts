@@ -2,12 +2,12 @@
  * Team mode management commands
  */
 
-import { loadConfig } from '@aligntrue/core'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs'
 import { dirname } from 'path'
 import { stringify as stringifyYaml } from 'yaml'
 import * as clack from '@clack/prompts'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { tryLoadConfig } from '../utils/config-loader.js'
 
 export async function team(args: string[]): Promise<void> {
   if (args.length === 0 || args[0] === '--help') {
@@ -46,8 +46,8 @@ async function teamEnable(): Promise<void> {
   }
 
   try {
-    // Load current config
-    const config = await loadConfig(configPath)
+    // Load current config (with standardized error handling)
+    const config = await tryLoadConfig(configPath)
 
     // Check if already in team mode
     if (config.mode === 'team') {
