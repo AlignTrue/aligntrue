@@ -28,7 +28,7 @@ import {
   saveConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
-import { parseIR } from "@aligntrue/markdown-parser";
+import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
@@ -187,14 +187,8 @@ export async function pull(args: string[]): Promise<void> {
 
   // Record telemetry
   await recordEvent({
-    event: "command",
-    properties: {
-      command: "pull",
-      has_save: saveToConfig ?? false,
-      has_sync: runSync ?? false,
-      dry_run: dryRun ?? false,
-      offline: offline ?? false,
-    },
+    command_name: "pull",
+    align_hashes_used: [], // No specific hashes for pull command
   });
 
   try {
@@ -319,10 +313,11 @@ async function executePull(
     // Fetch rules
     const content = await provider.fetch(ref);
 
-    // Parse to count rules
-    const ir = parseIR(content);
-    const ruleCount = ir.rules?.length ?? 0;
-    const profileId = ir.profile?.id;
+    // Parse and build IR to count rules
+    const parseResult = parseMarkdown(content);
+    const irResult = buildIR(parseResult.blocks);
+    const ruleCount = irResult.document?.rules?.length ?? 0;
+    const profileId = irResult.document?.id;
 
     spinner.stop(`✓ Pulled ${ruleCount} rule${ruleCount === 1 ? "" : "s"}`);
 
@@ -330,7 +325,7 @@ async function executePull(
       url,
       ref,
       ruleCount,
-      profileId,
+      ...(profileId && { profileId }),
       cached: false, // GitProvider will log if using cache
       tempLocation: ".aligntrue/.cache/git",
     };
@@ -388,7 +383,7 @@ async function saveSourceToConfig(
   config.sources = sources;
 
   // Save config
-  await saveConfig(configPath, config);
+  await saveConfig(config, configPath);
 }
 
 /**
