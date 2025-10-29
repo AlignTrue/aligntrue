@@ -85,7 +85,14 @@ export class ExporterRegistry {
   async loadHandler(handlerPath: string): Promise<ExporterPlugin> {
     try {
       // Convert to absolute path and file URL for ESM import
-      const absolutePath = resolve(handlerPath)
+      let absolutePath = resolve(handlerPath)
+      
+      // If the path points to src/, replace with dist/ for built files
+      // This happens when manifests reference ./index.ts but runtime needs ./index.js from dist/
+      if (absolutePath.includes('/src/')) {
+        absolutePath = absolutePath.replace('/src/', '/dist/').replace(/\.ts$/, '.js')
+      }
+      
       const fileUrl = pathToFileURL(absolutePath).href
 
       const module = await import(fileUrl)

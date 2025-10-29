@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { loadConfig, validateConfig, applyDefaults, saveConfig, type AlignTrueConfig } from '../src/config/index.js'
+import { loadConfig, validateConfig, applyDefaults, saveConfig, getModeHints, type AlignTrueConfig } from '../src/config/index.js'
 
 const TEST_DIR = join(process.cwd(), 'temp-config-test')
 
@@ -843,6 +843,146 @@ describe('Config Saving', () => {
     
     const tempPath = `${configPath}.tmp`
     expect(existsSync(tempPath)).toBe(false)
+  })
+})
+
+describe('Export Config and Mode Hints', () => {
+  it('loads config with export.mode_hints section', async () => {
+    const configPath = writeConfig('config.yaml', `
+version: "1"
+mode: solo
+exporters:
+  - cursor
+  - agents-md
+export:
+  mode_hints:
+    default: metadata_only
+    overrides:
+      agents_md: hints
+      claude_md: off
+  max_hint_blocks: 15
+  max_hint_tokens: 1200
+`)
+    
+    const config = await loadConfig(configPath)
+    expect(config.export).toBeDefined()
+    expect(config.export?.mode_hints?.default).toBe('metadata_only')
+    expect(config.export?.mode_hints?.overrides).toEqual({
+      agents_md: 'hints',
+      claude_md: 'off'
+    })
+    expect(config.export?.max_hint_blocks).toBe(15)
+    expect(config.export?.max_hint_tokens).toBe(1200)
+  })
+
+  it('getModeHints returns default when no override exists', () => {
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      export: {
+        mode_hints: {
+          default: 'hints'
+        }
+      }
+    }
+    
+    expect(getModeHints('agents-md', config)).toBe('hints')
+    expect(getModeHints('claude-md', config)).toBe('hints')
+  })
+
+  it('getModeHints applies per-exporter overrides', () => {
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      export: {
+        mode_hints: {
+          default: 'metadata_only',
+          overrides: {
+            'agents-md': 'hints',
+            'claude-md': 'off'
+          }
+        }
+      }
+    }
+    
+    expect(getModeHints('agents-md', config)).toBe('hints')
+    expect(getModeHints('claude-md', config)).toBe('off')
+    expect(getModeHints('warp-md', config)).toBe('metadata_only')
+  })
+
+  it('getModeHints forces native for cursor exporter', () => {
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      export: {
+        mode_hints: {
+          default: 'hints',
+          overrides: {
+            'cursor': 'off'  // Should be ignored
+          }
+        }
+      }
+    }
+    
+    expect(getModeHints('cursor', config)).toBe('native')
+  })
+
+  it('getModeHints forces native for yaml exporter', () => {
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo',
+      export: {
+        mode_hints: {
+          default: 'hints',
+          overrides: {
+            'yaml': 'metadata_only'  // Should be ignored
+          }
+        }
+      }
+    }
+    
+    expect(getModeHints('yaml', config)).toBe('native')
+  })
+
+  it('getModeHints defaults to metadata_only when no export config', () => {
+    const config: AlignTrueConfig = {
+      version: '1',
+      mode: 'solo'
+    }
+    
+    expect(getModeHints('agents-md', config)).toBe('metadata_only')
+    expect(getModeHints('claude-md', config)).toBe('metadata_only')
+  })
+
+  it('config preserves unknown fields in export section (pre-1.0)', async () => {
+    const configPath = writeConfig('config.yaml', `
+version: "1"
+mode: solo
+exporters:
+  - cursor
+export:
+  mode_hints:
+    default: hints
+  future_feature: some_value
+`)
+    
+    // Should load without error (unknown fields warned but not rejected)
+    const config = await loadConfig(configPath)
+    expect(config.export?.mode_hints?.default).toBe('hints')
+  })
+
+  it('config validates export.mode_hints enum values', async () => {
+    const configPath = writeConfig('config.yaml', `
+version: "1"
+mode: solo
+exporters:
+  - cursor
+export:
+  mode_hints:
+    default: invalid_mode
+`)
+    
+    await expect(loadConfig(configPath)).rejects.toThrow()
   })
 })
 
