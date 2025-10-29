@@ -188,6 +188,8 @@ sources:
 - **First-time consent:** Same consent flow as catalog
 - Clear disclosure of external repository URL
 
+See [Git Sources Guide](git-sources.md) for full documentation on configuration, caching, and troubleshooting.
+
 #### Telemetry sending (Phase 2+)
 - Separate opt-in required (beyond enabling telemetry)
 - Explicit consent with clear disclosure
