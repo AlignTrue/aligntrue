@@ -12,6 +12,10 @@ import { AtomicFileWriter } from '@aligntrue/file-utils'
 export class CursorExporter implements ExporterPlugin {
   name = 'cursor'
   version = '1.0.0'
+
+  // NOTE: Cursor always uses native frontmatter format (modeHints='native')
+  // This ensures round-trip fidelity for vendor.cursor fields
+  // The mode_hints config is intentionally ignored for this exporter
   
   async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
     const { scope, rules } = request
@@ -21,6 +25,10 @@ export class CursorExporter implements ExporterPlugin {
     if (!rules || rules.length === 0) {
       throw new Error('CursorExporter requires at least one rule to export')
     }
+
+    // Cursor always uses native frontmatter format, ignore config
+    // This preserves round-trip fidelity for vendor.cursor fields
+    const modeHints = 'native' // Force native, ignore config
 
     // Compute scope-specific filename
     const filename = this.getScopeFilename(scope)
@@ -106,17 +114,17 @@ export class CursorExporter implements ExporterPlugin {
       }
     }
 
-    // Export globs for any mode when applies_to has specific patterns (not just default **/*)
-    // Globs define "where" rules apply (filter), mode defines "when" they trigger
-    const hasSpecificGlobs = firstRule.applies_to && 
-      firstRule.applies_to.length > 0 && 
-      !(firstRule.applies_to.length === 1 && firstRule.applies_to[0] === '**/*')
-
-    if (hasSpecificGlobs) {
-      lines.push('globs:')
-      firstRule.applies_to.forEach(pattern => {
-        lines.push(`  - "${pattern}"`)
-      })
+    // Always prefer vendor.cursor.globs for byte-identical round-trips
+    const globs = firstRule.vendor?.['cursor']?.globs || firstRule.applies_to
+    if (globs && globs.length > 0) {
+      // Only export if non-default pattern
+      const hasSpecificGlobs = !(globs.length === 1 && globs[0] === '**/*')
+      if (hasSpecificGlobs) {
+        lines.push(`globs:`)
+        globs.forEach((glob: string) => {
+          lines.push(`  - "${glob}"`)
+        })
+      }
     }
 
     // Export title and tags if present
