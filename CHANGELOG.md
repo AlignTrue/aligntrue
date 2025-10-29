@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Git Source Provider** (Phase 2, Stage 1, Step 4) - Completed 2025-10-28
+  - Pull rules from any git repository (GitHub, GitLab, self-hosted)
+  - Local cache: `.aligntrue/.cache/git/<repo-hash>/` with indefinite TTL
+  - Shallow clone strategy (--depth 1) for speed and space efficiency
+  - Support for https and ssh URLs, branch/tag/commit refs
+  - Security: URL validation, file:// protocol rejection, path traversal prevention
+  - Force refresh option to bypass cache manually
+  - Offline fallback: uses cache when network unavailable
+  - Atomic cache updates: preserves old cache on network failure
+  - Privacy consent TODOs added for Step 10 implementation
+  - 33 comprehensive tests (URL validation, clone ops, cache, file extraction, edge cases)
+  - simple-git library integration (~3.28.0)
+  - Config: `type: git, url: "https://...", ref: "main", path: ".aligntrue.yaml"`
+  - Files created:
+    - `packages/sources/src/providers/git.ts` (447 lines)
+    - `packages/sources/tests/git-provider.test.ts` (748 lines, 33 tests)
+  - Updated: sources README with git section, core README examples, provider factory
+  - Test count: 903/903 passing (870 Phase 1+2 base + 33 new git tests, 100% pass rate)
+
 - **Import Coverage Report Command** (Phase 2, Stage 1, Step 3) - Completed 2025-10-28
   - New `aligntrue import <agent> --coverage` command for import analysis
   - Field-level mapping report: shows IR fields ← agent format sources
@@ -25,6 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `packages/markdown-parser/tests/coverage.test.ts` - Coverage tests (15 tests)
     - `packages/cli/tests/commands/import.test.ts` - Command tests (11 tests)
   - Integration with existing parsers from Steps 1-2 (Phase 1)
+
+- **Full npm release complete** - Shim package `aligntrue` published following 24-hour restriction removal
+  - Enables `npm install -g aligntrue@next` and `npm install -g @aligntrue/cli@next`
+  - Simple install experience now fully operational
+  - All packages published: `@aligntrue/cli`, `@aligntrue/core`, `@aligntrue/schema`, `@aligntrue/exporters`, `@aligntrue/sources`, `@aligntrue/markdown-parser`, `@aligntrue/checks`, `@aligntrue/testkit`, `aligntrue` (shim)
 
 ### Changed
 

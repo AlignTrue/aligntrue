@@ -4,6 +4,17 @@
 
 export type SourceType = 'local' | 'catalog' | 'git' | 'url';
 
+/**
+ * Git-specific configuration
+ */
+export interface GitSourceConfig extends SourceConfig {
+  type: 'git';
+  url: string;              // https:// or git@github.com: format
+  ref?: string;             // branch/tag/commit (default: 'main')
+  path?: string;            // path to .aligntrue.yaml in repo (default: '.aligntrue.yaml')
+  forceRefresh?: boolean;   // bypass cache
+}
+
 export interface SourceProvider {
   type: SourceType;
   fetch(ref: string): Promise<string>;
@@ -32,6 +43,11 @@ export interface CatalogSourceConfig extends SourceConfig {
 export const CATALOG_CACHE_DIR = '.aligntrue/.cache/catalog';
 
 /**
+ * Constants for git provider
+ */
+export const GIT_CACHE_DIR = '.aligntrue/.cache/git';
+
+/**
  * Create a source provider based on configuration
  */
 export function createProvider(config: SourceConfig): SourceProvider {
@@ -56,7 +72,14 @@ export function createProvider(config: SourceConfig): SourceProvider {
       });
     }
 
-    case 'git':
+    case 'git': {
+      if (!config.url) {
+        throw new Error('Git source requires "url" field (e.g., "https://github.com/org/rules-repo")');
+      }
+      const { GitProvider } = require('./git.js');
+      return new GitProvider(config as GitSourceConfig, GIT_CACHE_DIR);
+    }
+
     case 'url':
       throw new Error(`Source type "${config.type}" not yet implemented (Phase 2+)`);
 
@@ -65,3 +88,9 @@ export function createProvider(config: SourceConfig): SourceProvider {
   }
 }
 
+// Re-export provider implementations for direct use
+export { CatalogProvider } from './catalog.js';
+export type { CatalogIndex, CatalogEntry, CatalogProviderOptions } from './catalog.js';
+export { GitProvider } from './git.js';
+export type { GitProviderOptions } from './git.js';
+export { LocalProvider } from './local.js';

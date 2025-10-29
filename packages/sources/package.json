@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/schema": "workspace:*"
+    "@aligntrue/schema": "workspace:*",
+    "simple-git": "^3.25.0"
   },
   "devDependencies": {
     "@types/node": "^24",
