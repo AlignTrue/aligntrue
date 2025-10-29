@@ -14,12 +14,13 @@
  * - Clear error messages when consent denied
  */
 
-import { readFileSync, existsSync, mkdirSync, rmSync } from 'fs'
+import { readFileSync, existsSync, mkdirSync, rmSync, statSync } from 'fs'
 import { join, dirname } from 'path'
 import { createHash } from 'crypto'
 import simpleGit, { SimpleGit, GitError } from 'simple-git'
 import type { SourceProvider } from './index.js'
 import type { ConsentManager } from '@aligntrue/core'
+import { checkFileSize, createIgnoreFilter } from '@aligntrue/core/performance'
 
 /**
  * Git source configuration
@@ -59,17 +60,29 @@ export class GitProvider implements SourceProvider {
   private repoDir: string
   private offlineMode: boolean
   private consentManager?: ConsentManager
+  private mode: 'solo' | 'team' | 'enterprise'
+  private maxFileSizeMb: number
+  private force: boolean
 
   constructor(
     config: GitSourceConfig, 
     baseCacheDir: string = '.aligntrue/.cache/git',
-    options?: { offlineMode?: boolean; consentManager?: ConsentManager }
+    options?: { 
+      offlineMode?: boolean; 
+      consentManager?: ConsentManager;
+      mode?: 'solo' | 'team' | 'enterprise';
+      maxFileSizeMb?: number;
+      force?: boolean;
+    }
   ) {
     this.url = config.url
     this.ref = config.ref ?? 'main'
     this.path = config.path ?? '.aligntrue.yaml'
     this.forceRefresh = config.forceRefresh ?? false
     this.offlineMode = options?.offlineMode ?? false
+    this.mode = options?.mode ?? 'solo'
+    this.maxFileSizeMb = options?.maxFileSizeMb ?? 10
+    this.force = options?.force ?? false
     if (options?.consentManager !== undefined) {
       this.consentManager = options.consentManager
     }
@@ -328,6 +341,10 @@ export class GitProvider implements SourceProvider {
 
   /**
    * Read rules file from cloned repository
+   * 
+   * Performance guardrails:
+   * - Checks file size against limits before reading
+   * - Respects .gitignore (documentation only - we read one specific file)
    */
   private readRulesFile(): string {
     const filePath = join(this.repoDir, this.path)
@@ -341,6 +358,23 @@ export class GitProvider implements SourceProvider {
         `  Tip: Check that the repository contains this file at the specified path.`
       )
     }
+
+    // Check .gitignore (documentation/future-proofing - currently we only read one specific file)
+    const gitignorePath = join(this.repoDir, '.gitignore')
+    if (existsSync(gitignorePath)) {
+      const ignoreFilter = createIgnoreFilter(gitignorePath)
+      if (ignoreFilter(this.path)) {
+        console.warn(
+          `⚠️  Warning: Rules file is in .gitignore\n` +
+          `  URL: ${this.url}\n` +
+          `  Path: ${this.path}\n` +
+          `  This may indicate a configuration issue.`
+        )
+      }
+    }
+
+    // Check file size before reading (performance guardrail)
+    checkFileSize(filePath, this.maxFileSizeMb, this.mode, this.force)
 
     try {
       const content = readFileSync(filePath, 'utf-8')
