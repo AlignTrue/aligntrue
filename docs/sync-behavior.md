@@ -1,4 +1,4 @@
-# Sync Behavior
+# Sync behavior
 
 Complete reference for AlignTrue's two-way sync system, conflict resolution, and precedence rules.
 
@@ -12,9 +12,9 @@ AlignTrue synchronizes rules between three locations:
 
 The sync engine maintains consistency while allowing both IR→agent and agent→IR flows.
 
-## Sync Directions
+## Sync directions
 
-### IR → Agent (Default)
+### IR → Agent (default)
 
 **When:** Every `aligntrue sync` command (default direction)
 
@@ -63,7 +63,7 @@ aligntrue sync --force
 
 ---
 
-### Agent → IR (Pullback)
+### Agent → IR (pullback)
 
 **When:** 
 - **Solo mode (auto-pull):** Automatically before every `aligntrue sync` (default)
@@ -146,9 +146,9 @@ aligntrue sync --accept-agent agents-md
 
 ---
 
-## Precedence Rules
+## Precedence rules
 
-### IR Wins by Default
+### IR wins by default
 
 **.aligntrue/rules.md is the authoritative source.**
 
@@ -163,7 +163,7 @@ If you edit both IR and agent files:
 2. Run `aligntrue sync`
 3. Agent files updated automatically
 
-### Explicit Pullback Required
+### Explicit pullback required
 
 To pull changes from agent files back to IR:
 
@@ -174,7 +174,7 @@ aligntrue sync --accept-agent cursor
 
 Without `--accept-agent`, IR always wins.
 
-### Conflict Detection
+### Conflict detection
 
 Conflicts detected when:
 
@@ -193,9 +193,9 @@ Conflict in rule 'my-project.backend.use-typescript':
 
 ---
 
-## Conflict Resolution
+## Conflict resolution
 
-### Interactive Mode (Default)
+### Interactive mode (default)
 
 When conflicts detected, you'll see:
 
@@ -221,7 +221,7 @@ Choice:
 - `d` - Show complete diff of rule
 - `q` - Abort sync, no changes written
 
-### Batch Mode
+### Batch mode
 
 Apply same resolution to all conflicts in a rule:
 
@@ -239,7 +239,7 @@ Choice:
 
 Saves time when you trust one source completely.
 
-### Non-Interactive Mode
+### Non-interactive mode
 
 For CI or scripting, use default strategy:
 
@@ -253,7 +253,7 @@ aligntrue sync --accept-agent cursor --force
 
 No prompts, uses default resolution strategy.
 
-### Manual Edit Detection
+### Manual edit detection
 
 If sync detects manual edits to generated files:
 
@@ -280,9 +280,9 @@ Choice:
 
 ---
 
-## Scope Behavior
+## Scope behavior
 
-### Per-Scope Exports
+### Per-scope exports
 
 Some exporters create one file per scope:
 
@@ -309,7 +309,7 @@ Some exporters create one file per scope:
 
 ---
 
-### Merged Exports
+### Merged exports
 
 Other exporters merge all scopes into one file:
 
@@ -342,7 +342,7 @@ Use TypeScript strict mode in all files.
 
 ---
 
-### Scope Merge Order
+### Scope merge order
 
 When rules overlap across scopes, merge order determines precedence:
 
@@ -384,7 +384,7 @@ severity: error  # apps/web override wins
 
 ---
 
-## Dry Run Mode
+## Dry run mode
 
 Preview changes without writing files:
 
@@ -430,11 +430,11 @@ Conflicts: None
 
 ---
 
-## Git Integration
+## Git integration
 
 AlignTrue can automatically manage git operations for generated files.
 
-### Three Modes
+### Three modes
 
 **1. Ignore Mode (Default)**
 
@@ -502,7 +502,7 @@ aligntrue sync
 
 ---
 
-### Per-Adapter Override
+### Per-adapter override
 
 Override git mode for specific exporters:
 
@@ -550,11 +550,11 @@ AGENTS.md
 
 ---
 
-## Lockfile Behavior (Team Mode)
+## Lockfile behavior (team mode)
 
 When team mode enabled (`mode: team` in config):
 
-### Validation Before Sync
+### Validation before sync
 
 Lockfile validated before syncing:
 
@@ -588,7 +588,7 @@ lockfile:
 
 ---
 
-### Regeneration After Sync
+### Regeneration after sync
 
 Lockfile regenerated after successful sync (team mode only):
 
@@ -630,7 +630,7 @@ aligntrue sync
 
 ---
 
-### Drift Detection
+### Drift detection
 
 Lockfile drift occurs when:
 
@@ -679,9 +679,9 @@ aligntrue sync
 
 ---
 
-## Performance Considerations
+## Performance considerations
 
-### File Operations
+### File operations
 
 AlignTrue optimizes sync performance:
 
@@ -690,7 +690,7 @@ AlignTrue optimizes sync performance:
 - **Caching** - Reuses parsed IR across exporters
 - **Parallel exports** - Multiple exporters run concurrently
 
-### Large Repositories
+### Large repositories
 
 For monorepos with many scopes:
 
@@ -709,7 +709,7 @@ scopes:
 - Limit scope depth with specific paths
 - Enable only needed exporters
 
-### CI Optimization
+### CI optimization
 
 ```bash
 # Fast validation (no file writes)
@@ -782,7 +782,7 @@ Volatile fields won't cause lockfile drift.
 
 ---
 
-## See Also
+## See also
 
 - [Command Reference](commands.md) - Detailed flag documentation
 - [Troubleshooting](troubleshooting.md) - Common sync issues

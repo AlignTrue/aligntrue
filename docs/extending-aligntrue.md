@@ -10,7 +10,7 @@ AlignTrue supports 28+ AI coding agents through a hybrid manifest system. Adding
 2. (Optional) A TypeScript handler for custom export logic
 3. Tests validating the output format
 
-### When to Create a New Exporter
+### When to create a new exporter
 
 **Create a new exporter when:**
 
@@ -23,7 +23,7 @@ AlignTrue supports 28+ AI coding agents through a hybrid manifest system. Adding
 - The agent reads `AGENTS.md` (works for 11+ agents)
 - The agent follows a standard config format you can adapt
 
-### Exporter Types
+### Exporter types
 
 AlignTrue supports three main patterns:
 
@@ -32,9 +32,9 @@ AlignTrue supports three main patterns:
 3. **Config file** - `.vscode/mcp.json`, `.crush.json`
 4. **Dual output** - Rules file + config file (e.g., Cursor + MCP)
 
-## Quick Start
+## Quick start
 
-### 1. Create Manifest
+### 1. Create manifest
 
 Create `packages/exporters/src/<agent-name>/manifest.json`:
 
@@ -68,7 +68,7 @@ Create `packages/exporters/src/<agent-name>/manifest.json`:
 - `author` - Your name and email
 - `schema` - JSON Schema for exporter-specific config
 
-### 2. Implement Handler
+### 2. Implement handler
 
 Create `packages/exporters/src/<agent-name>/index.ts`:
 
@@ -153,7 +153,7 @@ export default function createExporter(): ExporterPlugin {
 - `ScopedExportRequest` - Input containing scope, rules, config
 - `ExportResult` - Output with files written, warnings, fidelity notes
 
-### 3. Add Tests
+### 3. Add tests
 
 Create `packages/exporters/tests/<agent-name>.test.ts`:
 
@@ -229,9 +229,9 @@ describe('MyAgentExporter', () => {
 - Vendor metadata extraction
 - Snapshot tests for format validation
 
-## Exporter Patterns
+## Exporter patterns
 
-### Pattern 1: Single File at Root
+### Pattern 1: Single file at root
 
 Used by: `AGENTS.md`, `CLAUDE.md`, `CRUSH.md`
 
@@ -265,7 +265,7 @@ Enable strict mode in tsconfig.json.
 
 ---
 
-### Pattern 2: Directory-Based
+### Pattern 2: Directory-based
 
 Used by: Cursor (`.cursor/rules/*.mdc`), AugmentCode (`.augment/rules/*.md`)
 
@@ -294,7 +294,7 @@ Used by: Cursor (`.cursor/rules/*.mdc`), AugmentCode (`.augment/rules/*.md`)
 
 ---
 
-### Pattern 3: Config File
+### Pattern 3: Config file
 
 Used by: VS Code MCP (`.vscode/mcp.json`), Windsurf (`.windsurf/mcp_config.json`)
 
@@ -329,7 +329,7 @@ Used by: VS Code MCP (`.vscode/mcp.json`), Windsurf (`.windsurf/mcp_config.json`
 
 ---
 
-### Pattern 4: Dual Output
+### Pattern 4: Dual output
 
 Used by: Agents requiring both rules + config (e.g., Cursor + MCP)
 
@@ -353,9 +353,9 @@ return {
 
 **See:** `packages/exporters/docs/DUAL_OUTPUT_CONFIGURATION.md`
 
-## Vendor Metadata
+## Vendor metadata
 
-### Extracting Agent-Specific Fields
+### Extracting agent-specific fields
 
 Rules can include agent-specific metadata in `vendor.<agent>` namespace:
 
@@ -378,7 +378,7 @@ private extractVendorMetadata(rule: AlignRule): Record<string, unknown> {
 }
 ```
 
-### Vendor.volatile Exclusion
+### Vendor.volatile exclusion
 
 Fields marked volatile are excluded from hashing:
 
@@ -393,9 +393,9 @@ vendor:
 
 Don't rely on volatile fields for deterministic output.
 
-## Fidelity Tracking
+## Fidelity tracking
 
-### When to Report Fidelity Notes
+### When to report fidelity notes
 
 Report when you cannot fully represent a field:
 
@@ -421,16 +421,16 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
 }
 ```
 
-### Common Fidelity Issues
+### Common fidelity issues
 
 - **Machine checks** - `check` field not mappable
 - **Autofix hints** - `autofix` field not supported
 - **Vendor metadata** - Other agent metadata preserved but not used
 - **Severity mapping** - Agent uses different severity levels
 
-## Testing Requirements
+## Testing requirements
 
-### Minimum Test Coverage
+### Minimum test coverage
 
 1. **Basic export** - Single rule, multiple rules
 2. **Dry-run mode** - No files written when `dryRun: true`
@@ -438,7 +438,7 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
 4. **Fidelity tracking** - Unsupported fields reported in notes
 5. **Format validation** - Output matches expected format (snapshot tests)
 
-### Snapshot Tests
+### Snapshot tests
 
 Use Vitest snapshots to validate output format:
 
@@ -458,7 +458,7 @@ it('generates expected format', async () => {
 
 First run generates snapshot, subsequent runs validate against it.
 
-### Test Fixtures
+### Test fixtures
 
 Create reusable fixtures in `tests/fixtures/<agent-name>/`:
 
@@ -472,16 +472,16 @@ export const singleRule: AlignRule = {
 };
 ```
 
-## Contribution Process
+## Contribution process
 
-### 1. Check Existing Exporters
+### 1. Check existing exporters
 
 Before creating a new exporter, check if your agent can use:
 
 - `agents-md` - Universal AGENTS.md format (11+ agents)
 - `root-mcp` - MCP config at root (Claude Code, Aider)
 
-### 2. Follow Technical Guide
+### 2. Follow technical guide
 
 See `packages/exporters/CONTRIBUTING.md` for:
 
@@ -490,7 +490,7 @@ See `packages/exporters/CONTRIBUTING.md` for:
 - Build and test commands
 - PR requirements
 
-### 3. Submit Pull Request
+### 3. Submit pull request
 
 **PR checklist:**
 
@@ -511,7 +511,7 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 
 ## References
 
-### Example Exporters
+### Example exporters
 
 **Simple (good starting points):**
 
