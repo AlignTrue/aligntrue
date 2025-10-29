@@ -8,6 +8,7 @@ import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, 
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { extractModeConfig, applyRulePrioritization } from '../utils/index.js'
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>
@@ -23,7 +24,7 @@ export class FirebenderExporter implements ExporterPlugin {
 
   async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
     const { scope, rules } = request
-    const { outputDir, dryRun = false } = options
+    const { outputDir, dryRun = false, config } = options
 
     if (!rules || rules.length === 0) {
       return {
@@ -39,12 +40,14 @@ export class FirebenderExporter implements ExporterPlugin {
     })
 
     const outputPath = join(outputDir, 'firebender.json')
-    const content = this.generateFirebenderJsonContent()
-    
+
+    const { maxBlocks, maxTokens } = extractModeConfig(this.name, config)
+    const { content, warnings } = this.generateFirebenderJsonContent(maxBlocks, maxTokens)
+
     const allRulesIR = this.state.allRules.map(({ rule }) => rule)
     const irContent = JSON.stringify({ rules: allRulesIR })
     const contentHash = computeHash(canonicalizeJson(irContent))
-    
+
     const fidelityNotes = this.computeFidelityNotes(allRulesIR)
     
     if (!dryRun) {
@@ -60,6 +63,10 @@ export class FirebenderExporter implements ExporterPlugin {
 
     if (fidelityNotes.length > 0) {
       result.fidelityNotes = fidelityNotes
+    }
+
+    if (warnings.length > 0) {
+      result.warnings = warnings
     }
 
     return result
@@ -78,14 +85,24 @@ export class FirebenderExporter implements ExporterPlugin {
     return scope.path
   }
 
-  private generateFirebenderJsonContent(): string {
-    const rules = this.state.allRules.map(({ rule, scopePath }) => ({
-      id: rule.id,
-      severity: rule.severity,
-      scope: scopePath,
-      guidance: rule.guidance || '',
-      applies_to: rule.applies_to || [],
-    }))
+  private generateFirebenderJsonContent(maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
+    // Apply prioritization before mapping rules
+    const allRules = this.state.allRules.map(({ rule }) => rule)
+    const { includedIds, warnings } = applyRulePrioritization(allRules, 'metadata_only', maxBlocks, maxTokens)
+
+    const rules = this.state.allRules
+      .filter(({ rule }) => includedIds.has(rule.id))
+      .map(({ rule, scopePath }) => ({
+        id: rule.id,
+        severity: rule.severity,
+        scope: scopePath,
+        guidance: rule.guidance || '',
+        applies_to: rule.applies_to || [],
+        // Add mode fields to JSON objects for structured formats
+        ...(rule.mode && { mode: rule.mode }),
+        ...(rule.description && { description: rule.description }),
+        ...(rule.tags?.length && { tags: rule.tags }),
+      }))
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule)
     const irContent = JSON.stringify({ rules: allRulesIR })
@@ -100,7 +117,10 @@ export class FirebenderExporter implements ExporterPlugin {
       fidelity_notes: fidelityNotes.length > 0 ? fidelityNotes : undefined,
     }
 
-    return JSON.stringify(output, null, 2)
+    return {
+      content: JSON.stringify(output, null, 2),
+      warnings
+    }
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
