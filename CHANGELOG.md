@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 2: Allow List Foundation** - Completed 2025-10-29
+  - `.aligntrue/allow.yaml` for team-approved rule sources with `id@profile@version` or `sha256:...` formats
+  - Git-based source resolution architecture (Phase 3: prep, Phase 4: catalog+git)
+  - CLI: `aligntrue team approve/list-allowed/remove` with interactive prompts
+  - Sync validates against allow list in team mode; `--force` bypasses with warning
+  - Comprehensive team-mode.md guide (~300 lines), updated commands.md and quickstart.md
+  - 179 new tests: 38 core allow.test.ts + 15 CLI team.test.ts + 5 CLI sync.test.ts + integration
+  - Test count: 1149 → 1328 passing (+179 tests, 100% pass rate)
+  - Files created: core/src/team/\* (types, allow, tests), docs/team-mode.md
+  - Files modified: team.ts (+220 lines), sync.ts (+50 lines), core package.json (team/allow.js export)
+  - Clear error messages with recovery suggestions; validation only in team mode
+
+### Changed
+
+- **Internal documentation cleanup** (2025-10-29)
+  - Archived 41 completed phase tracking files to `.internal_docs/archive/`
+  - Deleted 12 temporary tracking files (per `dev_docs.mdc` principles)
+  - Kept 12 active reference documents in `.internal_docs/`
+  - Added README files documenting archive purpose and usage
+  - Updated reference to `phase3_planning_stub.mdc` in Phase 3 implementation plan
+
+### Added
+
 - **Pre-commit hooks with Husky** for automatic linting and formatting (2025-10-29)
   - Runs on staged files only (<3 seconds)
   - Auto-fixes linting issues with ESLint
@@ -239,7 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables intelligent mode + globs (AI relevance on scoped files)
   - Enables always mode + globs (auto-apply to scoped files)
   - Enables manual mode + globs (manual invocation on scoped files)
-  - Only exports globs when applies_to has specific patterns (not default \*_/_)
+  - Only exports globs when applies\*to has specific patterns (not default \*\*/\_)
   - 3 new tests validate globs export for intelligent/always modes and default suppression
   - 4 snapshot tests updated to reflect correct behavior
   - Files modified:
