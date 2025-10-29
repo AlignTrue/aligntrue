@@ -3,7 +3,7 @@
  * Simple file-based telemetry enable/disable (infrastructure in Step 26)
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs'
 import { dirname } from 'path'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
@@ -140,6 +140,6 @@ function writeTelemetryConfig(config: TelemetryConfig): void {
   const tempPath = `${TELEMETRY_PATH}.tmp`
 
   writeFileSync(tempPath, content, 'utf-8')
-  writeFileSync(TELEMETRY_PATH, content, 'utf-8')
+  renameSync(tempPath, TELEMETRY_PATH)
 }
 

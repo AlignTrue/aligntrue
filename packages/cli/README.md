@@ -22,6 +22,7 @@ Basic Commands:
   check          Validate rules and configuration
 
 Development Commands:
+  adapters       Manage exporters (list, enable, disable)
   md             Markdown validation and formatting
 
 Team Commands:
@@ -455,6 +456,98 @@ scopes:
       - "**/*.test.ts"
 
 See: docs/guides/scopes.md (when available)
+```
+
+### `aligntrue adapters`
+
+Manage exporters (adapters) in your configuration. View available adapters, enable/disable them, and discover all 43 supported AI coding agents.
+
+**Features:**
+- List all 43 available adapters with descriptions
+- Show install status (✓ installed, - available, ❌ invalid)
+- Enable/disable adapters interactively or by name
+- Prevents disabling the last adapter
+
+#### `aligntrue adapters list`
+
+Show all discovered adapters with their current status:
+
+```bash
+aligntrue adapters list
+```
+
+**Example output:**
+```
+Available Adapters (44 total):
+
+✓ cursor                  Export AlignTrue rules to Cursor .mdc format
+                          Outputs: .cursor/rules/*.mdc
+
+✓ agents-md               Export AlignTrue rules to universal AGENTS.md format
+                          Outputs: AGENTS.md
+
+- claude-md               Export AlignTrue rules to Claude CLAUDE.md format
+                          Outputs: CLAUDE.md
+
+- vscode-mcp              Export AlignTrue rules to VS Code MCP configuration
+                          Outputs: .vscode/mcp.json
+
+❌ invalid-adapter         (Not found in available adapters)
+
+Summary:
+  ✓ Installed: 2
+  - Available: 41
+  ❌ Invalid: 1
+```
+
+**Status indicators:**
+- `✓` - Installed (enabled in your config)
+- `-` - Available (discovered but not enabled)
+- `❌` - Invalid (in config but not found)
+
+#### `aligntrue adapters enable <adapter>`
+
+Enable an adapter by adding it to your config:
+
+```bash
+aligntrue adapters enable claude-md
+```
+
+**Example output:**
+```
+✓ Enabled adapter: claude-md
+
+Next step:
+  Run: aligntrue sync
+```
+
+**Interactive mode:**
+
+Choose multiple adapters with a visual multiselect interface:
+
+```bash
+aligntrue adapters enable --interactive
+# or
+aligntrue adapters enable -i
+```
+
+The interactive prompt pre-selects currently enabled adapters and lets you toggle any available adapters.
+
+#### `aligntrue adapters disable <adapter>`
+
+Disable an adapter by removing it from your config:
+
+```bash
+aligntrue adapters disable claude-md
+```
+
+**Safety:**
+- Cannot disable the last adapter (at least one must be configured)
+- Shows clear error if adapter isn't currently enabled
+
+**Example output:**
+```
+✓ Disabled adapter: claude-md
 ```
 
 ### Telemetry Commands
