@@ -1,8 +1,8 @@
-# Command Reference
+# Command reference
 
 Complete reference for all AlignTrue CLI commands.
 
-## Basic Commands
+## Basic commands
 
 Commands you'll use most often for day-to-day development.
 
@@ -263,7 +263,7 @@ aligntrue check --ci
 
 ---
 
-## Development Commands
+## Development commands
 
 Tools for working with markdown rules and validating syntax.
 
@@ -359,7 +359,7 @@ aligntrue md compile > rules.json
 
 ---
 
-## Team Commands
+## Team commands
 
 Commands for managing team mode features (hidden until team mode enabled).
 
@@ -471,7 +471,7 @@ Configured scopes (2):
 
 ---
 
-## Settings Commands
+## Settings commands
 
 Manage AlignTrue settings and preferences.
 
@@ -543,7 +543,7 @@ We NEVER collect:
 
 ---
 
-## Getting Help
+## Getting help
 
 ```bash
 # Show all commands
@@ -561,7 +561,7 @@ aligntrue sync --help
 
 ---
 
-## See Also
+## See also
 
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds
 - [Troubleshooting](troubleshooting.md) - Common issues and fixes

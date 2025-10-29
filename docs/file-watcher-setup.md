@@ -1,10 +1,10 @@
-# File Watcher Setup Guide
+# File watcher setup guide
 
 Auto-sync your rules when you save changes to agent files. This guide provides the fastest and most reliable options for each platform.
 
 ---
 
-## Quick Start
+## Quick start
 
 For each platform, we provide two options:
 1. **Fastest**: Quickest to set up (1-2 minutes)
@@ -14,7 +14,7 @@ For each platform, we provide two options:
 
 ## VS Code (Fastest: ~2 minutes)
 
-### Option 1: VS Code Task (Fastest)
+### Option 1: VS Code task (fastest)
 
 **Create `.vscode/tasks.json`:**
 
@@ -54,7 +54,7 @@ For each platform, we provide two options:
 - Task runs `aligntrue sync` automatically
 - Silent output (check Terminal if needed)
 
-### Option 2: VS Code Extension (Most Reliable)
+### Option 2: VS Code extension (most reliable)
 
 Install **Run on Save** extension:
 
@@ -90,7 +90,7 @@ Install **Run on Save** extension:
 
 ## macOS Terminal
 
-### Option 1: fswatch (Fastest)
+### Option 1: fswatch (fastest)
 
 **Install:**
 
@@ -117,7 +117,7 @@ chmod +x watch-sync.sh
 
 **Stop:** Ctrl+C
 
-### Option 2: nodemon (Most Reliable)
+### Option 2: nodemon (most reliable)
 
 **Install:**
 
@@ -152,7 +152,7 @@ nodemon
 
 ## Linux
 
-### Option 1: inotifywait (Fastest)
+### Option 1: inotifywait (fastest)
 
 **Install (Ubuntu/Debian):**
 
@@ -184,7 +184,7 @@ chmod +x watch-sync.sh
 ./watch-sync.sh
 ```
 
-### Option 2: nodemon (Most Reliable)
+### Option 2: nodemon (most reliable)
 
 Same as macOS Option 2 above.
 
@@ -206,7 +206,7 @@ nodemon
 
 ## Windows
 
-### Option 1: PowerShell FileSystemWatcher (Fastest)
+### Option 1: PowerShell FileSystemWatcher (fastest)
 
 **Create `watch-sync.ps1`:**
 
@@ -239,7 +239,7 @@ while ($true) { Start-Sleep -Seconds 1 }
 
 **Stop:** Ctrl+C
 
-### Option 2: nodemon (Most Reliable)
+### Option 2: nodemon (most reliable)
 
 Same as macOS/Linux Option 2 above.
 
@@ -259,7 +259,7 @@ nodemon
 
 ---
 
-## Background Service (Production)
+## Background service (production)
 
 For always-on file watching, run as a background service.
 
@@ -347,7 +347,7 @@ systemctl --user status aligntrue-watch.service
 
 ## Troubleshooting
 
-### Sync Runs Too Often
+### Sync runs too often
 
 **Problem:** File saves trigger multiple syncs
 
@@ -359,7 +359,7 @@ systemctl --user status aligntrue-watch.service
 }
 ```
 
-### Sync Doesn't Trigger
+### Sync doesn't trigger
 
 **Problem:** File watcher not detecting changes
 
@@ -369,7 +369,7 @@ systemctl --user status aligntrue-watch.service
 3. Check watcher is running (`ps aux | grep nodemon`)
 4. Restart watcher service
 
-### VS Code Task Won't Run
+### VS Code task won't run
 
 **Problem:** Task not executing on file save
 
@@ -379,7 +379,7 @@ systemctl --user status aligntrue-watch.service
 3. Select "AlignTrue Auto-Sync"
 4. Check Terminal output for errors
 
-### High CPU Usage
+### High CPU usage
 
 **Problem:** File watcher using too much CPU
 
@@ -393,7 +393,7 @@ systemctl --user status aligntrue-watch.service
 2. Increase delay between checks
 3. Use more targeted watch patterns
 
-### Permission Errors
+### Permission errors
 
 **Problem:** "EACCES" or "permission denied"
 
@@ -409,7 +409,7 @@ chmod 755 .cursor/rules
 
 ---
 
-## Performance Tips
+## Performance tips
 
 1. **Watch specific directories only** (not entire project)
 2. **Add debounce delay** (1-2 seconds)
@@ -419,7 +419,7 @@ chmod 755 .cursor/rules
 
 ---
 
-## Recommendation by Use Case
+## Recommendation by use case
 
 | Use Case | Recommendation | Why |
 |----------|---------------|-----|
@@ -431,7 +431,7 @@ chmod 755 .cursor/rules
 
 ---
 
-## Next Steps
+## Next steps
 
 1. Choose option for your platform
 2. Set up file watcher (fastest option first)
