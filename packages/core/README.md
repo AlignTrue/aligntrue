@@ -12,6 +12,8 @@ This package provides the core functionality for AlignTrue's two-way sync engine
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
 - **Lockfile with hash modes** - Drift detection with off/soft/strict enforcement (team mode)
 
+**YAML Library**: This package uses `js-yaml` for config loading and IR parsing (internal operations). See [docs/yaml-libraries.md](../../docs/yaml-libraries.md) for rationale.
+
 ## Installation
 
 ```bash

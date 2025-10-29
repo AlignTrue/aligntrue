@@ -2,6 +2,8 @@
 
 Command-line interface for AlignTrue - the AI-native rules and alignment platform.
 
+**YAML Library**: This package uses `yaml` for config generation and CLI operations (user-facing formatting). See [docs/yaml-libraries.md](../../docs/yaml-libraries.md) for rationale.
+
 ## Installation
 
 ```bash
