@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config, adapters } from './commands/index.js';
+import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config, adapters, privacy } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -29,7 +29,8 @@ async function main() {
     
     console.log('Settings:');
     console.log('  config         View or edit configuration');
-    console.log('  telemetry      Telemetry settings\n');
+    console.log('  telemetry      Telemetry settings');
+    console.log('  privacy        Privacy and consent management\n');
     
     console.log('Coming Soon:');
     console.log('  migrate        Schema migration (preview mode)');
@@ -94,6 +95,11 @@ async function main() {
   
   if (command === 'adapters') {
     await adapters(commandArgs);
+    return;
+  }
+  
+  if (command === 'privacy') {
+    await privacy(commandArgs);
     return;
   }
   

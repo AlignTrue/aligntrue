@@ -4,4 +4,5 @@ export * from './scope.js';
 export * from './bundle.js';
 export * from './lockfile.js';
 export * from './telemetry/collector.js';
+export * from './privacy/index.js';
 

@@ -792,6 +792,84 @@ We NEVER collect:
 
 **See also:** [Privacy Policy](../PRIVACY.md) for complete details.
 
+### `aligntrue privacy audit|revoke`
+
+Manage privacy consents for network operations.
+
+**Usage:**
+
+```bash
+aligntrue privacy audit                    # List all consents
+aligntrue privacy revoke <operation>       # Revoke specific consent
+aligntrue privacy revoke --all             # Revoke all consents
+```
+
+**Commands:**
+
+- `audit` - List all granted consents with timestamps
+- `revoke catalog` - Revoke consent for catalog fetches
+- `revoke git` - Revoke consent for git clones
+- `revoke --all` - Revoke all consents (prompts for confirmation)
+
+**How consent works:**
+
+1. **First time** a network operation is needed (catalog or git source), you'll see a clear error
+2. The error message explains what consent is needed and how to grant it
+3. **After granting**, AlignTrue remembers and won't prompt again
+4. **Revoke anytime** using `aligntrue privacy revoke`
+
+**Examples:**
+
+```bash
+# List all consents
+aligntrue privacy audit
+
+# Revoke catalog consent
+aligntrue privacy revoke catalog
+
+# Revoke all consents with confirmation
+aligntrue privacy revoke --all
+```
+
+**Audit output:**
+
+```
+Privacy Consents
+
+  ✓ catalog    Granted Oct 29, 2025 at 10:30 AM
+  ✓ git        Granted Oct 29, 2025 at 11:45 AM
+
+Use 'aligntrue privacy revoke <operation>' to revoke
+```
+
+**When no consents:**
+
+```
+No privacy consents granted yet
+
+Network operations will prompt for consent when needed.
+Run "aligntrue privacy audit" after granting consent to see details.
+```
+
+**Storage:**
+
+- Consents: `.aligntrue/privacy-consent.json` (git-ignored)
+- Per-machine, not committed to git
+- Simple JSON format you can edit manually if needed
+
+**Offline mode:**
+
+```bash
+# Skip all network operations, use cache only
+aligntrue sync --offline
+```
+
+Offline mode bypasses consent checks entirely (no network = no consent needed).
+
+**See also:** 
+- [Privacy Policy](../PRIVACY.md) - Complete privacy details
+- [Sync command](#aligntrue-sync) - Offline flag documentation
+
 ---
 
 ## Getting help
