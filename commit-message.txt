@@ -1,0 +1,7 @@
+feat(exporters): create shared mode hints utilities and refactor 4 exporters to use DRY pattern
+
+- Created mode-hints-helpers.ts with 5 shared utilities (120 lines)
+- Refactored agents-md, claude-md, warp-md, crush-md to use shared utilities
+- Reduced duplicate code by ~132 lines across 4 exporters
+- All 166 tests passing, zero regressions
+- Pattern proven and ready for remaining 10 exporters

@@ -144,6 +144,9 @@ importers:
 
   packages/exporters:
     dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../core
       '@aligntrue/file-utils':
         specifier: workspace:*
         version: link:../file-utils

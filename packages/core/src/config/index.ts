@@ -17,11 +17,21 @@ import {
 } from '../scope.js'
 
 export type AlignTrueMode = 'solo' | 'team' | 'enterprise';
+export type ModeHints = 'off' | 'metadata_only' | 'hints' | 'native';
 
 export interface PerformanceConfig {
   max_file_size_mb?: number;
   max_directory_depth?: number;
   ignore_patterns?: string[];
+}
+
+export interface ExportConfig {
+  mode_hints?: {
+    default?: ModeHints;
+    overrides?: Record<string, ModeHints>;
+  };
+  max_hint_blocks?: number;
+  max_hint_tokens?: number;
 }
 
 export interface AlignTrueConfig {
@@ -64,6 +74,7 @@ export interface AlignTrueConfig {
     order?: MergeOrder;
   };
   performance?: PerformanceConfig;
+  export?: ExportConfig;
 }
 
 /**
@@ -260,7 +271,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
  */
 function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance'
+    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance', 'export'
   ])
   
   for (const key of Object.keys(config)) {
@@ -497,4 +508,25 @@ export async function saveConfig(config: AlignTrueConfig, configPath?: string): 
   
   // Rename atomically (overwrites destination)
   renameSync(tempPath, path)
+}
+
+/**
+ * Get mode hints setting for a specific exporter
+ * Handles precedence: override > default > 'metadata_only'
+ * Forces 'native' for cursor and yaml exporters
+ */
+export function getModeHints(exporterName: string, config: AlignTrueConfig): ModeHints {
+  // Force native for cursor and yaml (cannot be overridden)
+  if (exporterName === 'cursor' || exporterName === 'yaml') {
+    return 'native'
+  }
+  
+  // Check for per-exporter override
+  const override = config.export?.mode_hints?.overrides?.[exporterName]
+  if (override) {
+    return override
+  }
+  
+  // Use global default or fall back to metadata_only
+  return config.export?.mode_hints?.default ?? 'metadata_only'
 }
