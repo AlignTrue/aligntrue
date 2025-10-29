@@ -11,7 +11,8 @@ vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
   recordEvent: vi.fn(),
 }));
 vi.mock("@aligntrue/markdown-parser", () => ({
-  parseIR: vi.fn(),
+  parseMarkdown: vi.fn(),
+  buildIR: vi.fn(),
 }));
 vi.mock("@aligntrue/sources", () => ({
   GitProvider: vi.fn(),
@@ -40,14 +41,15 @@ vi.mock("@aligntrue/core", () => ({
 import { pull } from "../../src/commands/pull.js";
 import { GitProvider } from "@aligntrue/sources";
 import { createConsentManager, loadConfig, saveConfig } from "@aligntrue/core";
-import { parseIR } from "@aligntrue/markdown-parser";
+import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 
 describe("pull command", () => {
   let mockGitProvider: any;
   let mockConsentManager: any;
   let mockLoadConfig: any;
   let mockSaveConfig: any;
-  let mockParseIR: any;
+  let mockParseMarkdown: any;
+  let mockBuildIR: any;
   let mockSpinner: any;
   let consoleLogSpy: any;
   let consoleErrorSpy: any;
@@ -92,10 +94,21 @@ describe("pull command", () => {
     mockSaveConfig = vi.mocked(saveConfig);
 
     // Mock parseIR
-    mockParseIR = vi.mocked(parseIR);
-    mockParseIR.mockReturnValue({
-      rules: [{ id: "rule1" }, { id: "rule2" }],
-      profile: { id: "test-profile" },
+    mockParseMarkdown = vi.mocked(parseMarkdown);
+    mockParseMarkdown.mockReturnValue({
+      blocks: [],
+      errors: [],
+    } as any);
+
+    mockBuildIR = vi.mocked(buildIR);
+    mockBuildIR.mockReturnValue({
+      document: {
+        id: "test-profile",
+        version: "1.0.0",
+        spec_version: "1",
+        rules: [{ id: "rule1" }, { id: "rule2" }],
+      },
+      errors: [],
     } as any);
 
     // Mock console
@@ -177,7 +190,8 @@ describe("pull command", () => {
 
       expect(mockSpinner.start).toHaveBeenCalled();
       expect(mockGitProvider.fetch).toHaveBeenCalled();
-      expect(mockParseIR).toHaveBeenCalled();
+      expect(mockParseMarkdown).toHaveBeenCalled();
+      expect(mockBuildIR).toHaveBeenCalled();
       expect(mockSpinner.stop).toHaveBeenCalled();
       expect(clack.outro).toHaveBeenCalledWith(
         expect.stringContaining("temporary"),
@@ -235,7 +249,7 @@ describe("pull command", () => {
       await pull(["https://github.com/test/repo", "--save"]);
 
       expect(mockSaveConfig).toHaveBeenCalled();
-      const savedConfig = mockSaveConfig.mock.calls[0][1];
+      const savedConfig = mockSaveConfig.mock.calls[0][0]; // First argument is config
       expect(savedConfig.sources).toHaveLength(1);
       expect(savedConfig.sources[0]).toMatchObject({
         type: "git",
@@ -432,7 +446,7 @@ describe("pull command", () => {
     });
 
     it("should handle parse error", async () => {
-      mockParseIR.mockImplementation(() => {
+      mockParseMarkdown.mockImplementation(() => {
         throw new Error("Invalid YAML syntax");
       });
 
