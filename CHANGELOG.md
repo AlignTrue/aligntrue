@@ -150,6 +150,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- **Stage 1.5b: YAML Library Architectural Review** (Phase 2, Stage 1.5) - Completed 2025-10-29
+  - Documented architectural rationale for maintaining both 'yaml' and 'js-yaml' libraries
+  - Created comprehensive YAML libraries documentation (docs/yaml-libraries.md, ~200 lines)
+  - Updated package READMEs with YAML usage notes and links to rationale
+  - Decision: Keep both libraries serving different purposes (user-facing vs internal operations)
+  - Key rationale: Different use cases, API differences matter, zero consolidation benefit, 1082 tests at risk
+  - Zero code changes: documentation-only approach maintains 100% test pass rate
+  - 'yaml' package (^2.6.1): CLI and markdown-parser (8 files) for user-facing YAML operations
+  - 'js-yaml' package (^4.1.0): core, exporters, schema (6 files) for internal operations
+  - Files created: docs/yaml-libraries.md (rationale, usage patterns, future considerations)
+  - Files modified: 3 package READMEs with brief YAML usage notes
+  - Test count: 1082/1082 passing (maintained 100% pass rate)
+  - Stage 1.5 foundation cleanup complete (1.5a + 1.5b done, 1.5c deferred)
+
 - **Phase 2 Documentation Complete** (Phase 2, Stage 2, Step 12) - Completed 2025-10-29
   - Created comprehensive Git Sources guide (docs/git-sources.md, 359 lines)
   - Created Import Workflow migration guide (docs/import-workflow.md, 421 lines)
