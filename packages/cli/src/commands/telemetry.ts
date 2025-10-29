@@ -6,6 +6,8 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'fs'
 import { dirname } from 'path'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { exitWithError } from '../utils/error-formatter.js'
+import { CommonErrors as Errors } from '../utils/common-errors.js'
 
 interface TelemetryConfig {
   enabled: boolean;
@@ -66,9 +68,10 @@ async function telemetryOn(): Promise<void> {
     console.log('\nTo disable: aligntrue telemetry off')
     process.exit(0)
   } catch (err) {
-    console.error('✗ Failed to enable telemetry')
-    console.error(`  ${err instanceof Error ? err.message : String(err)}`)
-    process.exit(1)
+    exitWithError(Errors.operationFailed(
+      'Enable telemetry',
+      err instanceof Error ? err.message : String(err)
+    ))
   }
 }
 
@@ -81,9 +84,10 @@ async function telemetryOff(): Promise<void> {
     console.log('To re-enable: aligntrue telemetry on')
     process.exit(0)
   } catch (err) {
-    console.error('✗ Failed to disable telemetry')
-    console.error(`  ${err instanceof Error ? err.message : String(err)}`)
-    process.exit(1)
+    exitWithError(Errors.operationFailed(
+      'Disable telemetry',
+      err instanceof Error ? err.message : String(err)
+    ))
   }
 }
 
@@ -103,9 +107,10 @@ async function telemetryStatus(): Promise<void> {
     }
     process.exit(0)
   } catch (err) {
-    console.error('✗ Failed to read telemetry status')
-    console.error(`  ${err instanceof Error ? err.message : String(err)}`)
-    process.exit(1)
+    exitWithError(Errors.operationFailed(
+      'Read telemetry status',
+      err instanceof Error ? err.message : String(err)
+    ))
   }
 }
 

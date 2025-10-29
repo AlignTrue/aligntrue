@@ -742,6 +742,140 @@ aligntrue sync --help
 
 ---
 
+## Error Codes
+
+AlignTrue uses standardized error codes for consistent debugging and support. All errors include:
+
+- **Clear title and message** - What went wrong
+- **Actionable hints** - Next steps to fix
+- **Error codes** - Reference for support
+
+### System Errors (Exit Code 2)
+These errors indicate missing files, permissions, or system issues:
+
+- `ERR_CONFIG_NOT_FOUND` - Configuration file missing
+  ```
+  ✗ Config file not found
+
+  Could not locate: .aligntrue/config.yaml
+
+  Hint: Run 'aligntrue init' to create initial configuration
+
+  Error code: ERR_CONFIG_NOT_FOUND
+  ```
+
+- `ERR_RULES_NOT_FOUND` - Rules file missing
+  ```
+  ✗ Rules file not found
+
+  Could not locate: .aligntrue/rules.md
+
+  Hint: Run 'aligntrue init' to create initial rules
+
+  Error code: ERR_RULES_NOT_FOUND
+  ```
+
+- `ERR_FILE_WRITE_FAILED` - File I/O error
+  ```
+  ✗ File write failed
+
+  Could not write to: .aligntrue/config.yaml
+
+  Details:
+    - Permission denied (EACCES)
+
+  Hint: Check file permissions and disk space
+
+  Error code: ERR_FILE_WRITE_FAILED
+  ```
+
+### Validation Errors (Exit Code 1)
+These errors indicate invalid configuration, rules, or data:
+
+- `ERR_VALIDATION_FAILED` - Schema or rule validation failed
+  ```
+  ✗ Validation failed
+
+  Errors in .aligntrue/rules.md
+
+  Details:
+    - spec_version: Missing required field
+    - rules: Missing required field
+
+  Hint: Fix the errors above and try again
+
+  Error code: ERR_VALIDATION_FAILED
+  ```
+
+- `ERR_SYNC_FAILED` - Sync operation failed
+  ```
+  ✗ Sync failed
+
+  Failed to load exporters: Handler not found
+
+  Hint: Run 'aligntrue sync --help' for more options
+
+  Error code: ERR_SYNC_FAILED
+  ```
+
+- `ERR_LOCKFILE_VALIDATION_FAILED` - Lockfile drift detected
+  ```
+  ✗ Lockfile validation failed
+
+  Lockfile contains errors or drift detected
+
+  Details:
+    - Rule 'test.rule' modified since lock
+
+  Hint: Run 'aligntrue sync' to regenerate lockfile
+
+  Error code: ERR_LOCKFILE_VALIDATION_FAILED
+  ```
+
+### Specific Errors
+
+- `ERR_ADAPTER_NOT_FOUND` - Adapter not available
+  ```
+  ✗ Adapter not found
+
+  Adapter 'unknown' is not available
+
+  Hint: Run 'aligntrue adapters list' to see available adapters
+
+  Error code: ERR_ADAPTER_NOT_FOUND
+  ```
+
+- `ERR_MISSING_ARGUMENT` - Required CLI argument missing
+  ```
+  ✗ Missing required argument
+
+  Argument 'adapter' is required
+
+  Usage: aligntrue adapters disable <adapter>
+
+  Error code: ERR_MISSING_ARGUMENT
+  ```
+
+- `ERR_OPERATION_FAILED` - Generic operation failure
+  ```
+  ✗ [Operation] failed
+
+  [Detailed error message]
+
+  Error code: ERR_OPERATION_FAILED
+  ```
+
+### Getting Help
+
+If you encounter an error:
+
+1. **Read the hint** - Most errors include next steps
+2. **Check exit codes** - 2 = system issue, 1 = validation issue
+3. **Use error codes** - Reference for support or documentation
+4. **Check troubleshooting** - [Common issues](troubleshooting.md)
+
+---
+
 ## See also
 
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds

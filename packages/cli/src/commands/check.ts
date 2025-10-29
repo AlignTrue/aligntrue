@@ -5,7 +5,7 @@
 
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-import { loadConfig, type AlignTrueConfig } from '@aligntrue/core'
+import { type AlignTrueConfig } from '@aligntrue/core'
 import { validateAlign } from '@aligntrue/schema'
 import { readFileSync } from 'fs'
 import { 
@@ -14,6 +14,9 @@ import {
   type ValidationResult as LockfileValidationResult 
 } from '@aligntrue/core'
 import { parseYamlToJson } from '@aligntrue/schema'
+import { tryLoadConfig } from '../utils/config-loader.js'
+import { exitWithError } from '../utils/error-formatter.js'
+import { CommonErrors as Errors } from '../utils/common-errors.js'
 
 /**
  * Parse command-line arguments for check command
@@ -88,32 +91,19 @@ export async function check(args: string[]): Promise<void> {
   }
 
   try {
-    // Step 1: Load config (or use defaults)
-    let config: AlignTrueConfig
+    // Step 1: Load config (with standardized error handling)
     const configPath = parsed.config || '.aligntrue/config.yaml'
-    
-    try {
-      config = await loadConfig(configPath)
-    } catch (err) {
-      // If config doesn't exist, provide helpful message
-      if (err instanceof Error && err.message.includes('not found')) {
-        console.error('✗ Config file not found\n')
-        console.error(`  Run 'aligntrue init' to create a config file.\n`)
-        process.exit(2)
-      }
-      throw err
-    }
+    const config: AlignTrueConfig = await tryLoadConfig(configPath)
 
     // Step 2: Validate IR schema
     const rulesPath = config.sources?.[0]?.path || '.aligntrue/rules.md'
     const resolvedRulesPath = resolve(rulesPath)
     
     if (!existsSync(resolvedRulesPath)) {
-      console.error('✗ Rules file not found\n')
-      console.error(`  Expected: ${rulesPath}`)
-      console.error(`  Resolved: ${resolvedRulesPath}\n`)
-      console.error(`  Check your config sources or run 'aligntrue init'.\n`)
-      process.exit(2)
+      exitWithError({
+        ...Errors.rulesNotFound(rulesPath),
+        details: [`Expected: ${rulesPath}`, `Resolved: ${resolvedRulesPath}`]
+      }, 2)
     }
 
     // Load and parse rules file
@@ -121,9 +111,10 @@ export async function check(args: string[]): Promise<void> {
     try {
       rulesContent = readFileSync(resolvedRulesPath, 'utf8')
     } catch (err) {
-      console.error('✗ Failed to read rules file\n')
-      console.error(`  ${err instanceof Error ? err.message : String(err)}\n`)
-      process.exit(2)
+      exitWithError(Errors.fileWriteFailed(
+        resolvedRulesPath,
+        err instanceof Error ? err.message : String(err)
+      ), 2)
     }
 
     // Parse YAML to JSON for validation
@@ -140,15 +131,14 @@ export async function check(args: string[]): Promise<void> {
     // Validate against schema
     const schemaResult = validateAlign(alignData as string)
     if (!schemaResult.schema.valid) {
-      console.error('✗ Schema validation failed\n')
-      console.error(`  Errors in ${rulesPath}:`)
-      
-      for (const error of schemaResult.schema.errors || []) {
-        console.error(`    - ${error.path}: ${error.message}`)
-      }
-      
-      console.error(`\n  Fix the errors above and run 'aligntrue check --ci' again.\n`)
-      process.exit(1)
+      const details = (schemaResult.schema.errors || []).map(err => 
+        `${err.path}: ${err.message}`
+      )
+      exitWithError({
+        ...Errors.validationFailed(details),
+        message: `Errors in ${rulesPath}`,
+        hint: "Fix the errors above and run 'aligntrue check --ci' again"
+      }, 1)
     }
 
     // Step 2.5: Validate rule IDs

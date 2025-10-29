@@ -122,16 +122,16 @@ describe('sync command', () => {
     it('fails if config file not found', async () => {
       mockExistsSync.mockReturnValue(false)
       
-      await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.outro).toHaveBeenCalledWith(expect.stringContaining('Config file not found'))
+      await expect(sync([])).rejects.toThrow('process.exit(2)')
+      expect(clack.log.error).toHaveBeenCalledWith('Config file not found')
     })
 
     it('fails if config loading fails', async () => {
       mockExistsSync.mockReturnValue(true)
       mockLoadConfig.mockRejectedValue(new Error('Invalid YAML'))
       
-      await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.log.error).toHaveBeenCalledWith(expect.stringContaining('Failed to load config'))
+      await expect(sync([])).rejects.toThrow('process.exit(2)')
+      expect(clack.log.error).toHaveBeenCalledWith('Failed to load configuration')
     })
   })
 
@@ -147,8 +147,8 @@ describe('sync command', () => {
         exporters: ['cursor'],
       })
       
-      await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.outro).toHaveBeenCalledWith(expect.stringContaining('Source file not found'))
+      await expect(sync([])).rejects.toThrow('process.exit(2)')
+      expect(clack.log.error).toHaveBeenCalledWith('Rules file not found')
     })
   })
 
@@ -379,7 +379,7 @@ describe('sync command', () => {
       mockRegistry.registerFromManifest.mockRejectedValue(new Error('Failed to load handler'))
       
       await expect(sync([])).rejects.toThrow('process.exit(1)')
-      expect(clack.log.error).toHaveBeenCalledWith(expect.stringContaining('Failed to load exporters'))
+      expect(clack.log.error).toHaveBeenCalledWith('Sync failed')
     })
   })
 

@@ -2,13 +2,14 @@
  * Adapter management commands
  */
 
-import { loadConfig, saveConfig, type AlignTrueConfig } from '@aligntrue/core'
+import { saveConfig, type AlignTrueConfig } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
 import * as clack from '@clack/prompts'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { tryLoadConfig } from '../utils/config-loader.js'
 
 // Import AdapterManifest type from exporters package
 type AdapterManifest = {
@@ -92,8 +93,8 @@ async function discoverAndCategorize(): Promise<{
     process.exit(1)
   }
 
-  // Load config
-  const config = await loadConfig(configPath)
+  // Load config (using utility for consistent error handling)
+  const config = await tryLoadConfig(configPath)
 
   // Discover adapters
   const registry = new ExporterRegistry()

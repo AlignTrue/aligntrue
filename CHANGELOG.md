@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **UX Polish: Config Validation & Error Formatting** - Completed 2025-10-29
+  - Unified config loading with `loadConfigWithValidation()` utility
+  - Standardized error formatting with `CLIError` interface and `exitWithError()` function
+  - Common error patterns in `CommonErrors` library (11 error types with codes)
+  - Error codes for support/debugging (ERR_CONFIG_NOT_FOUND, ERR_VALIDATION_FAILED, etc.)
+  - Applied to 5 commands: `sync`, `check`, `init`, `adapters`, `team`, `telemetry`
+  - Consistent error messages with title, message, details, hint, and error code
+  - Professional error display using clack.log.error() for titles
+  - Files created:
+    - `packages/cli/src/utils/config-loader.ts` (~60 lines)
+    - `packages/cli/src/utils/error-formatter.ts` (~95 lines)
+    - `packages/cli/src/utils/common-errors.ts` (~170 lines)
+  - Files modified:
+    - `packages/cli/src/commands/sync.ts` - Standardized 5 error cases
+    - `packages/cli/src/commands/check.ts` - Standardized 4 error cases
+    - `packages/cli/src/commands/telemetry.ts` - Standardized 3 error cases
+    - `packages/cli/src/commands/adapters.ts` - Uses tryLoadConfig()
+    - `packages/cli/src/commands/team.ts` - Uses tryLoadConfig()
+  - Test updates:
+    - Updated 10 tests (7 for sync/check + 3 for telemetry) to match new error format
+    - Fixed exit code expectations (1 → 2 for system errors following POSIX)
+  - 162/162 tests passing (100% pass rate)
+  - Foundation for consistent UX across all CLI commands
+  - Maintainability: all future errors use shared utilities
+
+### Added
+
 - **Rule ID Validation** (Phase 2, Stage 1, Step 7) - Completed 2025-10-29
   - Enforced dot notation pattern: `category.subcategory.rule-name` (min 3 segments)
   - Added `aliases` array field for backwards compatibility after renames
