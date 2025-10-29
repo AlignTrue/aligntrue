@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Markdown Round-Trip** (Phase 2, Stage 1, Step 9) - Completed 2025-10-29
+  - Bidirectional markdown conversion: MD ↔ IR ↔ MD with semantic preservation
+  - Metadata capture in `_markdown_meta` field (indent, line endings, header, guidance position)
+  - Markdown generator in `packages/markdown-parser/src/generator.ts` (117 lines)
+  - `generateMarkdown(ir, options)` API with metadata preservation
+  - CLI command: `aligntrue md generate <yaml-file> [--output] [--preserve-style] [--canonical] [--header]`
+  - Round-trip tests validate semantic equivalence (MD → IR → MD produces identical IR)
+  - Golden repo round-trip test validates real-world usage
+  - 29 new tests: 5 metadata capture + 14 generator + 10 round-trip (all passing)
+  - Total test count: 995/995 passing (100% pass rate, up from 965)
+  - Files created:
+    - `packages/markdown-parser/src/generator.ts` (117 lines)
+    - `packages/markdown-parser/tests/generator.test.ts` (14 tests, 287 lines)
+    - `packages/markdown-parser/tests/round-trip.test.ts` (10 tests, 349 lines)
+  - Files modified:
+    - `packages/schema/src/validator.ts` - Added MarkdownMetadata interface
+    - `packages/schema/schema/align.schema.json` - Added _markdown_meta field
+    - `packages/markdown-parser/src/ir-builder.ts` - Metadata detection (60 lines added)
+    - `packages/markdown-parser/src/index.ts` - Export generator
+    - `packages/markdown-parser/tests/ir-builder.test.ts` - 5 metadata tests
+    - `packages/cli/src/commands/md.ts` - Added generate subcommand (42 lines)
+    - `packages/markdown-parser/README.md` - Generator API docs and round-trip workflow
+    - `docs/commands.md` - `aligntrue md generate` documentation (68 lines)
+  - Metadata fields preserved: indent style (spaces/tabs), indent size, line endings (LF/CRLF), header text, guidance position
+  - Quote style may differ (single vs double) due to YAML library preferences - semantically identical
+  - Sync engine integration deferred (not critical for round-trip functionality)
+
 - **Provenance Enhancements** (Phase 2, Stage 1, Step 8) - Completed 2025-10-29
   - Expanded lockfile entries to include full provenance: owner, source, source_sha
   - Display provenance in `aligntrue sync --dry-run` output
