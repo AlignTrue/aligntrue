@@ -46,6 +46,17 @@ Run aligntrue <command> --help for command-specific options
 
 **Error messages:** All errors follow what/why/how format with actionable fixes
 
+## Command Development
+
+AlignTrue CLI uses shared command utilities for consistent argument parsing and help display across all commands. When developing new commands or modifying existing ones:
+
+- **Use command utilities** from `src/utils/command-utilities.ts` for parseArgs and showHelp
+- **Follow established patterns** - see migrated commands (sync, check, import, config, privacy)
+- **Optional test utilities** available in `tests/utils/command-test-helpers.ts`
+- **Migration guide** available in [COMMAND-FRAMEWORK.md](./COMMAND-FRAMEWORK.md)
+
+This ensures consistent behavior, reduces duplication, and makes commands easier to test and maintain.
+
 ## Commands
 
 ### `aligntrue init`

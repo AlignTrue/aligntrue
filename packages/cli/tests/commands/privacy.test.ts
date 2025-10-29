@@ -49,8 +49,11 @@ describe('privacy command', () => {
   describe('help', () => {
     it('shows help with no args', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit: 0')
+      });
       
-      await privacy([]);
+      await expect(privacy([])).rejects.toThrow('process.exit: 0');
       
       expect(consoleSpy).toHaveBeenCalled();
       const output = consoleSpy.mock.calls.map(call => call[0]).join('\n');
@@ -59,15 +62,20 @@ describe('privacy command', () => {
       expect(output).toContain('aligntrue privacy revoke');
       
       consoleSpy.mockRestore();
+      exitSpy.mockRestore();
     });
 
     it('shows help with --help flag', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit: 0')
+      });
       
-      await privacy(['--help']);
+      await expect(privacy(['--help'])).rejects.toThrow('process.exit: 0');
       
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
+      exitSpy.mockRestore();
     });
   });
 
