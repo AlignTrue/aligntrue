@@ -119,6 +119,8 @@ aligntrue import cursor --no-coverage
 - **claude-code** - AGENTS.md format (alias)
 - **aider** - AGENTS.md format (alias)
 
+See [Import Workflow Guide](import-workflow.md) for step-by-step migration instructions.
+
 **Exit codes:**
 
 - `0` - Success
@@ -1027,6 +1029,8 @@ If you encounter an error:
 ## See also
 
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds
+- [Git Sources Guide](git-sources.md) - Pull rules from repositories
+- [Import Workflow](import-workflow.md) - Migrate from existing agent rules
 - [Troubleshooting](troubleshooting.md) - Common issues and fixes
 - [Sync Behavior](sync-behavior.md) - Two-way sync contract
 - [Extending AlignTrue](extending-aligntrue.md) - Add new exporters

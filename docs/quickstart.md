@@ -149,6 +149,20 @@ exporters:
 
 See `aligntrue adapters list` for the complete list.
 
+### Using git sources (optional)
+
+Pull rules from any git repository by adding to your config:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules
+    ref: main
+    path: .aligntrue.yaml
+```
+
+First sync will prompt for privacy consent. See [Git Sources Guide](git-sources.md) for full documentation on branches, tags, caching, and troubleshooting.
+
 ## Next steps
 
 ### Learn more commands
