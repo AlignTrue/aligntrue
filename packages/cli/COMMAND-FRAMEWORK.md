@@ -11,14 +11,13 @@ The CLI command framework provides reusable utilities for:
 
 ## Migration Status
 
-**Migrated Commands (5):**
+**All Commands Migrated (13):**
 - `sync` - IR → agents synchronization
 - `check` - Rule and config validation
 - `import` - Agent format → IR import
 - `config` - Config display and editing
 - `privacy` - Consent management
-
-**Pending Migration (8):**
+- `backup` - Backup and restore operations
 - `adapters` - Exporter management
 - `team` - Team mode enablement
 - `telemetry` - Telemetry controls
@@ -27,7 +26,7 @@ The CLI command framework provides reusable utilities for:
 - `migrate` - Migration operations
 - `init` - Project initialization
 
-**Note:** Migrate these when touched in Phase 3 or when adding new commands.
+**Status:** ✅ All CLI commands now use shared command framework (Phase 3, Session 1 complete)
 
 ## Using Command Utilities
 
@@ -265,15 +264,149 @@ const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
 - Common patterns = easier to test
 - Less duplication in tests
 
-## Phase 3 Migration Plan
+## Troubleshooting Common Migration Issues
 
-When adding or modifying commands in Phase 3:
+### Issue: Tests fail after migration
 
-1. **New commands** - Use framework from start (follow Basic Pattern above)
-2. **Modified commands** - Migrate during modification (follow Migration Guide)
-3. **Unchanged commands** - Defer migration (no rush, not blocking)
+**Symptoms:** Tests expect old help format (e.g., "Subcommands:")
 
-Target: Migrate remaining 8 commands by end of Phase 3.
+**Fix:** Update test assertions to match new standard help format
+
+```typescript
+// Before
+expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Subcommands:'))
+
+// After
+expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Team mode features:'))
+```
+
+### Issue: Subcommand not found
+
+**Symptoms:** `subcommand` is undefined
+
+**Fix:** Extract from `parsed.positional[0]` instead of `args[0]`
+
+```typescript
+// Before
+const subcommand = args[0]
+
+// After
+const subcommand = parsed.positional[0]
+const subArgs = parsed.positional.slice(1)
+```
+
+### Issue: Flag values not working
+
+**Symptoms:** Flags return `undefined` instead of expected values
+
+**Fix:** Check flag definitions and type casting
+
+```typescript
+// Ensure ARG_DEFINITIONS includes the flag
+{ flag: '--config', hasValue: true, description: '...' }
+
+// Type cast correctly
+const config = parsed.flags['config'] as string | undefined
+const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
+```
+
+### Issue: Help not showing when expected
+
+**Symptoms:** Help only shows with `--help`, not with no args
+
+**Fix:** Add condition for empty positional args
+
+```typescript
+// Before
+if (parsed.help) {
+
+// After  
+if (parsed.help || parsed.positional.length === 0) {
+```
+
+## Command Pattern Examples
+
+### Simple Command (no subcommands)
+
+`scopes` - Single operation, simple help
+
+```typescript
+const ARG_DEFINITIONS: ArgDefinition[] = []
+
+export async function scopes(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+  
+  if (parsed.help) {
+    showStandardHelp({ /* ... */ })
+    process.exit(0)
+  }
+  
+  // ... command logic ...
+}
+```
+
+### Subcommand Pattern
+
+`team`, `adapters`, `telemetry` - Multiple operations
+
+```typescript
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: '--interactive', alias: '-i', hasValue: false, description: '...' },
+]
+
+export async function adapters(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+  
+  if (parsed.help || parsed.positional.length === 0) {
+    showStandardHelp({ /* ... */ })
+    process.exit(0)
+  }
+  
+  const subcommand = parsed.positional[0]
+  const subArgs = parsed.positional.slice(1)
+  
+  switch (subcommand) {
+    case 'list':
+      await listAdapters()
+      break
+    case 'enable':
+      await enableAdapters(subArgs, parsed.flags['interactive'] as boolean)
+      break
+    default:
+      console.error(`Unknown subcommand: ${subcommand}`)
+      process.exit(1)
+  }
+}
+```
+
+### Complex Interactive Command
+
+`init` - Multiple flags, interactive prompts, complex logic
+
+```typescript
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: '--non-interactive', alias: '-n', hasValue: false, description: '...' },
+  { flag: '--project-id', hasValue: true, description: '...' },
+  { flag: '--exporters', hasValue: true, description: '...' },
+]
+
+export async function init(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+  
+  if (parsed.help) {
+    showStandardHelp({ /* ... */ })
+    return
+  }
+  
+  // Extract and process flags
+  const nonInteractive = parsed.flags['non-interactive'] as boolean || false
+  const projectId = parsed.flags['project-id'] as string | undefined
+  const exportersArg = parsed.flags['exporters'] as string | undefined
+  const exporters = exportersArg ? exportersArg.split(',').map(e => e.trim()) : undefined
+  
+  // Complex interactive logic with prompts...
+}
+```
 
 ## Related Files
 
@@ -282,10 +415,16 @@ Target: Migrate remaining 8 commands by end of Phase 3.
 - **Test Helpers:** `packages/cli/tests/utils/command-test-helpers.ts`
 - **Test Helper Tests:** `packages/cli/tests/utils/command-test-helpers.test.ts`
 
-## Support
+## Command Examples
 
-Questions or issues with the framework? See existing migrated commands for examples:
-- Simple: `config`, `privacy`
-- Medium: `check`, `import`
-- Complex: `sync`
+All 13 commands demonstrate different patterns:
+
+- **Simple, no subcommands:** `config`, `privacy`, `scopes`, `migrate`
+- **Simple with flags:** `check`, `import`, `md`
+- **Subcommands, simple:** `team`, `telemetry`
+- **Subcommands, interactive:** `adapters`
+- **Subcommands, complex:** `backup`, `sync`
+- **Complex interactive:** `init`
+
+Refer to these commands' source code for real-world examples of each pattern.
 

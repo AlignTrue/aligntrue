@@ -57,7 +57,7 @@ describe('team command', () => {
 
     it('shows help with no args', async () => {
       await expect(team([])).rejects.toThrow('process.exit(0)')
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Subcommands:'))
+      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Team mode features:'))
     })
   })
 

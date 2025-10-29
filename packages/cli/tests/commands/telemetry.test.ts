@@ -48,7 +48,7 @@ describe('telemetry command', () => {
 
     it('shows help with no args', async () => {
       await expect(telemetry([])).rejects.toThrow('process.exit(0)')
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Subcommands:'))
+      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('What we collect'))
     })
   })
 

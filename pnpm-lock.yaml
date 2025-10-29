@@ -7,16 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@clack/prompts':
-        specifier: ^0.11.0
-        version: 0.11.0
-      ajv:
-        specifier: ^8.17.1
-        version: 8.17.1
-      ajv-formats:
-        specifier: ^3.0.1
-        version: 3.0.1(ajv@8.17.1)
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.0.0
