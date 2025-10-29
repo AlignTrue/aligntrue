@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Adapters Command** (Phase 2, Stage 1, Step 6) - Completed 2025-10-29
+  - `aligntrue adapters list` - Show all 43 available adapters with install status
+  - `aligntrue adapters enable <adapter>` - Add adapter to config exporters
+  - `aligntrue adapters disable <adapter>` - Remove adapter from config
+  - Interactive multiselect mode with @clack/prompts UI (`--interactive` flag)
+  - Displays: ✓ installed / - available / ❌ invalid adapters
+  - Shared `saveConfig()` utility for atomic config writes
+  - 21 comprehensive tests (list, enable, disable, interactive, edge cases)
+  - 6 additional saveConfig() tests in core package
+  - Files created:
+    - `packages/cli/src/commands/adapters.ts` (~370 lines)
+    - `packages/cli/tests/commands/adapters.test.ts` (~260 lines, 21 tests)
+  - Files modified:
+    - `packages/core/src/config/index.ts` - Added saveConfig() utility (~15 lines)
+    - `packages/core/tests/config.test.ts` - Added saveConfig() tests (~115 lines, 6 tests)
+    - `packages/cli/src/index.ts` - Added adapters command routing
+    - `packages/cli/src/commands/index.ts` - Exported adapters command
+    - `packages/cli/README.md` - Added adapters section with examples
+    - `docs/commands.md` - Comprehensive adapters documentation (~180 lines)
+  - Integration with existing ExporterRegistry discovery
+  - Validates adapter exists before enabling
+  - Prevents disabling last adapter (safety check)
+  - Idempotent enable (friendly message if already enabled)
+  - Sorts exporters alphabetically in config
+  - Test count: 924/924 passing (903 Phase 1+2 base + 21 new adapters tests, 100% pass rate)
+
 - **Phase 2, Stage 1, Step 5 - Additional Exporters** - Marked complete 2025-10-29
   - Step 5 was pre-completed during Phase 1 Solo UX implementation (CHANGELOG lines 587-631)
   - Originally planned: Implement 2-3 exporters based on demand (Claude, Zed, Windsurf)

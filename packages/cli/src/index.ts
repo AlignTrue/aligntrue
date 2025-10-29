@@ -4,7 +4,7 @@
  * AlignTrue CLI - Main entry point
  */
 
-import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config } from './commands/index.js';
+import { init, importCommand, migrate, md, sync, team, telemetry, scopes, check, config, adapters } from './commands/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -20,6 +20,7 @@ async function main() {
     console.log('  check          Validate rules and configuration\n');
     
     console.log('Development Commands:');
+    console.log('  adapters       Manage exporters (list, enable, disable)');
     console.log('  md             Markdown validation and formatting\n');
     
     console.log('Team Commands:');
@@ -88,6 +89,11 @@ async function main() {
   
   if (command === 'config') {
     await config(commandArgs);
+    return;
+  }
+  
+  if (command === 'adapters') {
+    await adapters(commandArgs);
     return;
   }
   
