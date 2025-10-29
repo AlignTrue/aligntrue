@@ -3,9 +3,8 @@
  */
 
 import { existsSync } from 'fs'
-import { join } from 'path'
 import * as clack from '@clack/prompts'
-import { importFromAgent, canImportFromAgent, getImportSourcePath } from '@aligntrue/core'
+import { importFromAgent, canImportFromAgent, getImportSourcePath, getAlignTruePaths } from '@aligntrue/core'
 import {
   analyzeCursorCoverage,
   analyzeAgentsMdCoverage,
@@ -125,7 +124,8 @@ function generateCoverageReport(agent: string, rules: AlignRule[]): CoverageRepo
  * Write imported rules to IR file
  */
 async function writeToIRFile(rules: AlignRule[], dryRun: boolean): Promise<void> {
-  const irPath = join(process.cwd(), '.aligntrue', 'rules.md')
+  const paths = getAlignTruePaths()
+  const irPath = paths.rules
   
   // Generate markdown content
   const lines: string[] = []

@@ -22,7 +22,7 @@
     "validate": "node --import tsx --no-warnings scripts/validate-align.ts"
   },
   "dependencies": {
-    "ajv": "^8.12.0",
+    "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "canonicalize": "^2.1.0",
     "js-yaml": "^4.1.0"
