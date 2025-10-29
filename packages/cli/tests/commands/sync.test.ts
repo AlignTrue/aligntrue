@@ -18,6 +18,7 @@ vi.mock('@aligntrue/schema', () => ({
     return JSON.stringify(obj)
   }),
   validateAlign: vi.fn(),
+  validateRuleId: vi.fn(() => ({ valid: true })),
 }))
 vi.mock('@aligntrue/core', () => {
   const mockEngine = {
@@ -27,6 +28,7 @@ vi.mock('@aligntrue/core', () => {
   }
   return {
     loadConfig: vi.fn(),
+    loadIR: vi.fn(() => ({ rules: [] })),
     SyncEngine: vi.fn(function(this: any) {
       return mockEngine
     }),

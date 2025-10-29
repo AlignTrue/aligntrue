@@ -15,6 +15,7 @@ vi.mock('@aligntrue/core', () => ({
   loadConfig: vi.fn(),
   readLockfile: vi.fn(),
   validateLockfile: vi.fn(),
+  loadIR: vi.fn(() => ({ rules: [] })),
 }))
 
 vi.mock('@aligntrue/schema', () => ({
@@ -23,6 +24,7 @@ vi.mock('@aligntrue/schema', () => ({
     integrity: { valid: true }
   })),
   parseYamlToJson: vi.fn(),
+  validateRuleId: vi.fn(() => ({ valid: true })),
 }))
 
 // Import after mocks are set up
