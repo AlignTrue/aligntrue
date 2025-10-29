@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Stage 1.5: Foundation Cleanup** (Phase 2, Stage 1.5) - Completed 2025-10-29
+  - Centralized path utilities in @aligntrue/core for consistent file path generation
+  - getAlignTruePaths() helper reduces duplication across CLI and exporters
+  - Updated 6 CLI commands and 3 main exporters to use path utilities
+  - Consolidated dependency versions: ajv/ajv-formats (8.17.1/3.0.1), @clack/prompts (0.11.0)
+  - 24 new path utility tests validate cross-platform compatibility
+  - Test count: 1058 → 1082 passing (+24 tests, 100% pass rate)
+  - Files created:
+    - packages/core/src/paths.ts (104 lines) - Standard path helpers
+    - packages/core/tests/paths.test.ts (24 tests, 120 lines)
+  - Files modified:
+    - packages/core/src/index.ts - Export paths module
+    - 4 CLI commands (sync, init, config, import) - Use getAlignTruePaths()
+    - 3 exporters (cursor, agents-md, vscode-mcp) - Use path helpers
+    - 4 package.json files - Standardized versions
+  - Deferred enhancements:
+    - Stage 1.5a: Extend to remaining 60 files in core/sources/schema
+    - Stage 1.5b: YAML library architectural review (~5k tokens)
+    - Stage 1.5c: CLI command framework refactor (~6k tokens)
+  - Foundation ready for Phase 3 features
+
 ### Fixed
 
 - **Globs Export for All Modes** (Phase 2, Stage 1, Step 1b fix) - Completed 2025-10-29
@@ -25,6 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Matches Cursor's actual behavior where globs scope rules across all execution modes
 
 ### Added
+
+- **Mode Hints Experiment** (Phase 2, Stage 1, Step 9a - Phases 1-4) - Completed 2025-10-29
+  - Tri-state mode hints: off/metadata_only/hints/native per exporter
+  - 15 exporters updated with token budget caps and smart prioritization
+  - DRY refactor: shared mode-hints-helpers.ts utility eliminates ~400 lines duplication
+  - JSON markers for deterministic parsing, dual pattern for model salience
+  - Glob specificity prioritization: depth * 3 - stars * 2 - hasDouble * 2
+  - Conservative defaults: metadata_only global, agents_md=hints override
+  - Cursor/yaml forced to native mode (preserves round-trip fidelity)
+  - 106 new tests (8 config + 12 token + 9 markers + 35 exporter + 5 cursor + 37 DRY refactor)
+  - Files created: token-budget.ts, mode-markers.ts, mode-hints-helpers.ts, 7 test files
+  - Files modified: config schema, 15 exporters, cursor exporter
+  - Test count: 1073 → 1179 passing (100% pass rate maintained)
+  - Optional enhancements (Steps 9d-9g) deferred until user demand
 
 - **Schema Refinement for Mode Fields** (Phase 2, Stage 1, Step 1b) - Completed 2025-10-29
   - Migrated execution mode metadata from vendor.cursor to core schema fields

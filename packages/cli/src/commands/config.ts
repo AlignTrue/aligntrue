@@ -3,9 +3,9 @@
  */
 
 import { existsSync } from 'fs'
-import { join } from 'path'
 import * as clack from '@clack/prompts'
 import { spawn } from 'child_process'
+import { getAlignTruePaths } from '@aligntrue/core'
 
 /**
  * Parse command-line arguments for config command
@@ -70,7 +70,8 @@ export async function config(args: string[]): Promise<void> {
   }
 
   const cwd = process.cwd()
-  const configPath = join(cwd, '.aligntrue', 'config.yaml')
+  const paths = getAlignTruePaths(cwd)
+  const configPath = paths.config
 
   // Check if config exists
   if (!existsSync(configPath)) {

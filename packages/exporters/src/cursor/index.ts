@@ -3,11 +3,11 @@
  * Exports AlignTrue rules to Cursor's .cursor/rules/*.mdc format
  */
 
-import { join } from 'path'
 import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '@aligntrue/plugin-contracts'
 import type { AlignRule } from '@aligntrue/schema'
 import { canonicalizeJson, computeHash } from '@aligntrue/schema'
 import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { getAlignTruePaths } from '@aligntrue/core'
 
 export class CursorExporter implements ExporterPlugin {
   name = 'cursor'
@@ -30,9 +30,10 @@ export class CursorExporter implements ExporterPlugin {
     // This preserves round-trip fidelity for vendor.cursor fields
     const modeHints = 'native' // Force native, ignore config
 
-    // Compute scope-specific filename
+    // Compute scope-specific filename using centralized paths
+    const paths = getAlignTruePaths(outputDir)
     const filename = this.getScopeFilename(scope)
-    const outputPath = join(outputDir, '.cursor', 'rules', filename)
+    const outputPath = paths.cursorRules(scope.isDefault ? 'default' : scope.normalizedPath)
 
     // Generate .mdc content
     const content = this.generateMdcContent(scope, rules)

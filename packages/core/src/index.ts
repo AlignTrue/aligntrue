@@ -6,4 +6,5 @@ export * from './lockfile.js';
 export * from './performance/index.js';
 export * from './telemetry/collector.js';
 export * from './privacy/index.js';
+export * from './paths.js';
 
