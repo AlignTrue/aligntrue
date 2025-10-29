@@ -257,6 +257,7 @@ export interface AlignScope {
 
 export interface AlignRule {
   id: string
+  aliases?: string[]
   severity: 'error' | 'warn' | 'info'
   applies_to: string[]
   guidance?: string
@@ -279,5 +280,35 @@ export interface AlignAutofix {
 export interface AlignIntegrity {
   algo: 'jcs-sha256'
   value: string
+}
+
+/**
+ * Validate rule ID format
+ * 
+ * @param id - Rule identifier to validate
+ * @returns Validation result with optional error message and suggestion
+ */
+export function validateRuleId(id: string): { valid: boolean; error?: string; suggestion?: string } {
+  const pattern = /^[a-z0-9]+(\.[a-z0-9-]+){2,}$/
+  
+  if (pattern.test(id)) {
+    return { valid: true }
+  }
+  
+  // Suggest conversion from kebab-case
+  if (/^[a-z0-9]+(-[a-z0-9]+)+$/.test(id)) {
+    const suggestion = id.replace(/-/g, '.')
+    return {
+      valid: false,
+      error: `Rule ID must use dot notation with 3+ segments`,
+      suggestion: `Try: ${suggestion}`
+    }
+  }
+  
+  return {
+    valid: false,
+    error: `Rule ID must match pattern: category.subcategory.rule-name`,
+    suggestion: `Examples: testing.require.tests, security.no.secrets, docs.public.api`
+  }
 }
 

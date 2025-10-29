@@ -43,7 +43,14 @@ export class DiskFileProvider implements FileProvider {
 
   async readJson(path: string): Promise<unknown> {
     const content = await this.readFile(path)
-    return JSON.parse(content)
+    try {
+      return JSON.parse(content)
+    } catch (err) {
+      throw new Error(
+        `Failed to parse JSON file: ${path}\n` +
+        `  ${err instanceof Error ? err.message : String(err)}`
+      )
+    }
   }
 }
 

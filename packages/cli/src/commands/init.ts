@@ -3,7 +3,7 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, renameSync } from 'fs'
 import { join } from 'path'
 import * as clack from '@clack/prompts'
 import * as yaml from 'yaml'
@@ -360,7 +360,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
     exporters: selectedAgents.length > 0 ? selectedAgents : ['cursor', 'agents-md'],
   }
 
-  writeFileSync(configPath, yaml.stringify(config), 'utf-8')
+  // Write config atomically (temp + rename)
+  const configTempPath = `${configPath}.tmp`
+  writeFileSync(configTempPath, yaml.stringify(config), 'utf-8')
+  renameSync(configTempPath, configPath)
 
   // Create native format template or IR fallback
   const createdFiles: string[] = ['.aligntrue/config.yaml']
@@ -374,13 +377,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
       mkdirSync(nativeDir, { recursive: true })
     }
     
-    writeFileSync(nativeFullPath, nativeTemplate, 'utf-8')
+    // Write native template atomically (temp + rename)
+    const nativeTempPath = `${nativeFullPath}.tmp`
+    writeFileSync(nativeTempPath, nativeTemplate, 'utf-8')
+    renameSync(nativeTempPath, nativeFullPath)
     createdFiles.push(nativeTemplatePath)
   } else {
     // Fallback to IR format
     const rulesPath = join(aligntrueDir, 'rules.md')
     const template = getStarterTemplate(projectId)
-    writeFileSync(rulesPath, template, 'utf-8')
+    
+    // Write IR template atomically (temp + rename)
+    const rulesTempPath = `${rulesPath}.tmp`
+    writeFileSync(rulesTempPath, template, 'utf-8')
+    renameSync(rulesTempPath, rulesPath)
     createdFiles.push('.aligntrue/rules.md')
   }
 

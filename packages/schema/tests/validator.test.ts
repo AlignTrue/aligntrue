@@ -13,7 +13,7 @@ describe('validateAlignSchema (v1)', () => {
     spec_version: '1',
     rules: [
       {
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'warn',
         applies_to: ['**/*.test.ts'],
         check: {
@@ -37,7 +37,7 @@ describe('validateAlignSchema (v1)', () => {
     source_sha: 'abc123def456',
     rules: [
       {
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'error',
         applies_to: ['**/*.ts'],
       },
@@ -118,7 +118,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test-rule',
+          id: 'testing.example.rule',
           severity: 'error',
           applies_to: ['**/*.ts'],
           check: {
@@ -140,7 +140,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test',
+          id: 'testing.example.check',
           severity: 'error',
           applies_to: ['**/*.ts'],
           check: {
@@ -163,7 +163,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test',
+          id: 'testing.example.check',
           severity: 'warn',
           applies_to: ['src/**'],
           check: {
@@ -187,7 +187,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test',
+          id: 'testing.example.check',
           severity: 'error',
           applies_to: ['package.json'],
           check: {
@@ -212,7 +212,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test',
+          id: 'testing.example.check',
           severity: 'warn',
           applies_to: ['**/*.ts'],
           check: {
@@ -237,7 +237,7 @@ describe('validateAlignSchema (v1)', () => {
       ...validSoloPack,
       rules: [
         {
-          id: 'test',
+          id: 'testing.example.check',
           severity: 'error',
           applies_to: ['**/*.ts'],
           check: {
@@ -305,7 +305,7 @@ id: "test-integrity"
 version: "1.0.0"
 spec_version: "1"
 rules:
-  - id: "test-rule"
+  - id: "testing.example.rule"
     severity: "error"
     applies_to: ["**/*.test.ts"]
     check:
@@ -353,7 +353,7 @@ id: "test-solo"
 version: "1.0.0"
 spec_version: "1"
 rules:
-  - id: "test-rule"
+  - id: "testing.example.rule"
     severity: "warn"
     applies_to: ["**/*.ts"]
 `
@@ -379,7 +379,7 @@ version: "1.0.0"
 spec_version: "1"
 summary: "Test pack for combined validation"
 rules:
-  - id: "test-rule"
+  - id: "testing.example.rule"
     severity: "error"
     applies_to: ["**/*.test.ts"]
     check:
@@ -439,7 +439,7 @@ describe('provenance fields validation', () => {
       source: 'github.com/mycompany/rules',
       source_sha: 'abc123def456',
       rules: [{
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'error',
         applies_to: ['**/*.ts']
       }]
@@ -455,7 +455,7 @@ describe('provenance fields validation', () => {
       version: '1.0.0',
       spec_version: '1',
       rules: [{
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'warn',
         applies_to: ['**/*.ts']
       }]
@@ -474,7 +474,7 @@ describe('provenance fields validation', () => {
       source: 'github.com/mycompany/rules',
       source_sha: 'abc123',
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'error',
         applies_to: ['**/*.ts']
       }]
@@ -496,7 +496,7 @@ describe('provenance fields validation', () => {
       source_sha: 'abc123',
       // missing owner
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'error',
         applies_to: ['**/*.ts']
       }]
@@ -517,7 +517,7 @@ describe('provenance fields validation', () => {
       source: 'github.com/test/rules',
       // missing source_sha
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'error',
         applies_to: ['**/*.ts']
       }]
@@ -536,7 +536,7 @@ describe('mode-dependent validation', () => {
       version: '1.0.0',
       spec_version: '1',
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'info',
         applies_to: ['**/*.ts']
       }]
@@ -553,7 +553,7 @@ describe('mode-dependent validation', () => {
       spec_version: '1',
       summary: 'Test',
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'error',
         applies_to: ['**/*.ts']
       }]
@@ -576,7 +576,7 @@ describe('mode-dependent validation', () => {
       source_sha: 'abc123',
       tags: ['test'],
       rules: [{
-        id: 'test',
+        id: 'testing.example.test',
         severity: 'error',
         applies_to: ['**/*.ts']
       }],
@@ -598,7 +598,7 @@ describe('vendor bags in validation', () => {
       version: '1.0.0',
       spec_version: '1',
       rules: [{
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'warn',
         applies_to: ['**/*.ts'],
         vendor: {
@@ -618,7 +618,7 @@ describe('vendor bags in validation', () => {
       version: '1.0.0',
       spec_version: '1',
       rules: [{
-        id: 'test-rule',
+        id: 'testing.example.rule',
         severity: 'warn',
         applies_to: ['**/*.ts'],
         vendor: {

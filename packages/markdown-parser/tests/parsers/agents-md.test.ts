@@ -214,14 +214,14 @@ Content Hash: abc123
     expect(rules).toHaveLength(2)
     
     expect(rules[0]).toMatchObject({
-      id: 'testing-require-tests',
+      id: 'testing.require.tests',
       severity: 'error',
       applies_to: ['src/**/*.ts', 'src/**/*.tsx'],
     })
     expect(rules[0].guidance).toContain('unit tests')
     
     expect(rules[1]).toMatchObject({
-      id: 'code-review-no-todos',
+      id: 'code.review.no.todos',
       severity: 'warn',
       applies_to: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     })

@@ -101,7 +101,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -118,7 +118,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -134,7 +134,7 @@ rules:
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: invalid_severity
 `
       const irPath = join(TEST_DIR, 'invalid.yaml')
@@ -157,7 +157,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -182,7 +182,7 @@ rules:
       expect(result.success).toBe(true)
       expect(mockExporter.getCallCount()).toBe(1)
       expect(mockExporter.lastRequest?.rules).toHaveLength(1)
-      expect(mockExporter.lastRequest?.rules[0].id).toBe('test-rule')
+      expect(mockExporter.lastRequest?.rules[0].id).toBe('testing.example.rule')
     })
 
     it('supports dry-run mode', async () => {
@@ -197,7 +197,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -236,7 +236,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -280,7 +280,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -318,7 +318,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -356,7 +356,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -396,7 +396,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -430,7 +430,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -471,7 +471,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
@@ -522,7 +522,7 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule

@@ -6,7 +6,7 @@ version: "1.0.0"
 spec_version: "1"
 summary: "Minimal valid pack for conformance testing"
 rules:
-  - id: "minimal-rule"
+  - id: "minimal.example.rule"
     severity: "warn"
     applies_to: ["**/*.ts"]
     check:
@@ -16,5 +16,5 @@ rules:
       evidence: "Package must exist"
 integrity:
   algo: "jcs-sha256"
-  value: "7a6a91a9e592432dddfc7ed17c19bf2bf975d57c07b052522af34962fd592f19"
+  value: "d8700c52b383e2fb8c31753668c504afd6323357f2421b3a43f5af66360f9eda"
 

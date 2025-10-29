@@ -5,7 +5,7 @@ id: golden-repo
 version: 1.0.0
 spec_version: '1'
 rules:
-  - id: testing-require-tests
+  - id: testing.require.tests
     severity: error
     applies_to:
       - src/**/*.ts
@@ -17,7 +17,7 @@ rules:
       Examples:
       - src/utils/parser.ts → src/utils/parser.test.ts
       - src/components/Button.tsx → src/components/Button.test.tsx
-  - id: code-review-no-todos
+  - id: code.review.no.todos
     severity: warn
     applies_to:
       - '**/*.ts'
@@ -30,14 +30,14 @@ rules:
 
       Instead of: // TODO: refactor this
       Do: Create issue, then // Issue #123: refactor this
-  - id: docs-public-api
+  - id: docs.public.api
     severity: info
     applies_to:
       - src/**/index.ts
     guidance: |-
       Public API exports should include JSDoc comments explaining their purpose
       and usage. This helps with IDE intellisense and documentation generation.
-  - id: security-no-secrets
+  - id: security.no.secrets
     severity: error
     applies_to:
       - '**/*.ts'
@@ -52,7 +52,7 @@ rules:
       - API_KEY = "sk_live_..."
       - password: "mypassword123"
       - token: "ghp_..."
-  - id: typescript-no-any
+  - id: typescript.no.any
     severity: warn
     applies_to:
       - '**/*.ts'

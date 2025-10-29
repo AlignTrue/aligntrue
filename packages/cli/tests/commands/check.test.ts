@@ -107,7 +107,7 @@ describe('check command', () => {
       })
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
-      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
+      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'testing.example.test', version: '1', spec_version: '1', rules: [] })
       vi.mocked(schema.validateAlign).mockReturnValue({
         schema: { valid: true },
         integrity: { valid: true }
@@ -184,7 +184,7 @@ describe('check command', () => {
     it('exits with code 1 when schema validation fails', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"')
-      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1' })
+      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'testing.example.test', version: '1' })
       vi.mocked(schema.validateAlign).mockReturnValue({
         schema: {
           valid: false,
@@ -211,7 +211,7 @@ describe('check command', () => {
     it('passes validation with valid schema', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
-      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
+      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'testing.example.test', version: '1', spec_version: '1', rules: [] })
       vi.mocked(schema.validateAlign).mockReturnValue({
         schema: { valid: true },
         integrity: { valid: true }
@@ -239,7 +239,7 @@ describe('check command', () => {
       })
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
-      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
+      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'testing.example.test', version: '1', spec_version: '1', rules: [] })
       vi.mocked(schema.validateAlign).mockReturnValue({
         schema: { valid: true },
         integrity: { valid: true }
@@ -271,7 +271,7 @@ describe('check command', () => {
       })
       vi.mocked(fs.existsSync).mockReturnValue(true)
       vi.mocked(fs.readFileSync).mockReturnValue('id: test\nversion: "1"\nspec_version: "1"\nrules: []')
-      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'test', version: '1', spec_version: '1', rules: [] })
+      vi.mocked(schema.parseYamlToJson).mockReturnValue({ id: 'testing.example.test', version: '1', spec_version: '1', rules: [] })
       vi.mocked(schema.validateAlign).mockReturnValue({
         schema: { valid: true },
         integrity: { valid: true }

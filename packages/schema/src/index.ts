@@ -12,6 +12,7 @@ export {
   validateAlignSchema,
   validateAlignIntegrity,
   validateAlign,
+  validateRuleId,
   type ValidationResult,
   type ValidationError,
   type IntegrityResult,
