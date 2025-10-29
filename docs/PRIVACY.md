@@ -194,27 +194,20 @@ sources:
 - Shows exactly what data will be sent
 - Revocable at any time
 
-### First-time consent (Phase 2+)
+### First-time consent (Phase 2 - Implemented)
 
-When you add a network source, AlignTrue will:
-1. **Analyze** what network operations are needed
-2. **Show** clear description of each operation and why
-3. **Prompt** for permission before proceeding
-4. **Store** consent in `.aligntrue/privacy-consent.json` (git-ignored)
+When you add a network source, AlignTrue prompts for consent before the first network operation:
+
+**How it works:**
+1. **Detect** network operations needed (catalog or git sources)
+2. **Prompt** for permission with clear description
+3. **Store** consent in `.aligntrue/privacy-consent.json` (git-ignored)
+4. **Remember** - no prompts on subsequent syncs
 5. **Allow** revocation at any time
 
-Example consent prompt:
-```
-⚠️  Network operations required:
+The consent check happens when a provider attempts a network operation. If consent hasn't been granted, you'll see a clear error with instructions.
 
-  - Fetch rules from AlignTrue catalog (GitHub)
-    Why: Source: packs/base/base-global
-    Endpoint: https://raw.githubusercontent.com/AlignTrue/aligns
-
-Allow these network operations? (y/n)
-```
-
-### Privacy controls (Phase 2+)
+### Privacy controls (Phase 2 - Implemented)
 
 #### Audit Consents
 ```bash
@@ -222,11 +215,23 @@ aligntrue privacy audit
 ```
 Shows all granted consents with timestamps and details.
 
+**Example output:**
+```
+Privacy Consents
+
+  ✓ catalog    Granted Oct 29, 2025 at 10:30 AM
+  ✓ git        Granted Oct 29, 2025 at 11:45 AM
+
+Use 'aligntrue privacy revoke <operation>' to revoke
+```
+
 #### Revoke Consent
 ```bash
-aligntrue privacy revoke catalog-fetch
+aligntrue privacy revoke catalog    # Revoke specific operation
+aligntrue privacy revoke git        # Revoke git consent
+aligntrue privacy revoke --all      # Revoke everything
 ```
-Removes consent; future syncs will prompt again.
+Removes consent; future syncs will prompt again when network is needed.
 
 #### Offline Mode
 ```bash
@@ -243,14 +248,33 @@ All locally stored data is in plain JSON:
 cat .aligntrue/telemetry-events.json | jq .
 ```
 
-**Privacy consents (Phase 2+):**
+**Privacy consents:**
 ```bash
 cat .aligntrue/privacy-consent.json | jq .
+```
+
+**Example consent file:**
+```json
+{
+  "catalog": {
+    "granted": true,
+    "granted_at": "2025-10-29T10:30:00.000Z"
+  },
+  "git": {
+    "granted": true,
+    "granted_at": "2025-10-29T11:45:00.000Z"
+  }
+}
 ```
 
 **Catalog cache:**
 ```bash
 ls .aligntrue/.cache/catalog/
+```
+
+**Git cache:**
+```bash
+ls .aligntrue/.cache/git/
 ```
 
 ## Compliance
@@ -270,6 +294,6 @@ Because we:
 
 ---
 
-**Last Updated**: 2025-10-27  
-**Policy Version**: 1.0 (Phase 1 - Local-only, Phase 2+ network consent)
+**Last Updated**: 2025-10-29  
+**Policy Version**: 1.1 (Phase 2 - Network consent implemented)
 

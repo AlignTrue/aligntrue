@@ -7,11 +7,17 @@
  * - Caches indefinitely in .aligntrue/.cache/catalog/
  * - Falls back to cache when network unavailable
  * - Supports forceRefresh option to bypass cache
+ * 
+ * Privacy:
+ * - Requires user consent before first catalog fetch
+ * - Respects offline mode (uses cache only, no network)
+ * - Clear error messages when consent denied
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import type { SourceProvider } from './index.js'
+import type { ConsentManager } from '@aligntrue/core'
 
 /**
  * GitHub configuration for AlignTrue/aligns repository
@@ -55,6 +61,8 @@ export interface CatalogProviderOptions {
   cacheDir: string
   forceRefresh?: boolean
   warnOnStaleCache?: boolean
+  offlineMode?: boolean
+  consentManager?: ConsentManager
 }
 
 /**
@@ -65,11 +73,17 @@ export class CatalogProvider implements SourceProvider {
   private cacheDir: string
   private forceRefresh: boolean
   private warnOnStaleCache: boolean
+  private offlineMode: boolean
+  private consentManager?: ConsentManager
 
   constructor(options: CatalogProviderOptions) {
     this.cacheDir = options.cacheDir
     this.forceRefresh = options.forceRefresh ?? false
     this.warnOnStaleCache = options.warnOnStaleCache ?? true
+    this.offlineMode = options.offlineMode ?? false
+    if (options.consentManager !== undefined) {
+      this.consentManager = options.consentManager
+    }
 
     // Validate cache directory path (security check from Step 20)
     this.validateCachePath(this.cacheDir)
@@ -105,6 +119,30 @@ export class CatalogProvider implements SourceProvider {
         }
         return cached
       }
+    }
+
+    // Offline mode: use cache only, no network operations
+    if (this.offlineMode) {
+      const cached = this.getCachedPack(packId)
+      if (cached) {
+        return cached
+      }
+      throw new Error(
+        `Offline mode: no cache available for pack\n` +
+        `  Pack: ${packId}\n` +
+        `  Run without --offline to fetch from catalog`
+      )
+    }
+
+    // Privacy consent check before network operation
+    if (this.consentManager && !this.consentManager.checkConsent('catalog')) {
+      throw new Error(
+        `Network operation requires consent\n` +
+        `  Pack: ${packId}\n` +
+        `  Catalog: AlignTrue/aligns (GitHub)\n` +
+        `  Grant consent with: aligntrue privacy grant catalog\n` +
+        `  Or run with --offline to use cache only`
+      )
     }
 
     try {
