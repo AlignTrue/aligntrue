@@ -2,6 +2,8 @@
  * Source providers for pulling rules from multiple locations
  */
 
+import { getCacheDir } from '@aligntrue/core'
+
 export type SourceType = 'local' | 'catalog' | 'git' | 'url';
 
 /**
@@ -38,19 +40,9 @@ export interface CatalogSourceConfig extends SourceConfig {
 }
 
 /**
- * Constants for catalog provider
- */
-export const CATALOG_CACHE_DIR = '.aligntrue/.cache/catalog';
-
-/**
- * Constants for git provider
- */
-export const GIT_CACHE_DIR = '.aligntrue/.cache/git';
-
-/**
  * Create a source provider based on configuration
  */
-export function createProvider(config: SourceConfig): SourceProvider {
+export function createProvider(config: SourceConfig, cwd: string = process.cwd()): SourceProvider {
   switch (config.type) {
     case 'local': {
       if (!config.path) {
@@ -66,7 +58,7 @@ export function createProvider(config: SourceConfig): SourceProvider {
       }
       const { CatalogProvider } = require('./catalog.js');
       return new CatalogProvider({
-        cacheDir: CATALOG_CACHE_DIR,
+        cacheDir: getCacheDir('catalog', cwd),
         forceRefresh: (config as CatalogSourceConfig).forceRefresh,
         warnOnStaleCache: (config as CatalogSourceConfig).warnOnStaleCache,
       });
@@ -77,7 +69,7 @@ export function createProvider(config: SourceConfig): SourceProvider {
         throw new Error('Git source requires "url" field (e.g., "https://github.com/org/rules-repo")');
       }
       const { GitProvider } = require('./git.js');
-      return new GitProvider(config as GitSourceConfig, GIT_CACHE_DIR);
+      return new GitProvider(config as GitSourceConfig, getCacheDir('git', cwd));
     }
 
     case 'url':

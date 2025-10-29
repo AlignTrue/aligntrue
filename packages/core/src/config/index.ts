@@ -15,6 +15,7 @@ import {
   validateMergeOrder,
   type MergeOrder 
 } from '../scope.js'
+import { getAlignTruePaths } from '../paths.js'
 
 export type AlignTrueMode = 'solo' | 'team' | 'enterprise';
 export type ModeHints = 'off' | 'metadata_only' | 'hints' | 'native';
@@ -432,8 +433,9 @@ export async function validateConfig(config: AlignTrueConfig, configPath?: strin
 /**
  * Load and parse config file
  */
-export async function loadConfig(configPath?: string): Promise<AlignTrueConfig> {
-  const path = configPath || '.aligntrue/config.yaml'
+export async function loadConfig(configPath?: string, cwd?: string): Promise<AlignTrueConfig> {
+  const paths = getAlignTruePaths(cwd)
+  const path = configPath || paths.config
   
   // Check file exists
   if (!existsSync(path)) {
@@ -495,8 +497,9 @@ export async function loadConfig(configPath?: string): Promise<AlignTrueConfig> 
 /**
  * Save config to file with atomic write
  */
-export async function saveConfig(config: AlignTrueConfig, configPath?: string): Promise<void> {
-  const path = configPath || '.aligntrue/config.yaml'
+export async function saveConfig(config: AlignTrueConfig, configPath?: string, cwd?: string): Promise<void> {
+  const paths = getAlignTruePaths(cwd)
+  const path = configPath || paths.config
   const yamlContent = yaml.dump(config)
   const tempPath = `${path}.tmp`
   
