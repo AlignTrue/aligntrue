@@ -124,7 +124,7 @@ aligntrue sync --accept-agent cursor
 aligntrue sync --accept-agent agents-md
 ```
 
-**Note:** Phase 1 uses mock data for agent→IR parsing. Real parsers coming in Step 17.
+See [Import Workflow Guide](import-workflow.md) for detailed migration strategies and coverage analysis.
 
 **Output:**
 
@@ -785,6 +785,8 @@ Volatile fields won't cause lockfile drift.
 ## See also
 
 - [Command Reference](commands.md) - Detailed flag documentation
+- [Import Workflow](import-workflow.md) - Migrate from existing agent rules
+- [Git Sources Guide](git-sources.md) - Pull rules from repositories
 - [Troubleshooting](troubleshooting.md) - Common sync issues
 - [Extending AlignTrue](extending-aligntrue.md) - Create custom exporters
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds
