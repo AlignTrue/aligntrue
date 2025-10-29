@@ -5,7 +5,39 @@
  * Until then, schema may change without automated migrations.
  */
 
-export async function migrate(): Promise<void> {
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
+
+const ARG_DEFINITIONS: ArgDefinition[] = []
+
+export async function migrate(args: string[] = []): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help) {
+    showStandardHelp({
+      name: 'migrate',
+      description: 'Schema migration tooling (not yet available, pre-1.0)',
+      usage: 'aligntrue migrate',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue migrate',
+      ],
+      notes: [
+        'Migration framework will be added when we reach:',
+        '  • 50+ active repositories using AlignTrue, OR',
+        '  • 10+ organizations with multiple repos, OR',
+        '  • A planned breaking change that significantly impacts users',
+        '',
+        'For now:',
+        '  • Check CHANGELOG.md for breaking changes',
+        '  • Follow migration guides for each release',
+        '  • Pin CLI version if you need stability',
+        '',
+        'See: .internal_docs/pre-1.0-policy.md for details',
+      ],
+    })
+    process.exit(0)
+  }
+
   console.log(`
 ⚠️  Migration tooling not yet available
 

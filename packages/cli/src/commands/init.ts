@@ -14,103 +14,48 @@ import { getStarterTemplate } from '../templates/starter-rules.js'
 import { generateCursorStarter, getCursorStarterPath } from '../templates/cursor-starter.js'
 import { generateAgentsMdStarter, getAgentsMdStarterPath } from '../templates/agents-md-starter.js'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
-/**
- * Parse command-line arguments for init
- */
-interface InitArgs {
-  help: boolean
-  nonInteractive: boolean
-  yes: boolean
-  projectId?: string
-  exporters?: string[]
-}
-
-function parseInitArgs(args: string[]): InitArgs {
-  const parsed: InitArgs = {
-    help: false,
-    nonInteractive: false,
-    yes: false,
-  }
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (arg === '--non-interactive' || arg === '-n') {
-      parsed.nonInteractive = true
-    } else if (arg === '--yes' || arg === '-y') {
-      parsed.yes = true
-    } else if (arg === '--project-id') {
-      const nextArg = args[i + 1]
-      if (nextArg) {
-        parsed.projectId = nextArg
-        i++
-      }
-    } else if (arg === '--exporters') {
-      const nextArg = args[i + 1]
-      if (nextArg) {
-        parsed.exporters = nextArg.split(',').map(e => e.trim())
-        i++
-      }
-    }
-  }
-
-  // --yes is alias for --non-interactive
-  if (parsed.yes) {
-    parsed.nonInteractive = true
-  }
-
-  return parsed
-}
-
-function showInitHelp(): void {
-  console.log(`
-aligntrue init - Initialize AlignTrue in a project
-
-USAGE:
-  aligntrue init [options]
-
-OPTIONS:
-  -h, --help              Show this help message
-  -n, --non-interactive   Run without prompts (uses defaults)
-  -y, --yes               Same as --non-interactive
-  --project-id <id>       Project identifier (default: my-project)
-  --exporters <list>      Comma-separated list of exporters (default: auto-detect)
-
-EXAMPLES:
-  # Interactive (default)
-  aligntrue init
-
-  # Non-interactive with defaults
-  aligntrue init --yes
-
-  # Non-interactive with specific settings
-  aligntrue init --non-interactive --project-id my-app --exporters cursor,agents-md
-
-  # CI/automation
-  aligntrue init -y --project-id ci-project
-
-NOTES:
-  - In non-interactive mode, detected agents are auto-enabled
-  - If no agents detected, defaults to: cursor, agents-md
-  - Project ID defaults to: my-project
-  - Native format templates used when available
-`)
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: '--non-interactive', alias: '-n', hasValue: false, description: 'Run without prompts (uses defaults)' },
+  { flag: '--yes', alias: '-y', hasValue: false, description: 'Same as --non-interactive' },
+  { flag: '--project-id', hasValue: true, description: 'Project identifier (default: my-project)' },
+  { flag: '--exporters', hasValue: true, description: 'Comma-separated list of exporters (default: auto-detect)' },
+]
 
 /**
  * Init command implementation
  */
 export async function init(args: string[] = []): Promise<void> {
-  const parsed = parseInitArgs(args)
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
 
   if (parsed.help) {
-    showInitHelp()
+    showStandardHelp({
+      name: 'init',
+      description: 'Initialize AlignTrue in a project',
+      usage: 'aligntrue init [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue init',
+        'aligntrue init --yes',
+        'aligntrue init --non-interactive --project-id my-app --exporters cursor,agents-md',
+        'aligntrue init -y --project-id ci-project',
+      ],
+      notes: [
+        '- In non-interactive mode, detected agents are auto-enabled',
+        '- If no agents detected, defaults to: cursor, agents-md',
+        '- Project ID defaults to: my-project',
+        '- Native format templates used when available',
+      ],
+    })
     return
   }
 
-  const nonInteractive = parsed.nonInteractive
+  // Extract flags
+  const nonInteractive = (parsed.flags['non-interactive'] as boolean | undefined) || (parsed.flags['yes'] as boolean | undefined) || false
+  const projectId = parsed.flags['project-id'] as string | undefined
+  const exportersArg = parsed.flags['exporters'] as string | undefined
+  const exporters = exportersArg ? exportersArg.split(',').map(e => e.trim()) : undefined
 
   if (!nonInteractive) {
     clack.intro('AlignTrue Init')
@@ -207,9 +152,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   // Step 5: Select agents to enable
   let selectedAgents: string[]
 
-  if (parsed.exporters) {
+  if (exporters) {
     // CLI args override detection
-    selectedAgents = parsed.exporters
+    selectedAgents = exporters
     const msg = `Using exporters from CLI: ${selectedAgents.join(', ')}`
     if (nonInteractive) {
       console.log(msg)
@@ -259,18 +204,18 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   }
 
   // Step 6: Get project ID for template
-  let projectId: string
+  let projectIdValue: string
 
-  if (parsed.projectId) {
-    projectId = parsed.projectId
-    const msg = `Using project ID: ${projectId}`
+  if (projectId) {
+    projectIdValue = projectId
+    const msg = `Using project ID: ${projectIdValue}`
     if (nonInteractive) {
       console.log(msg)
     } else {
       clack.log.info(msg)
     }
   } else if (nonInteractive) {
-    projectId = 'my-project'
+    projectIdValue = 'my-project'
     console.log('Using default project ID: my-project')
   } else {
     const projectIdResponse = await clack.text({
@@ -292,7 +237,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
       process.exit(0)
     }
 
-    projectId = projectIdResponse as string
+    projectIdValue = projectIdResponse as string
   }
 
   // Step 7: Determine primary agent and template format
@@ -387,7 +332,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`
   } else {
     // Fallback to IR format
     const rulesPath = paths.rules
-    const template = getStarterTemplate(projectId)
+    const template = getStarterTemplate(projectIdValue)
     
     // Write IR template atomically (temp + rename)
     const rulesTempPath = `${rulesPath}.tmp`

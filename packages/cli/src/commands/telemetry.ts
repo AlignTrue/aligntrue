@@ -8,6 +8,7 @@ import { dirname } from 'path'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 import { exitWithError } from '../utils/error-formatter.js'
 import { CommonErrors as Errors } from '../utils/common-errors.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
 
 interface TelemetryConfig {
   enabled: boolean;
@@ -16,27 +17,41 @@ interface TelemetryConfig {
 
 const TELEMETRY_PATH = '.aligntrue/telemetry.json'
 
+const ARG_DEFINITIONS: ArgDefinition[] = []
+
 export async function telemetry(args: string[]): Promise<void> {
-  if (args.length === 0 || args[0] === '--help') {
-    console.log('Usage: aligntrue telemetry <subcommand>\n')
-    console.log('Subcommands:')
-    console.log('  on             Enable anonymous telemetry')
-    console.log('  off            Disable telemetry')
-    console.log('  status         Show current telemetry status\n')
-    console.log('What we collect (when enabled):')
-    console.log('  - Command name (init, sync, etc.)')
-    console.log('  - Export targets used (cursor, agents-md, etc.)')
-    console.log('  - Align content hashes (no code, no paths, no PII)\n')
-    console.log('What we never collect:')
-    console.log('  - Repository names or paths')
-    console.log('  - Rule content or guidance text')
-    console.log('  - File paths or directory structures')
-    console.log('  - Any personally identifiable information\n')
-    console.log('Default: disabled (opt-in only)')
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help || parsed.positional.length === 0) {
+    showStandardHelp({
+      name: 'telemetry',
+      description: 'Manage anonymous usage telemetry (opt-in only)',
+      usage: 'aligntrue telemetry <subcommand>',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue telemetry on',
+        'aligntrue telemetry off',
+        'aligntrue telemetry status',
+      ],
+      notes: [
+        'What we collect (when enabled):',
+        '  - Command name (init, sync, etc.)',
+        '  - Export targets used (cursor, agents-md, etc.)',
+        '  - Align content hashes (no code, no paths, no PII)',
+        '',
+        'What we never collect:',
+        '  - Repository names or paths',
+        '  - Rule content or guidance text',
+        '  - File paths or directory structures',
+        '  - Any personally identifiable information',
+        '',
+        'Default: disabled (opt-in only)',
+      ],
+    })
     process.exit(0)
   }
 
-  const subcommand = args[0]
+  const subcommand = parsed.positional[0]
 
   switch (subcommand) {
     case 'on':

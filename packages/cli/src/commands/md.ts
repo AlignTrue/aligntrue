@@ -6,27 +6,44 @@ import { readFileSync, writeFileSync, renameSync } from 'fs'
 import { parseMarkdown, buildIR, validateMarkdown, normalizeWhitespace, generateMarkdown } from '@aligntrue/markdown-parser'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
+
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: '--check', hasValue: false, description: 'Dry-run mode (format only, no writes)' },
+  { flag: '--output', hasValue: true, description: 'Output file path (default: stdout)' },
+  { flag: '--preserve-style', hasValue: false, description: 'Use _markdown_meta if present (generate only)' },
+  { flag: '--canonical', hasValue: false, description: 'Force canonical formatting (generate only)' },
+  { flag: '--header', hasValue: true, description: 'Custom header text (generate only)' },
+]
 
 export async function md(args: string[]): Promise<void> {
-  if (args.length === 0 || args[0] === '--help') {
-    console.log('Usage: aligntrue md <subcommand> <file> [options]\n')
-    console.log('Validate and compile literate markdown files\n')
-    console.log('Subcommands:')
-    console.log('  lint <file>       Validate markdown aligntrue blocks')
-    console.log('  format <file>     Normalize whitespace in aligntrue blocks')
-    console.log('  compile <file>    Convert markdown to aligntrue.yaml')
-    console.log('  generate <file>   Convert YAML to markdown (round-trip)\n')
-    console.log('Options:')
-    console.log('  --check           Dry-run mode (format only, no writes)')
-    console.log('  --output <file>   Output file path (default: stdout)')
-    console.log('  --preserve-style  Use _markdown_meta if present (generate only)')
-    console.log('  --canonical       Force canonical formatting (generate only)')
-    console.log('  --header <text>   Custom header text (generate only)')
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+
+  if (parsed.help || parsed.positional.length < 2) {
+    showStandardHelp({
+      name: 'md',
+      description: 'Validate and compile literate markdown files',
+      usage: 'aligntrue md <subcommand> <file> [options]',
+      args: ARG_DEFINITIONS,
+      examples: [
+        'aligntrue md lint rules.md',
+        'aligntrue md format rules.md',
+        'aligntrue md compile rules.md --output rules.yaml',
+        'aligntrue md generate rules.yaml --output rules.md',
+      ],
+      notes: [
+        'Subcommands:',
+        '  lint <file>       Validate markdown aligntrue blocks',
+        '  format <file>     Normalize whitespace in aligntrue blocks',
+        '  compile <file>    Convert markdown to aligntrue.yaml',
+        '  generate <file>   Convert YAML to markdown (round-trip)',
+      ],
+    })
     process.exit(0)
   }
 
-  const subcommand = args[0]
-  const file = args[1]
+  const subcommand = parsed.positional[0]
+  const file = parsed.positional[1]
 
   if (!file) {
     console.error('Error: File path required')
@@ -39,13 +56,13 @@ export async function md(args: string[]): Promise<void> {
       await mdLint(file)
       break
     case 'format':
-      await mdFormat(file, args.includes('--check'))
+      await mdFormat(file, parsed.flags['check'] as boolean | undefined || false)
       break
     case 'compile':
-      await mdCompile(file, getOutputFile(args))
+      await mdCompile(file, parsed.flags['output'] as string | undefined)
       break
     case 'generate':
-      await mdGenerate(file, args)
+      await mdGenerate(file, parsed.flags)
       break
     default:
       console.error(`Unknown subcommand: ${subcommand}`)
@@ -139,7 +156,7 @@ async function mdFormat(file: string, checkOnly: boolean): Promise<void> {
   }
 }
 
-async function mdCompile(file: string, outputFile: string): Promise<void> {
+async function mdCompile(file: string, outputFile?: string): Promise<void> {
   try {
     const content = readFileSync(file, 'utf-8')
     const parseResult = parseMarkdown(content)
@@ -174,7 +191,7 @@ async function mdCompile(file: string, outputFile: string): Promise<void> {
     const yamlContent = stringifyYaml(irResult.document)
     const output = `# Generated from ${file}\n# Source format: markdown\n\n${yamlContent}`
 
-    if (outputFile === '-') {
+    if (!outputFile || outputFile === '-') {
       console.log(output)
     } else {
       // Write compiled output atomically (temp + rename)
@@ -192,7 +209,7 @@ async function mdCompile(file: string, outputFile: string): Promise<void> {
   }
 }
 
-async function mdGenerate(file: string, args: string[]): Promise<void> {
+async function mdGenerate(file: string, flags: Record<string, boolean | string | undefined>): Promise<void> {
   try {
     // Read YAML file
     const content = readFileSync(file, 'utf-8')
@@ -204,11 +221,10 @@ async function mdGenerate(file: string, args: string[]): Promise<void> {
     }
 
     // Parse generation options
-    const preserveStyle = args.includes('--preserve-style')
-    const canonical = args.includes('--canonical')
-    const headerIndex = args.indexOf('--header')
-    const headerText = headerIndex !== -1 && args[headerIndex + 1] ? args[headerIndex + 1] : undefined
-    const outputFile = getOutputFile(args)
+    const preserveStyle = flags['preserve-style'] as boolean | undefined
+    const canonical = flags['canonical'] as boolean | undefined
+    const headerText = flags['header'] as string | undefined
+    const outputFile = flags['output'] as string | undefined
 
     // Generate markdown
     const generateOpts: any = {
@@ -220,7 +236,7 @@ async function mdGenerate(file: string, args: string[]): Promise<void> {
     const markdown = generateMarkdown(ir as any, generateOpts)
 
     // Write output
-    if (outputFile === '-') {
+    if (!outputFile || outputFile === '-') {
       console.log(markdown)
     } else {
       // Write generated markdown atomically (temp + rename)
@@ -238,11 +254,4 @@ async function mdGenerate(file: string, args: string[]): Promise<void> {
   }
 }
 
-function getOutputFile(args: string[]): string {
-  const outputIndex = args.indexOf('--output')
-  if (outputIndex !== -1 && args[outputIndex + 1]) {
-    return args[outputIndex + 1]!
-  }
-  return '-' // stdout by default
-}
 
