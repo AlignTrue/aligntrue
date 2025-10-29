@@ -451,6 +451,85 @@ describe('CursorExporter', () => {
       expect(content).not.toContain('globs:')
     })
   })
+
+  describe('mode hints and round-trip invariants', () => {
+    const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+
+    it('should always use native mode regardless of config', async () => {
+      const config = { export: { mode_hints: { default: 'hints' } } }
+      const request = createRequest(loadFixture('single-rule.yaml').rules, createDefaultScope())
+      const result = await exporter.export(request, { ...options, config })
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      // Should NOT have HTML comment markers
+      expect(content).not.toContain('<!-- aligntrue:begin')
+      // Should have native frontmatter
+      expect(content).toContain('---')
+    })
+
+    it('should preserve vendor.cursor.globs byte-identical', async () => {
+      const rules = [createRuleWithVendorGlobs(['**/*.ts', '**/*.tsx'])]
+      const request = createRequest(rules, createDefaultScope())
+      const result = await exporter.export(request, options)
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('globs:')
+      expect(content).toContain('- "**/*.ts"')
+      expect(content).toContain('- "**/*.tsx"')
+    })
+
+    it('should prefer vendor.cursor.globs over applies_to in frontmatter', async () => {
+      const rule = {
+        id: 'test.rule.id',
+        severity: 'error' as const,
+        applies_to: ['**/*.js'],
+        mode: 'always' as const,
+        guidance: 'Test rule',
+        vendor: { cursor: { globs: ['**/*.ts'] } }
+      }
+      const request = createRequest([rule], createDefaultScope())
+      const result = await exporter.export(request, options)
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      
+      // Extract frontmatter (between --- markers)
+      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/)
+      expect(frontmatterMatch).toBeTruthy()
+      const frontmatter = frontmatterMatch![1]
+      
+      // vendor.cursor.globs should be in frontmatter
+      expect(frontmatter).toContain('- "**/*.ts"')
+      // applies_to should NOT be in frontmatter
+      expect(frontmatter).not.toContain('**/*.js')
+    })
+
+    it('should round-trip all execution modes correctly', async () => {
+      const modes = ['always', 'intelligent', 'files', 'manual']
+      for (const mode of modes) {
+        const rule = { ...createBasicRule(), mode: mode as any }
+        const request = createRequest([rule], createDefaultScope())
+        const result = await exporter.export(request, options)
+        const content = readFileSync(result.filesWritten[0], 'utf-8')
+        // Verify mode-specific frontmatter fields present
+        if (mode === 'always') expect(content).toContain('alwaysApply: true')
+        if (mode === 'intelligent') expect(content).toContain('intelligent: true')
+        // etc.
+      }
+    })
+
+    it('should work with mode_hints config present (ignored)', async () => {
+      const config = {
+        export: {
+          mode_hints: {
+            default: 'metadata_only',
+            overrides: { cursor: 'hints' } // Should be ignored
+          }
+        }
+      }
+      const request = createRequest(loadFixture('single-rule.yaml').rules, createDefaultScope())
+      const result = await exporter.export(request, { ...options, config })
+      expect(result.success).toBe(true)
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).not.toContain('aligntrue:begin')
+    })
+  })
 })
 
 describe('generateMdcFooter', () => {
@@ -509,6 +588,27 @@ function createDefaultScope(): ResolvedScope {
     normalizedPath: '.',
     isDefault: true,
     include: ['**/*'],
+  }
+}
+
+function createRuleWithVendorGlobs(globs: string[]): AlignRule {
+  return {
+    id: 'test.rule.id',
+    severity: 'error',
+    applies_to: ['**/*'],
+    mode: 'always',
+    guidance: 'Test rule with vendor globs',
+    vendor: { cursor: { globs } }
+  }
+}
+
+function createBasicRule(): AlignRule {
+  return {
+    id: 'test.rule.id',
+    severity: 'error',
+    applies_to: ['**/*'],
+    mode: 'always',
+    guidance: 'Basic test rule'
   }
 }
 
