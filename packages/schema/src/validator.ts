@@ -247,6 +247,20 @@ export interface AlignPack {
   
   rules: AlignRule[]
   integrity?: AlignIntegrity
+  
+  // Markdown metadata (for round-trip preservation)
+  _markdown_meta?: MarkdownMetadata
+}
+
+export interface MarkdownMetadata {
+  original_structure?: 'single-block' | 'multi-rule'
+  header_prefix?: string
+  guidance_position?: 'before-block' | 'in-doc'
+  whitespace_style?: {
+    indent: 'spaces' | 'tabs'
+    indent_size: number
+    line_endings: 'lf' | 'crlf'
+  }
 }
 
 export interface AlignScope {

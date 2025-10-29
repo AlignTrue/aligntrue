@@ -106,6 +106,44 @@
           "description": "Hex-encoded SHA-256 hash. Optional in solo mode, required in catalog mode."
         }
       }
+    },
+    "_markdown_meta": {
+      "type": "object",
+      "properties": {
+        "original_structure": {
+          "type": "string",
+          "enum": ["single-block", "multi-rule"],
+          "description": "Markdown structure used in source document"
+        },
+        "header_prefix": {
+          "type": "string",
+          "description": "Header text before fenced block (e.g., '# AlignTrue Rules')"
+        },
+        "guidance_position": {
+          "type": "string",
+          "enum": ["before-block", "in-doc"],
+          "description": "Where document guidance was located in markdown"
+        },
+        "whitespace_style": {
+          "type": "object",
+          "properties": {
+            "indent": {
+              "type": "string",
+              "enum": ["spaces", "tabs"]
+            },
+            "indent_size": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            },
+            "line_endings": {
+              "type": "string",
+              "enum": ["lf", "crlf"]
+            }
+          }
+        }
+      },
+      "description": "Metadata for byte-identical markdown round-trip reconstruction (excluded from canonical hash)"
     }
   },
   "$defs": {
