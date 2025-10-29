@@ -6,17 +6,34 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "test:fast": "pnpm -r test --reporter=dot --pool=threads",
     "verify": "pnpm --filter @aligntrue/testkit test",
     "testkit:verify": "pnpm verify",
-    "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist archive/*/node_modules archive/*/.next archive/*/dist",
-    "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete"
+    "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
+    "bootstrap": "pnpm install && pnpm build",
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,md,json,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.3.0",
     "typescript": "^5.6.0"
   },

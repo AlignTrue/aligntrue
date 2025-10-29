@@ -17,25 +17,25 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node: ['20']
-    
+        node: ["20"]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-      
+
       - name: Get pnpm store directory
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -43,25 +43,34 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      
+
+      - name: Validate lockfile sync
+        shell: bash
+        run: |
+          pnpm install --frozen-lockfile || {
+            echo "❌ pnpm-lock.yaml is out of sync with package.json"
+            echo "Run 'pnpm install' locally and commit pnpm-lock.yaml"
+            exit 1
+          }
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build all packages
         run: pnpm build
-      
+
       - name: Type check all packages
         run: pnpm typecheck
-      
+
       - name: Run all tests
         run: pnpm test
-      
+
       - name: Run conformance testkit
         run: pnpm verify
-      
+
       - name: Run integration tests
         run: pnpm -C packages/cli test tests/integration
-      
+
       - name: Validate golden repository
         shell: bash
         run: |
@@ -82,4 +91,3 @@ jobs:
             exit 1
           fi
           echo "All tests passed on all platforms"
-

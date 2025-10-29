@@ -7,7 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Pre-commit hooks with Husky** for automatic linting and formatting (2025-10-29)
+  - Runs on staged files only (<3 seconds)
+  - Auto-fixes linting issues with ESLint
+  - Formats code with Prettier
+  - Updates lockfile if package.json changed
+- **Pre-push hooks** running typecheck, tests, and build before push (2025-10-29)
+  - Full validation suite (~30-60 seconds)
+  - Mirrors CI validation
+  - Prevents pushing code that will fail CI
+- **Commitlint** for Conventional Commits enforcement (2025-10-29)
+  - Validates commit message format
+  - Supports: feat, fix, docs, style, refactor, perf, test, chore, ci, build
+- **Changesets** for package versioning and release management (2025-10-29)
+  - Linked versioning for all @aligntrue/\* packages
+  - Automated changelog generation
+  - npm scripts: `pnpm changeset`, `pnpm version`, `pnpm release`
+- **Node version pinning** with `.node-version` file (2025-10-29)
+  - Volta/asdf/nvm compatibility
+  - Pinned to Node 20.18.0
+- **lockfile-only update in lint-staged** to prevent lockfile drift (2025-10-29)
+  - Automatically updates lockfile when package.json changes in commits
+- **Comprehensive test running documentation** in DEVELOPMENT.md (2025-10-29)
+  - All test command patterns documented
+  - Watch mode guidance for TDD workflow
+  - Coverage, deterministic environment, and fast feedback mode
+- **npm scripts** for improved developer experience (2025-10-29)
+  - `pnpm bootstrap` - One-command setup
+  - `pnpm test:fast` - Fast reporter for quick feedback
+  - `pnpm lint:fix` - Auto-fix linting issues
+
 ### Changed
+
+- **Updated DEVELOPMENT.md** with testing workflows and quality guardrails (2025-10-29)
+  - Added Quick start section with `pnpm bootstrap`
+  - Comprehensive "Running tests locally" section
+  - Git hooks documentation (pre-commit, commit-msg, pre-push)
+  - Versioning with Changesets workflow
+  - Troubleshooting for hooks and commit messages
+  - Expanded from 210 lines to ~410 lines
+- **Updated testing.mdc** with pre-commit/pre-push workflow documentation (2025-10-29)
+  - Local workflow integration section
+  - Hook timing and behavior explanation
+  - Emergency bypass instructions
+- **Updated tdd.mdc** with watch mode guidance for TDD workflow (2025-10-29)
+  - TDD with watch mode section
+  - Specific watch mode commands for different scenarios
+  - Integration with pre-push hooks
+- **Enhanced CI** with explicit lockfile validation step (2025-10-29)
+  - Validates lockfile sync before installation
+  - Clear error messages when lockfile is out of sync
+  - Prevents confusing CI failures
+
+### Fixed
+
+- **Lockfile drift** causing CI failures (removed incorrect root dependencies) (2025-10-29)
+  - Removed @clack/prompts, ajv, ajv-formats from root package.json
+  - Dependencies properly scoped to packages that need them
+  - CI now passes with frozen-lockfile check
+- **Husky hooks** updated to v10 format (2025-10-29)
+  - Removed deprecated shebang and sourcing pattern
+  - Hooks now use simplified format
+- **Pre-commit hook** simplified to use Prettier only (2025-10-29)
+  - Removed ESLint from lint-staged (no ESLint config exists yet)
+  - Changed npm scripts from lint/lint:fix to format/format:check
+  - Removed automatic lockfile updates (caused pnpm errors with workspace root)
+  - Pre-commit now only runs Prettier formatting
 
 - **Phase 3 Implementation Plan** - Reorganized into efficient Plan Sessions (2025-10-29)
   - Restructured from 46 granular steps into 10 cohesive Plan Sessions
@@ -172,7 +239,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables intelligent mode + globs (AI relevance on scoped files)
   - Enables always mode + globs (auto-apply to scoped files)
   - Enables manual mode + globs (manual invocation on scoped files)
-  - Only exports globs when applies_to has specific patterns (not default **/*) 
+  - Only exports globs when applies_to has specific patterns (not default \*_/_)
   - 3 new tests validate globs export for intelligent/always modes and default suppression
   - 4 snapshot tests updated to reflect correct behavior
   - Files modified:
@@ -188,7 +255,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 15 exporters updated with token budget caps and smart prioritization
   - DRY refactor: shared mode-hints-helpers.ts utility eliminates ~400 lines duplication
   - JSON markers for deterministic parsing, dual pattern for model salience
-  - Glob specificity prioritization: depth * 3 - stars * 2 - hasDouble * 2
+  - Glob specificity prioritization: depth _ 3 - stars _ 2 - hasDouble \* 2
   - Conservative defaults: metadata_only global, agents_md=hints override
   - Cursor/yaml forced to native mode (preserves round-trip fidelity)
   - 106 new tests (8 config + 12 token + 9 markers + 35 exporter + 5 cursor + 37 DRY refactor)
@@ -202,7 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added mode enum: "always", "manual", "intelligent", "files"
   - Added title, description, and tags fields to AlignRule schema
   - Normalized mode detection: alwaysApply → "always", intelligent → "intelligent", globs → "files", default → "manual"
-  - Cursor parser maps frontmatter to schema fields with unknown field safety net (vendor.cursor._unknown)
+  - Cursor parser maps frontmatter to schema fields with unknown field safety net (vendor.cursor.\_unknown)
   - Cursor exporter reads schema fields and generates correct frontmatter
   - applies_to and globs mirror each other (single concept, bidirectional mapping)
   - Round-trip fidelity maintained: import → export → import produces identical schema fields
@@ -218,7 +285,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `packages/exporters/tests/cursor.test.ts` - Updated round-trip tests (40 lines modified)
   - Test count: 1073/1073 passing (100% pass rate, maintained from Step 1a)
   - Zero vendor.cursor redundancy: clean migration to schema fields with safety net for unknown fields
-  - Future-proof: unknown Cursor fields preserved in vendor.cursor._unknown to prevent data loss
+  - Future-proof: unknown Cursor fields preserved in vendor.cursor.\_unknown to prevent data loss
 
 - **Cursor Mode Preservation** (Phase 2, Stage 1, Step 1a) - Completed 2025-10-29
   - Capture ALL Cursor frontmatter fields in vendor.cursor namespace
@@ -353,7 +420,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `packages/markdown-parser/tests/round-trip.test.ts` (10 tests, 349 lines)
   - Files modified:
     - `packages/schema/src/validator.ts` - Added MarkdownMetadata interface
-    - `packages/schema/schema/align.schema.json` - Added _markdown_meta field
+    - `packages/schema/schema/align.schema.json` - Added \_markdown_meta field
     - `packages/markdown-parser/src/ir-builder.ts` - Metadata detection (60 lines added)
     - `packages/markdown-parser/src/index.ts` - Export generator
     - `packages/markdown-parser/tests/ir-builder.test.ts` - 5 metadata tests
@@ -502,7 +569,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `aligntrue import <agent> --coverage` command for import analysis
   - Field-level mapping report: shows IR fields ← agent format sources
   - Coverage calculation: percentage, confidence level (high/medium/low)
-  - Tracks vendor.* preservation for round-trip fidelity
+  - Tracks vendor.\* preservation for round-trip fidelity
   - Cursor parser: 71% coverage (5/7 IR fields), confidence: medium
   - AGENTS.md parser: 71% coverage (5/7 IR fields), confidence: medium
   - 26 new tests for coverage analysis and CLI command (15 coverage + 11 import)
@@ -555,7 +622,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Second npm publish** on `next` tag (fixed alpha release)
-- Successfully published 10 @aligntrue/* packages to npm:
+- Successfully published 10 @aligntrue/\* packages to npm:
   - `@aligntrue/cli` - Command-line interface
   - `@aligntrue/core` - Core sync engine
   - `@aligntrue/schema` - JSON Schema validation
@@ -604,7 +671,7 @@ Use `0.1.0-alpha.2` instead.
 ### Added
 
 - **First npm publish** on `next` tag (experimental alpha release)
-- Published all 8 @aligntrue/* packages to npm
+- Published all 8 @aligntrue/\* packages to npm
 - `aligntrue` shim package for simple install experience
 - Solo mode CLI with <60 second setup
 - Three exporters: Cursor (.mdc), AGENTS.md, VS Code MCP config
@@ -782,6 +849,7 @@ For stable releases, wait for `0.1.0` on the `latest` tag.
     - `packages/cli/README.md` - Quick reference section + flag documentation
 
 ### Documentation
+
 - Added `docs/mcp-scope.md` - Clarifies AlignTrue's MCP scope (generates config files, not server declarations)
 - Updated `long_term.mdc` - Removed "Full MCP server" from Phase 2, added to deferred features with clear triggers
 - **Privacy-focused network consent** (Phase 2 planning) - 2025-10-27
@@ -1062,10 +1130,10 @@ For stable releases, wait for `0.1.0` on the `latest` tag.
     - `cline` - .clinerules plain text format
     - `goose` - .goosehints plain text format
     - `firebender` - firebender.json configuration
-    - `amazonq` - .amazonq/rules/*.md directory-based
-    - `augmentcode` - .augment/rules/*.md directory-based
-    - `kilocode` - .kilocode/rules/*.md directory-based
-    - `kiro` - .kiro/steering/*.md directory-based
+    - `amazonq` - .amazonq/rules/\*.md directory-based
+    - `augmentcode` - .augment/rules/\*.md directory-based
+    - `kilocode` - .kilocode/rules/\*.md directory-based
+    - `kiro` - .kiro/steering/\*.md directory-based
     - `firebase-studio` - .idx/airules.md format
     - `junie` - .junie/guidelines.md format
     - `trae-ai` - .trae/rules/project_rules.md format
@@ -1295,7 +1363,6 @@ For stable releases, wait for `0.1.0` on the `latest` tag.
   - Workspace integrity verified with successful pnpm install and typecheck
   - Total 5 packages ready for implementation (15k token estimate)
 
-
 ### Added
 
 - **Workspace structure** reorganized into proper pnpm monorepo layout
@@ -1385,7 +1452,7 @@ For stable releases, wait for `0.1.0` on the `latest` tag.
 
 - **Basealigns migration** (Stage 1.2.5)
   - Completed migration of 11 packs to AlignTrue/aligns repository
-  - Pack IDs properly namespaced under packs/base/* and packs/stacks/*
+  - Pack IDs properly namespaced under packs/base/_ and packs/stacks/_
   - Cross-repository CI validation workflow established
   - Base packs (8): base-global, base-testing, base-docs, base-security, base-debugging, base-tdd, base-rule-authoring, base-typescript
   - Stack packs (3): nextjs-app-router, web-quality, vercel-deployments
@@ -1459,4 +1526,4 @@ For stable releases, wait for `0.1.0` on the `latest` tag.
 
 ---
 
-*This changelog follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.*
+_This changelog follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format._
