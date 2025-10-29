@@ -35,6 +35,12 @@ export interface ExportConfig {
   max_hint_tokens?: number;
 }
 
+export interface BackupConfig {
+  auto_backup?: boolean;
+  keep_count?: number;
+  backup_on?: Array<'sync' | 'restore' | 'import'>;
+}
+
 export interface AlignTrueConfig {
   version: string | undefined;
   mode: AlignTrueMode;
@@ -76,6 +82,7 @@ export interface AlignTrueConfig {
   };
   performance?: PerformanceConfig;
   export?: ExportConfig;
+  backup?: BackupConfig;
 }
 
 /**
@@ -264,6 +271,14 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   result.performance.max_directory_depth = result.performance.max_directory_depth ?? 10
   result.performance.ignore_patterns = result.performance.ignore_patterns ?? []
   
+  // Apply backup defaults
+  if (!result.backup) {
+    result.backup = {}
+  }
+  result.backup.auto_backup = result.backup.auto_backup ?? false
+  result.backup.keep_count = result.backup.keep_count ?? 10
+  result.backup.backup_on = result.backup.backup_on ?? ['sync']
+  
   return result
 }
 
@@ -272,7 +287,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
  */
 function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance', 'export'
+    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance', 'export', 'backup'
   ])
   
   for (const key of Object.keys(config)) {

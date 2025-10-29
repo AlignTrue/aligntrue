@@ -265,6 +265,260 @@ aligntrue check --ci
 
 ---
 
+### `aligntrue backup`
+
+Create, list, restore, and clean up backups of your `.aligntrue/` directory.
+
+**Usage:**
+
+```bash
+aligntrue backup <subcommand>
+```
+
+**Subcommands:**
+
+- `create` - Create a new backup
+- `list` - List all available backups
+- `restore` - Restore from a backup
+- `cleanup` - Remove old backups
+
+#### `aligntrue backup create`
+
+Create a manual backup of your `.aligntrue/` directory.
+
+**Usage:**
+
+```bash
+aligntrue backup create [--notes "description"]
+```
+
+**Flags:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--notes <text>` | Optional description for the backup | (none) |
+
+**What it does:**
+
+1. Creates timestamped directory in `.aligntrue/.backups/<timestamp>/`
+2. Copies all files from `.aligntrue/` (except `.cache/`, `.backups/`, telemetry)
+3. Generates `manifest.json` with metadata
+4. Displays backup timestamp and restore command
+
+**Examples:**
+
+```bash
+# Basic backup
+aligntrue backup create
+
+# With notes
+aligntrue backup create --notes "Before experimental changes"
+aligntrue backup create --notes "Working state before refactor"
+```
+
+**Output:**
+
+```
+✔ Creating backup
+✔ Backup created: 2025-10-29T14-30-00-000
+
+Backed up 2 files:
+  config.yaml
+  rules.md
+
+Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
+```
+
+#### `aligntrue backup list`
+
+List all available backups from newest to oldest.
+
+**Usage:**
+
+```bash
+aligntrue backup list
+```
+
+**What it does:**
+
+1. Scans `.aligntrue/.backups/` directory
+2. Reads manifest from each backup
+3. Displays backups sorted by timestamp (newest first)
+4. Shows total count
+
+**Example output:**
+
+```
+Available backups:
+
+  2025-10-29T14-30-00-000
+    Created: Oct 29, 2025 at 2:30:00 PM
+    Files: 2 (config.yaml, rules.md)
+    Notes: Before experimental changes
+
+  2025-10-29T12-15-45-123
+    Created: Oct 29, 2025 at 12:15:45 PM
+    Files: 3 (config.yaml, rules.md, privacy-consent.json)
+    Notes: Auto-backup before sync
+
+3 backups found
+```
+
+#### `aligntrue backup restore`
+
+Restore files from a backup. Creates temporary backup before restore for safety.
+
+**Usage:**
+
+```bash
+# Restore most recent backup
+aligntrue backup restore
+
+# Restore specific backup
+aligntrue backup restore --to <timestamp>
+```
+
+**Flags:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--to <timestamp>` | Specific backup timestamp | Most recent |
+
+**What it does:**
+
+1. Creates temporary backup of current state (safety net)
+2. Removes existing files in `.aligntrue/`
+3. Copies files from backup
+4. Validates restore success
+5. Cleans up temporary backup
+
+**Rollback behavior:**
+
+If restore fails:
+- Automatically restores from temporary backup
+- Original state preserved
+- Error message displayed
+
+**Examples:**
+
+```bash
+# Restore most recent
+aligntrue backup restore
+
+# Restore specific backup (timestamp from `backup list`)
+aligntrue backup restore --to 2025-10-29T14-30-00-000
+```
+
+**Output:**
+
+```
+✔ Creating temporary backup
+✔ Restoring backup: 2025-10-29T14-30-00-000
+✔ Restore complete
+
+Restored 2 files:
+  config.yaml
+  rules.md
+```
+
+**Warning:** This overwrites your current `.aligntrue/` directory. Use `backup list` to verify timestamp before restoring.
+
+#### `aligntrue backup cleanup`
+
+Remove old backups, keeping only the most recent N backups.
+
+**Usage:**
+
+```bash
+# Use keep_count from config (default: 10)
+aligntrue backup cleanup
+
+# Keep specific number
+aligntrue backup cleanup --keep 5
+```
+
+**Flags:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--keep <number>` | Number of backups to keep | From config or 10 |
+
+**What it does:**
+
+1. Lists all backups sorted by timestamp
+2. Identifies backups older than keep count
+3. Prompts for confirmation
+4. Removes old backup directories
+5. Displays count removed and kept
+
+**Examples:**
+
+```bash
+# Keep default number (from config)
+aligntrue backup cleanup
+
+# Keep only most recent 5
+aligntrue backup cleanup --keep 5
+```
+
+**Example output:**
+
+```
+Found 12 backups (keeping 5 most recent)
+
+Remove 7 old backups? (yes/no): yes
+
+✔ Cleanup complete
+  Removed: 7 backups
+  Kept: 5 backups
+```
+
+#### Auto-backup configuration
+
+Enable automatic backups before destructive operations in `.aligntrue/config.yaml`:
+
+```yaml
+backup:
+  # Enable auto-backup before operations
+  auto_backup: false  # Set to true to enable
+  
+  # Commands that trigger auto-backup
+  backup_on:
+    - sync
+    - import
+    - restore
+  
+  # Number of backups to keep (older ones auto-deleted)
+  keep_count: 10
+```
+
+**Auto-backup workflow:**
+
+When enabled, AlignTrue automatically:
+1. Creates backup before operation
+2. Displays backup timestamp
+3. Executes operation
+4. Cleans up old backups on success
+
+**Example with auto-backup:**
+
+```bash
+$ aligntrue sync
+
+✔ Creating backup
+✔ Backup created: 2025-10-29T14-30-00-000
+  Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
+
+✔ Syncing to agents
+✔ Wrote 3 files
+
+✔ Cleaned up 2 old backups
+```
+
+**See also:** [Backup and Restore Guide](backup-restore.md) for detailed usage and troubleshooting.
+
+---
+
 ## Development commands
 
 Tools for working with markdown rules, managing adapters, and validating syntax.
@@ -1029,6 +1283,7 @@ If you encounter an error:
 ## See also
 
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds
+- [Backup and Restore Guide](backup-restore.md) - Protect your configuration
 - [Git Sources Guide](git-sources.md) - Pull rules from repositories
 - [Import Workflow](import-workflow.md) - Migrate from existing agent rules
 - [Troubleshooting](troubleshooting.md) - Common issues and fixes
