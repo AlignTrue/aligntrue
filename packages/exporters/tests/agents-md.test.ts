@@ -3,397 +3,497 @@
  * Validates v1 format generation, scope merging, fidelity tracking, and snapshot outputs
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { load as loadYaml } from 'js-yaml'
-import { AgentsMdExporter } from '../src/agents-md/index.js'
-import type { ScopedExportRequest, ExportOptions, ResolvedScope } from '../src/types.js'
-import type { AlignRule } from '@aligntrue/schema'
+import { describe, it, expect, beforeEach } from "vitest";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { load as loadYaml } from "js-yaml";
+import { AgentsMdExporter } from "../src/agents-md/index.js";
+import type {
+  ScopedExportRequest,
+  ExportOptions,
+  ResolvedScope,
+} from "../src/types.js";
+import type { AlignRule } from "@aligntrue/schema";
 
 // Helper to load YAML fixture
 function loadFixture(name: string): { rules: AlignRule[] } {
-  const fixturePath = join(__dirname, 'fixtures', 'agents-md', `${name}.yaml`)
-  const content = readFileSync(fixturePath, 'utf-8')
-  const data = loadYaml(content) as any
-  return { rules: data.rules || [] }
+  const fixturePath = join(__dirname, "fixtures", "agents-md", `${name}.yaml`);
+  const content = readFileSync(fixturePath, "utf-8");
+  const data = loadYaml(content) as any;
+  return { rules: data.rules || [] };
 }
 
 // Helper to create mock scope
-function createMockScope(path: string = '.', isDefault: boolean = true): ResolvedScope {
+function createMockScope(
+  path: string = ".",
+  isDefault: boolean = true,
+): ResolvedScope {
   return {
     path,
     normalizedPath: path,
-    include: ['**/*'],
+    include: ["**/*"],
     exclude: [],
     isDefault,
-  }
+  };
 }
 
 // Helper to create scoped export request
-function createRequest(scope: ResolvedScope, rules: AlignRule[]): ScopedExportRequest {
+function createRequest(
+  scope: ResolvedScope,
+  rules: AlignRule[],
+): ScopedExportRequest {
   return {
     scope,
     rules,
-    outputPath: '/test/output',
-  }
+    outputPath: "/test/output",
+  };
 }
 
-describe('AgentsMdExporter', () => {
-  let exporter: AgentsMdExporter
-  let options: ExportOptions
+describe("AgentsMdExporter", () => {
+  let exporter: AgentsMdExporter;
+  let options: ExportOptions;
 
   beforeEach(() => {
-    exporter = new AgentsMdExporter()
+    exporter = new AgentsMdExporter();
     options = {
-      outputDir: '/test/output',
+      outputDir: "/test/output",
       dryRun: true, // Default to dry-run for tests
-    }
-  })
+    };
+  });
 
-  describe('Basic functionality', () => {
-    it('implements ExporterPlugin interface', () => {
-      expect(exporter.name).toBe('agents-md')
-      expect(exporter.version).toBe('1.0.0')
-      expect(typeof exporter.export).toBe('function')
-    })
+  describe("Basic functionality", () => {
+    it("implements ExporterPlugin interface", () => {
+      expect(exporter.name).toBe("agents-md");
+      expect(exporter.version).toBe("1.0.0");
+      expect(typeof exporter.export).toBe("function");
+    });
 
-    it('exports single rule successfully', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("exports single rule successfully", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
+      const result = await exporter.export(request, options);
 
-      expect(result.success).toBe(true)
-      expect(result.filesWritten).toEqual([])
-      expect(result.contentHash).toBeTruthy()
-      expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/)
-    })
+      expect(result.success).toBe(true);
+      expect(result.filesWritten).toEqual([]);
+      expect(result.contentHash).toBeTruthy();
+      expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/);
+    });
 
-    it('exports multiple rules successfully', async () => {
-      const { rules } = loadFixture('multiple-rules')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("exports multiple rules successfully", async () => {
+      const { rules } = loadFixture("multiple-rules");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
+      const result = await exporter.export(request, options);
 
-      expect(result.success).toBe(true)
-      expect(result.contentHash).toBeTruthy()
-    })
+      expect(result.success).toBe(true);
+      expect(result.contentHash).toBeTruthy();
+    });
 
-    it('handles empty rules array', async () => {
-      const scope = createMockScope()
-      const request = createRequest(scope, [])
+    it("handles empty rules array", async () => {
+      const scope = createMockScope();
+      const request = createRequest(scope, []);
 
-      const result = await exporter.export(request, options)
+      const result = await exporter.export(request, options);
 
-      expect(result.success).toBe(true)
-      expect(result.filesWritten).toEqual([])
-      expect(result.contentHash).toBe('')
-    })
-  })
+      expect(result.success).toBe(true);
+      expect(result.filesWritten).toEqual([]);
+      expect(result.contentHash).toBe("");
+    });
+  });
 
-  describe('Format validation', () => {
-    it('generates v1 header with version marker', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+  describe("Format validation", () => {
+    it("generates v1 header with version marker", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
-      
+      const result = await exporter.export(request, options);
+
       // Access private method for testing (via type assertion)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
-      
-      expect(content).toContain('# AGENTS.md')
-      expect(content).toContain('**Version:** v1')
-      expect(content).toContain('**Generated by:** AlignTrue')
-      expect(content).toContain('This file contains rules and guidance for AI coding agents.')
-    })
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-    it('maps severity to plain text labels (ERROR, WARN, INFO)', async () => {
-      const { rules } = loadFixture('all-severities')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+      expect(content).toContain("# AGENTS.md");
+      expect(content).toContain("**Version:** v1");
+      expect(content).toContain("**Generated by:** AlignTrue");
+      expect(content).toContain(
+        "This file contains rules and guidance for AI coding agents.",
+      );
+    });
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+    it("maps severity to plain text labels (ERROR, WARN, INFO)", async () => {
+      const { rules } = loadFixture("all-severities");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      expect(content).toContain('**Severity:** ERROR')
-      expect(content).toContain('**Severity:** WARN')
-      expect(content).toContain('**Severity:** INFO')
-    })
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-    it('includes rule ID and scope paths in each section', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+      expect(content).toContain("**Severity:** ERROR");
+      expect(content).toContain("**Severity:** WARN");
+      expect(content).toContain("**Severity:** INFO");
+    });
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+    it("includes rule ID and scope paths in each section", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      expect(content).toContain('## Rule: testing.require-tests')
-      expect(content).toContain('**ID:** testing.require-tests')
-      expect(content).toContain('**Scope:**')
-    })
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-    it('separates rules with horizontal lines', async () => {
-      const { rules } = loadFixture('multiple-rules')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+      expect(content).toContain("## Rule: testing.require-tests");
+      expect(content).toContain("**ID:** testing.require-tests");
+      expect(content).toContain("**Scope:**");
+    });
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+    it("separates rules with horizontal lines", async () => {
+      const { rules } = loadFixture("multiple-rules");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
+
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
       // Should have separators between rules
-      const separators = content.match(/\n---\n\n/g)
-      expect(separators).toBeTruthy()
-      expect(separators!.length).toBeGreaterThanOrEqual(2) // Between rules
-    })
+      const separators = content.match(/\n---\n\n/g);
+      expect(separators).toBeTruthy();
+      expect(separators!.length).toBeGreaterThanOrEqual(2); // Between rules
+    });
 
-    it('generates footer with content hash and fidelity notes', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("generates footer with content hash and fidelity notes", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      const result = await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toContain('**Generated by AlignTrue**')
-      expect(content).toContain(`Content Hash: ${result.contentHash}`)
-    })
-  })
+      expect(content).toContain("**Generated by AlignTrue**");
+      expect(content).toContain(`Content Hash: ${result.contentHash}`);
+    });
+  });
 
-  describe('Scope merging', () => {
-    it('merges multiple scopes into single file', async () => {
-      exporter.resetState()
-      
+  describe("Scope merging", () => {
+    it("merges multiple scopes into single file", async () => {
+      exporter.resetState();
+
       // First scope
-      const scope1 = createMockScope('backend', false)
-      const rules1: AlignRule[] = [{
-        id: 'backend.api-tests',
-        severity: 'error',
-        applies_to: ['backend/**/*.ts'],
-        guidance: 'API tests required',
-      }]
-      const request1 = createRequest(scope1, rules1)
-      await exporter.export(request1, options)
+      const scope1 = createMockScope("backend", false);
+      const rules1: AlignRule[] = [
+        {
+          id: "backend.api-tests",
+          severity: "error",
+          applies_to: ["backend/**/*.ts"],
+          guidance: "API tests required",
+        },
+      ];
+      const request1 = createRequest(scope1, rules1);
+      await exporter.export(request1, options);
 
       // Second scope
-      const scope2 = createMockScope('frontend', false)
-      const rules2: AlignRule[] = [{
-        id: 'frontend.component-tests',
-        severity: 'warn',
-        applies_to: ['frontend/**/*.tsx'],
-        guidance: 'Component tests recommended',
-      }]
-      const request2 = createRequest(scope2, rules2)
-      await exporter.export(request2, options)
+      const scope2 = createMockScope("frontend", false);
+      const rules2: AlignRule[] = [
+        {
+          id: "frontend.component-tests",
+          severity: "warn",
+          applies_to: ["frontend/**/*.tsx"],
+          guidance: "Component tests recommended",
+        },
+      ];
+      const request2 = createRequest(scope2, rules2);
+      await exporter.export(request2, options);
 
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
-      
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
+
       // Both rules should be present
-      expect(content).toContain('## Rule: backend.api-tests')
-      expect(content).toContain('## Rule: frontend.component-tests')
-    })
+      expect(content).toContain("## Rule: backend.api-tests");
+      expect(content).toContain("## Rule: frontend.component-tests");
+    });
 
-    it('preserves scope path information in rule metadata', async () => {
-      const { rules } = loadFixture('multiple-scopes')
-      const scope = createMockScope('backend', false)
-      const request = createRequest(scope, rules)
+    it("preserves scope path information in rule metadata", async () => {
+      const { rules } = loadFixture("multiple-scopes");
+      const scope = createMockScope("backend", false);
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
       // Scope path should be included
-      expect(content).toContain('**Scope:** backend')
-    })
+      expect(content).toContain("**Scope:** backend");
+    });
 
-    it('handles default scope correctly', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope('.', true)
-      const request = createRequest(scope, rules)
+    it("handles default scope correctly", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope(".", true);
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
       // Default scope should show "all files" or just applies_to patterns
-      expect(content).toMatch(/\*\*Scope:\*\*.*\*\*\/\*\.ts/)
-    })
-  })
+      expect(content).toMatch(/\*\*Scope:\*\*.*\*\*\/\*\.ts/);
+    });
+  });
 
-  describe('Fidelity tracking', () => {
-    it('tracks unmapped fields (check, autofix)', async () => {
-      const rules: AlignRule[] = [{
-        id: 'test.rule',
-        severity: 'warn',
-        guidance: 'Test guidance',
-        check: {
-          type: 'file_exists' as any,
-          inputs: { path: 'test.txt' },
+  describe("Fidelity tracking", () => {
+    it("tracks unmapped fields (check, autofix)", async () => {
+      const rules: AlignRule[] = [
+        {
+          id: "test.rule",
+          severity: "warn",
+          guidance: "Test guidance",
+          check: {
+            type: "file_exists" as any,
+            inputs: { path: "test.txt" },
+          },
+          autofix: {
+            description: "Auto-fix description",
+            command: "fix-it",
+          },
         },
-        autofix: {
-          description: 'Auto-fix description',
-          command: 'fix-it',
-        },
-      }]
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+      ];
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
+      const result = await exporter.export(request, options);
 
-      expect(result.fidelityNotes).toBeDefined()
-      expect(result.fidelityNotes).toContain('Machine-checkable rules (check) not represented in AGENTS.md format')
-      expect(result.fidelityNotes).toContain('Autofix hints not represented in AGENTS.md format')
-    })
+      expect(result.fidelityNotes).toBeDefined();
+      expect(result.fidelityNotes).toContain(
+        "Machine-checkable rules (check) not represented in AGENTS.md format",
+      );
+      expect(result.fidelityNotes).toContain(
+        "Autofix hints not represented in AGENTS.md format",
+      );
+    });
 
-    it('tracks vendor.* fields (cursor, copilot, etc.) in fidelity notes', async () => {
-      const { rules } = loadFixture('with-vendor-fields')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("tracks vendor.* fields (cursor, copilot, etc.) in fidelity notes", async () => {
+      const { rules } = loadFixture("with-vendor-fields");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options)
+      const result = await exporter.export(request, options);
 
-      expect(result.fidelityNotes).toBeDefined()
-      expect(result.fidelityNotes!.some(note => 
-        note.includes('Vendor-specific metadata preserved but not active in universal format')
-      )).toBe(true)
-      expect(result.fidelityNotes!.some(note => 
-        note.includes('copilot') && note.includes('cursor') && note.includes('vscode')
-      )).toBe(true)
-    })
-  })
+      expect(result.fidelityNotes).toBeDefined();
+      expect(
+        result.fidelityNotes!.some((note) =>
+          note.includes(
+            "Vendor-specific metadata preserved but not active in universal format",
+          ),
+        ),
+      ).toBe(true);
+      expect(
+        result.fidelityNotes!.some(
+          (note) =>
+            note.includes("copilot") &&
+            note.includes("cursor") &&
+            note.includes("vscode"),
+        ),
+      ).toBe(true);
+    });
+  });
 
-  describe('Content hash', () => {
-    it('computes deterministic hash from canonical IR', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+  describe("Content hash", () => {
+    it("computes deterministic hash from canonical IR", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result1 = await exporter.export(request, options)
-      
+      const result1 = await exporter.export(request, options);
+
       // Reset and export again
-      exporter.resetState()
-      const result2 = await exporter.export(request, options)
+      exporter.resetState();
+      const result2 = await exporter.export(request, options);
 
-      expect(result1.contentHash).toBe(result2.contentHash)
-    })
+      expect(result1.contentHash).toBe(result2.contentHash);
+    });
 
-    it('hash consistent across multiple exports of same IR', async () => {
-      const { rules } = loadFixture('multiple-rules')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("hash consistent across multiple exports of same IR", async () => {
+      const { rules } = loadFixture("multiple-rules");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const hashes: string[] = []
+      const hashes: string[] = [];
       for (let i = 0; i < 3; i++) {
-        exporter.resetState()
-        const result = await exporter.export(request, options)
-        hashes.push(result.contentHash)
+        exporter.resetState();
+        const result = await exporter.export(request, options);
+        hashes.push(result.contentHash);
       }
 
-      expect(hashes[0]).toBe(hashes[1])
-      expect(hashes[1]).toBe(hashes[2])
-    })
-  })
+      expect(hashes[0]).toBe(hashes[1]);
+      expect(hashes[1]).toBe(hashes[2]);
+    });
+  });
 
-  describe('File operations', () => {
-    it('writes to correct location (workspace root / AGENTS.md)', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
-      
+  describe("File operations", () => {
+    it("writes to correct location (workspace root / AGENTS.md)", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
+
       // In dry-run mode, verify path construction is correct
-      const result = await exporter.export(request, { outputDir: '/workspace', dryRun: true })
+      const result = await exporter.export(request, {
+        outputDir: "/workspace",
+        dryRun: true,
+      });
 
       // Verify it would write to AGENTS.md at root (not scoped directory)
       // In actual write mode, filesWritten would be ['/workspace/AGENTS.md']
-      expect(result.success).toBe(true)
-      
+      expect(result.success).toBe(true);
+
       // Also verify it's not writing to a scope-based subdirectory
       // (unlike Cursor exporter which writes to .cursor/rules/)
-      const outputPath = join('/workspace', 'AGENTS.md')
-      expect(outputPath).toBe('/workspace/AGENTS.md')
-    })
+      // Note: In dry-run mode, filesWritten is empty, so we verify path construction
+      // would produce platform-agnostic path that ends with AGENTS.md
+      if (result.filesWritten.length > 0) {
+        expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
+          /\/AGENTS\.md$/,
+        );
+      } else {
+        // In dry-run, verify expected path structure would be correct
+        const expectedPath = join("/workspace", "AGENTS.md").replace(
+          /\\/g,
+          "/",
+        );
+        expect(expectedPath).toBe("/workspace/AGENTS.md");
+      }
+    });
 
-    it('dry-run mode returns content without writing', async () => {
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("dry-run mode returns content without writing", async () => {
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, { ...options, dryRun: true })
+      const result = await exporter.export(request, {
+        ...options,
+        dryRun: true,
+      });
 
-      expect(result.success).toBe(true)
-      expect(result.filesWritten).toEqual([])
-      expect(result.contentHash).toBeTruthy()
-    })
-  })
+      expect(result.success).toBe(true);
+      expect(result.filesWritten).toEqual([]);
+      expect(result.contentHash).toBeTruthy();
+    });
+  });
 
-  describe('Snapshot tests', () => {
-    it('single rule golden output', async () => {
-      exporter.resetState()
-      const { rules } = loadFixture('single-rule')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+  describe("Snapshot tests", () => {
+    it("single rule golden output", async () => {
+      exporter.resetState();
+      const { rules } = loadFixture("single-rule");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toMatchSnapshot()
-    })
+      expect(content).toMatchSnapshot();
+    });
 
-    it('multiple rules golden output', async () => {
-      exporter.resetState()
-      const { rules } = loadFixture('multiple-rules')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("multiple rules golden output", async () => {
+      exporter.resetState();
+      const { rules } = loadFixture("multiple-rules");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toMatchSnapshot()
-    })
+      expect(content).toMatchSnapshot();
+    });
 
-    it('multiple scopes merged output', async () => {
-      exporter.resetState()
-      const { rules } = loadFixture('multiple-scopes')
-      
+    it("multiple scopes merged output", async () => {
+      exporter.resetState();
+      const { rules } = loadFixture("multiple-scopes");
+
       // Simulate different scopes
-      const scope1 = createMockScope('backend', false)
-      const request1 = createRequest(scope1, [rules[0]])
-      await exporter.export(request1, options)
+      const scope1 = createMockScope("backend", false);
+      const request1 = createRequest(scope1, [rules[0]]);
+      await exporter.export(request1, options);
 
-      const scope2 = createMockScope('apps/web', false)
-      const request2 = createRequest(scope2, [rules[1]])
-      await exporter.export(request2, options)
+      const scope2 = createMockScope("apps/web", false);
+      const request2 = createRequest(scope2, [rules[1]]);
+      await exporter.export(request2, options);
 
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toMatchSnapshot()
-    })
+      expect(content).toMatchSnapshot();
+    });
 
-    it('all severities (ERROR, WARN, INFO) output', async () => {
-      exporter.resetState()
-      const { rules } = loadFixture('all-severities')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("all severities (ERROR, WARN, INFO) output", async () => {
+      exporter.resetState();
+      const { rules } = loadFixture("all-severities");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toMatchSnapshot()
-    })
+      expect(content).toMatchSnapshot();
+    });
 
-    it('with vendor fields (fidelity notes included)', async () => {
-      exporter.resetState()
-      const { rules } = loadFixture('with-vendor-fields')
-      const scope = createMockScope()
-      const request = createRequest(scope, rules)
+    it("with vendor fields (fidelity notes included)", async () => {
+      exporter.resetState();
+      const { rules } = loadFixture("with-vendor-fields");
+      const scope = createMockScope();
+      const request = createRequest(scope, rules);
 
-      await exporter.export(request, options)
-      const content = (exporter as any).generateAgentsMdContent('metadata_only', 1000, 100000).content
+      await exporter.export(request, options);
+      const content = (exporter as any).generateAgentsMdContent(
+        "metadata_only",
+        1000,
+        100000,
+      ).content;
 
-      expect(content).toMatchSnapshot()
-    })
-  })
-})
-
+      expect(content).toMatchSnapshot();
+    });
+  });
+});
