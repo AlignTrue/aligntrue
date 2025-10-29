@@ -11,7 +11,20 @@ export interface IRDocument {
   spec_version: string
   rules: unknown[]
   source_format?: 'markdown' | 'yaml'
+  guidance?: string
+  _markdown_meta?: MarkdownMetadata
   [key: string]: unknown
+}
+
+export interface MarkdownMetadata {
+  original_structure?: 'single-block' | 'multi-rule'
+  header_prefix?: string
+  guidance_position?: 'before-block' | 'in-doc'
+  whitespace_style?: {
+    indent: 'spaces' | 'tabs'
+    indent_size: number
+    line_endings: 'lf' | 'crlf'
+  }
 }
 
 export interface IRBuildError {
@@ -27,9 +40,13 @@ export interface IRBuildResult {
 }
 
 /**
- * Build IR document from parsed fenced blocks
+ * Build IR document from parsed fenced blocks with optional metadata capture
+ * 
+ * @param blocks - Parsed fenced blocks from markdown
+ * @param options - Build options
+ * @returns IR document with optional metadata
  */
-export function buildIR(blocks: FencedBlock[]): IRBuildResult {
+export function buildIR(blocks: FencedBlock[], options?: { captureMetadata?: boolean; originalMarkdown?: string }): IRBuildResult {
   const errors: IRBuildError[] = []
 
   if (blocks.length === 0) {
@@ -78,6 +95,36 @@ export function buildIR(blocks: FencedBlock[]): IRBuildResult {
       // Merge guidance if present
       if (firstBlock.guidanceBefore && !('guidance' in doc)) {
         (doc as Record<string, unknown>)['guidance'] = firstBlock.guidanceBefore
+      }
+
+      // Capture metadata for round-trip if requested
+      if (options?.captureMetadata && options.originalMarkdown) {
+        const indentStyle = detectIndentStyle(firstBlock.content)
+        const lineEndings = detectLineEndings(options.originalMarkdown)
+        
+        const metadata: MarkdownMetadata = {
+          original_structure: 'single-block',
+          whitespace_style: {
+            indent: indentStyle.indent,
+            indent_size: indentStyle.indent_size,
+            line_endings: lineEndings
+          }
+        }
+        
+        // Extract header prefix
+        const header = extractHeaderPrefix(options.originalMarkdown, firstBlock.startLine)
+        if (header) {
+          metadata.header_prefix = header
+        }
+        
+        // Determine guidance position
+        if (firstBlock.guidanceBefore) {
+          metadata.guidance_position = 'before-block'
+        } else if ('guidance' in doc) {
+          metadata.guidance_position = 'in-doc'
+        }
+        
+        doc._markdown_meta = metadata
       }
 
       return { document: doc, errors: [] }
@@ -173,5 +220,73 @@ export function normalizeWhitespace(yaml: string): string {
   result = result.replace(/\n+$/, '') + '\n'
 
   return result
+}
+
+/**
+ * Detect indent style from YAML content
+ */
+export function detectIndentStyle(yaml: string): { indent: 'spaces' | 'tabs'; indent_size: number } {
+  const lines = yaml.split('\n')
+  
+  // Look for indented lines
+  let spacesCount = 0
+  let tabsCount = 0
+  const spaceSizes: number[] = []
+  
+  for (const line of lines) {
+    if (line.startsWith('\t')) {
+      tabsCount++
+    } else if (line.startsWith(' ')) {
+      spacesCount++
+      // Count leading spaces
+      const match = line.match(/^( +)/)
+      if (match) {
+        spaceSizes.push(match[1]!.length)
+      }
+    }
+  }
+  
+  // Determine indent type
+  const indent: 'spaces' | 'tabs' = tabsCount > spacesCount ? 'tabs' : 'spaces'
+  
+  // Determine indent size (most common space count, or default 2)
+  let indent_size = 2
+  if (spaceSizes.length > 0) {
+    // Find GCD of all indent sizes (most likely base indent)
+    const sorted = [...spaceSizes].sort((a, b) => a - b)
+    const smallest = sorted[0]!
+    if (smallest > 0 && smallest <= 8) {
+      indent_size = smallest
+    }
+  }
+  
+  return { indent, indent_size }
+}
+
+/**
+ * Detect line ending style
+ */
+export function detectLineEndings(text: string): 'lf' | 'crlf' {
+  const crlfCount = (text.match(/\r\n/g) || []).length
+  const lfCount = (text.match(/(?<!\r)\n/g) || []).length
+  
+  return crlfCount > lfCount ? 'crlf' : 'lf'
+}
+
+/**
+ * Extract markdown header before first block
+ */
+export function extractHeaderPrefix(markdown: string, firstBlockLine: number): string | undefined {
+  const lines = markdown.split('\n')
+  const beforeBlock = lines.slice(0, firstBlockLine - 1)
+  
+  // Find the first header line
+  for (const line of beforeBlock) {
+    if (line.match(/^#+ /)) {
+      return line.trim()
+    }
+  }
+  
+  return undefined
 }
 

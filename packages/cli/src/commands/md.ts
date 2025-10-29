@@ -3,8 +3,8 @@
  */
 
 import { readFileSync, writeFileSync, renameSync } from 'fs'
-import { parseMarkdown, buildIR, validateMarkdown, normalizeWhitespace } from '@aligntrue/markdown-parser'
-import { stringify as stringifyYaml } from 'yaml'
+import { parseMarkdown, buildIR, validateMarkdown, normalizeWhitespace, generateMarkdown } from '@aligntrue/markdown-parser'
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
 
 export async function md(args: string[]): Promise<void> {
@@ -14,10 +14,14 @@ export async function md(args: string[]): Promise<void> {
     console.log('Subcommands:')
     console.log('  lint <file>       Validate markdown aligntrue blocks')
     console.log('  format <file>     Normalize whitespace in aligntrue blocks')
-    console.log('  compile <file>    Convert markdown to aligntrue.yaml\n')
+    console.log('  compile <file>    Convert markdown to aligntrue.yaml')
+    console.log('  generate <file>   Convert YAML to markdown (round-trip)\n')
     console.log('Options:')
     console.log('  --check           Dry-run mode (format only, no writes)')
-    console.log('  --output <file>   Output file path (compile only, default: aligntrue.yaml)')
+    console.log('  --output <file>   Output file path (default: stdout)')
+    console.log('  --preserve-style  Use _markdown_meta if present (generate only)')
+    console.log('  --canonical       Force canonical formatting (generate only)')
+    console.log('  --header <text>   Custom header text (generate only)')
     process.exit(0)
   }
 
@@ -39,6 +43,9 @@ export async function md(args: string[]): Promise<void> {
       break
     case 'compile':
       await mdCompile(file, getOutputFile(args))
+      break
+    case 'generate':
+      await mdGenerate(file, args)
       break
     default:
       console.error(`Unknown subcommand: ${subcommand}`)
@@ -178,6 +185,52 @@ async function mdCompile(file: string, outputFile: string): Promise<void> {
     }
 
     recordEvent({ command_name: 'md-compile', align_hashes_used: [] })
+    process.exit(0)
+  } catch (err) {
+    console.error(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    process.exit(1)
+  }
+}
+
+async function mdGenerate(file: string, args: string[]): Promise<void> {
+  try {
+    // Read YAML file
+    const content = readFileSync(file, 'utf-8')
+    const ir = parseYaml(content)
+
+    if (!ir || typeof ir !== 'object') {
+      console.error('✗ Invalid YAML file')
+      process.exit(1)
+    }
+
+    // Parse generation options
+    const preserveStyle = args.includes('--preserve-style')
+    const canonical = args.includes('--canonical')
+    const headerIndex = args.indexOf('--header')
+    const headerText = headerIndex !== -1 && args[headerIndex + 1] ? args[headerIndex + 1] : undefined
+    const outputFile = getOutputFile(args)
+
+    // Generate markdown
+    const generateOpts: any = {
+      preserveMetadata: preserveStyle && !canonical,
+    }
+    if (headerText) {
+      generateOpts.headerText = headerText
+    }
+    const markdown = generateMarkdown(ir as any, generateOpts)
+
+    // Write output
+    if (outputFile === '-') {
+      console.log(markdown)
+    } else {
+      // Write generated markdown atomically (temp + rename)
+      const tempPath = `${outputFile}.tmp`
+      writeFileSync(tempPath, markdown, 'utf-8')
+      renameSync(tempPath, outputFile)
+      console.log(`✓ Generated ${file} → ${outputFile}`)
+    }
+
+    recordEvent({ command_name: 'md-generate', align_hashes_used: [] })
     process.exit(0)
   } catch (err) {
     console.error(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)

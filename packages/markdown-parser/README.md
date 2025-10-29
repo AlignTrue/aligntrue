@@ -184,6 +184,68 @@ interface MarkdownValidationError {
 
 Normalize whitespace in YAML content.
 
+### `generateMarkdown(ir: IRDocument, options?: GenerateOptions): string`
+
+Generate markdown from IR document (for round-trip workflows).
+
+Options:
+```typescript
+interface GenerateOptions {
+  preserveMetadata?: boolean  // Use _markdown_meta if available
+  headerText?: string         // Override header (default: "# AlignTrue Rules")
+  indentSize?: number        // Override indent (default: 2)
+  lineEndings?: 'lf' | 'crlf' // Override line endings (default: 'lf')
+}
+```
+
+Example:
+```typescript
+import { generateMarkdown } from '@aligntrue/markdown-parser'
+
+const ir = {
+  id: 'my-rules',
+  version: '1.0.0',
+  spec_version: '1',
+  rules: [
+    {
+      id: 'testing.require.tests',
+      severity: 'warn',
+      applies_to: ['**/*.ts'],
+      guidance: 'All features must have tests.'
+    }
+  ]
+}
+
+const markdown = generateMarkdown(ir)
+// Returns markdown with fenced aligntrue block
+```
+
+## Round-Trip Workflow
+
+The package supports lossless markdown ↔ IR ↔ markdown conversion:
+
+```typescript
+import { parseMarkdown, buildIR, generateMarkdown } from '@aligntrue/markdown-parser'
+
+// Start with markdown
+const original = readFileSync('rules.md', 'utf8')
+
+// Parse to IR with metadata capture
+const parseResult = parseMarkdown(original)
+const irResult = buildIR(parseResult.blocks, { 
+  captureMetadata: true, 
+  originalMarkdown: original 
+})
+
+// Generate markdown (preserves original formatting)
+const regenerated = generateMarkdown(irResult.document, { 
+  preserveMetadata: true 
+})
+
+// regenerated is semantically identical to original
+// (quote style may differ due to YAML library preferences)
+```
+
 ## Error Handling
 
 All errors include line numbers and clear messages:
@@ -212,6 +274,15 @@ aligntrue md format rules.md
 
 # Compile markdown to YAML
 aligntrue md compile rules.md --output aligntrue.yaml
+
+# Generate markdown from YAML (round-trip)
+aligntrue md generate aligntrue.yaml --output rules.md
+
+# Generate with custom formatting
+aligntrue md generate aligntrue.yaml --header "## My Rules"
+
+# Force canonical formatting (ignore metadata)
+aligntrue md generate aligntrue.yaml --canonical
 ```
 
 ## License

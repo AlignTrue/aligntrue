@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildIR, normalizeWhitespace } from '../src/ir-builder.js'
+import { buildIR, normalizeWhitespace, detectIndentStyle, detectLineEndings, extractHeaderPrefix } from '../src/ir-builder.js'
 
 describe('buildIR', () => {
   it('converts valid YAML block to IR', () => {
@@ -198,6 +198,97 @@ rules:
     
     expect(normalized).toContain('  - id: rule-1')
     expect(normalized).toContain('    severity: warn')
+  })
+})
+
+describe('Metadata Capture', () => {
+  it('captures metadata when requested', () => {
+    const markdown = `# AlignTrue Rules
+
+\`\`\`aligntrue
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: testing.require.tests
+    severity: warn
+    applies_to: ["**/*.ts"]
+\`\`\`
+`
+    
+    const blocks = [
+      {
+        content: `id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: testing.require.tests
+    severity: warn
+    applies_to: ["**/*.ts"]`,
+        startLine: 3,
+        endLine: 10,
+      }
+    ]
+    
+    const result = buildIR(blocks, { captureMetadata: true, originalMarkdown: markdown })
+    
+    expect(result.document?._markdown_meta).toBeDefined()
+    expect(result.document?._markdown_meta?.original_structure).toBe('single-block')
+    expect(result.document?._markdown_meta?.header_prefix).toBe('# AlignTrue Rules')
+    expect(result.document?._markdown_meta?.whitespace_style?.indent).toBe('spaces')
+    expect(result.document?._markdown_meta?.whitespace_style?.indent_size).toBe(2)
+    expect(result.document?._markdown_meta?.whitespace_style?.line_endings).toBe('lf')
+  })
+
+  it('detects tab indentation', () => {
+    const yaml = `id: test
+rules:
+\t- id: rule-1
+\t  severity: warn`
+    
+    const style = detectIndentStyle(yaml)
+    
+    expect(style.indent).toBe('tabs')
+  })
+
+  it('detects 4-space indentation', () => {
+    const yaml = `id: test
+rules:
+    - id: rule-1
+        severity: warn`
+    
+    const style = detectIndentStyle(yaml)
+    
+    expect(style.indent).toBe('spaces')
+    expect(style.indent_size).toBe(4)
+  })
+
+  it('detects CRLF line endings', () => {
+    const text = "line1\r\nline2\r\nline3\r\n"
+    const endings = detectLineEndings(text)
+    
+    expect(endings).toBe('crlf')
+  })
+
+  it('detects LF line endings', () => {
+    const text = "line1\nline2\nline3\n"
+    const endings = detectLineEndings(text)
+    
+    expect(endings).toBe('lf')
+  })
+
+  it('extracts header prefix from markdown', () => {
+    const markdown = `# My Rules
+
+Some text here.
+
+\`\`\`aligntrue
+id: test
+\`\`\``
+    
+    const header = extractHeaderPrefix(markdown, 5)
+    
+    expect(header).toBe('# My Rules')
   })
 })
 

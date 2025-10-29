@@ -540,6 +540,76 @@ aligntrue md compile > rules.json
 
 ---
 
+### `aligntrue md generate`
+
+Generate markdown from YAML (round-trip workflow).
+
+**Usage:**
+
+```bash
+aligntrue md generate <file> [--output <path>] [--preserve-style] [--canonical] [--header <text>]
+```
+
+**Flags:**
+
+- `--output, -o` - Output file path (default: stdout)
+- `--preserve-style` - Use `_markdown_meta` if present (default: true)
+- `--canonical` - Force canonical formatting (ignore metadata)
+- `--header <text>` - Custom header text
+
+**What it does:**
+
+- Reads YAML file (aligntrue.yaml or custom IR)
+- Generates markdown with fenced `aligntrue` block
+- Preserves original formatting if metadata available
+- Supports custom headers and indent styles
+
+**Examples:**
+
+```bash
+# Generate markdown (stdout)
+aligntrue md generate aligntrue.yaml
+
+# Generate and save to file
+aligntrue md generate aligntrue.yaml --output rules.md
+
+# Generate with custom header
+aligntrue md generate aligntrue.yaml --header "## My Project Rules"
+
+# Force canonical format (ignore metadata)
+aligntrue md generate aligntrue.yaml --canonical
+```
+
+**Round-trip workflow:**
+
+```bash
+# Start with markdown
+aligntrue md compile rules.md --output aligntrue.yaml
+
+# Edit YAML as needed
+
+# Generate back to markdown
+aligntrue md generate aligntrue.yaml --output rules.md --preserve-style
+```
+
+**Output format:**
+
+```markdown
+# AlignTrue Rules
+
+```aligntrue
+id: my-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: testing.require.tests
+    severity: warn
+    applies_to: ["**/*.ts"]
+```
+```
+
+---
+
 ## Team commands
 
 Commands for managing team mode features (hidden until team mode enabled).
