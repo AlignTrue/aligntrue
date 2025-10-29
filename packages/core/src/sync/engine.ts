@@ -113,8 +113,16 @@ export class SyncEngine {
   /**
    * Load IR from source
    */
-  async loadIRFromSource(sourcePath: string): Promise<void> {
-    this.ir = await loadIR(sourcePath)
+  async loadIRFromSource(sourcePath: string, force?: boolean): Promise<void> {
+    if (!this.config) {
+      throw new Error('Configuration not loaded. Call loadConfiguration() first.')
+    }
+
+    this.ir = await loadIR(sourcePath, {
+      mode: this.config.mode,
+      maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
+      force: force || false,
+    })
   }
 
   /**
@@ -129,7 +137,7 @@ export class SyncEngine {
     try {
       // Load config and IR
       await this.loadConfiguration(options.configPath)
-      await this.loadIRFromSource(irPath)
+      await this.loadIRFromSource(irPath, options.force)
 
       if (!this.config || !this.ir) {
         throw new Error('Configuration or IR not loaded')
@@ -391,7 +399,7 @@ export class SyncEngine {
     try {
       // Load config and IR
       await this.loadConfiguration(options.configPath)
-      await this.loadIRFromSource(irPath)
+      await this.loadIRFromSource(irPath, options.force)
 
       if (!this.config || !this.ir) {
         throw new Error('Configuration or IR not loaded')

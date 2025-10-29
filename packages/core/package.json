@@ -11,6 +11,7 @@
     "./scope": "./dist/scope.js",
     "./bundle": "./dist/bundle.js",
     "./lockfile": "./dist/lockfile.js",
+    "./performance": "./dist/performance/index.js",
     "./telemetry/collector.js": "./dist/telemetry/collector.js"
   },
   "scripts": {
@@ -27,6 +28,7 @@
     "@clack/prompts": "^0.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "ignore": "^5.3.0",
     "js-yaml": "^4.1.0",
     "micromatch": "^4.0.8"
   },

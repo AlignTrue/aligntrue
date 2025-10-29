@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { writeFileSync, unlinkSync, mkdirSync, rmdirSync, existsSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
 import { SyncEngine } from '../../src/sync/engine.js'
 import { MockExporter } from '../mocks/mock-exporter.js'
 import { FailingExporter } from '../mocks/failing-exporter.js'
@@ -94,6 +94,18 @@ mode: invalid_mode
 
   describe('loadIRFromSource', () => {
     it('loads IR from markdown', async () => {
+      // Setup config first
+      const config = `version: "1"
+mode: solo
+exporters:
+  - cursor
+`
+      const configPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+      mkdirSync(dirname(configPath), { recursive: true })
+      writeFileSync(configPath, config, 'utf8')
+
+      await engine.loadConfiguration(configPath)
+
       const markdown = `# Test Pack
 
 \`\`\`aligntrue
@@ -114,6 +126,18 @@ rules:
     })
 
     it('loads IR from YAML', async () => {
+      // Setup config first
+      const config = `version: "1"
+mode: solo
+exporters:
+  - cursor
+`
+      const configPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+      mkdirSync(dirname(configPath), { recursive: true })
+      writeFileSync(configPath, config, 'utf8')
+
+      await engine.loadConfiguration(configPath)
+
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
@@ -130,6 +154,18 @@ rules:
     })
 
     it('fails on invalid IR', async () => {
+      // Setup config first
+      const config = `version: "1"
+mode: solo
+exporters:
+  - cursor
+`
+      const configPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+      mkdirSync(dirname(configPath), { recursive: true })
+      writeFileSync(configPath, config, 'utf8')
+
+      await engine.loadConfiguration(configPath)
+
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
@@ -517,6 +553,18 @@ rules:
 
   describe('clear', () => {
     it('clears internal state', async () => {
+      // Setup config first
+      const config = `version: "1"
+mode: solo
+exporters:
+  - cursor
+`
+      const configPath = join(TEST_DIR, '.aligntrue', 'config.yaml')
+      mkdirSync(dirname(configPath), { recursive: true })
+      writeFileSync(configPath, config, 'utf8')
+
+      await engine.loadConfiguration(configPath)
+
       const markdown = `\`\`\`aligntrue
 id: test-pack
 version: 1.0.0
@@ -533,6 +581,9 @@ rules:
 
       await engine.loadIRFromSource(irPath)
       engine.clear()
+
+      // Need to reload configuration after clear since it clears config too
+      await engine.loadConfiguration(configPath)
 
       // Should be able to load again without issues
       await expect(engine.loadIRFromSource(irPath)).resolves.not.toThrow()

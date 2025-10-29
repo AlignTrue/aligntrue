@@ -7,12 +7,28 @@ import { extname } from 'path'
 import * as yaml from 'js-yaml'
 import { parseMarkdown, buildIR } from '@aligntrue/markdown-parser'
 import { validateAlignSchema, type AlignPack, type ValidationResult } from '@aligntrue/schema'
+import { checkFileSize } from '../performance/index.js'
+import type { AlignTrueMode } from '../config/index.js'
 
 /**
  * Load IR from a markdown or YAML file
  * Auto-detects format based on file extension
+ * 
+ * @param sourcePath - Path to the source file
+ * @param options - Loading options (mode, max size, force flag)
  */
-export async function loadIR(sourcePath: string): Promise<AlignPack> {
+export async function loadIR(
+  sourcePath: string,
+  options?: {
+    mode?: AlignTrueMode
+    maxFileSizeMb?: number
+    force?: boolean
+  }
+): Promise<AlignPack> {
+  const mode = options?.mode || 'solo'
+  const maxFileSizeMb = options?.maxFileSizeMb || 10
+  const force = options?.force || false
+
   // Check file exists
   if (!existsSync(sourcePath)) {
     throw new Error(
@@ -20,6 +36,9 @@ export async function loadIR(sourcePath: string): Promise<AlignPack> {
       `  Check the path is correct and the file exists.`
     )
   }
+
+  // Check file size before reading
+  checkFileSize(sourcePath, maxFileSizeMb, mode, force)
 
   // Read file content
   let content: string

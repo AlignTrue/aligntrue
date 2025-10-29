@@ -187,6 +187,32 @@
           "uniqueItems": true
         }
       }
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance guardrails and resource limits",
+      "additionalProperties": false,
+      "properties": {
+        "max_file_size_mb": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum file size in MB for source files (default: 10MB)"
+        },
+        "max_directory_depth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Maximum directory depth for scanning (default: 10 levels)"
+        },
+        "ignore_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional ignore patterns beyond .gitignore (glob format)"
+        }
+      }
     }
   }
 }
