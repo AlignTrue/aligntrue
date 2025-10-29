@@ -1,10 +1,10 @@
 {
   "version": "v1",
   "generated_by": "AlignTrue",
-  "content_hash": "5c7032b2c0cb68f9dbfae127ef0910bf6b0ae53a7423fe7a9480b754fc035496",
+  "content_hash": "156771757589b70e05ff51ba93d6a646bc49c018f9d65839b9c436e9abc5bdae",
   "rules": [
     {
-      "id": "testing-require-tests",
+      "id": "testing.require.tests",
       "severity": "error",
       "guidance": "Every new feature must include unit tests. Test files should be co-located\nwith source files using the .test.ts or .spec.ts naming convention.\n\nExamples:\n- src/utils/parser.ts → src/utils/parser.test.ts\n- src/components/Button.tsx → src/components/Button.test.tsx",
       "applies_to": [
@@ -13,7 +13,7 @@
       ]
     },
     {
-      "id": "code-review-no-todos",
+      "id": "code.review.no.todos",
       "severity": "warn",
       "guidance": "TODO comments should be converted to GitHub issues before merging.\nThey often get forgotten in the codebase.\n\nInstead of: // TODO: refactor this\nDo: Create issue, then // Issue #123: refactor this",
       "applies_to": [
@@ -24,7 +24,7 @@
       ]
     },
     {
-      "id": "docs-public-api",
+      "id": "docs.public.api",
       "severity": "info",
       "guidance": "Public API exports should include JSDoc comments explaining their purpose\nand usage. This helps with IDE intellisense and documentation generation.",
       "applies_to": [
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "id": "security-no-secrets",
+      "id": "security.no.secrets",
       "severity": "error",
       "guidance": "Never commit API keys, passwords, or tokens to version control.\nUse environment variables or secure secret management instead.\n\nCommon patterns to avoid:\n- API_KEY = \"sk_live_...\"\n- password: \"mypassword123\"\n- token: \"ghp_...\"",
       "applies_to": [
@@ -43,7 +43,7 @@
       ]
     },
     {
-      "id": "typescript-no-any",
+      "id": "typescript.no.any",
       "severity": "warn",
       "guidance": "Avoid using 'any' type as it defeats TypeScript's type safety.\nUse 'unknown' for truly unknown types, or define proper interfaces.",
       "applies_to": [

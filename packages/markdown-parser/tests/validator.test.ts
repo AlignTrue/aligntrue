@@ -12,7 +12,7 @@ id: test-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: require-tests
+  - id: testing.require.tests
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: "Write tests"
@@ -84,7 +84,7 @@ id: test-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
     vendor:
@@ -106,7 +106,7 @@ version: 1.0.0
 spec_version: "1"
 source_format: markdown
 rules:
-  - id: test-rule
+  - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]
 \`\`\`

@@ -151,6 +151,24 @@ export async function check(args: string[]): Promise<void> {
       process.exit(1)
     }
 
+    // Step 2.5: Validate rule IDs
+    const { validateRuleId } = await import('@aligntrue/schema')
+    const alignPack = alignData as any
+    
+    for (const rule of alignPack.rules || []) {
+      const validation = validateRuleId(rule.id)
+      if (!validation.valid) {
+        console.error('✗ Invalid rule ID\n')
+        console.error(`  Rule: ${rule.id}`)
+        console.error(`  Error: ${validation.error}`)
+        if (validation.suggestion) {
+          console.error(`  ${validation.suggestion}`)
+        }
+        console.error(`\n  Fix the rule ID and run 'aligntrue check --ci' again.\n`)
+        process.exit(1)
+      }
+    }
+
     // Step 3: Validate lockfile if team mode + lockfile enabled
     let lockfileValid = true
     const shouldCheckLockfile = config.mode === 'team' && config.modules?.lockfile === true

@@ -243,14 +243,14 @@ Content Hash: abc123
     expect(rules).toHaveLength(2)
     
     expect(rules[0]).toMatchObject({
-      id: 'testing-require-tests',
+      id: 'testing.require.tests',
       severity: 'error',
       applies_to: ['src/**/*.ts', 'src/**/*.tsx'],
     })
     expect(rules[0].guidance).toContain('unit tests')
     
     expect(rules[1]).toMatchObject({
-      id: 'typescript-no-any',
+      id: 'typescript.no.any',
       severity: 'warn',
       applies_to: ['**/*.ts', '**/*.tsx'],
     })
@@ -268,7 +268,7 @@ describe('parseCursorMdcFiles', () => {
     const files = new Map([
       ['file1.mdc', `---
 ---
-## Rule: rule-one
+## Rule: testing.example.one
 
 **Severity:** error
 
@@ -276,7 +276,7 @@ Guidance one.
 `],
       ['file2.mdc', `---
 ---
-## Rule: rule-two
+## Rule: testing.example.two
 
 **Severity:** warn
 
@@ -287,7 +287,7 @@ Guidance two.
     const rules = parseCursorMdcFiles(files)
     
     expect(rules).toHaveLength(2)
-    expect(rules.map(r => r.id)).toEqual(['rule-one', 'rule-two'])
+    expect(rules.map(r => r.id)).toEqual(['testing.example.one', 'testing.example.two'])
   })
 
   it('should deduplicate rules by ID (last wins)', () => {

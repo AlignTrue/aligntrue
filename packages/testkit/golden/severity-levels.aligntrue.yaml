@@ -6,7 +6,7 @@ version: "1.0.0"
 spec_version: "1"
 summary: "Tests all severity levels"
 rules:
-  - id: "severity-error"
+  - id: "severity.example.error"
     severity: "error"
     applies_to: ["**/*.ts"]
     check:
@@ -15,7 +15,7 @@ rules:
         paths: ["tsconfig.json"]
       evidence: "TypeScript config must exist"
   
-  - id: "severity-warn"
+  - id: "severity.example.warn"
     severity: "warn"
     applies_to: ["**/*.js"]
     check:
@@ -25,7 +25,7 @@ rules:
         pattern: "^[a-z0-9-]+\\.js$"
       evidence: "JavaScript files should use kebab-case"
   
-  - id: "severity-info"
+  - id: "severity.example.info"
     severity: "info"
     applies_to: ["**/*.md"]
     check:
@@ -38,5 +38,5 @@ rules:
 
 integrity:
   algo: "jcs-sha256"
-  value: "026c3ebbf83dbd5440bf7f7798ec103b337fdb45b903a9ca1bd378c6b89622bf"
+  value: "6c36aa871de5ba729fdc15ecdc0918e12297346a9fe5038fd5d089469b96eb1d"
 

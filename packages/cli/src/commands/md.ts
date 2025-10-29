@@ -2,7 +2,7 @@
  * Markdown validation and formatting commands
  */
 
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, renameSync } from 'fs'
 import { parseMarkdown, buildIR, validateMarkdown, normalizeWhitespace } from '@aligntrue/markdown-parser'
 import { stringify as stringifyYaml } from 'yaml'
 import { recordEvent } from '@aligntrue/core/telemetry/collector.js'
@@ -115,7 +115,10 @@ async function mdFormat(file: string, checkOnly: boolean): Promise<void> {
     }
 
     if (modified) {
-      writeFileSync(file, lines.join('\n'), 'utf-8')
+      // Write formatted content atomically (temp + rename)
+      const tempPath = `${file}.tmp`
+      writeFileSync(tempPath, lines.join('\n'), 'utf-8')
+      renameSync(tempPath, file)
       console.log(`✓ ${file} formatted`)
     } else {
       console.log(`✓ ${file} already formatted`)
@@ -167,7 +170,10 @@ async function mdCompile(file: string, outputFile: string): Promise<void> {
     if (outputFile === '-') {
       console.log(output)
     } else {
-      writeFileSync(outputFile, output, 'utf-8')
+      // Write compiled output atomically (temp + rename)
+      const tempPath = `${outputFile}.tmp`
+      writeFileSync(tempPath, output, 'utf-8')
+      renameSync(tempPath, outputFile)
       console.log(`✓ Compiled ${file} → ${outputFile}`)
     }
 

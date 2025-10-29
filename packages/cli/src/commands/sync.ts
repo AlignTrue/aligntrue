@@ -6,7 +6,7 @@
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import * as clack from '@clack/prompts'
-import { SyncEngine } from '@aligntrue/core'
+import { SyncEngine, type AlignTrueConfig } from '@aligntrue/core'
 import { ExporterRegistry } from '@aligntrue/exporters'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -119,7 +119,7 @@ Fix: Run 'aligntrue init' to create initial configuration`)
   const spinner = clack.spinner()
   spinner.start('Loading configuration')
 
-  let config: any
+  let config: AlignTrueConfig
   try {
     const { loadConfig } = await import('@aligntrue/core')
     config = await loadConfig(configPath)
@@ -222,9 +222,46 @@ Expected path: ${absoluteSourcePath}`)
     process.exit(1)
   }
 
+  // Step 5.5: Load and validate rule IDs in IR
+  spinner.start('Validating rules')
+  
+  try {
+    const { loadIR } = await import('@aligntrue/core')
+    const { validateRuleId } = await import('@aligntrue/schema')
+    const ir = await loadIR(absoluteSourcePath)
+    
+    // Validate all rule IDs
+    for (const rule of ir.rules || []) {
+      const validation = validateRuleId(rule.id)
+      if (!validation.valid) {
+        spinner.stop('Validation failed')
+        clack.log.error(`Invalid rule ID: ${rule.id}`)
+        clack.log.error(`  ${validation.error}`)
+        if (validation.suggestion) {
+          clack.log.info(`  ${validation.suggestion}`)
+        }
+        clack.outro('✗ Sync failed')
+        process.exit(2)
+      }
+    }
+    
+    spinner.stop('Rules validated')
+  } catch (error) {
+    spinner.stop('Validation failed')
+    clack.log.error(`Failed to load or validate rules: ${error instanceof Error ? error.message : String(error)}`)
+    clack.outro('✗ Sync failed')
+    process.exit(1)
+  }
+
   // Step 6: Execute sync (with auto-pull if enabled)
   try {
-    const syncOptions: any = {
+    const syncOptions: {
+      configPath: string
+      dryRun: boolean
+      force: boolean
+      interactive: boolean
+      acceptAgent?: string
+    } = {
       configPath,
       dryRun: parsed.dryRun,
       force: parsed.force,
