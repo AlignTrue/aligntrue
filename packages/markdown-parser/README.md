@@ -220,6 +220,55 @@ const markdown = generateMarkdown(ir)
 // Returns markdown with fenced aligntrue block
 ```
 
+## Agent Format Parsers
+
+The package includes specialized parsers for importing rules from agent-specific formats.
+
+### Cursor .mdc Parser
+
+Import Cursor's `.mdc` files with full frontmatter preservation:
+
+```typescript
+import { parseCursorMdc } from '@aligntrue/markdown-parser'
+
+const mdcContent = readFileSync('.cursor/rules/aligntrue.mdc', 'utf8')
+const { rules } = parseCursorMdc(mdcContent)
+
+// All file-level frontmatter fields are captured in vendor.cursor
+rules.forEach(rule => {
+  console.log(rule.id)
+  console.log(rule.vendor?.cursor?.alwaysApply)  // File-level
+  console.log(rule.vendor?.cursor?.intelligent)  // File-level
+  console.log(rule.vendor?.cursor?.globs)        // File-level
+  console.log(rule.vendor?.cursor?.ai_hint)      // Per-rule
+})
+```
+
+**Cursor mode preservation:** All execution mode fields are captured:
+
+- `alwaysApply` - Always active mode
+- `intelligent` - AI-driven activation
+- `description` - File description
+- `globs` - File patterns for specific_files mode
+- Custom fields - Future-proof pass-through
+
+These fields enable lossless round-trips: import from Cursor → edit in AlignTrue → export back to Cursor without losing any configuration.
+
+### AGENTS.md Parser
+
+Import universal AGENTS.md format:
+
+```typescript
+import { parseAgentsMd } from '@aligntrue/markdown-parser'
+
+const agentsMd = readFileSync('AGENTS.md', 'utf8')
+const rules = parseAgentsMd(agentsMd)
+
+// Severity inferred from labels: ERROR → error, WARN → warn, INFO → info
+```
+
+For detailed import workflows, see the [Import Workflow Guide](../../docs/import-workflow.md).
+
 ## Round-Trip Workflow
 
 The package supports lossless markdown ↔ IR ↔ markdown conversion:

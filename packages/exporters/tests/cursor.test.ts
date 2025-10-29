@@ -250,6 +250,207 @@ describe('CursorExporter', () => {
       expect(content).toMatchSnapshot()
     })
   })
+
+  describe('Cursor Mode Preservation', () => {
+    it('exports mode: "always" as alwaysApply', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'error',
+        applies_to: ['**/*'],
+        mode: 'always',
+        guidance: 'Test guidance',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('alwaysApply: true')
+    })
+
+    it('exports mode: "intelligent" with description', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'warn',
+        applies_to: ['**/*'],
+        mode: 'intelligent',
+        description: 'Intelligent mode active',
+        guidance: 'Smart rule',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('intelligent: true')
+      expect(content).toContain('description: Intelligent mode active')
+    })
+
+    it('exports mode: "files" with applies_to as globs', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'info',
+        applies_to: ['src/**/*.ts', 'tests/**/*.test.ts'],
+        mode: 'files',
+        guidance: 'Test guidance',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('globs:')
+      expect(content).toContain('- "src/**/*.ts"')
+      expect(content).toContain('- "tests/**/*.test.ts"')
+    })
+
+    it('exports title and tags when present', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'error',
+        applies_to: ['**/*'],
+        mode: 'always',
+        title: 'Test Rule',
+        tags: ['typescript', 'quality'],
+        guidance: 'Test guidance',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('title: Test Rule')
+      expect(content).toContain('tags:')
+      expect(content).toContain('- typescript')
+      expect(content).toContain('- quality')
+    })
+
+    it('restores unknown fields from vendor.cursor._unknown', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'error',
+        applies_to: ['**/*'],
+        mode: 'always',
+        guidance: 'Test guidance',
+        vendor: {
+          cursor: {
+            _unknown: {
+              customField: 'custom value',
+              futureFeature: 42
+            }
+          }
+        }
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('customField: custom value')
+      expect(content).toContain('futureFeature: 42')
+    })
+
+    it('separates schema fields and per-rule vendor metadata', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'error',
+        applies_to: ['**/*'],
+        mode: 'intelligent',
+        description: 'File desc',
+        guidance: 'Test guidance',
+        vendor: {
+          cursor: {
+            ai_hint: 'Per-rule hint',  // Per-rule only
+            quick_fix: true  // Per-rule only
+          }
+        }
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      // Schema fields in frontmatter (intelligent mode exports description)
+      expect(content).toContain('intelligent: true')
+      expect(content).toContain('description: File desc')
+      // Per-rule vendor fields under cursor: key
+      expect(content).toContain('cursor:')
+      expect(content).toContain('test.rule.id:')
+      expect(content).toContain('ai_hint: "Per-rule hint"')
+      expect(content).toContain('quick_fix: true')
+    })
+
+    it('exports intelligent mode WITH globs (globs filter where AI relevance applies)', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'warn',
+        applies_to: ['src/**/*.ts', 'lib/**/*.js'],
+        mode: 'intelligent',
+        description: 'Smart TypeScript/JS rule',
+        guidance: 'AI decides relevance, but only on TypeScript and JavaScript files',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      // Should have both intelligent mode AND globs
+      expect(content).toContain('intelligent: true')
+      expect(content).toContain('description: Smart TypeScript/JS rule')
+      expect(content).toContain('globs:')
+      expect(content).toContain('- "src/**/*.ts"')
+      expect(content).toContain('- "lib/**/*.js"')
+    })
+
+    it('exports always mode WITH globs (globs filter which files get auto-applied)', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'error',
+        applies_to: ['**/*.py', '**/*.pyi'],
+        mode: 'always',
+        guidance: 'Auto-apply only to Python files',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      // Should have both always mode AND globs
+      expect(content).toContain('alwaysApply: true')
+      expect(content).toContain('globs:')
+      expect(content).toContain('- "**/*.py"')
+      expect(content).toContain('- "**/*.pyi"')
+    })
+
+    it('does not export globs when applies_to is default **/*', async () => {
+      const rules: AlignRule[] = [{
+        id: 'test.rule.id',
+        severity: 'warn',
+        applies_to: ['**/*'],  // Default - applies to all files
+        mode: 'intelligent',
+        description: 'Applies everywhere',
+        guidance: 'No globs needed',
+      }]
+      
+      const request = createRequest(rules, createDefaultScope())
+      const options: ExportOptions = { outputDir: TEST_OUTPUT_DIR, dryRun: false }
+      const result = await exporter.export(request, options)
+      
+      const content = readFileSync(result.filesWritten[0], 'utf-8')
+      expect(content).toContain('intelligent: true')
+      expect(content).toContain('description: Applies everywhere')
+      // Should NOT have globs since it's the default
+      expect(content).not.toContain('globs:')
+    })
+  })
 })
 
 describe('generateMdcFooter', () => {

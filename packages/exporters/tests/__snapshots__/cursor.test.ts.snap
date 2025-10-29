@@ -2,10 +2,6 @@
 
 exports[`CursorExporter > All Severities > handles error, warn, and info severities 1`] = `
 "---
-description: AlignTrue rules (default scope)
-globs:
-  - "**/*"
-alwaysApply: true
 ---
 ## Rule: critical.security
 
@@ -46,10 +42,8 @@ Content Hash: 8240511830b1fb8e49556a69760515943291f7882bbafda1d250669302a0ecfb
 
 exports[`CursorExporter > Basic Export > exports multiple rules to single .mdc file 1`] = `
 "---
-description: AlignTrue rules (default scope)
 globs:
-  - "**/*"
-alwaysApply: true
+  - "**/*.ts"
 ---
 ## Rule: testing.require-tests
 
@@ -90,10 +84,9 @@ Content Hash: 430f4e606cb24006cf0fab0deaef2412bc940504f1a2925b5ace04ce5f545f59
 
 exports[`CursorExporter > Basic Export > exports single rule to .mdc file 1`] = `
 "---
-description: AlignTrue rules (default scope)
 globs:
-  - "**/*"
-alwaysApply: true
+  - "**/*.ts"
+  - "**/*.tsx"
 ---
 ## Rule: testing.require-tests
 
@@ -118,10 +111,8 @@ Content Hash: 7e39b22b4efdcbafb641f32942ee7d9f1060e765e552601c03cb4965efe2daa4
 
 exports[`CursorExporter > Vendor.cursor Metadata Extraction > extracts vendor.cursor fields to frontmatter 1`] = `
 "---
-description: AlignTrue rules (default scope)
 globs:
-  - "**/*"
-alwaysApply: true
+  - "**/*.ts"
 cursor:
   testing.require-tests:
     ai_hint: "Suggest test scaffolding with vitest"
@@ -148,10 +139,8 @@ Content Hash: ad9dd2c6dd7d874e4916ef796cdddd184d201c857a80541b70b63e41f674e7ef
 
 exports[`CursorExporter > Vendor.cursor Metadata Extraction > handles mixed vendor namespaces 1`] = `
 "---
-description: AlignTrue rules (default scope)
 globs:
-  - "**/*"
-alwaysApply: true
+  - "**/*.ts"
 cursor:
   testing.require-tests:
     ai_hint: "Suggest vitest"
