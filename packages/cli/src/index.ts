@@ -24,6 +24,7 @@ import {
   update,
   plugs,
   onboard,
+  override,
 } from "./commands/index.js";
 
 async function main() {
@@ -50,7 +51,10 @@ async function main() {
     console.log("  drift          Detect drift from allowed sources");
     console.log("  update         Check and apply updates");
     console.log("  onboard        Generate developer onboarding checklist");
-    console.log("  scopes         List configured scopes\n");
+    console.log("  scopes         List configured scopes");
+    console.log(
+      "  override       Manage overlays for fork-safe customization\n",
+    );
 
     console.log("Plugs Management:");
     console.log(
@@ -167,6 +171,11 @@ async function main() {
 
   if (command === "onboard") {
     await onboard(commandArgs);
+    return;
+  }
+
+  if (command === "override") {
+    await override(commandArgs);
     return;
   }
 
