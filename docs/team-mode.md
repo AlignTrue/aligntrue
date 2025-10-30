@@ -420,6 +420,173 @@ aligntrue team approve base-global@aligntrue/catalog@v1.0.0
 aligntrue team approve sha256:abc123def456...
 ```
 
+## Severity remapping
+
+Control how rule severities are enforced in your team environment while maintaining audit trails and policy guardrails.
+
+### Overview
+
+Severity remapping allows teams to adjust rule enforcement levels without modifying source packs. Common use cases:
+
+- **Staged rollout:** Start with warnings before enforcing errors
+- **Temporary exceptions:** Downgrade errors during migration periods
+- **Custom policy:** Align enforcement with team standards
+
+**Guardrails:** Lowering `MUST` rules to `info` requires documented rationale to prevent policy regression.
+
+### Configuration
+
+Create `.aligntrue.team.yaml` in your repo root:
+
+```yaml
+severity_remaps:
+  - rule_id: "security/no-eval"
+    from: "MUST"
+    to: "warn"
+    rationale_file: "docs/rationale/eval-exception.md"
+
+  - rule_id: "style/semicolons"
+    from: "SHOULD"
+    to: "note"
+```
+
+### Severity mapping
+
+AlignTrue uses human-readable severities that map to check levels:
+
+| Source severity | Check level | Behavior              |
+| --------------- | ----------- | --------------------- |
+| `MUST`          | `error`     | Fail checks, block CI |
+| `SHOULD`        | `warn`      | Log warning, continue |
+| `MAY`           | `note`      | Informational only    |
+
+Remapping allows you to override the source severity for specific rules.
+
+### Rationale requirement
+
+**Policy regression guardrail:** Lowering `MUST` rules to `note` (info) requires a rationale file.
+
+Example rationale (`docs/rationale/eval-exception.md`):
+
+```markdown
+# Rationale: Downgrade security/no-eval to warning
+
+**Issue:** #1234
+**Owner:** @security-team  
+**Date:** 2025-10-30
+**Review:** 2025-12-01
+
+## Context
+
+Legacy analytics code uses eval in controlled sandbox contexts. Refactoring will take 2-3 months.
+
+## Plan
+
+Migrate to safer alternatives by Q1 2026:
+
+- Phase 1: Audit all eval usage (complete)
+- Phase 2: Replace with Function constructor (Dec 2025)
+- Phase 3: Remove eval entirely (Jan 2026)
+
+## Approval
+
+Security team approved temporary downgrade with documented migration plan and quarterly reviews.
+
+## Monitoring
+
+Track remaining eval usage with custom lint rule: `@org/no-legacy-eval`
+```
+
+**Required fields:**
+
+- Issue link
+- Owner contact
+- Review date
+- Migration plan
+- Approval record
+
+### Drift detection
+
+Changes to `.aligntrue.team.yaml` are detected by drift detection:
+
+```bash
+aligntrue drift
+```
+
+Output:
+
+```
+SEVERITY_REMAP DRIFT:
+  security/no-eval
+    Team policy changed (hash mismatch)
+    Suggestion: Run aligntrue sync to update lockfile
+```
+
+The lockfile tracks `team_yaml_hash` to detect policy changes.
+
+### Example workflows
+
+**Staged rollout:**
+
+```yaml
+# Week 1: Introduce as notes
+severity_remaps:
+  - rule_id: "typescript/strict-null-checks"
+    from: "MUST"
+    to: "note"
+
+# Week 4: Upgrade to warnings
+severity_remaps:
+  - rule_id: "typescript/strict-null-checks"
+    from: "MUST"
+    to: "warn"
+
+# Week 8: Remove remap (enforce as error)
+severity_remaps: []
+```
+
+**Temporary exception:**
+
+```yaml
+severity_remaps:
+  - rule_id: "deprecated/lodash-v3"
+    from: "MUST"
+    to: "warn"
+    rationale_file: "docs/rationale/lodash-migration.md"
+```
+
+Set calendar reminder to remove after migration completes.
+
+### Troubleshooting
+
+**Rationale file missing:**
+
+```
+Error: MUST->note remap requires rationale
+Rule: security/no-eval
+Missing: docs/rationale/eval-exception.md
+```
+
+**Fix:** Create rationale file with required fields.
+
+**Drift detected after remap:**
+
+```
+SEVERITY_REMAP DRIFT:
+  Team policy changed
+```
+
+**Fix:** Run `aligntrue sync` to update lockfile with new team_yaml_hash.
+
+**Remap not applied:**
+
+```
+Expected: warn
+Got: error
+```
+
+**Fix:** Verify rule_id matches exactly (case-sensitive). Run `aligntrue check --verbose` to see active remaps.
+
 ## Advanced topics
 
 ### Phase 3.5 prep (optional base_hash field)

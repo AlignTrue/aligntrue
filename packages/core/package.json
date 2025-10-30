@@ -14,7 +14,8 @@
     "./performance": "./dist/performance/index.js",
     "./telemetry/collector.js": "./dist/telemetry/collector.js",
     "./team/allow.js": "./dist/team/allow.js",
-    "./team/drift.js": "./dist/team/drift.js"
+    "./team/drift.js": "./dist/team/drift.js",
+    "./team/updates.js": "./dist/team/updates.js"
   },
   "scripts": {
     "build": "tsc",

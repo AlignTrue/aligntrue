@@ -49,17 +49,14 @@ describe("drift command", () => {
     it("errors when config not found", async () => {
       await expect(drift([])).rejects.toThrow("process.exit called");
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Config not found"),
+        expect.stringContaining("Config file not found"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(exitSpy).toHaveBeenCalledWith(2);
     });
 
     it("errors when not in team mode", async () => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: solo\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: solo");
 
       await expect(drift([])).rejects.toThrow("process.exit called");
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -72,10 +69,7 @@ describe("drift command", () => {
   describe("upstream drift detection", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: team\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: team");
     });
 
     it("detects upstream drift and shows human output", async () => {
@@ -109,7 +103,7 @@ sources:
       await drift([]);
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("Drift Detection Report");
       expect(output).toContain("UPSTREAM DRIFT");
       expect(output).toContain("base-global");
@@ -185,7 +179,7 @@ sources:
 
       await drift([]);
 
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("aligntrue sync --force");
     });
   });
@@ -193,10 +187,7 @@ sources:
   describe("vendorized drift detection", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: team\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: team");
     });
 
     it("detects vendorized drift", async () => {
@@ -227,7 +218,7 @@ sources: []
 
       await drift([]);
 
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("VENDORIZED DRIFT");
       expect(output).toContain("vendored-pack");
       expect(output).toContain("vendor/missing");
@@ -262,7 +253,7 @@ sources: []
 
       await drift([]);
 
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("vendor/pack");
     });
 
@@ -294,7 +285,7 @@ sources: []
 
       await drift([]);
 
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("Vendor type: subtree");
     });
   });
@@ -302,10 +293,7 @@ sources: []
   describe("--gates flag", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: team\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: team");
     });
 
     it("exits 0 by default when drift detected", async () => {
@@ -408,10 +396,7 @@ sources:
   describe("solo mode error", () => {
     it("shows clear error message", async () => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: solo\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: solo");
 
       await expect(drift([])).rejects.toThrow("process.exit called");
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -426,10 +411,7 @@ sources:
   describe("no drift scenario", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: team\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: team");
     });
 
     it("shows success message", async () => {
@@ -478,7 +460,7 @@ sources: []
 
       await drift([]);
 
-      const output = consoleLogSpy.mock.calls[0][0];
+      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("Mode: team");
     });
   });
@@ -486,10 +468,7 @@ sources: []
   describe("output formats", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        "mode: team\nprofile:\n  id: test",
-      );
+      writeFileSync(".aligntrue/config.yaml", "mode: team");
 
       writeFileSync(
         ".aligntrue.lock.json",
