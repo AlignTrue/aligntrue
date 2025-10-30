@@ -10,3 +10,9 @@ export * from "./paths.js";
 export * from "./backup/index.js";
 export * from "./team/index.js";
 export * from "./plugs/index.js";
+
+// Cache (Phase 3 Session 10)
+export * from "./cache/index.js";
+
+// Performance (Phase 3 Session 10 - foundation)
+export * from "./performance/index.js";

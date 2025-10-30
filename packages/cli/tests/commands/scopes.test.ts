@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { scopes } from "../../src/commands/scopes.js";
+import { mockCommandArgs } from "../utils/command-test-helpers.js";
 import * as fs from "fs";
 
 // Mock filesystem
@@ -33,7 +34,8 @@ describe("scopes command", () => {
 
   describe("help", () => {
     it("shows help with --help flag", async () => {
-      await expect(scopes(["--help"])).rejects.toThrow("process.exit(0)");
+      const args = mockCommandArgs({ help: true });
+      await expect(scopes(args)).rejects.toThrow("process.exit(0)");
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Usage: aligntrue scopes"),
       );

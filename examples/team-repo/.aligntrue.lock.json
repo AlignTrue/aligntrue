@@ -1,0 +1,41 @@
+{
+  "version": "1",
+  "generated_at": "2025-10-30T12:00:00Z",
+  "mode": "team",
+  "team_yaml_hash": "sha256:def456abc789",
+  "total_unresolved_plugs": 0,
+  "sources": [
+    {
+      "type": "local",
+      "path": "vendor/shared-pack/rules.md",
+      "content_sha": "sha256:abc123def456",
+      "vendor_path": "vendor/shared-pack",
+      "vendor_type": "manual",
+      "resolved_at": "2025-10-30T12:00:00Z",
+      "pre_resolution_hash": "sha256:pre123",
+      "post_resolution_hash": "sha256:post456",
+      "unresolved_plugs_count": 0
+    }
+  ],
+  "exports": [
+    {
+      "exporter": "cursor",
+      "timestamp": "2025-10-30T12:00:00Z",
+      "scopes": [
+        {
+          "path": "frontend",
+          "output": ".cursor/rules/frontend.mdc"
+        },
+        {
+          "path": "backend",
+          "output": ".cursor/rules/backend.mdc"
+        }
+      ]
+    },
+    {
+      "exporter": "agents-md",
+      "timestamp": "2025-10-30T12:00:00Z",
+      "output": "AGENTS.md"
+    }
+  ]
+}

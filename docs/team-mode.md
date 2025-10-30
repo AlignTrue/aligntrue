@@ -628,9 +628,76 @@ When the catalog launches (Phase 4), ID@version resolution will:
 2. Fall back to git if catalog unavailable
 3. Store both ID and hash in allow list
 
+## Troubleshooting
+
+### Allow list not validated
+
+**Symptom:** Sync succeeds even with unapproved sources in team mode.
+
+**Cause:** Config may not be in team mode or allow list file missing.
+
+**Fix:**
+
+```bash
+# Verify team mode enabled
+aligntrue team status
+
+# Check allow list exists
+cat .aligntrue/allow.yaml
+
+# Re-approve sources if needed
+aligntrue team approve <source>
+```
+
+### Lockfile generation fails
+
+**Symptom:** Sync creates exports but no lockfile.
+
+**Cause:** Lockfile mode is "off" or team mode disabled.
+
+**Fix:**
+
+```bash
+# Check lockfile configuration
+grep "lockfile:" .aligntrue/config.yaml
+
+# Enable if needed
+aligntrue team enable
+```
+
+### Severity remap not applied
+
+**Symptom:** Rules still show original severity despite `.aligntrue.team.yaml`.
+
+**Cause:** Hash mismatch in lockfile or syntax error in team.yaml.
+
+**Fix:**
+
+```bash
+# Check for syntax errors
+cat .aligntrue.team.yaml
+
+# Re-sync to update lockfile
+aligntrue sync
+
+# Verify drift
+aligntrue drift
+```
+
+### Base hash not captured
+
+**Symptom:** Lockfile entries missing `base_hash` field.
+
+**Cause:** Source doesn't provide base hash metadata (expected for local sources).
+
+**Fix:** This is expected behavior. Only git and catalog sources provide base_hash. Local sources won't have it.
+
 ## See also
 
-- [Commands Reference](commands.md) - All CLI commands
-- [Quickstart Guide](quickstart.md) - Getting started
-- [Drift Detection](drift-detection.md) - Coming in Session 6
-- [Git Workflows](git-workflows.md) - Coming in Session 4
+- **[Commands Reference](commands.md)** - Complete CLI command documentation
+- **[Quickstart Guide](quickstart.md)** - Setup and first sync
+- **[Drift Detection](drift-detection.md)** - Monitoring team alignment
+- **[Auto-Updates](auto-updates.md)** - Scheduled update workflows
+- **[Git Workflows](git-workflows.md)** - Git-based rule sharing and vendoring
+- **[Onboarding](onboarding.md)** - Developer onboarding checklists
+- **[Examples](../examples/)** - team-repo and vendored-pack examples
