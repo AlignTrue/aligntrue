@@ -327,6 +327,7 @@ Reference implementation of canonicalization and validation is provided in the `
 - **API Documentation**: `packages/schema/README.md`
 
 The implementation includes:
+
 - JCS canonicalization via the `canonicalize` npm package (RFC 8785 compliant)
 - SHA-256 hashing with Node.js crypto module
 - Ajv-based JSON Schema validation in strict mode
@@ -346,4 +347,3 @@ The implementation includes:
 - JCS canonicalization and SHA-256 integrity
 - SARIF output mapping
 - Dependency resolution via `deps` field
-

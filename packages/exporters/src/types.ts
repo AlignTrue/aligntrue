@@ -1,6 +1,6 @@
 /**
  * Shared types for all exporters
- * 
+ *
  * NOTE: These types have been moved to @aligntrue/plugin-contracts.
  * This file now re-exports them for backwards compatibility.
  */
@@ -13,5 +13,4 @@ export type {
   ExportResult,
   ExporterPlugin,
   AdapterManifest,
-} from '@aligntrue/plugin-contracts'
-
+} from "@aligntrue/plugin-contracts";

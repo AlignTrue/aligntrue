@@ -22,4 +22,3 @@ rules:
       - "**/*.ts"
     guidance: |
       Style suggestions to consider.
-

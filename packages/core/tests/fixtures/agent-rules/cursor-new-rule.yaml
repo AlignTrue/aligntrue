@@ -4,14 +4,13 @@ rules:
     severity: warn
     guidance: All features should have tests.
     applies_to: ["**/*.ts"]
-  
+
   - id: style.no-any
     severity: warn
     guidance: Avoid using any type.
     applies_to: ["**/*.ts"]
-  
+
   - id: security.no-secrets
     severity: error
     guidance: Never commit secrets or API keys.
     applies_to: ["**/*"]
-

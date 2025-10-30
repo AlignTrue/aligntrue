@@ -12,6 +12,7 @@ This directory contains components that were built for Phase 1 (catalog-first ap
 ### Components
 
 **`apps-web/`** - Next.js catalog website
+
 - **Original purpose:** Public catalog for browsing and discovering Align packs
 - **Status:** Partially complete (Stage 2.0 done, Stages 2.1-2.3 pending)
 - **Deferred to:** Phase 4 (after CLI proves value)
@@ -19,6 +20,7 @@ This directory contains components that were built for Phase 1 (catalog-first ap
 - **Investment:** ~45k tokens
 
 **`apps-docs/`** - Nextra documentation site
+
 - **Original purpose:** Comprehensive documentation at `/docs`
 - **Status:** Scaffolded but not populated
 - **Deferred to:** Phase 4 (consolidate into CLI help + README for now)
@@ -26,6 +28,7 @@ This directory contains components that were built for Phase 1 (catalog-first ap
 - **Investment:** ~5k tokens
 
 **`mcp-v1/`** - MCP server package
+
 - **Original purpose:** Model Context Protocol adapter
 - **Status:** Empty scaffold only
 - **Deferred to:** Phase 2 (after CLI + exporters work)
@@ -50,6 +53,7 @@ Key insight: **Competitors optimize for ease, we were optimizing for completenes
 ## What We Kept
 
 **Reused in new architecture:**
+
 - `packages/schema` - Align YAML spec (minor refactoring)
 - `packages/checks` - Check engine, SARIF/JSON output (no changes)
 - `packages/testkit` - Conformance vectors (no changes)
@@ -66,16 +70,19 @@ Key insight: **Competitors optimize for ease, we were optimizing for completenes
 ### When to Revive
 
 **Catalog website** (`apps-web/`):
+
 - **Trigger:** CLI has 50+ active users, demand for discovery
 - **Effort to revive:** ~30k tokens (complete remaining stages)
 - **Dependencies:** CLI must be stable and proven
 
 **Documentation site** (`apps-docs/`):
+
 - **Trigger:** Documentation grows beyond README capacity
 - **Effort to revive:** ~20k tokens (populate with content)
 - **Alternative:** Could use different doc platform by then
 
 **MCP server** (`mcp-v1/`):
+
 - **Trigger:** Users request MCP integration (≥5 requests)
 - **Effort to rebuild:** ~15k tokens (thin wrapper over CLI)
 - **Dependencies:** CLI commands must be stable
@@ -93,11 +100,13 @@ Key insight: **Competitors optimize for ease, we were optimizing for completenes
 ## Lessons Learned
 
 **What went right:**
+
 - Strong foundation (schema, checks, testkit)
 - Clear governance model
 - Determinism and reproducibility principles
 
 **What we'd change:**
+
 - Start with CLI to prove value
 - Make complexity opt-in (lockfiles, bundles)
 - Focus on solo dev experience first
@@ -145,4 +154,3 @@ archive/
 See `.internal_docs/architecture-decisions.md` and `.internal_docs/refactor-plan.md` for full context on the architectural pivot.
 
 **TL;DR:** We're not deleting this work, just deferring it. CLI-first adoption is more important right now.
-

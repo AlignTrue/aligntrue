@@ -43,11 +43,13 @@ pnpm test --coverage
 **Failing:** 19 (13%)
 
 ### Passing Test Suites ✅
+
 - `tests/config.test.ts` - 43/43 passing (100%)
 - `tests/scope.test.ts` - 40/40 passing (100%)
 - `tests/sync/file-operations.test.ts` - 22/22 passing (100%)
 
 ### Failing Tests (Fixture Issues) 🔧
+
 - `tests/sync/ir-loader.test.ts` - 6/11 passing (5 fixture issues)
 - `tests/sync/engine.test.ts` - 8/19 passing (11 fixture issues)
 - `tests/sync/conflict-detector.test.ts` - 10/13 passing (3 schema assumptions)
@@ -57,24 +59,27 @@ pnpm test --coverage
 Most failing tests use incorrect test fixtures that don't match the actual IR schema v1:
 
 **Common issues:**
+
 1. Missing required fields (`id`, `version`, `spec_version`, `rules`)
 2. Rules missing `applies_to` field (required, min 1 item)
 3. Rule IDs using dots instead of kebab-case (`test.rule` → `test-rule`)
 4. Empty rules arrays (schema requires min 1 rule)
 
 **Example of invalid fixture:**
+
 ```yaml
 # ❌ INVALID
 id: test.pack
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule        # Invalid: should be kebab-case
+  - id: test.rule # Invalid: should be kebab-case
     severity: warn
-    guidance: Test       # Missing: applies_to field
+    guidance: Test # Missing: applies_to field
 ```
 
 **Correct fixture:**
+
 ```yaml
 # ✅ VALID
 id: test-pack
@@ -115,19 +120,16 @@ See `tests/fixtures/valid-pack.yaml` for a complete valid example.
 Configurable mock that tracks calls and returns configured results.
 
 ```typescript
-import { MockExporter } from '../mocks/mock-exporter'
+import { MockExporter } from "../mocks/mock-exporter";
 
-const exporter = new MockExporter('test-exporter')
-  .setFilesToWrite(['output.txt'])
-  .setFidelityNotes(['Feature X not supported'])
-  .setContentHash('abc123')
+const exporter = new MockExporter("test-exporter").setFilesToWrite(["output.txt"]).setFidelityNotes(["Feature X not supported"]).setContentHash("abc123");
 
-engine.registerExporter(exporter)
+engine.registerExporter(exporter);
 
 // After sync
-expect(exporter.getCallCount()).toBe(1)
-expect(exporter.lastRequest?.rules).toHaveLength(1)
-expect(exporter.wasCalledWithScope('apps/web')).toBe(true)
+expect(exporter.getCallCount()).toBe(1);
+expect(exporter.lastRequest?.rules).toHaveLength(1);
+expect(exporter.wasCalledWithScope("apps/web")).toBe(true);
 ```
 
 ### FailingExporter
@@ -149,40 +151,43 @@ expect(result.success).toBe(false)
 ## Test Patterns
 
 ### Config Loading Tests
+
 ```typescript
-it('loads config from default path', async () => {
-  const config = `version: "1"\nmode: solo\n`
-  writeFileSync(configPath, config, 'utf8')
-  
-  const loaded = await loadConfig(configPath)
-  expect(loaded.mode).toBe('solo')
-})
+it("loads config from default path", async () => {
+  const config = `version: "1"\nmode: solo\n`;
+  writeFileSync(configPath, config, "utf8");
+
+  const loaded = await loadConfig(configPath);
+  expect(loaded.mode).toBe("solo");
+});
 ```
 
 ### Sync Engine Tests
+
 ```typescript
-it('syncs IR to agents successfully', async () => {
-  const mockExporter = new MockExporter('test-exporter')
-  engine.registerExporter(mockExporter)
-  
-  const result = await engine.syncToAgents(irPath, { dryRun: true })
-  
-  expect(result.success).toBe(true)
-  expect(mockExporter.getCallCount()).toBe(1)
-})
+it("syncs IR to agents successfully", async () => {
+  const mockExporter = new MockExporter("test-exporter");
+  engine.registerExporter(mockExporter);
+
+  const result = await engine.syncToAgents(irPath, { dryRun: true });
+
+  expect(result.success).toBe(true);
+  expect(mockExporter.getCallCount()).toBe(1);
+});
 ```
 
 ### Conflict Detection Tests
+
 ```typescript
-it('detects severity conflicts', () => {
-  const irRules = [{ id: 'test-rule', severity: 'warn', applies_to: ['**/*'] }]
-  const agentRules = [{ id: 'test-rule', severity: 'error', applies_to: ['**/*'] }]
-  
-  const result = detector.detectConflicts('cursor', irRules, agentRules)
-  
-  expect(result.hasConflicts).toBe(true)
-  expect(result.conflicts[0].field).toBe('severity')
-})
+it("detects severity conflicts", () => {
+  const irRules = [{ id: "test-rule", severity: "warn", applies_to: ["**/*"] }];
+  const agentRules = [{ id: "test-rule", severity: "error", applies_to: ["**/*"] }];
+
+  const result = detector.detectConflicts("cursor", irRules, agentRules);
+
+  expect(result.hasConflicts).toBe(true);
+  expect(result.conflicts[0].field).toBe("severity");
+});
 ```
 
 ## Coverage Goals
@@ -190,6 +195,7 @@ it('detects severity conflicts', () => {
 **Target:** >80% coverage for all modules
 
 **Current (Step 9):**
+
 - Config: ~95%
 - Scope: ~90%
 - File operations: ~85%
@@ -231,4 +237,3 @@ When adding new functionality:
 ---
 
 **Test Philosophy:** Tests should validate contracts, not implementation details. Use mocks for external dependencies. Keep tests fast (<100ms per test).
-

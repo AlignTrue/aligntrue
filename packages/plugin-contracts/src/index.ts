@@ -1,9 +1,9 @@
 /**
  * @aligntrue/plugin-contracts
- * 
+ *
  * Defines interfaces and contracts for all AlignTrue plugins.
  * This package contains no implementations, only type definitions.
- * 
+ *
  * Plugin types:
  * - Exporters: Convert IR to agent-specific formats
  * - Importers: Convert agent formats back to IR (future)
@@ -19,5 +19,4 @@ export type {
   ExportResult,
   ExporterPlugin,
   AdapterManifest,
-} from './exporter.js'
-
+} from "./exporter.js";

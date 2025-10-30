@@ -11,4 +11,3 @@ rules:
         workbench_setting: "editor.formatOnSave"
         diagnostic_code: "format-001"
         quick_fix_available: true
-

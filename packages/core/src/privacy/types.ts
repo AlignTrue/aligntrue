@@ -5,7 +5,7 @@
 /**
  * Network operations that require user consent
  */
-export type ConsentOperation = 'catalog' | 'git';
+export type ConsentOperation = "catalog" | "git";
 
 /**
  * Individual consent record
@@ -25,4 +25,3 @@ export interface ConsentStorage {
     granted_at: string;
   };
 }
-

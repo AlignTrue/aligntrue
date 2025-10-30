@@ -14,20 +14,20 @@ Shared UI primitives and design tokens for AlignTrue.
 
 ```tsx
 // In your app's global CSS file
-import "@aligntrue/ui/styles/tokens.css"
+import "@aligntrue/ui/styles/tokens.css";
 ```
 
 ### Use BrandLogo component
 
 ```tsx
-import { BrandLogo } from "@aligntrue/ui"
+import { BrandLogo } from "@aligntrue/ui";
 
 export function Header() {
   return (
     <header>
       <BrandLogo className="text-2xl" />
     </header>
-  )
+  );
 }
 ```
 
@@ -35,18 +35,15 @@ export function Header() {
 
 ```ts
 // tailwind.config.ts
-import type { Config } from "tailwindcss"
-import preset from "@aligntrue/ui/tailwind-preset"
+import type { Config } from "tailwindcss";
+import preset from "@aligntrue/ui/tailwind-preset";
 
 const config: Config = {
   presets: [preset],
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-  ],
-}
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+};
 
-export default config
+export default config;
 ```
 
 ## Token Categories
@@ -73,4 +70,3 @@ sm, base (default), md, lg, xl
 ## Notes
 
 Current tokens are minimal placeholders for Phase 1. These can be refined when branding is finalized without breaking consuming code.
-

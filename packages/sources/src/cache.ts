@@ -14,7 +14,7 @@ export class SourceCache {
     // SECURITY NOTE (Step 20):
     // When implementing cache operations in Step 27, ensure cachePath is validated
     // against directory traversal attacks using validateScopePath from @aligntrue/core.
-    // 
+    //
     // Required validations:
     // 1. Reject paths containing '..' (parent directory traversal)
     // 2. Reject absolute paths (must be relative to workspace)
@@ -27,17 +27,20 @@ export class SourceCache {
     //
     // See packages/core/tests/security/path-traversal.test.ts for test patterns.
   }
-  
+
   async get(key: string): Promise<CacheEntry | null> {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
   }
-  
-  async set(key: string, content: string, metadata?: Record<string, unknown>): Promise<void> {
-    throw new Error('Not implemented');
+
+  async set(
+    key: string,
+    content: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    throw new Error("Not implemented");
   }
-  
+
   async clear(): Promise<void> {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
   }
 }
-

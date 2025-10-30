@@ -1,6 +1,6 @@
 /**
  * Lockfile operations with hash modes (off/soft/strict)
- * 
+ *
  * @deprecated Import from './lockfile/index.js' instead
  * This file exists for backward compatibility during refactor
  */
@@ -12,7 +12,7 @@ export type {
   Mismatch,
   ValidationResult,
   EnforcementResult,
-} from './lockfile/index.js'
+} from "./lockfile/index.js";
 
 export {
   generateLockfile,
@@ -22,4 +22,4 @@ export {
   enforceLockfile,
   readLockfile,
   writeLockfile,
-} from './lockfile/index.js'
+} from "./lockfile/index.js";

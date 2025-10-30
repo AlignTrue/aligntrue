@@ -3,4 +3,3 @@
   "description": "Missing name field",
   "outputs": [".test/*.txt"]
 }
-

@@ -2,27 +2,31 @@
  * Privacy commands - manage user consent for network operations
  */
 
-import * as clack from '@clack/prompts';
-import { createConsentManager } from '@aligntrue/core';
-import { exitWithError } from '../utils/error-formatter.js';
-import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js';
+import * as clack from "@clack/prompts";
+import { createConsentManager } from "@aligntrue/core";
+import { exitWithError } from "../utils/error-formatter.js";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
 
 /**
  * Argument definitions for privacy command
  */
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
-    flag: '--all',
+    flag: "--all",
     hasValue: false,
-    description: 'Revoke all consents (for revoke subcommand)',
+    description: "Revoke all consents (for revoke subcommand)",
   },
   {
-    flag: '--help',
-    alias: '-h',
+    flag: "--help",
+    alias: "-h",
     hasValue: false,
-    description: 'Show this help message',
+    description: "Show this help message",
   },
-]
+];
 
 /**
  * Privacy command router
@@ -33,21 +37,21 @@ export async function privacyCommand(args: string[]): Promise<void> {
 
   if (!subcommand || parsed.help) {
     showStandardHelp({
-      name: 'privacy',
-      description: 'Privacy consent management',
-      usage: 'aligntrue privacy <subcommand> [options]',
+      name: "privacy",
+      description: "Privacy consent management",
+      usage: "aligntrue privacy <subcommand> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        'aligntrue privacy audit',
-        'aligntrue privacy revoke catalog',
-        'aligntrue privacy revoke git',
-        'aligntrue privacy revoke --all',
+        "aligntrue privacy audit",
+        "aligntrue privacy revoke catalog",
+        "aligntrue privacy revoke git",
+        "aligntrue privacy revoke --all",
       ],
       notes: [
-        'Subcommands:',
-        '  audit              List all consents with timestamps',
-        '  revoke <operation> Revoke specific consent (catalog/git)',
-        '  revoke --all       Revoke all consents',
+        "Subcommands:",
+        "  audit              List all consents with timestamps",
+        "  revoke <operation> Revoke specific consent (catalog/git)",
+        "  revoke --all       Revoke all consents",
       ],
     });
     process.exit(0);
@@ -55,18 +59,21 @@ export async function privacyCommand(args: string[]): Promise<void> {
   }
 
   switch (subcommand) {
-    case 'audit':
+    case "audit":
       await auditCommand();
       break;
-    case 'revoke':
-      await revokeCommand(parsed.positional.slice(1), parsed.flags['all'] as boolean | undefined);
+    case "revoke":
+      await revokeCommand(
+        parsed.positional.slice(1),
+        parsed.flags["all"] as boolean | undefined,
+      );
       break;
     default:
       exitWithError({
-        title: 'Unknown subcommand',
+        title: "Unknown subcommand",
         message: `Unknown privacy subcommand: ${subcommand}`,
         hint: 'Run "aligntrue privacy --help" to see available commands',
-        code: 'ERR_UNKNOWN_COMMAND',
+        code: "ERR_UNKNOWN_COMMAND",
       });
   }
 }
@@ -79,30 +86,32 @@ async function auditCommand(): Promise<void> {
   const consents = manager.listConsents();
 
   if (consents.length === 0) {
-    clack.log.info('No privacy consents granted yet');
+    clack.log.info("No privacy consents granted yet");
     console.log();
-    console.log('Network operations will prompt for consent when needed.');
-    console.log('Run "aligntrue privacy audit" after granting consent to see details.');
+    console.log("Network operations will prompt for consent when needed.");
+    console.log(
+      'Run "aligntrue privacy audit" after granting consent to see details.',
+    );
     return;
   }
 
-  clack.log.message('Privacy Consents');
+  clack.log.message("Privacy Consents");
   console.log();
 
   for (const consent of consents) {
     const timestamp = new Date(consent.granted_at);
-    const formattedDate = timestamp.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    const formattedDate = timestamp.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
-    const formattedTime = timestamp.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+    const formattedTime = timestamp.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     console.log(
-      `  ✓ ${consent.operation.padEnd(10)} Granted ${formattedDate} at ${formattedTime}`
+      `  ✓ ${consent.operation.padEnd(10)} Granted ${formattedDate} at ${formattedTime}`,
     );
   }
 
@@ -113,7 +122,10 @@ async function auditCommand(): Promise<void> {
 /**
  * Revoke command - revoke consent
  */
-async function revokeCommand(operations: string[], all?: boolean): Promise<void> {
+async function revokeCommand(
+  operations: string[],
+  all?: boolean,
+): Promise<void> {
   const manager = createConsentManager();
 
   // Handle --all flag
@@ -121,7 +133,7 @@ async function revokeCommand(operations: string[], all?: boolean): Promise<void>
     const consents = manager.listConsents();
 
     if (consents.length === 0) {
-      clack.log.info('No consents to revoke');
+      clack.log.info("No consents to revoke");
       return;
     }
 
@@ -131,14 +143,16 @@ async function revokeCommand(operations: string[], all?: boolean): Promise<void>
     });
 
     if (clack.isCancel(confirmed) || !confirmed) {
-      clack.cancel('Revoke cancelled');
+      clack.cancel("Revoke cancelled");
       return;
     }
 
     manager.revokeAll();
     clack.log.success(`Revoked all consents (${consents.length})`);
     console.log();
-    console.log('Network operations will prompt for consent again when needed.');
+    console.log(
+      "Network operations will prompt for consent again when needed.",
+    );
     return;
   }
 
@@ -147,20 +161,20 @@ async function revokeCommand(operations: string[], all?: boolean): Promise<void>
 
   if (!operation) {
     exitWithError({
-      title: 'Missing operation',
-      message: 'Specify operation to revoke: catalog or git',
+      title: "Missing operation",
+      message: "Specify operation to revoke: catalog or git",
       hint: 'Run "aligntrue privacy revoke --all" to revoke all consents',
-      code: 'ERR_MISSING_ARGUMENT',
+      code: "ERR_MISSING_ARGUMENT",
     });
     return;
   }
 
-  if (operation !== 'catalog' && operation !== 'git') {
+  if (operation !== "catalog" && operation !== "git") {
     exitWithError({
-      title: 'Invalid operation',
+      title: "Invalid operation",
       message: `Unknown operation: ${operation}`,
-      hint: 'Valid operations: catalog, git',
-      code: 'ERR_INVALID_ARGUMENT',
+      hint: "Valid operations: catalog, git",
+      code: "ERR_INVALID_ARGUMENT",
     });
     return;
   }
@@ -178,4 +192,3 @@ async function revokeCommand(operations: string[], all?: boolean): Promise<void>
   console.log();
   console.log(`Next sync will prompt for ${operation} consent again.`);
 }
-

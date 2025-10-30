@@ -14,7 +14,7 @@ rules:
       inputs:
         paths: ["test.txt"]
       evidence: "Null handling test"
-  
+
   - id: "canon.example.unicode"
     severity: "warn"
     applies_to: ["**/*.ts"]
@@ -25,7 +25,7 @@ rules:
         pattern: "[ñáéíóú]"
         allow: false
       evidence: "Unicode normalization test"
-  
+
   - id: "canon.example.floats"
     severity: "error"
     applies_to: ["**/Makefile"]
@@ -39,4 +39,3 @@ rules:
 integrity:
   algo: "jcs-sha256"
   value: "840dd6266c46666b0933e3fe238a55f338509fa1bbca87b53ff949e5dcbbc85b"
-

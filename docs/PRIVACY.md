@@ -5,6 +5,7 @@ AlignTrue respects your privacy and operates with transparency.
 ## Privacy-first by default
 
 AlignTrue operates **offline-first** and respects your privacy:
+
 - **No network calls by default** - Local rules only, zero external requests
 - **Telemetry opt-in** - Disabled by default, must explicitly enable
 - **Transparent network operations** - You approve what connects where
@@ -14,6 +15,7 @@ AlignTrue operates **offline-first** and respects your privacy:
 ## Telemetry overview
 
 Telemetry in AlignTrue is:
+
 - **Opt-in only** - Disabled by default
 - **Anonymous** - Uses a randomly generated UUID, not tied to your identity
 - **Local-first** - Stored locally in Phase 1, with optional sending in Phase 2+
@@ -57,6 +59,7 @@ We explicitly **never** collect:
 ### Validation
 
 AlignTrue validates every telemetry event before recording:
+
 - Rejects events containing file paths (forward/backward slashes)
 - Rejects events containing code keywords (`function`, `const`, `let`, etc.)
 - Rejects suspiciously long strings that might contain code
@@ -64,6 +67,7 @@ AlignTrue validates every telemetry event before recording:
 ### Local storage (Phase 1)
 
 In Phase 1, all telemetry is stored **locally only**:
+
 - Location: `.aligntrue/telemetry-events.json`
 - Rotation: Automatically keeps only the last 1,000 events
 - Deletion: Simply remove the file to delete all events
@@ -85,13 +89,14 @@ When we add the ability to send telemetry to our servers in Phase 2+:
 
 - **Storage**: `.aligntrue/telemetry-events.json` in your project
 - **Rotation**: Automatically limited to 1,000 most recent events
-- **Deletion**: 
+- **Deletion**:
   - Delete the file manually: `rm .aligntrue/telemetry-events.json`
   - Disable telemetry: `aligntrue telemetry off` (stops new events)
 
 ### Server-side (Phase 2+)
 
 When sending is implemented:
+
 - Events will be retained for 90 days maximum
 - You can request deletion via `aligntrue telemetry delete`
 - UUIDs can be rotated to start fresh
@@ -155,6 +160,7 @@ AlignTrue operates **offline-first** and only makes network calls when explicitl
 ### Default (no network) ✅
 
 By default, AlignTrue makes **zero network requests**:
+
 - ✅ Local rules (`.aligntrue/rules.md`)
 - ✅ Telemetry storage (local-only in Phase 1)
 - ✅ All sync operations
@@ -167,11 +173,13 @@ By default, AlignTrue makes **zero network requests**:
 Network calls only occur when you explicitly configure these sources:
 
 #### Catalog sources
+
 ```yaml
 sources:
   - type: catalog
     id: packs/base/base-global
 ```
+
 - Fetches from `https://raw.githubusercontent.com/AlignTrue/aligns`
 - **First-time consent:** AlignTrue asks permission before first fetch
 - Shows what will be fetched and from where
@@ -179,11 +187,13 @@ sources:
 - Can be revoked at any time
 
 #### Git sources
+
 ```yaml
 sources:
   - type: git
     url: https://github.com/yourorg/rules
 ```
+
 - Fetches from specified repository
 - **First-time consent:** Same consent flow as catalog
 - Clear disclosure of external repository URL
@@ -191,6 +201,7 @@ sources:
 See [Git Sources Guide](git-sources.md) for full documentation on configuration, caching, and troubleshooting.
 
 #### Telemetry sending (Phase 2+)
+
 - Separate opt-in required (beyond enabling telemetry)
 - Explicit consent with clear disclosure
 - Shows exactly what data will be sent
@@ -201,6 +212,7 @@ See [Git Sources Guide](git-sources.md) for full documentation on configuration,
 When you add a network source, AlignTrue prompts for consent before the first network operation:
 
 **How it works:**
+
 1. **Detect** network operations needed (catalog or git sources)
 2. **Prompt** for permission with clear description
 3. **Store** consent in `.aligntrue/privacy-consent.json` (git-ignored)
@@ -212,12 +224,15 @@ The consent check happens when a provider attempts a network operation. If conse
 ### Privacy controls (Phase 2 - Implemented)
 
 #### Audit consents
+
 ```bash
 aligntrue privacy audit
 ```
+
 Shows all granted consents with timestamps and details.
 
 **Example output:**
+
 ```
 Privacy Consents
 
@@ -228,17 +243,21 @@ Use 'aligntrue privacy revoke <operation>' to revoke
 ```
 
 #### Revoke consent
+
 ```bash
 aligntrue privacy revoke catalog    # Revoke specific operation
 aligntrue privacy revoke git        # Revoke git consent
 aligntrue privacy revoke --all      # Revoke everything
 ```
+
 Removes consent; future syncs will prompt again when network is needed.
 
 #### Offline mode
+
 ```bash
 aligntrue sync --offline
 ```
+
 Skips all network operations, uses cache only, fails gracefully if network required.
 
 ### Viewing your data
@@ -246,16 +265,19 @@ Skips all network operations, uses cache only, fails gracefully if network requi
 All locally stored data is in plain JSON:
 
 **Telemetry events:**
+
 ```bash
 cat .aligntrue/telemetry-events.json | jq .
 ```
 
 **Privacy consents:**
+
 ```bash
 cat .aligntrue/privacy-consent.json | jq .
 ```
 
 **Example consent file:**
+
 ```json
 {
   "catalog": {
@@ -270,11 +292,13 @@ cat .aligntrue/privacy-consent.json | jq .
 ```
 
 **Catalog cache:**
+
 ```bash
 ls .aligntrue/.cache/catalog/
 ```
 
 **Git cache:**
+
 ```bash
 ls .aligntrue/.cache/git/
 ```
@@ -282,11 +306,13 @@ ls .aligntrue/.cache/git/
 ## Compliance
 
 AlignTrue's privacy approach is designed to be compliant with:
+
 - GDPR (General Data Protection Regulation)
 - CCPA (California Consumer Privacy Act)
 - Enterprise privacy policies
 
 Because we:
+
 - Collect no PII
 - Provide explicit opt-in for all network operations
 - Store locally by default with no external requests
@@ -298,4 +324,3 @@ Because we:
 
 **Last Updated**: 2025-10-29  
 **Policy Version**: 1.1 (Phase 2 - Network consent implemented)
-

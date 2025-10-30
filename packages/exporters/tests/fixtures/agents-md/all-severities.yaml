@@ -20,4 +20,3 @@ rules:
       - "**/*.ts"
     guidance: |
       Use const instead of let when variables are not reassigned.
-

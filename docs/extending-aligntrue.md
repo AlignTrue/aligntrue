@@ -73,30 +73,30 @@ Create `packages/exporters/src/<agent-name>/manifest.json`:
 Create `packages/exporters/src/<agent-name>/index.ts`:
 
 ```typescript
-import { ExporterPlugin, ScopedExportRequest, ExportResult } from '@aligntrue/plugin-contracts';
-import { AtomicFileWriter } from '@aligntrue/file-utils';
-import { createHash } from 'crypto';
+import { ExporterPlugin, ScopedExportRequest, ExportResult } from "@aligntrue/plugin-contracts";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { createHash } from "crypto";
 
 export class MyAgentExporter implements ExporterPlugin {
-  name = 'my-agent';
-  version = '1.0.0';
+  name = "my-agent";
+  version = "1.0.0";
 
   async export(request: ScopedExportRequest): Promise<ExportResult> {
     const { scope, rules, dryRun } = request;
-    
+
     // Generate output content
     const content = this.formatRules(rules);
-    
+
     // Compute content hash
-    const hash = createHash('sha256').update(content).digest('hex');
-    
+    const hash = createHash("sha256").update(content).digest("hex");
+
     // Write file (if not dry-run)
-    const outputPath = '.myagent/rules.md';
+    const outputPath = ".myagent/rules.md";
     if (!dryRun) {
       const writer = new AtomicFileWriter();
       await writer.writeFile(outputPath, content);
     }
-    
+
     return {
       filesWritten: dryRun ? [] : [outputPath],
       warnings: [],
@@ -104,15 +104,15 @@ export class MyAgentExporter implements ExporterPlugin {
       metadata: {
         scope: scope.name,
         ruleCount: rules.length,
-        contentHash: hash
-      }
+        contentHash: hash,
+      },
     };
   }
 
   private formatRules(rules: AlignRule[]): string {
     // Convert rules to agent format
-    let output = '# My Agent Rules\n\n';
-    
+    let output = "# My Agent Rules\n\n";
+
     for (const rule of rules) {
       output += `## ${rule.summary}\n\n`;
       output += `**Severity:** ${rule.severity}\n\n`;
@@ -120,13 +120,13 @@ export class MyAgentExporter implements ExporterPlugin {
         output += `${rule.guidance}\n\n`;
       }
     }
-    
+
     return output;
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
-    
+
     // Check for unsupported fields
     for (const rule of rules) {
       if (rule.check) {
@@ -136,7 +136,7 @@ export class MyAgentExporter implements ExporterPlugin {
         notes.push(`Rule '${rule.id}': autofix not supported`);
       }
     }
-    
+
     return notes;
   }
 }
@@ -158,13 +158,13 @@ export default function createExporter(): ExporterPlugin {
 Create `packages/exporters/tests/<agent-name>.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { MyAgentExporter } from '../src/my-agent';
-import { unlinkSync, existsSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { MyAgentExporter } from "../src/my-agent";
+import { unlinkSync, existsSync } from "fs";
 
-describe('MyAgentExporter', () => {
+describe("MyAgentExporter", () => {
   const exporter = new MyAgentExporter();
-  const outputPath = '.myagent/rules.md';
+  const outputPath = ".myagent/rules.md";
 
   afterEach(() => {
     if (existsSync(outputPath)) {
@@ -172,51 +172,53 @@ describe('MyAgentExporter', () => {
     }
   });
 
-  it('exports single rule', async () => {
+  it("exports single rule", async () => {
     const result = await exporter.export({
-      scope: { name: 'default', path: '.' },
-      rules: [{
-        id: 'test.rule',
-        summary: 'Test rule',
-        severity: 'error',
-        guidance: 'Do the thing'
-      }],
+      scope: { name: "default", path: "." },
+      rules: [
+        {
+          id: "test.rule",
+          summary: "Test rule",
+          severity: "error",
+          guidance: "Do the thing",
+        },
+      ],
       config: {},
-      dryRun: false
+      dryRun: false,
     });
 
     expect(result.filesWritten).toEqual([outputPath]);
     expect(existsSync(outputPath)).toBe(true);
   });
 
-  it('respects dry-run', async () => {
+  it("respects dry-run", async () => {
     const result = await exporter.export({
-      scope: { name: 'default', path: '.' },
-      rules: [{ id: 'test.rule', summary: 'Test', severity: 'error' }],
+      scope: { name: "default", path: "." },
+      rules: [{ id: "test.rule", summary: "Test", severity: "error" }],
       config: {},
-      dryRun: true
+      dryRun: true,
     });
 
     expect(result.filesWritten).toEqual([]);
     expect(existsSync(outputPath)).toBe(false);
   });
 
-  it('reports fidelity notes for unsupported fields', async () => {
+  it("reports fidelity notes for unsupported fields", async () => {
     const result = await exporter.export({
-      scope: { name: 'default', path: '.' },
-      rules: [{
-        id: 'test.rule',
-        summary: 'Test',
-        severity: 'error',
-        check: { type: 'file_presence', paths: ['README.md'] }
-      }],
+      scope: { name: "default", path: "." },
+      rules: [
+        {
+          id: "test.rule",
+          summary: "Test",
+          severity: "error",
+          check: { type: "file_presence", paths: ["README.md"] },
+        },
+      ],
       config: {},
-      dryRun: true
+      dryRun: true,
     });
 
-    expect(result.fidelityNotes).toContain(
-      "Rule 'test.rule': machine checks not supported"
-    );
+    expect(result.fidelityNotes).toContain("Rule 'test.rule': machine checks not supported");
   });
 });
 ```
@@ -343,10 +345,7 @@ Used by: Agents requiring both rules + config (e.g., Cursor + MCP)
 
 ```typescript
 return {
-  filesWritten: [
-    '.cursor/rules/aligntrue.mdc',
-    '.cursor/mcp.json'
-  ],
+  filesWritten: [".cursor/rules/aligntrue.mdc", ".cursor/mcp.json"],
   // ...
 };
 ```
@@ -385,7 +384,7 @@ Fields marked volatile are excluded from hashing:
 ```yaml
 vendor:
   _meta:
-    volatile: ['my-agent.cache', 'my-agent.lastSeen']
+    volatile: ["my-agent.cache", "my-agent.lastSeen"]
   my-agent:
     cache: "temporary data"
     lastSeen: "2025-01-01"
@@ -402,13 +401,13 @@ Report when you cannot fully represent a field:
 ```typescript
 private computeFidelityNotes(rules: AlignRule[]): string[] {
   const notes: string[] = [];
-  
+
   for (const rule of rules) {
     // Unsupported fields
     if (rule.check) {
       notes.push(`Rule '${rule.id}': machine checks not supported`);
     }
-    
+
     // Cross-agent vendor metadata
     const otherVendors = Object.keys(rule.vendor || {})
       .filter(k => k !== 'my-agent' && k !== '_meta');
@@ -416,7 +415,7 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
       notes.push(`Rule '${rule.id}': vendor metadata for ${otherVendors.join(', ')}`);
     }
   }
-  
+
   return notes;
 }
 ```
@@ -443,15 +442,15 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
 Use Vitest snapshots to validate output format:
 
 ```typescript
-it('generates expected format', async () => {
+it("generates expected format", async () => {
   const result = await exporter.export({
-    scope: { name: 'default', path: '.' },
+    scope: { name: "default", path: "." },
     rules: [fixture.singleRule],
     config: {},
-    dryRun: true
+    dryRun: true,
   });
 
-  const content = await fs.readFile(outputPath, 'utf-8');
+  const content = await fs.readFile(outputPath, "utf-8");
   expect(content).toMatchSnapshot();
 });
 ```
@@ -465,10 +464,10 @@ Create reusable fixtures in `tests/fixtures/<agent-name>/`:
 ```typescript
 // tests/fixtures/my-agent/single-rule.yaml
 export const singleRule: AlignRule = {
-  id: 'test.single-rule',
-  summary: 'Test rule',
-  severity: 'error',
-  guidance: 'Do the thing'
+  id: "test.single-rule",
+  summary: "Test rule",
+  severity: "error",
+  guidance: "Do the thing",
 };
 ```
 
@@ -542,4 +541,3 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 ---
 
 **Questions?** Open a discussion on GitHub. We're happy to help new contributors!
-

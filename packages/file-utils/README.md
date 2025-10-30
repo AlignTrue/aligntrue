@@ -30,23 +30,23 @@ This package has **zero workspace dependencies** - it's pure Node.js utilities.
 Safely write files with temp + rename pattern:
 
 ```typescript
-import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 
-const writer = new AtomicFileWriter()
+const writer = new AtomicFileWriter();
 
 // Write atomically (uses temp file + rename)
-await writer.write('/path/to/file.txt', 'content')
+await writer.write("/path/to/file.txt", "content");
 
 // Creates parent directories automatically
-await writer.write('/path/nested/deep/file.txt', 'content')
+await writer.write("/path/nested/deep/file.txt", "content");
 
 // Tracks checksums to detect manual edits
-writer.trackFile('/path/to/file.txt')
-await writer.write('/path/to/file.txt', 'new content')  // Works
+writer.trackFile("/path/to/file.txt");
+await writer.write("/path/to/file.txt", "new content"); // Works
 
 // Manually edit the file externally...
 // Next write will throw error (overwrite protection)
-await writer.write('/path/to/file.txt', 'more content')  // Throws!
+await writer.write("/path/to/file.txt", "more content"); // Throws!
 ```
 
 ### Checksum Utilities
@@ -54,16 +54,16 @@ await writer.write('/path/to/file.txt', 'more content')  // Throws!
 Compute SHA-256 checksums for files and content:
 
 ```typescript
-import { computeFileChecksum, computeContentChecksum } from '@aligntrue/file-utils'
+import { computeFileChecksum, computeContentChecksum } from "@aligntrue/file-utils";
 
 // From file
-const hash1 = computeFileChecksum('/path/to/file.txt')
+const hash1 = computeFileChecksum("/path/to/file.txt");
 
 // From string
-const hash2 = computeContentChecksum('content string')
+const hash2 = computeContentChecksum("content string");
 
 // Both produce hex SHA-256 (64 characters)
-console.log(hash1)  // "a1b2c3d4..."
+console.log(hash1); // "a1b2c3d4..."
 ```
 
 ### Directory Creation
@@ -71,16 +71,16 @@ console.log(hash1)  // "a1b2c3d4..."
 Ensure directories exist before writing:
 
 ```typescript
-import { ensureDirectoryExists } from '@aligntrue/file-utils'
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 
 // Creates all parent directories if needed
-ensureDirectoryExists('/path/to/nested/dir')
+ensureDirectoryExists("/path/to/nested/dir");
 
 // Idempotent (safe to call multiple times)
-ensureDirectoryExists('/existing/dir')
+ensureDirectoryExists("/existing/dir");
 
 // Validates path is actually a directory
-ensureDirectoryExists('/path/to/file.txt')  // Throws if file exists
+ensureDirectoryExists("/path/to/file.txt"); // Throws if file exists
 ```
 
 ## Usage
@@ -88,33 +88,33 @@ ensureDirectoryExists('/path/to/file.txt')  // Throws if file exists
 ### Basic Write
 
 ```typescript
-import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 
-const writer = new AtomicFileWriter()
-await writer.write('.aligntrue/config.yaml', yamlContent)
+const writer = new AtomicFileWriter();
+await writer.write(".aligntrue/config.yaml", yamlContent);
 ```
 
 ### Overwrite Protection
 
 ```typescript
-const writer = new AtomicFileWriter()
+const writer = new AtomicFileWriter();
 
 // Initial write
-await writer.write('file.txt', 'original')
+await writer.write("file.txt", "original");
 
 // Track for overwrite protection
-writer.trackFile('file.txt')
+writer.trackFile("file.txt");
 
 // Safe: checksum matches
-await writer.write('file.txt', 'updated')
+await writer.write("file.txt", "updated");
 
 // User manually edits file.txt...
 
 // Detected: checksum mismatch
 try {
-  await writer.write('file.txt', 'more updates')
+  await writer.write("file.txt", "more updates");
 } catch (err) {
-  console.log('File was manually edited!')
+  console.log("File was manually edited!");
 }
 ```
 
@@ -123,37 +123,37 @@ try {
 For interactive prompts (used by CLI):
 
 ```typescript
-const writer = new AtomicFileWriter()
+const writer = new AtomicFileWriter();
 
 writer.setChecksumHandler(async (filePath, lastChecksum, currentChecksum, interactive, force) => {
   if (force) {
-    return 'overwrite'  // --force flag
+    return "overwrite"; // --force flag
   }
 
   if (interactive) {
     // Prompt user: [o]verwrite [k]eep [a]bort
-    const answer = await promptUser()
-    return answer  // 'overwrite' | 'keep' | 'abort'
+    const answer = await promptUser();
+    return answer; // 'overwrite' | 'keep' | 'abort'
   }
 
-  return 'abort'  // CI mode: fail on mismatch
-})
+  return "abort"; // CI mode: fail on mismatch
+});
 
-await writer.write('file.txt', 'new content', { interactive: true })
+await writer.write("file.txt", "new content", { interactive: true });
 ```
 
 ### Rollback on Failure
 
 ```typescript
-const writer = new AtomicFileWriter()
+const writer = new AtomicFileWriter();
 
 try {
-  await writer.write('file1.txt', 'content1')
-  await writer.write('file2.txt', 'content2')
-  await writer.write('file3.txt', 'invalid')  // Fails
+  await writer.write("file1.txt", "content1");
+  await writer.write("file2.txt", "content2");
+  await writer.write("file3.txt", "invalid"); // Fails
 } catch (err) {
-  writer.rollback()  // Restores file1 and file2 from backups
-  throw err
+  writer.rollback(); // Restores file1 and file2 from backups
+  throw err;
 }
 ```
 
@@ -199,37 +199,35 @@ If any operation fails, `rollback()` restores from backups.
 ```typescript
 class AtomicFileWriter {
   // Write content atomically with optional overwrite protection
-  async write(filePath: string, content: string, options?: {
-    interactive?: boolean
-    force?: boolean
-  }): Promise<void>
+  async write(
+    filePath: string,
+    content: string,
+    options?: {
+      interactive?: boolean;
+      force?: boolean;
+    },
+  ): Promise<void>;
 
   // Set custom handler for checksum mismatches
-  setChecksumHandler(handler: (
-    filePath: string,
-    lastChecksum: string,
-    currentChecksum: string,
-    interactive: boolean,
-    force: boolean
-  ) => Promise<'overwrite' | 'keep' | 'abort'>): void
+  setChecksumHandler(handler: (filePath: string, lastChecksum: string, currentChecksum: string, interactive: boolean, force: boolean) => Promise<"overwrite" | "keep" | "abort">): void;
 
   // Track existing file's checksum for overwrite protection
-  trackFile(filePath: string): void
+  trackFile(filePath: string): void;
 
   // Get checksum record for a file
-  getChecksum(filePath: string): ChecksumRecord | undefined
+  getChecksum(filePath: string): ChecksumRecord | undefined;
 
   // Rollback writes by restoring from backups
-  rollback(): void
+  rollback(): void;
 
   // Clear all tracked checksums and backups
-  clear(): void
+  clear(): void;
 }
 
 interface ChecksumRecord {
-  filePath: string
-  checksum: string
-  timestamp: string
+  filePath: string;
+  checksum: string;
+  timestamp: string;
 }
 ```
 
@@ -237,13 +235,13 @@ interface ChecksumRecord {
 
 ```typescript
 // Compute SHA-256 checksum of file contents
-function computeFileChecksum(filePath: string): string
+function computeFileChecksum(filePath: string): string;
 
 // Compute SHA-256 checksum of string content
-function computeContentChecksum(content: string): string
+function computeContentChecksum(content: string): string;
 
 // Create directory and all parents (idempotent)
-function ensureDirectoryExists(dirPath: string): void
+function ensureDirectoryExists(dirPath: string): void;
 ```
 
 ## Testing
@@ -255,6 +253,7 @@ pnpm test
 ```
 
 Tests cover:
+
 - Atomic writes and temp file cleanup
 - Checksum computation and tracking
 - Overwrite protection and manual edit detection
@@ -265,12 +264,14 @@ Tests cover:
 ## Why Separate Package?
 
 File utilities are infrastructure primitives used by:
+
 - `@aligntrue/core` (sync engine writes)
 - `@aligntrue/exporters` (all 32 exporters)
 - `@aligntrue/cli` (config and lockfile writes)
 - Future: `@aligntrue/importers`, MCP server, etc.
 
 Keeping them separate:
+
 1. Avoids circular dependencies
 2. Makes utilities easily testable in isolation
 3. Enables reuse across all packages
@@ -279,4 +280,3 @@ Keeping them separate:
 ## License
 
 MIT
-

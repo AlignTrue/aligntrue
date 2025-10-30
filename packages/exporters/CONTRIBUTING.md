@@ -61,13 +61,12 @@ Create `manifest.json` with required fields:
   "outputs": [".mytool/*.txt"],
   "handler": "./index.ts",
   "license": "MIT",
-  "fidelityNotes": [
-    "List any semantic mapping limitations here"
-  ]
+  "fidelityNotes": ["List any semantic mapping limitations here"]
 }
 ```
 
 **Validation rules:**
+
 - `name` must match pattern `^[a-z0-9-]+$` (lowercase alphanumeric with hyphens)
 - `version` must be valid semver `^\\d+\\.\\d+\\.\\d+$`
 - `description` minimum 10 characters
@@ -78,85 +77,79 @@ Create `manifest.json` with required fields:
 Create `index.ts`:
 
 ```typescript
-import type {
-  ExporterPlugin,
-  ScopedExportRequest,
-  ExportOptions,
-  ExportResult
-} from '../types.js'
-import { writeFileSync, mkdirSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { createHash } from 'node:crypto'
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult } from "../types.js";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { createHash } from "node:crypto";
 
 export class MyAdapterExporter implements ExporterPlugin {
-  name = 'my-adapter'
-  version = '1.0.0'
-  
-  async export(
-    request: ScopedExportRequest,
-    options: ExportOptions
-  ): Promise<ExportResult> {
-    const { scope, rules, outputPath } = request
-    const { outputDir, dryRun, backup } = options
-    
+  name = "my-adapter";
+  version = "1.0.0";
+
+  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
+    const { scope, rules, outputPath } = request;
+    const { outputDir, dryRun, backup } = options;
+
     // Generate output content
-    const content = this.generateOutput(rules, scope)
-    
+    const content = this.generateOutput(rules, scope);
+
     // Compute content hash
-    const contentHash = this.computeHash(content)
-    
+    const contentHash = this.computeHash(content);
+
     // Write file (unless dry-run)
-    const filesWritten: string[] = []
+    const filesWritten: string[] = [];
     if (!dryRun) {
-      const fullPath = join(outputDir, outputPath)
-      mkdirSync(dirname(fullPath), { recursive: true })
-      
+      const fullPath = join(outputDir, outputPath);
+      mkdirSync(dirname(fullPath), { recursive: true });
+
       if (backup) {
         // Backup logic if needed
       }
-      
-      writeFileSync(fullPath, content, 'utf-8')
-      filesWritten.push(fullPath)
+
+      writeFileSync(fullPath, content, "utf-8");
+      filesWritten.push(fullPath);
     }
-    
+
     // Collect fidelity notes
-    const fidelityNotes = this.getFidelityNotes(rules)
-    
+    const fidelityNotes = this.getFidelityNotes(rules);
+
     return {
       success: true,
       filesWritten,
       contentHash,
-      fidelityNotes
-    }
+      fidelityNotes,
+    };
   }
-  
+
   private generateOutput(rules: AlignRule[], scope: ResolvedScope): string {
     // Your output generation logic
-    return rules.map(rule => {
-      return `# ${rule.id}\n${rule.guidance || ''}`
-    }).join('\n\n')
+    return rules
+      .map((rule) => {
+        return `# ${rule.id}\n${rule.guidance || ""}`;
+      })
+      .join("\n\n");
   }
-  
+
   private computeHash(content: string): string {
-    return createHash('sha256').update(content).digest('hex')
+    return createHash("sha256").update(content).digest("hex");
   }
-  
+
   private getFidelityNotes(rules: AlignRule[]): string[] {
     // Check for features not supported by target format
-    const notes: string[] = []
-    
+    const notes: string[] = [];
+
     // Example: check if severity levels are used
-    const hasSeverity = rules.some(r => r.severity && r.severity !== 'warn')
+    const hasSeverity = rules.some((r) => r.severity && r.severity !== "warn");
     if (hasSeverity) {
-      notes.push('Severity levels mapped to comments (not enforced)')
+      notes.push("Severity levels mapped to comments (not enforced)");
     }
-    
-    return notes
+
+    return notes;
   }
 }
 
 // Export as default for registry loading
-export default MyAdapterExporter
+export default MyAdapterExporter;
 ```
 
 ### 3. Write Tests
@@ -164,101 +157,101 @@ export default MyAdapterExporter
 Create comprehensive tests with snapshots:
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
-import { MyAdapterExporter } from './index.js'
-import type { ScopedExportRequest, ExportOptions } from '../types.js'
-import { mkdirSync, rmSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { describe, it, expect, beforeEach } from "vitest";
+import { MyAdapterExporter } from "./index.js";
+import type { ScopedExportRequest, ExportOptions } from "../types.js";
+import { mkdirSync, rmSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
-describe('MyAdapterExporter', () => {
-  const tempDir = join(__dirname, 'temp')
-  let exporter: MyAdapterExporter
-  
+describe("MyAdapterExporter", () => {
+  const tempDir = join(__dirname, "temp");
+  let exporter: MyAdapterExporter;
+
   beforeEach(() => {
-    exporter = new MyAdapterExporter()
-    
+    exporter = new MyAdapterExporter();
+
     // Clean and create temp directory
     try {
-      rmSync(tempDir, { recursive: true })
+      rmSync(tempDir, { recursive: true });
     } catch {}
-    mkdirSync(tempDir, { recursive: true })
-  })
-  
+    mkdirSync(tempDir, { recursive: true });
+  });
+
   afterEach(() => {
     try {
-      rmSync(tempDir, { recursive: true })
+      rmSync(tempDir, { recursive: true });
     } catch {}
-  })
-  
-  it('has correct name and version', () => {
-    expect(exporter.name).toBe('my-adapter')
-    expect(exporter.version).toBe('1.0.0')
-  })
-  
-  it('exports rules successfully', async () => {
+  });
+
+  it("has correct name and version", () => {
+    expect(exporter.name).toBe("my-adapter");
+    expect(exporter.version).toBe("1.0.0");
+  });
+
+  it("exports rules successfully", async () => {
     const request: ScopedExportRequest = {
       scope: {
-        path: '.',
-        normalizedPath: '.',
-        isDefault: true
+        path: ".",
+        normalizedPath: ".",
+        isDefault: true,
       },
       rules: [
         {
-          id: 'test-rule',
-          severity: 'warn',
-          applies_to: ['**/*.ts'],
-          guidance: 'Test guidance'
-        }
+          id: "test-rule",
+          severity: "warn",
+          applies_to: ["**/*.ts"],
+          guidance: "Test guidance",
+        },
       ],
-      outputPath: '.mytool/rules.txt'
-    }
-    
+      outputPath: ".mytool/rules.txt",
+    };
+
     const options: ExportOptions = {
       outputDir: tempDir,
-      dryRun: false
-    }
-    
-    const result = await exporter.export(request, options)
-    
-    expect(result.success).toBe(true)
-    expect(result.filesWritten).toHaveLength(1)
-    expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/)
-  })
-  
-  it('respects dry-run mode', async () => {
-    const result = await exporter.export(request, { ...options, dryRun: true })
-    
-    expect(result.success).toBe(true)
-    expect(result.filesWritten).toHaveLength(0)
-  })
-  
-  it('matches snapshot for standard rules', async () => {
-    const output = await exporter.export(request, options)
-    const content = readFileSync(output.filesWritten[0], 'utf-8')
-    
-    expect(content).toMatchSnapshot()
-  })
-  
-  it('includes fidelity notes when applicable', async () => {
+      dryRun: false,
+    };
+
+    const result = await exporter.export(request, options);
+
+    expect(result.success).toBe(true);
+    expect(result.filesWritten).toHaveLength(1);
+    expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("respects dry-run mode", async () => {
+    const result = await exporter.export(request, { ...options, dryRun: true });
+
+    expect(result.success).toBe(true);
+    expect(result.filesWritten).toHaveLength(0);
+  });
+
+  it("matches snapshot for standard rules", async () => {
+    const output = await exporter.export(request, options);
+    const content = readFileSync(output.filesWritten[0], "utf-8");
+
+    expect(content).toMatchSnapshot();
+  });
+
+  it("includes fidelity notes when applicable", async () => {
     const request: ScopedExportRequest = {
-      scope: { path: '.', normalizedPath: '.', isDefault: true },
+      scope: { path: ".", normalizedPath: ".", isDefault: true },
       rules: [
         {
-          id: 'test-rule',
-          severity: 'error', // Non-default severity
-          applies_to: ['**/*.ts'],
-          guidance: 'Test'
-        }
+          id: "test-rule",
+          severity: "error", // Non-default severity
+          applies_to: ["**/*.ts"],
+          guidance: "Test",
+        },
       ],
-      outputPath: '.mytool/rules.txt'
-    }
-    
-    const result = await exporter.export(request, options)
-    
-    expect(result.fidelityNotes).toBeDefined()
-    expect(result.fidelityNotes?.length).toBeGreaterThan(0)
-  })
-})
+      outputPath: ".mytool/rules.txt",
+    };
+
+    const result = await exporter.export(request, options);
+
+    expect(result.fidelityNotes).toBeDefined();
+    expect(result.fidelityNotes?.length).toBeGreaterThan(0);
+  });
+});
 ```
 
 ### 4. Validate Manifest
@@ -285,14 +278,15 @@ pnpm test
 **Required:** Golden output tests that verify byte-identical exports
 
 ```typescript
-it('matches snapshot', async () => {
-  const output = await exporter.export(request, options)
-  const content = readFileSync(output.filesWritten[0], 'utf-8')
-  expect(content).toMatchSnapshot()
-})
+it("matches snapshot", async () => {
+  const output = await exporter.export(request, options);
+  const content = readFileSync(output.filesWritten[0], "utf-8");
+  expect(content).toMatchSnapshot();
+});
 ```
 
 **Update snapshots:**
+
 ```bash
 pnpm test -- -u
 ```
@@ -340,11 +334,13 @@ Before submitting your PR:
 ## Versioning Policy
 
 **Pre-1.0 (Current)**
+
 - Schema may change without migration framework
 - Breaking changes allowed with notice
 - Adapters should be flexible
 
 **Post-1.0**
+
 - Schema locked for breaking changes
 - Migration framework required
 - Semver strictly enforced
@@ -357,4 +353,3 @@ Before submitting your PR:
 ## License
 
 By contributing, you agree to license your work under the MIT License.
-

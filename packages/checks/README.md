@@ -24,27 +24,27 @@ pnpm add @aligntrue/checks
 ### Programmatic API
 
 ```typescript
-import { runChecks, emitSarif, emitJson } from '@aligntrue/checks'
-import { parseYamlToJson } from '@aligntrue/schema'
-import { readFileSync } from 'fs'
+import { runChecks, emitSarif, emitJson } from "@aligntrue/checks";
+import { parseYamlToJson } from "@aligntrue/schema";
+import { readFileSync } from "fs";
 
 // Load and parse Align pack
-const alignYaml = readFileSync('pack.aligntrue.yaml', 'utf8')
-const alignPack = parseYamlToJson(alignYaml)
+const alignYaml = readFileSync("pack.aligntrue.yaml", "utf8");
+const alignPack = parseYamlToJson(alignYaml);
 
 // Run checks
 const results = await runChecks(alignPack, {
-  workingDir: '/path/to/project',
+  workingDir: "/path/to/project",
   allowExec: false, // Set to true to enable command_runner checks
-})
+});
 
 // Emit SARIF for CI
-const sarif = emitSarif(results)
-console.log(JSON.stringify(sarif, null, 2))
+const sarif = emitSarif(results);
+console.log(JSON.stringify(sarif, null, 2));
 
 // Or emit JSON for scripting
-const json = emitJson(results)
-console.log(`Passed: ${json.summary.passed}, Failed: ${json.summary.failed}`)
+const json = emitJson(results);
+console.log(`Passed: ${json.summary.passed}, Failed: ${json.summary.failed}`);
 ```
 
 ### CLI Script
@@ -153,6 +153,7 @@ Executes a shell command and validates exit code.
 Runs all checks in an Align pack.
 
 **Parameters:**
+
 - `alignPack: AlignPack` - Validated Align pack object
 - `options: RunChecksOptions` - Execution options
   - `fileProvider?: FileProvider` - Custom file provider (defaults to DiskFileProvider)
@@ -169,6 +170,7 @@ Runs all checks in an Align pack.
 Converts check results to SARIF 2.1.0 format.
 
 **Parameters:**
+
 - `results: CheckResult[]` - Check results from `runChecks`
 - `toolVersion?: string` - Tool version string (default: `'0.1.0'`)
 
@@ -179,6 +181,7 @@ Converts check results to SARIF 2.1.0 format.
 Converts check results to simple JSON format.
 
 **Parameters:**
+
 - `results: CheckResult[]` - Check results from `runChecks`
 
 **Returns:** `JsonFindings` - JSON findings object with summary and findings array
@@ -189,14 +192,15 @@ Abstract interface for file access. Implement this to use custom file sources.
 
 ```typescript
 interface FileProvider {
-  glob(pattern: string, options?: GlobOptions): Promise<string[]>
-  readFile(path: string): Promise<string>
-  exists(path: string): Promise<boolean>
-  readJson(path: string): Promise<unknown>
+  glob(pattern: string, options?: GlobOptions): Promise<string[]>;
+  readFile(path: string): Promise<string>;
+  exists(path: string): Promise<boolean>;
+  readJson(path: string): Promise<unknown>;
 }
 ```
 
 **Implementations:**
+
 - `DiskFileProvider` - Reads from local filesystem
 - Custom implementations for zip files, Git repos, remote storage, etc.
 
@@ -205,16 +209,19 @@ interface FileProvider {
 The `command_runner` check type is **disabled by default** for security.
 
 To enable:
+
 1. Pass `allowExec: true` to `runChecks`
 2. Optionally provide `envWhitelist` to restrict environment variables
 3. All commands run with configurable timeout (default 30s)
 
 Commands are executed in a shell with:
+
 - Working directory set via `working_dir` input or context `workingDir`
 - Only whitelisted environment variables (if provided)
 - Timeout enforcement (kills process after timeout)
 
 **Best practices:**
+
 - Only enable `allowExec` in trusted CI environments
 - Use `envWhitelist` to limit exposed secrets
 - Set appropriate `timeout_ms` for each command
@@ -238,14 +245,14 @@ Commands are executed in a shell with:
 ### VS Code Extension
 
 ```typescript
-import { runChecks, emitSarif } from '@aligntrue/checks'
+import { runChecks, emitSarif } from "@aligntrue/checks";
 
 // Run checks and convert to SARIF
-const results = await runChecks(pack, { workingDir: workspace.rootPath })
-const sarif = emitSarif(results)
+const results = await runChecks(pack, { workingDir: workspace.rootPath });
+const sarif = emitSarif(results);
 
 // Display in Problems panel
-diagnosticCollection.clear()
+diagnosticCollection.clear();
 for (const result of sarif.runs[0].results) {
   // Convert SARIF result to VS Code Diagnostic
   // ...
@@ -255,15 +262,15 @@ for (const result of sarif.runs[0].results) {
 ### Custom File Provider (Testing)
 
 ```typescript
-import { MemoryFileProvider } from '@aligntrue/checks/tests/providers/memory'
+import { MemoryFileProvider } from "@aligntrue/checks/tests/providers/memory";
 
-const provider = new MemoryFileProvider()
+const provider = new MemoryFileProvider();
 provider.addFiles({
-  'src/foo.ts': 'const x = 42;',
-  'package.json': JSON.stringify({ dependencies: {} }),
-})
+  "src/foo.ts": "const x = 42;",
+  "package.json": JSON.stringify({ dependencies: {} }),
+});
 
-const results = await runChecks(pack, { fileProvider: provider })
+const results = await runChecks(pack, { fileProvider: provider });
 ```
 
 ## Testing
@@ -287,4 +294,3 @@ pnpm typecheck
 ## License
 
 MIT
-

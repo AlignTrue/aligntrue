@@ -1,3 +1,2 @@
 #!/usr/bin/env node
-export * from '@aligntrue/cli';
-
+export * from "@aligntrue/cli";

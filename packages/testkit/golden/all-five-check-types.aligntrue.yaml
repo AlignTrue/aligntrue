@@ -14,7 +14,7 @@ rules:
       inputs:
         paths: ["package.json"]
       evidence: "Root package.json required"
-  
+
   - id: "checks.example.path-convention"
     severity: "warn"
     applies_to: ["src/**/*.ts"]
@@ -24,7 +24,7 @@ rules:
         include: ["src/**"]
         pattern: "^[a-z0-9-]+\\.ts$"
       evidence: "File names must be lowercase with hyphens"
-  
+
   - id: "checks.example.manifest-policy"
     severity: "warn"
     applies_to: ["**/package.json"]
@@ -35,7 +35,7 @@ rules:
         lockfile: "pnpm-lock.yaml"
         require_pinned: true
       evidence: "Package.json must match standard schema"
-  
+
   - id: "checks.example.regex"
     severity: "info"
     applies_to: ["**/*.md"]
@@ -46,7 +46,7 @@ rules:
         pattern: "^# "
         allow: true
       evidence: "Markdown files should start with h1"
-  
+
   - id: "checks.example.command-runner"
     severity: "warn"
     applies_to: ["**/Makefile"]
@@ -60,4 +60,3 @@ rules:
 integrity:
   algo: "jcs-sha256"
   value: "f8bbbfa21ed6a9e8aeaf28dfacd0dedce3d75c8cfc6c4173cf339dc1487f0864"
-

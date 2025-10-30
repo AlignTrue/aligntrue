@@ -163,4 +163,3 @@ This policy will evolve based on community needs. Proposed changes should:
 **Version**: 1.0.0  
 **Last updated**: 2025-10-24  
 **Applies to**: AlignTrue Align Spec v1
-

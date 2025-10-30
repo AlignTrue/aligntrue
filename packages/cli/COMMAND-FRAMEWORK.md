@@ -5,6 +5,7 @@ This document describes the shared CLI command utilities and migration path for 
 ## Overview
 
 The CLI command framework provides reusable utilities for:
+
 - **Argument parsing** - Consistent flag handling and positional args extraction
 - **Help display** - Standardized help text format across all commands
 - **Lifecycle management** - Intro/outro, telemetry, error handling (optional)
@@ -12,6 +13,7 @@ The CLI command framework provides reusable utilities for:
 ## Migration Status
 
 **All Commands Migrated (13):**
+
 - `sync` - IR → agents synchronization
 - `check` - Rule and config validation
 - `import` - Agent format → IR import
@@ -33,46 +35,46 @@ The CLI command framework provides reusable utilities for:
 ### Basic Pattern
 
 ```typescript
-import { parseCommonArgs, showStandardHelp, type ArgDefinition } from '../utils/command-utilities.js'
+import { parseCommonArgs, showStandardHelp, type ArgDefinition } from "../utils/command-utilities.js";
 
 // 1. Define argument structure
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
-    flag: '--dry-run',
+    flag: "--dry-run",
     hasValue: false,
-    description: 'Preview changes without writing files',
+    description: "Preview changes without writing files",
   },
   {
-    flag: '--config',
-    alias: '-c',
+    flag: "--config",
+    alias: "-c",
     hasValue: true,
-    description: 'Custom config file path',
+    description: "Custom config file path",
   },
-]
+];
 
 // 2. Use in command
 export async function myCommand(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
-  
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
   // 3. Handle help
   if (parsed.help) {
     showStandardHelp({
-      name: 'mycommand',
-      description: 'Does something useful',
-      usage: 'aligntrue mycommand [options]',
+      name: "mycommand",
+      description: "Does something useful",
+      usage: "aligntrue mycommand [options]",
       args: ARG_DEFINITIONS,
-      examples: ['aligntrue mycommand', 'aligntrue mycommand --dry-run'],
-    })
-    process.exit(0)
+      examples: ["aligntrue mycommand", "aligntrue mycommand --dry-run"],
+    });
+    process.exit(0);
   }
-  
+
   // 4. Extract flags
-  const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
-  const config = parsed.flags['config'] as string | undefined
-  
+  const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
+  const config = parsed.flags["config"] as string | undefined;
+
   // 5. Extract positional args
-  const target = parsed.positional[0]
-  
+  const target = parsed.positional[0];
+
   // ... command logic ...
 }
 ```
@@ -82,6 +84,7 @@ export async function myCommand(args: string[]): Promise<void> {
 Parses command-line arguments with type-safe flag handling.
 
 **Returns:**
+
 ```typescript
 {
   flags: Record<string, boolean | string | undefined>
@@ -91,6 +94,7 @@ Parses command-line arguments with type-safe flag handling.
 ```
 
 **Features:**
+
 - Automatically handles `--help` and `-h`
 - Supports aliases (`-c` for `--config`)
 - Boolean flags (presence = true)
@@ -103,6 +107,7 @@ Parses command-line arguments with type-safe flag handling.
 Displays consistent help text across all commands.
 
 **Config:**
+
 ```typescript
 {
   name: string            // Command name
@@ -115,6 +120,7 @@ Displays consistent help text across all commands.
 ```
 
 **Features:**
+
 - Automatic option alignment
 - Consistent formatting
 - Examples section
@@ -125,24 +131,26 @@ Displays consistent help text across all commands.
 **Optional:** Wraps command execution with lifecycle management.
 
 **Features:**
+
 - Intro/outro messages with @clack/prompts
 - Automatic telemetry recording
 - Standard error handling
 - Exit code management
 
 **Usage:**
+
 ```typescript
 await executeWithLifecycle(
   async () => {
     // Command logic here
   },
   {
-    commandName: 'mycommand',
+    commandName: "mycommand",
     showIntro: true,
-    introMessage: 'Running mycommand',
-    successMessage: '✓ Command complete',
-  }
-)
+    introMessage: "Running mycommand",
+    successMessage: "✓ Command complete",
+  },
+);
 ```
 
 **Note:** This is optional. Most commands handle their own intro/outro for fine-grained control.
@@ -154,28 +162,31 @@ Optional test helpers in `tests/utils/command-test-helpers.ts`:
 ### mockCommandArgs(overrides)
 
 Generate test argument arrays:
+
 ```typescript
-const args = mockCommandArgs({ dryRun: true, config: 'test.yaml' })
+const args = mockCommandArgs({ dryRun: true, config: "test.yaml" });
 // Returns: ['--dry-run', '--config', 'test.yaml']
 ```
 
 ### expectStandardHelp(output)
 
 Validate help text format:
+
 ```typescript
-const result = expectStandardHelp(helpOutput)
-expect(result.valid).toBe(true)
+const result = expectStandardHelp(helpOutput);
+expect(result.valid).toBe(true);
 ```
 
 ### captureCommandOutput()
 
 Capture stdout/stderr during tests:
+
 ```typescript
-const capture = captureCommandOutput()
-capture.start()
+const capture = captureCommandOutput();
+capture.start();
 // ... run command ...
-const output = capture.stop()
-expect(output.stdout).toContain('expected text')
+const output = capture.stop();
+expect(output.stdout).toContain("expected text");
 ```
 
 ## Migration Guide
@@ -184,16 +195,16 @@ expect(output.stdout).toContain('expected text')
 
 ```typescript
 function parseArgs(args: string[]): MyArgs {
-  const parsed: MyArgs = { help: false, dryRun: false }
+  const parsed: MyArgs = { help: false, dryRun: false };
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (arg === '--help' || arg === '-h') {
-      parsed.help = true
-    } else if (arg === '--dry-run') {
-      parsed.dryRun = true
+    const arg = args[i];
+    if (arg === "--help" || arg === "-h") {
+      parsed.help = true;
+    } else if (arg === "--dry-run") {
+      parsed.dryRun = true;
     }
   }
-  return parsed
+  return parsed;
 }
 
 function showHelp(): void {
@@ -206,7 +217,7 @@ Options:
 Examples:
   aligntrue mycommand
   aligntrue mycommand --dry-run
-`)
+`);
 }
 ```
 
@@ -214,24 +225,24 @@ Examples:
 
 ```typescript
 const ARG_DEFINITIONS: ArgDefinition[] = [
-  { flag: '--dry-run', hasValue: false, description: 'Preview mode' },
-  { flag: '--help', alias: '-h', hasValue: false, description: 'Show help' },
-]
+  { flag: "--dry-run", hasValue: false, description: "Preview mode" },
+  { flag: "--help", alias: "-h", hasValue: false, description: "Show help" },
+];
 
 // In command function
-const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
+const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 if (parsed.help) {
   showStandardHelp({
-    name: 'mycommand',
-    description: 'Does something',
-    usage: 'aligntrue mycommand [options]',
+    name: "mycommand",
+    description: "Does something",
+    usage: "aligntrue mycommand [options]",
     args: ARG_DEFINITIONS,
-    examples: ['aligntrue mycommand', 'aligntrue mycommand --dry-run'],
-  })
-  process.exit(0)
+    examples: ["aligntrue mycommand", "aligntrue mycommand --dry-run"],
+  });
+  process.exit(0);
 }
 
-const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
+const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
 ```
 
 ### Key Changes
@@ -245,21 +256,25 @@ const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
 ## Benefits
 
 ### Code Reduction
+
 - ~40 lines removed per command (parseArgs + showHelp)
 - ~350 lines of shared utilities used by 5 commands
 - ~140 lines net reduction with better consistency
 
 ### Consistency
+
 - Same help format across all commands
 - Same flag handling behavior
 - Same error messages for invalid args
 
 ### Maintainability
+
 - One place to fix parsing bugs
 - One place to improve help formatting
 - Easier for new commands to follow patterns
 
 ### Testability
+
 - Shared test utilities
 - Common patterns = easier to test
 - Less duplication in tests
@@ -274,10 +289,10 @@ const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
 
 ```typescript
 // Before
-expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Subcommands:'))
+expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Subcommands:"));
 
 // After
-expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Team mode features:'))
+expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Team mode features:"));
 ```
 
 ### Issue: Subcommand not found
@@ -288,11 +303,11 @@ expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Team mode feat
 
 ```typescript
 // Before
-const subcommand = args[0]
+const subcommand = args[0];
 
 // After
-const subcommand = parsed.positional[0]
-const subArgs = parsed.positional.slice(1)
+const subcommand = parsed.positional[0];
+const subArgs = parsed.positional.slice(1);
 ```
 
 ### Issue: Flag values not working
@@ -320,7 +335,7 @@ const dryRun = parsed.flags['dry-run'] as boolean | undefined || false
 // Before
 if (parsed.help) {
 
-// After  
+// After
 if (parsed.help || parsed.positional.length === 0) {
 ```
 
@@ -331,16 +346,18 @@ if (parsed.help || parsed.positional.length === 0) {
 `scopes` - Single operation, simple help
 
 ```typescript
-const ARG_DEFINITIONS: ArgDefinition[] = []
+const ARG_DEFINITIONS: ArgDefinition[] = [];
 
 export async function scopes(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
-  
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
   if (parsed.help) {
-    showStandardHelp({ /* ... */ })
-    process.exit(0)
+    showStandardHelp({
+      /* ... */
+    });
+    process.exit(0);
   }
-  
+
   // ... command logic ...
 }
 ```
@@ -350,31 +367,31 @@ export async function scopes(args: string[]): Promise<void> {
 `team`, `adapters`, `telemetry` - Multiple operations
 
 ```typescript
-const ARG_DEFINITIONS: ArgDefinition[] = [
-  { flag: '--interactive', alias: '-i', hasValue: false, description: '...' },
-]
+const ARG_DEFINITIONS: ArgDefinition[] = [{ flag: "--interactive", alias: "-i", hasValue: false, description: "..." }];
 
 export async function adapters(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
-  
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
   if (parsed.help || parsed.positional.length === 0) {
-    showStandardHelp({ /* ... */ })
-    process.exit(0)
+    showStandardHelp({
+      /* ... */
+    });
+    process.exit(0);
   }
-  
-  const subcommand = parsed.positional[0]
-  const subArgs = parsed.positional.slice(1)
-  
+
+  const subcommand = parsed.positional[0];
+  const subArgs = parsed.positional.slice(1);
+
   switch (subcommand) {
-    case 'list':
-      await listAdapters()
-      break
-    case 'enable':
-      await enableAdapters(subArgs, parsed.flags['interactive'] as boolean)
-      break
+    case "list":
+      await listAdapters();
+      break;
+    case "enable":
+      await enableAdapters(subArgs, parsed.flags["interactive"] as boolean);
+      break;
     default:
-      console.error(`Unknown subcommand: ${subcommand}`)
-      process.exit(1)
+      console.error(`Unknown subcommand: ${subcommand}`);
+      process.exit(1);
   }
 }
 ```
@@ -385,25 +402,27 @@ export async function adapters(args: string[]): Promise<void> {
 
 ```typescript
 const ARG_DEFINITIONS: ArgDefinition[] = [
-  { flag: '--non-interactive', alias: '-n', hasValue: false, description: '...' },
-  { flag: '--project-id', hasValue: true, description: '...' },
-  { flag: '--exporters', hasValue: true, description: '...' },
-]
+  { flag: "--non-interactive", alias: "-n", hasValue: false, description: "..." },
+  { flag: "--project-id", hasValue: true, description: "..." },
+  { flag: "--exporters", hasValue: true, description: "..." },
+];
 
 export async function init(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS)
-  
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
   if (parsed.help) {
-    showStandardHelp({ /* ... */ })
-    return
+    showStandardHelp({
+      /* ... */
+    });
+    return;
   }
-  
+
   // Extract and process flags
-  const nonInteractive = parsed.flags['non-interactive'] as boolean || false
-  const projectId = parsed.flags['project-id'] as string | undefined
-  const exportersArg = parsed.flags['exporters'] as string | undefined
-  const exporters = exportersArg ? exportersArg.split(',').map(e => e.trim()) : undefined
-  
+  const nonInteractive = (parsed.flags["non-interactive"] as boolean) || false;
+  const projectId = parsed.flags["project-id"] as string | undefined;
+  const exportersArg = parsed.flags["exporters"] as string | undefined;
+  const exporters = exportersArg ? exportersArg.split(",").map((e) => e.trim()) : undefined;
+
   // Complex interactive logic with prompts...
 }
 ```
@@ -427,4 +446,3 @@ All 13 commands demonstrate different patterns:
 - **Complex interactive:** `init`
 
 Refer to these commands' source code for real-world examples of each pattern.
-

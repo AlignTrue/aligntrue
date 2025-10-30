@@ -65,7 +65,8 @@ aligntrue sync --force
 
 ### Agent → IR (pullback)
 
-**When:** 
+**When:**
+
 - **Solo mode (auto-pull):** Automatically before every `aligntrue sync` (default)
 - **Team mode (manual):** `aligntrue sync --accept-agent <name>` (explicit opt-in)
 
@@ -94,9 +95,9 @@ exporters:
 
 # Auto-enabled for solo mode
 sync:
-  auto_pull: true  # Default for solo mode
-  primary_agent: cursor  # Auto-detected from exporters
-  on_conflict: accept_agent  # Default for solo mode
+  auto_pull: true # Default for solo mode
+  primary_agent: cursor # Auto-detected from exporters
+  on_conflict: accept_agent # Default for solo mode
 ```
 
 **Flow:**
@@ -379,7 +380,7 @@ Final merged rule in `apps/web` scope:
 
 ```yaml
 id: my-project.global.use-typescript
-severity: error  # apps/web override wins
+severity: error # apps/web override wins
 ```
 
 ---
@@ -509,11 +510,11 @@ Override git mode for specific exporters:
 ```yaml
 # .aligntrue/config.yaml
 git:
-  mode: ignore  # Default for all exporters
+  mode: ignore # Default for all exporters
 
 exporters:
   - name: cursor
-    git_override: commit  # Commit Cursor files
+    git_override: commit # Commit Cursor files
 
   - name: agents-md
     # Uses default (ignore)
@@ -561,7 +562,7 @@ Lockfile validated before syncing:
 ```yaml
 # .aligntrue/config.yaml
 lockfile:
-  mode: soft    # Warn but continue (default)
+  mode: soft # Warn but continue (default)
   # mode: strict  # Block on mismatch (CI)
   # mode: off     # Disable validation
 ```
@@ -773,9 +774,9 @@ aligntrue sync --dry-run
 # Mark changing fields as volatile
 vendor:
   _meta:
-    volatile: ['my-agent.timestamp', 'my-agent.cache']
+    volatile: ["my-agent.timestamp", "my-agent.cache"]
   my-agent:
-    timestamp: "2025-10-27T12:00:00Z"  # Excluded from hash
+    timestamp: "2025-10-27T12:00:00Z" # Excluded from hash
 ```
 
 Volatile fields won't cause lockfile drift.
@@ -790,4 +791,3 @@ Volatile fields won't cause lockfile drift.
 - [Troubleshooting](troubleshooting.md) - Common sync issues
 - [Extending AlignTrue](extending-aligntrue.md) - Create custom exporters
 - [Quickstart Guide](quickstart.md) - Get started in <60 seconds
-
