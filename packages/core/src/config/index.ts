@@ -22,6 +22,7 @@ import {
   type MergeOrder,
 } from "../scope.js";
 import { getAlignTruePaths } from "../paths.js";
+import type { OverlayConfig } from "../overlays/types.js";
 
 export type AlignTrueMode = "solo" | "team" | "enterprise";
 export type ModeHints = "off" | "metadata_only" | "hints" | "native";
@@ -89,6 +90,7 @@ export interface AlignTrueConfig {
   performance?: PerformanceConfig;
   export?: ExportConfig;
   backup?: BackupConfig;
+  overlays?: OverlayConfig;
 }
 
 /**
@@ -330,6 +332,7 @@ function checkUnknownFields(
     "performance",
     "export",
     "backup",
+    "overlays",
   ]);
 
   for (const key of Object.keys(config)) {
