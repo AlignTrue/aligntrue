@@ -415,8 +415,16 @@ describe("onboard command", () => {
     it("should show drift info in team mode with drift", async () => {
       vi.mocked(loadConfig).mockResolvedValue({ mode: "team" } as any);
       vi.mocked(detectDriftForConfig).mockResolvedValue({
-        success: true,
-        drift: [{ source_id: "test", status: "upstream", message: "drift" }],
+        driftDetected: true,
+        mode: "team",
+        lockfilePath: ".aligntrue.lock.json",
+        drift: [
+          {
+            category: "upstream",
+            ruleId: "test.rule",
+            description: "drift detected",
+          },
+        ],
       } as any);
 
       await onboard([]);
