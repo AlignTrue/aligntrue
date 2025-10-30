@@ -56,17 +56,26 @@ export async function runChecks(
 
   // Add informational finding for unresolved plugs
   if (options.unresolvedPlugsCount && options.unresolvedPlugsCount > 0) {
+    const message = `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`;
     const plugsFinding: CheckResult = {
       rule: {
         id: "plugs/unresolved-required",
-        severity: "MAY",
+        severity: "info",
+        applies_to: ["*"],
         description: `${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values`,
-        message: `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`,
       },
       packId: alignPack.id,
-      passed: false,
-      level: "note",
-      message: `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`,
+      pass: false,
+      findings: [
+        {
+          packId: alignPack.id,
+          ruleId: "plugs/unresolved-required",
+          severity: "info",
+          evidence: message,
+          message: message,
+          location: { path: ".aligntrue.yaml" },
+        },
+      ],
     };
     results.push(plugsFinding);
   }

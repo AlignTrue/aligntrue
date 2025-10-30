@@ -158,7 +158,7 @@ export class VsCodeMcpExporter implements ExporterPlugin {
     };
 
     if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config.unresolved_plugs = unresolvedPlugs;
+      config["unresolved_plugs"] = unresolvedPlugs;
     }
 
     if (fidelityNotes.length > 0) {
