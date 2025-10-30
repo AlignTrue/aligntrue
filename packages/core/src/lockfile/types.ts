@@ -13,6 +13,9 @@ export interface LockfileEntry {
   // Captured from git sources (commit SHA) when available
   // TODO(Phase 4): Capture from catalog sources when ready
   base_hash?: string;
+  // Vendoring provenance (Phase 3, Session 5)
+  vendor_path?: string; // Path where pack is vendored
+  vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
 }
 
 export interface Lockfile {

@@ -25,3 +25,4 @@ export { adapters } from "./adapters.js";
 export { privacyCommand as privacy } from "./privacy.js";
 export { backupCommand as backup } from "./backup.js";
 export { pull } from "./pull.js";
+export { link } from "./link.js";
