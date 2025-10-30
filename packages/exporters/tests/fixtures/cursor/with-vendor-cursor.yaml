@@ -13,4 +13,3 @@ rules:
         ai_hint: "Suggest test scaffolding with vitest"
         session_metadata:
           created: "2024-01-01"
-

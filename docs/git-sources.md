@@ -107,9 +107,9 @@ scopes:
   - path: "."
     include: ["**/*"]
     rulesets:
-      - source: 0  # Base rules
-      - source: 1  # Team rules (overrides base)
-      - source: 2  # Local rules (overrides all)
+      - source: 0 # Base rules
+      - source: 1 # Team rules (overrides base)
+      - source: 2 # Local rules (overrides all)
     merge:
       order: [root, path, local]
 ```
@@ -213,6 +213,7 @@ aligntrue sync --offline
 ```
 
 In offline mode:
+
 - ✅ Uses cached git repositories
 - ✅ Falls back gracefully if cache available
 - ❌ Errors clearly if cache missing (no silent failures)
@@ -356,4 +357,3 @@ Until then, use the config-based approach documented above.
 ---
 
 **Last Updated:** 2025-10-29
-

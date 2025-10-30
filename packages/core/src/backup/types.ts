@@ -49,4 +49,3 @@ export interface CleanupOptions {
   /** Number of backups to keep (default: 10) */
   keepCount?: number;
 }
-

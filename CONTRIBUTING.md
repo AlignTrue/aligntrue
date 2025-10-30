@@ -19,6 +19,7 @@ That's it! Our CI will validate your pack automatically.
 Start with the template pack at [`packs/templates/starter.aligntrue.yaml`](https://github.com/AlignTrue/aligns/blob/main/packs/templates/starter.aligntrue.yaml) in the `aligns` repository.
 
 The template includes:
+
 - All 5 check types with examples
 - Inline comments explaining best practices
 - Properly computed integrity hash
@@ -77,6 +78,7 @@ For more examples, browse existing packs in the [`AlignTrue/aligns`](https://git
 ### Prerequisites
 
 You'll need:
+
 - Node.js 20+ and pnpm 9+
 - Both repositories cloned:
   - `AlignTrue/aligntrue` (this repo with validation tools)
@@ -128,6 +130,7 @@ All rules in AlignTrue must be machine-checkable. No vibes, no subjective judgme
 Every rule must use one of these check types:
 
 1. **`file_presence`** - Check if files exist or don't exist
+
    ```yaml
    check:
      type: file_presence
@@ -137,6 +140,7 @@ Every rule must use one of these check types:
    ```
 
 2. **`path_convention`** - Validate file paths match patterns
+
    ```yaml
    check:
      type: path_convention
@@ -146,6 +150,7 @@ Every rule must use one of these check types:
    ```
 
 3. **`manifest_policy`** - Check package.json or lockfile constraints
+
    ```yaml
    check:
      type: manifest_policy
@@ -156,6 +161,7 @@ Every rule must use one of these check types:
    ```
 
 4. **`regex`** - Pattern matching in file contents
+
    ```yaml
    check:
      type: regex
@@ -293,7 +299,7 @@ Use `scope.applies_to` to narrow where your pack applies:
 
 ```yaml
 scope:
-  applies_to: ["backend"]  # or ["frontend"], ["cli"], etc.
+  applies_to: ["backend"] # or ["frontend"], ["cli"], etc.
 ```
 
 This helps users understand when to use your pack.
@@ -322,4 +328,3 @@ We're here to help!
 ---
 
 **Thank you** for contributing to AlignTrue and helping make AI-human alignment better for everyone.
-

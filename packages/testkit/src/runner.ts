@@ -1,8 +1,18 @@
 /**
  * Testkit runner for conformance testing
  */
-import { canonicalizeJson, computeHash, parseYamlToJson, validateAlign } from '@aligntrue/schema';
-import type { CanonVector, CheckVector, VectorResults, VectorFailure } from './types.js';
+import {
+  canonicalizeJson,
+  computeHash,
+  parseYamlToJson,
+  validateAlign,
+} from "@aligntrue/schema";
+import type {
+  CanonVector,
+  CheckVector,
+  VectorResults,
+  VectorFailure,
+} from "./types.js";
 
 /**
  * Canonicalization implementation interface
@@ -17,7 +27,7 @@ export interface CanonImpl {
  */
 export function runCanonVectors(
   vectors: CanonVector[],
-  impl: CanonImpl
+  impl: CanonImpl,
 ): VectorResults {
   const failures: VectorFailure[] = [];
 
@@ -29,7 +39,7 @@ export function runCanonVectors(
       if (actualJcs !== vector.expected_jcs) {
         failures.push({
           vector_name: vector.name,
-          reason: 'JCS output mismatch',
+          reason: "JCS output mismatch",
           expected: vector.expected_jcs,
           actual: actualJcs,
         });
@@ -38,7 +48,7 @@ export function runCanonVectors(
       if (actualHash !== vector.expected_sha256) {
         failures.push({
           vector_name: vector.name,
-          reason: 'SHA-256 hash mismatch',
+          reason: "SHA-256 hash mismatch",
           expected: vector.expected_sha256,
           actual: actualHash,
         });
@@ -68,13 +78,13 @@ export interface CheckImpl {
 
 /**
  * Run check vectors against an implementation
- * 
+ *
  * Note: This is a simplified runner. Full implementation would require
  * FileProvider abstraction and proper context setup.
  */
 export function runCheckVectors(
   vectors: CheckVector[],
-  _impl: CheckImpl
+  _impl: CheckImpl,
 ): VectorResults {
   const failures: VectorFailure[] = [];
 
@@ -84,21 +94,21 @@ export function runCheckVectors(
       if (!vector.rule.id || !vector.rule.check) {
         failures.push({
           vector_name: vector.name,
-          reason: 'Invalid rule structure',
+          reason: "Invalid rule structure",
         });
       }
 
-      if (typeof vector.file_tree !== 'object') {
+      if (typeof vector.file_tree !== "object") {
         failures.push({
           vector_name: vector.name,
-          reason: 'Invalid file_tree structure',
+          reason: "Invalid file_tree structure",
         });
       }
 
       if (!Array.isArray(vector.expected_findings)) {
         failures.push({
           vector_name: vector.name,
-          reason: 'Invalid expected_findings structure',
+          reason: "Invalid expected_findings structure",
         });
       }
     } catch (error) {
@@ -121,7 +131,11 @@ export function runCheckVectors(
  * Pack validator implementation interface
  */
 export interface PackValidator {
-  validatePack: (yaml: string) => { valid: boolean; hash?: string; errors?: string[] };
+  validatePack: (yaml: string) => {
+    valid: boolean;
+    hash?: string;
+    errors?: string[];
+  };
 }
 
 /**
@@ -129,7 +143,7 @@ export interface PackValidator {
  */
 export function runGoldenPacks(
   packFiles: Map<string, string>,
-  validator: PackValidator
+  validator: PackValidator,
 ): VectorResults {
   const failures: VectorFailure[] = [];
   const total = packFiles.size;
@@ -141,16 +155,20 @@ export function runGoldenPacks(
       if (!result.valid) {
         failures.push({
           vector_name: filename,
-          reason: `Validation failed: ${result.errors?.join(', ') || 'unknown error'}`,
+          reason: `Validation failed: ${result.errors?.join(", ") || "unknown error"}`,
         });
       }
 
       // Verify hash matches what's in the file
       const parsed = parseYamlToJson(content) as any;
-      if (parsed.integrity?.value && result.hash && parsed.integrity.value !== result.hash) {
+      if (
+        parsed.integrity?.value &&
+        result.hash &&
+        parsed.integrity.value !== result.hash
+      ) {
         failures.push({
           vector_name: filename,
-          reason: 'Hash mismatch',
+          reason: "Hash mismatch",
           expected: parsed.integrity.value,
           actual: result.hash,
         });
@@ -173,14 +191,14 @@ export function runGoldenPacks(
 
 /**
  * Run all conformance vectors
- * 
+ *
  * This is a convenience function that runs canonicalization, check, and golden pack vectors
  * using the AlignTrue reference implementation.
  */
 export function runAllVectors(
   canonVectors: CanonVector[],
   checkVectors: CheckVector[],
-  goldenPacks: Map<string, string>
+  goldenPacks: Map<string, string>,
 ): {
   canonicalization: VectorResults;
   checks: VectorResults;
@@ -205,29 +223,36 @@ export function runAllVectors(
     validatePack: (yaml: string) => {
       try {
         const validation = validateAlign(yaml);
-        
+
         if (!validation.schema.valid) {
-          return { 
-            valid: false, 
-            errors: validation.schema.errors?.map(e => e.message) || ['Schema validation failed']
+          return {
+            valid: false,
+            errors: validation.schema.errors?.map((e) => e.message) || [
+              "Schema validation failed",
+            ],
           };
         }
 
-        if (!validation.integrity.valid && validation.integrity.storedHash !== '<computed>') {
-          return { 
-            valid: false, 
-            errors: [validation.integrity.error || 'Integrity validation failed']
+        if (
+          !validation.integrity.valid &&
+          validation.integrity.storedHash !== "<computed>"
+        ) {
+          return {
+            valid: false,
+            errors: [
+              validation.integrity.error || "Integrity validation failed",
+            ],
           };
         }
 
-        const result: { valid: boolean; hash?: string; errors?: string[] } = { 
-          valid: true
+        const result: { valid: boolean; hash?: string; errors?: string[] } = {
+          valid: true,
         };
-        
+
         if (validation.integrity.computedHash) {
           result.hash = validation.integrity.computedHash;
         }
-        
+
         return result;
       } catch (error) {
         return {
@@ -253,4 +278,3 @@ export function runAllVectors(
     },
   };
 }
-

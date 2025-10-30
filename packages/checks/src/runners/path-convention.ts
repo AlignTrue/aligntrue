@@ -2,21 +2,21 @@
  * Path convention check runner
  */
 
-import type { AlignRule } from '@aligntrue/schema'
-import type { CheckResult, CheckContext } from '../types.js'
-import { hasCheck } from '../types.js'
+import type { AlignRule } from "@aligntrue/schema";
+import type { CheckResult, CheckContext } from "../types.js";
+import { hasCheck } from "../types.js";
 
 /**
  * Run path_convention check
- * 
+ *
  * Validates that file paths follow a naming convention regex.
  */
 export async function runPathConventionCheck(
   rule: AlignRule,
   packId: string,
-  context: CheckContext
+  context: CheckContext,
 ): Promise<CheckResult> {
-  const { fileProvider } = context
+  const { fileProvider } = context;
 
   if (!hasCheck(rule)) {
     return {
@@ -24,37 +24,37 @@ export async function runPathConventionCheck(
       packId,
       pass: false,
       findings: [],
-      error: 'Rule does not have a check property',
-    }
+      error: "Rule does not have a check property",
+    };
   }
 
-  const { inputs, evidence = 'Check failed' } = rule.check
+  const { inputs, evidence = "Check failed" } = rule.check;
 
-  if (rule.check.type !== 'path_convention') {
+  if (rule.check.type !== "path_convention") {
     return {
       rule,
       packId,
       pass: false,
       findings: [],
-      error: 'Check type mismatch: expected path_convention',
-    }
+      error: "Check type mismatch: expected path_convention",
+    };
   }
 
-  const pattern = inputs['pattern'] as string
-  const include = inputs['include'] as string[]
-  const message = inputs['message'] as string
+  const pattern = inputs["pattern"] as string;
+  const include = inputs["include"] as string[];
+  const message = inputs["message"] as string;
 
   try {
-    const regex = new RegExp(pattern)
-    const findings: CheckResult['findings'] = []
+    const regex = new RegExp(pattern);
+    const findings: CheckResult["findings"] = [];
 
     // Check each include pattern
     for (const includePattern of include) {
-      const files = await fileProvider.glob(includePattern)
+      const files = await fileProvider.glob(includePattern);
 
       for (const file of files) {
         // Extract just the filename (not the full path for the convention check)
-        const fileName = file.split('/').pop() || file
+        const fileName = file.split("/").pop() || file;
 
         if (!regex.test(fileName)) {
           findings.push({
@@ -65,7 +65,7 @@ export async function runPathConventionCheck(
             message: `${message}: ${file} (expected pattern: ${pattern})`,
             location: { path: file },
             ...(rule.autofix?.hint && { autofixHint: rule.autofix.hint }),
-          })
+          });
         }
       }
     }
@@ -75,15 +75,14 @@ export async function runPathConventionCheck(
       packId,
       pass: findings.length === 0,
       findings,
-    }
+    };
   } catch (err) {
     return {
       rule,
       packId,
       pass: false,
       findings: [],
-      error: err instanceof Error ? err.message : 'Unknown error',
-    }
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
 }
-

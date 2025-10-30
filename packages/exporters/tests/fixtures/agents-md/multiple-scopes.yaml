@@ -14,4 +14,3 @@ rules:
       - "apps/web/components/**/*.tsx"
     guidance: |
       All React components should have unit tests.
-

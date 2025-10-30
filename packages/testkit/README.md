@@ -38,6 +38,7 @@ Synthetic minimal packs in `golden/` demonstrating specific behaviors:
 5. `dependency-chain.aligntrue.yaml` - Pack dependencies
 
 All golden packs include:
+
 - Computed integrity hashes
 - Inline comments explaining what they test
 - Valid schema structure
@@ -85,11 +86,11 @@ for vector in canon_vectors:
     input_value = vector['input']
     expected_jcs = vector['expected_jcs']
     expected_sha256 = vector['expected_sha256']
-    
+
     # Test your implementation
     actual_jcs = your_canonicalize(input_value)
     actual_sha256 = your_hash(actual_jcs)
-    
+
     assert actual_jcs == expected_jcs, f"JCS mismatch: {vector['name']}"
     assert actual_sha256 == expected_sha256, f"Hash mismatch: {vector['name']}"
 ```
@@ -282,4 +283,3 @@ MIT
 - [packages/schema](../schema/README.md) - JSON Schema and canonicalization
 - [packages/checks](../checks/README.md) - Check runner implementation
 - [AlignTrue/aligns](https://github.com/AlignTrue/aligns) - Production packs
-

@@ -4,4 +4,3 @@
   "description": "Invalid semver format",
   "outputs": [".test/*.txt"]
 }
-

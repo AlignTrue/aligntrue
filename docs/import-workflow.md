@@ -16,12 +16,14 @@ If you already have rules in Cursor's `.mdc` format or the `AGENTS.md` universal
 ### Existing rules in agent formats
 
 You have established rules in:
+
 - **Cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
 - **AGENTS.md** - Universal markdown format used by Claude, Copilot, Aider, and others
 
 ### Team with established rules
 
 Your team already maintains agent-specific rules and wants:
+
 - Centralized rule management
 - Multi-agent support without duplication
 - Version control with git
@@ -30,6 +32,7 @@ Your team already maintains agent-specific rules and wants:
 ### Multi-agent consolidation
 
 You use multiple AI coding agents and want:
+
 - Single source of truth for all rules
 - Consistent behavior across agents
 - Easier maintenance (edit once, sync everywhere)
@@ -56,6 +59,7 @@ aligntrue init
 ```
 
 AlignTrue scans for:
+
 - `.cursor/rules/*.mdc` files
 - `AGENTS.md` in project root
 
@@ -271,6 +275,7 @@ These fields round-trip when exporting back to the same agent format.
 **Example import:**
 
 Original Cursor `.mdc` file:
+
 ```markdown
 ---
 description: "Production TypeScript rules"
@@ -293,6 +298,7 @@ Avoid 'any' type...
 ```
 
 Imported to AlignTrue IR (`.aligntrue/rules.md`):
+
 ```yaml
 id: my-project
 version: "1.0.0"
@@ -315,6 +321,7 @@ rules:
 ```
 
 Exported back to Cursor (round-trip):
+
 ```markdown
 ---
 description: Production TypeScript rules
@@ -342,20 +349,20 @@ Avoid 'any' type...
 
 ## Import vs fresh start decision framework
 
-| Scenario | Recommendation | Why |
-|----------|----------------|-----|
-| 10+ existing rules | **Import** | Significant investment, preserve work |
-| Complex agent metadata | **Import** | Vendor bags preserve configuration |
-| Learning AlignTrue | **Fresh start** | Simpler to understand format |
-| Legacy rules (>1 year old) | **Fresh start** | Likely need rewrite anyway |
-| Team migration | **Import** | Minimize disruption, gradual adoption |
-| Prototype/experiment | **Fresh start** | Faster to iterate from scratch |
+| Scenario                   | Recommendation  | Why                                   |
+| -------------------------- | --------------- | ------------------------------------- |
+| 10+ existing rules         | **Import**      | Significant investment, preserve work |
+| Complex agent metadata     | **Import**      | Vendor bags preserve configuration    |
+| Learning AlignTrue         | **Fresh start** | Simpler to understand format          |
+| Legacy rules (>1 year old) | **Fresh start** | Likely need rewrite anyway            |
+| Team migration             | **Import**      | Minimize disruption, gradual adoption |
+| Prototype/experiment       | **Fresh start** | Faster to iterate from scratch        |
 
 When in doubt, run `aligntrue import <agent>` (without `--write`) to see the coverage report. This helps you decide without committing to the import.
 
 ## Supported agent formats
 
-### Cursor (.cursor/rules/*.mdc)
+### Cursor (.cursor/rules/\*.mdc)
 
 **Format:** Markdown with YAML frontmatter
 
@@ -422,7 +429,7 @@ aligntrue import aider
 
 Current parsers achieve **71% field coverage** for both Cursor and AGENTS.md formats:
 
-- **Mapped:** id, summary, severity, guidance, vendor.*
+- **Mapped:** id, summary, severity, guidance, vendor.\*
 - **Unmapped:** check, autofix (AlignTrue-specific features)
 
 The unmapped fields can be added manually after import if needed.
@@ -430,6 +437,7 @@ The unmapped fields can be added manually after import if needed.
 ### Round-trip fidelity
 
 While vendor metadata is preserved during import:
+
 - ✅ Import Cursor → IR preserves all Cursor fields
 - ✅ Export IR → Cursor includes vendor.cursor fields
 - ⚠️ Round-trip testing limited (Phase 2 focus)
@@ -439,6 +447,7 @@ Full round-trip validation (import → edit → export → reimport) is planned 
 ### Conflict resolution
 
 Import currently overwrites existing `.aligntrue/rules.md`:
+
 - ⚠️ No merge with existing rules
 - ⚠️ No conflict detection
 - ✅ Preview with `--dry-run` before writing
@@ -450,6 +459,7 @@ Manual merge required if you have both existing IR and agent files. Automated co
 ### Improved field coverage
 
 Planned improvements to reach ≥90% coverage:
+
 - Infer `check` rules from guidance patterns
 - Map autofix hints from agent-specific fields
 - Detect applies_to patterns from file references
@@ -457,6 +467,7 @@ Planned improvements to reach ≥90% coverage:
 ### More agent formats
 
 Additional parsers planned based on demand:
+
 - Windsurf (`.windsurf/rules.md`)
 - Claude Code (`.claude/instructions.md`)
 - Cline (`.clinerules`)
@@ -465,6 +476,7 @@ Additional parsers planned based on demand:
 ### Conflict resolution
 
 Interactive conflict resolution during import:
+
 - Detect overlapping rules (matching IDs)
 - Prompt for merge strategy (keep, replace, merge)
 - Side-by-side diff display
@@ -502,4 +514,3 @@ aligntrue import cursor --no-coverage --write
 ---
 
 **Last Updated:** 2025-10-29
-

@@ -17,4 +17,3 @@ rules:
 integrity:
   algo: "jcs-sha256"
   value: "d8700c52b383e2fb8c31753668c504afd6323357f2421b3a43f5af66360f9eda"
-

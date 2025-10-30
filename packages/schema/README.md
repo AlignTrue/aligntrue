@@ -37,10 +37,10 @@ pnpm add @aligntrue/schema
 Parse YAML string to JavaScript object. Resolves anchors and aliases.
 
 ```typescript
-import { parseYamlToJson } from '@aligntrue/schema'
+import { parseYamlToJson } from "@aligntrue/schema";
 
-const yaml = 'id: "packs/test/example"\nversion: "1.0.0"'
-const obj = parseYamlToJson(yaml)
+const yaml = 'id: "packs/test/example"\nversion: "1.0.0"';
+const obj = parseYamlToJson(yaml);
 ```
 
 #### `canonicalizeJson(obj: unknown): string`
@@ -48,10 +48,10 @@ const obj = parseYamlToJson(yaml)
 Apply JCS (RFC 8785) canonicalization to produce stable JSON string with deterministic key ordering.
 
 ```typescript
-import { canonicalizeJson } from '@aligntrue/schema'
+import { canonicalizeJson } from "@aligntrue/schema";
 
-const obj = { z: 1, a: 2, m: 3 }
-const canonical = canonicalizeJson(obj)
+const obj = { z: 1, a: 2, m: 3 };
+const canonical = canonicalizeJson(obj);
 // Result: '{"a":2,"m":3,"z":1}'
 ```
 
@@ -60,9 +60,9 @@ const canonical = canonicalizeJson(obj)
 Compute SHA-256 hash of a string and return hex-encoded result.
 
 ```typescript
-import { computeHash } from '@aligntrue/schema'
+import { computeHash } from "@aligntrue/schema";
 
-const hash = computeHash('hello world')
+const hash = computeHash("hello world");
 // Result: 'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9'
 ```
 
@@ -76,7 +76,7 @@ Compute integrity hash for an Align pack YAML document. This function:
 4. Computes SHA-256 hash
 
 ```typescript
-import { computeAlignHash } from '@aligntrue/schema'
+import { computeAlignHash } from "@aligntrue/schema";
 
 const yaml = `
 id: "packs/test/example"
@@ -87,9 +87,9 @@ spec_version: "1"
 integrity:
   algo: "jcs-sha256"
   value: "<computed>"
-`
+`;
 
-const hash = computeAlignHash(yaml)
+const hash = computeAlignHash(yaml);
 // Result: hex-encoded SHA-256 hash (64 characters)
 ```
 
@@ -98,9 +98,9 @@ const hash = computeAlignHash(yaml)
 Verify that a stored hash matches the computed hash.
 
 ```typescript
-import { verifyAlignHash } from '@aligntrue/schema'
+import { verifyAlignHash } from "@aligntrue/schema";
 
-const isValid = verifyAlignHash(alignYaml, storedHash)
+const isValid = verifyAlignHash(alignYaml, storedHash);
 ```
 
 ### Validation
@@ -110,26 +110,27 @@ const isValid = verifyAlignHash(alignYaml, storedHash)
 Validate an Align pack object against the JSON Schema.
 
 ```typescript
-import { validateAlignSchema } from '@aligntrue/schema'
+import { validateAlignSchema } from "@aligntrue/schema";
 
-const result = validateAlignSchema(packObject)
+const result = validateAlignSchema(packObject);
 if (!result.valid) {
-  console.error('Schema validation failed:', result.errors)
+  console.error("Schema validation failed:", result.errors);
 }
 ```
 
 **ValidationResult:**
+
 ```typescript
 interface ValidationResult {
-  valid: boolean
-  errors?: ValidationError[]
+  valid: boolean;
+  errors?: ValidationError[];
 }
 
 interface ValidationError {
-  path: string
-  message: string
-  keyword?: string
-  params?: Record<string, unknown>
+  path: string;
+  message: string;
+  keyword?: string;
+  params?: Record<string, unknown>;
 }
 ```
 
@@ -138,23 +139,24 @@ interface ValidationError {
 Validate the integrity hash of an Align pack.
 
 ```typescript
-import { validateAlignIntegrity } from '@aligntrue/schema'
+import { validateAlignIntegrity } from "@aligntrue/schema";
 
-const result = validateAlignIntegrity(alignYaml)
+const result = validateAlignIntegrity(alignYaml);
 if (!result.valid) {
-  console.error('Hash mismatch!')
-  console.error(`Stored:   ${result.storedHash}`)
-  console.error(`Computed: ${result.computedHash}`)
+  console.error("Hash mismatch!");
+  console.error(`Stored:   ${result.storedHash}`);
+  console.error(`Computed: ${result.computedHash}`);
 }
 ```
 
 **IntegrityResult:**
+
 ```typescript
 interface IntegrityResult {
-  valid: boolean
-  storedHash?: string
-  computedHash?: string
-  error?: string
+  valid: boolean;
+  storedHash?: string;
+  computedHash?: string;
+  error?: string;
 }
 ```
 
@@ -163,14 +165,14 @@ interface IntegrityResult {
 Validate both schema and integrity of an Align pack in one call.
 
 ```typescript
-import { validateAlign } from '@aligntrue/schema'
+import { validateAlign } from "@aligntrue/schema";
 
-const result = validateAlign(alignYaml)
+const result = validateAlign(alignYaml);
 if (!result.schema.valid) {
-  console.error('Schema errors:', result.schema.errors)
+  console.error("Schema errors:", result.schema.errors);
 }
 if (!result.integrity.valid) {
-  console.error('Integrity error:', result.integrity.error)
+  console.error("Integrity error:", result.integrity.error);
 }
 ```
 
@@ -179,32 +181,25 @@ if (!result.integrity.valid) {
 Export types for Align pack structure:
 
 ```typescript
-import type { 
-  AlignPack,
-  AlignScope,
-  AlignRule,
-  AlignCheck,
-  AlignAutofix,
-  AlignIntegrity,
-} from '@aligntrue/schema'
+import type { AlignPack, AlignScope, AlignRule, AlignCheck, AlignAutofix, AlignIntegrity } from "@aligntrue/schema";
 
 const pack: AlignPack = {
-  id: 'packs/test/example',
-  version: '1.0.0',
-  profile: 'align',
-  spec_version: '1',
-  summary: 'Example pack',
-  tags: ['test'],
+  id: "packs/test/example",
+  version: "1.0.0",
+  profile: "align",
+  spec_version: "1",
+  summary: "Example pack",
+  tags: ["test"],
   deps: [],
   scope: {
-    applies_to: ['*'],
+    applies_to: ["*"],
   },
   rules: [],
   integrity: {
-    algo: 'jcs-sha256',
-    value: '<computed>',
+    algo: "jcs-sha256",
+    value: "<computed>",
   },
-}
+};
 ```
 
 ## CLI Scripts
@@ -261,6 +256,7 @@ This package ensures deterministic hashing through:
 4. **UTF-8 encoding**: Consistent byte representation
 
 The same Align pack content will always produce the same hash, regardless of:
+
 - Key ordering in YAML
 - Whitespace or formatting
 - YAML anchors vs explicit duplication
@@ -281,4 +277,3 @@ This package validates against IR spec v2-preview. The schema may iterate freely
 ## License
 
 MIT
-

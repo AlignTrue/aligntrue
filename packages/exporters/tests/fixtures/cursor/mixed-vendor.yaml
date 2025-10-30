@@ -15,4 +15,3 @@ rules:
         diagnostic_severity: "Warning"
       copilot:
         context_level: "high"
-

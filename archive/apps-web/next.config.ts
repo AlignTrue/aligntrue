@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 /**
  * Next.js configuration for AlignTrue catalog site
- * 
+ *
  * Configured for hybrid rendering (default Next.js behavior):
  * - Static generation (SSG) where possible for fast performance
  * - Server features available when needed (API routes, dynamic rendering)

@@ -36,6 +36,7 @@ cat .aligntrue/rules.md
 ```
 
 You'll see 5 practical rules:
+
 - Testing best practices (error severity)
 - Code review guidance (warn)
 - Documentation standards (info)
@@ -50,6 +51,7 @@ node ../../packages/cli/dist/index.js sync
 ```
 
 Expected output:
+
 ```
 ✓ Sync complete
 Wrote 3 files:
@@ -61,21 +63,25 @@ Wrote 3 files:
 ### 4. Inspect the Outputs
 
 **Cursor Rules:**
+
 ```bash
 cat .cursor/rules/aligntrue.mdc
 ```
 
 **Universal Format:**
+
 ```bash
 cat AGENTS.md
 ```
 
 **VS Code MCP Config:**
+
 ```bash
 cat .vscode/mcp.json
 ```
 
 Each output includes:
+
 - All 5 rules in agent-specific format
 - Content hash for integrity verification
 - Fidelity notes explaining any format limitations
@@ -135,6 +141,7 @@ git:
 ### Rule Format
 
 Each rule in `.aligntrue/rules.md` can include:
+
 - `id`: Unique identifier (kebab-case)
 - `severity`: error, warn, or info
 - `applies_to`: Glob patterns for file targeting
@@ -156,6 +163,7 @@ Run the validation script to verify everything works:
 ```
 
 This checks:
+
 - Config file exists and is valid
 - Rules file exists and validates
 - Sync succeeds
@@ -175,4 +183,3 @@ This checks:
 - [Command Reference](../../docs/commands.md)
 - [Sync Behavior](../../docs/sync-behavior.md)
 - [Extending AlignTrue](../../docs/extending-aligntrue.md)
-

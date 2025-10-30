@@ -12,6 +12,7 @@
 Align Spec v1 is optimized for **solo developers using CLI-first workflows**. It provides a simple, minimal schema for local rule management with opt-in complexity for team and catalog modes.
 
 **Key Design Principles:**
+
 - Solo mode: minimal fields, no integrity required, simple IDs
 - Team mode: adds provenance, lockfile support, stricter validation
 - Catalog mode: adds distribution metadata (deferred to Phase 4)
@@ -37,6 +38,7 @@ Align Spec v1 is optimized for **solo developers using CLI-first workflows**. It
 **Use case:** Individual developer, single project, local rules only
 
 **Characteristics:**
+
 - Minimal required fields
 - No integrity/canonicalization overhead
 - Simple rule IDs (no namespacing required)
@@ -48,6 +50,7 @@ Align Spec v1 is optimized for **solo developers using CLI-first workflows**. It
 **Use case:** Team collaboration, drift detection, reproducibility
 
 **Characteristics:**
+
 - Adds provenance fields (owner, source, source_sha)
 - Generates lockfile with canonical hashes
 - Enables bundle merging from multiple sources
@@ -61,6 +64,7 @@ Align Spec v1 is optimized for **solo developers using CLI-first workflows**. It
 **Use case:** Public distribution, discovery, verified authors
 
 **Characteristics:**
+
 - Adds distribution metadata (tags, deps, verified_author)
 - Required integrity hash
 - Pack namespacing for uniqueness
@@ -82,17 +86,17 @@ spec_version: "1"
 rules: Rule[]
 
 # Optional (solo mode), Required (team/catalog modes)
-summary: string          # Short description
+summary: string # Short description
 
 # Team mode additions
-owner: string           # Who owns these rules
-source: string          # Where they came from (git repo, etc.)
-source_sha: string      # Commit SHA or content hash
+owner: string # Who owns these rules
+source: string # Where they came from (git repo, etc.)
+source_sha: string # Commit SHA or content hash
 
 # Catalog mode additions (Phase 4)
-tags: string[]          # Categorization
-deps: string[]          # Dependencies on other packs
-scope:                  # Where pack applies
+tags: string[] # Categorization
+deps: string[] # Dependencies on other packs
+scope: # Where pack applies
   applies_to: string[]
   includes: string[]
   excludes: string[]
@@ -130,7 +134,7 @@ source_sha: abc123def456...
 
 rules:
   - id: require-tests
-    severity: error  # stricter in team mode
+    severity: error # stricter in team mode
     applies_to: ["src/**/*.ts"]
     guidance: |
       All features must have tests.
@@ -143,7 +147,7 @@ rules:
     vendor:
       cursor:
         ai_hint: "Suggest test scaffolding with vitest"
-        session_id: "xyz"  # volatile, excluded from hash
+        session_id: "xyz" # volatile, excluded from hash
       _meta:
         volatile: ["cursor.session_id"]
 ```
@@ -180,7 +184,7 @@ rules:
 # Catalog requires integrity
 integrity:
   algo: jcs-sha256
-  value: "abc123..."  # computed at publish time
+  value: "abc123..." # computed at publish time
 ```
 
 ---
@@ -193,16 +197,19 @@ integrity:
 **Format:** Flexible based on mode
 
 **Solo mode:** Simple names
+
 - Examples: `my-rules`, `project-standards`, `backend-rules`
 - No namespacing required
 - Purpose: Local identification only
 
 **Team mode:** Project-scoped names
+
 - Examples: `mycompany-backend`, `platform-api-rules`
 - Can use namespacing if helpful: `mycompany/backend-rules`
 - Purpose: Team-wide identification
 
 **Catalog mode:** Pack namespacing (Phase 4)
+
 - Pattern: `packs/<org>/<name>`
 - Examples: `packs/mycompany/backend-api`, `packs/base/base-testing`
 - Purpose: Global uniqueness in catalog
@@ -215,6 +222,7 @@ integrity:
 **Examples:** `1.0.0`, `1.2.3-beta.1`, `2.0.0+build.123`
 
 **Versioning semantics:**
+
 - MAJOR: Breaking changes to rules or checks
 - MINOR: New rules added, non-breaking changes
 - PATCH: Documentation or metadata updates
@@ -246,6 +254,7 @@ integrity:
 **Purpose:** Identifies who owns and maintains these rules
 
 **When required:**
+
 - Team mode: Required when using provenance tracking
 - Catalog mode: Always required
 - Solo mode: Optional
@@ -259,6 +268,7 @@ integrity:
 **Purpose:** Where these rules came from (for auditing and updates)
 
 **When required:**
+
 - Team mode: Required when rules pulled from remote
 - Catalog mode: Always required
 - Solo mode: Not used
@@ -272,6 +282,7 @@ integrity:
 **Purpose:** Pin exact version for reproducibility
 
 **When required:**
+
 - Team mode: Required when using lockfile
 - Catalog mode: Always required
 - Solo mode: Not used
@@ -297,6 +308,7 @@ integrity:
 **Type:** object
 
 **Fields:**
+
 - `applies_to`: string[] - Where pack applies (e.g., `["backend"]`, `["*"]`)
 - `includes`: string[] - Glob patterns to include
 - `excludes`: string[] - Glob patterns to exclude
@@ -314,12 +326,14 @@ See "Rule Schema" section below.
 **Type:** object
 
 **Fields:**
+
 - `algo`: `"jcs-sha256"` (only supported algorithm)
 - `value`: hex-encoded SHA-256 hash
 
 **Purpose:** Verify content integrity for catalog distribution
 
 **When computed:**
+
 - NOT on load/save operations
 - ONLY when: generating lockfile (team mode) or publishing to catalog
 - Uses JCS (RFC 8785) canonicalization
@@ -336,15 +350,15 @@ See "Rule Schema" section below.
 
 ```yaml
 # Required
-id: string              # Unique within pack, kebab-case
-severity: string        # "error" | "warn" | "info"
-applies_to: string[]    # Glob patterns
+id: string # Unique within pack, kebab-case
+severity: string # "error" | "warn" | "info"
+applies_to: string[] # Glob patterns
 
 # Optional
-guidance: string        # Markdown-formatted guidance
-check: Check            # Machine-checkable validation
-autofix: Autofix        # How to fix violations
-vendor: object          # Agent-specific metadata
+guidance: string # Markdown-formatted guidance
+check: Check # Machine-checkable validation
+autofix: Autofix # How to fix violations
+vendor: object # Agent-specific metadata
 ```
 
 ### `id` (required)
@@ -362,6 +376,7 @@ vendor: object          # Agent-specific metadata
 **Enum:** `"error"` | `"warn"` | `"info"`
 
 **Semantics:**
+
 - `error`: Blocking violation (team mode gates)
 - `warn`: Warning (should fix)
 - `info`: Advisory note (FYI)
@@ -383,6 +398,7 @@ vendor: object          # Agent-specific metadata
 **Purpose:** Human-readable explanation of the rule
 
 **May include:**
+
 - Why the rule exists
 - How to comply
 - Examples
@@ -395,6 +411,7 @@ vendor: object          # Agent-specific metadata
 See "Check Types" section in v1 spec (unchanged).
 
 **Check types:**
+
 - `file_presence`
 - `path_convention`
 - `manifest_policy`
@@ -406,6 +423,7 @@ See "Check Types" section in v1 spec (unchanged).
 **Type:** object
 
 **Fields:**
+
 - `hint`: string - Human-readable hint for fixing
 
 **Phase 1:** Only hints, no automated fixes  
@@ -417,6 +435,7 @@ See "Check Types" section in v1 spec (unchanged).
 **Purpose:** Agent-specific metadata for lossless round-trips
 
 **Format:**
+
 ```yaml
 vendor:
   cursor:
@@ -425,10 +444,11 @@ vendor:
   aider:
     priority: high
   _meta:
-    volatile: ["cursor.session_id"]  # excluded from hashing
+    volatile: ["cursor.session_id"] # excluded from hashing
 ```
 
 **Rules:**
+
 - Nested under agent name
 - `_meta.volatile` lists fields to exclude from canonical hash
 - Preserves agent-specific data during sync
@@ -443,13 +463,16 @@ vendor:
 ### When Canonicalization Happens
 
 **Team Mode:**
+
 - `aligntrue lock` command → generates `.aligntrue.lock.json` with canonical hash
 - Hash computed over canonical IR (JCS RFC 8785)
 
 **Catalog Mode (Phase 4):**
+
 - `aligntrue publish` command → computes integrity hash for catalog
 
 **Never:**
+
 - During load/save of IR files
 - During sync to agents
 - During import from agents
@@ -474,17 +497,17 @@ vendor:
 
 ## Comparison with v1
 
-| Aspect | v1 (Catalog-First) | v2-preview (CLI-First) |
-|--------|-------------------|----------------------|
-| Primary use case | Catalog distribution | Solo dev local rules |
-| ID format | `packs/org/name` required | Simple names for solo, flexible |
-| Profile field | Required `profile: "align"` | Removed (vestigial) |
-| Integrity | Required in spec | Only in lockfile/catalog |
-| Canonicalization | On every operation | Only at lock/publish |
-| Severity | `MUST`/`SHOULD`/`MAY` | `error`/`warn`/`info` |
-| Provenance | Optional | Required for team/catalog |
-| Vendor bags | Not supported | Supported for round-trips |
-| Min fields (solo) | 8 required fields | 4 required fields |
+| Aspect            | v1 (Catalog-First)          | v2-preview (CLI-First)          |
+| ----------------- | --------------------------- | ------------------------------- |
+| Primary use case  | Catalog distribution        | Solo dev local rules            |
+| ID format         | `packs/org/name` required   | Simple names for solo, flexible |
+| Profile field     | Required `profile: "align"` | Removed (vestigial)             |
+| Integrity         | Required in spec            | Only in lockfile/catalog        |
+| Canonicalization  | On every operation          | Only at lock/publish            |
+| Severity          | `MUST`/`SHOULD`/`MAY`       | `error`/`warn`/`info`           |
+| Provenance        | Optional                    | Required for team/catalog       |
+| Vendor bags       | Not supported               | Supported for round-trips       |
+| Min fields (solo) | 8 required fields           | 4 required fields               |
 
 ---
 
@@ -493,6 +516,7 @@ vendor:
 **No migration tooling in preview.**
 
 If you have v1 packs:
+
 1. Update `spec_version: "1"` → `spec_version: "1"`
 2. Remove `profile: "align"` field
 3. Change severity: `MUST` → `error`, `SHOULD` → `warn`, `MAY` → `info`
@@ -509,9 +533,11 @@ If you have v1 packs:
 ### Solo Mode Validation
 
 **Required fields:**
+
 - `id`, `version`, `spec_version`, `rules`
 
 **Optional fields:**
+
 - Everything else
 
 **Validation level:** Permissive (allow exploration)
@@ -519,6 +545,7 @@ If you have v1 packs:
 ### Team Mode Validation
 
 **Required fields:**
+
 - All solo fields, plus
 - `summary`, `owner`, `source`, `source_sha`
 
@@ -527,6 +554,7 @@ If you have v1 packs:
 ### Catalog Mode Validation (Phase 4)
 
 **Required fields:**
+
 - All team fields, plus
 - `tags`, `scope`, `integrity`
 
@@ -576,6 +604,7 @@ AGENTS.md                # Universal agent format
 **Migration policy:** Schema may iterate freely before 1.0 stable release
 
 **Migration framework:** Will be added when we have:
+
 - 50+ active repos using AlignTrue, OR
 - 10+ organizations, OR
 - Planned breaking change that affects users
@@ -599,6 +628,7 @@ AGENTS.md                # Universal agent format
 **Validation:** Ajv JSON Schema validation in strict mode
 
 **CLI commands:**
+
 - `aligntrue init` - Create new v2-preview config
 - `aligntrue validate` - Check spec compliance
 - `aligntrue lock` - Generate canonical lockfile (team mode)
@@ -611,18 +641,21 @@ AGENTS.md                # Universal agent format
 ### v2-preview (2025-10-26)
 
 **Added:**
+
 - Solo mode with minimal required fields
 - Team mode with provenance tracking
 - Vendor bags for lossless agent round-trips
 - Progressive complexity (solo → team → catalog)
 
 **Changed:**
+
 - ID format: flexible based on mode (not just `packs/...`)
 - Severity: `error`/`warn`/`info` (from `MUST`/`SHOULD`/`MAY`)
 - Canonicalization: only at lock/publish boundaries
 - Integrity: only in lockfile/catalog, not in IR file
 
 **Removed:**
+
 - `profile` field (vestigial)
 - Required integrity in IR
 - Forced pack namespacing for local use
@@ -632,4 +665,3 @@ AGENTS.md                # Universal agent format
 ---
 
 **Status:** ✅ v2-preview specification complete and ready for implementation
-

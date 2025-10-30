@@ -22,4 +22,3 @@ rules:
       - "**/*.{ts,tsx,js,jsx}"
     guidance: |
       Use Prettier for consistent formatting.
-

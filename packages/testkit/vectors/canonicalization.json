@@ -30,11 +30,7 @@
     "name": "array-order-preservation",
     "description": "Verifies that array element order is preserved during canonicalization",
     "input": {
-      "items": [
-        3,
-        1,
-        2
-      ]
+      "items": [3, 1, 2]
     },
     "expected_jcs": "{\"items\":[3,1,2]}",
     "expected_sha256": "de21aef9c6d6b65cfe6dc3c9159d9969659d1f5b854c6249d871036c57a26966"
@@ -113,11 +109,7 @@
       "level1": {
         "level2": {
           "level3": {
-            "data": [
-              1,
-              2,
-              3
-            ]
+            "data": [1, 2, 3]
           }
         }
       }
@@ -167,11 +159,7 @@
     "name": "tags-array",
     "description": "Verifies handling of typical tags array from Align spec",
     "input": {
-      "tags": [
-        "testing",
-        "paved-road",
-        "quality"
-      ]
+      "tags": ["testing", "paved-road", "quality"]
     },
     "expected_jcs": "{\"tags\":[\"testing\",\"paved-road\",\"quality\"]}",
     "expected_sha256": "3cf5cfae5faf7fceee38388afe5f9265aa144a8b1570ae7e61bb5ff3a84571f4"
@@ -198,15 +186,10 @@
       "profile": "align",
       "spec_version": "1",
       "summary": "Testing baseline",
-      "tags": [
-        "testing",
-        "determinism"
-      ],
+      "tags": ["testing", "determinism"],
       "deps": [],
       "scope": {
-        "applies_to": [
-          "*"
-        ]
+        "applies_to": ["*"]
       },
       "rules": [
         {
@@ -215,9 +198,7 @@
           "check": {
             "type": "regex",
             "inputs": {
-              "include": [
-                "**/*.test.ts"
-              ],
+              "include": ["**/*.test.ts"],
               "pattern": "sleep|setTimeout",
               "allow": false
             },

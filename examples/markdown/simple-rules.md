@@ -44,4 +44,3 @@ All features should have comprehensive tests. This ensures reliability and makes
 ## Documentation
 
 Documentation is crucial for maintainability. Keep your docs current and helpful.
-

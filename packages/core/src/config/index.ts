@@ -3,22 +3,28 @@
  * Handles solo/team/enterprise modes and module flags
  */
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync, renameSync } from 'fs'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
-import * as yaml from 'js-yaml'
-import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv'
-import addFormats from 'ajv-formats'
-import { 
-  validateScopePath, 
-  validateGlobPatterns, 
+import {
+  readFileSync,
+  existsSync,
+  writeFileSync,
+  mkdirSync,
+  renameSync,
+} from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import * as yaml from "js-yaml";
+import Ajv, { type ValidateFunction, type ErrorObject } from "ajv";
+import addFormats from "ajv-formats";
+import {
+  validateScopePath,
+  validateGlobPatterns,
   validateMergeOrder,
-  type MergeOrder 
-} from '../scope.js'
-import { getAlignTruePaths } from '../paths.js'
+  type MergeOrder,
+} from "../scope.js";
+import { getAlignTruePaths } from "../paths.js";
 
-export type AlignTrueMode = 'solo' | 'team' | 'enterprise';
-export type ModeHints = 'off' | 'metadata_only' | 'hints' | 'native';
+export type AlignTrueMode = "solo" | "team" | "enterprise";
+export type ModeHints = "off" | "metadata_only" | "hints" | "native";
 
 export interface PerformanceConfig {
   max_file_size_mb?: number;
@@ -38,7 +44,7 @@ export interface ExportConfig {
 export interface BackupConfig {
   auto_backup?: boolean;
   keep_count?: number;
-  backup_on?: Array<'sync' | 'restore' | 'import'>;
+  backup_on?: Array<"sync" | "restore" | "import">;
 }
 
 export interface AlignTrueConfig {
@@ -51,19 +57,19 @@ export interface AlignTrueConfig {
     mcp?: boolean;
   };
   lockfile?: {
-    mode?: 'off' | 'soft' | 'strict';
+    mode?: "off" | "soft" | "strict";
   };
   git?: {
-    mode?: 'ignore' | 'commit' | 'branch';
-    per_adapter?: Record<string, 'ignore' | 'commit' | 'branch'>;
+    mode?: "ignore" | "commit" | "branch";
+    per_adapter?: Record<string, "ignore" | "commit" | "branch">;
   };
   sync?: {
     auto_pull?: boolean;
     primary_agent?: string;
-    on_conflict?: 'prompt' | 'keep_ir' | 'accept_agent';
+    on_conflict?: "prompt" | "keep_ir" | "accept_agent";
   };
   sources?: Array<{
-    type: 'local' | 'catalog' | 'git' | 'url';
+    type: "local" | "catalog" | "git" | "url";
     path?: string;
     url?: string;
     id?: string;
@@ -77,7 +83,7 @@ export interface AlignTrueConfig {
     rulesets?: string[];
   }>;
   merge?: {
-    strategy?: 'deep';
+    strategy?: "deep";
     order?: MergeOrder;
   };
   performance?: PerformanceConfig;
@@ -99,203 +105,239 @@ interface SchemaValidationResult {
 }
 
 // Load JSON Schema and initialize Ajv
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const schemaPath = resolve(__dirname, '../../schema/config.schema.json')
-const configSchema = JSON.parse(readFileSync(schemaPath, 'utf8'))
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const schemaPath = resolve(__dirname, "../../schema/config.schema.json");
+const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 const ajv = new Ajv({
   strict: true,
   allErrors: true,
   verbose: true,
   validateSchema: false, // Avoid metaschema validation issues
-})
-addFormats(ajv)
+});
+addFormats(ajv);
 
-const validateSchemaFn: ValidateFunction = ajv.compile(configSchema)
+const validateSchemaFn: ValidateFunction = ajv.compile(configSchema);
 
 /**
  * Validate config against JSON Schema
  */
 function validateConfigSchema(config: unknown): SchemaValidationResult {
-  const valid = validateSchemaFn(config)
-  
+  const valid = validateSchemaFn(config);
+
   if (valid) {
-    return { valid: true }
+    return { valid: true };
   }
-  
+
   const errors = (validateSchemaFn.errors || []).map((err: ErrorObject) => {
-    const path = err.instancePath || '(root)'
-    let message = err.message || 'Validation error'
-    
+    const path = err.instancePath || "(root)";
+    let message = err.message || "Validation error";
+
     // Enhance error messages with more context
-    if (err.keyword === 'enum') {
-      const allowedValues = (err.params as { allowedValues?: unknown[] }).allowedValues || []
-      message = `${message}. Allowed values: ${allowedValues.join(', ')}`
-    } else if (err.keyword === 'required') {
-      const missingProperty = (err.params as { missingProperty?: string }).missingProperty
-      message = `Missing required field: ${missingProperty}`
-    } else if (err.keyword === 'type') {
-      const expectedType = (err.params as { type?: string }).type
-      message = `Expected type ${expectedType}`
+    if (err.keyword === "enum") {
+      const allowedValues =
+        (err.params as { allowedValues?: unknown[] }).allowedValues || [];
+      message = `${message}. Allowed values: ${allowedValues.join(", ")}`;
+    } else if (err.keyword === "required") {
+      const missingProperty = (err.params as { missingProperty?: string })
+        .missingProperty;
+      message = `Missing required field: ${missingProperty}`;
+    } else if (err.keyword === "type") {
+      const expectedType = (err.params as { type?: string }).type;
+      message = `Expected type ${expectedType}`;
     }
-    
+
     return {
-      path: path.replace(/^\//, '').replace(/\//g, '.') || '(root)',
+      path: path.replace(/^\//, "").replace(/\//g, ".") || "(root)",
       message,
       keyword: err.keyword,
       params: err.params as Record<string, unknown>,
-    }
-  })
-  
-  return { valid: false, errors }
+    };
+  });
+
+  return { valid: false, errors };
 }
 
 /**
  * Format validation errors for user display
  */
-function formatValidationErrors(errors: SchemaValidationResult['errors']): string {
+function formatValidationErrors(
+  errors: SchemaValidationResult["errors"],
+): string {
   if (!errors || errors.length === 0) {
-    return 'Unknown validation error'
+    return "Unknown validation error";
   }
-  
-  return errors
-    .map(err => `  - ${err.path}: ${err.message}`)
-    .join('\n')
+
+  return errors.map((err) => `  - ${err.path}: ${err.message}`).join("\n");
 }
 
 /**
  * Apply mode-specific defaults to config
  */
 export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
-  const result: AlignTrueConfig = { ...config }
-  
+  const result: AlignTrueConfig = { ...config };
+
   // Auto-detect mode if not specified
   if (!result.mode) {
     // If only exporters configured (minimal config), default to solo
-    if (result.exporters && result.exporters.length > 0 && !result.modules?.lockfile && !result.modules?.bundle) {
-      result.mode = 'solo'
+    if (
+      result.exporters &&
+      result.exporters.length > 0 &&
+      !result.modules?.lockfile &&
+      !result.modules?.bundle
+    ) {
+      result.mode = "solo";
     } else if (result.modules?.lockfile || result.modules?.bundle) {
-      result.mode = 'team'
+      result.mode = "team";
     } else {
-      result.mode = 'solo' // Default to solo
+      result.mode = "solo"; // Default to solo
     }
   }
-  
+
   // Auto-set version if not specified
   if (!result.version) {
-    result.version = '1'
+    result.version = "1";
   }
-  
+
   // Initialize modules if not present
   if (!result.modules) {
-    result.modules = {}
+    result.modules = {};
   }
-  
+
   // Apply mode-specific module defaults
-  if (result.mode === 'solo') {
-    result.modules.lockfile = result.modules.lockfile ?? false
-    result.modules.bundle = result.modules.bundle ?? false
-    result.modules.checks = result.modules.checks ?? true
-    result.modules.mcp = result.modules.mcp ?? false
-  } else if (config.mode === 'team') {
-    result.modules.lockfile = result.modules.lockfile ?? true
-    result.modules.bundle = result.modules.bundle ?? true
-    result.modules.checks = result.modules.checks ?? true
-    result.modules.mcp = result.modules.mcp ?? false
-  } else if (config.mode === 'enterprise') {
-    result.modules.lockfile = result.modules.lockfile ?? true
-    result.modules.bundle = result.modules.bundle ?? true
-    result.modules.checks = result.modules.checks ?? true
-    result.modules.mcp = result.modules.mcp ?? true
+  if (result.mode === "solo") {
+    result.modules.lockfile = result.modules.lockfile ?? false;
+    result.modules.bundle = result.modules.bundle ?? false;
+    result.modules.checks = result.modules.checks ?? true;
+    result.modules.mcp = result.modules.mcp ?? false;
+  } else if (config.mode === "team") {
+    result.modules.lockfile = result.modules.lockfile ?? true;
+    result.modules.bundle = result.modules.bundle ?? true;
+    result.modules.checks = result.modules.checks ?? true;
+    result.modules.mcp = result.modules.mcp ?? false;
+  } else if (config.mode === "enterprise") {
+    result.modules.lockfile = result.modules.lockfile ?? true;
+    result.modules.bundle = result.modules.bundle ?? true;
+    result.modules.checks = result.modules.checks ?? true;
+    result.modules.mcp = result.modules.mcp ?? true;
   }
-  
+
   // Apply lockfile defaults
   if (!result.lockfile) {
-    result.lockfile = {}
+    result.lockfile = {};
   }
   // Default to 'soft' mode for team/enterprise when lockfile enabled
   if (result.modules.lockfile) {
-    result.lockfile.mode = result.lockfile.mode ?? 'soft'
+    result.lockfile.mode = result.lockfile.mode ?? "soft";
   } else {
-    result.lockfile.mode = result.lockfile.mode ?? 'off'
+    result.lockfile.mode = result.lockfile.mode ?? "off";
   }
-  
+
   // Apply git defaults
   if (!result.git) {
-    result.git = {}
+    result.git = {};
   }
-  if (config.mode === 'solo' || config.mode === 'team') {
-    result.git.mode = result.git.mode ?? 'ignore'
-  } else if (config.mode === 'enterprise') {
-    result.git.mode = result.git.mode ?? 'commit'
+  if (config.mode === "solo" || config.mode === "team") {
+    result.git.mode = result.git.mode ?? "ignore";
+  } else if (config.mode === "enterprise") {
+    result.git.mode = result.git.mode ?? "commit";
   }
-  
+
   // Apply sync defaults
   if (!result.sync) {
-    result.sync = {}
+    result.sync = {};
   }
-  
+
   // Solo mode: auto_pull ON by default (enables native-format editing), accept_agent on conflict
-  if (config.mode === 'solo') {
-    result.sync.auto_pull = result.sync.auto_pull ?? true  // ON for solo (Phase 2 intent)
-    result.sync.on_conflict = result.sync.on_conflict ?? 'accept_agent'
+  if (config.mode === "solo") {
+    result.sync.auto_pull = result.sync.auto_pull ?? true; // ON for solo (Phase 2 intent)
+    result.sync.on_conflict = result.sync.on_conflict ?? "accept_agent";
     // Auto-detect primary_agent if not set (first exporter that supports import)
-    if (!result.sync.primary_agent && result.exporters && result.exporters.length > 0) {
-      const importableAgents = ['cursor', 'copilot', 'claude-code', 'aider', 'agents-md']
-      const detected = result.exporters.find(e => importableAgents.includes(e.toLowerCase()))
+    if (
+      !result.sync.primary_agent &&
+      result.exporters &&
+      result.exporters.length > 0
+    ) {
+      const importableAgents = [
+        "cursor",
+        "copilot",
+        "claude-code",
+        "aider",
+        "agents-md",
+      ];
+      const detected = result.exporters.find((e) =>
+        importableAgents.includes(e.toLowerCase()),
+      );
       if (detected) {
-        result.sync.primary_agent = detected
+        result.sync.primary_agent = detected;
       }
     }
   } else {
     // Team/enterprise mode: auto_pull off by default, prompt on conflict
-    result.sync.auto_pull = result.sync.auto_pull ?? false
-    result.sync.on_conflict = result.sync.on_conflict ?? 'prompt'
+    result.sync.auto_pull = result.sync.auto_pull ?? false;
+    result.sync.on_conflict = result.sync.on_conflict ?? "prompt";
   }
-  
+
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
-    result.exporters = ['cursor', 'agents-md']
+    result.exporters = ["cursor", "agents-md"];
   }
-  
+
   // Apply source defaults
   if (!result.sources || result.sources.length === 0) {
-    result.sources = [{ type: 'local', path: '.aligntrue/rules.md' }]
+    result.sources = [{ type: "local", path: ".aligntrue/rules.md" }];
   }
-  
+
   // Apply performance defaults
   if (!result.performance) {
-    result.performance = {}
+    result.performance = {};
   }
-  result.performance.max_file_size_mb = result.performance.max_file_size_mb ?? 10
-  result.performance.max_directory_depth = result.performance.max_directory_depth ?? 10
-  result.performance.ignore_patterns = result.performance.ignore_patterns ?? []
-  
+  result.performance.max_file_size_mb =
+    result.performance.max_file_size_mb ?? 10;
+  result.performance.max_directory_depth =
+    result.performance.max_directory_depth ?? 10;
+  result.performance.ignore_patterns = result.performance.ignore_patterns ?? [];
+
   // Apply backup defaults
   if (!result.backup) {
-    result.backup = {}
+    result.backup = {};
   }
-  result.backup.auto_backup = result.backup.auto_backup ?? false
-  result.backup.keep_count = result.backup.keep_count ?? 10
-  result.backup.backup_on = result.backup.backup_on ?? ['sync']
-  
-  return result
+  result.backup.auto_backup = result.backup.auto_backup ?? false;
+  result.backup.keep_count = result.backup.keep_count ?? 10;
+  result.backup.backup_on = result.backup.backup_on ?? ["sync"];
+
+  return result;
 }
 
 /**
  * Check for unknown fields and emit warnings
  */
-function checkUnknownFields(config: Record<string, unknown>, configPath: string): void {
+function checkUnknownFields(
+  config: Record<string, unknown>,
+  configPath: string,
+): void {
   const knownFields = new Set([
-    'version', 'mode', 'modules', 'lockfile', 'git', 'sync', 'sources', 'exporters', 'scopes', 'merge', 'performance', 'export', 'backup'
-  ])
-  
+    "version",
+    "mode",
+    "modules",
+    "lockfile",
+    "git",
+    "sync",
+    "sources",
+    "exporters",
+    "scopes",
+    "merge",
+    "performance",
+    "export",
+    "backup",
+  ]);
+
   for (const key of Object.keys(config)) {
     if (!knownFields.has(key)) {
       console.warn(
         `Warning: Unknown config field "${key}" in ${configPath}\n` +
-        `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(', ')}`
-      )
+          `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(", ")}`,
+      );
     }
   }
 }
@@ -303,229 +345,279 @@ function checkUnknownFields(config: Record<string, unknown>, configPath: string)
 /**
  * Validate configuration structure and values
  */
-export async function validateConfig(config: AlignTrueConfig, configPath?: string): Promise<void> {
+export async function validateConfig(
+  config: AlignTrueConfig,
+  configPath?: string,
+): Promise<void> {
   // Validate mode
-  const validModes: AlignTrueMode[] = ['solo', 'team', 'enterprise']
+  const validModes: AlignTrueMode[] = ["solo", "team", "enterprise"];
   if (!validModes.includes(config.mode)) {
-    throw new Error(`Invalid mode "${config.mode}": must be one of ${validModes.join(', ')}`)
+    throw new Error(
+      `Invalid mode "${config.mode}": must be one of ${validModes.join(", ")}`,
+    );
   }
-  
+
   // Check for unknown fields (warnings only)
   if (configPath) {
-    checkUnknownFields(config as unknown as Record<string, unknown>, configPath)
+    checkUnknownFields(
+      config as unknown as Record<string, unknown>,
+      configPath,
+    );
   }
-  
+
   // Validate module flags if present
   if (config.modules) {
     for (const [key, value] of Object.entries(config.modules)) {
-      if (typeof value !== 'boolean' && value !== undefined) {
-        throw new Error(`Invalid modules.${key}: must be boolean, got ${typeof value}`)
+      if (typeof value !== "boolean" && value !== undefined) {
+        throw new Error(
+          `Invalid modules.${key}: must be boolean, got ${typeof value}`,
+        );
       }
     }
   }
-  
+
   // Validate sources array if present
   if (config.sources && Array.isArray(config.sources)) {
     for (let i = 0; i < config.sources.length; i++) {
-      const source = config.sources[i]
-      if (!source || typeof source !== 'object') {
-        throw new Error(`Invalid source at index ${i}: must be an object`)
+      const source = config.sources[i];
+      if (!source || typeof source !== "object") {
+        throw new Error(`Invalid source at index ${i}: must be an object`);
       }
-      
+
       // Type-specific validation
-      if (source.type === 'local' && !source.path) {
-        throw new Error(`Invalid source at index ${i}: "path" is required for type "local"`)
-      } else if ((source.type === 'git' || source.type === 'url') && !source.url) {
-        throw new Error(`Invalid source at index ${i}: "url" is required for type "${source.type}"`)
-      } else if (source.type === 'catalog' && !source.id) {
-        throw new Error(`Invalid source at index ${i}: "id" is required for type "catalog"`)
+      if (source.type === "local" && !source.path) {
+        throw new Error(
+          `Invalid source at index ${i}: "path" is required for type "local"`,
+        );
+      } else if (
+        (source.type === "git" || source.type === "url") &&
+        !source.url
+      ) {
+        throw new Error(
+          `Invalid source at index ${i}: "url" is required for type "${source.type}"`,
+        );
+      } else if (source.type === "catalog" && !source.id) {
+        throw new Error(
+          `Invalid source at index ${i}: "id" is required for type "catalog"`,
+        );
       }
-      
+
       // Security: Validate local source paths for traversal attacks
-      if (source.type === 'local' && source.path) {
+      if (source.type === "local" && source.path) {
         try {
-          validateScopePath(source.path)
+          validateScopePath(source.path);
         } catch (err) {
-          throw new Error(`Invalid source at index ${i}: ${err instanceof Error ? err.message : String(err)}`)
+          throw new Error(
+            `Invalid source at index ${i}: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     }
   }
-  
+
   // Validate exporters array if present
   if (config.exporters && Array.isArray(config.exporters)) {
     for (let i = 0; i < config.exporters.length; i++) {
-      const exporter = config.exporters[i]
-      if (typeof exporter !== 'string' || exporter.trim() === '') {
-        throw new Error(`Invalid exporter at index ${i}: must be non-empty string`)
+      const exporter = config.exporters[i];
+      if (typeof exporter !== "string" || exporter.trim() === "") {
+        throw new Error(
+          `Invalid exporter at index ${i}: must be non-empty string`,
+        );
       }
     }
   }
-  
+
   // Validate scopes array if present
   if (config.scopes && Array.isArray(config.scopes)) {
     for (let i = 0; i < config.scopes.length; i++) {
-      const scope = config.scopes[i]
+      const scope = config.scopes[i];
       if (!scope) {
-        throw new Error(`Invalid scope at index ${i}: scope is null or undefined`)
+        throw new Error(
+          `Invalid scope at index ${i}: scope is null or undefined`,
+        );
       }
-      
+
       // Validate required path field
-      if (!scope.path || typeof scope.path !== 'string') {
-        throw new Error(`Invalid scope at index ${i}: missing or invalid "path" field`)
+      if (!scope.path || typeof scope.path !== "string") {
+        throw new Error(
+          `Invalid scope at index ${i}: missing or invalid "path" field`,
+        );
       }
-      
+
       try {
-        validateScopePath(scope.path)
+        validateScopePath(scope.path);
       } catch (err) {
-        throw new Error(`Invalid scope at index ${i}: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(
+          `Invalid scope at index ${i}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
-      
+
       try {
-        validateGlobPatterns(scope.include)
+        validateGlobPatterns(scope.include);
       } catch (err) {
-        throw new Error(`Invalid scope at index ${i}, include patterns: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(
+          `Invalid scope at index ${i}, include patterns: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
-      
+
       try {
-        validateGlobPatterns(scope.exclude)
+        validateGlobPatterns(scope.exclude);
       } catch (err) {
-        throw new Error(`Invalid scope at index ${i}, exclude patterns: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(
+          `Invalid scope at index ${i}, exclude patterns: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
-      
+
       // Validate rulesets is array of strings if present
       if (scope.rulesets !== undefined) {
         if (!Array.isArray(scope.rulesets)) {
-          throw new Error(`Invalid scope at index ${i}: "rulesets" must be an array`)
+          throw new Error(
+            `Invalid scope at index ${i}: "rulesets" must be an array`,
+          );
         }
         for (const ruleset of scope.rulesets) {
-          if (typeof ruleset !== 'string') {
-            throw new Error(`Invalid scope at index ${i}: ruleset IDs must be strings`)
+          if (typeof ruleset !== "string") {
+            throw new Error(
+              `Invalid scope at index ${i}: ruleset IDs must be strings`,
+            );
           }
         }
       }
     }
-    
+
     // Warn if scopes defined but empty
     if (config.scopes.length === 0) {
-      console.warn(`Warning: "scopes" array is defined but empty. Consider removing it or adding scope definitions.`)
+      console.warn(
+        `Warning: "scopes" array is defined but empty. Consider removing it or adding scope definitions.`,
+      );
     }
   }
-  
+
   // Validate merge order if present
   if (config.merge?.order) {
     try {
-      validateMergeOrder(config.merge.order)
+      validateMergeOrder(config.merge.order);
     } catch (err) {
-      throw new Error(`Invalid merge order: ${err instanceof Error ? err.message : String(err)}`)
+      throw new Error(
+        `Invalid merge order: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
-  
+
   // Validate git mode if present
   if (config.git?.mode) {
-    const validGitModes = ['ignore', 'commit', 'branch']
+    const validGitModes = ["ignore", "commit", "branch"];
     if (!validGitModes.includes(config.git.mode)) {
-      throw new Error(`Invalid git mode "${config.git.mode}": must be one of ${validGitModes.join(', ')}`)
+      throw new Error(
+        `Invalid git mode "${config.git.mode}": must be one of ${validGitModes.join(", ")}`,
+      );
     }
   }
-  
+
   // Cross-field validation: warn about mode/module inconsistencies
-  if (config.mode === 'solo' && config.modules?.lockfile === true) {
+  if (config.mode === "solo" && config.modules?.lockfile === true) {
     console.warn(
       `Warning: Solo mode with lockfile enabled is unusual.\n` +
-      `  Consider using 'mode: team' if you need lockfile features.`
-    )
+        `  Consider using 'mode: team' if you need lockfile features.`,
+    );
   }
-  
-  if (config.mode === 'solo' && config.modules?.bundle === true) {
+
+  if (config.mode === "solo" && config.modules?.bundle === true) {
     console.warn(
       `Warning: Solo mode with bundle enabled is unusual.\n` +
-      `  Consider using 'mode: team' if you need bundle features.`
-    )
+        `  Consider using 'mode: team' if you need bundle features.`,
+    );
   }
 }
 
 /**
  * Load and parse config file
  */
-export async function loadConfig(configPath?: string, cwd?: string): Promise<AlignTrueConfig> {
-  const paths = getAlignTruePaths(cwd)
-  const path = configPath || paths.config
-  
+export async function loadConfig(
+  configPath?: string,
+  cwd?: string,
+): Promise<AlignTrueConfig> {
+  const paths = getAlignTruePaths(cwd);
+  const path = configPath || paths.config;
+
   // Check file exists
   if (!existsSync(path)) {
     throw new Error(
       `Config file not found: ${path}\n` +
-      `  Run 'aligntrue init' to create one.`
-    )
+        `  Run 'aligntrue init' to create one.`,
+    );
   }
-  
+
   // Parse YAML
-  let content: string
-  let config: unknown
-  
+  let content: string;
+  let config: unknown;
+
   try {
-    content = readFileSync(path, 'utf8')
+    content = readFileSync(path, "utf8");
   } catch (err) {
     throw new Error(
       `Failed to read config file: ${path}\n` +
-      `  ${err instanceof Error ? err.message : String(err)}`
-    )
+        `  ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
-  
+
   try {
-    config = yaml.load(content)
+    config = yaml.load(content);
   } catch (err) {
-    const yamlErr = err as { mark?: { line?: number; column?: number } }
-    const location = yamlErr.mark 
+    const yamlErr = err as { mark?: { line?: number; column?: number } };
+    const location = yamlErr.mark
       ? ` at line ${yamlErr.mark.line! + 1}, column ${yamlErr.mark.column! + 1}`
-      : ''
-    
+      : "";
+
     throw new Error(
       `Invalid YAML in ${path}${location}\n` +
-      `  ${err instanceof Error ? err.message : String(err)}\n` +
-      `  Check for syntax errors (indentation, quotes, colons).`
-    )
+        `  ${err instanceof Error ? err.message : String(err)}\n` +
+        `  Check for syntax errors (indentation, quotes, colons).`,
+    );
   }
-  
+
   // Validate against JSON Schema
-  const schemaValidation = validateConfigSchema(config)
+  const schemaValidation = validateConfigSchema(config);
   if (!schemaValidation.valid) {
     throw new Error(
       `Invalid config in ${path}:\n${formatValidationErrors(schemaValidation.errors)}\n` +
-      `  See config.schema.json for full specification.`
-    )
+        `  See config.schema.json for full specification.`,
+    );
   }
-  
+
   // Cast to config type (safe after schema validation)
-  const typedConfig = config as AlignTrueConfig
-  
+  const typedConfig = config as AlignTrueConfig;
+
   // Apply defaults
-  const configWithDefaults = applyDefaults(typedConfig)
-  
+  const configWithDefaults = applyDefaults(typedConfig);
+
   // Run enhanced validation (scopes, paths, cross-field checks)
-  await validateConfig(configWithDefaults, path)
-  
-  return configWithDefaults
+  await validateConfig(configWithDefaults, path);
+
+  return configWithDefaults;
 }
 
 /**
  * Save config to file with atomic write
  */
-export async function saveConfig(config: AlignTrueConfig, configPath?: string, cwd?: string): Promise<void> {
-  const paths = getAlignTruePaths(cwd)
-  const path = configPath || paths.config
-  const yamlContent = yaml.dump(config)
-  const tempPath = `${path}.tmp`
-  
+export async function saveConfig(
+  config: AlignTrueConfig,
+  configPath?: string,
+  cwd?: string,
+): Promise<void> {
+  const paths = getAlignTruePaths(cwd);
+  const path = configPath || paths.config;
+  const yamlContent = yaml.dump(config);
+  const tempPath = `${path}.tmp`;
+
   // Ensure directory exists
-  mkdirSync(dirname(path), { recursive: true })
-  
+  mkdirSync(dirname(path), { recursive: true });
+
   // Write to temp file first
-  writeFileSync(tempPath, yamlContent, 'utf-8')
-  
+  writeFileSync(tempPath, yamlContent, "utf-8");
+
   // Rename atomically (overwrites destination)
-  renameSync(tempPath, path)
+  renameSync(tempPath, path);
 }
 
 /**
@@ -533,18 +625,21 @@ export async function saveConfig(config: AlignTrueConfig, configPath?: string, c
  * Handles precedence: override > default > 'metadata_only'
  * Forces 'native' for cursor and yaml exporters
  */
-export function getModeHints(exporterName: string, config: AlignTrueConfig): ModeHints {
+export function getModeHints(
+  exporterName: string,
+  config: AlignTrueConfig,
+): ModeHints {
   // Force native for cursor and yaml (cannot be overridden)
-  if (exporterName === 'cursor' || exporterName === 'yaml') {
-    return 'native'
+  if (exporterName === "cursor" || exporterName === "yaml") {
+    return "native";
   }
-  
+
   // Check for per-exporter override
-  const override = config.export?.mode_hints?.overrides?.[exporterName]
+  const override = config.export?.mode_hints?.overrides?.[exporterName];
   if (override) {
-    return override
+    return override;
   }
-  
+
   // Use global default or fall back to metadata_only
-  return config.export?.mode_hints?.default ?? 'metadata_only'
+  return config.export?.mode_hints?.default ?? "metadata_only";
 }
