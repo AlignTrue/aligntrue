@@ -21,6 +21,7 @@ import {
   type Lockfile,
 } from "../lockfile/index.js";
 import { resolvePlugsForPack } from "../plugs/index.js";
+import { applyOverlays } from "../overlays/index.js";
 
 // Import types from plugin-contracts package
 import type {
@@ -244,6 +245,59 @@ export class SyncEngine {
           ...(this.ir.source_sha && { source_sha: this.ir.source_sha }),
         },
       });
+
+      // Apply overlays (Phase 3.5) - before export, after plugs resolution
+      if (
+        this.ir &&
+        this.config.overlays?.overrides &&
+        this.config.overlays.overrides.length > 0
+      ) {
+        const overlayOptions: {
+          maxOverrides?: number;
+          maxOperationsPerOverride?: number;
+        } = {};
+        if (this.config.overlays.limits?.max_overrides) {
+          overlayOptions.maxOverrides =
+            this.config.overlays.limits.max_overrides;
+        }
+        if (this.config.overlays.limits?.max_operations_per_override) {
+          overlayOptions.maxOperationsPerOverride =
+            this.config.overlays.limits.max_operations_per_override;
+        }
+
+        const overlayResult = applyOverlays(
+          this.ir,
+          this.config.overlays.overrides,
+          Object.keys(overlayOptions).length > 0 ? overlayOptions : undefined,
+        );
+
+        if (!overlayResult.success) {
+          return {
+            success: false,
+            written: [],
+            warnings: overlayResult.errors || ["Overlay application failed"],
+          };
+        }
+
+        // Update IR with modified version
+        if (overlayResult.modifiedIR) {
+          this.ir = overlayResult.modifiedIR as AlignPack;
+        }
+
+        // Add overlay warnings
+        if (overlayResult.warnings) {
+          warnings.push(...overlayResult.warnings);
+        }
+
+        // Audit trail: Overlays applied
+        auditTrail.push({
+          action: "update",
+          target: "overlays",
+          source: "config",
+          timestamp: new Date().toISOString(),
+          details: `Applied ${overlayResult.appliedCount || 0} overlays`,
+        });
+      }
 
       // Lockfile validation (if team mode)
       const lockfilePath = resolvePath(process.cwd(), ".aligntrue.lock.json");
