@@ -1116,6 +1116,186 @@ aligntrue sync --dry-run
 
 ---
 
+### `aligntrue link`
+
+Vendor rule packs from git repositories using git submodules or subtrees.
+
+**Usage:**
+
+```bash
+aligntrue link <git-url> [--path <vendor-path>]
+```
+
+**What it does:**
+
+1. Detects existing submodule/subtree vendoring at specified path
+2. Validates pack integrity (`.aligntrue.yaml` required at repo root)
+3. Updates config with vendor metadata (path and type)
+4. Provides workflow guidance for updates and collaboration
+
+**Does NOT execute git operations** - You must vendor manually first using git submodule or subtree.
+
+**Key concept:** Link registers vendored packs so AlignTrue can track their provenance for drift detection. Vendoring provides:
+
+- **Offline access** - Rules available without network
+- **Version control** - Vendored code tracked in your repo
+- **Security auditing** - Review all vendored code before use
+- **Team collaboration** - Clear ownership and update workflows
+
+**Options:**
+
+- `--path <vendor-path>` - Custom vendor location (default: `vendor/<repo-name>`)
+- `--config, -c <path>` - Custom config file path
+
+**Examples:**
+
+```bash
+# Submodule workflow
+git submodule add https://github.com/org/rules vendor/org-rules
+aligntrue link https://github.com/org/rules --path vendor/org-rules
+
+# Subtree workflow
+git subtree add --prefix vendor/org-rules https://github.com/org/rules main --squash
+aligntrue link https://github.com/org/rules --path vendor/org-rules
+
+# Default vendor path
+git submodule add https://github.com/org/rules vendor/rules
+aligntrue link https://github.com/org/rules
+```
+
+**Vendor type detection:**
+
+AlignTrue automatically detects:
+
+- **Submodule** - `.git` file with `gitdir:` reference
+- **Subtree** - `.git` directory (full git repo)
+
+**Team mode integration:**
+
+In team mode, link warns if source is not in allow list:
+
+```
+⚠️  Not in allow list
+
+This source is not in your team's allow list.
+To approve this source:
+  aligntrue team approve "https://github.com/org/rules"
+
+This is non-blocking but recommended for team workflows.
+```
+
+Approve before or after linking - both work.
+
+**Output example:**
+
+```
+✅ Successfully linked https://github.com/org/rules
+
+Vendor path: vendor/org-rules
+Vendor type: submodule
+Profile: org/typescript-rules
+
+Next steps:
+1. Commit vendor changes: git add vendor/org-rules .aligntrue/config.yaml
+2. Run sync: aligntrue sync
+3. Update lockfile (if team mode): git add .aligntrue.lock.json
+```
+
+**Update workflows:**
+
+**Submodule:**
+
+```bash
+cd vendor/org-rules
+git pull origin main
+cd ../..
+git add vendor/org-rules
+git commit -m "chore: Update vendored rules"
+```
+
+**Subtree:**
+
+```bash
+git subtree pull --prefix vendor/org-rules https://github.com/org/rules main --squash
+```
+
+**Common use cases:**
+
+**When to vendor vs pull:**
+
+Use `aligntrue link` (vendoring) for:
+
+- Production dependencies (offline access required)
+- Security-critical rules (audit before use)
+- Stable versions (infrequent updates)
+
+Use `aligntrue pull` (ad-hoc) for:
+
+- Testing rules before committing
+- Exploring community rules
+- Rapid iteration
+
+**Submodule vs Subtree:**
+
+| Aspect     | Submodule                         | Subtree               |
+| ---------- | --------------------------------- | --------------------- |
+| Complexity | Requires `git submodule` commands | Just `git pull`       |
+| Space      | More efficient (reference only)   | Full copy in repo     |
+| Team setup | `git submodule init && update`    | No extra steps        |
+| History    | Separate                          | Merged with main repo |
+| Updates    | `git submodule update`            | `git subtree pull`    |
+
+**Recommendation:** Subtrees for simplicity, submodules for space efficiency.
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Validation error (invalid URL, duplicate vendor, pack validation failed)
+- `2` - System error (git operations, file system errors)
+
+**Troubleshooting:**
+
+**Error: "Vendor already exists"**
+
+Remove existing vendor first:
+
+```bash
+# For submodule
+git rm -rf vendor/org-rules
+rm -rf .git/modules/vendor/org-rules
+git commit -m "chore: Remove old vendor"
+
+# For subtree
+git rm -rf vendor/org-rules
+git commit -m "chore: Remove old vendor"
+
+# Then re-link
+git submodule add https://github.com/org/rules vendor/org-rules
+aligntrue link https://github.com/org/rules --path vendor/org-rules
+```
+
+**Error: "Pack validation failed"**
+
+Ensure vendored repo has valid `.aligntrue.yaml` at root:
+
+```bash
+# Check pack file exists
+ls vendor/org-rules/.aligntrue.yaml
+
+# Validate pack manually
+cat vendor/org-rules/.aligntrue.yaml
+```
+
+Required fields: `id`, `version`, `spec_version`, `profile.id`
+
+**See also:**
+
+- [Git Workflows Guide - Vendoring](git-workflows.md#vendoring-workflows) - Complete vendoring workflows
+- [Team Mode Guide](team-mode.md) - Team approval workflows
+- [Privacy Guide](PRIVACY.md) - Network consent management
+
+---
+
 ## Settings commands
 
 Manage AlignTrue settings and preferences.

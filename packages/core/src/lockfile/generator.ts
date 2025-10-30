@@ -35,6 +35,9 @@ export function generateLockfile(
       // Git sources provide source_sha (commit SHA) which serves as base_hash
       // TODO(Phase 4): Capture base_hash from catalog sources when ready
       ...(pack.source_sha && { base_hash: pack.source_sha }),
+      // Phase 3, Session 5: Capture vendoring provenance
+      ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
+      ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
     });
     ruleHashes.push(hash);
   }

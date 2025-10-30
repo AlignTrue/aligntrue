@@ -56,8 +56,6 @@ temp-*
 logs/
 
 # Work-in-progress files (phase work, incomplete implementations)
-**/link.ts
-**/link.test.ts
 packages/cli/src/commands/*-wip.ts
 packages/cli/tests/commands/*-wip.test.ts
 
