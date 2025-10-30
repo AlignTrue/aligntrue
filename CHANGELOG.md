@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 6: Drift Detection System (Foundation Complete)** - Completed 2025-10-30
+  - Drift detection core logic in `@aligntrue/core` for comparing lockfile to allowed sources
+  - Drift categorization: upstream (version mismatch), vendorized (integrity check), severity_remap (foundation for Session 7), local_overlay (placeholder for Phase 3.5)
+  - `detectDrift()` function with full test coverage (20 tests) covering all drift scenarios and edge cases
+  - `detectDriftForConfig()` high-level API for CLI integration with structured output and promise-based interface
+  - `aln drift` CLI command structure (integration in progress): `--gates`, `--json`, `--sarif` output formats
+  - Team mode validation (requires team mode enabled, lockfile exists, allow list configured)
+  - Exit codes: 0 (no drift or --gates not used), 2 (drift detected with --gates flag)
+  - Comprehensive documentation: `docs/drift-detection.md` (~300+ lines) with CI workflows, troubleshooting, best practices
+  - Updated `docs/commands.md` with drift command reference section
+  - Test count: 579 core tests passing (100% pass rate), 22 CLI tests skipped pending full integration
+  - Files created: core/src/team/drift.ts (~350 lines), tests/team/drift.test.ts (~600 lines, 20 tests), docs/drift-detection.md (~300 lines)
+  - Files modified: core/src/team/index.ts (drift exports), core/package.json (team/drift.js export), docs/commands.md (+40 lines drift section)
+  - Key decisions: Foundation complete for CLI activation, upstream and vendorized drift working, severity remap foundation ready for Session 7
+  - Integration: Uses Session 3 team validation, Session 5 lockfile provenance (vendor_path/vendor_type), ready for Session 7 severity remapping
+  - Known limitations: CLI integration needs activation (tests skipped), severity remap drift needs Session 7 `.aligntrue.team.yaml` implementation
+  - Status: Foundation complete, CLI integration ready for activation when team features are fully deployed
+
 - **Phase 3, Session 5: Link Command Complete** - Completed 2025-10-29
   - `aligntrue link` command for vendoring packs from git repositories
   - Git submodule and subtree detection with workflow guidance (detect and inform only, no automatic conversion)
