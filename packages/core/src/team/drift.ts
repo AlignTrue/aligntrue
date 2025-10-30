@@ -8,6 +8,7 @@ import { parseAllowList } from "./allow.js";
 import type { AllowList, AllowListSource } from "./types.js";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
+import { computeHash } from "@aligntrue/schema";
 
 /**
  * Drift categories
@@ -168,15 +169,58 @@ export function detectVendorizedDrift(
 
 /**
  * Detect severity remap drift
- * Placeholder for Session 7 implementation
+ * Checks if .aligntrue.team.yaml has changed since lockfile generation
  */
 export function detectSeverityRemapDrift(
-  _lockfile: Lockfile,
-  _basePath: string = ".",
+  lockfile: Lockfile,
+  basePath: string = ".",
 ): DriftFinding[] {
-  // TODO(Session 7): Implement severity remap drift detection
-  // Will check if .aligntrue.team.yaml has changed since lockfile generation
-  return [];
+  const findings: DriftFinding[] = [];
+  const teamYamlPath = join(basePath, ".aligntrue.team.yaml");
+
+  // If lockfile has no team_yaml_hash, no drift to detect
+  if (!lockfile.team_yaml_hash) {
+    return findings;
+  }
+
+  // Check if team.yaml file exists
+  if (!existsSync(teamYamlPath)) {
+    findings.push({
+      category: "severity_remap",
+      rule_id: "_team_policy",
+      message: "Team policy file removed since lockfile generation",
+      suggestion: "Restore .aligntrue.team.yaml or regenerate lockfile",
+    });
+    return findings;
+  }
+
+  // Compute current hash
+  let currentHash: string;
+  try {
+    const content = readFileSync(teamYamlPath, "utf-8");
+    currentHash = computeHash(content);
+  } catch (err) {
+    findings.push({
+      category: "severity_remap",
+      rule_id: "_team_policy",
+      message: `Failed to read team policy file: ${err instanceof Error ? err.message : String(err)}`,
+      suggestion: "Check file permissions and validity",
+    });
+    return findings;
+  }
+
+  // Compare hashes
+  if (currentHash !== lockfile.team_yaml_hash) {
+    findings.push({
+      category: "severity_remap",
+      rule_id: "_team_policy",
+      message: "Team severity remapping policy has changed",
+      suggestion:
+        "Review changes and regenerate lockfile if approved: aligntrue lock",
+    });
+  }
+
+  return findings;
 }
 
 /**
