@@ -1,7 +1,22 @@
 set -e
-echo "🔍 Running pre-push checks..."
+
+echo "🔍 Running pre-push validation... (this may take 30-60 seconds)"
+echo ""
+
+echo "📝 Type checking all packages..."
 pnpm typecheck
+echo "✅ Type checking passed."
+echo ""
+
+echo "🧪 Running the full test suite..."
 pnpm test
+echo "✅ All tests passed."
+echo ""
+
+echo "🔨 Building all packages..."
 pnpm build
-echo "✅ All pre-push checks passed"
+echo "✅ Build successful."
+echo ""
+
+echo "🎉 All pre-push checks passed! Your code is ready to push."
 
