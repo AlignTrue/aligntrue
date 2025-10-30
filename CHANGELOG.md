@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 3, Session 8: Auto-Update Flow + CLI Drift Test Fixes** - Completed 2025-10-30
+  - Fixed and activated 22 skipped drift CLI tests with full end-to-end validation
+  - CLI drift command fully operational: proper config setup, flag parsing fixes (--json, --sarif, --gates), comprehensive output formatting
+  - Auto-update detection for upstream changes in allowed sources (git-only, catalog deferred to Phase 4)
+  - UPDATE_NOTES.md generation for scheduled team updates with human-readable format including version changes, affected rules, breaking change indicators
+  - CLI commands: `aligntrue update check` (preview updates), `aligntrue update apply` (apply + generate notes + auto-sync)
+  - Update detection core logic in `@aligntrue/core/team/updates`: compares lockfile to allow list resolved hashes
+  - Automatic sync after applying updates for seamless workflow
+  - Team mode: updates lockfile entries; Solo mode: not applicable (team-only feature)
+  - Comprehensive auto-updates.md documentation (~340 lines) with manual workflows, CI integration examples (GitHub Actions, GitLab CI), UPDATE_NOTES.md format, best practices, troubleshooting
+  - Updated team-mode.md with severity remapping section (~165 lines): configuration, rationale requirements, drift detection, example workflows, troubleshooting
+  - Updated commands.md with update command section (~50 lines) and drift command enabled
+  - CLI routing added for both drift and update commands in main index
+  - Test count: CLI 219 → 241 tests (+22 drift tests activated), Core +15 updates tests, Total +37 tests, all passing (100% pass rate)
+  - Files created: `core/src/team/updates.ts` (~180 lines), `cli/src/commands/update.ts` (~290 lines), `docs/auto-updates.md` (~340 lines), 2 test files (~965 lines, 37 tests)
+  - Files modified: cli drift.ts (~100 lines fixes: flag parsing, output formatting, config paths), cli index.ts (+drift/update routing), commands/index.ts (exports), commands.md (+update docs), team-mode.md (+severity remap section)
+  - Drift CLI fixes: Removed invalid profile field from tests, fixed flag checking (gates/json/sarif without dashes), fixed output to show hashes/vendor info, TypeScript strict optional handling
+  - Key decisions: Git-only updates (catalog Phase 4 with TODO), human-readable UPDATE_NOTES.md (no JSON option), automatic sync after apply for better UX, inline test fixtures with helper functions, comprehensive documentation with CI examples
+  - Integration: Uses Phase 2 GitProvider foundation, Session 3 allow list validation, Session 6 drift detection system, Session 7 severity remapping
+  - Known limitations: Catalog source updates deferred to Phase 4 (TODO added in updates.ts), update command tests not implemented (basic commands work, comprehensive tests deferred)
+  - Status: CLI drift fully validated (22/22 tests passing), auto-update flow complete and documented, Session 8 objectives met
+
 - **Phase 3, Session 7: Severity Remapping (Core Complete)** - Completed 2025-10-30
   - Severity remapping system for team mode: MUST/SHOULD/MAY → error/warn/info adjustments with guardrails
   - `.aligntrue.team.yaml` file support with `severity_remaps` configuration
