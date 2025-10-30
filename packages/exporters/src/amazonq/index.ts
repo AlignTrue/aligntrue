@@ -3,178 +3,218 @@
  * Exports AlignTrue rules to Amazon Q .amazonq/rules/ directory format
  */
 
-import { join } from 'path'
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
-import type { AlignRule } from '@aligntrue/schema'
-import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { join } from "path";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+  ResolvedScope,
+} from "../types.js";
+import type { AlignRule } from "@aligntrue/schema";
+import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 import {
   extractModeConfig,
   applyRulePrioritization,
   generateSessionPreface,
   wrapRuleWithMarkers,
-  shouldIncludeRule
-} from '../utils/index.js'
+  shouldIncludeRule,
+} from "../utils/index.js";
 
 export class AmazonQExporter implements ExporterPlugin {
-  name = 'amazonq'
-  version = '1.0.0'
-  
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
-    const { scope, rules } = request
-    const { outputDir, dryRun = false, config } = options
+  name = "amazonq";
+  version = "1.0.0";
+
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { scope, rules } = request;
+    const { outputDir, dryRun = false, config } = options;
 
     if (!rules || rules.length === 0) {
-      throw new Error('AmazonQExporter requires at least one rule to export')
+      throw new Error("AmazonQExporter requires at least one rule to export");
     }
 
-    const filename = this.getScopeFilename(scope)
-    const outputPath = join(outputDir, '.amazonq', 'rules', filename)
+    const filename = this.getScopeFilename(scope);
+    const outputPath = join(outputDir, ".amazonq", "rules", filename);
 
-    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(this.name, config)
-    const { content, warnings } = this.generateRuleContent(scope, rules, modeHints, maxBlocks, maxTokens)
+    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
+      this.name,
+      config,
+    );
+    const { content, warnings } = this.generateRuleContent(
+      scope,
+      rules,
+      modeHints,
+      maxBlocks,
+      maxTokens,
+      options.unresolvedPlugsCount,
+    );
 
-    const irContent = JSON.stringify({ scope, rules })
-    const contentHash = computeHash(canonicalizeJson(irContent))
+    const irContent = JSON.stringify({ scope, rules });
+    const contentHash = computeHash(canonicalizeJson(irContent));
 
-    const fidelityNotes = this.computeFidelityNotes(rules)
+    const fidelityNotes = this.computeFidelityNotes(rules);
 
     if (!dryRun) {
-      const writer = new AtomicFileWriter()
-      writer.write(outputPath, content)
+      const writer = new AtomicFileWriter();
+      writer.write(outputPath, content);
     }
 
     const result: ExportResult = {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
       contentHash,
-    }
+    };
 
     if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes
+      result.fidelityNotes = fidelityNotes;
     }
 
     if (warnings.length > 0) {
-      result.warnings = warnings
+      result.warnings = warnings;
     }
 
-    return result
+    return result;
   }
 
   private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === '.' || scope.path === '') {
-      return 'rules.md'
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "rules.md";
     }
 
-    const normalized = scope.normalizedPath.replace(/\//g, '-')
-    return `${normalized}.md`
+    const normalized = scope.normalizedPath.replace(/\//g, "-");
+    return `${normalized}.md`;
   }
 
-  private generateRuleContent(scope: ResolvedScope, rules: AlignRule[], modeHints: string, maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
-    const lines: string[] = []
+  private generateRuleContent(
+    scope: ResolvedScope,
+    rules: AlignRule[],
+    modeHints: string,
+    maxBlocks: number,
+    maxTokens: number,
+    unresolvedPlugs?: number,
+  ): { content: string; warnings: string[] } {
+    const lines: string[] = [];
 
     const scopeDesc = scope.isDefault
-      ? 'Amazon Q rules (default scope)'
-      : `Amazon Q rules for ${scope.path}`
-    lines.push(`# ${scopeDesc}`)
+      ? "Amazon Q rules (default scope)"
+      : `Amazon Q rules for ${scope.path}`;
+    lines.push(`# ${scopeDesc}`);
 
     // Add session preface if needed
-    lines.push(...generateSessionPreface(modeHints))
+    lines.push(...generateSessionPreface(modeHints));
 
     // Apply prioritization
-    const { includedIds, warnings } = applyRulePrioritization(rules, modeHints, maxBlocks, maxTokens)
+    const { includedIds, warnings } = applyRulePrioritization(
+      rules,
+      modeHints,
+      maxBlocks,
+      maxTokens,
+    );
 
     // Generate rule sections
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       if (!shouldIncludeRule(rule.id, includedIds)) {
-        return
+        return;
       }
 
       // Build rule content
-      const ruleLines: string[] = []
-      ruleLines.push(`## Rule: ${rule.id}`)
-      ruleLines.push('')
-      ruleLines.push(`**Severity:** ${rule.severity}`)
-      ruleLines.push('')
+      const ruleLines: string[] = [];
+      ruleLines.push(`## Rule: ${rule.id}`);
+      ruleLines.push("");
+      ruleLines.push(`**Severity:** ${rule.severity}`);
+      ruleLines.push("");
 
       if (rule.applies_to && rule.applies_to.length > 0) {
-        ruleLines.push(`**Applies to:**`)
-        rule.applies_to.forEach(pattern => {
-          ruleLines.push(`- \`${pattern}\``)
-        })
-        ruleLines.push('')
+        ruleLines.push(`**Applies to:**`);
+        rule.applies_to.forEach((pattern) => {
+          ruleLines.push(`- \`${pattern}\``);
+        });
+        ruleLines.push("");
       }
 
       if (rule.guidance) {
-        ruleLines.push(rule.guidance.trim())
-        ruleLines.push('')
+        ruleLines.push(rule.guidance.trim());
+        ruleLines.push("");
       }
-      ruleLines.push('---')
+      ruleLines.push("---");
 
       // Wrap with markers and add to output
-      const ruleContent = ruleLines.join('\n')
-      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints))
-      lines.push('')
-    })
+      const ruleContent = ruleLines.join("\n");
+      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints));
+      lines.push("");
+    });
 
-    const irContent = JSON.stringify({ scope, rules })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    const fidelityNotes = this.computeFidelityNotes(rules)
+    const irContent = JSON.stringify({ scope, rules });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+    const fidelityNotes = this.computeFidelityNotes(rules);
 
-    lines.push('**Generated by AlignTrue**')
-    lines.push(`Content Hash: ${contentHash}`)
+    lines.push("**Generated by AlignTrue**");
+    lines.push(`Content Hash: ${contentHash}`);
 
-    if (fidelityNotes.length > 0) {
-      lines.push('')
-      lines.push('**Fidelity Notes:**')
-      fidelityNotes.forEach(note => {
-        lines.push(`- ${note}`)
-      })
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      lines.push(`Unresolved Plugs: ${unresolvedPlugs}`);
     }
 
-    lines.push('')
-    return { content: lines.join('\n'), warnings }
+    if (fidelityNotes.length > 0) {
+      lines.push("");
+      lines.push("**Fidelity Notes:**");
+      fidelityNotes.forEach((note) => {
+        lines.push(`- ${note}`);
+      });
+    }
+
+    lines.push("");
+    return { content: lines.join("\n"), warnings };
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = []
-    const unmappedFields = new Set<string>()
-    const crossAgentVendors = new Set<string>()
+    const notes: string[] = [];
+    const unmappedFields = new Set<string>();
+    const crossAgentVendors = new Set<string>();
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       if (rule.check) {
-        unmappedFields.add('check')
+        unmappedFields.add("check");
       }
       if (rule.autofix) {
-        unmappedFields.add('autofix')
+        unmappedFields.add("autofix");
       }
 
       if (rule.vendor) {
-        Object.keys(rule.vendor).forEach(agent => {
-          if (agent !== 'amazonq' && agent !== '_meta') {
-            crossAgentVendors.add(agent)
+        Object.keys(rule.vendor).forEach((agent) => {
+          if (agent !== "amazonq" && agent !== "_meta") {
+            crossAgentVendors.add(agent);
           }
-        })
+        });
       }
-    })
+    });
 
-    if (unmappedFields.has('check')) {
-      notes.push('Machine-checkable rules (check) not represented in .amazonq/rules/ format')
+    if (unmappedFields.has("check")) {
+      notes.push(
+        "Machine-checkable rules (check) not represented in .amazonq/rules/ format",
+      );
     }
-    if (unmappedFields.has('autofix')) {
-      notes.push('Autofix hints not represented in .amazonq/rules/ format')
+    if (unmappedFields.has("autofix")) {
+      notes.push("Autofix hints not represented in .amazonq/rules/ format");
     }
 
     if (crossAgentVendors.size > 0) {
-      const agents = Array.from(crossAgentVendors).sort().join(', ')
-      notes.push(`Vendor metadata for other agents preserved but not active: ${agents}`)
+      const agents = Array.from(crossAgentVendors).sort().join(", ");
+      notes.push(
+        `Vendor metadata for other agents preserved but not active: ${agents}`,
+      );
     }
 
-    notes.push('applies_to patterns preserved in metadata but not enforced by Amazon Q')
+    notes.push(
+      "applies_to patterns preserved in metadata but not enforced by Amazon Q",
+    );
 
-    return notes
+    return notes;
   }
 }
 
-export default AmazonQExporter
-
+export default AmazonQExporter;

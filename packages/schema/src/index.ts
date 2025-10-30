@@ -5,7 +5,7 @@ export {
   computeHash,
   computeAlignHash,
   verifyAlignHash,
-} from './canonicalize.js'
+} from "./canonicalize.js";
 
 // Validation
 export {
@@ -22,10 +22,22 @@ export {
   type AlignCheck,
   type AlignAutofix,
   type AlignIntegrity,
-} from './validator.js'
+} from "./validator.js";
 
 // Re-export scope types for cross-package consistency
 // Note: AlignScope is the IR-level scope (applies_to patterns in packs)
 // For config-level scopes, see @aligntrue/core/scope
-export type { AlignScope as AlignIRScope } from './validator.js'
+export type { AlignScope as AlignIRScope } from "./validator.js";
 
+// Plugs v1.1 (Phase 2.5)
+export {
+  validatePlugKey,
+  validatePlugValue,
+  validatePlugSlot,
+  type PlugFormat,
+  type PlugSlot,
+  type PlugFill,
+  type Plugs,
+  type PlugKeyValidation,
+  type PlugValueValidation,
+} from "./plugs-types.js";

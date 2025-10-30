@@ -21,14 +21,16 @@
   },
   "dependencies": {
     "@aligntrue/core": "workspace:*",
-    "@aligntrue/markdown-parser": "workspace:*",
-    "@aligntrue/sources": "workspace:*",
     "@aligntrue/exporters": "workspace:*",
+    "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/schema": "workspace:*",
+    "@aligntrue/sources": "workspace:*",
     "@clack/prompts": "^0.11.0",
+    "js-yaml": "^4.1.0",
     "yaml": "^2.6.1"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24",
     "typescript": "^5",
     "vitest": "^4.0.4"
@@ -40,4 +42,3 @@
     "access": "public"
   }
 }
-

@@ -15,7 +15,8 @@
     "./telemetry/collector.js": "./dist/telemetry/collector.js",
     "./team/allow.js": "./dist/team/allow.js",
     "./team/drift.js": "./dist/team/drift.js",
-    "./team/updates.js": "./dist/team/updates.js"
+    "./team/updates.js": "./dist/team/updates.js",
+    "./plugs": "./dist/plugs/index.js"
   },
   "scripts": {
     "build": "tsc",

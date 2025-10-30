@@ -9,3 +9,4 @@ export * from "./privacy/index.js";
 export * from "./paths.js";
 export * from "./backup/index.js";
 export * from "./team/index.js";
+export * from "./plugs/index.js";

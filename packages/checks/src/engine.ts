@@ -54,6 +54,23 @@ export async function runChecks(
     results.push(result);
   }
 
+  // Add informational finding for unresolved plugs
+  if (options.unresolvedPlugsCount && options.unresolvedPlugsCount > 0) {
+    const plugsFinding: CheckResult = {
+      rule: {
+        id: "plugs/unresolved-required",
+        severity: "MAY",
+        description: `${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values`,
+        message: `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`,
+      },
+      packId: alignPack.id,
+      passed: false,
+      level: "note",
+      message: `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`,
+    };
+    results.push(plugsFinding);
+  }
+
   // Apply severity remapping in team mode
   if (options.mode === "team") {
     return applySeverityRemapping(
