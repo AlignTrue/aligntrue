@@ -64,6 +64,7 @@ export class ClineExporter implements ExporterPlugin {
       modeHints,
       maxBlocks,
       maxTokens,
+      options,
     );
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
@@ -111,6 +112,7 @@ export class ClineExporter implements ExporterPlugin {
     modeHints: string,
     maxBlocks: number,
     maxTokens: number,
+    options: ExportOptions,
   ): { content: string; warnings: string[] } {
     const lines: string[] = [];
 

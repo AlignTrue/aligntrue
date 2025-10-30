@@ -49,7 +49,7 @@ export class AiderConfigExporter implements ExporterPlugin {
     });
 
     const outputPath = join(outputDir, ".aider.conf.yml");
-    const content = this.generateAiderConfigContent();
+    const content = this.generateAiderConfigContent(options);
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
     const irContent = JSON.stringify({ rules: allRulesIR });
@@ -72,6 +72,13 @@ export class AiderConfigExporter implements ExporterPlugin {
       result.fidelityNotes = fidelityNotes;
     }
 
+    if (
+      options.unresolvedPlugsCount !== undefined &&
+      options.unresolvedPlugsCount > 0
+    ) {
+      result.unresolvedPlugs = options.unresolvedPlugsCount;
+    }
+
     return result;
   }
 
@@ -88,7 +95,7 @@ export class AiderConfigExporter implements ExporterPlugin {
     return scope.path;
   }
 
-  private generateAiderConfigContent(): string {
+  private generateAiderConfigContent(options: ExportOptions): string {
     const rules = this.state.allRules.map(({ rule, scopePath }) => ({
       id: rule.id,
       severity: rule.severity,
@@ -114,6 +121,7 @@ export class AiderConfigExporter implements ExporterPlugin {
         applies_to: string[];
       }>;
       fidelity_notes?: string[];
+      unresolved_plugs?: number;
     } = {
       version: "v1",
       generated_by: "AlignTrue",

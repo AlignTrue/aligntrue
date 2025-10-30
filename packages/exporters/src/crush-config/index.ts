@@ -68,7 +68,7 @@ export class CrushConfigExporter implements ExporterPlugin {
       options.unresolvedPlugsCount !== undefined &&
       options.unresolvedPlugsCount > 0
     ) {
-      config.unresolved_plugs = options.unresolvedPlugsCount;
+      config["unresolved_plugs"] = options.unresolvedPlugsCount;
     }
 
     const content = JSON.stringify(config, null, 2) + "\n";
@@ -80,7 +80,7 @@ export class CrushConfigExporter implements ExporterPlugin {
     return {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
-      contentHash: config.content_hash,
+      contentHash: config["content_hash"],
     };
   }
 

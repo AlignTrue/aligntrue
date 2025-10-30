@@ -69,11 +69,11 @@ export class FirebaseMcpExporter implements ExporterPlugin {
       options.unresolvedPlugsCount !== undefined &&
       options.unresolvedPlugsCount > 0
     ) {
-      mcpConfig.unresolved_plugs = options.unresolvedPlugsCount;
+      mcpConfig["unresolved_plugs"] = options.unresolvedPlugsCount;
     }
 
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-    const contentHash = mcpConfig.content_hash;
+    const contentHash = mcpConfig["content_hash"];
 
     if (!dryRun) {
       mkdirSync(dirname(outputPath), { recursive: true });
