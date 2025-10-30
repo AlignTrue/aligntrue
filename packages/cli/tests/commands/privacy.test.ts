@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { privacyCommand as privacy } from "../../src/commands/privacy.js";
+import { mockCommandArgs } from "../utils/command-test-helpers.js";
 import * as clack from "@clack/prompts";
 
 // Mock clack prompts
@@ -71,7 +72,8 @@ describe("privacy command", () => {
         throw new Error("process.exit: 0");
       });
 
-      await expect(privacy(["--help"])).rejects.toThrow("process.exit: 0");
+      const args = mockCommandArgs({ help: true });
+      await expect(privacy(args)).rejects.toThrow("process.exit: 0");
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();

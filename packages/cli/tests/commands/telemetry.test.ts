@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { telemetry } from "../../src/commands/telemetry.js";
+import { mockCommandArgs } from "../utils/command-test-helpers.js";
 import * as fs from "fs";
 import * as clack from "@clack/prompts";
 
@@ -42,7 +43,8 @@ describe("telemetry command", () => {
 
   describe("help", () => {
     it("shows help with --help flag", async () => {
-      await expect(telemetry(["--help"])).rejects.toThrow("process.exit(0)");
+      const args = mockCommandArgs({ help: true });
+      await expect(telemetry(args)).rejects.toThrow("process.exit(0)");
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Usage: aligntrue telemetry"),
       );

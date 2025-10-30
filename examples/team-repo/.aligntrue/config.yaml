@@ -1,0 +1,37 @@
+version: "1"
+mode: team
+
+# Lockfile enforcement (off/soft/strict)
+lockfile:
+  mode: soft
+
+# Team-approved rule sources
+sources:
+  # Base pack from catalog (when Phase 4 complete)
+  - type: local
+    path: vendor/shared-pack/rules.md
+
+  # Git source example (Phase 3 Session 4)
+  # - type: git
+  #   url: https://github.com/org/shared-rules
+  #   ref: main
+
+# Export to Cursor and AGENTS.md
+exporters:
+  - cursor
+  - agents-md
+
+# Hierarchical scopes for monorepo
+scopes:
+  - path: frontend
+    include:
+      - "**/*.ts"
+      - "**/*.tsx"
+    exclude:
+      - "**/*.test.ts"
+
+  - path: backend
+    include:
+      - "**/*.ts"
+    exclude:
+      - "**/*.spec.ts"

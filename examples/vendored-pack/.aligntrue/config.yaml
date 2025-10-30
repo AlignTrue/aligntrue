@@ -1,0 +1,11 @@
+version: "1"
+mode: solo # Can also be team mode
+
+# Vendored pack as local source
+sources:
+  - type: local
+    path: vendor/org-standards/rules.md
+
+# Export to Cursor
+exporters:
+  - cursor
