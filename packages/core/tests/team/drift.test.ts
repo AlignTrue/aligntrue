@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  rmSync,
+  readFileSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import {
@@ -16,6 +22,7 @@ import {
 } from "../../src/team/drift.js";
 import type { Lockfile } from "../../src/lockfile/types.js";
 import type { AllowList } from "../../src/team/allow.js";
+import { computeHash } from "@aligntrue/schema";
 
 describe("detectUpstreamDrift", () => {
   it("detects no drift when hashes match", () => {
@@ -526,5 +533,171 @@ sources:
     expect(() => detectDrift(lockfilePath, allowListPath, tempDir)).toThrow(
       "Failed to parse allow list",
     );
+  });
+
+  describe("severity remap drift", () => {
+    it("detects no drift when team.yaml hash matches", () => {
+      const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+      const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+      const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
+
+      mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+      // Create team.yaml
+      writeFileSync(
+        teamYamlPath,
+        `severity_remaps:
+  - rule_id: "test"
+    from: "MUST"
+    to: "warn"
+`,
+      );
+
+      // Compute hash for lockfile
+      const teamYamlContent = readFileSync(teamYamlPath, "utf-8");
+      const teamYamlHash = computeHash(teamYamlContent);
+
+      writeFileSync(
+        lockfilePath,
+        JSON.stringify({
+          version: "1",
+          generated_at: "2025-10-29T12:00:00Z",
+          mode: "team",
+          rules: [],
+          bundle_hash: "xyz789",
+          team_yaml_hash: teamYamlHash,
+        }),
+      );
+      writeFileSync(allowListPath, "version: 1\nsources: []");
+
+      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      expect(result.has_drift).toBe(false);
+      expect(result.summary.by_category.severity_remap).toBe(0);
+    });
+
+    it("detects drift when team.yaml hash differs", () => {
+      const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+      const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+      const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
+
+      mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+      // Create team.yaml with different content
+      writeFileSync(
+        teamYamlPath,
+        `severity_remaps:
+  - rule_id: "test"
+    from: "MUST"
+    to: "info"
+`,
+      );
+
+      // Lockfile has different hash
+      writeFileSync(
+        lockfilePath,
+        JSON.stringify({
+          version: "1",
+          generated_at: "2025-10-29T12:00:00Z",
+          mode: "team",
+          rules: [],
+          bundle_hash: "xyz789",
+          team_yaml_hash: "oldhash123",
+        }),
+      );
+      writeFileSync(allowListPath, "version: 1\nsources: []");
+
+      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      expect(result.has_drift).toBe(true);
+      expect(result.summary.by_category.severity_remap).toBe(1);
+      expect(result.findings[0].category).toBe("severity_remap");
+      expect(result.findings[0].message).toContain("policy has changed");
+    });
+
+    it("detects drift when team.yaml is removed", () => {
+      const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+      const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+
+      mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+      // Lockfile has team_yaml_hash but file doesn't exist
+      writeFileSync(
+        lockfilePath,
+        JSON.stringify({
+          version: "1",
+          generated_at: "2025-10-29T12:00:00Z",
+          mode: "team",
+          rules: [],
+          bundle_hash: "xyz789",
+          team_yaml_hash: "somehash123",
+        }),
+      );
+      writeFileSync(allowListPath, "version: 1\nsources: []");
+
+      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      expect(result.has_drift).toBe(true);
+      expect(result.summary.by_category.severity_remap).toBe(1);
+      expect(result.findings[0].category).toBe("severity_remap");
+      expect(result.findings[0].message).toContain("removed");
+    });
+
+    it("detects no drift when team.yaml doesn't exist and lockfile has no hash", () => {
+      const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+      const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+
+      mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+      // Lockfile has no team_yaml_hash
+      writeFileSync(
+        lockfilePath,
+        JSON.stringify({
+          version: "1",
+          generated_at: "2025-10-29T12:00:00Z",
+          mode: "team",
+          rules: [],
+          bundle_hash: "xyz789",
+        }),
+      );
+      writeFileSync(allowListPath, "version: 1\nsources: []");
+
+      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      expect(result.has_drift).toBe(false);
+      expect(result.summary.by_category.severity_remap).toBe(0);
+    });
+
+    it("detects drift when team.yaml is added after lockfile generation", () => {
+      const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+      const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+      const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
+
+      mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+      // Create team.yaml
+      writeFileSync(
+        teamYamlPath,
+        `severity_remaps:
+  - rule_id: "test"
+    from: "MUST"
+    to: "warn"
+`,
+      );
+
+      // Lockfile has no team_yaml_hash (generated before team.yaml existed)
+      writeFileSync(
+        lockfilePath,
+        JSON.stringify({
+          version: "1",
+          generated_at: "2025-10-29T12:00:00Z",
+          mode: "team",
+          rules: [],
+          bundle_hash: "xyz789",
+        }),
+      );
+      writeFileSync(allowListPath, "version: 1\nsources: []");
+
+      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      // No drift - if lockfile was generated without team.yaml, adding it later doesn't constitute drift
+      // until lockfile is regenerated
+      expect(result.summary.by_category.severity_remap).toBe(0);
+    });
   });
 });

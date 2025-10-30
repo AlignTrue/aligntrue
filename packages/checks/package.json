@@ -23,6 +23,7 @@
     "run-checks": "tsx scripts/run-checks.ts"
   },
   "dependencies": {
+    "@aligntrue/core": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "fast-glob": "^3.3.2"
   },

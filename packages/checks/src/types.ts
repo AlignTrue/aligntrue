@@ -2,7 +2,7 @@
  * Core types for the checks runner engine
  */
 
-import type { AlignPack, AlignRule } from '@aligntrue/schema'
+import type { AlignPack, AlignRule } from "@aligntrue/schema";
 
 /**
  * Abstract file provider interface for testability
@@ -14,28 +14,28 @@ export interface FileProvider {
    * @param options - Optional glob options
    * @returns Array of matched file paths relative to working directory
    */
-  glob(pattern: string, options?: GlobOptions): Promise<string[]>
+  glob(pattern: string, options?: GlobOptions): Promise<string[]>;
 
   /**
    * Read file contents as string
    * @param path - File path relative to working directory
    * @returns File contents
    */
-  readFile(path: string): Promise<string>
+  readFile(path: string): Promise<string>;
 
   /**
    * Check if a file exists
    * @param path - File path relative to working directory
    * @returns True if file exists
    */
-  exists(path: string): Promise<boolean>
+  exists(path: string): Promise<boolean>;
 
   /**
    * Read and parse JSON file
    * @param path - File path relative to working directory
    * @returns Parsed JSON object
    */
-  readJson(path: string): Promise<unknown>
+  readJson(path: string): Promise<unknown>;
 }
 
 /**
@@ -45,17 +45,17 @@ export interface GlobOptions {
   /**
    * Current working directory for glob resolution
    */
-  cwd?: string
+  cwd?: string;
 
   /**
    * Patterns to ignore
    */
-  ignore?: string[]
+  ignore?: string[];
 
   /**
    * Follow symbolic links
    */
-  followSymlinks?: boolean
+  followSymlinks?: boolean;
 }
 
 /**
@@ -65,27 +65,27 @@ export interface Location {
   /**
    * File path relative to working directory
    */
-  path: string
+  path: string;
 
   /**
    * Optional line number (1-indexed)
    */
-  line?: number
+  line?: number;
 
   /**
    * Optional column number (1-indexed)
    */
-  column?: number
+  column?: number;
 
   /**
    * Optional end line for ranges
    */
-  endLine?: number
+  endLine?: number;
 
   /**
    * Optional end column for ranges
    */
-  endColumn?: number
+  endColumn?: number;
 }
 
 /**
@@ -95,37 +95,37 @@ export interface Finding {
   /**
    * Pack ID this finding belongs to
    */
-  packId: string
+  packId: string;
 
   /**
    * Rule ID within the pack
    */
-  ruleId: string
+  ruleId: string;
 
   /**
    * Severity level from the rule (IR schema v1)
    */
-  severity: 'error' | 'warn' | 'info'
+  severity: "error" | "warn" | "info";
 
   /**
    * Evidence message from the check
    */
-  evidence: string
+  evidence: string;
 
   /**
    * Human-readable message
    */
-  message: string
+  message: string;
 
   /**
    * Location of the finding
    */
-  location: Location
+  location: Location;
 
   /**
    * Optional autofix hint
    */
-  autofixHint?: string
+  autofixHint?: string;
 }
 
 /**
@@ -135,27 +135,32 @@ export interface CheckResult {
   /**
    * Rule that was checked
    */
-  rule: AlignRule
+  rule: AlignRule;
 
   /**
    * Pack ID
    */
-  packId: string
+  packId: string;
 
   /**
    * Whether the check passed
    */
-  pass: boolean
+  pass: boolean;
 
   /**
    * Findings if check failed
    */
-  findings: Finding[]
+  findings: Finding[];
 
   /**
    * Optional error if check couldn't run
    */
-  error?: string
+  error?: string;
+
+  /**
+   * Optional metadata (e.g., original severity before remapping)
+   */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -166,18 +171,18 @@ export interface ExecutionConfig {
    * Allow actual command execution
    * Default: false (validation only)
    */
-  allowExec: boolean
+  allowExec: boolean;
 
   /**
    * Environment variables to pass to commands
    * Only these variables will be available
    */
-  envWhitelist?: string[]
+  envWhitelist?: string[];
 
   /**
    * Default timeout in milliseconds
    */
-  defaultTimeout?: number
+  defaultTimeout?: number;
 }
 
 /**
@@ -187,22 +192,22 @@ export interface CheckContext {
   /**
    * File provider for accessing files
    */
-  fileProvider: FileProvider
+  fileProvider: FileProvider;
 
   /**
    * Working directory for file operations
    */
-  workingDir: string
+  workingDir: string;
 
   /**
    * Execution configuration
    */
-  executionConfig: ExecutionConfig
+  executionConfig: ExecutionConfig;
 
   /**
    * Optional list of changed files (for incremental checks)
    */
-  changedFiles?: string[]
+  changedFiles?: string[];
 }
 
 /**
@@ -212,32 +217,42 @@ export interface RunChecksOptions {
   /**
    * File provider (defaults to DiskFileProvider)
    */
-  fileProvider?: FileProvider
+  fileProvider?: FileProvider;
 
   /**
    * Working directory (defaults to process.cwd())
    */
-  workingDir?: string
+  workingDir?: string;
 
   /**
    * Allow command execution (default: false)
    */
-  allowExec?: boolean
+  allowExec?: boolean;
 
   /**
    * Environment whitelist for command execution
    */
-  envWhitelist?: string[]
+  envWhitelist?: string[];
 
   /**
    * Changed files for incremental checking
    */
-  changedFiles?: string[]
+  changedFiles?: string[];
 
   /**
    * Default command timeout in milliseconds
    */
-  defaultTimeout?: number
+  defaultTimeout?: number;
+
+  /**
+   * Mode (solo or team) - severity remapping only applies in team mode
+   */
+  mode?: "solo" | "team";
+
+  /**
+   * Path to .aligntrue.team.yaml file (defaults to .aligntrue.team.yaml in workingDir)
+   */
+  teamYamlPath?: string;
 }
 
 /**
@@ -246,15 +261,16 @@ export interface RunChecksOptions {
 export type CheckRunner = (
   rule: AlignRule,
   packId: string,
-  context: CheckContext
-) => Promise<CheckResult>
+  context: CheckContext,
+) => Promise<CheckResult>;
 
 /**
  * Type guard to check if a rule has a check property
  * @param rule - Rule to check
  * @returns True if rule has a check property
  */
-export function hasCheck(rule: AlignRule): rule is AlignRule & { check: NonNullable<AlignRule['check']> } {
-  return rule.check !== undefined && rule.check !== null
+export function hasCheck(
+  rule: AlignRule,
+): rule is AlignRule & { check: NonNullable<AlignRule["check"]> } {
+  return rule.check !== undefined && rule.check !== null;
 }
-

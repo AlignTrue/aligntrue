@@ -8,7 +8,7 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { drift } from "../../src/commands/drift.js";
 
-describe.skip("drift command (Phase 3 Session 6 - Not Yet Implemented)", () => {
+describe("drift command", () => {
   let tempDir: string;
   let originalCwd: string;
   let exitSpy: any;

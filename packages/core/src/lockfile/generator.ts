@@ -2,6 +2,7 @@
  * Lockfile generator with per-rule and bundle hashing
  */
 
+import { existsSync, readFileSync } from "fs";
 import type { AlignPack, AlignRule } from "@aligntrue/schema";
 import { canonicalizeJson, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
@@ -13,11 +14,13 @@ import type { Lockfile, LockfileEntry } from "./types.js";
  *
  * @param pack - AlignPack to generate lockfile from
  * @param mode - Config mode (team or enterprise)
+ * @param teamYamlPath - Optional path to .aligntrue.team.yaml for hash capture
  * @returns Lockfile with per-rule and bundle hashes
  */
 export function generateLockfile(
   pack: AlignPack,
   mode: "team" | "enterprise",
+  teamYamlPath?: string,
 ): Lockfile {
   const entries: LockfileEntry[] = [];
   const ruleHashes: string[] = [];
@@ -48,12 +51,18 @@ export function generateLockfile(
   // Generate bundle hash from sorted rule hashes
   const bundleHash = computeBundleHash(ruleHashes.sort());
 
+  // Phase 3, Session 7: Capture team.yaml hash if file exists
+  const teamYamlHash = teamYamlPath
+    ? computeTeamYamlHash(teamYamlPath)
+    : undefined;
+
   return {
     version: "1",
     generated_at: new Date().toISOString(),
     mode,
     rules: entries,
     bundle_hash: bundleHash,
+    ...(teamYamlHash && { team_yaml_hash: teamYamlHash }),
   };
 }
 
@@ -72,4 +81,21 @@ export function hashRule(rule: AlignRule): string {
 function computeBundleHash(sortedHashes: string[]): string {
   const combined = sortedHashes.join("\n");
   return computeHash(combined);
+}
+
+/**
+ * Compute hash of .aligntrue.team.yaml file
+ * Returns undefined if file doesn't exist
+ */
+function computeTeamYamlHash(path: string): string | undefined {
+  if (!existsSync(path)) {
+    return undefined;
+  }
+
+  try {
+    const content = readFileSync(path, "utf-8");
+    return computeHash(content);
+  } catch {
+    return undefined;
+  }
 }

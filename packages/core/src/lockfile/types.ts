@@ -24,6 +24,11 @@ export interface Lockfile {
   mode: "team" | "enterprise";
   rules: LockfileEntry[];
   bundle_hash: string; // hash of all rule hashes combined
+  /**
+   * SHA-256 of .aligntrue.team.yaml at lockfile generation time
+   * Used for detecting severity remapping drift (Phase 3, Session 7)
+   */
+  team_yaml_hash?: string;
 }
 
 export type LockfileMode = "off" | "soft" | "strict";
