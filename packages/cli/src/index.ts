@@ -22,6 +22,8 @@ import {
   link,
   drift,
   update,
+  plugs,
+  onboard,
 } from "./commands/index.js";
 
 async function main() {
@@ -47,7 +49,13 @@ async function main() {
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
     console.log("  update         Check and apply updates");
+    console.log("  onboard        Generate developer onboarding checklist");
     console.log("  scopes         List configured scopes\n");
+
+    console.log("Plugs Management:");
+    console.log(
+      "  plugs          Manage plug slots and fills (audit, resolve, set)\n",
+    );
 
     console.log("Settings:");
     console.log("  config         View or edit configuration");
@@ -132,6 +140,11 @@ async function main() {
     return;
   }
 
+  if (command === "plugs") {
+    await plugs(commandArgs);
+    return;
+  }
+
   if (command === "pull") {
     await pull(commandArgs);
     return;
@@ -149,6 +162,11 @@ async function main() {
 
   if (command === "update") {
     await update(commandArgs);
+    return;
+  }
+
+  if (command === "onboard") {
+    await onboard(commandArgs);
     return;
   }
 

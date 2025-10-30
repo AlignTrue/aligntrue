@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 2.5: Plugs v1.1** - Completed 2025-10-30
+  - Plugs system for stack-agnostic rule authoring with configurable slots and fills
+  - Slots: base packs declare configurable values with format validation (command, text, file, url)
+  - Fills: stack packs and repos provide concrete single-line values for declared slots
+  - Resolution: `[[plug:key]]` placeholders → fill values with TODO blocks for unresolved required plugs
+  - Escaping support: `[[\plug:key]]` → literal `[[plug:key]]` in output (backslash consumed)
+  - Merge order: base < stack < repo with deterministic tie-breaking, last writer wins
+  - CLI commands: `aln plugs audit` (list slots/fills/status), `aln plugs resolve --dry-run` (preview), `aln plugs set <key> <value>` (write repo-local fills with validation)
+  - Dual hashing for determinism: pre-resolution hash (lockfile verification, template only, excludes fills), post-resolution hash (export integrity, includes resolved values)
+  - Lockfile integration: tracks `pre_resolution_hash`, `post_resolution_hash`, `unresolved_plugs_count` per entry + `total_unresolved_plugs` at top level
+  - Schema additions: `plugs.slots` (format, required, example fields), `plugs.fills` (single-line validation), key validation (`^[a-z0-9._-]+$`, forbid `stack.`/`sys.` prefixes)
+  - Format validation: command (no env vars except CI=true), text (any UTF-8), file (repo-relative, no `..`), url (http/https only)
+  - Sync engine integration: plugs resolved before export via `loadIRFromSource()`, unresolved count passed to exporters via `ExportOptions.unresolvedPlugsCount`
+  - Strict mode: `--strict` flag fails if required plugs unresolved (via `SyncOptions.strict`)
+  - Exporter updates: all 32 exporters updated with `Unresolved Plugs: N` footer/field support (Cursor `.mdc`, AGENTS.md, JSON configs, TOML configs, MCP configs)
+  - Test count: +86 new tests across 6 test files (plugs-types, plugs-schema, plugs resolution, plugs hashing, plugs CLI), 770 total tests passing (113 schema + 657 core), 100% pass rate
+  - Files created: `schema/src/plugs-types.ts` (~230 lines), `core/src/plugs/types.ts`, `core/src/plugs/resolver.ts` (~250 lines), `core/src/plugs/index.ts`, `core/src/plugs/hashing.ts` (~130 lines), `cli/src/commands/plugs.ts` (~240 lines), `cli/src/commands/plugs-command.ts`, 6 test files (~800 lines total)
+  - Files modified: schema/schema/align.schema.json (+plugs section), schema/src/validator.ts (+plugs interface), core/src/sync/engine.ts (~80 lines integration), core/src/lockfile/types.ts & generator.ts (~60 lines dual hash), plugin-contracts/src/exporter.ts (+unresolvedPlugsCount), all 32 exporter index.ts files
+  - Documentation: CLI help text updated, format validation rules in schema, resolution algorithm in code comments
+  - Key decisions: Plugs optional (backward compatible), IR still spec "1", slots in base packs only, fills in stack/repo, dual hashing (template vs resolved), TODO blocks for UI visibility, vendor bags excluded from pre-resolution hash
+  - Integration: Sync engine calls plugs resolution transparently, lockfile generator computes dual hashes, exporters display unresolved count in footers
+  - Known limitations: Catalog publishing (Phase 4) will use pre-resolution hash for integrity, PR comments (Phase 3) will display unresolved plug summary
+  - Status: Phase 2.5 complete, all tests passing, foundation for stack-agnostic base packs
+
 - **Phase 3, Session 8: Auto-Update Flow + CLI Drift Test Fixes** - Completed 2025-10-30
   - Fixed and activated 22 skipped drift CLI tests with full end-to-end validation
   - CLI drift command fully operational: proper config setup, flag parsing fixes (--json, --sarif, --gates), comprehensive output formatting

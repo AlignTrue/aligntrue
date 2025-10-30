@@ -16,6 +16,10 @@ export interface LockfileEntry {
   // Vendoring provenance (Phase 3, Session 5)
   vendor_path?: string; // Path where pack is vendored
   vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
+  // Plugs tracking (Phase 2.5)
+  pre_resolution_hash?: string; // Hash before plug resolution (template)
+  post_resolution_hash?: string; // Hash after plug resolution (with fills)
+  unresolved_plugs_count?: number; // Count of unresolved required plugs
 }
 
 export interface Lockfile {
@@ -29,6 +33,10 @@ export interface Lockfile {
    * Used for detecting severity remapping drift (Phase 3, Session 7)
    */
   team_yaml_hash?: string;
+  /**
+   * Total count of unresolved required plugs across all packs (Phase 2.5)
+   */
+  total_unresolved_plugs?: number;
 }
 
 export type LockfileMode = "off" | "soft" | "strict";

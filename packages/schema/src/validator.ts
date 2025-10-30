@@ -258,6 +258,20 @@ export interface AlignPack {
   rules: AlignRule[];
   integrity?: AlignIntegrity;
 
+  // Plugs v1.1 (Phase 2.5)
+  plugs?: {
+    slots?: Record<
+      string,
+      {
+        description: string;
+        format: "command" | "text" | "file" | "url";
+        required: boolean;
+        example?: string;
+      }
+    >;
+    fills?: Record<string, string>;
+  };
+
   // Markdown metadata (for round-trip preservation)
   _markdown_meta?: MarkdownMetadata;
 }

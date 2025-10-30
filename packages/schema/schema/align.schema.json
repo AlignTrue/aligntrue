@@ -144,6 +144,28 @@
         }
       },
       "description": "Metadata for byte-identical markdown round-trip reconstruction (excluded from canonical hash)"
+    },
+    "plugs": {
+      "type": "object",
+      "properties": {
+        "slots": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/plug_slot"
+          },
+          "description": "Slot declarations (base packs declare configurable values)"
+        },
+        "fills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Non-empty single-line value"
+          },
+          "description": "Fill values (stack packs and repos provide concrete values)"
+        }
+      },
+      "description": "Plugs v1.1: Stack-agnostic rule authoring with configurable slots and fills"
     }
   },
   "$defs": {
@@ -223,7 +245,13 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["file_presence", "path_convention", "manifest_policy", "regex", "command_runner"]
+          "enum": [
+            "file_presence",
+            "path_convention",
+            "manifest_policy",
+            "regex",
+            "command_runner"
+          ]
         },
         "inputs": {
           "type": "object"
@@ -390,6 +418,33 @@
           "description": "Human-readable hint for fixing the violation"
         }
       }
+    },
+    "plug_slot": {
+      "type": "object",
+      "required": ["description", "format", "required"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One short sentence explaining what this plug is for"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["command", "text", "file", "url"],
+          "description": "Format validation type: command (no env vars except CI), text (any UTF-8), file (repo-relative), url (http/https)"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this slot must be filled"
+        },
+        "example": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Single-line example (recommended for required slots)"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Slot declaration in base packs"
     }
   }
 }

@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from "fs";
 import type { AlignPack, AlignRule } from "@aligntrue/schema";
 import { canonicalizeJson, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
+import { computeDualHash } from "../plugs/hashing.js";
 
 /**
  * Generate lockfile from an AlignPack bundle
@@ -25,10 +26,16 @@ export function generateLockfile(
   const entries: LockfileEntry[] = [];
   const ruleHashes: string[] = [];
 
+  // Compute dual hashes for plugs (Phase 2.5)
+  let dualHashResult: ReturnType<typeof computeDualHash> | undefined;
+  if (pack.plugs) {
+    dualHashResult = computeDualHash(pack);
+  }
+
   // Generate per-rule hashes with full provenance
   for (const rule of pack.rules || []) {
     const hash = hashRule(rule);
-    entries.push({
+    const entry: LockfileEntry = {
       rule_id: rule.id,
       content_hash: hash,
       ...(pack.owner && { owner: pack.owner }),
@@ -41,7 +48,18 @@ export function generateLockfile(
       // Phase 3, Session 5: Capture vendoring provenance
       ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
       ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
-    });
+    };
+
+    // Add plugs hashes if pack has plugs (Phase 2.5)
+    if (dualHashResult) {
+      entry.pre_resolution_hash = dualHashResult.preResolutionHash;
+      if (dualHashResult.postResolutionHash) {
+        entry.post_resolution_hash = dualHashResult.postResolutionHash;
+      }
+      // Note: We track unresolved count at pack level, not per-rule
+    }
+
+    entries.push(entry);
     ruleHashes.push(hash);
   }
 
@@ -56,14 +74,26 @@ export function generateLockfile(
     ? computeTeamYamlHash(teamYamlPath)
     : undefined;
 
-  return {
+  // Build lockfile result
+  const lockfile: Lockfile = {
     version: "1",
     generated_at: new Date().toISOString(),
     mode,
     rules: entries,
     bundle_hash: bundleHash,
-    ...(teamYamlHash && { team_yaml_hash: teamYamlHash }),
   };
+
+  // Add optional fields
+  if (teamYamlHash) {
+    lockfile.team_yaml_hash = teamYamlHash;
+  }
+
+  // Phase 2.5: Add total unresolved plugs count
+  if (dualHashResult && dualHashResult.unresolvedRequired.length > 0) {
+    lockfile.total_unresolved_plugs = dualHashResult.unresolvedRequired.length;
+  }
+
+  return lockfile;
 }
 
 /**

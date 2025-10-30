@@ -253,6 +253,11 @@ export interface RunChecksOptions {
    * Path to .aligntrue.team.yaml file (defaults to .aligntrue.team.yaml in workingDir)
    */
   teamYamlPath?: string;
+
+  /**
+   * Count of unresolved required plugs (from sync engine)
+   */
+  unresolvedPlugsCount?: number;
 }
 
 /**

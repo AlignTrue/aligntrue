@@ -3,206 +3,240 @@
  * Exports AlignTrue rules to Firebase Studio .idx/airules.md format
  */
 
-import { join } from 'path'
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
-import type { AlignRule } from '@aligntrue/schema'
-import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { join } from "path";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+  ResolvedScope,
+} from "../types.js";
+import type { AlignRule } from "@aligntrue/schema";
+import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 import {
   extractModeConfig,
   applyRulePrioritization,
   generateSessionPreface,
   wrapRuleWithMarkers,
-  shouldIncludeRule
-} from '../utils/index.js'
+  shouldIncludeRule,
+} from "../utils/index.js";
 
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>
-  seenScopes: Set<string>
+  allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  seenScopes: Set<string>;
 }
 
 export class FirebaseStudioExporter implements ExporterPlugin {
-  name = 'firebase-studio'
-  version = '1.0.0'
-  
+  name = "firebase-studio";
+  version = "1.0.0";
+
   private state: ExporterState = {
     allRules: [],
     seenScopes: new Set(),
-  }
+  };
 
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
-    const { scope, rules } = request
-    const { outputDir, dryRun = false, config } = options
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { scope, rules } = request;
+    const { outputDir, dryRun = false, config } = options;
 
     if (!rules || rules.length === 0) {
       return {
         success: true,
         filesWritten: [],
-        contentHash: '',
-      }
+        contentHash: "",
+      };
     }
 
-    const scopePath = this.formatScopePath(scope)
-    rules.forEach(rule => {
-      this.state.allRules.push({ rule, scopePath })
-    })
-    this.state.seenScopes.add(scopePath)
+    const scopePath = this.formatScopePath(scope);
+    rules.forEach((rule) => {
+      this.state.allRules.push({ rule, scopePath });
+    });
+    this.state.seenScopes.add(scopePath);
 
-    const outputPath = join(outputDir, '.idx', 'airules.md')
+    const outputPath = join(outputDir, ".idx", "airules.md");
 
-    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(this.name, config)
-    const { content, warnings } = this.generateAiRulesMdContent(modeHints, maxBlocks, maxTokens)
-    
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
-    
+    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
+      this.name,
+      config,
+    );
+    const { content, warnings } = this.generateAiRulesMdContent(
+      modeHints,
+      maxBlocks,
+      maxTokens,
+      options.unresolvedPlugsCount,
+    );
+
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+
     if (!dryRun) {
-      const writer = new AtomicFileWriter()
-      writer.write(outputPath, content)
+      const writer = new AtomicFileWriter();
+      writer.write(outputPath, content);
     }
 
     const result: ExportResult = {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
       contentHash,
-    }
+    };
 
     if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes
+      result.fidelityNotes = fidelityNotes;
     }
 
     if (warnings.length > 0) {
-      result.warnings = warnings
+      result.warnings = warnings;
     }
 
-    return result
+    return result;
   }
 
   resetState(): void {
     this.state = {
       allRules: [],
       seenScopes: new Set(),
-    }
+    };
   }
 
   private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === '.' || scope.path === '') {
-      return 'all files'
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "all files";
     }
-    return scope.path
+    return scope.path;
   }
 
-  private generateAiRulesMdContent(modeHints: string, maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
-    const lines: string[] = []
+  private generateAiRulesMdContent(
+    modeHints: string,
+    maxBlocks: number,
+    maxTokens: number,
+    unresolvedPlugs?: number,
+  ): { content: string; warnings: string[] } {
+    const lines: string[] = [];
 
-    lines.push('# AI Rules')
-    lines.push('')
-    lines.push('**Version:** v1')
-    lines.push('**Generated by:** AlignTrue')
-    lines.push('')
-    lines.push('This file contains rules and guidance for Firebase Studio.')
+    lines.push("# AI Rules");
+    lines.push("");
+    lines.push("**Version:** v1");
+    lines.push("**Generated by:** AlignTrue");
+    lines.push("");
+    lines.push("This file contains rules and guidance for Firebase Studio.");
 
     // Add session preface if needed
-    lines.push(...generateSessionPreface(modeHints))
+    lines.push(...generateSessionPreface(modeHints));
 
     // Apply prioritization
-    const allRules = this.state.allRules.map(({ rule }) => rule)
-    const { includedIds, warnings } = applyRulePrioritization(allRules, modeHints, maxBlocks, maxTokens)
+    const allRules = this.state.allRules.map(({ rule }) => rule);
+    const { includedIds, warnings } = applyRulePrioritization(
+      allRules,
+      modeHints,
+      maxBlocks,
+      maxTokens,
+    );
 
     // Generate rule sections
     this.state.allRules.forEach(({ rule, scopePath }) => {
       if (!shouldIncludeRule(rule.id, includedIds)) {
-        return
+        return;
       }
 
       // Build rule content
-      const ruleLines: string[] = []
-      ruleLines.push(`## Rule: ${rule.id}`)
-      ruleLines.push('')
-      ruleLines.push(`**ID:** ${rule.id}`)
-      ruleLines.push(`**Severity:** ${this.mapSeverity(rule.severity)}`)
+      const ruleLines: string[] = [];
+      ruleLines.push(`## Rule: ${rule.id}`);
+      ruleLines.push("");
+      ruleLines.push(`**ID:** ${rule.id}`);
+      ruleLines.push(`**Severity:** ${this.mapSeverity(rule.severity)}`);
       if (scopePath) {
-        ruleLines.push(`**Scope:** ${scopePath}`)
+        ruleLines.push(`**Scope:** ${scopePath}`);
       }
-      ruleLines.push('')
+      ruleLines.push("");
       if (rule.guidance) {
-        ruleLines.push(rule.guidance.trim())
-        ruleLines.push('')
+        ruleLines.push(rule.guidance.trim());
+        ruleLines.push("");
       }
-      ruleLines.push('---')
+      ruleLines.push("---");
 
       // Wrap with markers and add to output
-      const ruleContent = ruleLines.join('\n')
-      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints))
-      lines.push('')
-    })
+      const ruleContent = ruleLines.join("\n");
+      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints));
+      lines.push("");
+    });
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    lines.push('**Generated by AlignTrue**')
-    lines.push(`Content Hash: ${contentHash}`)
+    lines.push("**Generated by AlignTrue**");
+    lines.push(`Content Hash: ${contentHash}`);
+
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      lines.push(`Unresolved Plugs: ${unresolvedPlugs}`);
+    }
 
     if (fidelityNotes.length > 0) {
-      lines.push('')
-      lines.push('**Fidelity Notes:**')
-      fidelityNotes.forEach(note => {
-        lines.push(`- ${note}`)
-      })
+      lines.push("");
+      lines.push("**Fidelity Notes:**");
+      fidelityNotes.forEach((note) => {
+        lines.push(`- ${note}`);
+      });
     }
 
-    return { content: lines.join('\n'), warnings }
+    return { content: lines.join("\n"), warnings };
   }
 
-  private mapSeverity(severity: 'error' | 'warn' | 'info'): string {
+  private mapSeverity(severity: "error" | "warn" | "info"): string {
     const map: Record<string, string> = {
-      error: 'ERROR',
-      warn: 'WARN',
-      info: 'INFO',
-    }
-    return map[severity] || 'WARN'
+      error: "ERROR",
+      warn: "WARN",
+      info: "INFO",
+    };
+    return map[severity] || "WARN";
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = []
-    const unmappedFields = new Set<string>()
-    const vendorFields = new Set<string>()
+    const notes: string[] = [];
+    const unmappedFields = new Set<string>();
+    const vendorFields = new Set<string>();
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       if (rule.check) {
-        unmappedFields.add('check')
+        unmappedFields.add("check");
       }
       if (rule.autofix) {
-        unmappedFields.add('autofix')
+        unmappedFields.add("autofix");
       }
       if (rule.vendor) {
-        Object.keys(rule.vendor).forEach(agent => {
-          if (agent !== '_meta') {
-            vendorFields.add(agent)
+        Object.keys(rule.vendor).forEach((agent) => {
+          if (agent !== "_meta") {
+            vendorFields.add(agent);
           }
-        })
+        });
       }
-    })
+    });
 
-    if (unmappedFields.has('check')) {
-      notes.push('Machine-checkable rules (check) not represented in .idx/airules.md format')
+    if (unmappedFields.has("check")) {
+      notes.push(
+        "Machine-checkable rules (check) not represented in .idx/airules.md format",
+      );
     }
-    if (unmappedFields.has('autofix')) {
-      notes.push('Autofix hints not represented in .idx/airules.md format')
+    if (unmappedFields.has("autofix")) {
+      notes.push("Autofix hints not represented in .idx/airules.md format");
     }
     if (vendorFields.size > 0) {
-      const agents = Array.from(vendorFields).sort().join(', ')
-      notes.push(`Vendor metadata for agents preserved but not extracted: ${agents}`)
+      const agents = Array.from(vendorFields).sort().join(", ");
+      notes.push(
+        `Vendor metadata for agents preserved but not extracted: ${agents}`,
+      );
     }
 
-    return notes
+    return notes;
   }
 }
 
-export default FirebaseStudioExporter
-
+export default FirebaseStudioExporter;
