@@ -15,4 +15,3 @@ rules:
         priority: high
       vscode:
         diagnostic_source: "aligntrue"
-

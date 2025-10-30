@@ -8,4 +8,3 @@ rules:
       - "**/*.ts"
     guidance: |
       All features must have tests.
-

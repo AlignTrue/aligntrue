@@ -1,19 +1,23 @@
 /**
  * Privacy consent manager
- * 
+ *
  * Handles user consent for network operations (catalog fetches, git clones).
  * Consent is stored locally in .aligntrue/privacy-consent.json (git-ignored).
  * Users are prompted once per operation type, not repeatedly.
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
-import type { ConsentOperation, ConsentRecord, ConsentStorage } from './types.js';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+import type {
+  ConsentOperation,
+  ConsentRecord,
+  ConsentStorage,
+} from "./types.js";
 
 /**
  * Default consent file location
  */
-const DEFAULT_CONSENT_FILE = '.aligntrue/privacy-consent.json';
+const DEFAULT_CONSENT_FILE = ".aligntrue/privacy-consent.json";
 
 /**
  * Consent manager for network operations
@@ -84,11 +88,15 @@ export class ConsentManager {
     }
 
     try {
-      const content = readFileSync(this.consentFilePath, 'utf-8');
+      const content = readFileSync(this.consentFilePath, "utf-8");
       const parsed = JSON.parse(content);
-      
+
       // Validate structure - must be a plain object (not null, not array)
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
         return {};
       }
 
@@ -110,8 +118,8 @@ export class ConsentManager {
       mkdirSync(dir, { recursive: true });
     }
 
-    const content = JSON.stringify(storage, null, 2) + '\n';
-    writeFileSync(this.consentFilePath, content, 'utf-8');
+    const content = JSON.stringify(storage, null, 2) + "\n";
+    writeFileSync(this.consentFilePath, content, "utf-8");
   }
 
   /**
@@ -128,4 +136,3 @@ export class ConsentManager {
 export function createConsentManager(consentFilePath?: string): ConsentManager {
   return new ConsentManager(consentFilePath);
 }
-

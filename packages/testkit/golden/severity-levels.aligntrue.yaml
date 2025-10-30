@@ -14,7 +14,7 @@ rules:
       inputs:
         paths: ["tsconfig.json"]
       evidence: "TypeScript config must exist"
-  
+
   - id: "severity.example.warn"
     severity: "warn"
     applies_to: ["**/*.js"]
@@ -24,7 +24,7 @@ rules:
         include: ["**/*.js"]
         pattern: "^[a-z0-9-]+\\.js$"
       evidence: "JavaScript files should use kebab-case"
-  
+
   - id: "severity.example.info"
     severity: "info"
     applies_to: ["**/*.md"]
@@ -39,4 +39,3 @@ rules:
 integrity:
   algo: "jcs-sha256"
   value: "6c36aa871de5ba729fdc15ecdc0918e12297346a9fe5038fd5d089469b96eb1d"
-

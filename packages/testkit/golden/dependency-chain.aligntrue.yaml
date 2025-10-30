@@ -14,7 +14,7 @@ rules:
       inputs:
         paths: ["package.json"]
       evidence: "Node.js project detected"
-  
+
   - id: "deps.example.pnpm"
     severity: "warn"
     applies_to: ["**/package.json"]
@@ -28,4 +28,3 @@ rules:
 integrity:
   algo: "jcs-sha256"
   value: "fca3c8d6bdae0a082ed6974a10c66c95de99e6262a01676b69b9238f13760100"
-

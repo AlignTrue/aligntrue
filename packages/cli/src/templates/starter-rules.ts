@@ -7,7 +7,7 @@
  * Get the comprehensive starter template
  * Shows all major features: basic rules, severity levels, checks, vendor metadata
  */
-export function getStarterTemplate(projectId: string = 'my-project'): string {
+export function getStarterTemplate(projectId: string = "my-project"): string {
   return `# AlignTrue Rules
 
 Welcome! This file contains rules for your AI coding assistants.
@@ -134,6 +134,5 @@ Each rule has:
 - **vendor**: Optional agent-specific metadata
 
 Enjoy coding with aligned AI assistants!
-`
+`;
 }
-

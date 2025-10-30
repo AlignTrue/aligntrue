@@ -39,4 +39,3 @@ For full documentation, see the main [@aligntrue/cli package](https://www.npmjs.
 ## License
 
 MIT © AlignTrue
-

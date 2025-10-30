@@ -7,6 +7,7 @@ Auto-sync your rules when you save changes to agent files. This guide provides t
 ## Quick start
 
 For each platform, we provide two options:
+
 1. **Fastest**: Quickest to set up (1-2 minutes)
 2. **Most Reliable**: Production-ready, handles edge cases
 
@@ -50,6 +51,7 @@ For each platform, we provide two options:
 ```
 
 **Usage:**
+
 - Files auto-save after 1 second of inactivity
 - Task runs `aligntrue sync` automatically
 - Silent output (check Terminal if needed)
@@ -82,6 +84,7 @@ Install **Run on Save** extension:
 ```
 
 **Advantages:**
+
 - Only runs on specific file changes
 - Handles rapid edits gracefully
 - Shows sync status in output panel
@@ -143,6 +146,7 @@ nodemon
 ```
 
 **Advantages:**
+
 - Debounces rapid changes (1 second delay)
 - Handles renames and deletes
 - Restarts on crash
@@ -355,7 +359,7 @@ systemctl --user status aligntrue-watch.service
 
 ```json
 {
-  "delay": 2000  // Wait 2 seconds before syncing
+  "delay": 2000 // Wait 2 seconds before syncing
 }
 ```
 
@@ -364,6 +368,7 @@ systemctl --user status aligntrue-watch.service
 **Problem:** File watcher not detecting changes
 
 **Solutions:**
+
 1. Check file paths are correct
 2. Verify `aligntrue sync` works manually
 3. Check watcher is running (`ps aux | grep nodemon`)
@@ -374,6 +379,7 @@ systemctl --user status aligntrue-watch.service
 **Problem:** Task not executing on file save
 
 **Solutions:**
+
 1. Open Command Palette (Cmd/Ctrl+Shift+P)
 2. Search "Tasks: Run Task"
 3. Select "AlignTrue Auto-Sync"
@@ -384,12 +390,15 @@ systemctl --user status aligntrue-watch.service
 **Problem:** File watcher using too much CPU
 
 **Solutions:**
+
 1. Exclude unnecessary directories:
+
 ```json
 {
   "ignore": ["node_modules", ".git", "dist"]
 }
 ```
+
 2. Increase delay between checks
 3. Use more targeted watch patterns
 
@@ -398,12 +407,14 @@ systemctl --user status aligntrue-watch.service
 **Problem:** "EACCES" or "permission denied"
 
 **Solutions (macOS/Linux):**
+
 ```bash
 chmod +x watch-sync.sh
 chmod 755 .cursor/rules
 ```
 
 **Solutions (Windows):**
+
 - Run PowerShell as Administrator
 - Check file permissions in folder properties
 
@@ -421,13 +432,13 @@ chmod 755 .cursor/rules
 
 ## Recommendation by use case
 
-| Use Case | Recommendation | Why |
-|----------|---------------|-----|
-| Solo dev, VS Code | VS Code Task | Built-in, no install |
-| Solo dev, any editor | nodemon | Universal, reliable |
-| Team, CI/CD | systemd/launchd | Always on, restarts |
-| Windows power user | PowerShell | Native, no dependencies |
-| Quick experiment | fswatch/inotifywait | Minimal setup |
+| Use Case             | Recommendation      | Why                     |
+| -------------------- | ------------------- | ----------------------- |
+| Solo dev, VS Code    | VS Code Task        | Built-in, no install    |
+| Solo dev, any editor | nodemon             | Universal, reliable     |
+| Team, CI/CD          | systemd/launchd     | Always on, restarts     |
+| Windows power user   | PowerShell          | Native, no dependencies |
+| Quick experiment     | fswatch/inotifywait | Minimal setup           |
 
 ---
 
@@ -445,4 +456,3 @@ chmod 755 .cursor/rules
 
 **Last Updated:** 2025-10-28  
 **AlignTrue Version:** Phase 1 Complete
-

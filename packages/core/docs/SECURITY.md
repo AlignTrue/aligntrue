@@ -15,18 +15,20 @@ This document describes the security guarantees, boundaries, and expectations fo
 **Implementation:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter`
 
 **Guarantee:** All file writes use a temp file + atomic rename pattern. This ensures:
+
 - No partial writes on crash or error
 - Files are always in a consistent state (complete or unchanged)
 - Backup created before overwriting existing files
 - Rollback available if operations fail
 
 **Pattern:**
+
 ```typescript
 // Write to temp file
-writeFileSync(`${filePath}.tmp`, content, 'utf8')
+writeFileSync(`${filePath}.tmp`, content, "utf8");
 
 // Atomic rename (OS-level guarantee)
-renameSync(`${filePath}.tmp`, filePath)
+renameSync(`${filePath}.tmp`, filePath);
 ```
 
 **Tests:** `packages/core/tests/security/atomic-writes.test.ts`
@@ -38,23 +40,26 @@ renameSync(`${filePath}.tmp`, filePath)
 **Implementation:** `packages/core/src/scope.ts` - `validateScopePath()`
 
 **Guarantee:** All user-provided paths are validated to prevent directory traversal attacks:
+
 - Reject paths containing `..` (parent directory traversal)
 - Reject absolute paths (`/tmp/malicious`, `C:\temp`)
 - Normalize Windows backslashes to forward slashes
 - Applied to: scope paths, local source paths, output directories
 
 **Validation points:**
+
 - Config loading: `packages/core/src/config/index.ts` (scopes and local sources)
 - Sync engine: `packages/core/src/sync/engine.ts` (output paths)
 - Future: Cache paths when implemented (Step 27)
 
 **Examples:**
+
 ```typescript
-validateScopePath('src/components')        // ✅ Valid
-validateScopePath('apps/web/.aligntrue')   // ✅ Valid
-validateScopePath('../../../etc/passwd')   // ❌ Throws error
-validateScopePath('/tmp/malicious')        // ❌ Throws error
-validateScopePath('src/../../outside')     // ❌ Throws error
+validateScopePath("src/components"); // ✅ Valid
+validateScopePath("apps/web/.aligntrue"); // ✅ Valid
+validateScopePath("../../../etc/passwd"); // ❌ Throws error
+validateScopePath("/tmp/malicious"); // ❌ Throws error
+validateScopePath("src/../../outside"); // ❌ Throws error
 ```
 
 **Tests:** `packages/core/tests/security/path-traversal.test.ts`
@@ -66,12 +71,14 @@ validateScopePath('src/../../outside')     // ❌ Throws error
 **Implementation:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter`
 
 **Guarantee:** File checksums are tracked to detect manual edits:
+
 - SHA-256 checksums computed after each write
 - Checksum mismatch detected before overwriting
 - Interactive prompts for conflict resolution
 - Force flag available for non-interactive use
 
 **Workflow:**
+
 1. Write file → Compute SHA-256 checksum → Store in memory
 2. Next write → Check current file checksum vs stored checksum
 3. Mismatch → Prompt user or throw error
@@ -86,23 +93,25 @@ validateScopePath('src/../../outside')     // ❌ Throws error
 **Implementation:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter.rollback()`
 
 **Guarantee:** Backups created before overwrites, rollback available on error:
+
 - `.backup` files created before overwriting existing files
 - Backups cleaned up automatically on success
 - `rollback()` method restores all backed-up files
 - Error details provided if rollback fails
 
 **Usage:**
+
 ```typescript
-const writer = new AtomicFileWriter()
+const writer = new AtomicFileWriter();
 
 try {
-  await writer.write('file1.txt', 'new content')
-  await writer.write('file2.txt', 'new content')
+  await writer.write("file1.txt", "new content");
+  await writer.write("file2.txt", "new content");
   // Success - backups automatically cleaned
 } catch (err) {
   // Restore original state
-  writer.rollback()
-  throw err
+  writer.rollback();
+  throw err;
 }
 ```
 
@@ -117,6 +126,7 @@ try {
 **Enforcement:** Path validation in config loading and sync engine
 
 **Boundary:** AlignTrue only operates on files within the workspace directory:
+
 - All paths must be relative (not absolute)
 - No parent directory traversal allowed
 - Output paths constructed safely with validated inputs
@@ -130,6 +140,7 @@ try {
 **Enforcement:** `validateScopePath()` called at all path entry points
 
 **Rejected patterns:**
+
 - `../../../etc/passwd`
 - `src/../../outside/file.md`
 - `..` (bare parent reference)
@@ -137,6 +148,7 @@ try {
 - `C:\temp` (Windows absolute paths)
 
 **Accepted patterns:**
+
 - `src/components`
 - `apps/web/.aligntrue/rules.md`
 - `.` (current directory)
@@ -149,15 +161,17 @@ try {
 **Enforcement:** JSON Schema validation + runtime path checks
 
 **Locations validated:**
+
 - `sources[].path` (local source paths)
 - `scopes[].path` (scope definitions)
 - Output paths constructed by sync engine
 
 **Example rejection:**
+
 ```yaml
 sources:
   - type: local
-    path: /tmp/rules.md  # ❌ Rejected: absolute path not allowed
+    path: /tmp/rules.md # ❌ Rejected: absolute path not allowed
 ```
 
 ---
@@ -167,6 +181,7 @@ sources:
 **Enforcement:** Try-catch blocks in `AtomicFileWriter.write()`
 
 **Guarantee:**
+
 - `.tmp` files removed if rename fails
 - `.backup` files removed on successful write
 - Rollback cleans up backup files after restoration
@@ -188,6 +203,7 @@ Exporters (community-contributed or official) should follow these safety guideli
 **Why:** Exporters should be deterministic and work offline.
 
 **Violation example:**
+
 ```typescript
 // ❌ Don't do this
 async export(request, options) {
@@ -197,6 +213,7 @@ async export(request, options) {
 ```
 
 **Correct approach:**
+
 ```typescript
 // ✅ Do this
 async export(request, options) {
@@ -213,16 +230,18 @@ async export(request, options) {
 **Why:** Ensures atomic writes and proper error handling.
 
 **Violation example:**
+
 ```typescript
 // ❌ Don't do this
-import { writeFileSync } from 'fs'
-writeFileSync('/tmp/output.txt', content)  // Bad
+import { writeFileSync } from "fs";
+writeFileSync("/tmp/output.txt", content); // Bad
 ```
 
 **Correct approach:**
+
 ```typescript
 // ✅ Do this (exporters should use exportOptions.outputDir)
-const outputPath = join(options.outputDir, '.cursor/rules.mdc')
+const outputPath = join(options.outputDir, ".cursor/rules.mdc");
 // Framework handles atomic writes
 ```
 
@@ -233,17 +252,19 @@ const outputPath = join(options.outputDir, '.cursor/rules.mdc')
 **Why:** Security risk and determinism violation.
 
 **Violation example:**
+
 ```typescript
 // ❌ Don't do this
-import { execSync } from 'child_process'
-execSync('npm install something')  // Bad
+import { execSync } from "child_process";
+execSync("npm install something"); // Bad
 ```
 
 **Correct approach:**
+
 ```typescript
 // ✅ Do this - pure transformation only
 function transformRules(rules: AlignRule[]): string {
-  return rules.map(formatRule).join('\n')
+  return rules.map(formatRule).join("\n");
 }
 ```
 
@@ -254,19 +275,17 @@ function transformRules(rules: AlignRule[]): string {
 If an exporter cannot support a feature safely:
 
 ```typescript
-const fidelityNotes = []
+const fidelityNotes = [];
 
 if (rule.autofix?.command) {
-  fidelityNotes.push(
-    'Autofix commands not executed for security - stored as metadata only'
-  )
+  fidelityNotes.push("Autofix commands not executed for security - stored as metadata only");
 }
 
 return {
   success: true,
   fidelityNotes,
   // ...
-}
+};
 ```
 
 ---
@@ -279,11 +298,9 @@ return {
 
 ```typescript
 // Security: Validate output paths don't escape workspace
-if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
-  warnings.push(
-    `Skipped ${exporter.name}: invalid output path "${outputPath}"`
-  )
-  continue
+if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
+  warnings.push(`Skipped ${exporter.name}: invalid output path "${outputPath}"`);
+  continue;
 }
 ```
 
@@ -296,16 +313,19 @@ if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
 ### In Scope (Phase 1)
 
 **Accidental misconfiguration:**
+
 - User accidentally configures path traversal
 - Typo leads to absolute path
 - Manual file edits conflict with sync
 
 **File corruption:**
+
 - Crashes during write operations
 - Disk full errors
 - Permission issues
 
 **Protection:**
+
 - Path validation rejects dangerous configs
 - Atomic writes prevent partial state
 - Checksums detect tampering
@@ -316,16 +336,19 @@ if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
 ### Out of Scope (Phase 1)
 
 **Malicious exporters:**
+
 - Community exporter making network calls
 - Exporter executing shell commands
 - Exporter writing to arbitrary paths
 
 **Mitigation (Phase 1):**
+
 - Trust-based expectations documented
 - Code review for official exporters
 - Community reputation/vetting
 
 **Future (Phase 2+):**
+
 - Runtime sandboxing (no network, no exec, path restrictions)
 - Exporter signing and verification
 - Permission model for risky operations
@@ -333,15 +356,18 @@ if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
 ---
 
 **Supply chain attacks:**
+
 - Compromised npm dependencies
 - Malicious YAML in catalog packs
 
 **Mitigation (Phase 1):**
+
 - Standard npm security practices
 - Catalog integrity hashes (Step 27)
 - No code execution from YAML
 
 **Future:**
+
 - Sigstore signing for catalog packs
 - Dependency scanning in CI
 - Catalog governance policies
@@ -358,6 +384,7 @@ if (outputPath.includes('..') || posix.isAbsolute(outputPath)) {
 **Total:** 35 security-focused tests
 
 **Files:**
+
 - `packages/core/tests/security/path-traversal.test.ts`
 - `packages/core/tests/security/atomic-writes.test.ts`
 - `packages/core/tests/config.test.ts` (source path validation section)
@@ -407,22 +434,26 @@ Before releasing new features:
 ## Future Enhancements (Phase 2+)
 
 **Runtime Sandboxing:**
+
 - Use Node.js VM or worker threads to isolate exporters
 - Block network access (no `fetch`, `http`, `https`)
 - Block file system access outside workspace
 - Block `child_process` and `exec` family
 
 **Exporter Signing:**
+
 - Sigstore signatures for official exporters
 - Manifest includes signature and public key
 - Verification before loading handlers
 
 **Audit Logging:**
+
 - Log all file operations with timestamps
 - Log path validation failures
 - Export audit log for security review
 
 **Permission Model:**
+
 - Exporters declare required permissions in manifest
 - User approval required for risky operations
 - Deny-by-default for network/exec
@@ -435,4 +466,3 @@ Before releasing new features:
 **Implementation Plan:** `.internal_docs/refactor-plan.md` - Stage 3, Step 20  
 **Test Patterns:** `packages/core/tests/security/`  
 **Exporter Guidelines:** `packages/exporters/README.md` - Security Expectations section
-

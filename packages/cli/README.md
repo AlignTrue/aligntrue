@@ -64,6 +64,7 @@ This ensures consistent behavior, reduces duplication, and makes commands easier
 Initialize AlignTrue in your project with smart context detection.
 
 **Features:**
+
 - Auto-detects all 28 AI coding agents (Cursor, VS Code, Copilot, etc.)
 - Enables detected agents automatically (≤3 agents) or prompts for selection (>3 agents)
 - Creates comprehensive starter template with 5 example rules
@@ -71,21 +72,25 @@ Initialize AlignTrue in your project with smart context detection.
 - Optional auto-sync after initialization
 
 **Usage:**
+
 ```bash
 cd your-project
 aligntrue init
 ```
 
 **What it creates:**
+
 - `.aligntrue/config.yaml` - Configuration with solo mode defaults
 - `.aligntrue/rules.md` - Starter template with educational examples
 
 **Scenarios handled:**
+
 - **Fresh start** - No rules exist, creates comprehensive template
 - **Import existing** - Detects `.cursor/rules/` or `AGENTS.md`, offers import (Step 17)
 - **Team join** - `.aligntrue/` exists, provides helpful next steps
 
 **Example output:**
+
 ```
 ┌  AlignTrue Init
 │
@@ -121,6 +126,7 @@ aligntrue init
 Analyze and import rules from agent-specific formats with coverage analysis.
 
 **Features:**
+
 - Import from Cursor `.mdc` files or `AGENTS.md` universal format
 - Field-level coverage analysis showing IR mapping
 - Confidence calculation (high/medium/low) based on coverage percentage
@@ -128,14 +134,17 @@ Analyze and import rules from agent-specific formats with coverage analysis.
 - Optional write to IR file with `--write` flag
 
 **Usage:**
+
 ```bash
 aligntrue import <agent> [options]
 ```
 
 **Arguments:**
+
 - `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
 
 **Options:**
+
 - `--coverage` - Show import coverage report (default: true)
 - `--no-coverage` - Skip coverage report
 - `--write` - Write imported rules to .aligntrue/rules.md
@@ -145,26 +154,31 @@ aligntrue import <agent> [options]
 **Examples:**
 
 Analyze Cursor rules with coverage:
+
 ```bash
 aligntrue import cursor
 ```
 
 Import from AGENTS.md:
+
 ```bash
 aligntrue import agents-md
 ```
 
 Import and write to IR file:
+
 ```bash
 aligntrue import cursor --write
 ```
 
 Preview import without writing:
+
 ```bash
 aligntrue import cursor --write --dry-run
 ```
 
 **Coverage Report Example:**
+
 ```
 Import Coverage Report: cursor
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -189,6 +203,7 @@ Confidence: Medium (70-89% coverage)
 ```
 
 **Supported Agents:**
+
 - **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
 - **agents-md** - `AGENTS.md` universal markdown format
 - **copilot** - AGENTS.md format (alias)
@@ -196,6 +211,7 @@ Confidence: Medium (70-89% coverage)
 - **aider** - AGENTS.md format (alias)
 
 **Coverage Calculation:**
+
 - **High confidence** (≥90%): Most IR fields mapped from agent format
 - **Medium confidence** (70-89%): Core fields mapped, some fields unmapped
 - **Low confidence** (<70%): Significant field gaps, review carefully
@@ -203,18 +219,21 @@ Confidence: Medium (70-89% coverage)
 **Troubleshooting:**
 
 **Agent not found:**
+
 ```
 ✗ Agent format not found: .cursor/rules/
 Expected: .cursor/rules/ directory with .mdc files
 ```
 
 **Unsupported agent:**
+
 ```
 ✗ Import not supported for agent: xyz
 Supported agents: cursor, agents-md, copilot, claude-code, aider
 ```
 
 **No rules found:**
+
 ```
 ⚠ No rules found in agent format
 Check that .mdc files contain valid rules with ## Rule: headers
@@ -225,6 +244,7 @@ Check that .mdc files contain valid rules with ## Rule: headers
 Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).
 
 **Features:**
+
 - Default: IR → agents sync (rules.md to agent config files)
 - Pullback: agents → IR sync with `--accept-agent` flag
 - Preview changes with `--dry-run` before writing
@@ -233,41 +253,49 @@ Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, e
 - Comprehensive error messages with actionable fixes
 
 **Usage:**
+
 ```bash
 aligntrue sync [options]
 ```
 
 **Basic Options:**
+
 - `--dry-run` - Preview changes without writing files
 - `--config <path>` - Custom config file path (default: .aligntrue/config.yaml)
 
 **Advanced Options:**
+
 - `--accept-agent <name>` - Pull changes from agent back to IR (requires Step 17)
 - `--force` - Non-interactive mode (skip prompts)
 
 **Examples:**
 
 Default sync (IR → agents):
+
 ```bash
 aligntrue sync
 ```
 
 Preview changes:
+
 ```bash
 aligntrue sync --dry-run
 ```
 
 Import from Cursor (mock data):
+
 ```bash
 aligntrue sync --accept-agent cursor
 ```
 
 Non-interactive for CI:
+
 ```bash
 aligntrue sync --force
 ```
 
 **What it does:**
+
 1. Loads `.aligntrue/config.yaml` configuration
 2. Validates source file exists (default: `.aligntrue/rules.md`)
 3. Discovers and loads exporters from registry
@@ -277,6 +305,7 @@ aligntrue sync --force
 7. Shows files written, warnings, conflicts
 
 **Output example:**
+
 ```
 ┌  AlignTrue Sync
 │
@@ -296,24 +325,28 @@ aligntrue sync --force
 **Troubleshooting:**
 
 **Config not found:**
+
 ```
 ✗ AlignTrue not initialized
 Run: aligntrue init
 ```
 
 **Source file not found:**
+
 ```
 ✗ Source file not found: .aligntrue/rules.md
 Check your config.yaml sources section
 ```
 
 **Exporter not found:**
+
 ```
 ⚠ Exporter not found: my-exporter
 Check exporters list in config.yaml
 ```
 
 **Lockfile drift (team mode):**
+
 ```
 ✗ Lockfile validation failed in strict mode
 Options:
@@ -326,23 +359,27 @@ Options:
 Upgrade your project to team mode for lockfile-based collaboration.
 
 **Features:**
+
 - Enables lockfile generation for reproducibility
 - Enables bundle generation for multi-source merging
 - Drift detection with soft/strict validation modes
 - Git-based collaboration workflows
 
 **Usage:**
+
 ```bash
 aligntrue team enable
 ```
 
 **What it does:**
+
 1. Updates `.aligntrue/config.yaml` to set `mode: team`
 2. Enables `modules.lockfile: true` and `modules.bundle: true`
 3. Shows next steps for lockfile generation
 4. Team members can now clone and get identical outputs
 
 **Example output:**
+
 ```
 ┌  Team Mode Enable
 │
@@ -368,6 +405,7 @@ Team members can now:
 ```
 
 **Already in team mode:**
+
 ```
 ✓ Already in team mode
 
@@ -381,16 +419,19 @@ Team mode features active:
 Manage anonymous telemetry collection settings.
 
 **Features:**
+
 - Opt-in only (disabled by default)
 - Anonymous usage data (no code, no paths, no PII)
 - Collects: command names, export targets, content hashes
 
 **Usage:**
+
 ```bash
 aligntrue telemetry on|off|status
 ```
 
 **Subcommands:**
+
 - `on` - Enable telemetry collection
 - `off` - Disable telemetry collection
 - `status` - Show current telemetry status
@@ -398,27 +439,32 @@ aligntrue telemetry on|off|status
 **Examples:**
 
 Enable telemetry:
+
 ```bash
 aligntrue telemetry on
 ```
 
 Check status:
+
 ```bash
 aligntrue telemetry status
 # Output: Telemetry: enabled
 ```
 
 Disable telemetry:
+
 ```bash
 aligntrue telemetry off
 ```
 
 **What we collect (when enabled):**
+
 - Command name (init, sync, etc.)
 - Export targets used (cursor, agents-md, etc.)
 - Align content hashes (no code, no paths, no PII)
 
 **What we never collect:**
+
 - Repository names or paths
 - Rule content or guidance text
 - File paths or directory structures
@@ -429,17 +475,20 @@ aligntrue telemetry off
 List configured scopes for monorepo path-based rule application.
 
 **Features:**
+
 - Shows all configured scopes from config.yaml
 - Displays include/exclude patterns
 - Shows ruleset overrides per scope
 - Fast read-only operation
 
 **Usage:**
+
 ```bash
 aligntrue scopes
 ```
 
 **Example output:**
+
 ```
 Scopes configured in .aligntrue/config.yaml:
 
@@ -455,6 +504,7 @@ Total: 2 scopes
 ```
 
 **No scopes configured:**
+
 ```
 No scopes configured (applies rules to entire workspace)
 
@@ -476,6 +526,7 @@ See: docs/guides/scopes.md (when available)
 Manage exporters (adapters) in your configuration. View available adapters, enable/disable them, and discover all 43 supported AI coding agents.
 
 **Features:**
+
 - List all 43 available adapters with descriptions
 - Show install status (✓ installed, - available, ❌ invalid)
 - Enable/disable adapters interactively or by name
@@ -490,6 +541,7 @@ aligntrue adapters list
 ```
 
 **Example output:**
+
 ```
 Available Adapters (44 total):
 
@@ -514,6 +566,7 @@ Summary:
 ```
 
 **Status indicators:**
+
 - `✓` - Installed (enabled in your config)
 - `-` - Available (discovered but not enabled)
 - `❌` - Invalid (in config but not found)
@@ -527,6 +580,7 @@ aligntrue adapters enable claude-md
 ```
 
 **Example output:**
+
 ```
 ✓ Enabled adapter: claude-md
 
@@ -555,10 +609,12 @@ aligntrue adapters disable claude-md
 ```
 
 **Safety:**
+
 - Cannot disable the last adapter (at least one must be configured)
 - Shows clear error if adapter isn't currently enabled
 
 **Example output:**
+
 ```
 ✓ Disabled adapter: claude-md
 ```
@@ -576,11 +632,13 @@ aligntrue telemetry on
 ```
 
 **What we collect:**
+
 - Command names (init, sync, etc.)
 - Export targets used (cursor, agents-md, etc.)
 - Rule content hashes (SHA-256, no actual content)
 
 **What we never collect:**
+
 - File paths or repository names
 - Rule content or code
 - Personally identifiable information (PII)
@@ -608,6 +666,7 @@ aligntrue telemetry status
 ```
 
 **Output when enabled:**
+
 ```
 Telemetry: enabled
 
@@ -616,6 +675,7 @@ To disable: aligntrue telemetry off
 ```
 
 **Output when disabled:**
+
 ```
 Telemetry: disabled
 
@@ -636,19 +696,23 @@ aligntrue check --ci
 ```
 
 **What it validates:**
+
 - IR schema (loads and validates `.aligntrue/rules.md` against JSON Schema)
 - Lockfile drift (team mode only, validates `.aligntrue.lock.json` matches current rules)
 
 **Exit codes:**
+
 - `0` - Validation passed
 - `1` - Validation failed (schema or lockfile errors)
 - `2` - System error (missing files, config issues)
 
 **Options:**
+
 - `--ci` - CI mode (required)
 - `--config <path>` - Custom config path (default: `.aligntrue/config.yaml`)
 
 **Example output (success):**
+
 ```
 ✓ Validation passed
 
@@ -657,13 +721,14 @@ aligntrue check --ci
 ```
 
 **Example output (failure):**
+
 ```
 ✗ Schema validation failed
 
   Errors in .aligntrue/rules.md:
     - spec_version: Missing required field
     - rules[0].id: Missing required field
-  
+
   Fix the errors above and run 'aligntrue check --ci' again.
 ```
 
@@ -737,18 +802,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 9
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-      
+          cache: "pnpm"
+
       - run: pnpm install
-      
+
       - name: Validate AlignTrue rules
         run: pnpm aligntrue check --ci
 ```
@@ -758,6 +823,7 @@ jobs:
 The `aligntrue check --ci` command works in any CI environment. Just ensure AlignTrue is installed and run the command:
 
 - **GitLab CI**: Add to `.gitlab-ci.yml`
+
   ```yaml
   aligntrue:
     script:
@@ -766,6 +832,7 @@ The `aligntrue check --ci` command works in any CI environment. Just ensure Alig
   ```
 
 - **CircleCI**: Add to `.circleci/config.yml`
+
   ```yaml
   - run:
       name: Validate AlignTrue
@@ -789,6 +856,7 @@ Understanding exit codes helps with CI integration:
 
 **"Config not found"**  
 Run `aligntrue init` before the check command, or add init to your CI setup:
+
 ```bash
 - run: pnpm aligntrue init --non-interactive  # Future enhancement
 - run: pnpm aligntrue check --ci
@@ -796,6 +864,7 @@ Run `aligntrue init` before the check command, or add init to your CI setup:
 
 **"Lockfile drift"**  
 Lockfile doesn't match current rules. Run `aligntrue sync` locally to regenerate the lockfile, then commit:
+
 ```bash
 pnpm aligntrue sync
 git add .aligntrue.lock.json
@@ -804,6 +873,7 @@ git commit -m "chore: update lockfile"
 
 **"Schema validation failed"**  
 Fix the errors listed in the output. Common issues:
+
 - Missing required fields (`id`, `spec_version`, `rules`)
 - Invalid severity values (must be `error`, `warn`, or `info`)
 - Malformed YAML syntax
@@ -813,11 +883,13 @@ Fix the errors listed in the output. Common issues:
 AlignTrue automatically detects 28 AI coding agents:
 
 **Phase 1 Exporters:**
+
 - Cursor (`.cursor/`)
 - Universal AGENTS.md
 - VS Code MCP (`.vscode/`)
 
 **Additional Agents:**
+
 - GitHub Copilot, Claude, Windsurf, Amazon Q, Cline, Goose
 - Aider, Jules, Amp, Gemini, Qwen, Roo Code, Zed, Open Code
 - Firebender, Kilocode, Kiro, Firebase Studio, Junie, Trae AI
@@ -840,4 +912,3 @@ Each rule demonstrates key features and best practices.
 ## Package Status
 
 ✅ **Phase 1, Step 22 Complete** - Init command fully implemented with auto-detection and comprehensive UX
-

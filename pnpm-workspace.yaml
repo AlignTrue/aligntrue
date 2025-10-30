@@ -1,4 +1,3 @@
 packages:
   # Archived components (apps-web, apps-docs, mcp-v1) are excluded
   - "packages/*"
-

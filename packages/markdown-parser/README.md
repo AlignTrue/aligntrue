@@ -24,7 +24,7 @@ pnpm add @aligntrue/markdown-parser
 ### Parse Markdown
 
 ```typescript
-import { parseMarkdown } from '@aligntrue/markdown-parser'
+import { parseMarkdown } from "@aligntrue/markdown-parser";
 
 const markdown = `## Testing Rules
 
@@ -39,45 +39,45 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
 \`\`\`
-`
+`;
 
-const result = parseMarkdown(markdown)
+const result = parseMarkdown(markdown);
 
 if (result.errors.length === 0) {
-  console.log(`Found ${result.blocks.length} blocks`)
-  console.log(`Guidance: ${result.blocks[0].guidanceBefore}`)
+  console.log(`Found ${result.blocks.length} blocks`);
+  console.log(`Guidance: ${result.blocks[0].guidanceBefore}`);
 }
 ```
 
 ### Build IR Document
 
 ```typescript
-import { parseMarkdown, buildIR } from '@aligntrue/markdown-parser'
+import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 
-const markdown = `...` // your markdown content
-const parseResult = parseMarkdown(markdown)
-const irResult = buildIR(parseResult.blocks)
+const markdown = `...`; // your markdown content
+const parseResult = parseMarkdown(markdown);
+const irResult = buildIR(parseResult.blocks);
 
 if (irResult.document) {
-  console.log(`Built IR document: ${irResult.document.id}`)
-  console.log(`Source format: ${irResult.document.source_format}`) // 'markdown'
+  console.log(`Built IR document: ${irResult.document.id}`);
+  console.log(`Source format: ${irResult.document.source_format}`); // 'markdown'
 }
 ```
 
 ### Validate Markdown
 
 ```typescript
-import { validateMarkdown } from '@aligntrue/markdown-parser'
+import { validateMarkdown } from "@aligntrue/markdown-parser";
 
-const markdown = `...` // your markdown content
-const result = validateMarkdown(markdown)
+const markdown = `...`; // your markdown content
+const result = validateMarkdown(markdown);
 
 if (result.valid) {
-  console.log('✓ Valid')
+  console.log("✓ Valid");
 } else {
-  result.errors.forEach(err => {
-    console.error(`Line ${err.line}: ${err.message}`)
-  })
+  result.errors.forEach((err) => {
+    console.error(`Line ${err.line}: ${err.message}`);
+  });
 }
 ```
 
@@ -128,18 +128,19 @@ This ensures deterministic hashing and consistent formatting.
 Extract fenced ```aligntrue blocks from markdown.
 
 Returns:
+
 ```typescript
 interface ParseResult {
-  blocks: FencedBlock[]
-  errors: Array<{ line: number; message: string }>
+  blocks: FencedBlock[];
+  errors: Array<{ line: number; message: string }>;
 }
 
 interface FencedBlock {
-  content: string          // YAML content
-  startLine: number        // Line number where block starts
-  endLine: number          // Line number where block ends
-  sectionTitle?: string    // Title from preceding header
-  guidanceBefore?: string  // Prose before block
+  content: string; // YAML content
+  startLine: number; // Line number where block starts
+  endLine: number; // Line number where block ends
+  sectionTitle?: string; // Title from preceding header
+  guidanceBefore?: string; // Prose before block
 }
 ```
 
@@ -148,18 +149,19 @@ interface FencedBlock {
 Convert parsed blocks to IR document.
 
 Returns:
+
 ```typescript
 interface IRBuildResult {
-  document?: IRDocument
-  errors: IRBuildError[]
+  document?: IRDocument;
+  errors: IRBuildError[];
 }
 
 interface IRDocument {
-  id: string
-  version: string
-  spec_version: string
-  rules: unknown[]
-  source_format?: 'markdown' | 'yaml'
+  id: string;
+  version: string;
+  spec_version: string;
+  rules: unknown[];
+  source_format?: "markdown" | "yaml";
 }
 ```
 
@@ -168,17 +170,18 @@ interface IRDocument {
 Parse, build IR, and validate against schema in one step.
 
 Returns:
+
 ```typescript
 interface MarkdownValidationResult {
-  valid: boolean
-  errors: MarkdownValidationError[]
+  valid: boolean;
+  errors: MarkdownValidationError[];
 }
 
 interface MarkdownValidationError {
-  line: number
-  section?: string
-  field?: string
-  message: string
+  line: number;
+  section?: string;
+  field?: string;
+  message: string;
 }
 ```
 
@@ -191,34 +194,36 @@ Normalize whitespace in YAML content.
 Generate markdown from IR document (for round-trip workflows).
 
 Options:
+
 ```typescript
 interface GenerateOptions {
-  preserveMetadata?: boolean  // Use _markdown_meta if available
-  headerText?: string         // Override header (default: "# AlignTrue Rules")
-  indentSize?: number        // Override indent (default: 2)
-  lineEndings?: 'lf' | 'crlf' // Override line endings (default: 'lf')
+  preserveMetadata?: boolean; // Use _markdown_meta if available
+  headerText?: string; // Override header (default: "# AlignTrue Rules")
+  indentSize?: number; // Override indent (default: 2)
+  lineEndings?: "lf" | "crlf"; // Override line endings (default: 'lf')
 }
 ```
 
 Example:
+
 ```typescript
-import { generateMarkdown } from '@aligntrue/markdown-parser'
+import { generateMarkdown } from "@aligntrue/markdown-parser";
 
 const ir = {
-  id: 'my-rules',
-  version: '1.0.0',
-  spec_version: '1',
+  id: "my-rules",
+  version: "1.0.0",
+  spec_version: "1",
   rules: [
     {
-      id: 'testing.require.tests',
-      severity: 'warn',
-      applies_to: ['**/*.ts'],
-      guidance: 'All features must have tests.'
-    }
-  ]
-}
+      id: "testing.require.tests",
+      severity: "warn",
+      applies_to: ["**/*.ts"],
+      guidance: "All features must have tests.",
+    },
+  ],
+};
 
-const markdown = generateMarkdown(ir)
+const markdown = generateMarkdown(ir);
 // Returns markdown with fenced aligntrue block
 ```
 
@@ -231,19 +236,19 @@ The package includes specialized parsers for importing rules from agent-specific
 Import Cursor's `.mdc` files with full frontmatter preservation:
 
 ```typescript
-import { parseCursorMdc } from '@aligntrue/markdown-parser'
+import { parseCursorMdc } from "@aligntrue/markdown-parser";
 
-const mdcContent = readFileSync('.cursor/rules/aligntrue.mdc', 'utf8')
-const { rules } = parseCursorMdc(mdcContent)
+const mdcContent = readFileSync(".cursor/rules/aligntrue.mdc", "utf8");
+const { rules } = parseCursorMdc(mdcContent);
 
 // All file-level frontmatter fields are captured in vendor.cursor
-rules.forEach(rule => {
-  console.log(rule.id)
-  console.log(rule.vendor?.cursor?.alwaysApply)  // File-level
-  console.log(rule.vendor?.cursor?.intelligent)  // File-level
-  console.log(rule.vendor?.cursor?.globs)        // File-level
-  console.log(rule.vendor?.cursor?.ai_hint)      // Per-rule
-})
+rules.forEach((rule) => {
+  console.log(rule.id);
+  console.log(rule.vendor?.cursor?.alwaysApply); // File-level
+  console.log(rule.vendor?.cursor?.intelligent); // File-level
+  console.log(rule.vendor?.cursor?.globs); // File-level
+  console.log(rule.vendor?.cursor?.ai_hint); // Per-rule
+});
 ```
 
 **Cursor mode preservation:** All execution mode fields are captured:
@@ -261,10 +266,10 @@ These fields enable lossless round-trips: import from Cursor → edit in AlignTr
 Import universal AGENTS.md format:
 
 ```typescript
-import { parseAgentsMd } from '@aligntrue/markdown-parser'
+import { parseAgentsMd } from "@aligntrue/markdown-parser";
 
-const agentsMd = readFileSync('AGENTS.md', 'utf8')
-const rules = parseAgentsMd(agentsMd)
+const agentsMd = readFileSync("AGENTS.md", "utf8");
+const rules = parseAgentsMd(agentsMd);
 
 // Severity inferred from labels: ERROR → error, WARN → warn, INFO → info
 ```
@@ -276,22 +281,22 @@ For detailed import workflows, see the [Import Workflow Guide](../../docs/import
 The package supports lossless markdown ↔ IR ↔ markdown conversion:
 
 ```typescript
-import { parseMarkdown, buildIR, generateMarkdown } from '@aligntrue/markdown-parser'
+import { parseMarkdown, buildIR, generateMarkdown } from "@aligntrue/markdown-parser";
 
 // Start with markdown
-const original = readFileSync('rules.md', 'utf8')
+const original = readFileSync("rules.md", "utf8");
 
 // Parse to IR with metadata capture
-const parseResult = parseMarkdown(original)
-const irResult = buildIR(parseResult.blocks, { 
-  captureMetadata: true, 
-  originalMarkdown: original 
-})
+const parseResult = parseMarkdown(original);
+const irResult = buildIR(parseResult.blocks, {
+  captureMetadata: true,
+  originalMarkdown: original,
+});
 
 // Generate markdown (preserves original formatting)
-const regenerated = generateMarkdown(irResult.document, { 
-  preserveMetadata: true 
-})
+const regenerated = generateMarkdown(irResult.document, {
+  preserveMetadata: true,
+});
 
 // regenerated is semantically identical to original
 // (quote style may differ due to YAML library preferences)
@@ -302,14 +307,12 @@ const regenerated = generateMarkdown(irResult.document, {
 All errors include line numbers and clear messages:
 
 ```typescript
-const result = validateMarkdown(markdown)
+const result = validateMarkdown(markdown);
 
-result.errors.forEach(err => {
-  const location = err.section 
-    ? `Line ${err.line} (${err.section})`
-    : `Line ${err.line}`
-  console.error(`${location}: ${err.message}`)
-})
+result.errors.forEach((err) => {
+  const location = err.section ? `Line ${err.line} (${err.section})` : `Line ${err.line}`;
+  console.error(`${location}: ${err.message}`);
+});
 ```
 
 ## CLI Usage

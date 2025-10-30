@@ -2,138 +2,145 @@
  * IR loading with support for markdown and YAML formats
  */
 
-import { readFileSync, existsSync } from 'fs'
-import { extname } from 'path'
-import * as yaml from 'js-yaml'
-import { parseMarkdown, buildIR } from '@aligntrue/markdown-parser'
-import { validateAlignSchema, type AlignPack, type ValidationResult } from '@aligntrue/schema'
-import { checkFileSize } from '../performance/index.js'
-import type { AlignTrueMode } from '../config/index.js'
+import { readFileSync, existsSync } from "fs";
+import { extname } from "path";
+import * as yaml from "js-yaml";
+import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
+import {
+  validateAlignSchema,
+  type AlignPack,
+  type ValidationResult,
+} from "@aligntrue/schema";
+import { checkFileSize } from "../performance/index.js";
+import type { AlignTrueMode } from "../config/index.js";
 
 /**
  * Load IR from a markdown or YAML file
  * Auto-detects format based on file extension
- * 
+ *
  * @param sourcePath - Path to the source file
  * @param options - Loading options (mode, max size, force flag)
  */
 export async function loadIR(
   sourcePath: string,
   options?: {
-    mode?: AlignTrueMode
-    maxFileSizeMb?: number
-    force?: boolean
-  }
+    mode?: AlignTrueMode;
+    maxFileSizeMb?: number;
+    force?: boolean;
+  },
 ): Promise<AlignPack> {
-  const mode = options?.mode || 'solo'
-  const maxFileSizeMb = options?.maxFileSizeMb || 10
-  const force = options?.force || false
+  const mode = options?.mode || "solo";
+  const maxFileSizeMb = options?.maxFileSizeMb || 10;
+  const force = options?.force || false;
 
   // Check file exists
   if (!existsSync(sourcePath)) {
     throw new Error(
       `Source file not found: ${sourcePath}\n` +
-      `  Check the path is correct and the file exists.`
-    )
+        `  Check the path is correct and the file exists.`,
+    );
   }
 
   // Check file size before reading
-  checkFileSize(sourcePath, maxFileSizeMb, mode, force)
+  checkFileSize(sourcePath, maxFileSizeMb, mode, force);
 
   // Read file content
-  let content: string
+  let content: string;
   try {
-    content = readFileSync(sourcePath, 'utf8')
+    content = readFileSync(sourcePath, "utf8");
   } catch (err) {
     throw new Error(
       `Failed to read source file: ${sourcePath}\n` +
-      `  ${err instanceof Error ? err.message : String(err)}`
-    )
+        `  ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   // Auto-detect format based on extension
-  const ext = extname(sourcePath).toLowerCase()
-  let ir: unknown
+  const ext = extname(sourcePath).toLowerCase();
+  let ir: unknown;
 
-  if (ext === '.md' || ext === '.markdown') {
+  if (ext === ".md" || ext === ".markdown") {
     // Parse markdown with fenced blocks
     try {
-      const parseResult = parseMarkdown(content)
-      
+      const parseResult = parseMarkdown(content);
+
       // Check for parsing errors
       if (parseResult.errors.length > 0) {
         const errorList = parseResult.errors
-          .map(err => `  - Line ${err.line}: ${err.message}`)
-          .join('\n')
-        throw new Error(`Markdown parsing errors:\n${errorList}`)
+          .map((err) => `  - Line ${err.line}: ${err.message}`)
+          .join("\n");
+        throw new Error(`Markdown parsing errors:\n${errorList}`);
       }
-      
-      const buildResult = buildIR(parseResult.blocks)
-      
+
+      const buildResult = buildIR(parseResult.blocks);
+
       // Check for IR build errors
       if (buildResult.errors.length > 0) {
         const errorList = buildResult.errors
-          .map(err => `  - Line ${err.line}: ${err.message}${err.section ? ` (section: ${err.section})` : ''}`)
-          .join('\n')
-        throw new Error(`IR build errors:\n${errorList}`)
+          .map(
+            (err) =>
+              `  - Line ${err.line}: ${err.message}${err.section ? ` (section: ${err.section})` : ""}`,
+          )
+          .join("\n");
+        throw new Error(`IR build errors:\n${errorList}`);
       }
-      
+
       if (!buildResult.document) {
-        throw new Error('Failed to build IR document from markdown blocks')
+        throw new Error("Failed to build IR document from markdown blocks");
       }
-      
-      ir = buildResult.document
+
+      ir = buildResult.document;
     } catch (err) {
       throw new Error(
         `Failed to parse markdown in ${sourcePath}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}\n` +
-        `  Check for syntax errors in fenced \`\`\`aligntrue blocks.`
-      )
+          `  ${err instanceof Error ? err.message : String(err)}\n` +
+          `  Check for syntax errors in fenced \`\`\`aligntrue blocks.`,
+      );
     }
-  } else if (ext === '.yaml' || ext === '.yml') {
+  } else if (ext === ".yaml" || ext === ".yml") {
     // Parse YAML directly
     try {
-      ir = yaml.load(content)
+      ir = yaml.load(content);
     } catch (err) {
-      const yamlErr = err as { mark?: { line?: number; column?: number } }
+      const yamlErr = err as { mark?: { line?: number; column?: number } };
       const location = yamlErr.mark
         ? ` at line ${yamlErr.mark.line! + 1}, column ${yamlErr.mark.column! + 1}`
-        : ''
+        : "";
 
       throw new Error(
         `Failed to parse YAML in ${sourcePath}${location}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}\n` +
-        `  Check for syntax errors (indentation, quotes, colons).`
-      )
+          `  ${err instanceof Error ? err.message : String(err)}\n` +
+          `  Check for syntax errors (indentation, quotes, colons).`,
+      );
     }
   } else {
     throw new Error(
       `Unsupported file format: ${ext}\n` +
-      `  Supported formats: .md, .markdown, .yaml, .yml\n` +
-      `  Source: ${sourcePath}`
-    )
+        `  Supported formats: .md, .markdown, .yaml, .yml\n` +
+        `  Source: ${sourcePath}`,
+    );
   }
 
   // Validate loaded IR
-  if (typeof ir !== 'object' || ir === null) {
+  if (typeof ir !== "object" || ir === null) {
     throw new Error(
       `Invalid IR in ${sourcePath}: must be an object\n` +
-      `  Got: ${typeof ir}`
-    )
+        `  Got: ${typeof ir}`,
+    );
   }
-  
-  const validation = validateAlignSchema(ir)
+
+  const validation = validateAlignSchema(ir);
   if (!validation.valid) {
-    const errorList = validation.errors
-      ?.map(err => `  - ${err.path}: ${err.message}`)
-      .join('\n') || '  Unknown validation error'
+    const errorList =
+      validation.errors
+        ?.map((err) => `  - ${err.path}: ${err.message}`)
+        .join("\n") || "  Unknown validation error";
 
     throw new Error(
       `Invalid IR in ${sourcePath}:\n${errorList}\n` +
-      `  Fix the errors above and try again.`
-    )
+        `  Fix the errors above and try again.`,
+    );
   }
 
-  return ir as AlignPack
+  return ir as AlignPack;
 }
-

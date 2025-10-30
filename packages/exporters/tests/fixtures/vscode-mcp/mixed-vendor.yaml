@@ -13,4 +13,3 @@ rules:
         show_inline: true
       copilot:
         context_priority: "high"
-

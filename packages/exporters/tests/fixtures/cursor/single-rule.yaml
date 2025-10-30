@@ -10,4 +10,3 @@ rules:
     guidance: |
       All features must have tests to ensure reliability.
       Write tests alongside your code, not as an afterthought.
-

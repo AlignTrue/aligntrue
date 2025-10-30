@@ -9,6 +9,7 @@ This package contains TypeScript interfaces and type definitions for all AlignTr
 AlignTrue uses a plugin architecture to support multiple AI agents and development workflows. Plugin contracts define the interface between the core orchestration engine and plugin implementations.
 
 By keeping contracts separate from implementations:
+
 - **Clear boundaries:** Plugins depend on contracts, not on each other
 - **Scalability:** New plugin types can be added without circular dependencies
 - **Versioning:** Contract changes are explicit and can be versioned independently
@@ -33,26 +34,27 @@ Exporters convert AlignTrue IR (Intermediate Representation) to agent-specific f
 **Interface:** `ExporterPlugin`
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from '@aligntrue/plugin-contracts'
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from "@aligntrue/plugin-contracts";
 
 export class MyExporter implements ExporterPlugin {
-  name = 'my-exporter'
-  version = '1.0.0'
+  name = "my-exporter";
+  version = "1.0.0";
 
   async export(request: ScopedExportRequest, options: ExportOptions) {
     // Convert request.rules to agent format
     // Write to options.outputDir
     return {
       success: true,
-      filesWritten: ['.myagent/rules.txt'],
-      contentHash: 'sha256...',
-      fidelityNotes: ['field X not supported']
-    }
+      filesWritten: [".myagent/rules.txt"],
+      contentHash: "sha256...",
+      fidelityNotes: ["field X not supported"],
+    };
   }
 }
 ```
 
 **Key types:**
+
 - `ExporterPlugin` - Main plugin interface
 - `ScopedExportRequest` - Rules + scope information
 - `ExportOptions` - Output directory and flags
@@ -70,7 +72,7 @@ export class MyExporter implements ExporterPlugin {
 ### For Plugin Implementers
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from '@aligntrue/plugin-contracts'
+import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from "@aligntrue/plugin-contracts";
 
 export class MyExporter implements ExporterPlugin {
   // Implementation
@@ -80,10 +82,10 @@ export class MyExporter implements ExporterPlugin {
 ### For Core/Orchestration
 
 ```typescript
-import type { ExporterPlugin } from '@aligntrue/plugin-contracts'
+import type { ExporterPlugin } from "@aligntrue/plugin-contracts";
 
 function runExporter(plugin: ExporterPlugin, request: ScopedExportRequest) {
-  return plugin.export(request, { outputDir: '.myagent' })
+  return plugin.export(request, { outputDir: ".myagent" });
 }
 ```
 
@@ -93,18 +95,24 @@ Exporters are called once per scope with pre-merged rules:
 
 ```typescript
 // Default scope
-await exporter.export({
-  scope: { path: '.', normalizedPath: '.', isDefault: true },
-  rules: [rule1, rule2],
-  outputPath: '.cursor/rules/aligntrue.mdc'
-}, options)
+await exporter.export(
+  {
+    scope: { path: ".", normalizedPath: ".", isDefault: true },
+    rules: [rule1, rule2],
+    outputPath: ".cursor/rules/aligntrue.mdc",
+  },
+  options,
+);
 
 // Named scope (monorepo)
-await exporter.export({
-  scope: { path: 'apps/web', normalizedPath: 'apps/web', isDefault: false },
-  rules: [rule3, rule4],
-  outputPath: '.cursor/rules/apps-web.mdc'
-}, options)
+await exporter.export(
+  {
+    scope: { path: "apps/web", normalizedPath: "apps/web", isDefault: false },
+    rules: [rule3, rule4],
+    outputPath: ".cursor/rules/apps-web.mdc",
+  },
+  options,
+);
 ```
 
 ## Philosophy
@@ -147,4 +155,3 @@ When adding new plugin types:
 ## License
 
 MIT
-

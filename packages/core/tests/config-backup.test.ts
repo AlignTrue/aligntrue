@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { loadConfig } from '../src/config/index';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
-import { join } from 'path';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { loadConfig } from "../src/config/index";
+import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { join } from "path";
 
-describe('Config - Backup Configuration', () => {
-  const testDir = join(__dirname, '..', '..', 'temp-config-backup-test');
-  const aligntrueDir = join(testDir, '.aligntrue');
-  const configPath = join(aligntrueDir, 'config.yaml');
+describe("Config - Backup Configuration", () => {
+  const testDir = join(__dirname, "..", "..", "temp-config-backup-test");
+  const aligntrueDir = join(testDir, ".aligntrue");
+  const configPath = join(aligntrueDir, "config.yaml");
 
   beforeEach(() => {
     if (existsSync(testDir)) {
@@ -21,18 +21,18 @@ describe('Config - Backup Configuration', () => {
     }
   });
 
-  it('should apply default backup config when not specified', async () => {
-    writeFileSync(configPath, 'mode: solo\nexporters: [cursor]', 'utf-8');
+  it("should apply default backup config when not specified", async () => {
+    writeFileSync(configPath, "mode: solo\nexporters: [cursor]", "utf-8");
 
     const config = await loadConfig(configPath);
 
     expect(config.backup).toBeDefined();
     expect(config.backup?.auto_backup).toBe(false);
     expect(config.backup?.keep_count).toBe(10);
-    expect(config.backup?.backup_on).toEqual(['sync']);
+    expect(config.backup?.backup_on).toEqual(["sync"]);
   });
 
-  it('should accept custom backup configuration', async () => {
+  it("should accept custom backup configuration", async () => {
     const yaml = `
 mode: solo
 exporters: [cursor]
@@ -41,27 +41,26 @@ backup:
   keep_count: 5
   backup_on: [sync, restore]
 `;
-    writeFileSync(configPath, yaml, 'utf-8');
+    writeFileSync(configPath, yaml, "utf-8");
 
     const config = await loadConfig(configPath);
 
     expect(config.backup?.auto_backup).toBe(true);
     expect(config.backup?.keep_count).toBe(5);
-    expect(config.backup?.backup_on).toEqual(['sync', 'restore']);
+    expect(config.backup?.backup_on).toEqual(["sync", "restore"]);
   });
 
-  it('should validate backup_on enum values', async () => {
+  it("should validate backup_on enum values", async () => {
     const yaml = `
 mode: solo
 exporters: [cursor]
 backup:
   backup_on: [sync, restore, import]
 `;
-    writeFileSync(configPath, yaml, 'utf-8');
+    writeFileSync(configPath, yaml, "utf-8");
 
     const config = await loadConfig(configPath);
 
-    expect(config.backup?.backup_on).toEqual(['sync', 'restore', 'import']);
+    expect(config.backup?.backup_on).toEqual(["sync", "restore", "import"]);
   });
 });
-

@@ -4,6 +4,5 @@ rules:
     severity: warn
     guidance: All features should have tests.
     applies_to: ["**/*.ts"]
-  
-  # style.no-any deleted from agent
 
+  # style.no-any deleted from agent

@@ -1,12 +1,11 @@
 # Mock agent rules with modifications from IR
 rules:
   - id: testing.require-tests
-    severity: error  # Changed from warn in IR
+    severity: error # Changed from warn in IR
     guidance: All features should have tests.
     applies_to: ["**/*.ts"]
-  
+
   - id: style.no-any
     severity: warn
     guidance: Avoid using any type.
     applies_to: ["**/*.ts"]
-

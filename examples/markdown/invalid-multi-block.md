@@ -29,4 +29,3 @@ rules:
 ```
 
 This should fail validation with a clear error message.
-

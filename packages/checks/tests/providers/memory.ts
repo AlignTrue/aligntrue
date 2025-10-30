@@ -2,20 +2,20 @@
  * In-memory file provider for testing
  */
 
-import { minimatch } from 'minimatch'
-import type { FileProvider, GlobOptions } from '../../src/types.js'
+import { minimatch } from "minimatch";
+import type { FileProvider, GlobOptions } from "../../src/types.js";
 
 /**
  * In-memory file provider for deterministic testing
  */
 export class MemoryFileProvider implements FileProvider {
-  private files: Map<string, string> = new Map()
+  private files: Map<string, string> = new Map();
 
   /**
    * Add a file to the in-memory filesystem
    */
   addFile(path: string, content: string): void {
-    this.files.set(path, content)
+    this.files.set(path, content);
   }
 
   /**
@@ -23,46 +23,45 @@ export class MemoryFileProvider implements FileProvider {
    */
   addFiles(files: Record<string, string>): void {
     for (const [path, content] of Object.entries(files)) {
-      this.addFile(path, content)
+      this.addFile(path, content);
     }
   }
 
   async glob(pattern: string, options?: GlobOptions): Promise<string[]> {
-    const paths = Array.from(this.files.keys())
-    const ignore = options?.ignore || []
+    const paths = Array.from(this.files.keys());
+    const ignore = options?.ignore || [];
 
-    return paths.filter(path => {
+    return paths.filter((path) => {
       // Check if path matches pattern
       if (!minimatch(path, pattern)) {
-        return false
+        return false;
       }
 
       // Check if path matches any ignore pattern
       for (const ignorePattern of ignore) {
         if (minimatch(path, ignorePattern)) {
-          return false
+          return false;
         }
       }
 
-      return true
-    })
+      return true;
+    });
   }
 
   async readFile(path: string): Promise<string> {
-    const content = this.files.get(path)
+    const content = this.files.get(path);
     if (content === undefined) {
-      throw new Error(`File not found: ${path}`)
+      throw new Error(`File not found: ${path}`);
     }
-    return content
+    return content;
   }
 
   async exists(path: string): Promise<boolean> {
-    return this.files.has(path)
+    return this.files.has(path);
   }
 
   async readJson(path: string): Promise<unknown> {
-    const content = await this.readFile(path)
-    return JSON.parse(content)
+    const content = await this.readFile(path);
+    return JSON.parse(content);
   }
 }
-

@@ -1,14 +1,14 @@
 /**
  * AlignTrue Tailwind Preset
- * 
+ *
  * Minimal configuration referencing tokens.css variables.
  * Import this preset in your tailwind.config.ts:
- * 
+ *
  * import preset from "@aligntrue/ui/tailwind-preset"
  * export default { presets: [preset], content: [...] }
  */
 
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const preset: Partial<Config> = {
   theme: {
@@ -75,7 +75,6 @@ const preset: Partial<Config> = {
       },
     },
   },
-}
+};
 
-export default preset
-
+export default preset;

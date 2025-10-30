@@ -51,13 +51,13 @@ Add the `backup` section to your `.aligntrue/config.yaml`:
 backup:
   # Enable/disable automatic backups (default: false)
   auto_backup: false
-  
+
   # Commands that trigger auto-backup (default: ["sync"])
   backup_on:
     - sync
     - import
     - restore
-  
+
   # Number of backups to keep (default: 10)
   # Older backups are automatically deleted
   keep_count: 10
@@ -95,9 +95,11 @@ aligntrue backup create --notes "Before experimental changes"
 ```
 
 **Options:**
+
 - `--notes <text>` - Optional description for the backup
 
 **Output:**
+
 - Creates timestamped backup in `.aligntrue/.backups/<timestamp>/`
 - Displays backup timestamp and restore command
 
@@ -110,11 +112,13 @@ aligntrue backup list
 ```
 
 **Output:**
+
 - Shows backups from newest to oldest
 - Displays timestamp, created date, and notes
 - Shows number of files backed up
 
 **Example output:**
+
 ```
 Available backups:
   2025-10-29T14-30-00-000  2 files  Auto-backup before sync
@@ -137,9 +141,11 @@ aligntrue backup restore --to 2025-10-29T14-30-00-000
 ```
 
 **Options:**
+
 - `--to <timestamp>` - Specific backup to restore (from `backup list`)
 
 **Behavior:**
+
 - Creates temporary backup before restore (safety net)
 - Atomically restores all files from backup
 - Rolls back to temporary backup if restore fails
@@ -160,9 +166,11 @@ aligntrue backup cleanup
 ```
 
 **Options:**
+
 - `--keep <number>` - Number of backups to keep (default: from config or 10)
 
 **Behavior:**
+
 - Removes oldest backups first
 - Requires confirmation before deleting
 - Shows count of removed and kept backups
@@ -178,6 +186,7 @@ Backups include files from the `.aligntrue/` directory:
 - Any other files in `.aligntrue/` directory
 
 **Not backed up:**
+
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/.backups/` - Backup directory itself
 - `.aligntrue/telemetry-events.json` - Telemetry data
@@ -217,6 +226,7 @@ Each backup includes a `manifest.json`:
 ### Timestamp format
 
 Timestamps use ISO 8601 with millisecond precision, filesystem-safe:
+
 - Format: `YYYY-MM-DDTHH-mm-ss-SSS`
 - Example: `2025-10-29T14-30-00-000`
 - Original format: `2025-10-29T14:30:00.000Z` (stored in manifest)
@@ -231,11 +241,13 @@ When `auto_backup: true` and `backup_on` includes the command:
 4. **After success:** Automatically cleans up old backups based on `keep_count`
 
 **Failure handling:**
+
 - If backup fails: Warning logged, operation continues
 - If operation fails: Backups not cleaned up
 - If cleanup fails: Silent failure (backups retained)
 
 **Example output:**
+
 ```bash
 $ aligntrue sync
 
@@ -279,6 +291,7 @@ backup:
 ```
 
 Every sync creates a backup:
+
 ```bash
 $ aligntrue sync
 ✔ Backup created: 2025-10-29T14-30-00-000
@@ -298,6 +311,7 @@ aligntrue backup create --notes "Before migrating to new schema"
 ### "No backups found"
 
 If `aligntrue backup list` shows no backups:
+
 - No backups have been created yet
 - Run `aligntrue backup create` to create your first backup
 - Check `.aligntrue/.backups/` directory exists and has correct permissions
@@ -305,6 +319,7 @@ If `aligntrue backup list` shows no backups:
 ### "Backup restore failed"
 
 If restore fails:
+
 - Original files are preserved (restore is atomic)
 - Check backup timestamp is correct with `aligntrue backup list`
 - Verify `.aligntrue/` directory has write permissions
@@ -313,6 +328,7 @@ If restore fails:
 ### Auto-backup not triggering
 
 If `aligntrue sync` doesn't create backup:
+
 - Check `auto_backup: true` in `.aligntrue/config.yaml`
 - Verify `backup_on` array includes `"sync"`
 - Not triggered in dry-run mode (`--dry-run`)
@@ -321,6 +337,7 @@ If `aligntrue sync` doesn't create backup:
 ### Too many backups
 
 If backup directory is growing:
+
 - Adjust `keep_count` in config (lower number)
 - Run `aligntrue backup cleanup --keep 5` manually
 - Auto-cleanup runs after successful operations
@@ -328,6 +345,7 @@ If backup directory is growing:
 ### Backup timestamp format
 
 If timestamp looks unfamiliar:
+
 - Filesystem-safe format: `2025-10-29T14-30-00-000`
 - Colons and dots replaced with dashes
 - ISO 8601 format stored in manifest
@@ -338,10 +356,12 @@ If timestamp looks unfamiliar:
 ### Git workflow
 
 Backups complement but don't replace git:
+
 - **Backups:** Fast rollback for `.aligntrue/` only
 - **Git:** Full repository history including exports
 
 Recommended workflow:
+
 ```bash
 git add .aligntrue/
 git commit -m "Update rules"
@@ -361,6 +381,7 @@ backup:
 ```
 
 Import workflow with backup:
+
 ```bash
 $ aligntrue sync --accept-agent cursor
 ✔ Backup created: 2025-10-29T14-30-00-000
@@ -370,6 +391,7 @@ $ aligntrue sync --accept-agent cursor
 ### Team mode
 
 Backups are local (not in lockfile):
+
 - Each team member has separate backups
 - Not shared via git (`.backups/` should be ignored)
 - Useful for individual rollbacks during review
@@ -377,12 +399,14 @@ Backups are local (not in lockfile):
 ## Performance
 
 Backup operations are fast:
+
 - **Create:** ~10-50ms for typical configs
 - **Restore:** ~20-100ms with atomic operation
 - **List:** ~5-20ms directory scan
 - **Cleanup:** ~5-10ms per backup removed
 
 Storage footprint:
+
 - ~1-5KB per backup (config + rules)
 - 10 backups: ~10-50KB
 - Negligible compared to `.cache/` or node_modules
@@ -390,12 +414,14 @@ Storage footprint:
 ## Security
 
 Backup considerations:
+
 - Stored locally in `.aligntrue/.backups/`
 - Should be git-ignored (not shared)
 - Contains same sensitive data as `.aligntrue/config.yaml`
 - No encryption (rely on filesystem permissions)
 
 **Recommended `.gitignore`:**
+
 ```gitignore
 .aligntrue/.backups/
 .aligntrue/.cache/
@@ -408,4 +434,3 @@ Backup considerations:
 - [Commands reference](commands.md) - All CLI commands
 - [Configuration](quickstart.md#configuration) - Config file format
 - [Git sources](git-sources.md) - Using git for rule sharing
-

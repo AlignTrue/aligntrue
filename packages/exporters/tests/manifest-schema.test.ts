@@ -2,296 +2,307 @@
  * Tests for manifest.schema.json validation
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { ExporterRegistry } from '../src/registry.js'
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { ExporterRegistry } from "../src/registry.js";
+import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const tempDir = join(__dirname, 'temp')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const tempDir = join(__dirname, "temp");
 
-describe('Manifest Schema Validation', () => {
-  let registry: ExporterRegistry
+describe("Manifest Schema Validation", () => {
+  let registry: ExporterRegistry;
 
   beforeEach(() => {
-    registry = new ExporterRegistry()
-    
+    registry = new ExporterRegistry();
+
     // Create temp directory for test files
     try {
-      rmSync(tempDir, { recursive: true })
+      rmSync(tempDir, { recursive: true });
     } catch {
       // Ignore if doesn't exist
     }
-    mkdirSync(tempDir, { recursive: true })
-  })
+    mkdirSync(tempDir, { recursive: true });
+  });
 
   afterEach(() => {
     // Clean up temp directory
     try {
-      rmSync(tempDir, { recursive: true })
+      rmSync(tempDir, { recursive: true });
     } catch {
       // Ignore errors
     }
-  })
+  });
 
   const writeManifest = (filename: string, manifest: object): string => {
-    const path = join(tempDir, filename)
-    writeFileSync(path, JSON.stringify(manifest, null, 2))
-    return path
-  }
+    const path = join(tempDir, filename);
+    writeFileSync(path, JSON.stringify(manifest, null, 2));
+    return path;
+  };
 
-  describe('valid manifests', () => {
-    it('validates minimal valid manifest', () => {
-      const path = writeManifest('minimal.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Test adapter minimal',
-        outputs: ['.test/*.txt']
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.name).toBe('test')
-    })
+  describe("valid manifests", () => {
+    it("validates minimal valid manifest", () => {
+      const path = writeManifest("minimal.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Test adapter minimal",
+        outputs: [".test/*.txt"],
+      });
 
-    it('validates manifest with all optional fields', () => {
-      const path = writeManifest('full.json', {
-        name: 'test-full',
-        version: '2.3.4',
-        description: 'Test adapter with all fields',
-        outputs: ['.test/*.txt', '.test/*.md'],
-        handler: './handler.ts',
-        license: 'Apache-2.0',
-        fidelityNotes: ['Note 1', 'Note 2']
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.name).toBe('test-full')
-      expect(manifest.handler).toBe('./handler.ts')
-      expect(manifest.license).toBe('Apache-2.0')
-      expect(manifest.fidelityNotes).toHaveLength(2)
-    })
+      const manifest = registry.loadManifest(path);
+      expect(manifest.name).toBe("test");
+    });
 
-    it('accepts valid adapter names (lowercase alphanumeric with hyphens)', () => {
-      const validNames = ['cursor', 'agents-md', 'vscode-mcp', 'test123', 'my-adapter-v2']
-      
+    it("validates manifest with all optional fields", () => {
+      const path = writeManifest("full.json", {
+        name: "test-full",
+        version: "2.3.4",
+        description: "Test adapter with all fields",
+        outputs: [".test/*.txt", ".test/*.md"],
+        handler: "./handler.ts",
+        license: "Apache-2.0",
+        fidelityNotes: ["Note 1", "Note 2"],
+      });
+
+      const manifest = registry.loadManifest(path);
+      expect(manifest.name).toBe("test-full");
+      expect(manifest.handler).toBe("./handler.ts");
+      expect(manifest.license).toBe("Apache-2.0");
+      expect(manifest.fidelityNotes).toHaveLength(2);
+    });
+
+    it("accepts valid adapter names (lowercase alphanumeric with hyphens)", () => {
+      const validNames = [
+        "cursor",
+        "agents-md",
+        "vscode-mcp",
+        "test123",
+        "my-adapter-v2",
+      ];
+
       for (const name of validNames) {
         const path = writeManifest(`${name}.json`, {
           name,
-          version: '1.0.0',
-          description: 'Test adapter',
-          outputs: ['.test/*.txt']
-        })
-        
-        expect(() => registry.loadManifest(path)).not.toThrow()
-      }
-    })
+          version: "1.0.0",
+          description: "Test adapter",
+          outputs: [".test/*.txt"],
+        });
 
-    it('accepts valid semver versions', () => {
-      const validVersions = ['0.1.0', '1.0.0', '2.3.4', '10.20.30', '999.999.999']
-      
+        expect(() => registry.loadManifest(path)).not.toThrow();
+      }
+    });
+
+    it("accepts valid semver versions", () => {
+      const validVersions = [
+        "0.1.0",
+        "1.0.0",
+        "2.3.4",
+        "10.20.30",
+        "999.999.999",
+      ];
+
       for (const version of validVersions) {
         const path = writeManifest(`v-${version}.json`, {
-          name: 'test',
+          name: "test",
           version,
-          description: 'Test adapter',
-          outputs: ['.test/*.txt']
-        })
-        
-        expect(() => registry.loadManifest(path)).not.toThrow()
+          description: "Test adapter",
+          outputs: [".test/*.txt"],
+        });
+
+        expect(() => registry.loadManifest(path)).not.toThrow();
       }
-    })
-  })
+    });
+  });
 
-  describe('required fields', () => {
-    it('rejects manifest missing name', () => {
-      const path = writeManifest('no-name.json', {
-        version: '1.0.0',
-        description: 'Missing name',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-      expect(() => registry.loadManifest(path)).toThrow('name')
-    })
+  describe("required fields", () => {
+    it("rejects manifest missing name", () => {
+      const path = writeManifest("no-name.json", {
+        version: "1.0.0",
+        description: "Missing name",
+        outputs: [".test/*.txt"],
+      });
 
-    it('rejects manifest missing version', () => {
-      const path = writeManifest('no-version.json', {
-        name: 'test',
-        description: 'Missing version',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-      expect(() => registry.loadManifest(path)).toThrow('version')
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+      expect(() => registry.loadManifest(path)).toThrow("name");
+    });
 
-    it('rejects manifest missing description', () => {
-      const path = writeManifest('no-description.json', {
-        name: 'test',
-        version: '1.0.0',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-      expect(() => registry.loadManifest(path)).toThrow('description')
-    })
+    it("rejects manifest missing version", () => {
+      const path = writeManifest("no-version.json", {
+        name: "test",
+        description: "Missing version",
+        outputs: [".test/*.txt"],
+      });
 
-    it('rejects manifest missing outputs', () => {
-      const path = writeManifest('no-outputs.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Missing outputs'
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-      expect(() => registry.loadManifest(path)).toThrow('outputs')
-    })
-  })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+      expect(() => registry.loadManifest(path)).toThrow("version");
+    });
 
-  describe('invalid field formats', () => {
-    it('rejects invalid adapter name (uppercase)', () => {
-      const path = writeManifest('bad-name-upper.json', {
-        name: 'TestAdapter',
-        version: '1.0.0',
-        description: 'Invalid name',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+    it("rejects manifest missing description", () => {
+      const path = writeManifest("no-description.json", {
+        name: "test",
+        version: "1.0.0",
+        outputs: [".test/*.txt"],
+      });
 
-    it('rejects invalid adapter name (special chars)', () => {
-      const path = writeManifest('bad-name-special.json', {
-        name: 'test_adapter',
-        version: '1.0.0',
-        description: 'Invalid name',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+      expect(() => registry.loadManifest(path)).toThrow("description");
+    });
 
-    it('rejects invalid semver (missing patch)', () => {
-      const path = writeManifest('bad-version-1.json', {
-        name: 'test',
-        version: '1.0',
-        description: 'Invalid semver',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+    it("rejects manifest missing outputs", () => {
+      const path = writeManifest("no-outputs.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Missing outputs",
+      });
 
-    it('rejects invalid semver (with v prefix)', () => {
-      const path = writeManifest('bad-version-2.json', {
-        name: 'test',
-        version: 'v1.0.0',
-        description: 'Invalid semver',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+      expect(() => registry.loadManifest(path)).toThrow("outputs");
+    });
+  });
 
-    it('rejects short description (less than 10 chars)', () => {
-      const path = writeManifest('bad-desc.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Too short',
-        outputs: ['.test/*.txt']
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+  describe("invalid field formats", () => {
+    it("rejects invalid adapter name (uppercase)", () => {
+      const path = writeManifest("bad-name-upper.json", {
+        name: "TestAdapter",
+        version: "1.0.0",
+        description: "Invalid name",
+        outputs: [".test/*.txt"],
+      });
 
-    it('rejects empty outputs array', () => {
-      const path = writeManifest('empty-outputs.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Empty outputs array',
-        outputs: []
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
 
-    it('rejects non-string outputs', () => {
-      const path = writeManifest('bad-outputs.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Non-string outputs',
-        outputs: [123, 456]
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
-  })
+    it("rejects invalid adapter name (special chars)", () => {
+      const path = writeManifest("bad-name-special.json", {
+        name: "test_adapter",
+        version: "1.0.0",
+        description: "Invalid name",
+        outputs: [".test/*.txt"],
+      });
 
-  describe('optional fields', () => {
-    it('allows manifest without handler', () => {
-      const path = writeManifest('no-handler.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'No handler specified',
-        outputs: ['.test/*.txt']
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.handler).toBeUndefined()
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
 
-    it('allows manifest without license', () => {
-      const path = writeManifest('no-license.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'No license specified',
-        outputs: ['.test/*.txt']
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.license).toBeUndefined()
-    })
+    it("rejects invalid semver (missing patch)", () => {
+      const path = writeManifest("bad-version-1.json", {
+        name: "test",
+        version: "1.0",
+        description: "Invalid semver",
+        outputs: [".test/*.txt"],
+      });
 
-    it('allows manifest without fidelityNotes', () => {
-      const path = writeManifest('no-fidelity.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'No fidelity notes',
-        outputs: ['.test/*.txt']
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.fidelityNotes).toBeUndefined()
-    })
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
 
-    it('allows empty fidelityNotes array', () => {
-      const path = writeManifest('empty-fidelity.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Empty fidelity notes',
-        outputs: ['.test/*.txt'],
-        fidelityNotes: []
-      })
-      
-      const manifest = registry.loadManifest(path)
-      expect(manifest.fidelityNotes).toEqual([])
-    })
-  })
+    it("rejects invalid semver (with v prefix)", () => {
+      const path = writeManifest("bad-version-2.json", {
+        name: "test",
+        version: "v1.0.0",
+        description: "Invalid semver",
+        outputs: [".test/*.txt"],
+      });
 
-  describe('additional properties', () => {
-    it('rejects manifests with extra fields (strict mode)', () => {
-      const path = writeManifest('extra-fields.json', {
-        name: 'test',
-        version: '1.0.0',
-        description: 'Has extra fields',
-        outputs: ['.test/*.txt'],
-        extraField: 'should not be here'
-      })
-      
-      expect(() => registry.loadManifest(path)).toThrow('Invalid manifest')
-    })
-  })
-})
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
 
+    it("rejects short description (less than 10 chars)", () => {
+      const path = writeManifest("bad-desc.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Too short",
+        outputs: [".test/*.txt"],
+      });
+
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
+
+    it("rejects empty outputs array", () => {
+      const path = writeManifest("empty-outputs.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Empty outputs array",
+        outputs: [],
+      });
+
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
+
+    it("rejects non-string outputs", () => {
+      const path = writeManifest("bad-outputs.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Non-string outputs",
+        outputs: [123, 456],
+      });
+
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
+  });
+
+  describe("optional fields", () => {
+    it("allows manifest without handler", () => {
+      const path = writeManifest("no-handler.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "No handler specified",
+        outputs: [".test/*.txt"],
+      });
+
+      const manifest = registry.loadManifest(path);
+      expect(manifest.handler).toBeUndefined();
+    });
+
+    it("allows manifest without license", () => {
+      const path = writeManifest("no-license.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "No license specified",
+        outputs: [".test/*.txt"],
+      });
+
+      const manifest = registry.loadManifest(path);
+      expect(manifest.license).toBeUndefined();
+    });
+
+    it("allows manifest without fidelityNotes", () => {
+      const path = writeManifest("no-fidelity.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "No fidelity notes",
+        outputs: [".test/*.txt"],
+      });
+
+      const manifest = registry.loadManifest(path);
+      expect(manifest.fidelityNotes).toBeUndefined();
+    });
+
+    it("allows empty fidelityNotes array", () => {
+      const path = writeManifest("empty-fidelity.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Empty fidelity notes",
+        outputs: [".test/*.txt"],
+        fidelityNotes: [],
+      });
+
+      const manifest = registry.loadManifest(path);
+      expect(manifest.fidelityNotes).toEqual([]);
+    });
+  });
+
+  describe("additional properties", () => {
+    it("rejects manifests with extra fields (strict mode)", () => {
+      const path = writeManifest("extra-fields.json", {
+        name: "test",
+        version: "1.0.0",
+        description: "Has extra fields",
+        outputs: [".test/*.txt"],
+        extraField: "should not be here",
+      });
+
+      expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
+    });
+  });
+});

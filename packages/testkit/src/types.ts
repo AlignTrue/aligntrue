@@ -4,7 +4,7 @@
 
 /**
  * Canonicalization test vector
- * 
+ *
  * Tests that input → JCS → SHA-256 produces expected outputs.
  */
 export interface CanonVector {
@@ -22,7 +22,7 @@ export interface CanonVector {
 
 /**
  * Check runner test vector
- * 
+ *
  * Tests that a rule applied to a virtual file tree produces expected findings.
  */
 export interface CheckVector {
@@ -31,7 +31,12 @@ export interface CheckVector {
   /** Human-readable description of what this tests */
   description: string;
   /** Check type being tested */
-  check_type: 'file_presence' | 'path_convention' | 'manifest_policy' | 'regex' | 'command_runner';
+  check_type:
+    | "file_presence"
+    | "path_convention"
+    | "manifest_policy"
+    | "regex"
+    | "command_runner";
   /** Complete rule from Align spec */
   rule: Rule;
   /** Virtual file system: path → content */
@@ -61,7 +66,7 @@ export interface IntegrationVector {
  */
 export interface Rule {
   id: string;
-  severity: 'MUST' | 'SHOULD' | 'MAY';
+  severity: "MUST" | "SHOULD" | "MAY";
   check: Check;
   autofix?: {
     hint: string;
@@ -72,7 +77,12 @@ export interface Rule {
  * Check structure from Align Spec v1
  */
 export interface Check {
-  type: 'file_presence' | 'path_convention' | 'manifest_policy' | 'regex' | 'command_runner';
+  type:
+    | "file_presence"
+    | "path_convention"
+    | "manifest_policy"
+    | "regex"
+    | "command_runner";
   inputs: Record<string, unknown>;
   evidence: string;
 }
@@ -82,7 +92,7 @@ export interface Check {
  */
 export interface Finding {
   rule_id: string;
-  severity: 'MUST' | 'SHOULD' | 'MAY';
+  severity: "MUST" | "SHOULD" | "MAY";
   message: string;
   file?: string;
   line?: number;
@@ -108,4 +118,3 @@ export interface VectorFailure {
   expected?: unknown;
   actual?: unknown;
 }
-

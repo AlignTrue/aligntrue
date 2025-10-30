@@ -12,4 +12,3 @@ exporters:
 
 git:
   mode: ignore
-

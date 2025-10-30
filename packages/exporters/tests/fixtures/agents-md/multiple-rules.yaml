@@ -20,4 +20,3 @@ rules:
       - "**/*.{ts,js,json}"
     guidance: |
       Format code with Prettier before committing.
-

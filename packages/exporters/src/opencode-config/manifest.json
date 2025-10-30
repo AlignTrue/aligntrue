@@ -5,8 +5,5 @@
   "outputs": ["opencode.json"],
   "handler": "./index.ts",
   "license": "MIT",
-  "fidelityNotes": [
-    "Complements AGENTS.md exporter"
-  ]
+  "fidelityNotes": ["Complements AGENTS.md exporter"]
 }
-

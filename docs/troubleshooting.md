@@ -231,7 +231,7 @@ echo '# My Rules' > .aligntrue/rules.md
 # .aligntrue/config.yaml
 sources:
   - type: local
-    path: .aligntrue/rules.md  # Check this path
+    path: .aligntrue/rules.md # Check this path
 ```
 
 **3. Verify file exists:**
@@ -309,7 +309,7 @@ aligntrue sync
 ```yaml
 # .aligntrue/config.yaml
 lockfile:
-  mode: soft    # Warn but continue (default for team mode)
+  mode: soft # Warn but continue (default for team mode)
   # mode: strict  # Block on mismatch (for CI)
   # mode: off     # Disable validation (solo mode)
 ```
@@ -334,7 +334,7 @@ lockfile:
 ```yaml
 # .aligntrue/config.yaml
 exporters:
-  - cursor  # Make sure it's listed
+  - cursor # Make sure it's listed
 ```
 
 **2. Validate IR schema:**
@@ -445,7 +445,7 @@ aligntrue check
 ```
 ✖ Lockfile validation failed in strict mode
   2 rules have hash mismatches
-  
+
 Exit code: 1
 ```
 
@@ -470,7 +470,7 @@ git push
 ```yaml
 # .aligntrue/config.yaml
 lockfile:
-  mode: soft  # Warn but don't block CI
+  mode: soft # Warn but don't block CI
 ```
 
 ---
@@ -614,4 +614,3 @@ Include in your issue:
 - Operating system
 - Full error message
 - Steps to reproduce
-

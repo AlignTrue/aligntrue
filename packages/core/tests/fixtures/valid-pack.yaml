@@ -7,4 +7,3 @@ rules:
     applies_to:
       - "**/*.ts"
     guidance: Test rule for testing
-
