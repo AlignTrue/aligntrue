@@ -106,7 +106,8 @@ function analyzeGitHistory(): GitAnalysis {
       ).trim();
 
       if (commitInfo) {
-        const [hash, message, author, date] = commitInfo.split("|");
+        const [hash = "", message = "", author = "", date = ""] =
+          commitInfo.split("|");
         analysis.lastCommit = { hash, message, author, date };
       }
     } catch {
@@ -321,20 +322,16 @@ async function getDriftInfo(configPath?: string): Promise<{
     // Detect drift
     const driftResult = await detectDriftForConfig(config);
 
-    if (!driftResult.success || !driftResult.drift) {
+    if (!driftResult.driftDetected || !driftResult.drift) {
       return null;
     }
 
     const categories = new Set<string>();
     driftResult.drift.forEach((entry) => {
-      if (entry.status !== "ok") {
-        categories.add(entry.status);
-      }
+      categories.add(entry.category);
     });
 
-    const driftCount = driftResult.drift.filter(
-      (entry) => entry.status !== "ok",
-    ).length;
+    const driftCount = driftResult.drift.length;
 
     return {
       hasDrift: driftCount > 0,
@@ -452,9 +449,9 @@ export async function onboard(args: string[]): Promise<void> {
   }
 
   // Record telemetry
-  await recordEvent("command", {
-    command: "onboard",
-    withCI: !!parsed.flags["ci"],
+  recordEvent({
+    command_name: "onboard",
+    align_hashes_used: [],
   });
 
   const intro = clack.intro("AlignTrue Onboard");
@@ -519,10 +516,10 @@ export async function onboard(args: string[]): Promise<void> {
     process.exit(0);
   } catch (error) {
     clack.cancel("Onboarding analysis failed");
-    exitWithError(
-      Errors.COMMAND_FAILED,
-      "onboard",
-      error instanceof Error ? error.message : String(error),
-    );
+    exitWithError({
+      title: "Onboard command failed",
+      message: error instanceof Error ? error.message : String(error),
+      code: "ERR_ONBOARD_FAILED",
+    });
   }
 }
