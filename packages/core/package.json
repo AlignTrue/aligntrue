@@ -13,7 +13,8 @@
     "./lockfile": "./dist/lockfile.js",
     "./performance": "./dist/performance/index.js",
     "./telemetry/collector.js": "./dist/telemetry/collector.js",
-    "./team/allow.js": "./dist/team/allow.js"
+    "./team/allow.js": "./dist/team/allow.js",
+    "./team/drift.js": "./dist/team/drift.js"
   },
   "scripts": {
     "build": "tsc",

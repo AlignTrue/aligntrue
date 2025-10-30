@@ -19,6 +19,7 @@ import {
   privacy,
   backup,
   pull,
+  link,
 } from "./commands/index.js";
 
 async function main() {
@@ -41,6 +42,7 @@ async function main() {
     console.log("Team Commands:");
     console.log("  team           Team mode management");
     console.log("  pull           Pull rules from git repository");
+    console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  scopes         List configured scopes\n");
 
     console.log("Settings:");
@@ -128,6 +130,11 @@ async function main() {
 
   if (command === "pull") {
     await pull(commandArgs);
+    return;
+  }
+
+  if (command === "link") {
+    await link(commandArgs);
     return;
   }
 
