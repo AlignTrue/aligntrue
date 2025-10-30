@@ -1,2 +1,4 @@
-pnpm commitlint --edit "$1"
+#!/usr/bin/env sh
+
+node scripts/git-hooks/commit-msg.mjs $1
 
