@@ -20,6 +20,8 @@ import {
   backup,
   pull,
   link,
+  drift,
+  update,
 } from "./commands/index.js";
 
 async function main() {
@@ -43,6 +45,8 @@ async function main() {
     console.log("  team           Team mode management");
     console.log("  pull           Pull rules from git repository");
     console.log("  link           Vendor rules with git submodule/subtree");
+    console.log("  drift          Detect drift from allowed sources");
+    console.log("  update         Check and apply updates");
     console.log("  scopes         List configured scopes\n");
 
     console.log("Settings:");
@@ -135,6 +139,16 @@ async function main() {
 
   if (command === "link") {
     await link(commandArgs);
+    return;
+  }
+
+  if (command === "drift") {
+    await drift(commandArgs);
+    return;
+  }
+
+  if (command === "update") {
+    await update(commandArgs);
     return;
   }
 

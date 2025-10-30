@@ -26,4 +26,5 @@ export { privacyCommand as privacy } from "./privacy.js";
 export { backupCommand as backup } from "./backup.js";
 export { pull } from "./pull.js";
 export { link } from "./link.js";
-// export { drift } from "./drift.js"; // TODO: Enable when drift detection is working
+export { drift } from "./drift.js";
+export { update } from "./update.js";

@@ -250,11 +250,15 @@ export function detectDriftForConfig(config: any): Promise<{
     ruleId: string;
     description: string;
     suggestion?: string | undefined;
+    lockfile_hash?: string;
+    expected_hash?: string;
+    vendor_path?: string;
+    vendor_type?: string;
   }>;
 }> {
   const basePath = config.rootDir || ".";
   const lockfilePath = config.lockfilePath || ".aligntrue.lock.json";
-  const allowListPath = config.allowListPath || ".aligntrue.allow.yaml";
+  const allowListPath = config.allowListPath || ".aligntrue/allow.yaml";
 
   try {
     const result = detectDrift(lockfilePath, allowListPath, basePath);
@@ -266,12 +270,19 @@ export function detectDriftForConfig(config: any): Promise<{
       summary: result.has_drift
         ? `${result.summary.total} drift findings across ${Object.values(result.summary.by_category).filter((n) => (n as number) > 0).length} categories`
         : "",
-      drift: result.findings.map((f: DriftFinding) => ({
-        category: f.category,
-        ruleId: f.rule_id,
-        description: f.message,
-        suggestion: f.suggestion,
-      })),
+      drift: result.findings.map((f: DriftFinding) => {
+        const item: any = {
+          category: f.category,
+          ruleId: f.rule_id,
+          description: f.message,
+          suggestion: f.suggestion,
+        };
+        if (f.lockfile_hash) item.lockfile_hash = f.lockfile_hash;
+        if (f.expected_hash) item.expected_hash = f.expected_hash;
+        if (f.vendor_path) item.vendor_path = f.vendor_path;
+        if (f.vendor_type) item.vendor_type = f.vendor_type;
+        return item;
+      }),
     });
   } catch (error) {
     // If files don't exist, no drift

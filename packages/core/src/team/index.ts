@@ -14,3 +14,10 @@ export {
   hasValidTeamYaml,
   applySeverityRemap,
 } from "./remap.js";
+export {
+  detectUpstreamUpdates,
+  generateUpdateSummary,
+  detectUpdatesForConfig,
+  type UpdateFinding,
+  type UpdateResult,
+} from "./updates.js";

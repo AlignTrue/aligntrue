@@ -107,8 +107,8 @@ export async function drift(args: string[]): Promise<void> {
 
   // Load and validate config
   const configPath =
-    typeof parsedArgs.flags["--config"] === "string"
-      ? parsedArgs.flags["--config"]
+    typeof parsedArgs.flags["config"] === "string"
+      ? parsedArgs.flags["config"]
       : ".aligntrue/config.yaml";
   const config = await loadConfigWithValidation(configPath);
 
@@ -120,8 +120,14 @@ export async function drift(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  // Detect drift
-  const driftResults = await detectDriftForConfig(config);
+  // Detect drift (add path properties for drift detection)
+  const configWithPaths = {
+    ...config,
+    rootDir: process.cwd(),
+    lockfilePath: ".aligntrue.lock.json",
+    allowListPath: ".aligntrue/allow.yaml",
+  };
+  const driftResults = await detectDriftForConfig(configWithPaths);
 
   // Record telemetry
   await recordEvent({
@@ -130,16 +136,17 @@ export async function drift(args: string[]): Promise<void> {
   });
 
   // Output results based on format
-  if (parsedArgs.flags["--json"]) {
+  const gatesEnabled = Boolean(parsedArgs.flags["gates"]);
+  if (parsedArgs.flags["json"]) {
     outputJson(driftResults);
-  } else if (parsedArgs.flags["--sarif"]) {
-    outputSarif(driftResults);
+  } else if (parsedArgs.flags["sarif"]) {
+    outputSarif(driftResults, gatesEnabled);
   } else {
     outputHuman(driftResults);
   }
 
   // Exit with error code if --gates flag used and drift detected
-  if (parsedArgs.flags["--gates"] && driftResults.driftDetected) {
+  if (gatesEnabled && driftResults.driftDetected) {
     process.exit(2);
   }
 }
@@ -156,6 +163,7 @@ function outputHuman(results: any): void {
 
   console.log("Drift Detection Report");
   console.log("======================");
+  console.log(`Mode: ${results.mode}`);
 
   // Group by category
   const byCategory = results.drift.reduce((acc: any, item: any) => {
@@ -168,52 +176,91 @@ function outputHuman(results: any): void {
   Object.entries(byCategory).forEach(([category, items]) => {
     const upperCategory = category.toUpperCase().replace("_", " ");
     const itemArray = items as any[];
-    console.log(`\n${upperCategory} DRIFT (${itemArray.length} items):`);
+    console.log(`\n${upperCategory} DRIFT:`);
 
     itemArray.forEach((item: any) => {
-      console.log(`  • ${item.ruleId}: ${item.description}`);
+      console.log(`  ${item.ruleId}`);
+
+      // For upstream drift, show hashes
+      if (
+        category === "upstream" &&
+        (item.lockfile_hash || item.expected_hash)
+      ) {
+        if (item.lockfile_hash) {
+          console.log(`    Lockfile: ${item.lockfile_hash.slice(0, 12)}...`);
+        }
+        if (item.expected_hash) {
+          console.log(`    Allowed: ${item.expected_hash.slice(0, 12)}...`);
+        }
+      }
+
+      // For vendorized drift, show vendor info
+      if (category === "vendorized" && (item.vendor_path || item.vendor_type)) {
+        if (item.vendor_path) {
+          console.log(`    Vendor path: ${item.vendor_path}`);
+        }
+        if (item.vendor_type) {
+          console.log(`    Vendor type: ${item.vendor_type}`);
+        }
+      }
+
+      console.log(`    ${item.description}`);
       if (item.suggestion) {
         console.log(`    Suggestion: ${item.suggestion}`);
       }
     });
   });
-
-  if (results.summary && results.summary.trim()) {
-    console.log(`\nSummary: ${results.summary}`);
-  }
 }
 
 /**
  * Output results in JSON format
  */
 function outputJson(results: any): void {
-  console.log(
-    JSON.stringify(
-      {
-        driftDetected: results.driftDetected,
-        mode: results.mode,
-        lockfilePath: results.lockfilePath,
-        summary: results.summary,
-        driftByCategory: results.drift.reduce((acc: any, item: any) => {
-          if (!acc[item.category]) acc[item.category] = [];
-          acc[item.category].push({
-            ruleId: item.ruleId,
-            description: item.description,
-            suggestion: item.suggestion,
-          });
+  const output = {
+    mode: results.mode,
+    has_drift: results.driftDetected,
+    lockfile_path: results.lockfilePath,
+    findings: results.drift,
+    summary: {
+      total: results.drift.length,
+      by_category: results.drift.reduce(
+        (acc: any, item: any) => {
+          acc[item.category] = (acc[item.category] || 0) + 1;
           return acc;
-        }, {}),
-      },
-      null,
-      2,
-    ),
-  );
+        },
+        {
+          upstream: 0,
+          severity_remap: 0,
+          vendorized: 0,
+          local_overlay: 0,
+        } as Record<string, number>,
+      ),
+    },
+  };
+
+  console.log(JSON.stringify(output, null, 2));
 }
 
 /**
  * Output results in SARIF format
  */
-function outputSarif(results: any): void {
+function outputSarif(results: any, gatesEnabled: boolean): void {
+  const rules = results.drift.reduce((acc: any[], item: any) => {
+    const ruleId = `aligntrue/${item.category}-drift`;
+    if (!acc.find((r) => r.id === ruleId)) {
+      acc.push({
+        id: ruleId,
+        shortDescription: {
+          text: `${item.category} drift detected`,
+        },
+        fullDescription: {
+          text: `Detected drift in ${item.category} category`,
+        },
+      });
+    }
+    return acc;
+  }, []);
+
   const sarif = {
     version: "2.1.0",
     $schema:
@@ -222,15 +269,15 @@ function outputSarif(results: any): void {
       {
         tool: {
           driver: {
-            name: "aligntrue-drift",
-            fullName: "AlignTrue Drift Detection",
+            name: "AlignTrue Drift Detection",
             version: "1.0.0",
             informationUri: "https://github.com/AlignTrue/aligntrue",
+            rules,
           },
         },
         results: results.drift.map((item: any) => ({
-          ruleId: `drift-${item.category}`,
-          level: results.gatesEnabled ? "error" : "warning",
+          ruleId: `aligntrue/${item.category}-drift`,
+          level: gatesEnabled ? "error" : "warning",
           message: {
             text: item.description,
           },

@@ -915,6 +915,57 @@ aligntrue drift --json
 
 ---
 
+### `aligntrue update`
+
+**Status:** Phase 3, Session 8 - Complete
+
+Check for and apply updates from approved sources. Generates UPDATE_NOTES.md with change summary.
+
+**Usage:**
+```bash
+aligntrue update <check|apply> [options]
+```
+
+**Subcommands:**
+- `check` - Preview available updates
+- `apply` - Apply updates and generate UPDATE_NOTES.md
+
+**Options:**
+- `--config <path>` - Custom config file path
+- `--dry-run` - Preview without applying (apply only)
+
+**Examples:**
+```bash
+# Check for updates
+aligntrue update check
+
+# Apply updates
+aligntrue update apply
+
+# Preview what would be applied
+aligntrue update apply --dry-run
+```
+
+**Update workflow:**
+1. Detects updates by comparing lockfile to allow list
+2. Generates UPDATE_NOTES.md with change summary
+3. Runs `aligntrue sync --force` automatically
+4. Updates lockfile with new hashes
+
+**Update summary includes:**
+- Number of sources updated
+- Affected rules per source
+- Breaking changes (if any)
+- Previous and current commit SHAs
+
+**Exit codes:** `0` (success), `1` (validation error), `2` (system error)
+
+**Requirements:** Team mode enabled
+
+**See:** [Auto-updates guide](./auto-updates.md)
+
+---
+
 ### `aligntrue team enable`
 
 Upgrade project to team mode with lockfile validation.
