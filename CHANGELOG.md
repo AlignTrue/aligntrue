@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 3.5, Checkpoint 1: Stage 1 Complete (Foundation + CLI Scaffold) (Completed 2025-10-30)
+
+**Summary:**
+
+Stage 1 complete with full overlay foundation (config schema, selector engine, operations, application logic, sync integration) and minimal CLI scaffold. All 1746 tests passing (108 overlay-specific). Ready for Session 3: full CLI implementation with add/status/diff commands.
+
+**What's working:**
+
+- ✅ Config schema with validation (set/remove/limits)
+- ✅ Selector parser (rule[id=...], array[0], property.path)
+- ✅ Selector engine (exact matching, ambiguity detection)
+- ✅ Set/remove operations with dot-notation paths
+- ✅ Application algorithm (ordering, conflict detection, size limits)
+- ✅ Sync engine integration (IR → overlays → export)
+- ✅ Minimal CLI override command (help + status subcommand)
+
+**Deferred to Session 3:**
+
+- `aln override add` (interactive overlay creation)
+- `aln override diff` (show before/after changes)
+- Full integration tests for override workflow
+- Golden repo examples
+
+**Test results:**
+
+- Total: 1746/1746 passing (22 file-utils, 113 schema, 109 markdown-parser, 792 core, 81 sources, 221 exporters, 57 checks, 12 testkit, 339 cli)
+- Overlay-specific: 108/108 passing (31 selector-parser, 27 selector-engine, 13 config-schema, 22 operations, 15 apply)
+- CLI override: 5/5 smoke tests passing (help, unknown subcommand handling)
+
+**Files created (Session 1+2):**
+
+- packages/core/src/overlays/types.ts
+- packages/core/src/overlays/selector-parser.ts
+- packages/core/src/overlays/selector-engine.ts
+- packages/core/src/overlays/operations.ts
+- packages/core/src/overlays/apply.ts
+- packages/core/src/overlays/index.ts
+- packages/core/tests/overlays/\*.test.ts (5 files)
+- packages/cli/src/commands/override.ts (minimal v1)
+- packages/cli/tests/commands/override.test.ts (5 smoke tests)
+
+**Config changes:**
+
+- packages/core/src/config/index.ts: Added overlays field
+- packages/core/schema/config.schema.json: Added overlays schema
+- packages/core/src/sync/engine.ts: Integrated overlay application
+
+**Next:** Session 3 - Implement full CLI override commands (add, status, diff) with interactive mode and validation
+
+---
+
 ### Phase 3.5, Session 2: Overlay Application Logic (Completed 2025-10-30)
 
 **Overlay application (Phase 3.5 pre-launch):**

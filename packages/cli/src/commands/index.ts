@@ -30,3 +30,4 @@ export { link } from "./link.js";
 export { drift } from "./drift.js";
 export { update } from "./update.js";
 export { onboard } from "./onboard.js";
+export { overrideCommand as override } from "./override.js";
