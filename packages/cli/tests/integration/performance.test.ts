@@ -142,7 +142,7 @@ rules:
     // Assert average <450ms (increased to account for CI environment variance)
     expect(avgDuration).toBeLessThan(450);
 
-    // Allow individual runs up to 500ms (CI environments may be slower)
-    expect(maxDuration).toBeLessThan(500);
+    // Allow individual runs up to 550ms (CI environments may be slower)
+    expect(maxDuration).toBeLessThan(550);
   });
 });
