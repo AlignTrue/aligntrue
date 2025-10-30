@@ -7,3 +7,4 @@
 export * from "./types.js";
 export * from "./allow.js";
 export * from "./validation.js";
+export { detectDrift, detectDriftForConfig } from "./drift.js";
