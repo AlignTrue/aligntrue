@@ -1,0 +1,24 @@
+# Team-approved rule sources
+# Phase 3 Session 2: Allow List Foundation
+
+# Format 1: id@profile@version (resolved to hash by CLI)
+# sources:
+#   - type: id
+#     value: base-global@aligntrue@latest
+#     comment: Official base pack
+
+# Format 2: Raw SHA-256 hash (lockfile uses this)
+sources:
+  - type: hash
+    value: sha256:abc123def456... # Placeholder for shared-pack hash
+    comment: Vendored shared standards pack
+
+  # Example: Git repo (when Session 4 pull command available)
+  # - type: hash
+  #   value: sha256:def789abc123...
+  #   comment: Org shared rules from git
+# How to approve new sources:
+# aligntrue team approve git:https://github.com/org/shared-rules
+# aligntrue team approve sha256:abc123...
+# aligntrue team list-allowed
+

@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { adapters } from "../../src/commands/adapters.js";
+import { mockCommandArgs } from "../utils/command-test-helpers.js";
 import * as clack from "@clack/prompts";
 
 // Mock clack prompts
@@ -84,7 +85,8 @@ describe("adapters command", () => {
     });
 
     it("shows help with --help", async () => {
-      await expect(adapters(["--help"])).rejects.toThrow("process.exit: 0");
+      const args = mockCommandArgs({ help: true });
+      await expect(adapters(args)).rejects.toThrow("process.exit: 0");
       expect(exitCode).toBe(0);
     });
   });

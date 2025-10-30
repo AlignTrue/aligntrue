@@ -1,0 +1,20 @@
+# Git submodule placeholder
+
+In a real repository, this directory would be a git submodule.
+
+To set up as a real submodule:
+
+```bash
+# Remove placeholder directory
+rm -rf vendor/org-standards
+
+# Add as submodule
+git submodule add https://github.com/org/standards vendor/org-standards
+
+# Initialize and update
+git submodule init
+git submodule update
+```
+
+See README.md for full submodule workflow.
+

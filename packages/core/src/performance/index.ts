@@ -88,3 +88,17 @@ export function createIgnoreFilter(
     return ig.ignores(normalizedPath);
   };
 }
+
+// Phase 3 Session 10: Additional performance utilities
+export {
+  loadValidationState,
+  saveValidationState,
+  detectChangedFiles,
+  shouldUseIncremental,
+} from "./incremental.js";
+
+export type { ValidationState } from "./incremental.js";
+
+export { processInParallel, aggregateErrors } from "./parallel.js";
+
+export type { ParallelResult } from "./parallel.js";
