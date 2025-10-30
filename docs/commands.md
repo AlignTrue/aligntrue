@@ -875,6 +875,46 @@ rules:
 
 Commands for managing team mode features (hidden until team mode enabled).
 
+### `aligntrue drift`
+
+**Status:** Phase 3, Session 6 - Foundation complete, CLI integration in progress
+
+Detect drift between lockfile and approved sources. Monitors upstream changes, vendored pack integrity, and policy compliance.
+
+**Usage:**
+```bash
+aligntrue drift [options]
+```
+
+**Options:**
+- `--gates` - Exit non-zero if drift detected (CI mode)
+- `--json` - Output results in JSON format
+- `--sarif` - Output results in SARIF format for CI tools
+- `--config <path>` - Custom config file path
+
+**Examples:**
+```bash
+# Check for drift
+aligntrue drift
+
+# CI mode (fail on drift)
+aligntrue drift --gates
+
+# JSON output
+aligntrue drift --json
+```
+
+**Drift categories:**
+- **upstream** - Rule content differs from allowed version
+- **vendorized** - Vendored pack differs from source
+- **severity_remap** - Policy changes (Session 7)
+
+**Exit codes:** `0` (no drift), `2` (drift with --gates)
+
+**See:** [Drift detection guide](./drift-detection.md)
+
+---
+
 ### `aligntrue team enable`
 
 Upgrade project to team mode with lockfile validation.
