@@ -50,3 +50,14 @@ export interface ParsedSourceId {
   profile: string;
   version: string;
 }
+
+/**
+ * Severity remapping types (from remap.ts)
+ */
+export type {
+  AlignSeverity,
+  CheckSeverity,
+  SeverityRemap,
+  TeamYaml,
+  RemapValidationError,
+} from "./remap.js";
