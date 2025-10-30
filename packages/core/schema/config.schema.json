@@ -275,6 +275,61 @@
           }
         }
       }
+    },
+    "overlays": {
+      "type": "object",
+      "description": "Overlay configuration for declarative customization of upstream rules (Phase 3.5)",
+      "additionalProperties": false,
+      "properties": {
+        "overrides": {
+          "type": "array",
+          "description": "List of overlay definitions to apply to upstream rules",
+          "items": {
+            "type": "object",
+            "required": ["selector"],
+            "additionalProperties": false,
+            "properties": {
+              "selector": {
+                "type": "string",
+                "description": "Deterministic selector targeting exactly one rule (e.g., 'rule[id=...]')",
+                "minLength": 1
+              },
+              "set": {
+                "type": "object",
+                "description": "Key-value pairs to set (supports nested paths with dot notation)",
+                "additionalProperties": true
+              },
+              "remove": {
+                "type": "array",
+                "description": "List of keys to remove (supports nested paths with dot notation)",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "description": "Size limits for overlay configuration",
+          "additionalProperties": false,
+          "properties": {
+            "max_overrides": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Maximum number of overrides allowed (default: 50)"
+            },
+            "max_operations_per_override": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Maximum combined set+remove operations per override (default: 20)"
+            }
+          }
+        }
+      }
     }
   }
 }

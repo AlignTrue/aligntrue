@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 3.5, Session 2: Overlay Application Logic (Completed 2025-10-30)
+
+**Overlay application (Phase 3.5 pre-launch):**
+
+- Overlay operations module: set/remove property operations with dot-notation paths
+- Deep clone for safe IR modification (no mutations of original)
+- Array merging as sets with stable sort for determinism
+- Application algorithm: deterministic ordering (file order + stable sort by selector)
+- Conflict detection: warns when multiple overlays target same properties (last wins)
+- Size limit enforcement: max overlays (default 50), max operations per override (default 20)
+- Line ending normalization (LF with single trailing LF) before hashing
+- Sync engine integration: overlays applied after plugs resolution, before export
+
+**Tests:**
+
+- 108 overlay tests passing (71 Session 1 + 37 Session 2)
+- All 792 core package tests passing (no regressions)
+- Test coverage: set/remove operations, application logic, size limits, conflict warnings
+
+**Files created:**
+
+- packages/core/src/overlays/operations.ts (~180 lines)
+- packages/core/src/overlays/apply.ts (~330 lines)
+- packages/core/tests/overlays/operations.test.ts (22 tests)
+- packages/core/tests/overlays/apply.test.ts (15 tests)
+
+**Sync engine integration:**
+
+- Overlays applied in syncToAgents after IR loading and plugs resolution
+- Audit trail entry for overlay application
+- Failure handling with clear error messages
+- Optional limits passed from config
+
+**Technical notes:**
+
+- Operations applied in deterministic order: set before remove
+- Property paths support nested access with dot notation
+- Empty segments in paths are skipped safely
+- Triple-hash computation deferred to Session 6 (lockfile integration)
+
+**Next:** Session 3 - CLI override commands (add, status, diff)
+
+### Phase 3.5, Session 1: Overlay Schema & Selector Engine (Completed 2025-10-30)
+
+**Overlay foundation (Phase 3.5 pre-launch):**
+
+- Overlay config schema with `overrides` field and `limits` for size enforcement
+- JSON Schema validation for overlays: selector format, set/remove operations, additionalProperties=false
+- Deterministic selector language: `rule[id=...]`, property paths, array indices (no wildcards/regex/functions)
+- Selector parser with validation: detects wildcards, regex patterns, computed functions
+- Selector evaluation engine: exact-match requirement, stale/ambiguous selector detection
+- Overlay types module: OverlayDefinition, SelectorMatch, ValidationResult, triple-hash format
+- Config integration: overlays added to knownFields, OverlayConfig imported from overlays module
+
+**Tests:**
+
+- 71 overlay tests passing (31 selector parser, 27 selector engine, 13 config schema)
+- All 755 core package tests passing (no regressions)
+- Test coverage: valid/invalid selectors, schema validation, stale/ambiguous detection
+
+**Files created:**
+
+- packages/core/src/overlays/types.ts (~150 lines)
+- packages/core/src/overlays/selector-parser.ts (~220 lines)
+- packages/core/src/overlays/selector-engine.ts (~250 lines)
+- packages/core/src/overlays/index.ts (exports)
+- packages/core/tests/overlays/ (3 test files, 71 tests)
+
+**Technical notes:**
+
+- Selectors match exactly one target or fail (determinism)
+- Property paths limited to 10 levels, array indices 0-1000
+- Stable sort order: rule < property < array_index, then lexicographic
+- Default limits: 50 overrides, 20 operations per override
+
+**Next:** Session 2 - Overlay application logic with triple-hash computation
+
 ### Phase 3, Session 10: Test Standardization & Polish (Completed 2025-10-30)
 
 **Test framework standardization:**
