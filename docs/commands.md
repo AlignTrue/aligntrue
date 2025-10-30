@@ -966,6 +966,72 @@ aligntrue update apply --dry-run
 
 ---
 
+### `aligntrue onboard`
+
+**Status:** Phase 3, Session 9 - Complete
+
+Generate personalized developer onboarding checklist based on recent work, check results, and project state.
+
+**Usage:**
+```bash
+aligntrue onboard [options]
+```
+
+**Options:**
+- `--ci <path>` - Path to SARIF file with CI check results
+- `--config <path>` - Custom config file path
+
+**Examples:**
+```bash
+# Basic onboarding checklist
+aln onboard
+
+# Include CI check results
+aln onboard --ci checks.sarif
+
+# Use custom config
+aln onboard --config custom-config.yaml
+```
+
+**Checklist includes:**
+- Recent commit history and file changes
+- Uncommitted changes warnings
+- Test file patterns (suggest running tests)
+- Source changes without tests (warning)
+- Documentation updates
+- Team drift (in team mode)
+- Unresolved required plugs
+- Failed checks (when --ci provided)
+
+**Integrations:**
+- **Drift detection** - Shows team drift in team mode
+- **Check results** - Parses SARIF from CI runs
+- **Plugs** - Detects unresolved required plugs automatically
+
+**Output format:**
+```
+🚀 Developer Onboarding Checklist
+
+Based on your recent work:
+  Last commit: feat: Add feature
+  By: Developer Name
+  Files changed: 5
+
+Actionable next steps:
+
+1. ⚠️ Run tests (2 test files modified)
+   → Run: pnpm test
+
+2. ℹ️ Run validation checks
+   → Run: aligntrue check
+```
+
+**Exit codes:** `0` (success)
+
+**See:** [Onboarding guide](./onboarding.md)
+
+---
+
 ### `aligntrue team enable`
 
 Upgrade project to team mode with lockfile validation.

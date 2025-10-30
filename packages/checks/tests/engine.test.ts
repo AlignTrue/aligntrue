@@ -440,4 +440,111 @@ describe("runChecks", () => {
       expect(results[0].metadata).toBeUndefined(); // No metadata when no change
     });
   });
+
+  describe("unresolved plugs integration", () => {
+    it("should add informational finding for unresolved plugs", async () => {
+      const provider = new MemoryFileProvider();
+      const pack = createPack({
+        rules: [
+          {
+            id: "test-rule",
+            severity: "error",
+            check: {
+              type: "file_presence",
+              inputs: { pattern: "*.md" },
+              evidence: "No markdown files",
+            },
+          },
+        ],
+      });
+
+      const results = await runChecks(pack, {
+        fileProvider: provider,
+        unresolvedPlugsCount: 3,
+      });
+
+      // Should have original rule + plugs finding
+      expect(results).toHaveLength(2);
+
+      const plugsFinding = results.find(
+        (r) => r.rule.id === "plugs/unresolved-required",
+      );
+      expect(plugsFinding).toBeDefined();
+      expect(plugsFinding?.level).toBe("note");
+      expect(plugsFinding?.message).toContain("3 required plugs need values");
+      expect(plugsFinding?.message).toContain("aln plugs audit");
+    });
+
+    it("should not add finding when unresolvedPlugsCount is zero", async () => {
+      const provider = new MemoryFileProvider();
+      const pack = createPack({
+        rules: [],
+      });
+
+      const results = await runChecks(pack, {
+        fileProvider: provider,
+        unresolvedPlugsCount: 0,
+      });
+
+      expect(results).toHaveLength(0);
+    });
+
+    it("should not add finding when unresolvedPlugsCount is undefined", async () => {
+      const provider = new MemoryFileProvider();
+      const pack = createPack({
+        rules: [],
+      });
+
+      const results = await runChecks(pack, {
+        fileProvider: provider,
+      });
+
+      expect(results).toHaveLength(0);
+    });
+
+    it("should use singular form for one unresolved plug", async () => {
+      const provider = new MemoryFileProvider();
+      const pack = createPack({ rules: [] });
+
+      const results = await runChecks(pack, {
+        fileProvider: provider,
+        unresolvedPlugsCount: 1,
+      });
+
+      const plugsFinding = results.find(
+        (r) => r.rule.id === "plugs/unresolved-required",
+      );
+      expect(plugsFinding?.message).toContain("1 required plug needs values");
+    });
+
+    it("should work with severity remapping in team mode", async () => {
+      const provider = new MemoryFileProvider();
+      const pack = createPack({
+        rules: [
+          {
+            id: "test-rule",
+            severity: "error",
+            check: {
+              type: "file_presence",
+              inputs: { pattern: "*.md" },
+              evidence: "No markdown files",
+            },
+          },
+        ],
+      });
+
+      const results = await runChecks(pack, {
+        fileProvider: provider,
+        unresolvedPlugsCount: 2,
+        mode: "team",
+      });
+
+      // Should still have both findings in team mode
+      expect(results.length).toBeGreaterThanOrEqual(2);
+      const plugsFinding = results.find(
+        (r) => r.rule.id === "plugs/unresolved-required",
+      );
+      expect(plugsFinding).toBeDefined();
+    });
+  });
 });

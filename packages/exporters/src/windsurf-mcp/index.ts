@@ -3,186 +3,203 @@
  * Exports AlignTrue rules to .windsurf/mcp_config.json format
  */
 
-import { join, dirname } from 'path'
-import { mkdirSync } from 'fs'
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '../types.js'
-import type { AlignRule } from '@aligntrue/schema'
-import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/file-utils'
+import { join, dirname } from "path";
+import { mkdirSync } from "fs";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+  ResolvedScope,
+} from "../types.js";
+import type { AlignRule } from "@aligntrue/schema";
+import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>
-  seenScopes: Set<string>
+  allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  seenScopes: Set<string>;
 }
 
 interface McpConfig {
-  version: string
-  generated_by: string
-  content_hash: string
-  rules: McpRule[]
-  fidelity_notes?: string[]
+  version: string;
+  generated_by: string;
+  content_hash: string;
+  unresolved_plugs?: number;
+  rules: McpRule[];
+  fidelity_notes?: string[];
 }
 
 interface McpRule {
-  id: string
-  severity: 'error' | 'warn' | 'info'
-  guidance: string
-  scope?: string
-  applies_to?: string[]
-  [key: string]: any
+  id: string;
+  severity: "error" | "warn" | "info";
+  guidance: string;
+  scope?: string;
+  applies_to?: string[];
+  [key: string]: any;
 }
 
 export class WindsurfMcpExporter implements ExporterPlugin {
-  name = 'windsurf-mcp'
-  version = '1.0.0'
-  
+  name = "windsurf-mcp";
+  version = "1.0.0";
+
   private state: ExporterState = {
     allRules: [],
     seenScopes: new Set(),
-  }
+  };
 
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
-    const { scope, rules } = request
-    const { outputDir, dryRun = false } = options
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { scope, rules } = request;
+    const { outputDir, dryRun = false } = options;
 
     if (!rules || rules.length === 0) {
       return {
         success: true,
         filesWritten: [],
-        contentHash: '',
-      }
+        contentHash: "",
+      };
     }
 
-    const scopePath = this.formatScopePath(scope)
-    rules.forEach(rule => {
-      this.state.allRules.push({ rule, scopePath })
-    })
-    this.state.seenScopes.add(scopePath)
+    const scopePath = this.formatScopePath(scope);
+    rules.forEach((rule) => {
+      this.state.allRules.push({ rule, scopePath });
+    });
+    this.state.seenScopes.add(scopePath);
 
-    const outputPath = join(outputDir, '.windsurf', 'mcp_config.json')
-    
-    const mcpConfig = this.generateMcpConfig()
-    const content = JSON.stringify(mcpConfig, null, 2) + '\n'
-    
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
-    
+    const outputPath = join(outputDir, ".windsurf", "mcp_config.json");
+
+    const mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
+    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
+
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+
     if (!dryRun) {
-      const windsurfDirPath = dirname(outputPath)
-      mkdirSync(windsurfDirPath, { recursive: true })
-      
-      const writer = new AtomicFileWriter()
-      writer.write(outputPath, content)
+      const windsurfDirPath = dirname(outputPath);
+      mkdirSync(windsurfDirPath, { recursive: true });
+
+      const writer = new AtomicFileWriter();
+      writer.write(outputPath, content);
     }
 
     const result: ExportResult = {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
       contentHash,
-    }
+    };
 
     if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes
+      result.fidelityNotes = fidelityNotes;
     }
 
-    return result
+    return result;
   }
 
   resetState(): void {
     this.state = {
       allRules: [],
       seenScopes: new Set(),
-    }
+    };
   }
 
   private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === '.' || scope.path === '') {
-      return 'all files'
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "all files";
     }
-    return scope.path
+    return scope.path;
   }
 
-  private generateMcpConfig(): McpConfig {
+  private generateMcpConfig(unresolvedPlugs?: number): McpConfig {
     const rules: McpRule[] = this.state.allRules.map(({ rule, scopePath }) => {
       const mcpRule: McpRule = {
         id: rule.id,
         severity: rule.severity,
-        guidance: rule.guidance || '',
+        guidance: rule.guidance || "",
         scope: scopePath,
         applies_to: rule.applies_to || [],
-      }
+      };
 
-      if (rule.vendor && rule.vendor['windsurf']) {
-        const windsurfVendor = rule.vendor['windsurf'] as Record<string, any>
+      if (rule.vendor && rule.vendor["windsurf"]) {
+        const windsurfVendor = rule.vendor["windsurf"] as Record<string, any>;
         Object.entries(windsurfVendor).forEach(([key, value]) => {
-          if (key !== '_meta') {
-            mcpRule[key] = value
+          if (key !== "_meta") {
+            mcpRule[key] = value;
           }
-        })
+        });
       }
 
-      return mcpRule
-    })
+      return mcpRule;
+    });
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
     const config: McpConfig = {
-      version: 'v1',
-      generated_by: 'AlignTrue',
+      version: "v1",
+      generated_by: "AlignTrue",
       content_hash: contentHash,
       rules,
+    };
+
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      config.unresolved_plugs = unresolvedPlugs;
     }
 
     if (fidelityNotes.length > 0) {
-      config.fidelity_notes = fidelityNotes
+      config.fidelity_notes = fidelityNotes;
     }
 
-    return config
+    return config;
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = []
-    const unmappedFields = new Set<string>()
-    const crossAgentVendors = new Set<string>()
+    const notes: string[] = [];
+    const unmappedFields = new Set<string>();
+    const crossAgentVendors = new Set<string>();
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       if (rule.check) {
-        unmappedFields.add('check')
+        unmappedFields.add("check");
       }
       if (rule.autofix) {
-        unmappedFields.add('autofix')
+        unmappedFields.add("autofix");
       }
 
       if (rule.vendor) {
-        Object.keys(rule.vendor).forEach(agent => {
-          if (agent !== 'windsurf' && agent !== '_meta') {
-            crossAgentVendors.add(agent)
+        Object.keys(rule.vendor).forEach((agent) => {
+          if (agent !== "windsurf" && agent !== "_meta") {
+            crossAgentVendors.add(agent);
           }
-        })
+        });
       }
-    })
+    });
 
-    if (unmappedFields.has('check')) {
-      notes.push('Machine-checkable rules (check) not represented in MCP config format')
+    if (unmappedFields.has("check")) {
+      notes.push(
+        "Machine-checkable rules (check) not represented in MCP config format",
+      );
     }
-    if (unmappedFields.has('autofix')) {
-      notes.push('Autofix hints not represented in MCP config format')
+    if (unmappedFields.has("autofix")) {
+      notes.push("Autofix hints not represented in MCP config format");
     }
 
     if (crossAgentVendors.size > 0) {
-      const agents = Array.from(crossAgentVendors).sort().join(', ')
-      notes.push(`Vendor-specific metadata for other agents not extracted to MCP config: ${agents}`)
+      const agents = Array.from(crossAgentVendors).sort().join(", ");
+      notes.push(
+        `Vendor-specific metadata for other agents not extracted to MCP config: ${agents}`,
+      );
     }
 
-    return notes
+    return notes;
   }
 }
 
-export default WindsurfMcpExporter
-
+export default WindsurfMcpExporter;

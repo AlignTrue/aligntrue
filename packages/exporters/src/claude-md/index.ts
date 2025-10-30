@@ -1,212 +1,246 @@
 /**
  * CLAUDE.md exporter
  * Exports AlignTrue rules to Claude-specific CLAUDE.md format
- * 
+ *
  * Format: Single root-level CLAUDE.md file (similar to AGENTS.md but Claude-specific)
  */
 
-import { join } from 'path'
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult, ResolvedScope } from '@aligntrue/plugin-contracts'
-import type { AlignRule } from '@aligntrue/schema'
-import { canonicalizeJson, computeHash } from '@aligntrue/schema'
-import { AtomicFileWriter } from '@aligntrue/file-utils'
-import { 
-  extractModeConfig, 
-  applyRulePrioritization, 
+import { join } from "path";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+  ResolvedScope,
+} from "@aligntrue/plugin-contracts";
+import type { AlignRule } from "@aligntrue/schema";
+import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
+import {
+  extractModeConfig,
+  applyRulePrioritization,
   generateSessionPreface,
   wrapRuleWithMarkers,
-  shouldIncludeRule
-} from '../utils/index.js'
+  shouldIncludeRule,
+} from "../utils/index.js";
 
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>
-  seenScopes: Set<string>
+  allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  seenScopes: Set<string>;
 }
 
 export class ClaudeMdExporter implements ExporterPlugin {
-  name = 'claude-md'
-  version = '1.0.0'
-  
+  name = "claude-md";
+  version = "1.0.0";
+
   private state: ExporterState = {
     allRules: [],
     seenScopes: new Set(),
-  }
+  };
 
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
-    const { scope, rules } = request
-    const { outputDir, dryRun = false, config } = options
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { scope, rules } = request;
+    const { outputDir, dryRun = false, config } = options;
 
     if (!rules || rules.length === 0) {
       return {
         success: true,
         filesWritten: [],
-        contentHash: '',
-      }
+        contentHash: "",
+      };
     }
 
-    const scopePath = this.formatScopePath(scope)
-    rules.forEach(rule => {
-      this.state.allRules.push({ rule, scopePath })
-    })
-    this.state.seenScopes.add(scopePath)
+    const scopePath = this.formatScopePath(scope);
+    rules.forEach((rule) => {
+      this.state.allRules.push({ rule, scopePath });
+    });
+    this.state.seenScopes.add(scopePath);
 
-    const outputPath = join(outputDir, 'CLAUDE.md')
-    
+    const outputPath = join(outputDir, "CLAUDE.md");
+
     // Get mode hints from config
-    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(this.name, config)
-    
-    const { content, warnings } = this.generateClaudeMdContent(modeHints, maxBlocks, maxTokens)
-    
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
-    
+    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
+      this.name,
+      config,
+    );
+
+    const { content, warnings } = this.generateClaudeMdContent(
+      modeHints,
+      maxBlocks,
+      maxTokens,
+      options.unresolvedPlugsCount,
+    );
+
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+
     if (!dryRun) {
-      const writer = new AtomicFileWriter()
-      writer.write(outputPath, content)
+      const writer = new AtomicFileWriter();
+      writer.write(outputPath, content);
     }
 
     const result: ExportResult = {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
       contentHash,
-    }
+    };
 
     if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes
-    }
-    
-    if (warnings.length > 0) {
-      result.warnings = warnings
+      result.fidelityNotes = fidelityNotes;
     }
 
-    return result
+    if (warnings.length > 0) {
+      result.warnings = warnings;
+    }
+
+    return result;
   }
 
   resetState(): void {
     this.state = {
       allRules: [],
       seenScopes: new Set(),
-    }
+    };
   }
 
   private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === '.' || scope.path === '') {
-      return 'all files'
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "all files";
     }
-    return scope.path
+    return scope.path;
   }
 
-  private generateClaudeMdContent(modeHints: string, maxBlocks: number, maxTokens: number): { content: string; warnings: string[] } {
-    const lines: string[] = []
-    
-    lines.push('# CLAUDE.md')
-    lines.push('')
-    lines.push('**Version:** v1')
-    lines.push('**Generated by:** AlignTrue')
-    lines.push('')
-    lines.push('This file contains rules and guidance for Claude Code.')
-    
+  private generateClaudeMdContent(
+    modeHints: string,
+    maxBlocks: number,
+    maxTokens: number,
+    unresolvedPlugs?: number,
+  ): { content: string; warnings: string[] } {
+    const lines: string[] = [];
+
+    lines.push("# CLAUDE.md");
+    lines.push("");
+    lines.push("**Version:** v1");
+    lines.push("**Generated by:** AlignTrue");
+    lines.push("");
+    lines.push("This file contains rules and guidance for Claude Code.");
+
     // Add session preface using shared utility
-    lines.push(...generateSessionPreface(modeHints))
+    lines.push(...generateSessionPreface(modeHints));
 
     // Apply prioritization using shared utility
-    const allRules = this.state.allRules.map(({ rule }) => rule)
-    const { includedIds, warnings } = applyRulePrioritization(allRules, modeHints, maxBlocks, maxTokens)
+    const allRules = this.state.allRules.map(({ rule }) => rule);
+    const { includedIds, warnings } = applyRulePrioritization(
+      allRules,
+      modeHints,
+      maxBlocks,
+      maxTokens,
+    );
 
     // Generate rule sections
     this.state.allRules.forEach(({ rule, scopePath }) => {
       if (!shouldIncludeRule(rule.id, includedIds)) {
-        return
+        return;
       }
-      
+
       // Build rule content
-      const ruleLines: string[] = []
-      ruleLines.push(`## Rule: ${rule.id}`)
-      ruleLines.push('')
-      ruleLines.push(`**ID:** ${rule.id}`)
-      ruleLines.push(`**Severity:** ${this.mapSeverity(rule.severity)}`)
+      const ruleLines: string[] = [];
+      ruleLines.push(`## Rule: ${rule.id}`);
+      ruleLines.push("");
+      ruleLines.push(`**ID:** ${rule.id}`);
+      ruleLines.push(`**Severity:** ${this.mapSeverity(rule.severity)}`);
       if (scopePath) {
-        ruleLines.push(`**Scope:** ${scopePath}`)
+        ruleLines.push(`**Scope:** ${scopePath}`);
       }
-      ruleLines.push('')
+      ruleLines.push("");
       if (rule.guidance) {
-        ruleLines.push(rule.guidance.trim())
-        ruleLines.push('')
+        ruleLines.push(rule.guidance.trim());
+        ruleLines.push("");
       }
-      ruleLines.push('---')
-      
+      ruleLines.push("---");
+
       // Wrap with markers using shared utility
-      const ruleContent = ruleLines.join('\n')
-      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints))
-      lines.push('')
-    })
+      const ruleContent = ruleLines.join("\n");
+      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints));
+      lines.push("");
+    });
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule)
-    const irContent = JSON.stringify({ rules: allRulesIR })
-    const contentHash = computeHash(canonicalizeJson(irContent))
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR)
+    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+    const irContent = JSON.stringify({ rules: allRulesIR });
+    const contentHash = computeHash(canonicalizeJson(irContent));
+    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    lines.push('**Generated by AlignTrue**')
-    lines.push(`Content Hash: ${contentHash}`)
-    
-    if (fidelityNotes.length > 0) {
-      lines.push('')
-      lines.push('**Fidelity Notes:**')
-      fidelityNotes.forEach(note => {
-        lines.push(`- ${note}`)
-      })
+    lines.push("**Generated by AlignTrue**");
+    lines.push(`Content Hash: ${contentHash}`);
+
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      lines.push(`Unresolved Plugs: ${unresolvedPlugs}`);
     }
 
-    return { content: lines.join('\n'), warnings }
+    if (fidelityNotes.length > 0) {
+      lines.push("");
+      lines.push("**Fidelity Notes:**");
+      fidelityNotes.forEach((note) => {
+        lines.push(`- ${note}`);
+      });
+    }
+
+    return { content: lines.join("\n"), warnings };
   }
 
-  private mapSeverity(severity: 'error' | 'warn' | 'info'): string {
+  private mapSeverity(severity: "error" | "warn" | "info"): string {
     const map: Record<string, string> = {
-      error: 'ERROR',
-      warn: 'WARN',
-      info: 'INFO',
-    }
-    return map[severity] || 'WARN'
+      error: "ERROR",
+      warn: "WARN",
+      info: "INFO",
+    };
+    return map[severity] || "WARN";
   }
 
   private computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = []
-    const unmappedFields = new Set<string>()
-    const vendorFields = new Set<string>()
+    const notes: string[] = [];
+    const unmappedFields = new Set<string>();
+    const vendorFields = new Set<string>();
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       if (rule.check) {
-        unmappedFields.add('check')
+        unmappedFields.add("check");
       }
       if (rule.autofix) {
-        unmappedFields.add('autofix')
+        unmappedFields.add("autofix");
       }
       if (rule.vendor) {
-        Object.keys(rule.vendor).forEach(agent => {
-          if (agent !== '_meta') {
-            vendorFields.add(agent)
+        Object.keys(rule.vendor).forEach((agent) => {
+          if (agent !== "_meta") {
+            vendorFields.add(agent);
           }
-        })
+        });
       }
-    })
+    });
 
-    if (unmappedFields.has('check')) {
-      notes.push('Machine-checkable rules (check) not represented in CLAUDE.md format')
+    if (unmappedFields.has("check")) {
+      notes.push(
+        "Machine-checkable rules (check) not represented in CLAUDE.md format",
+      );
     }
-    if (unmappedFields.has('autofix')) {
-      notes.push('Autofix hints not represented in CLAUDE.md format')
+    if (unmappedFields.has("autofix")) {
+      notes.push("Autofix hints not represented in CLAUDE.md format");
     }
     if (vendorFields.size > 0) {
-      const agents = Array.from(vendorFields).sort().join(', ')
-      notes.push(`Vendor metadata for agents preserved but not extracted: ${agents}`)
+      const agents = Array.from(vendorFields).sort().join(", ");
+      notes.push(
+        `Vendor metadata for agents preserved but not extracted: ${agents}`,
+      );
     }
 
-    return notes
+    return notes;
   }
 }
 
-export default ClaudeMdExporter
-
+export default ClaudeMdExporter;
