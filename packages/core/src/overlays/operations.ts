@@ -26,6 +26,13 @@ export function setProperty(target: any, key: string, value: unknown): void {
     const segment = path[i];
     if (!segment) continue; // Skip empty segments
 
+    // Prevent prototype pollution
+    if (["__proto__", "constructor", "prototype"].includes(segment)) {
+      throw new Error(
+        `Invalid property path: segment "${segment}" is disallowed`,
+      );
+    }
+
     // Create intermediate objects if they don't exist
     if (!(segment in current)) {
       current[segment] = {};
@@ -68,6 +75,14 @@ export function removeProperty(target: any, key: string): boolean {
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i];
     if (!segment) continue; // Skip empty segments
+
+    // Prevent prototype pollution
+    if (["__proto__", "constructor", "prototype"].includes(segment)) {
+      throw new Error(
+        `Invalid property path: segment "${segment}" is disallowed`,
+      );
+    }
+
     if (!(segment in current)) {
       return false; // Path doesn't exist
     }
@@ -79,7 +94,11 @@ export function removeProperty(target: any, key: string): boolean {
 
   // Remove the final property
   const finalKey = path[path.length - 1];
-  if (finalKey && finalKey in current) {
+  if (
+    finalKey &&
+    !["__proto__", "constructor", "prototype"].includes(finalKey) &&
+    finalKey in current
+  ) {
     delete current[finalKey];
     return true;
   }
