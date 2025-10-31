@@ -233,7 +233,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documentation complete and accurate
   - Golden repo scenarios verified
 
-**Technical details:**
+**Design principles:**
+
+- **Overlays not forks**: Repos define `overrides` that apply deterministically atop an upstream Align referenced by hash
+- **Three-way merge with lineage**: `base_hash` (from catalog), `local_overlay`, `new_base_hash` → deterministic result or explicit conflicts
+- **Hash discipline**:
+  - Lock `bundle_hash` is computed on the **effective bundle** after applying overlays
+  - Lock stores `{ base_hash, overlay_hash, result_hash }` per affected pack
+
+**Schema additions:**
+
+```yaml
+# .aligntrue.yaml
+extends:
+  - id: stacks/react-frontend@prod
+    pin: sha256:BASE_HASH # optional if using allow by id@version
+overrides:
+  - selector: "rule[id=no-uninstalled-imports]" # JSONPath subset or typed selector
+    set:
+      check.inputs.pattern: "^src/"
+      message: "Disallow uninstalled imports in src/"
+  - selector: "rule[id=min-test-coverage]"
+    remove: ["autofix"] # drop specific keys
+```
+
+**Selector language:**
+
+- Deterministic JSONPath subset with no wildcards that change across runs
+- Allowed ops: select by rule.id, array index, and exact property paths
+- No computed functions or regex in selectors
+- Fails validation if a selector matches zero or many when expect:1
+
+**CLI commands:**
+
+- `aln override add --selector <sel> --set key=value [--remove key]` - Validates selector and writes to overrides
+- `aln update --safe` - Resolves upstream minor or patch updates, applies overlays, prints summary table. Fails on conflicts with exit 2 and writes a staged patch file
+- `aln override status` - Shows coverage: total overlays, matched targets, stale selectors, conflicts
+- `aln override diff` - Three-way diff view: base vs overlay vs effective
+
+**Conflict handling:**
+
+- Deterministic conflict markers in a generated patch file under `artifacts/` (no inline edits to source Aligns)
+- Conflicts report machine-readable entries in `overrides.report.json`
+- `--accept=base|overlay|theirs` fast-path options for batch resolution
+
+**Determinism rules:**
+
+- Overlays applied in file order, then stable sort by selector, set/remove key
+- Arrays that behave as sets are unioned and sorted by value
+- No side effects outside targeted paths
+- LF endings with single trailing LF before hashing
+
+**Lockfile changes:**
+
+```json
+{
+  "packs": [
+    {
+      "id": "stacks/react-frontend@prod",
+      "base_hash": "sha256:…",
+      "overlay_hash": "sha256:…",
+      "result_hash": "sha256:…"
+    }
+  ]
+}
+```
+
+**CI gates:**
+
+- Fail if any overlay selector is stale or ambiguous
+- Fail on unresolved conflicts
+- Warn if overlay redefines a key now provided as a plug in base
+- Enforce size limits for overlays block to avoid template sprawl
+
+**Website integration (Phase 4):**
+
+- Pack detail page shows "Customized locally" badge when overlay_hash present
+- Docs page explains overlays vs plugs and when to prefer each
+
+**Technical implementation:**
 
 - Current implementation uses selector-to-rule-ID matching for conflict detection
 - Full three-way merge with pack loading deferred to Phase 4.5 as optimization
@@ -245,6 +323,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed regex pattern in three-way merge conflict detection to support simple rule IDs
 - Was requiring complex format (e.g., `a.b.c`), now accepts simple IDs (e.g., `rule1`)
 - All 165 overlay tests now passing
+
+**Acceptance criteria met:**
+
+- Golden repos with overlays auto-merge cleanly across at least one upstream MINOR bump
+- `aln update --safe` exits 0 with no conflicts for ≥80% of golden updates
+- Lockfiles remain byte-identical across machines given same inputs
+- Overrides validation rejects ambiguous selectors with actionable errors
 
 **Effort:** ~5k tokens (implementation + documentation updates + bug fix)  
 **Tests:** 1842/1842 passing (100% pass rate maintained)
@@ -1176,18 +1261,48 @@ Stage 1 complete with full overlay foundation (config schema, selector engine, o
 - Validation at parse time: required plugs must have values
 - TODO blocks for unresolved plugs: "TODO: Set [[plug:database-host]]"
 
+**Schema additions:**
+
+```yaml
+plugs:
+  slots: # declared by base packs
+    <key>:
+      description: "One short sentence"
+      format: command | text | file | url
+      required: true | false
+      example: "pnpm test" # single line; validated per format
+  fills: # provided by stack packs or repo-local aligns
+    <key>: "<single-line value>"
+```
+
+**Resolution logic:**
+
+- Placeholder syntax: `[[plug:<key>]]` in rule content
+- Escape literal: `[[\plug:<key>]]` → becomes `[[plug:<key>]]` after resolution
+- Resolution order:
+  1. If `fills.<key>` is non-empty single line → replace in place
+  2. Else if slot is `required: true` → insert exact TODO block with LF only and final newline:
+     ```
+     TODO(plug:<key>): Provide a value for this plug.
+     Examples: <example-if-present>
+     ```
+  3. Else (optional and missing) → replace with empty string
+- Normalize to LF and ensure single trailing LF before hashing or export
+- Merge order: base < stack pack(s) < repo. Last writer wins. Deterministic tie-break by source and path
+
 **Dual hashing for fillable rules:**
 
-- Pre-resolution hash: with `[[plug:key]]` placeholders intact
-- Post-resolution hash: after filling plugs with actual values
+- Pre-resolution hash: with `[[plug:key]]` placeholders intact (computed before filling)
+- Post-resolution hash: after filling plugs with actual values (computed after resolution)
 - Lockfile tracks both hashes + unresolved plug count
 - Enables drift detection: upstream changes vs local fill changes
 
 **CLI commands:**
 
-- `aln plugs audit` - Show all plugs (defined, filled, required unfilled)
+- `aln plugs audit` - List required and optional keys, show unresolved, print exact TODO bytes
 - `aln plugs resolve` - Interactive wizard to fill required plugs
-- `aln plugs set <key> <value>` - Set individual plug value
+- `aln plugs resolve --dry-run` - Render with current fills, no write
+- `aln plugs set <key> <value>` - Write repo-local fill (validates format and single line)
 
 **Lockfile integration:**
 
@@ -1201,12 +1316,40 @@ Stage 1 complete with full overlay foundation (config schema, selector engine, o
 - TODO blocks emitted for unresolved required plugs
 - Check findings created for unresolved plugs (rule id: plugs/unresolved-required)
 - SARIF output includes plugs findings
+- `--strict` flag fails if any required plug unresolved
+
+**CI gates:**
+
+- Fail if any `[[plug:...]]` lacks a declared slot after merges
+- Fail on empty or multiline fills; forbid keys starting with `stack.` or `sys.`
+- Warn if `required: true` slot lacks an example
+
+**Website integration (Phase 4):**
+
+- `index.json` adds:
+  ```json
+  "plugs":{"required":["test.cmd"],"optional":["docs.build"]},
+  "plugs_unresolved_required_count":0
+  ```
+- Detail page: plugs panel, current fills, copy-TODO
+- List page: badge "Needs setup" when unresolved_required_count > 0; filter `has:missing-plugs`
+
+**Threat model:**
+
+- `format:file` resolves only under repo root; reject `..` segments
+- `format:command` cannot reference env vars except `CI=true`
+- Log plug values in redacted form
 
 **Test coverage:**
 
-- Core: +56 tests (plugs types, schema, resolution, lockfile)
+- Core: +56 tests (plugs types, schema, resolution, lockfile, hashing invariants)
 - CLI: +30 tests (plugs commands, audit, resolve, set)
+- Testkit additions: vectors for escaping, merge order, required vs optional behavior
 - Total: +86 tests (1520 → 1606 tests passing, 100% pass rate)
+
+**Backward compatibility:**
+
+- Packs without `plugs` remain valid. This is a minor spec bump: `spec_version: "1.1"`
 
 **Known limitations:**
 

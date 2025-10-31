@@ -3,13 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  writeFileSync,
-  unlinkSync,
-  mkdirSync,
-  rmdirSync,
-  existsSync,
-} from "fs";
+import { writeFileSync, mkdirSync, rmdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { MockExporter } from "../mocks/mock-exporter.js";

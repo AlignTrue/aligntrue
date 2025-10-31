@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { privacyCommand as privacy } from "../../src/commands/privacy.js";
 import { mockCommandArgs } from "../utils/command-test-helpers.js";

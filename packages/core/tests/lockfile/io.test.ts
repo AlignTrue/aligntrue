@@ -4,7 +4,6 @@ import { generateLockfile } from "../../src/lockfile/generator.js";
 import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
 import { join } from "path";
 import type { AlignPack } from "@aligntrue/schema";
-import type { Lockfile } from "../../src/lockfile/types.js";
 
 describe("lockfile I/O", () => {
   const testDir = join(process.cwd(), "packages/core/tests/lockfile/temp");

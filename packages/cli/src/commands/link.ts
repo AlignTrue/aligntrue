@@ -23,7 +23,6 @@
 import { existsSync, readFileSync } from "fs";
 import { resolve, join } from "path";
 import * as clack from "@clack/prompts";
-import { GitProvider } from "@aligntrue/sources";
 import {
   createConsentManager,
   saveConfig,

@@ -13,24 +13,16 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { resolve } from "path";
 import { execSync } from "child_process";
 import * as clack from "@clack/prompts";
-import {
-  loadConfig,
-  getAlignTruePaths,
-  detectDriftForConfig,
-} from "@aligntrue/core";
+import { loadConfig, detectDriftForConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { CommonErrors as Errors } from "../utils/common-errors.js";
-import { auditPlugs } from "./plugs.js";
 
 /**
  * Argument definitions for onboard command

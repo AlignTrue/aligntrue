@@ -5,7 +5,7 @@
  * catalog safe and performant.
  */
 
-import { statSync, readFileSync, readdirSync } from "fs";
+import { statSync, readdirSync } from "fs";
 import { join } from "path";
 
 /**

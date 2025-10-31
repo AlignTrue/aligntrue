@@ -3,14 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-  existsSync,
-  unlinkSync,
-  rmSync,
-} from "fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from "fs";
 import { join } from "path";
 import { AtomicFileWriter, computeFileChecksum } from "@aligntrue/file-utils";
 

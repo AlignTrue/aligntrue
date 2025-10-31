@@ -4,7 +4,7 @@
  * Generates installation commands with tracking and plug configuration.
  */
 
-import type { CatalogEntryExtended, RequiredPlug } from "@aligntrue/schema";
+import type { CatalogEntryExtended } from "@aligntrue/schema";
 
 /**
  * Command structure for installation modal

@@ -3,7 +3,7 @@
  */
 
 import { readFile, access } from "fs/promises";
-import { join, resolve } from "path";
+import { resolve } from "path";
 import fg from "fast-glob";
 import type { FileProvider, GlobOptions } from "../types.js";
 

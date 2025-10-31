@@ -6,12 +6,8 @@
 import { readdir, readFile } from "fs/promises";
 import { join, extname } from "path";
 import { existsSync } from "fs";
-import type { AlignRule, AlignPack } from "@aligntrue/schema";
-import {
-  parseCursorMdc,
-  parseCursorMdcFiles,
-  parseAgentsMd,
-} from "@aligntrue/markdown-parser";
+import type { AlignRule } from "@aligntrue/schema";
+import { parseCursorMdcFiles, parseAgentsMd } from "@aligntrue/markdown-parser";
 
 /**
  * Import rules from agent-specific format

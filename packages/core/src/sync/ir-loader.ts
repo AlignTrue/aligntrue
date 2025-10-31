@@ -6,11 +6,7 @@ import { readFileSync, existsSync } from "fs";
 import { extname } from "path";
 import * as yaml from "js-yaml";
 import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
-import {
-  validateAlignSchema,
-  type AlignPack,
-  type ValidationResult,
-} from "@aligntrue/schema";
+import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode } from "../config/index.js";
 

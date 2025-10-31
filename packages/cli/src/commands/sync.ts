@@ -4,20 +4,17 @@
  */
 
 import { existsSync } from "fs";
-import { resolve } from "path";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
 import {
+  BackupManager,
+  getAlignTruePaths,
   SyncEngine,
   type AlignTrueConfig,
-  getAlignTruePaths,
-  BackupManager,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
-import { canonicalizeJson } from "@aligntrue/schema";
-import { createHash } from "node:crypto";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";

@@ -12,7 +12,7 @@ import {
   detectContext,
   getContextDescription,
 } from "../utils/detect-context.js";
-import { detectAgents, getAgentDisplayName } from "../utils/detect-agents.js";
+import { detectAgents } from "../utils/detect-agents.js";
 import { getStarterTemplate } from "../templates/starter-rules.js";
 import {
   generateCursorStarter,

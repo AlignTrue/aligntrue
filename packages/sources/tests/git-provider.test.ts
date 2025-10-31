@@ -10,10 +10,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync } from "fs";
+import { existsSync, writeFileSync, mkdirSync, rmSync } from "fs";
 import { join } from "path";
 import { GitProvider } from "../src/providers/git.js";
-import type { GitSourceConfig } from "../src/providers/index.js";
 
 /**
  * Test fixtures

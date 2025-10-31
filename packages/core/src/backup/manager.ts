@@ -5,7 +5,7 @@
  * of the .aligntrue/ directory.
  */
 
-import { join, relative, dirname } from "path";
+import { join, dirname } from "path";
 import {
   existsSync,
   mkdirSync,
@@ -14,10 +14,8 @@ import {
   writeFileSync,
   rmSync,
   cpSync,
-  statSync,
 } from "fs";
 import type {
-  BackupMetadata,
   BackupManifest,
   BackupInfo,
   BackupOptions,

@@ -5,11 +5,7 @@
 
 import { existsSync, readFileSync } from "fs";
 import type { AlignPack, AlignRule } from "@aligntrue/schema";
-import {
-  computeContentHash,
-  computeHash,
-  stringifyCanonical,
-} from "@aligntrue/schema";
+import { computeContentHash, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
 import type { OverlayDefinition } from "../overlays/types.js";

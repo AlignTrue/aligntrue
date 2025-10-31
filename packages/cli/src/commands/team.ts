@@ -2,13 +2,7 @@
  * Team mode management commands
  */
 
-import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  renameSync,
-} from "fs";
+import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
 import { dirname } from "path";
 import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";

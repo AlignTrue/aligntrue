@@ -3,7 +3,6 @@
  */
 
 import { validateAlignSchema } from "@aligntrue/schema";
-import { stringify as stringifyYaml } from "yaml";
 import { parseMarkdown } from "./parser.js";
 import { buildIR, type IRBuildError } from "./ir-builder.js";
 
