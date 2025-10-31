@@ -262,6 +262,10 @@ export async function link(args: string[]): Promise<void> {
  */
 function isValidGitUrl(url: string): boolean {
   // Support https://, git@, and ssh:// URLs
+  // Reject local paths on both Windows and Unix
+  if (/^[a-zA-Z]:\\/.test(url) || url.startsWith("/")) {
+    return false;
+  }
   return (
     url.startsWith("https://") ||
     url.startsWith("git@") ||
