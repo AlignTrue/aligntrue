@@ -6,18 +6,15 @@ import * as clack from "@clack/prompts";
 async function main() {
   clack.intro("🔍 Running pre-commit checks...");
   const s = clack.spinner();
-  s.start("Formatting staged files with Prettier...");
 
+  // Step 1: Format staged files
+  s.start("Formatting staged files with Prettier...");
   try {
     execSync("pnpm lint-staged", { stdio: "pipe" });
     s.stop("✅ Files formatted successfully.");
-    clack.outro("All pre-commit checks passed");
-    process.exit(0);
   } catch (error) {
-    s.stop("❌ Pre-commit checks failed.", 1);
-
+    s.stop("❌ Formatting failed.", 1);
     clack.log.error("Could not format staged files.");
-
     console.error("\n📝 Some files were not correctly formatted by Prettier.");
     console.error(
       "   This usually happens when there are syntax errors in the staged files.",
@@ -28,10 +25,43 @@ async function main() {
     console.error(
       "\n   You can also run 'pnpm format' to format the entire project and see if there are other issues.",
     );
-
     clack.outro("💡 Fix the formatting issues and re-stage the files.");
     process.exit(1);
   }
+
+  // Step 2: Typecheck staged TypeScript files
+  let stagedTsFiles;
+  try {
+    stagedTsFiles = execSync(
+      "git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx)$' || true",
+      { encoding: "utf-8" },
+    ).trim();
+  } catch (error) {
+    // grep returns non-zero if no matches, which is fine
+    stagedTsFiles = "";
+  }
+
+  if (stagedTsFiles) {
+    s.start("Type checking staged TypeScript files...");
+    try {
+      execSync("pnpm -r typecheck", { stdio: "pipe" });
+      s.stop("✅ Type checking passed.");
+    } catch (error) {
+      s.stop("❌ Type checking failed.", 1);
+      clack.log.error("TypeScript errors detected in staged files.");
+      console.error("\n📝 Please fix the type errors before committing:");
+      console.error("\n   Run: pnpm -r typecheck");
+      console.error("   Or:  pnpm -r --filter <package> typecheck");
+      console.error(
+        "\n   This prevents type errors from blocking push operations later.",
+      );
+      clack.outro("💡 Fix the type errors and try committing again.");
+      process.exit(1);
+    }
+  }
+
+  clack.outro("All pre-commit checks passed");
+  process.exit(0);
 }
 
 main();
