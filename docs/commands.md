@@ -871,6 +871,391 @@ rules:
 
 ---
 
+## Overlay commands
+
+Commands for customizing third-party packs without forking. Available in all modes.
+
+### `aligntrue override add`
+
+Create a new overlay to customize pack behavior.
+
+**Usage:**
+
+```bash
+# Interactive mode (recommended)
+aligntrue override add
+
+# Direct mode with flags
+aligntrue override add [options]
+```
+
+**Options:**
+
+| Flag                     | Description                       | Required |
+| ------------------------ | --------------------------------- | -------- |
+| `--pack <id>`            | Pack identifier to overlay        | Yes      |
+| `--check <id>`           | Specific check ID (optional)      | No       |
+| `--scope <glob>`         | Scope pattern (e.g., `src/**`)    | No       |
+| `--severity <level>`     | Override severity (off/info/warning/error) | No |
+| `--input <key=value>`    | Add/override check input (repeatable) | No |
+| `--no-autofix`           | Disable autofix for check         | No       |
+| `--reason <text>`        | Reason for override               | No       |
+| `--expires <date>`       | Expiration date (YYYY-MM-DD)      | No       |
+| `--owner <name>`         | Team/person responsible           | No       |
+
+**What it does:**
+
+1. Validates pack exists in config or sources
+2. Validates check ID exists (if specified)
+3. Creates overlay with specified overrides
+4. Updates `.aligntrue.yaml` with new overlay
+5. Provides next steps (run `aligntrue sync`)
+
+**Examples:**
+
+```bash
+# Interactive mode (guided prompts)
+aligntrue override add
+
+# Change severity for specific check
+aligntrue override add \
+  --pack @acme/standards \
+  --check no-console-log \
+  --severity error
+
+# Disable check in test directory
+aligntrue override add \
+  --pack @acme/standards \
+  --check no-any-type \
+  --scope "tests/**" \
+  --severity off
+
+# Customize check inputs
+aligntrue override add \
+  --pack @acme/standards \
+  --check max-complexity \
+  --input threshold=15 \
+  --input excludeComments=true \
+  --reason "Backend needs higher complexity during migration" \
+  --expires 2025-12-31 \
+  --owner backend-team
+
+# Disable autofix
+aligntrue override add \
+  --pack @acme/standards \
+  --check prefer-const \
+  --no-autofix \
+  --reason "Autofix conflicts with reactive framework"
+```
+
+**Interactive mode flow:**
+
+```
+? Select pack to overlay
+  > @acme/standards
+    @acme/security
+
+? Select check (or press Enter for all checks)
+  > no-console-log
+    max-complexity
+    (All checks)
+
+? What to override?
+  > Severity
+    Check inputs
+    Autofix
+    Multiple
+
+? New severity
+  > error
+    warning
+    info
+    off
+
+? Add metadata? yes
+
+? Reason for override
+  Production logging policy
+
+? Owner (optional)
+  platform-team
+
+? Expiration date (optional, YYYY-MM-DD)
+  2025-12-31
+
+✓ Overlay created
+
+Next step:
+  Run: aligntrue sync
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Validation error (pack not found, invalid severity, etc.)
+- `2` - System error (file write failed)
+
+**See also:** [Overlays Guide](overlays.md) for complete overlay documentation.
+
+---
+
+### `aligntrue override status`
+
+View dashboard of all overlays with health status.
+
+**Usage:**
+
+```bash
+aligntrue override status [options]
+```
+
+**Options:**
+
+| Flag            | Description                      | Default |
+| --------------- | -------------------------------- | ------- |
+| `--pack <id>`   | Filter by pack ID                | (all)   |
+| `--stale`       | Show only stale/expired overlays | `false` |
+| `--json`        | Output in JSON format            | `false` |
+
+**What it shows:**
+
+- Overlay count (active, stale, expired)
+- Pack and check targeted
+- Override details (severity, inputs, autofix)
+- Metadata (reason, owner, expiration)
+- Health status (healthy, stale, expired)
+
+**Examples:**
+
+```bash
+# Show all overlays
+aligntrue override status
+
+# Filter by pack
+aligntrue override status --pack @acme/standards
+
+# Show only stale/expired
+aligntrue override status --stale
+
+# JSON output for scripting
+aligntrue override status --json
+```
+
+**Example output:**
+
+```
+Overlays (3 active, 1 expired, 1 stale)
+
+✓ @acme/standards → no-console-log
+  Override: severity error
+  Reason: Production logging policy
+  Owner: platform-team
+  Healthy: yes
+
+✓ @acme/standards → max-complexity
+  Override: inputs {threshold: 15}
+  Reason: Backend migration in progress
+  Expires: 2025-12-31 (92 days)
+  Healthy: yes
+
+⚠ @acme/standards → no-deprecated-api
+  Override: severity warning
+  Reason: Migration to new API
+  Expires: 2025-10-15 (EXPIRED 30 days ago)
+  Healthy: expired
+
+❌ @acme/security → old-check-name
+  Override: severity off
+  Healthy: stale (check not found in upstream)
+```
+
+**Health indicators:**
+
+- `✓` **Healthy** - Overlay applies successfully
+- `⚠` **Expired** - Expiration date passed
+- `❌` **Stale** - Check no longer exists in upstream
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config not found
+
+**See also:** [Drift Detection](drift-detection.md) for automated staleness checks.
+
+---
+
+### `aligntrue override diff`
+
+Show three-way diff for overlay conflicts.
+
+**Usage:**
+
+```bash
+aligntrue override diff <check-id> [options]
+```
+
+**Arguments:**
+
+- `check-id` - Check ID to diff (required)
+
+**Options:**
+
+| Flag           | Description                   | Default |
+| -------------- | ----------------------------- | ------- |
+| `--pack <id>`  | Filter by pack ID             | (all)   |
+| `--conflicts`  | Show only overlays with conflicts | `false` |
+
+**What it shows:**
+
+1. **Upstream original** - Check as it was when overlay created
+2. **Upstream current** - Check as it is now
+3. **Your overlay** - Your customizations
+4. **Merged result** - How overlay applies to current upstream
+
+**Examples:**
+
+```bash
+# Three-way diff for specific check
+aligntrue override diff no-console-log
+
+# Filter by pack
+aligntrue override diff no-console-log --pack @acme/standards
+
+# Show all conflicts
+aligntrue override diff --conflicts
+```
+
+**Example output:**
+
+```
+Three-way diff for: no-console-log
+
+━━━ Upstream Original ━━━
+severity: warning
+autofix: true
+
+━━━ Upstream Current ━━━
+severity: error
+autofix: true
+inputs:
+  exclude: []
+
+━━━ Your Overlay ━━━
+severity: error
+inputs:
+  exclude: ["debug.ts"]
+
+━━━ Merged Result ━━━
+severity: error (from overlay)
+autofix: true (from upstream)
+inputs:
+  exclude: ["debug.ts"] (from overlay, merged with upstream)
+
+⚠ Note: Upstream changed severity warning → error
+Your overlay also sets error, so no conflict.
+```
+
+**Conflict detection:**
+
+Conflicts occur when:
+
+- Upstream changes same field you override
+- Overlay targets non-existent check (stale)
+- Multiple overlays target same check
+
+**Resolution:**
+
+```bash
+# After reviewing diff, update overlay
+aligntrue override remove --check no-console-log
+aligntrue override add --check no-console-log --severity error --input exclude=debug.ts
+
+# Or accept upstream change
+aligntrue override remove --check no-console-log
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Check not found or no overlay exists
+
+**See also:** [Overlays Guide - Conflict Resolution](overlays.md#conflict-resolution)
+
+---
+
+### `aligntrue override remove`
+
+Remove an overlay.
+
+**Usage:**
+
+```bash
+# Interactive mode
+aligntrue override remove
+
+# Direct mode
+aligntrue override remove [options]
+```
+
+**Options:**
+
+| Flag            | Description                  | Required |
+| --------------- | ---------------------------- | -------- |
+| `--pack <id>`   | Pack identifier              | No*      |
+| `--check <id>`  | Check identifier             | No*      |
+| `--scope <glob>`| Scope pattern                | No*      |
+
+*At least one selector required in direct mode
+
+**What it does:**
+
+1. Finds matching overlay(s) by selector
+2. Prompts for confirmation (shows what will be removed)
+3. Removes overlay from `.aligntrue.yaml`
+4. Provides next steps (run `aligntrue sync`)
+
+**Examples:**
+
+```bash
+# Interactive removal (select from list)
+aligntrue override remove
+
+# Remove by pack and check
+aligntrue override remove --pack @acme/standards --check no-console-log
+
+# Remove all overlays for a pack
+aligntrue override remove --pack @acme/standards
+
+# Remove by scope
+aligntrue override remove --scope "tests/**"
+```
+
+**Interactive mode:**
+
+```
+? Select overlay to remove
+  > @acme/standards → no-console-log (severity: error)
+    @acme/standards → max-complexity (inputs: {threshold: 15})
+    @acme/security → old-check (severity: off)
+
+Remove overlay for @acme/standards → no-console-log? (yes/no)
+  yes
+
+✓ Overlay removed
+
+Next step:
+  Run: aligntrue sync
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - No matching overlay found
+
+**See also:** [Overlays Guide](overlays.md)
+
+---
+
 ## Team commands
 
 Commands for managing team mode features (hidden until team mode enabled).
