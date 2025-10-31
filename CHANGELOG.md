@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 3.5, Session 8: Documentation Corrections & CLI Commands (Completed 2025-10-31)
+
+**Documentation corrections to match actual implementation:**
+
+- **Corrected all overlay documentation** - Updated 3 docs (~2,000 lines total)
+  - `docs/overlays.md` (814 lines) - Replaced object-based selectors with string format
+  - `docs/troubleshooting-overlays.md` (887 lines) - Updated all examples and code snippets
+  - `docs/commands.md` (overlay commands section) - Fixed all CLI flag examples
+  - Pattern changes: `{ check_id }` → `"rule[id=...]"`, `override:` → `set:`/`remove:`
+  - Removed aspirational features (metadata fields, scope selectors, pack disambiguation)
+  - Added dot-notation examples for nested properties
+  - Clarified metadata tracking via YAML comments
+
+**CLI commands implementation:**
+
+- **`aln override add`** - Create overlays with proper schema
+  - Flags: `--selector`, `--set` (repeatable), `--remove` (repeatable), `--config`
+  - Validates selector syntax using core's parseSelector
+  - Parses set operations with dot-notation support
+  - Atomic config updates with confirmation
+
+- **`aln override status`** - Dashboard with health indicators
+  - Evaluates each overlay against IR
+  - Health states: healthy (matches) vs stale (no match)
+  - JSON output for CI integration
+  - Human-readable output with operation summaries
+
+- **`aln override diff`** - Show overlay effects on IR
+  - Optional selector filter
+  - Before/after comparison
+  - Change count summary
+  - Integration with core's applyOverlays
+
+- **`aln override remove`** - Interactive or direct removal
+  - Interactive mode: select from list
+  - Direct mode: specify selector
+  - Confirmation prompt (skip with `--force`)
+  - Atomic config updates
+
+**Infrastructure:**
+
+- New command files using commander pattern
+- Consistent error handling with clack
+- Integration with existing core overlay functions
+- Proper imports from @aligntrue/core
+
 ### Phase 3.5, Session 7: Documentation & Examples (Completed 2025-10-31)
 
 **Comprehensive overlay documentation:**
