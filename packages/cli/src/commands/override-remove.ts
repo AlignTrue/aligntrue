@@ -103,6 +103,13 @@ async function runOverrideRemove(
 
   const overlayToRemove = overlays[matchIndex];
 
+  // TypeScript strict mode: null check (should never happen due to matchIndex check)
+  if (!overlayToRemove) {
+    throw new Error(
+      `Overlay not found at index ${matchIndex} (this should never happen)`,
+    );
+  }
+
   // Confirm removal (unless --force)
   if (!options.force) {
     console.log("\nRemove overlay: " + overlayToRemove.selector + "?");

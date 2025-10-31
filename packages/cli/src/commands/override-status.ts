@@ -6,6 +6,7 @@
 
 import { Command } from "commander";
 import { loadConfig, evaluateSelector, loadIR } from "@aligntrue/core";
+import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 
 interface OverrideStatusOptions {
@@ -89,9 +90,10 @@ async function runOverrideStatus(
   for (const overlay of overlays) {
     let health: "healthy" | "stale" = "stale";
 
-    if (ir) {
+    // TypeScript strict mode: type guard for IR
+    if (ir && typeof ir === "object" && "rules" in ir) {
       try {
-        const match = evaluateSelector(overlay.selector, ir);
+        const match = evaluateSelector(overlay.selector, ir as AlignPack);
         if (match.success) {
           health = "healthy";
           healthyCount++;
@@ -103,13 +105,19 @@ async function runOverrideStatus(
       }
     }
 
+    // TypeScript strict mode: explicitly handle optional properties
+    const operations: { set?: Record<string, unknown>; remove?: string[] } = {};
+    if (overlay.set) {
+      operations.set = overlay.set;
+    }
+    if (overlay.remove) {
+      operations.remove = overlay.remove;
+    }
+
     results.push({
       selector: overlay.selector,
       health,
-      operations: {
-        set: overlay.set,
-        remove: overlay.remove,
-      },
+      operations,
     });
   }
 
