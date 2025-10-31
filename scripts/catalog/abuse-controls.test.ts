@@ -7,6 +7,7 @@ import {
   checkPreviewSize,
   scanForBinaries,
   checkCatalogBudget,
+  checkCatalogSize,
   runPackAbuseControls,
   LIMITS,
 } from "./abuse-controls.js";
@@ -90,7 +91,7 @@ describe("Abuse Controls", () => {
       expect(violation).toBeNull();
     });
 
-    it("fails for pack exceeding limit", () => {
+    it("fails for pack exceeding limit (>1MB)", () => {
       const path = join(TEST_DIR, "huge.yaml");
       const size = LIMITS.MAX_PACK_SIZE + 1000;
       const content = "x".repeat(size);
@@ -100,6 +101,7 @@ describe("Abuse Controls", () => {
       expect(violation?.type).toBe("size");
       expect(violation?.actual).toBeGreaterThan(LIMITS.MAX_PACK_SIZE);
       expect(violation?.limit).toBe(LIMITS.MAX_PACK_SIZE);
+      expect(violation?.message).toContain("1MB");
     });
 
     it("handles missing file gracefully", () => {
@@ -122,13 +124,14 @@ describe("Abuse Controls", () => {
       expect(violation).toBeNull();
     });
 
-    it("fails for preview exceeding limit", () => {
+    it("fails for preview exceeding limit (>512KB)", () => {
       const content = "x".repeat(LIMITS.MAX_PREVIEW_SIZE + 1000);
       const violation = checkPreviewSize(content, "yaml");
       expect(violation).not.toBeNull();
       expect(violation?.type).toBe("size");
       expect(violation?.message).toContain("yaml");
       expect(violation?.actual).toBeGreaterThan(LIMITS.MAX_PREVIEW_SIZE);
+      expect(violation?.message).toContain("0MB"); // Should show 0.50MB or similar
     });
 
     it("includes format in error message", () => {
@@ -270,6 +273,124 @@ describe("Abuse Controls", () => {
     });
   });
 
+  describe("checkCatalogSize", () => {
+    it("returns size info for empty catalog", () => {
+      const result = checkCatalogSize(TEST_DIR);
+      expect(result.totalSize).toBe(0);
+      expect(result.percentUsed).toBe(0);
+      expect(result.violation).toBeUndefined();
+      expect(result.warning).toBeUndefined();
+    });
+
+    it("returns size info under warning threshold", () => {
+      // Create file at 40% of budget (under 50% threshold)
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 100;
+
+      writeFileSync(join(TEST_DIR, "file.txt"), "x".repeat(40));
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.totalSize).toBe(40);
+      expect(result.percentUsed).toBeCloseTo(0.4);
+      expect(result.violation).toBeUndefined();
+      expect(result.warning).toBeUndefined();
+    });
+
+    it("returns warning at 50% threshold", () => {
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 100;
+
+      writeFileSync(join(TEST_DIR, "file.txt"), "x".repeat(50));
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.totalSize).toBe(50);
+      expect(result.percentUsed).toBe(0.5);
+      expect(result.violation).toBeUndefined();
+      expect(result.warning).toBeDefined();
+      expect(result.warning).toContain("50%");
+      expect(result.warning).toContain("threshold");
+    });
+
+    it("returns warning above 50% threshold", () => {
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 100;
+
+      writeFileSync(join(TEST_DIR, "file.txt"), "x".repeat(75));
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.totalSize).toBe(75);
+      expect(result.percentUsed).toBe(0.75);
+      expect(result.violation).toBeUndefined();
+      expect(result.warning).toBeDefined();
+      expect(result.warning).toContain("75.0%");
+    });
+
+    it("returns violation at 100% limit", () => {
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 100;
+
+      writeFileSync(join(TEST_DIR, "file.txt"), "x".repeat(101));
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.totalSize).toBe(101);
+      expect(result.percentUsed).toBeGreaterThan(1.0);
+      expect(result.violation).toBeDefined();
+      expect(result.violation?.type).toBe("budget");
+      expect(result.warning).toBeUndefined(); // Violation takes precedence
+    });
+
+    it("calculates percentage correctly for multiple files", () => {
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 1000;
+
+      const subdir = join(TEST_DIR, "subdir");
+      mkdirSync(subdir);
+      writeFileSync(join(TEST_DIR, "file1.txt"), "x".repeat(300));
+      writeFileSync(join(subdir, "file2.txt"), "x".repeat(200));
+
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.totalSize).toBe(500);
+      expect(result.percentUsed).toBe(0.5);
+      expect(result.warning).toBeDefined();
+    });
+
+    it("provides actionable warning message", () => {
+      const oldLimit = LIMITS.MAX_CATALOG_SIZE;
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = 100;
+
+      writeFileSync(join(TEST_DIR, "file.txt"), "x".repeat(60));
+      const result = checkCatalogSize(TEST_DIR);
+
+      // @ts-ignore
+      LIMITS.MAX_CATALOG_SIZE = oldLimit;
+
+      expect(result.warning).toContain("Consider increasing catalog budget");
+      expect(result.warning).toContain("removing old packs");
+    });
+  });
+
   describe("runPackAbuseControls", () => {
     it("returns no violations for valid pack", () => {
       const packPath = join(TEST_DIR, "pack.yaml");
@@ -318,16 +439,20 @@ describe("Abuse Controls", () => {
   });
 
   describe("LIMITS constants", () => {
-    it("exports MAX_PACK_SIZE", () => {
-      expect(LIMITS.MAX_PACK_SIZE).toBe(10 * 1024 * 1024);
+    it("exports MAX_PACK_SIZE (1MB)", () => {
+      expect(LIMITS.MAX_PACK_SIZE).toBe(1 * 1024 * 1024);
     });
 
-    it("exports MAX_PREVIEW_SIZE", () => {
-      expect(LIMITS.MAX_PREVIEW_SIZE).toBe(5 * 1024 * 1024);
+    it("exports MAX_PREVIEW_SIZE (512KB)", () => {
+      expect(LIMITS.MAX_PREVIEW_SIZE).toBe(512 * 1024);
     });
 
-    it("exports MAX_CATALOG_SIZE", () => {
+    it("exports MAX_CATALOG_SIZE (500MB)", () => {
       expect(LIMITS.MAX_CATALOG_SIZE).toBe(500 * 1024 * 1024);
+    });
+
+    it("exports CATALOG_WARNING_THRESHOLD (50%)", () => {
+      expect(LIMITS.CATALOG_WARNING_THRESHOLD).toBe(0.5);
     });
   });
 });
