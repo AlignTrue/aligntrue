@@ -12,10 +12,7 @@ import {
 } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
-import {
-  GitIntegration,
-  type GitMode,
-} from "../../src/sync/git-integration.js";
+import { GitIntegration } from "../../src/sync/git-integration.js";
 
 const TEST_DIR = join(
   process.cwd(),

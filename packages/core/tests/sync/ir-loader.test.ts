@@ -3,13 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  writeFileSync,
-  unlinkSync,
-  mkdirSync,
-  rmdirSync,
-  existsSync,
-} from "fs";
+import { writeFileSync, unlinkSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { loadIR } from "../../src/sync/ir-loader.js";
 

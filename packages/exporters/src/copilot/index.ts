@@ -1,0 +1,31 @@
+/**
+ * GitHub Copilot exporter (uses AGENTS.md format)
+ */
+
+import { AgentsMdExporter } from "../agents-md/index.js";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+} from "@aligntrue/plugin-contracts";
+
+/**
+ * Copilot exporter - wraps AgentsMdExporter with copilot-specific metadata
+ */
+export class CopilotExporter implements ExporterPlugin {
+  name = "copilot";
+  version = "1.0.0";
+
+  private delegate = new AgentsMdExporter();
+
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    // Delegate to agents-md exporter
+    return this.delegate.export(request, options);
+  }
+}
+
+export default CopilotExporter;

@@ -5,7 +5,6 @@
 
 import { join } from "path";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,

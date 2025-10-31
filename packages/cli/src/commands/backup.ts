@@ -6,10 +6,7 @@
 
 import * as clack from "@clack/prompts";
 import { BackupManager, type BackupInfo } from "@aligntrue/core";
-import {
-  parseCommonArgs,
-  showStandardHelp,
-} from "../utils/command-utilities.js";
+import { parseCommonArgs } from "../utils/command-utilities.js";
 
 interface BackupArgs {
   // Common

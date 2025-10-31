@@ -14,8 +14,8 @@
  * - Clear error messages when consent denied
  */
 
-import { readFileSync, existsSync, mkdirSync, rmSync, statSync } from "fs";
-import { join, dirname } from "path";
+import { readFileSync, existsSync, mkdirSync, rmSync } from "fs";
+import { join } from "path";
 import { createHash } from "crypto";
 import simpleGit, { SimpleGit, GitError } from "simple-git";
 import type { SourceProvider } from "./index.js";

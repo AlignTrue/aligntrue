@@ -3,7 +3,7 @@
  * Detects installed AI coding agents by checking for their output files/directories
  */
 
-import { existsSync, readdirSync } from "fs";
+import { existsSync } from "fs";
 import { join } from "path";
 
 /**

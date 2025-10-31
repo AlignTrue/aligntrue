@@ -12,7 +12,7 @@ import {
   mkdirSync,
   statSync,
 } from "fs";
-import { dirname, join } from "path";
+import { dirname } from "path";
 import { createHash } from "crypto";
 
 /**

@@ -18,16 +18,9 @@
  * - Clear error messages when consent denied
  */
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
 import * as clack from "@clack/prompts";
 import { GitProvider, type GitSourceConfig } from "@aligntrue/sources";
-import {
-  createConsentManager,
-  loadConfig,
-  saveConfig,
-  type AlignTrueConfig,
-} from "@aligntrue/core";
+import { createConsentManager, loadConfig, saveConfig } from "@aligntrue/core";
 import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {

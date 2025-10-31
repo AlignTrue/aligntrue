@@ -3,7 +3,6 @@ import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import {
   loadConfig,
-  validateConfig,
   applyDefaults,
   saveConfig,
   getModeHints,

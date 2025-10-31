@@ -21,7 +21,7 @@ import {
   type SearchFilters,
   type SortOrder,
 } from "@/lib/search";
-import { trackCatalogSearch, trackCatalogFilter } from "@/lib/analytics";
+import { trackCatalogSearch } from "@/lib/analytics";
 import { FilterChips } from "@/components/catalog/FilterChips";
 import { AdvancedFilters } from "@/components/catalog/AdvancedFilters";
 import { PackCard } from "@/components/catalog/PackCard";

@@ -12,7 +12,6 @@ import {
   hasValidTeamYaml,
   applySeverityRemap,
   type SeverityRemap,
-  type TeamYaml,
 } from "../../src/team/remap.js";
 
 describe("parseTeamYaml", () => {

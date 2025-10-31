@@ -19,18 +19,11 @@ import { join } from "path";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
-  showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
-import { exitWithError } from "../utils/error-formatter.js";
 import { detectUpdatesForConfig, type UpdateFinding } from "@aligntrue/core";
-import {
-  threeWayMerge,
-  writePatchFile,
-  type OverlayDefinition,
-} from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import { writePatchFile, type OverlayDefinition } from "@aligntrue/core";
 import { sync } from "./sync.js";
 
 /**

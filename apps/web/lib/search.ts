@@ -7,7 +7,6 @@
  */
 
 import Fuse from "fuse.js";
-import type { CatalogEntryExtended } from "@aligntrue/schema";
 
 /**
  * Search index entry (subset of CatalogEntryExtended for client-side search)

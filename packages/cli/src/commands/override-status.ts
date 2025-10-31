@@ -18,7 +18,6 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { join } from "path";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {

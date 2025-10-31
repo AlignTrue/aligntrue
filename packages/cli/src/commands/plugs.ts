@@ -8,7 +8,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve, extname } from "path";
+import { extname } from "path";
 import { load, dump } from "js-yaml";
 import { resolvePlugsForPack } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";

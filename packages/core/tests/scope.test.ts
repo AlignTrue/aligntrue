@@ -12,9 +12,7 @@ import {
   matchFilesToScopes,
   applyScopeMerge,
   groupRulesByLevel,
-  type Scope,
   type ScopeConfig,
-  type MergeOrder,
   type ResolvedScope,
 } from "../src/scope.js";
 import type { AlignPack, AlignRule } from "@aligntrue/schema";

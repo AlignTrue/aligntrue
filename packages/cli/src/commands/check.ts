@@ -12,7 +12,6 @@ import { readFileSync } from "fs";
 import {
   readLockfile,
   validateLockfile,
-  type ValidationResult as LockfileValidationResult,
   validateOverlays,
   formatOverlayValidationResult,
   type OverlayDefinition,

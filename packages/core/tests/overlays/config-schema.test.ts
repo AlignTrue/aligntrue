@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  loadConfig,
-  validateConfigAgainstSchema,
-} from "../../src/config/index.js";
+import { loadConfig } from "../../src/config/index.js";
 import { mkdirSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
