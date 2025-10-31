@@ -4,7 +4,12 @@
  * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { loadConfig, evaluateSelector, loadIR } from "@aligntrue/core";
+import {
+  loadConfig,
+  evaluateSelector,
+  loadIR,
+  getAlignTruePaths,
+} from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
@@ -85,10 +90,20 @@ async function runOverrideStatus(
   const overlays = config.overlays?.overrides || [];
   if (overlays.length === 0) {
     if (options.json) {
-      console.log(JSON.stringify({ overlays: [] }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            total: 0,
+            healthy: 0,
+            stale: 0,
+            overlays: [],
+          },
+          null,
+          2,
+        ),
+      );
     } else {
-      clack.log.info("No overlays configured");
-      clack.log.info("Run 'aligntrue override add --selector ...' to add one.");
+      console.log("No overlays configured");
     }
     process.exit(0);
   }
@@ -96,14 +111,10 @@ async function runOverrideStatus(
   // Load IR to evaluate selectors
   let ir: unknown;
   try {
-    const sourcePath = config.sources?.[0]?.path;
-    if (sourcePath) {
-      const { resolve } = await import("path");
-      const absoluteSourcePath = resolve(process.cwd(), sourcePath);
-      ir = await loadIR(absoluteSourcePath);
-    } else {
-      ir = null;
-    }
+    const paths = getAlignTruePaths(process.cwd());
+    const sourcePath = config.sources?.[0]?.path || paths.rules;
+    const absoluteSourcePath = resolve(process.cwd(), sourcePath);
+    ir = await loadIR(absoluteSourcePath);
   } catch (error) {
     clack.log.warn("Could not load IR - health status will be unavailable");
     clack.log.info("Run 'aligntrue sync' to generate IR");

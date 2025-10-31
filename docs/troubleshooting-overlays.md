@@ -1,7 +1,5 @@
 # Troubleshooting Overlays
 
-**Status:** Stable (Phase 3.5)
-
 Common issues when working with overlays and their solutions.
 
 ---
@@ -37,15 +35,14 @@ overlays:
 **Solution:**
 
 ```bash
-# Find correct rule ID
-aln check --list-checks
-
-# Or inspect IR directly
+# Find correct rule ID (inspect IR)
 cat .aligntrue/ir.json | jq '.rules[].id'
 
 # Fix overlay
 aln override remove 'rule[id=no-console-logs]'
-aln override add --selector 'rule[id=no-console-log]' --set severity=error
+aln override add \
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
 ```
 
 #### 2. Selector Doesn't Match
@@ -65,12 +62,15 @@ Hint: Check rule ID spelling and ensure rule exists in IR
 **Solution:**
 
 ```bash
-# List available rules
-aln check --list-checks
+# List available rules (feature not implemented yet)
+# For now, inspect IR directly:
+cat .aligntrue/ir.json | jq '.rules[].id'
 
 # Fix selector
 aln override remove 'rule[id=nonexistent-rule]'
-aln override add --selector 'rule[id=correct-rule-id]' --set severity=error
+aln override add \
+  --selector 'rule[id=correct-rule-id]' \
+  --set severity=error
 ```
 
 #### 3. Property Path Invalid
@@ -120,11 +120,13 @@ aln override status
 # Remove stale overlay
 aln override remove 'rule[id=old-rule-name]'
 
-# Find new rule ID
-aln check --list-checks
+# Find new rule ID (inspect IR)
+cat .aligntrue/ir.json | jq '.rules[].id'
 
 # Add overlay with new rule ID
-aln override add --selector 'rule[id=new-rule-name]' --set severity=error
+aln override add \
+  --selector 'rule[id=new-rule-name]' \
+  --set severity=error
 ```
 
 ---
@@ -157,7 +159,9 @@ overlays:
 # Remove duplicate overlay
 aln override remove 'rule[id=no-console-log]'
 # Choose which one to keep and re-add it
-aln override add --selector 'rule[id=no-console-log]' --set severity=error
+aln override add \
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
 ```
 
 **Solution (if intended):**
@@ -649,12 +653,14 @@ git diff .aligntrue.lock.json
 **Fix:**
 
 ```bash
-# List available rules
-aln check --list-checks
+# List available rules (inspect IR)
+cat .aligntrue/ir.json | jq '.rules[].id'
 
 # Update overlay with correct selector
 aln override remove 'rule[id=wrong-id]'
-aln override add --selector 'rule[id=correct-id]' --set severity=error
+aln override add \
+  --selector 'rule[id=correct-id]' \
+  --set severity=error
 ```
 
 ### "Overlay validation failed: Invalid selector syntax"
@@ -666,12 +672,14 @@ aln override add --selector 'rule[id=correct-id]' --set severity=error
 ```bash
 # Check selector format
 # Valid formats:
-# - rule[id=value]
+# - 'rule[id=value]' (quotes required)
 # - property.path
 # - array[0]
 
 # Update overlay with correct syntax
-aln override add --selector 'rule[id=correct-format]' --set severity=error
+aln override add \
+  --selector 'rule[id=correct-format]' \
+  --set severity=error
 ```
 
 ### "Overlay conflict: Duplicate selector"
