@@ -337,7 +337,12 @@ async function checkOverlayConflicts(
   if (hasConflicts) {
     console.log("\n⚠️  Overlay conflicts detected");
 
-    // Write patch file
+    // Write patch file (TypeScript strict mode: only pass defined source)
+    const patchOptions: { source?: string } = {};
+    if (updates[0]?.source) {
+      patchOptions.source = updates[0].source;
+    }
+
     const patchResult = writePatchFile(
       [], // conflicts would be passed here
       {
@@ -345,9 +350,7 @@ async function checkOverlayConflicts(
         newBaseHash: "new-hash",
         timestamp: new Date().toISOString(),
       },
-      {
-        source: updates[0]?.source,
-      },
+      patchOptions,
     );
 
     if (patchResult.success) {

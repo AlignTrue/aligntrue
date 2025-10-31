@@ -92,6 +92,13 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
         process.exit(1);
       }
       const [, key, value] = match;
+
+      // TypeScript strict mode: ensure key and value are defined
+      if (!key || !value) {
+        clack.log.error(`Invalid --set format: ${item}`);
+        process.exit(1);
+      }
+
       // Try to parse value as JSON, fallback to string
       try {
         setOperations[key] = JSON.parse(value);
