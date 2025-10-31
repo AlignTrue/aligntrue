@@ -4,7 +4,12 @@
  * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { loadConfig, loadIR, applyOverlays } from "@aligntrue/core";
+import {
+  loadConfig,
+  loadIR,
+  applyOverlays,
+  getAlignTruePaths,
+} from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
@@ -71,7 +76,7 @@ async function runOverrideDiff(
   const overlays = config.overlays?.overrides || [];
   if (overlays.length === 0) {
     console.log("No overlays configured");
-    return;
+    process.exit(0);
   }
 
   // Filter overlays if selector provided
@@ -87,12 +92,8 @@ async function runOverrideDiff(
   // Load IR
   let originalIR: unknown;
   try {
-    const sourcePath = config.sources?.[0]?.path;
-    if (!sourcePath) {
-      clack.log.error("No source path configured");
-      process.exit(1);
-    }
-    const { resolve } = await import("path");
+    const paths = getAlignTruePaths(process.cwd());
+    const sourcePath = config.sources?.[0]?.path || paths.rules;
     const absoluteSourcePath = resolve(process.cwd(), sourcePath);
     originalIR = await loadIR(absoluteSourcePath);
   } catch (error) {
