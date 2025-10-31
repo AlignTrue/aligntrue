@@ -47,7 +47,7 @@ describe("CopyBlock", () => {
         value: {
           writeText: vi.fn((text: string) => {
             clipboardText = text;
-            return Promise.resolve(true);
+            return Promise.resolve();
           }),
         },
         configurable: true,
@@ -56,7 +56,6 @@ describe("CopyBlock", () => {
       vi.spyOn(navigator.clipboard, "writeText").mockImplementation(
         async (text: string) => {
           clipboardText = text;
-          return true;
         },
       );
     }

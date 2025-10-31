@@ -55,10 +55,11 @@ describe("RelatedPacks", () => {
   let locationHref = "";
   beforeEach(() => {
     locationHref = "";
+    delete (window as any).location;
     Object.defineProperty(window, "location", {
       writable: true,
+      configurable: true,
       value: {
-        href: "",
         get href() {
           return locationHref;
         },

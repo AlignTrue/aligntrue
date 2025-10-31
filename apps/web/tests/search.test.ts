@@ -73,13 +73,13 @@ describe("Search utilities", () => {
     it("should create Fuse instance with entries", () => {
       const fuse = createSearchInstance(mockEntries);
       expect(fuse).toBeDefined();
-      expect(fuse.getIndex().docs).toHaveLength(3);
+      expect((fuse.getIndex() as any).docs).toHaveLength(3);
     });
 
     it("should handle empty entries", () => {
       const fuse = createSearchInstance([]);
       expect(fuse).toBeDefined();
-      expect(fuse.getIndex().docs).toHaveLength(0);
+      expect((fuse.getIndex() as any).docs).toHaveLength(0);
     });
   });
 
