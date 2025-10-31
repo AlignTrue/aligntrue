@@ -1,0 +1,33 @@
+# Namespace Ownership Registry (Phase 4)
+#
+# Prevents namespace squatting by mapping pack namespaces to GitHub owners.
+# All packs must declare namespace_owner and match this registry.
+#
+# Update process:
+# 1. Submit PR adding your namespace
+# 2. Prove GitHub org/user ownership (org membership or repo ownership)
+# 3. After approval, your namespace is reserved
+
+version: "1.0.0"
+updated_at: "2025-10-31T00:00:00.000Z"
+
+namespaces:
+  # AlignTrue org namespaces
+  - namespace: "packs/aligntrue/*"
+    owner: "AlignTrue"
+    notes: "Official AlignTrue maintained packs"
+
+  # Base namespace (for core packs)
+  - namespace: "packs/base/*"
+    owner: "AlignTrue"
+    notes: "Core base packs (base-global, etc.)"
+
+  # Example namespaces (add more via PR):
+  #
+  # - namespace: "packs/yourorg/*"
+  #   owner: "yourorg"
+  #   notes: "Your organization's packs"
+  #
+  # - namespace: "packs/yourusername/*"
+  #   owner: "yourusername"
+  #   notes: "Personal packs by @yourusername"
