@@ -1,0 +1,47 @@
+---
+title: AlignTrue Documentation
+description: Compile YAML rules into deterministic bundles and agent-ready exports for AI coding agents.
+---
+
+# AlignTrue Documentation
+
+AlignTrue compiles YAML Aligns into deterministic bundles and agent-ready exports. The CLI validates schemas, pins hashes, and writes stable outputs for CI.
+
+## Features
+
+- **IR-first architecture** - Single source of truth in `aligntrue.yaml`
+- **43 exporters** - Support for 28 AI coding agents (Cursor, Claude Code, Aider, etc.)
+- **Two-way sync** - Bidirectional sync with conflict resolution
+- **Team mode** - Lockfiles, drift detection, and approval flows
+- **Overlays** - Fork-safe customization without losing upstream updates
+- **Local-first** - Everything works offline, cloud is optional
+
+## Quick Start
+
+Get started in under 60 seconds:
+
+```bash
+npm install -g @aligntrue/cli
+aligntrue init
+aligntrue sync
+```
+
+Read the [Quick Start Guide](/getting-started/quickstart) for detailed instructions.
+
+## Key Concepts
+
+- [Catalog & Discovery](/concepts/catalog) - Browse and install rule packs
+- [Team Mode](/concepts/team-mode) - Collaboration features for teams
+- [Overlays](/concepts/overlays) - Customize third-party packs safely
+- [Drift Detection](/concepts/drift-detection) - Track alignment changes over time
+
+## Reference
+
+- [CLI Commands](/reference/cli-reference) - Complete command reference
+- [Import Workflow](/reference/import-workflow) - Import from existing configs
+- [Troubleshooting](/reference/troubleshooting) - Common issues and solutions
+
+## Contributing
+
+Want to contribute? Check out the [Getting Started](/contributing/getting-started) guide for contributors.
+
