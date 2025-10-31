@@ -14,7 +14,7 @@ import type {
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { getAlignTruePaths } from "@aligntrue/core";
 import {
@@ -92,8 +92,7 @@ export class AgentsMdExporter implements ExporterPlugin {
 
     // Compute content hash from canonical IR of all rules
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
 
     // Compute fidelity notes
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
@@ -157,8 +156,7 @@ export class AgentsMdExporter implements ExporterPlugin {
 
     // Compute content hash for footer
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
     const footer = this.generateFooter(
       contentHash,

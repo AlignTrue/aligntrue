@@ -13,7 +13,7 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
@@ -49,13 +49,9 @@ export class KiloCodeMcpExporter implements ExporterPlugin {
     const mcpConfig: Record<string, any> = {
       version: "v1",
       generated_by: "AlignTrue",
-      content_hash: computeHash(
-        canonicalizeJson(
-          JSON.stringify({
-            rules: this.state.allRules.map(({ rule }) => rule),
-          }),
-        ),
-      ),
+      content_hash: computeContentHash({
+        rules: this.state.allRules.map(({ rule }) => rule),
+      }),
       rules: this.state.allRules.map(({ rule, scopePath: sp }) => ({
         id: rule.id,
         severity: rule.severity,

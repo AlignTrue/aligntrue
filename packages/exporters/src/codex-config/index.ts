@@ -14,7 +14,7 @@ import type {
   ExportResult,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
@@ -50,11 +50,9 @@ export class CodexConfigExporter implements ExporterPlugin {
 
     // Simple TOML-like format
     const content = this.generateTomlContent(options.unresolvedPlugsCount);
-    const contentHash = computeHash(
-      canonicalizeJson(
-        JSON.stringify({ rules: this.state.allRules.map(({ rule }) => rule) }),
-      ),
-    );
+    const contentHash = computeContentHash({
+      rules: this.state.allRules.map(({ rule }) => rule),
+    });
 
     if (!dryRun) {
       mkdirSync(dirname(outputPath), { recursive: true });
