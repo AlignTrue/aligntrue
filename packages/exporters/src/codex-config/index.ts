@@ -14,6 +14,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -54,14 +55,11 @@ export class CodexConfigExporter extends ExporterBase {
 
     if (!dryRun) {
       mkdirSync(dirname(outputPath), { recursive: true });
-      new AtomicFileWriter().write(outputPath, content);
     }
 
-    return {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+
+    return this.buildResult(filesWritten, contentHash);
   }
 
   /**

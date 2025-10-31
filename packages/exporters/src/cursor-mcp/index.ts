@@ -146,7 +146,7 @@ export class CursorMcpExporter extends ExporterBase {
     return config;
   }
 
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();
