@@ -5,9 +5,7 @@
  */
 
 import { Command } from "commander";
-import { loadConfig } from "@aligntrue/core/config/index.js";
-import { evaluateSelector } from "@aligntrue/core/overlays/selector-engine.js";
-import { loadIR } from "@aligntrue/core/ir/loader.js";
+import { loadConfig, evaluateSelector, loadIR } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 
 interface OverrideStatusOptions {
