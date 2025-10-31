@@ -1,39 +1,59 @@
 /**
  * Command: aln override diff
  * Show the effect of overlays on IR
- * Phase 3.5, Session 8
+ * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { Command } from "commander";
 import { loadConfig, loadIR, applyOverlays } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
+
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--config",
+    hasValue: true,
+    description: "Custom config file path",
+  },
+];
+
+export async function overrideDiff(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
+  if (parsed.help) {
+    showStandardHelp({
+      name: "override diff",
+      description: "Show the effect of overlays on IR",
+      usage: "aligntrue override diff [selector] [options]",
+      args: ARG_DEFINITIONS,
+      examples: [
+        "aligntrue override diff",
+        "aligntrue override diff 'rule[id=test]'",
+      ],
+      notes: ["Optional selector argument filters overlays to display"],
+    });
+    process.exit(0);
+  }
+
+  const selectorFilter = parsed.positional[0];
+  const config = parsed.flags["config"] as string | undefined;
+
+  try {
+    await runOverrideDiff(selectorFilter, { config });
+  } catch (error) {
+    clack.log.error(
+      `Failed to generate overlay diff: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
 
 interface OverrideDiffOptions {
   config?: string;
-}
-
-export function createOverrideDiffCommand(): Command {
-  const cmd = new Command("diff");
-
-  cmd
-    .description("Show the effect of overlays on IR")
-    .argument("[selector]", "Optional selector to filter")
-    .option("--config <path>", "Custom config file path")
-    .action(
-      async (selector: string | undefined, options: OverrideDiffOptions) => {
-        try {
-          await runOverrideDiff(selector, options);
-        } catch (error) {
-          clack.log.error(
-            `Failed to generate overlay diff: ${error instanceof Error ? error.message : String(error)}`,
-          );
-          process.exit(1);
-        }
-      },
-    );
-
-  return cmd;
 }
 
 async function runOverrideDiff(

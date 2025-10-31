@@ -1,18 +1,30 @@
 /**
  * Command: aln override status
  * View dashboard of all overlays with health status
- * Phase 3.5, Session 8
+ * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { Command } from "commander";
 import { loadConfig, evaluateSelector, loadIR } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
 
-interface OverrideStatusOptions {
-  json?: boolean;
-  config?: string;
-}
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--json",
+    hasValue: false,
+    description: "Output in JSON format",
+  },
+  {
+    flag: "--config",
+    hasValue: true,
+    description: "Custom config file path",
+  },
+];
 
 interface OverlayHealth {
   selector: string;
@@ -23,25 +35,39 @@ interface OverlayHealth {
   };
 }
 
-export function createOverrideStatusCommand(): Command {
-  const cmd = new Command("status");
+export async function overrideStatus(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
-  cmd
-    .description("View dashboard of all overlays with health status")
-    .option("--json", "Output in JSON format")
-    .option("--config <path>", "Custom config file path")
-    .action(async (options: OverrideStatusOptions) => {
-      try {
-        await runOverrideStatus(options);
-      } catch (error) {
-        clack.log.error(
-          `Failed to get overlay status: ${error instanceof Error ? error.message : String(error)}`,
-        );
-        process.exit(1);
-      }
+  if (parsed.help) {
+    showStandardHelp({
+      name: "override status",
+      description: "View dashboard of all overlays with health status",
+      usage: "aligntrue override status [options]",
+      args: ARG_DEFINITIONS,
+      examples: [
+        "aligntrue override status",
+        "aligntrue override status --json",
+      ],
     });
+    process.exit(0);
+  }
 
-  return cmd;
+  const json = (parsed.flags["json"] as boolean | undefined) || false;
+  const config = parsed.flags["config"] as string | undefined;
+
+  try {
+    await runOverrideStatus({ json, config });
+  } catch (error) {
+    clack.log.error(
+      `Failed to get overlay status: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
+
+interface OverrideStatusOptions {
+  json?: boolean;
+  config?: string;
 }
 
 async function runOverrideStatus(
