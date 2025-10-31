@@ -217,11 +217,11 @@ describe("init command utilities", () => {
       );
       const template = getStarterTemplate("my-project");
 
-      expect(template).toContain("testing.require-tests");
-      expect(template).toContain("docs.update-readme");
-      expect(template).toContain("security.no-secrets");
-      expect(template).toContain("style.consistent-naming");
-      expect(template).toContain("performance.avoid-n-plus-one");
+      expect(template).toContain("quality.testing.require-tests");
+      expect(template).toContain("docs.maintenance.update-readme");
+      expect(template).toContain("security.secrets.no-hardcoded");
+      expect(template).toContain("style.naming.consistent");
+      expect(template).toContain("performance.queries.avoid-n-plus-one");
     });
 
     it("includes all severity levels", async () => {
@@ -241,9 +241,11 @@ describe("init command utilities", () => {
       );
       const template = getStarterTemplate("my-project");
 
-      expect(template).toContain("check:");
-      expect(template).toContain("type: regex");
-      expect(template).toContain("pattern:");
+      // Template includes check field documentation in Rule format reference
+      expect(template).toContain("Rule format reference");
+      expect(template).toContain(
+        "**check**: Optional machine-checkable validation",
+      );
     });
 
     it("includes vendor metadata example", async () => {

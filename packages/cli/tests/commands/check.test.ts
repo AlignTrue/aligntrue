@@ -21,9 +21,9 @@ vi.mock("@aligntrue/core", () => ({
 }));
 
 vi.mock("@aligntrue/schema", () => ({
-  validateAlign: vi.fn(() => ({
-    schema: { valid: true, errors: [] },
-    integrity: { valid: true },
+  validateAlignSchema: vi.fn(() => ({
+    valid: true,
+    errors: [],
   })),
   parseYamlToJson: vi.fn(),
   validateRuleId: vi.fn(() => ({ valid: true })),
@@ -122,7 +122,7 @@ describe("check command", () => {
         version: "1",
         mode: "solo",
         modules: { lockfile: false },
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/rules.yaml" }],
         exporters: ["cursor"],
       });
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -135,9 +135,9 @@ describe("check command", () => {
         spec_version: "1",
         rules: [],
       });
-      vi.mocked(schema.validateAlign).mockReturnValue({
-        schema: { valid: true },
-        integrity: { valid: true },
+      vi.mocked(schema.validateAlignSchema).mockReturnValue({
+        valid: true,
+        errors: [],
       });
 
       try {
@@ -157,7 +157,7 @@ describe("check command", () => {
         version: "1",
         mode: "solo",
         modules: { lockfile: false },
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/rules.yaml" }],
         exporters: ["cursor"],
       });
     });
@@ -217,15 +217,12 @@ describe("check command", () => {
         id: "testing.example.test",
         version: "1",
       });
-      vi.mocked(schema.validateAlign).mockReturnValue({
-        schema: {
-          valid: false,
-          errors: [
-            { path: "spec_version", message: "Missing required field" },
-            { path: "rules", message: "Missing required field" },
-          ],
-        },
-        integrity: { valid: true },
+      vi.mocked(schema.validateAlignSchema).mockReturnValue({
+        valid: false,
+        errors: [
+          { path: "spec_version", message: "Missing required field" },
+          { path: "rules", message: "Missing required field" },
+        ],
       });
 
       try {
@@ -234,7 +231,6 @@ describe("check command", () => {
         // Expected: process.exit throws in tests
       }
 
-      expect(clack.log.error).toHaveBeenCalledWith("Validation failed");
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("spec_version"),
       );
@@ -255,9 +251,9 @@ describe("check command", () => {
         spec_version: "1",
         rules: [],
       });
-      vi.mocked(schema.validateAlign).mockReturnValue({
-        schema: { valid: true },
-        integrity: { valid: true },
+      vi.mocked(schema.validateAlignSchema).mockReturnValue({
+        valid: true,
+        errors: [],
       });
 
       try {
@@ -267,7 +263,7 @@ describe("check command", () => {
       }
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Validation passed"),
+        expect.stringContaining("✓ Validation passed"),
       );
       expect(exitSpy).toHaveBeenCalledWith(0);
     });
@@ -279,7 +275,7 @@ describe("check command", () => {
         version: "1",
         mode: "solo",
         modules: { lockfile: false },
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/rules.yaml" }],
         exporters: ["cursor"],
       });
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -292,9 +288,9 @@ describe("check command", () => {
         spec_version: "1",
         rules: [],
       });
-      vi.mocked(schema.validateAlign).mockReturnValue({
-        schema: { valid: true },
-        integrity: { valid: true },
+      vi.mocked(schema.validateAlignSchema).mockReturnValue({
+        valid: true,
+        errors: [],
       });
     });
 
@@ -320,7 +316,7 @@ describe("check command", () => {
         version: "1",
         mode: "team",
         modules: { lockfile: true },
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/rules.yaml" }],
         exporters: ["cursor"],
       });
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -333,9 +329,9 @@ describe("check command", () => {
         spec_version: "1",
         rules: [],
       });
-      vi.mocked(schema.validateAlign).mockReturnValue({
-        schema: { valid: true },
-        integrity: { valid: true },
+      vi.mocked(schema.validateAlignSchema).mockReturnValue({
+        valid: true,
+        errors: [],
       });
     });
 
@@ -354,7 +350,7 @@ describe("check command", () => {
       }
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Lockfile not found"),
+        expect.stringContaining("✗ Lockfile validation failed"),
       );
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
@@ -389,7 +385,7 @@ describe("check command", () => {
       }
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Lockfile drift detected"),
+        expect.stringContaining("✗ Lockfile drift detected"),
       );
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("test.rule"),
@@ -505,7 +501,7 @@ describe("check command", () => {
       }
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Lockfile validation failed"),
+        expect.stringContaining("✗ Lockfile validation failed"),
       );
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("Failed to parse lockfile"),
