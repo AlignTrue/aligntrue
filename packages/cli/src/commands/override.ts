@@ -3,30 +3,23 @@
  * Phase 3.5 Session 11: Migrated to CLI framework (no Commander)
  */
 
-import {
-  parseCommonArgs,
-  showStandardHelp,
-  type ArgDefinition,
-} from "../utils/command-utilities.js";
+import { showStandardHelp } from "../utils/command-utilities.js";
 import { overrideAdd } from "./override-add.js";
 import { overrideStatus } from "./override-status.js";
 import { overrideDiff } from "./override-diff.js";
 import { overrideRemove } from "./override-remove.js";
 
-const ARG_DEFINITIONS: ArgDefinition[] = [];
-
 /**
  * Main override command with subcommands
  */
 export async function overrideCommand(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
-
-  if (parsed.help || parsed.positional.length === 0) {
+  // Check for help flag
+  if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     showStandardHelp({
       name: "override",
       description: "Manage overlays for fork-safe customization",
       usage: "aligntrue override <subcommand> [options]",
-      args: ARG_DEFINITIONS,
+      args: [],
       examples: [
         "aligntrue override add --selector 'rule[id=...]' --set severity=error",
         "aligntrue override status",
@@ -44,8 +37,8 @@ export async function overrideCommand(args: string[]): Promise<void> {
     process.exit(0);
   }
 
-  const subcommand = parsed.positional[0];
-  const subArgs = parsed.positional.slice(1);
+  const subcommand = args[0];
+  const subArgs = args.slice(1);
 
   switch (subcommand) {
     case "add":

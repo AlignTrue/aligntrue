@@ -7,11 +7,13 @@
 import { loadConfig, evaluateSelector, loadIR } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
+import { resolve } from "path";
 import {
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { join } from "path";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -56,7 +58,10 @@ export async function overrideStatus(args: string[]): Promise<void> {
   const config = parsed.flags["config"] as string | undefined;
 
   try {
-    await runOverrideStatus({ json, config });
+    const options: OverrideStatusOptions = { json };
+    if (config) options.config = config;
+
+    await runOverrideStatus(options);
   } catch (error) {
     clack.log.error(
       `Failed to get overlay status: ${error instanceof Error ? error.message : String(error)}`,
@@ -74,26 +79,16 @@ async function runOverrideStatus(
   options: OverrideStatusOptions,
 ): Promise<void> {
   // Load config
-  const configPath = options.config || ".aligntrue/config.yaml";
-  const config = await loadConfig(configPath);
+  const config = await loadConfig(options.config, process.cwd());
 
   // Check if any overlays exist
   const overlays = config.overlays?.overrides || [];
   if (overlays.length === 0) {
     if (options.json) {
-      console.log(
-        JSON.stringify(
-          { total: 0, healthy: 0, stale: 0, overlays: [] },
-          null,
-          2,
-        ),
-      );
+      console.log(JSON.stringify({ overlays: [] }, null, 2));
     } else {
-      console.log("No overlays configured");
-      console.log("\nAdd an overlay:");
-      console.log(
-        "  aligntrue override add --selector 'rule[id=...]' --set key=value",
-      );
+      clack.log.info("No overlays configured");
+      clack.log.info("Run 'aligntrue override add --selector ...' to add one.");
     }
     process.exit(0);
   }
@@ -101,7 +96,14 @@ async function runOverrideStatus(
   // Load IR to evaluate selectors
   let ir: unknown;
   try {
-    ir = await loadIR(configPath);
+    const sourcePath = config.sources?.[0]?.path;
+    if (sourcePath) {
+      const { resolve } = await import("path");
+      const absoluteSourcePath = resolve(process.cwd(), sourcePath);
+      ir = await loadIR(absoluteSourcePath);
+    } else {
+      ir = null;
+    }
   } catch (error) {
     clack.log.warn("Could not load IR - health status will be unavailable");
     clack.log.info("Run 'aligntrue sync' to generate IR");
