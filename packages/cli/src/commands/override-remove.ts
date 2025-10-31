@@ -1,43 +1,68 @@
 /**
  * Command: aln override remove
  * Remove an overlay
- * Phase 3.5, Session 8
+ * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { Command } from "commander";
 import { loadConfig, saveConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
+
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--force",
+    hasValue: false,
+    description: "Skip confirmation",
+  },
+  {
+    flag: "--config",
+    hasValue: true,
+    description: "Custom config file path",
+  },
+];
+
+export async function overrideRemove(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
+  if (parsed.help) {
+    showStandardHelp({
+      name: "override remove",
+      description: "Remove an overlay",
+      usage: "aligntrue override remove [selector] [options]",
+      args: ARG_DEFINITIONS,
+      examples: [
+        "aligntrue override remove",
+        "aligntrue override remove 'rule[id=test]'",
+        "aligntrue override remove --force",
+      ],
+      notes: [
+        "If no selector provided, interactive mode will prompt for selection",
+      ],
+    });
+    process.exit(0);
+  }
+
+  const selectorArg = parsed.positional[0];
+  const force = (parsed.flags["force"] as boolean | undefined) || false;
+  const config = parsed.flags["config"] as string | undefined;
+
+  try {
+    await runOverrideRemove(selectorArg, { force, config });
+  } catch (error) {
+    clack.log.error(
+      `Failed to remove overlay: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
 
 interface OverrideRemoveOptions {
   force?: boolean;
   config?: string;
-}
-
-export function createOverrideRemoveCommand(): Command {
-  const cmd = new Command("remove");
-
-  cmd
-    .description("Remove an overlay")
-    .argument(
-      "[selector]",
-      "Optional selector string (if omitted, interactive mode)",
-    )
-    .option("--force", "Skip confirmation")
-    .option("--config <path>", "Custom config file path")
-    .action(
-      async (selector: string | undefined, options: OverrideRemoveOptions) => {
-        try {
-          await runOverrideRemove(selector, options);
-        } catch (error) {
-          clack.log.error(
-            `Failed to remove overlay: ${error instanceof Error ? error.message : String(error)}`,
-          );
-          process.exit(1);
-        }
-      },
-    );
-
-  return cmd;
 }
 
 async function runOverrideRemove(

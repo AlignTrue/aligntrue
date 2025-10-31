@@ -1,10 +1,9 @@
 /**
  * Command: aln override add
  * Add an overlay to customize rules without forking
- * Phase 3.5, Session 8
+ * Phase 3.5, Session 11: Migrated to CLI framework
  */
 
-import { Command } from "commander";
 import {
   parseSelector,
   validateSelector,
@@ -12,41 +11,99 @@ import {
   saveConfig,
 } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
+
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--selector",
+    hasValue: true,
+    description: "Selector string (rule[id=...], property.path, array[0])",
+  },
+  {
+    flag: "--set",
+    hasValue: true,
+    description: "Set property (repeatable, supports dot notation)",
+  },
+  {
+    flag: "--remove",
+    hasValue: true,
+    description: "Remove property (repeatable)",
+  },
+  {
+    flag: "--config",
+    hasValue: true,
+    description: "Custom config file path",
+  },
+];
+
+export async function overrideAdd(args: string[]): Promise<void> {
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
+  if (parsed.help) {
+    showStandardHelp({
+      name: "override add",
+      description: "Add an overlay to customize rules",
+      usage: "aligntrue override add --selector <string> [options]",
+      args: ARG_DEFINITIONS,
+      examples: [
+        "aligntrue override add --selector 'rule[id=test]' --set severity=error",
+        "aligntrue override add --selector 'profile.version' --set value=2.0.0",
+        "aligntrue override add --selector 'rules[0]' --remove autofix",
+      ],
+      notes: [
+        "Valid selector formats:",
+        "  - rule[id=value]",
+        "  - property.path",
+        "  - array[0]",
+      ],
+    });
+    process.exit(0);
+  }
+
+  // Extract flags
+  const selector = parsed.flags["selector"] as string | undefined;
+  const config = parsed.flags["config"] as string | undefined;
+
+  // Collect all --set and --remove values
+  const setValues: string[] = [];
+  const removeValues: string[] = [];
+
+  // Parse raw args to collect multiple --set and --remove values
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--set" && args[i + 1]) {
+      setValues.push(args[i + 1]!);
+      i++;
+    } else if (arg === "--remove" && args[i + 1]) {
+      removeValues.push(args[i + 1]!);
+      i++;
+    }
+  }
+
+  try {
+    await runOverrideAdd({
+      selector: selector || "",
+      set: setValues.length > 0 ? setValues : undefined,
+      remove: removeValues.length > 0 ? removeValues : undefined,
+      config,
+    });
+  } catch (error) {
+    clack.log.error(
+      `Failed to add overlay: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
 
 interface OverrideAddOptions {
   selector: string;
   set?: string[];
   remove?: string[];
   config?: string;
-}
-
-export function createOverrideAddCommand(): Command {
-  const cmd = new Command("add");
-
-  cmd
-    .description("Add an overlay to customize rules")
-    .requiredOption(
-      "--selector <string>",
-      "Selector string (rule[id=...], property.path, array[0])",
-    )
-    .option(
-      "--set <key=value...>",
-      "Set property (repeatable, supports dot notation)",
-    )
-    .option("--remove <key...>", "Remove property (repeatable)")
-    .option("--config <path>", "Custom config file path")
-    .action(async (options: OverrideAddOptions) => {
-      try {
-        await runOverrideAdd(options);
-      } catch (error) {
-        clack.log.error(
-          `Failed to add overlay: ${error instanceof Error ? error.message : String(error)}`,
-        );
-        process.exit(1);
-      }
-    });
-
-  return cmd;
 }
 
 async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
