@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4, Session 1: Catalog Foundation (Completed 2025-10-31)
+
+**Data model and build pipeline for public catalog website:**
+
+- **Extended catalog entry schema** (`packages/schema/src/catalog-entry.ts`)
+  - `CatalogEntryExtended` interface with discovery metadata, trust signals, customization hints
+  - Provenance tracking: `preview_meta` with `engine_version`, `canonical_yaml_sha`, `rendered_at`
+  - Rules index for overlay-friendly packs (`rules_index[]`)
+  - Required plugs for copy block generation (`required_plugs[]`)
+  - Namespace ownership field (`namespace_owner`)
+  - Source repo linking (`source_repo`, `source_linked` badge trigger)
+  - Usage stats (`stats.copies_7d` for tracking)
+  - 45 validation tests covering all fields and edge cases
+
+- **Abuse control system** (`scripts/catalog/abuse-controls.ts`)
+  - Pack size limit: 10MB YAML max
+  - Preview size limit: 5MB per exporter max
+  - Total catalog budget: 500MB
+  - Binary file detection (heuristic-based)
+  - Directory scanning with exclusions (.git, node_modules)
+  - 31 tests for size checks, binary detection, budget enforcement
+
+- **Namespace validation** (`scripts/catalog/validate-namespace.ts`)
+  - Registry-based namespace ownership (`catalog/namespaces.yaml`)
+  - Wildcard pattern matching (`packs/org/*`)
+  - Most-specific namespace wins (precedence)
+  - GitHub org/user verification workflow
+  - 23 tests for pattern matching, ownership validation, registry loading
+
+- **Source repo validation** (`scripts/catalog/validate-source-repo.ts`)
+  - GitHub and GitLab URL format validation
+  - HTTPS requirement enforcement
+  - "Source Linked" badge eligibility determination
+  - Optional HEAD request for repo existence (graceful failure)
+  - 15 tests for URL validation, platform detection
+
+- **Build pipeline** (`scripts/catalog/build-catalog.ts`)
+  - Manual curation via `catalog/packs.yaml`
+  - Per-pack workflow: canonical SHA, schema validation, abuse controls, rules index extraction, exporter preview generation, namespace validation
+  - Search index generation (`search_v1.json` for Fuse.js)
+  - Cache-busting preview URLs (`/previews/<slug>/<format>.<sha>.<version>.txt`)
+  - Atomic catalog writes (`index.json`, `search_v1.json`)
+  - Deterministic output with provenance metadata
+
+- **Configuration files**
+  - `catalog/packs.yaml` - Manual pack curation template
+  - `catalog/namespaces.yaml` - Namespace ownership registry with AlignTrue and base namespaces
+
+**Test coverage:** 114 new tests (45 schema + 31 abuse + 23 namespace + 15 source repo)  
+**Files created:** 11 (5 implementation + 6 test files)
+
 ### Phase 3.5, Session 8: Documentation Corrections & CLI Commands (Completed 2025-10-31)
 
 **Documentation corrections to match actual implementation:**

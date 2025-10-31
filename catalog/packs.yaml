@@ -1,0 +1,45 @@
+# Catalog Pack Registry (Phase 4)
+#
+# Manual curation list for public catalog website.
+# Each pack entry includes discovery metadata, trust signals,
+# and customization hints for catalog display.
+#
+# To add a pack:
+# 1. Add entry below with all required fields
+# 2. Ensure namespace_owner matches catalog/namespaces.yaml
+# 3. Submit PR for review
+# 4. Build pipeline will validate and generate previews
+
+version: "1.0.0"
+
+packs: []
+  # Example entry (uncomment and modify to add packs):
+  #
+  # - id: packs/example/my-pack
+  #   version: "1.0.0"
+  #   path: examples/my-pack/aligntrue.yaml
+  #   name: My Example Pack
+  #   slug: my-pack
+  #   description: A concise 2-3 sentence description of what this pack does and who it's for.
+  #   summary_bullets:
+  #     - Key feature or rule 1
+  #     - Key feature or rule 2
+  #     - Key feature or rule 3
+  #   categories:
+  #     - code-quality
+  #     - security
+  #   tags:
+  #     - typescript
+  #     - testing
+  #     - linting
+  #   compatible_tools:
+  #     - cursor
+  #     - claude-code
+  #     - github-copilot
+  #   license: MIT
+  #   maintainer:
+  #     name: Your Name
+  #     github: yourusername
+  #     email: optional@example.com
+  #   source_repo: https://github.com/org/repo
+  #   namespace_owner: yourusername
