@@ -251,6 +251,113 @@ describe("detectUpstreamUpdates", () => {
 
     expect(updates).toHaveLength(0);
   });
+
+  describe("triple-hash overlay support (Phase 3.5)", () => {
+    it("uses base_hash when available for update detection", () => {
+      const lockfile: Lockfile = {
+        version: "1",
+        generated_at: "2025-10-31T12:00:00Z",
+        mode: "team",
+        rules: [
+          {
+            rule_id: "test.rule",
+            content_hash: "result456", // Result after overlays
+            source: "git:https://github.com/org/pack",
+            base_hash: "base123", // Base upstream hash
+            overlay_hash: "overlay789",
+            result_hash: "result456",
+          },
+        ],
+        bundle_hash: "xyz789",
+      };
+
+      const allowList: AllowList = {
+        version: 1,
+        sources: [
+          {
+            type: "id",
+            value: "git:https://github.com/org/pack",
+            resolved_hash: "base999", // New base upstream
+          },
+        ],
+      };
+
+      const updates = detectUpstreamUpdates(lockfile, allowList);
+
+      expect(updates).toHaveLength(1);
+      expect(updates[0].current_sha).toBe("base123"); // Uses base_hash
+      expect(updates[0].latest_sha).toBe("base999");
+    });
+
+    it("falls back to content_hash when base_hash not available", () => {
+      const lockfile: Lockfile = {
+        version: "1",
+        generated_at: "2025-10-31T12:00:00Z",
+        mode: "team",
+        rules: [
+          {
+            rule_id: "legacy.rule",
+            content_hash: "content123",
+            source: "git:https://github.com/org/pack",
+            // No triple-hash fields
+          },
+        ],
+        bundle_hash: "xyz789",
+      };
+
+      const allowList: AllowList = {
+        version: 1,
+        sources: [
+          {
+            type: "id",
+            value: "git:https://github.com/org/pack",
+            resolved_hash: "content999",
+          },
+        ],
+      };
+
+      const updates = detectUpstreamUpdates(lockfile, allowList);
+
+      expect(updates).toHaveLength(1);
+      expect(updates[0].current_sha).toBe("content123"); // Uses content_hash
+    });
+
+    it("no update when base_hash matches (overlay changes don't trigger update)", () => {
+      const lockfile: Lockfile = {
+        version: "1",
+        generated_at: "2025-10-31T12:00:00Z",
+        mode: "team",
+        rules: [
+          {
+            rule_id: "test.rule",
+            content_hash: "result456",
+            source: "git:https://github.com/org/pack",
+            base_hash: "base123",
+            overlay_hash: "oldoverlay",
+            result_hash: "result456",
+          },
+        ],
+        bundle_hash: "xyz789",
+      };
+
+      const allowList: AllowList = {
+        version: 1,
+        sources: [
+          {
+            type: "id",
+            value: "git:https://github.com/org/pack",
+            resolved_hash: "base123", // Same base
+          },
+        ],
+      };
+
+      const updates = detectUpstreamUpdates(lockfile, allowList);
+
+      // No update because base_hash matches
+      // (overlay changes are detected separately by drift detection)
+      expect(updates).toHaveLength(0);
+    });
+  });
 });
 
 describe("generateUpdateSummary", () => {

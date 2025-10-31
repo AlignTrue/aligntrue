@@ -4,15 +4,18 @@
 
 export interface LockfileEntry {
   rule_id: string;
-  content_hash: string; // SHA-256 of canonical IR (vendor.volatile excluded)
+  content_hash: string; // SHA-256 of canonical IR (vendor.volatile excluded) - alias to result_hash
   // Full provenance tracking
   owner?: string;
   source?: string;
   source_sha?: string;
-  // Phase 3.5: Optional base pack hash for overlay resolution
-  // Captured from git sources (commit SHA) when available
-  // TODO(Phase 4): Capture from catalog sources when ready
+  // Phase 3.5: Triple-hash format for overlay tracking
+  // base_hash: Hash of upstream pack (before overlays)
+  // overlay_hash: Hash of overlay configuration (when overlays applied)
+  // result_hash: Hash of final result (after overlays applied)
   base_hash?: string;
+  overlay_hash?: string;
+  result_hash?: string;
   // Vendoring provenance (Phase 3, Session 5)
   vendor_path?: string; // Path where pack is vendored
   vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
@@ -49,6 +52,11 @@ export interface Mismatch {
   owner?: string;
   source?: string;
   source_sha?: string;
+  // Phase 3.5: Triple-hash comparison details
+  hash_type?: "base" | "overlay" | "result"; // Which hash mismatched
+  base_hash?: string;
+  overlay_hash?: string;
+  result_hash?: string;
 }
 
 export interface ValidationResult {

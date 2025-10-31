@@ -7,9 +7,10 @@
  * - Automated update workflows for teams
  *
  * Strategy:
- * - Compare lockfile to allowed sources
+ * - Compare lockfile to allowed sources (uses base_hash when available)
  * - Generate UPDATE_NOTES.md with change summary
  * - Run sync automatically after applying updates
+ * - Overlays are automatically re-applied to new upstream versions
  */
 
 import * as clack from "@clack/prompts";
