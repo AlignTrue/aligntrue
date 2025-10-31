@@ -321,7 +321,7 @@ export default function PackDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column: Exporter previews + overlay info (2/3 width) */}
           <div className="lg:col-span-2 space-y-8">
-            {pack.overlay_friendly && (
+            {pack.overlay_friendly && pack.rules_index && (
               <OverlayInfo rulesIndex={pack.rules_index} packId={pack.id} />
             )}
             <ExporterPreview pack={pack} />
@@ -330,8 +330,14 @@ export default function PackDetailPage() {
           {/* Right column: Copy block + plugs + related packs (1/3 width) */}
           <div className="space-y-8">
             <CopyBlock pack={pack} />
-            {pack.plugs && pack.plugs.length > 0 && (
-              <PlugsPanel plugs={pack.plugs} />
+            {pack.required_plugs && pack.required_plugs.length > 0 && (
+              <PlugsPanel
+                plugs={pack.required_plugs.map((p) => ({
+                  ...p,
+                  default: p.default,
+                  required: true,
+                }))}
+              />
             )}
             <RelatedPacks currentPack={pack} allPacks={allPacks} />
           </div>

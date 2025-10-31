@@ -1,0 +1,196 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2025-10-31T00:00:00Z",
+  "engine_version": "0.1.0",
+  "packs": [
+    {
+      "id": "packs/base/base-global",
+      "version": "1.0.0",
+      "name": "Base Global",
+      "slug": "base-global",
+      "description": "Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices.",
+      "summary_bullets": [
+        "Deterministic output with stable sorting and hashing",
+        "Clear error messages with actionable guidance",
+        "Consistent code formatting and style"
+      ],
+      "categories": ["code-quality", "foundations"],
+      "tags": ["baseline", "essential", "determinism"],
+      "compatible_tools": [
+        "cursor",
+        "claude-code",
+        "github-copilot",
+        "cody",
+        "continue"
+      ],
+      "license": "CC0-1.0",
+      "maintainer": {
+        "name": "AlignTrue",
+        "github": "aligntrue"
+      },
+      "last_updated": "2025-10-31",
+      "published_at": "2025-10-01",
+      "source_repo": "https://github.com/AlignTrue/aligns",
+      "namespace_owner": "aligntrue",
+      "source_linked": true,
+      "stats": {
+        "copies_7d": 150
+      },
+      "has_plugs": false,
+      "overlay_friendly": true,
+      "required_plugs_count": 0,
+      "rules_index": [
+        {
+          "id": "base-global-determinism",
+          "content_sha": "abc123"
+        },
+        {
+          "id": "base-global-errors",
+          "content_sha": "def456"
+        }
+      ],
+      "exporters": [
+        {
+          "format": "yaml",
+          "preview": "spec_version: \"1\"\nrules:\n  - id: base-global-determinism\n    title: Deterministic output\n    content: |\n      Always produce deterministic output with stable sorting.\n",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "abc123xyz",
+            "rendered_at": "2025-10-31T00:00:00Z"
+          }
+        },
+        {
+          "format": "cursor",
+          "preview": "# Deterministic output\n\nAlways produce deterministic output with stable sorting.\n\n---\nContent-Hash: abc123xyz",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "abc123xyz",
+            "rendered_at": "2025-10-31T00:00:00Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "packs/testing/tdd-workflow",
+      "version": "1.2.0",
+      "name": "TDD Workflow",
+      "slug": "tdd-workflow",
+      "description": "Test-driven development workflow for AI agents. Implements red-green-refactor cycle with clear test coverage expectations and deterministic test execution.",
+      "summary_bullets": [
+        "Red-green-refactor cycle enforcement",
+        "Test coverage thresholds and reporting",
+        "Fast unit tests with performance budgets"
+      ],
+      "categories": ["testing", "development-workflow"],
+      "tags": ["tdd", "testing", "quality"],
+      "compatible_tools": ["cursor", "claude-code", "github-copilot"],
+      "license": "CC0-1.0",
+      "maintainer": {
+        "name": "AlignTrue",
+        "github": "aligntrue"
+      },
+      "last_updated": "2025-10-30",
+      "published_at": "2025-10-15",
+      "source_repo": "https://github.com/AlignTrue/aligns",
+      "namespace_owner": "aligntrue",
+      "source_linked": true,
+      "stats": {
+        "copies_7d": 85
+      },
+      "has_plugs": true,
+      "overlay_friendly": true,
+      "required_plugs_count": 2,
+      "required_plugs": [
+        {
+          "key": "test.cmd",
+          "description": "Test command to run",
+          "type": "string",
+          "default": "npm test"
+        },
+        {
+          "key": "coverage.threshold",
+          "description": "Minimum coverage percentage",
+          "type": "number",
+          "default": "80"
+        }
+      ],
+      "rules_index": [
+        {
+          "id": "tdd-workflow-red-green-refactor",
+          "content_sha": "ghi789"
+        }
+      ],
+      "exporters": [
+        {
+          "format": "yaml",
+          "preview": "spec_version: \"1\"\nrules:\n  - id: tdd-workflow\n    title: TDD Workflow\n    plugs:\n      test.cmd:\n        type: string\n        default: npm test\n",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "def456uvw",
+            "rendered_at": "2025-10-30T00:00:00Z"
+          }
+        },
+        {
+          "format": "cursor",
+          "preview": "# TDD Workflow\n\nImplement red-green-refactor cycle.\n\nTest command: {{test.cmd}}\nCoverage threshold: {{coverage.threshold}}%\n\n---\nContent-Hash: def456uvw",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "def456uvw",
+            "rendered_at": "2025-10-30T00:00:00Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "packs/security/input-validation",
+      "version": "2.0.1",
+      "name": "Input Validation",
+      "slug": "input-validation",
+      "description": "Security-focused input validation rules for AI agents. Ensures all external inputs are validated at boundaries with clear error messages and type safety.",
+      "summary_bullets": [
+        "Boundary validation for all external inputs",
+        "Type-safe validation with schema enforcement",
+        "Actionable error messages for invalid inputs"
+      ],
+      "categories": ["security", "code-quality"],
+      "tags": ["security", "validation", "boundaries"],
+      "compatible_tools": ["cursor", "claude-code", "cody"],
+      "license": "CC0-1.0",
+      "maintainer": {
+        "name": "AlignTrue Security Team",
+        "github": "aligntrue"
+      },
+      "last_updated": "2025-10-29",
+      "published_at": "2025-09-15",
+      "source_repo": "https://github.com/AlignTrue/aligns",
+      "namespace_owner": "aligntrue",
+      "source_linked": true,
+      "stats": {
+        "copies_7d": 120
+      },
+      "has_plugs": false,
+      "overlay_friendly": false,
+      "required_plugs_count": 0,
+      "exporters": [
+        {
+          "format": "yaml",
+          "preview": "spec_version: \"1\"\nrules:\n  - id: input-validation-boundaries\n    title: Validate at boundaries\n    content: |\n      Validate all external inputs at system boundaries.\n",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "jkl012mno",
+            "rendered_at": "2025-10-29T00:00:00Z"
+          }
+        },
+        {
+          "format": "cursor",
+          "preview": "# Validate at boundaries\n\nValidate all external inputs at system boundaries.\n\n---\nContent-Hash: jkl012mno",
+          "preview_meta": {
+            "engine_version": "0.1.0",
+            "canonical_yaml_sha": "jkl012mno",
+            "rendered_at": "2025-10-29T00:00:00Z"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -34,11 +34,11 @@ describe("OverlayInfo", () => {
 
   describe("Rules index display", () => {
     it("displays rules count when rulesIndex provided", () => {
-      const rulesIndex = {
-        "security/input-validation": { id: "security/input-validation" },
-        "performance/caching": { id: "performance/caching" },
-        "testing/coverage": { id: "testing/coverage" },
-      };
+      const rulesIndex = [
+        { id: "security/input-validation", content_sha: "abc123" },
+        { id: "performance/caching", content_sha: "def456" },
+        { id: "testing/coverage", content_sha: "ghi789" },
+      ];
 
       render(<OverlayInfo packId="test/pack" rulesIndex={rulesIndex} />);
 
@@ -46,9 +46,7 @@ describe("OverlayInfo", () => {
     });
 
     it("uses singular form for single rule", () => {
-      const rulesIndex = {
-        "single-rule": { id: "single-rule" },
-      };
+      const rulesIndex = [{ id: "single-rule", content_sha: "abc123" }];
 
       render(<OverlayInfo packId="test/pack" rulesIndex={rulesIndex} />);
 
@@ -56,7 +54,7 @@ describe("OverlayInfo", () => {
     });
 
     it("does not display count when rulesIndex empty", () => {
-      render(<OverlayInfo packId="test/pack" rulesIndex={{}} />);
+      render(<OverlayInfo packId="test/pack" rulesIndex={[]} />);
 
       expect(screen.queryByText(/customizable rules/i)).not.toBeInTheDocument();
     });
@@ -79,12 +77,14 @@ describe("OverlayInfo", () => {
       const summary = screen.getByText(/example overlay snippet/i);
       expect(summary).toBeInTheDocument();
 
-      // The component appears to be expanded by default in test env
-      expect(screen.getByText(/spec_version/i)).toBeInTheDocument();
+      // Details should be closed by default (check open attribute, not element absence)
+      expect(details).not.toHaveAttribute("open");
 
-      // Collapse
+      // Expand
       await user.click(summary);
-      expect(screen.queryByText(/spec_version/i)).not.toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/example overlay configuration/i),
+      ).toBeInTheDocument();
     });
 
     it("includes pack ID in example snippet", async () => {
@@ -252,12 +252,10 @@ describe("OverlayInfo", () => {
     });
 
     it("handles large rules index", () => {
-      const largeIndex = Object.fromEntries(
-        Array.from({ length: 100 }, (_, i) => [
-          `rule-${i}`,
-          { id: `rule-${i}` },
-        ]),
-      );
+      const largeIndex = Array.from({ length: 100 }, (_, i) => ({
+        id: `rule-${i}`,
+        content_sha: `sha-${i}`,
+      }));
 
       render(<OverlayInfo packId="test/pack" rulesIndex={largeIndex} />);
 

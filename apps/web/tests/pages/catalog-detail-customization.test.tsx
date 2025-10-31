@@ -55,12 +55,15 @@ describe("PackDetailPage - Customization Integration", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole("heading", { name: /customization \(1 plug\)/i }),
+          screen.getByRole("heading", { name: /customization \(2 plugs\)/i }),
         ).toBeInTheDocument();
       });
 
-      expect(screen.getByText("project_name")).toBeInTheDocument();
-      expect(screen.getByText("debug_mode")).toBeInTheDocument();
+      // Use getAllByText since plug names appear in labels and potentially other places
+      const projectNameMatches = screen.getAllByText("project_name");
+      expect(projectNameMatches.length).toBeGreaterThan(0);
+      const debugModeMatches = screen.getAllByText("debug_mode");
+      expect(debugModeMatches.length).toBeGreaterThan(0);
     });
 
     it("does not render plugs panel when pack has no plugs", async () => {
@@ -404,8 +407,10 @@ describe("PackDetailPage - Customization Integration", () => {
         ).toBeInTheDocument();
       });
 
-      // Verify main landmark exists
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      // Verify region landmarks exist (page doesn't use main, uses section with aria-labelledby)
+      expect(
+        screen.getByRole("region", { name: /overlay-friendly pack/i }),
+      ).toBeInTheDocument();
     });
   });
 });

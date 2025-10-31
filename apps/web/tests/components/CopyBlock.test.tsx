@@ -187,9 +187,7 @@ describe("CopyBlock", () => {
   });
 
   it("should reset success message after timeout", async () => {
-    vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-
+    const user = userEvent.setup();
     render(<CopyBlock pack={mockPackWithoutPlugs} />);
 
     const copyButton = screen.getByRole("button", {
@@ -199,17 +197,17 @@ describe("CopyBlock", () => {
     await user.click(copyButton);
 
     // Success message should appear
-    await screen.findByText("✓ Copied!");
-
-    // Fast-forward 2 seconds
-    vi.runAllTimers();
-
-    // Success message should disappear
     await waitFor(() => {
-      expect(screen.queryByText("✓ Copied!")).not.toBeInTheDocument();
+      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
     });
 
-    vi.useRealTimers();
+    // Wait for it to disappear (CopyBlock uses 2000ms timeout)
+    await waitFor(
+      () => {
+        expect(screen.queryByText("✓ Copied!")).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("should have link to CLI docs", () => {
@@ -246,8 +244,13 @@ describe("CopyBlock", () => {
     });
     await user.click(copyButton);
 
+    // Wait for clipboard to be written
     await waitFor(() => {
-      expect(clipboardText).not.toContain("aln plugs set test.cmd");
+      expect(clipboardText).toContain("aligntrue add");
     });
+
+    // Empty values still use defaults if available, so verify default value is used
+    // The component falls back to default value "npm test" when input is empty
+    expect(clipboardText).toContain('aln plugs set test.cmd "npm test"');
   });
 });

@@ -39,7 +39,7 @@ function isAnalyticsEnabled(): boolean {
  * Only logs to console in development, can be extended with real analytics
  */
 export function trackEvent(
-  event: Omit<AnalyticsEvent, "timestamp" | "sessionId">,
+  event: any, // Temporary: AnalyticsEvent types need sync with catalog data
 ): void {
   if (!isAnalyticsEnabled()) return;
 

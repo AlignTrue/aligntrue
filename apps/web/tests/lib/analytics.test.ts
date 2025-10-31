@@ -19,8 +19,13 @@ describe("Analytics", () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let localStorageGetSpy: ReturnType<typeof vi.spyOn>;
   let localStorageSetSpy: ReturnType<typeof vi.spyOn>;
+  let originalNodeEnv: string | undefined;
 
   beforeEach(() => {
+    // Save and set NODE_ENV to development for analytics logging
+    originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
     // Mock console.log
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -44,6 +49,13 @@ describe("Analytics", () => {
   });
 
   afterEach(() => {
+    // Restore NODE_ENV
+    if (originalNodeEnv !== undefined) {
+      process.env.NODE_ENV = originalNodeEnv;
+    } else {
+      delete process.env.NODE_ENV;
+    }
+
     consoleLogSpy.mockRestore();
     localStorageGetSpy.mockRestore();
     localStorageSetSpy.mockRestore();
