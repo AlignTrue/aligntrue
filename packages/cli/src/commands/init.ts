@@ -73,10 +73,11 @@ export async function init(args: string[] = []): Promise<void> {
         "aligntrue init -y --project-id ci-project",
       ],
       notes: [
+        "- Creates .aligntrue/rules.md (source of truth)",
+        "- Creates native agent format when detected (e.g., .cursor/rules/*.mdc)",
         "- In non-interactive mode, detected agents are auto-enabled",
         "- If no agents detected, defaults to: cursor, agents-md",
         "- Project ID defaults to: my-project",
-        "- Native format templates used when available",
       ],
     });
     return;
@@ -317,23 +318,21 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   if (nonInteractive) {
     console.log("\nCreating files:");
     console.log("  - .aligntrue/config.yaml (minimal solo config)");
+    console.log("  - .aligntrue/rules.md (source of truth)");
     if (nativeTemplatePath && nativeTemplate) {
       console.log(
         `  - ${nativeTemplatePath} (5 starter rules in native format)`,
       );
-    } else {
-      console.log("  - .aligntrue/rules.md (IR format)");
     }
   } else {
     clack.log.info("\nWill create:");
     clack.log.info(`  - .aligntrue/config.yaml (minimal solo config)`);
+    clack.log.info(`  - .aligntrue/rules.md (source of truth)`);
 
     if (nativeTemplatePath && nativeTemplate) {
       clack.log.info(
         `  - ${nativeTemplatePath} (5 starter rules in native format)`,
       );
-    } else {
-      clack.log.info(`  - .aligntrue/rules.md (IR format)`);
     }
 
     const confirmCreate = await clack.confirm({
@@ -385,8 +384,16 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     writeFileSync(nativeTempPath, nativeTemplate, "utf-8");
     renameSync(nativeTempPath, nativeFullPath);
     createdFiles.push(nativeTemplatePath);
+
+    // ALSO create .aligntrue/rules.md as the source of truth
+    const rulesPath = paths.rules;
+    const template = getStarterTemplate(projectIdValue);
+    const rulesTempPath = `${rulesPath}.tmp`;
+    writeFileSync(rulesTempPath, template, "utf-8");
+    renameSync(rulesTempPath, rulesPath);
+    createdFiles.push(".aligntrue/rules.md");
   } else {
-    // Fallback to IR format
+    // Fallback to IR format only
     const rulesPath = paths.rules;
     const template = getStarterTemplate(projectIdValue);
 

@@ -27,20 +27,25 @@ type AdapterManifest = {
   fidelityNotes?: string[];
 };
 
-// Determine exporters package path (relative to CLI)
-// In built dist: cli/dist/commands/adapters.js -> ../../../../exporters/src
-// In tests/dev: cli/src/commands/adapters.ts -> ../../../../exporters/src
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-let exportersPath = join(__dirname, "../../../../exporters/src");
-
-// If running from built dist, adjust path
-if (__dirname.includes("/dist/")) {
-  exportersPath = join(__dirname, "../../../../exporters/src");
-} else {
-  // Running from src (tests/dev)
-  exportersPath = join(__dirname, "../../../exporters/src");
+// Use package resolution at runtime
+function getExportersPath(): string {
+  try {
+    // Try to resolve exporters package at runtime
+    // This works with npm global installs, symlinks, and dev environments
+    const exportersPackage = require.resolve(
+      "@aligntrue/exporters/package.json",
+    );
+    const exportersRoot = dirname(exportersPackage);
+    return join(exportersRoot, "src");
+  } catch {
+    // Fallback to relative path (dev/tests)
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    return join(__dirname, "../../../exporters/src");
+  }
 }
+
+const exportersPath = getExportersPath();
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -129,6 +134,9 @@ async function discoverAndCategorize(): Promise<{
   let manifestPaths: string[] = [];
 
   try {
+    if (!existsSync(exportersPath)) {
+      throw new Error(`Search path not found: ${exportersPath}`);
+    }
     manifestPaths = registry.discoverAdapters(exportersPath);
   } catch (error) {
     console.error("✗ Failed to discover adapters");

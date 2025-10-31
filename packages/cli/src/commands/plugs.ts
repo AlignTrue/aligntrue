@@ -8,11 +8,12 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, extname } from "path";
 import { load, dump } from "js-yaml";
 import { resolvePlugsForPack } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import { validatePlugValue } from "@aligntrue/schema";
+import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 
 /**
  * Audit command: List all slots, fills, and resolution status
@@ -22,16 +23,49 @@ export async function auditPlugs(options: {
 }): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue.yaml";
+    const irPath = options.config || ".aligntrue/rules.md";
     if (!existsSync(irPath)) {
       return {
         success: false,
-        message: `IR file not found: ${irPath}. Run 'aligntrue init' first.`,
+        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
       };
     }
 
     const irContent = readFileSync(irPath, "utf-8");
-    const ir: AlignPack = load(irContent) as AlignPack;
+    let ir: AlignPack;
+
+    // Detect file format and parse
+    const ext = extname(irPath).toLowerCase();
+    if (ext === ".md" || ext === ".markdown") {
+      // Parse markdown with fenced blocks
+      const parseResult = parseMarkdown(irContent);
+      if (parseResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `Markdown parsing errors in ${irPath}`,
+        };
+      }
+
+      const buildResult = buildIR(parseResult.blocks);
+      if (buildResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `IR build errors in ${irPath}`,
+        };
+      }
+
+      if (!buildResult.document) {
+        return {
+          success: false,
+          message: `No aligntrue blocks found in ${irPath}`,
+        };
+      }
+
+      ir = buildResult.document as AlignPack;
+    } else {
+      // Parse as YAML
+      ir = load(irContent) as AlignPack;
+    }
 
     if (!ir.plugs || (!ir.plugs.slots && !ir.plugs.fills)) {
       console.log("No plugs defined in this pack.");
@@ -118,16 +152,49 @@ export async function resolvePlugs(options: {
 }): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue.yaml";
+    const irPath = options.config || ".aligntrue/rules.md";
     if (!existsSync(irPath)) {
       return {
         success: false,
-        message: `IR file not found: ${irPath}. Run 'aligntrue init' first.`,
+        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
       };
     }
 
     const irContent = readFileSync(irPath, "utf-8");
-    const ir: AlignPack = load(irContent) as AlignPack;
+    let ir: AlignPack;
+
+    // Detect file format and parse
+    const ext = extname(irPath).toLowerCase();
+    if (ext === ".md" || ext === ".markdown") {
+      // Parse markdown with fenced blocks
+      const parseResult = parseMarkdown(irContent);
+      if (parseResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `Markdown parsing errors in ${irPath}`,
+        };
+      }
+
+      const buildResult = buildIR(parseResult.blocks);
+      if (buildResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `IR build errors in ${irPath}`,
+        };
+      }
+
+      if (!buildResult.document) {
+        return {
+          success: false,
+          message: `No aligntrue blocks found in ${irPath}`,
+        };
+      }
+
+      ir = buildResult.document as AlignPack;
+    } else {
+      // Parse as YAML
+      ir = load(irContent) as AlignPack;
+    }
 
     if (!ir.plugs) {
       console.log("No plugs defined in this pack.");
@@ -225,16 +292,49 @@ export async function setPlug(
 ): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue.yaml";
+    const irPath = options.config || ".aligntrue/rules.md";
     if (!existsSync(irPath)) {
       return {
         success: false,
-        message: `IR file not found: ${irPath}. Run 'aligntrue init' first.`,
+        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
       };
     }
 
     const irContent = readFileSync(irPath, "utf-8");
-    const ir: AlignPack = load(irContent) as AlignPack;
+    let ir: AlignPack;
+
+    // Detect file format and parse
+    const ext = extname(irPath).toLowerCase();
+    if (ext === ".md" || ext === ".markdown") {
+      // Parse markdown with fenced blocks
+      const parseResult = parseMarkdown(irContent);
+      if (parseResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `Markdown parsing errors in ${irPath}`,
+        };
+      }
+
+      const buildResult = buildIR(parseResult.blocks);
+      if (buildResult.errors.length > 0) {
+        return {
+          success: false,
+          message: `IR build errors in ${irPath}`,
+        };
+      }
+
+      if (!buildResult.document) {
+        return {
+          success: false,
+          message: `No aligntrue blocks found in ${irPath}`,
+        };
+      }
+
+      ir = buildResult.document as AlignPack;
+    } else {
+      // Parse as YAML
+      ir = load(irContent) as AlignPack;
+    }
 
     // Check if slot exists
     const slot = ir.plugs?.slots?.[key];

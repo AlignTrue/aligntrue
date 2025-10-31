@@ -1,0 +1,82 @@
+id: "packs/base/base-debugging"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Systematic debugging workflow: reproduce, reduce, root-cause, fix, prevent"
+tags: ["debugging", "troubleshooting", "determinism", "paved-road"]
+deps: ["packs/base/base-global", "packs/base/base-testing"]
+scope:
+  applies_to: ["*"]
+  excludes: ["vendor/**", "third_party/**", "node_modules/**"]
+rules:
+  - id: "reproduce-before-fixing"
+    severity: "MUST"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: "scripts/repro*.{sh,ts,js,py}"
+      evidence: "Missing reproduction script for non-trivial bugs"
+    autofix:
+      hint: "Create a minimal repro script showing the exact failure"
+
+  - id: "regression-test-before-fix"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "git diff --name-only HEAD~1 | grep -E 'test|spec' | wc -l | grep -v '^0$'"
+        expect_exit_code: 0
+      evidence: "Bug fix PR missing regression test"
+    autofix:
+      hint: "Add a failing test that proves the bug before implementing the fix"
+
+  - id: "no-temp-debug-artifacts"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "git ls-files | grep -E '(debug|temp|scratch)' | grep -v temp- || exit 0"
+        expect_exit_code: 1
+      evidence: "Debug artifacts committed to repo"
+    autofix:
+      hint: "Prefix with temp- and add to .gitignore"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "60f9fa1d0fc093e7836246c7a37bd6dfa77d1ae745e01d32d5f21060cc32f178"
+
+notes: |
+  Precedence: complements global, testing, tdd; defers to security
+
+  For complex debugging sessions, follow the systematic workflow:
+  reproduce → reduce → classify → inspect → trace → bisect → test → fix → validate
+
+guidance: |
+  # Systematic Debugging Workflow
+
+  ## Core Steps
+
+  1. **Reproduce deterministically** before changing code
+  2. **Reduce** to smallest failing case
+  3. **Classify** the failure type
+  4. **Inspect evidence**, not vibes
+  5. **Trace data flow** and invariants
+  6. **Bisect** recent changes if new
+  7. **Write failing test** before fixing
+  8. **Minimal change** that passes
+  9. **Clean up** and harden
+  10. **Validate broadly** before merge
+
+  ## Temp Artifact Policy
+
+  - Prefix AI-generated debug artifacts with `temp-`
+  - Store under logs/ or local scratch
+  - .gitignore them
+  - Never commit
+
+  ## Root Cause Communication
+
+  In PR description, explain:
+  - Root cause
+  - Minimal fix
+  - How test prevents recurrence

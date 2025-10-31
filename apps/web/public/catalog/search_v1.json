@@ -1,11 +1,9 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-10-31T14:22:37.665Z",
-  "engine_version": "0.1.0",
-  "packs": [
+  "generated_at": "2025-10-31T14:29:14.924Z",
+  "entries": [
     {
       "id": "packs/base/base-global",
-      "version": "1.0.0",
       "name": "Base Global",
       "slug": "base-global",
       "description": "Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Start here for any new project.",
@@ -16,7 +14,6 @@
         "CI gates and contribution workflow",
         "No generated artifacts in version control"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["foundations", "code-quality"],
       "tags": ["baseline", "essential", "determinism", "ci", "paved-road"],
       "compatible_tools": [
@@ -29,36 +26,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Base Global\n\nSee full pack at: catalog/examples/global.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-docs",
-      "version": "1.0.0",
       "name": "Base Documentation",
       "slug": "base-docs",
       "description": "Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates. Keeps documentation minimal, testable, and always current.",
@@ -69,7 +45,6 @@
         "Copy-pasteable runnable commands",
         "CHANGELOG maintenance"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["foundations", "development-workflow"],
       "tags": ["documentation", "readme", "changelog", "paved-road"],
       "compatible_tools": [
@@ -82,36 +57,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Base Documentation\n\nSee full pack at: catalog/examples/docs.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-typescript",
-      "version": "1.0.0",
       "name": "TypeScript Standards",
       "slug": "base-typescript",
       "description": "TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings, no 'any' types, type-only imports, and input validation at boundaries.",
@@ -122,7 +76,6 @@
         "Named exports for consistency",
         "Input validation at all boundaries"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["code-quality"],
       "tags": ["typescript", "language", "type-safety", "paved-road"],
       "compatible_tools": [
@@ -134,36 +87,15 @@
         "windsurf"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# TypeScript Standards\n\nSee full pack at: catalog/examples/typescript.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-testing",
-      "version": "1.0.0",
       "name": "Testing Baseline",
       "slug": "base-testing",
       "description": "Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance, no sleep-based timing, and speed requirements under 1 second per test.",
@@ -174,7 +106,6 @@
         "Deterministic with frozen time and seeded randomness",
         "Coverage thresholds in CI"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["code-quality", "development-workflow"],
       "tags": ["testing", "quality", "determinism", "paved-road"],
       "compatible_tools": [
@@ -187,36 +118,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Testing Baseline\n\nSee full pack at: catalog/examples/testing.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-tdd",
-      "version": "1.0.0",
       "name": "TDD Workflow",
       "slug": "base-tdd",
       "description": "Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation, minimal changes to pass, and deterministic test execution.",
@@ -227,7 +137,6 @@
         "Deterministic tests required",
         "Small focused commits"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["development-workflow", "code-quality"],
       "tags": ["tdd", "testing", "workflow", "paved-road"],
       "compatible_tools": [
@@ -239,36 +148,15 @@
         "windsurf"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# TDD Workflow\n\nSee full pack at: catalog/examples/tdd.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-debugging",
-      "version": "1.0.0",
       "name": "Debugging Workflow",
       "slug": "base-debugging",
       "description": "Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles with regression test requirements.",
@@ -279,7 +167,6 @@
         "Systematic root-cause analysis",
         "Minimal fix validation"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["development-workflow"],
       "tags": ["debugging", "troubleshooting", "determinism", "paved-road"],
       "compatible_tools": [
@@ -292,36 +179,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Debugging Workflow\n\nSee full pack at: catalog/examples/debugging.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-security",
-      "version": "1.0.0",
       "name": "Security and Compliance",
       "slug": "base-security",
       "description": "Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Prevents secret commits, enforces lockfiles, and blocks vulnerable dependencies.",
@@ -332,7 +198,6 @@
         "No floating version ranges",
         "Environment example files"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["security", "code-quality"],
       "tags": [
         "security",
@@ -351,36 +216,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Security and Compliance\n\nSee full pack at: catalog/examples/security.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/base/base-rule-authoring",
-      "version": "1.0.0",
       "name": "Rule Authoring Guide",
       "slug": "base-rule-authoring",
       "description": "Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Ensures rules are focused, well-scoped, and maintainable.",
@@ -391,7 +235,6 @@
         "Machine-checkable rules",
         "Actionable guidance"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["development-workflow", "foundations"],
       "tags": ["meta", "rule-authoring", "governance", "paved-road"],
       "compatible_tools": [
@@ -404,36 +247,15 @@
         "aider"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Rule Authoring Guide\n\nSee full pack at: catalog/examples/rule-authoring.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/stacks/nextjs-app-router",
-      "version": "1.0.0",
       "name": "Next.js App Router",
       "slug": "nextjs-app-router",
       "description": "Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Enforces Server Components by default and proper input validation.",
@@ -444,7 +266,6 @@
         "Named exports in shared code",
         "Colocated route files"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["frameworks"],
       "tags": ["nextjs", "react", "app-router", "paved-road"],
       "compatible_tools": [
@@ -456,36 +277,15 @@
         "windsurf"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Next.js App Router\n\nSee full pack at: catalog/examples/nextjs_app_router.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/stacks/vercel-deployments",
-      "version": "1.0.0",
       "name": "Vercel Deployments",
       "slug": "vercel-deployments",
       "description": "Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene. Prevents secret leaks and ensures proper environment variable usage.",
@@ -496,7 +296,6 @@
         "Preview URL requirements",
         "Environment tier separation"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["infrastructure"],
       "tags": ["vercel", "deployment", "infra", "paved-road"],
       "compatible_tools": [
@@ -508,36 +307,15 @@
         "windsurf"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Vercel Deployments\n\nSee full pack at: catalog/examples/vercel_deployments.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     },
     {
       "id": "packs/stacks/web-quality",
-      "version": "1.0.0",
       "name": "Web Quality Standards",
       "slug": "web-quality",
       "description": "Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s, next/image usage, next/font optimization, and WCAG 2.0 AA compliance.",
@@ -548,7 +326,6 @@
         "ESLint a11y plugin required",
         "Playwright accessibility tests"
       ],
-      "content_sha256": "placeholder-hash-will-be-generated-later",
       "categories": ["performance", "code-quality"],
       "tags": ["web", "performance", "a11y", "quality", "paved-road"],
       "compatible_tools": [
@@ -560,32 +337,12 @@
         "windsurf"
       ],
       "license": "CC0-1.0",
-      "maintainer": {
-        "name": "AlignTrue",
-        "github": "aligntrue"
-      },
       "last_updated": "2025-10-31",
-      "published_at": "2025-10-31",
-      "source_repo": "https://github.com/AlignTrue/aligntrue",
-      "namespace_owner": "AlignTrue",
-      "source_linked": true,
-      "stats": {
-        "copies_7d": 0
-      },
       "has_plugs": false,
       "overlay_friendly": true,
-      "required_plugs_count": 0,
-      "exporters": [
-        {
-          "format": "yaml",
-          "preview": "# Web Quality Standards\n\nSee full pack at: catalog/examples/web_quality.yaml",
-          "preview_meta": {
-            "engine_version": "0.1.0",
-            "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T14:22:37.665Z"
-          }
-        }
-      ]
+      "stats": {
+        "copies_7d": 0
+      }
     }
   ]
 }

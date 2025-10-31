@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "tsx scripts/generate-search-index.ts",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
@@ -32,6 +33,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "jsdom": "^25.0.1",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^2.1.8"
   }

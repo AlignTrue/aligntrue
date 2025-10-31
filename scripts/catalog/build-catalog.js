@@ -16,133 +16,29 @@
  * 4. Build catalog/search_v1.json (Fuse.js index)
  * 5. Report summary
  */
-
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { join, dirname, basename } from "path";
+import { join, dirname } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import YAML from "yaml";
-import {
-  parseYamlToJson,
-  computeHash,
-  validateAlign,
-  type AlignPack,
-} from "@aligntrue/schema";
+import { parseYamlToJson, computeHash, validateAlign } from "@aligntrue/schema";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import type {
-  CatalogEntryExtended,
-  CatalogIndexExtended,
-  ExporterPreview,
-  RequiredPlug,
-  RuleIndexEntry,
-} from "@aligntrue/schema";
 import {
   runPackAbuseControls,
   checkPreviewSize,
   checkCatalogSize,
-  type AbuseViolation,
 } from "./abuse-controls.js";
 import {
   loadNamespaceRegistry,
   validateNamespace,
-  extractOrgFromPackId,
 } from "./validate-namespace.js";
-import {
-  validateSourceRepoUrl,
-  shouldShowSourceLinkedBadge,
-} from "./validate-source-repo.js";
-
+import { validateSourceRepoUrl } from "./validate-source-repo.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-/**
- * Pack entry in catalog/packs.yaml
- */
-interface PackEntry {
-  /** Pack ID (e.g., "packs/base/base-global") */
-  id: string;
-  /** Semantic version */
-  version: string;
-  /** Path to pack YAML file (relative to repo root) */
-  path: string;
-  /** Human-readable name */
-  name: string;
-  /** URL-friendly slug */
-  slug: string;
-  /** Description (2-3 sentences) */
-  description: string;
-  /** Summary bullets (3-5 items) */
-  summary_bullets: string[];
-  /** Categories */
-  categories: string[];
-  /** Tags */
-  tags: string[];
-  /** Compatible tools */
-  compatible_tools: string[];
-  /** License (SPDX) */
-  license: string;
-  /** Maintainer */
-  maintainer: {
-    name: string;
-    github?: string;
-    email?: string;
-  };
-  /** Source repo URL (optional) */
-  source_repo?: string;
-  /** Namespace owner (optional, validated against registry) */
-  namespace_owner?: string;
-}
-
-/**
- * Catalog packs.yaml structure
- */
-interface CatalogPacks {
-  version: string;
-  packs: PackEntry[];
-}
-
-/**
- * Search index entry for Fuse.js
- */
-interface SearchIndexEntry {
-  id: string;
-  version: string;
-  slug: string;
-  name: string;
-  description: string;
-  summary_bullets: string[];
-  categories: string[];
-  tags: string[];
-  compatible_tools: string[];
-}
-
-/**
- * Search index structure
- */
-interface SearchIndex {
-  version: string;
-  entries: SearchIndexEntry[];
-}
-
-/**
- * Build options
- */
-interface BuildOptions {
-  /** Path to AlignTrue repo root */
-  repoRoot: string;
-  /** Path to catalog output directory */
-  outputDir: string;
-  /** AlignTrue engine version */
-  engineVersion: string;
-  /** Verify source repos (HEAD requests) */
-  verifyRepos?: boolean;
-}
-
 /**
  * Extract required plugs from pack
  */
-function extractRequiredPlugs(pack: AlignPack): RequiredPlug[] {
-  const requiredPlugs: RequiredPlug[] = [];
-
+function extractRequiredPlugs(pack) {
+  const requiredPlugs = [];
   if (pack.plugs) {
     for (const [key, slot] of Object.entries(pack.plugs)) {
       if (slot.required === true) {
@@ -161,23 +57,19 @@ function extractRequiredPlugs(pack: AlignPack): RequiredPlug[] {
       }
     }
   }
-
   return requiredPlugs;
 }
-
 /**
  * Extract rules index from pack (if overlay-friendly)
  */
-function extractRulesIndex(pack: AlignPack): RuleIndexEntry[] | undefined {
-  const rulesIndex: RuleIndexEntry[] = [];
-
+function extractRulesIndex(pack) {
+  const rulesIndex = [];
   if (pack.rules) {
     for (const rule of pack.rules) {
       if (rule.id) {
         // Compute rule content hash (for overlay tracking)
         const ruleContent = JSON.stringify(rule);
         const contentSha = computeHash(ruleContent);
-
         rulesIndex.push({
           id: rule.id,
           path: rule.path,
@@ -186,26 +78,18 @@ function extractRulesIndex(pack: AlignPack): RuleIndexEntry[] | undefined {
       }
     }
   }
-
   // Only return rules_index if pack has stable rule IDs
   return rulesIndex.length > 0 ? rulesIndex : undefined;
 }
-
 /**
  * Generate exporter previews for all formats
  */
-async function generateExporterPreviews(
-  pack: AlignPack,
-  canonicalSha: string,
-  engineVersion: string,
-): Promise<ExporterPreview[]> {
+async function generateExporterPreviews(pack, canonicalSha, engineVersion) {
   const renderedAt = new Date().toISOString();
-  const previews: ExporterPreview[] = [];
-
+  const previews = [];
   // Initialize exporter registry
   const registry = new ExporterRegistry();
   await registry.discoverAll();
-
   // Export formats for catalog (prioritize common ones)
   const formats = [
     "yaml",
@@ -215,7 +99,6 @@ async function generateExporterPreviews(
     "vscode-mcp",
     // Add more as needed
   ];
-
   for (const format of formats) {
     try {
       const exporter = registry.get(format);
@@ -223,10 +106,8 @@ async function generateExporterPreviews(
         console.warn(`Exporter not found: ${format}, skipping`);
         continue;
       }
-
       // Generate preview
       const previewContent = exporter.export(pack);
-
       // Check preview size
       const sizeViolation = checkPreviewSize(previewContent, format);
       if (sizeViolation) {
@@ -234,7 +115,6 @@ async function generateExporterPreviews(
         console.error(`  ${sizeViolation.message}`);
         continue; // Skip oversized previews
       }
-
       previews.push({
         format,
         preview: previewContent,
@@ -249,31 +129,21 @@ async function generateExporterPreviews(
       // Continue with other formats
     }
   }
-
   return previews;
 }
-
 /**
  * Build catalog entry from pack
  */
-async function buildCatalogEntry(
-  packEntry: PackEntry,
-  options: BuildOptions,
-  namespaceRegistry: ReturnType<typeof loadNamespaceRegistry>,
-): Promise<CatalogEntryExtended | null> {
+async function buildCatalogEntry(packEntry, options, namespaceRegistry) {
   const packPath = join(options.repoRoot, packEntry.path);
-
   console.log(`\nProcessing: ${packEntry.id}@${packEntry.version}`);
-
   // 1. Load and parse pack
   if (!existsSync(packPath)) {
     console.error(`  ❌ Pack file not found: ${packPath}`);
     return null;
   }
-
   const packYaml = readFileSync(packPath, "utf8");
   const packJson = parseYamlToJson(packYaml);
-
   // 2. Validate schema
   const validation = validateAlign(packJson);
   if (!validation.valid) {
@@ -283,12 +153,9 @@ async function buildCatalogEntry(
     });
     return null;
   }
-
-  const pack = packJson as AlignPack;
-
+  const pack = packJson;
   // 3. Compute canonical SHA
   const canonicalSha = computeHash(JSON.stringify(pack));
-
   // 4. Run abuse controls
   const packDir = dirname(packPath);
   const abuseViolations = runPackAbuseControls(packPath, packDir);
@@ -299,7 +166,6 @@ async function buildCatalogEntry(
     });
     return null;
   }
-
   // 5. Validate namespace ownership
   const namespaceValidation = validateNamespace(
     packEntry.id,
@@ -312,7 +178,6 @@ async function buildCatalogEntry(
     );
     return null;
   }
-
   // 6. Validate source repo (if provided)
   let sourceLinked = false;
   if (packEntry.source_repo) {
@@ -323,14 +188,11 @@ async function buildCatalogEntry(
       sourceLinked = true;
     }
   }
-
   // 7. Extract required plugs
   const requiredPlugs = extractRequiredPlugs(pack);
-
   // 8. Extract rules index (if overlay-friendly)
   const rulesIndex = extractRulesIndex(pack);
   const overlayFriendly = rulesIndex !== undefined && rulesIndex.length > 0;
-
   // 9. Generate exporter previews
   console.log(`  Generating previews...`);
   const exporters = await generateExporterPreviews(
@@ -338,14 +200,12 @@ async function buildCatalogEntry(
     canonicalSha,
     options.engineVersion,
   );
-
   if (exporters.length === 0) {
     console.error(`  ❌ No exporter previews generated`);
     return null;
   }
-
   // 10. Build catalog entry
-  const entry: CatalogEntryExtended = {
+  const entry = {
     // Core identity
     id: packEntry.id,
     version: packEntry.version,
@@ -354,27 +214,22 @@ async function buildCatalogEntry(
     description: packEntry.description,
     summary_bullets: packEntry.summary_bullets,
     content_sha256: canonicalSha,
-
     // Discovery
     categories: packEntry.categories,
     tags: packEntry.tags,
     compatible_tools: packEntry.compatible_tools,
     license: packEntry.license,
-
     // Author
     maintainer: packEntry.maintainer,
-
     // Trust signals
     last_updated: new Date().toISOString(),
     source_repo: packEntry.source_repo,
     namespace_owner: namespaceValidation.owner,
     source_linked: sourceLinked,
-
     // Usage stats (placeholder - Phase 4.6 will track real usage)
     stats: {
       copies_7d: 0,
     },
-
     // Customization
     has_plugs:
       requiredPlugs.length > 0 ||
@@ -383,22 +238,18 @@ async function buildCatalogEntry(
     required_plugs_count: requiredPlugs.length,
     required_plugs: requiredPlugs.length > 0 ? requiredPlugs : undefined,
     rules_index: rulesIndex,
-
     // Exporters
     exporters,
   };
-
   console.log(
     `  ✅ Entry built (${exporters.length} previews, ${requiredPlugs.length} required plugs)`,
   );
-
   return entry;
 }
-
 /**
  * Build search index from catalog entries
  */
-function buildSearchIndex(entries: CatalogEntryExtended[]): SearchIndex {
+function buildSearchIndex(entries) {
   return {
     version: "1.0.0",
     entries: entries.map((e) => ({
@@ -414,55 +265,42 @@ function buildSearchIndex(entries: CatalogEntryExtended[]): SearchIndex {
     })),
   };
 }
-
 /**
  * Write catalog files with atomic operations
  */
-function writeCatalogFiles(
-  index: CatalogIndexExtended,
-  searchIndex: SearchIndex,
-  outputDir: string,
-): void {
+function writeCatalogFiles(index, searchIndex, outputDir) {
   // Ensure output directory exists
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true });
   }
-
   // Write index.json
   const indexPath = join(outputDir, "index.json");
   writeFileSync(indexPath, JSON.stringify(index, null, 2), "utf8");
   console.log(`\n✅ Wrote ${indexPath}`);
-
   // Write search_v1.json
   const searchPath = join(outputDir, "search_v1.json");
   writeFileSync(searchPath, JSON.stringify(searchIndex, null, 2), "utf8");
   console.log(`✅ Wrote ${searchPath}`);
-
   // Check total catalog size with warning threshold
   const sizeResult = checkCatalogSize(outputDir);
-
   if (sizeResult.violation) {
     console.error(`\n❌ ${sizeResult.violation.message}`);
     process.exit(1);
   }
-
   if (sizeResult.warning) {
     console.warn(`\n⚠️  ${sizeResult.warning}`);
   }
-
   console.log(
     `\nCatalog size: ${(sizeResult.totalSize / 1024 / 1024).toFixed(2)}MB (${(sizeResult.percentUsed * 100).toFixed(1)}% of ${(500).toFixed(0)}MB budget)`,
   );
 }
-
 /**
  * Main build pipeline
  */
-async function buildCatalog(options: BuildOptions): Promise<void> {
+async function buildCatalog(options) {
   console.log("Building catalog...\n");
   console.log(`Engine version: ${options.engineVersion}`);
   console.log(`Output directory: ${options.outputDir}`);
-
   // Load pack list
   const packsPath = join(options.repoRoot, "catalog", "packs.yaml");
   if (!existsSync(packsPath)) {
@@ -470,12 +308,9 @@ async function buildCatalog(options: BuildOptions): Promise<void> {
       `Pack list not found: ${packsPath}\nCreate catalog/packs.yaml with manual curation.`,
     );
   }
-
   const packsYaml = readFileSync(packsPath, "utf8");
-  const packsList = YAML.parse(packsYaml) as CatalogPacks;
-
+  const packsList = YAML.parse(packsYaml);
   console.log(`\nFound ${packsList.packs.length} pack(s) to process\n`);
-
   // Load namespace registry
   const namespaceRegistryPath = join(
     options.repoRoot,
@@ -483,12 +318,10 @@ async function buildCatalog(options: BuildOptions): Promise<void> {
     "namespaces.yaml",
   );
   const namespaceRegistry = loadNamespaceRegistry(namespaceRegistryPath);
-
   // Build catalog entries
-  const entries: CatalogEntryExtended[] = [];
+  const entries = [];
   let successCount = 0;
   let failCount = 0;
-
   for (const packEntry of packsList.packs) {
     try {
       const entry = await buildCatalogEntry(
@@ -509,32 +342,26 @@ async function buildCatalog(options: BuildOptions): Promise<void> {
       failCount++;
     }
   }
-
   // Build catalog index
-  const catalogIndex: CatalogIndexExtended = {
+  const catalogIndex = {
     version: "1.0.0",
     generated_at: new Date().toISOString(),
     engine_version: options.engineVersion,
     packs: entries,
   };
-
   // Build search index
   const searchIndex = buildSearchIndex(entries);
-
   // Write output files
   writeCatalogFiles(catalogIndex, searchIndex, options.outputDir);
-
   // Summary
   console.log(`\n${"=".repeat(60)}`);
   console.log(`Build complete: ${successCount} success, ${failCount} failed`);
   console.log(`Total packs in catalog: ${entries.length}`);
   console.log(`${"=".repeat(60)}\n`);
-
   if (failCount > 0) {
     process.exit(1);
   }
 }
-
 // CLI entry point
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const repoRoot = process.cwd();
@@ -542,7 +369,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const packageJsonPath = join(repoRoot, "packages", "cli", "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
   const engineVersion = packageJson.version || "0.1.0";
-
   buildCatalog({
     repoRoot,
     outputDir,
@@ -555,11 +381,4 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     process.exit(1);
   });
 }
-
-export {
-  buildCatalog,
-  type BuildOptions,
-  type PackEntry,
-  type CatalogPacks,
-  type SearchIndex,
-};
+export { buildCatalog };

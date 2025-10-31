@@ -1,0 +1,128 @@
+id: "packs/stacks/vercel-deployments"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Vercel deployment posture: env tiers, runtime selection, headers, redirects, and preview hygiene"
+tags: ["vercel", "deployment", "infra", "paved-road"]
+deps: []
+scope:
+  applies_to: ["infra", "deployment"]
+  includes:
+    [
+      "vercel.json",
+      ".vercel/**",
+      "next.config.*",
+      "package.json",
+      "app/**",
+      "middleware.ts",
+    ]
+rules:
+  - id: "no-client-secrets"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["app/**/*.{tsx,jsx}", "components/**/*.{tsx,jsx}"]
+        pattern: "process\\.env\\.[A-Z_]+(?!NEXT_PUBLIC)"
+        allow: false
+      evidence: "Non-prefixed env var accessed in Client Component"
+    autofix:
+      hint: "Only read process.env.NEXT_PUBLIC_* in Client Components"
+
+  - id: "no-committed-env-files"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "git ls-files | grep -E '^\\.env' | grep -v '.env.example'"
+        expect_exit_code: 1
+      evidence: "Committed .env file found"
+    autofix:
+      hint: "Remove .env* from git and add to .gitignore"
+
+  - id: "edge-runtime-requirements"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["app/**/*.{ts,tsx}"]
+        pattern: "export\\s+const\\s+runtime\\s*=\\s*[\"']edge[\"']"
+        allow: true
+      evidence: "Edge runtime requires web-standard APIs only"
+    autofix:
+      hint: "Remove Node-only APIs or switch to Node runtime"
+
+  - id: "preview-url-in-pr"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: [".github/pull_request_template.md"]
+        pattern: "Preview URL"
+        allow: true
+      evidence: "PR template missing Preview URL requirement"
+    autofix:
+      hint: "Add Preview URL field to PR template"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "1ca280b09f94b13cef0939e399f47cd9720ffe9c064a6a37bdfe9926b0c8fb52"
+
+notes: |
+  This align covers Vercel-specific deployment concerns:
+  - Environment variable hygiene
+  - Runtime selection (Edge vs Node)
+  - Header and redirect configuration
+  - Preview deployment standards
+
+  App behavior lives in nextjs-app-router align.
+  Security headers and CSP live in security align.
+
+guidance: |
+  # Vercel Deployments Guide
+
+  ## Core goals
+
+  1. Safe by default: no secret leaks
+  2. Predictable caching
+  3. Fast cold starts and small bundles
+  4. Reproducible previews
+
+  ## Environments and secrets
+
+  - Three tiers: Development, Preview, Production
+  - Server-only envs have no prefix
+  - Client-visible must be NEXT_PUBLIC_*
+  - Never commit .env*
+  - Pull envs locally: vercel env pull .env.local
+
+  ## Runtime selection
+
+  - Default to Node unless you need Edge
+  - Edge: low-latency, web-standard APIs only
+  - Keep Edge functions tiny and stateless
+
+  ## Regions and placement
+
+  - Pin regions for data-adjacent routes
+  - Use preferredRegion for Node routes
+  - Keep static with ISR for global reads
+
+  ## Headers, redirects, images
+
+  - Prefer Next config over vercel.json
+  - Security headers defined in security align
+  - Allowlist image remote patterns
+
+  ## Preview deployments
+
+  - Each PR must produce Preview URL
+  - Use Preview env vars only
+  - Stub unsafe writes or route to sandbox
+
+  ## Common pitfalls
+
+  - Reading non-prefixed secrets in Client Components
+  - Using Edge with Node-only APIs
+  - Wide-open images.remotePatterns
+  - Mixing Production secrets into Preview

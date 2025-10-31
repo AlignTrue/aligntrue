@@ -1,5 +1,6 @@
 /**
  * Integration tests for install flow (Phase 4, Session 5)
+ * Updated to test PackDetailClient component (client-side logic)
  *
  * Tests the full user journey: detail page → install button → modal → commands → download
  */
@@ -7,15 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import type { CatalogEntryExtended } from "@aligntrue/schema";
-
-// Mock useParams and useRouter for Next.js
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ slug: "test-pack" }),
-  useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
-  }),
-}));
+import { PackDetailClient } from "@/app/catalog/[slug]/PackDetailClient";
 
 /**
  * Create test pack with full data
@@ -94,6 +87,8 @@ function createFullPack(): CatalogEntryExtended {
 
 describe("Install Flow Integration", () => {
   let originalClipboard: typeof navigator.clipboard;
+  const mockPack = createFullPack();
+  const mockAllPacks = [mockPack];
 
   beforeEach(() => {
     // Add portal root BEFORE setting up any mocks
@@ -115,15 +110,10 @@ describe("Install Flow Integration", () => {
     vi.spyOn(document.body, "appendChild");
     vi.spyOn(document.body, "removeChild");
 
-    // Mock fetch for catalog data
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        version: "1.0",
-        generated_at: "2025-10-31T00:00:00Z",
-        engine_version: "0.1.0",
-        packs: [createFullPack()],
-      }),
+    // Mock window.location for structured data JSON-LD
+    Object.defineProperty(window, "location", {
+      value: { origin: "https://aligntrue.ai" },
+      writable: true,
     });
   });
 
@@ -134,17 +124,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("completes full install flow from button to modal", async () => {
-    // Import PackDetailPage dynamically to avoid static module issues
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    // Wait for pack to load
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Click install button
     const installButton = screen.getByText("Install with AlignTrue");
@@ -165,15 +147,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("copies commands from modal", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));
@@ -206,15 +182,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("downloads YAML from modal", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));
@@ -232,15 +202,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("closes modal with ESC key", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));
@@ -258,15 +222,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("closes modal with close button", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));
@@ -285,15 +243,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("generates correct plug commands with defaults", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));
@@ -314,15 +266,9 @@ describe("Install Flow Integration", () => {
   });
 
   it("displays tracking transparency note", async () => {
-    const { default: PackDetailPage } = await import(
-      "../../app/catalog/[slug]/page"
-    );
+    render(<PackDetailClient pack={mockPack} allPacks={mockAllPacks} />);
 
-    render(<PackDetailPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Pack")).toBeInTheDocument();
-    });
+    expect(screen.getByText("Test Pack")).toBeInTheDocument();
 
     // Open modal
     fireEvent.click(screen.getByText("Install with AlignTrue"));

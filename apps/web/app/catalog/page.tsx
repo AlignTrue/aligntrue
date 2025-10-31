@@ -72,11 +72,7 @@ export default function CatalogPage() {
         if (!mounted) return;
 
         console.error("Failed to load search index:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load catalog. Please try again later.",
-        );
+        setError("Catalog index unavailable. Please check back later.");
       } finally {
         if (mounted) {
           setIsLoading(false);
