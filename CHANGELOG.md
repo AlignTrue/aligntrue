@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Import command help now clarifies that Cursor import scans ALL .mdc files
   - Team enable supports non-interactive mode for CI/automation workflows
 
+- Migrated documentation site from Next.js Pages Router to App Router for Nextra 4.6.0 compatibility
+- Downgraded Next.js from 16.0.1 to 15.1.3 and React from 19.2.0 to 19.0.0 for Nextra compatibility
 - Archived original `/docs` directory to `archive/docs-original/`
 - Updated `.cursor/rules/dev_docs.mdc` to reference live docs site at `apps/docs/pages/`
 - Updated `.cursor/rules/global.mdc` to note documentation site is now active
