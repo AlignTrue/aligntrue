@@ -51,7 +51,10 @@ export async function overrideRemove(args: string[]): Promise<void> {
   const config = parsed.flags["config"] as string | undefined;
 
   try {
-    await runOverrideRemove(selectorArg, { force, config });
+    const options: OverrideRemoveOptions = { force };
+    if (config) options.config = config;
+
+    await runOverrideRemove(selectorArg, options);
   } catch (error) {
     clack.log.error(
       `Failed to remove overlay: ${error instanceof Error ? error.message : String(error)}`,
@@ -70,8 +73,8 @@ async function runOverrideRemove(
   options: OverrideRemoveOptions,
 ): Promise<void> {
   // Load config
-  const configPath = options.config || ".aligntrue/config.yaml";
-  const config = await loadConfig(configPath);
+  const configPath = options.config;
+  const config = await loadConfig(configPath, process.cwd());
 
   // Check if any overlays exist
   const overlays = config.overlays?.overrides || [];

@@ -7,6 +7,7 @@
 import { loadConfig, loadIR, applyOverlays } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
+import { resolve } from "path";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -43,7 +44,10 @@ export async function overrideDiff(args: string[]): Promise<void> {
   const config = parsed.flags["config"] as string | undefined;
 
   try {
-    await runOverrideDiff(selectorFilter, { config });
+    const options: OverrideDiffOptions = {};
+    if (config) options.config = config;
+
+    await runOverrideDiff(selectorFilter, options);
   } catch (error) {
     clack.log.error(
       `Failed to generate overlay diff: ${error instanceof Error ? error.message : String(error)}`,
@@ -61,18 +65,13 @@ async function runOverrideDiff(
   options: OverrideDiffOptions,
 ): Promise<void> {
   // Load config
-  const configPath = options.config || ".aligntrue/config.yaml";
-  const config = await loadConfig(configPath);
+  const config = await loadConfig(options.config, process.cwd());
 
   // Check if any overlays exist
   const overlays = config.overlays?.overrides || [];
   if (overlays.length === 0) {
     console.log("No overlays configured");
-    console.log("\nAdd an overlay:");
-    console.log(
-      "  aligntrue override add --selector 'rule[id=...]' --set key=value",
-    );
-    process.exit(0);
+    return;
   }
 
   // Filter overlays if selector provided
@@ -88,7 +87,14 @@ async function runOverrideDiff(
   // Load IR
   let originalIR: unknown;
   try {
-    originalIR = await loadIR(configPath);
+    const sourcePath = config.sources?.[0]?.path;
+    if (!sourcePath) {
+      clack.log.error("No source path configured");
+      process.exit(1);
+    }
+    const { resolve } = await import("path");
+    const absoluteSourcePath = resolve(process.cwd(), sourcePath);
+    originalIR = await loadIR(absoluteSourcePath);
   } catch (error) {
     clack.log.error("Could not load IR");
     clack.log.info("Run 'aligntrue sync' to generate IR");
