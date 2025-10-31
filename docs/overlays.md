@@ -23,11 +23,10 @@ sources:
     path: packs/base.yaml
 
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-console-log"
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 ```
 
 Run sync:
@@ -97,139 +96,121 @@ See `docs/plugs.md` for plug documentation.
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards" # Required: pack to modify
-      check_id: "no-console-log" # Optional: specific check
-    override:
-      severity: error # Change severity
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error" # Change severity
 ```
 
 ### Advanced Overlay
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "max-complexity"
-      scope: "backend/**" # Only in backend/
-    override:
-      inputs:
-        threshold: 15 # Add/merge inputs
-      severity: warning
-      autofix: false # Disable autofix
-    metadata:
-      reason: "Backend needs higher complexity during migration"
-      expires: "2025-12-31"
-      owner: "backend-team"
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        severity: "warning"
+        "check.inputs.threshold": 15 # Nested property with dot notation
+        autofix: false # Disable autofix
 ```
+
+**Note:** Metadata like `reason`, `expires`, and `owner` are not part of the overlay schema yet, but can be tracked via config comments or external documentation.
 
 ---
 
 ## Selector Strategies
 
-### By Pack Only
+### By Rule ID
 
-Applies to all checks in a pack:
-
-```yaml
-overlays:
-  - selector:
-      source_pack: "@acme/standards"
-    override:
-      severity: warning # Downgrade everything to warning
-```
-
-**Use when:** Trialing a new pack, gradual rollout.
-
-### By Check ID
-
-Applies to one specific check:
+Applies to one specific rule by its unique ID:
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-console-log"
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 ```
 
-**Use when:** Most checks are fine, one needs adjustment.
+**Use when:** Most rules are fine, one needs adjustment.
 
-### By Scope
+### By Property Path
 
-Applies to checks in specific paths:
+Modify nested properties using dot notation:
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      scope: "tests/**"
-    override:
-      severity: off # Disable checks in tests/
+  overrides:
+    - selector: "profile.version"
+      set:
+        value: "2.0.0"
 ```
 
-**Use when:** Different rules for different directories.
+**Use when:** Changing configuration or metadata fields.
 
-### Combining Selectors
+### By Array Index
 
-All conditions must match (AND logic):
+Target specific array elements:
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-await-in-loop"
-      scope: "scripts/**"
-    override:
-      severity: off # Only disable in scripts/
+  overrides:
+    - selector: "rules[0]"
+      set:
+        severity: "warn"
 ```
+
+**Use when:** Modifying rules by position (less common, prefer rule ID).
+
+**Note:** Scope-based selectors (e.g., `tests/**`) are not yet implemented. For now, overlays apply globally. You can track scope requirements separately and apply different overlays per directory by using hierarchical configs.
 
 ---
 
 ## Override Capabilities
 
-### Severity Levels
+### Set Operation
+
+Use `set` to modify properties (supports dot notation for nested paths):
 
 ```yaml
-override:
-  severity: off       # Disable check entirely
-  # OR
-  severity: info      # Informational only
-  # OR
-  severity: warning   # Default for most checks
-  # OR
-  severity: error     # Fail CI
-```
-
-### Check Inputs
-
-Merge with upstream inputs (deep merge):
-
-```yaml
-# Upstream defines:
-# inputs:
-#   maxLength: 80
-#   allowUrls: true
-
 overlays:
-  - selector:
-      check_id: "line-length"
-    override:
-      inputs:
-        maxLength: 120 # Overrides upstream
-        ignoreComments: true # Adds new input
-        # allowUrls: true (preserved from upstream)
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error" # Simple property
+        "check.inputs.maxLength": 120 # Nested property
+        autofix: false # Disable autofix
 ```
 
-### Autofix Control
+**Severity values:** `"off"`, `"info"`, `"warning"`, `"error"`
+
+### Remove Operation
+
+Use `remove` to delete properties:
 
 ```yaml
-override:
-  autofix: false # Disable autofix, keep check
+overlays:
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      remove:
+        - "autofix" # Remove autofix
+        - "tags" # Remove tags array
 ```
 
-**Use when:** Want manual fixes, or autofix is risky in your codebase.
+### Combined Operations
+
+Apply both set and remove in one overlay:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=line-length]"
+      set:
+        severity: "warning"
+        "check.inputs.threshold": 120
+      remove:
+        - "autofix"
+```
 
 ---
 
@@ -237,45 +218,42 @@ override:
 
 ### Multiple Overlays
 
-Apply multiple overlays to same pack:
+Apply multiple overlays to different rules:
 
 ```yaml
 overlays:
-  # Disable checks in tests
-  - selector:
-      source_pack: "@acme/standards"
-      scope: "tests/**"
-    override:
-      severity: off
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 
-  # Stricter in production code
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-console-log"
-      scope: "src/**"
-    override:
-      severity: error
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15
+
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix"
 ```
 
-**Precedence:** Most specific selector wins (check_id + scope > check_id > pack).
+**Order:** Overlays apply in definition order. Last matching overlay wins if multiple target the same rule.
 
 ### Temporary Overrides
 
-Document expiration dates:
+Use YAML comments to track temporary overlays:
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "no-deprecated-api"
-    override:
-      severity: warning
-    metadata:
-      reason: "Migration to new API in progress"
-      expires: "2025-12-31"
-      owner: "platform-team"
+  overrides:
+    # TEMPORARY: Migration to new API in progress
+    # Expires: 2025-12-31
+    # Owner: platform-team
+    - selector: "rule[id=no-deprecated-api]"
+      set:
+        severity: "warning"
 ```
 
-Use `aln override status` to audit expired overrides.
+Use `aln override status` to review all active overlays.
 
 ### Migration Workflow
 
@@ -284,20 +262,21 @@ Gradually adopt stricter rules:
 ```yaml
 # Week 1: Disable new check
 overlays:
-  - selector:
-      check_id: "new-security-rule"
-    override:
-      severity: off
+  overrides:
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "off"
 
 # Week 2: Enable as warning
 overlays:
-  - selector:
-      check_id: "new-security-rule"
-    override:
-      severity: warning
+  overrides:
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "warning"
 
 # Week 3: Remove overlay (use upstream default: error)
-# overlays: []
+overlays:
+  overrides: []
 ```
 
 ---
@@ -306,77 +285,58 @@ overlays:
 
 ### What Causes Conflicts?
 
-**Stale selectors:** Upstream renamed or removed a check.
+**Stale selectors:** Upstream renamed or removed a rule.
 
 ```yaml
 # Upstream renamed "no-console-log" → "no-console-statements"
 overlays:
-  - selector:
-      check_id: "no-console-log" # ❌ No longer exists
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-log]" # ❌ No longer exists
+      set:
+        severity: "error"
 ```
 
-**Resolution:** Run `aln override status` to detect stale selectors, update to new check ID.
+**Resolution:** Run `aln override status` to detect stale selectors, update to new rule ID.
 
-**Ambiguous selectors:** Multiple checks match.
-
-```yaml
-# Both "@acme/standards" and "@acme/security" have "no-console-log"
-overlays:
-  - selector:
-      check_id: "no-console-log" # ❌ Ambiguous
-    override:
-      severity: error
-```
-
-**Resolution:** Add `source_pack` to disambiguate.
-
-**Conflicting overrides:** Multiple overlays target same check.
+**Duplicate overlays:** Multiple overlays target same rule.
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "no-console-log"
-    override:
-      severity: error
-  - selector:
-      check_id: "no-console-log"
-      scope: "src/**"
-    override:
-      severity: warning # ❌ Conflicts with above
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "warning" # ❌ Conflicts with above
 ```
 
-**Resolution:** Most specific selector wins (check_id + scope > check_id).
+**Resolution:** Last matching overlay wins. Consolidate into single overlay or remove duplicate.
 
-### Three-Way Merge
+### Handling Upstream Changes
 
-When upstream changes conflict with your overlay:
+When upstream changes may conflict with your overlay:
 
 ```bash
-aln update --safe
-# Output:
-# ⚠ Conflict in overlay for check "no-console-log"
-# Upstream changed: severity warning → error
-# Your overlay: severity error, inputs: { exclude: ["debug.ts"] }
-#
-# Options:
-# 1. Keep your overlay (ignore upstream change)
-# 2. Accept upstream change (remove overlay)
-# 3. Merge manually (edit overlay)
-#
-# Conflict patch saved to: .aligntrue/.conflicts/overlay-no-console-log.patch
+# Check overlay health after update
+aln sync
+aln override status
+# Shows if overlays still match rules
+
+# View overlay effects
+aln override diff 'rule[id=no-console-log]'
+# Shows: original IR → modified IR with overlay applied
 ```
 
-View three-way diff:
+**If rule ID changed upstream:**
 
-```bash
-aln override diff no-console-log
-# Shows:
-# - Upstream original
-# - Upstream new
-# - Your overlay
-```
+1. Remove old overlay: `aln override remove 'rule[id=old-name]'`
+2. Add new overlay: `aln override add --selector 'rule[id=new-name]' --set severity=error`
+
+**If overlay now redundant (upstream matches your override):**
+
+1. Verify match: `aln override diff`
+2. Remove overlay: `aln override remove 'rule[id=rule-name]'`
 
 ---
 
@@ -384,19 +344,22 @@ aln override diff no-console-log
 
 ### Overlay Approval
 
-Require review for overlays in CI:
+Team mode tracks overlays in lockfile for review:
 
-```yaml
-# .aligntrue.team.yaml
-overlay_policy:
-  require_approval: true
-  allowed_overrides:
-    - severity # Can change severity without approval
-  restricted_overrides:
-    - autofix # Requires approval
+```json
+// .aligntrue.lock.json
+{
+  "dependencies": {
+    "acme-standards": {
+      "content_hash": "sha256:upstream...",
+      "overlay_hash": "sha256:local-mods...",
+      "final_hash": "sha256:combined..."
+    }
+  }
+}
 ```
 
-See `docs/team-mode.md` for team policies.
+See `docs/team-mode.md` for team mode workflows.
 
 ### Overlay Dashboard
 
@@ -408,24 +371,17 @@ aln override status
 # Output:
 # Overlays (3 active, 1 stale)
 #
-# ✓ @acme/standards → no-console-log (severity: error)
-#   Reason: Production logging policy
-#   Owner: platform-team
+# ✓ rule[id=no-console-log]
+#   Set: severity=error
 #   Healthy: yes
 #
-# ✓ @acme/standards → max-complexity (inputs: {threshold: 15})
-#   Reason: Backend migration in progress
-#   Expires: 2025-12-31
+# ✓ rule[id=max-complexity]
+#   Set: check.inputs.threshold=15
 #   Healthy: yes
 #
-# ⚠ @acme/standards → no-deprecated-api (severity: warning)
-#   Reason: Migration to new API
-#   Expires: 2025-10-15 (EXPIRED)
-#   Healthy: stale
-#
-# ❌ @acme/security → old-check-name (severity: off)
-#   Reason: Unknown
-#   Healthy: no (check not found in upstream)
+# ❌ rule[id=old-rule-name]
+#   Set: severity=off
+#   Healthy: stale (no match in IR)
 ```
 
 ---
@@ -449,17 +405,17 @@ Overlays are deterministic and hashed separately:
         "ref": "v1.2.0",
         "commit": "abc123"
       },
-      "content_hash": "sha256:upstream-content-hash",
+      "base_hash": "sha256:upstream-content-hash",
       "overlay_hash": "sha256:overlay-modifications-hash",
-      "final_hash": "sha256:combined-hash"
+      "result_hash": "sha256:combined-hash"
     }
   }
 }
 ```
 
-**content_hash:** Upstream pack content  
+**base_hash:** Upstream pack content  
 **overlay_hash:** Your overlay modifications  
-**final_hash:** Combined result after overlays applied
+**result_hash:** Combined result after overlays applied
 
 ### Drift Detection
 
@@ -469,18 +425,17 @@ Detect overlay staleness:
 aln drift
 
 # Output:
-# Drift detected (2 issues)
+# Drift detected (2 categories)
 #
-# Overlay staleness:
-#   @acme/standards overlay for "no-console-log"
-#   - Upstream changed severity: warning → error
-#   - Your overlay: severity error (now matches upstream)
-#   - Recommendation: Remove overlay (redundant)
+# Overlay drift:
+#   rule[id=no-console-log]
+#   - overlay_hash changed (local modifications)
+#   - Recommendation: Review overlay changes
 #
-# Expired overlays:
-#   @acme/standards overlay for "no-deprecated-api"
-#   - Expires: 2025-10-15 (30 days ago)
-#   - Recommendation: Review and update or remove
+# Upstream drift:
+#   @acme/standards
+#   - base_hash changed (upstream updated)
+#   - Recommendation: Run aln sync to apply latest
 ```
 
 See `docs/drift-detection.md` for full drift capabilities.
@@ -492,23 +447,27 @@ See `docs/drift-detection.md` for full drift capabilities.
 ### Add Overlay
 
 ```bash
-# Interactive mode
-aln override add
-
-# Direct mode
+# Add overlay to change severity
 aln override add \
-  --pack @acme/standards \
-  --check no-console-log \
-  --severity error
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
 
-# With metadata
+# Add overlay with nested property (dot notation)
 aln override add \
-  --pack @acme/standards \
-  --check max-complexity \
-  --input threshold=15 \
-  --reason "Backend migration" \
-  --expires 2025-12-31 \
-  --owner backend-team
+  --selector 'rule[id=max-complexity]' \
+  --set check.inputs.threshold=15
+
+# Remove property
+aln override add \
+  --selector 'rule[id=prefer-const]' \
+  --remove autofix
+
+# Combined set and remove
+aln override add \
+  --selector 'rule[id=line-length]' \
+  --set severity=warning \
+  --set check.inputs.max=120 \
+  --remove autofix
 ```
 
 ### View Overlays
@@ -517,46 +476,41 @@ aln override add \
 # Dashboard of all overlays
 aln override status
 
-# Filter by pack
-aln override status --pack @acme/standards
-
-# Show only stale/expired
-aln override status --stale
+# JSON output for CI
+aln override status --json
 ```
 
 ### Diff Overlays
 
 ```bash
-# Three-way diff for specific check
-aln override diff no-console-log
+# Show effect of specific overlay
+aln override diff 'rule[id=no-console-log]'
 
-# Show all conflicts
-aln override diff --conflicts
+# Show all overlay effects
+aln override diff
 ```
 
 ### Remove Overlay
 
 ```bash
-# Interactive removal
+# Interactive removal (select from list)
 aln override remove
 
-# Direct removal
-aln override remove \
-  --pack @acme/standards \
-  --check no-console-log
+# Direct removal by selector
+aln override remove 'rule[id=no-console-log]'
+
+# Skip confirmation
+aln override remove 'rule[id=no-console-log]' --force
 ```
 
 ### Integration with Other Commands
 
 ```bash
-# Update with conflict detection
-aln update --safe
+# Sync applies overlays automatically
+aln sync
 
-# Check with overlay validation
-aln check --validate-overlays
-
-# Sync with overlay application
-aln sync  # Overlays applied automatically
+# Update preserves overlays
+aln update
 ```
 
 See `docs/commands.md` for complete CLI reference.
@@ -567,7 +521,7 @@ See `docs/commands.md` for complete CLI reference.
 
 ### Example 1: Severity Adjustment
 
-**Scenario:** Upstream pack is too strict for your legacy codebase.
+**Scenario:** Upgrade warning to error for stricter enforcement.
 
 ```yaml
 # .aligntrue.yaml
@@ -577,68 +531,54 @@ sources:
     path: packs/strict.yaml
 
 overlays:
-  # Downgrade all errors to warnings during migration
-  - selector:
-      source_pack: "@acme/standards"
-      severity: error
-    override:
-      severity: warning
-    metadata:
-      reason: "Legacy codebase migration"
-      expires: "2025-12-31"
+  overrides:
+    # TEMPORARY: Legacy codebase migration
+    # Expires: 2025-12-31
+    - selector: "rule[id=no-any-type]"
+      set:
+        severity: "error"
 ```
 
-### Example 2: Scope-Specific Rules
-
-**Scenario:** Different rules for production vs test code.
-
-```yaml
-overlays:
-  # Strict in production
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-any-type"
-      scope: "src/**"
-    override:
-      severity: error
-
-  # Relaxed in tests
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-any-type"
-      scope: "tests/**"
-    override:
-      severity: off
-```
-
-### Example 3: Input Customization
+### Example 2: Input Customization
 
 **Scenario:** Customize complexity threshold for your project.
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "max-complexity"
-    override:
-      inputs:
-        threshold: 15 # Default is 10
-        excludeComments: true
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15 # Default is 10
+        "check.inputs.excludeComments": true
 ```
 
-### Example 4: Disable Autofix
+### Example 3: Disable Autofix
 
 **Scenario:** Keep check but disable risky autofix.
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "prefer-const"
-    override:
-      autofix: false
-    metadata:
-      reason: "Autofix conflicts with reactive framework"
+  overrides:
+    # Autofix conflicts with reactive framework
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix"
+```
+
+### Example 4: Multiple Property Changes
+
+**Scenario:** Change severity and add input configuration.
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=line-length]"
+      set:
+        severity: "warning"
+        "check.inputs.maxLength": 120
+        "check.inputs.ignoreUrls": true
+      remove:
+        - "autofix"
 ```
 
 ---
@@ -649,81 +589,67 @@ overlays:
 
 Only override what you must. Fewer overlays = easier updates.
 
-❌ **Bad:** Override many checks:
+❌ **Bad:** Override many rules:
 
 ```yaml
 overlays:
-  - selector: { check_id: "check-1" }
-    override: { severity: error }
-  - selector: { check_id: "check-2" }
-    override: { severity: error }
-  # ... 20 more overlays
+  overrides:
+    - selector: "rule[id=check-1]"
+      set: { severity: "error" }
+    - selector: "rule[id=check-2]"
+      set: { severity: "error" }
+    # ... 20 more overlays
 ```
 
 ✅ **Good:** Fork and customize:
 
 ```yaml
 # Create your own pack based on upstream
-# Maintain in your repo
+# Maintain in your repo, or request changes upstream
 ```
 
 ### Document Reasons
 
-Always explain why:
+Always explain why using YAML comments:
 
 ```yaml
 overlays:
-  - selector: { check_id: "no-console-log" }
-    override: { severity: off }
-    metadata:
-      reason: "CLI tool requires console output"
-      owner: "cli-team"
+  overrides:
+    # CLI tool requires console output for user feedback
+    # Owner: cli-team
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "off"
 ```
 
-### Set Expiration Dates
+### Track Expiration
 
-For temporary overrides:
+For temporary overrides, use YAML comments:
 
 ```yaml
 overlays:
-  - selector: { check_id: "new-rule" }
-    override: { severity: warning }
-    metadata:
-      expires: "2025-12-31"
-      reason: "Gradual rollout"
+  overrides:
+    # TEMPORARY: Gradual rollout
+    # Expires: 2025-12-31
+    - selector: "rule[id=new-rule]"
+      set:
+        severity: "warning"
 ```
 
-Use `aln override status --expired` to audit.
-
-### Use Scopes Wisely
-
-Target specific directories:
-
-```yaml
-# ✅ Good: Specific scope
-overlays:
-  - selector:
-      scope: "legacy/**"
-    override: { severity: warning }
-
-# ❌ Bad: Too broad
-overlays:
-  - selector: {}  # Applies everywhere
-    override: { severity: warning }
-```
+Use `aln override status` to review active overlays regularly.
 
 ### Review Regularly
 
 Audit overlays monthly:
 
 ```bash
-# Check for stale overlays
-aln override status --stale
+# Check all overlays health
+aln override status
 
-# Review expired overlays
-aln override status --expired
+# View overlay effects
+aln override diff
 
-# Validate overlays still needed
+# Detect drift
 aln drift
 ```
 
@@ -748,20 +674,22 @@ aln override status
 2. Check no longer exists in upstream
 3. Selector too specific (no matches)
 
-**Fix:** Run `aln check --validate-overlays` for detailed errors.
+**Fix:** Run `aln override status` for health status and detailed errors.
 
 ### Overlay Conflicts
 
-**Symptom:** Multiple overlays target same check.
+**Symptom:** Multiple overlays target same rule.
 
 **Diagnosis:**
 
 ```bash
-aln override diff <check-id>
-# Shows all overlays targeting this check
+aln override status
+# Lists all active overlays
+aln override diff
+# Shows combined effect
 ```
 
-**Fix:** Consolidate overlays or use more specific scopes.
+**Fix:** Consolidate overlays into single definition. Last overlay wins if multiple target same rule.
 
 ### Update Breaks Overlays
 
@@ -770,14 +698,14 @@ aln override diff <check-id>
 **Diagnosis:**
 
 ```bash
-aln update --dry-run
-# Shows what would change
-
 aln override status
 # Shows health after update
+
+aln override diff
+# Shows current effects
 ```
 
-**Fix:** Use `aln update --safe` for conflict detection and three-way merge.
+**Fix:** Update selectors to match new upstream rule IDs. Run `aln override remove` for stale overlays and re-add with correct selectors.
 
 See `docs/troubleshooting-overlays.md` for comprehensive troubleshooting.
 
