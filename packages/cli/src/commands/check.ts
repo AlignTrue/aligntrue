@@ -5,7 +5,8 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { type AlignTrueConfig, type AlignPack } from "@aligntrue/core";
+import { type AlignTrueConfig } from "@aligntrue/core";
+import type { AlignPack } from "@aligntrue/schema";
 import { validateAlign } from "@aligntrue/schema";
 import { readFileSync } from "fs";
 import {
@@ -263,11 +264,19 @@ export async function check(args: string[]): Promise<void> {
 
     if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
       const overlays: OverlayDefinition[] = config.overlays.overrides;
-      const limits = {
-        maxOverrides: config.overlays.limits?.max_overrides,
-        maxOperationsPerOverride:
-          config.overlays.limits?.max_operations_per_override,
-      };
+      // TypeScript strict mode: only pass defined values
+      const limits: {
+        maxOverrides?: number;
+        maxOperationsPerOverride?: number;
+      } = {};
+
+      if (config.overlays.limits?.max_overrides !== undefined) {
+        limits.maxOverrides = config.overlays.limits.max_overrides;
+      }
+      if (config.overlays.limits?.max_operations_per_override !== undefined) {
+        limits.maxOperationsPerOverride =
+          config.overlays.limits.max_operations_per_override;
+      }
 
       const overlayResult = validateOverlays(
         overlays,

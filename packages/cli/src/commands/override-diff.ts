@@ -6,6 +6,7 @@
 
 import { Command } from "commander";
 import { loadConfig, loadIR, applyOverlays } from "@aligntrue/core";
+import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 
 interface OverrideDiffOptions {
@@ -74,8 +75,11 @@ async function runOverrideDiff(
     process.exit(1);
   }
 
-  // Apply overlays
-  const result = applyOverlays(originalIR, config.overlays?.overrides || []);
+  // Apply overlays (TypeScript: cast to AlignPack after IR load validation)
+  const result = applyOverlays(
+    originalIR as AlignPack,
+    config.overlays?.overrides || [],
+  );
 
   if (!result.success) {
     clack.log.error("Failed to apply overlays");
