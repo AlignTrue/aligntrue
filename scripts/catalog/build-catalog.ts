@@ -38,7 +38,7 @@ import type {
 import {
   runPackAbuseControls,
   checkPreviewSize,
-  checkCatalogBudget,
+  checkCatalogSize,
   type AbuseViolation,
 } from "./abuse-controls.js";
 import {
@@ -438,12 +438,21 @@ function writeCatalogFiles(
   writeFileSync(searchPath, JSON.stringify(searchIndex, null, 2), "utf8");
   console.log(`✅ Wrote ${searchPath}`);
 
-  // Check total catalog budget
-  const budgetViolation = checkCatalogBudget(outputDir);
-  if (budgetViolation) {
-    console.error(`\n❌ ${budgetViolation.message}`);
+  // Check total catalog size with warning threshold
+  const sizeResult = checkCatalogSize(outputDir);
+
+  if (sizeResult.violation) {
+    console.error(`\n❌ ${sizeResult.violation.message}`);
     process.exit(1);
   }
+
+  if (sizeResult.warning) {
+    console.warn(`\n⚠️  ${sizeResult.warning}`);
+  }
+
+  console.log(
+    `\nCatalog size: ${(sizeResult.totalSize / 1024 / 1024).toFixed(2)}MB (${(sizeResult.percentUsed * 100).toFixed(1)}% of ${(500).toFixed(0)}MB budget)`,
+  );
 }
 
 /**

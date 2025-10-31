@@ -12,12 +12,14 @@ import { join } from "path";
  * Abuse control limits
  */
 export const LIMITS = {
-  /** Max size for pack YAML (10MB) */
-  MAX_PACK_SIZE: 10 * 1024 * 1024,
-  /** Max size for single exporter preview (5MB) */
-  MAX_PREVIEW_SIZE: 5 * 1024 * 1024,
-  /** Max total catalog size (500MB) */
+  /** Max size for pack YAML (1MB - realistic for ~5,000 rules) */
+  MAX_PACK_SIZE: 1 * 1024 * 1024,
+  /** Max size for single exporter preview (512KB - realistic for ~2,500 rules) */
+  MAX_PREVIEW_SIZE: 512 * 1024,
+  /** Max total catalog size (500MB - supports 200-500 packs, revisit at 150 packs) */
   MAX_CATALOG_SIZE: 500 * 1024 * 1024,
+  /** Warning threshold for catalog size (50% of max) */
+  CATALOG_WARNING_THRESHOLD: 0.5,
 } as const;
 
 /**
@@ -195,12 +197,36 @@ export function scanForBinaries(
 }
 
 /**
+ * Catalog size result with optional warning
+ */
+export interface CatalogSizeResult {
+  totalSize: number;
+  violation?: AbuseViolation;
+  warning?: string;
+  percentUsed: number;
+}
+
+/**
  * Check total catalog size budget
  *
  * @param catalogDir - Path to catalog output directory
  * @returns Violation if total size exceeds budget
  */
 export function checkCatalogBudget(catalogDir: string): AbuseViolation | null {
+  const result = checkCatalogSize(catalogDir);
+  return result.violation || null;
+}
+
+/**
+ * Check catalog size with warning threshold
+ *
+ * Returns detailed size information including warning when
+ * catalog exceeds 50% of budget (early warning system).
+ *
+ * @param catalogDir - Path to catalog output directory
+ * @returns Size result with optional violation and warning
+ */
+export function checkCatalogSize(catalogDir: string): CatalogSizeResult {
   let totalSize = 0;
 
   function calculateSize(dir: string): void {
@@ -222,16 +248,31 @@ export function checkCatalogBudget(catalogDir: string): AbuseViolation | null {
 
   calculateSize(catalogDir);
 
+  const percentUsed = totalSize / LIMITS.MAX_CATALOG_SIZE;
+  const result: CatalogSizeResult = {
+    totalSize,
+    percentUsed,
+  };
+
+  // Hard limit violation
   if (totalSize > LIMITS.MAX_CATALOG_SIZE) {
-    return {
+    result.violation = {
       type: "budget",
       message: `Catalog exceeds total size budget: ${(totalSize / 1024 / 1024).toFixed(2)}MB > ${(LIMITS.MAX_CATALOG_SIZE / 1024 / 1024).toFixed(0)}MB`,
       actual: totalSize,
       limit: LIMITS.MAX_CATALOG_SIZE,
     };
   }
+  // Warning threshold (50%)
+  else if (percentUsed >= LIMITS.CATALOG_WARNING_THRESHOLD) {
+    const warningThresholdMB =
+      (LIMITS.MAX_CATALOG_SIZE * LIMITS.CATALOG_WARNING_THRESHOLD) /
+      1024 /
+      1024;
+    result.warning = `Catalog size exceeds ${(LIMITS.CATALOG_WARNING_THRESHOLD * 100).toFixed(0)}% threshold: ${(totalSize / 1024 / 1024).toFixed(2)}MB > ${warningThresholdMB.toFixed(0)}MB (${(percentUsed * 100).toFixed(1)}% used). Consider increasing catalog budget or removing old packs.`;
+  }
 
-  return null;
+  return result;
 }
 
 /**
