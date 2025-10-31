@@ -700,4 +700,362 @@ sources:
       expect(result.summary.by_category.severity_remap).toBe(0);
     });
   });
+
+  describe("triple-hash drift detection (Phase 3.5)", () => {
+    describe("detectOverlayDrift", () => {
+      it("detects no drift when overlay_hash matches", async () => {
+        const { detectOverlayDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "test.rule",
+            content_hash: "result123",
+            base_hash: "base123",
+            overlay_hash: "overlay123",
+            result_hash: "result123",
+          },
+        ];
+
+        const findings = detectOverlayDrift(entries, "overlay123");
+        expect(findings).toHaveLength(0);
+      });
+
+      it("detects drift when overlay_hash differs", async () => {
+        const { detectOverlayDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "test.rule",
+            content_hash: "result123",
+            base_hash: "base123",
+            overlay_hash: "oldoverlay",
+            result_hash: "result123",
+          },
+        ];
+
+        const findings = detectOverlayDrift(entries, "newoverlay");
+        expect(findings).toHaveLength(1);
+        expect(findings[0]).toMatchObject({
+          category: "overlay",
+          rule_id: "test.rule",
+          message: expect.stringContaining("Overlay configuration has changed"),
+          overlay_hash: "oldoverlay",
+          expected_overlay_hash: "newoverlay",
+        });
+      });
+
+      it("skips entries without overlay_hash", async () => {
+        const { detectOverlayDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "local.rule",
+            content_hash: "hash123",
+            // No overlay_hash
+          },
+        ];
+
+        const findings = detectOverlayDrift(entries, "overlay123");
+        expect(findings).toHaveLength(0);
+      });
+
+      it("detects drift in multiple entries", async () => {
+        const { detectOverlayDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "rule.one",
+            overlay_hash: "oldoverlay",
+          },
+          {
+            rule_id: "rule.two",
+            overlay_hash: "oldoverlay",
+          },
+        ];
+
+        const findings = detectOverlayDrift(entries, "newoverlay");
+        expect(findings).toHaveLength(2);
+      });
+    });
+
+    describe("detectResultDrift", () => {
+      it("detects no drift when result_hash matches", async () => {
+        const { detectResultDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "test.rule",
+            base_hash: "base123",
+            overlay_hash: "overlay123",
+            result_hash: "result123",
+          },
+        ];
+
+        const currentResults = new Map([["test.rule", "result123"]]);
+
+        const findings = detectResultDrift(entries, currentResults);
+        expect(findings).toHaveLength(0);
+      });
+
+      it("detects drift when result_hash differs", async () => {
+        const { detectResultDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "test.rule",
+            base_hash: "base123",
+            overlay_hash: "overlay123",
+            result_hash: "oldresult",
+          },
+        ];
+
+        const currentResults = new Map([["test.rule", "newresult"]]);
+
+        const findings = detectResultDrift(entries, currentResults);
+        expect(findings).toHaveLength(1);
+        expect(findings[0]).toMatchObject({
+          category: "result",
+          rule_id: "test.rule",
+          message: expect.stringContaining("Result hash differs"),
+          result_hash: "oldresult",
+          expected_result_hash: "newresult",
+          base_hash: "base123",
+          overlay_hash: "overlay123",
+        });
+      });
+
+      it("skips entries without triple-hash format", async () => {
+        const { detectResultDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "legacy.rule",
+            content_hash: "hash123",
+            // No triple-hash fields
+          },
+        ];
+
+        const currentResults = new Map([["legacy.rule", "hash456"]]);
+
+        const findings = detectResultDrift(entries, currentResults);
+        expect(findings).toHaveLength(0);
+      });
+
+      it("skips entries not in currentResults map", async () => {
+        const { detectResultDrift } = await import("../../src/team/drift.js");
+
+        const entries: any[] = [
+          {
+            rule_id: "test.rule",
+            base_hash: "base123",
+            overlay_hash: "overlay123",
+            result_hash: "result123",
+          },
+        ];
+
+        const currentResults = new Map(); // Empty
+
+        const findings = detectResultDrift(entries, currentResults);
+        expect(findings).toHaveLength(0);
+      });
+    });
+
+    describe("detectUpstreamDrift with triple-hash", () => {
+      it("uses base_hash when available", () => {
+        const lockfile: Lockfile = {
+          version: "1",
+          generated_at: "2025-10-31T12:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule",
+              content_hash: "result123",
+              source: "git:https://github.com/org/pack",
+              base_hash: "oldbase",
+              overlay_hash: "overlay123",
+              result_hash: "result123",
+            },
+          ],
+          bundle_hash: "xyz789",
+        };
+
+        const allowList: AllowList = {
+          sources: [
+            {
+              type: "id",
+              value: "git:https://github.com/org/pack",
+              resolved_hash: "newbase", // Different from base_hash
+            },
+          ],
+        };
+
+        const findings = detectUpstreamDrift(lockfile, allowList);
+        expect(findings).toHaveLength(1);
+        expect(findings[0]).toMatchObject({
+          category: "upstream",
+          message: expect.stringContaining("base_hash differs"),
+          base_hash: "oldbase",
+          expected_base_hash: "newbase",
+          overlay_hash: "overlay123",
+          result_hash: "result123",
+        });
+      });
+
+      it("falls back to content_hash when base_hash not available", () => {
+        const lockfile: Lockfile = {
+          version: "1",
+          generated_at: "2025-10-31T12:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "legacy.rule",
+              content_hash: "oldhash",
+              source: "git:https://github.com/org/pack",
+              // No triple-hash fields
+            },
+          ],
+          bundle_hash: "xyz789",
+        };
+
+        const allowList: AllowList = {
+          sources: [
+            {
+              type: "id",
+              value: "git:https://github.com/org/pack",
+              resolved_hash: "newhash",
+            },
+          ],
+        };
+
+        const findings = detectUpstreamDrift(lockfile, allowList);
+        expect(findings).toHaveLength(1);
+        expect(findings[0]).toMatchObject({
+          category: "upstream",
+          message: expect.not.stringContaining("base_hash"),
+          lockfile_hash: "oldhash",
+        });
+      });
+
+      it("suggests using update command for base_hash drift", () => {
+        const lockfile: Lockfile = {
+          version: "1",
+          generated_at: "2025-10-31T12:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule",
+              content_hash: "result123",
+              source: "git:https://github.com/org/pack",
+              base_hash: "oldbase",
+              overlay_hash: "overlay123",
+              result_hash: "result123",
+            },
+          ],
+          bundle_hash: "xyz789",
+        };
+
+        const allowList: AllowList = {
+          sources: [
+            {
+              type: "id",
+              value: "git:https://github.com/org/pack",
+              resolved_hash: "newbase",
+            },
+          ],
+        };
+
+        const findings = detectUpstreamDrift(lockfile, allowList);
+        expect(findings[0].suggestion).toContain("aligntrue update apply");
+      });
+    });
+
+    describe("integrated drift detection", () => {
+      it("categorizes drift into upstream/overlay/result", () => {
+        const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+        const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+
+        mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+        // Lockfile with triple-hash entries
+        writeFileSync(
+          lockfilePath,
+          JSON.stringify({
+            version: "1",
+            generated_at: "2025-10-31T12:00:00Z",
+            mode: "team",
+            rules: [
+              {
+                rule_id: "upstream.rule",
+                content_hash: "result1",
+                source: "git:https://github.com/org/pack",
+                base_hash: "oldbase",
+                overlay_hash: "overlay1",
+                result_hash: "result1",
+              },
+            ],
+            bundle_hash: "xyz789",
+          }),
+        );
+
+        writeFileSync(
+          allowListPath,
+          `version: 1
+sources:
+  - type: id
+    value: git:https://github.com/org/pack
+    resolved_hash: newbase
+`,
+        );
+
+        const result = detectDrift(lockfilePath, allowListPath, tempDir);
+        expect(result.has_drift).toBe(true);
+        expect(result.summary.by_category.upstream).toBe(1);
+      });
+
+      it("reports correct summary counts for all categories", () => {
+        const lockfilePath = join(tempDir, ".aligntrue.lock.json");
+        const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
+
+        mkdirSync(join(tempDir, ".aligntrue"), { recursive: true });
+
+        writeFileSync(
+          lockfilePath,
+          JSON.stringify({
+            version: "1",
+            generated_at: "2025-10-31T12:00:00Z",
+            mode: "team",
+            rules: [
+              {
+                rule_id: "rule1",
+                content_hash: "hash1",
+                source: "git:https://github.com/org/pack",
+                base_hash: "oldbase",
+              },
+              {
+                rule_id: "rule2",
+                content_hash: "hash2",
+                vendor_path: "vendor/missing",
+              },
+            ],
+            bundle_hash: "xyz789",
+          }),
+        );
+
+        writeFileSync(
+          allowListPath,
+          `version: 1
+sources:
+  - type: id
+    value: git:https://github.com/org/pack
+    resolved_hash: newbase
+`,
+        );
+
+        const result = detectDrift(lockfilePath, allowListPath, tempDir);
+        expect(result.summary.by_category.upstream).toBe(1);
+        expect(result.summary.by_category.vendorized).toBe(1);
+        expect(result.summary.total).toBe(2);
+      });
+    });
+  });
 });

@@ -220,8 +220,7 @@ describe("lockfile generator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const entry = lockfile.rules[0];
 
-      expect(entry.base_hash).toBeDefined();
-      expect(entry.base_hash).toBe("abc123"); // Same as source_sha
+      expect(entry.base_hash).toBeUndefined(); // No basePack provided
     });
 
     it("omits base_hash when source_sha is undefined", () => {
@@ -254,17 +253,6 @@ describe("lockfile generator", () => {
       expect(entry.source_sha).toBeUndefined();
     });
 
-    it("preserves base_hash through round-trip serialization", () => {
-      const lockfile = generateLockfile(mockPack, "team");
-
-      // Serialize to JSON
-      const json = JSON.stringify(lockfile);
-      const parsed = JSON.parse(json);
-
-      // Verify base_hash preserved
-      expect(parsed.rules[0].base_hash).toBe("abc123");
-    });
-
     it("base_hash is optional and does not break existing lockfiles", () => {
       // Simulate an old lockfile without base_hash
       const lockfile = generateLockfile(mockPack, "team");
@@ -279,6 +267,250 @@ describe("lockfile generator", () => {
       expect(entry?.rule_id).toBeDefined();
       expect(entry?.content_hash).toBeDefined();
       expect(entry?.base_hash).toBeUndefined();
+    });
+  });
+
+  describe("triple-hash format (Phase 3.5)", () => {
+    const basePack: AlignPack = {
+      id: "test.pack",
+      version: "1.0.0",
+      spec_version: "1",
+      summary: "Base pack",
+      rules: [mockRule],
+    };
+
+    const modifiedRule: AlignRule = {
+      ...mockRule,
+      severity: "warn", // Modified from base
+    };
+
+    const modifiedPack: AlignPack = {
+      ...basePack,
+      rules: [modifiedRule],
+    };
+
+    const overlays = [
+      {
+        selector: 'rule[id="test.rule.one"]',
+        set: { severity: "warn" },
+      },
+    ];
+
+    it("generates triple-hash when overlays and basePack provided", () => {
+      const lockfile = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const entry = lockfile.rules[0];
+
+      expect(entry.base_hash).toBeDefined();
+      expect(entry.overlay_hash).toBeDefined();
+      expect(entry.result_hash).toBeDefined();
+      expect(entry.content_hash).toBe(entry.result_hash); // Alias
+    });
+
+    it("base_hash matches hash of base rule", () => {
+      const lockfile = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const entry = lockfile.rules[0];
+
+      const expectedBaseHash = hashRule(mockRule);
+      expect(entry.base_hash).toBe(expectedBaseHash);
+    });
+
+    it("result_hash matches hash of modified rule", () => {
+      const lockfile = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const entry = lockfile.rules[0];
+
+      const expectedResultHash = hashRule(modifiedRule);
+      expect(entry.result_hash).toBe(expectedResultHash);
+    });
+
+    it("overlay_hash is deterministic for same overlays", () => {
+      const lockfile1 = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const lockfile2 = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+
+      expect(lockfile1.rules[0].overlay_hash).toBe(
+        lockfile2.rules[0].overlay_hash,
+      );
+    });
+
+    it("overlay_hash changes when overlay config changes", () => {
+      const overlays2 = [
+        {
+          selector: 'rule[id="test.rule.one"]',
+          set: { severity: "info" }, // Different value
+        },
+      ];
+
+      const lockfile1 = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const lockfile2 = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays2,
+        basePack,
+      );
+
+      expect(lockfile1.rules[0].overlay_hash).not.toBe(
+        lockfile2.rules[0].overlay_hash,
+      );
+    });
+
+    it("omits triple-hash when no overlays provided", () => {
+      const lockfile = generateLockfile(modifiedPack, "team");
+      const entry = lockfile.rules[0];
+
+      expect(entry.overlay_hash).toBeUndefined();
+      expect(entry.result_hash).toBeUndefined();
+      expect(entry.base_hash).toBeUndefined();
+    });
+
+    it("omits base_hash when basePack not provided", () => {
+      const lockfile = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+      );
+      const entry = lockfile.rules[0];
+
+      expect(entry.base_hash).toBeUndefined();
+      expect(entry.overlay_hash).toBeDefined(); // Overlay hash still present
+      expect(entry.result_hash).toBeDefined();
+    });
+
+    it("handles multiple rules with overlays", () => {
+      const multiRulePack: AlignPack = {
+        ...basePack,
+        rules: [
+          { ...mockRule, id: "rule.one", severity: "warn" },
+          { ...mockRule, id: "rule.two", severity: "info" },
+        ],
+      };
+
+      const multiRuleBase: AlignPack = {
+        ...basePack,
+        rules: [
+          { ...mockRule, id: "rule.one", severity: "error" },
+          { ...mockRule, id: "rule.two", severity: "error" },
+        ],
+      };
+
+      const multiOverlays = [
+        { selector: 'rule[id="rule.one"]', set: { severity: "warn" } },
+        { selector: 'rule[id="rule.two"]', set: { severity: "info" } },
+      ];
+
+      const lockfile = generateLockfile(
+        multiRulePack,
+        "team",
+        undefined,
+        multiOverlays,
+        multiRuleBase,
+      );
+
+      expect(lockfile.rules).toHaveLength(2);
+      lockfile.rules.forEach((entry) => {
+        expect(entry.base_hash).toBeDefined();
+        expect(entry.overlay_hash).toBeDefined();
+        expect(entry.result_hash).toBeDefined();
+      });
+
+      // All rules share same overlay_hash (same overlay config)
+      expect(lockfile.rules[0].overlay_hash).toBe(
+        lockfile.rules[1].overlay_hash,
+      );
+    });
+
+    it("backward compatible: content_hash equals result_hash when present", () => {
+      const lockfile = generateLockfile(
+        modifiedPack,
+        "team",
+        undefined,
+        overlays,
+        basePack,
+      );
+      const entry = lockfile.rules[0];
+
+      expect(entry.content_hash).toBe(entry.result_hash);
+    });
+  });
+
+  describe("computeOverlayHash", () => {
+    it("is exported and callable", async () => {
+      const { computeOverlayHash } = await import(
+        "../../src/lockfile/generator.js"
+      );
+      expect(computeOverlayHash).toBeDefined();
+    });
+
+    it("generates deterministic hash", async () => {
+      const { computeOverlayHash } = await import(
+        "../../src/lockfile/generator.js"
+      );
+      const overlays = [
+        { selector: 'rule[id="test"]', set: { severity: "warn" } },
+      ];
+
+      const hash1 = computeOverlayHash(overlays);
+      const hash2 = computeOverlayHash(overlays);
+
+      expect(hash1).toBe(hash2);
+      expect(hash1).toHaveLength(64); // SHA-256
+    });
+
+    it("sorts overlays by selector for determinism", async () => {
+      const { computeOverlayHash } = await import(
+        "../../src/lockfile/generator.js"
+      );
+
+      const overlays1 = [
+        { selector: 'rule[id="b"]', set: { severity: "warn" } },
+        { selector: 'rule[id="a"]', set: { severity: "info" } },
+      ];
+
+      const overlays2 = [
+        { selector: 'rule[id="a"]', set: { severity: "info" } },
+        { selector: 'rule[id="b"]', set: { severity: "warn" } },
+      ];
+
+      const hash1 = computeOverlayHash(overlays1);
+      const hash2 = computeOverlayHash(overlays2);
+
+      expect(hash1).toBe(hash2); // Order-independent
     });
   });
 });

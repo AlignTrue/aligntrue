@@ -1,5 +1,6 @@
 /**
  * Lockfile generator with per-rule and bundle hashing
+ * Phase 3.5: Supports triple-hash format for overlay tracking
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -7,21 +8,27 @@ import type { AlignPack, AlignRule } from "@aligntrue/schema";
 import { canonicalizeJson, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
+import type { OverlayDefinition } from "../overlays/types.js";
 
 /**
  * Generate lockfile from an AlignPack bundle
  *
  * Uses canonical JSON (JCS) with vendor.volatile fields excluded
+ * Phase 3.5: Supports triple-hash format when overlays are present
  *
  * @param pack - AlignPack to generate lockfile from
  * @param mode - Config mode (team or enterprise)
  * @param teamYamlPath - Optional path to .aligntrue.team.yaml for hash capture
+ * @param overlays - Optional overlay definitions applied to this pack
+ * @param basePack - Optional base pack (before overlays) for triple-hash
  * @returns Lockfile with per-rule and bundle hashes
  */
 export function generateLockfile(
   pack: AlignPack,
   mode: "team" | "enterprise",
   teamYamlPath?: string,
+  overlays?: OverlayDefinition[],
+  basePack?: AlignPack,
 ): Lockfile {
   const entries: LockfileEntry[] = [];
   const ruleHashes: string[] = [];
@@ -32,19 +39,33 @@ export function generateLockfile(
     dualHashResult = computeDualHash(pack);
   }
 
+  // Compute overlay hash if overlays present (Phase 3.5)
+  const overlayHash =
+    overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
+
   // Generate per-rule hashes with full provenance
   for (const rule of pack.rules || []) {
-    const hash = hashRule(rule);
+    const resultHash = hashRule(rule);
+
+    // Compute base hash if base pack provided (Phase 3.5)
+    let baseHash: string | undefined;
+    if (basePack) {
+      const baseRule = basePack.rules?.find((r) => r.id === rule.id);
+      if (baseRule) {
+        baseHash = hashRule(baseRule);
+      }
+    }
+
     const entry: LockfileEntry = {
       rule_id: rule.id,
-      content_hash: hash,
+      content_hash: resultHash, // Alias to result_hash for backward compatibility
       ...(pack.owner && { owner: pack.owner }),
       ...(pack.source && { source: pack.source }),
       ...(pack.source_sha && { source_sha: pack.source_sha }),
-      // Phase 3.5: Capture base_hash from git sources when available
-      // Git sources provide source_sha (commit SHA) which serves as base_hash
-      // TODO(Phase 4): Capture base_hash from catalog sources when ready
-      ...(pack.source_sha && { base_hash: pack.source_sha }),
+      // Phase 3.5: Triple-hash format when overlays present
+      ...(baseHash && { base_hash: baseHash }),
+      ...(overlayHash && { overlay_hash: overlayHash }),
+      ...(overlayHash && { result_hash: resultHash }),
       // Phase 3, Session 5: Capture vendoring provenance
       ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
       ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
@@ -60,7 +81,7 @@ export function generateLockfile(
     }
 
     entries.push(entry);
-    ruleHashes.push(hash);
+    ruleHashes.push(resultHash);
   }
 
   // Sort entries by rule_id for determinism
@@ -128,4 +149,22 @@ function computeTeamYamlHash(path: string): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Compute hash of overlay configuration (Phase 3.5)
+ * Uses canonical JSON for deterministic hashing
+ *
+ * @param overlays - Array of overlay definitions
+ * @returns SHA-256 hash of canonicalized overlays
+ */
+export function computeOverlayHash(overlays: OverlayDefinition[]): string {
+  // Sort overlays by selector for determinism
+  const sortedOverlays = [...overlays].sort((a, b) =>
+    a.selector.localeCompare(b.selector),
+  );
+
+  // Canonicalize and hash
+  const canonical = canonicalizeJson(sortedOverlays, false);
+  return computeHash(canonical);
 }
