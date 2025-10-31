@@ -8,10 +8,9 @@ import { Command } from "commander";
 import {
   parseSelector,
   validateSelector,
-} from "@aligntrue/core/overlays/selector-parser";
-import { loadConfig, saveConfig } from "../utils/config-loader.js";
-import { logger } from "../utils/logger.js";
-import { ExitCode } from "../utils/exit-codes.js";
+} from "@aligntrue/core/overlays/selector-parser.js";
+import { loadConfig, saveConfig } from "@aligntrue/core/config/index.js";
+import * as clack from "@clack/prompts";
 
 interface OverrideAddOptions {
   selector: string;
@@ -39,10 +38,10 @@ export function createOverrideAddCommand(): Command {
       try {
         await runOverrideAdd(options);
       } catch (error) {
-        logger.error(
+        clack.log.error(
           `Failed to add overlay: ${error instanceof Error ? error.message : String(error)}`,
         );
-        process.exit(ExitCode.ERROR);
+        process.exit(1);
       }
     });
 
@@ -53,29 +52,29 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   // Validate selector syntax
   const validation = validateSelector(options.selector);
   if (!validation.valid) {
-    logger.error(`Invalid selector: ${validation.error}`);
-    logger.info("Valid formats:");
-    logger.info("  - rule[id=value]");
-    logger.info("  - property.path");
-    logger.info("  - array[0]");
-    process.exit(ExitCode.VALIDATION_ERROR);
+    clack.log.error(`Invalid selector: ${validation.error}`);
+    console.log("\nValid formats:");
+    console.log("  - rule[id=value]");
+    console.log("  - property.path");
+    console.log("  - array[0]");
+    process.exit(1);
   }
 
   // Parse selector to verify it's well-formed
   const parsed = parseSelector(options.selector);
   if (!parsed) {
-    logger.error(`Could not parse selector: ${options.selector}`);
-    process.exit(ExitCode.VALIDATION_ERROR);
+    clack.log.error(`Could not parse selector: ${options.selector}`);
+    process.exit(1);
   }
 
   // At least one operation required
   if (!options.set && !options.remove) {
-    logger.error("At least one of --set or --remove is required");
-    logger.info("Examples:");
-    logger.info("  --set severity=error");
-    logger.info("  --remove autofix");
-    logger.info("  --set severity=warn --remove autofix");
-    process.exit(ExitCode.VALIDATION_ERROR);
+    clack.log.error("At least one of --set or --remove is required");
+    console.log("\nExamples:");
+    console.log("  --set severity=error");
+    console.log("  --remove autofix");
+    console.log("  --set severity=warn --remove autofix");
+    process.exit(1);
   }
 
   // Parse set operations
@@ -84,12 +83,12 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     for (const item of options.set) {
       const match = item.match(/^([^=]+)=(.+)$/);
       if (!match) {
-        logger.error(`Invalid --set format: ${item}`);
-        logger.info("Expected format: key=value");
-        logger.info("Examples:");
-        logger.info("  --set severity=error");
-        logger.info("  --set check.inputs.threshold=15");
-        process.exit(ExitCode.VALIDATION_ERROR);
+        clack.log.error(`Invalid --set format: ${item}`);
+        console.log("\nExpected format: key=value");
+        console.log("Examples:");
+        console.log("  --set severity=error");
+        console.log("  --set check.inputs.threshold=15");
+        process.exit(1);
       }
       const [, key, value] = match;
       // Try to parse value as JSON, fallback to string
@@ -105,7 +104,7 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   const removeOperations: string[] = options.remove || [];
 
   // Load config
-  const configPath = options.config;
+  const configPath = options.config || ".aligntrue/config.yaml";
   const config = await loadConfig(configPath);
 
   // Ensure overlays.overrides array exists
@@ -137,25 +136,25 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   config.overlays.overrides.push(overlay);
 
   // Save config
-  await saveConfig(configPath || ".aligntrue.yaml", config);
+  await saveConfig(config, configPath);
 
   // Success output
-  logger.success("Overlay added to config");
-  logger.info("");
-  logger.info(`Selector: ${options.selector}`);
+  clack.log.success("Overlay added to config");
+  console.log("");
+  console.log(`Selector: ${options.selector}`);
   if (overlay.set) {
-    logger.info(
+    console.log(
       `  Set: ${Object.entries(overlay.set)
         .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
         .join(", ")}`,
     );
   }
   if (overlay.remove) {
-    logger.info(`  Remove: ${overlay.remove.join(", ")}`);
+    console.log(`  Remove: ${overlay.remove.join(", ")}`);
   }
-  logger.info("");
-  logger.info("Next step:");
-  logger.info("  Run: aligntrue sync");
+  console.log("");
+  console.log("Next step:");
+  console.log("  Run: aligntrue sync");
 
-  process.exit(ExitCode.SUCCESS);
+  process.exit(0);
 }
