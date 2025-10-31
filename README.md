@@ -186,13 +186,31 @@ This is a pnpm monorepo with the following packages:
 ```
 aligntrue/
 ├── apps/
-│   ├── web/          # Next.js catalog site (aligntrue.ai)
-│   └── docs/         # Nextra documentation site (/docs)
+│   └── web/          # Catalog Next.js site (ACTIVE - 246/266 tests, 92% pass rate)
 ├── packages/
 │   ├── schema/       # JSON Schema, canonicalization, hashing
+│   ├── core/         # Config management, sync engine
 │   ├── cli/          # Node CLI (aligntrue/aln)
-│   └── mcp/          # MCP server (Phase 2+)
+│   ├── exporters/    # 43 exporters for 28+ AI agents
+│   └── [8 more packages]
+├── catalog/
+│   ├── examples/     # 11 curated packs (local seed data)
+│   ├── packs.yaml    # Registry metadata
+│   └── namespaces.yaml  # Namespace ownership
+└── archive/
+    ├── apps-docs/    # Nextra documentation (deferred)
+    └── mcp-v1/       # MCP server (deferred)
 ```
+
+**Phase Status (2025-10-31):**
+
+- ✅ Phase 1: CLI-first architecture complete (786 tests)
+- ✅ Phase 2: Import parsers & git sources complete (1149 tests)
+- ✅ Phase 3: Team mode complete (1842 tests)
+- ✅ Phase 3.5: Overlays complete (163 overlay tests)
+- 🚧 Phase 4: Catalog website active (246 tests, 92% pass rate)
+- 📋 Phase 4.5: Pre-launch stabilization (next)
+- 🔮 Phase 5: Paid cloud (post-launch, adoption trigger required)
 
 ## Development setup
 
@@ -225,9 +243,34 @@ pnpm typecheck
 
 ## Repositories
 
-- **AlignTrue/aligntrue** (MIT, this repo): Web catalog, CLI, schema packages
-- **AlignTrue/aligns** (CC0): Public rules registry
-- **AlignTrue/cloud** (private): Commercial features (future)
+- **AlignTrue/aligntrue** (MIT, this repo): Catalog website, CLI, core packages, 43 exporters
+- **AlignTrue/aligns** (CC0): Public rules registry (can be mirrored later)
+- **AlignTrue/cloud** (private): Commercial features (Phase 5, post-launch)
+
+## Catalog Website
+
+The AlignTrue catalog provides discovery and sharing for curated packs:
+
+- **Homepage** (`/`) - Quickstart guide and featured packs
+- **Catalog** (`/catalog`) - Browse 11+ packs with search, filters, and install commands
+- **Detail** (`/catalog/[slug]`) - Pack details, exporter previews, install instructions
+
+**Local Development:**
+
+```bash
+cd apps/web
+pnpm dev
+# Open http://localhost:3000
+```
+
+**Build Catalog:**
+
+```bash
+node temp-build-catalog.mjs
+# Generates apps/web/public/catalog/*.json
+```
+
+**Current Status:** 246/266 tests passing (92%), Sessions 2-6 complete. See `docs/catalog.md` for details.
 
 ## Documentation
 
