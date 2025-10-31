@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Documentation site with Nextra v4.6.0 at `apps/docs/`
+- Navigation structure: Getting Started, Concepts, Reference, Contributing
+- 22 documentation pages covering quickstart, team mode, overlays, CLI reference, and more
+- Writing standards for documentation site in `.cursor/rules/writing.mdc`
+- Homepage with feature overview and quick start links
+- SEO frontmatter on all documentation pages
+
+### Changed
+
+- Archived original `/docs` directory to `archive/docs-original/`
+- Updated `.cursor/rules/dev_docs.mdc` to reference live docs site at `apps/docs/pages/`
+- Updated `.cursor/rules/global.mdc` to note documentation site is now active
+- Updated `.internal_docs/docs-organization.md` with new documentation structure
+
+### Fixed
+
+- Documentation organization now follows clear hierarchy: getting-started, concepts, reference, contributing
+
 ### Phase 4.5, Session 2: Exporter Base Class Refactoring (Completed 2025-10-31)
 
 **Consolidated 32 exporters to extend `ExporterBase` class:**
