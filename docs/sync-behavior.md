@@ -135,7 +135,6 @@ See [Import Workflow Guide](import-workflow.md) for detailed migration strategie
 ◇ Detecting conflicts...
 │
 ⚠ Warning: Using mock data for agent→IR parsing
-  Real parsers coming in Phase 1, Step 17
 │
 ◆ Changes detected:
 │  • 2 rules modified
