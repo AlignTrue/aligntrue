@@ -7,6 +7,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 3.5, Session 7: Documentation & Examples (Completed 2025-10-31)
+
+**Comprehensive overlay documentation:**
+
+- **Overlays Guide** (`docs/overlays.md`, ~550 lines) - Complete user guide
+  - Quick start: First overlay in 60 seconds
+  - Decision tree: Fork vs overlay vs plug
+  - Selector strategies: By pack, check, scope, or combination
+  - Override capabilities: Severity, inputs, autofix control
+  - Advanced patterns: Multiple overlays, temporary overrides, migration workflows
+  - Conflict resolution: Stale selectors, ambiguous matches, three-way merge
+  - Team workflows: Approval policies, overlay dashboard, expiration tracking
+  - Triple-hash lockfile explanation with drift detection integration
+  - Best practices and troubleshooting quick reference
+
+- **CLI Commands Reference** (`docs/commands.md`, +387 lines) - New overlay commands section
+  - `aln override add` - Create overlays interactively or with flags
+  - `aln override status` - Dashboard of all overlays with health indicators
+  - `aln override diff` - Three-way diff for conflict detection
+  - `aln override remove` - Remove overlays interactively or by selector
+  - Complete examples, interactive mode flows, exit codes, and error handling
+  - Integration with existing commands (sync, check, update)
+
+- **Troubleshooting Guide** (`docs/troubleshooting-overlays.md`, ~400 lines) - Issue resolution
+  - Overlay not applied: Typos, missing packs, stale checks, narrow selectors
+  - Overlay conflicts: Multiple overlays, upstream changes, three-way merge
+  - Ambiguous selectors: Multiple packs with same check ID
+  - Expired overlays: Advisory expiration, automated audits, CI integration
+  - Plug slot overlap: Decision tree for overlay vs plug usage
+  - Overlay validation in CI: Lockfile drift, team mode, missing sources
+  - When to fork instead: Indicators and hybrid approaches
+  - Debug commands and common error messages with fixes
+
+**Golden repository enhancements:**
+
+- **Overlay Scenarios** (`examples/golden-repo/OVERLAY-SCENARIOS.md`, ~350 lines)
+  - Scenario 1: Clean merge - Overlays survive upstream updates
+  - Scenario 2: Conflict resolution - Three-way merge with conflicting changes
+  - Scenario 3: Overlay update workflow - Merging with new upstream fields
+  - Scenario 4: Multi-pack overlays - Same check ID across different packs
+  - Complete setup, verification, and success criteria for each scenario
+  - Integration instructions for golden repo README
+
+- **Test Script** (`examples/golden-repo/test-overlays.sh`, executable)
+  - Automated testing of all 4 scenarios
+  - Clean merge: Verify overlay survival after upstream update
+  - Conflict detection: Test redundancy detection and three-way diff
+  - Triple-hash lockfile: Validate content, overlay, and final hashes
+  - Exporter integration: Confirm overlays reflected in Cursor and AGENTS.md exports
+  - Colored output, test result tracking, automatic cleanup
+  - Works in both solo and team modes
+
+**Cross-linking and integration:**
+
+- All overlay docs cross-link with existing guides
+- Commands reference integrates overlay commands into natural workflow
+- Troubleshooting guide connects to drift detection, team mode, and git sources
+- Golden repo scenarios demonstrate triple-hash lockfile from Session 6
+- Overlay guide references team mode policies and approval workflows
+
+**Documentation standards applied:**
+
+- Clarity over completeness: 80% use cases first
+- Decision trees: Help users choose fork vs overlay vs plug
+- Concrete examples: Real YAML snippets, not abstract descriptions
+- Troubleshooting focus: Common mistakes and clear fixes
+- Professional tone throughout
+
+**Key concepts documented:**
+
+1. **Overlays**: Pack-level customization (severity, inputs, autofix)
+2. **Plugs**: Agent-specific config (AI prompts, tool settings)
+3. **Fork**: Fundamental changes requiring divergence
+4. **Selector precedence**: check_id + scope > check_id > pack
+5. **Three-way merge**: Original, current upstream, your overlay
+6. **Expiration**: Advisory only, warnings in status command
+7. **Health indicators**: Healthy, expired, stale
+
+**Line count summary:**
+
+- New documentation: ~1,687 lines
+- Enhanced golden repo: ~350 lines scenarios + test script
+- Total additions: ~2,037 lines of documentation and examples
+
+**Tests:**
+
+- No new unit tests (documentation session)
+- Test count: 1842 tests (all passing from Session 6)
+- Golden repo test script validates 4 scenarios automatically
+
+**Files created:**
+
+- `docs/overlays.md` - Comprehensive overlay guide
+- `docs/troubleshooting-overlays.md` - Overlay troubleshooting
+- `examples/golden-repo/OVERLAY-SCENARIOS.md` - Overlay demonstrations
+- `examples/golden-repo/test-overlays.sh` - Automated scenario testing
+
+**Files modified:**
+
+- `docs/commands.md` - Added overlay commands section (387 lines)
+- `CHANGELOG.md` - This entry
+
+**Next:** Phase 3.5 continues with remaining sessions (finalization, polish, edge cases)
+
+---
+
 ### Phase 3.5, Session 6: Triple-Hash Lockfile & Drift Detection (Completed 2025-10-31)
 
 **Triple-hash lockfile format (overlay-aware):**
