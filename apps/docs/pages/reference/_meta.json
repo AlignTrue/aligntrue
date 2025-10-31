@@ -1,0 +1,13 @@
+{
+  "cli-reference": "CLI Commands",
+  "import-workflow": "Import Workflow",
+  "git-sources": "Git Sources",
+  "backup-restore": "Backup & Restore",
+  "auto-updates": "Auto Updates",
+  "file-watcher-setup": "File Watcher Setup",
+  "privacy": "Privacy Controls",
+  "pre-1.0-policy": "Pre-1.0 Policy",
+  "yaml-libraries": "YAML Libraries",
+  "troubleshooting": "Troubleshooting",
+  "troubleshooting-overlays": "Troubleshooting Overlays"
+}
