@@ -5,13 +5,16 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { type AlignTrueConfig } from "@aligntrue/core";
+import { type AlignTrueConfig, type AlignPack } from "@aligntrue/core";
 import { validateAlign } from "@aligntrue/schema";
 import { readFileSync } from "fs";
 import {
   readLockfile,
   validateLockfile,
   type ValidationResult as LockfileValidationResult,
+  validateOverlays,
+  formatOverlayValidationResult,
+  type OverlayDefinition,
 } from "@aligntrue/core";
 import { parseYamlToJson } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
@@ -37,6 +40,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     alias: "-c",
     hasValue: true,
     description: "Custom config file path (default: .aligntrue/config.yaml)",
+  },
+  {
+    flag: "--json",
+    hasValue: false,
+    description: "Output validation results in JSON format",
   },
   {
     flag: "--help",
@@ -75,6 +83,7 @@ export async function check(args: string[]): Promise<void> {
 
   // Extract flags
   const ci = (parsed.flags["ci"] as boolean | undefined) || false;
+  const jsonOutput = (parsed.flags["json"] as boolean | undefined) || false;
   const configPath =
     (parsed.flags["config"] as string | undefined) || ".aligntrue/config.yaml";
 
@@ -90,11 +99,12 @@ export async function check(args: string[]): Promise<void> {
       examples: [
         "aligntrue check --ci",
         "aligntrue check --ci --config .aligntrue/config.yaml",
+        "aligntrue check --ci --json",
       ],
       notes: [
         "Exit Codes:",
         "  0  All validations passed",
-        "  1  Validation failed (schema or lockfile errors)",
+        "  1  Validation failed (schema, lockfile, or overlay errors)",
         "  2  System error (missing files, invalid config)",
       ],
     });
@@ -247,22 +257,123 @@ export async function check(args: string[]): Promise<void> {
       }
     }
 
-    // Step 4: All validations passed
-    console.log("✓ Validation passed\n");
-    console.log(`  Schema: ${rulesPath} is valid`);
+    // Step 4: Validate overlays if present
+    let overlayValid = true;
+    let overlayWarnings: string[] = [];
 
-    if (shouldCheckLockfile) {
-      console.log("  Lockfile: .aligntrue.lock.json matches current rules");
-    } else if (config.mode === "solo") {
-      console.log("  Lockfile: skipped (solo mode)");
+    if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
+      const overlays: OverlayDefinition[] = config.overlays.overrides;
+      const limits = {
+        maxOverrides: config.overlays.limits?.max_overrides,
+        maxOperationsPerOverride:
+          config.overlays.limits?.max_operations_per_override,
+      };
+
+      const overlayResult = validateOverlays(
+        overlays,
+        alignData as AlignPack,
+        limits,
+      );
+
+      if (!overlayResult.valid) {
+        overlayValid = false;
+
+        if (jsonOutput) {
+          // JSON output mode
+          console.log(
+            JSON.stringify(
+              {
+                valid: false,
+                errors: overlayResult.errors,
+                warnings: overlayResult.warnings,
+              },
+              null,
+              2,
+            ),
+          );
+        } else {
+          // Human-readable output
+          console.error("✗ Overlay validation failed\n");
+          console.error(formatOverlayValidationResult(overlayResult));
+          console.error("");
+        }
+
+        process.exit(1);
+      }
+
+      if (overlayResult.warnings && overlayResult.warnings.length > 0) {
+        overlayWarnings = overlayResult.warnings.map((w) => w.message);
+      }
     }
 
-    console.log("");
+    // Step 5: All validations passed
+    if (jsonOutput) {
+      // JSON output mode
+      const result: any = {
+        valid: true,
+        schema: { valid: true, file: rulesPath },
+      };
+
+      if (shouldCheckLockfile) {
+        result.lockfile = {
+          valid: true,
+          file: ".aligntrue.lock.json",
+        };
+      }
+
+      if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
+        result.overlays = {
+          valid: true,
+          count: config.overlays.overrides.length,
+          warnings: overlayWarnings,
+        };
+      }
+
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      // Human-readable output
+      console.log("✓ Validation passed\n");
+      console.log(`  Schema: ${rulesPath} is valid`);
+
+      if (shouldCheckLockfile) {
+        console.log("  Lockfile: .aligntrue.lock.json matches current rules");
+      } else if (config.mode === "solo") {
+        console.log("  Lockfile: skipped (solo mode)");
+      }
+
+      if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
+        console.log(
+          `  Overlays: ${config.overlays.overrides.length} overlay(s) validated`,
+        );
+        if (overlayWarnings.length > 0) {
+          console.log(`    Warnings: ${overlayWarnings.length}`);
+          for (const warning of overlayWarnings) {
+            console.log(`      - ${warning}`);
+          }
+        }
+      }
+
+      console.log("");
+    }
+
     process.exit(0);
   } catch (err) {
     // Unexpected system error
-    console.error("✗ System error\n");
-    console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
+    if (jsonOutput) {
+      console.log(
+        JSON.stringify(
+          {
+            valid: false,
+            error: err instanceof Error ? err.message : String(err),
+          },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error("✗ System error\n");
+      console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
+    }
     process.exit(2);
   }
 }

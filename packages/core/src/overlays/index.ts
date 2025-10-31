@@ -10,3 +10,4 @@ export * from "./operations.js";
 export * from "./apply.js";
 export * from "./merge.js";
 export * from "./patch-writer.js";
+export * from "./validation.js";

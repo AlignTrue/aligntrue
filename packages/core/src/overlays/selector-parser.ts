@@ -26,11 +26,23 @@ export function parseSelector(selector: string): ParsedSelector | null {
     return null;
   }
 
-  // Try parsing as rule selector: rule[id=value]
+  // Try parsing as rule selector: rule[id=value] or rule[id="value"]
   const ruleMatch = trimmed.match(/^rule\[id=([^\]]+)\]$/);
   if (ruleMatch) {
-    const ruleId = ruleMatch[1];
-    if (!ruleId || ruleId.includes("*") || ruleId.includes("?")) {
+    let ruleId = ruleMatch[1];
+    if (!ruleId) {
+      return null;
+    }
+
+    // Strip optional surrounding quotes (single or double)
+    if (
+      (ruleId.startsWith('"') && ruleId.endsWith('"')) ||
+      (ruleId.startsWith("'") && ruleId.endsWith("'"))
+    ) {
+      ruleId = ruleId.slice(1, -1);
+    }
+
+    if (ruleId.includes("*") || ruleId.includes("?")) {
       return null; // No wildcards allowed
     }
     return {

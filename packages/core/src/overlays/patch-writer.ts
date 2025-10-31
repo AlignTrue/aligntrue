@@ -64,10 +64,20 @@ export function writePatchFile(
     const fullPath = join(artifactsDir, filename);
 
     // Generate patch content
-    const patchContent = generatePatchFile(conflicts, {
-      ...metadata,
-      source: options?.source,
-    });
+    const patchMetadata: {
+      baseHash: string;
+      newBaseHash: string;
+      timestamp: string;
+      source?: string;
+    } = {
+      baseHash: metadata.baseHash,
+      newBaseHash: metadata.newBaseHash,
+      timestamp: metadata.timestamp,
+    };
+    if (options?.source) {
+      patchMetadata.source = options.source;
+    }
+    const patchContent = generatePatchFile(conflicts, patchMetadata);
 
     // Write to file
     writeFileSync(fullPath, patchContent, "utf-8");
