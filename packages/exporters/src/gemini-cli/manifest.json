@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to AGENTS.md format (Gemini CLI compatible)",
   "outputs": ["AGENTS.md"],
-  "handler": "../agents-md/index.ts",
+  "handler": "./index.ts",
   "license": "MIT",
   "fidelityNotes": [
     "Uses universal AGENTS.md format",

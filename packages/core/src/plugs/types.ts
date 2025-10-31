@@ -2,8 +2,6 @@
  * Types for plugs resolution
  */
 
-import type { Plugs } from "@aligntrue/schema";
-
 /**
  * Resolution result for a single placeholder
  */

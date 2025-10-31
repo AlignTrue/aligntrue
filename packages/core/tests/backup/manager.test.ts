@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { BackupManager } from "../../src/backup/manager";
-import type { BackupManifest } from "../../src/backup/types";
 
 describe("BackupManager", () => {
   const testDir = join(__dirname, "..", "..", "..", "temp-backup-test");

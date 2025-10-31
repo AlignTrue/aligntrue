@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-10-31T20:04:34.798Z",
+  "generated_at": "2025-10-31T21:51:34.470Z",
   "engine_version": "0.1.0",
   "packs": [
     {
@@ -38,12 +38,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -51,7 +53,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -91,12 +93,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -104,7 +108,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -143,12 +147,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -156,7 +162,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -196,12 +202,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -209,7 +217,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -248,12 +256,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -261,7 +271,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -301,12 +311,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -314,7 +326,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.469Z"
           }
         }
       ]
@@ -360,12 +372,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -373,7 +387,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.470Z"
           }
         }
       ]
@@ -413,12 +427,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -426,7 +442,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.470Z"
           }
         }
       ]
@@ -465,12 +481,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -478,7 +496,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.470Z"
           }
         }
       ]
@@ -517,12 +535,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -530,7 +550,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.470Z"
           }
         }
       ]
@@ -569,12 +589,14 @@
       "source_repo": "https://github.com/AlignTrue/aligntrue",
       "namespace_owner": "AlignTrue",
       "source_linked": true,
+      "trust_score": 75,
       "stats": {
         "copies_7d": 0
       },
       "has_plugs": false,
       "overlay_friendly": true,
       "required_plugs_count": 0,
+      "complexity_score": 30,
       "exporters": [
         {
           "format": "yaml",
@@ -582,7 +604,7 @@
           "preview_meta": {
             "engine_version": "0.1.0",
             "canonical_yaml_sha": "placeholder",
-            "rendered_at": "2025-10-31T20:04:34.798Z"
+            "rendered_at": "2025-10-31T21:51:34.470Z"
           }
         }
       ]

@@ -7,17 +7,11 @@ import type { AlignPack } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import { compareSelectors } from "./selector-parser.js";
 import {
-  setProperty,
-  removeProperty,
   applySetOperations,
   applyRemoveOperations,
   deepClone,
 } from "./operations.js";
-import type {
-  OverlayDefinition,
-  OverlayApplicationResult,
-  DEFAULT_OVERLAY_LIMITS,
-} from "./types.js";
+import type { OverlayDefinition, OverlayApplicationResult } from "./types.js";
 
 /**
  * Apply overlays to an AlignPack IR

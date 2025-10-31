@@ -6,7 +6,6 @@
 import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -14,7 +13,6 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {

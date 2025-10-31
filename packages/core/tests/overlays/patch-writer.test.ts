@@ -3,15 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  existsSync,
-  mkdirSync,
-  rmdirSync,
-  readdirSync,
-  openSync,
-  closeSync,
-  unlinkSync,
-} from "fs";
+import { existsSync, mkdirSync, rmdirSync, readdirSync } from "fs";
 import { join } from "path";
 import {
   writePatchFile,

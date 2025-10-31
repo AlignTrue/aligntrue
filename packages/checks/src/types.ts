@@ -2,7 +2,7 @@
  * Core types for the checks runner engine
  */
 
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignRule } from "@aligntrue/schema";
 
 /**
  * Abstract file provider interface for testability

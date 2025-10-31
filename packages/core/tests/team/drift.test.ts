@@ -18,7 +18,6 @@ import {
   detectSeverityRemapDrift,
   detectLocalOverlayDrift,
   detectDrift,
-  type DriftFinding,
 } from "../../src/team/drift.js";
 import type { Lockfile } from "../../src/lockfile/types.js";
 import type { AllowList } from "../../src/team/allow.js";

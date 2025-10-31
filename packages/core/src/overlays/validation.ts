@@ -11,7 +11,6 @@ import type {
   OverlayValidationResult,
   OverlayValidationError,
   OverlayValidationWarning,
-  DEFAULT_OVERLAY_LIMITS,
 } from "./types.js";
 
 /**

@@ -14,16 +14,12 @@
  * - Multiple output formats: human, JSON, SARIF
  */
 
-import * as clack from "@clack/prompts";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
-  showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
-import { exitWithError } from "../utils/error-formatter.js";
-import { CommonErrors as Errors } from "../utils/common-errors.js";
 import { detectDriftForConfig } from "@aligntrue/core";
 
 /**

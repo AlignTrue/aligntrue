@@ -4,7 +4,7 @@
  * Validates common exporter functionality consolidated in base class.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { ExporterBase } from "../../src/base/exporter-base.js";
 import type {
   ScopedExportRequest,

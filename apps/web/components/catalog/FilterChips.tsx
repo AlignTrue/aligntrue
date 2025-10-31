@@ -7,7 +7,6 @@
 
 "use client";
 
-import { useState } from "react";
 import { trackCatalogFilter } from "@/lib/analytics";
 
 export interface FilterChipsProps {

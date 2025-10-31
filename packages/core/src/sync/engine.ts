@@ -7,7 +7,7 @@ import type { AlignPack, AlignRule } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { ResolvedScope, Scope, MergeOrder } from "../scope.js";
 import { loadConfig } from "../config/index.js";
-import { resolveScopes, applyScopeMerge, groupRulesByLevel } from "../scope.js";
+import { resolveScopes } from "../scope.js";
 import { loadIR } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ConflictDetector, type Conflict } from "./conflict-detector.js";
@@ -18,7 +18,6 @@ import {
   validateLockfile,
   enforceLockfile,
   generateLockfile,
-  type Lockfile,
 } from "../lockfile/index.js";
 import { resolvePlugsForPack } from "../plugs/index.js";
 import { applyOverlays } from "../overlays/index.js";

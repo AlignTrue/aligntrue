@@ -139,6 +139,8 @@ export interface CatalogEntryExtended extends CatalogEntryBase {
   namespace_owner?: string;
   /** Source linked status (computed at build time) */
   source_linked?: boolean;
+  /** Trust score (0-100) based on GitHub stars, maintainer reputation, freshness */
+  trust_score?: number;
 
   // Usage stats
   /** Usage statistics */
@@ -155,6 +157,8 @@ export interface CatalogEntryExtended extends CatalogEntryBase {
   required_plugs?: RequiredPlug[];
   /** Rule index for overlay-friendly packs */
   rules_index?: RuleIndexEntry[];
+  /** Complexity score (0-100) based on rule count, nesting depth, description length */
+  complexity_score?: number;
 
   // Pre-computed exports with provenance
   /** Exporter previews */

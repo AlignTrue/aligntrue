@@ -8,10 +8,7 @@
 "use client";
 
 import { useState } from "react";
-import type {
-  CatalogEntryExtended,
-  ExporterPreview as ExporterPreviewType,
-} from "@aligntrue/schema";
+import type { CatalogEntryExtended } from "@aligntrue/schema";
 import {
   trackExporterTabSwitch,
   trackCopyExporterPreview,

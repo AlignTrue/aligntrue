@@ -9,7 +9,6 @@ import {
   validateTeamSources,
   getTeamValidationErrors,
   formatTeamValidationErrors,
-  type TeamValidationError,
 } from "../../src/team/validation.js";
 import type { AlignTrueConfig } from "../../src/config/index.js";
 import * as fs from "fs";
