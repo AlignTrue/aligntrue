@@ -15,12 +15,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class OpenHandsConfigExporter implements ExporterPlugin {
+export class OpenHandsConfigExporter extends ExporterBase {
   name = "openhands-config";
   version = "1.0.0";
 

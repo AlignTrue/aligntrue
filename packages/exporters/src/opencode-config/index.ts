@@ -13,12 +13,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class OpencodeConfigExporter implements ExporterPlugin {
+export class OpencodeConfigExporter extends ExporterBase {
   name = "opencode-config";
   version = "1.0.0";
 

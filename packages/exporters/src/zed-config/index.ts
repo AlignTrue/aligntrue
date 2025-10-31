@@ -14,12 +14,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class ZedConfigExporter implements ExporterPlugin {
+export class ZedConfigExporter extends ExporterBase {
   name = "zed-config";
   version = "1.0.0";
 

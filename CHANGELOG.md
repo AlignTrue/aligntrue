@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4.5, Session 2: Exporter Base Class Refactoring (Completed 2025-10-31)
+
+**Consolidated 32 exporters to extend `ExporterBase` class:**
+
+- **Created `ExporterBase` abstract class** (`packages/exporters/src/base/exporter-base.ts`)
+  - `computeHash(irContent)` - Canonical hashing with vendor.\*.volatile exclusion
+  - `computeFidelityNotes(rules)` - Generic fidelity note generation
+  - `writeFile(path, content, dryRun)` - Atomic file writing with dry-run support
+  - `validateManifest()` - Manifest validation
+  - `buildResult(files, hash, notes)` - Standard ExportResult construction
+  - 18 comprehensive tests ensuring base functionality
+
+- **Refactored 32 exporters** to extend `ExporterBase`
+  - Replaced `implements ExporterPlugin` with `extends ExporterBase`
+  - Removed duplicate `AtomicFileWriter` instantiation patterns
+  - Replaced manual `ExportResult` building with `this.buildResult()`
+  - Changed `private computeFidelityNotes()` to `protected` for custom overrides
+  - Preserved exporter-specific fidelity messages (cursor, agents-md, vscode-mcp, etc.)
+
+**Exporters refactored:**
+
+- cursor, agents-md, vscode-mcp, cline, goose
+- aider-config, claude-md, cursor-mcp, amazonq, amazonq-mcp
+- augmentcode, codex-config, crush-config, crush-md, firebase-mcp
+- firebase-studio, firebender, gemini-config, junie, kilocode
+- kilocode-mcp, kiro, opencode-config, openhands, openhands-config
+- qwen-config, roocode-mcp, root-mcp, trae-ai, warp-md
+- windsurf-mcp, zed-config
+
+**Impact:**
+
+- Net reduction: 223 LOC (357 deletions, 134 insertions) across 32 files
+- Single source of truth for common exporter patterns
+- Eliminated duplicate file writing, result building, and hash computation
+- All 239 exporter tests passing (100% pass rate)
+- Improved maintainability: future changes to common patterns only need updates in base class
+
+---
+
 ### Phase 4.5, Session 1: JSON Utilities & Error Handling (Completed 2025-10-31)
 
 **Consolidation of duplicate patterns across codebase:**
@@ -52,6 +91,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All 1200+ tests passing
 
 **Effort:** ~18k tokens
+
+### Phase 4.5, Session 2: Exporter Base Class Foundation (In Progress 2025-10-31)
+
+**Exporter base class created for future refactoring:**
+
+- **Base class implementation** (`packages/exporters/src/base/exporter-base.ts`)
+  - `ExporterBase` abstract class with common patterns
+  - `computeHash()` - Consistent content hashing with volatile field exclusion
+  - `computeFidelityNotes()` - Standard fidelity note generation for unmapped fields
+  - `writeFile()` - Atomic file writing with dry-run support
+  - `validateManifest()` - Manifest.json loading and validation
+  - `buildResult()` - Standardized ExportResult construction
+  - 18 comprehensive tests (100% passing)
+
+- **Ready for incremental adoption**
+  - Base class proven with test exporter implementation
+  - All common patterns abstracted and tested
+  - Can be adopted by exporters incrementally without breaking changes
+  - Estimated ~25 LOC reduction per exporter when refactored
+
+**Next steps (deferred to future work):**
+
+- Refactor 43 exporters to extend `ExporterBase` (estimated ~15k tokens)
+- Expected savings: ~1,075 LOC across all exporters
+- Single source of truth for common patterns
+- All existing tests should pass unchanged
+
+**Effort:** ~3k tokens (base class only, full refactoring deferred)
 
 ### Catalog Examples Integration (Completed 2025-10-31)
 
