@@ -1,4 +1,4 @@
-# Test Scaffolding Workflow
+# Test scaffolding workflow
 
 **Purpose:** How to add test scaffolds for future features without blocking CI.
 

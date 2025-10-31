@@ -1,4 +1,4 @@
-# Overlays Guide
+# Overlays guide
 
 Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
 
