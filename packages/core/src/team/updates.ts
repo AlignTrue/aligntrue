@@ -39,6 +39,7 @@ export interface UpdateResult {
 
 /**
  * Detect upstream updates by comparing lockfile to allowed sources
+ * Phase 3.5: Uses base_hash when available for overlay-aware detection
  * Git-only for Phase 3; catalog support deferred to Phase 4
  */
 export function detectUpstreamUpdates(
@@ -74,10 +75,11 @@ export function detectUpstreamUpdates(
     }
 
     // Compare current hash to allowed hash
+    // Phase 3.5: Use base_hash if available (more precise for overlays)
     const firstEntry = entries[0];
     if (!firstEntry) continue; // TypeScript guard
 
-    const currentHash = firstEntry.content_hash; // All entries from same source should have same hash
+    const currentHash = firstEntry.base_hash || firstEntry.content_hash;
     if (currentHash !== allowedSource.resolved_hash) {
       updates.push({
         source,

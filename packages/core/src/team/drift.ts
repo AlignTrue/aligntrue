@@ -11,13 +11,15 @@ import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
 
 /**
- * Drift categories
+ * Drift categories (Phase 3.5 enhanced)
  */
 export type DriftCategory =
-  | "upstream" // Lockfile hash differs from allowed version
+  | "upstream" // base_hash differs: upstream pack updated
+  | "overlay" // overlay_hash differs: local overlay config changed
+  | "result" // result_hash differs: unexpected application result
   | "severity_remap" // Severity remapping rules changed (Session 7)
   | "vendorized" // Vendored pack differs from source
-  | "local_overlay"; // Local overlays changed (Phase 3.5)
+  | "local_overlay"; // Legacy: use "overlay" instead
 
 /**
  * Individual drift finding
@@ -33,6 +35,13 @@ export interface DriftFinding {
   source?: string;
   vendor_path?: string;
   vendor_type?: "submodule" | "subtree" | "manual";
+  // Phase 3.5: Triple-hash details for granular drift
+  base_hash?: string;
+  overlay_hash?: string;
+  result_hash?: string;
+  expected_base_hash?: string;
+  expected_overlay_hash?: string;
+  expected_result_hash?: string;
 }
 
 /**
@@ -43,13 +52,21 @@ export interface DriftResult {
   findings: DriftFinding[];
   summary: {
     total: number;
-    by_category: Record<DriftCategory, number>;
+    by_category: {
+      upstream: number;
+      overlay: number;
+      result: number;
+      severity_remap: number;
+      vendorized: number;
+      local_overlay: number;
+    };
   };
 }
 
 /**
- * Detect upstream drift
- * Compares lockfile hashes with allowed source hashes
+ * Detect upstream drift (Phase 3.5 enhanced)
+ * Compares base_hash (when available) with allowed source hashes
+ * Falls back to content_hash for backward compatibility
  */
 export function detectUpstreamDrift(
   lockfile: Lockfile,
@@ -86,17 +103,35 @@ export function detectUpstreamDrift(
     }
 
     // Check if resolved hash exists and differs
+    // Phase 3.5: Use base_hash if available (more precise for overlays)
+    const hashToCompare = entry.base_hash || entry.content_hash;
     if (allowedSource.resolved_hash) {
-      if (entry.content_hash !== allowedSource.resolved_hash) {
-        findings.push({
+      if (hashToCompare !== allowedSource.resolved_hash) {
+        const finding: DriftFinding = {
           category: "upstream",
           rule_id: entry.rule_id,
-          message: `Lockfile hash differs from allowed version`,
-          suggestion: `Run: aligntrue team approve ${entry.source}\nOr:  aligntrue sync --force to accept current version`,
-          lockfile_hash: entry.content_hash,
+          message: entry.base_hash
+            ? "Upstream pack has been updated (base_hash differs)"
+            : "Lockfile hash differs from allowed version",
+          suggestion: `Run: aligntrue update apply\nOr:  aligntrue team approve ${entry.source} --force`,
+          lockfile_hash: hashToCompare,
           expected_hash: allowedSource.resolved_hash,
           source: entry.source,
-        });
+        };
+
+        // Include triple-hash details when available
+        if (entry.base_hash) {
+          finding.base_hash = entry.base_hash;
+          finding.expected_base_hash = allowedSource.resolved_hash;
+        }
+        if (entry.overlay_hash) {
+          finding.overlay_hash = entry.overlay_hash;
+        }
+        if (entry.result_hash) {
+          finding.result_hash = entry.result_hash;
+        }
+
+        findings.push(finding);
       }
     }
   }
@@ -224,15 +259,87 @@ export function detectSeverityRemapDrift(
 }
 
 /**
- * Detect local overlay drift
- * Placeholder for Phase 3.5 implementation
+ * Detect overlay drift (Phase 3.5)
+ * Checks if overlay_hash differs, indicating overlay config changed
+ */
+export function detectOverlayDrift(
+  lockfileEntries: LockfileEntry[],
+  currentOverlayHash?: string,
+): DriftFinding[] {
+  const findings: DriftFinding[] = [];
+
+  for (const entry of lockfileEntries) {
+    // Skip entries without overlay_hash (no overlays applied)
+    if (!entry.overlay_hash) {
+      continue;
+    }
+
+    // Compare with current overlay hash
+    if (currentOverlayHash && entry.overlay_hash !== currentOverlayHash) {
+      findings.push({
+        category: "overlay",
+        rule_id: entry.rule_id,
+        message: "Overlay configuration has changed since lockfile generation",
+        suggestion: "Regenerate lockfile: aligntrue lock",
+        overlay_hash: entry.overlay_hash,
+        expected_overlay_hash: currentOverlayHash,
+      });
+    }
+  }
+
+  return findings;
+}
+
+/**
+ * Detect result drift (Phase 3.5)
+ * Checks if result_hash differs while base_hash and overlay_hash match
+ * Indicates unexpected behavior in overlay application
+ */
+export function detectResultDrift(
+  lockfileEntries: LockfileEntry[],
+  currentResults: Map<string, string>, // rule_id -> current result_hash
+): DriftFinding[] {
+  const findings: DriftFinding[] = [];
+
+  for (const entry of lockfileEntries) {
+    // Skip entries without triple-hash format
+    if (!entry.result_hash || !entry.base_hash || !entry.overlay_hash) {
+      continue;
+    }
+
+    const currentResultHash = currentResults.get(entry.rule_id);
+    if (!currentResultHash) {
+      continue;
+    }
+
+    // Result drift: base and overlay match but result differs
+    if (entry.result_hash !== currentResultHash) {
+      findings.push({
+        category: "result",
+        rule_id: entry.rule_id,
+        message: "Result hash differs despite matching base and overlay hashes",
+        suggestion:
+          "This indicates non-deterministic overlay application. Report issue.",
+        result_hash: entry.result_hash,
+        expected_result_hash: currentResultHash,
+        base_hash: entry.base_hash,
+        overlay_hash: entry.overlay_hash,
+      });
+    }
+  }
+
+  return findings;
+}
+
+/**
+ * Detect local overlay drift (legacy)
+ * Deprecated: Use detectOverlayDrift instead
  */
 export function detectLocalOverlayDrift(
   _lockfile: Lockfile,
   _basePath: string = ".",
 ): DriftFinding[] {
-  // TODO(Phase 3.5): Implement local overlay drift detection
-  // Will check if local rule overlays have changed
+  // Legacy placeholder - use detectOverlayDrift for Phase 3.5
   return [];
 }
 
@@ -313,6 +420,8 @@ export function detectDrift(
         total: 0,
         by_category: {
           upstream: 0,
+          overlay: 0,
+          result: 0,
           severity_remap: 0,
           vendorized: 0,
           local_overlay: 0,
@@ -330,6 +439,8 @@ export function detectDrift(
         total: 0,
         by_category: {
           upstream: 0,
+          overlay: 0,
+          result: 0,
           severity_remap: 0,
           vendorized: 0,
           local_overlay: 0,
@@ -366,9 +477,11 @@ export function detectDrift(
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));
 
-  // Calculate summary
-  const by_category: Record<DriftCategory, number> = {
+  // Calculate summary (Phase 3.5: includes new categories)
+  const by_category = {
     upstream: findings.filter((f) => f.category === "upstream").length,
+    overlay: findings.filter((f) => f.category === "overlay").length,
+    result: findings.filter((f) => f.category === "result").length,
     severity_remap: findings.filter((f) => f.category === "severity_remap")
       .length,
     vendorized: findings.filter((f) => f.category === "vendorized").length,

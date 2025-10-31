@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 3.5, Session 6: Triple-Hash Lockfile & Drift Detection (Completed 2025-10-31)
+
+**Triple-hash lockfile format (overlay-aware):**
+
+- Lockfile entries now store `base_hash`, `overlay_hash`, and `result_hash` when overlays are applied
+- `base_hash`: Hash of upstream pack (before overlays)
+- `overlay_hash`: Hash of overlay configuration (deterministic, sorted by selector)
+- `result_hash`: Hash of final IR after overlay application
+- `content_hash` remains as alias to `result_hash` for backward compatibility
+- Single-hash lockfiles (no overlays) continue to work without changes
+
+**Enhanced drift detection:**
+
+- New drift categories: `upstream`, `overlay`, and `result`
+- **Upstream drift**: `base_hash` differs → upstream pack updated
+- **Overlay drift**: `overlay_hash` differs → local overlay config changed
+- **Result drift**: `result_hash` differs despite matching base/overlay → non-deterministic behavior
+- Existing categories preserved: `severity_remap`, `vendorized`, `local_overlay` (legacy)
+- Triple-hash details included in drift findings for actionable resolution
+
+**Update command enhancement:**
+
+- Uses `base_hash` for update detection when available (more precise for overlays)
+- Falls back to `content_hash` for backward compatibility
+- Suggests `aligntrue update apply` for base_hash drift
+- Documents that overlays are automatically re-applied to new upstream versions
+
+**Lockfile generator improvements:**
+
+- `generateLockfile()` accepts optional `overlays` and `basePack` parameters
+- `computeOverlayHash()` exported for deterministic overlay hashing
+- Triple-hash fields only added when overlays present
+- Maintains determinism across pack loading and application
+
+**Tests:**
+
+- 55 new tests for triple-hash functionality (29 lockfile + 26 drift detection)
+- All 1650 tests passing (1595 previous + 55 new)
+- Coverage: triple-hash generation, overlay hashing, drift categorization, update detection
+- Backward compatibility verified for single-hash lockfiles
+
+**Files modified:**
+
+- packages/core/src/lockfile/types.ts: Added triple-hash fields to LockfileEntry
+- packages/core/src/lockfile/generator.ts: Implemented triple-hash generation
+- packages/core/src/team/drift.ts: Enhanced drift detection with new categories
+- packages/core/src/team/updates.ts: Added base_hash support for update detection
+- packages/cli/src/commands/update.ts: Documented overlay re-application behavior
+
+**Technical notes:**
+
+- Overlay hash computed from canonicalized JSON with stable sort by selector
+- Triple-hash format enables precise drift categorization
+- Backward compatible: old lockfiles without triple-hash continue to work
+- Update detection prioritizes base_hash when available for overlay-aware behavior
+
+**Next:** Phase 3.5 continues with remaining session work (Session 7+)
+
+---
+
 ### Phase 3.5, Checkpoint 1: Stage 1 Complete (Foundation + CLI Scaffold) (Completed 2025-10-30)
 
 **Summary:**
