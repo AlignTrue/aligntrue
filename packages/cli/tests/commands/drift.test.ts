@@ -180,7 +180,7 @@ sources:
       await drift([]);
 
       const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("aligntrue sync --force");
+      expect(output).toContain("aligntrue update apply");
     });
   });
 
