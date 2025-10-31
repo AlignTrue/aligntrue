@@ -1,4 +1,4 @@
-# Troubleshooting Overlays
+# Troubleshooting overlays
 
 Common issues when working with overlays and their solutions.
 
