@@ -6,7 +6,6 @@
 import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -14,7 +13,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -39,7 +38,7 @@ interface McpRule {
   [key: string]: any;
 }
 
-export class CursorMcpExporter implements ExporterPlugin {
+export class CursorMcpExporter extends ExporterBase {
   name = "cursor-mcp";
   version = "1.0.0";
 
@@ -82,22 +81,11 @@ export class CursorMcpExporter implements ExporterPlugin {
     if (!dryRun) {
       const cursorDirPath = dirname(outputPath);
       mkdirSync(cursorDirPath, { recursive: true });
-
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
     }
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
-
-    return result;
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
 
   resetState(): void {
@@ -158,7 +146,7 @@ export class CursorMcpExporter implements ExporterPlugin {
     return config;
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();

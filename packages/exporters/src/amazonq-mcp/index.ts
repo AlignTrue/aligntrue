@@ -6,7 +6,6 @@
 import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -14,7 +13,6 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -35,7 +33,7 @@ interface McpConfig {
   fidelity_notes?: string[];
 }
 
-export class AmazonQMcpExporter implements ExporterPlugin {
+export class AmazonQMcpExporter extends ExporterBase {
   name = "amazonq-mcp";
   version = "1.0.0";
 
@@ -81,15 +79,7 @@ export class AmazonQMcpExporter implements ExporterPlugin {
       writer.write(outputPath, content);
     }
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     return result;
   }
@@ -138,7 +128,7 @@ export class AmazonQMcpExporter implements ExporterPlugin {
     return config;
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

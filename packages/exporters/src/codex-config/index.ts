@@ -8,20 +8,18 @@
 import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class CodexConfigExporter implements ExporterPlugin {
+export class CodexConfigExporter extends ExporterBase {
   name = "codex-config";
   version = "1.0.0";
 

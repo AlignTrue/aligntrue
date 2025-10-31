@@ -15,12 +15,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class RooCodeMcpExporter implements ExporterPlugin {
+export class RooCodeMcpExporter extends ExporterBase {
   name = "roocode-mcp";
   version = "1.0.0";
 

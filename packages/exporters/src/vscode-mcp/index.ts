@@ -9,7 +9,6 @@
 import { dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -17,8 +16,8 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { getAlignTruePaths } from "@aligntrue/core";
+import { ExporterBase } from "../base/index.js";
 
 /**
  * State for collecting all scopes before generating single merged file
@@ -52,7 +51,7 @@ interface McpRule {
   [key: string]: any; // Additional vendor.vscode fields
 }
 
-export class VsCodeMcpExporter implements ExporterPlugin {
+export class VsCodeMcpExporter extends ExporterBase {
   name = "vscode-mcp";
   version = "1.0.0";
 
@@ -106,22 +105,11 @@ export class VsCodeMcpExporter implements ExporterPlugin {
       // Ensure .vscode directory exists
       const vscodeDirPath = dirname(outputPath);
       mkdirSync(vscodeDirPath, { recursive: true });
-
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
     }
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
-
-    return result;
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
 
   /**
@@ -214,10 +202,10 @@ export class VsCodeMcpExporter implements ExporterPlugin {
   }
 
   /**
-   * Compute fidelity notes for unmapped fields
-   * MCP config extracts vendor.vscode - note what's not represented
+   * Compute fidelity notes for unmapped fields (custom for VS Code MCP)
+   * Overrides base class to add VS Code MCP-specific messages
    */
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorAgents = new Set<string>();

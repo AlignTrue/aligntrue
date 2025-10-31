@@ -14,12 +14,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class GeminiConfigExporter implements ExporterPlugin {
+export class GeminiConfigExporter extends ExporterBase {
   name = "gemini-config";
   version = "1.0.0";
 

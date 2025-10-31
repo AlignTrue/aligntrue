@@ -15,12 +15,13 @@ import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { extractModeConfig, applyRulePrioritization } from "../utils/index.js";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class FirebenderExporter implements ExporterPlugin {
+export class FirebenderExporter extends ExporterBase {
   name = "firebender";
   version = "1.0.0";
 
@@ -62,20 +63,9 @@ export class FirebenderExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;

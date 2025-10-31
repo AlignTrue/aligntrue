@@ -15,6 +15,7 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -39,7 +40,7 @@ interface McpRule {
   [key: string]: any;
 }
 
-export class WindsurfMcpExporter implements ExporterPlugin {
+export class WindsurfMcpExporter extends ExporterBase {
   name = "windsurf-mcp";
   version = "1.0.0";
 
@@ -87,15 +88,7 @@ export class WindsurfMcpExporter implements ExporterPlugin {
       writer.write(outputPath, content);
     }
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     return result;
   }
