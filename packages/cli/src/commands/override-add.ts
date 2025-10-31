@@ -85,12 +85,14 @@ export async function overrideAdd(args: string[]): Promise<void> {
   }
 
   try {
-    await runOverrideAdd({
+    const options: OverrideAddOptions = {
       selector: selector || "",
-      set: setValues.length > 0 ? setValues : undefined,
-      remove: removeValues.length > 0 ? removeValues : undefined,
-      config,
-    });
+    };
+    if (setValues.length > 0) options.set = setValues;
+    if (removeValues.length > 0) options.remove = removeValues;
+    if (config) options.config = config;
+
+    await runOverrideAdd(options);
   } catch (error) {
     clack.log.error(
       `Failed to add overlay: ${error instanceof Error ? error.message : String(error)}`,
@@ -169,8 +171,8 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   const removeOperations: string[] = options.remove || [];
 
   // Load config
-  const configPath = options.config || ".aligntrue/config.yaml";
-  const config = await loadConfig(configPath);
+  const configPath = options.config;
+  const config = await loadConfig(configPath, process.cwd());
 
   // Ensure overlays.overrides array exists
   if (!config.overlays) {
