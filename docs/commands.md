@@ -877,113 +877,71 @@ Commands for customizing third-party packs without forking. Available in all mod
 
 ### `aligntrue override add`
 
-Create a new overlay to customize pack behavior.
+Create a new overlay to customize rules without forking.
 
 **Usage:**
 
 ```bash
-# Interactive mode (recommended)
-aligntrue override add
-
-# Direct mode with flags
 aligntrue override add [options]
 ```
 
 **Options:**
 
-| Flag                     | Description                       | Required |
-| ------------------------ | --------------------------------- | -------- |
-| `--pack <id>`            | Pack identifier to overlay        | Yes      |
-| `--check <id>`           | Specific check ID (optional)      | No       |
-| `--scope <glob>`         | Scope pattern (e.g., `src/**`)    | No       |
-| `--severity <level>`     | Override severity (off/info/warning/error) | No |
-| `--input <key=value>`    | Add/override check input (repeatable) | No |
-| `--no-autofix`           | Disable autofix for check         | No       |
-| `--reason <text>`        | Reason for override               | No       |
-| `--expires <date>`       | Expiration date (YYYY-MM-DD)      | No       |
-| `--owner <name>`         | Team/person responsible           | No       |
+| Flag                  | Description                       | Required |
+| --------------------- | --------------------------------- | -------- |
+| `--selector <string>` | Selector string (rule[id=...], property.path, array[0]) | Yes |
+| `--set <key=value>`   | Set property (repeatable, supports dot notation) | No*      |
+| `--remove <key>`      | Remove property (repeatable)      | No*      |
+| `--config <path>`     | Custom config file path           | No       |
+
+*At least one of `--set` or `--remove` is required
 
 **What it does:**
 
-1. Validates pack exists in config or sources
-2. Validates check ID exists (if specified)
-3. Creates overlay with specified overrides
-4. Updates `.aligntrue.yaml` with new overlay
+1. Validates selector syntax
+2. Parses set/remove operations
+3. Adds overlay to `overlays.overrides[]` in config
+4. Writes config atomically
 5. Provides next steps (run `aligntrue sync`)
 
 **Examples:**
 
 ```bash
-# Interactive mode (guided prompts)
-aligntrue override add
-
-# Change severity for specific check
+# Change severity for specific rule
 aligntrue override add \
-  --pack @acme/standards \
-  --check no-console-log \
-  --severity error
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
 
-# Disable check in test directory
+# Set nested property with dot notation
 aligntrue override add \
-  --pack @acme/standards \
-  --check no-any-type \
-  --scope "tests/**" \
-  --severity off
+  --selector 'rule[id=max-complexity]' \
+  --set check.inputs.threshold=15
 
-# Customize check inputs
+# Remove property
 aligntrue override add \
-  --pack @acme/standards \
-  --check max-complexity \
-  --input threshold=15 \
-  --input excludeComments=true \
-  --reason "Backend needs higher complexity during migration" \
-  --expires 2025-12-31 \
-  --owner backend-team
+  --selector 'rule[id=prefer-const]' \
+  --remove autofix
 
-# Disable autofix
+# Multiple set operations
 aligntrue override add \
-  --pack @acme/standards \
-  --check prefer-const \
-  --no-autofix \
-  --reason "Autofix conflicts with reactive framework"
+  --selector 'rule[id=line-length]' \
+  --set severity=warning \
+  --set check.inputs.maxLength=120
+
+# Combined set and remove
+aligntrue override add \
+  --selector 'rule[id=complexity]' \
+  --set check.inputs.threshold=15 \
+  --remove autofix
 ```
 
-**Interactive mode flow:**
+**Output:**
 
 ```
-? Select pack to overlay
-  > @acme/standards
-    @acme/security
+✓ Overlay added to config
 
-? Select check (or press Enter for all checks)
-  > no-console-log
-    max-complexity
-    (All checks)
-
-? What to override?
-  > Severity
-    Check inputs
-    Autofix
-    Multiple
-
-? New severity
-  > error
-    warning
-    info
-    off
-
-? Add metadata? yes
-
-? Reason for override
-  Production logging policy
-
-? Owner (optional)
-  platform-team
-
-? Expiration date (optional, YYYY-MM-DD)
-  2025-12-31
-
-✓ Overlay created
+Selector: rule[id=no-console-log]
+  Set: severity=error
 
 Next step:
   Run: aligntrue sync
@@ -992,7 +950,7 @@ Next step:
 **Exit codes:**
 
 - `0` - Success
-- `1` - Validation error (pack not found, invalid severity, etc.)
+- `1` - Validation error (invalid selector, missing operations)
 - `2` - System error (file write failed)
 
 **See also:** [Overlays Guide](overlays.md) for complete overlay documentation.
@@ -1013,29 +971,21 @@ aligntrue override status [options]
 
 | Flag            | Description                      | Default |
 | --------------- | -------------------------------- | ------- |
-| `--pack <id>`   | Filter by pack ID                | (all)   |
-| `--stale`       | Show only stale/expired overlays | `false` |
 | `--json`        | Output in JSON format            | `false` |
+| `--config <path>` | Custom config file path        | (default) |
 
 **What it shows:**
 
-- Overlay count (active, stale, expired)
-- Pack and check targeted
-- Override details (severity, inputs, autofix)
-- Metadata (reason, owner, expiration)
-- Health status (healthy, stale, expired)
+- Overlay count (total, healthy, stale)
+- Selector for each overlay
+- Operations (set, remove)
+- Health status (healthy if selector matches, stale if no match)
 
 **Examples:**
 
 ```bash
 # Show all overlays
 aligntrue override status
-
-# Filter by pack
-aligntrue override status --pack @acme/standards
-
-# Show only stale/expired
-aligntrue override status --stale
 
 # JSON output for scripting
 aligntrue override status --json
@@ -1044,36 +994,44 @@ aligntrue override status --json
 **Example output:**
 
 ```
-Overlays (3 active, 1 expired, 1 stale)
+Overlays (3 active, 1 stale)
 
-✓ @acme/standards → no-console-log
-  Override: severity error
-  Reason: Production logging policy
-  Owner: platform-team
+✓ rule[id=no-console-log]
+  Set: severity=error
   Healthy: yes
 
-✓ @acme/standards → max-complexity
-  Override: inputs {threshold: 15}
-  Reason: Backend migration in progress
-  Expires: 2025-12-31 (92 days)
+✓ rule[id=max-complexity]
+  Set: check.inputs.threshold=15
   Healthy: yes
 
-⚠ @acme/standards → no-deprecated-api
-  Override: severity warning
-  Reason: Migration to new API
-  Expires: 2025-10-15 (EXPIRED 30 days ago)
-  Healthy: expired
+❌ rule[id=old-rule-name]
+  Set: severity=off
+  Healthy: stale (no match in IR)
+```
 
-❌ @acme/security → old-check-name
-  Override: severity off
-  Healthy: stale (check not found in upstream)
+**JSON output:**
+
+```json
+{
+  "total": 3,
+  "healthy": 2,
+  "stale": 1,
+  "overlays": [
+    {
+      "selector": "rule[id=no-console-log]",
+      "health": "healthy",
+      "operations": {
+        "set": { "severity": "error" }
+      }
+    }
+  ]
+}
 ```
 
 **Health indicators:**
 
-- `✓` **Healthy** - Overlay applies successfully
-- `⚠` **Expired** - Expiration date passed
-- `❌` **Stale** - Check no longer exists in upstream
+- `✓` **Healthy** - Overlay selector matches rules in IR
+- `❌` **Stale** - Selector matches no rules
 
 **Exit codes:**
 
@@ -1086,100 +1044,66 @@ Overlays (3 active, 1 expired, 1 stale)
 
 ### `aligntrue override diff`
 
-Show three-way diff for overlay conflicts.
+Show the effect of overlays on IR.
 
 **Usage:**
 
 ```bash
-aligntrue override diff <check-id> [options]
+aligntrue override diff [selector] [options]
 ```
 
 **Arguments:**
 
-- `check-id` - Check ID to diff (required)
+- `selector` - Optional selector to filter (shows all if omitted)
 
 **Options:**
 
 | Flag           | Description                   | Default |
 | -------------- | ----------------------------- | ------- |
-| `--pack <id>`  | Filter by pack ID             | (all)   |
-| `--conflicts`  | Show only overlays with conflicts | `false` |
+| `--config <path>` | Custom config file path    | (default) |
 
 **What it shows:**
 
-1. **Upstream original** - Check as it was when overlay created
-2. **Upstream current** - Check as it is now
-3. **Your overlay** - Your customizations
-4. **Merged result** - How overlay applies to current upstream
+1. **Original IR** - IR before overlays applied
+2. **Modified IR** - IR after overlays applied
+3. **Changes** - Summary of modifications
 
 **Examples:**
 
 ```bash
-# Three-way diff for specific check
-aligntrue override diff no-console-log
+# Show all overlay effects
+aligntrue override diff
 
-# Filter by pack
-aligntrue override diff no-console-log --pack @acme/standards
-
-# Show all conflicts
-aligntrue override diff --conflicts
+# Show effect of specific overlay
+aligntrue override diff 'rule[id=no-console-log]'
 ```
 
 **Example output:**
 
 ```
-Three-way diff for: no-console-log
+Overlay diff for: rule[id=no-console-log]
 
-━━━ Upstream Original ━━━
-severity: warning
-autofix: true
+━━━ Original (upstream) ━━━
+severity: warn
 
-━━━ Upstream Current ━━━
+━━━ With overlay ━━━
 severity: error
-autofix: true
-inputs:
-  exclude: []
 
-━━━ Your Overlay ━━━
-severity: error
-inputs:
-  exclude: ["debug.ts"]
-
-━━━ Merged Result ━━━
-severity: error (from overlay)
-autofix: true (from upstream)
-inputs:
-  exclude: ["debug.ts"] (from overlay, merged with upstream)
-
-⚠ Note: Upstream changed severity warning → error
-Your overlay also sets error, so no conflict.
+Changes: 1 property modified
 ```
 
-**Conflict detection:**
+**No overlay case:**
 
-Conflicts occur when:
-
-- Upstream changes same field you override
-- Overlay targets non-existent check (stale)
-- Multiple overlays target same check
-
-**Resolution:**
-
-```bash
-# After reviewing diff, update overlay
-aligntrue override remove --check no-console-log
-aligntrue override add --check no-console-log --severity error --input exclude=debug.ts
-
-# Or accept upstream change
-aligntrue override remove --check no-console-log
+```
+No overlays match selector: rule[id=nonexistent]
 ```
 
 **Exit codes:**
 
 - `0` - Success
-- `1` - Check not found or no overlay exists
+- `1` - Selector invalid or no overlays found
 
-**See also:** [Overlays Guide - Conflict Resolution](overlays.md#conflict-resolution)
+**See also:** [Overlays Guide](overlays.md) for overlay usage.
 
 ---
 
@@ -1190,29 +1114,27 @@ Remove an overlay.
 **Usage:**
 
 ```bash
-# Interactive mode
-aligntrue override remove
-
-# Direct mode
-aligntrue override remove [options]
+aligntrue override remove [selector] [options]
 ```
+
+**Arguments:**
+
+- `selector` - Optional selector string (if omitted, interactive mode)
 
 **Options:**
 
-| Flag            | Description                  | Required |
-| --------------- | ---------------------------- | -------- |
-| `--pack <id>`   | Pack identifier              | No*      |
-| `--check <id>`  | Check identifier             | No*      |
-| `--scope <glob>`| Scope pattern                | No*      |
-
-*At least one selector required in direct mode
+| Flag            | Description                  | Default |
+| --------------- | ---------------------------- | ------- |
+| `--force`       | Skip confirmation            | `false` |
+| `--config <path>` | Custom config file path    | (default) |
 
 **What it does:**
 
-1. Finds matching overlay(s) by selector
-2. Prompts for confirmation (shows what will be removed)
-3. Removes overlay from `.aligntrue.yaml`
-4. Provides next steps (run `aligntrue sync`)
+1. If no selector: shows interactive list of overlays
+2. Finds matching overlay by selector
+3. Prompts for confirmation (unless `--force`)
+4. Removes overlay from config
+5. Writes config atomically
 
 **Examples:**
 
@@ -1220,26 +1142,22 @@ aligntrue override remove [options]
 # Interactive removal (select from list)
 aligntrue override remove
 
-# Remove by pack and check
-aligntrue override remove --pack @acme/standards --check no-console-log
+# Remove by selector
+aligntrue override remove 'rule[id=no-console-log]'
 
-# Remove all overlays for a pack
-aligntrue override remove --pack @acme/standards
-
-# Remove by scope
-aligntrue override remove --scope "tests/**"
+# Remove without confirmation
+aligntrue override remove 'rule[id=no-console-log]' --force
 ```
 
 **Interactive mode:**
 
 ```
 ? Select overlay to remove
-  > @acme/standards → no-console-log (severity: error)
-    @acme/standards → max-complexity (inputs: {threshold: 15})
-    @acme/security → old-check (severity: off)
+  > rule[id=no-console-log] (Set: severity=error)
+    rule[id=max-complexity] (Set: check.inputs.threshold=15)
+    rule[id=old-rule] (Set: severity=off)
 
-Remove overlay for @acme/standards → no-console-log? (yes/no)
-  yes
+Remove overlay: rule[id=no-console-log]? (y/N): y
 
 ✓ Overlay removed
 

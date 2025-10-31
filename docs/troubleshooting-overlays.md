@@ -22,99 +22,81 @@ aln override status --stale
 
 ### Common Causes
 
-#### 1. Typo in Check ID
+#### 1. Typo in Rule ID
 
 **Problem:**
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "no-console-logs" # Wrong: should be "no-console-log"
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-logs]" # Wrong: should be "no-console-log"
+      set:
+        severity: "error"
 ```
 
 **Solution:**
 
 ```bash
-# Find correct check ID
+# Find correct rule ID
 aln check --list-checks
 
-# Or inspect pack directly
-cat vendor/acme-standards/.aligntrue.yaml | grep "id:"
+# Or inspect IR directly
+cat .aligntrue/ir.json | jq '.rules[].id'
 
 # Fix overlay
-aln override remove --check no-console-logs
-aln override add --check no-console-log --severity error
+aln override remove 'rule[id=no-console-logs]'
+aln override add --selector 'rule[id=no-console-log]' --set severity=error
 ```
 
-#### 2. Pack Not Found
+#### 2. Selector Doesn't Match
 
-**Problem:**
-
-```yaml
-overlays:
-  - selector:
-      source_pack: "@acme/standarsd" # Typo in pack name
-    override:
-      severity: error
-```
+**Problem:** Selector doesn't match any rules in the IR.
 
 **Error message:**
 
 ```
 ✗ Overlay validation failed
 
-Pack not found: @acme/standarsd
+Selector matches no rules: rule[id=nonexistent-rule]
 
-Available packs:
-  - @acme/standards
-  - @acme/security
-
-Hint: Check spelling and ensure pack is in config
+Hint: Check rule ID spelling and ensure rule exists in IR
 ```
 
 **Solution:**
 
 ```bash
-# List available packs
-aln scopes
+# List available rules
+aln check --list-checks
 
-# Fix typo
-aln override remove --pack @acme/standarsd
-aln override add --pack @acme/standards --severity error
+# Fix selector
+aln override remove 'rule[id=nonexistent-rule]'
+aln override add --selector 'rule[id=correct-rule-id]' --set severity=error
 ```
 
-#### 3. Selector Too Specific
+#### 3. Property Path Invalid
 
 **Problem:**
 
 ```yaml
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-console-log"
-      scope: "src/utils/**" # Too narrow, check applies to "src/**"
-    override:
-      severity: error
+  overrides:
+    - selector: "nonexistent.property.path"
+      set:
+        value: "test"
 ```
 
-**Result:** Overlay only applies to `src/utils/**` but check runs in all of `src/`, so most violations use upstream severity.
+**Result:** Selector doesn't match any property in IR.
 
 **Solution:**
 
-Widen scope or remove scope selector:
+Inspect IR structure and use correct path:
 
 ```bash
-# Remove overly specific overlay
-aln override remove --check no-console-log --scope "src/utils/**"
+# View IR structure
+cat .aligntrue/ir.json | jq 'keys'
 
-# Add broader overlay
-aln override add \
-  --pack @acme/standards \
-  --check no-console-log \
-  --scope "src/**" \
-  --severity error
+# Use correct property path
+aln override add --selector 'profile.version' --set value="2.0.0"
 ```
 
 #### 4. Check Removed from Upstream
@@ -124,24 +106,25 @@ aln override add \
 **Diagnosis:**
 
 ```bash
-aln override status --stale
+aln override status
 
 # Output:
-# ❌ @acme/standards → old-check-name
-#   Healthy: stale (check not found in upstream)
+# ❌ rule[id=old-rule-name]
+#   Set: severity=error
+#   Healthy: stale (no match in IR)
 ```
 
 **Solution:**
 
 ```bash
 # Remove stale overlay
-aln override remove --check old-check-name
+aln override remove 'rule[id=old-rule-name]'
 
-# Find new check name
+# Find new rule ID
 aln check --list-checks
 
-# Add overlay with new check ID
-aln override add --check new-check-name --severity error
+# Add overlay with new rule ID
+aln override add --selector 'rule[id=new-rule-name]' --set severity=error
 ```
 
 ---
@@ -156,52 +139,38 @@ aln override add --check new-check-name --severity error
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "no-console-log"
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 
-  - selector:
-      check_id: "no-console-log"
-      scope: "src/**"
-    override:
-      severity: warning # Conflicts with above
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "warning" # Conflicts with above
 ```
 
-**Behavior:** Most specific selector wins (check_id + scope > check_id). The second overlay overrides the first for `src/**`.
+**Behavior:** Last matching overlay wins. The second overlay overrides the first.
 
 **Solution (if unintended):**
 
 ```bash
-# Remove less specific overlay
-aln override remove --check no-console-log
-
-# Keep only scope-specific overlay
-# (Second overlay remains)
+# Remove duplicate overlay
+aln override remove 'rule[id=no-console-log]'
+# Choose which one to keep and re-add it
+aln override add --selector 'rule[id=no-console-log]' --set severity=error
 ```
 
 **Solution (if intended):**
 
-Keep both. Document precedence:
+Consolidate into single overlay:
 
 ```yaml
 overlays:
-  # Default: error everywhere
-  - selector:
-      check_id: "no-console-log"
-    override:
-      severity: error
-    metadata:
-      reason: "Strict by default"
-
-  # Exception: warning in src/ (more specific, wins)
-  - selector:
-      check_id: "no-console-log"
-      scope: "src/**"
-    override:
-      severity: warning
-    metadata:
-      reason: "Legacy code has console.log usage"
+  overrides:
+    # Single overlay with desired severity
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 ```
 
 ### Upstream Changed Same Field
@@ -211,12 +180,12 @@ overlays:
 **Diagnosis:**
 
 ```bash
-aln override diff no-console-log
+aln override diff 'rule[id=no-console-log]'
 
 # Output shows:
-# Upstream changed: warning → error
-# Your overlay: error
-# Result: error (redundant overlay)
+# Original: severity=warning
+# With overlay: severity=error
+# (If upstream also changed to error, overlay is now redundant)
 ```
 
 **Solution:**
@@ -224,7 +193,7 @@ aln override diff no-console-log
 Remove redundant overlay:
 
 ```bash
-aln override remove --check no-console-log
+aln override remove 'rule[id=no-console-log]'
 
 # Overlay no longer needed (upstream matches your preference)
 ```
@@ -245,11 +214,10 @@ check:
 
 # Your overlay (before upstream update)
 overlays:
-  - selector:
-      check_id: max-complexity
-    override:
-      inputs:
-        threshold: 15
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15
 
 # Upstream update
 check:
@@ -265,9 +233,9 @@ check:
 **Diagnosis:**
 
 ```bash
-aln override diff max-complexity
+aln override diff 'rule[id=max-complexity]'
 
-# Shows three-way diff with merge result
+# Shows original vs overlayed result
 ```
 
 **Solution options:**
@@ -283,77 +251,55 @@ aln sync
 
 ```bash
 # Remove old overlay
-aln override remove --check max-complexity
+aln override remove 'rule[id=max-complexity]'
 
 # Add new overlay with merged inputs
 aln override add \
-  --check max-complexity \
-  --input threshold=15 \
-  --input excludeComments=true \
-  --reason "Use upstream excludeComments, keep our threshold"
+  --selector 'rule[id=max-complexity]' \
+  --set check.inputs.threshold=15 \
+  --set check.inputs.excludeComments=true
 ```
 
 **Option C:** Accept upstream (remove overlay):
 
 ```bash
-aln override remove --check max-complexity
+aln override remove 'rule[id=max-complexity]'
 ```
 
 ---
 
 ## Ambiguous Selector
 
-**Symptom:** Overlay matches multiple checks unintentionally.
+**Symptom:** Overlay matches multiple rules unintentionally.
 
-### Multiple Packs Have Same Check ID
+### Selector Matches Multiple Rules
 
-**Problem:**
+**Problem:** Selector is ambiguous and matches more than one rule.
+
+**Example:**
 
 ```yaml
-# Both packs define "no-console-log"
-sources:
-  - git: https://github.com/acme/standards
-  - git: https://github.com/acme/security
-
 overlays:
-  - selector:
-      check_id: "no-console-log" # Ambiguous!
-    override:
-      severity: error
+  overrides:
+    # If multiple rules have same ID (from different sources)
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 ```
 
-**Result:** Overlay applies to both checks (may be unintended).
+**Result:** Overlay applies to all matching rules (may be unintended).
 
 **Diagnosis:**
 
 ```bash
 aln override status
 
-# Output shows overlay applies to multiple packs:
-# ✓ @acme/standards → no-console-log (severity: error)
-# ✓ @acme/security → no-console-log (severity: error)
+# Output shows if overlay matches multiple rules
 ```
 
 **Solution:**
 
-Add `source_pack` to disambiguate:
-
-```bash
-# Remove ambiguous overlay
-aln override remove --check no-console-log
-
-# Add specific overlay
-aln override add \
-  --pack @acme/standards \
-  --check no-console-log \
-  --severity error
-
-# Optionally add second overlay for other pack
-aln override add \
-  --pack @acme/security \
-  --check no-console-log \
-  --severity warning
-```
+Make selector more specific or accept that it applies to all matches. Currently, selectors apply to all matching rules. For more granular control, use property paths or array indices to target specific instances.
 
 ---
 
@@ -368,50 +314,48 @@ aln override add \
 **Diagnosis:**
 
 ```bash
-aln override status --stale
+aln override status
 
 # Output:
-# ⚠ @acme/standards → no-deprecated-api
-#   Expires: 2025-10-15 (EXPIRED 30 days ago)
-#   Healthy: expired
+# ⚠ rule[id=no-deprecated-api]
+#   Set: severity=warning
+#   Healthy: yes
+#   Note: Check YAML comments for expiration tracking
 ```
 
 **Solution:**
 
-Review and decide:
+Review YAML comments and decide:
 
-**Option A:** Extend expiration:
+**Option A:** Extend expiration (update YAML comment):
 
-```bash
-# Remove old overlay
-aln override remove --check no-deprecated-api
-
-# Add with new expiration
-aln override add \
-  --check no-deprecated-api \
-  --severity warning \
-  --expires 2025-12-31 \
-  --reason "Migration extended"
+```yaml
+overlays:
+  overrides:
+    # TEMPORARY: Migration extended
+    # Expires: 2025-12-31 (was 2025-10-15)
+    - selector: "rule[id=no-deprecated-api]"
+      set:
+        severity: "warning"
 ```
 
 **Option B:** Remove overlay:
 
 ```bash
 # Migration complete, remove override
-aln override remove --check no-deprecated-api
+aln override remove 'rule[id=no-deprecated-api]'
 ```
 
-**Option C:** Make permanent (remove expiration):
+**Option C:** Make permanent (update YAML comment):
 
-```bash
-# Remove old overlay
-aln override remove --check no-deprecated-api
-
-# Add without expiration
-aln override add \
-  --check no-deprecated-api \
-  --severity warning \
-  --reason "Permanent exception for legacy code"
+```yaml
+overlays:
+  overrides:
+    # PERMANENT: Legacy code exception
+    # Owner: platform-team
+    - selector: "rule[id=no-deprecated-api]"
+      set:
+        severity: "warning"
 ```
 
 ### Automated Expiration Audits
@@ -442,11 +386,10 @@ Add to CI:
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "ai-prompt-template"
-    override:
-      inputs:
-        context: "production code"
+  overrides:
+    - selector: "rule[id=ai-prompt-template]"
+      set:
+        "check.inputs.context": "production code"
 ```
 
 **Plug:**
@@ -488,18 +431,18 @@ plugs:
 
 # Keep overlay (applies to all agents)
 overlays:
-  - selector:
-      check_id: "ai-prompt-template"
-    override:
-      inputs:
-        context: "production code"
+  overrides:
+    - selector: "rule[id=ai-prompt-template]"
+      set:
+        "check.inputs.context": "production code"
 ```
 
 **Option B:** Use plug for agent-specific override:
 
 ```yaml
 # Remove overlay
-# overlays: []
+overlays:
+  overrides: []
 
 # Keep plug (Cursor-specific)
 plugs:
@@ -647,14 +590,12 @@ sources:
 
 # Overlay minor adjustments
 overlays:
-  - selector:
-      source_pack: "@yourorg/my-standards"
-      check_id: "specific-check"
-    override:
-      severity: error
-    metadata:
-      reason: "Temporary strictness for migration"
-      expires: "2025-12-31"
+  overrides:
+    # TEMPORARY: Migration strictness
+    # Expires: 2025-12-31
+    - selector: "rule[id=specific-check]"
+      set:
+        severity: "error"
 ```
 
 ---
@@ -667,11 +608,8 @@ overlays:
 # Show all overlays
 aln override status
 
-# Show overlay for specific check
-aln override diff <check-id>
-
-# Show only stale/expired
-aln override status --stale
+# Show overlay for specific rule
+aln override diff 'rule[id=no-console-log]'
 
 # JSON output for scripting
 aln override status --json | jq '.overlays[] | select(.healthy == false)'
@@ -680,13 +618,13 @@ aln override status --json | jq '.overlays[] | select(.healthy == false)'
 ### Validate Overlays
 
 ```bash
-# Validate overlay selectors
-aln check --validate-overlays
+# Validate overlay application
+aln override status
 
-# Dry-run sync to see overlay effects
+# Dry-run sync to see effects
 aln sync --dry-run
 
-# Check drift (includes overlay staleness)
+# Check drift (includes overlay drift)
 aln drift
 ```
 
@@ -704,37 +642,39 @@ git diff .aligntrue.lock.json
 
 ## Common Error Messages
 
-### "Overlay validation failed: Pack not found"
+### "Overlay validation failed: Selector matches no rules"
 
-**Cause:** Pack ID in overlay doesn't match any configured source.
-
-**Fix:**
-
-```bash
-# List available packs
-aln scopes
-
-# Update overlay with correct pack ID
-aln override remove --pack <wrong-id>
-aln override add --pack <correct-id> --check <check-id> --severity <level>
-```
-
-### "Overlay validation failed: Check not found"
-
-**Cause:** Check ID doesn't exist in target pack.
+**Cause:** Selector doesn't match any rules in IR.
 
 **Fix:**
 
 ```bash
-# List checks in pack
-aln check --list-checks --pack <pack-id>
+# List available rules
+aln check --list-checks
 
-# Update overlay with correct check ID
-aln override remove --check <wrong-id>
-aln override add --check <correct-id> --severity <level>
+# Update overlay with correct selector
+aln override remove 'rule[id=wrong-id]'
+aln override add --selector 'rule[id=correct-id]' --set severity=error
 ```
 
-### "Overlay conflict: Multiple overlays match"
+### "Overlay validation failed: Invalid selector syntax"
+
+**Cause:** Selector syntax is incorrect.
+
+**Fix:**
+
+```bash
+# Check selector format
+# Valid formats:
+# - rule[id=value]
+# - property.path
+# - array[0]
+
+# Update overlay with correct syntax
+aln override add --selector 'rule[id=correct-format]' --set severity=error
+```
+
+### "Overlay conflict: Duplicate selector"
 
 **Cause:** Multiple overlays have identical selectors.
 
@@ -744,8 +684,8 @@ aln override add --check <correct-id> --severity <level>
 # View all overlays
 aln override status
 
-# Remove duplicate
-aln override remove --check <check-id>  # Interactive mode to choose which one
+# Remove duplicate (interactive)
+aln override remove
 ```
 
 ### "Lockfile drift detected: Overlay hash mismatch"
@@ -770,40 +710,39 @@ git commit -m "chore: Update lockfile"
 ### 1. Use Specific Selectors
 
 ```yaml
-# ✅ Good: Specific
+# ✅ Good: Specific rule ID
 overlays:
-  - selector:
-      source_pack: "@acme/standards"
-      check_id: "no-console-log"
-    override:
-      severity: error
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
 
-# ❌ Bad: Too broad
+# ❌ Bad: Too vague (if property path is ambiguous)
 overlays:
-  - selector: {}  # Matches everything
-    override:
-      severity: warning
+  overrides:
+    - selector: "severity"  # Might match multiple properties
+      set:
+        value: "warning"
 ```
 
 ### 2. Document Reasons
 
 ```yaml
-# ✅ Good: Clear reason
+# ✅ Good: Clear reason with YAML comments
 overlays:
-  - selector:
-      check_id: "no-console-log"
-    override:
-      severity: off
-    metadata:
-      reason: "CLI tool requires console output"
-      owner: "cli-team"
+  overrides:
+    # CLI tool requires console output for user feedback
+    # Owner: cli-team
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "off"
 
 # ❌ Bad: No context
 overlays:
-  - selector:
-      check_id: "no-console-log"
-    override:
-      severity: off
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "off"
 ```
 
 ### 3. Set Expiration for Temporary Overrides
@@ -811,52 +750,53 @@ overlays:
 ```yaml
 # ✅ Good: Expires after migration
 overlays:
-  - selector:
-      check_id: "new-security-rule"
-    override:
-      severity: warning
-    metadata:
-      expires: "2025-12-31"
-      reason: "Gradual rollout"
+  overrides:
+    # TEMPORARY: Gradual rollout
+    # Expires: 2025-12-31
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "warning"
 
 # ❌ Bad: No expiration (forgotten override)
 overlays:
-  - selector:
-      check_id: "new-security-rule"
-    override:
-      severity: warning
+  overrides:
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "warning"
 ```
 
 ### 4. Audit Regularly
 
 ```bash
 # Monthly audit
-aln override status --stale
+aln override status
 
 # Check for redundant overlays
-aln override diff <check-id>
+aln override diff
 
 # Validate in CI
-aln check --validate-overlays
+aln drift
 ```
 
-### 5. Prefer Narrow Scopes
+### 5. Use Dot Notation for Nested Properties
 
 ```yaml
-# ✅ Good: Specific directory
+# ✅ Good: Dot notation for nested properties
 overlays:
-  - selector:
-      check_id: "no-any-type"
-      scope: "tests/**"
-    override:
-      severity: off
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15
+        "check.inputs.excludeComments": true
 
-# ❌ Bad: Too broad
+# ❌ Bad: Won't work (overlays don't support nested objects in set)
 overlays:
-  - selector:
-      check_id: "no-any-type"
-    override:
-      severity: off
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        check:
+          inputs:
+            threshold: 15
 ```
 
 ---
