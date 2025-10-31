@@ -8,7 +8,7 @@ Drift detection compares your lockfile's rule hashes against:
 
 - **Allowed sources** - Approved versions in `.aligntrue/allow.yaml`
 - **Vendored packs** - Integrity of git submodule/subtree vendored rules
-- **Severity remapping** - Policy changes in `.aligntrue.team.yaml` (Session 7)
+- **Severity remapping** - Policy changes in `.aligntrue.team.yaml`
 
 **Key benefits:**
 
@@ -65,8 +65,6 @@ aligntrue sync
 ```
 
 ### Severity remap drift
-
-**Status:** Session 7 implementation
 
 **What it will detect:** Changes to `.aligntrue.team.yaml` severity remapping rules.
 
@@ -312,28 +310,6 @@ performance:
 2. Update vendored pack if appropriate
 3. Re-link and re-sync
 4. Commit vendored changes
-
-## Implementation status
-
-**Phase 3, Session 6 - Foundation complete:**
-
-- ✅ Drift detection core logic (`detectDrift()`)
-- ✅ Upstream drift detection
-- ✅ Vendorized drift detection
-- ✅ CLI command structure
-- ✅ Output formats (human, JSON, SARIF)
-- ⏸️ CLI integration (skipped tests, needs activation)
-
-**Session 7 - Planned:**
-
-- Severity remap drift detection
-- `.aligntrue.team.yaml` policy validation
-- Rationale file requirements
-
-**Phase 3.5 - Planned:**
-
-- Local overlay drift detection
-- Overlay resolution system
 
 ## Related documentation
 

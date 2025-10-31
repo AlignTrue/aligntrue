@@ -10,7 +10,7 @@ AlignTrue operates **offline-first** and respects your privacy:
 - **Telemetry opt-in** - Disabled by default, must explicitly enable
 - **Transparent network operations** - You approve what connects where
 - **Anonymous when enabled** - Uses randomly generated UUID, not tied to identity
-- **Local-first storage** - Data stays on your machine in Phase 1
+- **Local-first storage** - Data stays on your machine
 
 ## Telemetry overview
 
@@ -18,7 +18,7 @@ Telemetry in AlignTrue is:
 
 - **Opt-in only** - Disabled by default
 - **Anonymous** - Uses a randomly generated UUID, not tied to your identity
-- **Local-first** - Stored locally in Phase 1, with optional sending in Phase 2+
+- **Local-first** - Stored locally, with optional sending when enabled
 - **Minimal** - Only collects aggregate usage data, never your code or files
 
 ## What we collect
@@ -51,7 +51,7 @@ We explicitly **never** collect:
 - ❌ Code snippets or implementations
 - ❌ Environment variables or secrets
 - ❌ User names, emails, or identities
-- ❌ IP addresses (Phase 2+ when sending is added)
+- ❌ IP addresses
 - ❌ Any personally identifiable information (PII)
 
 ## Privacy guarantees
@@ -64,18 +64,18 @@ AlignTrue validates every telemetry event before recording:
 - Rejects events containing code keywords (`function`, `const`, `let`, etc.)
 - Rejects suspiciously long strings that might contain code
 
-### Local storage (Phase 1)
+### Local storage
 
-In Phase 1, all telemetry is stored **locally only**:
+Currently, all telemetry is stored **locally only**:
 
 - Location: `.aligntrue/telemetry-events.json`
 - Rotation: Automatically keeps only the last 1,000 events
 - Deletion: Simply remove the file to delete all events
 - Network: No data sent anywhere
 
-### Future sending (Phase 2+)
+### Optional sending
 
-When we add the ability to send telemetry to our servers in Phase 2+:
+If you choose to enable telemetry sending in the future:
 
 1. **Explicit opt-in required** - Separate consent from enabling telemetry
 2. **Clear disclosure** - You'll see exactly what will be sent before agreeing
@@ -85,7 +85,7 @@ When we add the ability to send telemetry to our servers in Phase 2+:
 
 ## Data retention
 
-### Local (Phase 1)
+### Local storage
 
 - **Storage**: `.aligntrue/telemetry-events.json` in your project
 - **Rotation**: Automatically limited to 1,000 most recent events
@@ -93,7 +93,7 @@ When we add the ability to send telemetry to our servers in Phase 2+:
   - Delete the file manually: `rm .aligntrue/telemetry-events.json`
   - Disable telemetry: `aligntrue telemetry off` (stops new events)
 
-### Server-side (Phase 2+)
+### Server-side (when enabled)
 
 When sending is implemented:
 
@@ -162,7 +162,7 @@ AlignTrue operates **offline-first** and only makes network calls when explicitl
 By default, AlignTrue makes **zero network requests**:
 
 - ✅ Local rules (`.aligntrue/rules.md`)
-- ✅ Telemetry storage (local-only in Phase 1)
+- ✅ Telemetry storage (local-only)
 - ✅ All sync operations
 - ✅ All exporter outputs
 - ✅ Validation and checks
@@ -200,14 +200,14 @@ sources:
 
 See [Git Sources Guide](git-sources.md) for full documentation on configuration, caching, and troubleshooting.
 
-#### Telemetry sending (Phase 2+)
+#### Telemetry sending (when implemented)
 
 - Separate opt-in required (beyond enabling telemetry)
 - Explicit consent with clear disclosure
 - Shows exactly what data will be sent
 - Revocable at any time
 
-### First-time consent (Phase 2 - Implemented)
+### First-time consent
 
 When you add a network source, AlignTrue prompts for consent before the first network operation:
 
@@ -221,7 +221,7 @@ When you add a network source, AlignTrue prompts for consent before the first ne
 
 The consent check happens when a provider attempts a network operation. If consent hasn't been granted, you'll see a clear error with instructions.
 
-### Privacy controls (Phase 2 - Implemented)
+### Privacy controls
 
 #### Audit consents
 
@@ -323,4 +323,4 @@ Because we:
 ---
 
 **Last Updated**: 2025-10-29  
-**Policy Version**: 1.1 (Phase 2 - Network consent implemented)
+**Policy Version**: 1.1

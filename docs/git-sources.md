@@ -151,7 +151,7 @@ aligntrue sync --force-refresh
 rm -rf .aligntrue/.cache/git/<repo-hash>
 ```
 
-**Note:** `--force-refresh` flag is planned for Phase 3. Currently, manually delete the cache directory to force a fresh clone.
+**Note:** To force a fresh clone, manually delete the cache directory.
 
 ## Privacy consent flow
 
@@ -334,8 +334,6 @@ AlignTrue uses shallow clones (depth 1) for speed and space efficiency. This mea
 For full history, manually clone to a local directory and use `type: local` source instead.
 
 ## Coming soon: `aligntrue pull` CLI command
-
-**Phase 3 feature** (not yet available)
 
 Interactive command for browsing and pulling rules from repositories:
 
