@@ -12,7 +12,7 @@ The CLI command framework provides reusable utilities for:
 
 ## Migration Status
 
-**All Commands Migrated (13):**
+**All Commands Migrated (18):**
 
 - `sync` - IR → agents synchronization
 - `check` - Rule and config validation
@@ -27,8 +27,15 @@ The CLI command framework provides reusable utilities for:
 - `scopes` - Scope management
 - `migrate` - Migration operations
 - `init` - Project initialization
+- `override` - Overlay management (parent command)
+- `override add` - Add overlay
+- `override status` - View overlay dashboard
+- `override diff` - Show overlay effects
+- `override remove` - Remove overlay
 
-**Status:** ✅ All CLI commands now use shared command framework (Phase 3, Session 1 complete)
+**Status:** ✅ All CLI commands now use shared command framework (Phase 3.5, Session 11 complete)
+
+**Commander dependency removed** - No longer using Commander library for any commands
 
 ## Using Command Utilities
 

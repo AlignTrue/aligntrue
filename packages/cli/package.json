@@ -26,7 +26,6 @@
     "@aligntrue/schema": "workspace:*",
     "@aligntrue/sources": "workspace:*",
     "@clack/prompts": "^0.11.0",
-    "commander": "^14.0.2",
     "js-yaml": "^4.1.0",
     "yaml": "^2.6.1"
   },

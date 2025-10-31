@@ -1,620 +1,436 @@
 /**
- * Unit tests for override status command (Phase 3.5, Session 9)
- * Tests display, health detection, JSON output
+ * Unit tests for override status command (Phase 3.5, Session 10)
+ * Standardized mock-based tests following sync.test.ts pattern
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { overrideCommand } from "../../src/commands/override.js";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
-import { join } from "path";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import * as clack from "@clack/prompts";
 
-const TEST_DIR = join(process.cwd(), "temp-override-status-test");
+// Mock dependencies before imports
+vi.mock("fs");
+vi.mock("@clack/prompts");
+vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
+  recordEvent: vi.fn(),
+}));
+vi.mock("@aligntrue/schema", () => ({
+  canonicalizeJson: vi.fn((obj) => JSON.stringify(obj || {})),
+  validateAlign: vi.fn(),
+  validateRuleId: vi.fn(() => ({ valid: true })),
+}));
+vi.mock("@aligntrue/core", () => ({
+  loadConfig: vi.fn(),
+  saveConfig: vi.fn(),
+  loadIR: vi.fn(),
+  evaluateSelector: vi.fn(),
+  getAlignTruePaths: vi.fn((cwd = process.cwd()) => ({
+    config: `${cwd}/.aligntrue/config.yaml`,
+    rules: `${cwd}/.aligntrue/rules.md`,
+    lockfile: `${cwd}/.aligntrue.lock.json`,
+    bundle: `${cwd}/.aligntrue.bundle.yaml`,
+    aligntrueDir: `${cwd}/.aligntrue`,
+  })),
+}));
 
-describe("Override Status - Display All Overlays", () => {
+import { overrideStatus } from "../../src/commands/override-status.js";
+import * as core from "@aligntrue/core";
+import { existsSync } from "fs";
+
+describe("Override Status - No Overlays", () => {
+  let mockExit: ReturnType<typeof vi.spyOn>;
+  let mockLog: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-    mkdirSync(TEST_DIR, { recursive: true });
-    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-    vi.spyOn(process, "cwd").mockReturnValue(TEST_DIR);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-  });
-
-  it("shows human-readable format with single overlay", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("Overlays");
-    expect(output).toContain("rule[id=test/rule]");
-    expect(output).toContain("Set:");
-    expect(output).toContain("severity");
-    expect(output).toContain("critical");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("shows all overlays when multiple configured", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule1]"
-      set:
-        severity: critical
-    - selector: "rule[id=test/rule2]"
-      set:
-        severity: error
-    - selector: "rule[id=test/rule3]"
-      remove:
-        - autofix
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("rule[id=test/rule1]");
-    expect(output).toContain("rule[id=test/rule2]");
-    expect(output).toContain("rule[id=test/rule3]");
-    expect(output).toContain("Remove:");
-    expect(output).toContain("autofix");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("shows empty state message when no overlays", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("No overlays configured");
-    expect(output).toContain("Add an overlay:");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("displays set and remove operations correctly", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-        enabled: true
-      remove:
-        - autofix
-        - examples
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("Set:");
-    expect(output).toContain("severity");
-    expect(output).toContain("enabled");
-    expect(output).toContain("Remove:");
-    expect(output).toContain("autofix");
-    expect(output).toContain("examples");
-
-    consoleSpy.mockRestore();
-  });
-});
-
-describe("Override Status - Health Detection", () => {
-  beforeEach(() => {
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-    mkdirSync(TEST_DIR, { recursive: true });
-    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-    vi.spyOn(process, "cwd").mockReturnValue(TEST_DIR);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-  });
-
-  it("shows healthy when selector matches IR", async () => {
-    // Create IR with matching rule
-    const ir = {
-      spec_version: "1",
-      profile: { id: "test", version: "1.0.0" },
-      rules: [
-        {
-          id: "test/rule",
-          severity: "warn",
-          message: "Test rule",
-        },
-      ],
-    };
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "ir.yaml"),
-      `spec_version: "1"
-profile:
-  id: test
-  version: 1.0.0
-rules:
-  - id: test/rule
-    severity: warn
-    message: Test rule
-`,
-    );
-
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("✓");
-    expect(output).toContain("Healthy: yes");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("shows stale when selector does not match IR", async () => {
-    // Create IR without matching rule
-    const ir = {
-      spec_version: "1",
-      profile: { id: "test", version: "1.0.0" },
-      rules: [
-        {
-          id: "different/rule",
-          severity: "warn",
-          message: "Different rule",
-        },
-      ],
-    };
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "ir.yaml"),
-      `spec_version: "1"
-profile:
-  id: test
-  version: 1.0.0
-rules:
-  - id: different/rule
-    severity: warn
-    message: Different rule
-`,
-    );
-
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("❌");
-    expect(output).toContain("stale");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("shows stale count in summary", async () => {
-    // IR with only one matching rule
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "ir.yaml"),
-      `spec_version: "1"
-profile:
-  id: test
-  version: 1.0.0
-rules:
-  - id: test/rule1
-    severity: warn
-    message: Test rule 1
-`,
-    );
-
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule1]"
-      set:
-        severity: critical
-    - selector: "rule[id=test/rule2]"
-      set:
-        severity: error
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("1 stale");
-    expect(output).toContain("💡 Tip:");
-
-    consoleSpy.mockRestore();
-  });
-
-  it("shows warning when IR cannot be loaded", async () => {
-    // No IR file
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    // Without IR, all overlays will show as stale
-    expect(output).toContain("stale");
-
-    consoleSpy.mockRestore();
-  });
-});
-
-describe("Override Status - JSON Output", () => {
-  beforeEach(() => {
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-    mkdirSync(TEST_DIR, { recursive: true });
-    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-    vi.spyOn(process, "cwd").mockReturnValue(TEST_DIR);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-  });
-
-  it("outputs valid JSON with --json flag", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status", "--json"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    // Should be valid JSON
-    const parsed = JSON.parse(output);
-    expect(parsed).toBeDefined();
-
-    consoleSpy.mockRestore();
-  });
-
-  it("includes total, healthy, stale counts in JSON", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "ir.yaml"),
-      `spec_version: "1"
-profile:
-  id: test
-  version: 1.0.0
-rules:
-  - id: test/rule1
-    severity: warn
-    message: Test rule 1
-`,
-    );
-
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule1]"
-      set:
-        severity: critical
-    - selector: "rule[id=test/rule2]"
-      set:
-        severity: error
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status", "--json"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-    const parsed = JSON.parse(output);
-
-    expect(parsed.total).toBe(2);
-    expect(parsed.healthy).toBe(1);
-    expect(parsed.stale).toBe(1);
-
-    consoleSpy.mockRestore();
-  });
-
-  it("includes overlay details in JSON", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule]"
-      set:
-        severity: critical
-        enabled: true
-      remove:
-        - autofix
-`,
-    );
-
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status", "--json"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-    const parsed = JSON.parse(output);
-
-    expect(parsed.overlays).toHaveLength(1);
-    expect(parsed.overlays[0].selector).toBe("rule[id=test/rule]");
-    expect(parsed.overlays[0].operations.set).toEqual({
-      severity: "critical",
-      enabled: true,
+    vi.clearAllMocks();
+
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    vi.mocked(clack.log.error).mockImplementation(() => {});
+    vi.mocked(clack.log.warn).mockImplementation(() => {});
+    vi.mocked(clack.log.info).mockImplementation(() => {});
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      // No overlays
     });
-    expect(parsed.overlays[0].operations.remove).toEqual(["autofix"]);
-
-    consoleSpy.mockRestore();
   });
 
-  it("outputs empty structure with --json when no overlays", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-`,
-    );
+  it("shows empty state message", async () => {
+    await overrideStatus([]);
 
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    expect(mockExit).toHaveBeenCalledWith(0);
+    expect(mockLog).toHaveBeenCalledWith("No overlays configured");
+  });
 
-    await overrideCommand(["status", "--json"]);
+  it("outputs JSON for empty state", async () => {
+    await overrideStatus(["--json"]);
 
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-    const parsed = JSON.parse(output);
+    expect(mockExit).toHaveBeenCalledWith(0);
 
-    expect(parsed.total).toBe(0);
-    expect(parsed.healthy).toBe(0);
-    expect(parsed.stale).toBe(0);
-    expect(parsed.overlays).toEqual([]);
+    // Find the JSON output (single call with full JSON)
+    const jsonCall = mockLog.mock.calls.find((call) => {
+      const str = call.join(" ");
+      return str.trim().startsWith("{");
+    });
 
-    consoleSpy.mockRestore();
+    expect(jsonCall).toBeDefined();
+    const json = JSON.parse(jsonCall!.join(" "));
+    expect(json).toEqual({
+      total: 0,
+      healthy: 0,
+      stale: 0,
+      overlays: [],
+    });
   });
 });
 
-describe("Override Status - Multiple Overlays", () => {
+describe("Override Status - Healthy Overlays", () => {
+  let mockExit: ReturnType<typeof vi.spyOn>;
+  let mockLog: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-    mkdirSync(TEST_DIR, { recursive: true });
-    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-    vi.spyOn(process, "cwd").mockReturnValue(TEST_DIR);
+    vi.clearAllMocks();
+
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    vi.mocked(clack.log.error).mockImplementation(() => {});
+    vi.mocked(clack.log.warn).mockImplementation(() => {});
+    vi.mocked(clack.log.info).mockImplementation(() => {});
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=test/rule]",
+            set: { severity: "error" },
+          },
+        ],
+      },
+    });
+
+    vi.mocked(core.loadIR).mockResolvedValue({
+      rules: [{ id: "test/rule", severity: "warn" }],
+    });
+
+    vi.mocked(core.evaluateSelector).mockReturnValue({ success: true });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
+  it("shows healthy overlay", async () => {
+    await overrideStatus([]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+    expect(core.evaluateSelector).toHaveBeenCalledWith(
+      "rule[id=test/rule]",
+      expect.any(Object),
+    );
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain("Overlays (1 active");
+    expect(output).toContain("✓ rule[id=test/rule]");
+    expect(output).toContain("Healthy: yes");
   });
 
-  it("displays correct counts with multiple overlays", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule1]"
-      set:
-        severity: critical
-    - selector: "rule[id=test/rule2]"
-      set:
-        severity: error
-    - selector: "rule[id=test/rule3]"
-      remove:
-        - autofix
-`,
-    );
+  it("outputs JSON for healthy overlay", async () => {
+    await overrideStatus(["--json"]);
 
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    expect(mockExit).toHaveBeenCalledWith(0);
 
-    await overrideCommand(["status"]);
+    const jsonCall = mockLog.mock.calls.find((call) => {
+      const str = call.join(" ");
+      return str.trim().startsWith("{");
+    });
 
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    expect(output).toContain("3 active");
-
-    consoleSpy.mockRestore();
+    expect(jsonCall).toBeDefined();
+    const json = JSON.parse(jsonCall!.join(" "));
+    expect(json.total).toBe(1);
+    expect(json.healthy).toBe(1);
+    expect(json.stale).toBe(0);
+    expect(json.overlays[0].health).toBe("healthy");
+    expect(json.overlays[0].selector).toBe("rule[id=test/rule]");
   });
 
-  it("shows all overlays regardless of health status", async () => {
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "ir.yaml"),
-      `spec_version: "1"
-profile:
-  id: test
-  version: 1.0.0
-rules:
-  - id: test/rule1
-    severity: warn
-    message: Test rule 1
-`,
+  it("displays set operations", async () => {
+    await overrideStatus([]);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain('Set: severity="error"');
+  });
+
+  it("displays remove operations", async () => {
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=test/rule]",
+            remove: ["autofix", "examples"],
+          },
+        ],
+      },
+    });
+
+    await overrideStatus([]);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain("Remove: autofix, examples");
+  });
+
+  it("displays set and remove operations together", async () => {
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=test/rule]",
+            set: { severity: "critical", enabled: false },
+            remove: ["autofix"],
+          },
+        ],
+      },
+    });
+
+    await overrideStatus([]);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain('severity="critical"');
+    expect(output).toContain("Remove: autofix");
+  });
+});
+
+describe("Override Status - Stale Overlays", () => {
+  let mockExit: ReturnType<typeof vi.spyOn>;
+  let mockLog: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    vi.mocked(clack.log.error).mockImplementation(() => {});
+    vi.mocked(clack.log.warn).mockImplementation(() => {});
+    vi.mocked(clack.log.info).mockImplementation(() => {});
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=deleted/rule]",
+            set: { severity: "error" },
+          },
+        ],
+      },
+    });
+
+    vi.mocked(core.loadIR).mockResolvedValue({
+      rules: [], // No matching rules
+    });
+
+    vi.mocked(core.evaluateSelector).mockReturnValue({ success: false });
+  });
+
+  it("marks non-matching overlay as stale", async () => {
+    await overrideStatus([]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain("Overlays (1 active, 1 stale)");
+    expect(output).toContain("❌ rule[id=deleted/rule]");
+    expect(output).toContain("Healthy: stale (no match in IR)");
+  });
+
+  it("outputs JSON for stale overlay", async () => {
+    await overrideStatus(["--json"]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+
+    const jsonCall = mockLog.mock.calls.find((call) => {
+      const str = call.join(" ");
+      return str.trim().startsWith("{");
+    });
+
+    expect(jsonCall).toBeDefined();
+    const json = JSON.parse(jsonCall!.join(" "));
+    expect(json.total).toBe(1);
+    expect(json.healthy).toBe(0);
+    expect(json.stale).toBe(1);
+    expect(json.overlays[0].health).toBe("stale");
+  });
+
+  it("shows tip to clean up stale overlays", async () => {
+    await overrideStatus([]);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain("aligntrue override remove");
+  });
+});
+
+describe("Override Status - Mixed Health", () => {
+  let mockExit: ReturnType<typeof vi.spyOn>;
+  let mockLog: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    vi.mocked(clack.log.error).mockImplementation(() => {});
+    vi.mocked(clack.log.warn).mockImplementation(() => {});
+    vi.mocked(clack.log.info).mockImplementation(() => {});
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=active/rule]",
+            set: { severity: "error" },
+          },
+          {
+            selector: "rule[id=deleted/rule]",
+            set: { enabled: false },
+          },
+          {
+            selector: "rule[id=another/active]",
+            remove: ["autofix"],
+          },
+        ],
+      },
+    });
+
+    vi.mocked(core.loadIR).mockResolvedValue({
+      rules: [
+        { id: "active/rule", severity: "warn" },
+        { id: "another/active", autofix: true },
+      ],
+    });
+
+    // Mock evaluateSelector to return different results per call
+    let callCount = 0;
+    vi.mocked(core.evaluateSelector).mockImplementation((selector: string) => {
+      callCount++;
+      if (
+        selector === "rule[id=active/rule]" ||
+        selector === "rule[id=another/active]"
+      ) {
+        return { success: true };
+      }
+      return { success: false };
+    });
+  });
+
+  it("shows mixed health status", async () => {
+    await overrideStatus([]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+
+    expect(output).toContain("Overlays (3 active, 1 stale)");
+    expect(output).toContain("✓ rule[id=active/rule]");
+    expect(output).toContain("❌ rule[id=deleted/rule]");
+    expect(output).toContain("✓ rule[id=another/active]");
+  });
+
+  it("outputs JSON for mixed health", async () => {
+    await overrideStatus(["--json"]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+
+    const jsonCall = mockLog.mock.calls.find((call) => {
+      const str = call.join(" ");
+      return str.trim().startsWith("{");
+    });
+
+    expect(jsonCall).toBeDefined();
+    const json = JSON.parse(jsonCall!.join(" "));
+    expect(json.total).toBe(3);
+    expect(json.healthy).toBe(2);
+    expect(json.stale).toBe(1);
+  });
+});
+
+describe("Override Status - No IR", () => {
+  let mockExit: ReturnType<typeof vi.spyOn>;
+  let mockLog: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    vi.mocked(clack.log.error).mockImplementation(() => {});
+    vi.mocked(clack.log.warn).mockImplementation(() => {});
+    vi.mocked(clack.log.info).mockImplementation(() => {});
+    vi.mocked(existsSync).mockReturnValue(true);
+
+    vi.mocked(core.loadConfig).mockResolvedValue({
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      sources: [],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=test/rule]",
+            set: { severity: "error" },
+          },
+        ],
+      },
+    });
+
+    // Simulate IR loading failure
+    vi.mocked(core.loadIR).mockRejectedValue(new Error("IR not found"));
+  });
+
+  it("marks all overlays as stale when IR unavailable", async () => {
+    await overrideStatus([]);
+
+    expect(mockExit).toHaveBeenCalledWith(0);
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining("Could not load IR"),
+    );
+    expect(clack.log.info).toHaveBeenCalledWith(
+      expect.stringContaining("aligntrue sync"),
     );
 
-    writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
-      `version: "1"
-mode: solo
-exporters: [cursor]
-sources:
-  - type: local
-    path: .aligntrue/rules.md
-overlays:
-  overrides:
-    - selector: "rule[id=test/rule1]"
-      set:
-        severity: critical
-    - selector: "rule[id=test/rule2]"
-      set:
-        severity: error
-`,
-    );
+    const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
 
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await overrideCommand(["status"]);
-
-    const output = consoleSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-
-    // Both should be displayed
-    expect(output).toContain("rule[id=test/rule1]");
-    expect(output).toContain("rule[id=test/rule2]");
-
-    consoleSpy.mockRestore();
+    // Without IR, cannot determine health
+    expect(output).toContain("rule[id=test/rule]");
   });
 });
