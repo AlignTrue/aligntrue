@@ -4,7 +4,6 @@
  */
 
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -12,10 +11,10 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { getAlignTruePaths } from "@aligntrue/core";
+import { ExporterBase } from "../base/index.js";
 
-export class CursorExporter implements ExporterPlugin {
+export class CursorExporter extends ExporterBase {
   name = "cursor";
   version = "1.0.0";
 
@@ -56,22 +55,9 @@ export class CursorExporter implements ExporterPlugin {
     const fidelityNotes = this.computeFidelityNotes(rules);
 
     // Write file atomically if not dry-run
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
-
-    return result;
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
 
   /**
@@ -278,9 +264,10 @@ export class CursorExporter implements ExporterPlugin {
   }
 
   /**
-   * Compute fidelity notes for unmapped fields
+   * Compute fidelity notes for unmapped fields (custom for Cursor)
+   * Overrides base class to add Cursor-specific messages
    */
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();
@@ -304,7 +291,7 @@ export class CursorExporter implements ExporterPlugin {
       }
     });
 
-    // Add notes for unmapped fields
+    // Add notes for unmapped fields (Cursor-specific wording)
     if (unmappedFields.has("check")) {
       notes.push(
         "Machine-checkable rules (check) not represented in .mdc format",
@@ -314,7 +301,7 @@ export class CursorExporter implements ExporterPlugin {
       notes.push("Autofix hints not represented in .mdc format");
     }
 
-    // Add notes for cross-agent vendor fields
+    // Add notes for cross-agent vendor fields (Cursor-specific wording)
     if (crossAgentVendors.size > 0) {
       const agents = Array.from(crossAgentVendors).sort().join(", ");
       notes.push(
@@ -322,7 +309,7 @@ export class CursorExporter implements ExporterPlugin {
       );
     }
 
-    // Add general scope limitation note
+    // Add general scope limitation note (Cursor-specific)
     notes.push(
       "applies_to patterns preserved in metadata but not enforced by Cursor",
     );

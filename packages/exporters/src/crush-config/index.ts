@@ -5,7 +5,6 @@
 
 import { join } from "path";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -13,13 +12,12 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class CrushConfigExporter implements ExporterPlugin {
+export class CrushConfigExporter extends ExporterBase {
   name = "crush-config";
   version = "1.0.0";
 

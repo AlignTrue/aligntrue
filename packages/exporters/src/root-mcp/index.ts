@@ -15,6 +15,7 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -39,7 +40,7 @@ interface McpRule {
   [key: string]: any;
 }
 
-export class RootMcpExporter implements ExporterPlugin {
+export class RootMcpExporter extends ExporterBase {
   name = "root-mcp";
   version = "1.0.0";
 
@@ -79,20 +80,9 @@ export class RootMcpExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     return result;
   }

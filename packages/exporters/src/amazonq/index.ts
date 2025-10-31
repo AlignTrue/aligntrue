@@ -5,7 +5,6 @@
 
 import { join } from "path";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -13,7 +12,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
   applyRulePrioritization,
@@ -22,7 +21,7 @@ import {
   shouldIncludeRule,
 } from "../utils/index.js";
 
-export class AmazonQExporter implements ExporterPlugin {
+export class AmazonQExporter extends ExporterBase {
   name = "amazonq";
   version = "1.0.0";
 
@@ -57,20 +56,9 @@ export class AmazonQExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(rules);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;
@@ -169,7 +157,7 @@ export class AmazonQExporter implements ExporterPlugin {
     return { content: lines.join("\n"), warnings };
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();

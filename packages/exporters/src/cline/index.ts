@@ -5,7 +5,6 @@
 
 import { join } from "path";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -13,7 +12,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
   applyRulePrioritization,
@@ -26,7 +25,7 @@ interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class ClineExporter implements ExporterPlugin {
+export class ClineExporter extends ExporterBase {
   name = "cline";
   version = "1.0.0";
 
@@ -72,20 +71,9 @@ export class ClineExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;
@@ -181,7 +169,11 @@ export class ClineExporter implements ExporterPlugin {
     return { content: lines.join("\n"), warnings };
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  /**
+   * Compute fidelity notes for unmapped fields (custom for Cline)
+   * Overrides base class to add Cline-specific messages
+   */
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

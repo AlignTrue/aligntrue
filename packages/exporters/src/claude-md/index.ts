@@ -7,7 +7,6 @@
 
 import { join } from "path";
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -15,7 +14,7 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
   applyRulePrioritization,
@@ -29,7 +28,7 @@ interface ExporterState {
   seenScopes: Set<string>;
 }
 
-export class ClaudeMdExporter implements ExporterPlugin {
+export class ClaudeMdExporter extends ExporterBase {
   name = "claude-md";
   version = "1.0.0";
 
@@ -79,20 +78,9 @@ export class ClaudeMdExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;
@@ -201,7 +189,7 @@ export class ClaudeMdExporter implements ExporterPlugin {
     return map[severity] || "WARN";
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorFields = new Set<string>();

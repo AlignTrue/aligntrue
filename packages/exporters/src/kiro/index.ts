@@ -14,6 +14,7 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
   applyRulePrioritization,
@@ -22,7 +23,7 @@ import {
   shouldIncludeRule,
 } from "../utils/index.js";
 
-export class KiroExporter implements ExporterPlugin {
+export class KiroExporter extends ExporterBase {
   name = "kiro";
   version = "1.0.0";
 
@@ -57,20 +58,9 @@ export class KiroExporter implements ExporterPlugin {
 
     const fidelityNotes = this.computeFidelityNotes(rules);
 
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;

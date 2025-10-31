@@ -15,12 +15,13 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
 }
 
-export class FirebaseMcpExporter implements ExporterPlugin {
+export class FirebaseMcpExporter extends ExporterBase {
   name = "firebase-mcp";
   version = "1.0.0";
 

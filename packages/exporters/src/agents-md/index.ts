@@ -7,7 +7,6 @@
  */
 
 import type {
-  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
@@ -15,8 +14,8 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { getAlignTruePaths } from "@aligntrue/core";
+import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
   applyRulePrioritization,
@@ -33,7 +32,7 @@ interface ExporterState {
   seenScopes: Set<string>;
 }
 
-export class AgentsMdExporter implements ExporterPlugin {
+export class AgentsMdExporter extends ExporterBase {
   name = "agents-md";
   version = "1.0.0";
 
@@ -98,20 +97,9 @@ export class AgentsMdExporter implements ExporterPlugin {
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
     // Write file atomically if not dry-run
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const result: ExportResult = {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
-    };
-
-    if (fidelityNotes.length > 0) {
-      result.fidelityNotes = fidelityNotes;
-    }
+    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
     if (warnings.length > 0) {
       result.warnings = warnings;
@@ -294,10 +282,10 @@ export class AgentsMdExporter implements ExporterPlugin {
   }
 
   /**
-   * Compute fidelity notes for unmapped fields
-   * AGENTS.md is universal format - note what's not represented
+   * Compute fidelity notes for unmapped fields (custom for AGENTS.md)
+   * Overrides base class to add AGENTS.md-specific messages
    */
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorAgents = new Set<string>();
