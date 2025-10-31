@@ -228,14 +228,14 @@ export function normalizeWhitespace(yaml: string): string {
     const spacesReplaced = line.replace(/\t/g, "  ");
 
     // Remove trailing whitespace
-    return spacesReplaced.replace(/\s+$/, "");
+    return spacesReplaced.trimEnd();
   });
 
   // Join with newlines and ensure single newline at EOF
   let result = normalized.join("\n");
 
   // Remove multiple trailing newlines, ensure exactly one
-  result = result.replace(/\n+$/, "") + "\n";
+  result = result.trimEnd() + "\n";
 
   return result;
 }
