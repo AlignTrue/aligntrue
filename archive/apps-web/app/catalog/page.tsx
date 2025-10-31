@@ -308,8 +308,7 @@ export default function CatalogPage() {
                   key={result.item.id}
                   pack={result.item as unknown as CatalogEntryExtended}
                   onClick={(pack) => {
-                    // Future: navigate to detail page
-                    console.log("Clicked pack:", pack.id);
+                    window.location.href = `/catalog/${pack.slug}`;
                   }}
                 />
               ))}
