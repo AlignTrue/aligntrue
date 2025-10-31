@@ -568,7 +568,7 @@ aligntrue sync
 ### Enable verbose logging
 
 ```bash
-# Set debug environment variable (coming in Phase 2)
+# Set debug environment variable
 DEBUG=aligntrue:* aligntrue sync
 ```
 

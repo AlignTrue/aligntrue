@@ -440,9 +440,9 @@ While vendor metadata is preserved during import:
 
 - ✅ Import Cursor → IR preserves all Cursor fields
 - ✅ Export IR → Cursor includes vendor.cursor fields
-- ⚠️ Round-trip testing limited (Phase 2 focus)
+- ⚠️ Round-trip testing limited
 
-Full round-trip validation (import → edit → export → reimport) is planned for Phase 3+.
+Full round-trip validation (import → edit → export → reimport) will be added in future releases.
 
 ### Conflict resolution
 
@@ -452,7 +452,7 @@ Import currently overwrites existing `.aligntrue/rules.md`:
 - ⚠️ No conflict detection
 - ✅ Preview with `--dry-run` before writing
 
-Manual merge required if you have both existing IR and agent files. Automated conflict resolution is planned for Phase 3+.
+Manual merge required if you have both existing IR and agent files. Automated conflict resolution will be added in future releases.
 
 ## Future enhancements
 

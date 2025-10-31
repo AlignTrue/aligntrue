@@ -149,7 +149,7 @@ aligntrue team approve custom-pack@myorg/rules@v2.1.0
 **What it does:**
 
 1. Parses source format
-2. Resolves ID@version to concrete hash (Phase 3: git only, Phase 4: catalog first)
+2. Resolves ID@version to concrete hash
 3. Adds to `.aligntrue/allow.yaml`
 4. Shows resolved hash
 
@@ -383,7 +383,6 @@ aligntrue team approve <source>
 
 ✅ **Use for:**
 
-- Catalog packs (Phase 4)
 - Shared git repositories
 - Public/well-known sources
 - When you want semantic versioning
@@ -479,14 +478,6 @@ Example rationale (`docs/rationale/eval-exception.md`):
 ## Context
 
 Legacy analytics code uses eval in controlled sandbox contexts. Refactoring will take 2-3 months.
-
-## Plan
-
-Migrate to safer alternatives by Q1 2026:
-
-- Phase 1: Audit all eval usage (complete)
-- Phase 2: Replace with Function constructor (Dec 2025)
-- Phase 3: Remove eval entirely (Jan 2026)
 
 ## Approval
 
@@ -589,9 +580,9 @@ Got: error
 
 ## Advanced topics
 
-### Phase 3.5 prep (optional base_hash field)
+### Optional base_hash field
 
-The lockfile includes an optional `base_hash` field to prepare for Phase 3.5 overlay resolution:
+The lockfile includes an optional `base_hash` field for advanced overlay resolution:
 
 ```json
 {
@@ -608,9 +599,7 @@ The lockfile includes an optional `base_hash` field to prepare for Phase 3.5 ove
 }
 ```
 
-**Current behavior (Phase 3):** Field is captured when available but not used for resolution.
-
-**Future behavior (Phase 3.5):** Enables overlay resolution for local modifications atop base packs.
+This field enables overlay resolution for local modifications atop base packs.
 
 ### Private/vendored pack workflows
 
@@ -620,9 +609,9 @@ See [Git Workflows](git-workflows.md) for:
 - Git subtree setup
 - Vendored pack integrity validation
 
-### Catalog resolution (Phase 4)
+### Catalog resolution
 
-When the catalog launches (Phase 4), ID@version resolution will:
+When available, catalog resolution will:
 
 1. Try catalog API first (fast, no clone)
 2. Fall back to git if catalog unavailable

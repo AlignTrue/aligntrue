@@ -11,7 +11,7 @@ Literate markdown parser for AlignTrue rules. Extract and validate fenced ```ali
 - **Whitespace normalization**: Consistent formatting before hashing
 - **Schema validation**: Validates IR against AlignTrue v1 schema
 
-**YAML Library**: This package uses `yaml` for literate markdown parsing and round-trip conversion (user-facing operations). See [docs/yaml-libraries.md](../../docs/yaml-libraries.md) for rationale.
+**YAML Library**: This package uses `yaml` for literate markdown parsing and round-trip conversion (user-facing operations). See [.internal_docs/yaml-libraries.md](../../.internal_docs/yaml-libraries.md) for rationale.
 
 ## Installation
 

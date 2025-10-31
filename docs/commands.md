@@ -143,12 +143,12 @@ aligntrue sync [options]
 
 **Flags:**
 
-| Flag                    | Description                                               | Default                  |
-| ----------------------- | --------------------------------------------------------- | ------------------------ |
-| `--dry-run`             | Preview changes without writing files                     | `false`                  |
-| `--force`               | Override performance limits and safety checks             | `false`                  |
-| `--accept-agent <name>` | Pull changes from agent back to IR (mock data in Phase 1) | -                        |
-| `--config <path>`       | Custom config file path                                   | `.aligntrue/config.yaml` |
+| Flag                    | Description                                   | Default                  |
+| ----------------------- | --------------------------------------------- | ------------------------ |
+| `--dry-run`             | Preview changes without writing files         | `false`                  |
+| `--force`               | Override performance limits and safety checks | `false`                  |
+| `--accept-agent <name>` | Pull changes from agent back to IR            | -                        |
+| `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **What it does:**
 
@@ -1180,8 +1180,6 @@ Commands for managing team mode features (hidden until team mode enabled).
 
 ### `aligntrue drift`
 
-**Status:** Phase 3, Session 6 - Foundation complete, CLI integration in progress
-
 Detect drift between lockfile and approved sources. Monitors upstream changes, vendored pack integrity, and policy compliance.
 
 **Usage:**
@@ -1210,7 +1208,7 @@ aligntrue drift --json
 **Drift categories:**
 - **upstream** - Rule content differs from allowed version
 - **vendorized** - Vendored pack differs from source
-- **severity_remap** - Policy changes (Session 7)
+- **severity_remap** - Policy changes
 
 **Exit codes:** `0` (no drift), `2` (drift with --gates)
 
@@ -1219,8 +1217,6 @@ aligntrue drift --json
 ---
 
 ### `aligntrue update`
-
-**Status:** Phase 3, Session 8 - Complete
 
 Check for and apply updates from approved sources. Generates UPDATE_NOTES.md with change summary.
 
@@ -1270,8 +1266,6 @@ aligntrue update apply --dry-run
 ---
 
 ### `aligntrue onboard`
-
-**Status:** Phase 3, Session 9 - Complete
 
 Generate personalized developer onboarding checklist based on recent work, check results, and project state.
 
