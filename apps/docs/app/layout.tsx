@@ -1,16 +1,19 @@
 import { Layout } from "nextra-theme-docs";
+import { getPageMap } from "nextra/page-map";
 import type { ReactNode } from "react";
 
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: ReactNode;
-  params: Promise<{}>;
 }) {
-  await params; // Await params as required by Next.js 15+
+  const pageMap = await getPageMap();
 
-  // Pass children directly to the Layout
-  // Nextra's Layout will handle pageMap and other requirements internally
-  return children;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Layout pageMap={pageMap}>{children}</Layout>
+      </body>
+    </html>
+  );
 }
