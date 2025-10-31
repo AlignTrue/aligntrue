@@ -1,10 +1,12 @@
+import type { RuleIndexEntry } from "@aligntrue/schema";
+
 interface OverlayInfoProps {
-  rulesIndex?: Record<string, { id: string; summary?: string }>;
+  rulesIndex?: RuleIndexEntry[];
   packId: string;
 }
 
 export function OverlayInfo({ rulesIndex, packId }: OverlayInfoProps) {
-  const rulesCount = rulesIndex ? Object.keys(rulesIndex).length : 0;
+  const rulesCount = rulesIndex ? rulesIndex.length : 0;
 
   return (
     <section

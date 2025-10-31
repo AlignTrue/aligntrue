@@ -64,8 +64,6 @@ describe("ShareButton", () => {
   });
 
   it("should reset copied state after 2 seconds", async () => {
-    vi.useFakeTimers();
-
     render(<ShareButton packSlug="base-global" packName="Base Global" />);
 
     const button = screen.getByRole("button", { name: /share base global/i });
@@ -75,13 +73,13 @@ describe("ShareButton", () => {
       expect(screen.getByText("Copied!")).toBeTruthy();
     });
 
-    vi.advanceTimersByTime(2000);
-
-    await waitFor(() => {
-      expect(screen.getByText("Share")).toBeTruthy();
-    });
-
-    vi.useRealTimers();
+    // Wait for it to reset (ShareButton uses 2000ms timeout)
+    await waitFor(
+      () => {
+        expect(screen.getByText("Share")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("should handle clipboard copy failure gracefully", async () => {

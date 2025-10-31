@@ -242,18 +242,19 @@ export function ExporterPreview({ pack }: ExporterPreviewProps) {
 
           {/* Fidelity notes (if present) */}
           {currentPreview.preview_meta &&
-            typeof currentPreview.preview_meta === "object" &&
-            "fidelity_notes" in currentPreview.preview_meta &&
-            currentPreview.preview_meta.fidelity_notes && (
-              <div className="mt-2 pt-2 border-t border-neutral-200">
-                <p className="text-xs text-amber-700 font-medium mb-1">
-                  Fidelity notes:
-                </p>
-                <p className="text-xs text-neutral-700">
-                  {String(currentPreview.preview_meta.fidelity_notes)}
-                </p>
-              </div>
-            )}
+          typeof currentPreview.preview_meta === "object" &&
+          "fidelity_notes" in currentPreview.preview_meta &&
+          currentPreview.preview_meta.fidelity_notes &&
+          typeof currentPreview.preview_meta.fidelity_notes === "string" ? (
+            <div className="mt-2 pt-2 border-t border-neutral-200">
+              <p className="text-xs text-amber-700 font-medium mb-1">
+                Fidelity notes:
+              </p>
+              <p className="text-xs text-neutral-700">
+                {currentPreview.preview_meta.fidelity_notes}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

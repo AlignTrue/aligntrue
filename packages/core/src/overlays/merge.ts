@@ -310,9 +310,7 @@ function detectOverlayConflicts(
   const conflicts: MergeConflict[] = [];
 
   // Extract rule ID from selector (simplified - assumes rule[id=...] format)
-  const ruleIdMatch = overlay.selector.match(
-    /rule\[id=([a-z0-9]+(?:\.[a-z0-9-]+){2,})\]/,
-  );
+  const ruleIdMatch = overlay.selector.match(/rule\[id=([a-z0-9._-]+)\]/i);
   if (!ruleIdMatch) {
     // Non-rule selector - skip conflict detection for now
     return conflicts;

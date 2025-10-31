@@ -85,7 +85,9 @@ describe("QuickstartSection", () => {
     fireEvent.click(buttons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText("Copied!")).toBeTruthy();
+      // Use getAllByText since "Copied!" appears for both copy buttons
+      const copiedMatches = screen.getAllByText("Copied!");
+      expect(copiedMatches.length).toBeGreaterThan(0);
     });
   });
 

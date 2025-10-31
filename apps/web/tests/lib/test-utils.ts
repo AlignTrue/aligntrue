@@ -1,7 +1,21 @@
 /**
  * Common test utilities for the catalog website.
  */
-import type { CatalogEntryExtended } from "@aligntrue/schema";
+import type { CatalogEntryExtended, RequiredPlug } from "@aligntrue/schema";
+
+/**
+ * Helper type to allow passing plugs array for convenience in tests.
+ * This gets converted to the proper required_plugs format.
+ */
+type TestPackOverrides = Partial<CatalogEntryExtended> & {
+  plugs?: Array<{
+    key: string;
+    description: string;
+    type: string;
+    default?: string;
+    required?: boolean;
+  }>;
+};
 
 /**
  * Creates a complete, valid CatalogEntryExtended object for testing.
@@ -12,10 +26,21 @@ import type { CatalogEntryExtended } from "@aligntrue/schema";
  * @returns A complete CatalogEntryExtended object.
  */
 export function createTestPack(
-  overrides: Partial<CatalogEntryExtended> = {},
+  overrides: TestPackOverrides = {},
 ): CatalogEntryExtended {
-  // Base structure with all required fields.
-  const basePack: Omit<CatalogEntryExtended, "id" | "slug" | "name"> = {
+  // Extract plugs array if provided (for convenience in tests)
+  const { plugs, ...rest } = overrides;
+
+  // Convert plugs to required_plugs format
+  const required_plugs: RequiredPlug[] | undefined = plugs?.map((p) => ({
+    key: p.key,
+    description: p.description,
+    type: p.type,
+    default: p.default,
+  }));
+
+  // Base structure with default values for required fields.
+  const basePack: Partial<CatalogEntryExtended> = {
     version: "1.0.0",
     description: "A test pack for unit tests",
     summary_bullets: ["Feature 1", "Feature 2"],
@@ -25,10 +50,13 @@ export function createTestPack(
     license: "CC0-1.0",
     maintainer: { name: "AlignTrue Test", github: "aligntrue" },
     last_updated: "2025-10-31",
+    published_at: "2025-10-01",
     source_linked: false,
     overlay_friendly: false,
     stats: { copies_7d: 100 },
-    plugs: [], // Default to no plugs
+    has_plugs: !!required_plugs && required_plugs.length > 0,
+    required_plugs_count: required_plugs?.length || 0,
+    required_plugs,
     exporters: [
       {
         format: "yaml",
@@ -44,16 +72,17 @@ export function createTestPack(
 
   const finalPack = {
     ...basePack,
-    id: overrides.id ?? "test/pack",
-    slug: overrides.slug ?? "test-pack",
-    name: overrides.name ?? "Test Pack",
-    ...overrides,
+    id: rest.id ?? "test/pack",
+    slug: rest.slug ?? "test-pack",
+    name: rest.name ?? "Test Pack",
+    ...rest,
+    // Ensure computed fields are set correctly after merge
+    has_plugs:
+      rest.has_plugs ?? (!!required_plugs && required_plugs.length > 0),
+    required_plugs_count:
+      rest.required_plugs_count ?? (required_plugs?.length || 0),
+    required_plugs: rest.required_plugs ?? required_plugs,
   } as CatalogEntryExtended;
-
-  // Derive required_plugs from plugs
-  finalPack.required_plugs = finalPack.plugs?.filter((p: any) => p.required);
-  finalPack.has_plugs = (finalPack.plugs?.length || 0) > 0;
-  finalPack.required_plugs_count = finalPack.required_plugs?.length || 0;
 
   return finalPack;
 }
