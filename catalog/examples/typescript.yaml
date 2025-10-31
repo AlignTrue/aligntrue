@@ -1,0 +1,172 @@
+id: "packs/base/base-typescript"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "TypeScript development standards for correctness, safety, and maintainability"
+tags: ["typescript", "language", "type-safety", "paved-road"]
+deps: []
+scope:
+  applies_to: ["backend", "frontend", "cli", "tooling"]
+  includes:
+    [
+      "**/*.{ts,tsx}",
+      "tsconfig*.json",
+      ".eslintrc*",
+      "eslint.config.*",
+      "biome.*",
+    ]
+rules:
+  - id: "require-strict-tsconfig"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "jq -e '.compilerOptions.strict == true' tsconfig.json > /dev/null 2>&1"
+        expect_exit_code: 0
+      evidence: "tsconfig.json missing strict mode or required flags"
+    autofix:
+      hint: "Enable strict, noUncheckedIndexedAccess, and other safety flags per typescript.mdc baseline"
+
+  - id: "no-explicit-any"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.{ts,tsx}"]
+        pattern: ":\\s*any\\b"
+        allow: false
+      evidence: "Explicit 'any' type found"
+    autofix:
+      hint: "Replace 'any' with 'unknown' and narrow the type"
+
+  - id: "prefer-type-imports"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.{ts,tsx}"]
+        pattern: "^import\\s+type\\s+"
+        allow: true
+      evidence: "Missing 'import type' for type-only imports"
+    autofix:
+      hint: "Use 'import type' for types to avoid runtime weight"
+
+  - id: "no-default-exports"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["**/*.{ts,tsx}"]
+        pattern: "export\\s+default\\s+"
+        allow: false
+      evidence: "Default export found, prefer named exports"
+    autofix:
+      hint: "Convert to named export"
+
+  - id: "validate-external-inputs"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "grep -r 'z.parse\\|z.safeParse\\|safeParse' --include='*.ts' --include='*.tsx' src/"
+        expect_exit_code: 0
+      evidence: "Missing input validation at boundaries"
+    autofix:
+      hint: "Add Zod or similar schema validation at all external boundaries"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "e1123fe761e53017ebc3b708281b3e87e0c6126a4fac4288504c2ba130a0aa71"
+
+notes: |
+  This align enforces TypeScript best practices including:
+  - Strict compiler settings
+  - No 'any' types
+  - Type-only imports for tree-shaking
+  - Named exports for consistency
+  - Input validation at boundaries
+
+  See full guidance in the pack's extended documentation.
+
+guidance: |
+  # TypeScript Development Guide
+
+  ## Core principles
+
+  1. Types first, then implementation
+  2. No 'any' creep
+  3. Narrow types at boundaries, keep internals precise
+  4. Prefer simple data and pure functions over classes
+  5. Fail fast with helpful errors
+
+  ## tsconfig Baseline (Required)
+
+  Create `tsconfig.base.json` with strictness on by default:
+
+  - target: "ES2022"
+  - module: "ES2022"
+  - moduleResolution: "bundler"
+  - strict: true
+  - noUncheckedIndexedAccess: true
+  - exactOptionalPropertyTypes: true
+  - noImplicitOverride: true
+  - noPropertyAccessFromIndexSignature: true
+
+  ## Linting and formatting
+
+  - Use @typescript-eslint with type-checked config
+  - Enforce no-explicit-any, no-floating-promises, no-unsafe-argument
+  - Prefer Biome or Prettier for formatting
+
+  ## Module and API boundaries
+
+  - Use named exports only
+  - Barrel files allowed only at package boundaries
+  - Use import type for types
+
+  ## Data validation at boundaries
+
+  At all external boundaries (HTTP, file I/O, env, user input), parse and validate.
+  Prefer Zod or similar schema lib.
+
+  ## Types over classes
+
+  - Prefer simple data structures and pure functions
+  - Use discriminated unions instead of class hierarchies
+
+  ## Narrowing and exhaustiveness
+
+  - Always handle all cases on unions
+  - Enable compiler to prove exhaustiveness
+
+  ## Unknown over any
+
+  - Use unknown instead of any
+  - Narrow before use
+
+  ## Prefer unions over enums
+
+  - Use string literal unions plus 'as const'
+
+  ## Immutability defaults
+
+  - Prefer readonly arrays and objects at edges
+  - Avoid in-place mutation unless profiling proves it matters
+
+  ## Error handling
+
+  - Throw Error instances only, never strings
+  - Use cause to preserve roots
+  - For expected failures, return a Result type
+
+  ## Async discipline
+
+  - No unhandled promises (lint with no-floating-promises)
+  - Wrap fire-and-forget with explicit void
+  - Timeouts and abort signals for all network calls
+
+  ## Naming and structure
+
+  - File names: kebab-case for files, PascalCase for React components
+  - One module per concern
+  - Tests mirror source tree

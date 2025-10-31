@@ -1,0 +1,106 @@
+id: "packs/base/base-global"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Global baseline for AI-assisted repos: CI gates, contribution workflow, deterministic behavior"
+tags: ["global", "baseline", "ci", "paved-road"]
+deps: []
+scope:
+  applies_to: ["*"]
+  excludes:
+    [
+      "vendor/**",
+      "third_party/**",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "out/**",
+      "*.ipynb_checkpoints/**",
+    ]
+rules:
+  - id: "require-ci-gates"
+    severity: "MUST"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: ".github/workflows/*.{yml,yaml}"
+      evidence: "Missing CI workflow configuration"
+    autofix:
+      hint: "Add CI workflow that runs tests and lints on every PR"
+
+  - id: "conventional-commits"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: [".git/COMMIT_EDITMSG"]
+        pattern: "^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?!?: .+"
+        allow: true
+      evidence: "Commit message does not follow Conventional Commits format"
+    autofix:
+      hint: "Use format: 'type(scope): description' e.g. 'feat: add server pagination'"
+
+  - id: "no-generated-artifacts-in-vcs"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "git ls-files | grep -E '(dist/|build/|out/|\\.tsbuildinfo)' || exit 0"
+        expect_exit_code: 1
+      evidence: "Generated artifacts found in version control"
+    autofix:
+      hint: "Add generated paths to .gitignore and remove from git"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "644243c3319b3771986f3c1d6e7a6daaf4741a70d1038f08e5f5ccb2f47ad503"
+
+notes: |
+  This pack establishes paved-road commands and consistent workflow patterns.
+  - Plugs for stack-specific commands (deferred to Phase 2.5)
+  - Precedence: complements docs, testing, tdd; defers to security
+
+guidance: |
+  # Global Baseline for AI-Assisted Repos
+
+  ## Core Principles
+
+  - Establish paved-road commands and use them consistently
+  - Keep PRs focused and small
+  - Require CI gates on every PR (tests + lint)
+  - Enforce deterministic behavior
+  - Update docs when behavior changes
+  - Keep generated artifacts out of VCS
+
+  ## PR and Commit Discipline
+
+  - One cohesive change per PR
+  - Descriptive Conventional Commit messages
+  - CI must pass before merge
+
+  ## Deterministic Behavior
+
+  - Pin tool versions
+  - Seed randomness
+  - Stable ordering
+  - Delegate supply-chain specifics to security pack
+
+  ## Documentation Updates
+
+  - Update docs and examples when interfaces change
+  - Reference other packs using @ notation
+
+  ## Output Contract
+
+  For significant changes:
+  1. Summary of change
+  2. Rationale
+  3. Updated rule text only
+  4. Impacted areas/precedence
+  5. Tests/examples
+  6. Conflict check
+
+  ## Examples
+
+  - Good: Run tests and lint in CI; block merge on failure
+  - Bad: Merge first and fix tests later

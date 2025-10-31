@@ -20,7 +20,12 @@ namespaces:
   # Base namespace (for core packs)
   - namespace: "packs/base/*"
     owner: "AlignTrue"
-    notes: "Core base packs (base-global, etc.)"
+    notes: "Core base packs (base-global, base-docs, etc.)"
+
+  # Stacks namespace (for framework/platform-specific packs)
+  - namespace: "packs/stacks/*"
+    owner: "AlignTrue"
+    notes: "Framework and platform-specific packs (Next.js, Vercel, etc.)"
 
   # Example namespaces (add more via PR):
   #
