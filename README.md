@@ -249,11 +249,16 @@ pnpm typecheck
 
 ## Catalog Website
 
-The AlignTrue catalog provides discovery and sharing for curated packs:
+The AlignTrue catalog provides discovery and sharing for **11 curated packs** stored locally in `catalog/examples/`:
 
+- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
+- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
+
+**Features:**
+
+- **Browse** (`/catalog`) - Search, filter by category/tools, sort by popularity
+- **Detail** (`/catalog/[slug]`) - Pack info, exporter previews, install commands
 - **Homepage** (`/`) - Quickstart guide and featured packs
-- **Catalog** (`/catalog`) - Browse 11+ packs with search, filters, and install commands
-- **Detail** (`/catalog/[slug]`) - Pack details, exporter previews, install instructions
 
 **Local Development:**
 
@@ -267,10 +272,10 @@ pnpm dev
 
 ```bash
 node temp-build-catalog.mjs
-# Generates apps/web/public/catalog/*.json
+# Generates apps/web/public/catalog/*.json from catalog/packs.yaml
 ```
 
-**Current Status:** 246/266 tests passing (92%), Sessions 2-6 complete. See `docs/catalog.md` for details.
+**Current Status:** 232/269 tests passing (86%). See `docs/catalog.md` for catalog structure and management.
 
 ## Documentation
 

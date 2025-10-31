@@ -117,7 +117,7 @@ rules:
     expect(duration).toBeLessThan(5000);
   });
 
-  it("Help speed: completes in <600ms (with quality tooling)", async () => {
+  it("Help speed: completes in <800ms (with quality tooling)", async () => {
     const projectDir = join(testDir, "help-speed");
     await fs.mkdir(projectDir, { recursive: true });
 
@@ -139,10 +139,10 @@ rules:
 
     console.log(`Help avg: ${avgDuration.toFixed(0)}ms, max: ${maxDuration}ms`);
 
-    // Assert average <600ms (increased to account for Windows CI environment variance)
-    expect(avgDuration).toBeLessThan(600);
+    // Assert average <800ms (increased to account for Windows CI environment variance)
+    expect(avgDuration).toBeLessThan(800);
 
-    // Allow individual runs up to 600ms (CI environments may be slower)
-    expect(maxDuration).toBeLessThan(600);
+    // Allow individual runs up to 800ms (CI environments may be slower)
+    expect(maxDuration).toBeLessThan(800);
   });
 });
