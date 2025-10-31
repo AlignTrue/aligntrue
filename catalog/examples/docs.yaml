@@ -1,0 +1,90 @@
+id: "packs/base/base-docs"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Docs-as-code baseline: readme-first, CI-enforced, minimal and testable"
+tags: ["documentation", "readme", "changelog", "paved-road"]
+deps: ["packs/base/base-global"]
+scope:
+  applies_to: ["*"]
+  includes: ["README.md", "CONTRIBUTING.md", "CHANGELOG.md", "docs/**", "*.md"]
+  excludes: ["vendor/**", "node_modules/**", "dist/**"]
+rules:
+  - id: "require-readme"
+    severity: "MUST"
+    check:
+      type: "file_presence"
+      inputs:
+        pattern: "README.md"
+      evidence: "Missing README.md"
+    autofix:
+      hint: "Create README.md with: what it is, how to try it, how to run tests, how to build, how to contribute"
+
+  - id: "readme-has-quickstart"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["README.md"]
+        pattern: "(## Getting Started|## Quickstart|## Installation)"
+        allow: true
+      evidence: "README missing quickstart section"
+    autofix:
+      hint: "Add quickstart section with runnable commands"
+
+  - id: "behavior-change-updates-docs"
+    severity: "MUST"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "git diff --name-only HEAD~1 | grep -E '\\.(md|mdx)$' | wc -l | grep -v '^0$'"
+        expect_exit_code: 0
+      evidence: "Behavior change PR missing doc updates"
+    autofix:
+      hint: "Update relevant docs in the same PR"
+
+  - id: "no-broken-links"
+    severity: "SHOULD"
+    check:
+      type: "command_runner"
+      inputs:
+        command: "markdown-link-check README.md"
+        timeout_ms: 30000
+        expect_exit_code: 0
+      evidence: "Broken links found in documentation"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "bb680a9d0c7e97999062bf5ae66a5cf8e2e0ad35f79b3cccdaa22b5e7f3d6411"
+
+notes: |
+  Precedence: complements global, testing, tdd; defers to security
+
+guidance: |
+  # Docs-as-Code Baseline
+
+  ## Core Principles
+
+  - **Readme-first**: Single authoritative README at repo root
+  - **Change behavior? Change docs**: Update in same PR
+  - **Copy-pasteable snippets**: Verified, minimal, runnable
+  - **DRY and reference-first**: Link, don't duplicate
+  - **CI-enforced**: Lint, link-check, spell-check in CI
+
+  ## Structure
+
+  - Short top-level: README, CONTRIBUTING, CHANGELOG, LICENSE
+  - Longer docs under docs/ with one topic per page
+  - Keep pages concise
+
+  ## CI Enforcement
+
+  - Lint markdown
+  - Check links
+  - Spell-check where configured
+  - Generated sites built but not committed
+
+  ## Release Notes
+
+  - Keep CHANGELOG or generate from Conventional Commits
+  - Link releases to docs as needed

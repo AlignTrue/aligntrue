@@ -1,0 +1,138 @@
+id: "packs/stacks/nextjs-app-router"
+version: "1.0.0"
+profile: "align"
+spec_version: "1"
+summary: "Best practices for Next.js App Router: server/client boundaries, caching, data fetching"
+tags: ["nextjs", "react", "app-router", "paved-road"]
+deps: ["packs/base/base-typescript"]
+scope:
+  applies_to: ["frontend", "fullstack"]
+  includes: ["app/**", "pages/**", "next.config.*", "middleware.ts", "src/**"]
+rules:
+  - id: "server-components-by-default"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["app/**/*.{ts,tsx}"]
+        pattern: '^["'']use client["'']'
+        allow: false
+      evidence: "Unnecessary 'use client' directive, prefer Server Components"
+    autofix:
+      hint: "Remove 'use client' unless component uses useState, useEffect, or browser APIs"
+
+  - id: "explicit-caching-strategy"
+    severity: "SHOULD"
+    check:
+      type: "regex"
+      inputs:
+        include: ["app/**/page.{ts,tsx}"]
+        pattern: "export\\s+const\\s+(revalidate|dynamic|fetchCache)\\s*="
+        allow: true
+      evidence: "Missing explicit caching strategy in page component"
+    autofix:
+      hint: 'Add ''export const revalidate = N'' or ''export const dynamic = "force-static"'''
+
+  - id: "validate-server-action-inputs"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["app/**/*.{ts,tsx}"]
+        pattern: '["'']use server["'']'
+        allow: true
+      evidence: "Server Actions must validate inputs with Zod or similar"
+    autofix:
+      hint: "Add schema validation before processing FormData or action inputs"
+
+  - id: "no-default-exports-in-lib"
+    severity: "MUST"
+    check:
+      type: "regex"
+      inputs:
+        include: ["lib/**/*.{ts,tsx}"]
+        pattern: "export\\s+default\\s+"
+        allow: false
+      evidence: "Default exports forbidden in lib/ shared code"
+    autofix:
+      hint: "Use named exports only in shared library code"
+
+  - id: "colocate-route-files"
+    severity: "SHOULD"
+    check:
+      type: "path_convention"
+      inputs:
+        pattern: "^app/.*/((page|layout|error|loading|not-found|route)\\.(ts|tsx|js|jsx))$"
+        include: ["app/**"]
+        message: "Route files must be colocated with their page"
+      evidence: "Route file not in expected location"
+
+integrity:
+  algo: "jcs-sha256"
+  value: "c2252a5c6b2487fe59226e0b2c7671c08afe59a176125a197621372283a82747"
+
+notes: |
+  This align enforces Next.js App Router best practices including:
+  - Server Components by default
+  - Explicit caching and revalidation
+  - Input validation for Server Actions
+  - Proper file organization
+
+  Infra and deploy specifics live in vercel-deployments align.
+  Security headers and secrets live in security align.
+
+guidance: |
+  # Next.js App Router Guide
+
+  ## Core principles
+
+  1. Server Components by default
+  2. Client only for interaction or browser APIs
+  3. Validate at boundaries, cache reads, revalidate on writes
+  4. Deterministic routing and metadata
+  5. Keep files small and focused
+
+  ## File layout
+
+  - Use (group) folders to organize routes
+  - Colocate loading.tsx, error.tsx, not-found.tsx near routes
+  - No default exports in lib/
+
+  ## Server vs Client
+
+  - Default to Server Components
+  - Mark Client only when you need useState, useEffect, useRef, or browser APIs
+  - Use thin Client wrapper pattern
+
+  ## Data fetching and caching
+
+  - Reads should be cacheable and explicit
+  - Use revalidate for ISR
+  - Use noStore() only for truly dynamic data
+  - Revalidate after mutations with revalidateTag/revalidatePath
+
+  ## Server Actions for mutations
+
+  - Validate inputs with Zod
+  - Mutate, then revalidate
+  - Return small Result objects, not thrown errors
+
+  ## Error, loading, not-found
+
+  - error.tsx is a Client Component
+  - loading.tsx must not fetch
+  - Throw notFound() for 404s
+
+  ## Metadata, SEO, and assets
+
+  - Use static metadata when possible
+  - generateMetadata for dynamic pages
+  - Use next/font for fonts
+  - Use next/image for all images
+
+  ## Common pitfalls
+
+  - Marking entire route trees with 'use client'
+  - Forgetting to set revalidate or tags
+  - Default exports in shared lib code
+  - Storing tokens in localStorage

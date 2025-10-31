@@ -4,10 +4,10 @@
  */
 
 import { existsSync } from "fs";
-import { resolve } from "path";
+import { resolve, extname } from "path";
 import { type AlignTrueConfig } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
-import { validateAlign } from "@aligntrue/schema";
+import { validateAlignSchema } from "@aligntrue/schema";
 import { readFileSync } from "fs";
 import {
   readLockfile,
@@ -144,21 +144,63 @@ export async function check(args: string[]): Promise<void> {
       );
     }
 
-    // Parse YAML to JSON for validation
+    // Detect file format and parse
+    const ext = extname(resolvedRulesPath).toLowerCase();
     let alignData: unknown;
-    try {
-      alignData = parseYamlToJson(rulesContent);
-    } catch (err) {
-      console.error("✗ Invalid YAML in rules file\n");
-      console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
-      console.error(`  Check for syntax errors in ${rulesPath}\n`);
-      process.exit(1);
+
+    if (ext === ".md" || ext === ".markdown") {
+      // Parse markdown with fenced blocks
+      const { parseMarkdown, buildIR } = await import(
+        "@aligntrue/markdown-parser"
+      );
+      const parseResult = parseMarkdown(rulesContent);
+
+      if (parseResult.errors.length > 0) {
+        const errorList = parseResult.errors
+          .map((err) => `  Line ${err.line}: ${err.message}`)
+          .join("\n");
+        console.error("✗ Invalid markdown structure\n");
+        console.error(errorList + "\n");
+        process.exit(1);
+      }
+
+      const buildResult = buildIR(parseResult.blocks);
+
+      if (buildResult.errors.length > 0) {
+        const errorList = buildResult.errors
+          .map((err) => `  Line ${err.line}: ${err.message}`)
+          .join("\n");
+        console.error("✗ IR build errors\n");
+        console.error(errorList + "\n");
+        console.error(`  Check for syntax errors in ${rulesPath}\n`);
+        process.exit(1);
+      }
+
+      if (!buildResult.document) {
+        console.error("✗ Failed to build IR from markdown\n");
+        console.error(`  No aligntrue blocks found in ${rulesPath}\n`);
+        process.exit(1);
+      }
+
+      alignData = buildResult.document;
+    } else {
+      // Parse as YAML
+      try {
+        alignData = parseYamlToJson(rulesContent);
+      } catch (err) {
+        console.error("✗ Invalid YAML in rules file\n");
+        console.error(
+          `  ${err instanceof Error ? err.message : String(err)}\n`,
+        );
+        console.error(`  Check for syntax errors in ${rulesPath}\n`);
+        process.exit(1);
+      }
     }
 
     // Validate against schema
-    const schemaResult = validateAlign(alignData as string);
-    if (!schemaResult.schema.valid) {
-      const details = (schemaResult.schema.errors || []).map(
+    const schemaResult = validateAlignSchema(alignData);
+    if (!schemaResult.valid) {
+      const details = (schemaResult.errors || []).map(
         (err) => `${err.path}: ${err.message}`,
       );
       exitWithError(

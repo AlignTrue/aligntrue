@@ -28,7 +28,7 @@ id: ${projectId}-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: testing.require-tests
+  - id: quality.testing.require-tests
     severity: warn
     applies_to:
       - "**/*.ts"
@@ -48,7 +48,7 @@ rules:
       cursor:
         ai_hint: "Suggest test scaffolding with vitest or jest"
 
-  - id: docs.update-readme
+  - id: docs.maintenance.update-readme
     severity: info
     applies_to:
       - "README.md"
@@ -61,7 +61,7 @@ rules:
     tags:
       - documentation
 
-  - id: security.no-secrets
+  - id: security.secrets.no-hardcoded
     severity: error
     applies_to:
       - "**/*"
@@ -72,12 +72,8 @@ rules:
       If a secret is committed, rotate it immediately.
     tags:
       - security
-    check:
-      type: regex
-      pattern: "(api[_-]?key|secret|token|password)\\\\s*=\\\\s*['\\\"][^'\\\"]{8,}['\\\"]"
-      message: "Possible hardcoded secret detected"
 
-  - id: style.consistent-naming
+  - id: style.naming.consistent
     severity: warn
     applies_to:
       - "**/*.ts"
@@ -96,7 +92,7 @@ rules:
       cursor:
         ai_hint: "Suggest rename if inconsistent with project conventions"
 
-  - id: performance.avoid-n-plus-one
+  - id: performance.queries.avoid-n-plus-one
     severity: warn
     applies_to:
       - "**/*.ts"
