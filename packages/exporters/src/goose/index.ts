@@ -169,7 +169,7 @@ export class GooseExporter extends ExporterBase {
    * Compute fidelity notes for unmapped fields (custom for Goose)
    * Overrides base class to add Goose-specific messages
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

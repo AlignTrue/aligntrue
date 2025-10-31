@@ -285,7 +285,7 @@ export class AgentsMdExporter extends ExporterBase {
    * Compute fidelity notes for unmapped fields (custom for AGENTS.md)
    * Overrides base class to add AGENTS.md-specific messages
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorAgents = new Set<string>();

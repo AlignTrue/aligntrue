@@ -173,7 +173,7 @@ export class ClineExporter extends ExporterBase {
    * Compute fidelity notes for unmapped fields (custom for Cline)
    * Overrides base class to add Cline-specific messages
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

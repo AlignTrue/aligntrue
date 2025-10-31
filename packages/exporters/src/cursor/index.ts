@@ -267,7 +267,7 @@ export class CursorExporter extends ExporterBase {
    * Compute fidelity notes for unmapped fields (custom for Cursor)
    * Overrides base class to add Cursor-specific messages
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();

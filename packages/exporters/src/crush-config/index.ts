@@ -12,6 +12,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -67,15 +68,9 @@ export class CrushConfigExporter extends ExporterBase {
 
     const content = JSON.stringify(config, null, 2) + "\n";
 
-    if (!dryRun) {
-      new AtomicFileWriter().write(outputPath, content);
-    }
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    return {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash: config["content_hash"],
-    };
+    return this.buildResult(filesWritten, config["content_hash"]);
   }
 
   resetState(): void {

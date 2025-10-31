@@ -187,7 +187,7 @@ export class FirebaseStudioExporter extends ExporterBase {
     return map[severity] || "WARN";
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorFields = new Set<string>();

@@ -159,7 +159,7 @@ export class KiloCodeExporter extends ExporterBase {
     return { content: lines.join("\n"), warnings };
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 
