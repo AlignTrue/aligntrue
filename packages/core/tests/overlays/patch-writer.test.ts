@@ -3,7 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, mkdirSync, rmdirSync, readdirSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  rmdirSync,
+  readdirSync,
+  openSync,
+  closeSync,
+  unlinkSync,
+} from "fs";
 import { join } from "path";
 import {
   writePatchFile,
@@ -130,22 +138,35 @@ describe("writePatchFile", () => {
     expect(content).toContain("# Source: github.com/example/pack");
   });
 
-  it("handles write errors gracefully", () => {
-    const conflicts: MergeConflict[] = [];
-    const metadata = {
-      baseHash: "abc123",
-      newBaseHash: "def456",
-      timestamp: "2025-10-30T12:00:00Z",
-    };
+  // Skip on Windows: chmod read-only behavior is inconsistent across Windows versions
+  (process.platform === "win32" ? it.skip : it)(
+    "handles write errors gracefully",
+    () => {
+      const { chmodSync } = require("fs");
 
-    // Use invalid path to trigger error
-    const result = writePatchFile(conflicts, metadata, {
-      artifactsDir: "/invalid/path/that/does/not/exist/and/cannot/be/created",
-    });
+      // Create artifacts dir and make it read-only to trigger write error
+      mkdirSync(TEST_ARTIFACTS_DIR, { recursive: true });
+      chmodSync(TEST_ARTIFACTS_DIR, 0o444);
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-  });
+      const conflicts: MergeConflict[] = [];
+      const metadata = {
+        baseHash: "abc123",
+        newBaseHash: "def456",
+        timestamp: "2025-10-30T12:00:00Z",
+      };
+
+      const result = writePatchFile(conflicts, metadata, {
+        artifactsDir: TEST_ARTIFACTS_DIR,
+        filename: "test-error.md",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+
+      // Clean up - restore permissions first
+      chmodSync(TEST_ARTIFACTS_DIR, 0o755);
+    },
+  );
 });
 
 describe("listPatchFiles", () => {
