@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4, Session 1: Catalog Foundation - Abuse Limits Updated (Completed 2025-10-31)
+
+**Abuse control limits updated to realistic values:**
+
+- **Pack YAML limit reduced:** 10MB → **1MB** (still allows ~5,000 rules, 10x more realistic)
+- **Exporter preview limit reduced:** 5MB → **512KB** (still allows ~2,500 rules, 10x more realistic)
+- **Total catalog budget unchanged:** 500MB (now supports 200-500 packs with reduced limits)
+- **Early warning system added:** Alerts at 50% catalog usage (250MB) to address capacity early
+
+**New features:**
+
+- `checkCatalogSize()` function returns detailed size info with warning threshold
+- `CatalogSizeResult` interface tracks total size, percent used, violation, and warning
+- Build pipeline logs catalog size and usage percentage
+- Warning threshold configurable via `LIMITS.CATALOG_WARNING_THRESHOLD` (default: 0.5)
+- 8 new tests for warning system (total: 39 abuse control tests)
+
+**Rationale:**
+
+- Current example packs: ~2-3KB YAML, ~3KB previews
+- Even 500-rule pack: ~200KB YAML, ~250KB preview
+- Original limits were 500x realistic size (wasteful, harder to review)
+- New limits still very generous while being cost-effective
+- Reduced attack surface for data exfiltration
+- Faster PR reviews and better UX
+
 ### Phase 4, Session 1: Catalog Foundation (Completed 2025-10-31)
 
 **Data model and build pipeline for public catalog website:**
