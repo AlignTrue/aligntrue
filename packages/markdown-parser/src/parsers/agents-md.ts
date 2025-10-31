@@ -104,9 +104,9 @@ function parseAgentsMdRuleSection(
   // Extract guidance (everything after metadata lines)
   let guidance = body;
   // Remove metadata lines
-  guidance = guidance.replace(/\*\*ID:\*\*[^\n]+\n/, "");
-  guidance = guidance.replace(/\*\*Severity:\*\*[^\n]+\n/, "");
-  guidance = guidance.replace(/\*\*Scope:\*\*[^\n]+\n/, "");
+  guidance = guidance.replace(/^\*\*ID:\*\*.*\n/m, "");
+  guidance = guidance.replace(/^\*\*Severity:\*\*.*\n/m, "");
+  guidance = guidance.replace(/^\*\*Scope:\*\*.*\n/m, "");
   guidance = guidance.trim();
 
   // Remove horizontal rules at the end
