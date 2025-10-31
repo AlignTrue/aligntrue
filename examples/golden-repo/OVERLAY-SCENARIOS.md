@@ -24,13 +24,10 @@ cat .aligntrue/rules.md
 ```yaml
 # Add to .aligntrue.yaml (or use CLI: aln override add)
 overlays:
-  - selector:
-      check_id: "typescript.no.any"
-    override:
-      severity: error # Upgrade from warn to error
-    metadata:
-      reason: "Strict type safety for production"
-      owner: "platform-team"
+  overrides:
+    - selector: "rule[id=typescript.no.any]"
+      set:
+        severity: "error" # Upgrade from warn to error
 ```
 
 3. **Sync with overlay:**
@@ -144,12 +141,10 @@ cd examples/golden-repo
 ```yaml
 # Add to .aligntrue.yaml
 overlays:
-  - selector:
-      check_id: "code.review.no.todos"
-    override:
-      severity: error # Upgrade from warn
-    metadata:
-      reason: "Strict TODO policy"
+  overrides:
+    - selector: "rule[id=code.review.no.todos]"
+      set:
+        severity: "error" # Upgrade from warn
 ```
 
 3. **Record original state:**
@@ -282,12 +277,10 @@ aln override add \
 
 ```yaml
 overlays:
-  - selector:
-      check_id: "typescript.no.any"
-    override:
-      severity: error
-    metadata:
-      reason: "Strict typing"
+  overrides:
+    - selector: "rule[id=typescript.no.any]"
+      set:
+        severity: "error"
 ```
 
 ### Upstream Adds New Field
@@ -322,13 +315,12 @@ Use 'unknown' for truly unknown types, or define proper interfaces.
 # No action needed - inputs merge automatically
 
 # Option B: Customize new inputs
-aln override remove --check typescript.no.any
+aln override remove 'rule[id=typescript.no.any]'
 aln override add \
-  --check typescript.no.any \
-  --severity error \
-  --input allowImplicit=false \
-  --input allowExplicit=true \
-  --reason "Allow explicit 'any' for legacy code migration"
+  --selector 'rule[id=typescript.no.any]' \
+  --set severity=error \
+  --set allowImplicit=false \
+  --set allowExplicit=true
 ```
 
 4. **Verify merge:**
@@ -390,25 +382,20 @@ sources:
 
 ```yaml
 overlays:
-  # Override local pack (make more strict)
-  - selector:
-      source_pack: "golden-repo-rules"
-      check_id: "security.no.secrets"
-    override:
-      severity: error
-      inputs:
-        scanComments: true
+  overrides:
+    # Override local pack (make more strict)
+    - selector: "rule[id=security.no.secrets]"
+      set:
+        severity: "error"
+        "check.inputs.scanComments": true
 
-  # Override vendor pack (less strict for legacy)
-  - selector:
-      source_pack: "security-rules"
-      check_id: "security.no.secrets"
-    override:
-      severity: warning
-      inputs:
-        scanComments: false
-    metadata:
-      reason: "Legacy codebase has many false positives"
+    # Override vendor pack (less strict for legacy)
+    # Note: Selector applies to all rules with this ID
+    # Use property paths for more granular control if needed
+    - selector: "rule[id=security.no.secrets-vendor]"
+      set:
+        severity: "warning"
+        "check.inputs.scanComments": false
 ```
 
 4. **Verify pack-specific application:**
@@ -449,10 +436,10 @@ cd examples/golden-repo
 # Add overlay
 cat > .aligntrue-overlay.yaml <<EOF
 overlays:
-  - selector:
-      check_id: "typescript.no.any"
-    override:
-      severity: error
+  overrides:
+    - selector: 'rule[id=typescript.no.any]'
+      set:
+        severity: "error"
 EOF
 
 # Sync
@@ -494,10 +481,10 @@ echo "Scenario 2: Conflict Resolution"
 # Add conflicting overlay
 cat > .aligntrue-overlay.yaml <<EOF
 overlays:
-  - selector:
-      check_id: "code.review.no.todos"
-    override:
-      severity: error
+  overrides:
+    - selector: 'rule[id=code.review.no.todos]'
+      set:
+        severity: "error"
 EOF
 
 # Sync
