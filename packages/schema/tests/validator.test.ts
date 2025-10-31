@@ -405,10 +405,9 @@ integrity:
   });
 
   it("detects schema errors", () => {
-    // codeql[js/identity-replacement] - Intentional test: verifies that unchanged YAML is still valid
     const invalidYaml = validAlignYaml.replace(
       'spec_version: "1"',
-      'spec_version: "1"',
+      'spec_version: "99"',
     );
 
     const result = validateAlign(invalidYaml);
