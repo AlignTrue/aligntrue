@@ -13,6 +13,7 @@ import type {
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
+import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
@@ -74,10 +75,9 @@ export class AmazonQMcpExporter extends ExporterBase {
     if (!dryRun) {
       const amazonqDirPath = dirname(outputPath);
       mkdirSync(amazonqDirPath, { recursive: true });
-
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
     }
+
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
     const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
@@ -128,7 +128,7 @@ export class AmazonQMcpExporter extends ExporterBase {
     return config;
   }
 
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

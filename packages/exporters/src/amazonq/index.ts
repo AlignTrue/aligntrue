@@ -157,7 +157,7 @@ export class AmazonQExporter extends ExporterBase {
     return { content: lines.join("\n"), warnings };
   }
 
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();

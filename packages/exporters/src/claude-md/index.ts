@@ -189,7 +189,7 @@ export class ClaudeMdExporter extends ExporterBase {
     return map[severity] || "WARN";
   }
 
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorFields = new Set<string>();

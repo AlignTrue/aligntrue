@@ -205,7 +205,7 @@ export class VsCodeMcpExporter extends ExporterBase {
    * Compute fidelity notes for unmapped fields (custom for VS Code MCP)
    * Overrides base class to add VS Code MCP-specific messages
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const vendorAgents = new Set<string>();

@@ -136,7 +136,7 @@ export class RootMcpExporter extends ExporterBase {
     return config;
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
 

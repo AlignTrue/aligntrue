@@ -83,10 +83,9 @@ export class WindsurfMcpExporter extends ExporterBase {
     if (!dryRun) {
       const windsurfDirPath = dirname(outputPath);
       mkdirSync(windsurfDirPath, { recursive: true });
-
-      const writer = new AtomicFileWriter();
-      writer.write(outputPath, content);
     }
+
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
     const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 
@@ -151,7 +150,7 @@ export class WindsurfMcpExporter extends ExporterBase {
     return config;
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  override computeFidelityNotes(rules: AlignRule[]): string[] {
     const notes: string[] = [];
     const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();
