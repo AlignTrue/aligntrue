@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4, Session 2: Discovery - Catalog List Page (Completed 2025-10-31)
+
+**Catalog list page with search, filters, and sorting:**
+
+- **Search system** (`archive/apps-web/lib/search.ts`, 318 lines)
+  - Fuse.js integration with weighted keys (name: 3.0, description: 2.0, summary_bullets: 1.5, tags: 1.0, categories: 1.0)
+  - Fuzzy search threshold: 0.4 (balanced accuracy)
+  - Include match info for highlighting
+  - AND logic for tool filters (pack must support ALL selected tools)
+  - OR logic for category filters (pack must have at least ONE selected category)
+  - Advanced filters: license, last updated, has plugs, overlay-friendly
+  - Four sort orders: most copied (7d), trending (weighted), recently updated, name A-Z
+  - Helper functions: `getUniqueTools`, `getUniqueCategories`, `getUniqueLicenses`
+  - 20 tests covering search accuracy, filter combinations, sort orders
+
+- **Filter components** (`archive/apps-web/components/catalog/`)
+  - `FilterChips.tsx` (97 lines) - Multi-select tool/category filters with chip UI
+    - Keyboard navigation and ARIA labels
+    - Clear all button when filters active
+    - Option formatting (e.g., "cursor" → "Cursor", "claude-code" → "Claude Code")
+    - 8 tests for selection, toggling, clearing, accessibility
+  - `AdvancedFilters.tsx` (192 lines) - Additional filter controls
+    - Collapsible accordion (default: collapsed)
+    - License dropdown (all licenses from index)
+    - Last updated presets (7d, 30d, 90d, all time)
+    - Boolean filters: has plugs, overlay-friendly
+    - Clear advanced filters button
+    - 7 tests for expansion, selection, clearing
+
+- **Pack card component** (`archive/apps-web/components/catalog/PackCard.tsx`, 138 lines)
+  - Displays all catalog entry metadata
+  - Trust signals: Source Linked badge, Overlay Friendly badge
+  - Stats: copies/7d (or "New"), license, plug count
+  - Maintainer info with GitHub link
+  - Compatible tools (first 4 with +N more)
+  - Categories (first 3 with +N more)
+  - Keyboard accessible (Enter/Space)
+  - 15 tests for rendering, badges, stats, interaction, accessibility
+
+- **Catalog list page** (`archive/apps-web/app/catalog/page.tsx`, 295 lines)
+  - Client-side search index loading (`/catalog/search_v1.json`)
+  - Search bar with typeahead
+  - Filter sidebar (264px fixed width) with tool/category chips and advanced filters
+  - Sort dropdown (4 options)
+  - Results grid (1 column mobile, 2 columns desktop)
+  - Loading state with spinner
+  - Error state with message
+  - Empty state with clear filters button
+  - Responsive layout (sidebar + main content)
+
+- **Test infrastructure** (`archive/apps-web/`)
+  - Vitest configuration with jsdom environment
+  - Testing Library setup (@testing-library/react, @testing-library/user-event)
+  - Test scripts: `pnpm test` (run), `pnpm test:watch` (watch mode)
+  - Total: 50 tests (20 search + 8 filter chips + 7 advanced filters + 15 pack card)
+
+**Dependencies added:**
+
+- `fuse.js@^7.0.0` - Fuzzy search
+- `vitest@^2.1.8` - Test runner
+- `@testing-library/react@^16.0.1` - Component testing
+- `@testing-library/user-event@^14.5.2` - User interaction simulation
+- `jsdom@^25.0.1` - DOM environment for tests
+
+**Test coverage:** 50 new tests  
+**Files created:** 12 (1 lib + 3 components + 1 page + 2 config + 5 test files)
+
 ### Phase 4, Session 1: Catalog Foundation - Abuse Limits Updated (Completed 2025-10-31)
 
 **Abuse control limits updated to realistic values:**
