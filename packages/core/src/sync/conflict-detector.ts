@@ -420,9 +420,22 @@ export class ConflictDetector {
       }
 
       if (!(part in current)) {
-        current[part] = {};
+        current[part] = Object.create(null);
       }
-      current = current[part] as Record<string, unknown>;
+
+      const next = current[part];
+      if (
+        typeof next !== "object" ||
+        next === null ||
+        (!Object.prototype.hasOwnProperty.call(next, "constructor") &&
+          next.constructor !== Object)
+      ) {
+        throw new Error(
+          `Security: Invalid path component '${part}' - cannot modify non-object prototype`,
+        );
+      }
+
+      current = next as Record<string, unknown>;
     }
 
     const lastPart = parts[parts.length - 1];

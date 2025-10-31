@@ -25,11 +25,14 @@ export function setProperty(target: any, key: string, value: unknown): void {
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i];
     if (!segment) continue; // Skip empty segments
-
     // Prevent prototype pollution
-    if (["__proto__", "constructor", "prototype"].includes(segment)) {
+    if (
+      segment === "__proto__" ||
+      segment === "constructor" ||
+      segment === "prototype"
+    ) {
       throw new Error(
-        `Invalid property path: segment "${segment}" is disallowed`,
+        `Refusing to set dangerous key segment "${segment}" in path "${key}"`,
       );
     }
 
@@ -50,8 +53,15 @@ export function setProperty(target: any, key: string, value: unknown): void {
 
   // Set the final property
   const finalKey = path[path.length - 1];
-  if (finalKey) {
+  if (
+    finalKey &&
+    finalKey !== "__proto__" &&
+    finalKey !== "constructor" &&
+    finalKey !== "prototype"
+  ) {
     current[finalKey] = value;
+  } else if (finalKey) {
+    throw new Error(`Refusing to set dangerous property name "${finalKey}"`);
   }
 }
 
