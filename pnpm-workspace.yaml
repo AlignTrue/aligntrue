@@ -1,3 +1,4 @@
 packages:
-  # Archived components (apps-web, apps-docs, mcp-v1) are excluded
+  # Archived components (apps-docs, mcp-v1) remain excluded; apps-web is now active
   - "packages/*"
+  - "apps/*"
