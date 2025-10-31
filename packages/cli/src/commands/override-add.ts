@@ -8,8 +8,9 @@ import { Command } from "commander";
 import {
   parseSelector,
   validateSelector,
-} from "@aligntrue/core/overlays/selector-parser.js";
-import { loadConfig, saveConfig } from "@aligntrue/core/config/index.js";
+  loadConfig,
+  saveConfig,
+} from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 
 interface OverrideAddOptions {
