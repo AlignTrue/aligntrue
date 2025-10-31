@@ -5,7 +5,7 @@
  */
 
 import { Command } from "commander";
-import { loadConfig, saveConfig } from "@aligntrue/core/config/index.js";
+import { loadConfig, saveConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 
 interface OverrideRemoveOptions {

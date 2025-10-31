@@ -5,9 +5,7 @@
  */
 
 import { Command } from "commander";
-import { loadConfig } from "@aligntrue/core/config/index.js";
-import { loadIR } from "@aligntrue/core/ir/loader.js";
-import { applyOverlays } from "@aligntrue/core/overlays/apply.js";
+import { loadConfig, loadIR, applyOverlays } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 
 interface OverrideDiffOptions {
