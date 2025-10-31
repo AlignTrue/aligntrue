@@ -68,6 +68,7 @@ export async function adapters(args: string[]): Promise<void> {
       examples: [
         "aligntrue adapters list",
         "aligntrue adapters enable cursor",
+        "aligntrue adapters enable cursor claude-md vscode-mcp",
         "aligntrue adapters enable --interactive",
         "aligntrue adapters disable cursor",
       ],
@@ -76,6 +77,9 @@ export async function adapters(args: string[]): Promise<void> {
         "  ✓ installed   - Enabled in config",
         "  - available   - Discovered but not enabled",
         "  ❌ invalid     - In config but not found",
+        "",
+        "Enable supports multiple adapters at once:",
+        "  aligntrue adapters enable adapter1 adapter2 adapter3",
       ],
     });
     process.exit(0);
@@ -282,43 +286,72 @@ async function enableAdapters(
 
     adaptersToEnable = selected as string[];
   } else {
-    // Single adapter mode
+    // Multiple adapter mode (one or more adapter names)
     if (args.length === 0) {
       console.error("✗ Missing adapter name");
-      console.error("  Usage: aligntrue adapters enable <adapter>");
+      console.error(
+        "  Usage: aligntrue adapters enable <adapter> [adapter2 ...]",
+      );
       console.error("  Or: aligntrue adapters enable --interactive");
       process.exit(1);
     }
 
-    const adapterName = args[0];
-    if (!adapterName) {
-      console.error("✗ Missing adapter name");
-      console.error("  Usage: aligntrue adapters enable <adapter>");
-      process.exit(1);
+    const adapterNames = args;
+    const notFound: string[] = [];
+    const invalid: string[] = [];
+    const alreadyEnabled: string[] = [];
+    const toEnable: string[] = [];
+
+    // Validate all provided adapter names
+    for (const adapterName of adapterNames) {
+      const adapter = adapters.find((a) => a.name === adapterName);
+
+      if (!adapter) {
+        notFound.push(adapterName);
+        continue;
+      }
+
+      if (adapter.status === "invalid") {
+        invalid.push(adapterName);
+        continue;
+      }
+
+      if (adapter.status === "installed") {
+        alreadyEnabled.push(adapterName);
+        continue;
+      }
+
+      toEnable.push(adapterName);
     }
 
-    const adapter = adapters.find((a) => a.name === adapterName);
-
-    if (!adapter) {
-      console.error(`✗ Adapter not found: ${adapterName}`);
+    // Report errors for any problematic adapters
+    if (notFound.length > 0) {
+      console.error(`✗ Adapter(s) not found: ${notFound.join(", ")}`);
       console.error("  Run: aligntrue adapters list");
       process.exit(1);
     }
 
-    if (adapter.status === "invalid") {
-      console.error(`✗ Invalid adapter: ${adapterName}`);
+    if (invalid.length > 0) {
+      console.error(`✗ Invalid adapter(s): ${invalid.join(", ")}`);
       console.error(
-        "  This adapter is not available in the installed exporters package",
+        "  These adapters are not available in the installed exporters package",
       );
       process.exit(1);
     }
 
-    if (adapter.status === "installed") {
-      console.log(`✓ Adapter already enabled: ${adapterName}`);
+    // If all are already enabled, exit early
+    if (toEnable.length === 0 && alreadyEnabled.length > 0) {
+      if (alreadyEnabled.length === 1) {
+        console.log(`✓ Adapter already enabled: ${alreadyEnabled[0]}`);
+      } else {
+        console.log(
+          `✓ All adapters already enabled: ${alreadyEnabled.join(", ")}`,
+        );
+      }
       process.exit(0);
     }
 
-    adaptersToEnable = [adapterName];
+    adaptersToEnable = toEnable;
   }
 
   // Update config

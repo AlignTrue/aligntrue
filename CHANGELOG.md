@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CLI UX Improvements:**
+  - `team enable --yes` flag for non-interactive mode (bypasses confirmation prompt)
+  - `team enable --non-interactive` alias for CI/automation workflows
+  - Multiple adapter support in `adapters enable` command (e.g., `adapters enable cursor claude-md vscode-mcp`)
+  - Enhanced import help text explaining that all `.mdc` files are imported (not just current rules)
+  - 5 new tests for non-interactive team enable and multiple adapter enable flows
+
 - Documentation site with Nextra v4.6.0 at `apps/docs/`
 - Navigation structure: Getting Started, Concepts, Reference, Contributing
 - 22 documentation pages covering quickstart, team mode, overlays, CLI reference, and more
@@ -18,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **CLI Behavior:**
+  - `adapters enable` now processes all provided adapter names instead of only the first one
+  - Import command help now clarifies that Cursor import scans ALL .mdc files
+  - Team enable supports non-interactive mode for CI/automation workflows
+
 - Archived original `/docs` directory to `archive/docs-original/`
 - Updated `.cursor/rules/dev_docs.mdc` to reference live docs site at `apps/docs/pages/`
 - Updated `.cursor/rules/global.mdc` to note documentation site is now active
@@ -26,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Documentation organization now follows clear hierarchy: getting-started, concepts, reference, contributing
+- `team enable` command now properly respects `--yes` and `--non-interactive` flags
+- `adapters enable` with multiple arguments now enables all specified adapters
 
 ### Phase 4.5, Session 2: Exporter Base Class Refactoring (Completed 2025-10-31)
 
