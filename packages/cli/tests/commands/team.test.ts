@@ -100,6 +100,54 @@ describe("team command", () => {
       expect(clack.outro).toHaveBeenCalledWith("✓ Team mode enabled");
     });
 
+    it("enables team mode with --yes flag (non-interactive)", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "solo",
+        modules: { lockfile: false, bundle: false },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["enable", "--yes"])).rejects.toThrow("process.exit");
+
+      // Should NOT call clack.intro or clack.confirm in non-interactive mode
+      expect(clack.intro).not.toHaveBeenCalled();
+      expect(clack.confirm).not.toHaveBeenCalled();
+
+      // Should write config
+      expect(fs.writeFileSync).toHaveBeenCalled();
+
+      // Should show non-interactive output
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("non-interactive mode"),
+      );
+    });
+
+    it("enables team mode with --non-interactive flag", async () => {
+      const { loadConfig } = await import("@aligntrue/core");
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(loadConfig).mockResolvedValue({
+        version: "1",
+        mode: "solo",
+        modules: { lockfile: false, bundle: false },
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      });
+
+      await expect(team(["enable", "--non-interactive"])).rejects.toThrow(
+        "process.exit",
+      );
+
+      // Should NOT call clack.confirm in non-interactive mode
+      expect(clack.confirm).not.toHaveBeenCalled();
+      expect(fs.writeFileSync).toHaveBeenCalled();
+    });
+
     it("fails when config not found", async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 

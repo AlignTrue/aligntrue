@@ -50,6 +50,10 @@ describe("adapters command", () => {
       exitCode = code ?? 0;
       throw new Error(`process.exit: ${code}`);
     }) as any;
+
+    // Mock console methods
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -158,6 +162,67 @@ describe("adapters command", () => {
 
       await expect(adapters(["enable"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
+    });
+
+    it("enables multiple adapters with multiple arguments", async () => {
+      createConfig(["cursor"]);
+
+      await expect(
+        adapters(["enable", "agents-md", "claude-md", "vscode-mcp"]),
+      ).rejects.toThrow("process.exit: 0");
+      expect(exitCode).toBe(0);
+
+      // Verify all three adapters were added to config
+      const config = readFileSync(".aligntrue/config.yaml", "utf-8");
+      expect(config).toContain("agents-md");
+      expect(config).toContain("claude-md");
+      expect(config).toContain("vscode-mcp");
+      expect(config).toContain("cursor"); // original should still be there
+    });
+
+    it("handles mix of enabled and new adapters in multiple args", async () => {
+      createConfig(["cursor", "agents-md"]);
+
+      await expect(
+        adapters(["enable", "agents-md", "claude-md"]),
+      ).rejects.toThrow("process.exit: 0");
+      expect(exitCode).toBe(0);
+
+      // Verify new adapter added, existing preserved
+      const config = readFileSync(".aligntrue/config.yaml", "utf-8");
+      expect(config).toContain("agents-md");
+      expect(config).toContain("claude-md");
+    });
+
+    it("shows all already enabled message for multiple args", async () => {
+      createConfig(["cursor", "agents-md", "claude-md"]);
+
+      await expect(adapters(["enable", "cursor", "agents-md"])).rejects.toThrow(
+        "process.exit: 0",
+      );
+      expect(exitCode).toBe(0);
+
+      // Should show message about all being enabled
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("already enabled"),
+      );
+    });
+
+    it("shows error for invalid adapters in multiple args", async () => {
+      createConfig(["cursor"]);
+
+      await expect(
+        adapters(["enable", "agents-md", "nonexistent", "claude-md"]),
+      ).rejects.toThrow("process.exit: 1");
+      expect(exitCode).toBe(1);
+
+      // Should show error about nonexistent adapter
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("not found"),
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("nonexistent"),
+      );
     });
 
     it("enables multiple adapters in interactive mode", async () => {

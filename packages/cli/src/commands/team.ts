@@ -26,7 +26,20 @@ import {
   writeAllowList,
 } from "@aligntrue/core/team/allow.js";
 
-const ARG_DEFINITIONS: ArgDefinition[] = [];
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Skip confirmation prompts (enable only)",
+  },
+  {
+    flag: "--non-interactive",
+    alias: "-n",
+    hasValue: false,
+    description: "Same as --yes",
+  },
+];
 const ALLOW_LIST_PATH = ".aligntrue/allow.yaml";
 
 export async function team(args: string[]): Promise<void> {
@@ -40,6 +53,7 @@ export async function team(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue team enable",
+        "aligntrue team enable --yes",
         "aligntrue team status",
         "aligntrue team approve base-global@aligntrue/catalog@v1.0.0",
         "aligntrue team list-allowed",
@@ -61,7 +75,7 @@ export async function team(args: string[]): Promise<void> {
 
   switch (subcommand) {
     case "enable":
-      await teamEnable();
+      await teamEnable(parsed.flags);
       break;
     case "status":
       await teamStatus();
@@ -211,8 +225,16 @@ async function teamStatus(): Promise<void> {
   }
 }
 
-async function teamEnable(): Promise<void> {
+async function teamEnable(
+  flags: Record<string, string | boolean | undefined>,
+): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
+
+  // Check for non-interactive mode
+  const nonInteractive =
+    (flags["yes"] as boolean | undefined) ||
+    (flags["non-interactive"] as boolean | undefined) ||
+    false;
 
   // Check if config exists
   if (!existsSync(configPath)) {
@@ -239,7 +261,9 @@ async function teamEnable(): Promise<void> {
     }
 
     // Show what will change
-    clack.intro("Team Mode Enable");
+    if (!nonInteractive) {
+      clack.intro("Team Mode Enable");
+    }
 
     const changes = [
       "mode: solo → team",
@@ -247,18 +271,25 @@ async function teamEnable(): Promise<void> {
       "modules.bundle: false → true",
     ];
 
-    clack.log.info(
-      `Changes to .aligntrue/config.yaml:\n${changes.map((c) => `  - ${c}`).join("\n")}`,
-    );
+    if (nonInteractive) {
+      console.log("Team Mode Enable (non-interactive mode)");
+      console.log("\nChanges to .aligntrue/config.yaml:");
+      changes.forEach((c) => console.log(`  - ${c}`));
+      console.log("\nProceeding automatically...\n");
+    } else {
+      clack.log.info(
+        `Changes to .aligntrue/config.yaml:\n${changes.map((c) => `  - ${c}`).join("\n")}`,
+      );
 
-    const shouldProceed = await clack.confirm({
-      message: "Enable team mode?",
-      initialValue: true,
-    });
+      const shouldProceed = await clack.confirm({
+        message: "Enable team mode?",
+        initialValue: true,
+      });
 
-    if (clack.isCancel(shouldProceed) || !shouldProceed) {
-      clack.cancel("Team mode enable cancelled");
-      process.exit(0);
+      if (clack.isCancel(shouldProceed) || !shouldProceed) {
+        clack.cancel("Team mode enable cancelled");
+        process.exit(0);
+      }
     }
 
     // Update config
