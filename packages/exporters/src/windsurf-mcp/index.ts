@@ -13,7 +13,7 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
@@ -75,8 +75,7 @@ export class WindsurfMcpExporter implements ExporterPlugin {
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
@@ -138,8 +137,7 @@ export class WindsurfMcpExporter implements ExporterPlugin {
     });
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
     const config: McpConfig = {

@@ -28,6 +28,21 @@ export interface CLIError {
 }
 
 /**
+ * Validation error with field context
+ * Phase 4.5: Standardized validation error format
+ */
+export interface ValidationError {
+  /** Field path (e.g., "profile.id", "rules[0].applies_to") */
+  field: string;
+
+  /** Human-readable error message */
+  message: string;
+
+  /** Optional actual value that failed validation */
+  value?: unknown;
+}
+
+/**
  * Format and display a CLI error without exiting
  *
  * @param error - Structured error information
@@ -87,4 +102,92 @@ export function exitWithError(error: CLIError, exitCode: number = 1): never {
   formatError(error);
   clack.outro("✗ Operation failed");
   process.exit(exitCode);
+}
+
+/**
+ * Format validation errors into CLI error
+ * Phase 4.5: Consolidate validation error formatting
+ *
+ * @param errors - Array of validation errors
+ * @returns Structured CLI error
+ *
+ * @example
+ * ```typescript
+ * const validationErrors: ValidationError[] = [
+ *   { field: 'profile.id', message: 'Required field is missing' },
+ *   { field: 'rules[0].id', message: 'Must be a valid identifier' }
+ * ];
+ * exitWithError(formatValidationErrors(validationErrors), 1);
+ * ```
+ */
+export function formatValidationErrors(errors: ValidationError[]): CLIError {
+  return {
+    title: "Validation failed",
+    message: `Found ${errors.length} validation error${errors.length === 1 ? "" : "s"}`,
+    details: errors.map((e) =>
+      e.value !== undefined
+        ? `${e.field}: ${e.message} (got: ${JSON.stringify(e.value)})`
+        : `${e.field}: ${e.message}`,
+    ),
+    hint: "Fix the errors above and try again",
+    code: "ERR_VALIDATION_FAILED",
+  };
+}
+
+/**
+ * Common error: Config file not found
+ * Phase 4.5: Standardized error pattern
+ */
+export function configNotFoundError(path: string): CLIError {
+  return {
+    title: "Config not found",
+    message: `AlignTrue config file not found at: ${path}`,
+    hint: 'Run "aligntrue init" to create a new config',
+    code: "ERR_CONFIG_NOT_FOUND",
+  };
+}
+
+/**
+ * Common error: Git source error
+ * Phase 4.5: Standardized error pattern
+ */
+export function gitSourceError(url: string, reason: string): CLIError {
+  return {
+    title: "Git source error",
+    message: `Failed to fetch rules from git source: ${url}`,
+    details: [reason],
+    hint: "Verify the repository URL and your network connection",
+    code: "ERR_GIT_SOURCE_FAILED",
+  };
+}
+
+/**
+ * Common error: Exporter failed
+ * Phase 4.5: Standardized error pattern
+ */
+export function exporterFailedError(name: string, details: string[]): CLIError {
+  return {
+    title: "Export failed",
+    message: `Exporter "${name}" failed to generate output`,
+    details,
+    hint: "Check the error details above and try again",
+    code: "ERR_EXPORTER_FAILED",
+  };
+}
+
+/**
+ * Common error: Source not trusted
+ * Phase 4.5: Standardized error pattern
+ */
+export function sourceUntrustedError(source: string, hint: string): CLIError {
+  return {
+    title: "Source not trusted",
+    message: `Source "${source}" is not in your allow list`,
+    details: [
+      "Team mode requires all sources to be explicitly approved",
+      "Add to .aligntrue.allow or use --trust flag (with caution)",
+    ],
+    hint,
+    code: "ERR_SOURCE_UNTRUSTED",
+  };
 }

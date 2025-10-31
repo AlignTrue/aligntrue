@@ -7,6 +7,16 @@ export {
   verifyAlignHash,
 } from "./canonicalize.js";
 
+// JSON utilities (Phase 4.5 consolidation)
+export {
+  stringifyCanonical,
+  computeContentHash,
+  parseJsonSafe,
+  hashObject,
+  compareCanonical,
+  type Result,
+} from "./json-utils.js";
+
 // Validation
 export {
   validateAlignSchema,

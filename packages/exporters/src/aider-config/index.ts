@@ -13,7 +13,7 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 interface ExporterState {
@@ -52,8 +52,7 @@ export class AiderConfigExporter implements ExporterPlugin {
     const content = this.generateAiderConfigContent(options);
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
 
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
@@ -105,8 +104,7 @@ export class AiderConfigExporter implements ExporterPlugin {
     }));
 
     const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const irContent = JSON.stringify({ rules: allRulesIR });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ rules: allRulesIR });
     const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
     const config: {
