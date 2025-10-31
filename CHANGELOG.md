@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Dependency Updates:**
+  - Updated `esbuild` to ≥0.25.0 (fixes GHSA-67mh-4wv8-2f99: CORS vulnerability allowing code exfiltration in dev server)
+  - Updated `prismjs` to ≥1.30.0 (fixes CVE-2024-53382: DOM clobbering vulnerability)
+  - Updated `next.js` to ≥15.4.7 in docs site (fixes multiple vulnerabilities: authorization bypass, DoS, SSRF, cache confusion)
+  - Added pnpm overrides at workspace root to enforce minimum secure versions across all transitive dependencies
+
 ### Added
 
 - **CLI UX Improvements:**
