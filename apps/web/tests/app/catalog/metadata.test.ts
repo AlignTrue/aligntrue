@@ -28,17 +28,16 @@ describe("Pack metadata generation", () => {
     source_repo: "https://github.com/AlignTrue/aligns",
     stats: {
       copies_7d: 150,
-      copies_30d: 500,
-      views_7d: 1000,
-      trending_score: 0.95,
+      copies_total: 500,
     },
     summary_bullets: ["Rule 1", "Rule 2"],
-    exporters: [],
-    plugs: [],
+    has_plugs: false,
+    required_plugs_count: 0,
     required_plugs: [],
     overlay_friendly: true,
     source_linked: true,
     rules_index: [],
+    exporters: [],
   };
 
   beforeEach(() => {
@@ -83,7 +82,7 @@ describe("Pack metadata generation", () => {
       expect(metadata.openGraph?.url).toBe(
         "https://aligntrue.ai/catalog/base-global",
       );
-      expect(metadata.openGraph?.type).toBe("article");
+      expect((metadata.openGraph as any)?.type).toBe("article");
     });
 
     it("should include Twitter card metadata", async () => {
@@ -96,7 +95,7 @@ describe("Pack metadata generation", () => {
       const metadata = await generatePackMetadata("base-global");
 
       expect(metadata.twitter).toBeDefined();
-      expect(metadata.twitter?.card).toBe("summary_large_image");
+      expect((metadata.twitter as any)?.card).toBe("summary_large_image");
     });
 
     it("should set canonical URL", async () => {

@@ -46,22 +46,23 @@ describe("PackDetailPage", () => {
 
   // Mock fetch
   beforeEach(() => {
-    global.fetch = vi.fn((url: string) => {
-      if (url.includes("/catalog/index.json")) {
-        return Promise.resolve({
-          ok: true,
-          statusText: "OK",
-          json: () =>
-            Promise.resolve({
-              version: "1",
-              generated_at: "2025-10-31T10:00:00Z",
-              engine_version: "0.1.0",
-              packs: [mockPack],
-            }),
-        } as Response);
-      }
-      return Promise.reject(new Error("Not found"));
-    });
+    global.fetch = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        statusText: "OK",
+        json: () =>
+          Promise.resolve(
+            url.includes("/catalog/index.json")
+              ? {
+                  version: "1",
+                  generated_at: "2025-10-31T10:00:00Z",
+                  engine_version: "0.1.0",
+                  packs: [mockPack],
+                }
+              : null,
+          ),
+      } as Response),
+    ) as any;
   });
 
   afterEach(() => {
