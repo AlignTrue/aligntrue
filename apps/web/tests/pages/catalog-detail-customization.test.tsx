@@ -40,7 +40,7 @@ describe("PackDetailPage - Customization Integration", () => {
             key: "debug_mode",
             description: "Enable debugging",
             type: "boolean",
-            default: false,
+            default: "false",
           },
         ],
       });

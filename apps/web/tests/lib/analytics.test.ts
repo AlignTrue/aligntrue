@@ -24,7 +24,7 @@ describe("Analytics", () => {
   beforeEach(() => {
     // Save and set NODE_ENV to development for analytics logging
     originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    (process.env as any).NODE_ENV = "development";
 
     // Mock console.log
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -33,12 +33,12 @@ describe("Analytics", () => {
     const storage: Record<string, string> = {};
     localStorageGetSpy = vi
       .spyOn(Storage.prototype, "getItem")
-      .mockImplementation((key) => storage[key] || null);
+      .mockImplementation((key) => storage[key] || null) as any;
     localStorageSetSpy = vi
       .spyOn(Storage.prototype, "setItem")
       .mockImplementation((key, value) => {
         storage[key] = value;
-      });
+      }) as any;
 
     // Mock navigator.doNotTrack
     Object.defineProperty(navigator, "doNotTrack", {
@@ -51,9 +51,9 @@ describe("Analytics", () => {
   afterEach(() => {
     // Restore NODE_ENV
     if (originalNodeEnv !== undefined) {
-      process.env.NODE_ENV = originalNodeEnv;
+      (process.env as any).NODE_ENV = originalNodeEnv;
     } else {
-      delete process.env.NODE_ENV;
+      delete (process.env as any).NODE_ENV;
     }
 
     consoleLogSpy.mockRestore();
@@ -179,7 +179,7 @@ describe("Analytics", () => {
     });
 
     it("should respect opt-out preference", () => {
-      localStorageSetSpy("aligntrue_analytics", "disabled");
+      localStorage.setItem("aligntrue_analytics", "disabled");
       localStorageGetSpy.mockReturnValue("disabled");
 
       trackCatalogSearch("test", 0);
@@ -212,9 +212,9 @@ describe("Analytics", () => {
       trackCatalogSearch("test", 0);
 
       const call = consoleLogSpy.mock.calls[0];
-      const event = call[1];
+      const event = call?.[1] as any;
 
-      expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      expect(event?.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
     it("should include session ID", () => {
@@ -225,8 +225,10 @@ describe("Analytics", () => {
       const call2 = consoleLogSpy.mock.calls[1];
 
       // Same session ID across events
-      expect(call1[1].sessionId).toBe(call2[1].sessionId);
-      expect(call1[1].sessionId).toMatch(/^session_\d+_[a-z0-9]+$/);
+      expect((call1?.[1] as any)?.sessionId).toBe(
+        (call2?.[1] as any)?.sessionId,
+      );
+      expect((call1?.[1] as any)?.sessionId).toMatch(/^session_\d+_[a-z0-9]+$/);
     });
   });
 });

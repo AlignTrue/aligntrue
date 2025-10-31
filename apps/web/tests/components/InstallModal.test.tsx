@@ -36,8 +36,8 @@ describe("InstallModal", () => {
     });
 
     // Mock document.body methods for download (AFTER adding portal root)
-    appendChildSpy = vi.spyOn(document.body, "appendChild");
-    removeChildSpy = vi.spyOn(document.body, "removeChild");
+    appendChildSpy = vi.spyOn(document.body, "appendChild") as any;
+    removeChildSpy = vi.spyOn(document.body, "removeChild") as any;
 
     // Mock URL methods for download
     global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
