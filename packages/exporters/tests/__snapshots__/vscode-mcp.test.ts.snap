@@ -2,7 +2,7 @@
 
 exports[`VsCodeMcpExporter > Snapshot tests > all severities golden JSON output 1`] = `
 {
-  "content_hash": "3bb7fad1e4aefa4ce0f308049806ca563f9a4a3d2d68816c7be08d2f6de2bf97",
+  "content_hash": "54936332c02b9fe00fd31c4400e21110c090c753b1428b381404a8c53d62f50e",
   "generated_by": "AlignTrue",
   "rules": [
     {
@@ -39,7 +39,7 @@ exports[`VsCodeMcpExporter > Snapshot tests > all severities golden JSON output 
 
 exports[`VsCodeMcpExporter > Snapshot tests > mixed vendor fields golden output 1`] = `
 {
-  "content_hash": "e0ee9308e58a893339bcf8a3cc55a876f74418ebda3daec04a150ff5f914e66f",
+  "content_hash": "a1c8ca53396ae41d2c779ce716175f9424d6ca899f11498efed9cda57fc3e610",
   "fidelity_notes": [
     "Vendor-specific metadata for other agents not extracted to MCP config: copilot, cursor",
   ],
@@ -63,7 +63,7 @@ exports[`VsCodeMcpExporter > Snapshot tests > mixed vendor fields golden output 
 
 exports[`VsCodeMcpExporter > Snapshot tests > multiple rules golden JSON output 1`] = `
 {
-  "content_hash": "eb940cfe4e31eb4c1784648b635fa145f02988b0c03f758a27821247063bfe12",
+  "content_hash": "c73a1e4c34a4fde318791878e9dac71bde4790d54590b146047f5ab8de07cd60",
   "generated_by": "AlignTrue",
   "rules": [
     {
@@ -100,7 +100,7 @@ exports[`VsCodeMcpExporter > Snapshot tests > multiple rules golden JSON output 
 
 exports[`VsCodeMcpExporter > Snapshot tests > single rule golden JSON output 1`] = `
 {
-  "content_hash": "23acca0213552e11e91da6c376d84e0935e38d35dafe889b7004918806c50b1d",
+  "content_hash": "d95d5b9bfd162460fd1b204b868c21e1d19868cd97f069c193b68eff3244f869",
   "generated_by": "AlignTrue",
   "rules": [
     {
@@ -119,7 +119,7 @@ exports[`VsCodeMcpExporter > Snapshot tests > single rule golden JSON output 1`]
 
 exports[`VsCodeMcpExporter > Snapshot tests > with vendor.vscode extracted golden output 1`] = `
 {
-  "content_hash": "de029f9c6a977e4f105dd0603840b5ca85ce473e922f0d0b51f4b0e6b238b073",
+  "content_hash": "6b4582b08f822214f9b5dbd1b1fe412f7c2727357b4e5d195652d752526604c1",
   "generated_by": "AlignTrue",
   "rules": [
     {

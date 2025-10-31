@@ -5,7 +5,11 @@
 
 import { existsSync, readFileSync } from "fs";
 import type { AlignPack, AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import {
+  computeContentHash,
+  computeHash,
+  stringifyCanonical,
+} from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
 import type { OverlayDefinition } from "../overlays/types.js";
@@ -121,9 +125,7 @@ export function generateLockfile(
  * Hash a single rule using canonical JSON (excludes vendor.volatile)
  */
 export function hashRule(rule: AlignRule): string {
-  // Canonicalize with volatile field exclusion
-  const canonical = canonicalizeJson(rule, true);
-  return computeHash(canonical);
+  return computeContentHash(rule, true);
 }
 
 /**
@@ -164,7 +166,5 @@ export function computeOverlayHash(overlays: OverlayDefinition[]): string {
     a.selector.localeCompare(b.selector),
   );
 
-  // Canonicalize and hash
-  const canonical = canonicalizeJson(sortedOverlays, false);
-  return computeHash(canonical);
+  return computeContentHash(sortedOverlays, false);
 }

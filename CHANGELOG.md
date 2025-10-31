@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4.5, Session 1: JSON Utilities & Error Handling (Completed 2025-10-31)
+
+**Consolidation of duplicate patterns across codebase:**
+
+- **JSON utilities module** (`packages/schema/src/json-utils.ts`)
+  - `stringifyCanonical()` - Always produces deterministic JSON with stable key ordering
+  - `computeContentHash()` - Combined canonicalize + hash in one call
+  - `parseJsonSafe()` - Type-safe JSON parsing with Result type
+  - `hashObject()` - Convenience wrapper for common hashing patterns
+  - `compareCanonical()` - Canonical comparison ignoring key order
+  - 44 comprehensive tests covering determinism, volatile fields, performance
+
+- **Exporter refactoring** (43 exporters)
+  - Replaced `computeHash(canonicalizeJson(irContent))` with `computeContentHash(obj)`
+  - Eliminated duplicate JSON.stringify + canonicalize + hash patterns
+  - Updated all importers: cursor, agents-md, vscode-mcp, and 40 more
+  - All 221 exporter tests passing with updated snapshots
+
+- **Core package updates**
+  - Refactored `packages/core/src/lockfile/generator.ts` to use new utilities
+  - Updated `hashRule()` and `computeOverlayHash()` functions
+  - Consistent hashing across bundle, lockfile, and overlay operations
+
+- **Error handling standardization** (`packages/cli/src/utils/`)
+  - **Spinner utilities** (`spinners.ts`)
+    - `withSpinner()` - Execute operation with automatic spinner management
+    - `withSpinners()` - Sequential operations with individual spinners
+  - **Error formatter extensions** (`error-formatter.ts`)
+    - `ValidationError` interface for field-level validation errors
+    - `formatValidationErrors()` - Convert validation errors to CLI errors
+    - `configNotFoundError()` - Standard "config not found" pattern
+    - `gitSourceError()` - Standard git source failure pattern
+    - `exporterFailedError()` - Standard exporter failure pattern
+    - `sourceUntrustedError()` - Standard untrusted source pattern
+  - All errors now include consistent codes: `ERR_<CATEGORY>_<REASON>`
+
+**Impact:**
+
+- 100+ duplicate JSON patterns eliminated
+- 34 files refactored (34 insertions, 127 deletions = net -93 LOC)
+- Consistent canonicalization and hashing across all exporters
+- Single source of truth for common error patterns
+- All 1200+ tests passing
+
+**Effort:** ~18k tokens
+
 ### Catalog Examples Integration (Completed 2025-10-31)
 
 **Local catalog with 11 curated AlignTrue packs:**

@@ -11,7 +11,7 @@ import type {
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
-import { canonicalizeJson, computeHash } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { getAlignTruePaths } from "@aligntrue/core";
 
@@ -50,8 +50,7 @@ export class CursorExporter implements ExporterPlugin {
     const content = this.generateMdcContent(scope, rules);
 
     // Compute content hash from canonical IR
-    const irContent = JSON.stringify({ scope, rules });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ scope, rules });
 
     // Compute fidelity notes
     const fidelityNotes = this.computeFidelityNotes(rules);
@@ -100,8 +99,7 @@ export class CursorExporter implements ExporterPlugin {
   ): string {
     const frontmatter = this.generateFrontmatter(scope, rules);
     const rulesSections = this.generateRulesSections(rules);
-    const irContent = JSON.stringify({ scope, rules });
-    const contentHash = computeHash(canonicalizeJson(irContent));
+    const contentHash = computeContentHash({ scope, rules });
     const fidelityNotes = this.computeFidelityNotes(rules);
     const footer = generateMdcFooter(
       contentHash,
