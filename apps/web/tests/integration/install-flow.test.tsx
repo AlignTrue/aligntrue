@@ -96,6 +96,11 @@ describe("Install Flow Integration", () => {
   let originalClipboard: typeof navigator.clipboard;
 
   beforeEach(() => {
+    // Add portal root BEFORE setting up any mocks
+    const portalRoot = document.createElement("div");
+    portalRoot.id = "__next";
+    document.body.appendChild(portalRoot);
+
     // Mock clipboard API
     originalClipboard = navigator.clipboard;
     Object.assign(navigator, {
@@ -107,12 +112,8 @@ describe("Install Flow Integration", () => {
     // Mock download helpers
     global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
     global.URL.revokeObjectURL = vi.fn();
-    vi.spyOn(document.body, "appendChild").mockImplementation(
-      () => null as any,
-    );
-    vi.spyOn(document.body, "removeChild").mockImplementation(
-      () => null as any,
-    );
+    vi.spyOn(document.body, "appendChild");
+    vi.spyOn(document.body, "removeChild");
 
     // Mock fetch for catalog data
     global.fetch = vi.fn().mockResolvedValue({
@@ -128,6 +129,7 @@ describe("Install Flow Integration", () => {
 
   afterEach(() => {
     Object.assign(navigator, { clipboard: originalClipboard });
+    document.body.innerHTML = "";
     vi.restoreAllMocks();
   });
 
@@ -180,9 +182,11 @@ describe("Install Flow Integration", () => {
       expect(screen.getByText("Install Test Pack")).toBeInTheDocument();
     });
 
-    // Copy first command
-    const copyButtons = screen.getAllByText("Copy");
-    fireEvent.click(copyButtons[0]);
+    // Copy first command - use specific aria-label to avoid clicking exporter preview copy button
+    const copyButton = screen.getByRole("button", {
+      name: /Copy Install AlignTrue CLI command/i,
+    });
+    fireEvent.click(copyButton);
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
@@ -298,15 +302,15 @@ describe("Install Flow Integration", () => {
       expect(screen.getByText("Install Test Pack")).toBeInTheDocument();
     });
 
-    // Check plug commands
-    expect(
-      screen.getByText(/aln plugs set test\.cmd "pnpm test"/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /aln plugs set coverage\.threshold "<coverage\.threshold>"/,
-      ),
-    ).toBeInTheDocument();
+    // Check plug commands - use getAllByText since they appear multiple times
+    const testCmdMatches = screen.getAllByText(
+      /aln plugs set test\.cmd "pnpm test"/,
+    );
+    expect(testCmdMatches.length).toBeGreaterThan(0);
+    const coverageMatches = screen.getAllByText(
+      /aln plugs set coverage\.threshold "<coverage\.threshold>"/,
+    );
+    expect(coverageMatches.length).toBeGreaterThan(0);
   });
 
   it("displays tracking transparency note", async () => {
@@ -327,8 +331,9 @@ describe("Install Flow Integration", () => {
       expect(screen.getByText("Install Test Pack")).toBeInTheDocument();
     });
 
-    // Check transparency note
-    expect(screen.getByText(/--from=catalog_web/)).toBeInTheDocument();
+    // Check transparency note - use getAllByText since --from appears multiple times
+    const matches = screen.getAllByText(/--from=catalog_web/);
+    expect(matches.length).toBeGreaterThan(0);
     expect(
       screen.getByText(/This is transparent tracking/),
     ).toBeInTheDocument();

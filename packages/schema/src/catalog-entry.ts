@@ -131,6 +131,8 @@ export interface CatalogEntryExtended extends CatalogEntryBase {
   // Trust signals
   /** ISO 8601 timestamp of last update */
   last_updated: string;
+  /** ISO 8601 timestamp of initial publication (optional) */
+  published_at?: string;
   /** Source repository URL (GitHub/GitLab) */
   source_repo?: string;
   /** Reserved namespace owner (GitHub org/user) */

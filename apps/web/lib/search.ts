@@ -42,7 +42,8 @@ export interface SearchIndex {
 /**
  * Fuse.js search options optimized for catalog discovery
  */
-const FUSE_OPTIONS: Fuse.IFuseOptions<SearchIndexEntry> = {
+const FUSE_OPTIONS: any = {
+  // Temporary: Using any for Fuse options due to type export issues
   // Keys to search with weights (higher = more important)
   keys: [
     { name: "name", weight: 3.0 },
@@ -101,7 +102,7 @@ export type SortOrder =
 export interface SearchResult {
   item: SearchIndexEntry;
   score: number;
-  matches?: Fuse.FuseResultMatch[];
+  matches?: any[]; // Temporary: Using any for Fuse match results due to type export issues
 }
 
 /**
@@ -148,7 +149,7 @@ export function searchCatalog(
 
   if (query.trim() === "") {
     // No query: return all entries with score 0
-    const allEntries = fuse.getIndex().docs as SearchIndexEntry[];
+    const allEntries: SearchIndexEntry[] = (fuse as any).getIndex().docs;
     results = allEntries.map((item) => ({ item, score: 0 }));
   } else {
     // Run fuzzy search
@@ -156,7 +157,7 @@ export function searchCatalog(
     results = fuseResults.map((r) => ({
       item: r.item,
       score: r.score ?? 0,
-      matches: r.matches,
+      matches: r.matches ? [...r.matches] : undefined,
     }));
   }
 

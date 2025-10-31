@@ -44,6 +44,10 @@ describe("RelatedPacks", () => {
     description: "Completely different",
     categories: ["documentation"], // No shared categories
     compatible_tools: ["warp"], // No shared tools
+    maintainer: {
+      name: "Different Author",
+      github: "different-author",
+    },
     stats: { copies_7d: 5 },
   });
 
@@ -238,8 +242,8 @@ describe("RelatedPacks", () => {
       slug: "same-maintainer",
       categories: ["documentation"], // Different category
       maintainer: {
-        name: "Maintainer",
-        github: "maintainer", // Same as currentPack
+        name: "AlignTrue Test",
+        github: "aligntrue", // Same as currentPack (default)
       },
     });
 
