@@ -184,6 +184,8 @@ export async function importCommand(args: string[]): Promise<void> {
         "  - Cursor import scans ALL .mdc files in .cursor/rules/ directory",
         "  - This includes starter files and synced files - review before --write",
         "  - Coverage report shows field-level mapping from agent format to IR",
+        "  - 70-80% coverage is typical and expected for agent formats",
+        "  - Lower coverage doesn't mean data loss - unmapped fields preserved in vendor.*",
         "  - Import preserves vendor.* metadata for round-trip fidelity",
         "  - Use --write carefully to avoid overwriting current rules",
         "  - Recommend: backup rules before import with --write",

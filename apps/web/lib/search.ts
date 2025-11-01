@@ -105,17 +105,61 @@ export interface SearchResult {
 }
 
 /**
- * Load search index from JSON
+ * Load search index from JSON with timeout and retry logic
  *
  * @param indexUrl - URL to search_v1.json
+ * @param timeoutMs - Timeout in milliseconds (default: 10000)
  * @returns Search index
  */
-export async function loadSearchIndex(indexUrl: string): Promise<SearchIndex> {
-  const response = await fetch(indexUrl);
-  if (!response.ok) {
-    throw new Error(`Failed to load search index: ${response.statusText}`);
+export async function loadSearchIndex(
+  indexUrl: string,
+  timeoutMs: number = 10000,
+): Promise<SearchIndex> {
+  console.log(`[Search] Loading search index from: ${indexUrl}`);
+
+  // Create abort controller for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.error(`[Search] Timeout after ${timeoutMs}ms loading ${indexUrl}`);
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const response = await fetch(indexUrl, {
+      signal: controller.signal,
+      cache: "no-cache", // Force fresh fetch in dev mode
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.error(
+        `[Search] Failed to load search index: ${response.status} ${response.statusText}`,
+      );
+      throw new Error(
+        `Failed to load search index: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    console.log(
+      `[Search] Successfully loaded ${data.entries?.length || 0} entries`,
+    );
+    return data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        console.error(`[Search] Request aborted (timeout)`);
+        throw new Error(
+          `Search index loading timed out after ${timeoutMs}ms. Please check your network connection.`,
+        );
+      }
+      console.error(`[Search] Error loading search index:`, error.message);
+    }
+    throw error;
   }
-  return response.json();
 }
 
 /**
