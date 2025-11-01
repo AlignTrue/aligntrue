@@ -16,9 +16,9 @@ import {
 } from "@/lib/analytics";
 
 describe("Analytics", () => {
-  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-  let localStorageGetSpy: ReturnType<typeof vi.spyOn>;
-  let localStorageSetSpy: ReturnType<typeof vi.spyOn>;
+  let consoleLogSpy: any;
+  let localStorageGetSpy: any;
+  let localStorageSetSpy: any;
   let originalNodeEnv: string | undefined;
 
   beforeEach(() => {
@@ -33,12 +33,12 @@ describe("Analytics", () => {
     const storage: Record<string, string> = {};
     localStorageGetSpy = vi
       .spyOn(Storage.prototype, "getItem")
-      .mockImplementation((key) => storage[key] || null) as any;
+      .mockImplementation((key) => storage[key] || null);
     localStorageSetSpy = vi
       .spyOn(Storage.prototype, "setItem")
       .mockImplementation((key, value) => {
         storage[key] = value;
-      }) as any;
+      });
 
     // Mock navigator.doNotTrack
     Object.defineProperty(navigator, "doNotTrack", {
@@ -179,8 +179,11 @@ describe("Analytics", () => {
     });
 
     it("should respect opt-out preference", () => {
-      localStorage.setItem("aligntrue_analytics", "disabled");
-      localStorageGetSpy.mockReturnValue("disabled");
+      // Update mock to return "disabled" for opt-out preference
+      localStorageGetSpy.mockImplementation((key: string) => {
+        if (key === "aligntrue_analytics") return "disabled";
+        return null;
+      });
 
       trackCatalogSearch("test", 0);
 
