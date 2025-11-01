@@ -73,7 +73,7 @@ export async function generatePackMetadata(slug: string): Promise<Metadata> {
         // ],
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title,
         description,
         // images commented out until /api/og is implemented
