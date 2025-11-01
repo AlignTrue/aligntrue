@@ -33,7 +33,8 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--ci",
     hasValue: false,
-    description: "CI mode (strict validation, non-zero exit on errors)",
+    description:
+      "CI mode (REQUIRED - strict validation, non-zero exit on errors)",
   },
   {
     flag: "--config",
@@ -65,16 +66,19 @@ export async function check(args: string[]): Promise<void> {
     showStandardHelp({
       name: "check",
       description: "Validate rules and configuration (non-interactive)",
-      usage: "aligntrue check [options]",
+      usage: "aligntrue check --ci [options]",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue check --ci",
         "aligntrue check --ci --config .aligntrue/config.yaml",
+        "aligntrue check --ci --json",
       ],
       notes: [
+        "Note: The --ci flag is REQUIRED for all check operations.",
+        "",
         "Exit Codes:",
         "  0  All validations passed",
-        "  1  Validation failed (schema or lockfile errors)",
+        "  1  Validation failed (schema, lockfile, or overlay errors)",
         "  2  System error (missing files, invalid config)",
       ],
     });
@@ -89,12 +93,10 @@ export async function check(args: string[]): Promise<void> {
 
   // CI mode is required for now (other modes deferred)
   if (!ci) {
-    console.error("Error: --ci flag is required\n");
-    console.error("Run: aligntrue check --ci\n");
     showStandardHelp({
       name: "check",
       description: "Validate rules and configuration (non-interactive)",
-      usage: "aligntrue check [options]",
+      usage: "aligntrue check --ci [options]",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue check --ci",
@@ -102,12 +104,16 @@ export async function check(args: string[]): Promise<void> {
         "aligntrue check --ci --json",
       ],
       notes: [
+        "Note: The --ci flag is REQUIRED for all check operations.",
+        "",
         "Exit Codes:",
         "  0  All validations passed",
         "  1  Validation failed (schema, lockfile, or overlay errors)",
         "  2  System error (missing files, invalid config)",
       ],
     });
+    console.error("Error: --ci flag is required\n");
+    console.error("Run: aligntrue check --ci\n");
     process.exit(2);
   }
 

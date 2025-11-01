@@ -3,8 +3,8 @@
  * Orchestrates loading config, pulling sources, and syncing IR to/from agents
  */
 
-import { existsSync } from "fs";
-import { dirname, resolve } from "path";
+import { existsSync, writeFileSync } from "fs";
+import { dirname, resolve, join } from "path";
 import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
 import {
@@ -119,12 +119,33 @@ export async function sync(args: string[]): Promise<void> {
 
   if (config.mode === "team") {
     const allowListPath = resolve(cwd, ".aligntrue/allow.yaml");
+    const teamOnboardingMarker = join(
+      paths.aligntrueDir,
+      ".team-onboarding-complete",
+    );
 
     // Check if allow list exists first
     if (!existsSync(allowListPath)) {
-      clack.log.info("ℹ No allow list found (team mode)");
-      clack.log.info("  Sources will be validated once allow list is created");
-      clack.log.info("  Run: aligntrue team approve <source>");
+      // Only show full warning if marker doesn't exist
+      if (!existsSync(teamOnboardingMarker)) {
+        clack.log.info("ℹ No allow list found (team mode)");
+        clack.log.info(
+          "  Sources will be validated once allow list is created",
+        );
+        clack.log.info("  Run: aligntrue team approve <source>");
+
+        // Create marker file to suppress future warnings
+        try {
+          writeFileSync(teamOnboardingMarker, new Date().toISOString());
+        } catch {
+          // Silently fail if we can't write marker
+        }
+      } else {
+        // Show condensed tip
+        clack.log.info(
+          "💡 Tip: Run 'aligntrue team approve <source>' to create allow list",
+        );
+      }
     } else {
       try {
         const { parseAllowList, isSourceAllowed } = await import(
