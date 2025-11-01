@@ -419,7 +419,8 @@ export class ConflictDetector {
         );
       }
 
-      if (!(part in current)) {
+      // Use hasOwnProperty to ensure we're accessing own properties, not prototype
+      if (!Object.prototype.hasOwnProperty.call(current, part)) {
         // Create object without prototype to prevent inheritance pollution
         Object.defineProperty(current, part, {
           value: Object.create(null),
@@ -429,15 +430,29 @@ export class ConflictDetector {
         });
       }
 
-      const next = current[part];
+      // Access property only after verifying it's an own property
+      const next = Object.prototype.hasOwnProperty.call(current, part)
+        ? current[part]
+        : undefined;
+
       if (
+        next === undefined ||
         typeof next !== "object" ||
         next === null ||
-        (!Object.prototype.hasOwnProperty.call(next, "constructor") &&
-          next.constructor !== Object)
+        Array.isArray(next)
       ) {
         throw new Error(
-          `Security: Invalid path component '${part}' - cannot modify non-object prototype`,
+          `Security: Invalid path component '${part}' - cannot modify non-object or unsafe object`,
+        );
+      }
+
+      // Ensure next is a plain object (not a class instance or polluted object)
+      // Objects created with Object.create(null) don't have prototype, which is safe
+      // Plain objects {} have constructor from prototype, which is also acceptable
+      // We just need to ensure it's not a function or other dangerous type
+      if (typeof next === "function") {
+        throw new Error(
+          `Security: Invalid path component '${part}' - cannot modify function objects`,
         );
       }
 
@@ -452,6 +467,20 @@ export class ConflictDetector {
           `Security: Invalid path component '${lastPart}' - cannot modify object prototype`,
         );
       }
+
+      // Ensure we're setting an own property, not a prototype property
+      if (!Object.prototype.hasOwnProperty.call(current, lastPart)) {
+        // Property doesn't exist, safe to create
+      } else {
+        // Property exists, verify it's not a prototype property
+        const descriptor = Object.getOwnPropertyDescriptor(current, lastPart);
+        if (!descriptor || descriptor.configurable === false) {
+          throw new Error(
+            `Security: Cannot modify non-configurable property '${lastPart}'`,
+          );
+        }
+      }
+
       // Safe assignment: key has been validated against dangerous prototype keys
       Object.defineProperty(current, lastPart, {
         value,
