@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://aligntrue.com/schemas/adapter-manifest.json",
+  "$id": "https://aligntrue.ai/schemas/adapter-manifest.json",
   "title": "AlignTrue Adapter Manifest",
-  "description": "Manifest file for AlignTrue adapter/exporter plugins",
+  "description": "Describes an AlignTrue exporter adapter.",
   "type": "object",
   "required": ["name", "version", "description", "outputs"],
   "properties": {

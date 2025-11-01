@@ -285,7 +285,7 @@ node temp-build-catalog.mjs
 - [Development Guide](DEVELOPMENT.md)
 - [Security Policy](SECURITY.md)
 
-Full documentation will be available at aligntrue.com/docs.
+Full documentation will be available at aligntrue.ai/docs.
 
 ## License
 
