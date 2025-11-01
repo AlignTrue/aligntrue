@@ -8,7 +8,7 @@ import { ShareButton } from "@/components/catalog/ShareButton";
 
 describe("ShareButton", () => {
   let writeTextSpy: ReturnType<typeof vi.fn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: any;
 
   beforeEach(() => {
     // Mock clipboard API

@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
+  "generated_at": "2025-11-01T01:27:30.653Z",
   "entries": [
     {
       "id": "packs/base/base-global",
-      "version": "1.0.0",
-      "slug": "base-global",
       "name": "Base Global",
+      "slug": "base-global",
       "description": "Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Start here for any new project.",
       "summary_bullets": [
         "Deterministic output with stable sorting and hashing",
@@ -31,15 +31,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-docs",
-      "version": "1.0.0",
-      "slug": "base-docs",
       "name": "Base Documentation",
+      "slug": "base-docs",
       "description": "Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates. Keeps documentation minimal, testable, and always current.",
       "summary_bullets": [
         "README with quickstart required",
@@ -65,15 +62,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-typescript",
-      "version": "1.0.0",
-      "slug": "base-typescript",
       "name": "TypeScript Standards",
+      "slug": "base-typescript",
       "description": "TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings, no 'any' types, type-only imports, and input validation at boundaries.",
       "summary_bullets": [
         "Strict tsconfig with noUncheckedIndexedAccess",
@@ -98,15 +92,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-testing",
-      "version": "1.0.0",
-      "slug": "base-testing",
       "name": "Testing Baseline",
+      "slug": "base-testing",
       "description": "Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance, no sleep-based timing, and speed requirements under 1 second per test.",
       "summary_bullets": [
         "Test pyramid balance (more unit, less e2e)",
@@ -132,15 +123,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-tdd",
-      "version": "1.0.0",
-      "slug": "base-tdd",
       "name": "TDD Workflow",
+      "slug": "base-tdd",
       "description": "Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation, minimal changes to pass, and deterministic test execution.",
       "summary_bullets": [
         "Red-green-refactor cycle enforcement",
@@ -165,15 +153,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-debugging",
-      "version": "1.0.0",
-      "slug": "base-debugging",
       "name": "Debugging Workflow",
+      "slug": "base-debugging",
       "description": "Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles with regression test requirements.",
       "summary_bullets": [
         "Reproduce deterministically before fixing",
@@ -199,15 +184,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-security",
-      "version": "1.0.0",
-      "slug": "base-security",
       "name": "Security and Compliance",
+      "slug": "base-security",
       "description": "Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Prevents secret commits, enforces lockfiles, and blocks vulnerable dependencies.",
       "summary_bullets": [
         "No committed secrets (gitleaks scanning)",
@@ -239,15 +221,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/base/base-rule-authoring",
-      "version": "1.0.0",
-      "slug": "base-rule-authoring",
       "name": "Rule Authoring Guide",
+      "slug": "base-rule-authoring",
       "description": "Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Ensures rules are focused, well-scoped, and maintainable.",
       "summary_bullets": [
         "One topic per rule file",
@@ -273,15 +252,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/stacks/nextjs-app-router",
-      "version": "1.0.0",
-      "slug": "nextjs-app-router",
       "name": "Next.js App Router",
+      "slug": "nextjs-app-router",
       "description": "Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Enforces Server Components by default and proper input validation.",
       "summary_bullets": [
         "Server Components by default",
@@ -306,15 +282,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/stacks/vercel-deployments",
-      "version": "1.0.0",
-      "slug": "vercel-deployments",
       "name": "Vercel Deployments",
+      "slug": "vercel-deployments",
       "description": "Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene. Prevents secret leaks and ensures proper environment variable usage.",
       "summary_bullets": [
         "No client-side secrets (NEXT_PUBLIC_ prefix)",
@@ -339,15 +312,12 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     },
     {
       "id": "packs/stacks/web-quality",
-      "version": "1.0.0",
-      "slug": "web-quality",
       "name": "Web Quality Standards",
+      "slug": "web-quality",
       "description": "Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s, next/image usage, next/font optimization, and WCAG 2.0 AA compliance.",
       "summary_bullets": [
         "Core Web Vitals SLOs (LCP ≤ 2.5s)",
@@ -372,9 +342,7 @@
       "overlay_friendly": true,
       "stats": {
         "copies_7d": 0
-      },
-      "trust_score": 75,
-      "complexity_score": 30
+      }
     }
   ]
 }

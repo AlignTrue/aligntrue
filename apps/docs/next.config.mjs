@@ -1,15 +1,15 @@
-import nextra from 'nextra';
+import nextra from "nextra";
 
 const withNextra = nextra({
   latex: true,
   search: {
-    codeblocks: false
+    codeblocks: false,
   },
   defaultShowCopyCode: true,
-  contentDirBasePath: '/docs',
+  contentDirBasePath: "/docs",
 });
 
 export default withNextra({
-  output: 'standalone',
+  output: "standalone",
   reactStrictMode: true,
 });
