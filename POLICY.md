@@ -153,7 +153,7 @@ This policy will evolve based on community needs. Proposed changes should:
 
 ## Questions and feedback
 
-- **Documentation**: See https://aligntrue.com/docs for full documentation
+- **Documentation**: See https://aligntrue.ai/docs for full documentation
 - **Discussions**: Use GitHub Discussions for questions and proposals
 - **Issues**: Open issues for bugs, problems, or policy concerns
 - **Contributing**: See CONTRIBUTING.md for how to submit packs

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://aligntrue.com/schema/config-v1.schema.json",
+  "$id": "https://aligntrue.ai/schema/config-v1.schema.json",
   "title": "AlignTrue Config v1",
   "description": "Configuration schema for AlignTrue CLI (solo/team/enterprise modes)",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://aligntrue.com/schema/align-v1.schema.json",
+  "$id": "https://aligntrue.ai/schema/align-v1.schema.json",
   "title": "Align Pack v1",
   "description": "Schema for AlignTrue Align packs (Spec v1, CLI-first)",
   "type": "object",

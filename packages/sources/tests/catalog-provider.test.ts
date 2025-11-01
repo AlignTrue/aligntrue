@@ -24,7 +24,7 @@ const mockCatalogIndex: CatalogIndex = {
     {
       id: "packs/base/base-global",
       version: "1.0.0",
-      profile: { id: "aligntrue", url: "https://aligntrue.com" },
+      profile: { id: "aligntrue", url: "https://aligntrue.ai" },
       summary: "Global base rules",
       tags: ["base", "global"],
       content_sha256: "abc123",
