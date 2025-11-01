@@ -412,7 +412,7 @@ export class ConflictDetector {
       const part = parts[i];
       if (!part) continue; // Skip empty parts
 
-      // Security: Prevent prototype pollution
+      // Security: Prevent prototype pollution - validated key before access
       if (DANGEROUS_KEYS.has(part)) {
         throw new Error(
           `Security: Invalid path component '${part}' - cannot modify object prototype`,
@@ -420,7 +420,13 @@ export class ConflictDetector {
       }
 
       if (!(part in current)) {
-        current[part] = Object.create(null);
+        // Create object without prototype to prevent inheritance pollution
+        Object.defineProperty(current, part, {
+          value: Object.create(null),
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       }
 
       const next = current[part];
@@ -440,13 +446,19 @@ export class ConflictDetector {
 
     const lastPart = parts[parts.length - 1];
     if (lastPart) {
-      // Security: Prevent prototype pollution
+      // Security: Prevent prototype pollution - validated key before assignment
       if (DANGEROUS_KEYS.has(lastPart)) {
         throw new Error(
           `Security: Invalid path component '${lastPart}' - cannot modify object prototype`,
         );
       }
-      current[lastPart] = value;
+      // Safe assignment: key has been validated against dangerous prototype keys
+      Object.defineProperty(current, lastPart, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     }
   }
 

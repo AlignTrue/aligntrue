@@ -6,10 +6,22 @@
 import { AnalyticsEvent } from "./analytics-types";
 
 // Session ID generation (client-side only, ephemeral)
+// Uses cryptographically secure random for analytics session tracking
 let sessionId: string | undefined;
 
 if (typeof window !== "undefined") {
-  sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  try {
+    // Use cryptographically secure random when available
+    const array = new Uint8Array(8);
+    crypto.getRandomValues(array);
+    const randomPart = Array.from(array, (byte) => byte.toString(36))
+      .join("")
+      .substring(0, 9);
+    sessionId = `session_${Date.now()}_${randomPart}`;
+  } catch {
+    // Fallback to Math.random for older browsers (acceptable for non-security analytics)
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }
 }
 
 /**
