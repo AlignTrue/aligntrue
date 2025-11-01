@@ -58,23 +58,34 @@ export default function CatalogPage() {
 
     async function load() {
       try {
+        console.log("[Catalog] Starting to load search index");
         setIsLoading(true);
         setError(null);
 
         // Load search_v1.json (adjust path for production)
         const index = await loadSearchIndex("/catalog/search_v1.json");
 
-        if (!mounted) return;
+        if (!mounted) {
+          console.log("[Catalog] Component unmounted, aborting state update");
+          return;
+        }
 
+        console.log(`[Catalog] Loaded ${index.entries.length} entries`);
         setSearchIndex(index.entries);
         setFuseInstance(createSearchInstance(index.entries));
+        console.log("[Catalog] Search index initialized successfully");
       } catch (err) {
         if (!mounted) return;
 
-        console.error("Failed to load search index:", err);
-        setError("Catalog index unavailable. Please check back later.");
+        console.error("[Catalog] Failed to load search index:", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Catalog index unavailable. Please check back later.";
+        setError(errorMessage);
       } finally {
         if (mounted) {
+          console.log("[Catalog] Setting loading to false");
           setIsLoading(false);
         }
       }
@@ -83,6 +94,7 @@ export default function CatalogPage() {
     load();
 
     return () => {
+      console.log("[Catalog] Component unmounting");
       mounted = false;
     };
   }, []);

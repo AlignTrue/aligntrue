@@ -34,9 +34,9 @@ export async function generatePackMetadata(slug: string): Promise<Metadata> {
       pack.description || `AI-native rules pack for ${pack.name}`;
     const url = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/catalog/${slug}`;
 
-    // Use first exporter preview as OpenGraph image (rendered as code card)
-    // In production, you'd generate an actual image from the preview
-    const ogImage = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/og?pack=${encodeURIComponent(pack.id)}`;
+    // Note: OG image generation (/api/og) not yet implemented
+    // Leaving it out for now to avoid 404 errors
+    // TODO: Add OG image generation API route in future
 
     // Keywords from categories and tools
     const keywords = [
@@ -62,20 +62,22 @@ export async function generatePackMetadata(slug: string): Promise<Metadata> {
         modifiedTime: pack.last_updated,
         authors: [pack.maintainer.name],
         tags: keywords,
-        images: [
-          {
-            url: ogImage,
-            width: 1200,
-            height: 630,
-            alt: `${pack.name} - AlignTrue Pack`,
-          },
-        ],
+        // images commented out until /api/og is implemented
+        // images: [
+        //   {
+        //     url: ogImage,
+        //     width: 1200,
+        //     height: 630,
+        //     alt: `${pack.name} - AlignTrue Pack`,
+        //   },
+        // ],
       },
       twitter: {
-        card: "summary_large_image",
+        card: "summary",
         title,
         description,
-        images: [ogImage],
+        // images commented out until /api/og is implemented
+        // images: [ogImage],
       },
       alternates: {
         canonical: url,

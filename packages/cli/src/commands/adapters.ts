@@ -2,7 +2,11 @@
  * Adapter management commands
  */
 
-import { saveConfig, type AlignTrueConfig } from "@aligntrue/core";
+import {
+  saveConfig,
+  saveMinimalConfig,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -372,9 +376,13 @@ async function enableAdapters(
 
   config.exporters = Array.from(currentExporters).sort();
 
-  // Save config
+  // Save config (use minimal save for solo mode to keep config clean)
   try {
-    await saveConfig(config);
+    if (config.mode === "solo") {
+      await saveMinimalConfig(config);
+    } else {
+      await saveConfig(config);
+    }
   } catch (error) {
     console.error("✗ Failed to save config");
     console.error(
@@ -441,9 +449,13 @@ async function disableAdapter(args: string[]): Promise<void> {
   // Remove adapter
   config.exporters = currentExporters.filter((e: string) => e !== adapterName);
 
-  // Save config
+  // Save config (use minimal save for solo mode to keep config clean)
   try {
-    await saveConfig(config);
+    if (config.mode === "solo") {
+      await saveMinimalConfig(config);
+    } else {
+      await saveConfig(config);
+    }
   } catch (error) {
     console.error("✗ Failed to save config");
     console.error(
