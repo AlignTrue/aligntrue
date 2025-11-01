@@ -62,4 +62,4 @@ packages/cli/tests/commands/*-wip.test.ts
 # internal docs (moved temporary documentation)
 .internal_docs/
 docs/pre-1.0-policy.md
-phase-3-5-implementation.plan.md
+phase-3-5-implementation.plan.mdapps/web/public/catalog/search_v1.json
