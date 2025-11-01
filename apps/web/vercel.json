@@ -9,5 +9,11 @@
   "regions": ["iad1"],
   "git": {
     "deploymentEnabled": true
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/docs/:path*",
+      "destination": "https://aligntrue-docs.vercel.app/docs/:path*"
+    }
+  ]
 }
