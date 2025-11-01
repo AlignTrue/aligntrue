@@ -180,7 +180,7 @@ Every rule must use one of these check types:
        expect_exit_code: 0
    ```
 
-See the [checks documentation](https://aligntrue.com/docs/checks) for complete details on each type.
+See the [checks documentation](https://aligntrue.ai/docs/checks) for complete details on each type.
 
 ### Evidence messages
 
@@ -253,10 +253,10 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 
 Stuck? Here's how to get help:
 
-- **Documentation**: Read the full docs at [aligntrue.com/docs](https://aligntrue.com/docs)
-  - [Align Spec v1](https://aligntrue.com/docs/spec) - Complete specification
-  - [Checks reference](https://aligntrue.com/docs/checks) - All check types explained
-  - [Canonicalization](https://aligntrue.com/docs/canonicalization) - How hashing works
+- **Documentation**: Read the full docs at [aligntrue.ai/docs](https://aligntrue.ai/docs)
+  - [Align Spec v1](https://aligntrue.ai/docs/spec) - Complete specification
+  - [Checks reference](https://aligntrue.ai/docs/checks) - All check types explained
+  - [Canonicalization](https://aligntrue.ai/docs/canonicalization) - How hashing works
 
 - **Examples**: Browse existing packs in [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns)
   - [base-testing](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-testing.aligntrue.yaml) - Testing rules
@@ -319,7 +319,7 @@ This runs your checks against a test repository and shows findings.
 
 If this guide doesn't answer your question:
 
-- Check the [documentation](https://aligntrue.com/docs)
+- Check the [documentation](https://aligntrue.ai/docs)
 - Search [existing discussions](https://github.com/AlignTrue/aligns/discussions)
 - Open a [new discussion](https://github.com/AlignTrue/aligns/discussions/new)
 

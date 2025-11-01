@@ -143,7 +143,7 @@ export function emitSarif(
           driver: {
             name: "AlignTrue Checks",
             version: toolVersion,
-            informationUri: "https://aligntrue.com",
+            informationUri: "https://aligntrue.ai",
             rules: Array.from(rulesMap.values()),
           },
         },
