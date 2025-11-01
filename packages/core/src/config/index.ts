@@ -212,12 +212,12 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.modules.bundle = result.modules.bundle ?? false;
     result.modules.checks = result.modules.checks ?? true;
     result.modules.mcp = result.modules.mcp ?? false;
-  } else if (config.mode === "team") {
+  } else if (result.mode === "team") {
     result.modules.lockfile = result.modules.lockfile ?? true;
     result.modules.bundle = result.modules.bundle ?? true;
     result.modules.checks = result.modules.checks ?? true;
     result.modules.mcp = result.modules.mcp ?? false;
-  } else if (config.mode === "enterprise") {
+  } else if (result.mode === "enterprise") {
     result.modules.lockfile = result.modules.lockfile ?? true;
     result.modules.bundle = result.modules.bundle ?? true;
     result.modules.checks = result.modules.checks ?? true;
@@ -239,9 +239,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (!result.git) {
     result.git = {};
   }
-  if (config.mode === "solo" || config.mode === "team") {
+  if (result.mode === "solo" || result.mode === "team") {
     result.git.mode = result.git.mode ?? "ignore";
-  } else if (config.mode === "enterprise") {
+  } else if (result.mode === "enterprise") {
     result.git.mode = result.git.mode ?? "commit";
   }
 
@@ -251,7 +251,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   }
 
   // Solo mode: auto_pull ON by default (enables native-format editing), accept_agent on conflict
-  if (config.mode === "solo") {
+  if (result.mode === "solo") {
     result.sync.auto_pull = result.sync.auto_pull ?? true; // ON for solo (Phase 2 intent)
     result.sync.on_conflict = result.sync.on_conflict ?? "accept_agent";
     // Auto-detect primary_agent if not set (first exporter that supports import)
@@ -620,6 +620,137 @@ export async function saveConfig(
   writeFileSync(tempPath, yamlContent, "utf-8");
 
   // Rename atomically (overwrites destination)
+  renameSync(tempPath, path);
+}
+
+/**
+ * Save config to file with minimal output (only non-default values)
+ * Use for solo mode where clean, readable configs matter
+ */
+export async function saveMinimalConfig(
+  config: AlignTrueConfig,
+  configPath?: string,
+  cwd?: string,
+): Promise<void> {
+  const paths = getAlignTruePaths(cwd);
+  const path = configPath || paths.config;
+
+  // Create minimal config by comparing against defaults
+  const minimalConfig: Partial<AlignTrueConfig> = {};
+
+  // Always include exporters (required field)
+  if (config.exporters && config.exporters.length > 0) {
+    minimalConfig.exporters = config.exporters;
+  }
+
+  // Only add fields that differ from defaults
+  // Use same mode as config to get correct mode-specific defaults
+  const defaults = applyDefaults({
+    exporters: config.exporters || [],
+    mode: config.mode,
+    version: config.version,
+  });
+
+  // Mode: only if not solo (solo is default)
+  if (config.mode && config.mode !== "solo") {
+    minimalConfig.mode = config.mode;
+  }
+
+  // Version: only if not "1"
+  if (config.version && config.version !== "1") {
+    minimalConfig.version = config.version;
+  }
+
+  // Modules: only non-default values
+  if (config.modules) {
+    const hasNonDefaults =
+      config.modules.lockfile !== defaults.modules?.lockfile ||
+      config.modules.bundle !== defaults.modules?.bundle ||
+      config.modules.checks !== defaults.modules?.checks ||
+      config.modules.mcp !== defaults.modules?.mcp;
+
+    if (hasNonDefaults) {
+      minimalConfig.modules = {};
+      if (
+        config.modules.lockfile !== defaults.modules?.lockfile &&
+        config.modules.lockfile !== undefined
+      ) {
+        minimalConfig.modules.lockfile = config.modules.lockfile;
+      }
+      if (
+        config.modules.bundle !== defaults.modules?.bundle &&
+        config.modules.bundle !== undefined
+      ) {
+        minimalConfig.modules.bundle = config.modules.bundle;
+      }
+      if (
+        config.modules.checks !== defaults.modules?.checks &&
+        config.modules.checks !== undefined
+      ) {
+        minimalConfig.modules.checks = config.modules.checks;
+      }
+      if (
+        config.modules.mcp !== defaults.modules?.mcp &&
+        config.modules.mcp !== undefined
+      ) {
+        minimalConfig.modules.mcp = config.modules.mcp;
+      }
+    }
+  }
+
+  // Only include other sections if they have non-default values
+  if (
+    config.lockfile?.mode &&
+    config.lockfile.mode !== defaults.lockfile?.mode
+  ) {
+    minimalConfig.lockfile = { mode: config.lockfile.mode };
+  }
+
+  if (
+    config.sync?.auto_pull !== defaults.sync?.auto_pull ||
+    config.sync?.on_conflict !== defaults.sync?.on_conflict
+  ) {
+    minimalConfig.sync = {};
+    if (
+      config.sync?.auto_pull !== defaults.sync?.auto_pull &&
+      config.sync?.auto_pull !== undefined
+    ) {
+      minimalConfig.sync.auto_pull = config.sync.auto_pull;
+    }
+    if (
+      config.sync?.on_conflict !== defaults.sync?.on_conflict &&
+      config.sync?.on_conflict !== undefined
+    ) {
+      minimalConfig.sync.on_conflict = config.sync.on_conflict;
+    }
+  }
+
+  // Sources: only if not default
+  const defaultSources = JSON.stringify([
+    { type: "local", path: ".aligntrue/rules.md" },
+  ]);
+  const currentSources = JSON.stringify(config.sources);
+  if (currentSources !== defaultSources && config.sources !== undefined) {
+    minimalConfig.sources = config.sources;
+  }
+
+  // Scopes, overlays: always include if present (not defaults)
+  if (config.scopes && config.scopes.length > 0) {
+    minimalConfig.scopes = config.scopes;
+  }
+  if (
+    config.overlays &&
+    Array.isArray(config.overlays) &&
+    config.overlays.length > 0
+  ) {
+    minimalConfig.overlays = config.overlays;
+  }
+
+  const yamlContent = yaml.dump(minimalConfig);
+  const tempPath = `${path}.tmp`;
+
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(tempPath, yamlContent, "utf-8");
   renameSync(tempPath, path);
 }
 

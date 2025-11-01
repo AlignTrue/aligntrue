@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `adapters enable` now processes all provided adapter names instead of only the first one
   - Import command help now clarifies that Cursor import scans ALL .mdc files
   - Team enable supports non-interactive mode for CI/automation workflows
+  - Config files now stay minimal in solo mode (only non-default values written)
+  - Improved import command help to explain coverage percentages and fidelity expectations
 
 - Migrated documentation site from Next.js Pages Router to App Router for Nextra 4.6.0 compatibility
 - Downgraded Next.js from 16.0.1 to 15.1.3 and React from 19.2.0 to 19.0.0 for Nextra compatibility
@@ -47,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Config defaults now properly apply mode-specific values after auto-detecting mode (fixes `result.mode` vs `config.mode` bug)
 - Documentation organization now follows clear hierarchy: getting-started, concepts, reference, contributing
 - `team enable` command now properly respects `--yes` and `--non-interactive` flags
 - `adapters enable` with multiple arguments now enables all specified adapters
