@@ -237,6 +237,59 @@ export function showStandardHelp(config: HelpConfig): void {
 }
 
 /**
+ * Check if the current environment supports TTY (interactive terminal)
+ *
+ * Returns true if both stdin and stdout are TTY devices, indicating
+ * the command is running in an interactive terminal that can handle
+ * prompts and colored output.
+ *
+ * @returns True if TTY is available, false otherwise
+ *
+ * @example
+ * ```typescript
+ * if (isTTY()) {
+ *   // Show interactive prompts
+ * } else {
+ *   // Use non-interactive mode
+ * }
+ * ```
+ */
+export function isTTY(): boolean {
+  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
+}
+
+/**
+ * Determine if interactive mode should be used
+ *
+ * Checks for explicit non-interactive flag and TTY availability.
+ * Automatically falls back to non-interactive mode when TTY is not
+ * available (CI environments, piped contexts, etc.).
+ *
+ * @param forceNonInteractive - True if --yes or --non-interactive flag was provided
+ * @returns True if interactive mode should be used
+ *
+ * @example
+ * ```typescript
+ * const nonInteractive = args.includes('--yes')
+ * const useInteractive = shouldUseInteractive(nonInteractive)
+ *
+ * if (useInteractive) {
+ *   const response = await clack.text({ message: 'Enter value:' })
+ * }
+ * ```
+ */
+export function shouldUseInteractive(forceNonInteractive: boolean): boolean {
+  if (forceNonInteractive) return false;
+
+  if (!isTTY()) {
+    console.log("Non-TTY environment detected, using non-interactive mode");
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Execute a command with standardized lifecycle management
  *
  * Wraps command execution with intro/outro, telemetry recording, and

@@ -26,8 +26,11 @@ import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  shouldUseInteractive,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { execSync } from "child_process";
+import { basename } from "path";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -45,7 +48,8 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--project-id",
     hasValue: true,
-    description: "Project identifier (default: my-project)",
+    description:
+      "Project identifier (default: auto-detected from git/directory)",
   },
   {
     flag: "--exporters",
@@ -53,6 +57,42 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Comma-separated list of exporters (default: auto-detect)",
   },
 ];
+
+/**
+ * Detect project ID intelligently from git repo or directory name
+ *
+ * Tries in order:
+ * 1. Git remote URL (extracts repo name)
+ * 2. Current directory name
+ * 3. Fallback to "my-project"
+ *
+ * @returns Sanitized project ID
+ */
+function detectProjectId(): string {
+  try {
+    // Try git remote
+    const gitRemote = execSync("git config --get remote.origin.url", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+
+    const match = gitRemote.match(/\/([^/]+?)(?:\.git)?$/);
+    if (match && match[1]) {
+      return match[1].toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    }
+  } catch {
+    // Git not available or no remote
+  }
+
+  // Fallback to directory name
+  const dirName = basename(process.cwd());
+  const sanitized = dirName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  if (sanitized && sanitized !== "." && sanitized !== "..") {
+    return sanitized;
+  }
+
+  return "my-project";
+}
 
 /**
  * Init command implementation
@@ -84,10 +124,13 @@ export async function init(args: string[] = []): Promise<void> {
   }
 
   // Extract flags
-  const nonInteractive =
+  const forceNonInteractive =
     (parsed.flags["non-interactive"] as boolean | undefined) ||
     (parsed.flags["yes"] as boolean | undefined) ||
     false;
+  const useInteractive = shouldUseInteractive(forceNonInteractive);
+  const nonInteractive = !useInteractive;
+
   const projectId = parsed.flags["project-id"] as string | undefined;
   const exportersArg = parsed.flags["exporters"] as string | undefined;
   const exporters = exportersArg
@@ -261,13 +304,14 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       clack.log.info(msg);
     }
   } else if (nonInteractive) {
-    projectIdValue = "my-project";
-    console.log("Using default project ID: my-project");
+    projectIdValue = detectProjectId();
+    console.log(`Using detected project ID: ${projectIdValue}`);
   } else {
+    const detectedId = detectProjectId();
     const projectIdResponse = await clack.text({
       message: "Project ID (for rules identifier):",
-      placeholder: "my-project",
-      initialValue: "my-project",
+      placeholder: detectedId,
+      initialValue: detectedId,
       validate: (value) => {
         if (!value || value.trim().length === 0) {
           return "Project ID is required";
