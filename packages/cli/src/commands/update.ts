@@ -119,9 +119,9 @@ export async function update(args: string[]): Promise<void> {
   // Get subcommand
   const subcommand = parsedArgs.positional[0];
   if (!subcommand || (subcommand !== "check" && subcommand !== "apply")) {
+    console.log(HELP_TEXT);
     console.error("Error: Missing or invalid subcommand");
-    console.error("Usage: aligntrue update <check|apply> [options]");
-    console.error("Run 'aligntrue update --help' for more information");
+    console.error("Usage: aligntrue update <check|apply> [options]\n");
     process.exit(1);
   }
 

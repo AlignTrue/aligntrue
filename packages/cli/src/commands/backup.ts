@@ -69,8 +69,8 @@ export async function backupCommand(argv: string[]): Promise<void> {
   const subcommand = (args.positional[0] as string | undefined) ?? argv[0];
 
   if (!subcommand) {
-    clack.log.error("Missing subcommand");
     console.log(HELP_TEXT);
+    console.error("Error: Missing subcommand\n");
     process.exit(2);
   }
 
@@ -95,8 +95,8 @@ export async function backupCommand(argv: string[]): Promise<void> {
         break;
 
       default:
-        clack.log.error(`Unknown subcommand: ${subcommand}`);
         console.log(HELP_TEXT);
+        console.error(`Error: Unknown subcommand: ${subcommand}\n`);
         process.exit(2);
     }
   } catch (error) {

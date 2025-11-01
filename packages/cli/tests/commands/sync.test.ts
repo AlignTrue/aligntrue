@@ -933,6 +933,7 @@ describe("sync command", () => {
     it("shows info message when allow list does not exist in team mode", async () => {
       mockExistsSync.mockImplementation((path: string) => {
         if (path.includes("allow.yaml")) return false; // No allow list
+        if (path.includes(".team-onboarding-complete")) return false; // No marker file yet
         return true; // Config and other files exist
       });
       mockLoadConfig.mockReturnValue({
