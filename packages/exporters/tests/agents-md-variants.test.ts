@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { ExporterRegistry } from "../src/registry.js";
-import { dirname, join } from "path";
+import { dirname, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync, rmSync } from "fs";
 import { readFileSync } from "fs";
@@ -44,9 +44,9 @@ describe("AGENTS.md-based exporter variants", () => {
     const manifests = registry.discoverAdapters(srcPath);
 
     // Check that all variants are discovered
+    // Use path.basename() to get directory name (works cross-platform)
     const manifestNames = manifests.map((p) => {
-      const parts = p.split("/");
-      return parts[parts.length - 2]; // Get directory name before manifest.json
+      return basename(dirname(p)); // Get directory name before manifest.json
     });
 
     for (const variant of AGENTS_MD_VARIANTS) {
