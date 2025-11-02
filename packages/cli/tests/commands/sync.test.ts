@@ -84,6 +84,7 @@ vi.mock("@aligntrue/exporters", () => {
     }),
     registerFromManifest: vi.fn(),
     get: vi.fn((name: string) => ({ name, version: "1.0.0", export: vi.fn() })),
+    list: vi.fn(() => ["cursor", "agents-md"]),
   };
   return {
     ExporterRegistry: vi.fn(function (this: any) {

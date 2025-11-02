@@ -10,5 +10,9 @@ exporters:
   - agents-md
   - vscode-mcp
 
+sync:
+  auto_pull: true
+  primary_agent: cursor
+
 git:
   mode: ignore
