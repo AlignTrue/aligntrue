@@ -61,24 +61,16 @@ describe("generateMarkdown", () => {
     expect(markdown).toContain("## Project Rules");
   });
 
-  it("places guidance before block when metadata indicates", () => {
+  it("places pack-level guidance before block as prose", () => {
     const ir: IRDocument = {
       id: "test-rules",
       version: "1.0.0",
       spec_version: "1",
       rules: [],
       guidance: "This file demonstrates AlignTrue rules.",
-      _markdown_meta: {
-        guidance_position: "before-block",
-        whitespace_style: {
-          indent: "spaces",
-          indent_size: 2,
-          line_endings: "lf",
-        },
-      },
     };
 
-    const markdown = generateMarkdown(ir, { preserveMetadata: true });
+    const markdown = generateMarkdown(ir);
 
     // Guidance should be before ```aligntrue block
     const guidanceIndex = markdown.indexOf("This file demonstrates");
@@ -87,39 +79,12 @@ describe("generateMarkdown", () => {
     expect(guidanceIndex).toBeGreaterThan(0);
     expect(guidanceIndex).toBeLessThan(blockIndex);
 
-    // Guidance should NOT be in YAML
+    // Guidance should NOT be in YAML (not part of AlignPack spec)
     const yamlStart = markdown.indexOf("```aligntrue") + "```aligntrue".length;
     const yamlEnd = markdown.lastIndexOf("```");
     const yamlContent = markdown.slice(yamlStart, yamlEnd);
 
     expect(yamlContent).not.toContain("This file demonstrates");
-  });
-
-  it("keeps guidance in doc when metadata indicates", () => {
-    const ir: IRDocument = {
-      id: "test-rules",
-      version: "1.0.0",
-      spec_version: "1",
-      rules: [],
-      guidance: "This file demonstrates AlignTrue rules.",
-      _markdown_meta: {
-        guidance_position: "in-doc",
-        whitespace_style: {
-          indent: "spaces",
-          indent_size: 2,
-          line_endings: "lf",
-        },
-      },
-    };
-
-    const markdown = generateMarkdown(ir, { preserveMetadata: true });
-
-    // Guidance should be in YAML block
-    const yamlStart = markdown.indexOf("```aligntrue") + "```aligntrue".length;
-    const yamlEnd = markdown.lastIndexOf("```");
-    const yamlContent = markdown.slice(yamlStart, yamlEnd);
-
-    expect(yamlContent).toContain("This file demonstrates");
   });
 
   it("uses 4-space indent when specified", () => {
@@ -285,8 +250,8 @@ describe("generateMarkdown", () => {
 
     const markdown = generateMarkdown(ir);
 
-    // source_format should be preserved in YAML
-    expect(markdown).toContain("source_format: markdown");
+    // source_format is internal metadata, should NOT appear in output
+    expect(markdown).not.toContain("source_format");
   });
 
   it("ends with single newline", () => {
