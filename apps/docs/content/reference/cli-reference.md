@@ -47,7 +47,7 @@ aligntrue init
 - `1` - Already initialized (shows guidance for team join vs re-init)
 - `2` - System error (permissions, disk space, etc.)
 
-**See also:** [Quickstart Guide](quickstart.md) for step-by-step walkthrough.
+**See also:** [Quickstart Guide](/getting-started/quickstart) for step-by-step walkthrough.
 
 ---
 
@@ -120,14 +120,14 @@ aligntrue import cursor --no-coverage
 - **claude-code** - AGENTS.md format (alias)
 - **aider** - AGENTS.md format (alias)
 
-See [Import Workflow Guide](import-workflow.md) for step-by-step migration instructions.
+See [Import Workflow Guide](/reference/import-workflow) for step-by-step migration instructions.
 
 **Exit codes:**
 
 - `0` - Success
 - `1` - Error (agent not found, no rules, unsupported agent)
 
-**See also:** [Sync Behavior](sync-behavior.md) for two-way sync details.
+**See also:** [Sync Behavior](/concepts/sync-behavior) for two-way sync details.
 
 ---
 
@@ -201,7 +201,7 @@ When `mode: team` is enabled in config:
 - Regenerates lockfile after successful sync
 - Detects drift and suggests resolution
 
-**See also:** [Sync Behavior](sync-behavior.md) for detailed contract.
+**See also:** [Sync Behavior](/concepts/sync-behavior) for detailed contract.
 
 ---
 
@@ -262,7 +262,7 @@ aligntrue check --ci
     aligntrue check --ci
 ```
 
-**See also:** [Troubleshooting Guide](troubleshooting.md#check-issues-ci) for common check failures.
+**See also:** [Troubleshooting Guide](/reference/troubleshooting#check-issues-ci) for common check failures.
 
 ---
 
@@ -518,7 +518,7 @@ $ aligntrue sync
 ✔ Cleaned up 2 old backups
 ```
 
-**See also:** [Backup and Restore Guide](backup-restore.md) for detailed usage and troubleshooting.
+**See also:** [Backup and Restore Guide](/reference/backup-restore) for detailed usage and troubleshooting.
 
 ---
 
@@ -953,7 +953,7 @@ Next step:
 - `1` - Validation error (invalid selector, missing operations)
 - `2` - System error (file write failed)
 
-**See also:** [Overlays Guide](overlays.md) for complete overlay documentation.
+**See also:** [Overlays Guide](/concepts/overlays) for complete overlay documentation.
 
 ---
 
@@ -1038,7 +1038,7 @@ Overlays (3 active, 1 stale)
 - `0` - Success
 - `1` - Config not found
 
-**See also:** [Drift Detection](drift-detection.md) for automated staleness checks.
+**See also:** [Drift Detection](/concepts/drift-detection) for automated staleness checks.
 
 ---
 
@@ -1103,7 +1103,7 @@ No overlays match selector: rule[id=nonexistent]
 - `0` - Success
 - `1` - Selector invalid or no overlays found
 
-**See also:** [Overlays Guide](overlays.md) for overlay usage.
+**See also:** [Overlays Guide](/concepts/overlays) for overlay usage.
 
 ---
 
@@ -1170,7 +1170,7 @@ Next step:
 - `0` - Success
 - `1` - No matching overlay found
 
-**See also:** [Overlays Guide](overlays.md)
+**See also:** [Overlays Guide](/concepts/overlays)
 
 ---
 
@@ -1212,7 +1212,7 @@ aligntrue drift --json
 
 **Exit codes:** `0` (no drift), `2` (drift with --gates)
 
-**See:** [Drift detection guide](./drift-detection.md)
+**See:** [Drift detection guide](/concepts/drift-detection)
 
 ---
 
@@ -1261,7 +1261,7 @@ aligntrue update apply --dry-run
 
 **Requirements:** Team mode enabled
 
-**See:** [Auto-updates guide](./auto-updates.md)
+**See:** [Auto-updates guide](/reference/auto-updates)
 
 ---
 
@@ -1325,7 +1325,7 @@ Actionable next steps:
 
 **Exit codes:** `0` (success)
 
-**See:** [Onboarding guide](./onboarding.md)
+**See:** [Onboarding guide](/contributing/team-onboarding)
 
 ---
 
@@ -1387,7 +1387,7 @@ lockfile:
   mode: soft # Warn on drift, don't block
 ```
 
-**See also:** [Sync Behavior](sync-behavior.md#lockfile-behavior-team-mode) for lockfile modes.
+**See also:** [Sync Behavior](/concepts/sync-behavior#lockfile-behavior-team-mode) for lockfile modes.
 
 ---
 
@@ -1564,9 +1564,9 @@ aligntrue sync --dry-run
 
 **See also:**
 
-- [Git Workflows Guide](git-workflows.md) - Complete pull command workflows
-- [Git Sources Guide](git-sources.md) - Config-based permanent git sources
-- [Privacy Guide](PRIVACY.md) - Network consent management
+- [Git Workflows Guide](/concepts/git-workflows) - Complete pull command workflows
+- [Git Sources Guide](/reference/git-sources) - Config-based permanent git sources
+- [Privacy Guide](/reference/privacy) - Network consent management
 
 ---
 
@@ -1744,9 +1744,9 @@ Required fields: `id`, `version`, `spec_version`, `profile.id`
 
 **See also:**
 
-- [Git Workflows Guide - Vendoring](git-workflows.md#vendoring-workflows) - Complete vendoring workflows
-- [Team Mode Guide](team-mode.md) - Team approval workflows
-- [Privacy Guide](PRIVACY.md) - Network consent management
+- [Git Workflows Guide - Vendoring](/concepts/git-workflows#vendoring-workflows) - Complete vendoring workflows
+- [Team Mode Guide](/concepts/team-mode) - Team approval workflows
+- [Privacy Guide](/reference/privacy) - Network consent management
 
 ---
 
@@ -1756,7 +1756,7 @@ Manage AlignTrue settings and preferences.
 
 ### `aligntrue team enable|approve|list-allowed|remove`
 
-Manage team mode and approved rule sources. See [Team Mode Guide](team-mode.md) for complete workflows.
+Manage team mode and approved rule sources. See [Team Mode Guide](/concepts/team-mode) for complete workflows.
 
 **Usage:**
 
@@ -1858,7 +1858,7 @@ We NEVER collect:
 - State: `.aligntrue/telemetry.json`
 - Events: `.aligntrue/telemetry-events.json` (last 1000 events)
 
-**See also:** [Privacy Policy](../PRIVACY.md) for complete details.
+**See also:** [Privacy Policy](/reference/privacy) for complete details.
 
 ### `aligntrue privacy audit|revoke`
 
@@ -1936,7 +1936,7 @@ Offline mode bypasses consent checks entirely (no network = no consent needed).
 
 **See also:**
 
-- [Privacy Policy](../PRIVACY.md) - Complete privacy details
+- [Privacy Policy](/reference/privacy) - Complete privacy details
 - [Sync command](#aligntrue-sync) - Offline flag documentation
 
 ---
@@ -2100,16 +2100,16 @@ If you encounter an error:
 1. **Read the hint** - Most errors include next steps
 2. **Check exit codes** - 2 = system issue, 1 = validation issue
 3. **Use error codes** - Reference for support or documentation
-4. **Check troubleshooting** - [Common issues](troubleshooting.md)
+4. **Check troubleshooting** - [Common issues](/reference/troubleshooting)
 
 ---
 
 ## See also
 
-- [Quickstart Guide](quickstart.md) - Get started in <60 seconds
-- [Backup and Restore Guide](backup-restore.md) - Protect your configuration
-- [Git Sources Guide](git-sources.md) - Pull rules from repositories
-- [Import Workflow](import-workflow.md) - Migrate from existing agent rules
-- [Troubleshooting](troubleshooting.md) - Common issues and fixes
-- [Sync Behavior](sync-behavior.md) - Two-way sync contract
-- [Extending AlignTrue](extending-aligntrue.md) - Add new exporters
+- [Quickstart Guide](/getting-started/quickstart) - Get started in <60 seconds
+- [Backup and Restore Guide](/reference/backup-restore) - Protect your configuration
+- [Git Sources Guide](/reference/git-sources) - Pull rules from repositories
+- [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
+- [Troubleshooting](/reference/troubleshooting) - Common issues and fixes
+- [Sync Behavior](/concepts/sync-behavior) - Two-way sync contract
+- [Extending AlignTrue](/contributing/adding-exporters) - Add new exporters

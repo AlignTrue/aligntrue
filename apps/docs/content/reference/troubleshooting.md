@@ -603,8 +603,8 @@ cat .aligntrue/config.yaml | grep exporters -A 5
 
 ### Still stuck?
 
-1. Check [Command Reference](commands.md) for detailed flag documentation
-2. Review [Sync Behavior](sync-behavior.md) for expected workflow
+1. Check [Command Reference](/reference/cli-reference) for detailed flag documentation
+2. Review [Sync Behavior](/concepts/sync-behavior) for expected workflow
 3. Open an issue at [github.com/AlignTrue/aligntrue](https://github.com/AlignTrue/aligntrue/issues)
 
 Include in your issue:

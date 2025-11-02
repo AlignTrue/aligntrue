@@ -13,11 +13,13 @@
   "rewrites": [
     {
       "source": "/docs/:path*",
-      "destination": "https://aligntrue-docs.vercel.app/docs/:path*"
+      "destination": "https://aligntrue-docs.vercel.app/docs/:path*",
+      "_comment": "Production-only: Proxies /docs requests to external Nextra site. In development, this returns 404 (expected behavior - rewrites don't resolve external URLs locally)."
     },
     {
       "source": "/sitemap.docs.xml",
-      "destination": "https://aligntrue-docs.vercel.app/sitemap.docs.xml"
+      "destination": "https://aligntrue-docs.vercel.app/sitemap.docs.xml",
+      "_comment": "Production-only: Fetches docs sitemap from external site for SEO consolidation."
     }
   ]
 }

@@ -528,10 +528,10 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 
 ### Documentation
 
-- [Command Reference](commands.md) - CLI usage
-- [Import Workflow](import-workflow.md) - Migrate from existing agent rules
-- [Sync Behavior](sync-behavior.md) - How exports are triggered
-- [Technical CONTRIBUTING.md](../packages/exporters/CONTRIBUTING.md) - Detailed requirements
+- [Command Reference](/reference/cli-reference) - CLI usage
+- [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
+- [Sync Behavior](/concepts/sync-behavior) - How exports are triggered
+- [Technical CONTRIBUTING.md](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/CONTRIBUTING.md) - Detailed requirements
 
 ### Community
 

@@ -16,7 +16,9 @@ const nextConfig: NextConfig = {
   // Static pages are generated at build time
   // Dynamic features work when needed
 
-  // Rewrite docs requests to external docs site
+  // Rewrite docs requests to external Nextra docs site
+  // Note: Rewrites only work in production. In development mode, /docs will return 404.
+  // This is expected Next.js behavior - external rewrites don't resolve locally.
   async rewrites() {
     return [
       {

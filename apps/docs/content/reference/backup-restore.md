@@ -430,7 +430,7 @@ Backup considerations:
 
 ## See also
 
-- [Sync behavior](sync-behavior.md) - How sync operations work
-- [Commands reference](commands.md) - All CLI commands
-- [Configuration](quickstart.md#configuration) - Config file format
-- [Git sources](git-sources.md) - Using git for rule sharing
+- [Sync behavior](/concepts/sync-behavior) - How sync operations work
+- [Commands reference](/reference/cli-reference) - All CLI commands
+- [Configuration](/getting-started/quickstart#configuration) - Config file format
+- [Git sources](/reference/git-sources) - Using git for rule sharing
