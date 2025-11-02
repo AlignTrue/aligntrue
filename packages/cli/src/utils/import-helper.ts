@@ -158,9 +158,9 @@ export async function executeImport(
 
   return {
     rules,
-    coverage,
+    ...(coverage !== undefined && { coverage }),
     written,
-    irPath,
+    ...(irPath !== undefined && { irPath }),
   };
 }
 
