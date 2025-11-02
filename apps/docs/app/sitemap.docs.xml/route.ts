@@ -8,11 +8,26 @@ interface Entry {
   lastModified?: string;
 }
 
+/**
+ * Escape XML entities to prevent injection attacks
+ * Escapes: & < > " '
+ */
+function escapeXml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 function toXml(entries: Entry[]): string {
   const body = entries
     .map((e) => {
-      const last = e.lastModified ? `<lastmod>${e.lastModified}</lastmod>` : "";
-      return `<url><loc>${e.url}</loc>${last}</url>`;
+      const last = e.lastModified
+        ? `<lastmod>${escapeXml(e.lastModified)}</lastmod>`
+        : "";
+      return `<url><loc>${escapeXml(e.url)}</loc>${last}</url>`;
     })
     .join("");
 

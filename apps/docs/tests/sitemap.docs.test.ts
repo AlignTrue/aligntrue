@@ -56,4 +56,45 @@ describe("sitemap.docs.xml", () => {
     // Should have root route for index.mdx
     expect(routes).toContain("/");
   });
+
+  it("escapes XML entities to prevent injection", async () => {
+    const mod = await import("../app/sitemap.docs.xml/route");
+    const response = await mod.GET();
+    const text = await response.text();
+
+    // Verify XML is well-formed (parser would fail if entities not escaped)
+    const parser = new XMLParser();
+    const parsed = parser.parse(text);
+    expect(parsed.urlset).toBeTruthy();
+
+    // Check raw XML text for proper escaping
+    // URLs and dates should not contain unescaped XML special characters
+    const urls = parsed.urlset.url
+      ? Array.isArray(parsed.urlset.url)
+        ? parsed.urlset.url
+        : [parsed.urlset.url]
+      : [];
+
+    // Verify no unescaped ampersands in XML text (should be &amp;)
+    // This regex finds & not followed by valid entity name
+    expect(text).not.toMatch(/&(?!amp;|lt;|gt;|quot;|apos;|#)/);
+
+    // Verify no unescaped angle brackets in content (outside of XML tags)
+    // Content between tags should not contain < or >
+    const locMatches = text.matchAll(/<loc>(.*?)<\/loc>/g);
+    for (const match of locMatches) {
+      const content = match[1];
+      expect(content).not.toContain("<");
+      expect(content).not.toContain(">");
+    }
+
+    // All URLs should be valid strings after parsing
+    for (const url of urls) {
+      expect(url.loc).toBeTruthy();
+      expect(typeof url.loc).toBe("string");
+      if (url.lastmod) {
+        expect(typeof url.lastmod).toBe("string");
+      }
+    }
+  });
 });
