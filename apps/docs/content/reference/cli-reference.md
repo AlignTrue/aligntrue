@@ -8,27 +8,38 @@ Commands you'll use most often for day-to-day development.
 
 ### `aligntrue init`
 
-Set up AlignTrue in your project with automatic agent detection.
+Set up AlignTrue in your project with automatic agent detection and import support.
 
 **Usage:**
 
 ```bash
-aligntrue init
+aligntrue init [options]
 ```
+
+**Flags:**
+
+| Flag                 | Description                                  | Default |
+| -------------------- | -------------------------------------------- | ------- |
+| `--import <agent>`   | Import from agent format (cursor, agents-md) | -       |
+| `--yes`, `-y`        | Non-interactive mode (uses defaults)         | `false` |
+| `--project-id <id>`  | Project identifier (default: auto-detected)  | -       |
+| `--exporters <list>` | Comma-separated list of exporters            | -       |
 
 **What it does:**
 
 1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
-2. Creates `.aligntrue/config.yaml` with detected agents enabled
-3. Creates `.aligntrue/rules.md` with starter template (5 example rules)
-4. Optionally runs `aligntrue sync` to generate agent files
+2. Detects existing agent rules and offers to import them
+3. Creates `.aligntrue/config.yaml` with detected agents enabled
+4. Creates `.aligntrue/rules.md` (from import or starter template)
+5. Auto-configures workflow mode based on initialization choice
 
 **Interactive prompts:**
 
+- **Import existing rules?** - If Cursor `.mdc` or `AGENTS.md` detected
+- **Preview coverage?** - Show import coverage report before importing
 - **Agents detected** - Choose which agents to enable (auto-enables if ≤3 detected)
 - **Project ID** - Identifier for your project (used in rule IDs)
 - **Create files?** - Confirm before writing
-- **Run sync now?** - Generate agent files immediately
 
 **Examples:**
 
@@ -36,10 +47,25 @@ aligntrue init
 # Fresh project setup
 aligntrue init
 
-# Already have rules? Import them
-# (Cursor .mdc files or AGENTS.md detected automatically)
+# Import existing Cursor rules (interactive)
 aligntrue init
+# Detects .cursor/rules/*.mdc and offers import
+
+# Import existing rules (non-interactive)
+aligntrue init --yes --import cursor
+
+# Import from AGENTS.md
+aligntrue init --import agents-md
+
+# Skip import, use fresh template
+aligntrue init
+# Select "Start fresh" when prompted
 ```
+
+**Workflow mode auto-configuration:**
+
+- **Imported rules** → `workflow_mode: native_format` (auto-pull enabled)
+- **Fresh start** → `workflow_mode: ir_source` (auto-pull disabled)
 
 **Exit codes:**
 
@@ -47,7 +73,10 @@ aligntrue init
 - `1` - Already initialized (shows guidance for team join vs re-init)
 - `2` - System error (permissions, disk space, etc.)
 
-**See also:** [Quickstart Guide](/getting-started/quickstart) for step-by-step walkthrough.
+**See also:**
+
+- [Quickstart Guide](/getting-started/quickstart) for step-by-step walkthrough
+- [Workflows Guide](/guides/workflows) for workflow mode details
 
 ---
 
@@ -115,7 +144,11 @@ aligntrue import cursor --no-coverage
 **Supported Agents:**
 
 - **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
-- **agents-md** - `AGENTS.md` universal markdown format
+- **cursorrules** - `.cursorrules` legacy single-file format (same as `.mdc`)
+- **agents-md** - `AGENTS.md` universal markdown format (case-insensitive)
+- **claude-md** - `CLAUDE.md` format (case-insensitive)
+- **crush-md** - `CRUSH.md` format (case-insensitive)
+- **warp-md** - `WARP.md` format (case-insensitive)
 - **copilot** - AGENTS.md format (alias)
 - **claude-code** - AGENTS.md format (alias)
 - **aider** - AGENTS.md format (alias)
