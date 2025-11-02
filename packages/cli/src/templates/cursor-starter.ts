@@ -8,7 +8,7 @@ export function generateCursorStarter(): string {
 description: AlignTrue starter rules
 alwaysApply: true
 ---
-## Rule: typescript-strict
+## Rule: quality.typescript.strict
 
 **Severity:** error
 
@@ -19,7 +19,7 @@ Enable strict mode in tsconfig.json.
 This enforces noImplicitAny, strictNullChecks, and strictFunctionTypes.
 Fix all TypeScript errors before committing.
 
-## Rule: naming-conventions
+## Rule: style.naming.conventions
 
 **Severity:** error
 
@@ -33,7 +33,7 @@ Follow these naming conventions:
 - Constants: UPPER_SNAKE_CASE (e.g., \`MAX_RETRIES\`)
 - Private properties: prefix with underscore (e.g., \`_cache\`)
 
-## Rule: testing-required
+## Rule: quality.testing.required
 
 **Severity:** warn
 
@@ -49,7 +49,7 @@ Examples:
 - src/utils/parser.ts → src/utils/parser.test.ts
 - src/components/Button.tsx → src/components/Button.test.tsx
 
-## Rule: imports-organized
+## Rule: style.imports.organized
 
 **Severity:** info
 
@@ -72,7 +72,7 @@ import { parseConfig } from './config'
 import { logger } from './logger'
 \`\`\`
 
-## Rule: no-console-log
+## Rule: quality.no.console-log
 
 **Severity:** warn
 
