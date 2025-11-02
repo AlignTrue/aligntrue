@@ -143,6 +143,9 @@ export class EditDetector {
   updateLastSyncTimestamp(): void {
     const timestamp = Date.now();
     try {
+      const { mkdirSync } = require("fs");
+      const { dirname } = require("path");
+      mkdirSync(dirname(this.lastSyncFile), { recursive: true });
       writeFileSync(this.lastSyncFile, timestamp.toString(), "utf-8");
     } catch (err) {
       // Silently fail if we can't write the timestamp
