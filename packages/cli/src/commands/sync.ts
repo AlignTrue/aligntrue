@@ -29,6 +29,21 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import {
+  EditDetector,
+  calculateRuleDiff,
+  formatDiffSummary,
+  formatFullDiff,
+} from "@aligntrue/core/sync";
+import { WorkflowDetector } from "../utils/workflow-detector.js";
+
+// ANSI color codes for diff output
+const colors = {
+  cyan: (str: string) => `\x1b[36m${str}\x1b[0m`,
+  green: (str: string) => `\x1b[32m${str}\x1b[0m`,
+  yellow: (str: string) => `\x1b[33m${str}\x1b[0m`,
+  red: (str: string) => `\x1b[31m${str}\x1b[0m`,
+};
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
@@ -58,6 +73,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--no-auto-pull",
     hasValue: false,
     description: "Disable auto-pull for this sync",
+  },
+  {
+    flag: "--show-auto-pull-diff",
+    hasValue: false,
+    description: "Show full diff when auto-pull executes",
   },
   {
     flag: "--force",
@@ -240,6 +260,8 @@ export async function sync(args: string[]): Promise<void> {
   const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
   const noAutoPull =
     (parsed.flags["no-auto-pull"] as boolean | undefined) || false;
+  const showAutoPullDiff =
+    (parsed.flags["show-auto-pull-diff"] as boolean | undefined) || false;
 
   if (config.sync?.auto_pull && !acceptAgent && !noAutoPull) {
     // Auto-pull enabled and user didn't manually specify agent
@@ -252,9 +274,6 @@ export async function sync(args: string[]): Promise<void> {
 
         if (existsSync(agentSourcePath)) {
           // Check for conflicts before auto-pull
-          const { EditDetector } = await import(
-            "@aligntrue/core/sync/edit-detector.js"
-          );
           const detector = new EditDetector(cwd);
           const conflictInfo = detector.hasConflict(
             absoluteSourcePath,
@@ -268,39 +287,82 @@ export async function sync(args: string[]): Promise<void> {
             clack.log.warn(`  - Changes also found in ${agentSourcePath}`);
             clack.log.warn("");
 
-            // Prompt user for resolution strategy
-            const resolution = await clack.select({
-              message: "How would you like to resolve this conflict?",
-              options: [
-                {
-                  value: "keep-ir",
-                  label: "Keep my edits to rules.md (skip auto-pull)",
-                  hint: "Recommended if you manually edited rules",
-                },
-                {
-                  value: "accept-agent",
-                  label: `Accept changes from ${autoPullAgent}`,
-                  hint: "Overwrites your rules.md edits",
-                },
-                {
-                  value: "abort",
-                  label: "Abort sync and review manually",
-                  hint: "Exit without making any changes",
-                },
-              ],
-            });
+            // Check if workflow has been configured
+            const workflowDetector = new WorkflowDetector(cwd);
+            const workflowConfigured = workflowDetector.isWorkflowConfigured();
 
-            if (resolution === "abort" || clack.isCancel(resolution)) {
-              clack.outro("Sync aborted. Review conflicts manually.");
-              process.exit(0);
+            // On first conflict, offer workflow choice
+            if (!workflowConfigured && config.sync.workflow_mode === "auto") {
+              clack.log.info(
+                "💡 This is your first conflict. Let's configure your workflow.",
+              );
+              clack.log.info("");
+
+              const workflowChoice =
+                await workflowDetector.promptWorkflowChoice();
+
+              if (!clack.isCancel(workflowChoice)) {
+                await workflowDetector.saveWorkflowChoice(
+                  workflowChoice,
+                  config,
+                  configPath,
+                );
+
+                // Update config in memory for this sync
+                config.sync.workflow_mode = workflowChoice;
+
+                clack.log.info("");
+              }
             }
 
-            if (resolution === "keep-ir") {
-              clack.log.info("Skipping auto-pull, keeping your edits");
+            // Resolve conflict based on workflow mode
+            const workflowMode = config.sync.workflow_mode || "auto";
+
+            if (workflowMode === "ir_source") {
+              // IR-source workflow: always keep IR edits
+              clack.log.info("Workflow: IR-source (keeping your edits)");
               shouldAutoPull = false;
-            } else {
-              clack.log.info(`Accepting changes from ${autoPullAgent}`);
+            } else if (workflowMode === "native_format") {
+              // Native-format workflow: always accept agent
+              clack.log.info(
+                `Workflow: Native-format (accepting ${autoPullAgent} changes)`,
+              );
               shouldAutoPull = true;
+            } else {
+              // Auto mode: prompt user for resolution
+              const resolution = await clack.select({
+                message: "How would you like to resolve this conflict?",
+                options: [
+                  {
+                    value: "keep-ir",
+                    label: "Keep my edits to rules.md (skip auto-pull)",
+                    hint: "Recommended if you manually edited rules",
+                  },
+                  {
+                    value: "accept-agent",
+                    label: `Accept changes from ${autoPullAgent}`,
+                    hint: "Overwrites your rules.md edits",
+                  },
+                  {
+                    value: "abort",
+                    label: "Abort sync and review manually",
+                    hint: "Exit without making any changes",
+                  },
+                ],
+              });
+
+              if (resolution === "abort" || clack.isCancel(resolution)) {
+                clack.outro("Sync aborted. Review conflicts manually.");
+                process.exit(0);
+              }
+
+              if (resolution === "keep-ir") {
+                clack.log.info("Skipping auto-pull, keeping your edits");
+                shouldAutoPull = false;
+              } else {
+                clack.log.info(`Accepting changes from ${autoPullAgent}`);
+                shouldAutoPull = true;
+              }
             }
           } else {
             shouldAutoPull = true;
@@ -495,6 +557,15 @@ export async function sync(args: string[]): Promise<void> {
     if (shouldAutoPull && autoPullAgent) {
       spinner.start(`Auto-pulling from ${autoPullAgent}`);
 
+      // Snapshot current rules for diff calculation
+      let beforeRules: any[] = [];
+      try {
+        const currentIR = await loadIR(absoluteSourcePath);
+        beforeRules = currentIR.rules || [];
+      } catch {
+        // Ignore errors - might be first sync
+      }
+
       try {
         // Import from agent first
         const importedRules = await importFromAgent(autoPullAgent, cwd);
@@ -588,6 +659,67 @@ export async function sync(args: string[]): Promise<void> {
               );
             } else if (pullResult.written && pullResult.written.length > 0) {
               clack.log.success(`Updated IR from ${autoPullAgent}`);
+
+              // Calculate and display diff if enabled
+              const showDiff =
+                showAutoPullDiff || (config.sync?.show_diff_on_pull ?? true);
+
+              if (showDiff && beforeRules.length > 0) {
+                try {
+                  const afterIR = await loadIR(absoluteSourcePath);
+                  const afterRules = afterIR.rules || [];
+                  const diff = calculateRuleDiff(beforeRules, afterRules);
+
+                  const totalChanges =
+                    diff.added.length +
+                    diff.modified.length +
+                    diff.removed.length;
+
+                  if (totalChanges > 0) {
+                    clack.log.info("");
+                    clack.log.info(
+                      colors.cyan(
+                        `ℹ Auto-pull from ${autoPullAgent} (${totalChanges} change${totalChanges !== 1 ? "s" : ""}):`,
+                      ),
+                    );
+
+                    if (showAutoPullDiff) {
+                      // Full diff mode
+                      const fullDiff = formatFullDiff(diff);
+                      fullDiff.forEach((line: string) => {
+                        if (line.startsWith("  +")) {
+                          clack.log.info(colors.green(line));
+                        } else if (line.startsWith("  ~")) {
+                          clack.log.info(colors.yellow(line));
+                        } else if (line.startsWith("  -")) {
+                          clack.log.info(colors.red(line));
+                        } else {
+                          clack.log.info(line);
+                        }
+                      });
+                    } else {
+                      // Brief summary mode (default)
+                      const summary = formatDiffSummary(diff);
+                      summary.forEach((line: string) => {
+                        if (line.startsWith("  +")) {
+                          clack.log.info(colors.green(line));
+                        } else if (line.startsWith("  ~")) {
+                          clack.log.info(colors.yellow(line));
+                        } else if (line.startsWith("  -")) {
+                          clack.log.info(colors.red(line));
+                        } else {
+                          clack.log.info(line);
+                        }
+                      });
+                    }
+                  }
+                } catch (diffErr) {
+                  // Non-critical - continue even if diff fails
+                  clack.log.warn(
+                    `Could not calculate diff: ${diffErr instanceof Error ? diffErr.message : String(diffErr)}`,
+                  );
+                }
+              }
             }
           }
         }
@@ -708,9 +840,6 @@ export async function sync(args: string[]): Promise<void> {
       // Update last sync timestamp (for conflict detection)
       if (!dryRun) {
         try {
-          const { EditDetector } = await import(
-            "@aligntrue/core/sync/edit-detector.js"
-          );
           const detector = new EditDetector(cwd);
           detector.updateLastSyncTimestamp();
         } catch {

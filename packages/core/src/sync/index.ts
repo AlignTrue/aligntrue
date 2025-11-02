@@ -8,9 +8,15 @@ import { SyncEngine } from "./engine.js";
 export type { SyncOptions, SyncResult } from "./engine.js";
 export type { Conflict } from "./conflict-detector.js";
 export type { EditInfo, ConflictInfo } from "./edit-detector.js";
+export type { RuleDiff, RuleChange } from "./diff-calculator.js";
 export { SyncEngine } from "./engine.js";
 export { ConflictDetector } from "./conflict-detector.js";
 export { EditDetector } from "./edit-detector.js";
+export {
+  calculateRuleDiff,
+  formatDiffSummary,
+  formatFullDiff,
+} from "./diff-calculator.js";
 export {
   AtomicFileWriter,
   computeFileChecksum,
