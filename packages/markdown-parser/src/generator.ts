@@ -40,17 +40,15 @@ export function generateMarkdown(
   const lineEnding =
     opts.lineEndings || meta?.whitespace_style?.line_endings || "lf";
 
-  // Check if guidance should be placed before block
-  const guidanceBeforeBlock = meta?.guidance_position === "before-block";
-
   // Build clean IR for YAML generation (remove metadata fields)
   const cleanIr = { ...ir };
   delete cleanIr._markdown_meta;
+  delete cleanIr.source_format; // Internal field, not part of AlignPack spec
 
-  // Extract and remove pack-level guidance ONLY if position is "before-block"
-  // When guidance_position is "in-doc", keep it in the YAML
+  // Extract pack-level guidance (not part of AlignPack spec)
+  // Pack-level guidance should be prose outside the fenced block, not YAML inside it
   let guidanceProse: string | undefined;
-  if (cleanIr.guidance && guidanceBeforeBlock) {
+  if (cleanIr.guidance) {
     guidanceProse = cleanIr.guidance as string;
     delete cleanIr.guidance;
   }

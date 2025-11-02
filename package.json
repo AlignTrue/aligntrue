@@ -6,9 +6,11 @@
   "scripts": {
     "build": "pnpm -r build",
     "build:catalog": "node temp-build-catalog.mjs",
+    "build:packages": "pnpm -r --filter './packages/*' build",
     "dev:web": "pnpm --filter @aligntrue/web dev",
     "dev:docs": "pnpm --filter @aligntrue/docs dev",
     "dev:all": "concurrently \"pnpm dev:web\" \"pnpm dev:docs\"",
+    "dev:packages": "pnpm -r --filter './packages/*' --parallel build --watch",
     "test": "pnpm -r test",
     "test:fast": "pnpm -r test --reporter=dot --pool=threads",
     "verify": "pnpm --filter @aligntrue/testkit test",

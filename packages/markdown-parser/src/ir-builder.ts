@@ -19,7 +19,6 @@ export interface IRDocument {
 export interface MarkdownMetadata {
   original_structure?: "single-block" | "multi-rule";
   header_prefix?: string;
-  guidance_position?: "before-block" | "in-doc";
   whitespace_style?: {
     indent: "spaces" | "tabs";
     indent_size: number;
@@ -144,13 +143,6 @@ export function buildIR(
         );
         if (header) {
           metadata.header_prefix = header;
-        }
-
-        // Determine guidance position
-        if (firstBlock.guidanceBefore) {
-          metadata.guidance_position = "before-block";
-        } else if ("guidance" in doc) {
-          metadata.guidance_position = "in-doc";
         }
 
         doc._markdown_meta = metadata;
