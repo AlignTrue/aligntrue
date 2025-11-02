@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CLI UX:** `team enable` supports `--yes` for non-interactive mode. `adapters enable` now processes multiple adapter names. Config files stay minimal in solo mode.
 - **Documentation:** Nextra v4.6.0 site at `apps/docs/` with 22 pages covering quickstart, team mode, overlays, and CLI reference.
+- **Pre-commit Error Messages:** Git hooks now show actual TypeScript errors inline with common fix patterns. No more "run this command to see errors" - errors display immediately with actionable guidance.
 
 ---
 
