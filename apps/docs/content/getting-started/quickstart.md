@@ -42,12 +42,37 @@ cd your-project
 aligntrue init
 ```
 
-**What this does:** AlignTrue scans your project for AI agents (like Cursor or Copilot) and creates:
+**What this does:** AlignTrue scans your project for AI agents and existing rules:
 
-- `.aligntrue/config.yaml` - Configuration with detected agents enabled
-- `.aligntrue/rules.md` - Starter template with 5 example rules
+- If you have existing rules (Cursor `.mdc`, `.cursorrules`, `AGENTS.md`, `CLAUDE.md`, `CRUSH.md`, `WARP.md`), it offers to import them
+- Otherwise, it creates a starter template with 5 example rules
+- Creates `.aligntrue/config.yaml` with detected agents enabled
+- Auto-configures workflow mode based on your choice
+- Case-insensitive detection (finds `agents.md`, `AGENTS.md`, `Agents.md`, etc.)
+- Supports legacy `.cursorrules` format (single file, same as `.mdc`)
 
-**Example output:**
+**Example output (with existing rules):**
+
+```
+◇ Found existing rules: .cursor/rules/my-rules.mdc
+│
+? What would you like to do?
+  ❯ Import these rules (recommended)
+    Preview import coverage first
+    Start fresh (ignore existing rules)
+│
+◇ Imported 12 rules from cursor
+◇ Coverage: 71% (high confidence)
+│
+◆ Created 2 files:
+│  • .aligntrue/config.yaml
+│  • .aligntrue/rules.md
+│
+💡 Workflow: native_format
+   Edit in Cursor, AlignTrue syncs automatically
+```
+
+**Example output (fresh start):**
 
 ```
 ◇ Detected 2 AI coding agents:
@@ -60,7 +85,8 @@ aligntrue init
 │  • .aligntrue/config.yaml
 │  • .aligntrue/rules.md
 │
-◇ Run sync now? Yes
+💡 Workflow: ir_source
+   Edit .aligntrue/rules.md as source of truth
 ```
 
 ### 2. Customize your rules

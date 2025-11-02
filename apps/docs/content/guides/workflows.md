@@ -86,7 +86,39 @@ sync:
 
 ## Configuring your workflow
 
-### First-time configuration
+### Automatic configuration during init
+
+AlignTrue automatically configures your workflow mode during initialization:
+
+**If you import existing rules:**
+
+```bash
+aligntrue init
+# Detects .cursor/rules/*.mdc
+# Offers to import
+# Sets workflow_mode: native_format
+# Enables auto_pull
+```
+
+**If you start fresh:**
+
+```bash
+aligntrue init
+# No existing rules detected
+# Creates starter template
+# Sets workflow_mode: ir_source
+# Disables auto_pull
+```
+
+**Explicit import:**
+
+```bash
+aligntrue init --import cursor
+# Forces import from Cursor
+# Sets workflow_mode: native_format
+```
+
+### First-time configuration (legacy)
 
 On your first conflict, AlignTrue will prompt you:
 
