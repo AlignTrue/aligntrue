@@ -12,8 +12,14 @@ import {
   getAlignTruePaths,
   SyncEngine,
   type AlignTrueConfig,
+  loadIR,
+  canImportFromAgent,
+  getImportSourcePath,
+  importFromAgent,
 } from "@aligntrue/core";
+import { parseAllowList, isSourceAllowed } from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
+import { validateRuleId, validateAlignSchema } from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
@@ -148,9 +154,6 @@ export async function sync(args: string[]): Promise<void> {
       }
     } else {
       try {
-        const { parseAllowList, isSourceAllowed } = await import(
-          "@aligntrue/core/team/allow.js"
-        );
         const allowList = parseAllowList(allowListPath);
 
         // Validate each source in config
@@ -219,10 +222,6 @@ export async function sync(args: string[]): Promise<void> {
 
     if (autoPullAgent) {
       // Check if primary agent's file exists
-      const { canImportFromAgent, getImportSourcePath } = await import(
-        "@aligntrue/core"
-      );
-
       if (canImportFromAgent(autoPullAgent)) {
         const agentSourcePath = getImportSourcePath(autoPullAgent, cwd);
 
@@ -295,8 +294,6 @@ export async function sync(args: string[]): Promise<void> {
   spinner.start("Validating rules");
 
   try {
-    const { loadIR } = await import("@aligntrue/core");
-    const { validateRuleId } = await import("@aligntrue/schema");
     const ir = await loadIR(absoluteSourcePath);
 
     // Collect all invalid rule IDs
@@ -422,12 +419,15 @@ export async function sync(args: string[]): Promise<void> {
 
       try {
         // Import from agent first
-        const { importFromAgent } = await import("@aligntrue/core");
-        const { validateAlignSchema, validateRuleId } = await import(
-          "@aligntrue/schema"
-        );
+        const importedRules = await importFromAgent(autoPullAgent, cwd);
 
-        const imported = await importFromAgent(autoPullAgent, cwd);
+        // Wrap rules in AlignPack structure for validation
+        const imported = {
+          id: config.sources?.[0]?.path || ".aligntrue/rules.md",
+          version: "1.0.0",
+          spec_version: "1",
+          rules: importedRules,
+        };
 
         // Validate schema before writing
         const schemaValidation = validateAlignSchema(imported, {
