@@ -55,6 +55,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Pull changes from agent back to IR",
   },
   {
+    flag: "--no-auto-pull",
+    hasValue: false,
+    description: "Disable auto-pull for this sync",
+  },
+  {
     flag: "--force",
     hasValue: false,
     description: "Bypass allow list validation in team mode (use with caution)",
@@ -211,7 +216,7 @@ export async function sync(args: string[]): Promise<void> {
   }
 
   /**
-   * Step 4: Auto-pull logic
+   * Step 4: Auto-pull logic with conflict detection
    *
    * If enabled, pulls from primary_agent BEFORE syncing IR to agents.
    * This keeps IR in sync with any edits made directly to agent config files.
@@ -221,6 +226,7 @@ export async function sync(args: string[]): Promise<void> {
    * 2. User didn't manually specify --accept-agent (manual import takes precedence)
    * 3. primary_agent is configured (auto-detected on init)
    * 4. primary_agent's file exists and is importable
+   * 5. No conflict detected (both IR and agent modified since last sync)
    *
    * Mode defaults:
    * - Solo: auto_pull ON (enables native-format editing workflow)
@@ -232,8 +238,10 @@ export async function sync(args: string[]): Promise<void> {
   let autoPullAgent: string | undefined;
   const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
   const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
+  const noAutoPull =
+    (parsed.flags["no-auto-pull"] as boolean | undefined) || false;
 
-  if (config.sync?.auto_pull && !acceptAgent) {
+  if (config.sync?.auto_pull && !acceptAgent && !noAutoPull) {
     // Auto-pull enabled and user didn't manually specify agent
     autoPullAgent = config.sync.primary_agent;
 
@@ -243,8 +251,61 @@ export async function sync(args: string[]): Promise<void> {
         const agentSourcePath = getImportSourcePath(autoPullAgent, cwd);
 
         if (existsSync(agentSourcePath)) {
-          shouldAutoPull = true;
-          clack.log.info(`Auto-pull enabled: pulling from ${autoPullAgent}`);
+          // Check for conflicts before auto-pull
+          const { EditDetector } = await import(
+            "@aligntrue/core/sync/edit-detector.js"
+          );
+          const detector = new EditDetector(cwd);
+          const conflictInfo = detector.hasConflict(
+            absoluteSourcePath,
+            agentSourcePath,
+          );
+
+          if (conflictInfo.hasConflict) {
+            // Both files modified - show conflict warning
+            clack.log.warn("⚠ Conflict detected:");
+            clack.log.warn(`  - You edited ${sourcePath}`);
+            clack.log.warn(`  - Changes also found in ${agentSourcePath}`);
+            clack.log.warn("");
+
+            // Prompt user for resolution strategy
+            const resolution = await clack.select({
+              message: "How would you like to resolve this conflict?",
+              options: [
+                {
+                  value: "keep-ir",
+                  label: "Keep my edits to rules.md (skip auto-pull)",
+                  hint: "Recommended if you manually edited rules",
+                },
+                {
+                  value: "accept-agent",
+                  label: `Accept changes from ${autoPullAgent}`,
+                  hint: "Overwrites your rules.md edits",
+                },
+                {
+                  value: "abort",
+                  label: "Abort sync and review manually",
+                  hint: "Exit without making any changes",
+                },
+              ],
+            });
+
+            if (resolution === "abort" || clack.isCancel(resolution)) {
+              clack.outro("Sync aborted. Review conflicts manually.");
+              process.exit(0);
+            }
+
+            if (resolution === "keep-ir") {
+              clack.log.info("Skipping auto-pull, keeping your edits");
+              shouldAutoPull = false;
+            } else {
+              clack.log.info(`Accepting changes from ${autoPullAgent}`);
+              shouldAutoPull = true;
+            }
+          } else {
+            shouldAutoPull = true;
+            clack.log.info(`Auto-pull enabled: pulling from ${autoPullAgent}`);
+          }
         }
       }
     }
@@ -641,6 +702,19 @@ export async function sync(args: string[]): Promise<void> {
               clack.log.message(`  ${entry.target}: ${parts.join(", ")}`);
             }
           });
+        }
+      }
+
+      // Update last sync timestamp (for conflict detection)
+      if (!dryRun) {
+        try {
+          const { EditDetector } = await import(
+            "@aligntrue/core/sync/edit-detector.js"
+          );
+          const detector = new EditDetector(cwd);
+          detector.updateLastSyncTimestamp();
+        } catch {
+          // Non-critical - continue even if timestamp update fails
         }
       }
 
