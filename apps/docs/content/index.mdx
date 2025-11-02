@@ -1,20 +1,20 @@
 ---
 title: AlignTrue Documentation
-description: Compile YAML rules into deterministic bundles and agent-ready exports for AI coding agents.
+description: Make your AI coding assistants follow your project's standards with deterministic, version-controlled rules.
 ---
 
 # AlignTrue Documentation
 
-AlignTrue compiles YAML Aligns into deterministic bundles and agent-ready exports. The CLI validates schemas, pins hashes, and writes stable outputs for CI.
+**Make your AI coding assistants follow your project's standards.** AlignTrue converts simple YAML rules into agent-specific formats for Cursor, GitHub Copilot, Claude Code, and 25+ other AI agents.
 
-## Features
+## Why AlignTrue?
 
-- **IR-first architecture** - Single source of truth in `aligntrue.yaml`
-- **43 exporters** - Support for 28 AI coding agents (Cursor, Claude Code, Aider, etc.)
-- **Two-way sync** - Bidirectional sync with conflict resolution
-- **Team mode** - Lockfiles, drift detection, and approval flows
-- **Overlays** - Fork-safe customization without losing upstream updates
+- **Single source of truth** - Write rules once, export to all your AI agents
+- **Version controlled** - Track rule changes in git like any other code
+- **Team collaboration** - Share rules across your team with lockfiles and drift detection
+- **28+ AI agents** - Cursor, Copilot, Claude Code, Aider, Windsurf, and more
 - **Local-first** - Everything works offline, cloud is optional
+- **Deterministic** - Same rules produce identical outputs every time
 
 ## Quick Start
 
@@ -26,20 +26,23 @@ aligntrue init
 aligntrue sync
 ```
 
-Read the [Quick Start Guide](/getting-started/quickstart) for detailed instructions.
+Read the [Quickstart Guide](/getting-started/quickstart) for detailed instructions.
 
 ## Key Concepts
 
-- [Catalog & Discovery](/concepts/catalog) - Browse and install rule packs
+- [Quickstart](/getting-started/quickstart) - Get AlignTrue running in 60 seconds
 - [Team Mode](/concepts/team-mode) - Collaboration features for teams
-- [Overlays](/concepts/overlays) - Customize third-party packs safely
+- [Sync Behavior](/concepts/sync-behavior) - How two-way sync works
 - [Drift Detection](/concepts/drift-detection) - Track alignment changes over time
+- [Git Workflows](/concepts/git-workflows) - Pull and share rules via git
+- [Overlays](/concepts/overlays) - Customize third-party packs safely
 
 ## Reference
 
 - [CLI Commands](/reference/cli-reference) - Complete command reference
-- [Import Workflow](/reference/import-workflow) - Import from existing configs
+- [Import Workflow](/reference/import-workflow) - Migrate from existing agent configs
 - [Troubleshooting](/reference/troubleshooting) - Common issues and solutions
+- [Privacy Controls](/reference/privacy) - Network consent and telemetry
 
 ## Contributing
 

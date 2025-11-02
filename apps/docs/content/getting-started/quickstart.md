@@ -2,48 +2,47 @@
 
 Get AlignTrue running in under 60 seconds. No prior knowledge required.
 
-## Try the golden repository
+## What is AlignTrue?
 
-The fastest way to see AlignTrue in action is to explore the golden repository - a complete, working example with 5 practical rules.
+AlignTrue helps you control how AI coding assistants behave in your project. You write rules once in a simple format, and AlignTrue converts them into each agent's specific format automatically.
 
-```bash
-git clone https://github.com/AlignTrue/aligntrue.git
-cd aligntrue/examples/golden-repo
-node ../../packages/cli/dist/index.js sync
-```
+**Key terms:**
 
-This generates three outputs in under 5 seconds:
-
-- `.cursor/rules/aligntrue.mdc` - Cursor rules with content hash
-- `AGENTS.md` - Universal format for Claude, Copilot, Aider
-- `.vscode/mcp.json` - VS Code MCP configuration
-
-**Learn more:** See `examples/golden-repo/README.md` for a detailed walkthrough.
+- **Rules** - Guidelines that tell AI agents how to work in your project (e.g., "use TypeScript strict mode")
+- **Sync** - Convert your rules into agent-specific formats (like `.cursor/rules/*.mdc` or `AGENTS.md`)
+- **Agents** - AI coding assistants like Cursor, GitHub Copilot, Claude Code, etc.
 
 ## Prerequisites
 
 - **Node.js 20+** - [Download](https://nodejs.org/)
-- **pnpm** - `npm install -g pnpm`
+- **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/reference/cli-reference#supported-agents)
 
 ## Installation
 
-```bash
-# Add to your project
-pnpm add -D @aligntrue/cli
+Install AlignTrue globally to use it in any project:
 
-# Or use without installing
-npx @aligntrue/cli init
+```bash
+npm install -g @aligntrue/cli
+```
+
+**Verify installation:**
+
+```bash
+aligntrue --version
 ```
 
 ## Quick start
 
 ### 1. Initialize your project
 
+Open a terminal, navigate to your project directory, and run:
+
 ```bash
+cd your-project
 aligntrue init
 ```
 
-AlignTrue automatically detects AI coding agents in your workspace (Cursor, GitHub Copilot, Claude Code, etc.) and creates:
+**What this does:** AlignTrue scans your project for AI agents (like Cursor or Copilot) and creates:
 
 - `.aligntrue/config.yaml` - Configuration with detected agents enabled
 - `.aligntrue/rules.md` - Starter template with 5 example rules
@@ -64,9 +63,9 @@ AlignTrue automatically detects AI coding agents in your workspace (Cursor, GitH
 ◇ Run sync now? Yes
 ```
 
-### 2. Edit your rules
+### 2. Customize your rules
 
-Open `.aligntrue/rules.md` and customize the starter rules:
+Open `.aligntrue/rules.md` and edit the starter rules for your project:
 
 ````markdown
 # My Project Rules
@@ -88,23 +87,22 @@ rules:
 ```
 ````
 
-````
-
 The starter template includes examples for:
 
 - Code style enforcement
 - Testing requirements
 - Documentation standards
 - Security practices
-- AI-specific hints (optional)
 
 ### 3. Sync to your agents
 
+Run this command (in your project directory) to generate agent-specific files:
+
 ```bash
 aligntrue sync
-````
+```
 
-This generates agent-specific files from your rules:
+**What this does:** Converts your rules from `.aligntrue/rules.md` into formats that each AI agent understands.
 
 **Example output:**
 
@@ -122,128 +120,39 @@ This generates agent-specific files from your rules:
 
 ## What you get
 
-After running `aligntrue sync`, you'll have:
+After running `aligntrue sync`, you'll have agent-specific rule files:
 
-### For Cursor
+**For Cursor:**
 
-- `.cursor/rules/aligntrue.mdc` - Rules in Cursor's native format with YAML frontmatter
+- `.cursor/rules/aligntrue.mdc` - Rules in Cursor's native format
 
-### For GitHub Copilot, Claude Code, Aider, and others
+**For GitHub Copilot, Claude Code, Aider, and others:**
 
-- `AGENTS.md` - Universal markdown format readable by multiple agents
+- `AGENTS.md` - Universal markdown format
 
-### For VS Code with MCP
+**For VS Code with MCP:**
 
 - `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
 
-### Other agents
-
-AlignTrue supports 28+ AI coding agents. Enable additional agents in `.aligntrue/config.yaml`:
-
-```yaml
-exporters:
-  - cursor
-  - agents-md
-  - windsurf
-  - claude-md
-  - cline
-  # ... and 23 more
-```
-
-See `aligntrue adapters list` for the complete list.
-
-### Using git sources (optional)
-
-Pull rules from any git repository by adding to your config:
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/yourorg/rules
-    ref: main
-    path: .aligntrue.yaml
-```
-
-First sync will prompt for privacy consent. See [Git Sources Guide](git-sources.md) for full documentation on branches, tags, caching, and troubleshooting.
-
 ## Next steps
 
-### Learn more commands
+**Want to try a working example first?** See [Try the Example](/getting-started/try-example) for a complete working demo.
 
-- `aligntrue sync --dry-run` - Preview changes without writing files
-- `aligntrue check` - Validate rules (great for CI)
-- `aligntrue md lint` - Check markdown syntax
+**Ready to learn more?** Check out [Next Steps](/getting-started/next-steps) for:
 
-See [Command Reference](commands.md) for all available commands.
+- Auto-sync on save
+- Team collaboration features
+- Git-based rule sharing
+- Custom exporters
 
-### Explore examples
-
-Check `examples/markdown/` in the AlignTrue repository for more rule examples.
-
-### Troubleshooting
-
-Run into issues? See [Troubleshooting Guide](troubleshooting.md) for common solutions.
-
-### Auto-sync on save (optional)
-
-Want rules to sync automatically when you save? Set up a file watcher:
-
-```bash
-# Quick option (VS Code)
-# Add to .vscode/tasks.json - see file-watcher-setup.md
-
-# Universal option (any editor)
-npm install -g nodemon
-nodemon --watch .cursor/rules --watch AGENTS.md --exec "aligntrue sync"
-```
-
-**Full guide:** See [File Watcher Setup](file-watcher-setup.md) for platform-specific instructions (VS Code, macOS, Linux, Windows).
-
-### Advanced features
-
-When your project grows, explore:
-
-- **Team Mode** - Shared rules with lockfile validation (see below)
-- **Hierarchical Scopes** - Different rules for different directories
-- **Custom Exporters** - Add support for new agents ([Extending Guide](extending-aligntrue.md))
-
-### Team mode (5-minute setup)
-
-Enable team mode for collaborative rule management with lockfiles and allow lists.
-
-**For repository owners:**
-
-```bash
-# 1. Enable team mode
-aligntrue team enable
-
-# 2. Approve rule sources
-aligntrue team approve sha256:abc123...
-
-# 3. Sync to generate lockfile
-aligntrue sync
-
-# 4. Commit team files
-git add .aligntrue/
-git commit -m "Enable AlignTrue team mode"
-```
-
-**For team members:**
-
-```bash
-# Clone and sync (validated against allow list)
-git clone <repo> && cd <repo>
-aligntrue sync
-```
-
-**See:** [Team Mode Guide](team-mode.md) for complete workflows.
+**Run into issues?** See [Troubleshooting Guide](/reference/troubleshooting) for common solutions.
 
 ---
 
 **That's it!** You now have consistent AI rules across all your coding agents.
 
-**Workflow:**
+**Basic workflow:**
 
-1. Edit rules in your preferred format (`.cursor/*.mdc`, `AGENTS.md`, or `.aligntrue/rules.md`)
-2. Save changes
-3. Run `aligntrue sync` (or set up auto-sync)
+1. Edit rules in `.aligntrue/rules.md`
+2. Run `aligntrue sync`
+3. Your AI agents now follow your project's standards

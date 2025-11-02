@@ -313,9 +313,9 @@ performance:
 
 ## Related documentation
 
-- [Team mode](./team-mode.md) - Team collaboration features
-- [Git workflows](./git-workflows.md) - Pull and link commands
-- [Commands](./commands.md) - All CLI commands reference
+- [Team mode](/concepts/team-mode) - Team collaboration features
+- [Git workflows](/concepts/git-workflows) - Pull and link commands
+- [Commands](/reference/cli-reference) - All CLI commands reference
 
 ## See also
 

@@ -74,7 +74,7 @@ sources:
     path: rules/typescript.yaml
 ```
 
-First sync will prompt for [privacy consent](PRIVACY.md#network-operations). AlignTrue clones the repository and extracts the specified file.
+First sync will prompt for [privacy consent](/reference/privacy#network-operations). AlignTrue clones the repository and extracts the specified file.
 
 ### Private repository with SSH
 
@@ -114,7 +114,7 @@ scopes:
       order: [root, path, local]
 ```
 
-Sources are indexed from 0. Later sources override earlier ones via [hierarchical scopes](sync-behavior.md#hierarchical-scopes).
+Sources are indexed from 0. Later sources override earlier ones via [hierarchical scopes](/concepts/sync-behavior#hierarchical-scopes).
 
 ## Local cache behavior
 
@@ -155,7 +155,7 @@ rm -rf .aligntrue/.cache/git/<repo-hash>
 
 ## Privacy consent flow
 
-Git sources require network access, which triggers AlignTrue's [privacy consent system](PRIVACY.md#network-operations).
+Git sources require network access, which triggers AlignTrue's [privacy consent system](/reference/privacy#network-operations).
 
 ### First-time consent
 
@@ -202,7 +202,7 @@ Revoke git consent:
 aligntrue privacy revoke git
 ```
 
-Future syncs will error until consent is granted again. See [PRIVACY.md](PRIVACY.md) for full privacy documentation.
+Future syncs will error until consent is granted again. See [Privacy & Telemetry](/reference/privacy) for full privacy documentation.
 
 ## Offline mode
 
@@ -347,10 +347,10 @@ Until then, use the config-based approach documented above.
 
 ## See also
 
-- [Quickstart Guide](quickstart.md) - Get started with AlignTrue
-- [Command Reference](commands.md) - All CLI commands including `sync`
-- [Privacy & Telemetry](PRIVACY.md) - Network operations and consent system
-- [Sync Behavior](sync-behavior.md) - How rules merge and override
+- [Quickstart Guide](/getting-started/quickstart) - Get started with AlignTrue
+- [Command Reference](/reference/cli-reference) - All CLI commands including `sync`
+- [Privacy & Telemetry](/reference/privacy) - Network operations and consent system
+- [Sync Behavior](/concepts/sync-behavior) - How rules merge and override
 
 ---
 
