@@ -463,60 +463,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     });
   }
 
-  // Step 10: Prompt to run sync
+  // Step 10: Show success message and next steps
   const editPath = nativeTemplatePath || ".aligntrue/rules.md";
-  let runSync = true; // Default for non-interactive
 
   if (nonInteractive) {
-    console.log("\nNon-interactive mode: running sync automatically");
+    console.log("\nSuccess! Next: aligntrue sync");
   } else {
-    const runSyncResponse = await clack.confirm({
-      message: "Run sync now?",
-      initialValue: true,
-    });
-
-    if (clack.isCancel(runSyncResponse)) {
-      clack.outro(
-        `\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`,
-      );
-      process.exit(0);
-    }
-
-    runSync = runSyncResponse as boolean;
-  }
-
-  if (runSync) {
-    if (!nonInteractive) {
-      clack.log.info("\nRunning sync...");
-    }
-
-    try {
-      // Import and run sync command
-      const { sync } = await import("./sync.js");
-      await sync([]);
-    } catch (error) {
-      const errorMsg = `Sync failed: ${error instanceof Error ? error.message : String(error)}`;
-      const nextSteps = `\n✗ Sync failed but files created successfully\n\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`;
-
-      if (nonInteractive) {
-        console.error(errorMsg);
-        console.log(nextSteps);
-      } else {
-        clack.log.error(errorMsg);
-        clack.outro(nextSteps);
-      }
-      process.exit(1);
-    }
-  } else {
-    if (!nonInteractive) {
-      clack.outro(
-        `\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`,
-      );
-    } else {
-      console.log(
-        `\nNext steps:\n  1. Edit rules: ${editPath}\n  2. Run sync: aligntrue sync`,
-      );
-    }
+    clack.outro(
+      `Success! AlignTrue is initialized.\n\nNext steps:\n  1. Review starter rules: ${editPath}\n  2. Customize for your project (optional)\n  3. Sync to agents: aligntrue sync\n\nLearn more: https://aligntrue.dev/docs/getting-started/quickstart`,
+    );
   }
 
   // Record telemetry event
