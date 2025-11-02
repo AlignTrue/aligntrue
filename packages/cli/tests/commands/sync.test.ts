@@ -3,11 +3,17 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import * as clack from "@clack/prompts";
 
 // Mock dependencies
-vi.mock("fs");
+vi.mock("fs", async () => {
+  const actual = await vi.importActual<typeof import("fs")>("fs");
+  return {
+    ...actual,
+    existsSync: vi.fn(),
+  };
+});
 vi.mock("@clack/prompts");
 vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
   recordEvent: vi.fn(),
