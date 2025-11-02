@@ -22,7 +22,7 @@ const conventionalPattern =
   /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build)(\(.+\))?!?: .{1,}/;
 
 const isConventional = conventionalPattern.test(commitMsgClean);
-const subject = commitMsgClean.split("\\n")[0].split(": ")[1] || "";
+const subject = commitMsgClean.split("\n")[0].split(": ")[1] || "";
 const isSentenceCase =
   subject.length > 0 && subject[0] === subject[0].toUpperCase();
 
