@@ -29,7 +29,38 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 2: Typecheck staged TypeScript files
+  // Step 2: Build workspace packages if source files changed
+  let packageSrcFiles;
+  try {
+    packageSrcFiles = execSync(
+      "git diff --cached --name-only --diff-filter=ACM | grep -E '^packages/.*/src/.*\\.(ts|tsx)$' || true",
+      { encoding: "utf-8" },
+    ).trim();
+  } catch (error) {
+    packageSrcFiles = "";
+  }
+
+  if (packageSrcFiles) {
+    s.start("Building workspace packages (source files changed)...");
+    try {
+      // Build packages only (not apps) to ensure fresh types for typecheck
+      execSync("pnpm -r --filter './packages/*' build", { stdio: "pipe" });
+      s.stop("✅ Packages built successfully.");
+    } catch (error) {
+      s.stop("❌ Build failed.", 1);
+      clack.log.error("Build errors detected in workspace packages.");
+      console.error("\n📝 Please fix the build errors before committing:");
+      console.error("\n   Run: pnpm -r --filter './packages/*' build");
+      console.error("   Or:  pnpm --filter @aligntrue/<package> build");
+      console.error(
+        "\n   This ensures all packages have fresh type definitions.",
+      );
+      clack.outro("💡 Fix the build errors and try committing again.");
+      process.exit(1);
+    }
+  }
+
+  // Step 3: Typecheck staged TypeScript files
   let stagedTsFiles;
   try {
     stagedTsFiles = execSync(
