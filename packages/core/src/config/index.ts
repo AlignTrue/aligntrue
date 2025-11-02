@@ -68,6 +68,8 @@ export interface AlignTrueConfig {
     auto_pull?: boolean;
     primary_agent?: string;
     on_conflict?: "prompt" | "keep_ir" | "accept_agent";
+    workflow_mode?: "auto" | "ir_source" | "native_format";
+    show_diff_on_pull?: boolean;
   };
   sources?: Array<{
     type: "local" | "catalog" | "git" | "url";
@@ -290,12 +292,16 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * - auto_pull: true (pulls from primary_agent before each sync)
    * - on_conflict: accept_agent (agent edits win over IR when conflicts detected)
    * - primary_agent: auto-detected from first importable exporter
+   * - workflow_mode: auto (prompt on first conflict to choose workflow)
+   * - show_diff_on_pull: true (show brief diff when auto-pull executes)
    *
    * To disable: Set sync.auto_pull: false in config
    */
   if (result.mode === "solo") {
     result.sync.auto_pull = result.sync.auto_pull ?? true;
     result.sync.on_conflict = result.sync.on_conflict ?? "accept_agent";
+    result.sync.workflow_mode = result.sync.workflow_mode ?? "auto";
+    result.sync.show_diff_on_pull = result.sync.show_diff_on_pull ?? true;
 
     // Auto-detect primary_agent if not set (first exporter that supports import)
     if (
@@ -326,11 +332,15 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
      *
      * - auto_pull: false (manual import only with --accept-agent)
      * - on_conflict: prompt (ask user to resolve conflicts)
+     * - workflow_mode: ir_source (IR is source of truth)
+     * - show_diff_on_pull: true (show diff when manual import via --accept-agent)
      *
      * To enable: Set sync.auto_pull: true in config (not recommended for teams)
      */
     result.sync.auto_pull = result.sync.auto_pull ?? false;
     result.sync.on_conflict = result.sync.on_conflict ?? "prompt";
+    result.sync.workflow_mode = result.sync.workflow_mode ?? "ir_source";
+    result.sync.show_diff_on_pull = result.sync.show_diff_on_pull ?? true;
   }
 
   // Apply exporter defaults

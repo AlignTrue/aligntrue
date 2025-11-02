@@ -88,6 +88,15 @@
           "type": "string",
           "enum": ["prompt", "keep_ir", "accept_agent"],
           "description": "Conflict resolution strategy: prompt (interactive), keep_ir (default), accept_agent (auto-accept)"
+        },
+        "workflow_mode": {
+          "type": "string",
+          "enum": ["auto", "ir_source", "native_format"],
+          "description": "Editing workflow preference: auto (ask on conflict), ir_source (edit rules.md), native_format (edit agent files)"
+        },
+        "show_diff_on_pull": {
+          "type": "boolean",
+          "description": "Show diff summary when auto-pull executes (default: true)"
         }
       }
     },

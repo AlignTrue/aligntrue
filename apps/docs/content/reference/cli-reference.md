@@ -133,7 +133,7 @@ See [Import Workflow Guide](/reference/import-workflow) for step-by-step migrati
 
 ### `aligntrue sync`
 
-Sync rules from `.aligntrue/rules.md` to your AI coding agents.
+Sync rules between `.aligntrue/rules.md` and your AI coding agents with automatic change detection.
 
 **Usage:**
 
@@ -148,19 +148,74 @@ aligntrue sync [options]
 | `--dry-run`             | Preview changes without writing files         | `false`                  |
 | `--force`               | Override performance limits and safety checks | `false`                  |
 | `--accept-agent <name>` | Pull changes from agent back to IR            | -                        |
+| `--no-auto-pull`        | Disable auto-pull for this sync               | `false`                  |
+| `--show-auto-pull-diff` | Show full diff when auto-pull executes        | `false`                  |
 | `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **What it does:**
 
 1. Loads configuration from `.aligntrue/config.yaml`
-2. Parses rules from `.aligntrue/rules.md`
-3. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-4. Detects conflicts if files were manually edited
-5. Updates lockfile (team mode only)
+2. Auto-pulls changes from primary agent (if enabled and no conflicts)
+3. Shows diff summary of what changed during auto-pull
+4. Parses rules from `.aligntrue/rules.md`
+5. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+6. Detects conflicts if files were manually edited
+7. Updates lockfile (team mode only)
+
+**Auto-pull behavior:**
+
+Auto-pull automatically imports changes from your primary agent before syncing. It runs when:
+
+- `sync.auto_pull` is `true` in config (default for solo mode)
+- Primary agent is configured (auto-detected on init)
+- No conflicts detected between rules.md and agent files
+
+See [Auto-pull guide](/guides/auto-pull) for details.
+
+**Conflict detection:**
+
+If both rules.md and agent files were modified since last sync, you'll see:
+
+```
+⚠ Conflict detected:
+  - You edited .aligntrue/rules.md
+  - Changes also found in .cursor/rules/aligntrue.mdc
+
+? How would you like to resolve this conflict?
+  > Keep my edits to rules.md (skip auto-pull)
+    Accept changes from cursor
+    Abort sync and review manually
+```
+
+See [Resolving conflicts](/troubleshooting/conflicts) for resolution strategies.
+
+**Workflow modes:**
+
+Configure your preferred workflow to avoid conflict prompts:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  workflow_mode: "native_format" # auto | ir_source | native_format
+```
+
+See [Workflows guide](/guides/workflows) for choosing your workflow.
 
 **Examples:**
 
 ```bash
+# Standard sync (with auto-pull if enabled)
+aligntrue sync
+
+# Disable auto-pull for this sync
+aligntrue sync --no-auto-pull
+
+# Show full diff of auto-pull changes
+aligntrue sync --show-auto-pull-diff
+
+# Pull changes from agent to IR (manual)
+aligntrue sync --accept-agent cursor
+
 # Standard sync
 aligntrue sync
 
