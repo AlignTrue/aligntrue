@@ -170,7 +170,7 @@ export function QuickstartSection() {
             href="/catalog"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white text-neutral-900 rounded-lg text-lg font-semibold hover:bg-neutral-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-neutral-900"
           >
-            Browse all packs
+            Browse 11 packs
             <svg
               className="w-5 h-5"
               fill="none"

@@ -78,6 +78,36 @@ function generateCoverageReport(
 
 /**
  * Write imported rules to IR file in single-block format
+ *
+ * Format: Markdown with one fenced ```aligntrue block containing full pack
+ *
+ * Example output:
+ * ```markdown
+ * # AlignTrue Rules
+ *
+ * Rules imported from agent format.
+ *
+ * ```aligntrue
+ * id: imported-rules
+ * version: 1.0.0
+ * spec_version: "1"
+ * rules:
+ *   - id: quality.typescript.strict
+ *     severity: error
+ *     ...
+ *   - id: style.naming.conventions
+ *     severity: error
+ *     ...
+ * ```
+ * ```
+ *
+ * CRITICAL: Must use single-block format
+ * - Parser expects ONE aligntrue block per section
+ * - Multi-block format (one block per rule) will fail validation
+ * - See: packages/markdown-parser for block parsing rules
+ *
+ * @param rules - Imported rules from agent format
+ * @param dryRun - Preview only, don't write file
  */
 async function writeToIRFile(
   rules: AlignRule[],

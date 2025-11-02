@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
   // Use default hybrid rendering mode
   // Static pages are generated at build time
   // Dynamic features work when needed
+
+  // Rewrite docs requests to external docs site
+  async rewrites() {
+    return [
+      {
+        source: "/docs/:path*",
+        destination: "https://aligntrue-docs.vercel.app/docs/:path*",
+      },
+      {
+        source: "/sitemap.docs.xml",
+        destination: "https://aligntrue-docs.vercel.app/sitemap.docs.xml",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
