@@ -106,8 +106,8 @@ describe("EditDetector", () => {
     // Update last sync timestamp
     detector.updateLastSyncTimestamp();
 
-    // Wait a bit
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for filesystem mtime resolution (macOS APFS can be slow)
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Modify only IR
     writeFileSync(irPath, "IR content v2");
@@ -131,8 +131,8 @@ describe("EditDetector", () => {
     // Update last sync timestamp
     detector.updateLastSyncTimestamp();
 
-    // Wait a bit
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for filesystem mtime resolution (macOS APFS can be slow)
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Modify only agent
     writeFileSync(agentPath, "Agent content v2");
@@ -173,8 +173,8 @@ describe("EditDetector", () => {
 
     detector.updateLastSyncTimestamp();
 
-    // Wait a bit
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for filesystem mtime resolution (macOS APFS can be slow)
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Modify file
     writeFileSync(testFile, "modified content");
