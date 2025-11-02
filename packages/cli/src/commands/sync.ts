@@ -519,7 +519,31 @@ export async function sync(args: string[]): Promise<void> {
         // Silently continue
       }
 
-      clack.outro(dryRun ? "✓ Preview complete" : "✓ Sync complete");
+      // Show success message with next steps
+      if (dryRun) {
+        clack.outro("✓ Preview complete");
+      } else {
+        const exporterNames = loadedAdapters.map((a) => a.name);
+        const writtenFiles = result.written || [];
+
+        let message = "✓ Sync complete\n\n";
+
+        if (writtenFiles.length > 0) {
+          message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
+          writtenFiles.forEach((file) => {
+            message += `  - ${file}\n`;
+          });
+          message += "\n";
+        }
+
+        message += "Your AI assistants are now aligned with these rules.\n\n";
+        message +=
+          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+        message +=
+          "Tip: Update rules anytime by editing .aligntrue/rules.md and running: aligntrue sync";
+
+        clack.outro(message);
+      }
     } else {
       // Sync failed
       clack.log.error("Sync failed");

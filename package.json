@@ -6,6 +6,9 @@
   "scripts": {
     "build": "pnpm -r build",
     "build:catalog": "node temp-build-catalog.mjs",
+    "dev:web": "pnpm --filter @aligntrue/web dev",
+    "dev:docs": "pnpm --filter @aligntrue/docs dev",
+    "dev:all": "concurrently \"pnpm dev:web\" \"pnpm dev:docs\"",
     "test": "pnpm -r test",
     "test:fast": "pnpm -r test --reporter=dot --pool=threads",
     "verify": "pnpm --filter @aligntrue/testkit test",
@@ -35,6 +38,7 @@
     "@commitlint/config-conventional": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.0",
     "eslint-plugin-unused-imports": "^4.3.0",
     "fast-xml-parser": "^5.3.0",
