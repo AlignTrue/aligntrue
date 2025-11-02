@@ -299,20 +299,65 @@ export async function sync(args: string[]): Promise<void> {
     const { validateRuleId } = await import("@aligntrue/schema");
     const ir = await loadIR(absoluteSourcePath);
 
-    // Validate all rule IDs
-    for (const rule of ir.rules || []) {
+    // Collect all invalid rule IDs
+    const invalidRules: Array<{
+      index: number;
+      id: string;
+      error: string;
+      suggestion?: string;
+    }> = [];
+
+    const rules = ir.rules || [];
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+      if (!rule) continue;
+
       const validation = validateRuleId(rule.id);
       if (!validation.valid) {
-        spinner.stop("Validation failed");
-        const details = [
-          `Invalid rule ID: ${rule.id}`,
-          `Error: ${validation.error}`,
-        ];
+        const invalidRule: {
+          index: number;
+          id: string;
+          error: string;
+          suggestion?: string;
+        } = {
+          index: i,
+          id: rule.id,
+          error: validation.error!,
+        };
+
         if (validation.suggestion) {
-          details.push(`Suggestion: ${validation.suggestion}`);
+          invalidRule.suggestion = validation.suggestion;
         }
-        exitWithError(Errors.validationFailed(details), 2);
+
+        invalidRules.push(invalidRule);
       }
+    }
+
+    if (invalidRules.length > 0) {
+      spinner.stop("Validation failed");
+
+      console.log("");
+      clack.log.error("Validation failed");
+      console.log("");
+      clack.log.error(`Invalid rule IDs in ${sourcePath}:`);
+      console.log("");
+
+      invalidRules.forEach(({ index, id, error, suggestion }) => {
+        clack.log.error(`  Rule ${index}: "${id}"`);
+        clack.log.error(`    ✗ ${error}`);
+        if (suggestion) {
+          clack.log.info(`    ✓ ${suggestion}`);
+        }
+        console.log("");
+      });
+
+      console.log("Format: category.subcategory.rule-name");
+      console.log("Examples: testing.require.tests, security.no.secrets");
+      console.log("");
+      console.log("Fix the IDs above and run: aligntrue sync");
+      console.log("");
+
+      process.exit(1);
     }
 
     spinner.stop("Rules validated");
@@ -375,24 +420,105 @@ export async function sync(args: string[]): Promise<void> {
     if (shouldAutoPull && autoPullAgent) {
       spinner.start(`Auto-pulling from ${autoPullAgent}`);
 
-      const pullResult = await engine.syncFromAgent(
-        autoPullAgent,
-        absoluteSourcePath,
-        {
-          ...syncOptions,
-          interactive: false, // Auto-pull is non-interactive
-          defaultResolutionStrategy: config.sync?.on_conflict || "accept_agent",
-        },
-      );
-
-      spinner.stop(`Auto-pull complete from ${autoPullAgent}`);
-
-      if (!pullResult.success) {
-        clack.log.warn(
-          `Auto-pull failed: ${pullResult.warnings?.[0] || "Unknown error"}`,
+      try {
+        // Import from agent first
+        const { importFromAgent } = await import("@aligntrue/core");
+        const { validateAlignSchema, validateRuleId } = await import(
+          "@aligntrue/schema"
         );
-      } else if (pullResult.written && pullResult.written.length > 0) {
-        clack.log.success(`Updated IR from ${autoPullAgent}`);
+
+        const imported = await importFromAgent(autoPullAgent, cwd);
+
+        // Validate schema before writing
+        const schemaValidation = validateAlignSchema(imported, {
+          mode: "solo",
+        });
+
+        if (!schemaValidation.valid) {
+          spinner.stop("Auto-pull validation failed");
+          clack.log.warn(
+            `Cannot auto-pull from ${autoPullAgent}: schema validation failed`,
+          );
+          schemaValidation.errors?.forEach((err) => {
+            clack.log.warn(`  - ${err.path}: ${err.message}`);
+          });
+          clack.log.info(
+            `\nFix ${autoPullAgent} files and run: aligntrue sync --accept-agent ${autoPullAgent}`,
+          );
+        } else {
+          // Validate rule IDs
+          const invalidIds: Array<{
+            id: string;
+            error: string;
+            suggestion?: string;
+          }> = [];
+
+          const rules = (imported as any).rules || [];
+          for (const rule of rules) {
+            if (!rule) continue;
+            const idValidation = validateRuleId(rule.id);
+            if (!idValidation.valid) {
+              const entry: {
+                id: string;
+                error: string;
+                suggestion?: string;
+              } = {
+                id: rule.id,
+                error: idValidation.error!,
+              };
+              if (idValidation.suggestion) {
+                entry.suggestion = idValidation.suggestion;
+              }
+              invalidIds.push(entry);
+            }
+          }
+
+          if (invalidIds.length > 0) {
+            spinner.stop("Auto-pull validation failed");
+            clack.log.warn(
+              `Cannot auto-pull from ${autoPullAgent}: invalid rule IDs`,
+            );
+
+            invalidIds.forEach(({ id, error, suggestion }) => {
+              clack.log.warn(`  - "${id}": ${error}`);
+              if (suggestion) {
+                clack.log.info(`    Try: ${suggestion}`);
+              }
+            });
+
+            clack.log.info(
+              `\nFix rule IDs in ${autoPullAgent} files and run: aligntrue sync --accept-agent ${autoPullAgent}`,
+            );
+          } else {
+            // Safe to write - proceed with actual sync
+            const pullResult = await engine.syncFromAgent(
+              autoPullAgent,
+              absoluteSourcePath,
+              {
+                ...syncOptions,
+                interactive: false, // Auto-pull is non-interactive
+                defaultResolutionStrategy:
+                  config.sync?.on_conflict || "accept_agent",
+              },
+            );
+
+            spinner.stop(`Auto-pull complete from ${autoPullAgent}`);
+
+            if (!pullResult.success) {
+              clack.log.warn(
+                `Auto-pull failed: ${pullResult.warnings?.[0] || "Unknown error"}`,
+              );
+            } else if (pullResult.written && pullResult.written.length > 0) {
+              clack.log.success(`Updated IR from ${autoPullAgent}`);
+            }
+          }
+        }
+      } catch (error) {
+        spinner.stop("Auto-pull failed");
+        clack.log.warn(
+          `Auto-pull error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        clack.log.info("Continuing with sync...");
       }
     }
 
@@ -523,6 +649,10 @@ export async function sync(args: string[]): Promise<void> {
       if (dryRun) {
         clack.outro("✓ Preview complete");
       } else {
+        const loadedAdapters = registry
+          .list()
+          .map((name) => registry.get(name)!)
+          .filter(Boolean);
         const exporterNames = loadedAdapters.map((a) => a.name);
         const writtenFiles = result.written || [];
 

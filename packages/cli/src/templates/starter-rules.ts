@@ -1,13 +1,37 @@
 /**
  * Starter template for AlignTrue rules
- * Comprehensive example with 5 rules demonstrating key features
+ * Generated from canonical source to ensure consistency
  */
+
+import { STARTER_RULES_CANONICAL } from "./starter-rules-canonical.js";
+import * as yaml from "yaml";
 
 /**
  * Get the comprehensive starter template
- * Shows all major features: basic rules, severity levels, checks, vendor metadata
+ * Generated from canonical rules source
  */
 export function getStarterTemplate(projectId: string = "my-project"): string {
+  // Build pack from canonical rules
+  const pack = {
+    id: `${projectId}-rules`,
+    version: "1.0.0",
+    spec_version: "1",
+    rules: STARTER_RULES_CANONICAL.map((rule) => ({
+      id: rule.id,
+      severity: rule.severity,
+      applies_to: rule.applies_to,
+      guidance: rule.guidance,
+      tags: rule.tags,
+      ...(rule.vendor && { vendor: rule.vendor }),
+    })),
+  };
+
+  // Generate YAML
+  const yamlContent = yaml.stringify(pack, {
+    lineWidth: 0, // Don't wrap long lines
+    indent: 2,
+  });
+
   return `# AlignTrue Rules
 
 Welcome! This file contains rules for your AI coding assistants.
@@ -24,89 +48,7 @@ so they work consistently across your project.
 ---
 
 \`\`\`aligntrue
-id: ${projectId}-rules
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: quality.testing.require-tests
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-      - "**/*.tsx"
-      - "**/*.js"
-      - "**/*.jsx"
-    guidance: |
-      All features must have tests to ensure reliability.
-      Write tests alongside your code, not as an afterthought.
-      
-      Use descriptive test names that explain what you're testing.
-      Aim for >80% coverage on new code.
-    tags:
-      - testing
-      - quality
-    vendor:
-      cursor:
-        ai_hint: "Suggest test scaffolding with vitest or jest"
-
-  - id: docs.maintenance.update-readme
-    severity: info
-    applies_to:
-      - "README.md"
-      - "docs/**/*.md"
-    guidance: |
-      Keep documentation up to date with any significant changes.
-      
-      A good README helps onboarding and reduces support burden.
-      Update examples when APIs change.
-    tags:
-      - documentation
-
-  - id: security.secrets.no-hardcoded
-    severity: error
-    applies_to:
-      - "**/*"
-    guidance: |
-      Never commit API keys, tokens, passwords, or other secrets.
-      
-      Use environment variables or a secrets manager instead.
-      If a secret is committed, rotate it immediately.
-    tags:
-      - security
-
-  - id: style.naming.consistent
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-      - "**/*.tsx"
-    guidance: |
-      Use consistent naming conventions:
-      - camelCase for variables and functions
-      - PascalCase for types, interfaces, and classes
-      - UPPER_SNAKE_CASE for constants
-      
-      Consistent naming makes code easier to read and maintain.
-    tags:
-      - style
-      - readability
-    vendor:
-      cursor:
-        ai_hint: "Suggest rename if inconsistent with project conventions"
-
-  - id: performance.queries.avoid-n-plus-one
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-      - "**/*.tsx"
-    guidance: |
-      Watch out for N+1 query problems in loops.
-      
-      Instead of fetching data inside a loop, fetch all needed data upfront
-      or use batch operations.
-      
-      Example: Use Promise.all() for parallel async operations.
-    tags:
-      - performance
-      - database
+${yamlContent.trim()}
 \`\`\`
 
 ---
@@ -121,7 +63,7 @@ rules:
 ## Rule format reference
 
 Each rule has:
-- **id**: Unique identifier (e.g., \`testing.require-tests\`)
+- **id**: Unique identifier (e.g., \`quality.testing.required\`)
 - **severity**: \`error\` | \`warn\` | \`info\`
 - **applies_to**: File patterns (glob syntax)
 - **guidance**: Instructions for AI assistants

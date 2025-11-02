@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Template Validation:**
+  - Fixed Cursor starter template to use valid 3-segment rule IDs (e.g., `quality.typescript.strict`)
+  - Fixed AGENTS.md starter template to use valid 3-segment rule IDs
+  - Fixed init command to no longer auto-run sync, avoiding validation failures on fresh init
+  - Fixed import command to generate single-block markdown format (was generating multiple blocks)
+  - Improved validation error messages with actionable suggestions using `validateRuleId`
+
+### Added
+
+- **Template System:**
+  - Canonical starter rules source (`starter-rules-canonical.ts`) as single source of truth
+  - Template generators derive IR, Cursor, and AGENTS.md formats from canonical source
+  - Build-time template validation tests (19 tests) ensure templates stay consistent
+  - Integration tests covering fresh init workflow and validation safeguards
+- **Runtime Validation:**
+  - Auto-pull validation in sync command prevents corruption of IR from invalid agent files
+  - Import command validates rules before writing to IR
+  - Schema validation and rule ID validation with helpful error messages
+  - Clear next steps in all error messages and success outputs
+
+- **User Experience:**
+  - Init command no longer auto-runs sync; provides clear next steps instead
+  - Sync command shows contextual next steps based on enabled exporters
+  - Import command shows clear instructions for next steps
+  - All error messages include suggestions and recovery instructions
+
 ### Security
 
 - **Dependency Updates:**
@@ -15,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `next.js` to 15.4.7 in docs site (fixes multiple vulnerabilities: authorization bypass, DoS, SSRF, cache confusion)
   - Added pnpm overrides at workspace root to enforce minimum secure versions across all transitive dependencies
 
-### Added
+### Changed
 
 - **CLI UX Improvements:**
   - `team enable --yes` flag for non-interactive mode (bypasses confirmation prompt)
