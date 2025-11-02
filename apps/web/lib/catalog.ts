@@ -41,3 +41,20 @@ export async function listCatalogEntries(): Promise<CatalogEntry[]> {
     return [];
   }
 }
+
+/**
+ * Load full catalog index server-side
+ * Used for SSR and static generation
+ *
+ * @returns Catalog index with all packs, or null if load fails
+ */
+export async function loadCatalogIndex() {
+  try {
+    const catalogPath = join(process.cwd(), "public", "catalog", "index.json");
+    const data = await readFile(catalogPath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Failed to load catalog index:", error);
+    return null;
+  }
+}

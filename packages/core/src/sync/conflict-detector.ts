@@ -538,8 +538,23 @@ export class ConflictDetector {
 }
 
 /**
- * Determine if solo mode fast path should be used
- * Solo mode with auto-pull skips conflict detection entirely
+ * Determine if agent edits should be automatically accepted
+ *
+ * This implements the "auto-pull" feature for solo mode.
+ * When enabled, agent edits (e.g., changes to .cursor/rules/*.mdc)
+ * are automatically pulled back into IR before syncing.
+ *
+ * Conditions (ALL must be true):
+ * 1. Solo mode only (team mode requires explicit approval)
+ * 2. auto_pull enabled in config (default: true for solo, false for team)
+ * 3. This is the primary_agent (e.g., cursor, agents-md)
+ * 4. on_conflict set to "accept_agent" (default for solo mode)
+ *
+ * Design rationale:
+ * - Solo devs: Can edit agent configs directly, changes auto-sync to IR
+ * - Team mode: IR is authoritative, agent edits require explicit review
+ *
+ * See config defaults: packages/core/src/config/index.ts (lines 253-303)
  */
 export function shouldUseSoloFastPath(
   config: AlignTrueConfig,

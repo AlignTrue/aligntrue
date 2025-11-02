@@ -206,7 +206,24 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.modules = {};
   }
 
-  // Apply mode-specific module defaults
+  /**
+   * Module defaults differ by mode
+   *
+   * Solo mode:
+   * - lockfile: disabled (no need for reproducibility in solo workflows)
+   * - bundle: disabled (no multi-source merging needed)
+   * - checks: enabled (always validate rules)
+   *
+   * Team/enterprise mode:
+   * - lockfile: enabled (ensures reproducible builds across team)
+   * - bundle: enabled (merge rules from multiple sources)
+   * - checks: enabled (validate rules and detect drift)
+   *
+   * Lockfile modes (team only):
+   * - "off": No lockfile validation
+   * - "soft": Warn on drift but don't fail
+   * - "strict": Fail on any drift (recommended for CI)
+   */
   if (result.mode === "solo") {
     result.modules.lockfile = result.modules.lockfile ?? false;
     result.modules.bundle = result.modules.bundle ?? false;
@@ -239,6 +256,20 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (!result.git) {
     result.git = {};
   }
+
+  /**
+   * Git mode defaults differ by mode
+   *
+   * Solo mode: "ignore" (don't commit .aligntrue files by default)
+   * - Rationale: Solo devs often experiment locally, don't need version control
+   * - Can manually commit if desired
+   *
+   * Team/enterprise mode: "commit" (commit .aligntrue files automatically)
+   * - Rationale: Teams need shared rules in version control
+   * - Enables collaboration and drift detection
+   *
+   * To override: Set git.mode in config
+   */
   if (result.mode === "solo" || result.mode === "team") {
     result.git.mode = result.git.mode ?? "ignore";
   } else if (result.mode === "enterprise") {
@@ -250,10 +281,22 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sync = {};
   }
 
-  // Solo mode: auto_pull ON by default (enables native-format editing), accept_agent on conflict
+  /**
+   * Solo mode: Auto-pull ENABLED by default
+   *
+   * Rationale: Solo devs benefit from native-format editing (edit .cursor rules directly).
+   * Auto-pull keeps IR in sync with agent edits automatically.
+   *
+   * - auto_pull: true (pulls from primary_agent before each sync)
+   * - on_conflict: accept_agent (agent edits win over IR when conflicts detected)
+   * - primary_agent: auto-detected from first importable exporter
+   *
+   * To disable: Set sync.auto_pull: false in config
+   */
   if (result.mode === "solo") {
-    result.sync.auto_pull = result.sync.auto_pull ?? true; // ON for solo (Phase 2 intent)
+    result.sync.auto_pull = result.sync.auto_pull ?? true;
     result.sync.on_conflict = result.sync.on_conflict ?? "accept_agent";
+
     // Auto-detect primary_agent if not set (first exporter that supports import)
     if (
       !result.sync.primary_agent &&
@@ -275,7 +318,17 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
       }
     }
   } else {
-    // Team/enterprise mode: auto_pull off by default, prompt on conflict
+    /**
+     * Team/enterprise mode: Auto-pull DISABLED by default
+     *
+     * Rationale: Teams need explicit review before accepting agent edits.
+     * IR is the single source of truth, modified only through explicit commands.
+     *
+     * - auto_pull: false (manual import only with --accept-agent)
+     * - on_conflict: prompt (ask user to resolve conflicts)
+     *
+     * To enable: Set sync.auto_pull: true in config (not recommended for teams)
+     */
     result.sync.auto_pull = result.sync.auto_pull ?? false;
     result.sync.on_conflict = result.sync.on_conflict ?? "prompt";
   }

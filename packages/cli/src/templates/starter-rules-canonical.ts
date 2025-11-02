@@ -1,12 +1,28 @@
 /**
  * Canonical source of truth for starter rules
- * All template formats (IR, Cursor, AGENTS.md) are generated from this source
  *
- * This ensures template consistency and prevents divergence
+ * All template formats (IR, Cursor, AGENTS.md) are generated from this source.
+ * This ensures template consistency and prevents divergence between formats.
+ *
+ * CRITICAL: When updating starter rules:
+ * 1. Modify ONLY this file
+ * 2. All other templates auto-generate from this source
+ * 3. Rule IDs MUST follow schema pattern: ^[a-z0-9]+(\.[a-z0-9-]+){2,}$
+ *    (minimum 3 segments, e.g., quality.typescript.strict)
+ * 4. Run tests to validate: pnpm test packages/cli/tests/templates
+ *
+ * Template generation:
+ * - IR format: packages/cli/src/templates/starter-rules.ts (markdown)
+ * - Cursor format: packages/cli/src/templates/cursor-starter.ts (.mdc)
+ * - AGENTS.md format: packages/cli/src/templates/agents-md-starter.ts
+ *
+ * Validation:
+ * - Build-time: packages/cli/tests/templates/validation.test.ts
+ * - Integration: packages/cli/tests/integration/fresh-init.test.ts
  */
 
 export interface CanonicalRule {
-  id: string;
+  id: string; // Must match schema pattern (validated at build time)
   severity: "error" | "warn" | "info";
   applies_to: string[];
   guidance: string;

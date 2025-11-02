@@ -304,6 +304,56 @@ aligntrue sync --force
 6. Syncs IR to agent config files
 7. Shows files written, warnings, conflicts
 
+### Auto-Pull Behavior
+
+AlignTrue supports bi-directional sync with agent config files.
+
+**Solo Mode (Default: Enabled)**
+
+When `sync.auto_pull: true` (default), AlignTrue automatically pulls changes from your primary agent before syncing:
+
+```bash
+# Edit .cursor/rules/aligntrue.mdc directly
+# Changes automatically sync back to .aligntrue/rules.md
+aligntrue sync
+```
+
+**Workflow:**
+
+1. Auto-pull from primary agent (e.g., cursor)
+2. Merge agent changes into IR
+3. Sync IR to all configured agents
+
+**To disable:**
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  auto_pull: false
+```
+
+**Team Mode (Default: Disabled)**
+
+In team mode, IR is the single source of truth. Agent edits require explicit approval:
+
+```bash
+# Explicit import from agent
+aligntrue sync --accept-agent cursor
+
+# Or use import command
+aligntrue import cursor --write
+```
+
+**Primary Agent**
+
+Auto-detected from your first importable exporter (cursor, agents-md, etc.). To set manually:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  primary_agent: cursor
+```
+
 **Output example:**
 
 ```

@@ -91,10 +91,10 @@ describe("QuickstartSection", () => {
     });
   });
 
-  it("should render Browse all packs link", () => {
+  it("should render Browse 11 packs link", () => {
     render(<QuickstartSection />);
 
-    const link = screen.getByRole("link", { name: /browse all packs/i });
+    const link = screen.getByRole("link", { name: /browse 11 packs/i });
     expect(link.getAttribute("href")).toBe("/catalog");
   });
 

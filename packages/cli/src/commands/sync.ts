@@ -210,7 +210,24 @@ export async function sync(args: string[]): Promise<void> {
     );
   }
 
-  // Step 4: Auto-pull logic (solo mode)
+  /**
+   * Step 4: Auto-pull logic
+   *
+   * If enabled, pulls from primary_agent BEFORE syncing IR to agents.
+   * This keeps IR in sync with any edits made directly to agent config files.
+   *
+   * Conditions for auto-pull:
+   * 1. config.sync.auto_pull is true (default in solo mode)
+   * 2. User didn't manually specify --accept-agent (manual import takes precedence)
+   * 3. primary_agent is configured (auto-detected on init)
+   * 4. primary_agent's file exists and is importable
+   *
+   * Mode defaults:
+   * - Solo: auto_pull ON (enables native-format editing workflow)
+   * - Team: auto_pull OFF (IR is single source of truth)
+   *
+   * See: packages/core/src/config/index.ts (lines 253-303) for mode defaults
+   */
   let shouldAutoPull = false;
   let autoPullAgent: string | undefined;
   const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
