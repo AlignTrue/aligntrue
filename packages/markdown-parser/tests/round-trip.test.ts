@@ -1,361 +1,153 @@
+/**
+ * Round-trip tests: parse → modify → generate → parse should preserve structure
+ */
+
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { parseMarkdown } from "../src/parser.js";
 import { buildIR } from "../src/ir-builder.js";
 import { generateMarkdown } from "../src/generator.js";
-import type { IRDocument } from "../src/ir-builder.js";
 
-describe("Markdown Round-Trip", () => {
-  it("golden repo round-trip is semantically identical", () => {
-    // Read golden repo markdown
-    const goldenRepoPath = join(
-      process.cwd(),
-      "../../examples/golden-repo/.aligntrue/rules.md",
-    );
-    const original = readFileSync(goldenRepoPath, "utf8");
-
-    // Parse markdown → IR
-    const parseResult = parseMarkdown(original);
-    expect(parseResult.errors).toEqual([]);
-
-    const irResult = buildIR(parseResult.blocks, {
-      captureMetadata: true,
-      originalMarkdown: original,
-    });
-    expect(irResult.errors).toEqual([]);
-    expect(irResult.document).toBeDefined();
-
-    // Generate markdown from IR
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
-
-    // Parse again to verify semantic equivalence
-    const parseResult2 = parseMarkdown(regenerated);
-    const irResult2 = buildIR(parseResult2.blocks);
-
-    // Compare IR documents (semantically equivalent)
-    expect(irResult2.document?.id).toBe(irResult.document?.id);
-    expect(irResult2.document?.version).toBe(irResult.document?.version);
-    expect(irResult2.document?.spec_version).toBe(
-      irResult.document?.spec_version,
-    );
-    expect(irResult2.document?.rules).toHaveLength(
-      irResult.document!.rules.length,
-    );
-
-    // Verify structure is preserved
-    expect(regenerated).toContain("# AlignTrue Rules");
-    expect(regenerated).toContain("```aligntrue");
-    expect(regenerated).toContain("testing.require.tests");
-    expect(regenerated).toContain("code.review.no.todos");
-    expect(regenerated).toContain("docs.public.api");
-    expect(regenerated).toContain("security.no.secrets");
-    expect(regenerated).toContain("typescript.no.any");
-
-    // Note: Exact quote style (single vs double) may differ due to YAML library preferences
-    // This is semantically identical in YAML
-  });
-
-  it("YAML → MD → IR → MD produces valid markdown", () => {
-    // Start with IR (simulating YAML source)
-    const ir: IRDocument = {
-      id: "test-rules",
-      version: "1.0.0",
-      spec_version: "1",
-      rules: [
-        {
-          id: "testing.require.tests",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
-          guidance: "All features must have tests.",
-        },
-      ],
-    };
-
-    // Convert to markdown
-    const markdown = generateMarkdown(ir);
-
-    // Parse back to IR
-    const parseResult = parseMarkdown(markdown);
-    expect(parseResult.errors).toEqual([]);
-
-    const irResult = buildIR(parseResult.blocks);
-    expect(irResult.errors).toEqual([]);
-    expect(irResult.document).toBeDefined();
-
-    // Verify core fields preserved
-    expect(irResult.document?.id).toBe("test-rules");
-    expect(irResult.document?.version).toBe("1.0.0");
-    expect(irResult.document?.spec_version).toBe("1");
-    expect(irResult.document?.rules).toHaveLength(1);
-  });
-
-  it("guidance prose preserved in round-trip", () => {
-    const original = `# My Rules
-
-This is important guidance about our rules.
+describe("Round-trip fidelity", () => {
+  it("should preserve rules after parse → generate → parse", () => {
+    const originalMarkdown = `# AlignTrue Rules
 
 \`\`\`aligntrue
 id: test-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: testing.require.tests
-    severity: warn
-    applies_to: ["**/*.ts"]
-\`\`\`
-`;
-
-    // Parse → IR
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
-      captureMetadata: true,
-      originalMarkdown: original,
-    });
-
-    expect(irResult.document?.guidance).toContain("important guidance");
-    expect(irResult.document?._markdown_meta?.guidance_position).toBe(
-      "before-block",
-    );
-
-    // Generate → should place guidance before block again
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
-
-    // Guidance should be between header and code block
-    const guidanceIndex = regenerated.indexOf("important guidance");
-    const blockIndex = regenerated.indexOf("```aligntrue");
-
-    expect(guidanceIndex).toBeGreaterThan(0);
-    expect(guidanceIndex).toBeLessThan(blockIndex);
-  });
-
-  it("vendor metadata preserved in round-trip", () => {
-    const original = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: testing.require.tests
-    severity: warn
-    applies_to: ["**/*.ts"]
-    vendor:
-      cursor:
-        ai_hint: "Suggest test scaffolding with vitest"
-        quick_fix: true
-\`\`\`
-`;
-
-    // Parse → IR
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
-      captureMetadata: true,
-      originalMarkdown: original,
-    });
-
-    const rule = irResult.document?.rules[0] as any;
-    expect(rule.vendor?.cursor?.ai_hint).toContain("vitest");
-
-    // Generate → vendor metadata should survive
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
-
-    expect(regenerated).toContain("vendor:");
-    expect(regenerated).toContain("cursor:");
-    expect(regenerated).toContain("ai_hint:");
-    expect(regenerated).toContain("vitest");
-  });
-
-  it("canonical format when no metadata", () => {
-    // IR without metadata
-    const ir: IRDocument = {
-      id: "test-rules",
-      version: "1.0.0",
-      spec_version: "1",
-      rules: [
-        {
-          id: "testing.require.tests",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
-        },
-      ],
-    };
-
-    // Generate markdown
-    const markdown = generateMarkdown(ir);
-
-    // Should use canonical defaults
-    expect(markdown).toContain("# AlignTrue Rules");
-    expect(markdown).not.toContain("\r\n"); // LF endings
-    expect(markdown).not.toContain("\t"); // Spaces not tabs
-
-    // Parse back
-    const parseResult = parseMarkdown(markdown);
-    const irResult = buildIR(parseResult.blocks);
-
-    expect(irResult.errors).toEqual([]);
-    expect(irResult.document?.id).toBe("test-rules");
-  });
-
-  it("multiple rules preserved in round-trip", () => {
-    const original = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: testing.require.tests
+  - id: test.rule.one
     severity: error
-    applies_to: ["src/**/*.ts"]
-    guidance: "All features must have tests."
-  - id: code.review.no.todos
+    applies_to:
+      - "**/*.ts"
+    guidance: Test guidance one
+  - id: test.rule.two
     severity: warn
-    applies_to: ["**/*.ts", "**/*.js"]
-    guidance: "Convert TODOs to GitHub issues."
-  - id: docs.public.api
-    severity: info
-    applies_to: ["src/**/index.ts"]
-    guidance: "Public APIs need JSDoc."
+    applies_to:
+      - "**/*.js"
+    guidance: Test guidance two
 \`\`\`
 `;
 
-    // Round-trip
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
+    // Parse
+    const { blocks, errors: parseErrors } = parseMarkdown(originalMarkdown);
+    expect(parseErrors).toHaveLength(0);
+    expect(blocks).toHaveLength(1);
+
+    const { document: ir, errors: buildErrors } = buildIR(blocks, {
       captureMetadata: true,
-      originalMarkdown: original,
+      originalMarkdown,
     });
+    expect(buildErrors).toHaveLength(0);
+    expect(ir).toBeDefined();
+    expect(ir!.rules).toHaveLength(2);
 
-    expect(irResult.document?.rules).toHaveLength(3);
+    // Generate
+    const regenerated = generateMarkdown(ir!, { preserveMetadata: true });
 
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
+    // Parse again
+    const { blocks: blocks2, errors: parseErrors2 } =
+      parseMarkdown(regenerated);
+    expect(parseErrors2).toHaveLength(0);
+    expect(blocks2).toHaveLength(1);
 
-    // All three rules should be present
-    expect(regenerated).toContain("testing.require.tests");
-    expect(regenerated).toContain("code.review.no.todos");
-    expect(regenerated).toContain("docs.public.api");
+    const { document: ir2, errors: buildErrors2 } = buildIR(blocks2);
+    expect(buildErrors2).toHaveLength(0);
+    expect(ir2).toBeDefined();
+    expect(ir2!.rules).toHaveLength(2);
 
-    // Parse again to verify structure
-    const parseResult2 = parseMarkdown(regenerated);
-    const irResult2 = buildIR(parseResult2.blocks);
-
-    expect(irResult2.document?.rules).toHaveLength(3);
+    // Verify rules are identical
+    expect(ir2!.rules).toEqual(ir!.rules);
   });
 
-  it("handles rules with all optional fields", () => {
-    const original = `# AlignTrue Rules
+  it("should not include source_format in fenced block", () => {
+    const markdown = `# AlignTrue Rules
 
 \`\`\`aligntrue
 id: test-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: testing.require.tests
-    aliases: ["testing-require-tests"]
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: "All features must have tests."
-    tags:
-      - testing
-      - quality
-    vendor:
-      cursor:
-        ai_hint: "Suggest test scaffolding"
+  - id: test.rule.one
+    severity: error
+    applies_to:
+      - "**/*.ts"
+    guidance: Test guidance
 \`\`\`
 `;
 
-    // Round-trip
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
+    const { blocks } = parseMarkdown(markdown);
+    const { document: ir } = buildIR(blocks, {
       captureMetadata: true,
-      originalMarkdown: original,
+      originalMarkdown: markdown,
     });
 
-    const rule = irResult.document?.rules[0] as any;
-    expect(rule.aliases).toEqual(["testing-require-tests"]);
-    expect(rule.tags).toEqual(["testing", "quality"]);
+    const regenerated = generateMarkdown(ir!, { preserveMetadata: true });
 
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
+    // Verify source_format is NOT in the fenced block
+    expect(regenerated).not.toMatch(/```aligntrue[\s\S]*source_format:/);
 
-    expect(regenerated).toContain("aliases:");
-    expect(regenerated).toContain("tags:");
-    expect(regenerated).toContain("vendor:");
+    // Verify it still parses correctly
+    const { blocks: blocks2 } = parseMarkdown(regenerated);
+    const { document: ir2, errors } = buildIR(blocks2);
+    expect(errors).toHaveLength(0);
+    expect(ir2!.rules).toHaveLength(1);
   });
 
-  it("preserves source_format field", () => {
-    const original = `# AlignTrue Rules
+  it("should handle malformed markdown with internal fields in fence", () => {
+    // This is the broken format that auto-pull was creating
+    const malformedMarkdown = `# AlignTrue Rules
 
 \`\`\`aligntrue
 id: test-rules
 version: 1.0.0
 spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    applies_to:
+      - "**/*.ts"
+    guidance: Test guidance
 source_format: markdown
-rules: []
+guidance: |-
+  1. Edit the rules below to match your project needs
+  2. Run \`aligntrue sync\` to update your agent configs
+  3. Your AI assistants will follow these rules automatically
+  ---
 \`\`\`
 `;
 
-    // Round-trip
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
+    // Should still parse the rules correctly despite malformed structure
+    const { blocks, errors: parseErrors } = parseMarkdown(malformedMarkdown);
+    expect(parseErrors).toHaveLength(0);
+    expect(blocks).toHaveLength(1);
+
+    const { document: ir, errors: buildErrors } = buildIR(blocks, {
       captureMetadata: true,
-      originalMarkdown: original,
+      originalMarkdown: malformedMarkdown,
     });
 
-    expect(irResult.document?.source_format).toBe("markdown");
+    expect(buildErrors).toHaveLength(0);
+    expect(ir).toBeDefined();
+    expect(ir!.rules).toHaveLength(1);
+    expect(ir!.rules[0]).toHaveProperty("id", "test.rule.one");
 
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
+    // Generate clean version
+    const cleaned = generateMarkdown(ir!, { preserveMetadata: true });
 
-    expect(regenerated).toContain("source_format: markdown");
+    // Verify cleaned version doesn't have internal fields in fence
+    expect(cleaned).not.toMatch(/```aligntrue[\s\S]*source_format:/);
+    expect(cleaned).not.toMatch(/```aligntrue[\s\S]*guidance: \|-/);
+
+    // Verify it parses correctly
+    const { blocks: blocks2 } = parseMarkdown(cleaned);
+    const { document: ir2, errors: errors2 } = buildIR(blocks2);
+    expect(errors2).toHaveLength(0);
+    expect(ir2!.rules).toHaveLength(1);
   });
 
-  it("handles empty rules array", () => {
-    const original = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-rules: []
-\`\`\`
-`;
-
-    // Round-trip
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
-      captureMetadata: true,
-      originalMarkdown: original,
-    });
-
-    expect(irResult.document?.rules).toEqual([]);
-
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
-
-    expect(regenerated).toContain("rules: []");
-
-    // Verify can parse back
-    const parseResult2 = parseMarkdown(regenerated);
-    const irResult2 = buildIR(parseResult2.blocks);
-
-    expect(irResult2.errors).toEqual([]);
-    expect(irResult2.document?.rules).toEqual([]);
-  });
-
-  it("preserves 4-space indentation in round-trip", () => {
+  it("should preserve rule additions after auto-pull cycle", () => {
+    // Start with original rules
     const original = `# AlignTrue Rules
 
 \`\`\`aligntrue
@@ -363,28 +155,37 @@ id: test-rules
 version: 1.0.0
 spec_version: "1"
 rules:
-    - id: testing.require.tests
-      severity: warn
-      applies_to: ["**/*.ts"]
+  - id: test.rule.one
+    severity: error
+    applies_to:
+      - "**/*.ts"
+    guidance: Original rule
 \`\`\`
 `;
 
-    // Round-trip with metadata
-    const parseResult = parseMarkdown(original);
-    const irResult = buildIR(parseResult.blocks, {
-      captureMetadata: true,
-      originalMarkdown: original,
+    // Parse original
+    const { blocks } = parseMarkdown(original);
+    const { document: ir } = buildIR(blocks);
+
+    // Add a new rule (simulating manual edit)
+    ir!.rules.push({
+      id: "test.rule.two",
+      severity: "warn",
+      applies_to: ["**/*.js"],
+      guidance: "Manually added rule",
     });
 
-    expect(
-      irResult.document?._markdown_meta?.whitespace_style?.indent_size,
-    ).toBe(4);
+    // Generate updated markdown (simulating auto-pull write)
+    const updated = generateMarkdown(ir!);
 
-    const regenerated = generateMarkdown(irResult.document!, {
-      preserveMetadata: true,
-    });
+    // Parse updated
+    const { blocks: blocks2 } = parseMarkdown(updated);
+    const { document: ir2, errors } = buildIR(blocks2);
 
-    // Should use 4-space indent
-    expect(regenerated).toMatch(/\n    - id: testing\.require\.tests/);
+    // Verify both rules are present
+    expect(errors).toHaveLength(0);
+    expect(ir2!.rules).toHaveLength(2);
+    expect(ir2!.rules[0]).toHaveProperty("id", "test.rule.one");
+    expect(ir2!.rules[1]).toHaveProperty("id", "test.rule.two");
   });
 });

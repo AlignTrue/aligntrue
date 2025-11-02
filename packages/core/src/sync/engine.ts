@@ -392,6 +392,14 @@ export class SyncEngine {
         );
       }
 
+      // Reset state on all exporters before starting new sync cycle
+      // This prevents accumulation of rules across multiple syncs
+      for (const exporter of activeExporters) {
+        if (typeof (exporter as any).resetState === "function") {
+          (exporter as any).resetState();
+        }
+      }
+
       // For each scope, merge rules and call exporters
       for (const scope of scopes) {
         // For now, just use all rules from IR (scoped merge will be enhanced in later steps)
@@ -627,9 +635,21 @@ export class SyncEngine {
           let content: string;
 
           if (ext === ".md" || ext === ".markdown") {
-            // Preserve markdown format with fenced blocks
-            const yamlContent = yaml.dump(this.ir, { lineWidth: -1 });
-            content = `# AlignTrue Rules\n\n\`\`\`aligntrue\n${yamlContent}\`\`\`\n`;
+            // Use markdown generator to preserve literate markdown structure
+            const { generateMarkdown } = await import(
+              "@aligntrue/markdown-parser"
+            );
+
+            // Clean IR for markdown generation: remove internal metadata fields
+            const cleanIr = { ...this.ir } as any;
+
+            // Remove markdown-specific internal fields that shouldn't be in fenced block
+            delete cleanIr.source_format;
+
+            // Keep guidance in IR for generator to handle (it may move it outside block)
+            content = generateMarkdown(cleanIr, {
+              preserveMetadata: true, // Preserve existing markdown formatting if available
+            });
           } else {
             // Write as YAML
             content = yaml.dump(this.ir);
