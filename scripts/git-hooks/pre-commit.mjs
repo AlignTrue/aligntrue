@@ -10,22 +10,21 @@ async function main() {
   // Step 1: Format staged files
   s.start("Formatting staged files with Prettier...");
   try {
-    execSync("pnpm lint-staged", { stdio: "pipe" });
+    execSync("pnpm lint-staged", { stdio: "inherit" });
     s.stop("✅ Files formatted successfully.");
   } catch (error) {
     s.stop("❌ Formatting failed.", 1);
-    clack.log.error("Could not format staged files.");
-    console.error("\n📝 Some files were not correctly formatted by Prettier.");
-    console.error(
-      "   This usually happens when there are syntax errors in the staged files.",
-    );
-    console.error(
-      "\n   Please review the errors above, fix them, and try committing again.",
-    );
-    console.error(
-      "\n   You can also run 'pnpm format' to format the entire project and see if there are other issues.",
-    );
-    clack.outro("💡 Fix the formatting issues and re-stage the files.");
+    console.error("");
+    clack.log.error("Prettier formatting failed.");
+    console.error("");
+    console.error("📝 This usually means syntax errors in staged files:");
+    console.error("   • Missing closing brackets, braces, or parentheses");
+    console.error("   • Invalid JSON in config files");
+    console.error("   • Malformed JSX or TypeScript syntax");
+    console.error("");
+    console.error("🔍 Re-run format: pnpm format");
+    console.error("");
+    clack.outro("💡 Fix the syntax errors above and re-stage the files.");
     process.exit(1);
   }
 
@@ -44,18 +43,30 @@ async function main() {
     s.start("Building workspace packages (source files changed)...");
     try {
       // Build packages only (not apps) to ensure fresh types for typecheck
-      execSync("pnpm -r --filter './packages/*' build", { stdio: "pipe" });
+      execSync("pnpm -r --filter './packages/*' build", { stdio: "inherit" });
       s.stop("✅ Packages built successfully.");
     } catch (error) {
       s.stop("❌ Build failed.", 1);
-      clack.log.error("Build errors detected in workspace packages.");
-      console.error("\n📝 Please fix the build errors before committing:");
-      console.error("\n   Run: pnpm -r --filter './packages/*' build");
-      console.error("   Or:  pnpm --filter @aligntrue/<package> build");
-      console.error(
-        "\n   This ensures all packages have fresh type definitions.",
-      );
-      clack.outro("💡 Fix the build errors and try committing again.");
+      console.error("");
+      clack.log.error("TypeScript compilation failed.");
+      console.error("");
+      console.error("📝 Common TypeScript Strictness Patterns:");
+      console.error("");
+      console.error("   1. Indexed access returns T | undefined:");
+      console.error("      const value = record[key];  // string | undefined");
+      console.error("      if (!value) throw new Error('Missing key');");
+      console.error("      useValue(value);  // Now narrowed to string");
+      console.error("");
+      console.error("   2. Optional properties cannot be undefined:");
+      console.error("      return { data, ...(error !== undefined && { error }) };");
+      console.error("");
+      console.error("   3. Function parameters need explicit checks:");
+      console.error("      if (!param) { log.warn('Missing param'); return; }");
+      console.error("");
+      console.error("📖 Complete patterns: .cursor/rules/typescript.mdc");
+      console.error("🔍 Re-run build: pnpm -r --filter './packages/*' build");
+      console.error("");
+      clack.outro("💡 Fix the TypeScript errors above and try committing again.");
       process.exit(1);
     }
   }
@@ -75,18 +86,25 @@ async function main() {
   if (stagedTsFiles) {
     s.start("Type checking staged TypeScript files...");
     try {
-      execSync("pnpm -r typecheck", { stdio: "pipe" });
+      execSync("pnpm -r typecheck", { stdio: "inherit" });
       s.stop("✅ Type checking passed.");
     } catch (error) {
       s.stop("❌ Type checking failed.", 1);
-      clack.log.error("TypeScript errors detected in staged files.");
-      console.error("\n📝 Please fix the type errors before committing:");
-      console.error("\n   Run: pnpm -r typecheck");
-      console.error("   Or:  pnpm -r --filter <package> typecheck");
-      console.error(
-        "\n   This prevents type errors from blocking push operations later.",
-      );
-      clack.outro("💡 Fix the type errors and try committing again.");
+      console.error("");
+      clack.log.error("TypeScript type checking failed.");
+      console.error("");
+      console.error("📝 These are stricter checks than compilation.");
+      console.error("   They catch potential runtime errors before they happen.");
+      console.error("");
+      console.error("   Common fixes:");
+      console.error("   • Add explicit type annotations for complex expressions");
+      console.error("   • Use 'as const' for literal unions");
+      console.error("   • Narrow types with guards: if (typeof x === 'string')");
+      console.error("   • Validate at boundaries: parse(input) throws on bad data");
+      console.error("");
+      console.error("🔍 Re-run typecheck: pnpm -r typecheck");
+      console.error("");
+      clack.outro("💡 Fix the type errors above and try committing again.");
       process.exit(1);
     }
   }
