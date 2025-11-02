@@ -340,4 +340,296 @@ describe("init command utilities", () => {
       expect(agents).toContain("vscode-mcp");
     });
   });
+
+  describe("Import flow integration", () => {
+    let testDir: string;
+
+    beforeEach(() => {
+      testDir = join(
+        tmpdir(),
+        `aligntrue-test-import-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      );
+      mkdirSync(testDir, { recursive: true });
+    });
+
+    afterEach(() => {
+      if (existsSync(testDir)) {
+        rmSync(testDir, { recursive: true, force: true });
+      }
+    });
+
+    it("detects import-cursor context when .cursor/rules/*.mdc exists", async () => {
+      // Setup: Create .cursor/rules with .mdc file
+      const cursorDir = join(testDir, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(
+        join(cursorDir, "test.mdc"),
+        "---\n---\n\n## Rule: test.rule\n",
+        "utf-8",
+      );
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-cursor");
+      expect(result.existingFiles).toContain(".cursor/rules/");
+    });
+
+    it("detects import-agents context when AGENTS.md exists", async () => {
+      // Setup: Create AGENTS.md
+      writeFileSync(join(testDir, "AGENTS.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-agents");
+      expect(result.existingFiles).toContain("AGENTS.md");
+    });
+
+    it("prioritizes .cursor over AGENTS.md when both exist", async () => {
+      // Setup: Create both
+      const cursorDir = join(testDir, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(
+        join(cursorDir, "test.mdc"),
+        "---\n---\n\n## Rule: test.rule\n",
+        "utf-8",
+      );
+      writeFileSync(join(testDir, "AGENTS.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      // Cursor takes priority
+      expect(result.context).toBe("import-cursor");
+    });
+
+    it("returns fresh-start when no existing files", async () => {
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("fresh-start");
+      expect(result.existingFiles).toEqual([]);
+    });
+
+    it("returns already-initialized when .aligntrue/ exists", async () => {
+      // Setup: Create .aligntrue directory
+      mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("already-initialized");
+      expect(result.existingFiles).toContain(".aligntrue/");
+    });
+
+    it("detects .cursorrules (legacy Cursor format)", async () => {
+      writeFileSync(join(testDir, ".cursorrules"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-cursorrules");
+      expect(result.existingFiles).toContain(".cursorrules");
+    });
+
+    it("detects CLAUDE.md (uppercase)", async () => {
+      writeFileSync(join(testDir, "CLAUDE.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-claude");
+      expect(result.existingFiles).toContain("CLAUDE.md");
+    });
+
+    it("detects claude.md (lowercase)", async () => {
+      writeFileSync(join(testDir, "claude.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-claude");
+      // On case-insensitive filesystems (macOS), CLAUDE.md will match claude.md
+      expect(result.existingFiles.length).toBe(1);
+      expect(result.existingFiles[0].toLowerCase()).toBe("claude.md");
+    });
+
+    it("detects Claude.md (title case)", async () => {
+      writeFileSync(join(testDir, "Claude.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-claude");
+      // On case-insensitive filesystems (macOS), CLAUDE.md will match Claude.md
+      expect(result.existingFiles.length).toBe(1);
+      expect(result.existingFiles[0].toLowerCase()).toBe("claude.md");
+    });
+
+    it("detects CRUSH.md", async () => {
+      writeFileSync(join(testDir, "CRUSH.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-crush");
+      expect(result.existingFiles).toContain("CRUSH.md");
+    });
+
+    it("detects WARP.md", async () => {
+      writeFileSync(join(testDir, "WARP.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-warp");
+      expect(result.existingFiles).toContain("WARP.md");
+    });
+
+    it("detects agents.md (lowercase AGENTS.md)", async () => {
+      writeFileSync(join(testDir, "agents.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-agents");
+      // On case-insensitive filesystems (macOS), AGENTS.md will match agents.md
+      expect(result.existingFiles.length).toBe(1);
+      expect(result.existingFiles[0].toLowerCase()).toBe("agents.md");
+    });
+
+    it("prioritizes .cursor/rules/ over .cursorrules", async () => {
+      // Setup: Create both
+      const cursorDir = join(testDir, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(
+        join(cursorDir, "test.mdc"),
+        "---\n---\n\n## Rule: test.rule\n",
+        "utf-8",
+      );
+      writeFileSync(join(testDir, ".cursorrules"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-cursor");
+    });
+
+    it("prioritizes .cursorrules over AGENTS.md", async () => {
+      // Setup: Create both
+      writeFileSync(join(testDir, ".cursorrules"), "# Rules\n", "utf-8");
+      writeFileSync(join(testDir, "AGENTS.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-cursorrules");
+    });
+
+    it("prioritizes Cursor over AGENTS.md", async () => {
+      // Setup: Create both
+      const cursorDir = join(testDir, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(
+        join(cursorDir, "test.mdc"),
+        "---\n---\n\n## Rule: test.rule\n",
+        "utf-8",
+      );
+      writeFileSync(join(testDir, "AGENTS.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-cursor");
+    });
+
+    it("prioritizes AGENTS.md over CLAUDE.md", async () => {
+      // Setup: Create both
+      writeFileSync(join(testDir, "AGENTS.md"), "# Rules\n", "utf-8");
+      writeFileSync(join(testDir, "CLAUDE.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-agents");
+    });
+
+    it("prioritizes CLAUDE.md over CRUSH.md", async () => {
+      // Setup: Create both
+      writeFileSync(join(testDir, "CLAUDE.md"), "# Rules\n", "utf-8");
+      writeFileSync(join(testDir, "CRUSH.md"), "# Rules\n", "utf-8");
+
+      const { detectContext } = await import(
+        "../../src/utils/detect-context.js"
+      );
+      const result = detectContext(testDir);
+
+      expect(result.context).toBe("import-claude");
+    });
+  });
+
+  describe("Workflow mode configuration", () => {
+    it("generates native_format config for imported rules", () => {
+      const config: any = {
+        exporters: ["cursor", "agents-md"],
+        sync: {
+          workflow_mode: "native_format",
+          auto_pull: true,
+          primary_agent: "cursor",
+        },
+      };
+
+      const yamlString = yaml.stringify(config);
+      expect(yamlString).toContain("workflow_mode: native_format");
+      expect(yamlString).toContain("auto_pull: true");
+      expect(yamlString).toContain("primary_agent: cursor");
+    });
+
+    it("generates ir_source config for fresh start", () => {
+      const config: any = {
+        exporters: ["cursor", "agents-md"],
+        sync: {
+          workflow_mode: "ir_source",
+          auto_pull: false,
+        },
+      };
+
+      const yamlString = yaml.stringify(config);
+      expect(yamlString).toContain("workflow_mode: ir_source");
+      expect(yamlString).toContain("auto_pull: false");
+    });
+  });
 });
