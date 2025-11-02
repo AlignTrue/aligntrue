@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **TypeScript Strictness:** Resolved `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` violations in import flow. Added null checks for indexed record access and conditional spread for optional properties.
 - **Template Validation:** Cursor and AGENTS.md starter templates now use valid 3-segment rule IDs. Init command no longer auto-runs sync, preventing validation failures on fresh setup. Import command generates correct single-block markdown format.
 - **User Experience:** Init no longer auto-syncs. Sync and import commands show contextual next steps. All error messages include actionable suggestions.
 
