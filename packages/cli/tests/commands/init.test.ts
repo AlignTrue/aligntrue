@@ -217,11 +217,11 @@ describe("init command utilities", () => {
       );
       const template = getStarterTemplate("my-project");
 
-      expect(template).toContain("quality.testing.require-tests");
-      expect(template).toContain("docs.maintenance.update-readme");
-      expect(template).toContain("security.secrets.no-hardcoded");
-      expect(template).toContain("style.naming.consistent");
-      expect(template).toContain("performance.queries.avoid-n-plus-one");
+      expect(template).toContain("quality.typescript.strict");
+      expect(template).toContain("style.naming.conventions");
+      expect(template).toContain("quality.testing.required");
+      expect(template).toContain("style.imports.organized");
+      expect(template).toContain("quality.no.console-log");
     });
 
     it("includes all severity levels", async () => {
