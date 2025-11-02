@@ -27,11 +27,15 @@ describe("EditDetector", () => {
 
   it("should detect file modification time", () => {
     const testFile = join(tempDir, "test.md");
+    const beforeWrite = Date.now();
     writeFileSync(testFile, "initial content");
+    const afterWrite = Date.now();
 
     const mtime = detector.getFileModificationTime(testFile);
     expect(mtime).toBeGreaterThan(0);
-    expect(mtime).toBeLessThanOrEqual(Date.now());
+    // mtime should be between beforeWrite and afterWrite + small buffer for filesystem precision
+    expect(mtime).toBeGreaterThanOrEqual(beforeWrite - 10);
+    expect(mtime).toBeLessThanOrEqual(afterWrite + 10);
   });
 
   it("should return null for non-existent files", () => {
@@ -103,7 +107,10 @@ describe("EditDetector", () => {
     writeFileSync(irPath, "IR content v1");
     writeFileSync(agentPath, "Agent content v1");
 
-    // Update last sync timestamp
+    // Wait to ensure initial files have stable mtime
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Update last sync timestamp AFTER initial files are written
     detector.updateLastSyncTimestamp();
 
     // Wait for filesystem mtime resolution (macOS APFS can be slow)
@@ -128,7 +135,10 @@ describe("EditDetector", () => {
     writeFileSync(irPath, "IR content v1");
     writeFileSync(agentPath, "Agent content v1");
 
-    // Update last sync timestamp
+    // Wait to ensure initial files have stable mtime
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Update last sync timestamp AFTER initial files are written
     detector.updateLastSyncTimestamp();
 
     // Wait for filesystem mtime resolution (macOS APFS can be slow)
