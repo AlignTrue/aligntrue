@@ -77,7 +77,7 @@ function generateCoverageReport(
 }
 
 /**
- * Write imported rules to IR file
+ * Write imported rules to IR file in single-block format
  */
 async function writeToIRFile(
   rules: AlignRule[],
@@ -85,52 +85,72 @@ async function writeToIRFile(
 ): Promise<void> {
   const paths = getAlignTruePaths();
   const irPath = paths.rules;
+  const yaml = await import("yaml");
 
-  // Generate markdown content
+  // Generate single-block IR format
+  const pack = {
+    id: "imported-rules",
+    version: "1.0.0",
+    spec_version: "1",
+    rules: rules.map((rule) => {
+      const ruleData: Record<string, any> = {
+        id: rule.id,
+        severity: rule.severity,
+        applies_to: rule.applies_to,
+      };
+
+      if (rule.guidance) {
+        ruleData["guidance"] = rule.guidance;
+      }
+
+      if (rule.tags && rule.tags.length > 0) {
+        ruleData["tags"] = rule.tags;
+      }
+
+      if (rule.mode) {
+        ruleData["mode"] = rule.mode;
+      }
+
+      if (rule.title) {
+        ruleData["title"] = rule.title;
+      }
+
+      if (rule.description) {
+        ruleData["description"] = rule.description;
+      }
+
+      if (rule.vendor) {
+        ruleData["vendor"] = rule.vendor;
+      }
+
+      if (rule.check) {
+        ruleData["check"] = rule.check;
+      }
+
+      if (rule.autofix) {
+        ruleData["autofix"] = rule.autofix;
+      }
+
+      return ruleData;
+    }),
+  };
+
+  // Generate markdown with single fenced block
   const lines: string[] = [];
   lines.push("# AlignTrue Rules");
   lines.push("");
   lines.push("Rules imported from agent format.");
   lines.push("");
+  lines.push("```aligntrue");
 
-  for (const rule of rules) {
-    lines.push("```aligntrue");
-    lines.push(`id: ${rule.id}`);
-    lines.push(`severity: ${rule.severity}`);
+  // Convert to YAML and add to lines
+  const yamlContent = yaml.stringify(pack, {
+    lineWidth: 0, // Don't wrap long lines
+    indent: 2,
+  });
 
-    if (rule.applies_to) {
-      lines.push("applies_to:");
-      for (const pattern of rule.applies_to) {
-        lines.push(`  - ${pattern}`);
-      }
-    }
-
-    if (rule.tags) {
-      lines.push("tags:");
-      for (const tag of rule.tags) {
-        lines.push(`  - ${tag}`);
-      }
-    }
-
-    if (rule.vendor) {
-      lines.push("vendor:");
-      lines.push(`  # Preserved from original format`);
-      lines.push(
-        JSON.stringify(rule.vendor, null, 2)
-          .split("\n")
-          .slice(1, -1)
-          .join("\n"),
-      );
-    }
-
-    lines.push("```");
-    lines.push("");
-
-    if (rule.guidance) {
-      lines.push(rule.guidance);
-      lines.push("");
-    }
-  }
+  lines.push(yamlContent.trim());
+  lines.push("```");
 
   const content = lines.join("\n");
 
@@ -265,13 +285,38 @@ export async function importCommand(args: string[]): Promise<void> {
   if (write) {
     try {
       await writeToIRFile(rules, dryRun);
+
+      // Show success message with next steps
+      if (!dryRun) {
+        console.log("");
+        clack.log.success(
+          "Your " + agent + " rules are now in AlignTrue IR format.",
+        );
+        console.log("");
+        console.log("Next steps:");
+        console.log("  1. Review imported rules: .aligntrue/rules.md");
+        console.log("  2. Sync to other agents: aligntrue sync");
+        console.log("");
+        console.log(
+          "Tip: Edit .aligntrue/rules.md to customize rules for your project",
+        );
+      }
     } catch (error) {
       clack.log.error(
         `Failed to write IR file: ${error instanceof Error ? error.message : String(error)}`,
       );
       process.exit(1);
     }
+  } else {
+    // Show next steps for preview mode
+    console.log("");
+    console.log("Import complete (preview only)");
+    console.log("");
+    console.log("Next steps:");
+    console.log("  1. Review the import above");
+    console.log("  2. Write to IR: aligntrue import " + agent + " --write");
+    console.log("  3. Then sync: aligntrue sync");
   }
 
-  clack.outro("Import complete");
+  clack.outro("");
 }
