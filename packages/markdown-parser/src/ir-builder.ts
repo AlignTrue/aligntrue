@@ -95,7 +95,7 @@ export function buildIR(
       // Full document in first block - validate and return
       const doc = parsed as IRDocument;
 
-      // Ensure source_format is set
+      // Ensure source_format is set (as internal metadata, not in spec)
       if (!doc.source_format) {
         doc.source_format = "markdown";
       }
@@ -104,6 +104,23 @@ export function buildIR(
       if (firstBlock.guidanceBefore && !("guidance" in doc)) {
         (doc as Record<string, unknown>)["guidance"] =
           firstBlock.guidanceBefore;
+      }
+
+      // Validation: Warn if pack-level metadata is in fenced block (will be cleaned on write)
+      // These fields should be outside the fenced block or handled as metadata
+      const internalFields = ["source_format", "guidance"];
+      const foundInternalFields = internalFields.filter(
+        (field) => field in parsed,
+      );
+
+      if (foundInternalFields.length > 0 && options?.captureMetadata) {
+        // Store warning in metadata so we can clean it on next write
+        if (!doc._markdown_meta) {
+          doc._markdown_meta = {
+            original_structure: "single-block",
+          };
+        }
+        (doc._markdown_meta as any).had_internal_fields_in_fence = true;
       }
 
       // Capture metadata for round-trip if requested

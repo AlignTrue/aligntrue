@@ -46,10 +46,12 @@ export function generateMarkdown(
   // Build clean IR for YAML generation (remove metadata fields)
   const cleanIr = { ...ir };
   delete cleanIr._markdown_meta;
+  delete cleanIr.source_format; // Internal field, not part of AlignPack spec
 
-  // Extract doc-level guidance if it should go before block
+  // Extract and remove pack-level guidance (not part of AlignPack spec)
+  // Pack-level guidance should be prose outside the fenced block, not YAML inside it
   let guidanceProse: string | undefined;
-  if (guidanceBeforeBlock && cleanIr.guidance) {
+  if (cleanIr.guidance) {
     guidanceProse = cleanIr.guidance as string;
     delete cleanIr.guidance;
   }
