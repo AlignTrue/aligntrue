@@ -86,12 +86,48 @@ aligntrue/
 │   └── docs/         # Nextra documentation
 ├── packages/
 │   ├── schema/       # JSON Schema, canonicalization, hashing
+│   ├── core/         # Config, sync engine, bundle/lockfile
 │   ├── cli/          # aligntrue/aln CLI
-│   └── mcp/          # MCP server (Phase 2+)
-└── basealigns/       # Temporary: will move to aligns repo
+│   ├── exporters/    # Agent-specific exports (Cursor, AGENTS.md, etc.)
+│   └── ...           # Other packages
+└── catalog/          # Local catalog with curated packs
 ```
 
 ## Working on packages
+
+### Package build workflow
+
+When editing workspace packages that other packages depend on (core, schema, exporters), you have two options:
+
+**Option 1: Watch mode (recommended for active development)**
+
+Run packages in watch mode for automatic rebuilds on save:
+
+```bash
+pnpm dev:packages
+```
+
+This runs all packages in parallel watch mode. Keep this running in a separate terminal while developing.
+
+**Option 2: Manual builds**
+
+Build packages explicitly when needed:
+
+```bash
+# Build all packages
+pnpm build:packages
+
+# Build specific package
+pnpm --filter @aligntrue/core build
+```
+
+### Why builds matter
+
+Packages import from `dist/` directories of their dependencies (e.g., CLI imports from `packages/core/dist/`). If you edit source in `packages/core/src/` but don't rebuild, other packages will see stale types and code.
+
+**The pre-commit hook automatically rebuilds packages when source files change**, so you won't commit stale builds. But during development, use watch mode for instant feedback.
+
+## Working on specific packages
 
 ### packages/schema
 
@@ -278,10 +314,18 @@ This project uses Husky to automatically run quality checks. Hooks are installed
 
 ### Pre-commit hook
 
-Runs automatically before each commit (takes ~2-3 seconds):
+Runs automatically before each commit:
 
-- Formats code with Prettier
-- Only runs on staged files for speed
+1. **Format staged files** (~1-2s) - Prettier auto-formats code
+2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed, rebuilds to ensure fresh types
+3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+
+**Total time:**
+
+- Without package changes: ~3-5 seconds
+- With package changes: ~4-8 seconds
+
+The build step prevents stale type definitions from causing errors. If you're actively developing packages, run `pnpm dev:packages` in a separate terminal for continuous rebuilds.
 
 **Note:** If you modify `package.json`, manually run `pnpm install` to update the lockfile before committing.
 
