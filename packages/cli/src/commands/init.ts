@@ -239,6 +239,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     };
     const detectedAgent = contextToAgent[contextResult.context];
 
+    if (!detectedAgent) {
+      // Safety check: context should always map to an agent
+      clack.log.warn("Could not map context to agent");
+      return;
+    }
+
     if (nonInteractive) {
       // Non-interactive without --import flag: skip import (safe default)
       console.log(
