@@ -59,11 +59,21 @@ aligntrue sync    # Generate agent files
 aligntrue sync    # Update all agents when rules change
 ```
 
+**Two-way sync:**
+
+AlignTrue supports bidirectional sync. You can:
+
+- Edit rules.md and sync to agents (default)
+- Edit agent files and auto-pull back to rules.md (optional, enabled by default in solo mode)
+
+See [Workflows guide](https://aligntrue.ai/docs/guides/workflows) for choosing your editing workflow.
+
 **Optional verification:**
 
 ```bash
-aligntrue sync --dry-run    # Preview changes
-aligntrue check             # Validate rules (great for CI)
+aligntrue sync --dry-run       # Preview changes
+aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
+aligntrue check                # Validate rules (great for CI)
 ```
 
 ## What you get
