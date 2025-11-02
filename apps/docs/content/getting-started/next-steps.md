@@ -1,0 +1,319 @@
+# Next steps
+
+You've got AlignTrue set up and syncing. Here's what to explore next based on your needs.
+
+## Essential commands
+
+These commands will be part of your daily workflow:
+
+### Preview changes
+
+See what would change without writing files:
+
+```bash
+aligntrue sync --dry-run
+```
+
+### Validate rules
+
+Check rules for errors (great for CI):
+
+```bash
+aligntrue check
+```
+
+### Check syntax
+
+Lint your markdown rules file:
+
+```bash
+aligntrue md lint
+```
+
+**Full command reference:** [CLI Reference](/reference/cli-reference)
+
+## Auto-sync on save
+
+Want rules to sync automatically when you save? Set up a file watcher.
+
+### VS Code (Quick Option)
+
+Add to `.vscode/tasks.json`:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AlignTrue Auto-Sync",
+      "type": "shell",
+      "command": "aligntrue sync",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}
+```
+
+### Universal Option (Any Editor)
+
+Use nodemon to watch for changes:
+
+```bash
+npm install -g nodemon
+nodemon --watch .aligntrue/rules.md --exec "aligntrue sync"
+```
+
+**Platform-specific guides:** [File Watcher Setup](/reference/file-watcher-setup)
+
+## Using git sources
+
+Pull rules from any git repository to share across projects or teams.
+
+### Quick pull (temporary)
+
+Try rules without committing:
+
+```bash
+aligntrue pull https://github.com/yourorg/rules
+```
+
+### Permanent subscription
+
+Add to `.aligntrue/config.yaml`:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules
+    ref: main
+    path: .aligntrue.yaml
+```
+
+First sync will prompt for privacy consent.
+
+**Full documentation:** [Git Sources Guide](/reference/git-sources)
+
+## Team collaboration
+
+Enable team mode for shared rules with lockfiles and drift detection.
+
+### For repository owners
+
+```bash
+# 1. Enable team mode
+aligntrue team enable
+
+# 2. Approve rule sources
+aligntrue team approve sha256:abc123...
+
+# 3. Sync to generate lockfile
+aligntrue sync
+
+# 4. Commit team files
+git add .aligntrue/
+git commit -m "Enable AlignTrue team mode"
+```
+
+### For team members
+
+```bash
+# Clone and sync (validated against allow list)
+git clone <repo> && cd <repo>
+aligntrue sync
+```
+
+Team mode provides:
+
+- Lockfile validation (soft/strict modes)
+- Drift detection
+- Approved source tracking
+- Reproducible builds
+
+**Complete workflows:** [Team Mode Guide](/concepts/team-mode)
+
+## Supporting more agents
+
+AlignTrue supports 28+ AI coding agents out of the box.
+
+### List available adapters
+
+```bash
+aligntrue adapters list
+```
+
+### Enable additional agents
+
+Edit `.aligntrue/config.yaml`:
+
+```yaml
+exporters:
+  - cursor
+  - agents-md
+  - windsurf
+  - claude-md
+  - cline
+  - copilot
+  - aider
+```
+
+Common agent formats:
+
+- **cursor** - Cursor `.mdc` files
+- **agents-md** - Universal AGENTS.md format (works with Copilot, Claude Code, Aider)
+- **windsurf** - Windsurf rules format
+- **cline** - Cline configuration
+- **vscode-mcp** - VS Code MCP configuration
+
+## Advanced features
+
+### Hierarchical scopes
+
+Apply different rules to different directories:
+
+```yaml
+scopes:
+  - path: src/
+    rules:
+      - strict-types
+  - path: tests/
+    rules:
+      - allow-any
+```
+
+### Overlays
+
+Customize third-party packs without losing upstream updates:
+
+```bash
+aligntrue override add rule-id --set severity=warning
+```
+
+**Full guide:** [Overlays Guide](/concepts/overlays)
+
+### Custom exporters
+
+Add support for new agents by creating custom exporters.
+
+**Extension guide:** [Adding Exporters](/contributing/adding-exporters)
+
+## Importing existing rules
+
+Migrate from existing agent configurations to AlignTrue.
+
+### Detect and analyze
+
+```bash
+aligntrue import cursor --dry-run
+```
+
+### Import with coverage report
+
+```bash
+aligntrue import cursor --write
+```
+
+**Complete migration guide:** [Import Workflow](/reference/import-workflow)
+
+## Workflow examples
+
+### Solo developer workflow
+
+```bash
+# Daily workflow
+cd your-project
+vim .aligntrue/rules.md  # Edit rules
+aligntrue sync           # Update agents
+git add .
+git commit -m "Update project rules"
+```
+
+### Team workflow
+
+```bash
+# Repository owner
+aligntrue team enable
+aligntrue sync
+git add .aligntrue/
+git commit -m "Add AlignTrue configuration"
+git push
+
+# Team member
+git pull
+aligntrue sync  # Validates against lockfile
+```
+
+### Multi-project workflow
+
+```bash
+# Create shared rules in a separate repo
+cd shared-rules
+aligntrue init
+# Add rules that apply to all projects
+
+# Use in projects
+cd project-1
+aligntrue pull ../shared-rules --save
+aligntrue sync
+```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+**Rules not showing in agent?**
+
+- Check agent is enabled in `.aligntrue/config.yaml`
+- Run `aligntrue sync` again
+- Restart your IDE
+
+**Syntax errors?**
+
+- Run `aligntrue check` for validation
+- Run `aligntrue md lint` for markdown issues
+
+**Network consent prompts?**
+
+- First-time git source access requires consent
+- Use `--offline` flag to skip network operations
+- See [Privacy Guide](/reference/privacy)
+
+**Full troubleshooting:** [Troubleshooting Guide](/reference/troubleshooting)
+
+## Learning resources
+
+### Guides
+
+- [Sync Behavior](/concepts/sync-behavior) - How two-way sync works
+- [Drift Detection](/concepts/drift-detection) - Track alignment changes
+- [Git Workflows](/concepts/git-workflows) - Pull and vendor workflows
+- [Backup & Restore](/reference/backup-restore) - Protect your configuration
+
+### Reference
+
+- [CLI Reference](/reference/cli-reference) - Complete command documentation
+- [Pre-1.0 Policy](/reference/pre-1.0-policy) - Schema evolution policy
+- [Privacy Controls](/reference/privacy) - Network consent and telemetry
+
+### Contributing
+
+- [Getting Started](/contributing/getting-started) - Contribute to AlignTrue
+- [Testing Workflow](/contributing/testing-workflow) - Test standards
+- [Team Onboarding](/contributing/team-onboarding) - Internal dev guide
+
+## Community
+
+**Need help?**
+
+- [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+- [Issues](https://github.com/AlignTrue/aligntrue/issues)
+
+**Want to contribute?**
+
+- [Contributing Guide](/contributing/getting-started)
+- [Code of Conduct](https://github.com/AlignTrue/aligntrue/blob/main/CODE_OF_CONDUCT.md)
+
+---
+
+**Ready to dive deeper?** Pick a topic from the guides above and explore AlignTrue's full capabilities.

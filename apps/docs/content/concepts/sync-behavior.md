@@ -125,7 +125,7 @@ aligntrue sync --accept-agent cursor
 aligntrue sync --accept-agent agents-md
 ```
 
-See [Import Workflow Guide](import-workflow.md) for detailed migration strategies and coverage analysis.
+See [Import Workflow Guide](/reference/import-workflow) for detailed migration strategies and coverage analysis.
 
 **Output:**
 
@@ -784,9 +784,9 @@ Volatile fields won't cause lockfile drift.
 
 ## See also
 
-- [Command Reference](commands.md) - Detailed flag documentation
-- [Import Workflow](import-workflow.md) - Migrate from existing agent rules
-- [Git Sources Guide](git-sources.md) - Pull rules from repositories
-- [Troubleshooting](troubleshooting.md) - Common sync issues
-- [Extending AlignTrue](extending-aligntrue.md) - Create custom exporters
-- [Quickstart Guide](quickstart.md) - Get started in <60 seconds
+- [Command Reference](/reference/cli-reference) - Detailed flag documentation
+- [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
+- [Git Sources Guide](/reference/git-sources) - Pull rules from repositories
+- [Troubleshooting](/reference/troubleshooting) - Common sync issues
+- [Extending AlignTrue](/contributing/adding-exporters) - Create custom exporters
+- [Quickstart Guide](/getting-started/quickstart) - Get started in <60 seconds
