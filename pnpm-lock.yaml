@@ -24,21 +24,24 @@ importers:
     devDependencies:
       "@changesets/cli":
         specifier: ^2.29.7
-        version: 2.29.7(@types/node@24.9.1)
+        version: 2.29.7(@types/node@24.10.0)
       "@clack/prompts":
         specifier: ^0.11.0
         version: 0.11.0
       "@commitlint/cli":
         specifier: ^20.1.0
-        version: 20.1.0(@types/node@24.9.1)(typescript@5.9.3)
+        version: 20.1.0(@types/node@24.10.0)(typescript@5.9.3)
       "@commitlint/config-conventional":
         specifier: ^20.0.0
         version: 20.0.0
+      "@next/eslint-plugin-next":
+        specifier: ^15.5.6
+        version: 15.5.6
       "@typescript-eslint/eslint-plugin":
-        specifier: ^8.0.0
+        specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
       "@typescript-eslint/parser":
-        specifier: ^8.0.0
+        specifier: ^8.46.2
         version: 8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
       concurrently:
         specifier: ^9.2.1
@@ -50,8 +53,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(@typescript-eslint/eslint-plugin@8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.0(jiti@2.6.1))
       fast-xml-parser:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^5.3.1
+        version: 5.3.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -59,14 +62,17 @@ importers:
         specifier: ^16.2.6
         version: 16.2.6
       prettier:
-        specifier: ^3.3.0
+        specifier: ^3.6.2
         version: 3.6.2
       typescript:
-        specifier: ^5.6.0
+        specifier: ^5.9.3
         version: 5.9.3
 
   apps/docs:
     dependencies:
+      "@aligntrue/ui":
+        specifier: workspace:*
+        version: link:../../packages/ui
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
@@ -464,15 +470,30 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
+      "@testing-library/react":
+        specifier: ^16.0.1
+        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      "@testing-library/user-event":
+        specifier: ^14.5.2
+        version: 14.6.1(@testing-library/dom@10.4.1)
       "@types/react":
         specifier: ^19
         version: 19.2.2
+      "@types/react-dom":
+        specifier: ^19
+        version: 19.2.2(@types/react@19.2.2)
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
       tailwindcss:
         specifier: ^4
         version: 4.1.16
       typescript:
         specifier: ^5
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.6
+        version: 4.0.6(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(jsdom@25.0.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
 
 packages:
   "@adobe/css-tools@4.4.4":
@@ -1680,6 +1701,12 @@ packages:
         integrity: sha512-PrBIpO8oljZGTOe9HH0miix1w5MUiGJ/q83Jge03mHEE0E3pyqzAy2+l5G6aJDbXoobmxPJTVhbCuwlLtjSHwg==,
       }
 
+  "@next/eslint-plugin-next@15.5.6":
+    resolution:
+      {
+        integrity: sha512-YxDvsT2fwy1j5gMqk3ppXlsgDopHnkM4BoxSVASbvvgh5zgsK8lvWerDzPip8k3WVzsTZ1O7A7si1KNfN4OZfQ==,
+      }
+
   "@next/swc-darwin-arm64@15.4.7":
     resolution:
       {
@@ -2584,6 +2611,12 @@ packages:
         integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==,
       }
 
+  "@types/node@24.10.0":
+    resolution:
+      {
+        integrity: sha512-qzQZRBqkFsYyaSWXuEHc2WR9c0a0CXwiE5FWUvn7ZM+vdy1uZLfCunD38UzhuB7YN/J11ndbDBcTmOdxJo9Q7A==,
+      }
+
   "@types/node@24.9.1":
     resolution:
       {
@@ -3157,10 +3190,10 @@ packages:
         integrity: sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==,
       }
 
-  chardet@2.1.0:
+  chardet@2.1.1:
     resolution:
       {
-        integrity: sha512-bNFETTG/pM5ryzQ9Ad0lJOTa6HWD/YsScAR3EnCPZRPlQh77JocYktSHOUHelyhm8IARL+o4c4F1bP5KVOjiRA==,
+        integrity: sha512-PsezH1rqdV9VvyNhxxOW32/d75r01NY7TQCmOqomRo15ZSOKbpTFVsfjghxo6JloQUCGnH4k1LGu0R4yCLlWQQ==,
       }
 
   chevrotain-allstar@0.3.1:
@@ -4148,6 +4181,13 @@ packages:
         integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==,
       }
 
+  fast-glob@3.3.1:
+    resolution:
+      {
+        integrity: sha512-kNFPyjhh5cKjrUltxs+wFx+ZkbRaxxmZ+X0ZU31SOsxCEtP9VPgtq2teZw1DebupL5GmDaNQ6yKMMVcM41iqDg==,
+      }
+    engines: { node: ">=8.6.0" }
+
   fast-glob@3.3.3:
     resolution:
       {
@@ -4177,6 +4217,13 @@ packages:
     resolution:
       {
         integrity: sha512-gkWGshjYcQCF+6qtlrqBqELqNqnt4CxruY6UVAWWnqb3DQ6qaNFEIKqzYep1XzHLM/QtrHVCxyPOtTk4LTQ7Aw==,
+      }
+    hasBin: true
+
+  fast-xml-parser@5.3.1:
+    resolution:
+      {
+        integrity: sha512-jbNkWiv2Ec1A7wuuxk0br0d0aTMUtQ4IkL+l/i1r9PRf6pLXjDgsBsWwO+UyczmQlnehi4Tbc8/KIvxGQe+I/A==,
       }
     hasBin: true
 
@@ -7659,7 +7706,7 @@ snapshots:
     dependencies:
       "@changesets/types": 6.1.0
 
-  "@changesets/cli@2.29.7(@types/node@24.9.1)":
+  "@changesets/cli@2.29.7(@types/node@24.10.0)":
     dependencies:
       "@changesets/apply-release-plan": 7.0.13
       "@changesets/assemble-release-plan": 6.0.9
@@ -7675,7 +7722,7 @@ snapshots:
       "@changesets/should-skip-package": 0.1.2
       "@changesets/types": 6.1.0
       "@changesets/write": 0.4.0
-      "@inquirer/external-editor": 1.0.2(@types/node@24.9.1)
+      "@inquirer/external-editor": 1.0.2(@types/node@24.10.0)
       "@manypkg/get-packages": 1.1.3
       ansi-colors: 4.1.3
       ci-info: 3.9.0
@@ -7802,11 +7849,11 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  "@commitlint/cli@20.1.0(@types/node@24.9.1)(typescript@5.9.3)":
+  "@commitlint/cli@20.1.0(@types/node@24.10.0)(typescript@5.9.3)":
     dependencies:
       "@commitlint/format": 20.0.0
       "@commitlint/lint": 20.0.0
-      "@commitlint/load": 20.1.0(@types/node@24.9.1)(typescript@5.9.3)
+      "@commitlint/load": 20.1.0(@types/node@24.10.0)(typescript@5.9.3)
       "@commitlint/read": 20.0.0
       "@commitlint/types": 20.0.0
       tinyexec: 1.0.1
@@ -7853,7 +7900,7 @@ snapshots:
       "@commitlint/rules": 20.0.0
       "@commitlint/types": 20.0.0
 
-  "@commitlint/load@20.1.0(@types/node@24.9.1)(typescript@5.9.3)":
+  "@commitlint/load@20.1.0(@types/node@24.10.0)(typescript@5.9.3)":
     dependencies:
       "@commitlint/config-validator": 20.0.0
       "@commitlint/execute-rule": 20.0.0
@@ -7861,7 +7908,7 @@ snapshots:
       "@commitlint/types": 20.0.0
       chalk: 5.6.2
       cosmiconfig: 9.0.0(typescript@5.9.3)
-      cosmiconfig-typescript-loader: 6.2.0(@types/node@24.9.1)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3)
+      cosmiconfig-typescript-loader: 6.2.0(@types/node@24.10.0)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -8215,12 +8262,12 @@ snapshots:
   "@img/sharp-win32-x64@0.34.4":
     optional: true
 
-  "@inquirer/external-editor@1.0.2(@types/node@24.9.1)":
+  "@inquirer/external-editor@1.0.2(@types/node@24.10.0)":
     dependencies:
-      chardet: 2.1.0
+      chardet: 2.1.1
       iconv-lite: 0.7.0
     optionalDependencies:
-      "@types/node": 24.9.1
+      "@types/node": 24.10.0
 
   "@isaacs/balanced-match@4.0.1": {}
 
@@ -8369,6 +8416,10 @@ snapshots:
       "@napi-rs/simple-git-win32-x64-msvc": 0.1.22
 
   "@next/env@15.4.7": {}
+
+  "@next/eslint-plugin-next@15.5.6":
+    dependencies:
+      fast-glob: 3.3.1
 
   "@next/swc-darwin-arm64@15.4.7":
     optional: true
@@ -8710,7 +8761,7 @@ snapshots:
 
   "@types/conventional-commits-parser@5.0.2":
     dependencies:
-      "@types/node": 24.9.1
+      "@types/node": 24.10.0
 
   "@types/d3-array@3.2.2": {}
 
@@ -8875,6 +8926,10 @@ snapshots:
 
   "@types/node@12.20.55": {}
 
+  "@types/node@24.10.0":
+    dependencies:
+      undici-types: 7.16.0
+
   "@types/node@24.9.1":
     dependencies:
       undici-types: 7.16.0
@@ -9027,6 +9082,14 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
+
+  "@vitest/mocker@4.0.6(vite@7.1.12(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))":
+    dependencies:
+      "@vitest/spy": 4.0.6
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 7.1.12(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
 
   "@vitest/mocker@4.0.6(vite@7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))":
     dependencies:
@@ -9219,7 +9282,7 @@ snapshots:
 
   character-reference-invalid@2.0.1: {}
 
-  chardet@2.1.0: {}
+  chardet@2.1.1: {}
 
   chevrotain-allstar@0.3.1(chevrotain@11.0.3):
     dependencies:
@@ -9335,9 +9398,9 @@ snapshots:
     dependencies:
       layout-base: 2.0.1
 
-  cosmiconfig-typescript-loader@6.2.0(@types/node@24.9.1)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3):
+  cosmiconfig-typescript-loader@6.2.0(@types/node@24.10.0)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3):
     dependencies:
-      "@types/node": 24.9.1
+      "@types/node": 24.10.0
       cosmiconfig: 9.0.0(typescript@5.9.3)
       jiti: 2.6.1
       typescript: 5.9.3
@@ -9840,6 +9903,14 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
+  fast-glob@3.3.1:
+    dependencies:
+      "@nodelib/fs.stat": 2.0.5
+      "@nodelib/fs.walk": 1.2.8
+      glob-parent: 5.1.2
+      merge2: 1.4.1
+      micromatch: 4.0.8
+
   fast-glob@3.3.3:
     dependencies:
       "@nodelib/fs.stat": 2.0.5
@@ -9855,6 +9926,10 @@ snapshots:
   fast-uri@3.1.0: {}
 
   fast-xml-parser@5.3.0:
+    dependencies:
+      strnum: 2.1.1
+
+  fast-xml-parser@5.3.1:
     dependencies:
       strnum: 2.1.1
 
@@ -12091,6 +12166,22 @@ snapshots:
       "@types/unist": 3.0.3
       vfile-message: 4.0.3
 
+  vite@7.1.12(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1):
+    dependencies:
+      esbuild: 0.25.11
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.52.5
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      "@types/node": 24.10.0
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      lightningcss: 1.30.2
+      tsx: 4.20.6
+      yaml: 2.8.1
+
   vite@7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.11
@@ -12132,6 +12223,46 @@ snapshots:
     optionalDependencies:
       "@types/debug": 4.1.12
       "@types/node": 24.9.1
+      jsdom: 25.0.1
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@4.0.6(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(jsdom@25.0.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1):
+    dependencies:
+      "@vitest/expect": 4.0.6
+      "@vitest/mocker": 4.0.6(vite@7.1.12(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
+      "@vitest/pretty-format": 4.0.6
+      "@vitest/runner": 4.0.6
+      "@vitest/snapshot": 4.0.6
+      "@vitest/spy": 4.0.6
+      "@vitest/utils": 4.0.6
+      debug: 4.4.3
+      es-module-lexer: 1.7.0
+      expect-type: 1.2.2
+      magic-string: 0.30.21
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 7.1.12(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      "@types/debug": 4.1.12
+      "@types/node": 24.10.0
       jsdom: 25.0.1
     transitivePeerDependencies:
       - jiti

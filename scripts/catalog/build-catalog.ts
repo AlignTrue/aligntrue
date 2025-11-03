@@ -38,6 +38,11 @@ interface PackMetadata {
   };
   source_repo?: string;
   namespace_owner?: string;
+  attribution?: {
+    type: "original" | "community";
+    author: string;
+    source_url: string;
+  };
   path: string;
 }
 
@@ -76,6 +81,7 @@ const entries: CatalogEntryExtended[] = packsList.packs.map((pack) => {
 
     // Author
     maintainer: pack.maintainer,
+    attribution: pack.attribution,
 
     // Trust signals
     last_updated: new Date().toISOString().split("T")[0],

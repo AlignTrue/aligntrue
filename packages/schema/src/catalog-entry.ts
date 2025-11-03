@@ -69,6 +69,18 @@ export interface Maintainer {
 }
 
 /**
+ * Attribution information for community-contributed packs
+ */
+export interface Attribution {
+  /** Type: original (AlignTrue) or community (third-party) */
+  type: "original" | "community";
+  /** Original author name or handle */
+  author: string;
+  /** Link to original source (tweet, gist, repo, etc.) */
+  source_url: string;
+}
+
+/**
  * Usage statistics
  */
 export interface PackStats {
@@ -127,6 +139,8 @@ export interface CatalogEntryExtended extends CatalogEntryBase {
   // Author
   /** Maintainer information */
   maintainer: Maintainer;
+  /** Optional attribution for community-contributed packs */
+  attribution?: Attribution;
 
   // Trust signals
   /** ISO 8601 timestamp of last update */
@@ -281,6 +295,20 @@ export function validateCatalogEntry(entry: unknown): CatalogEntryValidation {
     const m = e["maintainer"] as Record<string, unknown>;
     if (!m["name"] || typeof m["name"] !== "string") {
       errors.push("maintainer.name is required and must be a string");
+    }
+  }
+
+  // Validate attribution structure (optional)
+  if (e["attribution"]) {
+    const a = e["attribution"] as Record<string, unknown>;
+    if (!a["type"] || (a["type"] !== "original" && a["type"] !== "community")) {
+      errors.push('attribution.type must be "original" or "community"');
+    }
+    if (!a["author"] || typeof a["author"] !== "string") {
+      errors.push("attribution.author is required and must be a string");
+    }
+    if (!a["source_url"] || typeof a["source_url"] !== "string") {
+      errors.push("attribution.source_url is required and must be a string");
     }
   }
 

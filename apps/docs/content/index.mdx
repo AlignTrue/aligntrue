@@ -1,32 +1,112 @@
 ---
-title: AlignTrue Documentation
-description: Make your AI coding assistants follow your project's standards with deterministic, version-controlled rules.
+title: AlignTrue
+description: Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 ---
 
-# AlignTrue documentation
+# AlignTrue
 
-**Make your AI coding assistants follow your project's standards.** AlignTrue converts simple YAML rules into agent-specific formats for Cursor, GitHub Copilot, Claude Code, and 25+ other AI agents.
+Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 
-## Why AlignTrue?
+Write rules once in markdown. Sync everywhere. Stay aligned.
 
-- **Single source of truth** - Write rules once, export to all your AI agents
-- **Version controlled** - Track rule changes in git like any other code
-- **Team collaboration** - Share rules across your team with lockfiles and drift detection
-- **28+ AI agents** - Cursor, Copilot, Claude Code, Aider, Windsurf, and more
-- **Local-first** - Everything works offline, cloud is optional
-- **Deterministic** - Same rules produce identical outputs every time
+- **Solo developers:** Keep your personal AI rules consistent across projects and machines.
+- **Teams:** Shared rule sets with version control, CI validation, and drift detection.
 
-## Quick start
+[![npm version](https://img.shields.io/npm/v/@aligntrue/cli.svg)](https://www.npmjs.com/package/@aligntrue/cli) [![Tests](https://img.shields.io/badge/tests-1842%20passing-brightgreen)](https://github.com/AlignTrue/aligntrue) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
 
-Get started in under 60 seconds:
+## Why AlignTrue
+
+- **Write once, sync everywhere** - One markdown file generates agent-specific formats for 28+ AI coding tools
+- **60-second setup** - Auto-detects your agents and creates starter rules in under a minute
+- **Two-way sync** - Edit rules OR agent files; changes flow both directions automatically
+
+## Quickstart
 
 ```bash
-npm install -g @aligntrue/cli
-aligntrue init
-aligntrue sync
+npx @aligntrue/cli init  # Auto-detect agents, create .aligntrue/rules.md
+# Edit .aligntrue/rules.md (optional)
+aligntrue sync           # Generate all agent files
 ```
 
+**Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
+
 Read the [Quickstart Guide](/getting-started/quickstart) for detailed instructions.
+
+## Features
+
+- **Auto-detection** - Finds Cursor, Copilot, Claude, VS Code, and 25+ other agents automatically
+- **Two-way sync** - Edit markdown or agent files; AlignTrue keeps them aligned
+- **28+ agents supported** - Comprehensive coverage through 43 specialized exporters
+- **Agent-optimized formats** - Native .mdc for Cursor, AGENTS.md for universals, MCP configs, and more
+- **Local-first** - No cloud required; works offline and in CI
+- **Team mode** - Optional lockfiles, bundles, and drift detection for teams
+
+## Broad agent support
+
+AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**:
+
+**Popular agents:**
+
+- Cursor (.mdc files)
+- GitHub Copilot (AGENTS.md)
+- Claude (AGENTS.md + CLAUDE.md)
+- Aider (AGENTS.md + .aider.conf.yml)
+- Windsurf (AGENTS.md + MCP config)
+- VS Code MCP agents
+- Amazon Q, Firebase Studio, OpenHands, Zed, and 20+ more
+
+**Coverage:**
+- 43 total exporters supporting 28+ agents
+- 8 MCP configurations for protocol-based agents
+- 15 unique format exporters for agent-specific formats
+- 11 universal format agents using AGENTS.md
+- 9 dual-output agents with both universal + specific formats
+
+[View full agent compatibility matrix →](/reference/agent-support)
+
+## How it works
+
+1. **Write rules** in `.aligntrue/rules.md` using simple markdown
+2. **Run sync** - AlignTrue detects installed agents and generates optimized formats
+3. **Agent-specific exports** - Each agent gets its native format (.mdc, .json, .yml, etc.)
+4. **Stay aligned** - Edit markdown or agent files; sync keeps everything consistent
+
+## Common workflows
+
+**Solo developer (default):**
+
+```bash
+aligntrue init    # One-time setup
+aligntrue sync    # Update agents when rules change
+```
+
+**Team mode (opt-in):**
+
+```bash
+aligntrue lock    # Pin rule versions
+aligntrue check   # Validate in CI
+```
+
+**Two-way sync:**
+
+- Edit `.aligntrue/rules.md` → sync to agents (default)
+- Edit agent files → auto-pull to rules.md (optional, enabled by default)
+
+See [workflows guide](/guides/workflows) for details.
+
+**Optional verification:**
+
+```bash
+aligntrue sync --dry-run       # Preview changes
+aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
+aligntrue check                # Validate rules (great for CI)
+```
+
+## Who is this for?
+
+**Solo developers:** Keep your personal AI rules consistent across projects and machines
+
+**Teams:** Shared rule sets with version control, CI validation, and drift detection
 
 ## Key concepts
 
@@ -36,6 +116,7 @@ Read the [Quickstart Guide](/getting-started/quickstart) for detailed instructio
 - [Drift Detection](/concepts/drift-detection) - Track alignment changes over time
 - [Git Workflows](/concepts/git-workflows) - Pull and share rules via git
 - [Overlays](/concepts/overlays) - Customize third-party packs safely
+- [Catalog](/concepts/catalog) - Browse 11 curated rule packs
 
 ## Reference
 
@@ -46,4 +127,32 @@ Read the [Quickstart Guide](/getting-started/quickstart) for detailed instructio
 
 ## Contributing
 
-Want to contribute? Check out the [Getting Started](/contributing/getting-started) guide for contributors.
+Want to contribute? Check out the guides:
+
+- [Getting Started](/contributing/getting-started) - Set up your development environment
+- [Creating Packs](/contributing/creating-packs) - Author and publish rule packs
+- [Adding Exporters](/contributing/adding-exporters) - Add support for new agents
+
+## Development
+
+Setting up AlignTrue for local development:
+
+- [Setup](/development/setup) - Prerequisites and installation
+- [Workspace](/development/workspace) - Monorepo structure and packages
+- [Commands](/development/commands) - Development commands and scripts
+- [Architecture](/development/architecture) - Key architectural concepts
+
+## Learn more
+
+- [GitHub repository](https://github.com/AlignTrue/aligntrue)
+- [Catalog website](/catalog) - Browse 11 curated rule packs
+- [Security policy](https://github.com/AlignTrue/aligntrue/blob/main/SECURITY.md)
+
+## Support
+
+- [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
+- [Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+
+## License
+
+MIT (see [LICENSE](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE))

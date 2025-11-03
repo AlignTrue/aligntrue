@@ -1,4 +1,11 @@
+<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
+<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
+
 # Development guide
+
+This guide is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs/development).
+
+# Development setup
 
 ## Prerequisites
 
@@ -31,71 +38,126 @@ pnpm install
 
 This will install dependencies for all workspace packages and set up Git hooks automatically.
 
-### 2. Development commands
+### 2. Verify installation
 
-#### Run the web app locally
-
-```bash
-pnpm dev
-```
-
-Opens the Next.js app at `http://localhost:3000` (from `apps/web`)
-
-#### Build all packages
+After installation completes, verify everything works:
 
 ```bash
-pnpm build
+pnpm typecheck   # Type-check all packages
+pnpm test:fast   # Run tests with fast reporter
 ```
 
-#### Run tests
+If all checks pass, you're ready to develop!
+
+## Git hooks
+
+Hooks are installed automatically when you run `pnpm install`.
+
+### Pre-commit hook
+
+Runs automatically before each commit:
+
+1. **Format staged files** (~1-2s) - Prettier auto-formats code
+2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
+3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+
+**Total time:**
+
+- Without package changes: ~3-5 seconds
+- With package changes: ~4-8 seconds
+
+### Commit message hook
+
+Validates commit messages follow Conventional Commits format:
 
 ```bash
-pnpm test        # All tests across all packages
-pnpm test:fast   # Fast reporter for quick feedback
+# Good commit messages
+feat: Add drift detection command
+fix: Resolve lockfile sync issue
+docs: Update setup guide
+
+# Bad commit messages (will be rejected)
+updated stuff
+WIP
+fixes bug
 ```
 
-#### Type-check all packages
+Format: `type: Subject in sentence case`
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+### Pre-push hook
+
+Runs automatically before pushing (takes ~30-60 seconds):
+
+- Full typecheck across all packages
+- Full test suite (all packages)
+- Full build to catch build errors
+- Mirrors CI validation
+
+This ensures you never push code that will fail CI.
+
+### Bypassing hooks (emergency only)
+
+If hooks are genuinely broken (not just failing validation):
+
+```bash
+git commit --no-verify   # Skip pre-commit
+git push --no-verify     # Skip pre-push
+```
+
+**Only use when hooks are broken, not to skip validation.**
+
+### Hooks not running
+
+If Git hooks aren't running after `pnpm install`:
+
+```bash
+pnpm prepare
+```
+
+This manually runs the Husky setup.
+
+## Troubleshooting
+
+### "Command not found: pnpm"
+
+Install pnpm globally:
+
+```bash
+npm install -g pnpm@9
+```
+
+### "Module not found" errors
+
+Reinstall dependencies:
+
+```bash
+pnpm clean
+pnpm install
+```
+
+### Type errors after changes
+
+Run type-check to see all errors:
 
 ```bash
 pnpm typecheck
 ```
 
-#### Format
+## Next steps
 
-```bash
-pnpm format        # Format code with Prettier
-pnpm format:check  # Check formatting without changes
-```
+- Learn about the [workspace structure](https://aligntrue.ai/docs/development/workspace)
+- Explore [development commands](https://aligntrue.ai/docs/development/commands)
+- Understand [architectural concepts](https://aligntrue.ai/docs/development/architecture)
 
-#### Validation workflow
+---
 
-Run before large refactors to ensure clean baseline:
+# Workspace structure
 
-```bash
-pnpm pre-refactor  # Type check + lint entire workspace
-```
+AlignTrue is a pnpm monorepo with apps and packages organized for clarity and maintainability.
 
-The pre-commit hook runs automatically on every commit with optimized incremental checks:
-
-- Quick typecheck of changed packages (~5-15s) - **Fails fast**
-- Build changed packages (~15-30s)
-- Full typecheck of changed packages (~10-20s)
-
-**Total time:** 30-60s for typical commits
-
-See [Preventing CI failures](docs/development/preventing-ci-failures.md) for detailed workflow documentation.
-
-#### Clean
-
-```bash
-# Remove all node_modules and build artifacts
-pnpm clean
-
-# Remove temp files created by AI/debugging
-pnpm clean-temp
-```
-
-## Workspace structure
+## Overview
 
 ```
 aligntrue/
@@ -109,6 +171,303 @@ aligntrue/
 │   ├── exporters/    # Agent-specific exports (Cursor, AGENTS.md, etc.)
 │   └── ...           # Other packages
 └── catalog/          # Local catalog with curated packs
+```
+
+## Apps
+
+### apps/web
+
+The Next.js catalog site providing discovery and sharing for rule packs.
+
+**Key features:**
+
+- Search and browse 11 curated packs
+- Pack detail pages with exporter previews
+- Install commands and documentation
+
+**Development:**
+
+```bash
+cd apps/web
+pnpm dev           # Start dev server at http://localhost:3000
+pnpm build         # Production build
+pnpm test          # Run tests
+```
+
+### apps/docs
+
+Nextra-based documentation site (this site).
+
+**Development:**
+
+```bash
+cd apps/docs
+pnpm dev           # Start dev server at http://localhost:3001
+pnpm build         # Production build
+```
+
+## Core packages
+
+### packages/schema
+
+Core validation and canonicalization logic.
+
+**Responsibilities:**
+
+- JSON Schema validation
+- YAML → canonical JSON (JCS)
+- SHA-256 integrity hashing
+- IR (Intermediate Representation) types
+
+**Development:**
+
+```bash
+cd packages/schema
+pnpm test:watch    # Run tests in watch mode
+pnpm build         # Build to dist/
+```
+
+### packages/core
+
+Config management and sync engine.
+
+**Responsibilities:**
+
+- Parse and validate `.aligntrue.yaml` config
+- Two-way sync engine (IR ↔ agents)
+- Bundle resolution (team mode)
+- Lockfile management (team mode)
+- Hierarchical scope resolution
+
+**Development:**
+
+```bash
+cd packages/core
+pnpm test:watch    # Run tests in watch mode
+pnpm build         # Build to dist/
+```
+
+### packages/cli
+
+The `aligntrue`/`aln` CLI tool.
+
+**Responsibilities:**
+
+- Command-line interface (init, sync, check, lock, etc.)
+- Agent auto-detection
+- Interactive prompts
+- Git integration
+
+**Development:**
+
+```bash
+cd packages/cli
+pnpm build
+node dist/index.js --help
+```
+
+### packages/exporters
+
+Agent-specific export adapters (43 exporters for 28+ agents).
+
+**Responsibilities:**
+
+- Export IR to agent-specific formats
+- Cursor `.mdc` files
+- `AGENTS.md` universal format
+- MCP configurations
+- Fidelity notes and metadata
+
+**Development:**
+
+```bash
+cd packages/exporters
+pnpm test          # Run exporter tests
+pnpm build         # Build to dist/
+```
+
+## Supporting packages
+
+### packages/markdown-parser
+
+Literate markdown → IR conversion.
+
+**Responsibilities:**
+
+- Parse fenced ```aligntrue blocks
+- Convert markdown to IR
+- Validate extracted YAML
+
+### packages/sources
+
+Multi-source pulling (local, catalog, git, url).
+
+**Responsibilities:**
+
+- Load rules from multiple sources
+- Cache management
+- Git repository cloning
+- HTTP fetching with ETag support
+
+### packages/file-utils
+
+Shared infrastructure utilities.
+
+**Responsibilities:**
+
+- Atomic file writes
+- Checksums and integrity verification
+- No workspace dependencies (pure utilities)
+
+### packages/plugin-contracts
+
+Plugin interface definitions.
+
+**Responsibilities:**
+
+- ExporterPlugin interface
+- AdapterManifest types
+- No implementations (just contracts)
+
+### packages/checks
+
+Machine-checkable rules engine.
+
+**Responsibilities:**
+
+- Execute check types (file_presence, regex, etc.)
+- Generate evidence and autofix hints
+- Report findings with severity
+
+### packages/testkit
+
+Conformance vectors and golden tests.
+
+**Responsibilities:**
+
+- Test fixtures
+- Golden test data
+- Validation test cases
+
+### packages/ui
+
+Shared design system for web properties.
+
+**Responsibilities:**
+
+- AlignTrueLogo component
+- ThemeProvider and ThemeToggle
+- Primer-based color tokens
+- Nextra theme integration
+
+**Development:**
+
+```bash
+cd packages/ui
+pnpm test          # Run tests
+pnpm test:watch    # Watch mode
+pnpm typecheck     # Type checking
+```
+
+## Catalog
+
+Local catalog with 11 curated packs:
+
+- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
+- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
+
+**Structure:**
+
+```
+catalog/
+├── examples/          # YAML pack definitions
+├── packs.yaml         # Registry metadata
+└── namespaces.yaml    # Namespace ownership
+```
+
+## Package dependencies
+
+Packages are organized in layers:
+
+```
+schema (base layer)
+  ↓
+core, markdown-parser, file-utils
+  ↓
+sources, exporters
+  ↓
+cli (top layer)
+```
+
+Apps depend on multiple packages as needed.
+
+## Working across packages
+
+See [development commands](https://aligntrue.ai/docs/development/commands) for package build workflows and watch mode.
+
+## Next steps
+
+- Learn [development commands](https://aligntrue.ai/docs/development/commands)
+- Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
+
+---
+
+# Development commands
+
+Common commands and workflows for AlignTrue development.
+
+## Core commands
+
+### Run the web app locally
+
+```bash
+pnpm dev
+```
+
+Opens the Next.js app at `http://localhost:3000` (from `apps/web`)
+
+### Build all packages
+
+```bash
+pnpm build
+```
+
+### Run tests
+
+```bash
+pnpm test        # All tests across all packages
+pnpm test:fast   # Fast reporter for quick feedback
+```
+
+### Type-check all packages
+
+```bash
+pnpm typecheck
+```
+
+### Format
+
+```bash
+pnpm format        # Format code with Prettier
+pnpm format:check  # Check formatting without changes
+```
+
+### Validation workflow
+
+Run before large refactors to ensure clean baseline:
+
+```bash
+pnpm pre-refactor  # Type check + lint entire workspace
+```
+
+### Clean
+
+```bash
+# Remove all node_modules and build artifacts
+pnpm clean
+
+# Remove temp files created by AI/debugging
+pnpm clean-temp
 ```
 
 ## Working on packages
@@ -144,120 +503,6 @@ pnpm --filter @aligntrue/core build
 Packages import from `dist/` directories of their dependencies (e.g., CLI imports from `packages/core/dist/`). If you edit source in `packages/core/src/` but don't rebuild, other packages will see stale types and code.
 
 **The pre-commit hook automatically rebuilds packages when source files change**, so you won't commit stale builds. But during development, use watch mode for instant feedback.
-
-## Working on specific packages
-
-### packages/schema
-
-Core validation and canonicalization logic.
-
-```bash
-cd packages/schema
-pnpm test:watch    # Run tests in watch mode
-pnpm build         # Build to dist/
-```
-
-### packages/cli
-
-The CLI that consumes the schema package.
-
-```bash
-cd packages/cli
-pnpm build
-node dist/index.js --help
-```
-
-### apps/web
-
-The Next.js catalog site.
-
-```bash
-cd apps/web
-pnpm dev           # Start dev server
-pnpm build         # Production build
-```
-
-## Code quality
-
-### TypeScript
-
-- All packages use strict TypeScript
-- Extends `tsconfig.base.json` from repo root
-- No `any` types allowed
-- Use `unknown` and narrow types
-
-### Formatting
-
-EditorConfig is configured at the root. Use:
-
-- 2 spaces for indentation
-- LF line endings
-- UTF-8 encoding
-
-### Testing
-
-- Unit tests go in `packages/*/tests/`
-- Keep tests fast (<1s per test)
-- Make tests deterministic (no real time, network, or randomness)
-- See [Running tests locally](#running-tests-locally) for detailed commands
-
-## Common tasks
-
-### Add a new package
-
-1. Create directory under `packages/`
-2. Add `package.json` with workspace dependencies
-3. Create `tsconfig.json` extending base
-4. Add to workspace commands in root `package.json`
-
-### Update dependencies
-
-```bash
-pnpm update --latest --recursive
-```
-
-### Check for security issues
-
-```bash
-pnpm audit
-```
-
-## Troubleshooting
-
-### "Command not found: pnpm"
-
-Install pnpm globally:
-
-```bash
-npm install -g pnpm@9
-```
-
-### "Module not found" errors
-
-Reinstall dependencies:
-
-```bash
-pnpm clean
-pnpm install
-```
-
-### Type errors after changes
-
-Run type-check to see all errors:
-
-```bash
-pnpm typecheck
-```
-
-### Hooks not running
-
-If Git hooks aren't running after `pnpm install`:
-
-```bash
-pnpm prepare
-```
-
-This manually runs the Husky setup.
 
 ## Running tests locally
 
@@ -326,71 +571,120 @@ Use the fast reporter for quicker output:
 pnpm test:fast
 ```
 
-## Git hooks and quality guardrails
+## Design system and theming
 
-This project uses Husky to automatically run quality checks. Hooks are installed automatically when you run `pnpm install`.
+AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent branding across all web properties.
 
-### Pre-commit hook
+### Key components
 
-Runs automatically before each commit:
+- **AlignTrueLogo** - SVG logo with theme-aware colors and orange colon (#F5A623)
+- **ThemeProvider** - System preference detection with manual light/dark toggle
+- **ThemeToggle** - Button to switch between themes
+- **Primer-based colors** - Semantic tokens that adapt to light/dark modes
 
-1. **Format staged files** (~1-2s) - Prettier auto-formats code
-2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed, rebuilds to ensure fresh types
-3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+### Using the design system
 
-**Total time:**
+Import components and styles in your Next.js app:
 
-- Without package changes: ~3-5 seconds
-- With package changes: ~4-8 seconds
-
-The build step prevents stale type definitions from causing errors. If you're actively developing packages, run `pnpm dev:packages` in a separate terminal for continuous rebuilds.
-
-**Note:** If you modify `package.json`, manually run `pnpm install` to update the lockfile before committing.
-
-If the hook fails, fix the issues and try committing again.
-
-### Commit message hook
-
-Validates commit messages follow Conventional Commits format:
-
-```bash
-# Good commit messages
-feat: Add drift detection command
-fix: Resolve lockfile sync issue
-docs: Update DEVELOPMENT.md with testing guide
-chore: Update dependencies
-
-# Bad commit messages (will be rejected)
-updated stuff
-WIP
-fixes bug
+```tsx
+import { AlignTrueLogo, ThemeProvider, ThemeScript, ThemeToggle } from "@aligntrue/ui";
+import "@aligntrue/ui/styles/tokens.css";
 ```
 
-Format: `type: Subject in sentence case`
+### Color tokens
 
-Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+Use semantic color tokens instead of hardcoded colors:
 
-### Pre-push hook
+```tsx
+// Good - adapts to theme
+<div style={{ color: "var(--fgColor-default)" }}>Text</div>
 
-Runs automatically before pushing (takes ~30-60 seconds):
-
-- Full typecheck across all packages
-- Full test suite (all packages)
-- Full build to catch build errors
-- Mirrors CI validation
-
-This ensures you never push code that will fail CI.
-
-### Bypassing hooks (emergency only)
-
-If hooks are genuinely broken (not just failing validation):
-
-```bash
-git commit --no-verify   # Skip pre-commit
-git push --no-verify     # Skip pre-push
+// Bad - hardcoded, breaks in dark mode
+<div style={{ color: "#171717" }}>Text</div>
 ```
 
-**Only use when hooks are broken, not to skip validation.**
+Available token categories:
+
+- `--fgColor-*` - Foreground/text colors
+- `--bgColor-*` - Background colors
+- `--borderColor-*` - Border colors
+- `--color-neutral-*` - Neutral scale (50-950)
+
+See [workspace structure](https://aligntrue.ai/docs/development/workspace) for complete documentation.
+
+### Testing themes
+
+Test both light and dark modes during development:
+
+1. Use the theme toggle in the UI
+2. Check browser DevTools → Application → Local Storage for `aligntrue-theme`
+3. Toggle system preference in OS settings to test "system" mode
+4. Verify no FOUC (flash of unstyled content) on page load
+
+### Nextra documentation sites
+
+For Nextra-based docs, use the theme config factory:
+
+```tsx
+import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import "@aligntrue/ui/styles/tokens.css";
+import "@aligntrue/ui/nextra/nextra.css";
+
+const themeConfig = createAlignTrueNextraTheme({
+  docsRepositoryBase: "https://github.com/org/repo/tree/main/apps/docs",
+  logoSize: "md",
+});
+```
+
+This provides:
+
+- Branded logo in navbar
+- Consistent sidebar and TOC configuration
+- Primer colors mapped to Nextra theme variables
+
+## Code quality
+
+### TypeScript
+
+- All packages use strict TypeScript
+- Extends `tsconfig.base.json` from repo root
+- No `any` types allowed
+- Use `unknown` and narrow types
+
+### Formatting
+
+EditorConfig is configured at the root. Use:
+
+- 2 spaces for indentation
+- LF line endings
+- UTF-8 encoding
+
+### Testing
+
+- Unit tests go in `packages/*/tests/`
+- Keep tests fast (<1s per test)
+- Make tests deterministic (no real time, network, or randomness)
+
+## Common tasks
+
+### Add a new package
+
+1. Create directory under `packages/`
+2. Add `package.json` with workspace dependencies
+3. Create `tsconfig.json` extending base
+4. Add to workspace commands in root `package.json`
+
+### Update dependencies
+
+```bash
+pnpm update --latest --recursive
+```
+
+### Check for security issues
+
+```bash
+pnpm audit
+```
 
 ## Versioning with Changesets
 
@@ -469,6 +763,246 @@ Ensure your commit message follows Conventional Commits format:
 
 Example: `feat: Add new command` or `fix: Resolve memory leak`
 
-## Contributing
+## Next steps
 
-See `CONTRIBUTING.md` for contribution guidelines.
+- Review [workspace structure](https://aligntrue.ai/docs/development/workspace)
+- Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
+- See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
+
+---
+
+# Architecture
+
+Key architectural concepts and design principles for AlignTrue.
+
+## Core principles
+
+1. **Maintainability** – Prefer explicit modules and shallow trees so AI can reason about the code
+2. **Determinism** – YAML → Type-safe model → JCS canonical JSON → SHA-256 hashes
+3. **Simplicity** – Small, predictable modules; no registries, no plugin magic
+4. **Local-first** – All useful flows run offline; cloud augments later
+5. **Agent parity** – Exporters preserve semantics and emit fidelity notes when they cannot
+6. **Advisory-first** – Validators explain before they block
+
+## Data flow
+
+AlignTrue follows an IR-first (Intermediate Representation) architecture:
+
+```
+Source (YAML/Markdown)
+  ↓
+IR (Intermediate Representation)
+  ↓
+Canonical JSON (JCS) + SHA-256 Hash
+  ↓
+Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
+```
+
+### IR-first design
+
+- `aligntrue.yaml` (IR) is the canonical source, not bundles
+- Literate markdown with fenced ```aligntrue blocks compiles to IR
+- All operations work on IR directly
+- Canonicalization only at lock/publish boundaries
+
+### Two-way sync
+
+- Default: IR → agents (export rules to agent files)
+- Optional: agent → IR (pull changes back from agent files)
+- `--accept-agent` flag enables explicit pullback
+- Auto-pull enabled by default for seamless workflows
+
+## Determinism
+
+### When to canonicalize
+
+**Only canonicalize when determinism is required:**
+
+- **Lockfile generation** (`aligntrue lock` in team mode) - Produce canonical hash for drift detection
+- **Catalog publishing** (`aligntrue publish` in Phase 4) - Produce integrity hash for distribution
+- **NOT during:** init, sync, export, import, normal file operations
+
+**Why:**
+
+- Solo devs don't need canonicalization overhead for local files
+- Team mode only needs determinism for lockfile-based drift detection
+- Catalog publishing needs integrity hash at distribution boundary
+- Running canonicalization on every operation adds unnecessary cost
+
+### Implementation
+
+- `packages/schema/src/canonicalize.ts` contains JCS canonicalization logic
+- `packages/core/src/lockfile.ts` calls canonicalize when generating locks
+- Exporters do NOT canonicalize; they work with IR directly
+- All hashing uses `packages/schema/src/hashing.ts`
+
+## Package architecture
+
+### Stable modules (deterministic logic)
+
+Keep these modules consolidated and deterministic:
+
+- `packages/schema/src/canonicalize.ts` – YAML → canonical JSON (JCS)
+- `packages/schema/src/hashing.ts` – SHA-256 integrity hashing
+- `packages/schema/src/validator.ts` – IR validation with Ajv strict mode
+- `packages/core/src/config.ts` – Config parsing and validation
+- `packages/core/src/sync.ts` – Two-way sync engine (IR ↔ agents)
+- `packages/core/src/bundle.ts` – Dependency merge + precedence (team mode)
+- `packages/core/src/lockfile.ts` – Lockfile generation with canonical hashing
+- `packages/core/src/scope.ts` – Hierarchical scope resolution
+
+### Adaptation layers (agent-specific)
+
+These adapt core logic to specific surfaces:
+
+- `packages/cli/src/commands/*` – CLI command implementations
+- `packages/exporters/src/*/exporter.ts` – Agent-specific exports
+- `packages/markdown-parser/src/parser.ts` – Markdown parsing
+
+## Vendor bags
+
+Vendor bags enable lossless round-trips for agent-specific metadata:
+
+- `vendor.<agent>` namespace for agent-specific extensions
+- `vendor.*.volatile` excluded from hashing (timestamps, session IDs, etc.)
+- Preserved during sync operations
+- Allows agents to store additional metadata without breaking AlignTrue semantics
+
+Example:
+
+```yaml
+vendor:
+  cursor:
+    session_id: "abc123" # Volatile, excluded from hash
+    preferences:
+      theme: "dark" # Stable, included in hash
+```
+
+## Hierarchical scopes
+
+Path-based rules with merge order for monorepos:
+
+1. Root scope (applies everywhere)
+2. Directory scopes (applies to subtree)
+3. File-level overrides (most specific)
+
+Rules merge with precedence from most specific to least specific.
+
+## Team mode features
+
+### Lockfiles
+
+- Enable with `mode: team` in config
+- Generated with `aligntrue lock`
+- Pin exact versions and hashes
+- Detect drift in CI with `aligntrue check`
+
+### Bundles
+
+- Merge dependencies and rules
+- Resolve conflicts with precedence rules
+- Generate once, track in git
+- Enable reproducible builds
+
+### Drift detection
+
+- Compare current state against lockfile
+- Report changes to rules, versions, or hashes
+- Fail CI if drift detected (configurable severity)
+
+## Exporters
+
+AlignTrue includes 43 exporters supporting 28+ agents:
+
+### Categories
+
+1. **MCP config exporters** - JSON configs for Model Context Protocol agents
+2. **Agent-specific formats** - Native formats (.mdc, .yml, .json, etc.)
+3. **Universal formats** - AGENTS.md for broad compatibility
+4. **Dual-output** - Both universal + specific (e.g., Aider)
+
+### Fidelity notes
+
+Each exporter documents what information may be lost when converting from IR:
+
+- Stored in exporter metadata
+- Written to export file footers
+- Help users understand limitations
+- Guide decisions about which exporters to use
+
+### Footer format
+
+All exports include:
+
+- Lock hash (if available)
+- Exporter version
+- Capabilities version
+- Loss count (fidelity notes)
+
+## AI-maintainable code principles
+
+### 1. Explicit over dynamic
+
+```ts
+// Good: Explicit dispatch
+switch (target) {
+  case "cursor":
+    return exportCursor(bundle);
+  case "codex":
+    return exportCodex(bundle);
+}
+
+// Bad: Dynamic lookup
+const exporters = { cursor: exportCursor, codex: exportCodex };
+return exporters[target](bundle);
+```
+
+### 2. Flat over nested
+
+Max depth three. Modules at `packages/*/src/` with minimal nesting.
+
+### 3. Consolidated complexity
+
+Keep deterministic logic together up to ~800 LOC. Split only when boundaries are obvious.
+
+### 4. Clear data flow
+
+Good: CLI command → schema service → exporter  
+Bad: CLI → orchestrator → factory → plugin host → exporter
+
+### 5. Deterministic schema validation
+
+Single JSON Schema (2020-12) exported from `packages/schema`. Use Ajv strict mode everywhere.
+
+### 6. Finish refactors
+
+If you start moving logic, finish in the same PR or leave a `_legacy.ts` file with owner + removal date.
+
+## Testing philosophy
+
+- Unit tests for all core logic
+- Integration tests for CLI commands
+- Golden tests for determinism
+- Contract tests for exporters
+- No real time, network, or randomness in tests
+- Match CI environment exactly (TZ=UTC)
+
+## Security considerations
+
+- No outbound network calls in core path
+- Telemetry opt-in via env var (off by default)
+- Never log secrets or PII
+- Never commit real tokens
+- Atomic file writes prevent corruption
+- Sandbox execution for command runners
+
+## Next steps
+
+- Review [workspace structure](https://aligntrue.ai/docs/development/workspace)
+- Explore [development commands](https://aligntrue.ai/docs/development/commands)
+- See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
+
+---
+
+**This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
+**To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**
