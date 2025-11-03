@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Agent-First Authoring (Import Flow Enhancement):** Init command now detects existing agent rule files (.mdc, AGENTS.md, CLAUDE.md, CRUSH.md, WARP.md) with interactive import prompts. Coverage reports show field-level mapping. Use `--import <agent>` flag for non-interactive imports. Workflow mode auto-configures based on import choice.
+- **Version Flag:** Added `--version` and `-v` flags to display CLI version. Help text now includes version information hint.
 
 ### Fixed
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CLI UX:** `team enable` supports `--yes` for non-interactive mode. `adapters enable` now processes multiple adapter names. Config files stay minimal in solo mode.
 - **Documentation:** Nextra v4.6.0 site at `apps/docs/` with 22 pages covering quickstart, team mode, overlays, and CLI reference.
 - **Pre-commit Error Messages:** Git hooks now show actual TypeScript errors inline with common fix patterns. No more "run this command to see errors" - errors display immediately with actionable guidance.
+- **Help Text:** Moved `migrate` command from "Coming Soon" to Settings section with policy hint. Help now includes version flag information.
 
 ---
 

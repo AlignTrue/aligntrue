@@ -1,10 +1,15 @@
 /**
  * 404 Not Found page (Phase 4, Session 6)
+ *
+ * Dynamically loads popular pack suggestions from catalog data.
  */
 
 import Link from "next/link";
+import { getPopularPacks } from "@/lib/catalog";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const popularPacks = await getPopularPacks();
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 text-center">
       <div className="mb-8">
@@ -32,32 +37,25 @@ export default function NotFound() {
         </Link>
       </div>
 
-      {/* Popular packs suggestion */}
-      <div className="mt-12 pt-8 border-t border-neutral-200">
-        <p className="text-sm text-neutral-600 mb-4">
-          Or explore these popular packs:
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/catalog/base-global"
-            className="px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-          >
-            base-global
-          </Link>
-          <Link
-            href="/catalog/typescript-strict"
-            className="px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-          >
-            typescript-strict
-          </Link>
-          <Link
-            href="/catalog/security-best-practices"
-            className="px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-          >
-            security-best-practices
-          </Link>
+      {/* Popular packs suggestion - dynamically loaded from catalog */}
+      {popularPacks.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-neutral-200">
+          <p className="text-sm text-neutral-600 mb-4">
+            Or explore these popular packs:
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {popularPacks.map((pack) => (
+              <Link
+                key={pack.slug}
+                href={`/catalog/${pack.slug}`}
+                className="px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+              >
+                {pack.name}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
