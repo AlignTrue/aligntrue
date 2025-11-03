@@ -13,6 +13,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        {/* @ts-expect-error - Nextra v4 type mismatch, will be fixed in future update */}
         <Layout pageMap={pageMap} {...themeConfig}>
           {children}
         </Layout>
