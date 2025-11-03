@@ -17,6 +17,7 @@
     "testkit:verify": "pnpm verify",
     "typecheck": "pnpm -r typecheck",
     "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
+    "validate:transpile-packages": "node scripts/validate-transpile-packages.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

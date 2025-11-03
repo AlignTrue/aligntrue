@@ -143,27 +143,54 @@ Run type-check to see all errors:
 pnpm typecheck
 ```
 
-### Stale Next.js build cache errors
+### Next.js dev server fails with "Cannot find module" errors
 
-**Symptom:** Module not found errors like `Cannot find module './vendor-chunks/nextra@4.6.0...'`
+**Symptom:** Dev server crashes with errors like:
 
-**Cause:** Next.js `.next` directory contains stale vendor chunks after dependency updates.
+```
+Error: Cannot find module './vendor-chunks/nextra@4.6.0...'
+Cannot find module '@aligntrue/ui'
+```
+
+**Cause:** Next.js doesn't transpile workspace packages by default. The `@aligntrue/ui` package exports TypeScript source directly (no build step), so Next.js needs to be configured to transpile it.
 
 **Fix:**
 
-```bash
-# Clean all Next.js build caches
-rm -rf apps/web/.next apps/docs/.next
+1. Check your Next.js config has `transpilePackages`:
 
-# Rebuild
-pnpm --filter @aligntrue/web build
-pnpm --filter @aligntrue/docs build
+```typescript
+// apps/web/next.config.ts
+const nextConfig: NextConfig = {
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+};
+```
+
+```javascript
+// apps/docs/next.config.mjs
+export default withNextra({
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+});
+```
+
+2. Clean stale build caches:
+
+```bash
+rm -rf apps/web/.next apps/docs/.next
+```
+
+3. Restart dev servers:
+
+```bash
+pnpm dev:web   # or pnpm dev:docs
 ```
 
 **Prevention:**
 
+- CI validates `transpilePackages` config: `pnpm validate:transpile-packages`
 - Pre-commit hook automatically cleans `.next` directories before each commit
-- CI validates generated files match source (fails if out of sync)
+- If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs
 
 **Workflow after editing docs:**
 
