@@ -13,8 +13,8 @@
   "dependencies": {
     "fast-glob": "^3.3.2",
     "next": "15.4.7",
-    "nextra": "^4.6.0",
-    "nextra-theme-docs": "^4.6.0",
+    "nextra": "4.6.0",
+    "nextra-theme-docs": "4.6.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },

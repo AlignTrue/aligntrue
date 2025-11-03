@@ -20,7 +20,28 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
-import { detectDriftForConfig } from "@aligntrue/core";
+import {
+  detectDriftForConfig,
+  type DriftCategory,
+} from "@aligntrue/core/team/drift.js";
+
+// Type for detectDriftForConfig return value
+type DriftDetectionResult = {
+  driftDetected: boolean;
+  mode: string;
+  lockfilePath: string;
+  summary?: string | undefined;
+  drift: Array<{
+    category: DriftCategory;
+    ruleId: string;
+    description: string;
+    suggestion?: string | undefined;
+    lockfile_hash?: string | undefined;
+    expected_hash?: string | undefined;
+    vendor_path?: string | undefined;
+    vendor_type?: string | undefined;
+  }>;
+};
 
 /**
  * Argument definitions for drift command
@@ -150,7 +171,7 @@ export async function drift(args: string[]): Promise<void> {
 /**
  * Output results in human-readable format
  */
-function outputHuman(results: any): void {
+function outputHuman(results: DriftDetectionResult): void {
   if (!results.driftDetected) {
     console.log("No drift detected");
     console.log(`Mode: ${results.mode}`);
@@ -162,19 +183,25 @@ function outputHuman(results: any): void {
   console.log(`Mode: ${results.mode}`);
 
   // Group by category
-  const byCategory = results.drift.reduce((acc: any, item: any) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
-    return acc;
-  }, {});
+  const byCategory = results.drift.reduce(
+    (
+      acc: Record<string, DriftDetectionResult["drift"]>,
+      item: DriftDetectionResult["drift"][0],
+    ) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category]!.push(item);
+      return acc;
+    },
+    {} as Record<string, DriftDetectionResult["drift"]>,
+  );
 
   // Output each category
   Object.entries(byCategory).forEach(([category, items]) => {
     const upperCategory = category.toUpperCase().replace("_", " ");
-    const itemArray = items as any[];
+    const itemArray = items as DriftDetectionResult["drift"];
     console.log(`\n${upperCategory} DRIFT:`);
 
-    itemArray.forEach((item: any) => {
+    itemArray.forEach((item: DriftDetectionResult["drift"][0]) => {
       console.log(`  ${item.ruleId}`);
 
       // For upstream drift, show hashes
@@ -211,7 +238,7 @@ function outputHuman(results: any): void {
 /**
  * Output results in JSON format
  */
-function outputJson(results: any): void {
+function outputJson(results: DriftDetectionResult): void {
   const output = {
     mode: results.mode,
     has_drift: results.driftDetected,
@@ -220,7 +247,10 @@ function outputJson(results: any): void {
     summary: {
       total: results.drift.length,
       by_category: results.drift.reduce(
-        (acc: any, item: any) => {
+        (
+          acc: Record<string, number>,
+          item: DriftDetectionResult["drift"][0],
+        ) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
           return acc;
         },
@@ -240,22 +270,35 @@ function outputJson(results: any): void {
 /**
  * Output results in SARIF format
  */
-function outputSarif(results: any, gatesEnabled: boolean): void {
-  const rules = results.drift.reduce((acc: any[], item: any) => {
-    const ruleId = `aligntrue/${item.category}-drift`;
-    if (!acc.find((r) => r.id === ruleId)) {
-      acc.push({
-        id: ruleId,
-        shortDescription: {
-          text: `${item.category} drift detected`,
-        },
-        fullDescription: {
-          text: `Detected drift in ${item.category} category`,
-        },
-      });
-    }
-    return acc;
-  }, []);
+function outputSarif(
+  results: DriftDetectionResult,
+  gatesEnabled: boolean,
+): void {
+  const rules = results.drift.reduce(
+    (
+      acc: {
+        id: string;
+        shortDescription: { text: string };
+        fullDescription: { text: string };
+      }[],
+      item: DriftDetectionResult["drift"][0],
+    ) => {
+      const ruleId = `aligntrue/${item.category}-drift`;
+      if (!acc.find((r) => r.id === ruleId)) {
+        acc.push({
+          id: ruleId,
+          shortDescription: {
+            text: `${item.category} drift detected`,
+          },
+          fullDescription: {
+            text: `Detected drift in ${item.category} category`,
+          },
+        });
+      }
+      return acc;
+    },
+    [],
+  );
 
   const sarif = {
     version: "2.1.0",
@@ -271,22 +314,24 @@ function outputSarif(results: any, gatesEnabled: boolean): void {
             rules,
           },
         },
-        results: results.drift.map((item: any) => ({
-          ruleId: `aligntrue/${item.category}-drift`,
-          level: gatesEnabled ? "error" : "warning",
-          message: {
-            text: item.description,
-          },
-          locations: [
-            {
-              physicalLocation: {
-                artifactLocation: {
-                  uri: results.lockfilePath,
+        results: results.drift.map(
+          (item: DriftDetectionResult["drift"][0]) => ({
+            ruleId: `aligntrue/${item.category}-drift`,
+            level: gatesEnabled ? "error" : "warning",
+            message: {
+              text: item.description,
+            },
+            locations: [
+              {
+                physicalLocation: {
+                  artifactLocation: {
+                    uri: results.lockfilePath,
+                  },
                 },
               },
-            },
-          ],
-        })),
+            ],
+          }),
+        ),
       },
     ],
   };

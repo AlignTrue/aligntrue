@@ -273,13 +273,19 @@ async function mdGenerate(
     const outputFile = flags["output"] as string | undefined;
 
     // Generate markdown
-    const generateOpts: any = {
-      preserveMetadata: preserveStyle && !canonical,
-    };
+    const generateOpts: {
+      preserveMetadata?: boolean;
+      headerText?: string;
+    } = {};
+
+    if (preserveStyle && !canonical) {
+      generateOpts.preserveMetadata = true;
+    }
+
     if (headerText) {
       generateOpts.headerText = headerText;
     }
-    const markdown = generateMarkdown(ir as any, generateOpts);
+    const markdown = generateMarkdown(ir, generateOpts);
 
     // Write output
     if (!outputFile || outputFile === "-") {

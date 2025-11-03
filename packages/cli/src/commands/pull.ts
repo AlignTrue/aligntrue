@@ -357,7 +357,8 @@ async function saveSourceToConfig(
   // Add git source if not already present
   const sources = config.sources ?? [];
   const existingSource = sources.find(
-    (s) => s.type === "git" && s.url === url && (s as any).ref === ref,
+    (s) =>
+      s.type === "git" && s.url === url && (s as { ref?: string }).ref === ref,
   );
 
   if (existingSource) {
@@ -366,11 +367,12 @@ async function saveSourceToConfig(
   }
 
   // Add new source
+  // Note: ref is stored as metadata; config schema allows additional properties
   sources.push({
     type: "git",
     url,
-    ref,
-  } as any);
+    ...(ref && { ref }),
+  } as { type: "git"; url: string; ref?: string });
 
   // Update config
   config.sources = sources;

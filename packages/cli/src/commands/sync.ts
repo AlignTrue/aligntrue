@@ -17,9 +17,13 @@ import {
   getImportSourcePath,
   importFromAgent,
 } from "@aligntrue/core";
-import { parseAllowList, isSourceAllowed } from "@aligntrue/core/team/allow.js";
+import { parseAllowList } from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import { validateRuleId, validateAlignSchema } from "@aligntrue/schema";
+import {
+  validateRuleId,
+  validateAlignSchema,
+  AlignRule,
+} from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
@@ -558,7 +562,7 @@ export async function sync(args: string[]): Promise<void> {
       spinner.start(`Auto-pulling from ${autoPullAgent}`);
 
       // Snapshot current rules for diff calculation
-      let beforeRules: any[] = [];
+      let beforeRules: AlignRule[] = [];
       try {
         const currentIR = await loadIR(absoluteSourcePath);
         beforeRules = currentIR.rules || [];
@@ -602,7 +606,7 @@ export async function sync(args: string[]): Promise<void> {
             suggestion?: string;
           }> = [];
 
-          const rules = (imported as any).rules || [];
+          const rules = (imported as { rules?: AlignRule[] }).rules || [];
           for (const rule of rules) {
             if (!rule) continue;
             const idValidation = validateRuleId(rule.id);

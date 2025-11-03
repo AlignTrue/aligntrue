@@ -7,11 +7,8 @@ import { existsSync, mkdirSync, writeFileSync, renameSync } from "fs";
 import { dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
-import { getAlignTruePaths } from "@aligntrue/core";
-import {
-  detectContext,
-  getContextDescription,
-} from "../utils/detect-context.js";
+import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
+import { detectContext } from "../utils/detect-context.js";
 import { detectAgents } from "../utils/detect-agents.js";
 import { getStarterTemplate } from "../templates/starter-rules.js";
 import {
@@ -32,6 +29,7 @@ import {
 import { executeImport } from "../utils/import-helper.js";
 import { execSync } from "child_process";
 import { basename } from "path";
+import { AlignRule } from "@aligntrue/schema";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -211,7 +209,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 4: Handle import flows
-  let importedRules: any[] | null = null;
+  let importedRules: AlignRule[] | null = null;
   let importedFromAgent: string | null = null;
   let shouldImport = false;
 
@@ -531,7 +529,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Generate config with workflow mode based on init choice
-  const config: any = {
+  const config: Partial<AlignTrueConfig> = {
     exporters:
       selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents-md"],
   };
@@ -568,8 +566,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       id: projectIdValue,
       version: "1.0.0",
       spec_version: "1",
-      rules: importedRules.map((rule: any) => {
-        const ruleData: Record<string, any> = {
+      rules: importedRules.map((rule: AlignRule) => {
+        const ruleData: Partial<AlignRule> = {
           id: rule.id,
           severity: rule.severity,
           applies_to: rule.applies_to,
