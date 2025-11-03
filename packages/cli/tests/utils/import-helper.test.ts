@@ -323,6 +323,18 @@ No hardcoded secrets.
       expect(result.rules).toHaveLength(1);
       expect(result.rules[0].id).toBe("security.no.secrets");
     });
+
+    it("should throw error if CLAUDE.md not found", async () => {
+      await expect(
+        executeImport("claude-md", tmpDir, {
+          showCoverage: false,
+          writeToIR: false,
+          interactive: false,
+        }),
+      ).rejects.toThrow(
+        `Agent format not found: ${join(tmpDir, "CLAUDE.md")}\nExpected: CLAUDE.md file in workspace root`,
+      );
+    });
   });
 
   describe("CRUSH.md import", () => {

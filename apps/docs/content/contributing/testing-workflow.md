@@ -3,7 +3,7 @@ title: Testing Workflow
 description: Testing standards and practices for AlignTrue contributions.
 ---
 
-# Testing Workflow
+# Testing workflow
 
 AlignTrue uses Vitest for unit and integration tests. All contributions must include tests.
 

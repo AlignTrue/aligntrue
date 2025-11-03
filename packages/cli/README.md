@@ -10,7 +10,7 @@ Command-line interface for AlignTrue - the AI-native rules and alignment platfor
 pnpm install -g @aligntrue/cli
 ```
 
-## Quick Reference
+## Quick reference
 
 ```
 AlignTrue CLI - AI-native rules and alignment platform
@@ -46,7 +46,7 @@ Run aligntrue <command> --help for command-specific options
 
 **Error messages:** All errors follow what/why/how format with actionable fixes
 
-## Command Development
+## Command development
 
 AlignTrue CLI uses shared command utilities for consistent argument parsing and help display across all commands. When developing new commands or modifying existing ones:
 
@@ -669,7 +669,7 @@ aligntrue adapters disable claude-md
 ✓ Disabled adapter: claude-md
 ```
 
-### Telemetry Commands
+### Telemetry commands
 
 AlignTrue includes optional, anonymous telemetry to help improve the product.
 
@@ -782,13 +782,13 @@ aligntrue check --ci
   Fix the errors above and run 'aligntrue check --ci' again.
 ```
 
-### Other Commands
+### Other commands
 
 - `aligntrue import` - Import rules from agent configs (coming soon)
 - `aligntrue md` - Markdown validation and formatting (Step 4 ✓)
 - `aligntrue migrate` - Migration status (Step 24 ✓)
 
-## Quick Start
+## Quick start
 
 ```bash
 cd your-project
@@ -797,7 +797,7 @@ aligntrue init
 aligntrue sync
 ```
 
-## CI Integration
+## CI integration
 
 AlignTrue integrates seamlessly with CI/CD pipelines and pre-commit hooks using the `aligntrue check --ci` command.
 
@@ -805,7 +805,7 @@ AlignTrue integrates seamlessly with CI/CD pipelines and pre-commit hooks using 
 
 Validate rules before committing to prevent broken configurations from entering version control.
 
-#### Manual Installation
+#### Manual installation
 
 Create a pre-commit hook:
 
@@ -868,7 +868,7 @@ jobs:
         run: pnpm aligntrue check --ci
 ```
 
-### Other CI Systems
+### Other CI systems
 
 The `aligntrue check --ci` command works in any CI environment. Just ensure AlignTrue is installed and run the command:
 
@@ -894,7 +894,7 @@ The `aligntrue check --ci` command works in any CI environment. Just ensure Alig
   sh 'pnpm aligntrue check --ci'
   ```
 
-### Exit Codes
+### Exit codes
 
 Understanding exit codes helps with CI integration:
 
@@ -928,7 +928,7 @@ Fix the errors listed in the output. Common issues:
 - Invalid severity values (must be `error`, `warn`, or `info`)
 - Malformed YAML syntax
 
-## Agent Detection
+## Agent detection
 
 AlignTrue automatically detects 28 AI coding agents:
 
@@ -947,7 +947,7 @@ AlignTrue automatically detects 28 AI coding agents:
 
 Detection is automatic based on existing files/directories.
 
-## Starter Template
+## Starter template
 
 The comprehensive starter template includes 5 example rules:
 
@@ -959,6 +959,6 @@ The comprehensive starter template includes 5 example rules:
 
 Each rule demonstrates key features and best practices.
 
-## Package Status
+## Package status
 
 ✅ **Phase 1, Step 22 Complete** - Init command fully implemented with auto-detection and comprehensive UX

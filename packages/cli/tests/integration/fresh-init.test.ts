@@ -26,7 +26,7 @@ describe("Fresh user experience", () => {
 
   it("init creates files with valid rule IDs", () => {
     // Run init in non-interactive mode
-    execSync("npx aligntrue init --yes", {
+    execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       stdio: "ignore",
     });
@@ -85,13 +85,13 @@ describe("Fresh user experience", () => {
 
   it("init → sync workflow succeeds", () => {
     // Run init
-    execSync("npx aligntrue init --yes", {
+    execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       stdio: "ignore",
     });
 
     // Run sync
-    const syncOutput = execSync("npx aligntrue sync", {
+    const syncOutput = execSync("pnpm aligntrue sync", {
       cwd: testDir,
       encoding: "utf-8",
     });
@@ -110,13 +110,13 @@ describe("Fresh user experience", () => {
 
   it("init → check workflow succeeds", () => {
     // Run init
-    execSync("npx aligntrue init --yes", {
+    execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       stdio: "ignore",
     });
 
     // Run check
-    const checkOutput = execSync("npx aligntrue check --ci", {
+    const checkOutput = execSync("pnpm aligntrue check --ci", {
       cwd: testDir,
       encoding: "utf-8",
     });
@@ -129,7 +129,7 @@ describe("Fresh user experience", () => {
 
   it("init does not auto-run sync", () => {
     // Run init and capture output
-    const initOutput = execSync("npx aligntrue init --yes", {
+    const initOutput = execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       encoding: "utf-8",
     });
@@ -172,7 +172,7 @@ Example test rule with valid 3-segment ID.
     );
 
     // Run import with --write
-    const importOutput = execSync("npx aligntrue import cursor --write", {
+    const importOutput = execSync("pnpm aligntrue import cursor --write", {
       cwd: testDir,
       encoding: "utf-8",
     });
@@ -182,7 +182,7 @@ Example test rule with valid 3-segment ID.
     expect(importOutput).toContain("rules");
 
     // Run sync
-    const syncOutput = execSync("npx aligntrue sync", {
+    const syncOutput = execSync("pnpm aligntrue sync", {
       cwd: testDir,
       encoding: "utf-8",
     });
@@ -207,7 +207,7 @@ describe("Validation safeguards", () => {
 
   it("sync validates rule IDs before proceeding", () => {
     // Run init
-    execSync("npx aligntrue init --yes", {
+    execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       stdio: "ignore",
     });
@@ -226,7 +226,7 @@ describe("Validation safeguards", () => {
 
     // Try to sync - should fail with clear error
     try {
-      execSync("npx aligntrue sync", {
+      execSync("pnpm aligntrue sync", {
         cwd: testDir,
         encoding: "utf-8",
       });
@@ -269,7 +269,7 @@ Valid rule.
     );
 
     // Run import with --write
-    execSync("npx aligntrue import cursor --write", {
+    execSync("pnpm aligntrue import cursor --write", {
       cwd: testDir,
       stdio: "ignore",
     });
@@ -294,7 +294,7 @@ Valid rule.
 
   it("templates use same rule IDs after generation", () => {
     // Run init
-    execSync("npx aligntrue init --yes", {
+    execSync("pnpm aligntrue init --yes", {
       cwd: testDir,
       stdio: "ignore",
     });
