@@ -93,7 +93,7 @@ function transformReadme(content: string): string {
 }
 
 /**
- * Generate CONTRIBUTING.md from contributing/creating-packs.md
+ * Generate CONTRIBUTING.md from 05-contributing/creating-packs.md
  */
 function transformContributing(content: string): string {
   const stripped = stripFrontmatter(content);
@@ -154,22 +154,22 @@ const FILES_TO_GENERATE: GeneratedFile[] = [
     transform: (content) => transformReadme(content as string),
   },
   {
-    source: "contributing/creating-packs.md",
+    source: "05-contributing/creating-packs.md",
     dest: "CONTRIBUTING.md",
     transform: (content) => transformContributing(content as string),
   },
   {
     source: [
-      "development/setup.md",
-      "development/workspace.md",
-      "development/commands.md",
-      "development/architecture.md",
+      "07-development/setup.md",
+      "07-development/workspace.md",
+      "07-development/commands.md",
+      "07-development/architecture.md",
     ],
     dest: "DEVELOPMENT.md",
     transform: (contents) => transformDevelopment(contents as string[]),
   },
   {
-    source: "policies/index.md",
+    source: "06-policies/index.md",
     dest: "POLICY.md",
     transform: (content) => transformPolicy(content as string),
   },

@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
   // Static pages are generated at build time
   // Dynamic features work when needed
 
+  // Transpile workspace packages that export TypeScript source directly
+  // Required for @aligntrue/ui which has no build step
+  transpilePackages: ["@aligntrue/ui"],
+
   // Rewrite docs requests to external Nextra docs site
   // Note: Rewrites only work in production. In development mode, /docs will return 404.
   // This is expected Next.js behavior - external rewrites don't resolve locally.

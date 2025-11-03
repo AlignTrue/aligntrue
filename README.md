@@ -158,5 +158,3 @@ MIT (see [LICENSE](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE))
 
 **This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
 **To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**
-
-# TEST DRIFT
