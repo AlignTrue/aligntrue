@@ -1,14 +1,11 @@
 // apps/docs/app/layout.tsx
 import "nextra-theme-docs/style.css";
-import "@aligntrue/ui/styles/tokens.css";
-import "@aligntrue/ui/nextra/nextra.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Layout, Navbar, Footer } from "nextra-theme-docs";
 import { Head, Banner } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
-import { ThemeScript } from "@aligntrue/ui";
 
 export const metadata: Metadata = {
   title: {
@@ -46,9 +43,7 @@ export default async function RootLayout({
       <Head
         // Adjust theme colors or favicon glyph as desired
         faviconGlyph=":"
-      >
-        <ThemeScript />
-      </Head>
+      />
       <body>
         <Layout
           pageMap={pageMap}
@@ -61,9 +56,8 @@ export default async function RootLayout({
           footer={
             <Footer>
               <div className="text-sm">
-                <p>Made with ❤️ and hash determinism.</p>
                 <p className="mt-2">
-                  © {new Date().getFullYear()} AlignTrue contributors. Docs{" "}
+                  © {new Date().getFullYear()} AlignTrue. Docs{" "}
                   <a
                     href="https://creativecommons.org/licenses/by/4.0/"
                     target="_blank"
@@ -92,25 +86,7 @@ export default async function RootLayout({
                   </a>
                   .
                 </p>
-                <p className="mt-2">
-                  <a
-                    href="https://github.com/AlignTrue/aligntrue"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    aligntrue
-                  </a>
-                  {" · "}
-                  <a
-                    href="https://github.com/AlignTrue/aligns"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    aligns
-                  </a>
-                </p>
+                <p>Made with ❤️ and hash determinism.</p>
               </div>
             </Footer>
           }
