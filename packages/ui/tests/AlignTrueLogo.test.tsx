@@ -20,68 +20,69 @@ describe("AlignTrueLogo", () => {
     const svg = container.querySelector("svg");
 
     expect(svg?.getAttribute("role")).toBe("img");
-    expect(svg?.getAttribute("aria-label")).toBe("AlignTrue");
+    expect(svg?.getAttribute("aria-labelledby")).toBe("aligntrue-logo-title");
     expect(container.querySelector("title")).toBeTruthy();
   });
 
   it("renders with default medium size", () => {
     const { container } = render(<AlignTrueLogo />);
-    const svg = container.querySelector("svg");
+    const wrapper = container.querySelector("div");
 
-    // Default is "md" which maps to height 28
-    expect(svg?.getAttribute("height")).toBe("28");
+    // Default is "md" which maps to height 28px
+    expect(wrapper?.style.height).toBe("28px");
   });
 
   it("renders with small size", () => {
     const { container } = render(<AlignTrueLogo size="sm" />);
-    const svg = container.querySelector("svg");
+    const wrapper = container.querySelector("div");
 
-    expect(svg?.getAttribute("height")).toBe("20");
+    expect(wrapper?.style.height).toBe("20px");
   });
 
   it("renders with large size", () => {
     const { container } = render(<AlignTrueLogo size="lg" />);
-    const svg = container.querySelector("svg");
+    const wrapper = container.querySelector("div");
 
-    expect(svg?.getAttribute("height")).toBe("36");
+    expect(wrapper?.style.height).toBe("36px");
   });
 
   it("renders with custom numeric size", () => {
     const { container } = render(<AlignTrueLogo size={50} />);
-    const svg = container.querySelector("svg");
+    const wrapper = container.querySelector("div");
 
-    expect(svg?.getAttribute("height")).toBe("50");
+    expect(wrapper?.style.height).toBe("50px");
   });
 
   it("includes custom className", () => {
     const { container } = render(<AlignTrueLogo className="custom-class" />);
-    const svg = container.querySelector("svg");
+    const wrapper = container.querySelector("div");
 
-    expect(svg?.className).toContain("custom-class");
+    expect(wrapper?.className).toContain("custom-class");
   });
 
-  it("contains align text element", () => {
+  it("contains wordmark path element", () => {
     const { container } = render(<AlignTrueLogo />);
-    const texts = container.querySelectorAll("text");
+    const wordmark = container.querySelector(".aligntrue-wordmark");
 
-    expect(texts.length).toBeGreaterThanOrEqual(3); // align, :, True
-    expect(texts[0]?.textContent).toBe("align");
+    expect(wordmark).toBeTruthy();
+    expect(wordmark?.querySelector("path")).toBeTruthy();
   });
 
-  it("contains colon with orange color", () => {
+  it("contains accent (colon) path element", () => {
     const { container } = render(<AlignTrueLogo />);
-    const texts = container.querySelectorAll("text");
+    const accent = container.querySelector(".aligntrue-accent");
 
-    const colon = Array.from(texts).find((t) => t.textContent === ":");
-    expect(colon?.getAttribute("fill")).toBe("#F5A623");
+    expect(accent).toBeTruthy();
+    expect(accent?.querySelector("path")).toBeTruthy();
   });
 
-  it("contains True text element", () => {
+  it("contains embedded styles for color inheritance", () => {
     const { container } = render(<AlignTrueLogo />);
-    const texts = container.querySelectorAll("text");
+    const style = container.querySelector("style");
 
-    const trueText = Array.from(texts).find((t) => t.textContent === "True");
-    expect(trueText).toBeTruthy();
+    expect(style).toBeTruthy();
+    expect(style?.textContent).toContain("aligntrue-wordmark");
+    expect(style?.textContent).toContain("aligntrue-accent");
   });
 });
 
@@ -98,13 +99,13 @@ describe("AlignTrueLogoText", () => {
     expect(text).toBe("align:True");
   });
 
-  it("styles colon with orange color", () => {
+  it("styles colon with brand accent variable", () => {
     const { container } = render(<AlignTrueLogoText />);
     const colon = Array.from(container.querySelectorAll("span")).find(
       (s) => s.textContent === ":",
     );
 
-    expect(colon?.style.color).toBe("#F5A623");
+    expect(colon?.style.color).toBe("var(--brand-accent, #F5A623)");
   });
 
   it("includes custom className", () => {
