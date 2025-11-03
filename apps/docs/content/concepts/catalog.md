@@ -1,4 +1,4 @@
-# Catalog Management
+# Catalog management
 
 ## Overview
 

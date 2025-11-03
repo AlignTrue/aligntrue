@@ -3,7 +3,7 @@ title: Contributing - Getting Started
 description: Set up your development environment and learn the contribution workflow for AlignTrue.
 ---
 
-# Getting Started with Contributing
+# Getting started with contributing
 
 This guide helps you set up your development environment and understand the contribution workflow.
 

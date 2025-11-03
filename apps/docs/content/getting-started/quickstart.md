@@ -94,9 +94,9 @@ aligntrue init
 Open `.aligntrue/rules.md` and edit the starter rules for your project:
 
 ````markdown
-# My Project Rules
+# My project rules
 
-## Global Standards
+## Global standards
 
 ```aligntrue
 id: my-project.global.code-style

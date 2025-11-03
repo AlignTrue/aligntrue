@@ -1,113 +1,77 @@
 # AlignTrue
 
-AI-native rules and alignment platform. Turn small, composable YAML rules (Aligns) into deterministic bundles and agent-ready exports.
+Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 
-## 60-second quick start
+Write rules once in markdown. Sync everywhere. Stay aligned.
 
-### 1. Install AlignTrue
+- **Solo developers:** Keep your personal AI rules consistent across projects and machines.
+- **Teams:** Shared rule sets with version control, CI validation, and drift detection.
 
-```bash
-# Add to your project (recommended)
-pnpm add -D @aligntrue/cli
+[![npm version](https://img.shields.io/npm/v/@aligntrue/cli.svg)](https://www.npmjs.com/package/@aligntrue/cli)
+[![Tests](https://img.shields.io/badge/tests-1842%20passing-brightgreen)](https://github.com/AlignTrue/aligntrue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-# Or use without installing
-npx @aligntrue/cli init
-```
+## Why AlignTrue
 
-### 2. Initialize Your Project
+- **Write once, sync everywhere** - One markdown file generates agent-specific formats for 28+ AI coding tools
+- **60-second setup** - Auto-detects your agents and creates starter rules in under a minute
+- **Two-way sync** - Edit rules OR agent files; changes flow both directions automatically
 
-```bash
-aligntrue init
-```
-
-**What this does:**
-
-- Auto-detects AI coding agents (Cursor, Copilot, Claude, etc.)
-- Creates `.aligntrue/config.yaml` with detected agents enabled
-- Creates `.aligntrue/rules.md` with 5 example rules
-- Prompts to run sync immediately
-
-### 3. Edit Rules (Optional)
-
-Edit `.aligntrue/rules.md` to customize the starter rules for your project.
-
-### 4. Sync to All Your Agents
+## Quickstart
 
 ```bash
-aligntrue sync
+npx @aligntrue/cli init  # Auto-detect agents, create .aligntrue/rules.md
+# Edit .aligntrue/rules.md (optional)
+aligntrue sync           # Generate all agent files
 ```
 
-**What this generates:**
+**Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
 
-- `.cursor/rules/aligntrue.mdc` (for Cursor)
-- `AGENTS.md` (for Copilot, Claude, Aider, and 10+ others)
-- `.vscode/mcp.json` (for VS Code MCP agents)
-- Plus any other agent-specific files based on your config
+## Features
 
-## Complete workflow summary
+- ✨ **Auto-detection** - Finds Cursor, Copilot, Claude, VS Code, and 25+ other agents automatically
+- 🔄 **Two-way sync** - Edit markdown or agent files; AlignTrue keeps them aligned
+- 📦 **28+ agents supported** - Comprehensive coverage through 43 specialized exporters
+- 🎯 **Agent-optimized formats** - Native .mdc for Cursor, AGENTS.md for universals, MCP configs, and more
+- 🔒 **Local-first** - No cloud required; works offline and in CI
+- ⚙️ **Team mode** - Optional lockfiles, bundles, and drift detection for teams
 
-**First-time setup (2 commands):**
+## Broad agent support
 
-```bash
-aligntrue init    # Detect agents + create config/rules
-aligntrue sync    # Generate agent files
-```
+AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**:
 
-**Ongoing workflow (1 command):**
+**Popular agents:**
 
-```bash
-aligntrue sync    # Update all agents when rules change
-```
+- Cursor (.mdc files)
+- GitHub Copilot (AGENTS.md)
+- Claude (AGENTS.md + CLAUDE.md)
+- Aider (AGENTS.md + .aider.conf.yml)
+- Windsurf (AGENTS.md + MCP config)
+- VS Code MCP agents
+- Amazon Q, Firebase Studio, OpenHands, Zed, and 20+ more
 
-**Two-way sync:**
+<details>
+<summary><strong>View full agent compatibility table (28+ agents, 43 exporters)</strong></summary>
 
-AlignTrue supports bidirectional sync. You can:
+### Exporter categories
 
-- Edit rules.md and sync to agents (default)
-- Edit agent files and auto-pull back to rules.md (optional, enabled by default in solo mode)
-
-See [Workflows guide](https://aligntrue.ai/docs/guides/workflows) for choosing your editing workflow.
-
-**Optional verification:**
-
-```bash
-aligntrue sync --dry-run       # Preview changes
-aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
-aligntrue check                # Validate rules (great for CI)
-```
-
-## What you get
-
-After running these commands, you'll have:
-
-- ✅ **Consistent rules** across all your AI coding agents
-- ✅ **Agent-optimized formats** (native `.mdc` for Cursor, universal markdown for others)
-- ✅ **Automatic detection** of installed agents
-- ✅ **No manual configuration** required for most setups
-
-The entire process takes **under 60 seconds** for a typical setup with 2-3 agents!
-
-## Supported agents & MCPs
-
-AlignTrue provides **comprehensive coverage** of 28+ AI coding agents through **43 exporters** that fall into several categories:
-
-### **1. MCP (Model Context Protocol) config exporters**
+**1. MCP (Model Context Protocol) config exporters**
 
 These generate JSON configuration files for agents that support the MCP protocol. MCP allows agents to connect to external tools and data sources. AlignTrue creates `.mcp.json` or equivalent files with rule-based guidance.
 
-### **2. Agent-specific format exporters**
+**2. Agent-specific format exporters**
 
 These create native configuration files or markdown formats specific to each agent (`.mdc`, `.md`, `.json`, `.yml`, etc.). Each format preserves agent-specific metadata and adapts rules to the agent's preferred structure.
 
-### **3. Universal format exporters**
+**3. Universal format exporters**
 
 AGENTS.md provides a single, universal markdown format that multiple agents can consume, reducing duplication while maintaining broad compatibility.
 
-### **4. Dual-output agents**
+**4. Dual-output agents**
 
 Some agents (like Aider) use both a universal format (AGENTS.md) AND their own specific config file for optimal results.
 
-### **Key Features:**
+### Key features
 
 - **Fidelity Notes**: Each exporter documents what information may be lost when converting from AlignTrue's IR format
 - **Vendor Metadata**: Agent-specific extensions are preserved in `vendor.*` namespaces
@@ -163,23 +127,7 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 
 Built-in extensibility allows the community to [add support for new agents or MCPs](docs/extending-aligntrue.md).
 
-## Usage summary
-
-**For Users:**
-
-1. **Auto-Detection**: `aligntrue init` detects which agents you have installed
-2. **Multi-Agent Support**: One AlignTrue config generates rules for all your agents
-3. **Universal Fallback**: AGENTS.md works with many agents as a baseline
-4. **Agent-Specific Optimization**: Dedicated exporters provide better integration for popular agents
-
-**For Agent Developers:**
-
-- **Manifest-Driven**: Add `manifest.json` + optional handler to contribute new exporters
-- **Schema Validation**: All manifests validated against JSON Schema
-- **Fidelity Transparency**: Document format limitations in `fidelityNotes`
-- **Community Scalable**: No core changes needed to add new agents
-
-**Coverage Statistics:**
+### Coverage statistics
 
 - **43 total exporters** supporting **28+ agents**
 - **8 MCP configurations** for protocol-based agents
@@ -189,7 +137,100 @@ Built-in extensibility allows the community to [add support for new agents or MC
 
 This comprehensive coverage ensures AlignTrue rules work across the entire AI coding agent ecosystem, from established tools like Cursor and GitHub Copilot to emerging agents like Windsurf and Roo Code.
 
-## Workspace structure
+</details>
+
+## How it works
+
+1. **Write rules** in `.aligntrue/rules.md` using simple markdown
+2. **Run sync** - AlignTrue detects installed agents and generates optimized formats
+3. **Agent-specific exports** - Each agent gets its native format (.mdc, .json, .yml, etc.)
+4. **Stay aligned** - Edit markdown or agent files; sync keeps everything consistent
+
+## Common workflows
+
+**Solo developer (default):**
+
+```bash
+aligntrue init    # One-time setup
+aligntrue sync    # Update agents when rules change
+```
+
+**Team mode (opt-in):**
+
+```bash
+aligntrue lock    # Pin rule versions
+aligntrue check   # Validate in CI
+```
+
+**Two-way sync:**
+
+- Edit `.aligntrue/rules.md` → sync to agents (default)
+- Edit agent files → auto-pull to rules.md (optional, enabled by default)
+
+See [workflows guide](https://aligntrue.ai/docs/guides/workflows) for details.
+
+**Optional verification:**
+
+```bash
+aligntrue sync --dry-run       # Preview changes
+aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
+aligntrue check                # Validate rules (great for CI)
+```
+
+## Who is this for?
+
+**Solo developers:** Keep your personal AI rules consistent across projects and machines
+
+**Teams:** Shared rule sets with version control, CI validation, and drift detection
+
+## Catalog website
+
+The AlignTrue catalog provides discovery and sharing for **11 curated packs** stored locally in `catalog/examples/`:
+
+- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
+- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
+
+**Features:**
+
+- **Browse** (`/catalog`) - Search, filter by category/tools, sort by popularity
+- **Detail** (`/catalog/[slug]`) - Pack info, exporter previews, install commands
+- **Homepage** (`/`) - Quickstart guide and featured packs
+
+**Local development:**
+
+```bash
+cd apps/web
+pnpm dev
+# Open http://localhost:3000
+```
+
+**Build catalog:**
+
+```bash
+node temp-build-catalog.mjs
+# Generates apps/web/public/catalog/*.json from catalog/packs.yaml
+```
+
+**Current status:** 232/269 tests passing (86%). See [catalog.md](docs/catalog.md) for catalog structure and management.
+
+## Learn more
+
+- [Full documentation](https://aligntrue.ai/docs)
+- [Catalog website](https://aligntrue.ai/catalog) - Browse 11 curated rule packs
+- [Contributing guide](CONTRIBUTING.md)
+- [Development guide](DEVELOPMENT.md)
+- [Security policy](SECURITY.md)
+
+## Support
+
+- [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
+- [Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+
+---
+
+## For contributors
+
+### Workspace structure
 
 This is a pnpm monorepo with the following packages:
 
@@ -212,30 +253,20 @@ aligntrue/
     └── mcp-v1/       # MCP server (deferred)
 ```
 
-**Phase Status (2025-10-31):**
+### Development setup
 
-- ✅ Phase 1: CLI-first architecture complete (786 tests)
-- ✅ Phase 2: Import parsers & git sources complete (1149 tests)
-- ✅ Phase 3: Team mode complete (1842 tests)
-- ✅ Phase 3.5: Overlays complete (163 overlay tests)
-- 🚧 Phase 4: Catalog website active (246 tests, 92% pass rate)
-- 📋 Phase 4.5: Pre-launch stabilization (next)
-- 🔮 Phase 5: Paid cloud (post-launch, adoption trigger required)
-
-## Development setup
-
-### Prerequisites
+**Prerequisites:**
 
 - Node.js 20+
 - pnpm 9+
 
-### Workspace installation
+**Workspace installation:**
 
 ```bash
 pnpm install
 ```
 
-### Development
+**Development:**
 
 ```bash
 # Start web app dev server
@@ -251,52 +282,6 @@ pnpm test
 pnpm typecheck
 ```
 
-## Repositories
-
-- **AlignTrue/aligntrue** (MIT, this repo): Catalog website, CLI, core packages, 43 exporters
-- **AlignTrue/aligns** (CC0): Public rules registry (can be mirrored later)
-- **AlignTrue/cloud** (private): Commercial features (Phase 5, post-launch)
-
-## Catalog Website
-
-The AlignTrue catalog provides discovery and sharing for **11 curated packs** stored locally in `catalog/examples/`:
-
-- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
-- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
-
-**Features:**
-
-- **Browse** (`/catalog`) - Search, filter by category/tools, sort by popularity
-- **Detail** (`/catalog/[slug]`) - Pack info, exporter previews, install commands
-- **Homepage** (`/`) - Quickstart guide and featured packs
-
-**Local Development:**
-
-```bash
-cd apps/web
-pnpm dev
-# Open http://localhost:3000
-```
-
-**Build Catalog:**
-
-```bash
-node temp-build-catalog.mjs
-# Generates apps/web/public/catalog/*.json from catalog/packs.yaml
-```
-
-**Current Status:** 232/269 tests passing (86%). See `docs/catalog.md` for catalog structure and management.
-
-## Documentation
-
-**Project Documentation:**
-
-- [Contributing Guide](CONTRIBUTING.md)
-- [Development Guide](DEVELOPMENT.md)
-- [Security Policy](SECURITY.md)
-
-Full documentation will be available at aligntrue.ai/docs.
-
 ## License
 
-MIT (see LICENSE file)
+MIT (see [LICENSE](LICENSE) )
