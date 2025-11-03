@@ -30,6 +30,12 @@ import {
 async function main() {
   const args = process.argv.slice(2);
 
+  // Handle version flag
+  if (args[0] === "--version" || args[0] === "-v") {
+    console.log("0.1.0-alpha.2");
+    process.exit(0);
+  }
+
   if (args.length === 0 || args[0] === "--help") {
     console.log("AlignTrue CLI - AI-native rules and alignment platform\n");
     console.log("Usage: aligntrue <command> [options]\n");
@@ -64,14 +70,11 @@ async function main() {
     console.log("Settings:");
     console.log("  config         View or edit configuration");
     console.log("  telemetry      Telemetry settings");
-    console.log("  privacy        Privacy and consent management\n");
+    console.log("  privacy        Privacy and consent management");
+    console.log("  migrate        Schema migration (run --help for policy)\n");
 
-    console.log("Coming Soon:");
-    console.log("  migrate        Schema migration (preview mode)");
-
-    console.log(
-      "\nRun aligntrue <command> --help for command-specific options",
-    );
+    console.log("Run aligntrue <command> --help for command-specific options");
+    console.log("Run aligntrue --version for version information");
     process.exit(0);
   }
 
