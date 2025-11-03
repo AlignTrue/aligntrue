@@ -82,10 +82,10 @@ aligntrue sync
 aligntrue drift
 
 # Output:
-# Drift Detection Report
+# Drift detection report
 # ======================
 #
-# UPSTREAM DRIFT (1 items):
+# Upstream drift (1 items):
 #   • base-global: Lockfile hash differs from allowed version
 #     Suggestion: Run: aligntrue team approve git:...
 ```

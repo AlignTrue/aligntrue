@@ -82,7 +82,13 @@ export async function executeImport(
         ? "Expected: .cursor/rules/ directory with .mdc files"
         : agent === "cursorrules"
           ? "Expected: .cursorrules file in workspace root"
-          : "Expected: AGENTS.md file in workspace root";
+          : agent === "claude-md"
+            ? "Expected: CLAUDE.md file in workspace root"
+            : agent === "crush-md"
+              ? "Expected: CRUSH.md file in workspace root"
+              : agent === "warp-md"
+                ? "Expected: WARP.md file in workspace root"
+                : "Expected: AGENTS.md or other markdown file in workspace root";
     throw new Error(`Agent format not found: ${sourcePath}\n${hint}`);
   }
 
