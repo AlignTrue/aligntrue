@@ -1,11 +1,14 @@
 // apps/docs/app/layout.tsx
 import "nextra-theme-docs/style.css";
+import "@aligntrue/ui/styles/tokens.css";
+import "@aligntrue/ui/nextra/nextra.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Layout, Navbar, Footer } from "nextra-theme-docs";
 import { Head, Banner } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import { ThemeScript } from "@aligntrue/ui";
 
 export const metadata: Metadata = {
   title: {
@@ -43,7 +46,9 @@ export default async function RootLayout({
       <Head
         // Adjust theme colors or favicon glyph as desired
         faviconGlyph=":"
-      />
+      >
+        <ThemeScript />
+      </Head>
       <body>
         <Layout
           pageMap={pageMap}
