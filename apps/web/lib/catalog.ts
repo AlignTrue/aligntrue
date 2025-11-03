@@ -58,3 +58,60 @@ export async function loadCatalogIndex() {
     return null;
   }
 }
+
+export interface PopularPack {
+  slug: string;
+  name: string;
+}
+
+/**
+ * Get popular packs for 404 page suggestions
+ * Returns top 3 packs prioritizing foundations category and base-global first
+ *
+ * @returns Array of popular pack slugs and names
+ */
+export async function getPopularPacks(): Promise<PopularPack[]> {
+  try {
+    const catalog = await loadCatalogIndex();
+    if (!catalog?.packs) {
+      return [];
+    }
+
+    // Prioritize base-global, then other foundation packs, then others
+    const packs = catalog.packs
+      .filter((pack: { slug: string }) => pack.slug) // Ensure slug exists
+      .sort(
+        (
+          a: { slug: string; categories?: string[] },
+          b: { slug: string; categories?: string[] },
+        ) => {
+          // base-global always first
+          if (a.slug === "base-global") return -1;
+          if (b.slug === "base-global") return 1;
+
+          // Then foundation packs
+          const aIsFoundation = a.categories?.includes("foundations") ?? false;
+          const bIsFoundation = b.categories?.includes("foundations") ?? false;
+          if (aIsFoundation && !bIsFoundation) return -1;
+          if (!aIsFoundation && bIsFoundation) return 1;
+
+          return 0;
+        },
+      )
+      .slice(0, 3)
+      .map((pack: { slug: string; name: string }) => ({
+        slug: pack.slug,
+        name: pack.name,
+      }));
+
+    return packs;
+  } catch (error) {
+    console.error("Failed to load popular packs:", error);
+    // Fallback to hardcoded values if catalog fails to load
+    return [
+      { slug: "base-global", name: "Base Global" },
+      { slug: "base-typescript", name: "TypeScript Standards" },
+      { slug: "base-security", name: "Security and Compliance" },
+    ];
+  }
+}
