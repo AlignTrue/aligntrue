@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { existsSync, readFileSync } from "fs";
+import { existsSync } from "fs";
 import * as clack from "@clack/prompts";
 
 // Mock dependencies

@@ -4,7 +4,6 @@ import { join } from "path";
 import * as yaml from "yaml";
 import {
   loadConfig,
-  applyDefaults,
   saveConfig,
   saveMinimalConfig,
   type AlignTrueConfig,

@@ -1,6 +1,7 @@
 import { Layout } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import type { ReactNode } from "react";
+import themeConfig from "../theme.config";
 
 export default async function RootLayout({
   children,
@@ -12,7 +13,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <Layout pageMap={pageMap}>{children}</Layout>
+        <Layout pageMap={pageMap} {...themeConfig}>
+          {children}
+        </Layout>
       </body>
     </html>
   );

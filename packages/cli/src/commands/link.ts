@@ -475,23 +475,31 @@ async function updateConfigWithVendor(
 
   // Check if source already exists
   const existingIndex = config.sources.findIndex(
-    (s) => s.type === "git" && (s as any).url === gitUrl,
+    (s) => s.type === "git" && s.url === gitUrl,
   );
 
   if (existingIndex >= 0) {
     // Update existing source with vendor info
-    const existing = config.sources[existingIndex] as any;
-    existing.vendor_path = vendorPath;
-    existing.vendor_type = vendorType;
+    const existing = config.sources[existingIndex];
+    // Note: vendor_path and vendor_type are stored as metadata in the source
+    // The config schema allows additional properties beyond the base type
+    (existing as Record<string, unknown>)["vendor_path"] = vendorPath;
+    (existing as Record<string, unknown>)["vendor_type"] = vendorType;
   } else {
     // Add new git source with vendor info
     config.sources.push({
       type: "git",
       url: gitUrl,
-      ref: "main",
-      vendor_path: vendorPath,
-      vendor_type: vendorType,
-    } as any);
+      // Note: vendor_path and vendor_type are stored as metadata
+      // The config schema allows additional properties beyond the base type
+      ...(vendorPath && { vendor_path: vendorPath }),
+      ...(vendorType && { vendor_type: vendorType }),
+    } as {
+      type: "git";
+      url: string;
+      vendor_path?: string;
+      vendor_type?: string;
+    });
   }
 
   // Save updated config

@@ -123,7 +123,7 @@ async function writeToIRFile(
     version: "1.0.0",
     spec_version: "1",
     rules: rules.map((rule) => {
-      const ruleData: Record<string, any> = {
+      const ruleData: Partial<AlignRule> = {
         id: rule.id,
         severity: rule.severity,
         applies_to: rule.applies_to,

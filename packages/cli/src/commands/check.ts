@@ -220,7 +220,7 @@ export async function check(args: string[]): Promise<void> {
 
     // Step 2.5: Validate rule IDs
     const { validateRuleId } = await import("@aligntrue/schema");
-    const alignPack = alignData as any;
+    const alignPack = alignData as AlignPack;
 
     for (const rule of alignPack.rules || []) {
       const validation = validateRuleId(rule.id);
@@ -263,7 +263,7 @@ export async function check(args: string[]): Promise<void> {
           console.error("  Failed to read lockfile\n");
           process.exit(2);
         }
-        const validation = validateLockfile(lockfile, alignData as any);
+        const validation = validateLockfile(lockfile, alignData as AlignPack);
 
         if (!validation.valid) {
           lockfileValid = false;
@@ -365,7 +365,16 @@ export async function check(args: string[]): Promise<void> {
     // Step 5: All validations passed
     if (jsonOutput) {
       // JSON output mode
-      const result: any = {
+      const result: {
+        valid: boolean;
+        schema: { valid: boolean; file: string };
+        lockfile?: { valid: boolean; file: string };
+        overlays?: {
+          valid: boolean;
+          count: number;
+          warnings: string[];
+        };
+      } = {
         valid: true,
         schema: { valid: true, file: rulesPath },
       };

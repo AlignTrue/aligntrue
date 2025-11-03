@@ -22,7 +22,11 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
-import { detectUpdatesForConfig, type UpdateFinding } from "@aligntrue/core";
+import {
+  detectUpdatesForConfig,
+  type UpdateFinding,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
 import { writePatchFile, type OverlayDefinition } from "@aligntrue/core";
 import { sync } from "./sync.js";
 
@@ -175,7 +179,7 @@ export async function update(args: string[]): Promise<void> {
 /**
  * Check for available updates
  */
-async function checkUpdates(config: any): Promise<void> {
+async function checkUpdates(config: AlignTrueConfig): Promise<void> {
   const spinner = clack.spinner();
   spinner.start("Checking for updates...");
 
@@ -217,7 +221,7 @@ async function checkUpdates(config: any): Promise<void> {
  * Apply updates and generate UPDATE_NOTES.md
  */
 async function applyUpdates(
-  config: any,
+  config: AlignTrueConfig,
   dryRun: boolean,
   safeMode: boolean = false,
   autoResolve?: "ours" | "theirs",
@@ -290,7 +294,7 @@ async function applyUpdates(
  * Returns true if conflicts detected
  */
 async function checkOverlayConflicts(
-  config: any,
+  config: AlignTrueConfig,
   updates: UpdateFinding[],
   autoResolve?: "ours" | "theirs",
 ): Promise<boolean> {
@@ -314,7 +318,9 @@ async function checkOverlayConflicts(
   spinner.start("Checking overlay conflicts...");
 
   try {
-    const lockfileContent = JSON.parse(readFileSync(lockfilePath, "utf-8"));
+    const lockfileContent = JSON.parse(readFileSync(lockfilePath, "utf-8")) as {
+      rules: { source: string }[];
+    };
 
     // For each update, check for conflicts
     let hasAnyConflicts = false;
@@ -322,7 +328,7 @@ async function checkOverlayConflicts(
     for (const update of updates) {
       // Find lockfile entries for this source
       const sourceEntries = lockfileContent.rules.filter(
-        (entry: any) => entry.source === update.source,
+        (entry: { source: string }) => entry.source === update.source,
       );
 
       if (sourceEntries.length === 0) {
