@@ -91,8 +91,7 @@ export function createAlignTrueNextraTheme(
     docsRepositoryBase,
     sidebar: {
       defaultMenuCollapseLevel: 2,
-      autoCollapse: true,
-      defaultOpen: true,
+      autoCollapse: false,
       toggleButton: true,
     },
     toc: {
