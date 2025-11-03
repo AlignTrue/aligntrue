@@ -28,7 +28,41 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 2: Build workspace packages if source files changed
+  // Step 2: Quick incremental typecheck (fail fast)
+  const changedPackages = getChangedPackages();
+  
+  if (changedPackages.length > 0) {
+    s.start(`Quick typecheck of ${changedPackages.length} changed package(s)...`);
+    try {
+      // Run quick typecheck on only changed packages to catch errors early
+      for (const pkg of changedPackages) {
+        execSync(`pnpm --filter ${pkg} exec tsc --noEmit`, { 
+          stdio: "pipe",
+          encoding: "utf-8"
+        });
+      }
+      s.stop("✅ Quick typecheck passed.");
+    } catch (error) {
+      s.stop("❌ Type errors detected.", 1);
+      console.error("");
+      clack.log.error("TypeScript type checking failed.");
+      console.error("");
+      console.error("📝 Fix these type errors before committing:");
+      console.error("");
+      // Show the actual error output
+      if (error.stdout) {
+        console.error(error.stdout);
+      }
+      console.error("");
+      console.error("💡 Tip: Run 'pnpm pre-refactor' before large changes");
+      console.error("🔍 Re-run typecheck: pnpm typecheck");
+      console.error("");
+      clack.outro("Fix the type errors above and try committing again.");
+      process.exit(1);
+    }
+  }
+
+  // Step 3: Build workspace packages if source files changed
   let packageSrcFiles;
   try {
     packageSrcFiles = execSync(
@@ -39,11 +73,12 @@ async function main() {
     packageSrcFiles = "";
   }
 
-  if (packageSrcFiles) {
-    s.start("Building workspace packages (source files changed)...");
+  if (packageSrcFiles && changedPackages.length > 0) {
+    s.start(`Building ${changedPackages.length} changed package(s)...`);
     try {
-      // Build packages only (not apps) to ensure fresh types for typecheck
-      execSync("pnpm -r --filter './packages/*' build", { stdio: "inherit" });
+      // Build only changed packages for faster commits
+      const filters = changedPackages.map(p => `--filter ${p}`).join(" ");
+      execSync(`pnpm ${filters} build`, { stdio: "inherit" });
       s.stop("✅ Packages built successfully.");
     } catch (error) {
       s.stop("❌ Build failed.", 1);
@@ -64,29 +99,19 @@ async function main() {
       console.error("      if (!param) { log.warn('Missing param'); return; }");
       console.error("");
       console.error("📖 Complete patterns: .cursor/rules/typescript.mdc");
-      console.error("🔍 Re-run build: pnpm -r --filter './packages/*' build");
+      console.error("🔍 Re-run build: pnpm build:packages");
       console.error("");
       clack.outro("💡 Fix the TypeScript errors above and try committing again.");
       process.exit(1);
     }
   }
 
-  // Step 3: Typecheck staged TypeScript files
-  let stagedTsFiles;
-  try {
-    stagedTsFiles = execSync(
-      "git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx)$' || true",
-      { encoding: "utf-8" },
-    ).trim();
-  } catch (error) {
-    // grep returns non-zero if no matches, which is fine
-    stagedTsFiles = "";
-  }
-
-  if (stagedTsFiles) {
-    s.start("Type checking staged TypeScript files...");
+  // Step 4: Full typecheck of changed packages (final validation)
+  if (changedPackages.length > 0) {
+    s.start("Final typecheck of changed packages...");
     try {
-      execSync("pnpm -r typecheck", { stdio: "inherit" });
+      const filters = changedPackages.map(p => `--filter ${p}`).join(" ");
+      execSync(`pnpm ${filters} typecheck`, { stdio: "inherit" });
       s.stop("✅ Type checking passed.");
     } catch (error) {
       s.stop("❌ Type checking failed.", 1);
@@ -102,15 +127,41 @@ async function main() {
       console.error("   • Narrow types with guards: if (typeof x === 'string')");
       console.error("   • Validate at boundaries: parse(input) throws on bad data");
       console.error("");
-      console.error("🔍 Re-run typecheck: pnpm -r typecheck");
+      console.error("🔍 Re-run typecheck: pnpm typecheck");
       console.error("");
       clack.outro("💡 Fix the type errors above and try committing again.");
       process.exit(1);
     }
   }
 
-  clack.outro("All pre-commit checks passed");
+  clack.outro("✅ All pre-commit checks passed");
   process.exit(0);
+}
+
+/**
+ * Get list of changed packages from staged files
+ * @returns Array of package names (e.g., ["@aligntrue/cli", "@aligntrue/core"])
+ */
+function getChangedPackages() {
+  try {
+    const stagedFiles = execSync(
+      "git diff --cached --name-only --diff-filter=ACM",
+      { encoding: "utf-8" }
+    ).trim().split("\n").filter(Boolean);
+    
+    const packages = new Set();
+    for (const file of stagedFiles) {
+      // Match files in packages/* or apps/*
+      const match = file.match(/^(packages|apps)\/([^/]+)\//);
+      if (match) {
+        const [, type, name] = match;
+        packages.add(`@aligntrue/${name}`);
+      }
+    }
+    return Array.from(packages);
+  } catch (error) {
+    return [];
+  }
 }
 
 main();
