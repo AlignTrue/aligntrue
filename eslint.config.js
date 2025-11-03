@@ -3,6 +3,47 @@ import typescriptParser from "@typescript-eslint/parser";
 import unusedImports from "eslint-plugin-unused-imports";
 import nextPlugin from "@next/eslint-plugin-next";
 
+// Custom rule to prevent asset imports in @aligntrue/ui (zero-build package)
+const noAssetImportsInUI = {
+  create(context) {
+    return {
+      ImportDeclaration(node) {
+        const filePath = context.filename;
+
+        // Only check files in packages/ui/src
+        if (!filePath.includes("packages/ui/src")) {
+          return;
+        }
+
+        const source = node.source.value;
+
+        // Check if importing an asset file
+        const assetExtensions = [
+          ".svg",
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".gif",
+          ".webp",
+        ];
+        const isAssetImport = assetExtensions.some((ext) =>
+          source.endsWith(ext),
+        );
+
+        if (isAssetImport) {
+          context.report({
+            node,
+            message: `❌ Asset import forbidden in @aligntrue/ui (zero-build package). Embed SVGs inline as JSX or use data URIs. See implementation_specs.mdc Section 14.`,
+            fix(fixer) {
+              return null; // Manual fix required
+            },
+          });
+        }
+      },
+    };
+  },
+};
+
 export default [
   {
     ignores: [
@@ -51,6 +92,19 @@ export default [
         ["apps/web/app", "apps/docs/app"],
       ],
       "@next/next/no-img-element": "warn",
+    },
+  },
+  {
+    files: ["packages/ui/src/**/*.{ts,tsx}"],
+    rules: {
+      "custom-rules/no-asset-imports-in-ui": "error",
+    },
+    plugins: {
+      "custom-rules": {
+        rules: {
+          "no-asset-imports-in-ui": noAssetImportsInUI,
+        },
+      },
     },
   },
 ];
