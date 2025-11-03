@@ -316,6 +316,78 @@ describe("CatalogEntry Validation", () => {
       expect(result.valid).toBe(true);
     });
 
+    it("accepts optional attribution field with original type", () => {
+      const withAttribution = {
+        ...validCatalogEntry,
+        attribution: {
+          type: "original",
+          author: "AlignTrue",
+          source_url: "https://github.com/AlignTrue/aligntrue",
+        },
+      };
+      const result = validateCatalogEntry(withAttribution);
+      expect(result.valid).toBe(true);
+    });
+
+    it("accepts optional attribution field with community type", () => {
+      const withAttribution = {
+        ...validCatalogEntry,
+        attribution: {
+          type: "community",
+          author: "@username on X",
+          source_url: "https://x.com/username/status/123456",
+        },
+      };
+      const result = validateCatalogEntry(withAttribution);
+      expect(result.valid).toBe(true);
+    });
+
+    it("validates attribution.type must be original or community", () => {
+      const invalid = {
+        ...validCatalogEntry,
+        attribution: {
+          type: "invalid",
+          author: "Test",
+          source_url: "https://example.com",
+        },
+      };
+      const result = validateCatalogEntry(invalid);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain(
+        'attribution.type must be "original" or "community"',
+      );
+    });
+
+    it("validates attribution.author is required", () => {
+      const invalid = {
+        ...validCatalogEntry,
+        attribution: {
+          type: "original",
+          source_url: "https://example.com",
+        },
+      };
+      const result = validateCatalogEntry(invalid);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain(
+        "attribution.author is required and must be a string",
+      );
+    });
+
+    it("validates attribution.source_url is required", () => {
+      const invalid = {
+        ...validCatalogEntry,
+        attribution: {
+          type: "original",
+          author: "Test",
+        },
+      };
+      const result = validateCatalogEntry(invalid);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain(
+        "attribution.source_url is required and must be a string",
+      );
+    });
+
     it("accepts multiple exporters", () => {
       const multiExporters = {
         ...validCatalogEntry,

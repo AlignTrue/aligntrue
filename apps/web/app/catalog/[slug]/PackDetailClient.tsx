@@ -200,6 +200,24 @@ export function PackDetailClient({ pack, allPacks }: PackDetailClientProps) {
             )}
           </div>
 
+          {/* Attribution banner for community packs */}
+          {pack.attribution?.type === "community" && (
+            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded">
+              <p className="text-sm text-amber-900">
+                <strong>Community contribution</strong> shared by{" "}
+                {pack.attribution.author}.{" "}
+                <a
+                  href={pack.attribution.source_url}
+                  className="underline hover:text-amber-700"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View original source
+                </a>
+              </p>
+            </div>
+          )}
+
           {/* Categories and tools */}
           <div className="mt-4 flex flex-wrap gap-2">
             {pack.categories.map((cat) => (

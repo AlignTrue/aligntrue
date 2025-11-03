@@ -1,7 +1,9 @@
-<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
-<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
+---
+title: Registry Policy
+description: Governance rules for the AlignTrue registry of Align packs.
+---
 
-# AlignTrue Registry Policy
+# AlignTrue registry policy
 
 This document defines the governance rules for the AlignTrue registry of Align packs.
 
@@ -157,15 +159,10 @@ This policy will evolve based on community needs. Proposed changes should:
 - **Documentation**: See [full documentation](/) for details
 - **Discussions**: Use [GitHub Discussions](https://github.com/AlignTrue/aligns/discussions) for questions and proposals
 - **Issues**: Open [issues](https://github.com/AlignTrue/aligns/issues) for bugs, problems, or policy concerns
-- **Contributing**: See [creating packs](https://aligntrue.ai/docs/contributing/creating-packs) for how to submit packs
+- **Contributing**: See [creating packs](/contributing/creating-packs) for how to submit packs
 
 ---
 
 **Version**: 1.0.0  
 **Last updated**: 2025-10-24  
 **Applies to**: AlignTrue Align Spec v1
-
----
-
-**This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
-**To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**

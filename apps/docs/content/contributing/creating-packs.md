@@ -1,7 +1,9 @@
-<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
-<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
+---
+title: Creating Packs
+description: Author and publish high-quality Align packs that pass validation and provide value to the community.
+---
 
-# Contributing to AlignTrue
+# Creating packs
 
 Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Align packs that pass validation and provide value to the community.
 
@@ -39,7 +41,7 @@ Pick the appropriate namespace for your pack:
   - Example: `packs/stacks/nextjs-app-router`, `packs/stacks/django-backend`
   - Use when: Your rules target a specific tech stack
 
-See [POLICY.md](https://aligntrue.ai/docs/policies) for complete namespacing rules.
+See [POLICY.md](/policies) for complete namespacing rules.
 
 ### Minimal example
 
@@ -226,7 +228,7 @@ Users should be able to copy-paste your hint and make progress.
   - TODO comments
   - Formatting preferences
 
-See [POLICY.md](https://aligntrue.ai/docs/policies) for complete severity guidelines.
+See [POLICY.md](/policies) for complete severity guidelines.
 
 ## Pull request checklist
 
@@ -331,8 +333,3 @@ We're here to help!
 ---
 
 **Thank you** for contributing to AlignTrue and helping make AI-human alignment better for everyone.
-
----
-
-**This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
-**To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**
