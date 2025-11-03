@@ -8,7 +8,6 @@ import { join } from "path";
 import {
   WorkflowDetector,
   getWorkflowAnnotation,
-  type WorkflowMode,
 } from "../src/utils/workflow-detector.js";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
