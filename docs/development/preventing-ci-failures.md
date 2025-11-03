@@ -157,6 +157,59 @@ Common type locations:
 
 ## Troubleshooting
 
+### Next.js dev server fails with "Cannot find module" errors
+
+**Symptom:** Dev server crashes with errors like:
+
+```
+Error: Cannot find module './vendor-chunks/nextra@4.6.0...'
+Cannot find module '@aligntrue/ui'
+```
+
+**Cause:** Next.js doesn't transpile workspace packages by default. The `@aligntrue/ui` package exports TypeScript source directly (no build step), so Next.js needs to be configured to transpile it.
+
+**Fix:**
+
+1. Check your Next.js config has `transpilePackages`:
+
+```typescript
+// apps/web/next.config.ts
+const nextConfig: NextConfig = {
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+};
+```
+
+```javascript
+// apps/docs/next.config.mjs
+export default withNextra({
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+});
+```
+
+2. Clean stale build caches:
+
+```bash
+rm -rf apps/web/.next apps/docs/.next
+```
+
+3. Restart dev servers:
+
+```bash
+pnpm dev:web   # or pnpm dev:docs
+```
+
+**Prevention:**
+
+The CI now validates `transpilePackages` config matches workspace dependencies:
+
+```bash
+pnpm validate:transpile-packages
+```
+
+This runs automatically in CI to catch config drift. If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs.
+
 ### Pre-commit hook is slow
 
 **Cause:** Checking too many packages or full workspace
