@@ -160,7 +160,11 @@ pnpm --filter @aligntrue/web build
 pnpm --filter @aligntrue/docs build
 ```
 
-**Prevention:** The pre-commit hook automatically cleans `.next` directories before validation.
+**Prevention:**
+
+- Pre-commit hook automatically cleans `.next` directories before validation
+- `pnpm generate:repo-files` automatically cleans caches after regeneration
+- **Important:** Restart dev servers after running `generate:repo-files` if they're running
 
 ### Missing DOM types in UI packages
 

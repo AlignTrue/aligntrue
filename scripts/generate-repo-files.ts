@@ -213,6 +213,16 @@ async function main() {
     await Promise.all(FILES_TO_GENERATE.map(generateFile));
 
     console.log("\n✓ All files generated successfully!");
+
+    // Clean Next.js caches after regenerating docs to prevent stale module errors
+    try {
+      const { execSync } = await import("child_process");
+      execSync("rm -rf apps/docs/.next apps/web/.next", { stdio: "ignore" });
+      console.log("✓ Cleaned Next.js build caches");
+    } catch (error) {
+      // Non-fatal: dev server will rebuild on next request
+    }
+
     console.log("\nGenerated files:");
     FILES_TO_GENERATE.forEach((config) => {
       console.log(`  - ${config.dest}`);
