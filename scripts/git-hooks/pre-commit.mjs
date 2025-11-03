@@ -7,7 +7,20 @@ async function main() {
   clack.intro("🔍 Running pre-commit checks...");
   const s = clack.spinner();
 
-  // Step 1: Format staged files
+  // Step 1: Clean stale Next.js build caches to prevent phantom errors
+  s.start("Cleaning Next.js build caches...");
+  try {
+    // Clean .next directories in all apps to prevent stale vendor chunk errors
+    execSync("find apps -name '.next' -type d -prune -exec rm -rf {} + 2>/dev/null || true", { 
+      stdio: "pipe" 
+    });
+    s.stop("✅ Build caches cleaned.");
+  } catch (error) {
+    // Non-fatal: continue even if cleanup fails
+    s.stop("⚠️  Cache cleanup skipped.");
+  }
+
+  // Step 2: Format staged files
   s.start("Formatting staged files with Prettier...");
   try {
     execSync("pnpm lint-staged", { stdio: "inherit" });
@@ -28,7 +41,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 2: Quick incremental typecheck (fail fast)
+  // Step 3: Quick incremental typecheck (fail fast)
   const changedPackages = getChangedPackages();
   
   if (changedPackages.length > 0) {
@@ -62,7 +75,7 @@ async function main() {
     }
   }
 
-  // Step 3: Build workspace packages if source files changed
+  // Step 4: Build workspace packages if source files changed
   let packageSrcFiles;
   try {
     packageSrcFiles = execSync(
@@ -106,7 +119,7 @@ async function main() {
     }
   }
 
-  // Step 4: Full typecheck of changed packages (final validation)
+  // Step 5: Full typecheck of changed packages (final validation)
   if (changedPackages.length > 0) {
     s.start("Final typecheck of changed packages...");
     try {

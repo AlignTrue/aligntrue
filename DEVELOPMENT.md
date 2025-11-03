@@ -145,6 +145,71 @@ Run type-check to see all errors:
 pnpm typecheck
 ```
 
+### Stale Next.js build cache errors
+
+**Symptom:** Module not found errors like `Cannot find module './vendor-chunks/nextra@4.6.0...'`
+
+**Cause:** Next.js `.next` directory contains stale vendor chunks after dependency updates.
+
+**Fix:**
+
+```bash
+# Clean all Next.js build caches
+rm -rf apps/web/.next apps/docs/.next
+
+# Rebuild
+pnpm --filter @aligntrue/web build
+pnpm --filter @aligntrue/docs build
+```
+
+**Prevention:** The pre-commit hook automatically cleans `.next` directories before validation.
+
+### Missing DOM types in UI packages
+
+**Symptom:** TypeScript errors like `Cannot find name 'window'`, `Cannot find name 'document'`
+
+**Cause:** UI packages with React need DOM library types in `tsconfig.json`.
+
+**Fix:**
+
+Add to `tsconfig.json` compilerOptions:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+**Prevention:** CI validates UI packages with `pnpm validate:ui-tsconfig`.
+
+### Missing type exports
+
+**Symptom:** `Property 'X' does not exist on type 'Y'` in apps consuming schema types.
+
+**Cause:** Type defined in schema package but not exported in `packages/schema/src/index.ts`.
+
+**Fix:**
+
+1. Check the type exists in source file (e.g., `packages/schema/src/catalog-entry.ts`)
+2. Add export to `packages/schema/src/index.ts`:
+
+```typescript
+export {
+  // ... existing exports
+  type YourMissingType,
+} from "./catalog-entry.js";
+```
+
+3. Rebuild schema package:
+
+```bash
+pnpm --filter @aligntrue/schema build
+```
+
+**Prevention:** CI runs full typecheck across all packages to catch missing exports.
+
 ## Next steps
 
 - Learn about the [workspace structure](https://aligntrue.ai/docs/development/workspace)
