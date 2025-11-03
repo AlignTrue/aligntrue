@@ -16,6 +16,7 @@
     "verify": "pnpm --filter @aligntrue/testkit test",
     "testkit:verify": "pnpm verify",
     "typecheck": "pnpm -r typecheck",
+    "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
