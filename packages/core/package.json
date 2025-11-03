@@ -20,7 +20,7 @@
     "./plugs": "./dist/plugs/index.js"
   },
   "scripts": {
-    "build": "tsc && mkdir -p dist/schema && cp schema/config.schema.json dist/schema/",
+    "build": "tsc && node ../../scripts/copy-core-schema.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
