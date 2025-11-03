@@ -67,6 +67,24 @@ pnpm format        # Format code with Prettier
 pnpm format:check  # Check formatting without changes
 ```
 
+#### Validation workflow
+
+Run before large refactors to ensure clean baseline:
+
+```bash
+pnpm pre-refactor  # Type check + lint entire workspace
+```
+
+The pre-commit hook runs automatically on every commit with optimized incremental checks:
+
+- Quick typecheck of changed packages (~5-15s) - **Fails fast**
+- Build changed packages (~15-30s)
+- Full typecheck of changed packages (~10-20s)
+
+**Total time:** 30-60s for typical commits
+
+See [Preventing CI failures](docs/development/preventing-ci-failures.md) for detailed workflow documentation.
+
 #### Clean
 
 ```bash
