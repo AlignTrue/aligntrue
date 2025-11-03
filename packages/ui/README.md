@@ -2,10 +2,33 @@
 
 Shared UI primitives and design tokens for AlignTrue.
 
+## ⚠️ Zero-Build Package
+
+This package is **non-compiled and ships raw source files** directly to consumers. It has **no build step** and **no asset bundling**.
+
+### Do's and Don'ts
+
+✅ **DO:**
+
+- Embed SVGs inline in JSX components
+- Import CSS files
+- Use plain TypeScript/React
+- Reference images as data URIs or base64
+- Use CSS variables for theming
+
+❌ **DON'T:**
+
+- Import `.svg`, `.png`, `.jpg`, or other media files
+- Use `require()` for assets
+- Assume Next.js will apply loaders (it won't for this package)
+- Create external asset files expected to be bundled
+
+**Why?** The UI package is consumed by multiple apps with different Next.js configurations. By keeping it asset-free, we ensure it works everywhere without special configuration.
+
 ## Contents
 
 - **Design tokens** - CSS custom properties for colors, typography, spacing, and border radius
-- **BrandLogo** - Simple text-based logo component (placeholder, can be swapped for SVG)
+- **AlignTrueLogo** - SVG logo with theme-aware color inheritance
 - **Tailwind preset** - Configuration that references design tokens
 
 ## Usage
@@ -17,19 +40,21 @@ Shared UI primitives and design tokens for AlignTrue.
 import "@aligntrue/ui/styles/tokens.css";
 ```
 
-### Use BrandLogo component
+### Use AlignTrueLogo component
 
 ```tsx
-import { BrandLogo } from "@aligntrue/ui";
+import { AlignTrueLogo } from "@aligntrue/ui";
 
 export function Header() {
   return (
     <header>
-      <BrandLogo className="text-2xl" />
+      <AlignTrueLogo size="md" className="text-slate-900 dark:text-white" />
     </header>
   );
 }
 ```
+
+The logo inherits text color from CSS (theme-aware) and uses the `--brand-accent` CSS variable for the colon accent.
 
 ### Configure Tailwind
 
