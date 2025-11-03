@@ -102,6 +102,9 @@ export function PackCard({ pack, onClick }: PackCardProps) {
           {pack.overlay_friendly && (
             <Badge variant="info">Overlay Friendly</Badge>
           )}
+          {pack.attribution?.type === "community" && (
+            <Badge variant="info">Community</Badge>
+          )}
           {pack.source_repo && (
             <a
               href={pack.source_repo}

@@ -65,5 +65,6 @@ export {
   type RequiredPlug,
   type ExporterPreview,
   type Maintainer,
+  type Attribution,
   type PackStats,
 } from "./catalog-entry.js";

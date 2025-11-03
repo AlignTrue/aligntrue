@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3001",
+    "prebuild": "cd ../.. && pnpm generate:repo-files",
     "build": "next build",
     "start": "next start -p 3001",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@aligntrue/ui": "workspace:*",
     "fast-glob": "^3.3.2",
     "next": "15.4.7",
     "nextra": "4.6.0",

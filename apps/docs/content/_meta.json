@@ -1,7 +1,11 @@
 {
   "index": "Introduction",
   "getting-started": "Getting Started",
+  "guides": "Guides",
   "concepts": "Concepts",
   "reference": "Reference",
-  "contributing": "Contributing"
+  "troubleshooting": "Troubleshooting",
+  "contributing": "Contributing",
+  "policies": "Policies",
+  "development": "Development"
 }

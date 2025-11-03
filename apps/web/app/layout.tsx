@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import { BrandLogo } from "@aligntrue/ui";
+import {
+  AlignTrueLogo,
+  SiteFooter,
+  ThemeProvider,
+  ThemeScript,
+  ThemeToggle,
+} from "@aligntrue/ui";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,32 +31,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header className="border-b border-neutral-200 px-6 py-4">
-          <nav className="max-w-7xl mx-auto flex items-center justify-between">
-            <Link href="/" className="hover:opacity-80 transition-opacity">
-              <BrandLogo />
-            </Link>
-            <div className="flex gap-6 text-sm">
-              <Link
-                href="/catalog"
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                Catalog
+        <ThemeProvider defaultTheme="system">
+          <header
+            className="px-6 py-4"
+            style={{
+              borderBottom: "1px solid var(--borderColor-default)",
+              backgroundColor: "var(--bgColor-default)",
+            }}
+          >
+            <nav className="max-w-7xl mx-auto flex items-center justify-between">
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                <AlignTrueLogo size="md" />
               </Link>
-              <Link
-                href="/docs"
-                className="text-neutral-700 hover:text-neutral-900 transition-colors"
-              >
-                Docs
-              </Link>
-            </div>
-          </nav>
-        </header>
-        <main>{children}</main>
+              <div className="flex items-center gap-6 text-sm">
+                <Link
+                  href="/catalog"
+                  className="transition-colors"
+                  style={{ color: "var(--fgColor-muted)" }}
+                >
+                  Catalog
+                </Link>
+                <Link
+                  href="/docs"
+                  className="transition-colors"
+                  style={{ color: "var(--fgColor-muted)" }}
+                >
+                  Docs
+                </Link>
+                <ThemeToggle variant="icon" />
+              </div>
+            </nav>
+          </header>
+          <main>{children}</main>
+          <SiteFooter />
+        </ThemeProvider>
       </body>
     </html>
   );
