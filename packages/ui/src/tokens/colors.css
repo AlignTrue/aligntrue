@@ -3,16 +3,16 @@
  * 
  * Color scales extracted from GitHub Primer design system.
  * Provides semantic color tokens for light and dark modes.
+ * Respects both CSS media queries and next-themes class="dark" selector.
  * 
  * Reference: https://primer.style/product/primitives/color/
  */
 
 /* ============================================================================
-   Light Mode Colors
+   Light Mode Colors (Default)
    ========================================================================= */
 
-[data-theme="light"],
-:root:not([data-theme="dark"]) {
+:root {
   /* Foreground colors */
   --fgColor-default: #1f2328;
   --fgColor-muted: #59636e;
@@ -95,91 +95,9 @@
    Dark Mode Colors
    ========================================================================= */
 
-[data-theme="dark"] {
-  /* Foreground colors */
-  --fgColor-default: #f0f6fc;
-  --fgColor-muted: #9198a1;
-  --fgColor-subtle: #656d76;
-  --fgColor-onEmphasis: #0d1117;
-  --fgColor-disabled: #656d76;
-  
-  /* Accent (primary blue) */
-  --fgColor-accent: #4493f8;
-  --bgColor-accent-muted: #0d419d1a;
-  --bgColor-accent-emphasis: #1f6feb;
-  --borderColor-accent-muted: #1f6feb66;
-  --borderColor-accent-emphasis: #4493f8;
-  
-  /* Success (green) */
-  --fgColor-success: #3fb950;
-  --bgColor-success-muted: #0465291a;
-  --bgColor-success-emphasis: #238636;
-  --borderColor-success-muted: #23863666;
-  --borderColor-success-emphasis: #3fb950;
-  
-  /* Danger (red) */
-  --fgColor-danger: #f85149;
-  --bgColor-danger-muted: #8c18291a;
-  --bgColor-danger-emphasis: #da3633;
-  --borderColor-danger-muted: #da363366;
-  --borderColor-danger-emphasis: #f85149;
-  
-  /* Attention (yellow) */
-  --fgColor-attention: #d29922;
-  --bgColor-attention-muted: #6c3d001a;
-  --bgColor-attention-emphasis: #9e6a03;
-  --borderColor-attention-muted: #9e6a0366;
-  --borderColor-attention-emphasis: #d29922;
-  
-  /* Severe (orange) */
-  --fgColor-severe: #ff9d76;
-  --bgColor-severe-muted: #89350b1a;
-  --bgColor-severe-emphasis: #bd561d;
-  --borderColor-severe-muted: #bd561d66;
-  --borderColor-severe-emphasis: #ff9d76;
-  
-  /* Neutral */
-  --fgColor-neutral: #9198a1;
-  --bgColor-neutral-muted: #656d761a;
-  --bgColor-neutral-emphasis: #656d76;
-  --borderColor-neutral-muted: #656d7666;
-  --borderColor-neutral-emphasis: #656d76;
-  
-  /* Background */
-  --bgColor-default: #0d1117;
-  --bgColor-muted: #161b22;
-  --bgColor-inset: #010409;
-  --bgColor-emphasis: #f0f6fc;
-  --bgColor-inverse: #f0f6fc;
-  
-  /* Border */
-  --borderColor-default: #30363d;
-  --borderColor-muted: #30363db3;
-  --borderColor-emphasis: #656d76;
-  
-  /* Neutral scale (50-950) - dark mode inverted */
-  --color-neutral-50: #0a0a0a;
-  --color-neutral-100: #171717;
-  --color-neutral-200: #262626;
-  --color-neutral-300: #404040;
-  --color-neutral-400: #525252;
-  --color-neutral-500: #737373;
-  --color-neutral-600: #a3a3a3;
-  --color-neutral-700: #d4d4d4;
-  --color-neutral-800: #e5e5e5;
-  --color-neutral-900: #f5f5f5;
-  --color-neutral-950: #fafafa;
-  
-  /* Focus */
-  --focus-outlineColor: #1f6feb;
-}
-
-/* ============================================================================
-   System Preference Detection (when no manual override)
-   ========================================================================= */
-
+/* Support both prefers-color-scheme and next-themes/Nextra class="dark" */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
+  :root:not(.dark) {
     /* Foreground colors */
     --fgColor-default: #f0f6fc;
     --fgColor-muted: #9198a1;
@@ -257,5 +175,85 @@
     /* Focus */
     --focus-outlineColor: #1f6feb;
   }
+}
+
+/* next-themes / Nextra dark mode (class="dark" on html) */
+html.dark {
+  /* Foreground colors */
+  --fgColor-default: #f0f6fc;
+  --fgColor-muted: #9198a1;
+  --fgColor-subtle: #656d76;
+  --fgColor-onEmphasis: #0d1117;
+  --fgColor-disabled: #656d76;
+  
+  /* Accent (primary blue) */
+  --fgColor-accent: #4493f8;
+  --bgColor-accent-muted: #0d419d1a;
+  --bgColor-accent-emphasis: #1f6feb;
+  --borderColor-accent-muted: #1f6feb66;
+  --borderColor-accent-emphasis: #4493f8;
+  
+  /* Success (green) */
+  --fgColor-success: #3fb950;
+  --bgColor-success-muted: #0465291a;
+  --bgColor-success-emphasis: #238636;
+  --borderColor-success-muted: #23863666;
+  --borderColor-success-emphasis: #3fb950;
+  
+  /* Danger (red) */
+  --fgColor-danger: #f85149;
+  --bgColor-danger-muted: #8c18291a;
+  --bgColor-danger-emphasis: #da3633;
+  --borderColor-danger-muted: #da363366;
+  --borderColor-danger-emphasis: #f85149;
+  
+  /* Attention (yellow) */
+  --fgColor-attention: #d29922;
+  --bgColor-attention-muted: #6c3d001a;
+  --bgColor-attention-emphasis: #9e6a03;
+  --borderColor-attention-muted: #9e6a0366;
+  --borderColor-attention-emphasis: #d29922;
+  
+  /* Severe (orange) */
+  --fgColor-severe: #ff9d76;
+  --bgColor-severe-muted: #89350b1a;
+  --bgColor-severe-emphasis: #bd561d;
+  --borderColor-severe-muted: #bd561d66;
+  --borderColor-severe-emphasis: #ff9d76;
+  
+  /* Neutral */
+  --fgColor-neutral: #9198a1;
+  --bgColor-neutral-muted: #656d761a;
+  --bgColor-neutral-emphasis: #656d76;
+  --borderColor-neutral-muted: #656d7666;
+  --borderColor-neutral-emphasis: #656d76;
+  
+  /* Background */
+  --bgColor-default: #0d1117;
+  --bgColor-muted: #161b22;
+  --bgColor-inset: #010409;
+  --bgColor-emphasis: #f0f6fc;
+  --bgColor-inverse: #f0f6fc;
+  
+  /* Border */
+  --borderColor-default: #30363d;
+  --borderColor-muted: #30363db3;
+  --borderColor-emphasis: #656d76;
+  
+  /* Neutral scale (50-950) - dark mode inverted */
+  --color-neutral-50: #0a0a0a;
+  --color-neutral-100: #171717;
+  --color-neutral-200: #262626;
+  --color-neutral-300: #404040;
+  --color-neutral-400: #525252;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #a3a3a3;
+  --color-neutral-700: #d4d4d4;
+  --color-neutral-800: #e5e5e5;
+  --color-neutral-900: #f5f5f5;
+  --color-neutral-950: #fafafa;
+  
+  /* Focus */
+  --focus-outlineColor: #1f6feb;
 }
 

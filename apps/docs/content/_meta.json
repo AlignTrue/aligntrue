@@ -1,11 +1,11 @@
 {
   "index": "Introduction",
-  "getting-started": "Getting Started",
-  "guides": "Guides",
-  "concepts": "Concepts",
-  "reference": "Reference",
-  "troubleshooting": "Troubleshooting",
-  "contributing": "Contributing",
-  "policies": "Policies",
-  "development": "Development"
+  "00-getting-started": "00 Getting Started",
+  "01-guides": "01 Guides",
+  "02-concepts": "02 Concepts",
+  "03-reference": "03 Reference",
+  "04-troubleshooting": "04 Troubleshooting",
+  "05-contributing": "05 Contributing",
+  "06-policies": "06 Policies",
+  "07-development": "07 Development"
 }

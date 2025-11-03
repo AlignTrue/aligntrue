@@ -162,9 +162,24 @@ pnpm --filter @aligntrue/docs build
 
 **Prevention:**
 
-- Pre-commit hook automatically cleans `.next` directories before validation
-- `pnpm generate:repo-files` automatically cleans caches after regeneration
-- **Important:** Restart dev servers after running `generate:repo-files` if they're running
+- Pre-commit hook automatically cleans `.next` directories before each commit
+- CI validates generated files match source (fails if out of sync)
+
+**Workflow after editing docs:**
+
+```bash
+# 1. Edit source files in apps/docs/content/
+pnpm dev:docs  # View changes at localhost:3001
+
+# 2. When done, generate root files
+pnpm generate:repo-files
+
+# 3. Commit (pre-commit hook handles cache cleanup)
+git add -A
+git commit -m "docs: Update documentation"
+```
+
+**Important:** Never manually edit `README.md`, `DEVELOPMENT.md`, `POLICY.md`, or `CONTRIBUTING.md` - they're auto-generated from docs sources.
 
 ### Missing DOM types in UI packages
 
