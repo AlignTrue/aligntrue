@@ -10,9 +10,6 @@ const config = {
   footer: {
     text: `© ${new Date().getFullYear()} AlignTrue. MIT License.`,
   },
-  editLink: {
-    text: "Edit this page on GitHub",
-  },
   feedback: {
     content: "Question? Give us feedback →",
     labels: "documentation",
