@@ -64,12 +64,11 @@ export default function HomePage() {
               fontSize: "1.25rem",
               color: "var(--fg-muted)",
               marginBottom: "2rem",
-              maxWidth: "48rem",
+              maxWidth: "52rem",
               margin: "0 auto 2rem",
             }}
           >
-            Automatically generate agent-specific formats for 28+ AI coding
-            tools. Keep rules aligned for yourself or your team.{" "}
+            Write once, sync everywhere. 28+ agents supported, easy to extend.{" "}
             <strong>Start in 60 seconds.</strong>
           </p>
           <code
@@ -160,8 +159,8 @@ export default function HomePage() {
                 60-second setup
               </h3>
               <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                Auto-detects your agents and creates starter rules in under a
-                minute. No configuration required.
+                Auto-detects your agents & creates starter rules in under a
+                minute. No config required.
               </p>
             </div>
             <div
@@ -185,8 +184,8 @@ export default function HomePage() {
                 Two-way sync
               </h3>
               <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                Edit rules OR agent files - changes flow both directions
-                automatically. Stay aligned without manual copying.
+                Edit rules OR agent files, changes sync both ways. No manual
+                copying or outdated rules.
               </p>
             </div>
             <div
@@ -210,8 +209,8 @@ export default function HomePage() {
                 28+ agents supported
               </h3>
               <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                Cursor, GitHub Copilot, Claude, Aider, Windsurf, VS Code MCP,
-                and 22+ more through 43 specialized exporters.
+                Cursor, Codex, Claude Code, Copilot, Claude, Aider, Windsurf, VS
+                Code MCP & 20+ more.
               </p>
             </div>
           </div>

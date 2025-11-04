@@ -145,7 +145,7 @@ When drift is detected:
    → Run: aligntrue drift
 ```
 
-See [drift detection](/concepts/drift-detection) for details.
+See [drift detection](/docs/02-concepts/drift-detection) for details.
 
 ### Check results integration
 
@@ -335,7 +335,7 @@ aln drift
 
 ## See also
 
-- [Commands reference](/reference/cli-reference)
-- [Team mode guide](/concepts/team-mode)
-- [Drift detection](/concepts/drift-detection)
-- [Git workflows](/concepts/git-workflows)
+- [Commands reference](/docs/03-reference/cli-reference)
+- [Team mode guide](/docs/02-concepts/team-mode)
+- [Drift detection](/docs/02-concepts/drift-detection)
+- [Git workflows](/docs/02-concepts/git-workflows)

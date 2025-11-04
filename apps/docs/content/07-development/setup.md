@@ -258,6 +258,6 @@ pnpm --filter @aligntrue/schema build
 
 ## Next steps
 
-- Learn about the [workspace structure](/development/workspace)
-- Explore [development commands](/development/commands)
-- Understand [architectural concepts](/development/architecture)
+- Learn about the [workspace structure](/docs/07-development/workspace)
+- Explore [development commands](/docs/07-development/commands)
+- Understand [architectural concepts](/docs/07-development/architecture)

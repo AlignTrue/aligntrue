@@ -182,7 +182,7 @@ After installing multiple packs, use overlays to:
 - Remap rule severity (warning → error in CI, etc.)
 - Combine conflicting rules from different packs
 
-See the [overlays guide](/concepts/overlays) for details.
+See the [overlays guide](/docs/02-concepts/overlays) for details.
 
 ## Trust and maintenance
 
@@ -221,7 +221,7 @@ Send this link to teammates or community members.
 
 ### Check team rules
 
-For team-specific rules, see the [git workflows](/concepts/git-workflows) guide on sharing rules via git repositories.
+For team-specific rules, see the [git workflows](/docs/02-concepts/git-workflows) guide on sharing rules via git repositories.
 
 ## Privacy and analytics
 
@@ -231,7 +231,7 @@ Installing packs from the catalog is transparent:
 - **No required login** - Catalog browsing and installation don't require authentication
 - **Optional telemetry** - Set `ALIGNTRUE_TELEMETRY=on` to share broader usage data (off by default)
 
-See the [privacy controls](/policies/privacy) reference for details.
+See the [privacy controls](/docs/06-policies/privacy) reference for details.
 
 ## Troubleshooting
 
@@ -255,10 +255,10 @@ If plugs don't take effect:
 
 If two packs define the same rule differently, use overlays to remap severity or disable one pack.
 
-See [overlays troubleshooting](/troubleshooting/overlays).
+See [overlays troubleshooting](/docs/04-troubleshooting/overlays).
 
 ## Next steps
 
 - **Combine packs** - Add multiple packs and use overlays to balance them
-- **Create a pack** - Share your rules with the community (see [contributing](/contributing/getting-started))
-- **Team mode** - Use packs in team settings with versioning and approval workflows (see [team mode](/concepts/team-mode))
+- **Create a pack** - Share your rules with the community (see [contributing](/docs/05-contributing/getting-started))
+- **Team mode** - Use packs in team settings with versioning and approval workflows (see [team mode](/docs/02-concepts/team-mode))

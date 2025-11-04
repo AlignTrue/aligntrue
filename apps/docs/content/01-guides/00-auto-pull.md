@@ -45,7 +45,7 @@ When a conflict is detected, you'll see:
     Abort sync and review manually
 ```
 
-Your choice depends on your workflow mode (see [Workflows guide](/guides/workflows)).
+Your choice depends on your workflow mode (see [Workflows guide](/docs/01-guides/01-workflows)).
 
 ## Configuration
 
@@ -74,6 +74,41 @@ Modes:
 - `auto`: Prompt on each conflict (default)
 - `ir_source`: Always keep rules.md edits, never auto-pull
 - `native_format`: Always accept agent changes, auto-pull enabled
+
+## Choosing your workflow mode
+
+### Decision guide
+
+**Use `ir_source` if:**
+
+- You prefer editing `.aligntrue/rules.md` directly in markdown
+- You want explicit control over sync direction
+- You're comfortable with markdown/YAML syntax
+- You want rules.md as single source of truth
+
+**Use `native_format` if:**
+
+- You prefer editing `.cursor/*.mdc` files directly in your IDE
+- You want seamless two-way sync without prompts
+- You're migrating from existing Cursor rules
+- You edit rules while coding in Cursor
+
+**Use `auto` (default) if:**
+
+- You're still exploring which workflow fits you
+- You want to be prompted when conflicts occur
+- You're not sure which source you'll edit more often
+
+### Setting your workflow mode
+
+Edit `.aligntrue/config.yaml`:
+
+```yaml
+sync:
+  workflow_mode: "ir_source" # or "native_format" or "auto"
+```
+
+Once set, AlignTrue will remember your preference and avoid conflict prompts.
 
 ### Show diff summaries
 
@@ -127,7 +162,7 @@ Check:
 
 This happens when both files are modified between syncs. Solutions:
 
-1. **Choose a workflow mode** to avoid prompts (see [Workflows guide](/guides/workflows))
+1. **Choose a workflow mode** to avoid prompts (see [Workflows guide](/docs/01-guides/01-workflows))
 2. **Edit only one source**: Either rules.md OR agent files, not both
 3. **Use `--no-auto-pull`** when you know you've edited rules.md manually
 
@@ -150,7 +185,7 @@ If you don't see the diff summary:
 
 ## Best practices
 
-1. **Pick one workflow** and stick to it (see [Workflows guide](/guides/workflows))
+1. **Pick one workflow** and stick to it (see [Workflows guide](/docs/01-guides/01-workflows))
 2. **Configure workflow mode** on first use to avoid conflict prompts
 3. **Review diffs** to understand what changed
 4. **Use version control** to track rule evolution over time
@@ -168,6 +203,6 @@ These files should be in `.gitignore` for solo mode, but committed in team mode.
 
 ## Related pages
 
-- [Workflows guide](/guides/workflows) - Choose between IR-source and native-format workflows
-- [Sync behavior](/concepts/sync-behavior) - Technical details of sync engine
-- [Troubleshooting conflicts](/troubleshooting/conflicts) - Detailed conflict resolution
+- [Workflows guide](/docs/01-guides/01-workflows) - Choose between IR-source and native-format workflows
+- [Sync behavior](/docs/02-concepts/sync-behavior) - Technical details of sync engine
+- [Troubleshooting conflicts](/docs/04-troubleshooting/conflicts) - Detailed conflict resolution

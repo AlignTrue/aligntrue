@@ -46,7 +46,7 @@ Consider skipping import if:
 - **Simple cases** - Only 1-2 rules that are easy to recreate
 - **Learning AlignTrue** - Fresh start helps understand the format
 
-The [Quickstart Guide](/getting-started/quickstart) covers starting from scratch.
+The [Quickstart Guide](/docs/00-getting-started/00-quickstart) covers starting from scratch.
 
 ## Step-by-step migration
 
@@ -484,7 +484,7 @@ Interactive conflict resolution during import:
 
 ## Command reference
 
-For detailed flag documentation, see [Command Reference](/reference/cli-reference#aligntrue-import).
+For detailed flag documentation, see [Command Reference](/docs/03-reference/cli-reference#aligntrue-import).
 
 **Common commands:**
 
@@ -506,10 +506,10 @@ aligntrue import cursor --no-coverage --write
 
 ## See also
 
-- [Quickstart Guide](/getting-started/quickstart) - Starting fresh with AlignTrue
-- [Command Reference](/reference/cli-reference) - Full CLI documentation
-- [Sync Behavior](/concepts/sync-behavior) - How rules export to agents
-- [Extending AlignTrue](/contributing/adding-exporters) - Creating custom importers
+- [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Starting fresh with AlignTrue
+- [Command Reference](/docs/03-reference/cli-reference) - Full CLI documentation
+- [Sync Behavior](/docs/02-concepts/sync-behavior) - How rules export to agents
+- [Extending AlignTrue](/docs/05-contributing/adding-exporters) - Creating custom importers
 
 ---
 
