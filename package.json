@@ -5,12 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "build:catalog": "node temp-build-catalog.mjs",
     "build:packages": "pnpm -r --filter './packages/*' build",
-    "dev": "pnpm dev:all",
-    "dev:web": "pnpm --filter @aligntrue/web dev",
-    "dev:docs": "pnpm --filter @aligntrue/docs dev",
-    "dev:all": "concurrently \"pnpm dev:web\" \"pnpm dev:docs\"",
+    "dev": "pnpm --filter @aligntrue/docs dev",
     "dev:packages": "pnpm -r --filter './packages/*' --parallel build --watch",
     "test": "pnpm -r test",
     "test:fast": "pnpm -r test --reporter=dot --pool=threads",
@@ -24,9 +20,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "pre-refactor": "node scripts/pre-refactor.mjs",
-    "generate:repo-files": "tsx scripts/generate-repo-files.ts",
-    "validate:repo-files": "tsx scripts/validate-repo-files.ts",
-    "docs:build": "pnpm generate:repo-files && pnpm --filter @aligntrue/docs build",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist archive/*/node_modules archive/*/.next archive/*/dist",
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
     "bootstrap": "pnpm install && pnpm build",
@@ -48,7 +41,6 @@
     "@next/eslint-plugin-next": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
-    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-unused-imports": "^4.3.0",
     "fast-xml-parser": "^5.3.1",
@@ -64,8 +56,6 @@
     "pnpm": ">=9"
   },
   "dependencies": {
-    "@types/react-syntax-highlighter": "^15.5.13",
-    "react-syntax-highlighter": "^16.1.0",
     "yaml": "^2.8.1"
   },
   "pnpm": {
