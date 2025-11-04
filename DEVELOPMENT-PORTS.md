@@ -1,61 +1,49 @@
 # Development Server Ports
 
-AlignTrue uses two Next.js applications with fixed port assignments to prevent conflicts.
+AlignTrue uses a single Next.js application for both marketing and documentation.
 
 ## Port Assignments
 
-- **Port 3000**: Catalog website (`apps/web`)
-- **Port 3001**: Documentation site (`apps/docs`)
+- **Port 3000**: Documentation site with marketing homepage (`apps/docs`)
 
-## Running Development Servers
-
-### Individual Apps
+## Running Development Server
 
 ```bash
-# Run catalog website only (port 3000)
-pnpm dev:web
-
-# Run docs site only (port 3001)
-pnpm dev:docs
+# Run docs site (port 3000)
+pnpm dev
 ```
 
-### Both Apps Simultaneously
-
-```bash
-# Run both apps at the same time
-pnpm dev:all
-```
-
-This will start:
-
-- Catalog at http://localhost:3000
-- Docs at http://localhost:3001
+This will start the documentation site with the marketing homepage at http://localhost:3000
 
 ## Production
 
-The docs site is served via Vercel path rewrites from the main domain:
+The docs site is deployed to Vercel and serves both marketing and documentation:
 
-- Production: https://aligntrue.com → catalog (apps/web)
-- Production: https://aligntrue.com/docs → documentation (apps/docs)
+- Production: https://aligntrue.ai → marketing homepage
+- Production: https://aligntrue.ai/docs → documentation
 
 ## Troubleshooting
 
 If you see "Address already in use" errors:
 
 ```bash
-# Check what's using port 3000 or 3001
+# Check what's using port 3000
 lsof -i :3000
-lsof -i :3001
 
 # Kill all Next.js processes
-pkill -f "next-server"
+pkill -f "next dev"
 ```
 
-## Why Fixed Ports?
+## Architecture
 
-Fixed port assignments prevent:
+The single-app architecture provides:
 
-- Accidental port conflicts between apps
-- Confusion about which app is running
-- Issues with Vercel local testing and path rewrites
-- Port drift when running multiple dev sessions
+- Simplified deployment (one Vercel project)
+- Consistent styling across marketing and docs
+- No rewrite proxy complexity
+- Faster development iteration
+- Easier maintenance
+
+## Archived Apps
+
+The catalog website (`apps/web`) was archived to `archive/apps-web` as part of pre-launch simplification. See `.cursor/rules/potential_future_features.mdc` for restoration triggers and approach.
