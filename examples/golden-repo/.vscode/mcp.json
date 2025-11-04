@@ -1,7 +1,7 @@
 {
   "version": "v1",
   "generated_by": "AlignTrue",
-  "content_hash": "156771757589b70e05ff51ba93d6a646bc49c018f9d65839b9c436e9abc5bdae",
+  "content_hash": "3940de38618a5df691a58e215b36ba9692884e033d5dc8e4a7b0955b10ee53e8",
   "rules": [
     {
       "id": "testing.require.tests",
