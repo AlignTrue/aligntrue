@@ -262,6 +262,7 @@ pnpm --filter @aligntrue/schema build
 - Explore [development commands](https://aligntrue.ai/docs/development/commands)
 - Understand [architectural concepts](https://aligntrue.ai/docs/development/architecture)
 
+
 ---
 
 # Workspace structure
@@ -520,6 +521,7 @@ See [development commands](https://aligntrue.ai/docs/development/commands) for p
 
 - Learn [development commands](https://aligntrue.ai/docs/development/commands)
 - Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
+
 
 ---
 
@@ -880,6 +882,7 @@ Example: `feat: Add new command` or `fix: Resolve memory leak`
 - Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
 - See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
 
+
 ---
 
 # Architecture
@@ -1112,6 +1115,7 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - Review [workspace structure](https://aligntrue.ai/docs/development/workspace)
 - Explore [development commands](https://aligntrue.ai/docs/development/commands)
 - See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
+
 
 ---
 
