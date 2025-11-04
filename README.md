@@ -25,7 +25,7 @@ aligntrue sync           # Generate all agent files
 
 **Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
 
-Read the [Quickstart Guide](https://aligntrue.ai/getting-started/quickstart) for detailed instructions.
+Read the [Quickstart Guide](https://aligntrue.ai/docs/00-getting-started/00-quickstart) for detailed instructions.
 
 ## Features
 
@@ -58,7 +58,7 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 - 11 universal format agents using AGENTS.md
 - 9 dual-output agents with both universal + specific formats
 
-[View full agent compatibility matrix →](https://aligntrue.ai/reference/agent-support)
+[View full agent compatibility matrix →](https://aligntrue.ai/docs/03-reference/agent-support)
 
 ## How it works
 
@@ -88,7 +88,7 @@ aligntrue check   # Validate in CI
 - Edit `.aligntrue/rules.md` → sync to agents (default)
 - Edit agent files → auto-pull to rules.md (optional, enabled by default)
 
-See [workflows guide](https://aligntrue.ai/guides/workflows) for details.
+See [workflows guide](https://aligntrue.ai/docs/01-guides/01-workflows) for details.
 
 **Optional verification:**
 
@@ -106,42 +106,42 @@ aligntrue check                # Validate rules (great for CI)
 
 ## Key concepts
 
-- [Quickstart](https://aligntrue.ai/getting-started/quickstart) - Get AlignTrue running in 60 seconds
-- [Team Mode](https://aligntrue.ai/concepts/team-mode) - Collaboration features for teams
-- [Sync Behavior](https://aligntrue.ai/concepts/sync-behavior) - How two-way sync works
-- [Drift Detection](https://aligntrue.ai/concepts/drift-detection) - Track alignment changes over time
-- [Git Workflows](https://aligntrue.ai/concepts/git-workflows) - Pull and share rules via git
-- [Overlays](https://aligntrue.ai/concepts/overlays) - Customize third-party packs safely
-- [Catalog](https://aligntrue.ai/catalog/available-packs) - Browse 11 curated rule packs
+- [Quickstart](https://aligntrue.ai/docs/00-getting-started/00-quickstart) - Get AlignTrue running in 60 seconds
+- [Team Mode](https://aligntrue.ai/docs/02-concepts/team-mode) - Collaboration features for teams
+- [Sync Behavior](https://aligntrue.ai/docs/02-concepts/sync-behavior) - How two-way sync works
+- [Drift Detection](https://aligntrue.ai/docs/02-concepts/drift-detection) - Track alignment changes over time
+- [Git Workflows](https://aligntrue.ai/docs/02-concepts/git-workflows) - Pull and share rules via git
+- [Overlays](https://aligntrue.ai/docs/02-concepts/overlays) - Customize third-party packs safely
+- [Examples](https://aligntrue.ai/docs/examples) - Browse 11 curated rule packs
 
 ## Reference
 
-- [CLI Commands](https://aligntrue.ai/reference/cli-reference) - Complete command reference
-- [Import Workflow](https://aligntrue.ai/reference/import-workflow) - Migrate from existing agent configs
-- [Troubleshooting](https://aligntrue.ai/reference/troubleshooting) - Common issues and solutions
-- [Privacy Controls](https://aligntrue.ai/reference/privacy) - Network consent and telemetry
+- [CLI Commands](https://aligntrue.ai/docs/03-reference/cli-reference) - Complete command reference
+- [Import Workflow](https://aligntrue.ai/docs/03-reference/import-workflow) - Migrate from existing agent configs
+- [Troubleshooting](https://aligntrue.ai/docs/04-troubleshooting) - Common issues and solutions
+- [Privacy Controls](https://aligntrue.ai/docs/06-policies/privacy) - Network consent and telemetry
 
 ## Contributing
 
 Want to contribute? Check out the guides:
 
-- [Getting Started](https://aligntrue.ai/contributing/getting-started) - Set up your development environment
-- [Creating Packs](https://aligntrue.ai/contributing/creating-packs) - Author and publish rule packs
-- [Adding Exporters](https://aligntrue.ai/contributing/adding-exporters) - Add support for new agents
+- [Getting Started](https://aligntrue.ai/docs/05-contributing/getting-started) - Set up your development environment
+- [Creating Packs](https://aligntrue.ai/docs/05-contributing/creating-packs) - Author and publish rule packs
+- [Adding Exporters](https://aligntrue.ai/docs/05-contributing/adding-exporters) - Add support for new agents
 
 ## Development
 
 Setting up AlignTrue for local development:
 
-- [Setup](https://aligntrue.ai/development/setup) - Prerequisites and installation
-- [Workspace](https://aligntrue.ai/development/workspace) - Monorepo structure and packages
-- [Commands](https://aligntrue.ai/development/commands) - Development commands and scripts
-- [Architecture](https://aligntrue.ai/development/architecture) - Key architectural concepts
+- [Setup](https://aligntrue.ai/docs/07-development/setup) - Prerequisites and installation
+- [Workspace](https://aligntrue.ai/docs/07-development/workspace) - Monorepo structure and packages
+- [Commands](https://aligntrue.ai/docs/07-development/commands) - Development commands and scripts
+- [Architecture](https://aligntrue.ai/docs/07-development/architecture) - Key architectural concepts
 
 ## Learn more
 
 - [GitHub repository](https://github.com/AlignTrue/aligntrue)
-- [Catalog](https://aligntrue.ai/catalog/available-packs) - Browse 11 curated rule packs
+- [Examples](https://aligntrue.ai/docs/examples) - Browse 11 curated rule packs
 - [Security policy](https://github.com/AlignTrue/aligntrue/blob/main/SECURITY.md)
 
 ## Support

@@ -91,7 +91,7 @@ git commit -m "docs: Update documentation"
 Use relative links for internal docs navigation:
 
 ```markdown
-See [team mode](/concepts/team-mode) for details.
+See [team mode](/docs/02-concepts/team-mode) for details.
 ```
 
 The generation script automatically transforms these to absolute URLs for GitHub:
@@ -217,6 +217,6 @@ And a footer linking back to the docs site:
 
 ## Questions?
 
-- See [getting started](/contributing/getting-started) for development setup
-- See [workspace structure](/development/workspace) for repo layout
-- See [architecture](/development/architecture) for design principles
+- See [getting started](/docs/05-contributing/getting-started) for development setup
+- See [workspace structure](/docs/07-development/workspace) for repo layout
+- See [architecture](/docs/07-development/architecture) for design principles

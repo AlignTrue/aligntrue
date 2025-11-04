@@ -184,7 +184,7 @@ sources:
 - **First-time consent:** Same consent flow as catalog
 - Clear disclosure of external repository URL
 
-See [Git Sources Guide](/reference/git-sources) for full documentation on configuration, caching, and troubleshooting.
+See [Git Sources Guide](/docs/03-reference/git-sources) for full documentation on configuration, caching, and troubleshooting.
 
 #### Telemetry sending (when implemented)
 

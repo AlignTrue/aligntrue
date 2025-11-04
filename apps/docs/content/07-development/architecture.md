@@ -230,6 +230,6 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 
 ## Next steps
 
-- Review [workspace structure](/development/workspace)
-- Explore [development commands](/development/commands)
-- See [setup guide](/development/setup) for installation
+- Review [workspace structure](/docs/07-development/workspace)
+- Explore [development commands](/docs/07-development/commands)
+- See [setup guide](/docs/07-development/setup) for installation

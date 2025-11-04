@@ -334,10 +334,10 @@ aligntrue update apply
 
 ## Related docs
 
-- [Team mode guide](/concepts/team-mode) - Enable and configure team mode
-- [Drift detection](/concepts/drift-detection) - Monitor alignment drift
-- [Git workflows](/concepts/git-workflows) - Pull and link commands
-- [Commands reference](/reference/cli-reference) - Complete command documentation
+- [Team mode guide](/docs/02-concepts/team-mode) - Enable and configure team mode
+- [Drift detection](/docs/02-concepts/drift-detection) - Monitor alignment drift
+- [Git workflows](/docs/02-concepts/git-workflows) - Pull and link commands
+- [Commands reference](/docs/03-reference/cli-reference) - Complete command documentation
 
 ---
 

@@ -2,6 +2,43 @@
 
 Common issues and actionable solutions organized by workflow stage.
 
+## Quick error lookup
+
+Jump directly to your issue:
+
+**Installation:**
+
+- [Node version mismatch](#node-version-mismatch)
+- [pnpm not found](#pnpm-not-found)
+
+**Initialization:**
+
+- [Already initialized](#already-initialized)
+- [No agents detected](#no-agents-detected)
+- [Permission denied](#permission-denied-creating-files)
+
+**Sync:**
+
+- [Config not found](#config-not-found)
+- [Source file not found](#source-file-not-found)
+- [Lockfile drift](#lockfile-drift-team-mode)
+- [Exporter failures](#exporter-failures)
+
+**CI/CD:**
+
+- [Schema validation failures](#schema-validation-failures)
+- [Lockfile strict mode failures](#lockfile-strict-mode-failures)
+- [Exit code meanings](#exit-code-meanings)
+
+**Platform-specific:**
+
+- [Windows path separators](#windows-path-separators)
+- [File permissions (Unix/macOS)](#file-permissions-on-unixmacos)
+
+**Still stuck?** See [Getting more help](#getting-more-help)
+
+---
+
 ## Installation issues
 
 ### Node version mismatch
@@ -603,8 +640,8 @@ cat .aligntrue/config.yaml | grep exporters -A 5
 
 ### Still stuck?
 
-1. Check [Command Reference](/reference/cli-reference) for detailed flag documentation
-2. Review [Sync Behavior](/concepts/sync-behavior) for expected workflow
+1. Check [Command Reference](/docs/03-reference/cli-reference) for detailed flag documentation
+2. Review [Sync Behavior](/docs/02-concepts/sync-behavior) for expected workflow
 3. Open an issue at [github.com/AlignTrue/aligntrue](https://github.com/AlignTrue/aligntrue/issues)
 
 Include in your issue:

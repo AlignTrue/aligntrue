@@ -1,0 +1,80 @@
+---
+title: Why AlignTrue?
+description: Understand the problem AlignTrue solves and why you need it
+---
+
+# Why AlignTrue?
+
+## The problem
+
+You're using AI coding agents to boost productivity. Maybe Cursor, GitHub Copilot, Claude Code, or Aider. Each one is powerful, but they have a problem:
+
+**Every agent has its own config format.**
+
+- Cursor uses `.cursor/rules/*.mdc` files
+- GitHub Copilot reads `AGENTS.md`
+- VS Code MCP agents need `.vscode/mcp.json`
+- Aider wants `.aider.conf.yml`
+
+You copy-paste rules between projects. You maintain separate configs for each agent. Rules drift out of sync. You waste time keeping everything aligned.
+
+## The AlignTrue solution
+
+**Write rules once. Sync everywhere.**
+
+```bash
+# One source of truth
+.aligntrue/rules.md
+
+# Syncs to all your agents
+aligntrue sync
+
+# Result:
+✓ .cursor/rules/aligntrue.mdc
+✓ AGENTS.md
+✓ .vscode/mcp.json
+✓ .aider.conf.yml
+```
+
+## Key benefits
+
+### 1. Single source of truth
+
+Edit rules in one place (`.aligntrue/rules.md`). AlignTrue generates agent-specific formats automatically.
+
+### 2. Consistent behavior
+
+All your AI agents follow the same rules. No more "it works in Cursor but not Copilot."
+
+### 3. Easy sharing
+
+Share rules across projects, teams, and machines. Git-based workflows with lockfiles and drift detection.
+
+### 4. Two-way sync
+
+Edit rules OR agent files. AlignTrue keeps them in sync automatically.
+
+### 5. 28+ agents supported
+
+Works with Cursor, GitHub Copilot, Claude Code, Aider, Windsurf, and 23+ more through 43 specialized exporters.
+
+## Who is this for?
+
+**Solo developers:**
+
+- Keep personal AI rules consistent across projects
+- Sync rules across multiple machines
+- Try different agents without reconfiguring
+
+**Teams:**
+
+- Share approved rule sets via git
+- Enforce standards with lockfiles
+- Detect drift with CI validation
+- Onboard new developers faster
+
+## What's next?
+
+Ready to get started? Follow the [Quickstart Guide](/docs/00-getting-started/00-quickstart) and be up and running in 60 seconds.
+
+Want to understand how it works? Read about [Sync Behavior](/docs/02-concepts/sync-behavior).

@@ -30,7 +30,7 @@ Lint your markdown rules file:
 aligntrue md lint
 ```
 
-**Full command reference:** [CLI Reference](/reference/cli-reference)
+**Full command reference:** [CLI Reference](/docs/03-reference/cli-reference)
 
 ## Auto-sync on save
 
@@ -65,7 +65,7 @@ npm install -g nodemon
 nodemon --watch .aligntrue/rules.md --exec "aligntrue sync"
 ```
 
-**Platform-specific guides:** [File Watcher Setup](/reference/file-watcher-setup)
+**Platform-specific guides:** [File Watcher Setup](/docs/03-reference/file-watcher-setup)
 
 ## Using git sources
 
@@ -93,7 +93,7 @@ sources:
 
 First sync will prompt for privacy consent.
 
-**Full documentation:** [Git Sources Guide](/reference/git-sources)
+**Full documentation:** [Git Sources Guide](/docs/03-reference/git-sources)
 
 ## Team collaboration
 
@@ -131,7 +131,7 @@ Team mode provides:
 - Approved source tracking
 - Reproducible builds
 
-**Complete workflows:** [Team Mode Guide](/concepts/team-mode)
+**Complete workflows:** [Team Mode Guide](/docs/02-concepts/team-mode)
 
 ## Supporting more agents
 
@@ -190,13 +190,13 @@ Customize third-party packs without losing upstream updates:
 aligntrue override add rule-id --set severity=warning
 ```
 
-**Full guide:** [Overlays Guide](/concepts/overlays)
+**Full guide:** [Overlays Guide](/docs/02-concepts/overlays)
 
 ### Custom exporters
 
 Add support for new agents by creating custom exporters.
 
-**Extension guide:** [Adding Exporters](/contributing/adding-exporters)
+**Extension guide:** [Adding Exporters](/docs/05-contributing/adding-exporters)
 
 ## Importing existing rules
 
@@ -214,7 +214,7 @@ aligntrue import cursor --dry-run
 aligntrue import cursor --write
 ```
 
-**Complete migration guide:** [Import Workflow](/reference/import-workflow)
+**Complete migration guide:** [Import Workflow](/docs/03-reference/import-workflow)
 
 ## Workflow examples
 
@@ -277,30 +277,30 @@ Common issues and solutions:
 
 - First-time git source access requires consent
 - Use `--offline` flag to skip network operations
-- See [Privacy Guide](/policies/privacy)
+- See [Privacy Guide](/docs/06-policies/privacy)
 
-**Full troubleshooting:** [Troubleshooting Guide](/troubleshooting)
+**Full troubleshooting:** [Troubleshooting Guide](/docs/04-troubleshooting)
 
 ## Learning resources
 
 ### Guides
 
-- [Sync Behavior](/concepts/sync-behavior) - How two-way sync works
-- [Drift Detection](/concepts/drift-detection) - Track alignment changes
-- [Git Workflows](/concepts/git-workflows) - Pull and vendor workflows
-- [Backup & Restore](/reference/backup-restore) - Protect your configuration
+- [Sync Behavior](/docs/02-concepts/sync-behavior) - How two-way sync works
+- [Drift Detection](/docs/02-concepts/drift-detection) - Track alignment changes
+- [Git Workflows](/docs/02-concepts/git-workflows) - Pull and vendor workflows
+- [Backup & Restore](/docs/03-reference/backup-restore) - Protect your configuration
 
 ### Reference
 
-- [CLI Reference](/reference/cli-reference) - Complete command documentation
-- [Pre-1.0 Policy](/reference/pre-1.0-policy) - Schema evolution policy
-- [Privacy Controls](/policies/privacy) - Network consent and telemetry
+- [CLI Reference](/docs/03-reference/cli-reference) - Complete command documentation
+- [Pre-1.0 Policy](/docs/06-policies/pre-1.0-policy) - Schema evolution policy
+- [Privacy Controls](/docs/06-policies/privacy) - Network consent and telemetry
 
 ### Contributing
 
-- [Getting Started](/contributing/getting-started) - Contribute to AlignTrue
-- [Testing Workflow](/contributing/testing-workflow) - Test standards
-- [Team Onboarding](/contributing/team-onboarding) - Internal dev guide
+- [Getting Started](/docs/05-contributing/getting-started) - Contribute to AlignTrue
+- [Testing Workflow](/docs/05-contributing/testing-workflow) - Test standards
+- [Team Onboarding](/docs/05-contributing/team-onboarding) - Internal dev guide
 
 ## Community
 
@@ -311,7 +311,7 @@ Common issues and solutions:
 
 **Want to contribute?**
 
-- [Contributing Guide](/contributing/getting-started)
+- [Contributing Guide](/docs/05-contributing/getting-started)
 - [Code of Conduct](https://github.com/AlignTrue/aligntrue/blob/main/CODE_OF_CONDUCT.md)
 
 ---

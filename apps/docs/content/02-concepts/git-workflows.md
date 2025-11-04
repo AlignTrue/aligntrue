@@ -11,7 +11,7 @@ The `aligntrue pull` command enables flexible git-based workflows:
 - **Share by URL** - Team members share git URLs for instant rule access
 - **No config changes** - Pull to temp by default, save only when ready
 
-This complements [config-based git sources](/reference/git-sources) for permanent rule subscriptions.
+This complements [config-based git sources](/docs/03-reference/git-sources) for permanent rule subscriptions.
 
 ## When to use pull vs config
 
@@ -22,7 +22,7 @@ This complements [config-based git sources](/reference/git-sources) for permanen
 - Sharing rules via URL (Slack, docs, PRs)
 - One-time rule imports
 
-**Use [config-based git sources](/reference/git-sources)** for:
+**Use [config-based git sources](/docs/03-reference/git-sources)** for:
 
 - Permanent rule subscriptions
 - Team-wide rule enforcement
@@ -317,7 +317,7 @@ aligntrue privacy grant git
 aligntrue pull https://github.com/yourorg/rules --offline
 ```
 
-See [Privacy guide](/policies/privacy) for full consent documentation.
+See [Privacy guide](/docs/06-policies/privacy) for full consent documentation.
 
 ## Vendoring workflows
 
@@ -573,7 +573,7 @@ aligntrue pull https://github.com/yourorg/rules
 
 ## See also
 
-- [Git sources guide](/reference/git-sources) - Config-based permanent git sources
-- [Command reference](/reference/cli-reference) - Full `aligntrue pull` flag reference
-- [Privacy guide](/policies/privacy) - Network consent and privacy management
-- [Quickstart](/getting-started/quickstart) - Initial setup and workflows
+- [Git sources guide](/docs/03-reference/git-sources) - Config-based permanent git sources
+- [Command reference](/docs/03-reference/cli-reference) - Full `aligntrue pull` flag reference
+- [Privacy guide](/docs/06-policies/privacy) - Network consent and privacy management
+- [Quickstart](/docs/00-getting-started/00-quickstart) - Initial setup and workflows
