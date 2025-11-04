@@ -103,11 +103,19 @@ console.log(
 );
 
 // Validation
-if (webTranspilePackages !== null && isUiSourcePackage && !webTranspilePackages.includes("@aligntrue/ui")) {
+if (
+  webTranspilePackages !== null &&
+  isUiSourcePackage &&
+  !webTranspilePackages.includes("@aligntrue/ui")
+) {
   errors.push("apps/web: Missing '@aligntrue/ui' in transpilePackages");
 }
 
-if (docsTranspilePackages !== null && isUiSourcePackage && !docsTranspilePackages.includes("@aligntrue/ui")) {
+if (
+  docsTranspilePackages !== null &&
+  isUiSourcePackage &&
+  !docsTranspilePackages.includes("@aligntrue/ui")
+) {
   errors.push("apps/docs: Missing '@aligntrue/ui' in transpilePackages");
 }
 
