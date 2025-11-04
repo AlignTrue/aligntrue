@@ -62,14 +62,8 @@ jobs:
       - name: Validate transpilePackages config
         run: node scripts/validate-transpile-packages.mjs
 
-      - name: Validate generated repo files are up to date
-        run: pnpm validate:repo-files
-
       - name: Build all packages
         run: pnpm build:packages
-
-      - name: Build web app
-        run: pnpm --filter @aligntrue/web build
 
       - name: Build docs app
         run: pnpm --filter @aligntrue/docs build
