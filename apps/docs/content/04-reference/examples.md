@@ -57,29 +57,29 @@ Complete, runnable examples in the AlignTrue repository:
 
 ### Foundation packs
 
-- **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/global.yaml)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices.
+- **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/global.yaml)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices.
 
-- **[Base Documentation](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/docs.yaml)** - Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.
+- **[Base Documentation](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/docs.yaml)** - Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.
 
-- **[TypeScript Standards](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/typescript.yaml)** - TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.
+- **[TypeScript Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/typescript.yaml)** - TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.
 
-- **[Testing Baseline](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/testing.yaml)** - Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.
+- **[Testing Baseline](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/testing.yaml)** - Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.
 
-- **[TDD Workflow](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/tdd.yaml)** - Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.
+- **[TDD Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/tdd.yaml)** - Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.
 
-- **[Debugging Workflow](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/debugging.yaml)** - Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.
+- **[Debugging Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/debugging.yaml)** - Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.
 
-- **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/security.yaml)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.
+- **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/security.yaml)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.
 
-- **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/rule-authoring.yaml)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence.
+- **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/rule-authoring.yaml)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence.
 
 ### Framework & Stack Packs
 
-- **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/nextjs_app_router.yaml)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.
+- **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.yaml)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.
 
-- **[Vercel Deployments](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/vercel_deployments.yaml)** - Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.
+- **[Vercel Deployments](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/vercel_deployments.yaml)** - Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.
 
-- **[Web Quality Standards](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/web_quality.yaml)** - Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.
+- **[Web Quality Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/web_quality.yaml)** - Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.
 
 ## Pack details
 
@@ -116,7 +116,7 @@ aligntrue sync
 
 ### Browse on GitHub
 
-All pack YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/catalog/examples).
+All pack YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs).
 
 ### Customize with overlays
 
