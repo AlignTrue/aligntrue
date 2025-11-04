@@ -23,7 +23,57 @@ Complete, runnable examples in the AlignTrue repository:
 
 [View golden-repo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo)
 
+**When to use:** Learning AlignTrue basics, solo developer workflow
+
 **Files:** YAML format (`.aligntrue.yaml`, `.aligntrue.lock.json`)
+
+### Overlays demo
+
+**Fork-safe customization** without forking upstream packs.
+
+- Severity remapping (warn → error)
+- Adding check inputs (threshold adjustments)
+- Removing autofix
+- Temporary overrides with comments
+- Overlay status and diff commands
+
+[View overlays-demo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo)
+
+**When to use:** Customizing third-party packs, team severity preferences
+
+**Files:** YAML format with overlays section
+
+### Monorepo scopes
+
+**Path-based rule application** for monorepos with different tech stacks.
+
+- Different rules per directory (Next.js, Node.js, Python)
+- Team boundaries with scope ownership
+- Include/exclude patterns
+- Hierarchical merge order
+- Scope validation
+
+[View monorepo-scopes on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/monorepo-scopes)
+
+**When to use:** Monorepos, multiple tech stacks, team boundaries
+
+**Files:** YAML format with scopes section, multiple directories
+
+### Multi-agent workflows
+
+**Same rules, multiple agents** - sync to Cursor, Copilot, Claude Code, and more.
+
+- Multiple exporters (4+ agents)
+- Vendor bags for agent-specific hints
+- Same core rules, different agent optimizations
+- Fidelity notes per agent
+- Content hash verification
+
+[View multi-agent on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/multi-agent)
+
+**When to use:** Using 2+ AI agents, agent-specific customization
+
+**Files:** YAML format with vendor bags, multiple agent outputs
 
 ### Markdown authoring examples
 
@@ -35,6 +85,8 @@ Complete, runnable examples in the AlignTrue repository:
 
 [View markdown examples on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/markdown)
 
+**When to use:** Prefer markdown over YAML, documentation-heavy rules
+
 **Files:** Markdown format (`.md` with ` ```aligntrue` blocks)
 
 ### Team repository example
@@ -44,8 +96,12 @@ Complete, runnable examples in the AlignTrue repository:
 - Vendored pack management
 - Team approval workflows
 - Git submodule integration
+- Lockfile and drift detection
+- CI/CD integration
 
 [View team-repo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/team-repo)
+
+**When to use:** Team workflows, lockfile enforcement, drift detection
 
 **Files:** YAML format with vendor directory
 

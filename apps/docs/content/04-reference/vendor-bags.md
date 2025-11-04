@@ -7,6 +7,8 @@ description: Agent-specific metadata for lossless round-trips
 
 Vendor bags preserve agent-specific metadata for lossless round-trips between AlignTrue and agent formats.
 
+> **See it in action:** Check out the [multi-agent example](https://github.com/AlignTrue/aligntrue/tree/main/examples/multi-agent) for vendor bag usage.
+
 ## What are vendor bags?
 
 Vendor bags are namespaced fields in the `vendor` property that store agent-specific metadata. They enable:

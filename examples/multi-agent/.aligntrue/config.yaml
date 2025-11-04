@@ -1,0 +1,19 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: .aligntrue/rules.md
+
+exporters:
+  - cursor
+  - agents-md
+  - github-copilot
+  - vscode-mcp
+
+sync:
+  workflow_mode: "ir_source"
+  auto_pull: false
+
+git:
+  mode: commit
