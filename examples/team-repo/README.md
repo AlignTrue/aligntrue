@@ -246,10 +246,17 @@ aligntrue-drift:
   allow_failure: false
 ```
 
+## Related examples
+
+- **[Overlays demo](../overlays-demo/)** - Fork-safe customization (used in team workflows)
+- **[Monorepo scopes](../monorepo-scopes/)** - Path-based rules (used in team monorepos)
+- **[Multi-agent](../multi-agent/)** - Same rules, multiple agents
+- **[Golden repo](../golden-repo/)** - Solo developer workflow
+- **[Vendored pack](../vendored-pack/)** - Submodule vs subtree workflows
+
 ## See also
 
 - [Team mode guide](../../docs/team-mode.md) - Complete team workflows
 - [Drift detection guide](../../docs/drift-detection.md) - Drift categories and fixes
 - [Auto-updates guide](../../docs/auto-updates.md) - Scheduled update workflows
 - [Git workflows guide](../../docs/git-workflows.md) - Pull and link commands
-- [Vendored pack example](../vendored-pack/) - Submodule vs subtree workflows

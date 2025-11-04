@@ -7,6 +7,8 @@ description: Fork-safe customization of upstream rules - change severity, adjust
 
 Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
 
+> **See it in action:** Check out the [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for a working demonstration.
+
 ## Quick start (60 seconds)
 
 **Scenario:** You use `@acme/standards` but want to treat one check as an error.
@@ -266,6 +268,8 @@ overlays:
 ```
 
 ## Scenario-based examples
+
+> **More examples:** See [SCENARIOS.md](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo/SCENARIOS.md) in the overlays example for detailed scenarios with expected outputs.
 
 ### Scenario 1: Solo developer - Temporarily disable strict rule
 

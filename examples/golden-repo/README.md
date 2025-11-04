@@ -170,14 +170,22 @@ This checks:
 - All 3 output files are created
 - Content hashes are present
 
-## What's Next
+## What's next
 
-- **Try team mode**: Enable lockfile for drift detection
-- **Add more rules**: Extend `.aligntrue/rules.md` with your practices
-- **Customize exporters**: Add or remove from the `exporters` list
-- **Explore scopes**: Use hierarchical rules for monorepos
+- **Try overlays**: See [overlays-demo](../overlays-demo/) for fork-safe customization
+- **Try scopes**: See [monorepo-scopes](../monorepo-scopes/) for path-based rules
+- **Try multi-agent**: See [multi-agent](../multi-agent/) for syncing to multiple agents
+- **Try team mode**: See [team-repo](../team-repo/) for lockfile and drift detection
 
-## Learn More
+## Related examples
+
+- **[Overlays demo](../overlays-demo/)** - Fork-safe customization without forking
+- **[Monorepo scopes](../monorepo-scopes/)** - Path-based rules for monorepos
+- **[Multi-agent](../multi-agent/)** - Same rules, multiple agents
+- **[Team repo](../team-repo/)** - Team mode with lockfile and drift detection
+- **[Markdown examples](../markdown/)** - Literate markdown authoring
+
+## Learn more
 
 - [Quickstart Guide](../../docs/quickstart.md)
 - [Command Reference](../../docs/commands.md)
