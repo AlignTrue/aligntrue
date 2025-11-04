@@ -38,9 +38,10 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 **Flow:**
 
 1. **Format** staged files with Prettier (~5s)
-2. **Quick typecheck** changed packages only (~5-15s) ← **Fails fast**
-3. **Build** changed packages (~15-30s)
-4. **Full typecheck** changed packages (~10-20s)
+2. **Validate protected repo files** - Prevent direct edits to auto-generated files
+3. **Quick typecheck** changed packages only (~5-15s) ← **Fails fast**
+4. **Build** changed packages (~15-30s)
+5. **Full typecheck** changed packages (~10-20s)
 
 **Total time:** 30-60s for typical commits (vs 2+ min previously)
 
@@ -50,6 +51,43 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 - Only checks/builds changed packages (faster)
 - Shows clear error messages with fix suggestions
 - Suggests `pnpm pre-refactor` for large changes
+- **Prevents direct edits to auto-generated files** (new)
+
+### Protected repository files
+
+The following files are auto-generated from documentation source and cannot be directly edited:
+
+- `README.md` (generated from `apps/docs/content/index.mdx`)
+- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-packs.md`)
+- `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
+- `POLICY.md` (generated from `apps/docs/content/06-policies/index.md`)
+
+**Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
+
+**Correct workflow:**
+
+1. Edit the canonical source in `apps/docs/content/`
+2. Run `pnpm generate:repo-files` to regenerate root files
+3. Commit both the doc changes AND the regenerated files
+
+**If you accidentally try to directly edit a protected file:**
+
+```
+❌ Protected files were directly edited
+
+📝 These files are generated from docs content:
+   README.md
+   CONTRIBUTING.md
+   DEVELOPMENT.md
+   POLICY.md
+
+🔄 Correct workflow:
+   1. Edit source files in apps/docs/content/
+   2. Run: pnpm generate:repo-files
+   3. Commit both docs changes AND generated files
+```
+
+**To fix:** Follow the workflow above and retry your commit.
 
 ### Bypassing the hook
 
