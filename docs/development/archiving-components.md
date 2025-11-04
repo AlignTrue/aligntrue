@@ -1,4 +1,4 @@
-# Archiving Components Checklist
+# Archiving components checklist
 
 This checklist prevents issues like the transpile validation CI failure that occurred when `apps/web` was archived but scripts still referenced it.
 

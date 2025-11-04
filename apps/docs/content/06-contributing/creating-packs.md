@@ -1,5 +1,5 @@
 ---
-title: Creating Packs
+title: Creating packs
 description: Author and publish high-quality Align packs that pass validation and provide value to the community.
 ---
 

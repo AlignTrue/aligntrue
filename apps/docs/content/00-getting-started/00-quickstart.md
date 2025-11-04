@@ -29,6 +29,19 @@ or use it directly without installing:
 npx aligntrue --help
 ```
 
+## Which mode should I use?
+
+AlignTrue has two modes optimized for different workflows:
+
+| Mode     | Best for               | Key features                                    |
+| -------- | ---------------------- | ----------------------------------------------- |
+| **Solo** | Individual developers  | Fast iteration, auto-pull, no lockfile overhead |
+| **Team** | Collaborative projects | Lockfile, drift detection, approved sources     |
+
+**Default:** Solo mode (perfect for getting started)
+
+**Need help deciding?** See [Choosing Your Mode](/docs/00-getting-started/03-choosing-your-mode) for detailed comparison.
+
 ## Quick start (60 seconds)
 
 Initialize a new configuration:

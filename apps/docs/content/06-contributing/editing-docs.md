@@ -1,5 +1,5 @@
 ---
-title: Editing Documentation
+title: Editing documentation
 description: How to edit AlignTrue documentation using the docs-first architecture.
 ---
 

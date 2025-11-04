@@ -71,7 +71,7 @@ const config: Config = {
 export default config;
 ```
 
-## Token Categories
+## Token categories
 
 ### Colors
 
@@ -88,7 +88,7 @@ export default config;
 
 4px base scale: 1, 2, 3, 4, 5, 6, 8, 10, 12, 16
 
-### Border Radius
+### Border radius
 
 sm, base (default), md, lg, xl
 

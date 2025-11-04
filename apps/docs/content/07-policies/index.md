@@ -1,5 +1,5 @@
 ---
-title: Registry Policy
+title: Registry policy
 description: Governance rules for the AlignTrue registry of Align packs.
 ---
 
