@@ -11,9 +11,12 @@ async function main() {
   s.start("Cleaning Next.js build caches...");
   try {
     // Clean .next directories in all apps to prevent stale vendor chunk errors
-    execSync("find apps -name '.next' -type d -prune -exec rm -rf {} + 2>/dev/null || true", { 
-      stdio: "pipe" 
-    });
+    execSync(
+      "find apps -name '.next' -type d -prune -exec rm -rf {} + 2>/dev/null || true",
+      {
+        stdio: "pipe",
+      },
+    );
     s.stop("✅ Build caches cleaned.");
   } catch (error) {
     // Non-fatal: continue even if cleanup fails
@@ -68,21 +71,25 @@ async function main() {
     console.error("   • 07-development/* → DEVELOPMENT.md");
     console.error("   • 06-policies/index.md → POLICY.md");
     console.error("");
-    clack.outro("💡 Update docs content, regenerate, and try committing again.");
+    clack.outro(
+      "💡 Update docs content, regenerate, and try committing again.",
+    );
     process.exit(1);
   }
 
   // Step 4: Quick incremental typecheck (fail fast)
   const changedPackages = getChangedPackages();
-  
+
   if (changedPackages.length > 0) {
-    s.start(`Quick typecheck of ${changedPackages.length} changed package(s)...`);
+    s.start(
+      `Quick typecheck of ${changedPackages.length} changed package(s)...`,
+    );
     try {
       // Run quick typecheck on only changed packages to catch errors early
       for (const pkg of changedPackages) {
-        execSync(`pnpm --filter ${pkg} exec tsc --noEmit`, { 
+        execSync(`pnpm --filter ${pkg} exec tsc --noEmit`, {
           stdio: "pipe",
-          encoding: "utf-8"
+          encoding: "utf-8",
         });
       }
       s.stop("✅ Quick typecheck passed.");
@@ -121,7 +128,7 @@ async function main() {
     s.start(`Building ${changedPackages.length} changed package(s)...`);
     try {
       // Build only changed packages for faster commits
-      const filters = changedPackages.map(p => `--filter ${p}`).join(" ");
+      const filters = changedPackages.map((p) => `--filter ${p}`).join(" ");
       execSync(`pnpm ${filters} build`, { stdio: "inherit" });
       s.stop("✅ Packages built successfully.");
     } catch (error) {
@@ -137,7 +144,9 @@ async function main() {
       console.error("      useValue(value);  // Now narrowed to string");
       console.error("");
       console.error("   2. Optional properties cannot be undefined:");
-      console.error("      return { data, ...(error !== undefined && { error }) };");
+      console.error(
+        "      return { data, ...(error !== undefined && { error }) };",
+      );
       console.error("");
       console.error("   3. Function parameters need explicit checks:");
       console.error("      if (!param) { log.warn('Missing param'); return; }");
@@ -145,7 +154,9 @@ async function main() {
       console.error("📖 Complete patterns: .cursor/rules/typescript.mdc");
       console.error("🔍 Re-run build: pnpm build:packages");
       console.error("");
-      clack.outro("💡 Fix the TypeScript errors above and try committing again.");
+      clack.outro(
+        "💡 Fix the TypeScript errors above and try committing again.",
+      );
       process.exit(1);
     }
   }
@@ -154,7 +165,7 @@ async function main() {
   if (changedPackages.length > 0) {
     s.start("Final typecheck of changed packages...");
     try {
-      const filters = changedPackages.map(p => `--filter ${p}`).join(" ");
+      const filters = changedPackages.map((p) => `--filter ${p}`).join(" ");
       execSync(`pnpm ${filters} typecheck`, { stdio: "inherit" });
       s.stop("✅ Type checking passed.");
     } catch (error) {
@@ -163,13 +174,21 @@ async function main() {
       clack.log.error("TypeScript type checking failed.");
       console.error("");
       console.error("📝 These are stricter checks than compilation.");
-      console.error("   They catch potential runtime errors before they happen.");
+      console.error(
+        "   They catch potential runtime errors before they happen.",
+      );
       console.error("");
       console.error("   Common fixes:");
-      console.error("   • Add explicit type annotations for complex expressions");
+      console.error(
+        "   • Add explicit type annotations for complex expressions",
+      );
       console.error("   • Use 'as const' for literal unions");
-      console.error("   • Narrow types with guards: if (typeof x === 'string')");
-      console.error("   • Validate at boundaries: parse(input) throws on bad data");
+      console.error(
+        "   • Narrow types with guards: if (typeof x === 'string')",
+      );
+      console.error(
+        "   • Validate at boundaries: parse(input) throws on bad data",
+      );
       console.error("");
       console.error("🔍 Re-run typecheck: pnpm typecheck");
       console.error("");
@@ -190,9 +209,12 @@ function getChangedPackages() {
   try {
     const stagedFiles = execSync(
       "git diff --cached --name-only --diff-filter=ACM",
-      { encoding: "utf-8" }
-    ).trim().split("\n").filter(Boolean);
-    
+      { encoding: "utf-8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
     const packages = new Set();
     for (const file of stagedFiles) {
       // Match files in packages/* or apps/*
@@ -223,17 +245,20 @@ function validateProtectedFiles() {
   try {
     const stagedFiles = execSync(
       "git diff --cached --name-only --diff-filter=ACM",
-      { encoding: "utf-8" }
-    ).trim().split("\n").filter(Boolean);
+      { encoding: "utf-8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
 
     // Check if any protected files were directly edited
-    const editedProtectedFiles = stagedFiles.filter(file =>
-      protectedFiles.includes(file)
+    const editedProtectedFiles = stagedFiles.filter((file) =>
+      protectedFiles.includes(file),
     );
 
     if (editedProtectedFiles.length > 0) {
       throw new Error(
-        `Protected files detected: ${editedProtectedFiles.join(", ")}`
+        `Protected files detected: ${editedProtectedFiles.join(", ")}`,
       );
     }
   } catch (error) {
