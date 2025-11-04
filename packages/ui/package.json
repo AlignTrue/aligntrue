@@ -30,5 +30,8 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.6"
+  },
+  "dependencies": {
+    "next-themes": "^0.4.6"
   }
 }
