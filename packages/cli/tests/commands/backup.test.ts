@@ -135,14 +135,14 @@ describe("backup command", () => {
   });
 
   describe("error handling", () => {
-    it("should error on missing subcommand", async () => {
+    it("should show help on missing subcommand", async () => {
       const exitSpy = vi
         .spyOn(process, "exit")
         .mockImplementation(() => undefined as never);
 
       await backupCommand([]);
 
-      expect(exitSpy).toHaveBeenCalledWith(2);
+      expect(exitSpy).toHaveBeenCalledWith(0);
       exitSpy.mockRestore();
     });
 
@@ -153,7 +153,7 @@ describe("backup command", () => {
 
       await backupCommand(["unknown"]);
 
-      expect(exitSpy).toHaveBeenCalledWith(2);
+      expect(exitSpy).toHaveBeenCalledWith(1);
       exitSpy.mockRestore();
     });
   });

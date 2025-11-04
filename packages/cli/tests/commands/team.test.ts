@@ -556,7 +556,9 @@ describe("team command", () => {
   describe("invalid subcommand", () => {
     it("shows error for unknown subcommand", async () => {
       await expect(team(["unknown"])).rejects.toThrow("process.exit(1)");
-      expect(console.error).toHaveBeenCalledWith("Unknown subcommand: unknown");
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Unknown subcommand: unknown"),
+      );
     });
   });
 
