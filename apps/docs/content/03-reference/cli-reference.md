@@ -20,6 +20,12 @@ Complete reference for all AlignTrue CLI commands.
 - [aligntrue md compile](#aligntrue-md-compile) - Compile to IR
 - [aligntrue md generate](#aligntrue-md-generate) - Generate markdown
 
+### Plugs commands
+
+- [aligntrue plugs audit](#aligntrue-plugs-audit) - List slots and fills
+- [aligntrue plugs resolve](#aligntrue-plugs-resolve) - Preview resolution
+- [aligntrue plugs set](#aligntrue-plugs-set) - Set fill value
+
 ### Overlay commands
 
 - [aligntrue override add](#aligntrue-override-add) - Create overlay
@@ -39,6 +45,9 @@ Complete reference for all AlignTrue CLI commands.
 
 ### Settings commands
 
+- [aligntrue config](#aligntrue-config-showedit) - View or edit configuration
+- [aligntrue migrate](#aligntrue-migrate) - Schema migration (pre-1.0)
+- [aligntrue team](#aligntrue-team-enablestatusapprovelist-allowedremove) - Team mode management
 - [aligntrue telemetry](#aligntrue-telemetry-onoffstatus) - Telemetry control
 - [aligntrue privacy](#aligntrue-privacy-auditrevoke) - Privacy consents
 
@@ -1006,6 +1015,223 @@ rules:
 
 ---
 
+## Plugs commands
+
+Manage dynamic configuration slots and fills in rule packs. Plugs allow template-based customization for stack-specific values.
+
+### `aligntrue plugs audit`
+
+List all declared slots, current fills, and resolution status.
+
+**Usage:**
+
+```bash
+aligntrue plugs audit [--config <path>]
+```
+
+**Options:**
+
+| Flag              | Description                       | Default                  |
+| ----------------- | --------------------------------- | ------------------------ |
+| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+
+**What it shows:**
+
+- Declared slots with descriptions, formats, and requirements
+- Current fill values for each slot
+- Resolution status (filled, required, optional)
+- Orphan fills (fills without declared slots)
+- Summary of required vs filled slots
+
+**Example output:**
+
+```
+📌 Plugs Audit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Slots declared:
+
+  test.cmd
+    Description: Command to run the project's tests
+    Format:      command
+    Required:    true
+    Example:     pytest -q
+    Status:      ✓ filled
+    Fill:        pnpm test
+
+  docs.url
+    Description: Documentation website URL
+    Format:      url
+    Required:    false
+    Example:     https://example.com/docs
+    Status:      ○ optional
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Summary:
+  Total slots:      2
+  Required slots:   1
+  Filled required:  1
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Rules file not found or parsing error
+
+**See also:** [Plugs Guide](/docs/02-customization/plugs) for detailed plug usage
+
+---
+
+### `aligntrue plugs resolve`
+
+Preview plug resolution with current fills (dry-run mode).
+
+**Usage:**
+
+```bash
+aligntrue plugs resolve [--config <path>] [--dry-run]
+```
+
+**Options:**
+
+| Flag              | Description                       | Default                  |
+| ----------------- | --------------------------------- | ------------------------ |
+| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+| `--dry-run`       | Preview without writing (default) | `true`                   |
+
+**What it does:**
+
+1. Loads rules from config file
+2. Resolves all `[[plug:key]]` references with current fills
+3. Inserts TODO blocks for unresolved required plugs
+4. Displays resolved text and unresolved plug list
+5. Does NOT write changes (preview only)
+
+**Example output:**
+
+```
+✓ Resolved 2 plugs
+
+Resolved text preview:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run tests with: pnpm test
+
+Documentation: https://example.com/docs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Unresolved required plugs: 0
+```
+
+**With unresolved required plugs:**
+
+```
+⚠ Unresolved required plugs: 1
+  - author.name
+
+Resolved text will contain TODO blocks:
+
+TODO(plug:author.name): Provide a value for this plug.
+Examples: John Doe
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Rules file not found or parsing error
+
+**See also:** [Plugs Guide](/docs/02-customization/plugs) for resolution algorithm
+
+---
+
+### `aligntrue plugs set`
+
+Set a repo-local fill value with format validation.
+
+**Usage:**
+
+```bash
+aligntrue plugs set <key> <value> [--config <path>]
+```
+
+**Arguments:**
+
+- `key` - Plug slot key (e.g., `test.cmd`, `author.name`)
+- `value` - Fill value (single-line string)
+
+**Options:**
+
+| Flag              | Description                       | Default                  |
+| ----------------- | --------------------------------- | ------------------------ |
+| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+
+**What it does:**
+
+1. Validates key exists as declared slot
+2. Validates value matches slot format (command, text, file, url)
+3. Writes fill to `plugs.fills` section in rules file
+4. Preserves existing file structure and formatting
+
+**Format validation:**
+
+- `command` - Single-line command, no environment variable interpolation (except `CI=true`)
+- `text` - Any single-line UTF-8 string
+- `file` - Repo-relative POSIX path, no `..` segments, no absolute paths
+- `url` - Must start with `http://` or `https://`
+
+**Examples:**
+
+```bash
+# Set test command
+aligntrue plugs set test.cmd "pnpm test"
+
+# Set author name
+aligntrue plugs set author.name "Jane Smith"
+
+# Set documentation URL
+aligntrue plugs set docs.url "https://docs.example.com"
+
+# Set relative file path
+aligntrue plugs set config.file "config/settings.json"
+```
+
+**Example output:**
+
+```
+✓ Set plug fill: test.cmd = "pnpm test"
+
+Updated: .aligntrue/rules.md
+
+Next step:
+  Run: aligntrue sync
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Validation error (invalid key, format mismatch, file not found)
+
+**Common errors:**
+
+```
+✗ Slot not declared: unknown.key
+  Hint: Run 'aligntrue plugs audit' to see declared slots
+
+✗ Format validation failed: file
+  Value contains '..' segments (not allowed)
+  Hint: Use repo-relative paths without parent directory traversal
+
+✗ Format validation failed: url
+  Value must start with http:// or https://
+```
+
+**See also:** [Plugs Guide](/docs/02-customization/plugs) for format requirements
+
+---
+
 ## Overlay commands
 
 Commands for customizing third-party packs without forking. Available in all modes.
@@ -1889,7 +2115,7 @@ Required fields: `id`, `version`, `spec_version`, `profile.id`
 
 Manage AlignTrue settings and preferences.
 
-### `aligntrue team enable|approve|list-allowed|remove`
+### `aligntrue team enable|status|approve|list-allowed|remove`
 
 Manage team mode and approved rule sources. See [Team Mode Guide](/docs/02-concepts/team-mode) for complete workflows.
 
@@ -1897,10 +2123,19 @@ Manage team mode and approved rule sources. See [Team Mode Guide](/docs/02-conce
 
 ```bash
 aligntrue team enable                           # Enable team mode
+aligntrue team status                           # Show team mode status
 aligntrue team approve <source> [<source2>...]  # Approve source(s)
 aligntrue team list-allowed                     # List approved sources
 aligntrue team remove <source> [<source2>...]   # Remove source(s)
 ```
+
+**Subcommands:**
+
+- `enable` - Upgrade project to team mode with lockfile validation
+- `status` - Display team mode status, lockfile, and allow list information
+- `approve` - Add source(s) to allow list
+- `list-allowed` - List all approved sources
+- `remove` - Remove source(s) from allow list
 
 **Key concepts:**
 
@@ -1926,6 +2161,167 @@ aligntrue sync
 # Bypass validation (emergency only)
 aligntrue sync --force
 ```
+
+**Team status command:**
+
+Show detailed team mode status including mode, lockfile, and allow list information.
+
+```bash
+aligntrue team status
+```
+
+**Example output (solo mode):**
+
+```
+Mode: solo
+
+💡 This project is in solo mode
+   To enable team features, run:
+   aligntrue team enable
+```
+
+**Example output (team mode):**
+
+```
+Team Mode Status
+================
+
+Mode: team
+Lockfile: soft
+  File: .aligntrue.lock.json (exists)
+Allow List: .aligntrue/allow.yaml
+  Sources: 3 approved
+  Last updated: Oct 29, 2025
+
+Team Members: (configure in .aligntrue/config.yaml)
+
+Next steps:
+  - Run 'aligntrue sync' to validate sources
+  - Run 'aligntrue drift' to check for upstream changes
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config file not found
+
+---
+
+### `aligntrue config show|edit`
+
+Display or edit AlignTrue configuration.
+
+**Usage:**
+
+```bash
+aligntrue config show   # Display active configuration
+aligntrue config edit   # Open config in default editor
+```
+
+**What it does:**
+
+**`show` subcommand:**
+
+- Displays active mode (solo/team/enterprise)
+- Shows effective configuration with defaults
+- Lists enabled modules (lockfile, bundle, checks, mcp)
+- Shows exporter configuration
+- Displays sync settings (auto-pull, primary agent, workflow mode)
+
+**`edit` subcommand:**
+
+- Opens `.aligntrue/config.yaml` in default editor
+- Uses `$EDITOR` environment variable
+- Falls back to `vi` on Unix, `notepad` on Windows
+
+**Example output (show):**
+
+```
+AlignTrue Configuration
+=======================
+
+Mode: solo
+
+Modules:
+  lockfile: false
+  bundle: false
+  checks: true
+  mcp: false
+
+Exporters:
+  - cursor
+  - agents-md
+
+Sync:
+  auto_pull: true
+  primary_agent: cursor
+  workflow_mode: native_format
+
+Config file: .aligntrue/config.yaml
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config file not found
+- `2` - Editor failed to open (edit subcommand)
+
+**See also:** [Team Mode Guide](/docs/02-concepts/team-mode) for configuration options
+
+---
+
+### `aligntrue migrate`
+
+Schema migration tooling (pre-1.0 status).
+
+**Usage:**
+
+```bash
+aligntrue migrate [--help]
+```
+
+**What it does:**
+
+Displays migration policy and status. Migration tooling is not yet available in pre-1.0 releases.
+
+**Migration framework will be added when:**
+
+- 50+ active repositories using AlignTrue, OR
+- 10+ organizations with multiple repos each, OR
+- A planned breaking change significantly impacts users
+
+**Current approach (pre-1.0):**
+
+1. Check `CHANGELOG.md` for breaking changes
+2. Follow migration guides in release notes
+3. Pin CLI version if stability is critical
+
+**Example output:**
+
+```
+⚠️  Migration tooling not yet available
+
+AlignTrue is in pre-1.0 status (spec_version: "1").
+Schema may change between releases without automated migration tooling.
+
+Migration framework will be added when we reach:
+• 50+ active repositories using AlignTrue, OR
+• 10+ organizations with multiple repos, OR
+• A planned breaking change that significantly impacts users
+
+For now:
+• Check CHANGELOG.md for breaking changes
+• Follow migration guides for each release
+• Pin CLI version if you need stability
+
+See: docs/06-policies/pre-1.0-policy for details
+```
+
+**Exit codes:**
+
+- `0` - Success (displays policy)
+
+**See also:** [Pre-1.0 Policy](/docs/06-policies/pre-1.0-policy) for schema iteration policy
 
 ---
 
@@ -2062,17 +2458,12 @@ Run "aligntrue privacy audit" after granting consent to see details.
 
 **Offline mode:**
 
-```bash
-# Skip all network operations, use cache only
-aligntrue sync --offline
-```
-
-Offline mode bypasses consent checks entirely (no network = no consent needed).
+The `pull` command supports `--offline` flag to use cache only without network operations. See the `pull` command documentation for details.
 
 **See also:**
 
 - [Privacy Policy](/docs/06-policies/privacy) - Complete privacy details
-- [Sync command](#aligntrue-sync) - Offline flag documentation
+- [Pull command](#aligntrue-pull) - Offline mode documentation
 
 ---
 

@@ -136,16 +136,17 @@ sources:
 
 ## Customizing installed packs
 
-Some packs include customizable fields called **plugs**.
+Some packs include customizable fields called **plugs**. Plugs are template slots that you fill with stack-specific or project-specific values.
 
 ### Viewing plugs
 
 On the pack detail page, the **Customization** section shows:
 
-- **Plug key** - Variable name (e.g., `AUTHOR_NAME`)
+- **Plug key** - Variable name (e.g., `test.cmd`, `author.name`)
 - **Description** - What this field controls
-- **Type** - String, boolean, enum, etc.
-- **Default** - Suggested or empty if required
+- **Format** - command, text, file, or url
+- **Required** - Whether you must provide a value
+- **Example** - Sample value to guide you
 
 ### Setting plugs
 
@@ -153,14 +154,17 @@ After installing, configure plugs with:
 
 ```bash
 # Set a plug value
-aln plugs set AUTHOR_NAME "Jane Doe"
+aligntrue plugs set test.cmd "pnpm test"
 
 # Set multiple
-aln plugs set PROJECT_NAME "myapp" SLACK_CHANNEL "#dev"
+aligntrue plugs set author.name "Jane Doe"
+aligntrue plugs set docs.url "https://docs.example.com"
 
 # View current values
-aln plugs list
+aligntrue plugs audit
 ```
+
+**Learn more:** [Plugs Guide](/docs/02-customization/plugs) for complete plug documentation.
 
 Plugs are stored in your `.aligntrue.yaml` under the pack's `customization` section.
 

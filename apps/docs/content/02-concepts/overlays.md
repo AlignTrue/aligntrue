@@ -1,5 +1,13 @@
 # Overlays guide
 
+**Note:** This guide has moved to the [Customization section](/docs/02-customization/overlays). The content below is kept for backward compatibility but may be outdated.
+
+---
+
+**→ [View updated Overlays Guide](/docs/02-customization/overlays)**
+
+---
+
 Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
 
 ---

@@ -11,12 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Agent-First Authoring (Import Flow Enhancement):** Init command now detects existing agent rule files (.mdc, AGENTS.md, CLAUDE.md, CRUSH.md, WARP.md) with interactive import prompts. Coverage reports show field-level mapping. Use `--import <agent>` flag for non-interactive imports. Workflow mode auto-configures based on import choice.
 - **Version Flag:** Added `--version` and `-v` flags to display CLI version. Help text now includes version information hint.
+- **Customization Documentation:** New top-level customization section with comprehensive guides for plugs, overlays, and scopes. Includes decision trees, scenario-based examples, and integration patterns.
+- **Persona Guides:** Solo developer and team guides with daily workflow scenarios, customization patterns, and best practices.
+- **CLI Commands:** Added documentation for `plugs` (audit, resolve, set), `config` (show, edit), `migrate`, and `team status` subcommands.
+- **Consolidated Agent Rule:** Created `customization.mdc` agent rule integrating plugs, overlays, and scopes guidance.
 
 ### Fixed
 
 - **TypeScript Strictness:** Resolved `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` violations in import flow. Added null checks for indexed record access and conditional spread for optional properties.
 - **Template Validation:** Cursor and AGENTS.md starter templates now use valid 3-segment rule IDs. Init command no longer auto-runs sync, preventing validation failures on fresh setup. Import command generates correct single-block markdown format.
 - **User Experience:** Init no longer auto-syncs. Sync and import commands show contextual next steps. All error messages include actionable suggestions.
+- **CLI Reference:** Removed incorrect `--offline` flag from sync command documentation (only exists on pull command).
 
 ### Security
 
@@ -25,9 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **CLI UX:** `team enable` supports `--yes` for non-interactive mode. `adapters enable` now processes multiple adapter names. Config files stay minimal in solo mode.
-- **Documentation:** Nextra v4.6.0 site at `apps/docs/` with 22 pages covering quickstart, team mode, overlays, and CLI reference.
+- **Documentation:** Nextra v4.6.0 site at `apps/docs/` with 30+ pages including new customization section (plugs, overlays, scopes), persona guides (solo, team), and enhanced CLI reference.
 - **Pre-commit Error Messages:** Git hooks now show actual TypeScript errors inline with common fix patterns. No more "run this command to see errors" - errors display immediately with actionable guidance.
 - **Help Text:** Moved `migrate` command from "Coming Soon" to Settings section with policy hint. Help now includes version flag information.
+- **Navigation:** Added customization section between getting-started and guides. Updated homepage and next-steps to link to customization features.
 
 ---
 
