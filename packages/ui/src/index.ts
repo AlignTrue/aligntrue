@@ -6,7 +6,8 @@
 // Logo components
 export { AlignTrueLogo, AlignTrueLogoText } from "./components/AlignTrueLogo";
 
-// Footer components
+// Header and footer components
+export { SiteHeader } from "./components/SiteHeader";
 export { SiteFooter } from "./components/SiteFooter";
 
 // Legacy exports (deprecated)

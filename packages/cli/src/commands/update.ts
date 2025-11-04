@@ -117,16 +117,22 @@ export async function update(args: string[]): Promise<void> {
   // Show help if requested
   if (parsedArgs.help) {
     console.log(HELP_TEXT);
-    return;
+    process.exit(0);
   }
 
   // Get subcommand
   const subcommand = parsedArgs.positional[0];
   if (!subcommand || (subcommand !== "check" && subcommand !== "apply")) {
     console.log(HELP_TEXT);
-    console.error("Error: Missing or invalid subcommand");
-    console.error("Usage: aligntrue update <check|apply> [options]\n");
-    process.exit(1);
+    if (!subcommand) {
+      // No subcommand provided - treat as help request
+      process.exit(0);
+    } else {
+      // Invalid subcommand - treat as error
+      console.error("Error: Missing or invalid subcommand");
+      console.error("Usage: aligntrue update <check|apply> [options]\n");
+      process.exit(1);
+    }
   }
 
   // Load and validate config
