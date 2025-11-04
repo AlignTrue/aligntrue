@@ -9,6 +9,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { execSync } from "child_process";
 import { FILES_TO_GENERATE } from "./generate-repo-files.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +48,30 @@ async function readMarkdownFile(filePath: string): Promise<string> {
 }
 
 /**
+ * Format content with prettier to match what lint-staged will do
+ */
+async function formatWithPrettier(
+  content: string,
+  filepath: string,
+): Promise<string> {
+  try {
+    // Write to temp file, format it, read back
+    const tempFile = path.join(
+      ROOT_DIR,
+      `.temp-validate-${path.basename(filepath)}`,
+    );
+    await fs.writeFile(tempFile, content, "utf-8");
+    execSync(`pnpm prettier --write ${tempFile}`, { stdio: "pipe" });
+    const formatted = await fs.readFile(tempFile, "utf-8");
+    await fs.unlink(tempFile);
+    return formatted;
+  } catch (error) {
+    // If prettier fails, return original content
+    return content;
+  }
+}
+
+/**
  * Generate content for a file based on its configuration
  */
 async function generateContent(
@@ -62,7 +87,10 @@ async function generateContent(
     content = await readMarkdownFile(config.source);
   }
 
-  return config.transform(content);
+  const transformed = config.transform(content);
+
+  // Format with prettier to match what the generate script does
+  return await formatWithPrettier(transformed, config.dest);
 }
 
 /**
