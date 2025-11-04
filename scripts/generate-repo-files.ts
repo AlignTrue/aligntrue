@@ -214,6 +214,16 @@ async function main() {
 
     console.log("\n✓ All files generated successfully!");
 
+    // Format generated files with prettier to match what lint-staged will do
+    try {
+      const { execSync } = await import("child_process");
+      const filesToFormat = FILES_TO_GENERATE.map((c) => c.dest).join(" ");
+      execSync(`pnpm prettier --write ${filesToFormat}`, { stdio: "pipe" });
+      console.log("✓ Formatted generated files with prettier");
+    } catch (error) {
+      console.warn("⚠️  Prettier formatting failed (non-fatal)");
+    }
+
     // Clean Next.js caches after regenerating docs to prevent stale module errors
     try {
       const { execSync } = await import("child_process");

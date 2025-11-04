@@ -232,7 +232,9 @@ function getChangedPackages() {
 
 /**
  * Validates that protected repo files (README.md, CONTRIBUTING.md, etc.)
- * have not been directly edited.
+ * match their generated versions from docs content.
+ * 
+ * This allows correctly regenerated files while blocking direct edits.
  */
 function validateProtectedFiles() {
   const protectedFiles = [
@@ -251,14 +253,28 @@ function validateProtectedFiles() {
       .split("\n")
       .filter(Boolean);
 
-    // Check if any protected files were directly edited
+    // Check if any protected files are staged
     const editedProtectedFiles = stagedFiles.filter((file) =>
       protectedFiles.includes(file),
     );
 
-    if (editedProtectedFiles.length > 0) {
+    if (editedProtectedFiles.length === 0) {
+      return; // No protected files staged, all good
+    }
+
+    // Protected files are staged - validate they match generated versions
+    // This allows correctly regenerated files while blocking direct edits
+    try {
+      execSync("pnpm validate:repo-files", {
+        stdio: "pipe",
+        encoding: "utf-8",
+      });
+      // Validation passed - files match generated versions
+      return;
+    } catch (error) {
+      // Validation failed - files don't match generated versions
       throw new Error(
-        `Protected files detected: ${editedProtectedFiles.join(", ")}`,
+        `Protected files don't match generated versions: ${editedProtectedFiles.join(", ")}`,
       );
     }
   } catch (error) {
