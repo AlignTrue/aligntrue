@@ -13,12 +13,12 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/schema": "workspace:*",
-    "simple-git": "^3.25.0"
+    "simple-git": "^3.30.0"
   },
   "devDependencies": {
     "@types/node": "^24",
     "typescript": "^5",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.6"
   },
   "engines": {
     "node": ">=20"

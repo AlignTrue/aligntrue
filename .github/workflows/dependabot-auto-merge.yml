@@ -1,0 +1,127 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request:
+    branches: [main]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  approve-and-merge:
+    name: Auto-approve and merge safe Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            console.log('PR Labels:', labels);
+            console.log('PR Title:', pr.title);
+
+            // Determine if auto-merge safe
+            const isDevDep = labels.includes('devDependencies');
+            const isPatch = pr.title.includes('patch') || pr.title.includes('from');
+            const isMinor = pr.title.includes('minor');
+            const isSafe = isDevDep || (isPatch && !labels.includes('requires-review'));
+
+            core.setOutput('is-safe', isSafe);
+            core.setOutput('reason', isDevDep ? 'devDependencies' : 'patch/minor update');
+
+      - name: Auto-approve safe PRs
+        if: steps.pr-details.outputs.is-safe == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            console.log(`✅ Auto-approving safe Dependabot PR: #${pr.number}`);
+
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              event: 'APPROVE',
+              body: 'Auto-approved: devDependencies or safe patch/minor update. Will merge once CI passes.',
+            });
+
+      - name: Wait for CI to pass
+        if: steps.pr-details.outputs.is-safe == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = pr.number;
+
+            // Poll for commit status (max 10 minutes)
+            const maxWaitTime = 10 * 60 * 1000;
+            const startTime = Date.now();
+
+            while (Date.now() - startTime < maxWaitTime) {
+              const { data: pullRequest } = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+              
+              const mergeable = pullRequest.mergeable;
+              const mergeable_state = pullRequest.mergeable_state;
+              
+              console.log(`Mergeable: ${mergeable}, State: ${mergeable_state}`);
+              
+              if (mergeable === true && mergeable_state === 'clean') {
+                console.log('✅ CI passed and PR is ready to merge');
+                return;
+              }
+              
+              if (mergeable === false || mergeable_state === 'dirty') {
+                console.log('❌ PR has conflicts or CI failed');
+                return;
+              }
+              
+              // Wait 30 seconds before checking again
+              await new Promise(resolve => setTimeout(resolve, 30000));
+            }
+
+            console.log('⏱️ Timeout waiting for CI');
+
+      - name: Enable auto-merge
+        if: steps.pr-details.outputs.is-safe == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            try {
+              await github.rest.pulls.enableAutoMerge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: 'squash',
+              });
+              console.log(`✅ Auto-merge enabled for PR #${pr.number}`);
+            } catch (error) {
+              console.log(`ℹ️ Auto-merge may already be enabled or unavailable: ${error.message}`);
+            }
+
+      - name: Comment on manual-review PRs
+        if: steps.pr-details.outputs.is-safe == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            console.log(`⏳ Manual review needed for PR #${pr.number}`);
+            console.log('Reason: Production dependency update or major version bump');

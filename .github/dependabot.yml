@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Root workspace
+  # Root workspace — dev dependencies only (auto-merge safe)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -11,6 +11,9 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "devDependencies"
+    allow:
+      - dependency-type: "development"
     groups:
       dev-dependencies:
         patterns:
@@ -19,7 +22,7 @@ updates:
           - "minor"
           - "patch"
 
-  # Schema package
+  # Schema package — patches + minor only (auto-merge safe)
   - package-ecosystem: "npm"
     directory: "/packages/schema"
     schedule:
@@ -30,6 +33,7 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "schema"
     groups:
       production:
         patterns:
@@ -38,7 +42,7 @@ updates:
           - "minor"
           - "patch"
 
-  # CLI package
+  # CLI package — patches + minor only (auto-merge safe)
   - package-ecosystem: "npm"
     directory: "/packages/cli"
     schedule:
@@ -49,8 +53,16 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "cli"
+    groups:
+      production:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # MCP package
+  # MCP package — patches + minor only (auto-merge safe)
   - package-ecosystem: "npm"
     directory: "/packages/mcp"
     schedule:
@@ -61,8 +73,16 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "mcp"
+    groups:
+      production:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # Web app
+  # Web app — dev deps auto-merge, runtime manual review
   - package-ecosystem: "npm"
     directory: "/apps/web"
     schedule:
@@ -73,11 +93,30 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "web"
+    allow:
+      - dependency-type: "development"
+
+  # Web app — runtime deps manual review (next major versions flagged)
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "web"
+      - "requires-review"
+    allow:
+      - dependency-type: "production"
     ignore:
       - dependency-name: "next"
         update-types: ["version-update:semver-major"]
 
-  # Docs app
+  # Docs app — dev deps auto-merge, runtime manual review
   - package-ecosystem: "npm"
     directory: "/apps/docs"
     schedule:
@@ -88,3 +127,22 @@ updates:
       prefix: "chore"
     labels:
       - "dependencies"
+      - "docs"
+    allow:
+      - dependency-type: "development"
+
+  # Docs app — runtime deps manual review
+  - package-ecosystem: "npm"
+    directory: "/apps/docs"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "docs"
+      - "requires-review"
+    allow:
+      - dependency-type: "production"
