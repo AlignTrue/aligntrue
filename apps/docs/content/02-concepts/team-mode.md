@@ -603,7 +603,7 @@ This field enables overlay resolution for local modifications atop base packs.
 
 ### Private/vendored pack workflows
 
-See [Git Workflows](/concepts/git-workflows) for:
+See [Git Workflows](/docs/02-concepts/git-workflows) for:
 
 - Git submodule setup
 - Git subtree setup
@@ -683,10 +683,10 @@ aligntrue drift
 
 ## See also
 
-- **[Commands Reference](/reference/cli-reference)** - Complete CLI command documentation
-- **[Quickstart Guide](/getting-started/quickstart)** - Setup and first sync
-- **[Drift Detection](/concepts/drift-detection)** - Monitoring team alignment
-- **[Auto-Updates](/reference/auto-updates)** - Scheduled update workflows
-- **[Git Workflows](/concepts/git-workflows)** - Git-based rule sharing and vendoring
-- **[Onboarding](/contributing/team-onboarding)** - Developer onboarding checklists
+- **[Commands Reference](/docs/03-reference/cli-reference)** - Complete CLI command documentation
+- **[Quickstart Guide](/docs/00-getting-started/00-quickstart)** - Setup and first sync
+- **[Drift Detection](/docs/02-concepts/drift-detection)** - Monitoring team alignment
+- **[Auto-Updates](/docs/03-reference/auto-updates)** - Scheduled update workflows
+- **[Git Workflows](/docs/02-concepts/git-workflows)** - Git-based rule sharing and vendoring
+- **[Onboarding](/docs/05-contributing/team-onboarding)** - Developer onboarding checklists
 - **[Examples](../examples/)** - team-repo and vendored-pack examples

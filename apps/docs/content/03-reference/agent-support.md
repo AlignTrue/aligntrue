@@ -95,10 +95,10 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 
 ## Extensibility
 
-Built-in extensibility allows the community to [add support for new agents](/contributing/adding-exporters). Each exporter follows a consistent pattern and can be contributed via pull request.
+Built-in extensibility allows the community to [add support for new agents](/docs/05-contributing/adding-exporters). Each exporter follows a consistent pattern and can be contributed via pull request.
 
 ## Related documentation
 
-- [CLI Reference](/reference/cli-reference) - Commands for working with exporters
-- [Adding Exporters](/contributing/adding-exporters) - Guide for adding new agent support
-- [Sync Behavior](/concepts/sync-behavior) - How AlignTrue syncs rules to agents
+- [CLI Reference](/docs/03-reference/cli-reference) - Commands for working with exporters
+- [Adding Exporters](/docs/05-contributing/adding-exporters) - Guide for adding new agent support
+- [Sync Behavior](/docs/02-concepts/sync-behavior) - How AlignTrue syncs rules to agents

@@ -2,6 +2,53 @@
 
 Complete reference for all AlignTrue CLI commands.
 
+## Quick navigation
+
+### Basic commands
+
+- [aligntrue init](#aligntrue-init) - Initialize project
+- [aligntrue import](#aligntrue-import) - Import from agent formats
+- [aligntrue sync](#aligntrue-sync) - Sync rules to agents
+- [aligntrue check](#aligntrue-check) - Validate rules
+- [aligntrue backup](#aligntrue-backup) - Backup management
+
+### Development commands
+
+- [aligntrue adapters](#aligntrue-adapters) - Manage exporters
+- [aligntrue md lint](#aligntrue-md-lint) - Lint markdown
+- [aligntrue md format](#aligntrue-md-format) - Format markdown
+- [aligntrue md compile](#aligntrue-md-compile) - Compile to IR
+- [aligntrue md generate](#aligntrue-md-generate) - Generate markdown
+
+### Overlay commands
+
+- [aligntrue override add](#aligntrue-override-add) - Create overlay
+- [aligntrue override status](#aligntrue-override-status) - View overlays
+- [aligntrue override diff](#aligntrue-override-diff) - Show overlay effects
+- [aligntrue override remove](#aligntrue-override-remove) - Remove overlay
+
+### Team commands
+
+- [aligntrue drift](#aligntrue-drift) - Detect drift
+- [aligntrue update](#aligntrue-update) - Apply updates
+- [aligntrue onboard](#aligntrue-onboard) - Developer onboarding
+- [aligntrue team enable](#aligntrue-team-enable) - Enable team mode
+- [aligntrue scopes](#aligntrue-scopes) - List scopes
+- [aligntrue pull](#aligntrue-pull) - Pull from git
+- [aligntrue link](#aligntrue-link) - Vendor packs
+
+### Settings commands
+
+- [aligntrue telemetry](#aligntrue-telemetry-onoffstatus) - Telemetry control
+- [aligntrue privacy](#aligntrue-privacy-auditrevoke) - Privacy consents
+
+### Getting help
+
+- [Error codes](#error-codes) - Standardized error reference
+- [Exit codes](#getting-help) - Exit code meanings
+
+---
+
 ## Basic commands
 
 Commands you'll use most often for day-to-day development.
@@ -75,8 +122,8 @@ aligntrue init
 
 **See also:**
 
-- [Quickstart Guide](/getting-started/quickstart) for step-by-step walkthrough
-- [Workflows Guide](/guides/workflows) for workflow mode details
+- [Quickstart Guide](/docs/00-getting-started/00-quickstart) for step-by-step walkthrough
+- [Workflows Guide](/docs/01-guides/01-workflows) for workflow mode details
 
 ---
 
@@ -153,14 +200,14 @@ aligntrue import cursor --no-coverage
 - **claude-code** - AGENTS.md format (alias)
 - **aider** - AGENTS.md format (alias)
 
-See [Import Workflow Guide](/reference/import-workflow) for step-by-step migration instructions.
+See [Import Workflow Guide](/docs/03-reference/import-workflow) for step-by-step migration instructions.
 
 **Exit codes:**
 
 - `0` - Success
 - `1` - Error (agent not found, no rules, unsupported agent)
 
-**See also:** [Sync Behavior](/concepts/sync-behavior) for two-way sync details.
+**See also:** [Sync Behavior](/docs/02-concepts/sync-behavior) for two-way sync details.
 
 ---
 
@@ -203,7 +250,7 @@ Auto-pull automatically imports changes from your primary agent before syncing. 
 - Primary agent is configured (auto-detected on init)
 - No conflicts detected between rules.md and agent files
 
-See [Auto-pull guide](/guides/auto-pull) for details.
+See [Auto-pull guide](/docs/01-guides/00-auto-pull) for details.
 
 **Conflict detection:**
 
@@ -220,7 +267,7 @@ If both rules.md and agent files were modified since last sync, you'll see:
     Abort sync and review manually
 ```
 
-See [Resolving conflicts](/troubleshooting/conflicts) for resolution strategies.
+See [Resolving conflicts](/docs/04-troubleshooting/conflicts) for resolution strategies.
 
 **Workflow modes:**
 
@@ -232,7 +279,7 @@ sync:
   workflow_mode: "native_format" # auto | ir_source | native_format
 ```
 
-See [Workflows guide](/guides/workflows) for choosing your workflow.
+See [Workflows guide](/docs/01-guides/01-workflows) for choosing your workflow.
 
 **Examples:**
 
@@ -289,7 +336,7 @@ When `mode: team` is enabled in config:
 - Regenerates lockfile after successful sync
 - Detects drift and suggests resolution
 
-**See also:** [Sync Behavior](/concepts/sync-behavior) for detailed contract.
+**See also:** [Sync Behavior](/docs/02-concepts/sync-behavior) for detailed contract.
 
 ---
 
@@ -606,7 +653,7 @@ $ aligntrue sync
 ✔ Cleaned up 2 old backups
 ```
 
-**See also:** [Backup and Restore Guide](/reference/backup-restore) for detailed usage and troubleshooting.
+**See also:** [Backup and Restore Guide](/docs/03-reference/backup-restore) for detailed usage and troubleshooting.
 
 ---
 
@@ -1041,7 +1088,7 @@ Next step:
 - `1` - Validation error (invalid selector, missing operations)
 - `2` - System error (file write failed)
 
-**See also:** [Overlays Guide](/concepts/overlays) for complete overlay documentation.
+**See also:** [Overlays Guide](/docs/02-concepts/overlays) for complete overlay documentation.
 
 ---
 
@@ -1126,7 +1173,7 @@ Overlays (3 active, 1 stale)
 - `0` - Success
 - `1` - Config not found
 
-**See also:** [Drift Detection](/concepts/drift-detection) for automated staleness checks.
+**See also:** [Drift Detection](/docs/02-concepts/drift-detection) for automated staleness checks.
 
 ---
 
@@ -1191,7 +1238,7 @@ No overlays match selector: rule[id=nonexistent]
 - `0` - Success
 - `1` - Selector invalid or no overlays found
 
-**See also:** [Overlays Guide](/concepts/overlays) for overlay usage.
+**See also:** [Overlays Guide](/docs/02-concepts/overlays) for overlay usage.
 
 ---
 
@@ -1258,7 +1305,7 @@ Next step:
 - `0` - Success
 - `1` - No matching overlay found
 
-**See also:** [Overlays Guide](/concepts/overlays)
+**See also:** [Overlays Guide](/docs/02-concepts/overlays)
 
 ---
 
@@ -1300,7 +1347,7 @@ aligntrue drift --json
 
 **Exit codes:** `0` (no drift), `2` (drift with --gates)
 
-**See:** [Drift detection guide](/concepts/drift-detection)
+**See:** [Drift detection guide](/docs/02-concepts/drift-detection)
 
 ---
 
@@ -1349,7 +1396,7 @@ aligntrue update apply --dry-run
 
 **Requirements:** Team mode enabled
 
-**See:** [Auto-updates guide](/reference/auto-updates)
+**See:** [Auto-updates guide](/docs/03-reference/auto-updates)
 
 ---
 
@@ -1413,7 +1460,7 @@ Actionable next steps:
 
 **Exit codes:** `0` (success)
 
-**See:** [Onboarding guide](/contributing/team-onboarding)
+**See:** [Onboarding guide](/docs/05-contributing/team-onboarding)
 
 ---
 
@@ -1475,7 +1522,7 @@ lockfile:
   mode: soft # Warn on drift, don't block
 ```
 
-**See also:** [Sync Behavior](/concepts/sync-behavior#lockfile-behavior-team-mode) for lockfile modes.
+**See also:** [Sync Behavior](/docs/02-concepts/sync-behavior#lockfile-behavior-team-mode) for lockfile modes.
 
 ---
 
@@ -1652,9 +1699,9 @@ aligntrue sync --dry-run
 
 **See also:**
 
-- [Git Workflows Guide](/concepts/git-workflows) - Complete pull command workflows
-- [Git Sources Guide](/reference/git-sources) - Config-based permanent git sources
-- [Privacy Guide](/policies/privacy) - Network consent management
+- [Git Workflows Guide](/docs/02-concepts/git-workflows) - Complete pull command workflows
+- [Git Sources Guide](/docs/03-reference/git-sources) - Config-based permanent git sources
+- [Privacy Guide](/docs/06-policies/privacy) - Network consent management
 
 ---
 
@@ -1832,9 +1879,9 @@ Required fields: `id`, `version`, `spec_version`, `profile.id`
 
 **See also:**
 
-- [Git Workflows Guide - Vendoring](/concepts/git-workflows#vendoring-workflows) - Complete vendoring workflows
-- [Team Mode Guide](/concepts/team-mode) - Team approval workflows
-- [Privacy Guide](/policies/privacy) - Network consent management
+- [Git Workflows Guide - Vendoring](/docs/02-concepts/git-workflows#vendoring-workflows) - Complete vendoring workflows
+- [Team Mode Guide](/docs/02-concepts/team-mode) - Team approval workflows
+- [Privacy Guide](/docs/06-policies/privacy) - Network consent management
 
 ---
 
@@ -1844,7 +1891,7 @@ Manage AlignTrue settings and preferences.
 
 ### `aligntrue team enable|approve|list-allowed|remove`
 
-Manage team mode and approved rule sources. See [Team Mode Guide](/concepts/team-mode) for complete workflows.
+Manage team mode and approved rule sources. See [Team Mode Guide](/docs/02-concepts/team-mode) for complete workflows.
 
 **Usage:**
 
@@ -1946,7 +1993,7 @@ We NEVER collect:
 - State: `.aligntrue/telemetry.json`
 - Events: `.aligntrue/telemetry-events.json` (last 1000 events)
 
-**See also:** [Privacy Policy](/policies/privacy) for complete details.
+**See also:** [Privacy Policy](/docs/06-policies/privacy) for complete details.
 
 ### `aligntrue privacy audit|revoke`
 
@@ -2024,7 +2071,7 @@ Offline mode bypasses consent checks entirely (no network = no consent needed).
 
 **See also:**
 
-- [Privacy Policy](/policies/privacy) - Complete privacy details
+- [Privacy Policy](/docs/06-policies/privacy) - Complete privacy details
 - [Sync command](#aligntrue-sync) - Offline flag documentation
 
 ---
@@ -2194,10 +2241,10 @@ If you encounter an error:
 
 ## See also
 
-- [Quickstart Guide](/getting-started/quickstart) - Get started in <60 seconds
-- [Backup and Restore Guide](/reference/backup-restore) - Protect your configuration
-- [Git Sources Guide](/reference/git-sources) - Pull rules from repositories
-- [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
-- [Troubleshooting](/troubleshooting) - Common issues and fixes
-- [Sync Behavior](/concepts/sync-behavior) - Two-way sync contract
-- [Extending AlignTrue](/contributing/adding-exporters) - Add new exporters
+- [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started in <60 seconds
+- [Backup and Restore Guide](/docs/03-reference/backup-restore) - Protect your configuration
+- [Git Sources Guide](/docs/03-reference/git-sources) - Pull rules from repositories
+- [Import Workflow](/docs/03-reference/import-workflow) - Migrate from existing agent rules
+- [Troubleshooting](/docs/04-troubleshooting) - Common issues and fixes
+- [Sync Behavior](/docs/02-concepts/sync-behavior) - Two-way sync contract
+- [Extending AlignTrue](/docs/05-contributing/adding-exporters) - Add new exporters

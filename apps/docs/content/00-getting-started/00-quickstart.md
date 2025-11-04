@@ -15,7 +15,7 @@ AlignTrue helps you control how AI coding assistants behave in your project. You
 ## Prerequisites
 
 - **Node.js 20+** - [Download](https://nodejs.org/)
-- **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/reference/agent-support)
+- **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/docs/03-reference/agent-support)
 
 ## Installation
 
@@ -121,21 +121,42 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 
 - `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
 
-## Next steps
+## Enabling rules in your agents
 
-- **Cursor**: Open Cursor Settings > Features > Cursor Rules, enable rules folder
-- **AGENTS.md**: Check `AGENTS.md` for Claude, ChatGPT, other agents
+### Cursor
+
+1. Open Cursor Settings (Cmd/Ctrl + ,)
+2. Navigate to Features > Cursor Rules
+3. Enable "Rules folder" option
+4. Restart Cursor to load rules from `.cursor/rules/`
+
+### GitHub Copilot / Claude Code / Aider
+
+No setup needed! These agents automatically read `AGENTS.md` from your project root.
+
+### VS Code with MCP
+
+1. Install VS Code extension that supports MCP
+2. Extension will automatically detect `.vscode/mcp.json`
+3. Restart VS Code to load configuration
+
+### Windsurf
+
+1. Open Windsurf settings
+2. MCP configuration automatically loaded from `.windsurf/mcp_config.json`
+
+## Next steps
 
 **Want to try a working example first?** See the [Golden Repository Example](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo) for a complete working demo.
 
-**Ready to learn more?** Check out [Next Steps](/getting-started/next-steps) for:
+**Ready to learn more?** Check out [Next Steps](/docs/00-getting-started/01-next-steps) for:
 
 - Auto-sync on save
 - Team collaboration features
 - Git-based rule sharing
 - Custom exporters
 
-**Run into issues?** See [Troubleshooting Guide](/troubleshooting) for common solutions.
+**Run into issues?** See [Troubleshooting Guide](/docs/04-troubleshooting) for common solutions.
 
 ---
 

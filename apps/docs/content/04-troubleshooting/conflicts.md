@@ -144,7 +144,7 @@ sync:
   workflow_mode: "native_format" # or "ir_source"
 ```
 
-See [Workflows guide](/guides/workflows) for details.
+See [Workflows guide](/docs/01-guides/01-workflows) for details.
 
 ### 2. Edit only one source
 
@@ -176,7 +176,7 @@ aligntrue sync
 
 ### 4. Use file watchers (advanced)
 
-See [File watcher setup](/reference/file-watcher-setup) for automatic sync on file changes.
+See [File watcher setup](/docs/03-reference/file-watcher-setup) for automatic sync on file changes.
 
 ## Common conflict scenarios
 
@@ -370,7 +370,7 @@ If you didn't have backups enabled:
 
 ## Related pages
 
-- [Auto-pull behavior](/guides/auto-pull) - Understanding auto-pull
-- [Workflows guide](/guides/workflows) - Choosing your workflow
-- [Backup and restore](/reference/backup-restore) - Using backups
-- [Sync behavior](/concepts/sync-behavior) - How sync works
+- [Auto-pull behavior](/docs/01-guides/00-auto-pull) - Understanding auto-pull
+- [Workflows guide](/docs/01-guides/01-workflows) - Choosing your workflow
+- [Backup and restore](/docs/03-reference/backup-restore) - Using backups
+- [Sync behavior](/docs/02-concepts/sync-behavior) - How sync works
