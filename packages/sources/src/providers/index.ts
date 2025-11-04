@@ -4,7 +4,7 @@
 
 import { getCacheDir } from "@aligntrue/core";
 
-export type SourceType = "local" | "catalog" | "git" | "url";
+export type SourceType = "local" | "git" | "url";
 
 /**
  * Git-specific configuration
@@ -26,17 +26,6 @@ export interface SourceConfig {
   type: SourceType;
   path?: string;
   url?: string;
-  id?: string; // For catalog sources
-}
-
-/**
- * Catalog-specific configuration
- */
-export interface CatalogSourceConfig extends SourceConfig {
-  type: "catalog";
-  id: string; // Pack ID (e.g., "packs/base/base-global")
-  forceRefresh?: boolean;
-  warnOnStaleCache?: boolean;
 }
 
 /**
@@ -53,20 +42,6 @@ export function createProvider(
       }
       const { LocalProvider } = require("./local.js");
       return new LocalProvider(config.path);
-    }
-
-    case "catalog": {
-      if (!config.id) {
-        throw new Error(
-          'Catalog source requires "id" field (e.g., "packs/base/base-global")',
-        );
-      }
-      const { CatalogProvider } = require("./catalog.js");
-      return new CatalogProvider({
-        cacheDir: getCacheDir("catalog", cwd),
-        forceRefresh: (config as CatalogSourceConfig).forceRefresh,
-        warnOnStaleCache: (config as CatalogSourceConfig).warnOnStaleCache,
-      });
     }
 
     case "git": {
@@ -93,12 +68,6 @@ export function createProvider(
 }
 
 // Re-export provider implementations for direct use
-export { CatalogProvider } from "./catalog.js";
-export type {
-  CatalogIndex,
-  CatalogEntry,
-  CatalogProviderOptions,
-} from "./catalog.js";
 export { GitProvider } from "./git.js";
 export type { GitProviderOptions } from "./git.js";
 export { LocalProvider } from "./local.js";

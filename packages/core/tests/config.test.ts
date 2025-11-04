@@ -265,9 +265,8 @@ exporters:
 sources:
   - type: local
     path: .aligntrue/rules.md
-  - type: catalog
-    id: packs/base/testing
-    version: "^1.0.0"
+  - type: git
+    url: https://github.com/example/rules
 scopes:
   - path: packages/frontend
     include: ["src/**/*.tsx"]
@@ -694,20 +693,6 @@ sources:
     await expect(loadConfig(configPath)).rejects.toThrow(/url.*required/);
   });
 
-  it("validates catalog source requires id", async () => {
-    const configPath = writeConfig(
-      "catalog-no-id.yaml",
-      `
-version: "1"
-mode: solo
-sources:
-  - type: catalog
-`,
-    );
-
-    await expect(loadConfig(configPath)).rejects.toThrow(/id.*required/);
-  });
-
   it("validates exporter names are non-empty", async () => {
     const configPath = writeConfig(
       "empty-exporter.yaml",
@@ -826,23 +811,6 @@ sources:
     expect(config.sources[0].url).toBe(
       "https://github.com/AlignTrue/aligns.git",
     );
-  });
-
-  it("accepts catalog sources with IDs (no path validation)", async () => {
-    const configPath = writeConfig(
-      "catalog-source.yaml",
-      `
-version: "1"
-mode: solo
-sources:
-  - type: catalog
-    id: packs.base.global
-    version: "1.0.0"
-`,
-    );
-
-    const config = await loadConfig(configPath);
-    expect(config.sources[0].id).toBe("packs.base.global");
   });
 
   it("validates each source in array independently", async () => {

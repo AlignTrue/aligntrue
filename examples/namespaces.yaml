@@ -1,12 +1,12 @@
-# Namespace Ownership Registry (Phase 4)
+# Namespace Registry (Reference)
 #
-# Prevents namespace squatting by mapping pack namespaces to GitHub owners.
-# All packs must declare namespace_owner and match this registry.
+# Documents namespace conventions for example packs.
+# This is for reference only - no catalog registry exists.
 #
-# Update process:
-# 1. Submit PR adding your namespace
-# 2. Prove GitHub org/user ownership (org membership or repo ownership)
-# 3. After approval, your namespace is reserved
+# When creating your own packs:
+# 1. Use a unique namespace (e.g., packs/yourorg/*)
+# 2. Share via GitHub URLs or local files
+# 3. No registration required
 
 version: "1.0.0"
 updated_at: "2025-10-31T00:00:00.000Z"

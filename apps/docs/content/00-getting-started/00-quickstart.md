@@ -19,75 +19,37 @@ AlignTrue helps you control how AI coding assistants behave in your project. You
 
 ## Installation
 
-Install AlignTrue globally to use it in any project:
-
 ```bash
-npm install -g @aligntrue/cli
+npm install -g aligntrue
 ```
 
-**Verify installation:**
+or use it directly without installing:
 
 ```bash
-aligntrue --version
+npx aligntrue --help
 ```
 
-## Quick start
+## Quick start (60 seconds)
 
-### 1. Initialize your project
-
-Open a terminal, navigate to your project directory, and run:
+Initialize a new configuration:
 
 ```bash
-cd your-project
 aligntrue init
 ```
 
-**What this does:** AlignTrue scans your project for AI agents and existing rules:
+This creates `.aligntrue.yaml` with:
 
-- If you have existing rules (Cursor `.mdc`, `.cursorrules`, `AGENTS.md`, `CLAUDE.md`, `CRUSH.md`, `WARP.md`), it offers to import them
-- Otherwise, it creates a starter template with 5 example rules
-- Creates `.aligntrue/config.yaml` with detected agents enabled
-- Auto-configures workflow mode based on your choice
-- Case-insensitive detection (finds `agents.md`, `AGENTS.md`, `Agents.md`, etc.)
-- Supports legacy `.cursorrules` format (single file, same as `.mdc`)
+- Base global rules
+- Your org/user namespace
+- Default scopes for your repo structure
 
-**Example output (with existing rules):**
+Sync your first export:
 
-```
-◇ Found existing rules: .cursor/rules/my-rules.mdc
-│
-? What would you like to do?
-  ❯ Import these rules (recommended)
-    Preview import coverage first
-    Start fresh (ignore existing rules)
-│
-◇ Imported 12 rules from cursor
-◇ Coverage: 71% (high confidence)
-│
-◆ Created 2 files:
-│  • .aligntrue/config.yaml
-│  • .aligntrue/rules.md
-│
-💡 Workflow: native_format
-   Edit in Cursor, AlignTrue syncs automatically
+```bash
+aligntrue sync
 ```
 
-**Example output (fresh start):**
-
-```
-◇ Detected 2 AI coding agents:
-│  • Cursor (.cursor/)
-│  • GitHub Copilot (AGENTS.md)
-│
-◇ Project ID: my-awesome-project
-│
-◆ Created 2 files:
-│  • .aligntrue/config.yaml
-│  • .aligntrue/rules.md
-│
-💡 Workflow: ir_source
-   Edit .aligntrue/rules.md as source of truth
-```
+This creates `.cursor/rules/*.mdc` files ready for Cursor.
 
 ### 2. Customize your rules
 
@@ -161,6 +123,9 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 - `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
 
 ## Next steps
+
+- **Cursor**: Open Cursor Settings > Features > Cursor Rules, enable rules folder
+- **AGENTS.md**: Check `AGENTS.md` for Claude, ChatGPT, other agents
 
 **Want to try a working example first?** See [Try the Example](/getting-started/try-example) for a complete working demo.
 
