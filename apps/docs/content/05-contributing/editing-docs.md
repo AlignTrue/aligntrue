@@ -26,7 +26,7 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 | `apps/docs/content/index.mdx`                      | `README.md`       | GitHub landing page              |
 | `apps/docs/content/contributing/creating-packs.md` | `CONTRIBUTING.md` | Contribution guide               |
 | `apps/docs/content/development/*.md`               | `DEVELOPMENT.md`  | Development guide (concatenated) |
-| `apps/docs/content/policies/index.md`              | `POLICY.md`       | Registry policy                  |
+| `apps/docs/content/06-policies/index.md`           | `POLICY.md`       | Registry policy                  |
 
 ## Editing workflow
 
@@ -48,7 +48,7 @@ apps/docs/content/development/commands.md
 apps/docs/content/development/architecture.md
 
 # Edit policy (becomes POLICY.md)
-apps/docs/content/policies/index.md
+apps/docs/content/06-policies/index.md
 ```
 
 ### 2. Generate repo files

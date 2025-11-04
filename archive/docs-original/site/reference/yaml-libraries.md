@@ -6,7 +6,7 @@ This document explains AlignTrue's YAML parsing and handling approach.
 
 AlignTrue uses `js-yaml` for YAML parsing with careful handling of canonicalization boundaries.
 
-## Design Principles
+## Design principles
 
 1. **Parse as YAML, validate as JSON**
    - Accept YAML's flexibility for authoring (comments, anchors, multi-line strings)
@@ -23,7 +23,7 @@ AlignTrue uses `js-yaml` for YAML parsing with careful handling of canonicalizat
    - Catalog publishing: YAML → IR → JCS → hash
    - Normal operations: Work with IR directly (no canonicalization overhead)
 
-## Library Choice: js-yaml
+## Library choice: js-yaml
 
 **Why js-yaml:**
 
@@ -39,7 +39,7 @@ AlignTrue uses `js-yaml` for YAML parsing with careful handling of canonicalizat
 - `js-yaml-parser`: Lower-level, more complex API
 - Custom parser: Not worth the maintenance burden
 
-## Canonicalization Strategy
+## Canonicalization strategy
 
 ### When to Canonicalize
 
@@ -84,7 +84,7 @@ Content hash
 
 See `packages/schema/src/canonicalize.ts` for implementation.
 
-## Edge Cases
+## Edge cases
 
 ### Comments
 
@@ -110,7 +110,7 @@ See `packages/schema/src/canonicalize.ts` for implementation.
 - `null` values preserved
 - Omit optional fields rather than setting to `null`
 
-## Validation Approach
+## Validation approach
 
 1. **Parse YAML** with `js-yaml`
 2. **Validate IR** with Ajv (JSON Schema validator) in strict mode
@@ -132,7 +132,7 @@ AlignTrue uses YAML 1.2 spec (via `js-yaml` defaults):
 
 **Pre-1.0 policy:** Schema can iterate freely. Post-1.0: Breaking changes require migration tooling.
 
-## Testing Strategy
+## Testing strategy
 
 **Golden files:**
 
@@ -149,7 +149,7 @@ AlignTrue uses YAML 1.2 spec (via `js-yaml` defaults):
 - YAML → IR → export → import → IR
 - Verify fidelity through full cycle
 
-## Performance Considerations
+## Performance considerations
 
 - **YAML parsing:** ~1ms for typical `.aligntrue.yaml` (~5KB)
 - **Canonicalization:** ~2ms for same file
@@ -161,7 +161,7 @@ AlignTrue uses YAML 1.2 spec (via `js-yaml` defaults):
 - Don't re-parse unchanged files
 - Use file modification timestamps to detect changes
 
-## Future Considerations
+## Future considerations
 
 - **YAML 1.2 strict mode:** Consider enforcing stricter YAML subset
 - **Schema evolution:** Plan for breaking changes post-1.0

@@ -4,7 +4,7 @@ Overlays let you customize third-party packs without forking. Change severity, a
 
 ---
 
-## Quick Start (60 seconds)
+## Quick start (60 seconds)
 
 **Scenario:** You use `@acme/standards` but want to treat one check as an error.
 
@@ -88,7 +88,7 @@ See `docs/plugs.md` for plug documentation.
 
 ---
 
-## Overlay Anatomy
+## Overlay anatomy
 
 ### Basic Overlay
 
@@ -116,7 +116,7 @@ overlays:
 
 ---
 
-## Selector Strategies
+## Selector strategies
 
 ### By Rule ID
 
@@ -164,7 +164,7 @@ overlays:
 
 ---
 
-## Override Capabilities
+## Override capabilities
 
 ### Set Operation
 
@@ -212,7 +212,7 @@ overlays:
 
 ---
 
-## Advanced Patterns
+## Advanced patterns
 
 ### Multiple Overlays
 
@@ -279,7 +279,7 @@ overlays:
 
 ---
 
-## Conflict Resolution
+## Conflict resolution
 
 ### What Causes Conflicts?
 
@@ -338,7 +338,7 @@ aln override diff 'rule[id=no-console-log]'
 
 ---
 
-## Team Workflows
+## Team workflows
 
 ### Overlay Approval
 
@@ -384,7 +384,7 @@ aln override status
 
 ---
 
-## Overlay Hashing and Lockfile
+## Overlay hashing and lockfile
 
 ### Triple-Hash Lockfile
 
@@ -581,7 +581,7 @@ overlays:
 
 ---
 
-## Best Practices
+## Best practices
 
 ### Keep Overlays Minimal
 
@@ -709,7 +709,7 @@ See `docs/troubleshooting-overlays.md` for comprehensive troubleshooting.
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - **Team Mode:** `docs/team-mode.md` - Overlay policies and approval workflows
 - **Git Sources:** `docs/git-sources.md` - Pull packs with overlays

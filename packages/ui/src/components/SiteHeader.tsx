@@ -9,6 +9,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AlignTrueLogo } from "./AlignTrueLogo";
 
 interface SiteHeaderProps {
@@ -52,9 +53,17 @@ export function SiteHeader({
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            textDecoration: "none",
+          }}
+        >
           <AlignTrueLogo size="md" />
-        </div>
+        </Link>
         {showNavigation && (
           <nav style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
             <a
@@ -75,7 +84,7 @@ export function SiteHeader({
                 color: "var(--fg-default)",
               }}
             >
-              Catalog
+              Example Rules
             </a>
             <a
               href="https://github.com/AlignTrue/aligntrue"

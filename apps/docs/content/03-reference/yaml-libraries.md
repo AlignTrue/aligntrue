@@ -7,11 +7,11 @@ description: Design decisions for YAML parsing in AlignTrue.
 
 AlignTrue uses specific YAML parsing strategies for determinism and compatibility.
 
-## Library Choice
+## Library choice
 
 AlignTrue uses `js-yaml` for YAML parsing with strict schema validation.
 
-## Design Principles
+## Design principles
 
 1. **Deterministic parsing** - Same YAML produces same IR
 2. **Strict validation** - Reject invalid YAML early
@@ -27,7 +27,7 @@ YAML is canonicalized only at boundaries:
 
 Not during normal operations like sync or export.
 
-## Error Handling
+## Error handling
 
 Invalid YAML produces actionable error messages:
 

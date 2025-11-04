@@ -57,7 +57,7 @@ export default function HomePage() {
               marginBottom: "1.5rem",
             }}
           >
-            Write once, sync everywhere
+            Sync rules across AI agents, projects & teams.
           </h1>
           <p
             style={{
@@ -68,9 +68,9 @@ export default function HomePage() {
               margin: "0 auto 2rem",
             }}
           >
-            One markdown file generates agent-specific formats for 28+ AI coding
-            tools. Keep your personal AI rules consistent across projects and
-            machines.
+            Automatically generate agent-specific formats for 28+ AI coding
+            tools. Keep rules aligned for yourself or your team.{" "}
+            <strong>Start in 60 seconds.</strong>
           </p>
           <code
             style={{
@@ -103,7 +103,7 @@ export default function HomePage() {
                 textDecoration: "none",
               }}
             >
-              Get Started
+              Quickstart Guide
             </Link>
             <Link
               href="/docs"

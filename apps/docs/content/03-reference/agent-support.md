@@ -7,7 +7,7 @@ description: Complete compatibility matrix for AlignTrue's 43 exporters supporti
 
 AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 
-## Coverage Statistics
+## Coverage statistics
 
 - **43 total exporters** supporting **28+ agents**
 - **8 MCP configurations** for protocol-based agents
@@ -17,7 +17,7 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 
 This comprehensive coverage ensures AlignTrue rules work across the entire AI coding agent ecosystem, from established tools like Cursor and GitHub Copilot to emerging agents like Windsurf and Roo Code.
 
-## Exporter Categories
+## Exporter categories
 
 ### 1. MCP (Model Context Protocol) Config Exporters
 
@@ -35,14 +35,14 @@ AGENTS.md provides a single, universal markdown format that multiple agents can 
 
 Some agents (like Aider) use both a universal format (AGENTS.md) AND their own specific config file for optimal results.
 
-## Key Features
+## Key features
 
 - **Fidelity Notes**: Each exporter documents what information may be lost when converting from AlignTrue's IR format
 - **Vendor Metadata**: Agent-specific extensions are preserved in `vendor.*` namespaces
 - **Version Control**: All exporters are versioned and follow semantic versioning
 - **Comprehensive Coverage**: Supports 28+ agents including Cursor, Claude, GitHub Copilot, Aider, and many others
 
-## Full Compatibility Matrix
+## Full compatibility matrix
 
 <div style="overflow-x: auto; max-width: 100%;">
 
@@ -97,7 +97,7 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 
 Built-in extensibility allows the community to [add support for new agents](/contributing/adding-exporters). Each exporter follows a consistent pattern and can be contributed via pull request.
 
-## Related Documentation
+## Related documentation
 
 - [CLI Reference](/reference/cli-reference) - Commands for working with exporters
 - [Adding Exporters](/contributing/adding-exporters) - Guide for adding new agent support

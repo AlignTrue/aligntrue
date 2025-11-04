@@ -74,7 +74,7 @@ sources:
     path: rules/typescript.yaml
 ```
 
-First sync will prompt for [privacy consent](/reference/privacy#network-operations). AlignTrue clones the repository and extracts the specified file.
+First sync will prompt for [privacy consent](/policies/privacy#network-operations). AlignTrue clones the repository and extracts the specified file.
 
 ### Private repository with SSH
 
@@ -155,7 +155,7 @@ rm -rf .aligntrue/.cache/git/<repo-hash>
 
 ## Privacy consent flow
 
-Git sources require network access, which triggers AlignTrue's [privacy consent system](/reference/privacy#network-operations).
+Git sources require network access, which triggers AlignTrue's [privacy consent system](/policies/privacy#network-operations).
 
 ### First-time consent
 
@@ -202,7 +202,7 @@ Revoke git consent:
 aligntrue privacy revoke git
 ```
 
-Future syncs will error until consent is granted again. See [Privacy & Telemetry](/reference/privacy) for full privacy documentation.
+Future syncs will error until consent is granted again. See [Privacy & Telemetry](/policies/privacy) for full privacy documentation.
 
 ## Offline mode
 
@@ -349,7 +349,7 @@ Until then, use the config-based approach documented above.
 
 - [Quickstart Guide](/getting-started/quickstart) - Get started with AlignTrue
 - [Command Reference](/reference/cli-reference) - All CLI commands including `sync`
-- [Privacy & Telemetry](/reference/privacy) - Network operations and consent system
+- [Privacy & Telemetry](/policies/privacy) - Network operations and consent system
 - [Sync Behavior](/concepts/sync-behavior) - How rules merge and override
 
 ---

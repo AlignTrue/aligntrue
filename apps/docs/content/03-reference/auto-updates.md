@@ -341,4 +341,4 @@ aligntrue update apply
 
 ---
 
-For questions or issues, see [troubleshooting guide](/reference/troubleshooting) or open an issue on GitHub.
+For questions or issues, see [troubleshooting guide](/troubleshooting) or open an issue on GitHub.

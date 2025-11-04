@@ -62,6 +62,12 @@ jobs:
       - name: Validate transpilePackages config
         run: node scripts/validate-transpile-packages.mjs
 
+      - name: Check code formatting
+        run: pnpm format:check
+
+      - name: Lint code
+        run: pnpm lint
+
       - name: Build all packages
         run: pnpm build:packages
 
