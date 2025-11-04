@@ -1,5 +1,5 @@
 ---
-title: AlignTrue
+title: Overview
 ---
 
 # AlignTrue
@@ -21,11 +21,25 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 
 ## Quickstart
 
+<div style={{ maxWidth: '56rem', margin: '2rem 0' }}>
+
+### 1. Initialize
+
 ```bash
-npx aligntrue init  # Auto-detect agents, create .aligntrue.yaml
-# Edit .aligntrue.yaml (optional)
-aligntrue sync           # Generate all agent files
+npx aligntrue init
 ```
+
+→ Auto-detects agents, imports existing rules or scaffolds new ones into `.aligntrue/rules.md`
+
+### 2. Align
+
+```bash
+aligntrue sync
+```
+
+→ Pushes rules to all configured agents (Cursor, AGENTS.md, VS Code, etc.)
+
+</div>
 
 **Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
 
