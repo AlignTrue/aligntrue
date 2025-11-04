@@ -120,16 +120,6 @@ export function SiteHeader({
                   Docs
                 </a>
                 <a
-                  href="/docs/catalog/available-packs"
-                  style={{
-                    fontSize: "0.875rem",
-                    textDecoration: "none",
-                    color: "var(--fg-default)",
-                  }}
-                >
-                  Example Rules
-                </a>
-                <a
                   href="https://github.com/AlignTrue/aligntrue"
                   target="_blank"
                   rel="noreferrer"
@@ -220,26 +210,6 @@ export function SiteHeader({
             }}
           >
             Docs
-          </a>
-          <a
-            href="/docs/catalog/available-packs"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{
-              padding: "0.75rem 1rem",
-              fontSize: "1rem",
-              textDecoration: "none",
-              color: "var(--fg-default)",
-              borderRadius: "0.375rem",
-              transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--bg-muted)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            Example Rules
           </a>
           <a
             href="https://github.com/AlignTrue/aligntrue"

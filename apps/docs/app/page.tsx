@@ -31,13 +31,14 @@ function CopyButton({ text }: { text: string }) {
       onClick={handleCopy}
       style={{
         marginLeft: "0.5rem",
-        padding: "0.25rem 0.5rem",
+        padding: "0.5rem 1rem",
         backgroundColor: "transparent",
         border: "1px solid var(--border-color)",
-        borderRadius: "0.25rem",
+        borderRadius: "0.375rem",
         cursor: "pointer",
-        fontSize: "0.75rem",
+        fontSize: "0.875rem",
         color: "var(--text-secondary)",
+        fontWeight: "500",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
@@ -92,19 +93,189 @@ export default function HomePage() {
               Write once, sync everywhere. 28+ agents supported. Extensible.{" "}
               <strong>Start in 60 seconds.</strong>
             </p>
-            <div className="command-wrapper" style={{ marginBottom: "2rem" }}>
-              <code
+            <div
+              className="quickstart-steps"
+              style={{
+                maxWidth: "56rem",
+                margin: "0 auto 2rem",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "2rem",
+              }}
+            >
+              {/* Step 1 */}
+              <div
+                className="step-card"
                 style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "var(--bg-muted)",
-                  borderRadius: "0.375rem",
-                  fontSize: "0.875rem",
-                  display: "inline-block",
+                  backgroundColor: "var(--bg-default)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "0.75rem",
+                  padding: "2rem",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
                 }}
               >
-                npx aligntrue init
-              </code>
-              <CopyButton text="npx aligntrue init" />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    marginBottom: "1.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "2rem",
+                      height: "2rem",
+                      borderRadius: "50%",
+                      backgroundColor: "var(--brand-accent, #F5A623)",
+                      color: "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "700",
+                      fontSize: "1rem",
+                      flexShrink: 0,
+                    }}
+                  >
+                    1
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: "1.375rem",
+                      fontWeight: "600",
+                      margin: 0,
+                    }}
+                  >
+                    Initialize
+                  </h3>
+                </div>
+                <div
+                  className="command-wrapper"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <code
+                    style={{
+                      padding: "0.625rem 1rem",
+                      backgroundColor: "var(--bg-muted)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "0.375rem",
+                      fontSize: "0.95rem",
+                      display: "inline-block",
+                      fontFamily: "monospace",
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    npx aligntrue init
+                  </code>
+                  <CopyButton text="npx aligntrue init" />
+                </div>
+                <p
+                  style={{
+                    fontSize: "0.95rem",
+                    color: "var(--fg-muted)",
+                    margin: 0,
+                    lineHeight: "1.5",
+                    textAlign: "center",
+                  }}
+                >
+                  Auto-detects agents, imports existing rules, or scaffolds{" "}
+                  <code>.aligntrue/rules.md</code>.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div
+                className="step-card"
+                style={{
+                  backgroundColor: "var(--bg-default)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "0.75rem",
+                  padding: "2rem",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    marginBottom: "1.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "2rem",
+                      height: "2rem",
+                      borderRadius: "50%",
+                      backgroundColor: "var(--brand-accent, #F5A623)",
+                      color: "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "700",
+                      fontSize: "1rem",
+                      flexShrink: 0,
+                    }}
+                  >
+                    2
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: "1.375rem",
+                      fontWeight: "600",
+                      margin: 0,
+                    }}
+                  >
+                    Sync
+                  </h3>
+                </div>
+                <div
+                  className="command-wrapper"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <code
+                    style={{
+                      padding: "0.625rem 1rem",
+                      backgroundColor: "var(--bg-muted)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "0.375rem",
+                      fontSize: "0.95rem",
+                      display: "inline-block",
+                      fontFamily: "monospace",
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    aligntrue sync
+                  </code>
+                  <CopyButton text="aligntrue sync" />
+                </div>
+                <p
+                  style={{
+                    fontSize: "0.95rem",
+                    color: "var(--fg-muted)",
+                    margin: 0,
+                    lineHeight: "1.5",
+                    textAlign: "center",
+                  }}
+                >
+                  Generates & updates each agent's native files (Cursor,
+                  AGENTS.md, VS Code, etc.).
+                </p>
+              </div>
             </div>
             <div
               className="hero-buttons"
@@ -445,11 +616,12 @@ export default function HomePage() {
             font-size: 1rem !important;
           }
 
+          .quickstart-steps {
+            grid-template-columns: 1fr !important;
+          }
+
           .command-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
+            flex-wrap: wrap;
           }
 
           .hero-buttons {
