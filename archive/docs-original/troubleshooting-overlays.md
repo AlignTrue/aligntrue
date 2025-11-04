@@ -4,7 +4,7 @@ Common issues when working with overlays and their solutions.
 
 ---
 
-## Overlay Not Applied
+## Overlay not applied
 
 **Symptom:** You defined an overlay but the check still uses upstream settings.
 
@@ -131,7 +131,7 @@ aln override add \
 
 ---
 
-## Overlay Conflicts
+## Overlay conflicts
 
 **Symptom:** Multiple overlays target the same check or upstream changes conflict with overlay.
 
@@ -272,7 +272,7 @@ aln override remove 'rule[id=max-complexity]'
 
 ---
 
-## Ambiguous Selector
+## Ambiguous selector
 
 **Symptom:** Overlay matches multiple rules unintentionally.
 
@@ -307,7 +307,7 @@ Make selector more specific or accept that it applies to all matches. Currently,
 
 ---
 
-## Expired Overlays
+## Expired overlays
 
 **Symptom:** Overlay has passed expiration date but still applies.
 
@@ -380,7 +380,7 @@ Add to CI:
 
 ---
 
-## Plug Slot Overlap
+## Plug slot overlap
 
 **Symptom:** Overlay and plug both try to customize same field.
 
@@ -464,7 +464,7 @@ plugs:
 
 ---
 
-## Overlay Not Validated in CI
+## Overlay not validated in CI
 
 **Symptom:** Overlay passes locally but fails in CI.
 
@@ -604,7 +604,7 @@ overlays:
 
 ---
 
-## Debug Commands
+## Debug commands
 
 ### Inspect Overlay Application
 
@@ -644,7 +644,7 @@ git diff .aligntrue.lock.json
 
 ---
 
-## Common Error Messages
+## Common error messages
 
 ### "Overlay validation failed: Selector matches no rules"
 
@@ -713,7 +713,7 @@ git commit -m "chore: Update lockfile"
 
 ---
 
-## Best Practices to Avoid Issues
+## Best practices to avoid issues
 
 ### 1. Use Specific Selectors
 
@@ -809,7 +809,7 @@ overlays:
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - **Overlays Guide:** `docs/overlays.md` - Complete overlay documentation
 - **Commands:** `docs/commands.md` - CLI reference for overlay commands
@@ -819,7 +819,7 @@ overlays:
 
 ---
 
-## Still Having Issues?
+## Still having issues?
 
 1. **Check lockfile:** `cat .aligntrue.lock.json | jq '.dependencies[] | select(.overlay_hash != null)'`
 2. **Validate overlays:** `aln check --validate-overlays`

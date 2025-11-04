@@ -350,7 +350,7 @@ aligntrue check --ci
     aligntrue check --ci
 ```
 
-**See also:** [Troubleshooting Guide](/reference/troubleshooting#check-issues-ci) for common check failures.
+**See also:** [Troubleshooting Guide](/troubleshooting#check-issues-ci) for common check failures.
 
 ---
 
@@ -1654,7 +1654,7 @@ aligntrue sync --dry-run
 
 - [Git Workflows Guide](/concepts/git-workflows) - Complete pull command workflows
 - [Git Sources Guide](/reference/git-sources) - Config-based permanent git sources
-- [Privacy Guide](/reference/privacy) - Network consent management
+- [Privacy Guide](/policies/privacy) - Network consent management
 
 ---
 
@@ -1834,7 +1834,7 @@ Required fields: `id`, `version`, `spec_version`, `profile.id`
 
 - [Git Workflows Guide - Vendoring](/concepts/git-workflows#vendoring-workflows) - Complete vendoring workflows
 - [Team Mode Guide](/concepts/team-mode) - Team approval workflows
-- [Privacy Guide](/reference/privacy) - Network consent management
+- [Privacy Guide](/policies/privacy) - Network consent management
 
 ---
 
@@ -1946,7 +1946,7 @@ We NEVER collect:
 - State: `.aligntrue/telemetry.json`
 - Events: `.aligntrue/telemetry-events.json` (last 1000 events)
 
-**See also:** [Privacy Policy](/reference/privacy) for complete details.
+**See also:** [Privacy Policy](/policies/privacy) for complete details.
 
 ### `aligntrue privacy audit|revoke`
 
@@ -2024,7 +2024,7 @@ Offline mode bypasses consent checks entirely (no network = no consent needed).
 
 **See also:**
 
-- [Privacy Policy](/reference/privacy) - Complete privacy details
+- [Privacy Policy](/policies/privacy) - Complete privacy details
 - [Sync command](#aligntrue-sync) - Offline flag documentation
 
 ---
@@ -2188,7 +2188,7 @@ If you encounter an error:
 1. **Read the hint** - Most errors include next steps
 2. **Check exit codes** - 2 = system issue, 1 = validation issue
 3. **Use error codes** - Reference for support or documentation
-4. **Check troubleshooting** - [Common issues](/reference/troubleshooting)
+4. **Check troubleshooting** - [Common issues](/troubleshooting)
 
 ---
 
@@ -2198,6 +2198,6 @@ If you encounter an error:
 - [Backup and Restore Guide](/reference/backup-restore) - Protect your configuration
 - [Git Sources Guide](/reference/git-sources) - Pull rules from repositories
 - [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
-- [Troubleshooting](/reference/troubleshooting) - Common issues and fixes
+- [Troubleshooting](/troubleshooting) - Common issues and fixes
 - [Sync Behavior](/concepts/sync-behavior) - Two-way sync contract
 - [Extending AlignTrue](/contributing/adding-exporters) - Add new exporters

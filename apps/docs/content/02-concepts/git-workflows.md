@@ -317,7 +317,7 @@ aligntrue privacy grant git
 aligntrue pull https://github.com/yourorg/rules --offline
 ```
 
-See [Privacy guide](/reference/privacy) for full consent documentation.
+See [Privacy guide](/policies/privacy) for full consent documentation.
 
 ## Vendoring workflows
 
@@ -575,5 +575,5 @@ aligntrue pull https://github.com/yourorg/rules
 
 - [Git sources guide](/reference/git-sources) - Config-based permanent git sources
 - [Command reference](/reference/cli-reference) - Full `aligntrue pull` flag reference
-- [Privacy guide](/reference/privacy) - Network consent and privacy management
+- [Privacy guide](/policies/privacy) - Network consent and privacy management
 - [Quickstart](/getting-started/quickstart) - Initial setup and workflows

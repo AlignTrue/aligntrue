@@ -25,13 +25,13 @@ const errors = [];
 function isSourcePackage(packagePath) {
   try {
     const pkg = JSON.parse(readFileSync(packagePath, "utf-8"));
-    
+
     // Check if exports point to src/ (no build step)
     if (pkg.exports) {
       const exportsStr = JSON.stringify(pkg.exports);
       return exportsStr.includes("/src/");
     }
-    
+
     return false;
   } catch (error) {
     return false;
@@ -44,20 +44,20 @@ function isSourcePackage(packagePath) {
 function getTranspilePackages(configPath, isESM = false) {
   try {
     const content = readFileSync(configPath, "utf-8");
-    
+
     // Extract transpilePackages array
     const match = content.match(/transpilePackages:\s*\[(.*?)\]/s);
     if (!match) {
       return [];
     }
-    
+
     // Parse package names from array
     const packagesStr = match[1];
     const packages = packagesStr
       .split(",")
-      .map(p => p.trim().replace(/['"]/g, ""))
+      .map((p) => p.trim().replace(/['"]/g, ""))
       .filter(Boolean);
-    
+
     return packages;
   } catch (error) {
     return [];
@@ -85,7 +85,9 @@ const uiPackagePath = join(rootDir, "packages/ui/package.json");
 const isUiSourcePackage = isSourcePackage(uiPackagePath);
 
 console.log("\n📦 Workspace packages:");
-console.log(`   @aligntrue/ui: ${isUiSourcePackage ? "source package (requires transpilation)" : "built package"}`);
+console.log(
+  `   @aligntrue/ui: ${isUiSourcePackage ? "source package (requires transpilation)" : "built package"}`,
+);
 
 // Validation
 if (isUiSourcePackage && !webTranspilePackages.includes("@aligntrue/ui")) {
@@ -106,8 +108,11 @@ if (errors.length === 0) {
   for (const error of errors) {
     console.error(`   • ${error}`);
   }
-  console.error("\n💡 Fix: Add source packages to transpilePackages in Next.js config");
-  console.error("   See: https://nextjs.org/docs/app/api-reference/config/next-config-js/transpilePackages");
+  console.error(
+    "\n💡 Fix: Add source packages to transpilePackages in Next.js config",
+  );
+  console.error(
+    "   See: https://nextjs.org/docs/app/api-reference/config/next-config-js/transpilePackages",
+  );
   process.exit(1);
 }
-

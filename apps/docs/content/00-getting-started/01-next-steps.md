@@ -277,9 +277,9 @@ Common issues and solutions:
 
 - First-time git source access requires consent
 - Use `--offline` flag to skip network operations
-- See [Privacy Guide](/reference/privacy)
+- See [Privacy Guide](/policies/privacy)
 
-**Full troubleshooting:** [Troubleshooting Guide](/reference/troubleshooting)
+**Full troubleshooting:** [Troubleshooting Guide](/troubleshooting)
 
 ## Learning resources
 
@@ -294,7 +294,7 @@ Common issues and solutions:
 
 - [CLI Reference](/reference/cli-reference) - Complete command documentation
 - [Pre-1.0 Policy](/reference/pre-1.0-policy) - Schema evolution policy
-- [Privacy Controls](/reference/privacy) - Network consent and telemetry
+- [Privacy Controls](/policies/privacy) - Network consent and telemetry
 
 ### Contributing
 

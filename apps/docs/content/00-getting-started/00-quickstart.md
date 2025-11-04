@@ -15,7 +15,7 @@ AlignTrue helps you control how AI coding assistants behave in your project. You
 ## Prerequisites
 
 - **Node.js 20+** - [Download](https://nodejs.org/)
-- **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/reference/cli-reference#supported-agents)
+- **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/reference/agent-support)
 
 ## Installation
 
@@ -37,11 +37,10 @@ Initialize a new configuration:
 aligntrue init
 ```
 
-This creates `.aligntrue.yaml` with:
+This creates `.aligntrue/config.yaml` and `.aligntrue/rules.md` with:
 
-- Base global rules
-- Your org/user namespace
-- Default scopes for your repo structure
+- Configuration file with your org/user namespace and default exporters
+- Starter rules file with base global rules and example patterns
 
 Sync your first export:
 
@@ -127,7 +126,7 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 - **Cursor**: Open Cursor Settings > Features > Cursor Rules, enable rules folder
 - **AGENTS.md**: Check `AGENTS.md` for Claude, ChatGPT, other agents
 
-**Want to try a working example first?** See [Try the Example](/getting-started/try-example) for a complete working demo.
+**Want to try a working example first?** See the [Golden Repository Example](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo) for a complete working demo.
 
 **Ready to learn more?** Check out [Next Steps](/getting-started/next-steps) for:
 
@@ -136,7 +135,7 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 - Git-based rule sharing
 - Custom exporters
 
-**Run into issues?** See [Troubleshooting Guide](/reference/troubleshooting) for common solutions.
+**Run into issues?** See [Troubleshooting Guide](/troubleshooting) for common solutions.
 
 ---
 

@@ -8,7 +8,7 @@ This guide covers setting up your development environment and contributing to Al
 - **pnpm** 8+ (workspace package manager)
 - **Git** 2.40+
 
-## Initial Setup
+## Initial setup
 
 1. **Clone the repository:**
 
@@ -34,7 +34,7 @@ This guide covers setting up your development environment and contributing to Al
    pnpm test
    ```
 
-## Development Workflow
+## Development workflow
 
 ### Running Tests
 
@@ -105,7 +105,7 @@ pnpm typecheck
 pnpm lint:fix
 ```
 
-## Project Structure
+## Project structure
 
 ```
 aligntrue/
@@ -126,7 +126,7 @@ aligntrue/
 └── .cursor/rules/         AI development guidance (private)
 ```
 
-## Making Changes
+## Making changes
 
 ### 1. Create a Branch
 
@@ -178,7 +178,7 @@ git push origin feature/your-feature-name
 
 Then open a Pull Request on GitHub.
 
-## Testing Guidelines
+## Testing guidelines
 
 See [testing-workflow.md](./testing-workflow.md) for detailed testing practices.
 
@@ -190,7 +190,7 @@ See [testing-workflow.md](./testing-workflow.md) for detailed testing practices.
 - Keep tests deterministic (no flaky tests)
 - Mock external dependencies
 
-## Code Style
+## Code style
 
 - **TypeScript strict mode** enabled
 - **ESLint + Prettier** configured at workspace root
@@ -198,7 +198,7 @@ See [testing-workflow.md](./testing-workflow.md) for detailed testing practices.
 - **Flat over nested** - max 3 levels of directory nesting
 - **Small, focused modules** - easier for AI to reason about
 
-## Common Tasks
+## Common tasks
 
 ### Adding a New Exporter
 
@@ -220,7 +220,7 @@ See [adding-exporters.md](./adding-exporters.md) for detailed guide.
 4. Update documentation
 5. Consider pre-1.0 migration policy
 
-## Getting Help
+## Getting help
 
 - **Documentation:** Check `docs/` for detailed guides
 - **Architecture decisions:** See `.internal_docs/architecture-decisions.md`
@@ -244,7 +244,7 @@ GitHub Actions runs on every push:
 - Build verification
 - Lint checks
 
-## Release Process
+## Release process
 
 (Post-1.0 - currently in alpha)
 
@@ -254,7 +254,7 @@ GitHub Actions runs on every push:
 4. Push tag: `git push origin v0.x.x`
 5. GitHub Actions publishes to npm
 
-## Additional Resources
+## Additional resources
 
 - [Testing Workflow](./testing-workflow.md)
 - [Adding Exporters](./adding-exporters.md)
