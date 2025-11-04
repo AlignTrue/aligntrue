@@ -12,6 +12,22 @@ AlignTrue helps you control how AI coding assistants behave in your project. You
 - **Sync** - Convert your rules into agent-specific formats (like `.cursor/rules/*.mdc` or `AGENTS.md`)
 - **Agents** - AI coding assistants like Cursor, GitHub Copilot, Claude Code, etc.
 
+## The two-step workflow
+
+AlignTrue's workflow is simple:
+
+1. **Initialize** (`aligntrue init`)
+   - Detects installed agents (Cursor, Copilot, Claude Code, etc.)
+   - Offers to import existing rules OR creates starter template
+   - Creates `.aligntrue/rules.md` as your source of truth
+
+2. **Sync** (`aligntrue sync`)
+   - Converts rules to agent-specific formats
+   - Generates `.cursor/rules/*.mdc`, `AGENTS.md`, `.vscode/mcp.json`, etc.
+   - Keeps everything aligned when you make changes
+
+**The key decision:** If you already have agent-specific rules (like `.cursor/rules/*.mdc` or `AGENTS.md`), init will offer to import them. Otherwise, it creates a starter template with common best practices.
+
 ## Prerequisites
 
 - **Node.js 20+** - [Download](https://nodejs.org/)
