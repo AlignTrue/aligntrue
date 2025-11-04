@@ -43,14 +43,13 @@ export async function privacyCommand(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue privacy audit",
-        "aligntrue privacy revoke catalog",
         "aligntrue privacy revoke git",
         "aligntrue privacy revoke --all",
       ],
       notes: [
         "Subcommands:",
         "  audit              List all consents with timestamps",
-        "  revoke <operation> Revoke specific consent (catalog/git)",
+        "  revoke <operation> Revoke specific consent (git)",
         "  revoke --all       Revoke all consents",
       ],
     });
@@ -162,18 +161,18 @@ async function revokeCommand(
   if (!operation) {
     exitWithError({
       title: "Missing operation",
-      message: "Specify operation to revoke: catalog or git",
+      message: "Specify operation to revoke: git",
       hint: 'Run "aligntrue privacy revoke --all" to revoke all consents',
       code: "ERR_MISSING_ARGUMENT",
     });
     return;
   }
 
-  if (operation !== "catalog" && operation !== "git") {
+  if (operation !== "git") {
     exitWithError({
       title: "Invalid operation",
       message: `Unknown operation: ${operation}`,
-      hint: "Valid operations: catalog, git",
+      hint: "Valid operation: git",
       code: "ERR_INVALID_ARGUMENT",
     });
     return;

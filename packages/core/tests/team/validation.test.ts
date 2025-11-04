@@ -304,47 +304,6 @@ describe("validateTeamSources", () => {
     expect(errors).toEqual([]);
   });
 
-  it("warns when catalog source not in allow list", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockReturnValue({
-      sources: [{ type: "hash", value: "sha256:abc123..." }],
-    });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      exporters: ["cursor"],
-      sources: [{ type: "catalog", id: "base-global", version: "v1.0.0" }],
-    };
-
-    const errors = validateTeamSources(config);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("warning");
-    expect(errors[0]?.message).toContain("not in allow list");
-    expect(errors[0]?.message).toContain("catalog:");
-  });
-
-  it("passes when catalog source in allow list", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockReturnValue({
-      sources: [{ type: "id", value: "base-global@aligntrue/catalog@v1.0.0" }],
-    });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      exporters: ["cursor"],
-      sources: [{ type: "catalog", id: "base-global", version: "v1.0.0" }],
-    };
-
-    const errors = validateTeamSources(config);
-    expect(errors).toEqual([]);
-  });
-
   it("returns error when allow list parse fails", async () => {
     const { parseAllowList } = await import("../../src/team/allow.js");
     vi.mocked(fs.existsSync).mockReturnValue(true);

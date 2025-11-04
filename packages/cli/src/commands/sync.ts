@@ -191,9 +191,9 @@ export async function sync(args: string[]): Promise<void> {
         if (config.sources) {
           for (const source of config.sources) {
             // For now, just check path-based sources
-            // TODO Phase 3.5: Check git/catalog sources once implemented
+            // TODO Phase 3.5: Check git sources once implemented
             if (source.path && source.path !== paths.rules) {
-              // External source path - would need approval if pulling from git/catalog
+              // External source path - would need approval if pulling from git
               // For local paths, skip validation
               continue;
             }

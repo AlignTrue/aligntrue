@@ -688,9 +688,4 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Record telemetry event
   recordEvent({ command_name: "init", align_hashes_used: [] });
-
-  // TODO: Add catalog source option when catalog is ready (Phase 2+)
-  // Prompt: "Start with: [Template] [From catalog] [Import existing]"
-  // If catalog: fetch base-global, base-testing, etc.
-  // See: .internal_docs/refactor-plan.md Phase 2, catalog source provider
 }

@@ -4,6 +4,44 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        marginLeft: "0.5rem",
+        padding: "0.25rem 0.5rem",
+        backgroundColor: "transparent",
+        border: "1px solid var(--border-color)",
+        borderRadius: "0.25rem",
+        cursor: "pointer",
+        fontSize: "0.75rem",
+        color: "var(--text-secondary)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
+      }}
+    >
+      {copied ? "✓ Copied" : "Copy"}
+    </button>
+  );
+}
+
 export default function HomePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -158,8 +196,9 @@ export default function HomePage() {
               fontSize: "0.875rem",
             }}
           >
-            npx @aligntrue/cli init
+            npx aligntrue init
           </code>
+          <CopyButton text="npx aligntrue init" />
         </div>
       </section>
 

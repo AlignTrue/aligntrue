@@ -49,7 +49,7 @@ export async function team(args: string[]): Promise<void> {
         "aligntrue team enable",
         "aligntrue team enable --yes",
         "aligntrue team status",
-        "aligntrue team approve base-global@aligntrue/catalog@v1.0.0",
+        "aligntrue team approve https://github.com/yourorg/rules",
         "aligntrue team list-allowed",
         "aligntrue team remove sha256:abc123...",
       ],
@@ -190,9 +190,7 @@ async function teamStatus(): Promise<void> {
             ? `local:${source.path}`
             : source.type === "git"
               ? `git:${source.url}`
-              : source.type === "catalog"
-                ? `catalog:${source.id}@${source.version}`
-                : source.type;
+              : source.type;
         console.log(`  ${idx + 1}. ${sourceStr}`);
       });
     }
@@ -349,7 +347,7 @@ async function teamApprove(sources: string[]): Promise<void> {
       console.error("✗ No sources provided");
       console.error("  Usage: aligntrue team approve <source> [<source2> ...]");
       console.error(
-        "  Example: aligntrue team approve base-global@aligntrue/catalog@v1.0.0",
+        "  Example: aligntrue team approve https://github.com/yourorg/rules",
       );
       process.exit(1);
     }
@@ -420,9 +418,7 @@ async function teamListAllowed(): Promise<void> {
       console.log("\nTo approve a source:");
       console.log("  aligntrue team approve <source>");
       console.log("\nExample:");
-      console.log(
-        "  aligntrue team approve base-global@aligntrue/catalog@v1.0.0",
-      );
+      console.log("  aligntrue team approve https://github.com/yourorg/rules");
       process.exit(0);
     }
 

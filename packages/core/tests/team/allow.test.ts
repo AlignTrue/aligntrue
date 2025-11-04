@@ -43,7 +43,7 @@ describe("parseAllowList", () => {
     const content = `version: 1
 sources:
   - type: id
-    value: base-global@aligntrue/catalog@v1.0.0
+    value: https://github.com/org/rules@v1.0.0
     resolved_hash: sha256:abc123
   - type: hash
     value: sha256:def456
@@ -55,9 +55,7 @@ sources:
     expect(result.version).toBe(1);
     expect(result.sources).toHaveLength(2);
     expect(result.sources[0].type).toBe("id");
-    expect(result.sources[0].value).toBe(
-      "base-global@aligntrue/catalog@v1.0.0",
-    );
+    expect(result.sources[0].value).toBe("https://github.com/org/rules@v1.0.0");
     expect(result.sources[0].resolved_hash).toBe("sha256:abc123");
     expect(result.sources[1].type).toBe("hash");
     expect(result.sources[1].value).toBe("sha256:def456");

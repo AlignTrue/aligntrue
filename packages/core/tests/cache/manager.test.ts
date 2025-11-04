@@ -6,7 +6,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   CacheManager,
   gitCacheKey,
-  catalogCacheKey,
   validationCacheKey,
   estimateSize,
 } from "../../src/cache/manager.js";
@@ -260,11 +259,6 @@ describe("CacheManager", () => {
     it("gitCacheKey() creates git cache key", () => {
       const key = gitCacheKey("https://github.com/org/repo", "main");
       expect(key).toBe("git:https://github.com/org/repo@main");
-    });
-
-    it("catalogCacheKey() creates catalog cache key", () => {
-      const key = catalogCacheKey("base-global", "1.0.0");
-      expect(key).toBe("catalog:base-global@1.0.0");
     });
 
     it("validationCacheKey() creates validation cache key", () => {

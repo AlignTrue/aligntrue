@@ -9,25 +9,26 @@ Thank you for your interest in contributing to AlignTrue! This guide will help y
 
 ## Quick start
 
-Get started contributing in three steps:
+Get started creating packs:
 
-1. **Fork** the [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns) repository
-2. **Create** your pack following the [template](#template-pack)
-3. **Submit** a PR with passing CI
+1. **Review examples** in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory
+2. **Create** your pack following the [template](#minimal-example)
+3. **Share** via GitHub URL, local file, or your own repository
 
-That's it! Our CI will validate your pack automatically.
+No central registry exists - share packs however works best for your team.
 
-## Authoring your first Align
+## Authoring your first pack
 
-### Use the template
+### Review examples
 
-Start with the template pack at [`packs/templates/starter.aligntrue.yaml`](https://github.com/AlignTrue/aligns/blob/main/packs/templates/starter.aligntrue.yaml) in the `aligns` repository.
+Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) in this repository.
 
-The template includes:
+Examples include:
 
-- All 5 check types with examples
+- Base packs (global, testing, security, etc.)
+- Stack-specific packs (Next.js, Vercel, etc.)
 - Inline comments explaining best practices
-- Properly computed integrity hash
+- Proper pack structure and formatting
 
 ### Choose your namespace
 
@@ -76,7 +77,7 @@ integrity:
   value: "<computed>"
 ```
 
-For more examples, browse existing packs in the [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns) repository.
+For more examples, browse existing packs in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory.
 
 ## Testing locally
 
@@ -85,9 +86,7 @@ For more examples, browse existing packs in the [`AlignTrue/aligns`](https://git
 You'll need:
 
 - Node.js 20+ and pnpm 9+
-- Both repositories cloned:
-  - `AlignTrue/aligntrue` (this repo with validation tools)
-  - `AlignTrue/aligns` (the registry repo for your pack)
+- The `AlignTrue/aligntrue` repository cloned
 
 ### Validate your pack
 
@@ -98,7 +97,7 @@ From the `aligntrue` repository:
 pnpm install
 
 # Validate your pack
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 ```
 
 ### Verify deterministic hash
@@ -106,10 +105,10 @@ pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntru
 Run validation twice and confirm the integrity hash is identical both times:
 
 ```bash
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 # Note the integrity hash in output
 
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 # Hash should match exactly
 ```
 
@@ -121,7 +120,7 @@ If your pack has `<computed>` as the integrity value, compute the real hash:
 
 ```bash
 # From the aligntrue repository
-pnpm --filter @aligntrue/schema compute-hash ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema compute-hash path/to/your-pack.yaml
 ```
 
 Copy the hash from the output and paste it into your pack's `integrity.value` field.
@@ -230,9 +229,37 @@ Users should be able to copy-paste your hint and make progress.
 
 See [POLICY.md](/policies) for complete severity guidelines.
 
-## Pull request checklist
+## Sharing your pack
 
-Before submitting your PR, verify:
+### Via GitHub
+
+1. **Publish to GitHub** - Users can import via git URLs:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules-repo
+    path: packs/your-pack.yaml
+```
+
+2. **Share raw URL** - Users can download directly:
+
+```bash
+curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/packs/your-pack.yaml
+```
+
+### Via local files
+
+Share the YAML file directly - users can copy it to their project:
+
+```bash
+cp your-pack.yaml .aligntrue/rules.yaml
+aligntrue sync
+```
+
+### Quality checklist
+
+Before sharing your pack, verify:
 
 - [ ] Schema validation passes locally
 - [ ] Integrity hash is computed (not `<computed>`)
@@ -241,7 +268,6 @@ Before submitting your PR, verify:
 - [ ] Pack summary clearly states purpose in one sentence
 - [ ] Namespace follows conventions (packs/base or packs/stacks)
 - [ ] All check types use one of the 5 supported types
-- [ ] No linter errors in CI
 
 ## Code of conduct
 
@@ -263,26 +289,25 @@ Stuck? Here's how to get help:
   - [Checks reference](https://aligntrue.ai/docs/checks) - All check types explained
   - [Canonicalization](https://aligntrue.ai/docs/canonicalization) - How hashing works
 
-- **Examples**: Browse existing packs in [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns)
-  - [base-testing](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-testing.aligntrue.yaml) - Testing rules
-  - [base-security](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-security.aligntrue.yaml) - Security rules
-  - [nextjs-app-router](https://github.com/AlignTrue/aligns/blob/main/packs/stacks/nextjs-app-router.aligntrue.yaml) - Stack-specific rules
+- **Examples**: Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs)
+  - [testing.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/testing.yaml) - Testing rules
+  - [security.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/security.yaml) - Security rules
+  - [nextjs_app_router.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.yaml) - Stack-specific rules
 
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligns/discussions)
+- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-- **Issues**: Report bugs or problems in [GitHub Issues](https://github.com/AlignTrue/aligns/issues)
+- **Issues**: Report bugs or problems in [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
 
-## What happens next?
+## Sharing with the community
 
-After you submit your PR:
+Consider sharing your pack with the community:
 
-1. **Automated checks run**: CI validates schema, checks hash, runs testkit
-2. **Maintainer review**: A maintainer reviews your pack for quality and fit
-3. **Feedback or approval**: You may receive feedback for improvements, or approval
-4. **Merge**: Once approved, your pack is merged and appears in the catalog
-5. **Verification badge**: Packs in `AlignTrue/aligns` automatically get the verified badge
+1. **GitHub repository** - Create a public repo with your packs
+2. **Documentation** - Add a README explaining what your packs do
+3. **Examples** - Include usage examples and configuration
+4. **Community** - Share in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-Typical review time is 2-5 days for new packs, faster for updates.
+Well-documented packs help others learn and adopt best practices.
 
 ## Advanced topics
 
@@ -325,8 +350,8 @@ This runs your checks against a test repository and shows findings.
 If this guide doesn't answer your question:
 
 - Check the [documentation](https://aligntrue.ai/docs)
-- Search [existing discussions](https://github.com/AlignTrue/aligns/discussions)
-- Open a [new discussion](https://github.com/AlignTrue/aligns/discussions/new)
+- Search [existing discussions](https://github.com/AlignTrue/aligntrue/discussions)
+- Open a [new discussion](https://github.com/AlignTrue/aligntrue/discussions/new)
 
 We're here to help!
 
