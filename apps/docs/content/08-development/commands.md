@@ -1,5 +1,5 @@
 ---
-title: Development Commands
+title: Commands
 description: Development commands, testing, and build workflows for AlignTrue.
 ---
 

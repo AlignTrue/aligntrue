@@ -1,13 +1,13 @@
 {
   "index": "Introduction",
-  "00-getting-started": "Getting Started",
+  "00-getting-started": "Getting started",
   "01-guides": "Guides",
   "02-customization": "Customization",
-  "02-concepts": "Concepts",
-  "03-reference": "Reference",
-  "04-troubleshooting": "Troubleshooting",
-  "05-contributing": "Contributing",
-  "06-policies": "Policies",
-  "07-development": "Development",
+  "03-concepts": "Concepts",
+  "04-reference": "Reference",
+  "05-troubleshooting": "Troubleshooting",
+  "06-contributing": "Contributing",
+  "07-policies": "Policies",
+  "08-development": "Development",
   "about": "About"
 }

@@ -1,5 +1,5 @@
 ---
-title: Workspace Structure
+title: Workspace
 description: Monorepo structure and packages overview for AlignTrue.
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: Customization Overview
+title: Overview
 description: Three powerful mechanisms for customizing AlignTrue rules without forking - plugs, overlays, and scopes
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: Plugs Guide
+title: Plugs
 description: Dynamic configuration slots for stack-specific and project-specific values in AlignTrue rules
 ---
 

@@ -1,8 +1,9 @@
 {
-  "00-auto-pull": "Auto-pull Behavior",
-  "01-workflows": "Choosing Your Workflow",
-  "02-migration": "Migration Guide",
-  "03-ci-cd-integration": "CI/CD Integration",
-  "04-solo-developer-guide": "Solo Developer Guide",
-  "05-team-guide": "Team Guide"
+  "00-auto-pull": "Auto-pull behavior",
+  "01-workflows": "Choosing your workflow",
+  "02-migration": "Migration guide",
+  "03-ci-cd-integration": "CI/CD integration",
+  "04-solo-developer-guide": "Solo developer guide",
+  "05-team-guide": "Team guide",
+  "06-multi-agent-workflows": "Multi-agent workflows"
 }

@@ -1,5 +1,5 @@
 ---
-title: Scopes Guide
+title: Scopes
 description: Path-based rule application for monorepos with hierarchical merge order
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: Migration Guide
+title: Migration guide
 description: Migrate from existing agent configurations to AlignTrue
 ---
 

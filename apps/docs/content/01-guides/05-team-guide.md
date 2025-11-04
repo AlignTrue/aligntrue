@@ -1,5 +1,5 @@
 ---
-title: Team Guide
+title: Team guide
 description: Complete guide for team collaboration with AlignTrue - shared standards, reproducibility, and drift detection
 ---
 

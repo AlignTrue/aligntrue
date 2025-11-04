@@ -1,5 +1,5 @@
 ---
-title: Contributing - Getting Started
+title: Getting started
 description: Set up your development environment and learn the contribution workflow for AlignTrue.
 ---
 

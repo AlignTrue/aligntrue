@@ -70,6 +70,9 @@ importers:
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
+      lucide-react:
+        specifier: ^0.552.0
+        version: 0.552.0(react@19.2.0)
       next:
         specifier: 15.4.7
         version: 15.4.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
