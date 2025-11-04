@@ -7,6 +7,8 @@ description: Complete guide for team collaboration with AlignTrue - shared stand
 
 This guide shows how teams use AlignTrue to maintain consistent AI agent behavior across team members with reproducible builds, drift detection, and approval workflows.
 
+> **Quick start guide** for team collaboration. For comprehensive reference on team mode features and configuration, see [Team Mode Concepts](/docs/03-concepts/team-mode).
+
 > **See it in action:** Check out the [team repo example](https://github.com/AlignTrue/aligntrue/tree/main/examples/team-repo) for team workflows, and [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for customization patterns.
 
 ## Quick team setup
@@ -817,7 +819,7 @@ Tested by: @dev1, @dev2, @dev3"
 - [Team Mode](/docs/02-concepts/team-mode) - Team mode concepts
 - [Drift Detection](/docs/02-concepts/drift-detection) - Drift detection details
 - [CLI Reference](/docs/03-reference/cli-reference) - Complete command docs
-- [Solo Developer Guide](./solo-developer-guide) - Solo workflow
+- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow
 
 ## Summary
 

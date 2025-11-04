@@ -1,6 +1,8 @@
 # Team mode
 
-Comprehensive guide to using AlignTrue in team environments with approved rule sources, lockfiles, and drift detection.
+Comprehensive reference for team mode concepts and configuration.
+
+> **Looking for step-by-step team setup?** See the [Team Guide](/docs/01-guides/05-team-guide) for practical workflows.
 
 ## Overview
 
@@ -689,4 +691,4 @@ aligntrue drift
 - **[Auto-Updates](/docs/03-reference/auto-updates)** - Scheduled update workflows
 - **[Git Workflows](/docs/02-concepts/git-workflows)** - Git-based rule sharing and vendoring
 - **[Onboarding](/docs/05-contributing/team-onboarding)** - Developer onboarding checklists
-- **[Examples](../examples/)** - team-repo and vendored-pack examples
+- **[Examples](/docs/04-reference/examples)** - team-repo and vendored-pack examples

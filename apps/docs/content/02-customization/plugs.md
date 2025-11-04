@@ -678,9 +678,9 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 
 ## Related documentation
 
-- [Customization Overview](./index) - When to use plugs vs overlays vs scopes
-- [Overlays Guide](./overlays) - Modify rule properties without forking
-- [Scopes Guide](./scopes) - Apply different rules per directory
+- [Customization Overview](/docs/02-customization) - When to use plugs vs overlays vs scopes
+- [Overlays Guide](/docs/02-customization/overlays) - Modify rule properties without forking
+- [Scopes Guide](/docs/02-customization/scopes) - Apply different rules per directory
 - [CLI Reference](/docs/03-reference/cli-reference#plugs-commands) - Complete command docs
 - [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with plugs
 - [Team Guide](/docs/01-guides/team-guide) - Team collaboration with plugs

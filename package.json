@@ -30,7 +30,11 @@
     "release": "pnpm build && changeset publish"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,md,json,yml,yaml}": [
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "eslint --max-warnings 0"
+    ],
+    "*.{md,json,yml,yaml}": [
       "prettier --write"
     ]
   },

@@ -2,6 +2,8 @@
 
 Complete reference for AlignTrue's two-way sync system, conflict resolution, and precedence rules.
 
+> **Comprehensive reference** for sync internals. For practical workflow selection, see [Choosing Your Workflow](/docs/01-guides/01-workflows).
+
 ## Overview
 
 AlignTrue synchronizes rules between three locations:

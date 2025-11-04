@@ -2,6 +2,8 @@
 
 AlignTrue supports two primary editing workflows. Understanding which one fits your style will help you avoid conflicts and work more efficiently.
 
+> **Quick guide** for choosing your workflow. For comprehensive sync behavior reference, see [Sync Behavior](/docs/03-concepts/sync-behavior).
+
 ## The two workflows
 
 ### IR-source workflow

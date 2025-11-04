@@ -38,7 +38,7 @@ plugs:
     test.cmd: "pnpm test" # Your project's value
 ```
 
-[Learn more about plugs →](./plugs)
+[Learn more about plugs →](/docs/02-customization/plugs)
 
 ### Overlays - Override rule properties
 
@@ -61,7 +61,7 @@ overlays:
         severity: "error" # Upgrade from warning to error
 ```
 
-[Learn more about overlays →](./overlays)
+[Learn more about overlays →](/docs/02-customization/overlays)
 
 ### Scopes - Apply rules by path
 
@@ -87,7 +87,7 @@ scopes:
     rulesets: ["node-rules", "api-rules"]
 ```
 
-[Learn more about scopes →](./scopes)
+[Learn more about scopes →](/docs/02-customization/scopes)
 
 ## Decision tree
 
@@ -306,9 +306,9 @@ You don't need to understand vendor bags to use AlignTrue effectively - they're 
 
 ## Next steps
 
-- [Plugs guide](./plugs) - Detailed plug usage with examples
-- [Overlays guide](./overlays) - Fork-safe customization patterns
-- [Scopes guide](./scopes) - Monorepo rule organization
+- [Plugs guide](/docs/02-customization/plugs) - Detailed plug usage with examples
+- [Overlays guide](/docs/02-customization/overlays) - Fork-safe customization patterns
+- [Scopes guide](/docs/02-customization/scopes) - Monorepo rule organization
 - [Solo developer guide](/docs/01-guides/solo-developer-guide) - Complete solo workflow
 - [Team guide](/docs/01-guides/team-guide) - Team collaboration patterns
 

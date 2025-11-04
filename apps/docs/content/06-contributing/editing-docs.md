@@ -86,18 +86,52 @@ git commit -m "docs: Update documentation"
 
 ## Link handling
 
-### Relative links (for docs site navigation)
+### Internal links (standard format)
 
-Use relative links for internal docs navigation:
+**Always use absolute paths from `/docs/` root for internal documentation links.**
 
 ```markdown
-See [team mode](/docs/02-concepts/team-mode) for details.
+<!-- ✅ Correct: Absolute path from /docs/ root -->
+
+[Team Mode](/docs/03-concepts/team-mode)
+[Quickstart Guide](/docs/00-getting-started/00-quickstart)
+[CLI Reference](/docs/04-reference/cli-reference)
+
+<!-- ❌ Incorrect: Relative paths -->
+
+[Team Mode](./team-mode)
+[Team Mode](../concepts/team-mode)
 ```
+
+**Why absolute paths?**
+
+- Robust during directory refactors
+- Work consistently in all contexts (navigation, search, external links)
+- Easier for contributors (one pattern to remember)
+- Future-proof for multi-site deployments
+
+**Path format:**
+
+`/docs/{section-number}-{section-name}/{page-name}`
+
+Examples:
+
+- `/docs/00-getting-started/00-quickstart`
+- `/docs/01-guides/05-team-guide`
+- `/docs/02-customization/overlays`
+- `/docs/03-concepts/team-mode`
+- `/docs/04-reference/cli-reference`
+
+**How to find the correct path:**
+
+1. Check the `_meta.json` file in that section for the section number
+2. Use the file name without the `.md` extension
+3. Join with `/docs/` prefix
 
 The generation script automatically transforms these to absolute URLs for GitHub:
 
 ```markdown
-See [team mode](https://aligntrue.ai/docs/concepts/team-mode) for details.
+See [team mode](https://aligntrue.ai/docs/03-concepts/team-mode) for details.
 ```
 
 ### External links

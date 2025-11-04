@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { XMLParser } from "fast-xml-parser";
 
-describe("sitemap.docs.xml", () => {
-  it("produces valid urlset with /docs prefix on all URLs", async () => {
-    const mod = await import("../app/sitemap.docs.xml/route");
+describe("sitemap.xml", () => {
+  it("produces valid urlset with homepage and /docs prefixed URLs", async () => {
+    const mod = await import("../app/sitemap.xml/route");
     const response = await mod.GET();
     const text = await response.text();
 
@@ -21,14 +21,19 @@ describe("sitemap.docs.xml", () => {
         : [parsed.urlset.url]
       : [];
 
-    // Should have at least some docs pages
+    // Should have at least some pages
     expect(urls.length).toBeGreaterThan(0);
 
     // Extract locations
     const locs = urls.map((u: { loc: string }) => u.loc);
 
-    // All URLs should contain /docs prefix
-    for (const loc of locs) {
+    // Should have homepage
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
+    expect(locs).toContain(baseUrl);
+
+    // Other URLs should contain /docs prefix (except homepage)
+    const nonHomepageUrls = locs.filter((loc: string) => loc !== baseUrl);
+    for (const loc of nonHomepageUrls) {
       expect(loc).toContain("/docs/");
     }
 
@@ -58,7 +63,7 @@ describe("sitemap.docs.xml", () => {
   });
 
   it("escapes XML entities to prevent injection", async () => {
-    const mod = await import("../app/sitemap.docs.xml/route");
+    const mod = await import("../app/sitemap.xml/route");
     const response = await mod.GET();
     const text = await response.text();
 
@@ -96,5 +101,24 @@ describe("sitemap.docs.xml", () => {
         expect(typeof url.lastmod).toBe("string");
       }
     }
+  });
+});
+
+describe("robots.txt", () => {
+  it("produces valid robots.txt with sitemap reference", async () => {
+    const mod = await import("../app/robots.txt/route");
+    const response = await mod.GET();
+    const text = await response.text();
+
+    // Should contain standard directives
+    expect(text).toContain("User-agent: *");
+    expect(text).toContain("Allow: /");
+
+    // Should reference sitemap.xml
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
+    expect(text).toContain(`Sitemap: ${baseUrl}/sitemap.xml`);
+
+    // Verify Content-Type header
+    expect(response.headers.get("Content-Type")).toBe("text/plain");
   });
 });
