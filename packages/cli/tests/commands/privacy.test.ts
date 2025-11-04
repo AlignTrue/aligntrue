@@ -146,10 +146,10 @@ describe("privacy command", () => {
     it("shows info when no consent to revoke", async () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-      await privacy(["revoke", "catalog"]);
+      await privacy(["revoke", "git"]);
 
       expect(clack.log.info).toHaveBeenCalledWith(
-        "No consent for 'catalog' to revoke",
+        "No consent for 'git' to revoke",
       );
       consoleSpy.mockRestore();
     });
@@ -160,16 +160,16 @@ describe("privacy command", () => {
       const manager = createConsentManager(
         join(testDir, ".aligntrue/privacy-consent.json"),
       );
-      manager.grantConsent("catalog");
+      manager.grantConsent("git");
 
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-      await privacy(["revoke", "catalog"]);
+      await privacy(["revoke", "git"]);
 
       expect(clack.log.success).toHaveBeenCalledWith(
-        "Revoked consent for 'catalog'",
+        "Revoked consent for 'git'",
       );
-      expect(manager.checkConsent("catalog")).toBe(false);
+      expect(manager.checkConsent("git")).toBe(false);
 
       consoleSpy.mockRestore();
     });

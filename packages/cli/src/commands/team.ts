@@ -84,7 +84,29 @@ export async function team(args: string[]): Promise<void> {
       await teamRemove(parsed.positional.slice(1));
       break;
     default:
-      console.error(`Unknown subcommand: ${subcommand}`);
+      showStandardHelp({
+        name: "team",
+        description: "Manage team mode for collaborative rule management",
+        usage: "aligntrue team <subcommand>",
+        args: ARG_DEFINITIONS,
+        examples: [
+          "aligntrue team enable",
+          "aligntrue team enable --yes",
+          "aligntrue team status",
+          "aligntrue team approve https://github.com/yourorg/rules",
+          "aligntrue team list-allowed",
+          "aligntrue team remove sha256:abc123...",
+        ],
+        notes: [
+          "Team mode features:",
+          "  - Lockfile generation for reproducibility",
+          "  - Bundle generation for multi-source merging",
+          "  - Drift detection with soft/strict validation",
+          "  - Git-based collaboration workflows",
+          "  - Allow list for approved rule sources",
+        ],
+      });
+      console.error(`\nError: Unknown subcommand: ${subcommand}`);
       console.error("Run: aligntrue team --help");
       process.exit(1);
   }
@@ -185,12 +207,16 @@ async function teamStatus(): Promise<void> {
     if (config.sources && config.sources.length > 0) {
       console.log(`\nSources: ${config.sources.length} configured`);
       config.sources.forEach((source, idx) => {
-        const sourceStr =
-          source.type === "local"
-            ? `local:${source.path}`
-            : source.type === "git"
-              ? `git:${source.url}`
-              : source.type;
+        let sourceStr: string;
+        if (source.type === "local") {
+          sourceStr = `local:${source.path}`;
+        } else if (source.type === "git") {
+          sourceStr = `git:${source.url}`;
+        } else if (source.type === "catalog") {
+          sourceStr = `catalog:${source.id}@${source.version}`;
+        } else {
+          sourceStr = source.type;
+        }
         console.log(`  ${idx + 1}. ${sourceStr}`);
       });
     }

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { SiteHeader, SiteFooter } from "@aligntrue/ui";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -43,90 +43,9 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function HomePage() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-default)" }}>
-      {/* Simple header */}
-      <header
-        style={{
-          borderBottom: "1px solid var(--border-color)",
-          padding: "1rem 1.5rem",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "72rem",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <span style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              AlignTrue
-            </span>
-          </div>
-          <nav style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-            <Link
-              href="/docs"
-              style={{
-                fontSize: "0.875rem",
-                textDecoration: "none",
-                color: "var(--fg-default)",
-              }}
-            >
-              Docs
-            </Link>
-            <Link
-              href="/docs/catalog/available-packs"
-              style={{
-                fontSize: "0.875rem",
-                textDecoration: "none",
-                color: "var(--fg-default)",
-              }}
-            >
-              Catalog
-            </Link>
-            <a
-              href="https://github.com/AlignTrue/aligntrue"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                fontSize: "0.875rem",
-                textDecoration: "none",
-                color: "var(--fg-default)",
-              }}
-            >
-              GitHub
-            </a>
-            {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                style={{
-                  padding: "0.375rem",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "0.375rem",
-                  backgroundColor: "transparent",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? "🌞" : "🌙"}
-              </button>
-            )}
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero section */}
       <section style={{ textAlign: "center", padding: "5rem 1.5rem" }}>
@@ -422,29 +341,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: "1px solid var(--border-color)",
-          marginTop: "4rem",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "72rem",
-            margin: "0 auto",
-            padding: "2rem 1.5rem",
-            textAlign: "center",
-            fontSize: "0.875rem",
-            color: "var(--fg-muted)",
-          }}
-        >
-          <p>© {new Date().getFullYear()} AlignTrue. MIT License.</p>
-          <p style={{ marginTop: "0.5rem" }}>
-            Made with ❤️ and hash determinism.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
