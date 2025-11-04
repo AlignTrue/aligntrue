@@ -52,7 +52,6 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 - Amazon Q, Firebase Studio, OpenHands, Zed, and 20+ more
 
 **Coverage:**
-
 - 43 total exporters supporting 28+ agents
 - 8 MCP configurations for protocol-based agents
 - 15 unique format exporters for agent-specific formats
@@ -153,6 +152,7 @@ Setting up AlignTrue for local development:
 ## License
 
 MIT (see [LICENSE](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE))
+
 
 ---
 
