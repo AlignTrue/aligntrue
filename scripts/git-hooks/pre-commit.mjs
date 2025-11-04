@@ -7,23 +7,58 @@ async function main() {
   clack.intro("🔍 Running pre-commit checks...");
   const s = clack.spinner();
 
-  s.start("Formatting staged files with Prettier...");
+  s.start("Formatting and linting staged files...");
   try {
     execSync("pnpm lint-staged", { stdio: "inherit" });
-    s.stop("✅ Files formatted successfully.");
+    s.stop("✅ Files formatted and linted successfully.");
   } catch (error) {
-    s.stop("❌ Formatting failed.", 1);
+    s.stop("❌ Formatting or linting failed.", 1);
     console.error("");
-    clack.log.error("Prettier formatting failed.");
+    clack.log.error("Pre-commit checks failed.");
     console.error("");
-    console.error("📝 This usually means syntax errors in staged files:");
-    console.error("   • Missing closing brackets, braces, or parentheses");
-    console.error("   • Invalid JSON in config files");
-    console.error("   • Malformed JSX or TypeScript syntax");
+
+    // Try to capture and parse lint-staged output for specific errors
+    try {
+      const result = execSync("pnpm lint-staged", {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+    } catch (lintError) {
+      const output = lintError.stdout || lintError.stderr || "";
+
+      // Parse file paths from ESLint output
+      const fileMatches = output.match(/\/[^\s]+\.(ts|tsx|js|jsx|md|json|yml|yaml)/g);
+      if (fileMatches && fileMatches.length > 0) {
+        const uniqueFiles = [...new Set(fileMatches)];
+        console.error("📋 Failed files:");
+        uniqueFiles.forEach((file) => {
+          // Count warnings/errors for this file
+          const fileRegex = new RegExp(
+            file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\\s\\S]*?(\\d+):(\\d+)",
+            "g",
+          );
+          const matches = [...output.matchAll(fileRegex)];
+          if (matches.length > 0) {
+            console.error(`   ${file} (${matches.length} issue${matches.length > 1 ? "s" : ""})`);
+          } else {
+            console.error(`   ${file}`);
+          }
+        });
+        console.error("");
+      }
+    }
+
+    console.error("🔧 Quick fixes:");
+    console.error("   • Auto-fix most issues: pnpm lint:fix");
+    console.error("   • Fix formatting: pnpm format");
+    console.error("   • Check specific file: pnpm eslint <file-path>");
     console.error("");
-    console.error("🔍 Re-run format: pnpm format");
+    console.error("💡 Common issues:");
+    console.error("   • Unused variables → prefix with underscore (_var) or remove");
+    console.error("   • Image warnings → add eslint-disable comment if intentional");
+    console.error("   • Formatting → run pnpm format");
     console.error("");
-    clack.outro("💡 Fix the syntax errors above and re-stage the files.");
+    clack.outro("Fix the issues above and try committing again.");
     process.exit(1);
   }
 

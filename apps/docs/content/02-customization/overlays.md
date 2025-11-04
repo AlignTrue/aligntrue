@@ -75,7 +75,7 @@ Need to customize a third-party pack?
 ✅ **Template slots:** Fill variables in rules  
 ✅ **Project metadata:** Author names, organization names
 
-See [Plugs Guide](./plugs) for plug documentation.
+See [Plugs Guide](/docs/02-customization/plugs) for plug documentation.
 
 ### When to fork
 
@@ -859,9 +859,9 @@ See [Troubleshooting Overlays](/docs/04-troubleshooting/overlays) for comprehens
 
 ## Related documentation
 
-- [Customization Overview](./index) - When to use overlays vs plugs vs scopes
-- [Plugs Guide](./plugs) - Stack-specific customization
-- [Scopes Guide](./scopes) - Path-based rule application
+- [Customization Overview](/docs/02-customization) - When to use overlays vs plugs vs scopes
+- [Plugs Guide](/docs/02-customization/plugs) - Stack-specific customization
+- [Scopes Guide](/docs/02-customization/scopes) - Path-based rule application
 - [Team Mode Guide](/docs/02-concepts/team-mode) - Overlay policies and approval workflows
 - [Drift Detection](/docs/02-concepts/drift-detection) - Detect overlay staleness
 - [CLI Reference](/docs/03-reference/cli-reference#overlay-commands) - Complete CLI reference

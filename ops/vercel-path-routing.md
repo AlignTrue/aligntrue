@@ -1,47 +1,36 @@
 # Vercel Path Routing Configuration
 
-Path-based routing required for sitemap federation across web and docs apps.
+## Current Architecture (Post-Catalog Archive)
 
-## Required Rewrites
-
-The following paths must route to the docs project:
-
-- `/docs/**` → docs project
-- `/sitemap.docs.xml` → docs project
-
-All other paths route to the web project by default.
+The docs app is now the main and only site. No path routing or rewrites needed.
 
 ## Environment Variables
 
-Both projects require:
+The docs project requires:
 
 ```
 NEXT_PUBLIC_SITE_URL=https://aligntrue.ai
 ```
 
-Set this in Vercel project settings for both:
-
-- `aligntrue-web` (or equivalent web project name)
-- `aligntrue-docs` (or equivalent docs project name)
+Set this in Vercel project settings for `aligntrue-docs`.
 
 ## Verification
 
 After deployment, verify:
 
 ```bash
-# Index should list both sub-sitemaps
+# Root sitemap includes homepage and all docs pages
 curl https://aligntrue.ai/sitemap.xml
-
-# Main sitemap (web project)
-curl https://aligntrue.ai/sitemap.main.xml
-
-# Docs sitemap (docs project, rewritten from /sitemap.docs.xml)
-curl https://aligntrue.ai/sitemap.docs.xml
 
 # Robots.txt should reference sitemap.xml
 curl https://aligntrue.ai/robots.txt
 ```
 
-## Current Configuration
+## Sitemap Structure
 
-See `apps/web/vercel.json` for the current rewrite rules.
+- **`/sitemap.xml`**: Root sitemap containing homepage and all `/docs/**` pages
+- **`/robots.txt`**: Points to `/sitemap.xml`
+
+## Historical Note
+
+Previously, this document described path routing between separate web and docs apps with federated sitemaps (`sitemap.main.xml`, `sitemap.docs.xml`, and a sitemap index). The catalog website has been archived to `archive/apps-web/` and the docs app now serves as the main website.

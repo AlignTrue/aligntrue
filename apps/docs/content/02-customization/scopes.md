@@ -782,9 +782,9 @@ scopes:
 
 ## Related documentation
 
-- [Customization Overview](./index) - When to use scopes vs plugs vs overlays
-- [Plugs Guide](./plugs) - Stack-specific values
-- [Overlays Guide](./overlays) - Rule property overrides
+- [Customization Overview](/docs/02-customization) - When to use scopes vs plugs vs overlays
+- [Plugs Guide](/docs/02-customization/plugs) - Stack-specific values
+- [Overlays Guide](/docs/02-customization/overlays) - Rule property overrides
 - [Team Mode Guide](/docs/02-concepts/team-mode) - Team collaboration with scopes
 - [CLI Reference](/docs/03-reference/cli-reference#aligntrue-scopes) - Complete command docs
 - [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with scopes
