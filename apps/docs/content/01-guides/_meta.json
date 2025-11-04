@@ -1,4 +1,6 @@
 {
   "00-auto-pull": "00 Auto-pull behavior",
-  "01-workflows": "01 Choosing your workflow"
+  "01-workflows": "01 Choosing your workflow",
+  "02-migration": "02 Migration guide",
+  "03-ci-cd-integration": "03 CI/CD integration"
 }
