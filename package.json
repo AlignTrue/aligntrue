@@ -16,7 +16,7 @@
     "typecheck": "pnpm -r typecheck",
     "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
     "validate:transpile-packages": "node scripts/validate-transpile-packages.mjs",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 460",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

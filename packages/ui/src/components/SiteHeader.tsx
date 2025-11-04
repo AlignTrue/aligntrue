@@ -237,21 +237,25 @@ export function SiteHeader({
       )}
 
       {/* Responsive styles */}
-      <style jsx global>{`
+      <style>{`
         /* Desktop: Show desktop nav, hide mobile controls */
         .desktop-nav {
           display: flex !important;
         }
-        .mobile-nav-controls {
-          display: none !important;
-        }
-
-        /* Mobile: Hide desktop nav, show mobile controls */
+        
         @media (max-width: 768px) {
           .desktop-nav {
             display: none !important;
           }
-          .mobile-nav-controls {
+        }
+        
+        /* Mobile: Show mobile controls, hide desktop nav */
+        .mobile-controls {
+          display: none;
+        }
+        
+        @media (max-width: 768px) {
+          .mobile-controls {
             display: flex !important;
           }
         }

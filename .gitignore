@@ -63,6 +63,12 @@ packages/cli/tests/commands/*-wip.test.ts
 .internal_docs/
 docs/pre-1.0-policy.md
 
-# archived apps
-archive/apps-web/.next/
-archive/apps-web/node_modules/
+# Archived components (Phase 4 deferred features)
+archive/
+
+# Test artifacts (should not be committed)
+packages/**/.aligntrue-test-*/
+packages/**/.test-output/
+**/.last-sync
+**/.team-onboarding-complete
+*.lock.json.test

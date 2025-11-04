@@ -23,6 +23,16 @@ npx aligntrue init  # Auto-detect agents, create .aligntrue.yaml
 aligntrue sync           # Generate all agent files
 ```
 
+**Installation options:**
+
+- `npm install -g aligntrue` - npm
+- `yarn global add aligntrue` - yarn
+- `pnpm add -g aligntrue` - pnpm
+- `bun install -g aligntrue` - bun
+- `npx aligntrue` - try without installing (requires Node.js 20+)
+
+**Platform support:** macOS, Windows, Linux (Node.js 20+)
+
 **Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
 
 Read the [Quickstart Guide](https://aligntrue.ai/docs/00-getting-started/00-quickstart) for detailed instructions.
