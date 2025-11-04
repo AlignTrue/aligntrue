@@ -1,0 +1,607 @@
+---
+title: CI/CD Integration
+description: Integrate AlignTrue into your continuous integration pipeline
+---
+
+# CI/CD integration
+
+Validate rules, detect drift, and enforce team standards in your CI pipeline.
+
+## Quick setup
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/aligntrue.yml
+name: AlignTrue
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install AlignTrue
+        run: npm install -g @aligntrue/cli
+
+      - name: Validate rules
+        run: aligntrue check --ci
+
+      - name: Check drift (team mode)
+        run: aligntrue drift --gates
+        if: hashFiles('.aligntrue.lock.json') != ''
+```
+
+### GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+aligntrue:
+  image: node:20
+  script:
+    - npm install -g @aligntrue/cli
+    - aligntrue check --ci
+    - aligntrue drift --gates
+  only:
+    - merge_requests
+    - main
+```
+
+### CircleCI
+
+```yaml
+# .circleci/config.yml
+version: 2.1
+
+jobs:
+  validate:
+    docker:
+      - image: cimg/node:20.0
+    steps:
+      - checkout
+      - run:
+          name: Install AlignTrue
+          command: npm install -g @aligntrue/cli
+      - run:
+          name: Validate rules
+          command: aligntrue check --ci
+      - run:
+          name: Check drift
+          command: aligntrue drift --gates
+
+workflows:
+  main:
+    jobs:
+      - validate
+```
+
+## Validation checks
+
+### Schema validation
+
+Validate that rules conform to AlignTrue schema:
+
+```bash
+aligntrue check --ci
+```
+
+**Checks:**
+
+- YAML/JSON syntax
+- Required fields present
+- Valid rule IDs
+- Correct data types
+- No duplicate rules
+
+**Exit codes:**
+
+- `0` - All checks passed
+- `1` - Validation errors found
+
+**Example output:**
+
+```
+✓ Schema validation passed
+✓ 15 rules validated
+✓ No duplicates found
+```
+
+### Lockfile validation (team mode)
+
+Validate lockfile matches current rules:
+
+```bash
+aligntrue check --ci
+```
+
+With team mode enabled, this also checks:
+
+- Lockfile exists
+- Lockfile is up to date
+- Hashes match current rules
+
+**Lockfile modes:**
+
+```yaml
+# .aligntrue/config.yaml
+lockfile:
+  mode: strict # Fail CI if lockfile out of sync
+  # or: soft   # Warn but don't fail
+  # or: off    # No lockfile validation
+```
+
+## Drift detection
+
+### Basic drift check
+
+Detect when upstream rules have changed:
+
+```bash
+aligntrue drift
+```
+
+**Checks:**
+
+- Git sources have new commits
+- Catalog packs have updates
+- Vendored packs differ from source
+
+**Exit codes:**
+
+- `0` - No drift detected
+- `1` - Drift detected (informational)
+
+### Fail CI on drift
+
+```bash
+aligntrue drift --gates
+```
+
+**Exit codes:**
+
+- `0` - No drift detected
+- `2` - Drift detected (fails CI)
+
+**Use cases:**
+
+- Enforce approved rule versions
+- Prevent accidental updates
+- Require explicit update PRs
+
+### Drift categories
+
+```bash
+aligntrue drift --format json
+```
+
+Output:
+
+```json
+{
+  "drift_detected": true,
+  "categories": {
+    "upstream": [
+      {
+        "source": "git:https://github.com/org/rules",
+        "local_hash": "abc123",
+        "remote_hash": "def456",
+        "commits_behind": 3
+      }
+    ],
+    "vendorized": [],
+    "severity_remap": []
+  }
+}
+```
+
+## CI workflows
+
+### Solo developer workflow
+
+**Goal:** Validate rules on every commit
+
+```yaml
+# .github/workflows/aligntrue.yml
+name: Validate Rules
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g @aligntrue/cli
+      - run: aligntrue check --ci
+```
+
+### Team workflow with lockfile
+
+**Goal:** Enforce lockfile, fail on drift
+
+```yaml
+# .github/workflows/aligntrue.yml
+name: AlignTrue Team Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install AlignTrue
+        run: npm install -g @aligntrue/cli
+
+      - name: Validate schema
+        run: aligntrue check --ci
+
+      - name: Validate lockfile
+        run: |
+          if [ ! -f .aligntrue.lock.json ]; then
+            echo "Error: Lockfile missing"
+            exit 1
+          fi
+
+      - name: Check drift
+        run: aligntrue drift --gates
+
+      - name: Verify sync
+        run: aligntrue sync --dry-run
+```
+
+### Monorepo with scopes
+
+**Goal:** Validate all scopes
+
+```yaml
+# .github/workflows/aligntrue.yml
+name: Validate Scopes
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scope:
+          - root
+          - packages/api
+          - packages/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g @aligntrue/cli
+      - run: aligntrue check --ci --scope ${{ matrix.scope }}
+```
+
+## Advanced CI patterns
+
+### Auto-update PRs
+
+Create PRs when drift is detected:
+
+```yaml
+# .github/workflows/aligntrue-auto-update.yml
+name: Auto-update Rules
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install AlignTrue
+        run: npm install -g @aligntrue/cli
+
+      - name: Check for updates
+        id: drift
+        run: |
+          aligntrue drift --format json > drift.json
+          if [ $(jq -r '.drift_detected' drift.json) == "true" ]; then
+            echo "drift=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Apply updates
+        if: steps.drift.outputs.drift == 'true'
+        run: aligntrue update apply
+
+      - name: Create PR
+        if: steps.drift.outputs.drift == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "chore: Update AlignTrue rules"
+          body: |
+            Automated update of AlignTrue rules.
+
+            Drift detected in:
+            $(cat drift.json | jq -r '.categories | keys[]')
+          branch: aligntrue-auto-update
+          commit-message: "chore: Update AlignTrue rules"
+```
+
+### Lockfile regeneration
+
+Regenerate lockfile on rule changes:
+
+```yaml
+# .github/workflows/aligntrue-lock.yml
+name: Update Lockfile
+
+on:
+  pull_request:
+    paths:
+      - ".aligntrue/**"
+
+jobs:
+  update-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install AlignTrue
+        run: npm install -g @aligntrue/cli
+
+      - name: Regenerate lockfile
+        run: aligntrue lock
+
+      - name: Commit if changed
+        run: |
+          if [ -n "$(git status --porcelain .aligntrue.lock.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .aligntrue.lock.json
+            git commit -m "chore: Regenerate lockfile"
+            git push
+          fi
+```
+
+### SARIF output for GitHub
+
+Generate SARIF for GitHub Code Scanning:
+
+```yaml
+# .github/workflows/aligntrue-sarif.yml
+name: AlignTrue SARIF
+
+on: [push, pull_request]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install AlignTrue
+        run: npm install -g @aligntrue/cli
+
+      - name: Run checks
+        run: aligntrue check --format sarif > aligntrue.sarif
+        continue-on-error: true
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: aligntrue.sarif
+```
+
+## Caching
+
+### Cache AlignTrue installation
+
+```yaml
+- name: Cache AlignTrue
+  uses: actions/cache@v3
+  with:
+    path: ~/.npm
+    key: ${{ runner.os }}-aligntrue-${{ hashFiles('**/package-lock.json') }}
+    restore-keys: |
+      ${{ runner.os }}-aligntrue-
+```
+
+### Cache git sources
+
+```yaml
+- name: Cache git sources
+  uses: actions/cache@v3
+  with:
+    path: .aligntrue/.cache
+    key: ${{ runner.os }}-aligntrue-cache-${{ hashFiles('.aligntrue.lock.json') }}
+    restore-keys: |
+      ${{ runner.os }}-aligntrue-cache-
+```
+
+## Exit codes
+
+AlignTrue uses standard exit codes:
+
+- `0` - Success
+- `1` - Validation error (schema, lockfile)
+- `2` - Drift detected with `--gates`
+- `3` - System error (permissions, network)
+
+**CI configuration:**
+
+```yaml
+- name: Validate rules
+  run: aligntrue check --ci
+  # Fails on exit code 1 or higher
+
+- name: Check drift (informational)
+  run: aligntrue drift || true
+  # Never fails CI
+
+- name: Check drift (strict)
+  run: aligntrue drift --gates
+  # Fails on exit code 2
+```
+
+## Troubleshooting CI
+
+### "Command not found: aligntrue"
+
+**Cause:** AlignTrue not installed or not in PATH
+
+**Fix:**
+
+```yaml
+- name: Install AlignTrue
+  run: npm install -g @aligntrue/cli
+
+- name: Verify installation
+  run: aligntrue --version
+```
+
+### "Config file not found"
+
+**Cause:** `.aligntrue/` directory not committed to git
+
+**Fix:**
+
+```bash
+# Ensure .aligntrue/ is tracked
+git add .aligntrue/
+git commit -m "Add AlignTrue config"
+```
+
+### Lockfile validation fails
+
+**Cause:** Lockfile out of sync with rules
+
+**Fix:**
+
+```bash
+# Regenerate locally
+aligntrue lock
+
+# Commit updated lockfile
+git add .aligntrue.lock.json
+git commit -m "Update lockfile"
+```
+
+### Git sources fail in CI
+
+**Cause:** Network access or authentication
+
+**Fix:**
+
+```yaml
+# Use --offline flag
+- name: Validate (offline)
+  run: aligntrue check --ci --offline
+
+# Or cache git sources
+- name: Cache git sources
+  uses: actions/cache@v3
+  with:
+    path: .aligntrue/.cache
+    key: aligntrue-cache-${{ hashFiles('.aligntrue.lock.json') }}
+```
+
+### Drift always detected
+
+**Cause:** Volatile fields included in hash
+
+**Fix:**
+
+```yaml
+# .aligntrue/config.yaml
+vendor:
+  _meta:
+    volatile: ["cursor.timestamp"]
+```
+
+## Best practices
+
+### 1. Validate on every PR
+
+```yaml
+on:
+  pull_request:
+    branches: [main]
+```
+
+### 2. Use lockfile in team mode
+
+```yaml
+- name: Validate lockfile exists
+  run: test -f .aligntrue.lock.json
+```
+
+### 3. Cache dependencies
+
+```yaml
+- uses: actions/cache@v3
+  with:
+    path: ~/.npm
+    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+```
+
+### 4. Fail fast
+
+```yaml
+- name: Validate schema
+  run: aligntrue check --ci
+  # Fails immediately if schema invalid
+
+- name: Check drift
+  run: aligntrue drift --gates
+  # Only runs if schema valid
+```
+
+### 5. Use matrix for monorepos
+
+```yaml
+strategy:
+  matrix:
+    scope: [root, packages/api, packages/web]
+```
+
+## See also
+
+- [CLI reference](/docs/03-reference/cli-reference) - All CLI commands
+- [Team mode](/docs/02-concepts/team-mode) - Lockfiles and drift detection
+- [Drift detection](/docs/02-concepts/drift-detection) - Monitoring alignment
+- [Troubleshooting](/docs/04-troubleshooting) - Common CI issues
