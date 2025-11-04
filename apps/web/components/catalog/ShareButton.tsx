@@ -38,11 +38,31 @@ export function ShareButton({
   return (
     <button
       onClick={handleShare}
-      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-        copied
-          ? "bg-green-600 text-white"
-          : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-      } ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${className}`}
+      style={{
+        backgroundColor: copied
+          ? "var(--bgColor-success-emphasis)"
+          : "var(--bgColor-muted)",
+        color: copied ? "var(--fgColor-onEmphasis)" : "var(--fgColor-default)",
+      }}
+      onMouseEnter={(e) => {
+        if (!copied) {
+          e.currentTarget.style.backgroundColor =
+            "var(--bgColor-neutral-muted)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!copied) {
+          e.currentTarget.style.backgroundColor = "var(--bgColor-muted)";
+        }
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.outline = "2px solid var(--focus-outlineColor)";
+        e.currentTarget.style.outlineOffset = "2px";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.outline = "none";
+      }}
       aria-label={`Share ${packName}`}
     >
       {copied ? (

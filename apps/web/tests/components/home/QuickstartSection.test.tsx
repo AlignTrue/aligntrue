@@ -121,12 +121,15 @@ describe("QuickstartSection", () => {
     expect(screen.getByText(/add your first pack/i)).toBeTruthy();
   });
 
-  it("should be mobile responsive with dark gradient background", () => {
+  it("should use theme-aware Tailwind classes", () => {
     const { container } = render(<QuickstartSection />);
 
     const section = container.querySelector("section");
-    expect(section?.className).toContain("bg-gradient-to-br");
-    expect(section?.className).toContain("from-neutral-900");
-    expect(section?.className).toContain("to-neutral-800");
+    expect(section).toBeTruthy();
+
+    // Check that section uses Tailwind classes with CSS variables
+    const className = section?.className;
+    expect(className).toContain("bg-[var(--bgColor-emphasis)]");
+    expect(className).toContain("text-[var(--fgColor-onEmphasis)]");
   });
 });

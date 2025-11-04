@@ -262,7 +262,6 @@ pnpm --filter @aligntrue/schema build
 - Explore [development commands](https://aligntrue.ai/docs/development/commands)
 - Understand [architectural concepts](https://aligntrue.ai/docs/development/architecture)
 
-
 ---
 
 # Workspace structure
@@ -468,7 +467,6 @@ Shared design system for web properties.
 **Responsibilities:**
 
 - AlignTrueLogo component
-- ThemeProvider and ThemeToggle
 - Primer-based color tokens
 - Nextra theme integration
 
@@ -521,7 +519,6 @@ See [development commands](https://aligntrue.ai/docs/development/commands) for p
 
 - Learn [development commands](https://aligntrue.ai/docs/development/commands)
 - Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
-
 
 ---
 
@@ -691,8 +688,6 @@ AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent bran
 ### Key components
 
 - **AlignTrueLogo** - SVG logo with theme-aware colors and orange colon (#F5A623)
-- **ThemeProvider** - System preference detection with manual light/dark toggle
-- **ThemeToggle** - Button to switch between themes
 - **Primer-based colors** - Semantic tokens that adapt to light/dark modes
 
 ### Using the design system
@@ -700,7 +695,7 @@ AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent bran
 Import components and styles in your Next.js app:
 
 ```tsx
-import { AlignTrueLogo, ThemeProvider, ThemeScript, ThemeToggle } from "@aligntrue/ui";
+import { AlignTrueLogo } from "@aligntrue/ui";
 import "@aligntrue/ui/styles/tokens.css";
 ```
 
@@ -881,7 +876,6 @@ Example: `feat: Add new command` or `fix: Resolve memory leak`
 - Review [workspace structure](https://aligntrue.ai/docs/development/workspace)
 - Understand [architecture concepts](https://aligntrue.ai/docs/development/architecture)
 - See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
-
 
 ---
 
@@ -1115,7 +1109,6 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - Review [workspace structure](https://aligntrue.ai/docs/development/workspace)
 - Explore [development commands](https://aligntrue.ai/docs/development/commands)
 - See [setup guide](https://aligntrue.ai/docs/development/setup) for installation
-
 
 ---
 

@@ -27,14 +27,14 @@ export function QuickstartSection() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-neutral-900 to-neutral-800 text-white">
+    <section className="bg-[var(--bgColor-accent-emphasis)] text-white">
       <div className="max-w-6xl mx-auto px-6 py-20">
         {/* Hero heading */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4">
             Try AlignTrue in 30 seconds
           </h1>
-          <p className="text-xl text-neutral-300">
+          <p className="text-xl text-white/90">
             Get started with AI-native rules and alignment for your code agents
           </p>
         </div>
@@ -42,23 +42,23 @@ export function QuickstartSection() {
         {/* Two-step quickstart */}
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Step 1: Install CLI */}
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6">
+          <div className="rounded-lg p-6 bg-[var(--bgColor-muted)] border border-[var(--borderColor-default)]">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-neutral-700 text-sm font-bold mr-3">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mr-3 bg-white/20 text-white">
                   1
                 </span>
                 <span className="text-lg font-semibold">Install the CLI</span>
               </div>
             </div>
             <div className="ml-11">
-              <div className="bg-neutral-900 rounded-md p-4 font-mono text-sm overflow-x-auto mb-3">
+              <div className="rounded-md p-4 font-mono text-sm overflow-x-auto mb-3 bg-[var(--bgColor-inset)] text-[var(--fgColor-default)]">
                 <code>{installScript}</code>
               </div>
               <button
                 type="button"
                 onClick={() => handleCopy(installScript)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white/20 text-white hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 {copied ? (
                   <>
@@ -102,10 +102,10 @@ export function QuickstartSection() {
           </div>
 
           {/* Step 2: Add a pack */}
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6">
+          <div className="rounded-lg p-6 bg-[var(--bgColor-muted)] border border-[var(--borderColor-default)]">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-neutral-700 text-sm font-bold mr-3">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold mr-3 bg-white/20 text-white">
                   2
                 </span>
                 <span className="text-lg font-semibold">
@@ -114,13 +114,13 @@ export function QuickstartSection() {
               </div>
             </div>
             <div className="ml-11">
-              <div className="bg-neutral-900 rounded-md p-4 font-mono text-sm overflow-x-auto mb-3">
+              <div className="rounded-md p-4 font-mono text-sm overflow-x-auto mb-3 bg-[var(--bgColor-inset)] text-[var(--fgColor-default)]">
                 <code>{addCommand}</code>
               </div>
               <button
                 type="button"
                 onClick={() => handleCopy(addCommand)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white/20 text-white hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 {copied ? (
                   <>
@@ -168,7 +168,7 @@ export function QuickstartSection() {
         <div className="text-center mt-12">
           <Link
             href="/catalog"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-neutral-900 rounded-lg text-lg font-semibold hover:bg-neutral-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-neutral-900"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-lg font-semibold transition-colors bg-[var(--bgColor-default)] text-[var(--fgColor-default)] hover:opacity-90"
           >
             Browse 11 packs
             <svg
@@ -192,15 +192,15 @@ export function QuickstartSection() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
             <div className="text-3xl font-bold mb-2">43+</div>
-            <div className="text-neutral-300">Exporter formats</div>
+            <div className="text-white/90">Exporter formats</div>
           </div>
           <div>
             <div className="text-3xl font-bold mb-2">28+</div>
-            <div className="text-neutral-300">AI coding agents</div>
+            <div className="text-white/90">AI coding agents</div>
           </div>
           <div>
             <div className="text-3xl font-bold mb-2">100%</div>
-            <div className="text-neutral-300">Deterministic</div>
+            <div className="text-white/90">Deterministic</div>
           </div>
         </div>
       </div>

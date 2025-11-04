@@ -169,8 +169,6 @@ AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent bran
 ### Key components
 
 - **AlignTrueLogo** - SVG logo with theme-aware colors and orange colon (#F5A623)
-- **ThemeProvider** - System preference detection with manual light/dark toggle
-- **ThemeToggle** - Button to switch between themes
 - **Primer-based colors** - Semantic tokens that adapt to light/dark modes
 
 ### Using the design system
@@ -178,7 +176,7 @@ AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent bran
 Import components and styles in your Next.js app:
 
 ```tsx
-import { AlignTrueLogo, ThemeProvider, ThemeScript, ThemeToggle } from "@aligntrue/ui";
+import { AlignTrueLogo } from "@aligntrue/ui";
 import "@aligntrue/ui/styles/tokens.css";
 ```
 

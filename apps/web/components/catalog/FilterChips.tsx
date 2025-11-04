@@ -67,12 +67,32 @@ export function FilterChips({
       aria-label={ariaLabel || `${label} filters`}
     >
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
+        <label
+          className="text-sm font-medium"
+          style={{ color: "var(--fgColor-default)" }}
+        >
+          {label}
+        </label>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-xs text-neutral-500 hover:text-neutral-700 focus:outline-none focus:underline"
+            className="text-xs transition-colors"
+            style={{ color: "var(--fgColor-accent)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "0.8";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.outline =
+                "2px solid var(--focus-outlineColor)";
+              e.currentTarget.style.outlineOffset = "2px";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.outline = "none";
+            }}
             aria-label={`Clear all ${label.toLowerCase()} filters`}
           >
             Clear all
@@ -87,15 +107,37 @@ export function FilterChips({
               key={option}
               type="button"
               onClick={() => handleToggle(option)}
-              className={`
-                px-3 py-1.5 rounded-full text-sm font-medium
-                transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-400
-                ${
-                  isSelected
-                    ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: isSelected
+                  ? "var(--bgColor-accent-emphasis)"
+                  : "var(--bgColor-muted)",
+                color: isSelected
+                  ? "var(--fgColor-onEmphasis)"
+                  : "var(--fgColor-default)",
+              }}
+              onMouseEnter={(e) => {
+                if (isSelected) {
+                  e.currentTarget.style.opacity = "0.9";
+                } else {
+                  e.currentTarget.style.backgroundColor =
+                    "var(--bgColor-neutral-muted)";
                 }
-              `}
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+                e.currentTarget.style.backgroundColor = isSelected
+                  ? "var(--bgColor-accent-emphasis)"
+                  : "var(--bgColor-muted)";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline =
+                  "2px solid var(--focus-outlineColor)";
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
               role="listitem"
               aria-pressed={isSelected}
               aria-label={`${isSelected ? "Remove" : "Add"} ${formatOption(option)} filter`}
