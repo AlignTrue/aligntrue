@@ -55,6 +55,7 @@ export default [
       "**/*.config.js",
       "**/*.config.mjs",
       "**/*.config.ts",
+      "archive/**",
     ],
   },
   {

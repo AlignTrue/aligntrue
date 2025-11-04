@@ -135,7 +135,9 @@ async function main() {
   // Step 1: Check if already running
   if (await checkServerResponding()) {
     success(`Server already running at ${SERVER_URL}`);
-    log(`\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`);
+    log(
+      `\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`,
+    );
     process.exit(0);
   }
 
@@ -150,7 +152,7 @@ async function main() {
     } else {
       error(`Failed to kill process ${existingPid}`);
       log(
-        `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${existingPid}\n`
+        `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${existingPid}\n`,
       );
       process.exit(2);
     }
@@ -171,7 +173,7 @@ async function main() {
       `\n${colors.yellow}Troubleshooting:${colors.reset}\n` +
         `  1. Check Node version: node -v (need 20+)\n` +
         `  2. Clean install: rm -rf node_modules && pnpm install\n` +
-        `  3. Check logs above for build errors\n`
+        `  3. Check logs above for build errors\n`,
     );
     process.exit(1);
   }
@@ -179,10 +181,10 @@ async function main() {
   // Step 6: Wait for server to respond
   if (await waitForServer()) {
     success(`Server ready at ${SERVER_URL}`);
-    log(`\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`);
     log(
-      `${colors.blue}Press Ctrl+C to stop the server${colors.reset}\n`
+      `\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`,
     );
+    log(`${colors.blue}Press Ctrl+C to stop the server${colors.reset}\n`);
     process.exit(0);
   } else {
     error(`Server failed to respond after ${MAX_WAIT_MS / 1000}s`);
@@ -199,7 +201,7 @@ async function main() {
         `  2. Try a different port: PORT=3001 pnpm dev (in apps/docs)\n` +
         `  3. Check build errors in output above\n` +
         `  4. Clean rebuild: rm -rf apps/docs/.next && pnpm start:docs\n` +
-        `  5. Check Node version: node -v (need 20+)\n`
+        `  5. Check Node version: node -v (need 20+)\n`,
     );
     process.exit(1);
   }
@@ -210,4 +212,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(2);
 });
-
