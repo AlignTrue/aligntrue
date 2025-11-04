@@ -68,7 +68,7 @@ export default function HomePage() {
               margin: "0 auto 2rem",
             }}
           >
-            Write once, sync everywhere. 28+ agents supported, easy to extend.{" "}
+            Write once, sync everywhere. 28+ agents supported. Extensible.{" "}
             <strong>Start in 60 seconds.</strong>
           </p>
           <code
@@ -257,10 +257,12 @@ export default function HomePage() {
               1
             </div>
             <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-              Write rules
+              One source of truth
             </h3>
             <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-              In <code>.aligntrue/rules.md</code> using simple markdown
+              <strong>Update:</strong> <code>.aligntrue/rules.md</code>
+              <br />
+              <strong>Sync:</strong> <code>aligntrue sync</code>
             </p>
           </div>
           <div style={{ textAlign: "center" }}>
@@ -282,10 +284,10 @@ export default function HomePage() {
               2
             </div>
             <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-              Run sync
+              Sync to all agents
             </h3>
             <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-              AlignTrue detects installed agents automatically
+              One command: <code>aligntrue sync</code>
             </p>
           </div>
           <div style={{ textAlign: "center" }}>
@@ -307,10 +309,12 @@ export default function HomePage() {
               3
             </div>
             <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-              Agent exports
+              Solo & team modes
             </h3>
             <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-              Each agent gets its native format (.mdc, .json, .yml)
+              <strong>Solo:</strong> Fast, simple, local-first
+              <br />
+              <strong>Team:</strong> Collaboration & governance
             </p>
           </div>
           <div style={{ textAlign: "center" }}>
@@ -332,10 +336,10 @@ export default function HomePage() {
               4
             </div>
             <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-              Stay aligned
+              Agent formats & configs
             </h3>
             <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-              Edit markdown or agent files - sync keeps everything consistent
+              Adapts for every agent, preserves settings
             </p>
           </div>
         </div>

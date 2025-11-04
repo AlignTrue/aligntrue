@@ -1,9 +1,9 @@
 ---
-title: Why AlignTrue?
-description: Understand the problem AlignTrue solves and why you need it
+title: About
+description: A bit about AlignTrue.
 ---
 
-# Why AlignTrue?
+# About
 
 ## The problem
 

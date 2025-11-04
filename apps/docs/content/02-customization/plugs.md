@@ -1,0 +1,686 @@
+---
+title: Plugs Guide
+description: Dynamic configuration slots for stack-specific and project-specific values in AlignTrue rules
+---
+
+# Plugs guide
+
+Plugs provide template-based customization for rules that need different values across projects, stacks, or teams. Instead of forking rules to change test commands or file paths, you declare slots and fill them with project-specific values.
+
+## Quick example
+
+**Rule with plug:**
+
+```yaml
+rules:
+  - id: testing.run-tests
+    summary: Run tests before committing
+    guidance: |
+      Run tests with: [[plug:test.cmd]]
+    applies_to: ["**/*"]
+
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run the project's tests"
+      format: command
+      required: true
+      example: "pytest -q"
+```
+
+**Fill the slot:**
+
+```bash
+aligntrue plugs set test.cmd "pnpm test"
+```
+
+**Result after sync:**
+
+```
+Run tests with: pnpm test
+```
+
+## When to use plugs
+
+### Good use cases
+
+- **Test commands** - `pytest`, `pnpm test`, `cargo test`, etc.
+- **File paths** - Config files, documentation URLs, build outputs
+- **Project metadata** - Author names, organization names, repository URLs
+- **Stack-specific values** - Package managers, build tools, deployment targets
+
+### Not suitable for
+
+- **Check logic** - Use overlays to adjust severity/inputs, or fork for logic changes
+- **Multi-line content** - Plugs are single-line only
+- **Secret values** - Don't put secrets in fills (use environment variables at runtime)
+- **Computed values** - Plugs are static strings, not expressions
+
+## Declaring slots
+
+Slots define the template variables in your rules.
+
+### Slot structure
+
+```yaml
+plugs:
+  slots:
+    <key>:
+      description: "One-line description"
+      format: command | text | file | url
+      required: true | false
+      example: "example value" # Recommended for required slots
+```
+
+### Format types
+
+**command**
+
+- Single-line shell command
+- No environment variable interpolation (except `CI=true`)
+- Examples: `pnpm test`, `cargo build --release`
+
+**text**
+
+- Any single-line UTF-8 string
+- Examples: `John Doe`, `Acme Corp`, `v1.0.0`
+
+**file**
+
+- Repo-relative POSIX path
+- No `..` segments (parent directory traversal blocked)
+- No absolute paths
+- Examples: `config/settings.json`, `docs/README.md`
+
+**url**
+
+- Must start with `http://` or `https://`
+- Examples: `https://docs.example.com`, `https://github.com/org/repo`
+
+### Key naming rules
+
+- Lowercase letters, numbers, dots, hyphens, underscores: `^[a-z0-9._-]+$`
+- Cannot start with `stack.` or `sys.` (reserved)
+- Use dots for namespacing: `test.cmd`, `docs.url`, `author.name`
+
+### Example declarations
+
+```yaml
+plugs:
+  slots:
+    # Required command
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pytest -q"
+
+    # Optional URL
+    docs.url:
+      description: "Documentation website URL"
+      format: url
+      required: false
+      example: "https://example.com/docs"
+
+    # Required file path
+    config.file:
+      description: "Path to configuration file"
+      format: file
+      required: true
+      example: "config/settings.json"
+
+    # Optional text
+    author.name:
+      description: "Primary author name"
+      format: text
+      required: false
+```
+
+## Providing fills
+
+Fills provide the actual values for slots.
+
+### Fill sources (merge order)
+
+Fills merge in this order (last writer wins):
+
+1. **Base pack** - Default fills from upstream
+2. **Stack pack(s)** - Stack-specific defaults (e.g., `nextjs-pack` provides `test.cmd: "pnpm test"`)
+3. **Repo-local** - Your project's fills (highest priority)
+
+### Setting fills
+
+**CLI command:**
+
+```bash
+aligntrue plugs set <key> <value>
+```
+
+**Examples:**
+
+```bash
+# Set test command
+aligntrue plugs set test.cmd "pnpm test"
+
+# Set author name
+aligntrue plugs set author.name "Jane Smith"
+
+# Set documentation URL
+aligntrue plugs set docs.url "https://docs.example.com"
+
+# Set config file path
+aligntrue plugs set config.file "config/production.json"
+```
+
+**Direct YAML editing:**
+
+```yaml
+plugs:
+  fills:
+    test.cmd: "pnpm test"
+    author.name: "Jane Smith"
+    docs.url: "https://docs.example.com"
+    config.file: "config/production.json"
+```
+
+### Fill validation
+
+AlignTrue validates fills against slot formats:
+
+```bash
+# Valid
+aligntrue plugs set test.cmd "pnpm test"  # ✓ Single-line command
+
+# Invalid
+aligntrue plugs set test.cmd "pnpm test && echo done"  # ✗ Complex command with &&
+aligntrue plugs set config.file "../secrets.json"  # ✗ Parent directory traversal
+aligntrue plugs set docs.url "example.com"  # ✗ Missing http:// or https://
+```
+
+## Resolution algorithm
+
+Plugs resolve during `aligntrue sync` before exporting to agents.
+
+### Resolution steps
+
+1. **Normalize line endings** - Convert CRLF/CR to LF
+2. **Protect escapes** - Temporarily replace `[[\plug:` with sentinel
+3. **Resolve each plug:**
+   - If fill exists → replace `[[plug:key]]` with fill value
+   - If required and no fill → insert TODO block
+   - If optional and no fill → replace with empty string
+4. **Unescape literals** - Restore `[[\plug:` to `[[plug:`
+5. **Normalize output** - Ensure single trailing LF
+
+### Resolution examples
+
+**Filled plug:**
+
+```
+Input:  Run tests with: [[plug:test.cmd]]
+Fill:   test.cmd: "pnpm test"
+Output: Run tests with: pnpm test
+```
+
+**Unresolved required plug (with example):**
+
+```
+Input:  Run tests with: [[plug:test.cmd]]
+Slot:   required: true, example: "pytest -q"
+Fill:   (none)
+Output: Run tests with: TODO(plug:test.cmd): Provide a value for this plug.
+        Examples: pytest -q
+```
+
+**Unresolved optional plug:**
+
+```
+Input:  Documentation: [[plug:docs.url]]
+Slot:   required: false
+Fill:   (none)
+Output: Documentation:
+```
+
+**Escaped literal:**
+
+```
+Input:  Use [[\plug:key]] syntax for plugs
+Output: Use [[plug:key]] syntax for plugs
+```
+
+## CLI commands
+
+### audit - List slots and fills
+
+```bash
+aligntrue plugs audit
+```
+
+Shows:
+
+- All declared slots with descriptions and formats
+- Current fill values
+- Resolution status (filled, required, optional)
+- Orphan fills (fills without slots)
+- Summary statistics
+
+**Example output:**
+
+```
+📌 Plugs Audit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Slots declared:
+
+  test.cmd
+    Description: Command to run the project's tests
+    Format:      command
+    Required:    true
+    Example:     pytest -q
+    Status:      ✓ filled
+    Fill:        pnpm test
+
+  docs.url
+    Description: Documentation website URL
+    Format:      url
+    Required:    false
+    Status:      ○ optional
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Summary:
+  Total slots:      2
+  Required slots:   1
+  Filled required:  1
+```
+
+### resolve - Preview resolution
+
+```bash
+aligntrue plugs resolve [--dry-run]
+```
+
+Previews plug resolution without writing changes. Shows resolved text and lists unresolved required plugs.
+
+**Example output:**
+
+```
+✓ Resolved 2 plugs
+
+Resolved text preview:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run tests with: pnpm test
+Documentation: https://docs.example.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Unresolved required plugs: 0
+```
+
+### set - Set fill value
+
+```bash
+aligntrue plugs set <key> <value>
+```
+
+Sets a repo-local fill with format validation.
+
+**Example:**
+
+```bash
+aligntrue plugs set test.cmd "pnpm test"
+```
+
+**Output:**
+
+```
+✓ Set plug fill: test.cmd = "pnpm test"
+
+Updated: .aligntrue/rules.md
+
+Next step:
+  Run: aligntrue sync
+```
+
+See [CLI Reference](/docs/03-reference/cli-reference#plugs-commands) for complete command documentation.
+
+## Scenario-based examples
+
+### Scenario 1: Solo developer with custom test command
+
+**Goal:** Use shared TypeScript rules but customize test command for your project.
+
+**Setup:**
+
+```yaml
+# Pull upstream TypeScript pack
+sources:
+  - git: https://github.com/org/typescript-standards
+    ref: v1.0.0
+```
+
+**Upstream pack includes:**
+
+```yaml
+rules:
+  - id: testing.run-before-commit
+    guidance: |
+      Run tests before committing: [[plug:test.cmd]]
+
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pytest -q"
+```
+
+**Your customization:**
+
+```bash
+# Set your project's test command
+aligntrue plugs set test.cmd "pnpm test"
+
+# Sync to agents
+aligntrue sync
+```
+
+**Result:** Rules use `pnpm test` instead of upstream's `pytest -q` example.
+
+### Scenario 2: Team sharing stack-specific configs
+
+**Goal:** Team uses shared base rules with stack-specific test commands.
+
+**Base pack (shared):**
+
+```yaml
+# base-rules.yaml
+rules:
+  - id: testing.run-tests
+    guidance: |
+      Run tests: [[plug:test.cmd]]
+
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+```
+
+**Stack pack (Next.js team):**
+
+```yaml
+# nextjs-pack.yaml
+plugs:
+  fills:
+    test.cmd: "pnpm test" # Default for Next.js projects
+```
+
+**Stack pack (Python team):**
+
+```yaml
+# python-pack.yaml
+plugs:
+  fills:
+    test.cmd: "pytest -q" # Default for Python projects
+```
+
+**Project overrides (if needed):**
+
+```bash
+# Override stack default for specific project
+aligntrue plugs set test.cmd "pnpm test:ci"
+```
+
+**Merge order:**
+
+1. Base pack: declares slot
+2. Stack pack: provides stack default
+3. Repo-local: overrides if needed
+
+### Scenario 3: Multi-stack monorepo
+
+**Goal:** Different test commands per scope in monorepo.
+
+**Config:**
+
+```yaml
+scopes:
+  - path: "apps/web"
+    rulesets: ["base-rules", "nextjs-rules"]
+  - path: "services/api"
+    rulesets: ["base-rules", "python-rules"]
+
+plugs:
+  fills:
+    # Global fills (used if scope doesn't override)
+    test.cmd: "pnpm test"
+```
+
+**Scope-specific fills:**
+
+```yaml
+# apps/web/.aligntrue/rules.md
+plugs:
+  fills:
+    test.cmd: "pnpm test:web"
+
+# services/api/.aligntrue/rules.md
+plugs:
+  fills:
+    test.cmd: "pytest -q"
+```
+
+**Result:** Each scope uses its own test command.
+
+### Scenario 4: Documentation URLs per project
+
+**Goal:** Shared rules reference project-specific documentation.
+
+**Shared rule:**
+
+```yaml
+rules:
+  - id: docs.link-in-readme
+    summary: Link to documentation in README
+    guidance: |
+      Add documentation link to README: [[plug:docs.url]]
+    applies_to: ["README.md"]
+
+plugs:
+  slots:
+    docs.url:
+      description: "Project documentation URL"
+      format: url
+      required: false # Optional - not all projects have docs
+      example: "https://docs.example.com"
+```
+
+**Project A:**
+
+```bash
+aligntrue plugs set docs.url "https://docs.projecta.com"
+```
+
+**Project B (no docs yet):**
+
+```bash
+# Don't set fill - optional plug resolves to empty string
+```
+
+**Result:**
+
+- Project A: Guidance includes docs URL
+- Project B: Guidance omits docs URL (empty string)
+
+## Troubleshooting
+
+### Unresolved required plugs
+
+**Problem:** Sync fails with "Unresolved required plugs"
+
+**Solution:**
+
+```bash
+# 1. Audit to see which plugs need fills
+aligntrue plugs audit
+
+# 2. Set missing fills
+aligntrue plugs set <key> <value>
+
+# 3. Sync again
+aligntrue sync
+```
+
+### Format validation errors
+
+**Problem:** `Format validation failed: file`
+
+**Solution:** Check format requirements:
+
+```bash
+# Bad: Parent directory traversal
+aligntrue plugs set config.file "../secrets.json"  # ✗
+
+# Good: Repo-relative path
+aligntrue plugs set config.file "config/settings.json"  # ✓
+
+# Bad: Absolute path
+aligntrue plugs set config.file "/etc/config.json"  # ✗
+
+# Good: Relative to repo root
+aligntrue plugs set config.file "config/production.json"  # ✓
+```
+
+### Orphan fills
+
+**Problem:** Audit shows "Fills without declared slots"
+
+**Cause:** Fill exists but no slot declared (typo or removed slot)
+
+**Solution:**
+
+```bash
+# Option 1: Fix typo in fill key
+aligntrue plugs set correct.key "value"
+
+# Option 2: Remove orphan fill
+# Edit .aligntrue/rules.md and remove the fill
+```
+
+### Multi-line values
+
+**Problem:** Need multi-line guidance with plug
+
+**Solution:** Plugs are single-line only. Use multiple plugs or overlays:
+
+```yaml
+# Bad: Multi-line plug (not supported)
+guidance: |
+  [[plug:multi.line]]
+
+# Good: Multiple single-line plugs
+guidance: |
+  Step 1: [[plug:step.one]]
+  Step 2: [[plug:step.two]]
+
+# Alternative: Use overlay to replace entire guidance
+overlays:
+  overrides:
+    - selector: "rule[id=my-rule]"
+      set:
+        guidance: |
+          Custom multi-line
+          guidance here
+```
+
+### Escaping plug syntax
+
+**Problem:** Need to show `[[plug:key]]` literally in guidance
+
+**Solution:** Use double backslash escape:
+
+```yaml
+guidance: |
+  Use [[\plug:key]] syntax for plugs
+```
+
+**Result after resolution:**
+
+```
+Use [[plug:key]] syntax for plugs
+```
+
+## Determinism and hashing
+
+### Lock hash (pre-resolution)
+
+Computed over canonicalized YAML **before** plug resolution:
+
+```yaml
+# This YAML is hashed (with plugs unresolved)
+rules:
+  - id: test
+    guidance: "Run: [[plug:test.cmd]]"
+
+plugs:
+  slots:
+    test.cmd: { ... }
+  fills:
+    test.cmd: "pnpm test"
+```
+
+**Purpose:** Detect changes to rule structure and plug declarations.
+
+### Export hash (post-resolution)
+
+Computed over resolved text **after** plug resolution:
+
+```
+# This text is hashed (with plugs resolved)
+Run: pnpm test
+```
+
+**Purpose:** Detect changes to exported agent files.
+
+### Volatile fields
+
+Fills are **not** volatile - they affect export hash. If you change a fill, the export hash changes.
+
+## Best practices
+
+### For rule authors
+
+1. **Provide examples** - Always include examples for required plugs
+2. **Clear descriptions** - One-line descriptions that explain the purpose
+3. **Appropriate formats** - Use the most restrictive format (command > file > text)
+4. **Optional by default** - Only mark as required if truly necessary
+5. **Namespace keys** - Use dots for organization: `test.cmd`, `docs.url`, `build.output`
+
+### For solo developers
+
+1. **Set fills early** - Run `aligntrue plugs audit` after init
+2. **Use stack packs** - Let stack packs provide sensible defaults
+3. **Override selectively** - Only set fills when defaults don't work
+4. **Document decisions** - Add comments in rules.md explaining custom fills
+
+### For teams
+
+1. **Share stack packs** - Create org-specific stack packs with common fills
+2. **Document required plugs** - List required plugs in team onboarding docs
+3. **Validate in CI** - Run `aligntrue plugs audit` in CI to catch missing fills
+4. **Review fill changes** - Treat fill changes like code changes (PR review)
+5. **Avoid secrets** - Never put secrets in fills (use env vars at runtime)
+
+## Related documentation
+
+- [Customization Overview](./index) - When to use plugs vs overlays vs scopes
+- [Overlays Guide](./overlays) - Modify rule properties without forking
+- [Scopes Guide](./scopes) - Apply different rules per directory
+- [CLI Reference](/docs/03-reference/cli-reference#plugs-commands) - Complete command docs
+- [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with plugs
+- [Team Guide](/docs/01-guides/team-guide) - Team collaboration with plugs

@@ -19,8 +19,23 @@ export default async function DocsLayout({
     logoSize: "md",
   });
 
-  // Get page map - the route structure already puts this at /docs
-  const pageMap = await getPageMap();
+  // Get page map and prefix all routes with /docs since we're in a nested route
+  const rawPageMap = await getPageMap();
+
+  // Recursively add /docs prefix to all route paths
+  const prefixRoutes = (items: any[], prefix: string): any[] => {
+    return items.map((item) => {
+      if (item.route) {
+        item = { ...item, route: prefix + item.route };
+      }
+      if (item.children) {
+        item = { ...item, children: prefixRoutes(item.children, prefix) };
+      }
+      return item;
+    });
+  };
+
+  const pageMap = prefixRoutes(rawPageMap, "/docs");
 
   return (
     <Layout
