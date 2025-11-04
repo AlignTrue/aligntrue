@@ -8,6 +8,7 @@
 "use client";
 
 import type { CatalogEntryExtended } from "@aligntrue/schema";
+import React from "react";
 
 export interface PackCardProps {
   /** Catalog entry data */
@@ -42,15 +43,30 @@ function Badge({
   children: React.ReactNode;
   variant?: "default" | "success" | "info";
 }) {
-  const colors = {
-    default: "bg-neutral-100 text-neutral-700",
-    success: "bg-green-100 text-green-800",
-    info: "bg-blue-100 text-blue-800",
+  const getColors = () => {
+    switch (variant) {
+      case "success":
+        return {
+          backgroundColor: "var(--bgColor-success-muted)",
+          color: "var(--fgColor-success)",
+        };
+      case "info":
+        return {
+          backgroundColor: "var(--bgColor-accent-muted)",
+          color: "var(--fgColor-accent)",
+        };
+      default:
+        return {
+          backgroundColor: "var(--bgColor-neutral-muted)",
+          color: "var(--fgColor-default)",
+        };
+    }
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[variant]}`}
+      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+      style={getColors()}
     >
       {children}
     </span>
@@ -75,16 +91,31 @@ export function PackCard({ pack, onClick }: PackCardProps) {
   };
 
   const isInteractive = !!onClick;
+  const [isHovered, setIsHovered] = React.useState(false);
 
   return (
     <div
-      className={`
-        bg-white border border-neutral-200 rounded-lg p-6 shadow-sm
-        transition-shadow hover:shadow-md
-        ${isInteractive ? "cursor-pointer" : ""}
-      `}
+      className={`rounded-lg p-6 transition-all ${isInteractive ? "cursor-pointer" : ""}`}
+      style={{
+        backgroundColor: isHovered
+          ? "var(--bgColor-muted)"
+          : "var(--bgColor-default)",
+        border: "1px solid var(--borderColor-default)",
+        boxShadow: isHovered ? "var(--shadow-md)" : "var(--shadow-sm)",
+      }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={(e) => {
+        setIsHovered(true);
+        e.currentTarget.style.outline = "2px solid var(--focus-outlineColor)";
+        e.currentTarget.style.outlineOffset = "2px";
+      }}
+      onBlur={(e) => {
+        setIsHovered(false);
+        e.currentTarget.style.outline = "none";
+      }}
       role={isInteractive ? "button" : "article"}
       tabIndex={isInteractive ? 0 : undefined}
       aria-label={isInteractive ? `View details for ${pack.name}` : undefined}
@@ -92,10 +123,18 @@ export function PackCard({ pack, onClick }: PackCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-neutral-900 truncate">
+          <h3
+            className="text-lg font-bold truncate"
+            style={{ color: "var(--fgColor-default)" }}
+          >
             {pack.name}
           </h3>
-          <p className="text-sm text-neutral-500 mt-0.5">v{pack.version}</p>
+          <p
+            className="text-sm mt-0.5"
+            style={{ color: "var(--fgColor-muted)" }}
+          >
+            v{pack.version}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1 ml-4">
           {pack.source_linked && <Badge variant="success">Source Linked</Badge>}
@@ -110,7 +149,19 @@ export function PackCard({ pack, onClick }: PackCardProps) {
               href={pack.source_repo}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors"
+              style={{
+                backgroundColor: "var(--bgColor-neutral-muted)",
+                color: "var(--fgColor-default)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  "var(--bgColor-accent-muted)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  "var(--bgColor-neutral-muted)";
+              }}
               onClick={(e) => e.stopPropagation()}
               title="Source code available for review"
               aria-label="View source repository"
@@ -136,7 +187,10 @@ export function PackCard({ pack, onClick }: PackCardProps) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-neutral-700 mb-4 line-clamp-2">
+      <p
+        className="text-sm mb-4 line-clamp-2"
+        style={{ color: "var(--fgColor-default)" }}
+      >
         {pack.description}
       </p>
 
@@ -151,7 +205,13 @@ export function PackCard({ pack, onClick }: PackCardProps) {
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-100">
+      <div
+        className="flex items-center justify-between text-xs pt-3"
+        style={{
+          color: "var(--fgColor-muted)",
+          borderTop: "1px solid var(--borderColor-muted)",
+        }}
+      >
         <div className="flex items-center gap-3">
           <span title="Copies in last 7 days">
             {pack.stats.copies_7d > 0
@@ -173,7 +233,10 @@ export function PackCard({ pack, onClick }: PackCardProps) {
       </div>
 
       {/* Maintainer info */}
-      <div className="flex items-center gap-2 mt-3 text-xs text-neutral-600">
+      <div
+        className="flex items-center gap-2 mt-3 text-xs"
+        style={{ color: "var(--fgColor-muted)" }}
+      >
         <span className="font-medium">{pack.maintainer.name}</span>
         {pack.maintainer.github && (
           <>
@@ -182,7 +245,14 @@ export function PackCard({ pack, onClick }: PackCardProps) {
               href={`https://github.com/${pack.maintainer.github}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-500 hover:text-neutral-700 hover:underline"
+              className="hover:underline transition-colors"
+              style={{ color: "var(--fgColor-accent)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.8";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
               onClick={(e) => e.stopPropagation()}
               aria-label={`View ${pack.maintainer.name} on GitHub`}
             >
@@ -193,19 +263,32 @@ export function PackCard({ pack, onClick }: PackCardProps) {
       </div>
 
       {/* Compatible tools */}
-      <div className="mt-3 pt-3 border-t border-neutral-100">
+      <div
+        className="mt-3 pt-3"
+        style={{ borderTop: "1px solid var(--borderColor-muted)" }}
+      >
         <div className="flex flex-wrap gap-1.5">
           {pack.compatible_tools.slice(0, 4).map((tool) => (
             <span
               key={tool}
-              className="inline-flex items-center px-2 py-0.5 rounded-full bg-neutral-50 text-xs text-neutral-600"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
+              style={{
+                backgroundColor: "var(--bgColor-muted)",
+                color: "var(--fgColor-muted)",
+              }}
               title={`Compatible with ${tool}`}
             >
               {tool}
             </span>
           ))}
           {pack.compatible_tools.length > 4 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-neutral-50 text-xs text-neutral-600">
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
+              style={{
+                backgroundColor: "var(--bgColor-muted)",
+                color: "var(--fgColor-muted)",
+              }}
+            >
               +{pack.compatible_tools.length - 4} more
             </span>
           )}

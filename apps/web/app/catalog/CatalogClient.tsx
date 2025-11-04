@@ -130,10 +130,13 @@ export function CatalogClient({ initialPacks }: CatalogClientProps) {
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+        <h1
+          className="text-3xl font-bold mb-2"
+          style={{ color: "var(--fgColor-default)" }}
+        >
           AlignTrue Catalog
         </h1>
-        <p className="text-lg text-neutral-600">
+        <p className="text-lg" style={{ color: "var(--fgColor-muted)" }}>
           Discover AI-native rules and alignment packs
         </p>
       </div>
@@ -149,7 +152,20 @@ export function CatalogClient({ initialPacks }: CatalogClientProps) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search packs by name, description, or tags..."
-          className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-neutral-400"
+          className="w-full px-4 py-3 rounded-lg text-base transition-colors"
+          style={{
+            backgroundColor: "var(--bgColor-default)",
+            color: "var(--fgColor-default)",
+            border: "1px solid var(--borderColor-default)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.outline =
+              "2px solid var(--focus-outlineColor)";
+            e.currentTarget.style.outlineOffset = "2px";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.outline = "none";
+          }}
           aria-label="Search catalog by name, description, or tags"
         />
       </div>
@@ -198,7 +214,27 @@ export function CatalogClient({ initialPacks }: CatalogClientProps) {
             <button
               type="button"
               onClick={handleClearAllFilters}
-              className="w-full px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-400"
+              className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: "var(--bgColor-muted)",
+                color: "var(--fgColor-default)",
+                border: "1px solid var(--borderColor-default)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  "var(--bgColor-neutral-muted)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--bgColor-muted)";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline =
+                  "2px solid var(--focus-outlineColor)";
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
               aria-label="Clear all filters"
             >
               Clear all filters
@@ -210,19 +246,36 @@ export function CatalogClient({ initialPacks }: CatalogClientProps) {
         <main className="flex-1 min-w-0">
           {/* Sort and count */}
           <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm" style={{ color: "var(--fgColor-muted)" }}>
               {searchResults.length}{" "}
               {searchResults.length === 1 ? "pack" : "packs"}
             </p>
             <div className="flex items-center gap-2">
-              <label htmlFor="sort-order" className="text-sm text-neutral-600">
+              <label
+                htmlFor="sort-order"
+                className="text-sm"
+                style={{ color: "var(--fgColor-muted)" }}
+              >
                 Sort by:
               </label>
               <select
                 id="sort-order"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                className="px-3 py-1.5 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                className="px-3 py-1.5 rounded-md text-sm transition-colors"
+                style={{
+                  backgroundColor: "var(--bgColor-default)",
+                  color: "var(--fgColor-default)",
+                  border: "1px solid var(--borderColor-default)",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline =
+                    "2px solid var(--focus-outlineColor)";
+                  e.currentTarget.style.outlineOffset = "2px";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.outline = "none";
+                }}
                 aria-label="Sort packs by"
               >
                 <option value="most-copied-7d">Most copied (7d)</option>
@@ -236,12 +289,29 @@ export function CatalogClient({ initialPacks }: CatalogClientProps) {
           {/* Pack cards grid */}
           {searchResults.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-neutral-600 mb-2">No packs found</p>
+              <p className="mb-2" style={{ color: "var(--fgColor-muted)" }}>
+                No packs found
+              </p>
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={handleClearAllFilters}
-                  className="text-sm text-neutral-500 hover:text-neutral-700 underline focus:outline-none"
+                  className="text-sm underline transition-colors"
+                  style={{ color: "var(--fgColor-accent)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = "0.8";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = "1";
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.outline =
+                      "2px solid var(--focus-outlineColor)";
+                    e.currentTarget.style.outlineOffset = "2px";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.outline = "none";
+                  }}
                 >
                   Clear filters to see all packs
                 </button>

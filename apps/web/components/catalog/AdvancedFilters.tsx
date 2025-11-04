@@ -110,16 +110,35 @@ export function AdvancedFilters({
     overlayFriendly !== undefined;
 
   return (
-    <div className="border-t border-neutral-200 pt-4">
+    <div
+      className="pt-4"
+      style={{ borderTop: "1px solid var(--borderColor-muted)" }}
+    >
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="flex w-full items-center justify-between text-sm font-medium text-neutral-700 hover:text-neutral-900 focus:outline-none focus:underline"
+        className="flex w-full items-center justify-between text-sm font-medium transition-colors"
+        style={{ color: "var(--fgColor-default)" }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "var(--fgColor-accent)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "var(--fgColor-default)";
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.outline = "2px solid var(--focus-outlineColor)";
+          e.currentTarget.style.outlineOffset = "2px";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.outline = "none";
+        }}
         aria-expanded={!isCollapsed}
         aria-controls="advanced-filters"
       >
         <span>Advanced filters</span>
-        <span className="text-neutral-500">{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ color: "var(--fgColor-muted)" }}>
+          {isCollapsed ? "▼" : "▲"}
+        </span>
       </button>
 
       {!isCollapsed && (
@@ -128,7 +147,8 @@ export function AdvancedFilters({
           <div>
             <label
               htmlFor="license-filter"
-              className="block text-sm font-medium text-neutral-700 mb-1"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--fgColor-default)" }}
             >
               License
             </label>
@@ -136,7 +156,20 @@ export function AdvancedFilters({
               id="license-filter"
               value={selectedLicense || "all"}
               onChange={handleLicenseChange}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400"
+              className="w-full px-3 py-2 rounded-md text-sm transition-colors"
+              style={{
+                backgroundColor: "var(--bgColor-default)",
+                color: "var(--fgColor-default)",
+                border: "1px solid var(--borderColor-default)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline =
+                  "2px solid var(--focus-outlineColor)";
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
               aria-label="Filter by license"
             >
               <option value="all">All licenses</option>
@@ -152,7 +185,8 @@ export function AdvancedFilters({
           <div>
             <label
               htmlFor="last-updated-filter"
-              className="block text-sm font-medium text-neutral-700 mb-1"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--fgColor-default)" }}
             >
               Last updated
             </label>
@@ -160,7 +194,20 @@ export function AdvancedFilters({
               id="last-updated-filter"
               value={lastUpdatedAfter ? "custom" : "all"}
               onChange={handleLastUpdatedChange}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400"
+              className="w-full px-3 py-2 rounded-md text-sm transition-colors"
+              style={{
+                backgroundColor: "var(--bgColor-default)",
+                color: "var(--fgColor-default)",
+                border: "1px solid var(--borderColor-default)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline =
+                  "2px solid var(--focus-outlineColor)";
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
               aria-label="Filter by last updated"
             >
               {LAST_UPDATED_PRESETS.map((preset) => (
@@ -173,26 +220,60 @@ export function AdvancedFilters({
 
           {/* Boolean filters */}
           <div className="space-y-2">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={hasPlugs === true}
                 onChange={handleHasPlugsChange}
-                className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-2 focus:ring-neutral-400"
+                className="w-4 h-4 rounded transition-colors"
+                style={{
+                  accentColor: "var(--bgColor-accent-emphasis)",
+                  border: "1px solid var(--borderColor-default)",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline =
+                    "2px solid var(--focus-outlineColor)";
+                  e.currentTarget.style.outlineOffset = "2px";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.outline = "none";
+                }}
                 aria-label="Filter packs with plugs"
               />
-              <span className="text-sm text-neutral-700">Has plugs</span>
+              <span
+                className="text-sm"
+                style={{ color: "var(--fgColor-default)" }}
+              >
+                Has plugs
+              </span>
             </label>
 
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={overlayFriendly === true}
                 onChange={handleOverlayFriendlyChange}
-                className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-2 focus:ring-neutral-400"
+                className="w-4 h-4 rounded transition-colors"
+                style={{
+                  accentColor: "var(--bgColor-accent-emphasis)",
+                  border: "1px solid var(--borderColor-default)",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline =
+                    "2px solid var(--focus-outlineColor)";
+                  e.currentTarget.style.outlineOffset = "2px";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.outline = "none";
+                }}
                 aria-label="Filter overlay-friendly packs"
               />
-              <span className="text-sm text-neutral-700">Overlay-friendly</span>
+              <span
+                className="text-sm"
+                style={{ color: "var(--fgColor-default)" }}
+              >
+                Overlay-friendly
+              </span>
             </label>
           </div>
 
@@ -201,7 +282,22 @@ export function AdvancedFilters({
             <button
               type="button"
               onClick={handleClearAll}
-              className="text-sm text-neutral-500 hover:text-neutral-700 focus:outline-none focus:underline"
+              className="text-sm transition-colors"
+              style={{ color: "var(--fgColor-accent)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.8";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline =
+                  "2px solid var(--focus-outlineColor)";
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
               aria-label="Clear all advanced filters"
             >
               Clear advanced filters

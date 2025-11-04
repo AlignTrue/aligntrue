@@ -2,7 +2,7 @@
  * Vitest setup file for @aligntrue/ui tests
  */
 
-// Mock window.matchMedia for ThemeProvider tests
+// Mock window.matchMedia for components that rely on it in tests
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
