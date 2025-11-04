@@ -25,10 +25,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head faviconGlyph=":" />
-      <head>
+      <Head faviconGlyph=":">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
+      </Head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
