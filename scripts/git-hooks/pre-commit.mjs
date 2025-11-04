@@ -27,6 +27,25 @@ async function main() {
     process.exit(1);
   }
 
+  s.start("Validating Next.js transpilePackages config...");
+  try {
+    execSync("node scripts/validate-transpile-packages.mjs", { stdio: "pipe" });
+    s.stop("✅ Next.js config validated.");
+  } catch (error) {
+    s.stop("❌ Next.js validation failed.", 1);
+    console.error("");
+    clack.log.error("transpilePackages validation failed.");
+    console.error("");
+    console.error("📦 If you modified Next.js configs or added workspace packages:");
+    console.error("   • Check that transpilePackages includes source packages");
+    console.error("   • See: https://nextjs.org/docs/app/api-reference/config/next-config-js/transpilePackages");
+    console.error("");
+    console.error("🔍 Re-run validation: node scripts/validate-transpile-packages.mjs");
+    console.error("");
+    clack.outro("💡 Fix the config and re-stage the files.");
+    process.exit(1);
+  }
+
   clack.outro("✅ Pre-commit checks passed");
   process.exit(0);
 }

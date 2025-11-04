@@ -11,6 +11,7 @@
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { existsSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,21 +65,33 @@ function getTranspilePackages(configPath, isESM = false) {
   }
 }
 
-// Check apps/web/next.config.ts
+// Check apps/web/next.config.ts (if it exists)
 console.log("🔍 Validating Next.js transpilePackages config...\n");
 
 const webConfigPath = join(rootDir, "apps/web/next.config.ts");
-const webTranspilePackages = getTranspilePackages(webConfigPath);
+const webTranspilePackages = existsSync(webConfigPath)
+  ? getTranspilePackages(webConfigPath)
+  : null;
 
-console.log("📦 apps/web/next.config.ts");
-console.log(`   transpilePackages: ${JSON.stringify(webTranspilePackages)}`);
+if (webTranspilePackages !== null) {
+  console.log("📦 apps/web/next.config.ts");
+  console.log(`   transpilePackages: ${JSON.stringify(webTranspilePackages)}`);
+} else {
+  console.log("📦 apps/web (skipped - archived)");
+}
 
 // Check apps/docs/next.config.mjs
 const docsConfigPath = join(rootDir, "apps/docs/next.config.mjs");
-const docsTranspilePackages = getTranspilePackages(docsConfigPath, true);
+const docsTranspilePackages = existsSync(docsConfigPath)
+  ? getTranspilePackages(docsConfigPath, true)
+  : null;
 
 console.log("📦 apps/docs/next.config.mjs");
-console.log(`   transpilePackages: ${JSON.stringify(docsTranspilePackages)}`);
+if (docsTranspilePackages !== null) {
+  console.log(`   transpilePackages: ${JSON.stringify(docsTranspilePackages)}`);
+} else {
+  console.log("   (file not found)");
+}
 
 // Check packages/ui (known source package)
 const uiPackagePath = join(rootDir, "packages/ui/package.json");
@@ -90,11 +103,11 @@ console.log(
 );
 
 // Validation
-if (isUiSourcePackage && !webTranspilePackages.includes("@aligntrue/ui")) {
+if (webTranspilePackages !== null && isUiSourcePackage && !webTranspilePackages.includes("@aligntrue/ui")) {
   errors.push("apps/web: Missing '@aligntrue/ui' in transpilePackages");
 }
 
-if (isUiSourcePackage && !docsTranspilePackages.includes("@aligntrue/ui")) {
+if (docsTranspilePackages !== null && isUiSourcePackage && !docsTranspilePackages.includes("@aligntrue/ui")) {
   errors.push("apps/docs: Missing '@aligntrue/ui' in transpilePackages");
 }
 
