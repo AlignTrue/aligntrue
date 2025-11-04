@@ -12,6 +12,7 @@
 "use client";
 
 import { useTheme } from "./ThemeProvider";
+import { useEffect, useState } from "react";
 
 interface ThemeToggleProps {
   /**
@@ -32,6 +33,12 @@ export function ThemeToggle({
   className = "",
 }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggle = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -61,7 +68,7 @@ export function ThemeToggle({
   return (
     <button
       onClick={toggle}
-      className={`inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors ${className}`}
+      className={`inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`}
       style={{
         color: "var(--fgColor-default)",
         backgroundColor: "transparent",
@@ -70,7 +77,15 @@ export function ThemeToggle({
       aria-label={label}
       title={label}
     >
-      {isDark ? <SunIcon /> : <MoonIcon />}
+      {mounted ? (
+        isDark ? (
+          <SunIcon />
+        ) : (
+          <MoonIcon />
+        )
+      ) : (
+        <div className="w-4 h-4" />
+      )}
     </button>
   );
 }
