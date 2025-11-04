@@ -1,4 +1,5 @@
 {
+  "examples": "Examples",
   "cli-reference": "CLI Commands",
   "agent-support": "Agent Support",
   "import-workflow": "Import Workflow",

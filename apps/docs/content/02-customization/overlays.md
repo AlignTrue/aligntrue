@@ -1,0 +1,884 @@
+---
+title: Overlays Guide
+description: Fork-safe customization of upstream rules - change severity, adjust inputs, and preserve updates
+---
+
+# Overlays guide
+
+Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
+
+## Quick start (60 seconds)
+
+**Scenario:** You use `@acme/standards` but want to treat one check as an error.
+
+```yaml
+# .aligntrue/rules.md
+sources:
+  - git: https://github.com/acme/standards
+    ref: v1.2.0
+
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+```
+
+Run sync:
+
+```bash
+aligntrue sync
+# Output:
+# ✓ Applied 1 overlay to @acme/standards
+# ✓ Lockfile updated with overlay hash
+```
+
+**Result:** `no-console-log` now fails CI instead of warning, and you still get upstream updates with `aligntrue update`.
+
+## When to use overlays vs plugs vs forks
+
+### Decision tree
+
+```
+Need to customize a third-party pack?
+│
+├─ Change exists in pack definition? (severity, inputs, autofix)
+│  ├─ YES → Use overlay (this guide)
+│  └─ NO → Continue...
+│
+├─ Customization is stack-specific? (test commands, paths)
+│  ├─ YES → Use plug (see plugs guide)
+│  └─ NO → Continue...
+│
+└─ Need to change check logic or add new checks?
+   └─ YES → Fork pack or create custom pack
+```
+
+### When to use overlays
+
+✅ **Change severity:** Warning → error, or disable a check  
+✅ **Add check inputs:** Pass project-specific config to checks  
+✅ **Remove autofix:** Keep check but disable automatic fixes  
+✅ **Temporary adjustments:** Override during migration, restore later
+
+❌ **Don't use overlays for:**
+
+- Changing check logic (fork instead)
+- Adding new checks (create custom pack)
+- Stack-specific values (use plugs)
+
+### When to use plugs
+
+✅ **Stack-specific values:** Test commands, file paths, URLs  
+✅ **Template slots:** Fill variables in rules  
+✅ **Project metadata:** Author names, organization names
+
+See [Plugs Guide](./plugs) for plug documentation.
+
+### When to fork
+
+✅ **Major changes:** Rewrite check logic, change structure  
+✅ **Divergent requirements:** Your needs differ fundamentally  
+✅ **No upstream updates needed:** You maintain your version
+
+## Overlay anatomy
+
+### Basic overlay
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error" # Change severity
+```
+
+### Advanced overlay
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        severity: "warning"
+        "check.inputs.threshold": 15 # Nested property with dot notation
+      remove:
+        - "autofix" # Disable autofix
+```
+
+**Note:** Track metadata like reason, expires, and owner via YAML comments.
+
+## Selector strategies
+
+### By rule ID
+
+Applies to one specific rule by its unique ID:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+```
+
+**Use when:** Most rules are fine, one needs adjustment.
+
+### By property path
+
+Modify nested properties using dot notation:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "profile.version"
+      set:
+        value: "2.0.0"
+```
+
+**Use when:** Changing configuration or metadata fields.
+
+### By array index
+
+Target specific array elements:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rules[0]"
+      set:
+        severity: "warn"
+```
+
+**Use when:** Modifying rules by position (less common, prefer rule ID).
+
+**Note:** Scope-based selectors (e.g., `tests/**`) are not yet implemented. Use hierarchical configs with scopes for path-based customization.
+
+## Override capabilities
+
+### Set operation
+
+Use `set` to modify properties (supports dot notation for nested paths):
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error" # Simple property
+        "check.inputs.maxLength": 120 # Nested property
+        autofix: false # Disable autofix
+```
+
+**Severity values:** `"off"`, `"info"`, `"warning"`, `"error"`
+
+### Remove operation
+
+Use `remove` to delete properties:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      remove:
+        - "autofix" # Remove autofix
+        - "tags" # Remove tags array
+```
+
+### Combined operations
+
+Apply both set and remove in one overlay:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=line-length]"
+      set:
+        severity: "warning"
+        "check.inputs.threshold": 120
+      remove:
+        - "autofix"
+```
+
+## Advanced patterns
+
+### Multiple overlays
+
+Apply multiple overlays to different rules:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15
+
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix"
+```
+
+**Order:** Overlays apply in definition order. Last matching overlay wins if multiple target the same rule.
+
+### Temporary overrides
+
+Use YAML comments to track temporary overlays:
+
+```yaml
+overlays:
+  overrides:
+    # TEMPORARY: Migration to new API in progress
+    # Expires: 2025-12-31
+    # Owner: platform-team
+    - selector: "rule[id=no-deprecated-api]"
+      set:
+        severity: "warning"
+```
+
+Use `aligntrue override status` to review all active overlays.
+
+### Migration workflow
+
+Gradually adopt stricter rules:
+
+```yaml
+# Week 1: Disable new check
+overlays:
+  overrides:
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "off"
+
+# Week 2: Enable as warning
+overlays:
+  overrides:
+    - selector: "rule[id=new-security-rule]"
+      set:
+        severity: "warning"
+
+# Week 3: Remove overlay (use upstream default: error)
+overlays:
+  overrides: []
+```
+
+## Scenario-based examples
+
+### Scenario 1: Solo developer - Temporarily disable strict rule
+
+**Goal:** Disable strict TypeScript rule during refactoring, re-enable after.
+
+**Setup:**
+
+```yaml
+sources:
+  - git: https://github.com/org/typescript-standards
+    ref: v1.0.0
+
+# Temporarily downgrade severity during refactoring
+overlays:
+  overrides:
+    # TEMPORARY: Refactoring legacy code
+    # Expires: 2025-12-31
+    # Will re-enable after refactor complete
+    - selector: "rule[id=strict-null-checks]"
+      set:
+        severity: "warn" # Downgrade from error
+```
+
+**Workflow:**
+
+```bash
+# 1. Add overlay
+aligntrue sync
+
+# 2. Refactor code with warnings instead of errors
+# ... refactoring work ...
+
+# 3. Remove overlay when done
+aligntrue override remove 'rule[id=strict-null-checks]'
+aligntrue sync
+```
+
+### Scenario 2: Solo developer - Adjust complexity threshold
+
+**Goal:** Increase complexity threshold for specific project needs.
+
+**Setup:**
+
+```yaml
+sources:
+  - git: https://github.com/org/code-quality-pack
+    ref: v2.0.0
+
+overlays:
+  overrides:
+    # Project has complex domain logic, increase threshold
+    # Reviewed: 2025-10-01
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15 # Default is 10
+        "check.inputs.excludeComments": true
+```
+
+**Result:** Complexity check allows up to 15 instead of 10.
+
+### Scenario 3: Team - Enforce stricter severity
+
+**Goal:** Team wants stricter enforcement than upstream defaults.
+
+**Setup:**
+
+```yaml
+sources:
+  - git: https://github.com/community/typescript-pack
+    ref: v1.0.0
+
+overlays:
+  overrides:
+    # Team policy: No console.log in production
+    # Approved: 2025-10-15
+    # Owner: platform-team
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error" # Upgrade from warning
+
+    # Team policy: No any types
+    # Approved: 2025-10-15
+    # Owner: platform-team
+    - selector: "rule[id=no-any-type]"
+      set:
+        severity: "error" # Upgrade from warning
+```
+
+**Workflow:**
+
+```bash
+# 1. Team lead adds overlays
+# 2. Commit to git
+git add .aligntrue/rules.md
+git commit -m "chore: Enforce stricter console.log and any-type rules"
+
+# 3. Team members pull and sync
+git pull
+aligntrue sync
+
+# 4. CI validates with stricter rules
+aligntrue check --ci
+```
+
+### Scenario 4: Team - Disable risky autofix
+
+**Goal:** Keep check but disable autofix that conflicts with framework.
+
+**Setup:**
+
+```yaml
+sources:
+  - git: https://github.com/org/react-standards
+    ref: v2.0.0
+
+overlays:
+  overrides:
+    # Autofix conflicts with React hooks dependencies
+    # Issue: #123
+    # Owner: frontend-team
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix"
+```
+
+**Result:** Check still runs, but doesn't auto-fix (manual fixes only).
+
+### Scenario 5: Team - Gradual rollout of new rule
+
+**Goal:** Roll out new security rule gradually across team.
+
+**Week 1 - Disable:**
+
+```yaml
+overlays:
+  overrides:
+    # ROLLOUT: Week 1 - Disabled
+    # New security rule, giving team time to review
+    - selector: "rule[id=new-security-check]"
+      set:
+        severity: "off"
+```
+
+**Week 2 - Warning:**
+
+```yaml
+overlays:
+  overrides:
+    # ROLLOUT: Week 2 - Warning
+    # Team reviewing violations
+    - selector: "rule[id=new-security-check]"
+      set:
+        severity: "warn"
+```
+
+**Week 3 - Error:**
+
+```yaml
+overlays:
+  overrides:
+    # ROLLOUT: Week 3 - Error
+    # All violations fixed, enforcing now
+    - selector: "rule[id=new-security-check]"
+      set:
+        severity: "error"
+```
+
+**Week 4 - Remove overlay:**
+
+```yaml
+# Remove overlay, use upstream default (error)
+overlays:
+  overrides: []
+```
+
+### Scenario 6: Fork-safe customization
+
+**Goal:** Customize third-party pack without forking, preserve updates.
+
+**Setup:**
+
+```yaml
+sources:
+  - git: https://github.com/thirdparty/standards
+    ref: v3.0.0
+
+overlays:
+  overrides:
+    # Customize for our needs
+    - selector: "rule[id=line-length]"
+      set:
+        "check.inputs.maxLength": 120 # We use 120, they use 80
+
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15 # We allow 15, they allow 10
+
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix" # Conflicts with our framework
+```
+
+**Update workflow:**
+
+```bash
+# 1. Update upstream
+aligntrue update check
+
+# 2. Review changes
+aligntrue override status  # Check overlay health
+
+# 3. Apply update
+aligntrue update apply
+
+# 4. Overlays preserved, applied to new version
+aligntrue sync
+```
+
+**Result:** Get upstream updates while keeping customizations.
+
+## Conflict resolution
+
+### What causes conflicts?
+
+**Stale selectors:** Upstream renamed or removed a rule.
+
+```yaml
+# Upstream renamed "no-console-log" → "no-console-statements"
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]" # ❌ No longer exists
+      set:
+        severity: "error"
+```
+
+**Resolution:** Run `aligntrue override status` to detect stale selectors, update to new rule ID.
+
+**Duplicate overlays:** Multiple overlays target same rule.
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "warning" # ❌ Conflicts with above
+```
+
+**Resolution:** Last matching overlay wins. Consolidate into single overlay or remove duplicate.
+
+### Handling upstream changes
+
+When upstream changes may conflict with your overlay:
+
+```bash
+# Check overlay health after update
+aligntrue sync
+aligntrue override status
+# Shows if overlays still match rules
+
+# View overlay effects
+aligntrue override diff 'rule[id=no-console-log]'
+# Shows: original IR → modified IR with overlay applied
+```
+
+**If rule ID changed upstream:**
+
+1. Remove old overlay: `aligntrue override remove 'rule[id=old-name]'`
+2. Add new overlay: `aligntrue override add --selector 'rule[id=new-name]' --set severity=error`
+
+**If overlay now redundant (upstream matches your override):**
+
+1. Verify match: `aligntrue override diff`
+2. Remove overlay: `aligntrue override remove 'rule[id=rule-name]'`
+
+## Team workflows
+
+### Overlay approval
+
+Team mode tracks overlays in lockfile for review:
+
+```json
+// .aligntrue.lock.json
+{
+  "dependencies": {
+    "acme-standards": {
+      "content_hash": "sha256:upstream...",
+      "overlay_hash": "sha256:local-mods...",
+      "final_hash": "sha256:combined..."
+    }
+  }
+}
+```
+
+See [Team Mode Guide](/docs/02-concepts/team-mode) for team mode workflows.
+
+### Overlay dashboard
+
+Audit all overlays:
+
+```bash
+aligntrue override status
+
+# Output:
+# Overlays (3 active, 1 stale)
+#
+# ✓ rule[id=no-console-log]
+#   Set: severity=error
+#   Healthy: yes
+#
+# ✓ rule[id=max-complexity]
+#   Set: check.inputs.threshold=15
+#   Healthy: yes
+#
+# ❌ rule[id=old-rule-name]
+#   Set: severity=off
+#   Healthy: stale (no match in IR)
+```
+
+## Overlay hashing and lockfile
+
+### Triple-hash lockfile
+
+Overlays are deterministic and hashed separately:
+
+```json
+{
+  "spec_version": "1",
+  "generated_at": "2025-10-31T12:00:00Z",
+  "dependencies": {
+    "@acme/standards": {
+      "version": "1.2.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/acme/standards",
+        "ref": "v1.2.0",
+        "commit": "abc123"
+      },
+      "base_hash": "sha256:upstream-content-hash",
+      "overlay_hash": "sha256:overlay-modifications-hash",
+      "result_hash": "sha256:combined-hash"
+    }
+  }
+}
+```
+
+**base_hash:** Upstream pack content  
+**overlay_hash:** Your overlay modifications  
+**result_hash:** Combined result after overlays applied
+
+### Drift detection
+
+Detect overlay staleness:
+
+```bash
+aligntrue drift
+
+# Output:
+# Drift detected (2 categories)
+#
+# Overlay drift:
+#   rule[id=no-console-log]
+#   - overlay_hash changed (local modifications)
+#   - Recommendation: Review overlay changes
+#
+# Upstream drift:
+#   @acme/standards
+#   - base_hash changed (upstream updated)
+#   - Recommendation: Run aligntrue sync to apply latest
+```
+
+See [Drift Detection](/docs/02-concepts/drift-detection) for full drift capabilities.
+
+## CLI commands
+
+### Add overlay
+
+```bash
+# Add overlay to change severity
+aligntrue override add \
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
+
+# Add overlay with nested property (dot notation)
+aligntrue override add \
+  --selector 'rule[id=max-complexity]' \
+  --set check.inputs.threshold=15
+
+# Remove property
+aligntrue override add \
+  --selector 'rule[id=prefer-const]' \
+  --remove autofix
+
+# Combined set and remove
+aligntrue override add \
+  --selector 'rule[id=line-length]' \
+  --set severity=warning \
+  --set check.inputs.max=120 \
+  --remove autofix
+```
+
+### View overlays
+
+```bash
+# Dashboard of all overlays
+aligntrue override status
+
+# JSON output for CI
+aligntrue override status --json
+```
+
+### Diff overlays
+
+```bash
+# Show effect of specific overlay
+aligntrue override diff 'rule[id=no-console-log]'
+
+# Show all overlay effects
+aligntrue override diff
+```
+
+### Remove overlay
+
+```bash
+# Interactive removal (select from list)
+aligntrue override remove
+
+# Direct removal by selector
+aligntrue override remove 'rule[id=no-console-log]'
+
+# Skip confirmation
+aligntrue override remove 'rule[id=no-console-log]' --force
+```
+
+### Integration with other commands
+
+```bash
+# Sync applies overlays automatically
+aligntrue sync
+
+# Update preserves overlays
+aligntrue update
+```
+
+See [CLI Reference](/docs/03-reference/cli-reference#overlay-commands) for complete command documentation.
+
+## Best practices
+
+### Keep overlays minimal
+
+Only override what you must. Fewer overlays = easier updates.
+
+❌ **Bad:** Override many rules:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=check-1]"
+      set: { severity: "error" }
+    - selector: "rule[id=check-2]"
+      set: { severity: "error" }
+    # ... 20 more overlays
+```
+
+✅ **Good:** Fork and customize:
+
+```yaml
+# Create your own pack based on upstream
+# Maintain in your repo, or request changes upstream
+```
+
+### Document reasons
+
+Always explain why using YAML comments:
+
+```yaml
+overlays:
+  overrides:
+    # CLI tool requires console output for user feedback
+    # Owner: cli-team
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "off"
+```
+
+### Track expiration
+
+For temporary overrides, use YAML comments:
+
+```yaml
+overlays:
+  overrides:
+    # TEMPORARY: Gradual rollout
+    # Expires: 2025-12-31
+    - selector: "rule[id=new-rule]"
+      set:
+        severity: "warning"
+```
+
+Use `aligntrue override status` to review active overlays regularly.
+
+### Review regularly
+
+Audit overlays monthly:
+
+```bash
+# Check all overlays health
+aligntrue override status
+
+# View overlay effects
+aligntrue override diff
+
+# Detect drift
+aligntrue drift
+```
+
+### For solo developers
+
+1. **Use for experimentation** - Try different severity levels
+2. **Temporary adjustments** - Disable strict rules during refactoring
+3. **Document decisions** - Add comments explaining why
+4. **Clean up** - Remove overlays when no longer needed
+
+### For teams
+
+1. **Require approval** - PR review for overlay changes
+2. **Document ownership** - Add owner comments
+3. **Set expiration dates** - Review temporary overlays
+4. **Audit regularly** - Monthly overlay review
+5. **Validate in CI** - Run `aligntrue override status` in CI
+
+## Troubleshooting
+
+### Overlay not applied
+
+**Symptom:** Overlay defined but check still uses upstream settings.
+
+**Diagnosis:**
+
+```bash
+aligntrue override status
+# Look for "Healthy: no" entries
+```
+
+**Common causes:**
+
+1. Typo in rule ID
+2. Rule no longer exists in upstream
+3. Selector too specific (no matches)
+
+**Fix:** Run `aligntrue override status` for health status and detailed errors.
+
+### Overlay conflicts
+
+**Symptom:** Multiple overlays target same rule.
+
+**Diagnosis:**
+
+```bash
+aligntrue override status
+# Lists all active overlays
+aligntrue override diff
+# Shows combined effect
+```
+
+**Fix:** Consolidate overlays into single definition. Last overlay wins if multiple target same rule.
+
+### Update breaks overlays
+
+**Symptom:** After `aligntrue update`, overlays fail to apply.
+
+**Diagnosis:**
+
+```bash
+aligntrue override status
+# Shows health after update
+
+aligntrue override diff
+# Shows current effects
+```
+
+**Fix:** Update selectors to match new upstream rule IDs. Run `aligntrue override remove` for stale overlays and re-add with correct selectors.
+
+See [Troubleshooting Overlays](/docs/04-troubleshooting/overlays) for comprehensive troubleshooting.
+
+## Related documentation
+
+- [Customization Overview](./index) - When to use overlays vs plugs vs scopes
+- [Plugs Guide](./plugs) - Stack-specific customization
+- [Scopes Guide](./scopes) - Path-based rule application
+- [Team Mode Guide](/docs/02-concepts/team-mode) - Overlay policies and approval workflows
+- [Drift Detection](/docs/02-concepts/drift-detection) - Detect overlay staleness
+- [CLI Reference](/docs/03-reference/cli-reference#overlay-commands) - Complete CLI reference
+- [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with overlays
+- [Team Guide](/docs/01-guides/team-guide) - Team collaboration with overlays
+
+## Summary
+
+**Overlays let you customize without forking:**
+
+1. **Quick:** Add overlay in 60 seconds
+2. **Safe:** Preserve upstream updates
+3. **Flexible:** Change severity, inputs, autofix
+4. **Auditable:** Dashboard and drift detection
+5. **Team-ready:** Approval policies and expiration tracking
+
+**When in doubt:**
+
+- Use **overlays** for pack-level customization (severity, inputs)
+- Use **plugs** for stack-specific values (test commands, paths)
+- Use **scopes** for path-based rules (monorepo)
+- **Fork** when you need fundamental changes
+
+Start with overlays, graduate to forks only when necessary.

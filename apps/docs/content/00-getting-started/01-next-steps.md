@@ -166,20 +166,16 @@ Common agent formats:
 - **cline** - Cline configuration
 - **vscode-mcp** - VS Code MCP configuration
 
-## Advanced features
+## Customization features
 
-### Hierarchical scopes
+AlignTrue provides three powerful mechanisms for customizing rules without forking:
 
-Apply different rules to different directories:
+### Plugs
 
-```yaml
-scopes:
-  - path: src/
-    rules:
-      - strict-types
-  - path: tests/
-    rules:
-      - allow-any
+Fill template slots with stack-specific values:
+
+```bash
+aligntrue plugs set test.cmd "pnpm test"
 ```
 
 ### Overlays
@@ -187,10 +183,22 @@ scopes:
 Customize third-party packs without losing upstream updates:
 
 ```bash
-aligntrue override add rule-id --set severity=warning
+aligntrue override add --selector 'rule[id=no-console-log]' --set severity=error
 ```
 
-**Full guide:** [Overlays Guide](/docs/02-concepts/overlays)
+### Scopes
+
+Apply different rules to different directories:
+
+```yaml
+scopes:
+  - path: "apps/web"
+    rulesets: ["base-rules", "nextjs-rules"]
+  - path: "packages/api"
+    rulesets: ["base-rules", "node-rules"]
+```
+
+**Complete guides:** [Customization Overview](/docs/02-customization)
 
 ### Custom exporters
 
