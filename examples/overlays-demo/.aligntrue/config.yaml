@@ -1,0 +1,17 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: .aligntrue/rules.md
+
+exporters:
+  - cursor
+  - agents-md
+
+sync:
+  workflow_mode: "ir_source"
+  auto_pull: false
+
+git:
+  mode: ignore

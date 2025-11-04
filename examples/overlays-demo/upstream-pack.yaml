@@ -1,0 +1,53 @@
+id: upstream-standards
+version: "1.0.0"
+spec_version: "1"
+
+profile:
+  id: example/upstream-standards
+  version: "1.0.0"
+  name: Upstream Standards Pack
+  summary: Example upstream pack for overlay demonstration
+
+rules:
+  - id: no-console-log
+    summary: Avoid console.log in production code
+    severity: warn
+    applies_to:
+      patterns: ["**/*.ts", "**/*.js"]
+    guidance: |
+      Use proper logging library instead of console.log.
+      Console statements can leak sensitive information and
+      clutter production logs.
+
+      Good: logger.info("User logged in")
+      Bad: console.log("User logged in")
+
+  - id: max-complexity
+    summary: Limit cyclomatic complexity
+    severity: error
+    applies_to:
+      patterns: ["**/*.ts", "**/*.js"]
+    guidance: |
+      Keep functions simple with cyclomatic complexity under threshold.
+      Complex functions are hard to test and maintain.
+
+      Refactor complex functions into smaller, focused functions.
+    check:
+      inputs:
+        threshold: 10
+        excludeComments: false
+
+  - id: prefer-const
+    summary: Use const for variables that are never reassigned
+    severity: warn
+    applies_to:
+      patterns: ["**/*.ts", "**/*.js"]
+    guidance: |
+      Use const instead of let for variables that are never reassigned.
+      This makes code more predictable and prevents accidental reassignment.
+
+      Good: const user = getUser();
+      Bad: let user = getUser();
+    autofix:
+      enabled: true
+      description: "Replace let with const"

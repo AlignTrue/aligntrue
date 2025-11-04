@@ -7,6 +7,8 @@ description: Complete guide for team collaboration with AlignTrue - shared stand
 
 This guide shows how teams use AlignTrue to maintain consistent AI agent behavior across team members with reproducible builds, drift detection, and approval workflows.
 
+> **See it in action:** Check out the [team repo example](https://github.com/AlignTrue/aligntrue/tree/main/examples/team-repo) for team workflows, and [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for customization patterns.
+
 ## Quick team setup
 
 ```bash

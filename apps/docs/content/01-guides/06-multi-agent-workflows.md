@@ -7,6 +7,8 @@ description: Use AlignTrue with multiple AI coding agents simultaneously
 
 Use AlignTrue to maintain consistent rules across multiple AI coding agents. Write rules once, sync to all agents automatically.
 
+> **See it in action:** Check out the [multi-agent example](https://github.com/AlignTrue/aligntrue/tree/main/examples/multi-agent) for a working demonstration.
+
 ## Overview
 
 This guide covers:
@@ -97,6 +99,8 @@ AGENTS.md                       # Universal format
 Each file contains the same rules in agent-specific format.
 
 ## Configuration examples
+
+> **More examples:** See [COMPARISON.md](https://github.com/AlignTrue/aligntrue/tree/main/examples/multi-agent/COMPARISON.md) in the multi-agent example for detailed agent comparison.
 
 ### Example 1: Cursor + Copilot + Claude Code
 
