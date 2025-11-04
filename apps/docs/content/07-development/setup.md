@@ -26,6 +26,8 @@ pnpm bootstrap
 
 This installs dependencies and builds all packages. You're ready to develop!
 
+**Note:** First-time setup takes ~2-3 minutes depending on your machine.
+
 ## Getting started
 
 ### 1. Install dependencies
