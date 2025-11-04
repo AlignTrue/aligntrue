@@ -206,7 +206,6 @@ Shared design system for web properties.
 **Responsibilities:**
 
 - AlignTrueLogo component
-- ThemeProvider and ThemeToggle
 - Primer-based color tokens
 - Nextra theme integration
 

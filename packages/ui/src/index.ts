@@ -6,14 +6,6 @@
 // Logo components
 export { AlignTrueLogo, AlignTrueLogoText } from "./components/AlignTrueLogo";
 
-// Theme components
-export {
-  ThemeProvider,
-  ThemeScript,
-  useTheme,
-} from "./components/ThemeProvider";
-export { ThemeToggle } from "./components/ThemeToggle";
-
 // Footer components
 export { SiteFooter } from "./components/SiteFooter";
 
