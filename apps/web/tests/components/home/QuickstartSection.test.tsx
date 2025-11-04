@@ -129,7 +129,7 @@ describe("QuickstartSection", () => {
 
     // Check that section uses Tailwind classes with CSS variables
     const className = section?.className;
-    expect(className).toContain("bg-[var(--bgColor-emphasis)]");
-    expect(className).toContain("text-[var(--fgColor-onEmphasis)]");
+    expect(className).toContain("bg-[var(--bgColor-accent-emphasis)]");
+    expect(className).toContain("text-white");
   });
 });
