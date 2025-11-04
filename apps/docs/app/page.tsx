@@ -72,19 +72,31 @@ export default function HomePage() {
             tools. Keep your personal AI rules consistent across projects and
             machines.
           </p>
+          <code
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--bg-muted)",
+              borderRadius: "0.375rem",
+              fontSize: "0.875rem",
+            }}
+          >
+            npx aligntrue init
+          </code>
+          <CopyButton text="npx aligntrue init" />
           <div
             style={{
               display: "flex",
               gap: "1rem",
               justifyContent: "center",
               marginBottom: "2rem",
+              marginTop: "2rem",
             }}
           >
             <Link
-              href="/docs/getting-started/quickstart"
+              href="/docs/00-getting-started/00-quickstart"
               style={{
                 padding: "0.75rem 1.5rem",
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "var(--brand-accent, #F5A623)",
                 color: "white",
                 borderRadius: "0.5rem",
                 fontWeight: "600",
@@ -97,27 +109,16 @@ export default function HomePage() {
               href="/docs"
               style={{
                 padding: "0.75rem 1.5rem",
-                border: "1px solid var(--border-color)",
+                border: "1px solid var(--brand-accent, #F5A623)",
                 borderRadius: "0.5rem",
                 fontWeight: "600",
                 textDecoration: "none",
-                color: "var(--fg-default)",
+                color: "var(--brand-accent, #F5A623)",
               }}
             >
               Read Docs
             </Link>
           </div>
-          <code
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "var(--bg-muted)",
-              borderRadius: "0.375rem",
-              fontSize: "0.875rem",
-            }}
-          >
-            npx aligntrue init
-          </code>
-          <CopyButton text="npx aligntrue init" />
         </div>
       </section>
 
@@ -250,7 +251,7 @@ export default function HomePage() {
                 justifyContent: "center",
                 fontSize: "1.25rem",
                 fontWeight: "bold",
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "var(--brand-accent, #F5A623)",
                 color: "white",
               }}
             >
@@ -275,7 +276,7 @@ export default function HomePage() {
                 justifyContent: "center",
                 fontSize: "1.25rem",
                 fontWeight: "bold",
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "var(--brand-accent, #F5A623)",
                 color: "white",
               }}
             >
@@ -300,7 +301,7 @@ export default function HomePage() {
                 justifyContent: "center",
                 fontSize: "1.25rem",
                 fontWeight: "bold",
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "var(--brand-accent, #F5A623)",
                 color: "white",
               }}
             >
@@ -325,7 +326,7 @@ export default function HomePage() {
                 justifyContent: "center",
                 fontSize: "1.25rem",
                 fontWeight: "bold",
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "var(--brand-accent, #F5A623)",
                 color: "white",
               }}
             >
