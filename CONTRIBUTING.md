@@ -332,7 +332,6 @@ We're here to help!
 
 **Thank you** for contributing to AlignTrue and helping make AI-human alignment better for everyone.
 
-
 ---
 
 **This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
