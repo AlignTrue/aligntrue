@@ -7,6 +7,7 @@ This document explains AlignTrue's hybrid approach to automatically merging Depe
 **Goal:** Save maintainer time on routine dependency updates while preserving manual review for higher-risk changes.
 
 **Strategy:**
+
 - ✅ Auto-merge: devDependencies, patch & minor updates
 - 🚫 Manual review: production dependencies, major version bumps
 
@@ -15,12 +16,14 @@ This document explains AlignTrue's hybrid approach to automatically merging Depe
 ### 1. `.github/dependabot.yml`
 
 Dependabot is configured to:
+
 - Create separate PRs per directory (workspace isolation)
 - Label PRs by scope (devDependencies, schema, cli, web, docs, etc.)
 - Group updates intelligently (production vs development)
 - Ignore unsafe updates (e.g., Next.js major versions)
 
 **Key scopes:**
+
 - **Root `/`**: dev-dependencies only → auto-merge safe
 - **Packages** (`/packages/schema`, `/packages/cli`, etc.): patch/minor only → auto-merge safe
 - **Web app** (`/apps/web`): split into dev (auto-merge) + production (manual review)
@@ -29,6 +32,7 @@ Dependabot is configured to:
 ### 2. `.github/workflows/dependabot-auto-merge.yml`
 
 GitHub Actions workflow that:
+
 1. Detects all Dependabot PRs
 2. Checks if PR is labeled as "safe" (devDependencies OR patch/minor without "requires-review")
 3. Auto-approves safe PRs with rationale
@@ -39,6 +43,7 @@ GitHub Actions workflow that:
 **Trigger:** Runs on all pull requests to `main`
 
 **Conditions:**
+
 - Only acts on PRs from `dependabot[bot]`
 - Requires passing CI checks before merge
 - Uses squash merge to keep commit history clean
@@ -46,11 +51,13 @@ GitHub Actions workflow that:
 ## What Gets Auto-Merged
 
 ✅ **Automatically merged once CI passes:**
+
 - All devDependencies (test frameworks, linters, build tools)
 - Patch updates to production packages (bug fixes)
 - Minor updates to production packages (new backward-compatible features)
 
 ❌ **Requires manual review:**
+
 - Major version bumps (Next.js 15→16, etc.)
 - Production dependencies not explicitly allowed
 - Any PR labeled "requires-review"
@@ -82,6 +89,7 @@ To temporarily disable auto-merge or change the strategy:
 ## Testing the Setup
 
 After pushing these files:
+
 1. Wait for a new Dependabot PR to arrive (weekly on Mondays)
 2. Check the PR for:
    - Expected labels (e.g., "devDependencies", "cli", "requires-review")
