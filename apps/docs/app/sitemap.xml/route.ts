@@ -1,7 +1,6 @@
 import { getAllDocRoutes } from "../../lib/docs-routes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
-const DOCS_PREFIX = "/docs";
 
 interface Entry {
   url: string;
@@ -41,11 +40,15 @@ export async function GET() {
   // Discover all doc routes
   const docPaths = await getAllDocRoutes();
 
-  // Build entries with /docs prefix
-  const entries: Entry[] = docPaths.map((p) => ({
-    url: `${BASE_URL}${DOCS_PREFIX}${p}`,
-    lastModified: now,
-  }));
+  // Build entries - homepage and docs pages
+  const entries: Entry[] = docPaths.map((p) => {
+    // Root path maps to homepage, others get /docs prefix
+    const url = p === "/" ? BASE_URL : `${BASE_URL}/docs${p}`;
+    return {
+      url,
+      lastModified: now,
+    };
+  });
 
   const xml = toXml(entries);
 
