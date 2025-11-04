@@ -71,7 +71,7 @@ Open `.aligntrue/rules.md` and customize the starter rules:
 ````markdown
 # My Project Rules
 
-## Global Standards
+## Global standards
 
 ```aligntrue
 id: my-project.global.code-style

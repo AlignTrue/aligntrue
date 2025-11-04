@@ -19,61 +19,61 @@
   --fgColor-subtle: #818b98;
   --fgColor-onEmphasis: #ffffff;
   --fgColor-disabled: #818b98;
-  
+
   /* Accent (primary blue) */
   --fgColor-accent: #0969da;
   --bgColor-accent-muted: #ddf4ff;
   --bgColor-accent-emphasis: #0969da;
   --borderColor-accent-muted: #54aeff66;
   --borderColor-accent-emphasis: #0969da;
-  
+
   /* Success (green) */
   --fgColor-success: #1a7f37;
   --bgColor-success-muted: #dafbe1;
   --bgColor-success-emphasis: #1f883d;
   --borderColor-success-muted: #4ac26b66;
   --borderColor-success-emphasis: #1a7f37;
-  
+
   /* Danger (red) */
   --fgColor-danger: #d1242f;
   --bgColor-danger-muted: #ffebe9;
   --bgColor-danger-emphasis: #cf222e;
   --borderColor-danger-muted: #ff818266;
   --borderColor-danger-emphasis: #cf222e;
-  
+
   /* Attention (yellow) */
   --fgColor-attention: #9a6700;
   --bgColor-attention-muted: #fff8c5;
   --bgColor-attention-emphasis: #9a6700;
   --borderColor-attention-muted: #d4a72c66;
   --borderColor-attention-emphasis: #9a6700;
-  
+
   /* Severe (orange) */
   --fgColor-severe: #bc4c00;
   --bgColor-severe-muted: #fff1e5;
   --bgColor-severe-emphasis: #bc4c00;
   --borderColor-severe-muted: #fb8f4466;
   --borderColor-severe-emphasis: #bc4c00;
-  
+
   /* Neutral */
   --fgColor-neutral: #59636e;
   --bgColor-neutral-muted: #818b981f;
   --bgColor-neutral-emphasis: #59636e;
   --borderColor-neutral-muted: #818b9866;
   --borderColor-neutral-emphasis: #818b98;
-  
+
   /* Background */
   --bgColor-default: #ffffff;
   --bgColor-muted: #f6f8fa;
   --bgColor-inset: #f6f8fa;
   --bgColor-emphasis: #25292e;
   --bgColor-inverse: #25292e;
-  
+
   /* Border */
   --borderColor-default: #d1d9e0;
   --borderColor-muted: #d1d9e0b3;
   --borderColor-emphasis: #818b98;
-  
+
   /* Neutral scale (50-950) */
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f5f5f5;
@@ -86,7 +86,7 @@
   --color-neutral-800: #262626;
   --color-neutral-900: #171717;
   --color-neutral-950: #0a0a0a;
-  
+
   /* Focus */
   --focus-outlineColor: #0969da;
 }
@@ -104,61 +104,61 @@
     --fgColor-subtle: #656d76;
     --fgColor-onEmphasis: #0d1117;
     --fgColor-disabled: #656d76;
-    
+
     /* Accent (primary blue) */
     --fgColor-accent: #4493f8;
     --bgColor-accent-muted: #0d419d1a;
     --bgColor-accent-emphasis: #1f6feb;
     --borderColor-accent-muted: #1f6feb66;
     --borderColor-accent-emphasis: #4493f8;
-    
+
     /* Success (green) */
     --fgColor-success: #3fb950;
     --bgColor-success-muted: #0465291a;
     --bgColor-success-emphasis: #238636;
     --borderColor-success-muted: #23863666;
     --borderColor-success-emphasis: #3fb950;
-    
+
     /* Danger (red) */
     --fgColor-danger: #f85149;
     --bgColor-danger-muted: #8c18291a;
     --bgColor-danger-emphasis: #da3633;
     --borderColor-danger-muted: #da363366;
     --borderColor-danger-emphasis: #f85149;
-    
+
     /* Attention (yellow) */
     --fgColor-attention: #d29922;
     --bgColor-attention-muted: #6c3d001a;
     --bgColor-attention-emphasis: #9e6a03;
     --borderColor-attention-muted: #9e6a0366;
     --borderColor-attention-emphasis: #d29922;
-    
+
     /* Severe (orange) */
     --fgColor-severe: #ff9d76;
     --bgColor-severe-muted: #89350b1a;
     --bgColor-severe-emphasis: #bd561d;
     --borderColor-severe-muted: #bd561d66;
     --borderColor-severe-emphasis: #ff9d76;
-    
+
     /* Neutral */
     --fgColor-neutral: #9198a1;
     --bgColor-neutral-muted: #656d761a;
     --bgColor-neutral-emphasis: #656d76;
     --borderColor-neutral-muted: #656d7666;
     --borderColor-neutral-emphasis: #656d76;
-    
+
     /* Background */
     --bgColor-default: #0d1117;
     --bgColor-muted: #161b22;
     --bgColor-inset: #010409;
     --bgColor-emphasis: #f0f6fc;
     --bgColor-inverse: #f0f6fc;
-    
+
     /* Border */
     --borderColor-default: #30363d;
     --borderColor-muted: #30363db3;
     --borderColor-emphasis: #656d76;
-    
+
     /* Neutral scale (50-950) - dark mode inverted */
     --color-neutral-50: #0a0a0a;
     --color-neutral-100: #171717;
@@ -171,7 +171,7 @@
     --color-neutral-800: #e5e5e5;
     --color-neutral-900: #f5f5f5;
     --color-neutral-950: #fafafa;
-    
+
     /* Focus */
     --focus-outlineColor: #1f6feb;
   }
@@ -187,61 +187,61 @@
   --fgColor-subtle: #656d76 !important;
   --fgColor-onEmphasis: #0d1117 !important;
   --fgColor-disabled: #656d76 !important;
-  
+
   /* Accent (primary blue) */
   --fgColor-accent: #4493f8 !important;
   --bgColor-accent-muted: #0d419d1a !important;
   --bgColor-accent-emphasis: #1f6feb !important;
   --borderColor-accent-muted: #1f6feb66 !important;
   --borderColor-accent-emphasis: #4493f8 !important;
-  
+
   /* Success (green) */
   --fgColor-success: #3fb950 !important;
   --bgColor-success-muted: #0465291a !important;
   --bgColor-success-emphasis: #238636 !important;
   --borderColor-success-muted: #23863666 !important;
   --borderColor-success-emphasis: #3fb950 !important;
-  
+
   /* Danger (red) */
   --fgColor-danger: #f85149 !important;
   --bgColor-danger-muted: #8c18291a !important;
   --bgColor-danger-emphasis: #da3633 !important;
   --borderColor-danger-muted: #da363366 !important;
   --borderColor-danger-emphasis: #f85149 !important;
-  
+
   /* Attention (yellow) */
   --fgColor-attention: #d29922 !important;
   --bgColor-attention-muted: #6c3d001a !important;
   --bgColor-attention-emphasis: #9e6a03 !important;
   --borderColor-attention-muted: #9e6a0366 !important;
   --borderColor-attention-emphasis: #d29922 !important;
-  
+
   /* Severe (orange) */
   --fgColor-severe: #ff9d76 !important;
   --bgColor-severe-muted: #89350b1a !important;
   --bgColor-severe-emphasis: #bd561d !important;
   --borderColor-severe-muted: #bd561d66 !important;
   --borderColor-severe-emphasis: #ff9d76 !important;
-  
+
   /* Neutral */
   --fgColor-neutral: #9198a1 !important;
   --bgColor-neutral-muted: #656d761a !important;
   --bgColor-neutral-emphasis: #656d76 !important;
   --borderColor-neutral-muted: #656d7666 !important;
   --borderColor-neutral-emphasis: #656d76 !important;
-  
+
   /* Background */
   --bgColor-default: #0d1117 !important;
   --bgColor-muted: #161b22 !important;
   --bgColor-inset: #010409 !important;
   --bgColor-emphasis: #f0f6fc !important;
   --bgColor-inverse: #f0f6fc !important;
-  
+
   /* Border */
   --borderColor-default: #30363d !important;
   --borderColor-muted: #30363db3 !important;
   --borderColor-emphasis: #656d76 !important;
-  
+
   /* Neutral scale (50-950) - dark mode inverted */
   --color-neutral-50: #0a0a0a;
   --color-neutral-100: #171717;
@@ -254,8 +254,7 @@
   --color-neutral-800: #e5e5e5;
   --color-neutral-900: #f5f5f5;
   --color-neutral-950: #fafafa;
-  
+
   /* Focus */
   --focus-outlineColor: #1f6feb;
 }
-

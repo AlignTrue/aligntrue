@@ -787,6 +787,6 @@ Volatile fields won't cause lockfile drift.
 - [Command Reference](/reference/cli-reference) - Detailed flag documentation
 - [Import Workflow](/reference/import-workflow) - Migrate from existing agent rules
 - [Git Sources Guide](/reference/git-sources) - Pull rules from repositories
-- [Troubleshooting](/reference/troubleshooting) - Common sync issues
+- [Troubleshooting](/troubleshooting) - Common sync issues
 - [Extending AlignTrue](/contributing/adding-exporters) - Create custom exporters
 - [Quickstart Guide](/getting-started/quickstart) - Get started in <60 seconds

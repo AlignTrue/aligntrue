@@ -4,7 +4,7 @@
 
 AlignTrue maintains a local catalog of curated packs that seed the catalog website. Packs are stored in `catalog/examples/` and referenced by `catalog/packs.yaml` for discovery metadata.
 
-## Directory Structure
+## Directory structure
 
 ```
 catalog/
@@ -27,7 +27,7 @@ apps/web/public/catalog/
   search_v1.json     # Generated search index
 ```
 
-## Pack Structure
+## Pack structure
 
 Each pack in `catalog/examples/` follows the AlignTrue IR schema (spec_version "1"):
 
@@ -63,7 +63,7 @@ guidance: |
   Detailed guidance for AI agents
 ```
 
-## Catalog Registry
+## Catalog registry
 
 `catalog/packs.yaml` contains discovery metadata for each pack:
 
@@ -101,7 +101,7 @@ packs:
     namespace_owner: AlignTrue
 ```
 
-## Category Taxonomy
+## Category taxonomy
 
 ### Primary Categories (for filtering)
 
@@ -121,7 +121,7 @@ packs:
 - `testing` - test-related
 - Language/framework tags: `typescript`, `nextjs`, `react`, etc.
 
-## Namespace Ownership
+## Namespace ownership
 
 `catalog/namespaces.yaml` prevents namespace squatting:
 
@@ -205,7 +205,7 @@ This performs:
 
 Packs can optionally be mirrored to a separate repo (e.g., `AlignTrue/aligns`) for external contributions while keeping the source of truth local for faster builds and testing.
 
-## Catalog Website
+## Catalog website
 
 The catalog website (`apps/web`) consumes the generated JSON files:
 
@@ -232,7 +232,7 @@ Current status: **232/269 tests passing** (86%)
 
 Failing tests are mostly related to async Server Component rendering and can be addressed in follow-up work.
 
-## Schema Validation
+## Schema validation
 
 All packs must conform to AlignTrue IR schema (spec_version "1"). Validation includes:
 
@@ -247,7 +247,7 @@ All packs must conform to AlignTrue IR schema (spec_version "1"). Validation inc
 - **Search index size**: ~50 KB for 11 packs
 - **Build time**: <5 seconds for 11 packs
 
-## Future Enhancements
+## Future enhancements
 
 - Full validation with schema checks
 - Exporter preview generation for all formats

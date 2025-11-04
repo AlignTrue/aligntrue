@@ -3,11 +3,11 @@
 **Date:** 2025-10-31  
 **Reason:** Migrated to Nextra documentation site
 
-## What Happened
+## What happened
 
 All documentation files from `/docs` have been migrated to the Nextra documentation site at `apps/docs/pages/`.
 
-## New Structure
+## New structure
 
 Documentation is now organized as:
 
@@ -23,7 +23,7 @@ Documentation is now organized as:
 - **Contributing:** `apps/docs/pages/contributing/`
   - Getting started, adding exporters, team onboarding, testing workflow
 
-## Migration Details
+## Migration details
 
 Original flat structure in `/docs` reorganized into Nextra-compatible hierarchy with:
 
@@ -31,7 +31,7 @@ Original flat structure in `/docs` reorganized into Nextra-compatible hierarchy 
 - Navigation metadata (`_meta.json` files)
 - Proper cross-references using relative paths
 
-## Viewing Documentation
+## Viewing documentation
 
 Development server:
 
@@ -42,7 +42,7 @@ pnpm dev
 
 Documentation will be available at http://localhost:3000
 
-## Files Archived
+## Files archived
 
 All original markdown files from `/docs`:
 

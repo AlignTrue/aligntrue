@@ -4,11 +4,11 @@ import * as clack from "@clack/prompts";
 
 /**
  * Pre-refactor validation script
- * 
+ *
  * Run this before large refactors to ensure clean baseline:
  * - Type checks entire workspace
  * - Lints entire workspace
- * 
+ *
  * Use before: type changes, cross-package edits, large refactors
  */
 
@@ -45,4 +45,3 @@ main().catch((error) => {
   console.error("Pre-refactor validation failed:", error);
   process.exit(1);
 });
-

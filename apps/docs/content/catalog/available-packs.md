@@ -7,7 +7,7 @@ description: Browse 11 curated rule packs for AI coding agents
 
 Browse 11 curated rule packs for AI coding agents. All packs are CC0-licensed and maintained by AlignTrue.
 
-## Foundation Packs
+## Foundation packs
 
 - **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/global.yaml)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices.
 
@@ -33,7 +33,7 @@ Browse 11 curated rule packs for AI coding agents. All packs are CC0-licensed an
 
 - **[Web Quality Standards](https://github.com/AlignTrue/aligntrue/blob/main/catalog/examples/web_quality.yaml)** - Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.
 
-## Pack Details
+## Pack details
 
 <details>
 <summary>View as table</summary>

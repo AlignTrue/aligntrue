@@ -34,7 +34,7 @@ Build all packages:
 pnpm build
 ```
 
-## Development Workflow
+## Development workflow
 
 Run tests:
 
@@ -49,7 +49,7 @@ cd packages/cli
 pnpm dev
 ```
 
-## Contribution Guidelines
+## Contribution guidelines
 
 1. Fork the repository
 2. Create a feature branch

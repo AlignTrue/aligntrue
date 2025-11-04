@@ -2,7 +2,7 @@
 
 This directory contains all user-facing and contributor documentation organized for Nextra (Next.js-based documentation site).
 
-## Directory Structure
+## Directory structure
 
 ```
 docs/site/
@@ -12,7 +12,7 @@ docs/site/
 └── reference/          Complete reference documentation
 ```
 
-## Content Organization
+## Content organization
 
 ### User Guide (1 doc)
 
@@ -48,7 +48,7 @@ docs/site/
 - `troubleshooting-overlays.md` - Overlay-specific troubleshooting
 - `yaml-libraries.md` - YAML library design decisions
 
-## Nextra Setup (Future)
+## Nextra setup (future)
 
 When ready to deploy the docs site:
 
@@ -82,7 +82,7 @@ When ready to deploy the docs site:
    ---
    ```
 
-## Navigation Structure (Recommended)
+## Navigation structure (recommended)
 
 ```
 AlignTrue Documentation

@@ -7,7 +7,7 @@ description: Testing standards and practices for AlignTrue contributions.
 
 AlignTrue uses Vitest for unit and integration tests. All contributions must include tests.
 
-## Running Tests
+## Running tests
 
 Run all tests:
 
@@ -27,7 +27,7 @@ Watch mode:
 pnpm test --watch
 ```
 
-## Test Structure
+## Test structure
 
 Tests mirror source structure:
 
@@ -39,7 +39,7 @@ packages/core/
     └── bundle.test.ts
 ```
 
-## Writing Tests
+## Writing tests
 
 Follow TDD workflow:
 
@@ -50,7 +50,7 @@ Follow TDD workflow:
 
 See `.cursor/rules/tdd.mdc` for detailed TDD workflow.
 
-## Test Quality
+## Test quality
 
 - Cover edge cases and error paths
 - Test determinism for exports

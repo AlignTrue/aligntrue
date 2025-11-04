@@ -231,7 +231,7 @@ Installing packs from the catalog is transparent:
 - **No required login** - Catalog browsing and installation don't require authentication
 - **Optional telemetry** - Set `ALIGNTRUE_TELEMETRY=on` to share broader usage data (off by default)
 
-See the [privacy controls](/reference/privacy) reference for details.
+See the [privacy controls](/policies/privacy) reference for details.
 
 ## Troubleshooting
 
@@ -255,7 +255,7 @@ If plugs don't take effect:
 
 If two packs define the same rule differently, use overlays to remap severity or disable one pack.
 
-See [overlays troubleshooting](/reference/troubleshooting-overlays).
+See [overlays troubleshooting](/troubleshooting/overlays).
 
 ## Next steps
 
