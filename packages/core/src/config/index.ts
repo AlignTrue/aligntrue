@@ -462,10 +462,6 @@ export async function validateConfig(
         throw new Error(
           `Invalid source at index ${i}: "url" is required for type "${source.type}"`,
         );
-      } else if (source.type === "catalog" && !source.id) {
-        throw new Error(
-          `Invalid source at index ${i}: "id" is required for type "catalog"`,
-        );
       }
 
       // Security: Validate local source paths for traversal attacks

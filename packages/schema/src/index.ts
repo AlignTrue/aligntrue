@@ -51,20 +51,3 @@ export {
   type PlugKeyValidation,
   type PlugValueValidation,
 } from "./plugs-types.js";
-
-// Catalog entries (Phase 4)
-export {
-  validateCatalogEntry,
-  validateCatalogIndex,
-  type CatalogEntryBase,
-  type CatalogEntryExtended,
-  type CatalogIndexExtended,
-  type CatalogEntryValidation,
-  type PreviewMeta,
-  type RuleIndexEntry,
-  type RequiredPlug,
-  type ExporterPreview,
-  type Maintainer,
-  type Attribution,
-  type PackStats,
-} from "./catalog-entry.js";

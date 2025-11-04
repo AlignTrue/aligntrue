@@ -64,10 +64,10 @@ describe("getAlignTruePaths", () => {
     expect(paths.vscodeMcp()).toBe(join(testCwd, ".vscode", "mcp.json"));
   });
 
-  it("should generate cache path for catalog", () => {
+  it("should generate cache path for git", () => {
     const paths = getAlignTruePaths(testCwd);
-    expect(paths.cache("catalog")).toBe(
-      join(testCwd, ".aligntrue", ".cache", "catalog"),
+    expect(paths.cache("git")).toBe(
+      join(testCwd, ".aligntrue", ".cache", "git"),
     );
   });
 
@@ -143,11 +143,9 @@ describe("getAlignTrueDir", () => {
 });
 
 describe("getCacheDir", () => {
-  it("should return cache directory for catalog", () => {
-    const dir = getCacheDir("catalog", "/test/workspace");
-    expect(dir).toBe(
-      join("/test/workspace", ".aligntrue", ".cache", "catalog"),
-    );
+  it("should return cache directory for git", () => {
+    const dir = getCacheDir("git", "/test/workspace");
+    expect(dir).toBe(join("/test/workspace", ".aligntrue", ".cache", "git"));
   });
 
   it("should return cache directory for git", () => {

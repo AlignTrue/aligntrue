@@ -33,31 +33,25 @@ describe("ConsentManager", () => {
 
   describe("checkConsent", () => {
     it("returns false when no consent file exists", () => {
-      expect(manager.checkConsent("catalog")).toBe(false);
-      expect(manager.checkConsent("git")).toBe(false);
-    });
-
-    it("returns false for operation without consent", () => {
-      manager.grantConsent("catalog");
       expect(manager.checkConsent("git")).toBe(false);
     });
 
     it("returns true for operation with consent", () => {
-      manager.grantConsent("catalog");
-      expect(manager.checkConsent("catalog")).toBe(true);
+      manager.grantConsent("git");
+      expect(manager.checkConsent("git")).toBe(true);
     });
   });
 
   describe("grantConsent", () => {
     it("grants consent for new operation", () => {
-      manager.grantConsent("catalog");
-      expect(manager.checkConsent("catalog")).toBe(true);
+      manager.grantConsent("git");
+      expect(manager.checkConsent("git")).toBe(true);
     });
 
     it("is idempotent - can grant multiple times", () => {
       const timestamp = "2025-10-29T10:00:00.000Z";
-      manager.grantConsent("catalog", timestamp);
-      manager.grantConsent("catalog", timestamp);
+      manager.grantConsent("git", timestamp);
+      manager.grantConsent("git", timestamp);
 
       const consents = manager.listConsents();
       expect(consents).toHaveLength(1);
@@ -66,7 +60,7 @@ describe("ConsentManager", () => {
 
     it("stores timestamp when not provided", () => {
       const before = new Date().toISOString();
-      manager.grantConsent("catalog");
+      manager.grantConsent("git");
       const after = new Date().toISOString();
 
       const consents = manager.listConsents();
@@ -79,7 +73,7 @@ describe("ConsentManager", () => {
 
     it("uses provided timestamp", () => {
       const timestamp = "2025-10-29T10:30:00.000Z";
-      manager.grantConsent("catalog", timestamp);
+      manager.grantConsent("git", timestamp);
 
       const consents = manager.listConsents();
       expect(consents[0].granted_at).toBe(timestamp);
@@ -89,36 +83,32 @@ describe("ConsentManager", () => {
       const deepFile = join(testDir, "deep", "nested", "consent.json");
       const deepManager = new ConsentManager(deepFile);
 
-      deepManager.grantConsent("catalog");
+      deepManager.grantConsent("git");
       expect(existsSync(deepFile)).toBe(true);
     });
   });
 
   describe("revokeConsent", () => {
     it("revokes specific operation consent", () => {
-      manager.grantConsent("catalog");
       manager.grantConsent("git");
 
-      manager.revokeConsent("catalog");
+      manager.revokeConsent("git");
 
-      expect(manager.checkConsent("catalog")).toBe(false);
-      expect(manager.checkConsent("git")).toBe(true);
+      expect(manager.checkConsent("git")).toBe(false);
     });
 
     it("is idempotent - can revoke non-existent consent", () => {
-      expect(() => manager.revokeConsent("catalog")).not.toThrow();
-      expect(manager.checkConsent("catalog")).toBe(false);
+      expect(() => manager.revokeConsent("git")).not.toThrow();
+      expect(manager.checkConsent("git")).toBe(false);
     });
   });
 
   describe("revokeAll", () => {
     it("revokes all consents", () => {
-      manager.grantConsent("catalog");
       manager.grantConsent("git");
 
       manager.revokeAll();
 
-      expect(manager.checkConsent("catalog")).toBe(false);
       expect(manager.checkConsent("git")).toBe(false);
       expect(manager.listConsents()).toHaveLength(0);
     });
@@ -135,16 +125,10 @@ describe("ConsentManager", () => {
     });
 
     it("returns all granted consents", () => {
-      manager.grantConsent("catalog", "2025-10-29T10:00:00.000Z");
       manager.grantConsent("git", "2025-10-29T11:00:00.000Z");
 
       const consents = manager.listConsents();
-      expect(consents).toHaveLength(2);
-
-      const catalog = consents.find((c) => c.operation === "catalog");
-      expect(catalog).toBeDefined();
-      expect(catalog?.granted).toBe(true);
-      expect(catalog?.granted_at).toBe("2025-10-29T10:00:00.000Z");
+      expect(consents).toHaveLength(1);
 
       const git = consents.find((c) => c.operation === "git");
       expect(git).toBeDefined();
@@ -155,21 +139,21 @@ describe("ConsentManager", () => {
 
   describe("storage persistence", () => {
     it("persists consent across instances", () => {
-      manager.grantConsent("catalog");
+      manager.grantConsent("git");
 
       // Create new instance with same file
       const newManager = new ConsentManager(consentFile);
-      expect(newManager.checkConsent("catalog")).toBe(true);
+      expect(newManager.checkConsent("git")).toBe(true);
     });
 
     it("writes valid JSON", () => {
-      manager.grantConsent("catalog", "2025-10-29T10:00:00.000Z");
+      manager.grantConsent("git", "2025-10-29T10:00:00.000Z");
 
       const content = readFileSync(consentFile, "utf-8");
       const parsed = JSON.parse(content);
 
       expect(parsed).toEqual({
-        catalog: {
+        git: {
           granted: true,
           granted_at: "2025-10-29T10:00:00.000Z",
         },
@@ -179,21 +163,21 @@ describe("ConsentManager", () => {
     it("handles corrupted JSON file gracefully", () => {
       writeFileSync(consentFile, "{ invalid json }");
 
-      expect(manager.checkConsent("catalog")).toBe(false);
+      expect(manager.checkConsent("git")).toBe(false);
       expect(manager.listConsents()).toEqual([]);
     });
 
     it("handles non-object JSON gracefully", () => {
       writeFileSync(consentFile, '["array", "not", "object"]');
 
-      expect(manager.checkConsent("catalog")).toBe(false);
+      expect(manager.checkConsent("git")).toBe(false);
       expect(manager.listConsents()).toEqual([]);
     });
 
     it("handles null JSON gracefully", () => {
       writeFileSync(consentFile, "null");
 
-      expect(manager.checkConsent("catalog")).toBe(false);
+      expect(manager.checkConsent("git")).toBe(false);
       expect(manager.listConsents()).toEqual([]);
     });
   });
@@ -202,7 +186,7 @@ describe("ConsentManager", () => {
     it("does not leave partial files on write", () => {
       // Grant consent multiple times rapidly
       for (let i = 0; i < 10; i++) {
-        manager.grantConsent("catalog");
+        manager.grantConsent("git");
       }
 
       // File should exist and be valid
@@ -212,12 +196,12 @@ describe("ConsentManager", () => {
     });
 
     it("uses AtomicFileWriter for safety", () => {
-      manager.grantConsent("catalog");
+      manager.grantConsent("git");
 
       // Verify file exists and is valid
       expect(existsSync(consentFile)).toBe(true);
       const content = JSON.parse(readFileSync(consentFile, "utf-8"));
-      expect(content.catalog.granted).toBe(true);
+      expect(content.git.granted).toBe(true);
     });
   });
 

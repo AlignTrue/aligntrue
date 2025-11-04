@@ -7,7 +7,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 - **Solo developers:** Keep your personal AI rules consistent across projects and machines.
 - **Teams:** Shared rule sets with version control, CI validation, and drift detection.
 
-[![npm version](https://img.shields.io/npm/v/@aligntrue/cli.svg)](https://www.npmjs.com/package/@aligntrue/cli) [![Tests](https://img.shields.io/badge/tests-1842%20passing-brightgreen)](https://github.com/AlignTrue/aligntrue) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Tests](https://img.shields.io/badge/tests-1842%20passing-brightgreen)](https://github.com/AlignTrue/aligntrue) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
 
 ## Why AlignTrue
 
@@ -18,8 +18,8 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 ## Quickstart
 
 ```bash
-npx @aligntrue/cli init  # Auto-detect agents, create .aligntrue/rules.md
-# Edit .aligntrue/rules.md (optional)
+npx aligntrue init  # Auto-detect agents, create .aligntrue.yaml
+# Edit .aligntrue.yaml (optional)
 aligntrue sync           # Generate all agent files
 ```
 

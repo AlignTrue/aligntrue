@@ -172,20 +172,6 @@ By default, AlignTrue makes **zero network requests**:
 
 Network calls only occur when you explicitly configure these sources:
 
-#### Catalog sources
-
-```yaml
-sources:
-  - type: catalog
-    id: packs/base/base-global
-```
-
-- Fetches from `https://raw.githubusercontent.com/AlignTrue/aligns`
-- **First-time consent:** AlignTrue asks permission before first fetch
-- Shows what will be fetched and from where
-- Stores consent in `.aligntrue/privacy-consent.json`
-- Can be revoked at any time
-
 #### Git sources
 
 ```yaml
@@ -236,7 +222,6 @@ Shows all granted consents with timestamps and details.
 ```
 Privacy Consents
 
-  ✓ catalog    Granted Oct 29, 2025 at 10:30 AM
   ✓ git        Granted Oct 29, 2025 at 11:45 AM
 
 Use 'aligntrue privacy revoke <operation>' to revoke
@@ -245,7 +230,6 @@ Use 'aligntrue privacy revoke <operation>' to revoke
 #### Revoke consent
 
 ```bash
-aligntrue privacy revoke catalog    # Revoke specific operation
 aligntrue privacy revoke git        # Revoke git consent
 aligntrue privacy revoke --all      # Revoke everything
 ```
@@ -280,21 +264,11 @@ cat .aligntrue/privacy-consent.json | jq .
 
 ```json
 {
-  "catalog": {
-    "granted": true,
-    "granted_at": "2025-10-29T10:30:00.000Z"
-  },
   "git": {
     "granted": true,
     "granted_at": "2025-10-29T11:45:00.000Z"
   }
 }
-```
-
-**Catalog cache:**
-
-```bash
-ls .aligntrue/.cache/catalog/
 ```
 
 **Git cache:**
