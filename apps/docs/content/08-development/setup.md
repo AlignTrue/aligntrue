@@ -1,5 +1,5 @@
 ---
-title: Development Setup
+title: Setup
 description: Prerequisites and installation instructions for AlignTrue development.
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: Overlays Guide
+title: Overlays
 description: Fork-safe customization of upstream rules - change severity, adjust inputs, and preserve updates
 ---
 

@@ -1,0 +1,12 @@
+{
+  "examples": "Examples",
+  "cli-reference": "CLI commands",
+  "agent-support": "Agent support",
+  "import-workflow": "Import workflow",
+  "vendor-bags": "Vendor bags",
+  "git-sources": "Git sources",
+  "backup-restore": "Backup & restore",
+  "auto-updates": "Auto updates",
+  "file-watcher-setup": "File watcher setup",
+  "yaml-libraries": "YAML libraries"
+}

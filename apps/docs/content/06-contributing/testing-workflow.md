@@ -1,5 +1,5 @@
 ---
-title: Testing Workflow
+title: Testing workflow
 description: Testing standards and practices for AlignTrue contributions.
 ---
 

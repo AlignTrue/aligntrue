@@ -1,5 +1,5 @@
 ---
-title: Solo Developer Guide
+title: Solo developer guide
 description: Complete guide for individual developers using AlignTrue across personal projects
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: Frequently asked questions about AlignTrue
+description: Frequently asked questions
 ---
 
 # Frequently asked questions
@@ -143,6 +143,50 @@ aligntrue drift --gates  # Fail CI if drift detected
 ```
 
 See [Drift detection guide](/docs/02-concepts/drift-detection).
+
+## Multi-agent usage
+
+### Can I use AlignTrue with multiple agents at once?
+
+Yes! AlignTrue is designed for multi-agent workflows. Configure multiple exporters:
+
+```yaml
+exporters:
+  - cursor
+  - agents-md
+  - claude-md
+  - copilot
+  - windsurf
+```
+
+Run `aligntrue sync` once and all agents get the same rules.
+
+See [Multi-Agent Workflows guide](/docs/01-guides/06-multi-agent-workflows).
+
+### How do I maintain different settings per agent?
+
+Use vendor bags for agent-specific metadata:
+
+```yaml
+rules:
+  - id: example-rule
+    summary: Example
+    vendor:
+      cursor:
+        ai_hint: "Cursor-specific hint"
+      claude:
+        mode: "assistant"
+```
+
+See [Vendor Bags reference](/docs/03-reference/vendor-bags).
+
+### Should I use solo or team mode?
+
+**Solo mode** for individual developers - fast, simple, no overhead.
+
+**Team mode** for collaborative projects - lockfiles, drift detection, reproducible builds.
+
+See [Choosing Your Mode](/docs/00-getting-started/03-choosing-your-mode) for detailed comparison.
 
 ## Technical
 

@@ -1,5 +1,5 @@
 ---
-title: CI/CD Integration
+title: CI/CD integration
 description: Integrate AlignTrue into your continuous integration pipeline
 ---
 

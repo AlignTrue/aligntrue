@@ -1,5 +1,5 @@
 ---
-title: Agent Support
+title: Agent support
 description: Complete compatibility matrix for AlignTrue's 43 exporters supporting 28+ AI coding agents
 ---
 
