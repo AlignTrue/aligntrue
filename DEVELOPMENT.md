@@ -60,13 +60,23 @@ Hooks are installed automatically when you run `pnpm install`.
 Runs automatically before each commit:
 
 1. **Format staged files** (~1-2s) - Prettier auto-formats code
-2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
-3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+2. **Lint staged files** (~1-3s) - ESLint validates code quality (max 0 warnings)
+3. **Typecheck staged files** (~2-3s) - TypeScript validates types on staged files
+4. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
 
 **Total time:**
 
-- Without package changes: ~3-5 seconds
-- With package changes: ~4-8 seconds
+- Without package changes: ~4-8 seconds
+- With package changes: ~5-11 seconds
+
+**What it catches:**
+
+- Unused imports and variables
+- Type errors (before they reach the pre-push hook)
+- Formatting issues (auto-fixed)
+- ESLint violations
+
+**Note:** TypeScript checking runs with `|| true` to warn but not block commits until existing type errors are resolved. ESLint runs with `--max-warnings 0` to enforce zero warnings.
 
 ### Commit message hook
 
@@ -98,6 +108,13 @@ Runs automatically before pushing (takes ~30-60 seconds):
 - Mirrors CI validation
 
 This ensures you never push code that will fail CI.
+
+**Why both pre-commit and pre-push type checking?**
+
+- **Pre-commit:** Fast, scoped to changed files, catches issues early
+- **Pre-push:** Comprehensive, checks entire codebase, catches cross-package issues
+
+This two-layer approach provides fast feedback during commits while ensuring full validation before pushing.
 
 ### Bypassing hooks (emergency only)
 
