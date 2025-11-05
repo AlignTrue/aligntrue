@@ -110,7 +110,7 @@ describe("AgentsMdExporter", () => {
       const scope = createMockScope();
       const request = createRequest(scope, rules);
 
-      const result = await exporter.export(request, options);
+      const _result = await exporter.export(request, options);
 
       // Access private method for testing (via type assertion)
       const content = (exporter as any).generateAgentsMdContent(

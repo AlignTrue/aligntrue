@@ -14,8 +14,8 @@ export class MockAdapterExporter implements ExporterPlugin {
   version = "2.0.0";
 
   async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
+    _request: ScopedExportRequest,
+    _options: ExportOptions,
   ): Promise<ExportResult> {
     return {
       success: true,
