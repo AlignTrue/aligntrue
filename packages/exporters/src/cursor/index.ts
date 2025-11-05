@@ -36,11 +36,11 @@ export class CursorExporter extends ExporterBase {
 
     // Cursor always uses native frontmatter format, ignore config
     // This preserves round-trip fidelity for vendor.cursor fields
-    const modeHints = "native"; // Force native, ignore config
+    const _modeHints = "native"; // Force native, ignore config
 
     // Compute scope-specific filename using centralized paths
     const paths = getAlignTruePaths(outputDir);
-    const filename = this.getScopeFilename(scope);
+    const _filename = this.getScopeFilename(scope);
     const outputPath = paths.cursorRules(
       scope.isDefault ? "default" : scope.normalizedPath,
     );

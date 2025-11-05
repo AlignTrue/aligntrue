@@ -28,14 +28,14 @@ export class SourceCache {
     // See packages/core/tests/security/path-traversal.test.ts for test patterns.
   }
 
-  async get(key: string): Promise<CacheEntry | null> {
+  async get(_key: string): Promise<CacheEntry | null> {
     throw new Error("Not implemented");
   }
 
   async set(
-    key: string,
-    content: string,
-    metadata?: Record<string, unknown>,
+    _key: string,
+    _content: string,
+    _metadata?: Record<string, unknown>,
   ): Promise<void> {
     throw new Error("Not implemented");
   }

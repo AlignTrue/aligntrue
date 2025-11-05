@@ -1,259 +1,214 @@
 ## CLI Test Patterns
 
-Standard patterns for testing AlignTrue CLI commands with Vitest.
+AlignTrue CLI uses a **hybrid testing approach** with two test types:
 
-## Overview
+1. **Smoke tests** (`tests/commands/*`) - Fast, minimal validation
+2. **Integration tests** (`tests/integration/*`) - Real file system operations
 
-All CLI tests use mock-based patterns with standardized setup. Tests verify command behavior through mocked dependencies rather than integration testing.
+## Test Philosophy
 
-## Standard Test Pattern
+**Smoke tests** catch obvious breaks quickly:
+
+- Verify command doesn't crash
+- Check help flags work
+- Validate basic argument parsing
+- Run in <1 second total
+
+**Integration tests** verify actual behavior:
+
+- Use real file system operations
+- Import real `@aligntrue/*` packages (no mocks)
+- Create temp directories for isolation
+- Verify actual outputs and side effects
+
+## When to Use Each Type
+
+### Use Smoke Tests For
+
+- Help flag validation (`--help`, `-h`)
+- Basic argument validation
+- Quick sanity checks
+- Commands that are low-risk or rarely change
+
+### Use Integration Tests For
+
+- Core workflow commands (init, sync, check)
+- File creation and modification
+- Config updates
+- Export generation
+- Any behavior that matters to users
+
+## Integration Test Pattern
+
+All integration tests follow this pattern:
 
 ```typescript
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import * as clack from "@clack/prompts";
-
-// Mock dependencies before imports
-vi.mock("fs");
-vi.mock("@clack/prompts");
-vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
-  recordEvent: vi.fn(),
-}));
-vi.mock("@aligntrue/core", () => ({
-  loadConfig: vi.fn(),
-  saveConfig: vi.fn(),
-  // ... other mocks
-}));
-
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import { myCommand } from "../../src/commands/mycommand.js";
-import * as core from "@aligntrue/core";
-import { existsSync } from "fs";
+import * as yaml from "yaml";
 
-describe("My Command - Basic Behavior", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
-  let mockLog: ReturnType<typeof vi.spyOn>;
+const TEST_DIR = join(tmpdir(), "aligntrue-test-mycommand");
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+beforeEach(() => {
+  if (existsSync(TEST_DIR)) {
+    rmSync(TEST_DIR, { recursive: true, force: true });
+  }
+  mkdirSync(TEST_DIR, { recursive: true });
+  process.chdir(TEST_DIR);
+});
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
-    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+afterEach(() => {
+  if (existsSync(TEST_DIR)) {
+    rmSync(TEST_DIR, { recursive: true, force: true });
+  }
+});
 
-    vi.mocked(clack.log.error).mockImplementation(() => {});
-    vi.mocked(clack.log.success).mockImplementation(() => {});
-    vi.mocked(existsSync).mockReturnValue(true);
+describe("My Command Integration", () => {
+  it("creates expected files", async () => {
+    // Setup: Create config
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+    const config = { exporters: ["cursor"] };
+    writeFileSync(
+      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      yaml.stringify(config),
+      "utf-8",
+    );
 
-    vi.mocked(core.loadConfig).mockResolvedValue({
-      version: "1",
-      mode: "solo",
-      exporters: ["cursor"],
-      sources: [],
-    });
-  });
-
-  it("executes successfully", async () => {
+    // Execute command
     await myCommand(["--flag", "value"]);
 
-    expect(mockExit).toHaveBeenCalledWith(0);
-    expect(core.loadConfig).toHaveBeenCalled();
+    // Verify: Check actual file system changes
+    expect(existsSync(join(TEST_DIR, "output.txt"))).toBe(true);
+    const content = readFileSync(join(TEST_DIR, "output.txt"), "utf-8");
+    expect(content).toContain("expected content");
   });
 });
 ```
 
-## Test Structure
+## Key Principles
 
-### 1. Mock Dependencies Before Imports
-
-Always mock before importing the module under test:
+### 1. No Mocking of @aligntrue/\* Packages
 
 ```typescript
-vi.mock("fs");
-vi.mock("@clack/prompts");
+// ❌ BAD: Mocking internal packages
 vi.mock("@aligntrue/core", () => ({
   loadConfig: vi.fn(),
   saveConfig: vi.fn(),
 }));
+
+// ✅ GOOD: Use real packages
+import { loadConfig, saveConfig } from "@aligntrue/core";
 ```
 
-### 2. Group Tests by Scenario
-
-Use descriptive suite names:
-
-- `Command Name - Basic Behavior`
-- `Command Name - Error Cases`
-- `Command Name - Interactive Mode`
-- `Command Name - Validation`
-
-### 3. Setup Common Mocks in beforeEach
-
-Reset mocks and set default behavior:
+### 2. Real File System Operations
 
 ```typescript
+// ❌ BAD: Mocking fs
+vi.mock("fs");
+
+// ✅ GOOD: Use real fs with temp directories
+import { writeFileSync, readFileSync } from "fs";
+const TEST_DIR = join(tmpdir(), "aligntrue-test-mycommand");
+```
+
+### 3. Isolated Test Directories
+
+```typescript
+// ✅ GOOD: Each test gets fresh directory
 beforeEach(() => {
-  vi.clearAllMocks();
-
-  mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
-  mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
-
-  // Set default mocks
-  vi.mocked(core.loadConfig).mockResolvedValue(defaultConfig);
+  if (existsSync(TEST_DIR)) {
+    rmSync(TEST_DIR, { recursive: true, force: true });
+  }
+  mkdirSync(TEST_DIR, { recursive: true });
+  process.chdir(TEST_DIR);
 });
 ```
 
-## Common Patterns
-
-### Testing Command Execution
+### 4. Mock Only External Services
 
 ```typescript
-it("executes with flags", async () => {
-  await myCommand(["--config", "custom.yaml", "--dry-run"]);
-
-  expect(mockExit).toHaveBeenCalledWith(0);
-  expect(core.loadConfig).toHaveBeenCalledWith("custom.yaml");
-});
+// ✅ OK: Mock network calls, not internal logic
+vi.mock("node-fetch");
 ```
 
-### Testing Error Cases
+### 5. Handle process.exit
 
 ```typescript
-it("shows error for invalid input", async () => {
-  await myCommand(["--invalid"]);
+// ✅ GOOD: Mock process.exit to capture exit codes
+const originalExit = process.exit;
+let exitCode: number | undefined;
+process.exit = ((code?: number) => {
+  exitCode = code;
+}) as never;
 
-  expect(mockExit).toHaveBeenCalledWith(1);
-  expect(clack.log.error).toHaveBeenCalledWith(
-    expect.stringContaining("Invalid"),
-  );
-});
+await myCommand([]);
+
+process.exit = originalExit;
+expect(exitCode).toBe(0);
 ```
 
-### Testing Interactive Prompts
+## Smoke Test Pattern
+
+Smoke tests are minimal and fast:
 
 ```typescript
-it("prompts user for confirmation", async () => {
-  vi.mocked(clack.confirm).mockResolvedValue(true);
+import { describe, it, expect } from "vitest";
+import { myCommand } from "../../src/commands/mycommand.js";
 
-  await myCommand([]);
+describe("mycommand - smoke tests", () => {
+  it("shows help with --help flag", async () => {
+    const originalExit = process.exit;
+    let exitCalled = false;
+    process.exit = (() => {
+      exitCalled = true;
+    }) as never;
 
-  expect(clack.confirm).toHaveBeenCalled();
-  expect(core.saveConfig).toHaveBeenCalled();
-});
-```
+    await myCommand(["--help"]);
 
-### Testing Output
+    process.exit = originalExit;
+    expect(exitCalled).toBe(true);
+  });
 
-```typescript
-it("outputs expected format", async () => {
-  await myCommand(["--json"]);
+  it("requires config file", async () => {
+    const originalExit = process.exit;
+    let exitCode: number | undefined;
+    process.exit = ((code?: number) => {
+      exitCode = code;
+    }) as never;
 
-  const output = mockLog.mock.calls.map((call) => call.join(" ")).join("\n");
+    await myCommand([]);
 
-  const json = JSON.parse(output);
-  expect(json.status).toBe("success");
+    process.exit = originalExit;
+    expect(exitCode).toBeGreaterThan(0);
+  });
 });
 ```
 
 ## Test Coverage Goals
 
-- **80%+ coverage** for CLI commands
-- **100% coverage** for critical paths (sync, init, config)
-- **Error paths** tested for all validation and file operations
-- **Interactive flows** tested with mocked prompts
-
-## Known Limitations
-
-### Process.exit Mocking
-
-Mocked `process.exit` doesn't stop execution. Tests expecting non-execution after exit may fail:
-
-```typescript
-// This pattern has limitations
-mockExit.mockImplementation(() => {});
-await myCommand([]); // Continues executing after process.exit(1)
-
-// For critical cases, make exit throw
-mockExit.mockImplementationOnce((code) => {
-  throw new Error(`process.exit: ${code}`);
-});
-await expect(myCommand([])).rejects.toThrow("process.exit: 1");
-```
-
-### File System Mocking
-
-Tests mock `fs` but don't create real files. Focus on API calls rather than file contents:
-
-```typescript
-// Good: Test that saveConfig was called
-expect(core.saveConfig).toHaveBeenCalledWith(expectedConfig);
-
-// Avoid: Testing actual file writes (too implementation-specific)
-```
-
-## Helper Utilities
-
-See `tests/utils/test-helpers.ts` for shared utilities:
-
-- `setupStandardMocks()` - Standard mock setup
-- `extractJsonOutput()` - Find JSON in console output
-- `getCombinedOutput()` - Combine all console calls
-- `mockCoreModule()` - Standard @aligntrue/core mocks
-
-## Tips
-
-1. **Keep tests focused** - One behavior per test
-2. **Use descriptive names** - Test name should explain what's being verified
-3. **Mock at module level** - Use `vi.mock()` before imports
-4. **Reset between tests** - Always call `vi.clearAllMocks()` in `beforeEach`
-5. **Test happy and error paths** - Both success and failure cases
-6. **Avoid testing implementation details** - Focus on observable behavior
-
-## Anti-Patterns to Avoid
-
-❌ **Testing internal functions directly**
-
-```typescript
-// Bad: Testing private helper
-import { parseArgs } from "../../src/commands/helpers.js";
-```
-
-✅ **Test through public API**
-
-```typescript
-// Good: Test command with args
-await myCommand(["--config", "test.yaml"]);
-```
-
-❌ **Complex mock setup per test**
-
-```typescript
-// Bad: Repeated setup in each test
-it("test 1", async () => {
-  vi.mocked(core.loadConfig).mockResolvedValue(...);
-  vi.mocked(core.saveConfig).mockResolvedValue(...);
-  // ...
-});
-```
-
-✅ **Common setup in beforeEach**
-
-```typescript
-// Good: Setup once, override when needed
-beforeEach(() => {
-  vi.mocked(core.loadConfig).mockResolvedValue(defaultConfig);
-});
-
-it("test with override", async () => {
-  vi.mocked(core.loadConfig).mockResolvedValue(customConfig);
-  // ...
-});
-```
+- **Integration tests**: 80%+ coverage for core commands
+- **Smoke tests**: Basic validation for all commands
+- **Critical paths**: 100% coverage (init, sync, check)
 
 ## Example Test Files
 
-Reference these for patterns:
+**Integration Tests:**
 
-- `tests/commands/sync.test.ts` - Complex command with multiple modes
-- `tests/commands/team.test.ts` - Subcommand routing
-- `tests/commands/override-add.test.ts` - Flag parsing and validation
-- `tests/commands/override-status.test.ts` - JSON output formatting
+- `tests/integration/init-command.test.ts` - File creation, config setup
+- `tests/integration/sync-command.test.ts` - Export generation, backups
+- `tests/integration/check-command.test.ts` - Validation, error reporting
+- `tests/integration/team-command.test.ts` - Lockfile operations
+- `tests/integration/override-add-command.test.ts` - Config updates
+
+**Smoke Tests:**
+
+- `tests/commands/sync.test.ts` - Help, basic validation
+- `tests/commands/override-add.test.ts` - Argument parsing
+- `tests/commands/override-remove.test.ts` - Basic checks
+- `tests/commands/override-status.test.ts` - Help validation
 
 ## Running Tests
 
@@ -261,12 +216,76 @@ Reference these for patterns:
 # All tests
 pnpm test
 
+# Integration tests only
+pnpm test tests/integration
+
+# Smoke tests only
+pnpm test tests/commands
+
 # Single file
-pnpm test sync.test.ts
+pnpm test init-command.test.ts
 
 # Watch mode
 pnpm test:watch
-
-# With coverage
-pnpm test --coverage
 ```
+
+## Anti-Patterns to Avoid
+
+### ❌ Heavy Mocking
+
+```typescript
+// BAD: 100+ lines of mocks
+vi.mock("@aligntrue/core", () => ({
+  loadConfig: vi.fn(),
+  saveConfig: vi.fn(),
+  loadIR: vi.fn(),
+  SyncEngine: vi.fn(),
+  // ... 50 more mocks
+}));
+```
+
+### ❌ Testing Implementation Details
+
+```typescript
+// BAD: Testing internal function calls
+expect(mockLoadConfig).toHaveBeenCalledWith(configPath);
+
+// GOOD: Testing actual behavior
+expect(existsSync(configPath)).toBe(true);
+const config = yaml.parse(readFileSync(configPath, "utf-8"));
+expect(config.exporters).toContain("cursor");
+```
+
+### ❌ Shared Test State
+
+```typescript
+// BAD: Tests depend on each other
+let sharedConfig: Config;
+it("test 1", () => { sharedConfig = {...} });
+it("test 2", () => { /* uses sharedConfig */ });
+
+// GOOD: Each test is independent
+beforeEach(() => {
+  // Fresh setup for each test
+});
+```
+
+## Benefits of This Approach
+
+1. **Tests survive refactors** - Internal API changes don't break tests
+2. **Faster to write** - No complex mock setup
+3. **More reliable** - Tests verify actual behavior
+4. **Better debugging** - Failures indicate real problems
+5. **Maintainable** - Less mock drift over time
+
+## Migration Notes
+
+When converting mock-heavy tests to integration tests:
+
+1. Delete excessive mocks
+2. Create temp directory setup
+3. Use real file operations
+4. Verify actual outputs
+5. Keep 3-5 smoke tests for quick validation
+
+The goal: **Durable tests that verify user-facing behavior, not implementation details.**

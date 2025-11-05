@@ -155,7 +155,7 @@ describe("FirebenderExporter", () => {
 
 // Helper functions
 
-function loadFixture(filename: string): { rules: AlignRule[] } {
+function _loadFixture(filename: string): { rules: AlignRule[] } {
   const filepath = join(FIXTURES_DIR, filename);
   const yaml = readFileSync(filepath, "utf-8");
   const data = parseYamlToJson(yaml) as any;
