@@ -16,6 +16,7 @@
     "typecheck": "pnpm -r typecheck",
     "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
     "validate:transpile-packages": "node scripts/validate-transpile-packages.mjs",
+    "validate:no-duplicate-docs": "node scripts/validate-no-duplicate-docs.mjs",
     "lint": "eslint . --max-warnings 460",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings 0",
@@ -33,7 +34,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "prettier --write",
-      "eslint --max-warnings 999"
+      "eslint --max-warnings 460"
     ],
     "*.{md,json,yml,yaml}": [
       "prettier --write"

@@ -73,7 +73,11 @@ Create `packages/exporters/src/<agent-name>/manifest.json`:
 Create `packages/exporters/src/<agent-name>/index.ts`:
 
 ```typescript
-import { ExporterPlugin, ScopedExportRequest, ExportResult } from "@aligntrue/plugin-contracts";
+import {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportResult,
+} from "@aligntrue/plugin-contracts";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { createHash } from "crypto";
 
@@ -218,7 +222,9 @@ describe("MyAgentExporter", () => {
       dryRun: true,
     });
 
-    expect(result.fidelityNotes).toContain("Rule 'test.rule': machine checks not supported");
+    expect(result.fidelityNotes).toContain(
+      "Rule 'test.rule': machine checks not supported",
+    );
   });
 });
 ```

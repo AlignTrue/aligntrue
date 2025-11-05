@@ -34,7 +34,11 @@ Exporters convert AlignTrue IR (Intermediate Representation) to agent-specific f
 **Interface:** `ExporterPlugin`
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from "@aligntrue/plugin-contracts";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+} from "@aligntrue/plugin-contracts";
 
 export class MyExporter implements ExporterPlugin {
   name = "my-exporter";
@@ -72,7 +76,11 @@ export class MyExporter implements ExporterPlugin {
 ### For Plugin Implementers
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions } from "@aligntrue/plugin-contracts";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+} from "@aligntrue/plugin-contracts";
 
 export class MyExporter implements ExporterPlugin {
   // Implementation
