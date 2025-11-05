@@ -9,11 +9,23 @@ This guide shows how solo developers use AlignTrue to maintain consistent AI age
 
 ## Quick setup (60 seconds)
 
-```bash
-# Install CLI
-npm install -g @aligntrue/cli@next
+**Install CLI:**
 
-# Initialize project
+<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
+
+<Tabs.Tab>`bash npm install -g @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash yarn global add @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash pnpm add -g @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash bun install -g @aligntrue/cli@next `</Tabs.Tab>
+
+</Tabs>
+
+**Initialize project:**
+
+```bash
 cd my-project
 aligntrue init
 

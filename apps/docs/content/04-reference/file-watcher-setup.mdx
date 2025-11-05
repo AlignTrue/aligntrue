@@ -11,7 +11,11 @@ For each platform, we provide two options:
 1. **Fastest**: Quickest to set up (1-2 minutes)
 2. **Most Reliable**: Production-ready, handles edge cases
 
----
+Choose your platform below:
+
+<Tabs items={["VS Code", "macOS", "Linux", "Windows"]}>
+
+<Tabs.Tab>
 
 ## VS Code (Fastest: ~2 minutes)
 
@@ -89,7 +93,9 @@ Install **Run on Save** extension:
 - Handles rapid edits gracefully
 - Shows sync status in output panel
 
----
+</Tabs.Tab>
+
+<Tabs.Tab>
 
 ## macOS Terminal
 
@@ -160,7 +166,9 @@ nodemon
 - Restarts on crash
 - Production-ready
 
----
+</Tabs.Tab>
+
+<Tabs.Tab>
 
 ## Linux
 
@@ -222,7 +230,9 @@ Same as macOS Option 2 above.
 nodemon
 ```
 
----
+</Tabs.Tab>
+
+<Tabs.Tab>
 
 ## Windows
 
@@ -370,6 +380,10 @@ systemctl --user status aligntrue-watch.service
 6. Program: `nodemon`
 7. Start in: `C:\path\to\your\project`
 8. Finish
+
+</Tabs.Tab>
+
+</Tabs>
 
 ---
 

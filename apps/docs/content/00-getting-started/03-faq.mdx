@@ -44,17 +44,21 @@ aligntrue sync      # Generates agent files
 
 Just Node.js 20+ and the AlignTrue CLI:
 
-```bash
-npm install -g @aligntrue/cli
-```
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
 
-### Can I try AlignTrue without installing?
+<Tabs.Tab>```bash npm install -g @aligntrue/cli ```</Tabs.Tab>
 
-Yes! Use npx:
+<Tabs.Tab>```bash yarn global add @aligntrue/cli ```</Tabs.Tab>
 
-```bash
-npx @aligntrue/cli init
-```
+<Tabs.Tab>```bash pnpm add -g @aligntrue/cli ```</Tabs.Tab>
+
+<Tabs.Tab>```bash bun install -g @aligntrue/cli ```</Tabs.Tab>
+
+<Tabs.Tab>
+  ```bash npx @aligntrue/cli init # Try without installing ```
+</Tabs.Tab>
+
+</Tabs>
 
 ### What if I already have agent configs?
 
@@ -238,15 +242,21 @@ These fields are excluded from hashing but preserved on round-trips.
 
 Install globally:
 
-```bash
-npm install -g @aligntrue/cli
-```
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
 
-Or use npx:
+<Tabs.Tab>```bash npm install -g @aligntrue/cli ```</Tabs.Tab>
 
-```bash
-npx @aligntrue/cli --help
-```
+<Tabs.Tab>```bash yarn global add @aligntrue/cli ```</Tabs.Tab>
+
+<Tabs.Tab>```bash pnpm add -g @aligntrue/cli ```</Tabs.Tab>
+
+<Tabs.Tab>```bash bun install -g @aligntrue/cli ```</Tabs.Tab>
+
+<Tabs.Tab>
+  ```bash npx @aligntrue/cli --help # Try without installing ```
+</Tabs.Tab>
+
+</Tabs>
 
 ### Config file not found
 
