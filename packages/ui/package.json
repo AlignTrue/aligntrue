@@ -18,7 +18,7 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "next": "^15.0.0",
+    "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -28,9 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "jsdom": "^27.1.0",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^4.0.6"
+    "tailwindcss": "^4"
   },
   "dependencies": {
     "lucide-react": "^0.552.0",

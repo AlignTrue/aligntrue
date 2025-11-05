@@ -40,7 +40,5 @@
     "directory": "packages/aligntrue"
   },
   "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5"
-  }
+  "devDependencies": {}
 }
