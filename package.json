@@ -46,6 +46,7 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@next/eslint-plugin-next": "^16.0.1",
+    "@types/node": "^24",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
     "eslint": "^9.39.1",
@@ -55,7 +56,8 @@
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.6"
   },
   "packageManager": "pnpm@10.0.0",
   "engines": {
@@ -68,8 +70,7 @@
   "pnpm": {
     "overrides": {
       "esbuild": ">=0.25.0",
-      "prismjs": ">=1.30.0",
-      "next": "15.4.7"
+      "prismjs": ">=1.30.0"
     }
   }
 }
