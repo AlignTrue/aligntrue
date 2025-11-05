@@ -1,6 +1,7 @@
 import { AlignTrueLogo } from "@aligntrue/ui";
+import type { DocsThemeConfig } from "nextra-theme-docs";
 
-const config = {
+const config: DocsThemeConfig = {
   logo: (
     <div className="flex items-center gap-2">
       <AlignTrueLogo size="md" />
@@ -13,13 +14,11 @@ const config = {
   docsRepositoryBase:
     "https://github.com/AlignTrue/aligntrue/tree/main/apps/docs",
   footer: {
-    content: `MIT ${new Date().getFullYear()} © AlignTrue.`,
+    content: <span>MIT {new Date().getFullYear()} © AlignTrue.</span>,
   },
-  search: {
-    placeholder: "Search docs...",
-  },
-  toc: {
-    title: "On this page",
+  sidebar: {
+    defaultMenuCollapseLevel: 1,
+    toggleButton: true,
   },
 };
 
