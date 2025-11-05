@@ -81,7 +81,7 @@ export function isLikelyBinary(filePath: string): boolean {
     // If >30% non-printable, likely binary
     const nonPrintableRatio = nonPrintable / bytesRead;
     return nonPrintableRatio > 0.3;
-  } catch (err) {
+  } catch (_err) {
     // If we can't read the file, assume it's safe (will fail elsewhere)
     return false;
   }
@@ -106,7 +106,7 @@ export function checkPackSize(packPath: string): AbuseViolation | null {
       };
     }
     return null;
-  } catch (err) {
+  } catch (_err) {
     // File doesn't exist or can't be read - will fail elsewhere
     return null;
   }
@@ -187,7 +187,7 @@ export function scanForBinaries(
           }
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // Skip directories we can't read
     }
   }
@@ -241,7 +241,7 @@ export function checkCatalogSize(catalogDir: string): CatalogSizeResult {
           totalSize += stats.size;
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // Skip directories we can't read
     }
   }
