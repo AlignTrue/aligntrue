@@ -163,21 +163,7 @@ export function validateTeamSources(
         }
       }
 
-      // For catalog sources, check id@version
-      if (source.type === "catalog" && source.id && source.version) {
-        const idVersion = `${source.id}@${source.version}`;
-        const idInList = allowList.sources.some((s) =>
-          s.value.includes(source.id || ""),
-        );
-        if (!idInList) {
-          errors.push({
-            type: "warning",
-            message: `Source not in allow list: catalog:${idVersion}`,
-            suggestion: `Run: aligntrue team approve ${idVersion}`,
-            field: "sources",
-          });
-        }
-      }
+      // Catalog sources no longer supported - removed in favor of git imports
     }
   } catch (_err) {
     errors.push({

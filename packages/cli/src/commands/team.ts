@@ -212,8 +212,6 @@ async function teamStatus(): Promise<void> {
           sourceStr = `local:${source.path}`;
         } else if (source.type === "git") {
           sourceStr = `git:${source.url}`;
-        } else if (source.type === "catalog") {
-          sourceStr = `catalog:${source.id}@${source.version}`;
         } else {
           sourceStr = source.type;
         }

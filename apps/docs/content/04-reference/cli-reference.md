@@ -2150,7 +2150,7 @@ aligntrue team remove <source> [<source2>...]   # Remove source(s)
 aligntrue team enable
 
 # Approve sources
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
 # List approved
 aligntrue team list-allowed
@@ -2402,13 +2402,12 @@ aligntrue privacy revoke --all             # Revoke all consents
 **Commands:**
 
 - `audit` - List all granted consents with timestamps
-- `revoke catalog` - Revoke consent for catalog fetches
 - `revoke git` - Revoke consent for git clones
 - `revoke --all` - Revoke all consents (prompts for confirmation)
 
 **How consent works:**
 
-1. **First time** a network operation is needed (catalog or git source), you'll see a clear error
+1. **First time** a network operation is needed (git source), you'll see a clear error
 2. The error message explains what consent is needed and how to grant it
 3. **After granting**, AlignTrue remembers and won't prompt again
 4. **Revoke anytime** using `aligntrue privacy revoke`
@@ -2419,8 +2418,8 @@ aligntrue privacy revoke --all             # Revoke all consents
 # List all consents
 aligntrue privacy audit
 
-# Revoke catalog consent
-aligntrue privacy revoke catalog
+# Revoke git consent
+aligntrue privacy revoke git
 
 # Revoke all consents with confirmation
 aligntrue privacy revoke --all
@@ -2431,7 +2430,6 @@ aligntrue privacy revoke --all
 ```
 Privacy Consents
 
-  ✓ catalog    Granted Oct 29, 2025 at 10:30 AM
   ✓ git        Granted Oct 29, 2025 at 11:45 AM
 
 Use 'aligntrue privacy revoke <operation>' to revoke

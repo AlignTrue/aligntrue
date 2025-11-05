@@ -259,14 +259,14 @@ Add to `tsconfig.json` compilerOptions:
 
 **Fix:**
 
-1. Check the type exists in source file (e.g., `packages/schema/src/catalog-entry.ts`)
+1. Check the type exists in source file (e.g., `packages/schema/src/types.ts`)
 2. Add export to `packages/schema/src/index.ts`:
 
 ```typescript
 export {
   // ... existing exports
   type YourMissingType,
-} from "./catalog-entry.js";
+} from "./types.js";
 ```
 
 3. Rebuild schema package:
@@ -294,8 +294,7 @@ AlignTrue is a pnpm monorepo with apps and packages organized for clarity and ma
 ```
 aligntrue/
 ├── apps/
-│   ├── web/          # Next.js catalog site
-│   └── docs/         # Nextra documentation
+│   └── docs/         # Nextra documentation site
 ├── packages/
 │   ├── schema/       # JSON Schema, canonicalization, hashing
 │   ├── core/         # Config, sync engine, bundle/lockfile

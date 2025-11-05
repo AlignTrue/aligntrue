@@ -3,7 +3,6 @@
  *
  * Caches:
  * - Git clone results (key: repo URL + ref)
- * - Catalog fetches (key: pack id + version)
  * - Validation results (key: content hash)
  *
  * Features:

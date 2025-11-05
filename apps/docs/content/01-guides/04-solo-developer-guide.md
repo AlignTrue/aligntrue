@@ -68,7 +68,7 @@ cursor .
 **What happened:**
 
 - Created `.aligntrue/rules.md` with base rules
-- Pulled `base-global` and `nextjs` packs from catalog
+- Pulled example packs from local examples
 - Exported to `.cursor/rules/` and `AGENTS.md`
 - Auto-pull enabled (pulls updates on sync)
 
@@ -77,17 +77,24 @@ cursor .
 - Customize test command: `aligntrue plugs set test.cmd "pnpm test"`
 - Adjust severity: `aligntrue override add --selector 'rule[id=...]' --set severity=warn`
 
-### Scenario 2: Using catalog packs
+### Scenario 2: Using example packs
 
-**Goal:** Pull curated packs from catalog and customize for your project.
+**Goal:** Use example packs from the AlignTrue repository and customize for your project.
 
 **Steps:**
 
 ```bash
-# 1. Browse catalog
-# Visit https://aligntrue.ai/catalog or check examples/packs.yaml
+# 1. Browse examples
+# Check examples/packs/ directory or examples/packs.yaml
 
-# 2. Pull pack (auto-pull enabled by default)
+# 2. Import pack via git source
+# Add to .aligntrue/config.yaml:
+# sources:
+#   - type: git
+#     url: https://github.com/AlignTrue/aligntrue
+#     path: examples/packs/testing.yaml
+
+# 3. Pull pack (auto-pull enabled by default)
 aligntrue sync
 
 # 3. Audit plugs (see what needs customization)
@@ -124,7 +131,7 @@ aligntrue override add \
   --set severity=warn  # Downgrade from error
 ```
 
-**Result:** Catalog pack customized for your project without forking.
+**Result:** Example pack customized for your project without forking.
 
 ### Scenario 3: Sharing rules across personal projects
 
@@ -393,7 +400,7 @@ sync:
 
 **Benefits:**
 
-- Always get latest catalog packs
+- Always get latest git-sourced packs
 - No manual `aligntrue pull` needed
 - Fast iteration
 
@@ -661,13 +668,13 @@ See [Team Guide](/docs/01-guides/05-team-guide) for team collaboration workflows
 **Key principles:**
 
 - Start simple, add complexity only when needed
-- Use catalog packs as starting point
+- Use example packs as starting point
 - Customize with plugs, overlays, and scopes
 - Document decisions with comments
 - Version control your rules
 
 **Next steps:**
 
-- Browse [catalog](https://aligntrue.ai/catalog) for curated packs
+- Browse [example packs](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) for curated examples
 - Read [customization guides](/docs/02-customization/) for advanced patterns
 - Join community for pack sharing and support

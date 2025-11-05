@@ -1,11 +1,15 @@
 # Example Packs Registry
 #
 # Local reference registry for example packs included in this repository.
-# These packs can be imported via GitHub URLs or copied locally.
+# These are examples only - no central catalog exists.
 #
 # To use a pack:
-# 1. Import via GitHub URL: https://raw.githubusercontent.com/AlignTrue/aligntrue/main/examples/packs/<filename>.yaml
-# 2. Or copy the file locally and reference it in your config
+# 1. Import via git source in .aligntrue/config.yaml:
+#    sources:
+#      - type: git
+#        url: https://github.com/AlignTrue/aligntrue
+#        path: examples/packs/<filename>.yaml
+# 2. Or copy the file locally and reference it with type: local
 # 3. See examples/packs/README.md for more details
 
 version: "1.0.0"
