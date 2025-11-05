@@ -93,7 +93,8 @@ function sortKeys(key: string, value: unknown): unknown {
       .sort()
       .reduce(
         (sorted, k) => {
-          sorted[k] = value[k];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (sorted as any)[k] = (value as any)[k];
           return sorted;
         },
         {} as Record<string, unknown>,

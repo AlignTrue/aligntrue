@@ -363,9 +363,11 @@ export function detectDriftForConfig(config: unknown): Promise<{
     vendor_type?: string;
   }>;
 }> {
-  const basePath = config.rootDir || ".";
-  const lockfilePath = config.lockfilePath || ".aligntrue.lock.json";
-  const allowListPath = config.allowListPath || ".aligntrue/allow.yaml";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const configAsAny = config as any;
+  const basePath = configAsAny.rootDir || ".";
+  const lockfilePath = configAsAny.lockfilePath || ".aligntrue.lock.json";
+  const allowListPath = configAsAny.allowListPath || ".aligntrue/allow.yaml";
 
   try {
     const result = detectDrift(lockfilePath, allowListPath, basePath);
@@ -378,7 +380,8 @@ export function detectDriftForConfig(config: unknown): Promise<{
         ? `${result.summary.total} drift findings across ${Object.values(result.summary.by_category).filter((n) => (n as number) > 0).length} categories`
         : "",
       drift: result.findings.map((f: DriftFinding) => {
-        const item: unknown = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const item: any = {
           category: f.category,
           ruleId: f.rule_id,
           description: f.message,

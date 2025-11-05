@@ -27,7 +27,7 @@ export class LocalProvider implements SourceProvider {
 
     try {
       return readFileSync(fullPath, "utf-8");
-    } catch {
+    } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to read file ${fullPath}: ${message}`);
     }

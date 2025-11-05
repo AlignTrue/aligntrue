@@ -23,7 +23,8 @@ export function setProperty(
   }
 
   const path = key.split(".");
-  let current = target;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let current = target as any;
 
   // Navigate to parent of target property
   for (let i = 0; i < path.length - 1; i++) {
@@ -83,7 +84,8 @@ export function removeProperty(target: unknown, key: string): boolean {
   }
 
   const path = key.split(".");
-  let current = target;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let current = target as any;
 
   // Navigate to parent of target property
   for (let i = 0; i < path.length - 1; i++) {

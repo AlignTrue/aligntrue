@@ -315,7 +315,7 @@ export function estimateSize(value: unknown): number {
 
   if (type === "boolean") return 4;
   if (type === "number") return 8;
-  if (type === "string") return value.length * 2; // UTF-16
+  if (type === "string") return (value as string).length * 2; // UTF-16
   if (type === "symbol") return 8;
 
   if (Array.isArray(value)) {
@@ -324,9 +324,11 @@ export function estimateSize(value: unknown): number {
 
   if (type === "object") {
     let size = 24; // Object overhead
-    for (const key in value) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = value as Record<string, any>;
+    for (const key in obj) {
       size += key.length * 2; // Key string
-      size += estimateSize(value[key]);
+      size += estimateSize(obj[key]);
     }
     return size;
   }
