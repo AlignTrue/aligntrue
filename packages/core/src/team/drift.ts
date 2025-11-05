@@ -234,11 +234,11 @@ export function detectSeverityRemapDrift(
   try {
     const content = readFileSync(teamYamlPath, "utf-8");
     currentHash = computeHash(content);
-  } catch (err) {
+  } catch (_err) {
     findings.push({
       category: "severity_remap",
       rule_id: "_team_policy",
-      message: `Failed to read team policy file: ${err instanceof Error ? err.message : String(err)}`,
+      message: `Failed to read team policy file: ${_err instanceof Error ? _err.message : String(_err)}`,
       suggestion: "Check file permissions and validity",
     });
     return findings;
@@ -347,7 +347,7 @@ export function detectLocalOverlayDrift(
  * High-level drift detection for CLI usage
  * Takes config object and handles file paths internally
  */
-export function detectDriftForConfig(config: any): Promise<{
+export function detectDriftForConfig(config: unknown): Promise<{
   driftDetected: boolean;
   mode: string;
   lockfilePath: string;
@@ -378,7 +378,7 @@ export function detectDriftForConfig(config: any): Promise<{
         ? `${result.summary.total} drift findings across ${Object.values(result.summary.by_category).filter((n) => (n as number) > 0).length} categories`
         : "",
       drift: result.findings.map((f: DriftFinding) => {
-        const item: any = {
+        const item: unknown = {
           category: f.category,
           ruleId: f.rule_id,
           description: f.message,
@@ -391,7 +391,7 @@ export function detectDriftForConfig(config: any): Promise<{
         return item;
       }),
     });
-  } catch (error) {
+  } catch {
     // If files don't exist, no drift
     return Promise.resolve({
       driftDetected: false,
@@ -454,9 +454,9 @@ export function detectDrift(
   try {
     const lockfileContent = readFileSync(lockfilePath, "utf-8");
     lockfile = JSON.parse(lockfileContent) as Lockfile;
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
-      `Failed to parse lockfile: ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to parse lockfile: ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 
@@ -464,9 +464,9 @@ export function detectDrift(
   let allowList: AllowList;
   try {
     allowList = parseAllowList(allowListPath);
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
-      `Failed to parse allow list: ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to parse allow list: ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 

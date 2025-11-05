@@ -62,9 +62,9 @@ export function parseTeamYaml(path: string): TeamYaml {
 
   try {
     parsed = parseYaml(content);
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
-      `Failed to parse team YAML: ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to parse team YAML: ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 

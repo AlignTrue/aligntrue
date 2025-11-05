@@ -31,7 +31,7 @@ vi.mock("js-yaml", () => ({
 describe("onboard command", () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let processExitSpy: ReturnType<typeof vi.spyOn>;
-  let mockSpinner: any;
+  let mockSpinner: unknown;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,7 +42,9 @@ describe("onboard command", () => {
     // Mock process.exit
     processExitSpy = vi
       .spyOn(process, "exit")
-      .mockImplementation((() => {}) as any);
+      .mockImplementation((() => {}) as (
+        code?: number | string | null | undefined,
+      ) => never);
 
     // Mock clack
     mockSpinner = {
@@ -83,27 +85,29 @@ describe("onboard command", () => {
   describe("git history analysis", () => {
     it("should handle git repo with commits", async () => {
       // Mock git commands - return strings when encoding specified
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|feat: Add feature|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git diff-tree")) {
+            return hasEncoding
+              ? "src/file1.ts\nsrc/file2.test.ts"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|feat: Add feature|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git diff-tree")) {
-          return hasEncoding
-            ? "src/file1.ts\nsrc/file2.test.ts"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -130,24 +134,26 @@ describe("onboard command", () => {
     });
 
     it("should detect uncommitted changes", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|feat: Test|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding
+              ? " M src/file.ts\n?? new-file.ts"
+              : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|feat: Test|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding
-            ? " M src/file.ts\n?? new-file.ts"
-            : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -159,27 +165,29 @@ describe("onboard command", () => {
 
   describe("checklist generation", () => {
     it("should suggest running tests when test files modified", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|test: Add tests|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git diff-tree")) {
+            return hasEncoding
+              ? "src/file.test.ts\nsrc/another.spec.ts"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|test: Add tests|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git diff-tree")) {
-          return hasEncoding
-            ? "src/file.test.ts\nsrc/another.spec.ts"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -192,25 +200,27 @@ describe("onboard command", () => {
     });
 
     it("should warn about source changes without tests", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|feat: Add logic|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git diff-tree")) {
+            return hasEncoding ? "src/file1.ts\nsrc/file2.ts" : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|feat: Add logic|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git diff-tree")) {
-          return hasEncoding ? "src/file1.ts\nsrc/file2.ts" : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -220,25 +230,27 @@ describe("onboard command", () => {
     });
 
     it("should note documentation updates", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|docs: Update|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git diff-tree")) {
+            return hasEncoding ? "docs/guide.md\ndocs/api.md" : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|docs: Update|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git diff-tree")) {
-          return hasEncoding ? "docs/guide.md\ndocs/api.md" : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -248,25 +260,27 @@ describe("onboard command", () => {
     });
 
     it("should provide default checklist when no specific patterns", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|chore: Config|Dev|2025-10-30"
+              : Buffer.from("");
+          }
+          if (cmd.includes("git diff-tree")) {
+            return hasEncoding ? "package.json" : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|chore: Config|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        if (cmd.includes("git diff-tree")) {
-          return hasEncoding ? "package.json" : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -281,19 +295,21 @@ describe("onboard command", () => {
 
   describe("CI integration", () => {
     beforeEach(() => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|fix: Bug|Dev|2025-10-30"
+              : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|fix: Bug|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
     });
 
     it("should parse SARIF file when --ci provided", async () => {
@@ -354,20 +370,22 @@ describe("onboard command", () => {
     });
 
     it("should handle empty git log", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            return hasEncoding ? "" : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          return hasEncoding ? "" : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -375,20 +393,22 @@ describe("onboard command", () => {
     });
 
     it("should handle git status failures", async () => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
 
-        if (cmd === "git rev-parse --git-dir") {
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding ? "abc123|test|dev|2025-10-30" : Buffer.from("");
+          }
+          if (cmd.includes("git status --porcelain")) {
+            throw new Error("status failed");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding ? "abc123|test|dev|2025-10-30" : Buffer.from("");
-        }
-        if (cmd.includes("git status --porcelain")) {
-          throw new Error("status failed");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
 
       await onboard([]);
 
@@ -398,18 +418,20 @@ describe("onboard command", () => {
 
   describe("integrations", () => {
     beforeEach(() => {
-      vi.mocked(execSync).mockImplementation((cmd: any, options?: any) => {
-        const hasEncoding = options?.encoding === "utf-8";
-        if (cmd === "git rev-parse --git-dir") {
+      vi.mocked(execSync).mockImplementation(
+        (cmd: unknown, options?: unknown) => {
+          const hasEncoding = options?.encoding === "utf-8";
+          if (cmd === "git rev-parse --git-dir") {
+            return hasEncoding ? "" : Buffer.from("");
+          }
+          if (cmd.includes("git log -1")) {
+            return hasEncoding
+              ? "abc123|feat: Test|Dev|2025-10-30"
+              : Buffer.from("");
+          }
           return hasEncoding ? "" : Buffer.from("");
-        }
-        if (cmd.includes("git log -1")) {
-          return hasEncoding
-            ? "abc123|feat: Test|Dev|2025-10-30"
-            : Buffer.from("");
-        }
-        return hasEncoding ? "" : Buffer.from("");
-      });
+        },
+      );
     });
 
     it("should show drift info in team mode with drift", async () => {

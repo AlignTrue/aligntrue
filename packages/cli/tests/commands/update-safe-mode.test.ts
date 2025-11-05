@@ -15,9 +15,9 @@ import {
 import { join } from "path";
 
 const TEST_DIR = ".aligntrue-test-update-safe";
-const CONFIG_PATH = join(TEST_DIR, ".aligntrue", "config.yaml");
-const LOCKFILE_PATH = join(TEST_DIR, ".aligntrue.lock.json");
-const ALLOW_LIST_PATH = join(TEST_DIR, ".aligntrue", "allow.yaml");
+const _CONFIG_PATH = join(TEST_DIR, ".aligntrue", "config.yaml");
+const _LOCKFILE_PATH = join(TEST_DIR, ".aligntrue.lock.json");
+const _ALLOW_LIST_PATH = join(TEST_DIR, ".aligntrue", "allow.yaml");
 
 describe("update command --safe flag", () => {
   const originalCwd = process.cwd();
@@ -96,7 +96,7 @@ spec_version: "1"
 
     try {
       await update(["apply", "--safe", "--config", ".aligntrue/config.yaml"]);
-    } catch (err) {
+    } catch {
       // Expected to exit
     }
 
@@ -110,7 +110,7 @@ spec_version: "1"
     // Capture console output
     const logs: string[] = [];
     const originalLog = console.log;
-    console.log = (...args: any[]) => {
+    console.log = (...args: unknown[]) => {
       logs.push(args.join(" "));
       originalLog(...args);
     };

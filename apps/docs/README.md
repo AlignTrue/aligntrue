@@ -8,9 +8,37 @@ Create `apps/docs/.env.local` with:
 
 ```
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ```
 
-**Production:** Set `NEXT_PUBLIC_SITE_URL=https://aligntrue.ai` in Vercel environment variables.
+**Production:** Set the following in Vercel environment variables:
+
+- `NEXT_PUBLIC_SITE_URL=https://aligntrue.ai`
+- `NEXT_PUBLIC_GA_ID=<your-google-analytics-4-id>` (optional, for analytics)
+
+## Static Assets
+
+The `apps/docs/public/` directory contains:
+
+- `og-image.png` (1200x630) - Open Graph and Twitter card image
+- `favicon.ico` - Site favicon
+
+These assets are automatically served at the root path (e.g., `/og-image.png`, `/favicon.ico`).
+
+## Analytics
+
+The site includes:
+
+- **Vercel Analytics** - Automatic, privacy-friendly analytics
+- **Google Analytics 4** - Optional, enabled when `NEXT_PUBLIC_GA_ID` is set
+
+## SEO Features
+
+- Open Graph metadata for social media sharing
+- Twitter card support
+- Structured data (JSON-LD) for search engines
+- Automatic sitemap generation
+- robots.txt configuration
 
 ## Development
 
@@ -20,7 +48,8 @@ pnpm dev
 
 ## Sitemaps
 
-- `/sitemap.docs.xml` - Lists all docs routes
+- `/sitemap.xml` - Main sitemap including homepage and all docs routes
+- `/sitemap.docs.xml` - Legacy docs-specific sitemap
 - All paths are prefixed with `/docs` for public URLs
 - Requires `NEXT_PUBLIC_SITE_URL` to be set to the public origin
 

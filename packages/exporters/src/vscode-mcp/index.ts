@@ -48,7 +48,7 @@ interface McpRule {
   guidance: string;
   scope?: string;
   applies_to?: string[];
-  [key: string]: any; // Additional vendor.vscode fields
+  [key: string]: unknown; // Additional vendor.vscode fields
 }
 
 export class VsCodeMcpExporter extends ExporterBase {
@@ -185,12 +185,12 @@ export class VsCodeMcpExporter extends ExporterBase {
    * Extract and flatten vendor.vscode fields
    * Returns object with vendor.vscode fields at top level
    */
-  private extractVendorVscode(rule: AlignRule): Record<string, any> {
+  private extractVendorVscode(rule: AlignRule): Record<string, unknown> {
     if (!rule.vendor || !rule.vendor["vscode"]) {
       return {};
     }
 
-    const vscodeFields: Record<string, any> = {};
+    const vscodeFields: Record<string, unknown> = {};
     const vscodeVendor = rule.vendor["vscode"];
 
     // Flatten all vendor.vscode fields to top level

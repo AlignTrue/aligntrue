@@ -179,12 +179,12 @@ export function validateTeamSources(
         }
       }
     }
-  } catch (err) {
+  } catch (_err) {
     errors.push({
       type: "error",
       message: "Failed to parse allow list",
       suggestion: `Check .aligntrue/allow.yaml for syntax errors
-  Error: ${err instanceof Error ? err.message : String(err)}`,
+  Error: ${_err instanceof Error ? _err.message : String(_err)}`,
       field: "sources",
     });
   }

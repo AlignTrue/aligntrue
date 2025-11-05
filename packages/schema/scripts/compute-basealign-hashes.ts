@@ -83,7 +83,7 @@ function main() {
           updated: false,
         });
       }
-    } catch (err) {
+    } catch {
       console.error(`Error processing ${file}:`, err);
     }
   }

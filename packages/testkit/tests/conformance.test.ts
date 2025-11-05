@@ -124,7 +124,7 @@ describe("Conformance: Golden Packs", () => {
         }
 
         return result;
-      } catch (error) {
+      } catch {
         return {
           valid: false,
           errors: [error instanceof Error ? error.message : String(error)],
@@ -162,7 +162,7 @@ describe("Conformance: Golden Packs", () => {
   });
 
   it("golden packs have computed integrity hashes", () => {
-    for (const [filename, content] of goldenPacks) {
+    for (const [_filename, content] of goldenPacks) {
       const parsed = parseYamlToJson(content) as any;
 
       expect(parsed.integrity).toBeDefined();

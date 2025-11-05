@@ -44,7 +44,7 @@ describe("GitIntegration", () => {
     it("adds generated files to .gitignore", async () => {
       const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -121,7 +121,7 @@ describe("GitIntegration", () => {
     it("prepares files for commit", async () => {
       const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "commit",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -170,7 +170,7 @@ describe("GitIntegration", () => {
           cwd: TEST_DIR,
           stdio: "pipe",
         });
-      } catch (error) {
+      } catch {
         // Ignore git setup errors in CI
       }
     });
@@ -182,7 +182,7 @@ describe("GitIntegration", () => {
       writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Test Agents\n", "utf-8");
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
@@ -210,7 +210,7 @@ describe("GitIntegration", () => {
 
       const customBranch = "feature/custom-rules-sync";
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc"],
@@ -242,7 +242,7 @@ describe("GitIntegration", () => {
       writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Cursor\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agents\n", "utf-8");
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore", // default
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
@@ -270,7 +270,7 @@ describe("GitIntegration", () => {
         ".windsurf/mcp_config.json",
       ];
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -298,7 +298,7 @@ describe("GitIntegration", () => {
 
   describe("edge cases", () => {
     it("handles empty file list", async () => {
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: [],
@@ -311,7 +311,7 @@ describe("GitIntegration", () => {
     it("handles files with special characters", async () => {
       const files = [".cursor/rules/special-chars-🎉.mdc"];
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -325,7 +325,7 @@ describe("GitIntegration", () => {
     it("handles deeply nested paths", async () => {
       const files = ["a/b/c/d/e/f/deep.mdc"];
 
-      const result = await gitIntegration.apply({
+      const _result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,

@@ -58,9 +58,9 @@ async function main() {
   let alignYaml: string;
   try {
     alignYaml = readFileSync(alignPath, "utf8");
-  } catch (err) {
+  } catch (_err) {
     console.error(`Error reading Align file: ${alignPath}`);
-    console.error(err);
+    console.error(_err);
     process.exit(2);
   }
 

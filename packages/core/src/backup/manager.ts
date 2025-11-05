@@ -217,7 +217,7 @@ export class BackupManager {
       rmSync(tempBackup.path, { recursive: true, force: true });
 
       return backup;
-    } catch (error) {
+    } catch (_error) {
       // Restore from temp backup on failure
       for (const file of tempBackup.manifest.files) {
         const srcPath = join(tempBackup.path, file);
@@ -229,7 +229,7 @@ export class BackupManager {
       rmSync(tempBackup.path, { recursive: true, force: true });
 
       throw new Error(
-        `Restore failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Restore failed: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
   }

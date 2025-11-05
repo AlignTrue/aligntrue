@@ -19,12 +19,12 @@ interface NextraThemeConfig {
   docsRepositoryBase?: string;
   editLink?:
     | {
-        component: React.ComponentType<any> | null;
+        component: React.ComponentType<unknown> | null;
       }
     | React.ReactNode;
   footer?:
     | {
-        component: React.ComponentType<any> | null;
+        component: React.ComponentType<unknown> | null;
       }
     | React.ReactNode;
   sidebar?: {
@@ -36,7 +36,7 @@ interface NextraThemeConfig {
   toc?: {
     backToTop?: boolean;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface AlignTrueNextraThemeOptions {
@@ -96,6 +96,11 @@ export function createAlignTrueNextraTheme(
     },
     toc: {
       backToTop: true,
+    },
+    search: {
+      placeholder: "Search documentation...",
+      emptyResult: "No results found.",
+      loading: "Searching...",
     },
     ...additionalConfig,
   };

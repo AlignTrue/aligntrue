@@ -90,7 +90,7 @@ function main() {
       console.log("✗ Validation failed");
       process.exit(1);
     }
-  } catch (err) {
+  } catch {
     console.error("Error:", err instanceof Error ? err.message : String(err));
     process.exit(3);
   }

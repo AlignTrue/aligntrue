@@ -70,7 +70,7 @@ export function createIgnoreFilter(
     try {
       const gitignoreContent = readFileSync(gitignorePath, "utf-8");
       ig.add(gitignoreContent);
-    } catch (err) {
+    } catch {
       // If .gitignore can't be read, continue without it
       console.warn(`⚠️  Could not read .gitignore: ${gitignorePath}`);
     }

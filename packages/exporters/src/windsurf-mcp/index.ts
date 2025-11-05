@@ -35,7 +35,7 @@ interface McpRule {
   guidance: string;
   scope?: string;
   applies_to?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export class WindsurfMcpExporter extends ExporterBase {
@@ -115,7 +115,10 @@ export class WindsurfMcpExporter extends ExporterBase {
       };
 
       if (rule.vendor && rule.vendor["windsurf"]) {
-        const windsurfVendor = rule.vendor["windsurf"] as Record<string, any>;
+        const windsurfVendor = rule.vendor["windsurf"] as Record<
+          string,
+          unknown
+        >;
         Object.entries(windsurfVendor).forEach(([key, value]) => {
           if (key !== "_meta") {
             mcpRule[key] = value;

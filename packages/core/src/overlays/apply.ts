@@ -104,9 +104,9 @@ export function applyOverlays(
       }
 
       appliedCount++;
-    } catch (err) {
+    } catch (_err) {
       errors.push(
-        `Error applying overlay "${overlay.selector}": ${err instanceof Error ? err.message : String(err)}`,
+        `Error applying overlay "${overlay.selector}": ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
   }
@@ -170,7 +170,7 @@ function sortOverlays(overlays: OverlayDefinition[]): OverlayDefinition[] {
  * @param path - Property path array (e.g., ["rules", "0"])
  * @returns Target object or undefined
  */
-function getTargetFromPath(ir: any, path: string[]): any {
+function getTargetFromPath(ir: unknown, path: string[]): unknown {
   let current = ir;
   for (const segment of path) {
     if (current === null || current === undefined) {
@@ -240,7 +240,7 @@ export function normalizeLineEndings(ir: AlignPack): AlignPack {
   const normalized = deepClone(ir);
 
   // Recursively normalize string properties
-  function normalize(obj: any): void {
+  function normalize(obj: unknown): void {
     if (typeof obj === "string") {
       return; // Can't mutate strings, caller must handle
     }

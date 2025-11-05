@@ -29,11 +29,11 @@ const schemaPath = join(__dirname, "../schema/manifest.schema.json");
 export class ExporterRegistry {
   private exporters = new Map<string, ExporterPlugin>();
   private manifests = new Map<string, AdapterManifest>();
-  private ajv: any;
+  private ajv: unknown;
 
   constructor() {
-    this.ajv = new (Ajv as any)({ strict: true, allErrors: true });
-    (addFormats as any)(this.ajv);
+    this.ajv = new (Ajv as typeof Ajv)({ strict: true, allErrors: true });
+    (addFormats as (ajv: typeof this.ajv) => void)(this.ajv);
 
     // Load and add manifest schema
     const manifestSchema = JSON.parse(
@@ -68,7 +68,7 @@ export class ExporterRegistry {
 
       if (!validate(manifest)) {
         const errors = validate.errors
-          ?.map((err: any) => {
+          ?.map((err: unknown) => {
             const missingProp =
               err.params && "missingProperty" in err.params
                 ? err.params["missingProperty"]
@@ -81,7 +81,7 @@ export class ExporterRegistry {
       }
 
       return manifest;
-    } catch (error) {
+    } catch {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON in manifest: ${error.message}`);
       }
@@ -138,7 +138,7 @@ export class ExporterRegistry {
       }
 
       return exporter as ExporterPlugin;
-    } catch (error) {
+    } catch {
       if (error instanceof Error) {
         throw new Error(`Failed to load handler: ${error.message}`);
       }
@@ -197,7 +197,7 @@ export class ExporterRegistry {
           manifests.push(fullPath);
         }
       }
-    } catch (error) {
+    } catch {
       if (
         error instanceof Error &&
         "code" in error &&

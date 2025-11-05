@@ -145,7 +145,7 @@ function analyzeGitHistory(): GitAnalysis {
 
     // Deduplicate files
     analysis.modifiedFiles = [...new Set(analysis.modifiedFiles)];
-  } catch (error) {
+  } catch {
     // Git operations failed, return empty analysis
   }
 
@@ -186,7 +186,7 @@ function parseSARIF(ciPath: string): {
         }
       }
     }
-  } catch (error) {
+  } catch {
     // SARIF parsing failed, return empty result
   }
 
@@ -451,7 +451,7 @@ export async function onboard(args: string[]): Promise<void> {
     align_hashes_used: [],
   });
 
-  const intro = clack.intro("AlignTrue Onboard");
+  const _intro = clack.intro("AlignTrue Onboard");
   console.log("");
 
   try {
@@ -507,7 +507,7 @@ export async function onboard(args: string[]): Promise<void> {
     // Display checklist
     displayChecklist(checklist, gitAnalysis);
 
-    const outro = clack.outro("Ready to get started!");
+    const _outro = clack.outro("Ready to get started!");
     console.log("");
 
     process.exit(0);

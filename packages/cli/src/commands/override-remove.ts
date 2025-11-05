@@ -55,9 +55,9 @@ export async function overrideRemove(args: string[]): Promise<void> {
     if (config) options.config = config;
 
     await runOverrideRemove(selectorArg, options);
-  } catch (error) {
+  } catch (_error) {
     clack.log.error(
-      `Failed to remove overlay: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to remove overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -88,7 +88,7 @@ async function runOverrideRemove(
 
   if (!selectorArg) {
     // Show interactive list
-    const choices = overlays.map((o, idx) => {
+    const choices = overlays.map((o, _idx) => {
       const ops: string[] = [];
       if (o.set) {
         const setPairs = Object.entries(o.set)

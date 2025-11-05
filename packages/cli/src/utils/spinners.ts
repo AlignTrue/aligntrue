@@ -39,9 +39,9 @@ export async function withSpinner<T>(
     const result = await operation();
     spinner.stop(successMessage || "Complete");
     return result;
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("Failed");
-    throw error; // Re-throw for caller to handle
+    throw _error; // Re-throw for caller to handle
   }
 }
 
@@ -65,12 +65,12 @@ export async function withSpinner<T>(
  */
 export async function withSpinners<T extends unknown[]>(
   steps: Array<{
-    operation: () => Promise<any>;
+    operation: () => Promise<unknown>;
     message: string;
     successMessage?: string;
   }>,
 ): Promise<T> {
-  const results: any[] = [];
+  const results: unknown[] = [];
 
   for (const step of steps) {
     const result = await withSpinner(

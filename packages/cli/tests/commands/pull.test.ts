@@ -44,16 +44,16 @@ import { createConsentManager, loadConfig, saveConfig } from "@aligntrue/core";
 import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 
 describe("pull command", () => {
-  let mockGitProvider: any;
-  let mockConsentManager: any;
-  let mockLoadConfig: any;
-  let mockSaveConfig: any;
-  let mockParseMarkdown: any;
-  let mockBuildIR: any;
-  let mockSpinner: any;
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
-  let processExitSpy: any;
+  let mockGitProvider: unknown;
+  let mockConsentManager: unknown;
+  let mockLoadConfig: unknown;
+  let mockSaveConfig: unknown;
+  let mockParseMarkdown: unknown;
+  let mockBuildIR: unknown;
+  let mockSpinner: unknown;
+  let consoleLogSpy: unknown;
+  let consoleErrorSpy: unknown;
+  let processExitSpy: unknown;
 
   beforeEach(() => {
     // Reset all mocks
@@ -78,9 +78,9 @@ describe("pull command", () => {
     mockGitProvider = {
       fetch: vi.fn().mockResolvedValue("# Rules\nrules: []"),
     };
-    vi.mocked(GitProvider).mockImplementation(function (this: any) {
+    vi.mocked(GitProvider).mockImplementation(function (this: unknown) {
       return mockGitProvider;
-    } as any);
+    } as new () => typeof mockGitProvider);
 
     // Mock ConsentManager
     mockConsentManager = {

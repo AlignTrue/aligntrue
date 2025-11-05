@@ -178,10 +178,10 @@ function detectChanges(
 
   // Compare rules by ID
   const oldRules = new Map(
-    (oldIR.rules || []).map((r) => [r.id, r] as [string, any]),
+    (oldIR.rules || []).map((r) => [r.id, r] as [string, AlignRule]),
   );
   const newRules = new Map(
-    (newIR.rules || []).map((r) => [r.id, r] as [string, any]),
+    (newIR.rules || []).map((r) => [r.id, r] as [string, AlignRule]),
   );
 
   // Check all rule IDs (old + new)
@@ -232,8 +232,8 @@ function detectChanges(
  * @returns Array of property changes
  */
 function compareObjects(
-  oldObj: any,
-  newObj: any,
+  oldObj: unknown,
+  newObj: unknown,
   path: string[],
 ): PropertyChange[] {
   const changes: PropertyChange[] = [];

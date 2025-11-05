@@ -15,6 +15,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
+  AdapterManifest,
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
@@ -166,7 +167,7 @@ export abstract class ExporterBase implements ExporterPlugin {
    * // { name: "cursor", version: "1.0.0", format: "mdc", ... }
    * ```
    */
-  protected validateManifest(): Record<string, any> {
+  protected validateManifest(): AdapterManifest {
     try {
       // Construct path to manifest.json relative to this exporter
       const exporterDir = dirname(fileURLToPath(import.meta.url));
@@ -192,12 +193,12 @@ export abstract class ExporterBase implements ExporterPlugin {
         );
       }
 
-      return manifest;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Manifest validation failed: ${error.message}`);
+      return manifest as AdapterManifest;
+    } catch (_error) {
+      if (_error instanceof Error) {
+        throw new Error(`Manifest validation failed: ${_error.message}`);
       }
-      throw error;
+      throw _error;
     }
   }
 

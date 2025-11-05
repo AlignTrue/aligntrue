@@ -183,7 +183,7 @@ export async function sync(args: string[]): Promise<void> {
       }
     } else {
       try {
-        const allowList = parseAllowList(allowListPath);
+        const _allowList = parseAllowList(allowListPath);
 
         // Validate each source in config
         const unapprovedSources: string[] = [];
@@ -216,10 +216,10 @@ export async function sync(args: string[]): Promise<void> {
             `  ${unapprovedSources.length} unapproved source${unapprovedSources.length !== 1 ? "s" : ""}`,
           );
         }
-      } catch (err) {
+      } catch (_err) {
         // Parsing error - log but don't fail
         clack.log.warn(
-          `⚠ Failed to validate allow list: ${err instanceof Error ? err.message : String(err)}`,
+          `⚠ Failed to validate allow list: ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
     }
@@ -425,11 +425,11 @@ export async function sync(args: string[]): Promise<void> {
       const names = exporterNames.slice(0, loadedCount).join(", ");
       clack.log.success(`Active: ${names}`);
     }
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("Exporter loading failed");
     exitWithError(
       Errors.syncFailed(
-        `Failed to load exporters: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to load exporters: ${_error instanceof Error ? _error.message : String(_error)}`,
       ),
     );
   }
@@ -502,11 +502,11 @@ export async function sync(args: string[]): Promise<void> {
     }
 
     spinner.stop("Rules validated");
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("Validation failed");
     exitWithError(
       Errors.syncFailed(
-        `Failed to load or validate rules: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to load or validate rules: ${_error instanceof Error ? _error.message : String(_error)}`,
       ),
     );
   }
@@ -526,10 +526,10 @@ export async function sync(args: string[]): Promise<void> {
         clack.log.info(
           `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
         );
-      } catch (error) {
+      } catch (_error) {
         spinner.stop("Backup failed");
         clack.log.warn(
-          `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to create backup: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
         clack.log.warn("Continuing with sync...");
       }
@@ -727,10 +727,10 @@ export async function sync(args: string[]): Promise<void> {
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         spinner.stop("Auto-pull failed");
         clack.log.warn(
-          `Auto-pull error: ${error instanceof Error ? error.message : String(error)}`,
+          `Auto-pull error: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
         clack.log.info("Continuing with sync...");
       }
@@ -765,7 +765,7 @@ export async function sync(args: string[]): Promise<void> {
             `Cleaned up ${removed} old backup${removed !== 1 ? "s" : ""}`,
           );
         }
-      } catch (error) {
+      } catch {
         // Silent failure on cleanup - not critical
       }
     }
@@ -864,7 +864,7 @@ export async function sync(args: string[]): Promise<void> {
           export_target: exportTargets,
           align_hashes_used: [], // Rule hashes would require loading the IR file again
         });
-      } catch (telemetryError) {
+      } catch {
         // Telemetry errors should not fail the sync command
         // Silently continue
       }
@@ -911,10 +911,10 @@ export async function sync(args: string[]): Promise<void> {
       clack.outro("✗ Sync failed");
       process.exit(1);
     }
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("Sync failed");
     clack.log.error(
-      `Sync error: ${error instanceof Error ? error.message : String(error)}`,
+      `Sync error: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
 
     // Show helpful suggestions

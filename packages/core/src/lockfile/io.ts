@@ -34,10 +34,10 @@ export function readLockfile(path: string): Lockfile | null {
     }
 
     return lockfile;
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
       `Failed to read lockfile: ${path}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}`,
+        `  ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 }
@@ -67,7 +67,7 @@ export function writeLockfile(path: string, lockfile: Lockfile): void {
   try {
     writeFileSync(tempPath, json, "utf8");
     renameSync(tempPath, path);
-  } catch (err) {
+  } catch (_err) {
     // Clean up temp file on failure
     if (existsSync(tempPath)) {
       try {
@@ -79,7 +79,7 @@ export function writeLockfile(path: string, lockfile: Lockfile): void {
 
     throw new Error(
       `Failed to write lockfile: ${path}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}`,
+        `  ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 }
@@ -87,7 +87,7 @@ export function writeLockfile(path: string, lockfile: Lockfile): void {
 /**
  * JSON.stringify replacer to sort keys alphabetically
  */
-function sortKeys(key: string, value: any): any {
+function sortKeys(key: string, value: unknown): unknown {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return Object.keys(value)
       .sort()
@@ -96,7 +96,7 @@ function sortKeys(key: string, value: any): any {
           sorted[k] = value[k];
           return sorted;
         },
-        {} as Record<string, any>,
+        {} as Record<string, unknown>,
       );
   }
   return value;

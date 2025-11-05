@@ -53,10 +53,10 @@ export function runCanonVectors(
           actual: actualHash,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       failures.push({
         vector_name: vector.name,
-        reason: `Exception: ${error instanceof Error ? error.message : String(error)}`,
+        reason: `Exception: ${_error instanceof Error ? _error.message : String(_error)}`,
       });
     }
   }
@@ -111,10 +111,10 @@ export function runCheckVectors(
           reason: "Invalid expected_findings structure",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       failures.push({
         vector_name: vector.name,
-        reason: `Exception: ${error instanceof Error ? error.message : String(error)}`,
+        reason: `Exception: ${_error instanceof Error ? _error.message : String(_error)}`,
       });
     }
   }
@@ -160,7 +160,7 @@ export function runGoldenPacks(
       }
 
       // Verify hash matches what's in the file
-      const parsed = parseYamlToJson(content) as any;
+      const parsed = parseYamlToJson(content) as unknown;
       if (
         parsed.integrity?.value &&
         result.hash &&
@@ -173,10 +173,10 @@ export function runGoldenPacks(
           actual: result.hash,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       failures.push({
         vector_name: filename,
-        reason: `Exception: ${error instanceof Error ? error.message : String(error)}`,
+        reason: `Exception: ${_error instanceof Error ? _error.message : String(_error)}`,
       });
     }
   }
@@ -254,7 +254,7 @@ export function runAllVectors(
         }
 
         return result;
-      } catch (error) {
+      } catch {
         return {
           valid: false,
           errors: [error instanceof Error ? error.message : String(error)],

@@ -35,7 +35,7 @@ interface McpRule {
   guidance: string;
   scope?: string;
   applies_to?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export class RootMcpExporter extends ExporterBase {

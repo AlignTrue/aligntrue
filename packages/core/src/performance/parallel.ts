@@ -11,7 +11,7 @@
  */
 export interface ParallelResult<T> {
   success: T[];
-  failures: Array<{ item: any; error: Error }>;
+  failures: Array<{ item: unknown; error: Error }>;
 }
 
 /**
@@ -42,10 +42,10 @@ export async function processInParallel<T, R>(
       try {
         const result = await processor(item);
         success.push(result);
-      } catch (error) {
+      } catch (_error) {
         failures.push({
           item,
-          error: error instanceof Error ? error : new Error(String(error)),
+          error: _error instanceof Error ? _error : new Error(String(_error)),
         });
       }
     }
@@ -102,7 +102,7 @@ async function processWithConcurrency<T, R>(
  * Aggregate errors into single error
  */
 export function aggregateErrors(
-  failures: Array<{ item: any; error: Error }>,
+  failures: Array<{ item: unknown; error: Error }>,
 ): Error {
   if (failures.length === 0) {
     return new Error("No errors");

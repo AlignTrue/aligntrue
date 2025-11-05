@@ -28,7 +28,7 @@ describe("SiteFooter", () => {
     // Check npm version badge
     const npmBadge = screen.getByAltText("npm version");
     expect(npmBadge).toBeDefined();
-    expect(npmBadge.getAttribute("src")).toContain("@aligntrue/cli");
+    expect(npmBadge.getAttribute("src")).toContain("aligntrue");
 
     // Check license badge
     const licenseBadge = screen.getByAltText("MIT License");
@@ -49,7 +49,7 @@ describe("SiteFooter", () => {
       name: /npm version/i,
     });
     expect(npmLink.getAttribute("href")).toBe(
-      "https://www.npmjs.com/package/@aligntrue/cli",
+      "https://www.npmjs.com/package/aligntrue",
     );
 
     // Get all license links and check the badge link
