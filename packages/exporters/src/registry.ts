@@ -29,7 +29,8 @@ const schemaPath = join(__dirname, "../schema/manifest.schema.json");
 export class ExporterRegistry {
   private exporters = new Map<string, ExporterPlugin>();
   private manifests = new Map<string, AdapterManifest>();
-  private ajv: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private ajv: any;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,19 +72,21 @@ export class ExporterRegistry {
       if (!validate(manifest)) {
         const errors = validate.errors
           ?.map((err: unknown) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
             const missingProp =
-              err.params && "missingProperty" in err.params
-                ? err.params["missingProperty"]
+              error.params && "missingProperty" in error.params
+                ? error.params["missingProperty"]
                 : undefined;
-            const field = err.instancePath || missingProp || "unknown";
-            return `${field}: ${err.message}`;
+            const field = error.instancePath || missingProp || "unknown";
+            return `${field}: ${error.message}`;
           })
           .join(", ");
         throw new Error(`Invalid manifest: ${errors}`);
       }
 
       return manifest;
-    } catch {
+    } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON in manifest: ${error.message}`);
       }
@@ -140,7 +143,7 @@ export class ExporterRegistry {
       }
 
       return exporter as ExporterPlugin;
-    } catch {
+    } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to load handler: ${error.message}`);
       }
@@ -199,7 +202,7 @@ export class ExporterRegistry {
           manifests.push(fullPath);
         }
       }
-    } catch {
+    } catch (error) {
       if (
         error instanceof Error &&
         "code" in error &&
