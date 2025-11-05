@@ -1,6 +1,11 @@
 /**
  * Nextra Theme Configuration Factory
  *
+ * @deprecated This factory is no longer needed with standard Nextra setup.
+ * Use a standard theme.config.tsx file at the app root instead.
+ *
+ * See: apps/docs/theme.config.tsx for the standard approach.
+ *
  * Creates a branded Nextra theme config with AlignTrue design system.
  * Maintains upgrade safety by using only documented Nextra APIs.
  *
@@ -72,6 +77,7 @@ interface AlignTrueNextraThemeOptions {
 
 /**
  * Creates AlignTrue-branded Nextra theme configuration
+ * @deprecated Use standard theme.config.tsx instead (see apps/docs/theme.config.tsx)
  */
 export function createAlignTrueNextraTheme(
   options: AlignTrueNextraThemeOptions = {},

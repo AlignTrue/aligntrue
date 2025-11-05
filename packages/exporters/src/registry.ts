@@ -32,8 +32,10 @@ export class ExporterRegistry {
   private ajv: unknown;
 
   constructor() {
-    this.ajv = new (Ajv as typeof Ajv)({ strict: true, allErrors: true });
-    (addFormats as (ajv: typeof this.ajv) => void)(this.ajv);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.ajv = new (Ajv as any)({ strict: true, allErrors: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (addFormats as any)(this.ajv);
 
     // Load and add manifest schema
     const manifestSchema = JSON.parse(

@@ -395,10 +395,10 @@ export class SyncEngine {
       // Reset state on all exporters before starting new sync cycle
       // This prevents accumulation of rules across multiple syncs
       for (const exporter of activeExporters) {
-        if (
-          typeof (exporter as Record<string, unknown>).resetState === "function"
-        ) {
-          ((exporter as Record<string, unknown>).resetState as () => void)();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (typeof (exporter as any).resetState === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (exporter as any).resetState();
         }
       }
 
@@ -643,7 +643,8 @@ export class SyncEngine {
             );
 
             // Clean IR for markdown generation: remove internal metadata fields
-            const cleanIr = { ...this.ir } as typeof this.ir;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cleanIr = { ...this.ir } as any;
 
             // Remove markdown-specific internal fields that shouldn't be in fenced block
             delete cleanIr.source_format;

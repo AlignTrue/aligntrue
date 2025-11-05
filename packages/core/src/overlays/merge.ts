@@ -178,10 +178,12 @@ function detectChanges(
 
   // Compare rules by ID
   const oldRules = new Map(
-    (oldIR.rules || []).map((r) => [r.id, r] as [string, AlignRule]),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (oldIR.rules || []).map((r) => [r.id, r] as [string, any]),
   );
   const newRules = new Map(
-    (newIR.rules || []).map((r) => [r.id, r] as [string, AlignRule]),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (newIR.rules || []).map((r) => [r.id, r] as [string, any]),
   );
 
   // Check all rule IDs (old + new)
