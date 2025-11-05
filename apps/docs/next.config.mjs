@@ -14,4 +14,9 @@ export default withNextra({
   // Transpile workspace packages that export TypeScript source directly
   // Required for @aligntrue/ui which has no build step
   transpilePackages: ["@aligntrue/ui"],
+  // Disable Turbopack - Nextra 4.6.0 has known incompatibility with Turbopack
+  // See: https://github.com/shuding/nextra/issues/3428
+  experimental: {
+    turbo: false,
+  },
 });
