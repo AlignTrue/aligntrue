@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Kiro exporter
  * Exports AlignTrue rules to Kiro .kiro/steering/ directory format
@@ -41,7 +43,7 @@ export class KiroExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateRuleContent(
       scope,

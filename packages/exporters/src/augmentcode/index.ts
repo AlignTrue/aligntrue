@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * AugmentCode exporter
  * Exports AlignTrue rules to AugmentCode .augment/rules/ directory format
@@ -43,7 +45,7 @@ export class AugmentCodeExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateRuleContent(
       scope,

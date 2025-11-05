@@ -422,7 +422,7 @@ export async function check(args: string[]): Promise<void> {
     }
 
     process.exit(0);
-  } catch (_err) {
+  } catch (err) {
     // Unexpected system error
     if (jsonOutput) {
       console.log(
@@ -437,9 +437,7 @@ export async function check(args: string[]): Promise<void> {
       );
     } else {
       console.error("✗ System error\n");
-      console.error(
-        `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
-      );
+      console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
     }
     process.exit(2);
   }

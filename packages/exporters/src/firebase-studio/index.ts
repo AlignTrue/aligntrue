@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Firebase Studio exporter
  * Exports AlignTrue rules to Firebase Studio .idx/airules.md format
@@ -60,7 +62,7 @@ export class FirebaseStudioExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateAiRulesMdContent(
       modeHints,

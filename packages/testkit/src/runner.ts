@@ -255,7 +255,7 @@ export function runAllVectors(
         }
 
         return result;
-      } catch {
+      } catch (error) {
         return {
           valid: false,
           errors: [error instanceof Error ? error.message : String(error)],

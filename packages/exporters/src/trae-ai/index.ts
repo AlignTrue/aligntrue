@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Trae AI exporter
  * Exports AlignTrue rules to Trae AI .trae/rules/project_rules.md format
@@ -57,7 +59,7 @@ export class TraeAiExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateProjectRulesContent(
       modeHints,

@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * WARP.md exporter
  * Exports AlignTrue rules to Warp-specific WARP.md format
@@ -60,7 +62,7 @@ export class WarpMdExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateWarpMdContent(
       modeHints,

@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Goose exporter
  * Exports AlignTrue rules to Goose .goosehints format
@@ -57,7 +59,7 @@ export class GooseExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateGooseHintsContent(
       modeHints,

@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Kilo Code exporter
  * Exports AlignTrue rules to Kilo Code .kilocode/rules/ directory format
@@ -41,7 +43,7 @@ export class KiloCodeExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateRuleContent(
       scope,
