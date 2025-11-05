@@ -131,7 +131,7 @@ Examples:
 The generation script automatically transforms these to absolute URLs for GitHub:
 
 ```markdown
-See [team mode](https://aligntrue.ai/docs/03-concepts/team-mode) for details.
+See [team mode](/docs/03-concepts/team-mode) for details.
 ```
 
 ### External links

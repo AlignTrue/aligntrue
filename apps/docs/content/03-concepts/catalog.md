@@ -94,7 +94,7 @@ Example install modal shows:
 
 ```bash
 # Install AlignTrue CLI (skip if you already have it)
-curl -fsSL https://aligntrue.ai/install.sh | bash
+npm install -g aligntrue
 
 # Add pack
 aligntrue add catalog:packs/base/base-global@1.0.0 --from=catalog_web
@@ -243,7 +243,7 @@ See the [privacy controls](/docs/06-policies/privacy) reference for details.
 
 Check the error message. Common issues:
 
-- **CLI not installed** - Run `curl -fsSL https://aligntrue.ai/install.sh | bash`
+- **CLI not installed** - Run `npm install -g aligntrue`
 - **Network error** - Ensure internet connection. Use `--offline` to use cache
 - **Integrity check failed** - Pack may be corrupted. Try again or report to maintainers
 
