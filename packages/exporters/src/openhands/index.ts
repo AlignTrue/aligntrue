@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Open Hands exporter
  * Exports AlignTrue rules to Open Hands .openhands/microagents/repo.md format
@@ -57,7 +59,7 @@ export class OpenHandsExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateRepoMdContent(
       modeHints,

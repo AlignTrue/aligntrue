@@ -254,8 +254,10 @@ async function writeToIRFile(
         ruleData["description"] = rule.description;
       }
 
-      if (rule.vendor) {
-        ruleData["vendor"] = rule.vendor;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((rule as any).vendor) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (ruleData as any)["vendor"] = (rule as any).vendor;
       }
 
       if (rule.check) {

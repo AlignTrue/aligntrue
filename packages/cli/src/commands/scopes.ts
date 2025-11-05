@@ -101,13 +101,13 @@ export async function scopes(args: string[]): Promise<void> {
     recordEvent({ command_name: "scopes", align_hashes_used: [] });
 
     process.exit(0);
-  } catch (_err) {
+  } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to load scopes");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }

@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Amazon Q exporter
  * Exports AlignTrue rules to Amazon Q .amazonq/rules/ directory format
@@ -41,7 +43,7 @@ export class AmazonQExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateRuleContent(
       scope,
