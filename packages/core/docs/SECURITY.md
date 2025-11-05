@@ -278,7 +278,9 @@ If an exporter cannot support a feature safely:
 const fidelityNotes = [];
 
 if (rule.autofix?.command) {
-  fidelityNotes.push("Autofix commands not executed for security - stored as metadata only");
+  fidelityNotes.push(
+    "Autofix commands not executed for security - stored as metadata only",
+  );
 }
 
 return {
@@ -299,7 +301,9 @@ return {
 ```typescript
 // Security: Validate output paths don't escape workspace
 if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
-  warnings.push(`Skipped ${exporter.name}: invalid output path "${outputPath}"`);
+  warnings.push(
+    `Skipped ${exporter.name}: invalid output path "${outputPath}"`,
+  );
   continue;
 }
 ```

@@ -122,7 +122,7 @@ describe("sync command", () => {
     mockRegistry = exportersModule.__mockRegistry;
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, "exit").mockImplementation(((
+    _processExitSpy = vi.spyOn(process, "exit").mockImplementation(((
       code?: number,
     ) => {
       throw new Error(`process.exit(${code})`);

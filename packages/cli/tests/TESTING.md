@@ -119,7 +119,9 @@ it("shows error for invalid input", async () => {
   await myCommand(["--invalid"]);
 
   expect(mockExit).toHaveBeenCalledWith(1);
-  expect(clack.log.error).toHaveBeenCalledWith(expect.stringContaining("Invalid"));
+  expect(clack.log.error).toHaveBeenCalledWith(
+    expect.stringContaining("Invalid"),
+  );
 });
 ```
 

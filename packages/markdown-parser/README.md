@@ -281,7 +281,11 @@ For detailed import workflows, see the [Import Workflow Guide](../../docs/import
 The package supports lossless markdown ↔ IR ↔ markdown conversion:
 
 ```typescript
-import { parseMarkdown, buildIR, generateMarkdown } from "@aligntrue/markdown-parser";
+import {
+  parseMarkdown,
+  buildIR,
+  generateMarkdown,
+} from "@aligntrue/markdown-parser";
 
 // Start with markdown
 const original = readFileSync("rules.md", "utf8");
@@ -310,7 +314,9 @@ All errors include line numbers and clear messages:
 const result = validateMarkdown(markdown);
 
 result.errors.forEach((err) => {
-  const location = err.section ? `Line ${err.line} (${err.section})` : `Line ${err.line}`;
+  const location = err.section
+    ? `Line ${err.line} (${err.section})`
+    : `Line ${err.line}`;
   console.error(`${location}: ${err.message}`);
 });
 ```

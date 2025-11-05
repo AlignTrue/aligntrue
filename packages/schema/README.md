@@ -181,7 +181,14 @@ if (!result.integrity.valid) {
 Export types for Align pack structure:
 
 ```typescript
-import type { AlignPack, AlignScope, AlignRule, AlignCheck, AlignAutofix, AlignIntegrity } from "@aligntrue/schema";
+import type {
+  AlignPack,
+  AlignScope,
+  AlignRule,
+  AlignCheck,
+  AlignAutofix,
+  AlignIntegrity,
+} from "@aligntrue/schema";
 
 const pack: AlignPack = {
   id: "packs/test/example",

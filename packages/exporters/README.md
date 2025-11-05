@@ -121,7 +121,10 @@ Generates `.vscode/mcp.json` configuration for Model Context Protocol support.
       "diagnostic_code": "format-001"
     }
   ],
-  "fidelity_notes": ["Machine-checkable rules (check) not represented in MCP config format", "Vendor-specific metadata for other agents not extracted to MCP config: cursor, copilot"]
+  "fidelity_notes": [
+    "Machine-checkable rules (check) not represented in MCP config format",
+    "Vendor-specific metadata for other agents not extracted to MCP config: cursor, copilot"
+  ]
 }
 ```
 
@@ -144,7 +147,10 @@ Each adapter directory contains a `manifest.json`:
   "outputs": [".cursor/rules/*.mdc"],
   "handler": "./index.ts",
   "license": "MIT",
-  "fidelityNotes": ["Session metadata stored in vendor.cursor namespace", "AI hints preserved in vendor.cursor.ai_hint"]
+  "fidelityNotes": [
+    "Session metadata stored in vendor.cursor namespace",
+    "AI hints preserved in vendor.cursor.ai_hint"
+  ]
 }
 ```
 
@@ -210,7 +216,12 @@ Create `manifest.json` in your adapter directory:
 Create a TypeScript file that exports an `ExporterPlugin`:
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult } from "@aligntrue/plugin-contracts";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+} from "@aligntrue/plugin-contracts";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { canonicalizeJson, computeHash } from "@aligntrue/schema";
 
@@ -218,7 +229,10 @@ export class MyAdapterExporter implements ExporterPlugin {
   name = "my-adapter";
   version = "1.0.0";
 
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
     // request.scope - Scope this export is for
     // request.rules - Pre-merged rules for this scope
     // request.outputPath - Suggested output path
@@ -299,7 +313,10 @@ The registry includes comprehensive test coverage:
 interface ExporterPlugin {
   name: string;
   version: string;
-  export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult>;
+  export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult>;
 }
 ```
 
@@ -363,7 +380,11 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 
 ```json
 {
-  "fidelityNotes": ["Severity mapped to markdown emphasis (* = info, ** = warn, *** = error)", "applies_to patterns stored as comments (not enforced)", "Vendor metadata preserved in frontmatter"]
+  "fidelityNotes": [
+    "Severity mapped to markdown emphasis (* = info, ** = warn, *** = error)",
+    "applies_to patterns stored as comments (not enforced)",
+    "Vendor metadata preserved in frontmatter"
+  ]
 }
 ```
 
@@ -524,11 +545,15 @@ If an exporter cannot support a feature safely, document the limitation in `fide
 const fidelityNotes: string[] = [];
 
 if (rule.autofix?.command) {
-  fidelityNotes.push("Autofix commands not executed for security - stored as metadata only");
+  fidelityNotes.push(
+    "Autofix commands not executed for security - stored as metadata only",
+  );
 }
 
 if (rule.check?.type === "command_runner") {
-  fidelityNotes.push("Command runner checks not executed - validation deferred to CLI");
+  fidelityNotes.push(
+    "Command runner checks not executed - validation deferred to CLI",
+  );
 }
 
 return {
