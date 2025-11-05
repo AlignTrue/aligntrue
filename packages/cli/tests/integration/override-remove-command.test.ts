@@ -7,7 +7,10 @@ import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { overrideRemove } from "../../src/commands/override-remove.js";
+import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
+
+vi.mock("@clack/prompts");
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-remove");
 
@@ -24,6 +27,11 @@ beforeEach(() => {
   vi.spyOn(process, "exit").mockImplementation((code?: number) => {
     throw new Error(`process.exit(${code})`);
   });
+
+  // Mock clack prompts to avoid terminal interaction
+  vi.mocked(clack.confirm).mockResolvedValue(true);
+  vi.mocked(clack.cancel).mockImplementation(() => {});
+  vi.mocked(clack.isCancel).mockReturnValue(false);
 });
 
 afterEach(() => {
@@ -85,17 +93,18 @@ describe("Override Remove Command Integration", () => {
         "utf-8",
       );
 
-      let threwExpectedError = false;
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
       try {
         await overrideRemove(["0"]);
       } catch (e) {
-        // Expected to throw from process.exit mock
-        if (e instanceof Error && e.message.includes("process.exit")) {
-          threwExpectedError = true;
-        }
+        // Not expected - should handle gracefully
       }
 
-      expect(threwExpectedError).toBe(true);
+      // Verify command handles no overrides gracefully
+      expect(consoleLogSpy).toHaveBeenCalledWith("No overlays configured");
     });
   });
 });
