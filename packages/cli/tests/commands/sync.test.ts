@@ -109,7 +109,6 @@ describe("sync command", () => {
   let mockSyncEngine: unknown;
   let mockRegistry: unknown;
   let consoleLogSpy: unknown;
-  let _processExitSpy: unknown;
 
   beforeEach(async () => {
     mockExistsSync = vi.mocked(existsSync);
