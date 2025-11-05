@@ -18,7 +18,7 @@ This guide shows how teams use AlignTrue to maintain consistent AI agent behavio
 aligntrue team enable
 
 # 2. Approve sources
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
 # 3. Generate lockfile
 aligntrue sync
@@ -73,16 +73,16 @@ aligntrue team enable
 
 ```bash
 # Approve sources
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
-aligntrue team approve typescript-standards@org/standards@v2.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+aligntrue team approve git:https://github.com/org/standards/typescript-standards.yaml
 
 # List approved
 aligntrue team list-allowed
 
 # Output:
 # Approved sources (2):
-#   base-global@aligntrue/catalog@v1.0.0
-#   typescript-standards@org/standards@v2.0.0
+#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+#   git:https://github.com/org/standards/typescript-standards.yaml
 ```
 
 **Allow list format:**
@@ -90,11 +90,11 @@ aligntrue team list-allowed
 ```yaml
 # .aligntrue/allow.yaml
 allowed_sources:
-  - id: base-global
-    profile: aligntrue/catalog
-    version: v1.0.0
+  - type: git
+    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
-  - id: typescript-standards
+  - type: git
+    value: https://github.com/org/standards/typescript-standards.yaml
     profile: org/standards
     version: v2.0.0
 ```
@@ -112,11 +112,11 @@ aligntrue sync
   "spec_version": "1",
   "generated_at": "2025-10-31T12:00:00Z",
   "dependencies": {
-    "base-global@aligntrue/catalog": {
+    "global-pack": {
       "version": "v1.0.0",
       "source": {
-        "type": "catalog",
-        "id": "base-global"
+        "type": "git",
+        "url": "https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml"
       },
       "base_hash": "sha256:abc123...",
       "overlay_hash": "sha256:def456...",
@@ -393,9 +393,9 @@ aligntrue drift
 
 # Output:
 # Upstream drift detected:
-#   base-global@aligntrue/catalog
-#   - Current: v1.0.0 (sha256:abc123...)
-#   - Latest: v1.1.0 (sha256:def456...)
+#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+#   - Current: sha256:abc123...
+#   - Latest: sha256:def456...
 #   - Changes: 3 new rules, 2 modified rules
 
 # 2. Review changes
@@ -769,11 +769,11 @@ Only approve sources you trust:
 ```yaml
 # Good: Minimal allow list
 allowed_sources:
-  - id: base-global
-    profile: aligntrue/catalog
-    version: v1.0.0
+  - type: git
+    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
-  - id: team-standards
+  - type: git
+    value: https://github.com/org/team-standards.yaml
     profile: org/team-standards
     version: v2.0.0
 

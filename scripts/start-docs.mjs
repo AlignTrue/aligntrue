@@ -55,22 +55,68 @@ async function checkServerResponding() {
   }
 }
 
-function getProcessOnPort(port) {
+function getProcessesOnPort(port) {
   try {
-    const pid = execSync(`lsof -ti:${port}`, { encoding: "utf8" }).trim();
-    return pid || null;
+    const output = execSync(`lsof -ti:${port}`, { encoding: "utf8" }).trim();
+    if (!output) return [];
+    return output.split("\n").filter((pid) => pid.length > 0);
   } catch {
-    return null;
+    return [];
   }
 }
 
-function killProcess(pid) {
+function killProcess(pid, signal = "SIGTERM") {
   try {
-    execSync(`kill -9 ${pid}`, { stdio: "ignore" });
+    const killCmd =
+      signal === "SIGKILL" ? `kill -9 ${pid}` : `kill ${pid}`;
+    execSync(killCmd, { stdio: "ignore" });
     return true;
   } catch {
     return false;
   }
+}
+
+async function killProcessesOnPort(port) {
+  const pids = getProcessesOnPort(port);
+  if (pids.length === 0) return { killed: [], failed: [] };
+
+  warn(
+    `Found ${pids.length} process${pids.length > 1 ? "es" : ""} on port ${port}: ${pids.join(", ")}`,
+  );
+
+  const killed = [];
+  const failed = [];
+
+  for (const pid of pids) {
+    // Try graceful shutdown first
+    const gracefulKilled = killProcess(pid, "SIGTERM");
+    if (gracefulKilled) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Check if still running
+      const stillRunning = getProcessesOnPort(port).includes(pid);
+      if (!stillRunning) {
+        killed.push(pid);
+        continue;
+      }
+    }
+
+    // Force kill if graceful failed or not attempted
+    const forceKilled = killProcess(pid, "SIGKILL");
+    if (forceKilled) {
+      // Wait to confirm kill
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      const stillRunning = getProcessesOnPort(port).includes(pid);
+      if (!stillRunning) {
+        killed.push(pid);
+      } else {
+        failed.push(pid);
+      }
+    } else {
+      failed.push(pid);
+    }
+  }
+
+  return { killed, failed };
 }
 
 async function cleanNextCache() {
@@ -142,20 +188,20 @@ async function main() {
   }
 
   // Step 2: Kill zombie processes on port
-  const existingPid = getProcessOnPort(PORT);
-  if (existingPid) {
-    warn(`Found process ${existingPid} on port ${PORT}`);
-    if (killProcess(existingPid)) {
-      success(`Killed zombie process ${existingPid}`);
-      // Wait a moment for port to be released
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } else {
-      error(`Failed to kill process ${existingPid}`);
-      log(
-        `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${existingPid}\n`,
-      );
-      process.exit(2);
-    }
+  const { killed, failed } = await killProcessesOnPort(PORT);
+  if (killed.length > 0) {
+    success(
+      `Killed ${killed.length} zombie process${killed.length > 1 ? "es" : ""}: ${killed.join(", ")}`,
+    );
+    // Wait a moment for port to be released
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  if (failed.length > 0) {
+    error(`Failed to kill process${failed.length > 1 ? "es" : ""}: ${failed.join(", ")}`);
+    log(
+      `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${failed.join(" ")}\n`,
+    );
+    process.exit(2);
   }
 
   // Step 3: Check dependencies
@@ -190,9 +236,11 @@ async function main() {
     error(`Server failed to respond after ${MAX_WAIT_MS / 1000}s`);
 
     // Provide diagnostics
-    const pid = getProcessOnPort(PORT);
-    if (pid) {
-      warn(`Process ${pid} is on port ${PORT} but not responding`);
+    const pids = getProcessesOnPort(PORT);
+    if (pids.length > 0) {
+      warn(
+        `Process${pids.length > 1 ? "es" : ""} ${pids.join(", ")} on port ${PORT} but not responding`,
+      );
     }
 
     log(

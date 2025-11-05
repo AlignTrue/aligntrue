@@ -1,11 +1,11 @@
 # Namespace Registry (Reference)
 #
 # Documents namespace conventions for example packs.
-# This is for reference only - no catalog registry exists.
+# This is for reference only - no central registry exists.
 #
 # When creating your own packs:
 # 1. Use a unique namespace (e.g., packs/yourorg/*)
-# 2. Share via GitHub URLs or local files
+# 2. Share via git URLs or local files
 # 3. No registration required
 
 version: "1.0.0"

@@ -72,7 +72,7 @@ export interface AlignTrueConfig {
     show_diff_on_pull?: boolean;
   };
   sources?: Array<{
-    type: "local" | "catalog" | "git" | "url";
+    type: "local" | "git" | "url";
     path?: string;
     url?: string;
     id?: string;

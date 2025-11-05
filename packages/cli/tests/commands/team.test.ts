@@ -312,7 +312,7 @@ describe("team command", () => {
       vi.mocked(parseAllowList).mockReturnValue({
         sources: [
           { type: "hash", value: "sha256:abc123...", comment: "Base rules" },
-          { type: "id", value: "base-global@aligntrue/catalog@v1.0.0" },
+          { type: "git", value: "https://github.com/AlignTrue/aligntrue" },
         ],
       });
 
@@ -472,23 +472,19 @@ describe("team command", () => {
         sources: [
           { type: "local", path: ".aligntrue/rules.md" },
           { type: "git", url: "https://github.com/example/rules.git" },
-          { type: "catalog", id: "base-global", version: "v1.0.0" },
         ],
       });
 
       await expect(team(["status"])).rejects.toThrow("process.exit(0)");
 
       expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining("Sources: 3 configured"),
+        expect.stringContaining("Sources: 2 configured"),
       );
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("local:.aligntrue/rules.md"),
       );
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("git:https://github.com/example/rules.git"),
-      );
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining("catalog:base-global@v1.0.0"),
       );
     });
 

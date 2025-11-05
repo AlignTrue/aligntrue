@@ -181,7 +181,7 @@ sources:
 ```
 
 - Fetches from specified repository
-- **First-time consent:** Same consent flow as catalog
+- **First-time consent:** Explicit consent required for git operations
 - Clear disclosure of external repository URL
 
 See [Git Sources Guide](/docs/03-reference/git-sources) for full documentation on configuration, caching, and troubleshooting.
@@ -199,7 +199,7 @@ When you add a network source, AlignTrue prompts for consent before the first ne
 
 **How it works:**
 
-1. **Detect** network operations needed (catalog or git sources)
+1. **Detect** network operations needed (git sources)
 2. **Prompt** for permission with clear description
 3. **Store** consent in `.aligntrue/privacy-consent.json` (git-ignored)
 4. **Remember** - no prompts on subsequent syncs

@@ -277,8 +277,8 @@ After you submit your PR:
 1. **Automated checks run**: CI validates schema, checks hash, runs testkit
 2. **Maintainer review**: A maintainer reviews your pack for quality and fit
 3. **Feedback or approval**: You may receive feedback for improvements, or approval
-4. **Merge**: Once approved, your pack is merged and appears in the catalog
-5. **Verification badge**: Packs in `AlignTrue/aligns` automatically get the verified badge
+4. **Merge**: Once approved, your pack is merged and appears in the examples directory
+5. **Verification**: Example packs in `AlignTrue/aligntrue` are automatically verified
 
 Typical review time is 2-5 days for new packs, faster for updates.
 
