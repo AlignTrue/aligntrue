@@ -113,7 +113,8 @@ export class CursorMcpExporter extends ExporterBase {
       };
 
       if (rule.vendor && rule.vendor["cursor"]) {
-        const cursorVendor = rule.vendor["cursor"] as Record<string, unknown>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cursorVendor = rule.vendor["cursor"] as Record<string, any>;
         Object.entries(cursorVendor).forEach(([key, value]) => {
           if (key !== "_meta") {
             mcpRule[key] = value;

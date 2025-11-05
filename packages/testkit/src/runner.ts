@@ -160,7 +160,8 @@ export function runGoldenPacks(
       }
 
       // Verify hash matches what's in the file
-      const parsed = parseYamlToJson(content) as unknown;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parsed = parseYamlToJson(content) as any;
       if (
         parsed.integrity?.value &&
         result.hash &&

@@ -305,7 +305,8 @@ export interface AlignRule {
   tags?: string[];
   check?: AlignCheck;
   autofix?: AlignAutofix;
-  vendor?: Record<string, unknown>; // Agent-specific metadata
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vendor?: Record<string, any>; // Agent-specific metadata
 }
 
 export interface AlignCheck {

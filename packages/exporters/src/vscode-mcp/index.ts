@@ -185,12 +185,14 @@ export class VsCodeMcpExporter extends ExporterBase {
    * Extract and flatten vendor.vscode fields
    * Returns object with vendor.vscode fields at top level
    */
-  private extractVendorVscode(rule: AlignRule): Record<string, unknown> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private extractVendorVscode(rule: AlignRule): Record<string, any> {
     if (!rule.vendor || !rule.vendor["vscode"]) {
       return {};
     }
 
-    const vscodeFields: Record<string, unknown> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vscodeFields: Record<string, any> = {};
     const vscodeVendor = rule.vendor["vscode"];
 
     // Flatten all vendor.vscode fields to top level

@@ -159,7 +159,5 @@ a:focus-visible {
    Theme Transition Prevention on Load
    ========================================================================= */
 
-/* Prevent flash of wrong theme on load */
-html:not(.theme-loaded) * {
-  transition: none !important;
-}
+/* Note: Removed theme-loaded CSS blocker as it was preventing theme toggle from working.
+   next-themes handles FOUC prevention automatically via suppressHydrationWarning. */

@@ -115,10 +115,8 @@ export class WindsurfMcpExporter extends ExporterBase {
       };
 
       if (rule.vendor && rule.vendor["windsurf"]) {
-        const windsurfVendor = rule.vendor["windsurf"] as Record<
-          string,
-          unknown
-        >;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const windsurfVendor = rule.vendor["windsurf"] as Record<string, any>;
         Object.entries(windsurfVendor).forEach(([key, value]) => {
           if (key !== "_meta") {
             mcpRule[key] = value;
