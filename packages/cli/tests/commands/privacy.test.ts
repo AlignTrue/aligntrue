@@ -21,7 +21,7 @@ vi.mock("@clack/prompts", () => ({
 
 describe("privacy command", () => {
   const testDir = join(process.cwd(), "test-privacy-cli");
-  const consentFile = join(testDir, ".aligntrue", "privacy-consent.json");
+  const _consentFile = join(testDir, ".aligntrue", "privacy-consent.json");
 
   beforeEach(() => {
     // Create test directory

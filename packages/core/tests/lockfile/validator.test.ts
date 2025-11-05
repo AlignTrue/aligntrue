@@ -13,7 +13,7 @@ import type { Lockfile } from "../../src/lockfile/types.js";
 import * as fs from "fs";
 
 // Mock filesystem - preserve real readFileSync for schema files
-const realFs = await import("fs");
+const _realFs = await import("fs");
 vi.mock("fs", async () => {
   const actual = await vi.importActual<typeof import("fs")>("fs");
   return {

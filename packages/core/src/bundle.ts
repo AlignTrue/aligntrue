@@ -7,6 +7,6 @@ export interface BundleOptions {
   outputPath: string;
 }
 
-export async function createBundle(options: BundleOptions): Promise<void> {
+export async function createBundle(_options: BundleOptions): Promise<void> {
   throw new Error("Not implemented - team mode only");
 }

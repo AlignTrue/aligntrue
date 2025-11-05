@@ -109,6 +109,7 @@ describe("sync command", () => {
   let mockSyncEngine: unknown;
   let mockRegistry: unknown;
   let consoleLogSpy: unknown;
+  let _processExitSpy: unknown;
 
   beforeEach(async () => {
     mockExistsSync = vi.mocked(existsSync);
@@ -919,7 +920,7 @@ describe("sync command", () => {
 
       const allowModule = await import("@aligntrue/core/team/allow.js");
       mockParseAllowList = allowModule.parseAllowList as any;
-      mockIsSourceAllowed = allowModule.isSourceAllowed as any;
+      _mockIsSourceAllowed = allowModule.isSourceAllowed as any;
     });
 
     it("skips validation in solo mode", async () => {

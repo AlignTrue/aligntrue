@@ -70,13 +70,13 @@ describe("Override Remove - No Overlays", () => {
 
 describe("Override Remove - Direct Selector", () => {
   let mockExit: ReturnType<typeof vi.spyOn>;
-  let mockLog: ReturnType<typeof vi.spyOn>;
+  let _mockLog: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
-    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+    _mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
     vi.mocked(clack.log.success).mockImplementation(() => {});
@@ -191,13 +191,13 @@ describe("Override Remove - Direct Selector", () => {
 
 describe("Override Remove - Interactive Mode", () => {
   let mockExit: ReturnType<typeof vi.spyOn>;
-  let mockLog: ReturnType<typeof vi.spyOn>;
+  let _mockLog: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
-    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+    _mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
     vi.mocked(clack.log.success).mockImplementation(() => {});
@@ -293,13 +293,13 @@ describe("Override Remove - Interactive Mode", () => {
 });
 
 describe("Override Remove - Display Information", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
+  let _mockExit: ReturnType<typeof vi.spyOn>;
   let mockLog: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    _mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
     mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
