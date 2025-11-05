@@ -35,7 +35,7 @@ describe("scopes command", () => {
   describe("help", () => {
     it("shows help with --help flag", async () => {
       const args = mockCommandArgs({ help: true });
-      await expect(scopes(args)).rejects.toThrow("process.exit(0)");
+      await scopes(args);
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Usage: aligntrue scopes"),
       );
@@ -66,7 +66,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Scopes configured"),
@@ -96,7 +96,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Include: *.ts, *.tsx"),
@@ -120,7 +120,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Exclude: **/*.test.ts, **/*.spec.ts"),
@@ -144,7 +144,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Rulesets: base-global, base-typescript"),
@@ -163,7 +163,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith("Total: 2 scopes");
     });
@@ -180,7 +180,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith("Total: 1 scope");
     });
@@ -196,7 +196,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit(0)");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("No scopes configured"),
@@ -215,7 +215,7 @@ describe("scopes command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(scopes([])).rejects.toThrow("process.exit(0)");
+      await scopes([]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("No scopes configured"),

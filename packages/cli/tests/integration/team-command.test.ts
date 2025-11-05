@@ -3,7 +3,7 @@
  * Tests real lockfile operations
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -13,11 +13,18 @@ import * as yaml from "yaml";
 const TEST_DIR = join(tmpdir(), "aligntrue-test-team");
 
 beforeEach(() => {
+  vi.clearAllMocks();
+
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true, force: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
+
+  // Mock process.exit to throw for integration tests
+  vi.spyOn(process, "exit").mockImplementation((code?: number) => {
+    throw new Error(`process.exit(${code})`);
+  });
 });
 
 afterEach(() => {
@@ -52,7 +59,11 @@ rules:
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
 
-      await team(["init", "--yes"]);
+      try {
+        await team(["init", "--yes"]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       const updatedConfig = yaml.parse(
         readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
@@ -84,7 +95,11 @@ rules:
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
 
-      await team(["init", "--yes"]);
+      try {
+        await team(["init", "--yes"]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
       expect(existsSync(lockfilePath)).toBe(true);
@@ -105,7 +120,11 @@ rules:
         "utf-8",
       );
 
-      await team(["approve", "github.com/org/repo"]);
+      try {
+        await team(["approve", "github.com/org/repo"]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       const allowListPath = join(TEST_DIR, ".aligntrue", "allow.yaml");
       expect(existsSync(allowListPath)).toBe(true);

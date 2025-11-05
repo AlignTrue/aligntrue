@@ -126,7 +126,6 @@ export async function sync(args: string[]): Promise<void> {
         "  Pullback direction: agents → IR (with --accept-agent flag)",
       ],
     });
-    process.exit(0);
     return;
   }
 
@@ -357,7 +356,7 @@ export async function sync(args: string[]): Promise<void> {
 
               if (resolution === "abort" || clack.isCancel(resolution)) {
                 clack.outro("Sync aborted. Review conflicts manually.");
-                process.exit(0);
+                return;
               }
 
               if (resolution === "keep-ir") {

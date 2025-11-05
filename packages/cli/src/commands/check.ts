@@ -82,7 +82,7 @@ export async function check(args: string[]): Promise<void> {
         "  2  System error (missing files, invalid config)",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   // Extract flags
@@ -420,8 +420,6 @@ export async function check(args: string[]): Promise<void> {
 
       console.log("");
     }
-
-    process.exit(0);
   } catch (err) {
     // Unexpected system error
     if (jsonOutput) {

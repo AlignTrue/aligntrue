@@ -39,7 +39,7 @@ export async function scopes(args: string[]): Promise<void> {
         "      Exclude: **/*.spec.ts",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const configPath = ".aligntrue/config.yaml";
@@ -69,7 +69,7 @@ export async function scopes(args: string[]): Promise<void> {
       console.log('      - "**/*.test.ts"');
       console.log("");
       console.log("See: docs/guides/scopes.md (when available)");
-      process.exit(0);
+      return;
     }
 
     // Display scopes
@@ -99,8 +99,6 @@ export async function scopes(args: string[]): Promise<void> {
 
     // Record telemetry event
     recordEvent({ command_name: "scopes", align_hashes_used: [] });
-
-    process.exit(0);
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {

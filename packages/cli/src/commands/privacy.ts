@@ -53,7 +53,6 @@ export async function privacyCommand(args: string[]): Promise<void> {
         "  revoke --all       Revoke all consents",
       ],
     });
-    process.exit(0);
     return;
   }
 

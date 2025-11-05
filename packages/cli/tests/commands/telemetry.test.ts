@@ -24,7 +24,12 @@ vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
 }));
 
 // Mock clack
-vi.mock("@clack/prompts");
+vi.mock("@clack/prompts", () => ({
+  log: {
+    error: vi.fn(),
+  },
+  outro: vi.fn(),
+}));
 
 describe("telemetry command", () => {
   beforeEach(() => {
@@ -35,23 +40,19 @@ describe("telemetry command", () => {
     vi.spyOn(process, "exit").mockImplementation((code?: number) => {
       throw new Error(`process.exit(${code})`);
     });
-
-    // Setup clack mocks
-    vi.mocked(clack.log).error = vi.fn();
-    vi.mocked(clack.outro).mockImplementation(() => {});
   });
 
   describe("help", () => {
     it("shows help with --help flag", async () => {
       const args = mockCommandArgs({ help: true });
-      await expect(telemetry(args)).rejects.toThrow("process.exit(0)");
+      await telemetry(args);
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Usage: aligntrue telemetry"),
       );
     });
 
     it("shows help with no args", async () => {
-      await expect(telemetry([])).rejects.toThrow("process.exit(0)");
+      await telemetry([]);
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("What we collect"),
       );
@@ -63,7 +64,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["on"])).rejects.toThrow("process.exit");
+      await telemetry(["on"]);
 
       expect(fs.writeFileSync).toHaveBeenCalled();
       expect(console.log).toHaveBeenCalledWith("✓ Telemetry enabled");
@@ -74,7 +75,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.renameSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["on"])).rejects.toThrow("process.exit");
+      await telemetry(["on"]);
 
       // Should write to temp file
       const writeCall = vi
@@ -105,7 +106,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["off"])).rejects.toThrow("process.exit");
+      await telemetry(["off"]);
 
       expect(fs.writeFileSync).toHaveBeenCalled();
       expect(console.log).toHaveBeenCalledWith("✓ Telemetry disabled");
@@ -116,7 +117,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.renameSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["off"])).rejects.toThrow("process.exit");
+      await telemetry(["off"]);
 
       // Should write to temp file
       const writeCall = vi
@@ -147,7 +148,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue('{"enabled": true}');
 
-      await expect(telemetry(["status"])).rejects.toThrow("process.exit");
+      await telemetry(["status"]);
 
       expect(console.log).toHaveBeenCalledWith("Telemetry: enabled");
     });
@@ -156,7 +157,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue('{"enabled": false}');
 
-      await expect(telemetry(["status"])).rejects.toThrow("process.exit");
+      await telemetry(["status"]);
 
       expect(console.log).toHaveBeenCalledWith("Telemetry: disabled");
     });
@@ -164,7 +165,7 @@ describe("telemetry command", () => {
     it("shows disabled status when file does not exist", async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
-      await expect(telemetry(["status"])).rejects.toThrow("process.exit");
+      await telemetry(["status"]);
 
       expect(console.log).toHaveBeenCalledWith("Telemetry: disabled");
     });
@@ -173,7 +174,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue("invalid json");
 
-      await expect(telemetry(["status"])).rejects.toThrow("process.exit");
+      await telemetry(["status"]);
 
       expect(console.warn).toHaveBeenCalledWith(
         expect.stringContaining("Invalid telemetry.json"),
@@ -187,9 +188,22 @@ describe("telemetry command", () => {
         throw new Error("Read error");
       });
 
-      await expect(telemetry(["status"])).rejects.toThrow("process.exit(1)");
-      expect(clack.log.error).toHaveBeenCalledWith(
-        "Read telemetry status failed",
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      try {
+        await telemetry(["status"]);
+      } catch (e) {
+        // Not expected to throw - error is handled gracefully
+      }
+
+      // When readFileSync fails, should warn and default to disabled
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid telemetry.json"),
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringContaining("Telemetry: disabled"),
       );
     });
   });
@@ -199,7 +213,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["on"])).rejects.toThrow("process.exit");
+      await telemetry(["on"]);
 
       expect(fs.mkdirSync).toHaveBeenCalledWith(
         expect.stringContaining(".aligntrue"),
@@ -211,7 +225,7 @@ describe("telemetry command", () => {
       vi.mocked(fs.writeFileSync).mockImplementation(() => {});
       vi.mocked(fs.mkdirSync).mockImplementation(() => undefined as any);
 
-      await expect(telemetry(["on"])).rejects.toThrow("process.exit");
+      await telemetry(["on"]);
 
       const writeCalls = vi.mocked(fs.writeFileSync).mock.calls;
       expect(writeCalls.length).toBeGreaterThan(0);

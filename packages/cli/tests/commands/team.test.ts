@@ -63,14 +63,14 @@ describe("team command", () => {
 
   describe("help", () => {
     it("shows help with --help flag", async () => {
-      await expect(team(["--help"])).rejects.toThrow("process.exit(0)");
+      await team(["--help"]);
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Usage: aligntrue team"),
       );
     });
 
     it("shows help with no args", async () => {
-      await expect(team([])).rejects.toThrow("process.exit(0)");
+      await team([]);
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Team mode features:"),
       );
@@ -92,7 +92,7 @@ describe("team command", () => {
       vi.mocked(clack.confirm).mockResolvedValue(true);
       vi.mocked(clack.isCancel).mockReturnValue(false);
 
-      await expect(team(["enable"])).rejects.toThrow("process.exit");
+      await team(["enable"]);
 
       expect(clack.intro).toHaveBeenCalledWith("Team Mode Enable");
       expect(clack.confirm).toHaveBeenCalled();
@@ -112,7 +112,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["enable", "--yes"])).rejects.toThrow("process.exit");
+      await team(["enable", "--yes"]);
 
       // Should NOT call clack.intro or clack.confirm in non-interactive mode
       expect(clack.intro).not.toHaveBeenCalled();
@@ -139,9 +139,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["enable", "--non-interactive"])).rejects.toThrow(
-        "process.exit",
-      );
+      await team(["enable", "--non-interactive"]);
 
       // Should NOT call clack.confirm in non-interactive mode
       expect(clack.confirm).not.toHaveBeenCalled();
@@ -170,7 +168,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["enable"])).rejects.toThrow("process.exit(0)");
+      await team(["enable"]);
 
       expect(console.log).toHaveBeenCalledWith("✓ Already in team mode");
     });
@@ -189,7 +187,7 @@ describe("team command", () => {
       vi.mocked(clack.confirm).mockResolvedValue(false);
       vi.mocked(clack.isCancel).mockReturnValue(false);
 
-      await expect(team(["enable"])).rejects.toThrow("process.exit(0)");
+      await team(["enable"]);
 
       expect(clack.cancel).toHaveBeenCalledWith("Team mode enable cancelled");
       expect(fs.writeFileSync).not.toHaveBeenCalled();
@@ -209,7 +207,7 @@ describe("team command", () => {
       vi.mocked(clack.confirm).mockResolvedValue(Symbol("cancel") as any);
       vi.mocked(clack.isCancel).mockReturnValue(true);
 
-      await expect(team(["enable"])).rejects.toThrow("process.exit(0)");
+      await team(["enable"]);
 
       expect(clack.cancel).toHaveBeenCalled();
       expect(fs.writeFileSync).not.toHaveBeenCalled();
@@ -229,7 +227,7 @@ describe("team command", () => {
       vi.mocked(clack.confirm).mockResolvedValue(true);
       vi.mocked(clack.isCancel).mockReturnValue(false);
 
-      await expect(team(["enable"])).rejects.toThrow("process.exit");
+      await team(["enable"]);
 
       // Should create directory
       expect(fs.mkdirSync).toHaveBeenCalled();
@@ -316,7 +314,7 @@ describe("team command", () => {
         ],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith("Team Mode Status");
       expect(console.log).toHaveBeenCalledWith(
@@ -342,7 +340,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith("Mode: solo");
       expect(console.log).toHaveBeenCalledWith(
@@ -366,7 +364,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Lockfile: disabled"),
@@ -391,7 +389,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("not generated yet"),
@@ -418,7 +416,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Allow List: not configured"),
@@ -450,7 +448,7 @@ describe("team command", () => {
         throw new Error("Invalid YAML");
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("exists but failed to parse"),
@@ -475,7 +473,7 @@ describe("team command", () => {
         ],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Sources: 2 configured"),
@@ -500,7 +498,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Exporters: 3 configured"),
@@ -538,7 +536,7 @@ describe("team command", () => {
         sources: [{ type: "local", path: ".aligntrue/rules.md" }],
       });
 
-      await expect(team(["status"])).rejects.toThrow("process.exit(0)");
+      await team(["status"]);
 
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Drift Status: Run 'aligntrue drift'"),
@@ -664,7 +662,7 @@ describe("team command", () => {
 
       vi.mocked(parseAllowList).mockReturnValue({ version: 1, sources: [] });
 
-      await expect(team(["list-allowed"])).rejects.toThrow("process.exit(0)");
+      await team(["list-allowed"]);
       expect(console.log).toHaveBeenCalledWith("No approved sources");
     });
 
@@ -757,9 +755,7 @@ describe("team command", () => {
 
       vi.mocked(parseAllowList).mockReturnValue({ version: 1, sources: [] });
 
-      await expect(team(["remove", "sha256:abc"])).rejects.toThrow(
-        "process.exit(0)",
-      );
+      await team(["remove", "sha256:abc"]);
       expect(console.log).toHaveBeenCalledWith("Allow list is already empty");
     });
 
@@ -835,9 +831,7 @@ describe("team command", () => {
       vi.mocked(clack.confirm).mockResolvedValue(undefined as any);
       vi.mocked(clack.isCancel).mockReturnValue(true);
 
-      await expect(team(["remove", "sha256:abc123"])).rejects.toThrow(
-        "process.exit(0)",
-      );
+      await team(["remove", "sha256:abc123"]);
       expect(clack.cancel).toHaveBeenCalledWith("Removal cancelled");
     });
   });
