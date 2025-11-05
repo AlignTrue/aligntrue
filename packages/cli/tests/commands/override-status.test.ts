@@ -339,9 +339,9 @@ describe("Override Status - Mixed Health", () => {
     });
 
     // Mock evaluateSelector to return different results per call
-    let callCount = 0;
+    let _callCount = 0;
     vi.mocked(core.evaluateSelector).mockImplementation((selector: string) => {
-      callCount++;
+      _callCount++;
       if (
         selector === "rule[id=active/rule]" ||
         selector === "rule[id=another/active]"

@@ -24,7 +24,7 @@ import { PlugResolutionError } from "./types.js";
 /**
  * Sentinel for protecting escaped plugs
  */
-const ESCAPE_SENTINEL = "\u0000PLUG_ESCAPE\u0000";
+const _ESCAPE_SENTINEL = "\u0000PLUG_ESCAPE\u0000";
 
 /**
  * Normalize line endings to LF

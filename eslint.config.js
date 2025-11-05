@@ -53,6 +53,7 @@ export default [
       "**/.next/**",
       "**/coverage/**",
       "archive/**",
+      ".archive/**",
     ],
   },
   {

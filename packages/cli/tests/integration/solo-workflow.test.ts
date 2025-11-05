@@ -190,7 +190,7 @@ Rule guidance here
 
     it("team mode has lockfile and mode explicit", () => {
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const _lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
 
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 
@@ -212,7 +212,7 @@ modules:
   describe("Zero YAML Interaction", () => {
     it("solo dev workflow never requires editing YAML IR", () => {
       const cursorPath = join(TEST_DIR, ".cursor", "rules", "my-rules.mdc");
-      const irPath = join(TEST_DIR, ".aligntrue", "rules.md");
+      const _irPath = join(TEST_DIR, ".aligntrue", "rules.md");
 
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
 
