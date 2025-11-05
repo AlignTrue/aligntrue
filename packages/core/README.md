@@ -127,7 +127,13 @@ const resolved = resolveScopes("/workspace", config);
 Lockfiles provide hash-based drift detection for team mode:
 
 ```typescript
-import { generateLockfile, validateLockfile, enforceLockfile, readLockfile, writeLockfile } from "@aligntrue/core";
+import {
+  generateLockfile,
+  validateLockfile,
+  enforceLockfile,
+  readLockfile,
+  writeLockfile,
+} from "@aligntrue/core";
 
 // Generate lockfile from IR
 const lockfile = generateLockfile(alignPack, "team");
@@ -347,7 +353,15 @@ export { loadConfig, validateConfig, applyDefaults };
 export type { AlignTrueConfig, AlignTrueMode };
 
 // Scope resolution
-export { resolveScopes, applyScopeMerge, groupRulesByLevel, normalizePath, validateScopePath, validateGlobPatterns, validateMergeOrder };
+export {
+  resolveScopes,
+  applyScopeMerge,
+  groupRulesByLevel,
+  normalizePath,
+  validateScopePath,
+  validateGlobPatterns,
+  validateMergeOrder,
+};
 export type { Scope, ResolvedScope, MergeOrder, ScopeConfig, ScopedRules };
 
 // Conflict detection
@@ -367,7 +381,12 @@ export { readLockfile, writeLockfile, verifyLockfile };
 export type { Lockfile, LockfileMode };
 
 // Exporter types (imported from @aligntrue/plugin-contracts)
-export type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult };
+export type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+};
 ```
 
 ## Integration Points

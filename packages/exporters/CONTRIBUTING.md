@@ -77,7 +77,12 @@ Create `manifest.json` with required fields:
 Create `index.ts`:
 
 ```typescript
-import type { ExporterPlugin, ScopedExportRequest, ExportOptions, ExportResult } from "../types.js";
+import type {
+  ExporterPlugin,
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+} from "../types.js";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { createHash } from "node:crypto";
@@ -86,7 +91,10 @@ export class MyAdapterExporter implements ExporterPlugin {
   name = "my-adapter";
   version = "1.0.0";
 
-  async export(request: ScopedExportRequest, options: ExportOptions): Promise<ExportResult> {
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
     const { scope, rules, outputPath } = request;
     const { outputDir, dryRun, backup } = options;
 

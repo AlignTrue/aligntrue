@@ -62,7 +62,7 @@ async function main() {
           // Count warnings/errors for this file
           const fileRegex = new RegExp(
             file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
-              "[\\s\\S]*?(\\d+):(\\d+)",
+            "[\\s\\S]*?(\\d+):(\\d+)",
             "g",
           );
           const matches = [...output.matchAll(fileRegex)];
@@ -79,9 +79,12 @@ async function main() {
     }
 
     console.error("🔧 Quick fixes:");
-    console.error("   • Auto-fix most issues: pnpm lint:fix");
-    console.error("   • Fix formatting: pnpm format");
+    console.error("   • Auto-fix most issues: pnpm lint:fix && pnpm format");
     console.error("   • Check specific file: pnpm eslint <file-path>");
+    console.error("");
+    console.error(
+      "⚠️  Note: Pre-commit enforces same limits as CI (460 warnings)",
+    );
     console.error("");
     console.error("💡 Common issues:");
     console.error(

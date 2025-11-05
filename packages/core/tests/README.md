@@ -122,7 +122,10 @@ Configurable mock that tracks calls and returns configured results.
 ```typescript
 import { MockExporter } from "../mocks/mock-exporter";
 
-const exporter = new MockExporter("test-exporter").setFilesToWrite(["output.txt"]).setFidelityNotes(["Feature X not supported"]).setContentHash("abc123");
+const exporter = new MockExporter("test-exporter")
+  .setFilesToWrite(["output.txt"])
+  .setFidelityNotes(["Feature X not supported"])
+  .setContentHash("abc123");
 
 engine.registerExporter(exporter);
 
@@ -181,7 +184,9 @@ it("syncs IR to agents successfully", async () => {
 ```typescript
 it("detects severity conflicts", () => {
   const irRules = [{ id: "test-rule", severity: "warn", applies_to: ["**/*"] }];
-  const agentRules = [{ id: "test-rule", severity: "error", applies_to: ["**/*"] }];
+  const agentRules = [
+    { id: "test-rule", severity: "error", applies_to: ["**/*"] },
+  ];
 
   const result = detector.detectConflicts("cursor", irRules, agentRules);
 

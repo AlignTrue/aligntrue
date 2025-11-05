@@ -54,7 +54,10 @@ await writer.write("/path/to/file.txt", "more content"); // Throws!
 Compute SHA-256 checksums for files and content:
 
 ```typescript
-import { computeFileChecksum, computeContentChecksum } from "@aligntrue/file-utils";
+import {
+  computeFileChecksum,
+  computeContentChecksum,
+} from "@aligntrue/file-utils";
 
 // From file
 const hash1 = computeFileChecksum("/path/to/file.txt");
@@ -125,19 +128,21 @@ For interactive prompts (used by CLI):
 ```typescript
 const writer = new AtomicFileWriter();
 
-writer.setChecksumHandler(async (filePath, lastChecksum, currentChecksum, interactive, force) => {
-  if (force) {
-    return "overwrite"; // --force flag
-  }
+writer.setChecksumHandler(
+  async (filePath, lastChecksum, currentChecksum, interactive, force) => {
+    if (force) {
+      return "overwrite"; // --force flag
+    }
 
-  if (interactive) {
-    // Prompt user: [o]verwrite [k]eep [a]bort
-    const answer = await promptUser();
-    return answer; // 'overwrite' | 'keep' | 'abort'
-  }
+    if (interactive) {
+      // Prompt user: [o]verwrite [k]eep [a]bort
+      const answer = await promptUser();
+      return answer; // 'overwrite' | 'keep' | 'abort'
+    }
 
-  return "abort"; // CI mode: fail on mismatch
-});
+    return "abort"; // CI mode: fail on mismatch
+  },
+);
 
 await writer.write("file.txt", "new content", { interactive: true });
 ```
@@ -209,7 +214,15 @@ class AtomicFileWriter {
   ): Promise<void>;
 
   // Set custom handler for checksum mismatches
-  setChecksumHandler(handler: (filePath: string, lastChecksum: string, currentChecksum: string, interactive: boolean, force: boolean) => Promise<"overwrite" | "keep" | "abort">): void;
+  setChecksumHandler(
+    handler: (
+      filePath: string,
+      lastChecksum: string,
+      currentChecksum: string,
+      interactive: boolean,
+      force: boolean,
+    ) => Promise<"overwrite" | "keep" | "abort">,
+  ): void;
 
   // Track existing file's checksum for overwrite protection
   trackFile(filePath: string): void;
