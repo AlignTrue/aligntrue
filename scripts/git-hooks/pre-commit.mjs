@@ -23,7 +23,9 @@ async function main() {
       clack.log.message(
         "Staging many files at once will lint ALL of them, which may surface pre-existing warnings.",
       );
-      clack.log.message("Consider splitting into smaller commits with 'git add -p' or '--patch'.");
+      clack.log.message(
+        "Consider splitting into smaller commits with 'git add -p' or '--patch'.",
+      );
       clack.log.message("");
     }
   } catch (error) {
@@ -60,7 +62,7 @@ async function main() {
           // Count warnings/errors for this file
           const fileRegex = new RegExp(
             file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
-            "[\\s\\S]*?(\\d+):(\\d+)",
+              "[\\s\\S]*?(\\d+):(\\d+)",
             "g",
           );
           const matches = [...output.matchAll(fileRegex)];
