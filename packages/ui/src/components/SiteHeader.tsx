@@ -100,15 +100,7 @@ export function SiteHeader({
           {showNavigation && (
             <>
               {/* Desktop Navigation */}
-              <nav
-                className="desktop-nav"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1.5rem",
-                }}
-                aria-label="Main navigation"
-              >
+              <nav className="desktop-nav" aria-label="Main navigation">
                 <a
                   href="/docs"
                   style={{
@@ -135,14 +127,7 @@ export function SiteHeader({
               </nav>
 
               {/* Mobile Menu Button */}
-              <div
-                style={{
-                  display: "none",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                }}
-                className="mobile-nav-controls"
-              >
+              <div className="mobile-nav-controls">
                 {showThemeToggle && <ThemeToggle />}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -241,6 +226,8 @@ export function SiteHeader({
         /* Desktop: Show desktop nav, hide mobile controls */
         .desktop-nav {
           display: flex !important;
+          align-items: center;
+          gap: 1.5rem;
         }
         
         @media (max-width: 768px) {
@@ -250,12 +237,14 @@ export function SiteHeader({
         }
         
         /* Mobile: Show mobile controls, hide desktop nav */
-        .mobile-controls {
+        .mobile-nav-controls {
           display: none;
+          align-items: center;
+          gap: 0.75rem;
         }
         
         @media (max-width: 768px) {
-          .mobile-controls {
+          .mobile-nav-controls {
             display: flex !important;
           }
         }
@@ -276,13 +265,20 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    console.log("[ThemeToggle] Mounted, current theme:", theme);
+  }, [theme]);
 
   if (!mounted) return null;
 
+  const handleClick = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    console.log("[ThemeToggle] Switching theme from", theme, "to", newTheme);
+    setTheme(newTheme);
+  };
+
   return (
     <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={handleClick}
       style={{
         padding: "0.375rem",
         border: "1px solid var(--border-color)",

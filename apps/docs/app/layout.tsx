@@ -7,7 +7,6 @@ import type { Metadata } from "next";
 import { Head } from "nextra/components";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
-import { ThemeLoader } from "./theme-loader";
 
 export const metadata: Metadata = {
   title: {
@@ -101,7 +100,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </Head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ThemeLoader />
           {children}
           <Analytics />
         </ThemeProvider>

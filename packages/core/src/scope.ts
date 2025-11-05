@@ -264,7 +264,8 @@ function deepMergeRules(oldRule: AlignRule, newRule: AlignRule): AlignRule {
   if (newRule.vendor || oldRule.vendor) {
     const oldVendor = oldRule.vendor || {};
     const newVendor = newRule.vendor || {};
-    const mergedVendor: Record<string, unknown> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mergedVendor: Record<string, any> = {};
 
     // Collect all vendor keys
     const allKeys = new Set([
