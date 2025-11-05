@@ -27,19 +27,24 @@ async function main() {
       const output = lintError.stdout || lintError.stderr || "";
 
       // Parse file paths from ESLint output
-      const fileMatches = output.match(/\/[^\s]+\.(ts|tsx|js|jsx|md|json|yml|yaml)/g);
+      const fileMatches = output.match(
+        /\/[^\s]+\.(ts|tsx|js|jsx|md|json|yml|yaml)/g,
+      );
       if (fileMatches && fileMatches.length > 0) {
         const uniqueFiles = [...new Set(fileMatches)];
         console.error("📋 Failed files:");
         uniqueFiles.forEach((file) => {
           // Count warnings/errors for this file
           const fileRegex = new RegExp(
-            file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\\s\\S]*?(\\d+):(\\d+)",
+            file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+              "[\\s\\S]*?(\\d+):(\\d+)",
             "g",
           );
           const matches = [...output.matchAll(fileRegex)];
           if (matches.length > 0) {
-            console.error(`   ${file} (${matches.length} issue${matches.length > 1 ? "s" : ""})`);
+            console.error(
+              `   ${file} (${matches.length} issue${matches.length > 1 ? "s" : ""})`,
+            );
           } else {
             console.error(`   ${file}`);
           }
@@ -54,8 +59,12 @@ async function main() {
     console.error("   • Check specific file: pnpm eslint <file-path>");
     console.error("");
     console.error("💡 Common issues:");
-    console.error("   • Unused variables → prefix with underscore (_var) or remove");
-    console.error("   • Image warnings → add eslint-disable comment if intentional");
+    console.error(
+      "   • Unused variables → prefix with underscore (_var) or remove",
+    );
+    console.error(
+      "   • Image warnings → add eslint-disable comment if intentional",
+    );
     console.error("   • Formatting → run pnpm format");
     console.error("");
     clack.outro("Fix the issues above and try committing again.");

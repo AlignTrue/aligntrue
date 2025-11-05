@@ -53,9 +53,9 @@ export async function overrideDiff(args: string[]): Promise<void> {
     if (config) options.config = config;
 
     await runOverrideDiff(selectorFilter, options);
-  } catch (error) {
+  } catch (_error) {
     clack.log.error(
-      `Failed to generate overlay diff: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -96,7 +96,7 @@ async function runOverrideDiff(
     const sourcePath = config.sources?.[0]?.path || paths.rules;
     const absoluteSourcePath = resolve(process.cwd(), sourcePath);
     originalIR = await loadIR(absoluteSourcePath);
-  } catch (error) {
+  } catch {
     clack.log.error("Could not load IR");
     clack.log.info("Run 'aligntrue sync' to generate IR");
     process.exit(1);

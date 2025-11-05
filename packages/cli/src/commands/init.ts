@@ -308,9 +308,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
             importedFromAgent = detectedAgent;
             importedRules = previewResult.rules;
           }
-        } catch (error) {
+        } catch (_error) {
           clack.log.error(
-            `Preview failed: ${error instanceof Error ? error.message : String(error)}`,
+            `Preview failed: ${_error instanceof Error ? _error.message : String(_error)}`,
           );
           clack.log.info("Continuing with fresh start template");
         }
@@ -349,15 +349,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
           `Imported ${importResult.rules.length} rules from ${importedFromAgent}`,
         );
       }
-    } catch (error) {
+    } catch (_error) {
       if (!nonInteractive) {
         clack.log.error(
-          `Import failed: ${error instanceof Error ? error.message : String(error)}`,
+          `Import failed: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
         clack.log.info("Continuing with fresh start template");
       } else {
         console.error(
-          `Import failed: ${error instanceof Error ? error.message : String(error)}`,
+          `Import failed: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
         console.log("Continuing with fresh start template");
       }
@@ -672,7 +672,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       message += `   Edit in ${importedFromAgent === "cursor" ? "Cursor" : importedFromAgent}, AlignTrue syncs automatically`;
     } else {
       // Fresh start workflow message
-      const editPath = nativeTemplatePath || ".aligntrue/rules.md";
+      const _editPath = nativeTemplatePath || ".aligntrue/rules.md";
       message += `📝 Next steps:\n`;
       message += `  1. Review: .aligntrue/rules.md\n`;
       message += `  2. Customize for your project\n`;

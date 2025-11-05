@@ -80,7 +80,7 @@ describe("backup command", () => {
 
   describe("restore subcommand", () => {
     it("should restore most recent backup", async () => {
-      const backup = BackupManager.createBackup({ cwd: testDir });
+      const _backup = BackupManager.createBackup({ cwd: testDir });
 
       // Modify files
       writeFileSync(join(aligntrueDir, "config.yaml"), "mode: team", "utf-8");

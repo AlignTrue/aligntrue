@@ -51,7 +51,7 @@ describe("Golden Repository Workflows", () => {
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }
@@ -96,7 +96,7 @@ describe("Golden Repository Workflows", () => {
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }
@@ -162,7 +162,7 @@ Content Hash:`,
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }
@@ -213,7 +213,7 @@ Content Hash:`,
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }
@@ -265,7 +265,7 @@ Content Hash:`,
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }

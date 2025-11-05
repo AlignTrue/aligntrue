@@ -304,9 +304,9 @@ export async function importCommand(args: string[]): Promise<void> {
       console.log("");
       console.log(formatted);
       console.log("");
-    } catch (error) {
+    } catch (_error) {
       clack.log.warn(
-        `Coverage analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Coverage analysis failed: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
   }
@@ -331,9 +331,9 @@ export async function importCommand(args: string[]): Promise<void> {
           "Tip: Edit .aligntrue/rules.md to customize rules for your project",
         );
       }
-    } catch (error) {
+    } catch (_error) {
       clack.log.error(
-        `Failed to write IR file: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to write IR file: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
       process.exit(1);
     }

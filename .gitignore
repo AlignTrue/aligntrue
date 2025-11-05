@@ -64,7 +64,7 @@ packages/cli/tests/commands/*-wip.test.ts
 docs/pre-1.0-policy.md
 
 # Archived components (Phase 4 deferred features)
-archive/
+.archive/
 
 # Test artifacts (should not be committed)
 packages/**/.aligntrue-test-*/

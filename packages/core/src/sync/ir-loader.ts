@@ -44,10 +44,10 @@ export async function loadIR(
   let content: string;
   try {
     content = readFileSync(sourcePath, "utf8");
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
       `Failed to read source file: ${sourcePath}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}`,
+        `  ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 
@@ -86,10 +86,10 @@ export async function loadIR(
       }
 
       ir = buildResult.document;
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
         `Failed to parse markdown in ${sourcePath}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}\n` +
+          `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
           `  Check for syntax errors in fenced \`\`\`aligntrue blocks.`,
       );
     }
@@ -97,15 +97,15 @@ export async function loadIR(
     // Parse YAML directly
     try {
       ir = yaml.load(content);
-    } catch (err) {
-      const yamlErr = err as { mark?: { line?: number; column?: number } };
+    } catch (_err) {
+      const yamlErr = _err as { mark?: { line?: number; column?: number } };
       const location = yamlErr.mark
         ? ` at line ${yamlErr.mark.line! + 1}, column ${yamlErr.mark.column! + 1}`
         : "";
 
       throw new Error(
         `Failed to parse YAML in ${sourcePath}${location}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}\n` +
+          `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
           `  Check for syntax errors (indentation, quotes, colons).`,
       );
     }

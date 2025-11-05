@@ -468,9 +468,9 @@ export async function validateConfig(
       if (source.type === "local" && source.path) {
         try {
           validateScopePath(source.path);
-        } catch (err) {
+        } catch (_err) {
           throw new Error(
-            `Invalid source at index ${i}: ${err instanceof Error ? err.message : String(err)}`,
+            `Invalid source at index ${i}: ${_err instanceof Error ? _err.message : String(_err)}`,
           );
         }
       }
@@ -508,25 +508,25 @@ export async function validateConfig(
 
       try {
         validateScopePath(scope.path);
-      } catch (err) {
+      } catch (_err) {
         throw new Error(
-          `Invalid scope at index ${i}: ${err instanceof Error ? err.message : String(err)}`,
+          `Invalid scope at index ${i}: ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
 
       try {
         validateGlobPatterns(scope.include);
-      } catch (err) {
+      } catch (_err) {
         throw new Error(
-          `Invalid scope at index ${i}, include patterns: ${err instanceof Error ? err.message : String(err)}`,
+          `Invalid scope at index ${i}, include patterns: ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
 
       try {
         validateGlobPatterns(scope.exclude);
-      } catch (err) {
+      } catch (_err) {
         throw new Error(
-          `Invalid scope at index ${i}, exclude patterns: ${err instanceof Error ? err.message : String(err)}`,
+          `Invalid scope at index ${i}, exclude patterns: ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
 
@@ -559,9 +559,9 @@ export async function validateConfig(
   if (config.merge?.order) {
     try {
       validateMergeOrder(config.merge.order);
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
-        `Invalid merge order: ${err instanceof Error ? err.message : String(err)}`,
+        `Invalid merge order: ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
   }
@@ -616,24 +616,24 @@ export async function loadConfig(
 
   try {
     content = readFileSync(path, "utf8");
-  } catch (err) {
+  } catch (_err) {
     throw new Error(
       `Failed to read config file: ${path}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}`,
+        `  ${_err instanceof Error ? _err.message : String(_err)}`,
     );
   }
 
   try {
     config = yaml.load(content);
-  } catch (err) {
-    const yamlErr = err as { mark?: { line?: number; column?: number } };
+  } catch (_err) {
+    const yamlErr = _err as { mark?: { line?: number; column?: number } };
     const location = yamlErr.mark
       ? ` at line ${yamlErr.mark.line! + 1}, column ${yamlErr.mark.column! + 1}`
       : "";
 
     throw new Error(
       `Invalid YAML in ${path}${location}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}\n` +
+        `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
         `  Check for syntax errors (indentation, quotes, colons).`,
     );
   }

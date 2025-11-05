@@ -27,7 +27,7 @@ describe("setProperty", () => {
   });
 
   it("creates intermediate objects", () => {
-    const obj: any = {};
+    const obj: unknown = {};
     setProperty(obj, "check.inputs.pattern", "value");
     expect(obj.check.inputs.pattern).toBe("value");
   });
@@ -82,7 +82,7 @@ describe("removeProperty", () => {
 
 describe("applySetOperations", () => {
   it("applies multiple set operations in order", () => {
-    const obj: any = {};
+    const obj: unknown = {};
     applySetOperations(obj, {
       "check.type": "regex",
       severity: "error",
@@ -94,7 +94,7 @@ describe("applySetOperations", () => {
   });
 
   it("applies operations in sorted key order", () => {
-    const obj: any = {};
+    const obj: unknown = {};
     const operations = { z: 1, a: 2, m: 3 };
     applySetOperations(obj, operations);
     expect(Object.keys(obj)).toEqual(["a", "m", "z"]);

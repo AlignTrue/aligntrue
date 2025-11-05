@@ -87,8 +87,8 @@ export function parseJsonSafe(str: string): Result<unknown, Error> {
   try {
     const value = JSON.parse(str);
     return { ok: true, value };
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
+  } catch (_err) {
+    const error = _err instanceof Error ? _err : new Error(String(_err));
     return { ok: false, error };
   }
 }

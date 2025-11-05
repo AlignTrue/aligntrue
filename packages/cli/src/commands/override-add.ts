@@ -93,9 +93,9 @@ export async function overrideAdd(args: string[]): Promise<void> {
     if (config) options.config = config;
 
     await runOverrideAdd(options);
-  } catch (error) {
+  } catch (_error) {
     clack.log.error(
-      `Failed to add overlay: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }

@@ -203,8 +203,8 @@ export class GitIntegration {
         filesAffected: files,
         branchCreated: branch,
       };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+    } catch (_error) {
+      const message = _error instanceof Error ? _error.message : String(_error);
       throw new Error(`Failed to create git branch: ${message}`);
     }
   }

@@ -9,7 +9,7 @@ import type { AlignRule } from "@aligntrue/schema";
  * Canonical JSON serialization with sorted keys and no spaces
  * Ensures stable, deterministic output for diffs and hashing
  */
-export function canonicalJson(obj: any): string {
+export function canonicalJson(obj: unknown): string {
   if (obj === null) return "null";
   if (typeof obj !== "object") return JSON.stringify(obj);
   if (Array.isArray(obj)) {

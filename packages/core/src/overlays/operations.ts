@@ -13,7 +13,11 @@
  * @param value - Value to set
  * @returns Modified target (mutates in place)
  */
-export function setProperty(target: any, key: string, value: unknown): void {
+export function setProperty(
+  target: unknown,
+  key: string,
+  value: unknown,
+): void {
   if (!target || typeof target !== "object") {
     throw new Error(`Cannot set property on non-object: ${typeof target}`);
   }
@@ -73,7 +77,7 @@ export function setProperty(target: any, key: string, value: unknown): void {
  * @param key - Property path (supports dot notation)
  * @returns Whether property was removed
  */
-export function removeProperty(target: any, key: string): boolean {
+export function removeProperty(target: unknown, key: string): boolean {
   if (!target || typeof target !== "object") {
     return false;
   }
@@ -124,7 +128,7 @@ export function removeProperty(target: any, key: string): boolean {
  * @param operations - Map of key -> value to set
  */
 export function applySetOperations(
-  target: any,
+  target: unknown,
   operations: Record<string, unknown>,
 ): void {
   // Sort keys for deterministic application order
@@ -142,7 +146,7 @@ export function applySetOperations(
  * @param target - Target object to modify
  * @param keys - Array of keys to remove
  */
-export function applyRemoveOperations(target: any, keys: string[]): void {
+export function applyRemoveOperations(target: unknown, keys: string[]): void {
   // Sort keys for deterministic application order
   const sortedKeys = [...keys].sort();
 

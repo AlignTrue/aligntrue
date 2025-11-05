@@ -105,11 +105,11 @@ export async function executeImport(
     if (interactive && spinner) {
       spinner.stop(`Imported ${rules.length} rules from ${agent}`);
     }
-  } catch (error) {
+  } catch (_error) {
     if (interactive && spinner) {
       spinner.stop("Import failed");
     }
-    throw error;
+    throw _error;
   }
 
   if (rules.length === 0) {
@@ -131,10 +131,10 @@ export async function executeImport(
         );
         console.log("");
       }
-    } catch (error) {
+    } catch (_error) {
       if (interactive) {
         clack.log.warn(
-          `Coverage analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+          `Coverage analysis failed: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
       }
     }
@@ -155,9 +155,9 @@ export async function executeImport(
       if (interactive) {
         clack.log.success(`Wrote ${rules.length} rules to ${irPath}`);
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
-        `Failed to write IR file: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to write IR file: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
   }
@@ -214,7 +214,21 @@ async function writeToIRFile(
     version: "1.0.0",
     spec_version: "1",
     rules: rules.map((rule) => {
-      const ruleData: Record<string, any> = {
+      const ruleData: Partial<
+        Pick<
+          AlignRule,
+          | "id"
+          | "severity"
+          | "applies_to"
+          | "guidance"
+          | "tags"
+          | "mode"
+          | "title"
+          | "description"
+          | "check"
+          | "autofix"
+        >
+      > = {
         id: rule.id,
         severity: rule.severity,
         applies_to: rule.applies_to,

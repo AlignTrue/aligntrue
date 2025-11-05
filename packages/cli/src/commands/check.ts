@@ -192,10 +192,10 @@ export async function check(args: string[]): Promise<void> {
       // Parse as YAML
       try {
         alignData = parseYamlToJson(rulesContent);
-      } catch (err) {
+      } catch (_err) {
         console.error("✗ Invalid YAML in rules file\n");
         console.error(
-          `  ${err instanceof Error ? err.message : String(err)}\n`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
         );
         console.error(`  Check for syntax errors in ${rulesPath}\n`);
         process.exit(1);
@@ -239,7 +239,7 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Step 3: Validate lockfile if team mode + lockfile enabled
-    let lockfileValid = true;
+    let _lockfileValid = true;
     const shouldCheckLockfile =
       config.mode === "team" && config.modules?.lockfile === true;
 
@@ -266,7 +266,7 @@ export async function check(args: string[]): Promise<void> {
         const validation = validateLockfile(lockfile, alignData as AlignPack);
 
         if (!validation.valid) {
-          lockfileValid = false;
+          _lockfileValid = false;
           console.error("✗ Lockfile drift detected\n");
 
           // Show mismatches
@@ -296,17 +296,17 @@ export async function check(args: string[]): Promise<void> {
           console.error(`\n  Run 'aligntrue sync' to update the lockfile.\n`);
           process.exit(1);
         }
-      } catch (err) {
+      } catch (_err) {
         console.error("✗ Lockfile validation failed\n");
         console.error(
-          `  ${err instanceof Error ? err.message : String(err)}\n`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
         );
         process.exit(2);
       }
     }
 
     // Step 4: Validate overlays if present
-    let overlayValid = true;
+    let _overlayValid = true;
     let overlayWarnings: string[] = [];
 
     if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
@@ -332,7 +332,7 @@ export async function check(args: string[]): Promise<void> {
       );
 
       if (!overlayResult.valid) {
-        overlayValid = false;
+        _overlayValid = false;
 
         if (jsonOutput) {
           // JSON output mode
@@ -422,7 +422,7 @@ export async function check(args: string[]): Promise<void> {
     }
 
     process.exit(0);
-  } catch (err) {
+  } catch (_err) {
     // Unexpected system error
     if (jsonOutput) {
       console.log(
@@ -437,7 +437,9 @@ export async function check(args: string[]): Promise<void> {
       );
     } else {
       console.error("✗ System error\n");
-      console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
+      console.error(
+        `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
+      );
     }
     process.exit(2);
   }

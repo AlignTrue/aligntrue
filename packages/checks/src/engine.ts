@@ -57,7 +57,7 @@ export async function runChecks(
   // Add informational finding for unresolved plugs
   if (options.unresolvedPlugsCount && options.unresolvedPlugsCount > 0) {
     const message = `Unresolved plugs: ${options.unresolvedPlugsCount} required plug${options.unresolvedPlugsCount > 1 ? "s" : ""} need${options.unresolvedPlugsCount === 1 ? "s" : ""} values. Run 'aln plugs audit' to see details.`;
-    const plugsFinding: any = {
+    const plugsFinding: unknown = {
       rule: {
         id: "plugs/unresolved-required",
         severity: "info",

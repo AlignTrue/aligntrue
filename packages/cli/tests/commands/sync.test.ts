@@ -43,7 +43,7 @@ vi.mock("@aligntrue/core", () => {
   return {
     loadConfig: vi.fn(),
     loadIR: vi.fn(() => ({ rules: [] })),
-    SyncEngine: vi.fn(function (this: any) {
+    SyncEngine: vi.fn(function (this: unknown) {
       return mockEngine;
     }),
     BackupManager: mockBackupManager,
@@ -93,7 +93,7 @@ vi.mock("@aligntrue/exporters", () => {
     list: vi.fn(() => ["cursor", "agents-md"]),
   };
   return {
-    ExporterRegistry: vi.fn(function (this: any) {
+    ExporterRegistry: vi.fn(function (this: unknown) {
       return mockRegistry;
     }),
     __mockRegistry: mockRegistry, // Export for test access
@@ -104,20 +104,20 @@ import { sync } from "../../src/commands/sync.js";
 import { loadConfig } from "@aligntrue/core";
 
 describe("sync command", () => {
-  let mockExistsSync: any;
-  let mockLoadConfig: any;
-  let mockSyncEngine: any;
-  let mockRegistry: any;
-  let consoleLogSpy: any;
-  let processExitSpy: any;
+  let mockExistsSync: unknown;
+  let mockLoadConfig: unknown;
+  let mockSyncEngine: unknown;
+  let mockRegistry: unknown;
+  let consoleLogSpy: unknown;
+  let _processExitSpy: unknown;
 
   beforeEach(async () => {
     mockExistsSync = vi.mocked(existsSync);
     mockLoadConfig = vi.mocked(loadConfig);
 
     // Get the mocked instances from the module
-    const coreModule = (await import("@aligntrue/core")) as any;
-    const exportersModule = (await import("@aligntrue/exporters")) as any;
+    const coreModule = (await import("@aligntrue/core")) as unknown;
+    const exportersModule = (await import("@aligntrue/exporters")) as unknown;
     mockSyncEngine = coreModule.__mockEngine;
     mockRegistry = exportersModule.__mockRegistry;
 
@@ -658,11 +658,11 @@ describe("sync command", () => {
   });
 
   describe("auto-backup integration", () => {
-    let mockBackupManager: any;
+    let mockBackupManager: unknown;
 
     beforeEach(async () => {
       // Get mocked backup manager from @aligntrue/core mock
-      const coreModule = (await import("@aligntrue/core")) as any;
+      const coreModule = (await import("@aligntrue/core")) as unknown;
       mockBackupManager = coreModule.__mockBackupManager;
 
       // Reset all mock functions
@@ -908,8 +908,8 @@ describe("sync command", () => {
   });
 
   describe("allow list validation", () => {
-    let mockParseAllowList: any;
-    let mockIsSourceAllowed: any;
+    let mockParseAllowList: unknown;
+    let _mockIsSourceAllowed: unknown;
 
     beforeEach(async () => {
       // Mock the team/allow module

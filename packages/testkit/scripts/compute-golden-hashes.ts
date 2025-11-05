@@ -31,9 +31,9 @@ for (const file of files) {
 
     writeFileSync(path, updated, "utf-8");
     console.log(`✓ ${file}: ${hash}`);
-  } catch (error) {
+  } catch (_error) {
     console.error(
-      `✗ ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      `✗ ${file}: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
   }
 }

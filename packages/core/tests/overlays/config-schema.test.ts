@@ -11,7 +11,7 @@ import { tmpdir } from "os";
 describe("overlay config schema validation", () => {
   let testDir: string;
 
-  function setupTestConfig(config: any): string {
+  function setupTestConfig(config: unknown): string {
     testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
     const configPath = join(testDir, ".aligntrue.yaml");

@@ -35,7 +35,7 @@ interface McpRule {
   guidance: string;
   scope?: string;
   applies_to?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export class CursorMcpExporter extends ExporterBase {
@@ -113,7 +113,7 @@ export class CursorMcpExporter extends ExporterBase {
       };
 
       if (rule.vendor && rule.vendor["cursor"]) {
-        const cursorVendor = rule.vendor["cursor"] as Record<string, any>;
+        const cursorVendor = rule.vendor["cursor"] as Record<string, unknown>;
         Object.entries(cursorVendor).forEach(([key, value]) => {
           if (key !== "_meta") {
             mcpRule[key] = value;

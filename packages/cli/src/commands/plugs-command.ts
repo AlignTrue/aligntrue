@@ -87,9 +87,9 @@ export async function plugsCommand(args: string[]): Promise<void> {
       console.log("Run: aligntrue plugs --help\n");
       process.exit(1);
     }
-  } catch (error) {
+  } catch (_error) {
     console.error(
-      `\n❌ Error: ${error instanceof Error ? error.message : "Unknown error"}\n`,
+      `\n❌ Error: ${_error instanceof Error ? _error.message : "Unknown error"}\n`,
     );
     process.exit(1);
   }

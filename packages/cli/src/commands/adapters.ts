@@ -146,10 +146,10 @@ async function discoverAndCategorize(): Promise<{
       throw new Error(`Search path not found: ${exportersPath}`);
     }
     manifestPaths = registry.discoverAdapters(exportersPath);
-  } catch (error) {
+  } catch (_error) {
     console.error("✗ Failed to discover adapters");
     console.error(
-      `  ${error instanceof Error ? error.message : String(error)}`,
+      `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -160,7 +160,7 @@ async function discoverAndCategorize(): Promise<{
     try {
       const manifest = registry.loadManifest(manifestPath);
       manifestMap.set(manifest.name, manifest);
-    } catch (error) {
+    } catch {
       // Skip invalid manifests silently
       continue;
     }
@@ -383,10 +383,10 @@ async function enableAdapters(
     } else {
       await saveConfig(config);
     }
-  } catch (error) {
+  } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
-      `  ${error instanceof Error ? error.message : String(error)}`,
+      `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -456,10 +456,10 @@ async function disableAdapter(args: string[]): Promise<void> {
     } else {
       await saveConfig(config);
     }
-  } catch (error) {
+  } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
-      `  ${error instanceof Error ? error.message : String(error)}`,
+      `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
