@@ -7,6 +7,29 @@ async function main() {
   clack.intro("🔍 Running pre-commit checks...");
   const s = clack.spinner();
 
+  // Check for large batch of staged files
+  try {
+    const stagedFiles = execSync("git diff --cached --name-only", {
+      encoding: "utf8",
+    })
+      .trim()
+      .split("\n")
+      .filter((f) => f.length > 0);
+
+    if (stagedFiles.length > 50) {
+      clack.log.warn(
+        `⚠️  Large commit detected: ${stagedFiles.length} files staged`,
+      );
+      clack.log.message(
+        "Staging many files at once will lint ALL of them, which may surface pre-existing warnings.",
+      );
+      clack.log.message("Consider splitting into smaller commits with 'git add -p' or '--patch'.");
+      clack.log.message("");
+    }
+  } catch (error) {
+    // Non-fatal: continue with commit if this check fails
+  }
+
   s.start("Formatting and linting staged files...");
   try {
     execSync("pnpm lint-staged", { stdio: "inherit" });
