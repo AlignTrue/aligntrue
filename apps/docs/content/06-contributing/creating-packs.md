@@ -284,7 +284,7 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 
 Stuck? Here's how to get help:
 
-- **Documentation**: Read the full docs at [aligntrue.ai/docs](https://aligntrue.ai/docs)
+- **Documentation**: Read the full docs at [aligntrue.ai/docs](/docs)
   - [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md) - Complete specification
   - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and checks
   - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
@@ -349,7 +349,7 @@ This runs your checks against a test repository and shows findings.
 
 If this guide doesn't answer your question:
 
-- Check the [documentation](https://aligntrue.ai/docs)
+- Check the [documentation](/docs)
 - Search [existing discussions](https://github.com/AlignTrue/aligntrue/discussions)
 - Open a [new discussion](https://github.com/AlignTrue/aligntrue/discussions/new)
 
