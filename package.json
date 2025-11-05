@@ -32,7 +32,8 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "prettier --write",
-      "eslint --max-warnings 0"
+      "eslint --max-warnings 0",
+      "bash -c 'tsc --noEmit || true'"
     ],
     "*.{md,json,yml,yaml}": [
       "prettier --write"
