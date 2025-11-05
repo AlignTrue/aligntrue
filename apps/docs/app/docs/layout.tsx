@@ -1,32 +1,14 @@
 // apps/docs/app/docs/layout.tsx
-// Standard Nextra docs theme layout following https://nextra.site/docs/docs-theme/start
-import { Layout, Footer, Navbar } from "nextra-theme-docs";
-import { getPageMap } from "nextra/page-map";
-import { AlignTrueLogo, SiteFooter } from "@aligntrue/ui";
-import type { ReactNode } from "react";
+"use client";
 
-export default async function DocsLayout({
+import { ReactNode } from "react";
+
+export default function DocsLayout({
   children,
+  params,
 }: {
   children: ReactNode;
+  params: Promise<Record<string, unknown>>;
 }) {
-  return (
-    <Layout
-      pageMap={await getPageMap()}
-      navbar={
-        <Navbar
-          logo={<AlignTrueLogo size="md" />}
-          projectLink="https://github.com/AlignTrue/aligntrue"
-        />
-      }
-      docsRepositoryBase="https://github.com/AlignTrue/aligntrue/tree/main/apps/docs"
-      footer={
-        <Footer>
-          <SiteFooter />
-        </Footer>
-      }
-    >
-      {children}
-    </Layout>
-  );
+  return children;
 }
