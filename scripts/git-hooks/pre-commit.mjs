@@ -41,6 +41,8 @@ async function main() {
     console.error("");
     clack.log.error("Pre-commit checks failed.");
     console.error("");
+    console.error("⚠️  Linting threshold lowered to 400 warnings (was 460)");
+    console.error("");
 
     // Try to capture and parse lint-staged output for specific errors
     try {
@@ -83,12 +85,15 @@ async function main() {
     console.error("   • Check specific file: pnpm eslint <file-path>");
     console.error("");
     console.error(
-      "⚠️  Note: Pre-commit enforces same limits as CI (460 warnings)",
+      "⚠️  Note: Pre-commit enforces same limits as CI (400 warnings)",
     );
     console.error("");
     console.error("💡 Common issues:");
     console.error(
       "   • Unused variables → prefix with underscore (_var) or remove",
+    );
+    console.error(
+      "   • Underscore mismatch → if declared as _var, use _var everywhere",
     );
     console.error(
       "   • Image warnings → add eslint-disable comment if intentional",
