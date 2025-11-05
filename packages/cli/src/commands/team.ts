@@ -62,7 +62,7 @@ export async function team(args: string[]): Promise<void> {
         "  - Allow list for approved rule sources",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const subcommand = parsed.positional[0];
@@ -135,7 +135,7 @@ async function teamStatus(): Promise<void> {
       console.log("\n💡 This project is in solo mode");
       console.log("   To enable team features, run:");
       console.log("   aligntrue team enable");
-      process.exit(0);
+      return;
     }
 
     // Team mode - show full status
@@ -229,8 +229,6 @@ async function teamStatus(): Promise<void> {
 
     // Record telemetry
     recordEvent({ command_name: "team-status", align_hashes_used: [] });
-
-    process.exit(0);
   } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
@@ -273,7 +271,7 @@ async function teamEnable(
       console.log(
         `  - Bundle: ${config.modules?.bundle ? "enabled" : "disabled"}`,
       );
-      process.exit(0);
+      return;
     }
 
     // Show what will change
@@ -304,7 +302,7 @@ async function teamEnable(
 
       if (clack.isCancel(shouldProceed) || !shouldProceed) {
         clack.cancel("Team mode enable cancelled");
-        process.exit(0);
+        return;
       }
     }
 
@@ -349,7 +347,6 @@ async function teamEnable(
     console.log(
       "\n💡 Tip: Use 'aligntrue team approve' to create an allow list",
     );
-    process.exit(0);
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
@@ -443,7 +440,7 @@ async function teamListAllowed(): Promise<void> {
       console.log("  aligntrue team approve <source>");
       console.log("\nExample:");
       console.log("  aligntrue team approve https://github.com/yourorg/rules");
-      process.exit(0);
+      return;
     }
 
     console.log("Approved rule sources:");
@@ -505,7 +502,7 @@ async function teamRemove(sources: string[]): Promise<void> {
 
     if (allowList.sources.length === 0) {
       console.log("Allow list is already empty");
-      process.exit(0);
+      return;
     }
 
     clack.intro("Remove Rule Sources");
@@ -530,7 +527,7 @@ async function teamRemove(sources: string[]): Promise<void> {
 
       if (clack.isCancel(shouldRemove)) {
         clack.cancel("Removal cancelled");
-        process.exit(0);
+        return;
       }
 
       if (shouldRemove) {

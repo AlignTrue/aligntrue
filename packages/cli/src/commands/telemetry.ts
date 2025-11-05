@@ -58,7 +58,7 @@ export async function telemetry(args: string[]): Promise<void> {
         "Default: disabled (opt-in only)",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const subcommand = parsed.positional[0];
@@ -91,7 +91,6 @@ async function telemetryOn(): Promise<void> {
     console.log("  - Export targets");
     console.log("  - Content hashes (no code/paths/PII)");
     console.log("\nTo disable: aligntrue telemetry off");
-    process.exit(0);
   } catch (err) {
     exitWithError(
       Errors.operationFailed(
@@ -109,7 +108,6 @@ async function telemetryOff(): Promise<void> {
     console.log("✓ Telemetry disabled");
     console.log("\nNo usage data will be collected.");
     console.log("To re-enable: aligntrue telemetry on");
-    process.exit(0);
   } catch (err) {
     exitWithError(
       Errors.operationFailed(
@@ -134,7 +132,6 @@ async function telemetryStatus(): Promise<void> {
       console.log("\nNo usage data is being collected.");
       console.log("To enable: aligntrue telemetry on");
     }
-    process.exit(0);
   } catch (err) {
     exitWithError(
       Errors.operationFailed(

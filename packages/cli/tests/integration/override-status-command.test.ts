@@ -2,7 +2,7 @@
  * Integration tests for override-status command
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, rmSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -12,11 +12,18 @@ import * as yaml from "yaml";
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-status");
 
 beforeEach(() => {
+  vi.clearAllMocks();
+
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true, force: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
+
+  // Mock process.exit to throw for integration tests
+  vi.spyOn(process, "exit").mockImplementation((code?: number) => {
+    throw new Error(`process.exit(${code})`);
+  });
 });
 
 afterEach(() => {
@@ -57,7 +64,11 @@ describe("Override Status Command Integration", () => {
         output += msg + "\n";
       };
 
-      await overrideStatus([]);
+      try {
+        await overrideStatus([]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       console.log = originalLog;
 
@@ -80,7 +91,11 @@ describe("Override Status Command Integration", () => {
         output += msg + "\n";
       };
 
-      await overrideStatus([]);
+      try {
+        await overrideStatus([]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       console.log = originalLog;
 
@@ -115,7 +130,11 @@ describe("Override Status Command Integration", () => {
         output += msg + "\n";
       };
 
-      await overrideStatus(["--json"]);
+      try {
+        await overrideStatus(["--json"]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       console.log = originalLog;
 

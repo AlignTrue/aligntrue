@@ -61,7 +61,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
         "  - array[0]",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   // Extract flags
@@ -222,6 +222,4 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   console.log("");
   console.log("Next step:");
   console.log("  Run: aligntrue sync");
-
-  process.exit(0);
 }

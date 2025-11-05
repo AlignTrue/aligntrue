@@ -34,7 +34,7 @@ export async function overrideCommand(args: string[]): Promise<void> {
         "  - Changes are tracked in .aligntrue/config.yaml",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const subcommand = args[0];

@@ -43,7 +43,7 @@ export async function overrideRemove(args: string[]): Promise<void> {
         "If no selector provided, interactive mode will prompt for selection",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const selectorArg = parsed.positional[0];
@@ -80,7 +80,7 @@ async function runOverrideRemove(
   const overlays = config.overlays?.overrides || [];
   if (overlays.length === 0) {
     console.log("No overlays configured");
-    process.exit(0);
+    return;
   }
 
   // Interactive mode if no selector provided
@@ -113,7 +113,7 @@ async function runOverrideRemove(
 
     if (clack.isCancel(selected)) {
       clack.cancel("Operation cancelled");
-      process.exit(0);
+      return;
     }
 
     selectorToRemove = selected as string;
@@ -157,7 +157,7 @@ async function runOverrideRemove(
 
     if (clack.isCancel(confirmed) || !confirmed) {
       clack.cancel("Operation cancelled");
-      process.exit(0);
+      return;
     }
   }
 
@@ -172,6 +172,4 @@ async function runOverrideRemove(
   console.log("");
   console.log("Next step:");
   console.log("  Run: aligntrue sync");
-
-  process.exit(0);
 }

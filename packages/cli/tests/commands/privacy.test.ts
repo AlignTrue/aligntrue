@@ -54,7 +54,7 @@ describe("privacy command", () => {
         throw new Error("process.exit: 0");
       });
 
-      await expect(privacy([])).rejects.toThrow("process.exit: 0");
+      await privacy([]);
 
       expect(consoleSpy).toHaveBeenCalled();
       const output = consoleSpy.mock.calls.map((call) => call[0]).join("\n");
@@ -73,7 +73,7 @@ describe("privacy command", () => {
       });
 
       const args = mockCommandArgs({ help: true });
-      await expect(privacy(args)).rejects.toThrow("process.exit: 0");
+      await privacy(args);
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
