@@ -2313,15 +2313,11 @@ For now:
 • Check CHANGELOG.md for breaking changes
 • Follow migration guides for each release
 • Pin CLI version if you need stability
-
-See: docs/06-policies/pre-1.0-policy for details
 ```
 
 **Exit codes:**
 
 - `0` - Success (displays policy)
-
-**See also:** [Pre-1.0 Policy](/docs/06-policies/pre-1.0-policy) for schema iteration policy
 
 ---
 
