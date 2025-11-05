@@ -11,6 +11,8 @@
     "esModuleInterop": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "jsx": "preserve",
     "plugins": [
