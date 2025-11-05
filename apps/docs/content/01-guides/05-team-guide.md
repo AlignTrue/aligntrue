@@ -160,11 +160,25 @@ git push
 # 1. Clone repo
 git clone https://github.com/org/project
 cd project
+```
 
-# 2. Install CLI
-npm install -g @aligntrue/cli@next
+**Install CLI:**
 
-# 3. Sync (pulls from lockfile)
+<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
+
+<Tabs.Tab>`bash npm install -g @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash yarn global add @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash pnpm add -g @aligntrue/cli@next `</Tabs.Tab>
+
+<Tabs.Tab>`bash bun install -g @aligntrue/cli@next `</Tabs.Tab>
+
+</Tabs>
+
+**Sync (pulls from lockfile):**
+
+```bash
 aligntrue sync
 
 # Output:
