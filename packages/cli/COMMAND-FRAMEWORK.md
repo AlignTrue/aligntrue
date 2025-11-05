@@ -42,7 +42,11 @@ The CLI command framework provides reusable utilities for:
 ### Basic Pattern
 
 ```typescript
-import { parseCommonArgs, showStandardHelp, type ArgDefinition } from "../utils/command-utilities.js";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
 
 // 1. Define argument structure
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -296,10 +300,14 @@ const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
 
 ```typescript
 // Before
-expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Subcommands:"));
+expect(console.log).toHaveBeenCalledWith(
+  expect.stringContaining("Subcommands:"),
+);
 
 // After
-expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Team mode features:"));
+expect(console.log).toHaveBeenCalledWith(
+  expect.stringContaining("Team mode features:"),
+);
 ```
 
 ### Issue: Subcommand not found
@@ -374,7 +382,9 @@ export async function scopes(args: string[]): Promise<void> {
 `team`, `adapters`, `telemetry` - Multiple operations
 
 ```typescript
-const ARG_DEFINITIONS: ArgDefinition[] = [{ flag: "--interactive", alias: "-i", hasValue: false, description: "..." }];
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  { flag: "--interactive", alias: "-i", hasValue: false, description: "..." },
+];
 
 export async function adapters(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
@@ -409,7 +419,12 @@ export async function adapters(args: string[]): Promise<void> {
 
 ```typescript
 const ARG_DEFINITIONS: ArgDefinition[] = [
-  { flag: "--non-interactive", alias: "-n", hasValue: false, description: "..." },
+  {
+    flag: "--non-interactive",
+    alias: "-n",
+    hasValue: false,
+    description: "...",
+  },
   { flag: "--project-id", hasValue: true, description: "..." },
   { flag: "--exporters", hasValue: true, description: "..." },
 ];
@@ -428,7 +443,9 @@ export async function init(args: string[]): Promise<void> {
   const nonInteractive = (parsed.flags["non-interactive"] as boolean) || false;
   const projectId = parsed.flags["project-id"] as string | undefined;
   const exportersArg = parsed.flags["exporters"] as string | undefined;
-  const exporters = exportersArg ? exportersArg.split(",").map((e) => e.trim()) : undefined;
+  const exporters = exportersArg
+    ? exportersArg.split(",").map((e) => e.trim())
+    : undefined;
 
   // Complex interactive logic with prompts...
 }
