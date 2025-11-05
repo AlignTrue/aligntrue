@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Template Validation:** Cursor and AGENTS.md starter templates now use valid 3-segment rule IDs. Init command no longer auto-runs sync, preventing validation failures on fresh setup. Import command generates correct single-block markdown format.
 - **User Experience:** Init no longer auto-syncs. Sync and import commands show contextual next steps. All error messages include actionable suggestions.
 - **CLI Reference:** Removed incorrect `--offline` flag from sync command documentation (only exists on pull command).
+- **Docs stability:** Upgraded Next.js in the documentation site to 15.5.3 so Nextra restores the sidebar and generates all `/docs/*` routes without 404s.
 
 ### Security
 
