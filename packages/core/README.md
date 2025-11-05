@@ -71,33 +71,34 @@ exporters:
 sources:
   - type: local
     path: .aligntrue/rules.md
-  - type: catalog
-    id: packs/base/base-global
+  - type: git
+    url: https://github.com/AlignTrue/aligntrue
+    path: examples/packs/global.yaml
 ```
 
 **Source Types:**
 
 - `local` - Read from local filesystem (requires `path`)
-- `catalog` - Fetch from AlignTrue catalog (requires `id`)
-- `git` - Clone from git repo (Phase 2+, requires `url`)
+- `git` - Clone from git repo (requires `url`, optional `path`)
 - `url` - Fetch from HTTP URL (Phase 2+, requires `url`)
 
-**Catalog Sources:**
-Catalog sources fetch packs from the AlignTrue/aligns GitHub repository:
+**Git Sources:**
+Git sources fetch rules from any git repository:
 
 ```yaml
 sources:
-  - type: catalog
-    id: packs/base/base-global
-  - type: catalog
-    id: packs/base/base-testing
-  - type: catalog
-    id: packs/stacks/nextjs-app-router
+  - type: git
+    url: https://github.com/AlignTrue/aligntrue
+    path: examples/packs/global.yaml
+  - type: git
+    url: https://github.com/yourorg/rules
+    path: rules/testing.yaml
 ```
 
-Cache location: `.aligntrue/.cache/catalog/`
+Cache location: `.aligntrue/.cache/git/`
 
-- Indefinite TTL (cache never expires automatically)
+- Clones repository to local cache
+- Extracts specified file path
 - Offline fallback when network unavailable
 - Force refresh with `--force-refresh` flag (future CLI)
 

@@ -65,8 +65,8 @@ The allow list (`.aligntrue/allow.yaml`) specifies which rule sources your team 
 ```yaml
 version: 1
 sources:
-  - type: id
-    value: base-global@aligntrue/catalog@v1.0.0
+  - type: git
+    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
     resolved_hash: sha256:abc123...
     comment: Official base rules
   - type: hash
@@ -76,24 +76,24 @@ sources:
 
 ### Source formats
 
-#### ID@version format
+#### Git URL format
 
-Format: `id@profile@version`
+Format: `git:URL`
 
-Example: `base-global@aligntrue/catalog@v1.0.0`
+Example: `git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml`
 
 **Pros:**
 
 - Semantic and readable
-- Can update version references
-- Clear provenance
+- Direct URL reference
+- Works with any git repository
 
 **Cons:**
 
-- Requires resolution (git clone or catalog lookup)
+- Requires resolution (git clone)
 - Network dependency
 
-**Best for:** External sources, catalog packs, shared repositories
+**Best for:** External sources, example packs, shared repositories
 
 #### Hash format
 
@@ -141,7 +141,7 @@ aligntrue team approve sha256:abc123...
 
 # Approve multiple sources
 aligntrue team approve \
-  base-global@aligntrue/catalog@v1.0.0 \
+  git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml \
   sha256:def456...
 
 # Approve with ID@version (resolves to hash)
@@ -170,7 +170,7 @@ aligntrue team list-allowed
 ```
 Approved rule sources:
 
-1.  base-global@aligntrue/catalog@v1.0.0
+1.  git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
     → sha256:abc123...
 
 2.  sha256:def456...
@@ -184,8 +184,8 @@ Total: 2 sources
 Remove source(s) from allow list.
 
 ```bash
-# Remove by ID
-aligntrue team remove base-global@aligntrue/catalog@v1.0.0
+# Remove by git URL
+aligntrue team remove git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
 # Remove by hash
 aligntrue team remove sha256:abc123...
@@ -214,7 +214,7 @@ aligntrue sync --force
 aligntrue team enable
 
 # 2. Approve team sources
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
 # 3. Sync to generate lockfile
 aligntrue sync
@@ -398,7 +398,7 @@ aligntrue team approve <source>
 **Example:**
 
 ```bash
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 ```
 
 ### When to use hash
@@ -591,9 +591,8 @@ The lockfile includes an optional `base_hash` field for advanced overlay resolut
   "version": "1",
   "sources": [
     {
-      "type": "catalog",
-      "id": "base-global",
-      "version": "v1.0.0",
+      "type": "git",
+      "url": "https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml",
       "hash": "sha256:abc...",
       "base_hash": "sha256:def..."
     }
@@ -611,13 +610,13 @@ See [Git Workflows](/docs/02-concepts/git-workflows) for:
 - Git subtree setup
 - Vendored pack integrity validation
 
-### Catalog resolution
+### Git resolution
 
-When available, catalog resolution will:
+Git source resolution:
 
-1. Try catalog API first (fast, no clone)
-2. Fall back to git if catalog unavailable
-3. Store both ID and hash in allow list
+1. Clones repository to local cache
+2. Extracts specified file path
+3. Stores hash in allow list for verification
 
 ## Troubleshooting
 
@@ -681,7 +680,7 @@ aligntrue drift
 
 **Cause:** Source doesn't provide base hash metadata (expected for local sources).
 
-**Fix:** This is expected behavior. Only git and catalog sources provide base_hash. Local sources won't have it.
+**Fix:** This is expected behavior. Only git sources provide base_hash. Local sources won't have it.
 
 ## See also
 

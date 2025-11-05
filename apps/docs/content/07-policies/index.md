@@ -41,8 +41,7 @@ Packs are marked as verified based on their source repository.
 
 ### Current verification
 
-- **Automatic verification**: All packs in the `AlignTrue/aligns` repository are automatically verified
-- **Verified badge**: Verified packs display a badge in the catalog
+- **Automatic verification**: All example packs in the `AlignTrue/aligntrue` repository are automatically verified
 - **Trust signal**: Verification indicates the pack comes from a known, trusted source
 
 ### Future enhancements
@@ -119,19 +118,18 @@ Packs may be yanked (marked as deprecated or unsafe) but not deleted to maintain
 
 2. **Discussion period**: Allow community feedback (minimum 48 hours for non-security issues)
 
-3. **Mark as yanked**: Submit PR to mark pack as yanked in `catalog/index.json`
+3. **Mark as deprecated**: Submit PR to mark pack as deprecated in examples
    - Pack remains in repository
    - Hash remains valid for reproducibility
-   - Catalog shows warning and suggests alternatives
+   - Documentation shows warning and suggests alternatives
 
 4. **Update documentation**: Add note to pack file explaining yank reason and pointing to replacement
 
 ### Yank implications
 
-- Yanked packs remain accessible by hash for reproducibility
-- Website catalog displays prominent warning
-- CLI shows warning when validating or bundling with yanked pack
-- Yanked packs excluded from search results and recommendations
+- Deprecated packs remain accessible by hash for reproducibility
+- Documentation displays prominent warning
+- CLI shows warning when validating or bundling with deprecated pack
 
 ## Future governance
 

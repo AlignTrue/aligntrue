@@ -97,7 +97,7 @@ git commit -m "Enable AlignTrue team mode"
 # Repository owner
 aligntrue team enable
 # Edit config: lockfile.mode: soft
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 aligntrue sync
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Enable team mode (soft)"
@@ -124,7 +124,7 @@ aligntrue sync  # Validated against allow list
 # Repository owner
 aligntrue team enable
 # Edit config: lockfile.mode: strict
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 aligntrue sync
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Enable team mode (strict)"
@@ -175,7 +175,7 @@ Switch to team mode when:
 aligntrue team enable
 
 # Approve current sources
-aligntrue team approve base-global@aligntrue/catalog@v1.0.0
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 
 # Generate lockfile
 aligntrue sync

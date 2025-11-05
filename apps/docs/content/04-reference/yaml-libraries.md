@@ -23,7 +23,6 @@ AlignTrue uses `js-yaml` for YAML parsing with strict schema validation.
 YAML is canonicalized only at boundaries:
 
 - Lockfile generation (team mode)
-- Catalog publishing (Phase 4)
 
 Not during normal operations like sync or export.
 
