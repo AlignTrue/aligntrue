@@ -129,11 +129,11 @@ export class GitProvider implements SourceProvider {
             `  Use forceRefresh: true to update`,
         );
         return content;
-      } catch {
+      } catch (error) {
         // Cache corrupted or file missing, will re-clone
         console.warn(
           `Cache corrupted or file missing, will re-clone: ${this.url}\n` +
-            `  ${_error instanceof Error ? _error.message : String(_error)}`,
+            `  ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }
@@ -144,11 +144,11 @@ export class GitProvider implements SourceProvider {
         try {
           const content = this.readRulesFile();
           return content;
-        } catch {
+        } catch (error) {
           throw new Error(
             `Offline mode: cache exists but cannot read rules file\n` +
               `  Repository: ${this.url}\n` +
-              `  Error: ${_error instanceof Error ? _error.message : String(_error)}`,
+              `  Error: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
       }
@@ -176,7 +176,7 @@ export class GitProvider implements SourceProvider {
       // Read rules file
       const content = this.readRulesFile();
       return content;
-    } catch {
+    } catch (error) {
       // Network error - try cache fallback
       if (this.isNetworkError(error)) {
         if (existsSync(this.repoDir)) {
@@ -191,7 +191,7 @@ export class GitProvider implements SourceProvider {
             // Cache exists but file missing/corrupted
             throw new Error(
               `Failed to fetch from ${this.url} and cache is corrupted\n` +
-                `  Network error: ${_error instanceof Error ? _error.message : String(_error)}\n` +
+                `  Network error: ${error instanceof Error ? error.message : String(error)}\n` +
                 `  Cache error: ${readError instanceof Error ? readError.message : String(readError)}`,
             );
           }
@@ -202,7 +202,7 @@ export class GitProvider implements SourceProvider {
           `Failed to clone repository and no cache available\n` +
             `  URL: ${this.url}\n` +
             `  Ref: ${targetRef}\n` +
-            `  Network error: ${_error instanceof Error ? _error.message : String(_error)}\n` +
+            `  Network error: ${error instanceof Error ? error.message : String(error)}\n` +
             `  Check your internet connection or try again later.`,
         );
       }
@@ -212,7 +212,7 @@ export class GitProvider implements SourceProvider {
         `Failed to fetch from git repository\n` +
           `  URL: ${this.url}\n` +
           `  Ref: ${targetRef}\n` +
-          `  ${_error instanceof Error ? _error.message : String(_error)}`,
+          `  ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -241,7 +241,7 @@ export class GitProvider implements SourceProvider {
         rmSync(this.repoDir, { recursive: true, force: true });
         const { renameSync } = require("fs");
         renameSync(tempDir, this.repoDir);
-      } catch {
+      } catch (error) {
         // Clean up temp on error, keep old cache for fallback
         if (existsSync(tempDir)) {
           rmSync(tempDir, { recursive: true, force: true });
@@ -272,7 +272,7 @@ export class GitProvider implements SourceProvider {
           ref,
           "--single-branch",
         ]);
-      } catch {
+      } catch (error) {
         // Clean up partial clone on error
         if (existsSync(this.repoDir)) {
           rmSync(this.repoDir, { recursive: true, force: true });
@@ -301,7 +301,7 @@ export class GitProvider implements SourceProvider {
           await repoGit.fetch(["origin", ref, "--depth", "1"]);
           await repoGit.checkout(ref);
         }
-      } catch {
+      } catch (error) {
         // Checkout failed, might be corrupted cache - remove and retry
         if (error instanceof GitError) {
           console.warn(
@@ -334,11 +334,11 @@ export class GitProvider implements SourceProvider {
     try {
       const sha = await git.revparse(["HEAD"]);
       return sha.trim();
-    } catch {
+    } catch (error) {
       throw new Error(
         `Failed to get commit SHA from repository\n` +
           `  URL: ${this.url}\n` +
-          `  ${_error instanceof Error ? _error.message : String(_error)}`,
+          `  ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -397,7 +397,7 @@ export class GitProvider implements SourceProvider {
       }
 
       return content;
-    } catch {
+    } catch (error) {
       // If error already thrown, re-throw it
       if (
         error instanceof Error &&
@@ -418,7 +418,7 @@ export class GitProvider implements SourceProvider {
         `Failed to read rules file\n` +
           `  URL: ${this.url}\n` +
           `  Path: ${this.path}\n` +
-          `  ${_error instanceof Error ? _error.message : String(_error)}`,
+          `  ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

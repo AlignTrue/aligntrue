@@ -122,8 +122,10 @@ export function generateUpdateSummary(updates: UpdateFinding[]): string {
  * High-level API for CLI usage
  */
 export function detectUpdatesForConfig(config: unknown): Promise<UpdateResult> {
-  const lockfilePath = config.lockfilePath || ".aligntrue.lock.json";
-  const allowListPath = config.allowListPath || ".aligntrue/allow.yaml";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const configAsAny = config as any;
+  const lockfilePath = configAsAny.lockfilePath || ".aligntrue.lock.json";
+  const allowListPath = configAsAny.allowListPath || ".aligntrue/allow.yaml";
 
   try {
     // Check if files exist
