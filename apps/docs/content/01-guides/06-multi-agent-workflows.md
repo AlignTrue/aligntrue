@@ -587,7 +587,7 @@ AGENTS.md
 
 Add a note to your README:
 
-````markdown
+```markdown
 ## AI Agent Setup
 
 This project uses AlignTrue for consistent AI agent behavior.
@@ -601,11 +601,18 @@ This project uses AlignTrue for consistent AI agent behavior.
 
 **Setup:**
 
-```bash
-npm install -g aligntrue
-aligntrue sync
+<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
+
+<Tabs.Tab>`bash npm install -g aligntrue && aligntrue sync `</Tabs.Tab>
+
+<Tabs.Tab>`bash yarn global add aligntrue && aligntrue sync `</Tabs.Tab>
+
+<Tabs.Tab>`bash pnpm add -g aligntrue && aligntrue sync `</Tabs.Tab>
+
+<Tabs.Tab>`bash bun install -g aligntrue && aligntrue sync `</Tabs.Tab>
+
+</Tabs>
 ```
-````
 
 **Agents will automatically load rules from:**
 
