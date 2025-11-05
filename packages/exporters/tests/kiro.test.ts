@@ -123,8 +123,8 @@ describe("KiroExporter", () => {
 // Helper functions
 
 function loadFixture(filename: string): { rules: AlignRule[] } {
-  const filepath = join(FIXTURES_DIR, filename);
-  const yaml = readFileSync(filepath, "utf-8");
+  const _filepath = join(FIXTURES_DIR, filename);
+  const yaml = readFileSync(_filepath, "utf-8");
   const data = parseYamlToJson(yaml) as any;
   return { rules: data.rules };
 }
