@@ -16,8 +16,10 @@ export function canonicalJson(obj: unknown): string {
     return "[" + obj.map((item) => canonicalJson(item)).join(",") + "]";
   }
 
-  const keys = Object.keys(obj).sort();
-  const pairs = keys.map((key) => `"${key}":${canonicalJson(obj[key])}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const objAsAny = obj as any;
+  const keys = Object.keys(objAsAny).sort();
+  const pairs = keys.map((key) => `"${key}":${canonicalJson(objAsAny[key])}`);
   return "{" + pairs.join(",") + "}";
 }
 
