@@ -67,8 +67,7 @@ function getProcessesOnPort(port) {
 
 function killProcess(pid, signal = "SIGTERM") {
   try {
-    const killCmd =
-      signal === "SIGKILL" ? `kill -9 ${pid}` : `kill ${pid}`;
+    const killCmd = signal === "SIGKILL" ? `kill -9 ${pid}` : `kill ${pid}`;
     execSync(killCmd, { stdio: "ignore" });
     return true;
   } catch {
@@ -197,7 +196,9 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   if (failed.length > 0) {
-    error(`Failed to kill process${failed.length > 1 ? "es" : ""}: ${failed.join(", ")}`);
+    error(
+      `Failed to kill process${failed.length > 1 ? "es" : ""}: ${failed.join(", ")}`,
+    );
     log(
       `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${failed.join(" ")}\n`,
     );

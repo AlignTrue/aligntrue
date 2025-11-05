@@ -55,7 +55,7 @@ export async function overrideStatus(args: string[]): Promise<void> {
         "aligntrue override status --json",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const json = (parsed.flags["json"] as boolean | undefined) || false;
@@ -104,7 +104,7 @@ async function runOverrideStatus(
     } else {
       console.log("No overlays configured");
     }
-    process.exit(0);
+    return;
   }
 
   // Load IR to evaluate selectors
@@ -207,6 +207,4 @@ async function runOverrideStatus(
       );
     }
   }
-
-  process.exit(0);
 }

@@ -69,7 +69,6 @@ describe("check command", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining("aligntrue check"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(0);
     });
 
     it("shows help when -h flag is provided", async () => {
@@ -82,7 +81,6 @@ describe("check command", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining("aligntrue check"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(0);
     });
 
     it("requires --ci flag for now", async () => {
@@ -147,7 +145,7 @@ describe("check command", () => {
       }
 
       expect(core.loadConfig).toHaveBeenCalledWith("custom.yaml");
-      expect(exitSpy).toHaveBeenCalledWith(0);
+      // Commands don't call process.exit(0) on success
     });
   });
 
@@ -265,7 +263,7 @@ describe("check command", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining("✓ Validation passed"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(0);
+      // Commands don't call process.exit(0) on success
     });
   });
 
@@ -306,7 +304,7 @@ describe("check command", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining("skipped (solo mode)"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(0);
+      // Commands don't call process.exit(0) on success
     });
   });
 
@@ -486,7 +484,7 @@ describe("check command", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining("matches current rules"),
       );
-      expect(exitSpy).toHaveBeenCalledWith(0);
+      // Commands don't call process.exit(0) on success
     });
 
     it("exits with code 2 on lockfile read error", async () => {

@@ -86,7 +86,7 @@ export async function adapters(args: string[]): Promise<void> {
         "  aligntrue adapters enable adapter1 adapter2 adapter3",
       ],
     });
-    process.exit(0);
+    return;
   }
 
   const subcommand = parsed.positional[0];
@@ -247,8 +247,6 @@ async function listAdapters(): Promise<void> {
   if (invalidCount > 0) {
     console.log(`  ❌ Invalid: ${invalidCount}`);
   }
-
-  process.exit(0);
 }
 
 /**
@@ -285,7 +283,7 @@ async function enableAdapters(
 
     if (clack.isCancel(selected)) {
       clack.cancel("Adapter selection cancelled");
-      process.exit(0);
+      return;
     }
 
     adaptersToEnable = selected as string[];
@@ -352,7 +350,7 @@ async function enableAdapters(
           `✓ All adapters already enabled: ${alreadyEnabled.join(", ")}`,
         );
       }
-      process.exit(0);
+      return;
     }
 
     adaptersToEnable = toEnable;
@@ -371,7 +369,7 @@ async function enableAdapters(
 
   if (addedCount === 0) {
     console.log("✓ No changes needed (all selected adapters already enabled)");
-    process.exit(0);
+    return;
   }
 
   config.exporters = Array.from(currentExporters).sort();
@@ -410,8 +408,6 @@ async function enableAdapters(
 
   console.log("\nNext step:");
   console.log("  Run: aligntrue sync");
-
-  process.exit(0);
 }
 
 /**
@@ -472,6 +468,4 @@ async function disableAdapter(args: string[]): Promise<void> {
   });
 
   console.log(`✓ Disabled adapter: ${adapterName}`);
-
-  process.exit(0);
 }

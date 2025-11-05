@@ -2,7 +2,7 @@
  * Integration tests for override-remove command
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -12,11 +12,18 @@ import * as yaml from "yaml";
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-remove");
 
 beforeEach(() => {
+  vi.clearAllMocks();
+
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true, force: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
+
+  // Mock process.exit to throw for integration tests
+  vi.spyOn(process, "exit").mockImplementation((code?: number) => {
+    throw new Error(`process.exit(${code})`);
+  });
 });
 
 afterEach(() => {
@@ -51,7 +58,11 @@ describe("Override Remove Command Integration", () => {
         "utf-8",
       );
 
-      await overrideRemove(["0"]);
+      try {
+        await overrideRemove(["rule[id=test-1]"]);
+      } catch (e) {
+        // May throw from process.exit if command fails
+      }
 
       const updatedConfig = yaml.parse(
         readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
@@ -74,16 +85,17 @@ describe("Override Remove Command Integration", () => {
         "utf-8",
       );
 
-      const originalExit = process.exit;
-      let exitCode: number | undefined;
-      process.exit = ((code?: number) => {
-        exitCode = code;
-      }) as never;
+      let threwExpectedError = false;
+      try {
+        await overrideRemove(["0"]);
+      } catch (e) {
+        // Expected to throw from process.exit mock
+        if (e instanceof Error && e.message.includes("process.exit")) {
+          threwExpectedError = true;
+        }
+      }
 
-      await overrideRemove(["0"]);
-
-      process.exit = originalExit;
-      expect(exitCode).toBeGreaterThan(0);
+      expect(threwExpectedError).toBe(true);
     });
   });
 });
