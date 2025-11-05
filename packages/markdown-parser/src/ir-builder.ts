@@ -119,9 +119,9 @@ export function buildIR(
             original_structure: "single-block",
           };
         }
-        (
-          doc._markdown_meta as Record<string, unknown>
-        ).had_internal_fields_in_fence = true;
+        (doc._markdown_meta as Record<string, unknown>)[
+          "had_internal_fields_in_fence"
+        ] = true;
       }
 
       // Capture metadata for round-trip if requested
