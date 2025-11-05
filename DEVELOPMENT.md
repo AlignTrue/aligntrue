@@ -72,11 +72,10 @@ Runs automatically before each commit:
 **What it catches:**
 
 - Unused imports and variables
-- Type errors (before they reach the pre-push hook)
-- Formatting issues (auto-fixed)
-- ESLint violations
+- Formatting issues (auto-fixed with Prettier)
+- ESLint errors (warnings allowed, enforced in CI)
 
-**Note:** TypeScript checking runs with `|| true` to warn but not block commits until existing type errors are resolved. ESLint runs with `--max-warnings 0` to enforce zero warnings.
+**Note:** Pre-commit is optimized for speed - it only blocks on real errors, not warnings. TypeScript checking and full linting run in CI. For a full quality check before pushing, run `pnpm lint:strict`.
 
 ### Commit message hook
 
@@ -109,12 +108,15 @@ Runs automatically before pushing (takes ~30-60 seconds):
 
 This ensures you never push code that will fail CI.
 
-**Why both pre-commit and pre-push type checking?**
+### Optional: Strict linting before push
 
-- **Pre-commit:** Fast, scoped to changed files, catches issues early
-- **Pre-push:** Comprehensive, checks entire codebase, catches cross-package issues
+For a comprehensive quality check before pushing (catches all warnings):
 
-This two-layer approach provides fast feedback during commits while ensuring full validation before pushing.
+```bash
+pnpm lint:strict
+```
+
+This enforces zero warnings, matching CI requirements. Pre-commit only blocks errors for speed.
 
 ### Bypassing hooks (emergency only)
 

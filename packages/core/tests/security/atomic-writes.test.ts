@@ -45,8 +45,8 @@ describe("Atomic Write Security", () => {
       const content = "Test content";
 
       // Mock to detect temp file usage
-      let tempFileCreated = false;
-      const originalWrite = writeFileSync;
+      let _tempFileCreated = false;
+      const _originalWrite = writeFileSync;
 
       // We can't easily intercept the sync write, so we verify by checking
       // that the final file exists and is correct
@@ -58,12 +58,12 @@ describe("Atomic Write Security", () => {
 
     it("cleans up temp file on error", async () => {
       const filePath = join(testDir, "nonexistent/deep/path/test.txt");
-      const content = "This should fail";
+      const _content = "This should fail";
 
       try {
         // This will fail because parent directory doesn't exist (we're testing error path)
         // But first, let's not use ensureDirectoryExists to test cleanup
-        const writer2 = new AtomicFileWriter();
+        const _writer2 = new AtomicFileWriter();
 
         // We can't easily test this without mocking, so skip this specific test
         // and verify in integration that temp files are cleaned

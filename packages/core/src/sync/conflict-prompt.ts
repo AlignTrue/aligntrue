@@ -141,7 +141,7 @@ export async function promptForConflicts(
   }
 
   // Process each rule's conflicts
-  for (const [ruleId, ruleConflicts] of groupedConflicts) {
+  for (const [_ruleId, ruleConflicts] of groupedConflicts) {
     let batchStrategy: ConflictResolutionStrategy | null = null;
 
     for (const conflict of ruleConflicts) {

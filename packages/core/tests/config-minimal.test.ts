@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 function writeConfig(filename: string, content: string): string {
-  const path = join(TEST_DIR, filename);
+  const _path = join(TEST_DIR, filename);
   mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
   const fullPath = join(TEST_DIR, ".aligntrue", filename);
   writeFileSync(fullPath, content, "utf8");

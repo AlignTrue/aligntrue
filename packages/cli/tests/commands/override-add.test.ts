@@ -39,8 +39,8 @@ import { existsSync } from "fs";
 
 describe("Override Add - Selector Validation", () => {
   let mockExit: ReturnType<typeof vi.spyOn>;
-  let mockLog: ReturnType<typeof vi.spyOn>;
-  let mockError: ReturnType<typeof vi.spyOn>;
+  let _mockLog: ReturnType<typeof vi.spyOn>;
+  let _mockError: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,8 +50,8 @@ describe("Override Add - Selector Validation", () => {
       // Don't throw, just record the call
     }) as any);
 
-    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
-    mockError = vi.spyOn(console, "error").mockImplementation(() => {});
+    _mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+    _mockError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     // Mock clack
     vi.mocked(clack.log.error).mockImplementation(() => {});
@@ -168,12 +168,12 @@ describe("Override Add - Selector Validation", () => {
 });
 
 describe("Override Add - Set Operations Parsing", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
+  let _mockExit: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    _mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
@@ -287,12 +287,12 @@ describe("Override Add - Set Operations Parsing", () => {
 });
 
 describe("Override Add - Remove Operations Parsing", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
+  let _mockExit: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    _mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
@@ -348,12 +348,12 @@ describe("Override Add - Remove Operations Parsing", () => {
 });
 
 describe("Override Add - Config Updates", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
+  let _mockExit: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    _mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
@@ -455,13 +455,13 @@ describe("Override Add - Config Updates", () => {
 
 describe("Override Add - Error Messages", () => {
   let mockExit: ReturnType<typeof vi.spyOn>;
-  let mockLog: ReturnType<typeof vi.spyOn>;
+  let _mockLog: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
-    mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
+    _mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});
     vi.mocked(clack.log.success).mockImplementation(() => {});
@@ -511,12 +511,12 @@ describe("Override Add - Error Messages", () => {
 });
 
 describe("Override Add - Multiple Operations", () => {
-  let mockExit: ReturnType<typeof vi.spyOn>;
+  let _mockExit: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    _mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     vi.mocked(clack.log.error).mockImplementation(() => {});

@@ -59,7 +59,7 @@ export function saveValidationState(
  * - Filter by include/exclude patterns from config
  * - Return list of files needing revalidation
  */
-export function detectChangedFiles(since: string): string[] {
+export function detectChangedFiles(_since: string): string[] {
   // TODO: Implement git diff detection
   // For now, return empty (will trigger full validation)
   return [];

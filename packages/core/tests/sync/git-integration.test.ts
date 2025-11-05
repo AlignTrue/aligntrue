@@ -44,7 +44,7 @@ describe("GitIntegration", () => {
     it("adds generated files to .gitignore", async () => {
       const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
 
-      const _result = await gitIntegration.apply({
+      const result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -121,7 +121,7 @@ describe("GitIntegration", () => {
     it("prepares files for commit", async () => {
       const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
 
-      const _result = await gitIntegration.apply({
+      const result = await gitIntegration.apply({
         mode: "commit",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
@@ -182,7 +182,7 @@ describe("GitIntegration", () => {
       writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Test Agents\n", "utf-8");
 
-      const _result = await gitIntegration.apply({
+      const result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
@@ -210,7 +210,7 @@ describe("GitIntegration", () => {
 
       const customBranch = "feature/custom-rules-sync";
 
-      const _result = await gitIntegration.apply({
+      const result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc"],
@@ -298,7 +298,7 @@ describe("GitIntegration", () => {
 
   describe("edge cases", () => {
     it("handles empty file list", async () => {
-      const _result = await gitIntegration.apply({
+      const result = await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: [],
