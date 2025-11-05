@@ -345,7 +345,7 @@ describe("json-utils", () => {
 
     it("returns false for uncanonicalizeable values", () => {
       // Create circular reference (not canonicalizable)
-      const obj1: any = { a: 1 };
+      const obj1: unknown = { a: 1 };
       obj1.self = obj1;
       const obj2 = { a: 1 };
       expect(compareCanonical(obj1, obj2)).toBe(false);

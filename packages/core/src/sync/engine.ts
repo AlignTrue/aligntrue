@@ -395,8 +395,10 @@ export class SyncEngine {
       // Reset state on all exporters before starting new sync cycle
       // This prevents accumulation of rules across multiple syncs
       for (const exporter of activeExporters) {
-        if (typeof (exporter as any).resetState === "function") {
-          (exporter as any).resetState();
+        if (
+          typeof (exporter as Record<string, unknown>).resetState === "function"
+        ) {
+          ((exporter as Record<string, unknown>).resetState as () => void)();
         }
       }
 
@@ -404,7 +406,7 @@ export class SyncEngine {
       for (const scope of scopes) {
         // For now, just use all rules from IR (scoped merge will be enhanced in later steps)
         // The current applyScopeMerge signature expects rule groups by level
-        const mergeOrder = this.config.merge?.order || [
+        const _mergeOrder = this.config.merge?.order || [
           "root",
           "path",
           "local",
@@ -484,7 +486,7 @@ export class SyncEngine {
                 `Exporter ${exporter.name} failed for scope ${scope.path}`,
               );
             }
-          } catch (err) {
+          } catch (_err) {
             // Rollback on error
             if (!options.dryRun) {
               try {
@@ -498,7 +500,7 @@ export class SyncEngine {
 
             throw new Error(
               `Export failed for ${exporter.name} (scope: ${scope.path})\n` +
-                `  ${err instanceof Error ? err.message : String(err)}`,
+                `  ${_err instanceof Error ? _err.message : String(_err)}`,
             );
           }
         }
@@ -523,9 +525,9 @@ export class SyncEngine {
             timestamp: new Date().toISOString(),
             details: `Generated lockfile with ${lockfile.rules.length} rule hashes`,
           });
-        } catch (err) {
+        } catch (_err) {
           warnings.push(
-            `Failed to generate lockfile: ${err instanceof Error ? err.message : String(err)}`,
+            `Failed to generate lockfile: ${_err instanceof Error ? _err.message : String(_err)}`,
           );
         }
       }
@@ -542,11 +544,11 @@ export class SyncEngine {
       }
 
       return result;
-    } catch (err) {
+    } catch (_err) {
       return {
         success: false,
         written: [],
-        warnings: [err instanceof Error ? err.message : String(err)],
+        warnings: [_err instanceof Error ? _err.message : String(_err)],
       };
     }
   }
@@ -641,7 +643,7 @@ export class SyncEngine {
             );
 
             // Clean IR for markdown generation: remove internal metadata fields
-            const cleanIr = { ...this.ir } as any;
+            const cleanIr = { ...this.ir } as typeof this.ir;
 
             // Remove markdown-specific internal fields that shouldn't be in fenced block
             delete cleanIr.source_format;
@@ -745,11 +747,11 @@ export class SyncEngine {
         warnings,
         auditTrail,
       };
-    } catch (err) {
+    } catch (_err) {
       return {
         success: false,
         written: [],
-        warnings: [err instanceof Error ? err.message : String(err)],
+        warnings: [_err instanceof Error ? _err.message : String(_err)],
         auditTrail,
       };
     }
@@ -761,7 +763,7 @@ export class SyncEngine {
    */
   private async loadAgentRules(
     agent: string,
-    options: SyncOptions,
+    _options: SyncOptions,
   ): Promise<AlignRule[]> {
     // Import from agent-specific format using parsers
     const { importFromAgent, canImportFromAgent } = await import("./import.js");
@@ -821,10 +823,10 @@ export class SyncEngine {
         );
         resolutions.set(key, resolution);
       }
-    } catch (err) {
+    } catch (_err) {
       // User aborted or error in prompts
       throw new Error(
-        `Conflict resolution failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Conflict resolution failed: ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
 

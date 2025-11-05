@@ -101,7 +101,7 @@ export class ConsentManager {
       }
 
       return parsed as ConsentStorage;
-    } catch (error) {
+    } catch {
       // Corrupted file - return empty storage
       return {};
     }

@@ -213,13 +213,13 @@ export function validateAgainstAllowList(
   let allowList;
   try {
     allowList = parseAllowList(allowListPath);
-  } catch (err) {
+  } catch (_err) {
     return [
       {
         type: "error",
         message: "Failed to parse allow list",
         suggestion: `Check ${allowListPath} for syntax errors
-  Error: ${err instanceof Error ? err.message : String(err)}`,
+  Error: ${_err instanceof Error ? _err.message : String(_err)}`,
       },
     ];
   }
@@ -292,7 +292,7 @@ export function checkDriftFromAllowedHashes(
   let allowList;
   try {
     allowList = parseAllowList(allowListPath);
-  } catch (err) {
+  } catch {
     // Already handled by validateAgainstAllowList
     return [];
   }

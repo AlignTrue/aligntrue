@@ -117,7 +117,7 @@ function evaluatePropertySelector(
     };
   }
 
-  let current: any = ir;
+  let current: unknown = ir;
   const traversedPath: string[] = [];
 
   for (const segment of propertyPath) {

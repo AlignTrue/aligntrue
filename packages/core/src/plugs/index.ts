@@ -112,16 +112,16 @@ export function resolvePlugsForPack(
       rules: resolvedRules,
       unresolvedRequired: uniqueUnresolved,
     };
-  } catch (error) {
-    if (error instanceof PlugResolutionError) {
+  } catch (_error) {
+    if (_error instanceof PlugResolutionError) {
       return {
         success: false,
         rules: [],
         unresolvedRequired: [],
-        errors: [error.message],
+        errors: [_error.message],
       };
     }
-    throw error;
+    throw _error;
   }
 }
 

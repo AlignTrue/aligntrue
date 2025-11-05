@@ -96,13 +96,13 @@ export async function runRegexCheck(
       pass: findings.length === 0,
       findings,
     };
-  } catch (err) {
+  } catch (_err) {
     return {
       rule,
       packId,
       pass: false,
       findings: [],
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: _err instanceof Error ? _err.message : "Unknown error",
     };
   }
 }

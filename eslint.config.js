@@ -52,9 +52,6 @@ export default [
       "**/build/**",
       "**/.next/**",
       "**/coverage/**",
-      "**/*.config.js",
-      "**/*.config.mjs",
-      "**/*.config.ts",
       "archive/**",
     ],
   },
@@ -106,6 +103,12 @@ export default [
           "no-asset-imports-in-ui": noAssetImportsInUI,
         },
       },
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "archive/**"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ];

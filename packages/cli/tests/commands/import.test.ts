@@ -37,12 +37,12 @@ describe("import command", () => {
   it("should show help when no agent specified", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand([]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 1");
     }
 
@@ -55,12 +55,12 @@ describe("import command", () => {
   it("should show help with --help flag", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["--help"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 
@@ -77,12 +77,12 @@ describe("import command", () => {
   it("should error for unsupported agent", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["unsupported-agent"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 1");
     }
 
@@ -93,12 +93,12 @@ describe("import command", () => {
   it("should error when cursor directory not found", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 1");
     }
 
@@ -109,12 +109,12 @@ describe("import command", () => {
   it("should error when AGENTS.md not found", async () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["agents-md"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 1");
     }
 
@@ -144,12 +144,12 @@ Test guidance for rule.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 
@@ -185,12 +185,12 @@ Test guidance.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["agents-md"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
     expect(logSpy).toHaveBeenCalled();
@@ -222,12 +222,12 @@ Test.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor", "--no-coverage"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 
@@ -262,12 +262,12 @@ Test guidance.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor", "--write"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 
@@ -306,12 +306,12 @@ Test.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor", "--write", "--dry-run"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 
@@ -350,12 +350,12 @@ Second rule.
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation(((code) => {
       throw new Error(`exit: ${code}`);
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     try {
       await importCommand(["cursor"]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       expect(e.message).toBe("exit: 0");
     }
 

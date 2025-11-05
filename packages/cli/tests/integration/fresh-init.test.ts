@@ -249,7 +249,7 @@ describe("Validation safeguards", () => {
         encoding: "utf-8",
       });
       fail("Sync should have failed with invalid rule ID");
-    } catch (error: any) {
+    } catch (error: unknown) {
       const output = (error.stdout || "") + (error.stderr || "");
 
       // Check that error message mentions validation failure
@@ -330,7 +330,7 @@ Valid rule.
     // Extract rule IDs from IR
     const irMatch = irContent.match(/```aligntrue\n([\s\S]+?)\n```/);
     const ir = parseYamlToJson(irMatch![1]) as any;
-    const irIds = ir.rules.map((r: any) => r.id).sort();
+    const irIds = ir.rules.map((r: unknown) => r.id).sort();
 
     // Extract rule IDs from Cursor
     const cursorMatches = cursorContent.matchAll(/## Rule: (.+)/g);

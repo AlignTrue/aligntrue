@@ -91,7 +91,7 @@ describe("Starter templates validation", () => {
       const yamlMatch = template.match(/```aligntrue\n([\s\S]+?)\n```/);
       const ir = parseYamlToJson(yamlMatch![1]) as any;
 
-      const templateIds = ir.rules.map((r: any) => r.id).sort();
+      const templateIds = ir.rules.map((r: unknown) => r.id).sort();
       const canonicalIds = STARTER_RULES_CANONICAL.map((r) => r.id).sort();
 
       expect(templateIds).toEqual(canonicalIds);
@@ -234,7 +234,7 @@ describe("Starter templates validation", () => {
       const irTemplate = getStarterTemplate("test");
       const irMatch = irTemplate.match(/```aligntrue\n([\s\S]+?)\n```/);
       const ir = parseYamlToJson(irMatch![1]) as any;
-      const irIds = ir.rules.map((r: any) => r.id).sort();
+      const irIds = ir.rules.map((r: unknown) => r.id).sort();
 
       const cursorIds = extractCursorRuleIds(generateCursorStarter()).sort();
       const agentsMdIds = extractAgentsMdRuleIds(

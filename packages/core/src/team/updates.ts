@@ -121,7 +121,7 @@ export function generateUpdateSummary(updates: UpdateFinding[]): string {
  * Detect updates for a given config
  * High-level API for CLI usage
  */
-export function detectUpdatesForConfig(config: any): Promise<UpdateResult> {
+export function detectUpdatesForConfig(config: unknown): Promise<UpdateResult> {
   const lockfilePath = config.lockfilePath || ".aligntrue.lock.json";
   const allowListPath = config.allowListPath || ".aligntrue/allow.yaml";
 
@@ -167,7 +167,7 @@ export function detectUpdatesForConfig(config: any): Promise<UpdateResult> {
         breaking_changes: breakingChanges,
       },
     });
-  } catch (error) {
+  } catch {
     // If parsing fails, return no updates
     return Promise.resolve({
       has_updates: false,

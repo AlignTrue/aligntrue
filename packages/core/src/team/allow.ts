@@ -148,11 +148,11 @@ export async function resolveSource(
       source,
       hash,
     };
-  } catch (err) {
+  } catch (_err) {
     return {
       success: false,
       source,
-      error: err instanceof Error ? err.message : String(err),
+      error: _err instanceof Error ? _err.message : String(_err),
     };
   }
 }

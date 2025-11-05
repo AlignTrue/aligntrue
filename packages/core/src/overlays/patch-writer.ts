@@ -86,10 +86,10 @@ export function writePatchFile(
       success: true,
       path: fullPath,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: _error instanceof Error ? _error.message : String(_error),
     };
   }
 }

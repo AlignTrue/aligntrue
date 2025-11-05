@@ -8,7 +8,11 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { validateOverlays } from "@aligntrue/core";
 import { parseYamlToJson } from "@aligntrue/schema";
-import type { AlignPack, OverlayDefinition } from "@aligntrue/core";
+import type {
+  AlignPack,
+  OverlayDefinition,
+  AlignTrueConfig,
+} from "@aligntrue/core";
 
 describe("check command overlay validation - integration", () => {
   const testDir = join(process.cwd(), "temp-test-overlay-integration");
@@ -57,7 +61,9 @@ rules:
     writeFileSync(rulesPath, rules, "utf8");
 
     // Parse config and rules
-    const configData: any = parseYamlToJson(config);
+    const configData: AlignTrueConfig = parseYamlToJson(
+      config,
+    ) as AlignTrueConfig;
     const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
 
     // Validate overlays
@@ -98,7 +104,9 @@ rules:
     writeFileSync(rulesPath, rules, "utf8");
 
     // Parse config and rules
-    const configData: any = parseYamlToJson(config);
+    const configData: AlignTrueConfig = parseYamlToJson(
+      config,
+    ) as AlignTrueConfig;
     const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
 
     // Validate overlays
@@ -145,7 +153,9 @@ rules:
     writeFileSync(rulesPath, rules, "utf8");
 
     // Parse config and rules
-    const configData: any = parseYamlToJson(config);
+    const configData: AlignTrueConfig = parseYamlToJson(
+      config,
+    ) as AlignTrueConfig;
     const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
 
     // Validate overlays
@@ -189,7 +199,9 @@ rules:
     writeFileSync(rulesPath, rules, "utf8");
 
     // Parse config and rules
-    const configData: any = parseYamlToJson(config);
+    const configData: AlignTrueConfig = parseYamlToJson(
+      config,
+    ) as AlignTrueConfig;
     const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
 
     // Validate overlays

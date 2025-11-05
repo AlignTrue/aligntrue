@@ -99,9 +99,9 @@ export function validateGlobPatterns(patterns?: string[]): void {
       // micromatch.makeRe can throw on truly invalid patterns
       // It returns a RegExp for valid patterns (very permissive)
       micromatch.makeRe(pattern);
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
-        `Invalid glob pattern "${pattern}": ${err instanceof Error ? err.message : String(err)}`,
+        `Invalid glob pattern "${pattern}": ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
   }
@@ -264,7 +264,7 @@ function deepMergeRules(oldRule: AlignRule, newRule: AlignRule): AlignRule {
   if (newRule.vendor || oldRule.vendor) {
     const oldVendor = oldRule.vendor || {};
     const newVendor = newRule.vendor || {};
-    const mergedVendor: Record<string, any> = {};
+    const mergedVendor: Record<string, unknown> = {};
 
     // Collect all vendor keys
     const allKeys = new Set([

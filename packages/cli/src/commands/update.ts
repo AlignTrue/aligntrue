@@ -415,10 +415,10 @@ async function checkOverlayConflicts(
     }
 
     return hasAnyConflicts;
-  } catch (error) {
+  } catch (_error) {
     spinner.stop();
     console.error(
-      `\n⚠️  Error checking conflicts: ${error instanceof Error ? error.message : String(error)}`,
+      `\n⚠️  Error checking conflicts: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     return false; // Don't block on error
   }

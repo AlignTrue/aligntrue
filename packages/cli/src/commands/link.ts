@@ -148,7 +148,7 @@ export async function link(args: string[]): Promise<void> {
     const config = await loadConfigWithValidation(configPath);
 
     // Check git repository accessibility (respects privacy consent)
-    const consentManager = createConsentManager(configPath);
+    const _consentManager = createConsentManager(configPath);
 
     // Note: We don't actually validate repo accessibility here as it requires
     // a full GitProvider with url/ref. The validation happens when user vendored
@@ -240,16 +240,16 @@ export async function link(args: string[]): Promise<void> {
       command_name: "link",
       align_hashes_used: [],
     });
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("Error");
 
-    if (error && typeof error === "object" && "code" in error) {
-      throw error;
+    if (_error && typeof _error === "object" && "code" in _error) {
+      throw _error;
     }
 
     exitWithError({
       title: "Link failed",
-      message: `Failed to link vendor: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Failed to link vendor: ${_error instanceof Error ? _error.message : String(_error)}`,
       hint: "Check git repository accessibility and try again.",
       code: "LINK_FAILED",
     });
@@ -397,10 +397,10 @@ async function validateVendoredPack(
       valid: true,
       profileId: packObj.profile.id,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       valid: false,
-      error: `Failed to parse pack: ${error instanceof Error ? error.message : String(error)}`,
+      error: `Failed to parse pack: ${_error instanceof Error ? _error.message : String(_error)}`,
     };
   }
 }
@@ -466,7 +466,7 @@ async function updateConfigWithVendor(
   gitUrl: string,
   vendorPath: string,
   vendorType: "submodule" | "subtree",
-  profileId?: string,
+  _profileId?: string,
 ): Promise<void> {
   // Initialize sources array if not exists
   if (!config.sources) {

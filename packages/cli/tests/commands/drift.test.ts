@@ -11,9 +11,9 @@ import { drift } from "../../src/commands/drift.js";
 describe("drift command", () => {
   let tempDir: string;
   let originalCwd: string;
-  let exitSpy: any;
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
+  let exitSpy: unknown;
+  let consoleLogSpy: unknown;
+  let consoleErrorSpy: unknown;
 
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), "drift-cmd-test-"));
@@ -23,7 +23,7 @@ describe("drift command", () => {
     // Spy on process.exit
     exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("process.exit called");
-    }) as any);
+    }) as (code?: number | string | null | undefined) => never);
 
     // Spy on console
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});

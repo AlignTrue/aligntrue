@@ -96,7 +96,7 @@ rules:
       const dstDir = join(projectDir, dir);
       try {
         await fs.cp(srcDir, dstDir, { recursive: true });
-      } catch (err) {
+      } catch {
         // Directory might not exist, continue
       }
     }

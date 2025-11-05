@@ -108,7 +108,7 @@ export async function verifySourceRepoExists(
       response.status === 301 ||
       response.status === 302
     );
-  } catch (err) {
+  } catch {
     // Network error, timeout, or offline - fail gracefully
     // This is optional verification, not a hard requirement
     console.warn(

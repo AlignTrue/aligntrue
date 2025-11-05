@@ -41,10 +41,10 @@ export function ensureDirectoryExists(dirPath: string): void {
   if (!existsSync(dirPath)) {
     try {
       mkdirSync(dirPath, { recursive: true });
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
         `Failed to create directory: ${dirPath}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
   } else {
@@ -57,11 +57,11 @@ export function ensureDirectoryExists(dirPath: string): void {
             `  Remove the file or choose a different path.`,
         );
       }
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+    } catch (_err) {
+      if ((_err as NodeJS.ErrnoException).code !== "ENOENT") {
         throw new Error(
           `Failed to check directory: ${dirPath}\n` +
-            `  ${err instanceof Error ? err.message : String(err)}`,
+            `  ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
     }
@@ -172,10 +172,10 @@ export class AtomicFileWriter {
         const originalContent = readFileSync(filePath, "utf8");
         writeFileSync(backup, originalContent, "utf8");
         this.backups.set(filePath, backup);
-      } catch (err) {
+      } catch (_err) {
         throw new Error(
           `Failed to create backup of ${filePath}\n` +
-            `  ${err instanceof Error ? err.message : String(err)}`,
+            `  ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
     }
@@ -184,17 +184,17 @@ export class AtomicFileWriter {
     const tempPath = `${filePath}.tmp`;
     try {
       writeFileSync(tempPath, content, "utf8");
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
         `Failed to write temp file: ${tempPath}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
 
     // Atomic rename
     try {
       renameSync(tempPath, filePath);
-    } catch (err) {
+    } catch (_err) {
       // Clean up temp file on failure
       try {
         if (existsSync(tempPath)) {
@@ -206,7 +206,7 @@ export class AtomicFileWriter {
 
       throw new Error(
         `Failed to rename temp file: ${tempPath} → ${filePath}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
 
@@ -243,9 +243,9 @@ export class AtomicFileWriter {
           writeFileSync(filePath, backupContent, "utf8");
           unlinkSync(backupPath);
         }
-      } catch (err) {
+      } catch (_err) {
         errors.push(
-          `  - ${filePath}: ${err instanceof Error ? err.message : String(err)}`,
+          `  - ${filePath}: ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
     }

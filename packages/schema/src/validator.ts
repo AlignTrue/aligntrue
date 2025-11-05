@@ -209,10 +209,10 @@ export function validateAlignIntegrity(alignYaml: string): IntegrityResult {
       storedHash,
       computedHash,
     };
-  } catch (err) {
+  } catch (_err) {
     return {
       valid: false,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: _err instanceof Error ? _err.message : "Unknown error",
     };
   }
 }
@@ -305,7 +305,7 @@ export interface AlignRule {
   tags?: string[];
   check?: AlignCheck;
   autofix?: AlignAutofix;
-  vendor?: Record<string, any>; // Agent-specific metadata
+  vendor?: Record<string, unknown>; // Agent-specific metadata
 }
 
 export interface AlignCheck {

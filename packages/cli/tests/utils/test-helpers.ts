@@ -13,7 +13,9 @@ import * as clack from "@clack/prompts";
 export function setupStandardMocks() {
   const mockExit = vi
     .spyOn(process, "exit")
-    .mockImplementation((() => {}) as any);
+    .mockImplementation((() => {}) as (
+      code?: number | string | null | undefined,
+    ) => never);
   const mockLog = vi.spyOn(console, "log").mockImplementation(() => {});
   const mockError = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -31,7 +33,7 @@ export function setupStandardMocks() {
  * Extract JSON output from console.log calls
  * Finds the first JSON object in combined output
  */
-export function extractJsonOutput(logCalls: any[][]): any | null {
+export function extractJsonOutput(logCalls: unknown[][]): unknown | null {
   const output = logCalls.map((call) => call.join(" ")).join("\n");
   const jsonMatch = output.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return null;
@@ -45,7 +47,7 @@ export function extractJsonOutput(logCalls: any[][]): any | null {
 /**
  * Get combined console output as single string
  */
-export function getCombinedOutput(logCalls: any[][]): string {
+export function getCombinedOutput(logCalls: unknown[][]): string {
   return logCalls.map((call) => call.join(" ")).join("\n");
 }
 

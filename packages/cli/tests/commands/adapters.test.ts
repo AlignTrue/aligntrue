@@ -49,7 +49,7 @@ describe("adapters command", () => {
     process.exit = ((code?: number) => {
       exitCode = code ?? 0;
       throw new Error(`process.exit: ${code}`);
-    }) as any;
+    }) as unknown;
 
     // Mock console methods
     vi.spyOn(console, "log").mockImplementation(() => {});
@@ -71,7 +71,7 @@ describe("adapters command", () => {
 
   const createConfig = (exporters: string[] = ["cursor", "agents-md"]) => {
     mkdirSync(".aligntrue", { recursive: true });
-    const config = {
+    const _config = {
       version: "1",
       mode: "solo",
       exporters,

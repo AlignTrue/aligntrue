@@ -44,7 +44,7 @@ export interface ExportOptions {
   outputDir: string;
   dryRun?: boolean;
   backup?: boolean;
-  config?: any; // Optional AlignTrue config for mode hints and caps
+  config?: unknown; // Optional AlignTrue config for mode hints and caps
   unresolvedPlugsCount?: number; // Count of unresolved required plugs (Phase 2.5)
 }
 

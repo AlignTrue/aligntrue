@@ -157,7 +157,7 @@ function readTelemetryConfig(): TelemetryConfig {
     const content = readFileSync(TELEMETRY_PATH, "utf-8");
     const config = JSON.parse(content) as TelemetryConfig;
     return config;
-  } catch (err) {
+  } catch {
     // If parse fails, default to disabled
     console.warn("Warning: Invalid telemetry.json, defaulting to disabled");
     return { enabled: false };

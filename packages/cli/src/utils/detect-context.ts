@@ -61,7 +61,7 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
           existingFiles,
         };
       }
-    } catch (err) {
+    } catch {
       // Directory not readable, continue
     }
   }

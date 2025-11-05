@@ -51,8 +51,8 @@ export interface CacheStats {
  * const value = cache.get<{ data: string }>('key');
  * ```
  */
-export class CacheManager {
-  private cache: Map<string, CacheEntry<any>>;
+export class CacheManager<T = unknown> {
+  private cache: Map<string, CacheEntry<T>>;
   private ttl: number;
   private maxSize: number;
   private maxEntries: number;
@@ -80,7 +80,7 @@ export class CacheManager {
    * - Key not found
    * - Entry expired (also removes it)
    */
-  get<T>(key: string): T | undefined {
+  get(key: string): T | undefined {
     const entry = this.cache.get(key);
 
     if (!entry) {
@@ -114,7 +114,7 @@ export class CacheManager {
    * @param value - Value to cache
    * @param size - Approximate size in bytes
    */
-  set<T>(key: string, value: T, size: number): void {
+  set(key: string, value: T, size: number): void {
     // Check if entry would exceed max size on its own
     if (size > this.maxSize) {
       // Don't cache entries larger than max size
@@ -306,7 +306,7 @@ export function validationCacheKey(contentHash: string): string {
 /**
  * Estimate size of value in bytes (approximate)
  */
-export function estimateSize(value: any): number {
+export function estimateSize(value: unknown): number {
   if (value === null || value === undefined) {
     return 8;
   }

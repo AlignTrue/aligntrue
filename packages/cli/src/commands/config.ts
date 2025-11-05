@@ -134,9 +134,9 @@ async function showConfig(configPath: string): Promise<void> {
     console.log(`\n📝 Config file: ${configPath}`);
 
     clack.outro("Configuration displayed");
-  } catch (error) {
+  } catch (_error) {
     clack.log.error(
-      `Failed to load config: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to load config: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }

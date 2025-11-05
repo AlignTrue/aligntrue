@@ -47,10 +47,10 @@ export class DiskFileProvider implements FileProvider {
     const content = await this.readFile(path);
     try {
       return JSON.parse(content);
-    } catch (err) {
+    } catch (_err) {
       throw new Error(
         `Failed to parse JSON file: ${path}\n` +
-          `  ${err instanceof Error ? err.message : String(err)}`,
+          `  ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
   }

@@ -119,7 +119,9 @@ export function buildIR(
             original_structure: "single-block",
           };
         }
-        (doc._markdown_meta as any).had_internal_fields_in_fence = true;
+        (
+          doc._markdown_meta as Record<string, unknown>
+        ).had_internal_fields_in_fence = true;
       }
 
       // Capture metadata for round-trip if requested
@@ -180,14 +182,14 @@ export function buildIR(
         }
 
         rules.push(rule);
-      } catch (err) {
+      } catch (_err) {
         errors.push({
           blockIndex: i,
           line: block.startLine,
           ...(block.sectionTitle !== undefined && {
             section: block.sectionTitle,
           }),
-          message: err instanceof Error ? err.message : "Invalid YAML",
+          message: _err instanceof Error ? _err.message : "Invalid YAML",
         });
       }
     }
@@ -208,7 +210,7 @@ export function buildIR(
     };
 
     return { document, errors: [] };
-  } catch (err) {
+  } catch (_err) {
     const firstBlock = blocks[0];
     errors.push({
       blockIndex: 0,
@@ -216,7 +218,7 @@ export function buildIR(
       ...(firstBlock?.sectionTitle !== undefined && {
         section: firstBlock.sectionTitle,
       }),
-      message: err instanceof Error ? err.message : "Failed to parse YAML",
+      message: _err instanceof Error ? _err.message : "Failed to parse YAML",
     });
     return { errors };
   }

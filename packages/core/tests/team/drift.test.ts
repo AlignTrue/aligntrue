@@ -705,7 +705,7 @@ sources:
       it("detects no drift when overlay_hash matches", async () => {
         const { detectOverlayDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "test.rule",
             content_hash: "result123",
@@ -722,7 +722,7 @@ sources:
       it("detects drift when overlay_hash differs", async () => {
         const { detectOverlayDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "test.rule",
             content_hash: "result123",
@@ -746,7 +746,7 @@ sources:
       it("skips entries without overlay_hash", async () => {
         const { detectOverlayDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "local.rule",
             content_hash: "hash123",
@@ -761,7 +761,7 @@ sources:
       it("detects drift in multiple entries", async () => {
         const { detectOverlayDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "rule.one",
             overlay_hash: "oldoverlay",
@@ -781,7 +781,7 @@ sources:
       it("detects no drift when result_hash matches", async () => {
         const { detectResultDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "test.rule",
             base_hash: "base123",
@@ -799,7 +799,7 @@ sources:
       it("detects drift when result_hash differs", async () => {
         const { detectResultDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "test.rule",
             base_hash: "base123",
@@ -826,7 +826,7 @@ sources:
       it("skips entries without triple-hash format", async () => {
         const { detectResultDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "legacy.rule",
             content_hash: "hash123",
@@ -843,7 +843,7 @@ sources:
       it("skips entries not in currentResults map", async () => {
         const { detectResultDrift } = await import("../../src/team/drift.js");
 
-        const entries: any[] = [
+        const entries: unknown[] = [
           {
             rule_id: "test.rule",
             base_hash: "base123",

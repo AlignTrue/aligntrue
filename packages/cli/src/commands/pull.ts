@@ -221,10 +221,10 @@ export async function pull(args: string[]): Promise<void> {
     } else {
       clack.outro("✓ Rules pulled (temporary - not saved to config)");
     }
-  } catch (error) {
+  } catch (_error) {
     clack.log.error("Failed to pull rules");
     console.error(
-      `\n${error instanceof Error ? error.message : String(error)}`,
+      `\n${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -280,7 +280,7 @@ async function executePull(
       mode = config.mode;
       maxFileSizeMb = config.performance?.max_file_size_mb ?? 10;
       force = false; // Pull command doesn't support --force flag
-    } catch (error) {
+    } catch {
       // Config doesn't exist or invalid - use defaults
       clack.log.warn("Config not found, using default settings");
     }
@@ -322,9 +322,9 @@ async function executePull(
       cached: false, // GitProvider will log if using cache
       tempLocation: ".aligntrue/.cache/git",
     };
-  } catch (error) {
+  } catch (_error) {
     spinner.stop("✗ Pull failed");
-    throw error;
+    throw _error;
   }
 }
 

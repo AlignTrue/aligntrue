@@ -118,10 +118,10 @@ export class WorkflowDetector {
 
     try {
       writeFileSync(this.markerFile, JSON.stringify(choice, null, 2), "utf-8");
-    } catch (err) {
+    } catch (_err) {
       // Non-critical - log warning but don't fail
       clack.log.warn(
-        `Warning: Failed to create workflow marker file: ${err instanceof Error ? err.message : String(err)}`,
+        `Warning: Failed to create workflow marker file: ${_err instanceof Error ? _err.message : String(_err)}`,
       );
     }
 

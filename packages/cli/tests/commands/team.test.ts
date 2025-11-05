@@ -290,7 +290,7 @@ describe("team command", () => {
       const { loadConfig } = await import("@aligntrue/core");
       const { parseAllowList } = await import("@aligntrue/core/team/allow.js");
 
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+      vi.mocked(fs.existsSync).mockImplementation((path: unknown) => {
         if (path === ".aligntrue/config.yaml") return true;
         if (path === ".aligntrue.lock.json") return true;
         if (path === ".aligntrue/allow.yaml") return true;
@@ -353,7 +353,7 @@ describe("team command", () => {
     it("shows lockfile disabled when not configured", async () => {
       const { loadConfig } = await import("@aligntrue/core");
 
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+      vi.mocked(fs.existsSync).mockImplementation((path: unknown) => {
         if (path === ".aligntrue/config.yaml") return true;
         return false;
       });
@@ -376,7 +376,7 @@ describe("team command", () => {
     it("shows lockfile not generated yet when file missing", async () => {
       const { loadConfig } = await import("@aligntrue/core");
 
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+      vi.mocked(fs.existsSync).mockImplementation((path: unknown) => {
         if (path === ".aligntrue/config.yaml") return true;
         if (path === ".aligntrue.lock.json") return false;
         return false;
@@ -404,7 +404,7 @@ describe("team command", () => {
     it("shows allow list not configured when missing", async () => {
       const { loadConfig } = await import("@aligntrue/core");
 
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+      vi.mocked(fs.existsSync).mockImplementation((path: unknown) => {
         if (path === ".aligntrue/config.yaml") return true;
         if (path === ".aligntrue/allow.yaml") return false;
         return false;
@@ -432,7 +432,7 @@ describe("team command", () => {
       const { loadConfig } = await import("@aligntrue/core");
       const { parseAllowList } = await import("@aligntrue/core/team/allow.js");
 
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+      vi.mocked(fs.existsSync).mockImplementation((path: unknown) => {
         if (path === ".aligntrue/config.yaml") return true;
         if (path === ".aligntrue/allow.yaml") return true;
         return false;
@@ -590,8 +590,11 @@ describe("team command", () => {
     });
 
     it("handles multiple sources", async () => {
-      const { parseAllowList, addSourceToAllowList, writeAllowList } =
-        await import("@aligntrue/core/team/allow.js");
+      const {
+        parseAllowList,
+        addSourceToAllowList,
+        writeAllowList: _writeAllowList,
+      } = await import("@aligntrue/core/team/allow.js");
 
       vi.mocked(parseAllowList).mockReturnValue({ version: 1, sources: [] });
       vi.mocked(addSourceToAllowList).mockResolvedValue({
@@ -606,8 +609,11 @@ describe("team command", () => {
     });
 
     it("handles resolution failure with option to continue", async () => {
-      const { parseAllowList, addSourceToAllowList, writeAllowList } =
-        await import("@aligntrue/core/team/allow.js");
+      const {
+        parseAllowList,
+        addSourceToAllowList,
+        writeAllowList: _writeAllowList,
+      } = await import("@aligntrue/core/team/allow.js");
 
       vi.mocked(parseAllowList).mockReturnValue({ version: 1, sources: [] });
       vi.mocked(addSourceToAllowList)

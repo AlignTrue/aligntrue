@@ -62,7 +62,7 @@ describe("check command", () => {
     it("shows help when --help flag is provided", async () => {
       try {
         await check(["--help"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -75,7 +75,7 @@ describe("check command", () => {
     it("shows help when -h flag is provided", async () => {
       try {
         await check(["-h"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -88,7 +88,7 @@ describe("check command", () => {
     it("requires --ci flag for now", async () => {
       try {
         await check([]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -107,7 +107,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -142,7 +142,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci", "--config", "custom.yaml"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -167,7 +167,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -183,7 +183,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -200,7 +200,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -227,7 +227,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -258,7 +258,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -297,7 +297,7 @@ describe("check command", () => {
     it("skips lockfile validation in solo mode", async () => {
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -345,7 +345,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -380,7 +380,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -412,7 +412,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -444,7 +444,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -476,7 +476,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -496,7 +496,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 
@@ -518,7 +518,7 @@ describe("check command", () => {
 
       try {
         await check(["--ci"]);
-      } catch (err) {
+      } catch {
         // Expected: process.exit throws in tests
       }
 

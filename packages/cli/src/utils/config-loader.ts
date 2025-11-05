@@ -26,12 +26,12 @@ export async function loadConfigWithValidation(
   try {
     const config = await loadConfig(configPath);
     return config;
-  } catch (error) {
+  } catch (_error) {
     // Standardized error handling for config loading failures
     clack.log.error("Failed to load configuration");
     console.error(`\nFile: ${configPath}`);
     console.error(
-      `Error: ${error instanceof Error ? error.message : String(error)}`,
+      `Error: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     console.error(`\nHint: Run 'aligntrue init' to create a valid config`);
     process.exit(2);

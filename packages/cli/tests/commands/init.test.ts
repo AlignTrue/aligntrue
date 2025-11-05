@@ -603,7 +603,7 @@ describe("init command utilities", () => {
 
   describe("Workflow mode configuration", () => {
     it("generates native_format config for imported rules", () => {
-      const config: any = {
+      const config: unknown = {
         exporters: ["cursor", "agents-md"],
         sync: {
           workflow_mode: "native_format",
@@ -619,7 +619,7 @@ describe("init command utilities", () => {
     });
 
     it("generates ir_source config for fresh start", () => {
-      const config: any = {
+      const config: unknown = {
         exporters: ["cursor", "agents-md"],
         sync: {
           workflow_mode: "ir_source",

@@ -66,9 +66,9 @@ export async function overrideStatus(args: string[]): Promise<void> {
     if (config) options.config = config;
 
     await runOverrideStatus(options);
-  } catch (error) {
+  } catch (_error) {
     clack.log.error(
-      `Failed to get overlay status: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     process.exit(1);
   }
@@ -114,7 +114,7 @@ async function runOverrideStatus(
     const sourcePath = config.sources?.[0]?.path || paths.rules;
     const absoluteSourcePath = resolve(process.cwd(), sourcePath);
     ir = await loadIR(absoluteSourcePath);
-  } catch (error) {
+  } catch {
     clack.log.warn("Could not load IR - health status will be unavailable");
     clack.log.info("Run 'aligntrue sync' to generate IR");
     ir = null;
