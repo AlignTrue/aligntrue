@@ -176,7 +176,8 @@ function getTargetFromPath(ir: unknown, path: string[]): unknown {
     if (current === null || current === undefined) {
       return undefined;
     }
-    current = current[segment];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    current = (current as any)[segment];
   }
   return current;
 }
@@ -251,15 +252,17 @@ export function normalizeLineEndings(ir: AlignPack): AlignPack {
     }
 
     if (typeof obj === "object" && obj !== null) {
-      for (const key of Object.keys(obj)) {
-        if (typeof obj[key] === "string") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const objAsAny = obj as any;
+      for (const key of Object.keys(objAsAny)) {
+        if (typeof objAsAny[key] === "string") {
           // Normalize line endings: CRLF -> LF, ensure single trailing LF
-          let str = obj[key].replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+          let str = objAsAny[key].replace(/\r\n/g, "\n").replace(/\r/g, "\n");
           // Trim trailing newlines then add exactly one
           str = str.replace(/\n+$/, "") + "\n";
-          obj[key] = str;
+          objAsAny[key] = str;
         } else {
-          normalize(obj[key]);
+          normalize(objAsAny[key]);
         }
       }
     }

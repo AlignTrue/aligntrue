@@ -241,14 +241,18 @@ function compareObjects(
   const changes: PropertyChange[] = [];
 
   // Get all keys from both objects
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oldObjAsAny = oldObj as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const newObjAsAny = newObj as any;
   const allKeys = new Set([
-    ...Object.keys(oldObj || {}),
-    ...Object.keys(newObj || {}),
+    ...Object.keys(oldObjAsAny || {}),
+    ...Object.keys(newObjAsAny || {}),
   ]);
 
   for (const key of allKeys) {
-    const oldValue = oldObj?.[key];
-    const newValue = newObj?.[key];
+    const oldValue = oldObjAsAny?.[key];
+    const newValue = newObjAsAny?.[key];
     const currentPath = [...path, key];
 
     if (oldValue === undefined && newValue !== undefined) {

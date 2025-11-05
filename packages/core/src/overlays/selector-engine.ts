@@ -117,7 +117,8 @@ function evaluatePropertySelector(
     };
   }
 
-  let current: unknown = ir;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let current: any = ir;
   const traversedPath: string[] = [];
 
   for (const segment of propertyPath) {
