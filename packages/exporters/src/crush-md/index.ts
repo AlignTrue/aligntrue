@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * CRUSH.md exporter
  * Exports AlignTrue rules to Crush-specific CRUSH.md format
@@ -60,7 +62,7 @@ export class CrushMdExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateCrushMdContent(
       modeHints,

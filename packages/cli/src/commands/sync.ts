@@ -911,10 +911,10 @@ export async function sync(args: string[]): Promise<void> {
       clack.outro("✗ Sync failed");
       process.exit(1);
     }
-  } catch (_error) {
+  } catch (error) {
     spinner.stop("Sync failed");
     clack.log.error(
-      `Sync error: ${_error instanceof Error ? _error.message : String(_error)}`,
+      `Sync error: ${error instanceof Error ? error.message : String(error)}`,
     );
 
     // Show helpful suggestions

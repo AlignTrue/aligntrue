@@ -173,10 +173,10 @@ async function teamStatus(): Promise<void> {
           `Allow List: ${count} source${count !== 1 ? "s" : ""} approved`,
         );
         console.log(`  File: ${ALLOW_LIST_PATH}`);
-      } catch (_err) {
+      } catch (err) {
         console.log("Allow List: exists but failed to parse");
         console.log(
-          `  Error: ${_err instanceof Error ? _err.message : String(_err)}`,
+          `  Error: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     } else {
@@ -233,12 +233,12 @@ async function teamStatus(): Promise<void> {
     recordEvent({ command_name: "team-status", align_hashes_used: [] });
 
     process.exit(0);
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to get team status");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }
@@ -352,13 +352,13 @@ async function teamEnable(
       "\n💡 Tip: Use 'aligntrue team approve' to create an allow list",
     );
     process.exit(0);
-  } catch (_err) {
+  } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to enable team mode");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }
@@ -391,11 +391,9 @@ async function teamApprove(sources: string[]): Promise<void> {
       try {
         allowList = await addSourceToAllowList(source, allowList);
         spinner.stop(`✓ Approved: ${source}`);
-      } catch (_err) {
+      } catch (err) {
         spinner.stop(`✗ Failed: ${source}`);
-        console.error(
-          `  ${_err instanceof Error ? _err.message : String(_err)}`,
-        );
+        console.error(`  ${err instanceof Error ? err.message : String(err)}`);
 
         // Continue with remaining sources
         if (sources.length > 1) {
@@ -423,12 +421,12 @@ async function teamApprove(sources: string[]): Promise<void> {
     console.log("\nNext steps:");
     console.log("  - Commit .aligntrue/allow.yaml to version control");
     console.log("  - Team members can now sync with approved sources");
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to approve sources");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }
@@ -481,12 +479,12 @@ async function teamListAllowed(): Promise<void> {
 
     // Record telemetry
     recordEvent({ command_name: "team-list-allowed", align_hashes_used: [] });
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to list allowed sources");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }
@@ -557,12 +555,12 @@ async function teamRemove(sources: string[]): Promise<void> {
       console.log("\nAllow list is now empty");
       console.log("  Run: aligntrue team list-allowed");
     }
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
     }
     console.error("✗ Failed to remove sources");
-    console.error(`  ${_err instanceof Error ? _err.message : String(_err)}`);
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }

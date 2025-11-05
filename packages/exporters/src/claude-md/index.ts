@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * CLAUDE.md exporter
  * Exports AlignTrue rules to Claude-specific CLAUDE.md format
@@ -63,7 +65,7 @@ export class ClaudeMdExporter extends ExporterBase {
     // Get mode hints from config
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
 
     const { content, warnings } = this.generateClaudeMdContent(

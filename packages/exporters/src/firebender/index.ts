@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Firebender exporter
  * Exports AlignTrue rules to Firebender firebender.json format
@@ -49,7 +51,10 @@ export class FirebenderExporter extends ExporterBase {
 
     const outputPath = join(outputDir, "firebender.json");
 
-    const { maxBlocks, maxTokens } = extractModeConfig(this.name, config);
+    const { maxBlocks, maxTokens } = extractModeConfig(
+      this.name,
+      config as AlignTrueConfig | undefined,
+    );
     const { content, warnings } = this.generateFirebenderJsonContent(
       maxBlocks,
       maxTokens,

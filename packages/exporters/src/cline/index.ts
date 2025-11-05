@@ -1,3 +1,5 @@
+import type { AlignTrueConfig } from "@aligntrue/core";
+
 /**
  * Cline exporter
  * Exports AlignTrue rules to Cline .clinerules format
@@ -57,7 +59,7 @@ export class ClineExporter extends ExporterBase {
 
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
     const { content, warnings } = this.generateClineRulesContent(
       modeHints,

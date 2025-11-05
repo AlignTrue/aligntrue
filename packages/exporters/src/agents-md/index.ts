@@ -14,7 +14,7 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { getAlignTruePaths } from "@aligntrue/core";
+import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
@@ -78,7 +78,7 @@ export class AgentsMdExporter extends ExporterBase {
     // Get mode hints from config (default to metadata_only)
     const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
       this.name,
-      config,
+      config as AlignTrueConfig | undefined,
     );
 
     // Generate AGENTS.md content with all accumulated rules
