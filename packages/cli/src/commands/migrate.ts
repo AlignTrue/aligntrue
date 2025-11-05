@@ -33,8 +33,6 @@ export async function migrate(args: string[] = []): Promise<void> {
         "  • Check CHANGELOG.md for breaking changes",
         "  • Follow migration guides for each release",
         "  • Pin CLI version if you need stability",
-        "",
-        "See: .internal_docs/pre-1.0-policy.md for details",
       ],
     });
     process.exit(0);
@@ -55,8 +53,6 @@ For now:
 • Check CHANGELOG.md for breaking changes
 • Follow migration guides for each release
 • Pin CLI version if you need stability
-
-See: .internal_docs/pre-1.0-policy.md for details
 
 Current approach: Manual updates with clear guides
 Future approach: Automated migrations with --write safeguard
