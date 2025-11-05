@@ -451,7 +451,7 @@ export async function onboard(args: string[]): Promise<void> {
     align_hashes_used: [],
   });
 
-  const _intro = clack.intro("AlignTrue Onboard");
+  clack.intro("AlignTrue Onboard");
   console.log("");
 
   try {
@@ -507,7 +507,7 @@ export async function onboard(args: string[]): Promise<void> {
     // Display checklist
     displayChecklist(checklist, gitAnalysis);
 
-    const _outro = clack.outro("Ready to get started!");
+    clack.outro("Ready to get started!");
     console.log("");
 
     process.exit(0);
