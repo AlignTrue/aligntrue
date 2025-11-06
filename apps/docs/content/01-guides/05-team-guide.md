@@ -477,7 +477,7 @@ aligntrue plugs set org.name "Acme Corp"
 aligntrue plugs set test.cmd "pnpm test"
 
 # Commit
-git add .aligntrue/rules.md
+git add .aligntrue/config.yaml
 git commit -m "chore: Set team plug values"
 ```
 
@@ -519,7 +519,7 @@ aligntrue override add \
 
 # Review and commit
 aligntrue override status
-git add .aligntrue/rules.md
+git add .aligntrue/config.yaml
 git commit -m "chore: Enforce no-console-log as error
 
 Approved by: @team-lead
@@ -698,10 +698,10 @@ Tested by: @dev1, @dev2
 # 1. Pull latest
 git pull origin main
 
-# Conflict in .aligntrue/rules.md
+# Conflict in AGENTS.md or .aligntrue/config.yaml
 
 # 2. Resolve conflict manually
-# (edit .aligntrue/rules.md)
+# (edit AGENTS.md or .aligntrue/config.yaml)
 
 # 3. Regenerate lockfile
 aligntrue sync
@@ -710,7 +710,7 @@ aligntrue sync
 aligntrue check
 
 # 5. Commit resolution
-git add .aligntrue/ .aligntrue.lock.json
+git add AGENTS.md .aligntrue/ .aligntrue.lock.json
 git commit -m "chore: Resolve AlignTrue conflict"
 ````
 

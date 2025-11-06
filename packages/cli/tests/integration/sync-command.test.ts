@@ -75,7 +75,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Execute sync
       try {
@@ -128,7 +128,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Execute sync
       try {
@@ -171,7 +171,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Create existing export to backup
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
@@ -221,7 +221,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Execute sync with dry-run
       try {
@@ -315,7 +315,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Execute sync with custom config
       try {
@@ -367,7 +367,7 @@ rules:
     guidance: Third rule
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       // Execute sync
       try {

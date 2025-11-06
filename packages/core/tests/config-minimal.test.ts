@@ -55,7 +55,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -112,7 +112,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: false,
         on_conflict: "prompt",
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -157,7 +157,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -206,7 +206,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       scopes: [
         {
           path: "packages/frontend",
@@ -276,7 +276,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true, // Default for solo
         on_conflict: "prompt", // Non-default for solo
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -327,7 +327,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: false,
         on_conflict: "prompt",
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -361,7 +361,7 @@ describe("saveMinimalConfig", () => {
       on_conflict: "prompt",
     });
     expect(parsed.sources).toEqual([
-      { type: "local", path: ".aligntrue/rules.md" },
+      { type: "local", path: ".aligntrue/.rules.yaml" },
     ]);
   });
 
@@ -387,7 +387,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: false, // Non-default for solo
         on_conflict: "prompt", // Non-default for solo
       },
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
