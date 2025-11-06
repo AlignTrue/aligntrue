@@ -13,7 +13,7 @@
     "test:fast": "pnpm -r test --reporter=dot --pool=threads",
     "verify": "pnpm --filter @aligntrue/testkit test",
     "testkit:verify": "pnpm verify",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r --sort typecheck",
     "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
     "validate:transpile-packages": "node scripts/validate-transpile-packages.mjs",
     "validate:no-duplicate-docs": "node scripts/validate-no-duplicate-docs.mjs",
