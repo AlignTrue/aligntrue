@@ -5,20 +5,20 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 ## What's Inside
 
 - **`.aligntrue/config.yaml`** - Minimal solo mode configuration (2 lines)
-- **`.aligntrue/rules.md`** - 5 example rules covering common development practices
+- **`.aligntrue/.rules.yaml`** - Internal IR file (auto-generated, don't edit directly)
+- **`AGENTS.md`** - Primary user-editable file with 5 example rules
 - **`.cursor/rules/aligntrue.mdc`** - Generated Cursor rules (with content hash)
-- **`AGENTS.md`** - Universal format for Claude, Copilot, Aider, and more
 - **`.vscode/mcp.json`** - VS Code MCP configuration
 
 ## Solo Developer Workflow
 
-This repository demonstrates the **native-format-first workflow** for solo developers:
+This repository demonstrates the **agent-format-first workflow** for solo developers:
 
-1. **Edit rules in your preferred format** (`.cursor/*.mdc`, `AGENTS.md`, or `.aligntrue/rules.md`)
+1. **Edit rules in your preferred format** (`AGENTS.md` or `.cursor/*.mdc`)
 2. **Save changes**
 3. **Run sync** (auto-pulls from primary agent, pushes to all others)
 
-No YAML knowledge required! The IR format (`.aligntrue/rules.md`) is generated automatically.
+No YAML knowledge required! The internal IR (`.aligntrue/.rules.yaml`) is generated automatically.
 
 ## Quick Start
 
@@ -32,7 +32,7 @@ cd examples/golden-repo
 ### 2. View the Rules
 
 ```bash
-cat .aligntrue/rules.md
+cat AGENTS.md
 ```
 
 You'll see 5 practical rules:
@@ -90,7 +90,7 @@ Each output includes:
 
 ### 1. Edit Rules
 
-Open `.aligntrue/rules.md` and add a new rule or modify an existing one.
+Open `AGENTS.md` and add a new rule or modify an existing one.
 
 ### 2. Sync Changes
 
@@ -102,10 +102,10 @@ node ../../packages/cli/dist/index.js sync
 
 ```bash
 # Check that outputs changed
-git diff .cursor/rules/aligntrue.mdc AGENTS.md .vscode/mcp.json
+git diff .cursor/rules/aligntrue.mdc .vscode/mcp.json .aligntrue/.rules.yaml
 ```
 
-The content hashes will update automatically, and fidelity notes will reflect any new unmapped fields.
+The content hashes will update automatically, and the internal IR (`.aligntrue/.rules.yaml`) will be regenerated.
 
 ## Advanced Features
 
@@ -127,26 +127,31 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 
 exporters:
   - cursor
   - agents-md
   - vscode-mcp
 
+sync:
+  auto_pull: true
+  primary_agent: cursor
+
 git:
   mode: ignore
 ```
 
+**Note:** The `sources` path points to `.aligntrue/.rules.yaml` (internal IR), but users should edit `AGENTS.md` or agent files directly. The IR is auto-generated during sync.
+
 ### Rule Format
 
-Each rule in `.aligntrue/rules.md` can include:
+Each rule in `AGENTS.md` includes:
 
-- `id`: Unique identifier (kebab-case)
-- `severity`: error, warn, or info
-- `applies_to`: Glob patterns for file targeting
-- `guidance`: Markdown-formatted explanation
-- `vendor`: Agent-specific metadata (e.g., `vendor.cursor.ai_hint`)
+- `ID`: Unique identifier (dot notation, e.g., `testing.require.tests`)
+- `Severity`: ERROR, WARN, or INFO (uppercase in AGENTS.md)
+- `Scope`: File patterns the rule applies to
+- `Guidance`: Markdown-formatted explanation with examples
 
 ## Expected Performance
 

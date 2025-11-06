@@ -39,21 +39,21 @@ else
   exit 1
 fi
 
-# Test 2: Rules file exists
-echo "Test 2: Rules file exists..."
-if [ -f ".aligntrue/rules.md" ]; then
-  pass "Rules file exists"
+# Test 2: IR file exists (internal)
+echo "Test 2: IR file exists..."
+if [ -f ".aligntrue/.rules.yaml" ]; then
+  pass "IR file exists (.aligntrue/.rules.yaml)"
 else
-  fail "Rules file not found"
+  fail "IR file not found"
   exit 1
 fi
 
-# Test 3: Validate rules with md lint
-echo "Test 3: Validating rules..."
-if node ../../packages/cli/dist/index.js md lint .aligntrue/rules.md >/dev/null 2>&1; then
-  pass "Rules file is valid"
+# Test 3: AGENTS.md exists (primary user file)
+echo "Test 3: AGENTS.md exists..."
+if [ -f "AGENTS.md" ]; then
+  pass "AGENTS.md exists (primary user-editable file)"
 else
-  fail "Rules validation failed"
+  fail "AGENTS.md not found"
 fi
 
 # Test 4: Run sync
