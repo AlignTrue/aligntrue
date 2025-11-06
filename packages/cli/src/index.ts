@@ -51,15 +51,17 @@ async function main() {
     console.log("  md             Markdown validation and formatting\n");
 
     console.log("Team Commands:");
-    console.log("  team           Team mode management");
+    console.log(
+      "  team           Team mode management (enable, status, approve, list-allowed, remove)",
+    );
     console.log("  pull           Pull rules from git repository");
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
-    console.log("  update         Check and apply updates");
+    console.log("  update         Check and apply updates (check, apply)");
     console.log("  onboard        Generate developer onboarding checklist");
     console.log("  scopes         List configured scopes");
     console.log(
-      "  override       Manage overlays for fork-safe customization\n",
+      "  override       Manage overlays for fork-safe customization (add, status, diff, remove)\n",
     );
 
     console.log("Plugs Management:");
@@ -68,9 +70,14 @@ async function main() {
     );
 
     console.log("Settings:");
-    console.log("  config         View or edit configuration");
-    console.log("  telemetry      Telemetry settings");
-    console.log("  privacy        Privacy and consent management");
+    console.log("  config         View or edit configuration (show, edit)");
+    console.log(
+      "  backup         Manage backups (create, list, restore, cleanup)",
+    );
+    console.log("  telemetry      Telemetry settings (on, off, status)");
+    console.log(
+      "  privacy        Privacy and consent management (audit, revoke)",
+    );
     console.log("  migrate        Schema migration (run --help for policy)\n");
 
     console.log("Run aligntrue <command> --help for command-specific options");

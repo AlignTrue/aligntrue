@@ -321,7 +321,9 @@ describe("team command", () => {
         expect.stringContaining("Mode: team"),
       );
       expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining("Lockfile: strict"),
+        expect.stringContaining(
+          "Lockfile validation: strict (file generation: enabled)",
+        ),
       );
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("Allow List: 2 sources approved"),

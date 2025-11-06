@@ -68,7 +68,7 @@ export async function scopes(args: string[]): Promise<void> {
       console.log("    exclude:");
       console.log('      - "**/*.test.ts"');
       console.log("");
-      console.log("See: docs/guides/scopes.md (when available)");
+      console.log("Learn more: https://aligntrue.ai/docs/concepts/scopes");
       return;
     }
 

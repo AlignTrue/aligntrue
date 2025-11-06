@@ -3,7 +3,7 @@
  * Orchestrates loading config, pulling sources, and syncing IR to/from agents
  */
 
-import { existsSync, writeFileSync } from "fs";
+import { existsSync, writeFileSync, unlinkSync } from "fs";
 import { dirname, resolve, join } from "path";
 import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
@@ -87,6 +87,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--force",
     hasValue: false,
     description: "Bypass allow list validation in team mode (use with caution)",
+  },
+  {
+    flag: "--verbose",
+    hasValue: false,
+    description: "Show detailed fidelity notes and warnings",
   },
   {
     flag: "--help",
@@ -754,7 +759,21 @@ export async function sync(args: string[]): Promise<void> {
 
     spinner.stop(dryRun ? "Preview complete" : "Sync complete");
 
-    // Step 8: Auto-cleanup old backups (if configured and not dry-run)
+    // Step 8: Remove starter file after first successful sync (if applicable)
+    if (!dryRun && result.success && !acceptAgent) {
+      const starterPath = join(cwd, ".cursor/rules/aligntrue-starter.mdc");
+      const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
+      if (existsSync(starterPath) && existsSync(syncedPath)) {
+        try {
+          unlinkSync(starterPath);
+          clack.log.info("Removed starter file (replaced by synced rules)");
+        } catch {
+          // Silent failure - not critical
+        }
+      }
+    }
+
+    // Step 9: Auto-cleanup old backups (if configured and not dry-run)
     if (!dryRun && config.backup?.auto_backup) {
       const keepCount = config.backup.keep_count ?? 10;
       try {
@@ -769,7 +788,7 @@ export async function sync(args: string[]): Promise<void> {
       }
     }
 
-    // Step 9: Display results
+    // Step 10: Display results
     if (result.success) {
       if (dryRun) {
         clack.log.info("Dry-run mode: no files written");
@@ -787,9 +806,32 @@ export async function sync(args: string[]): Promise<void> {
 
       // Show warnings
       if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach((warning) => {
-          clack.log.warn(warning);
-        });
+        const verbose = parsed.flags["verbose"] as boolean | undefined;
+        if (verbose) {
+          // Show all warnings in verbose mode
+          result.warnings.forEach((warning) => {
+            clack.log.warn(warning);
+          });
+        } else {
+          // Show summary count for fidelity notes, full text for other warnings
+          const fidelityNotes = result.warnings.filter((w) =>
+            w.startsWith("["),
+          );
+          const otherWarnings = result.warnings.filter(
+            (w) => !w.startsWith("["),
+          );
+
+          if (fidelityNotes.length > 0) {
+            clack.log.info(
+              `ℹ ${fidelityNotes.length} fidelity note${fidelityNotes.length !== 1 ? "s" : ""} (use --verbose to see details)`,
+            );
+          }
+
+          // Always show non-fidelity warnings
+          otherWarnings.forEach((warning) => {
+            clack.log.warn(warning);
+          });
+        }
       }
 
       // Show conflicts

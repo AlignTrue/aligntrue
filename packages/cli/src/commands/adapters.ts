@@ -71,9 +71,9 @@ export async function adapters(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue adapters list",
+        "aligntrue adapters enable --interactive  # Recommended for new users",
         "aligntrue adapters enable cursor",
         "aligntrue adapters enable cursor claude-md vscode-mcp",
-        "aligntrue adapters enable --interactive",
         "aligntrue adapters disable cursor",
       ],
       notes: [
