@@ -161,20 +161,21 @@ function parseRuleSection(
         : "manual";
 
   // Build rule with schema fields
+  const globs = fileLevelMetadata["globs"];
+  const appliesToValue = Array.isArray(globs) ? globs : ["**/*"];
+  const description = fileLevelMetadata["description"];
+  const title = fileLevelMetadata["title"];
+  const tags = fileLevelMetadata["tags"];
+
   const rule: AlignRule = {
     id: normalized,
     severity,
-    applies_to:
-      applies_to.length > 0
-        ? applies_to
-        : fileLevelMetadata["globs"] || ["**/*"],
+    applies_to: applies_to.length > 0 ? applies_to : appliesToValue,
     mode,
-    ...(fileLevelMetadata["description"] && {
-      description: fileLevelMetadata["description"],
-    }),
-    ...(fileLevelMetadata["title"] && { title: fileLevelMetadata["title"] }),
-    ...(fileLevelMetadata["tags"] && { tags: fileLevelMetadata["tags"] }),
-    ...(guidance && { guidance }),
+    ...(typeof description === "string" ? { description } : {}),
+    ...(typeof title === "string" ? { title } : {}),
+    ...(Array.isArray(tags) ? { tags } : {}),
+    ...(guidance ? { guidance } : {}),
   };
 
   // Safety: preserve unknown Cursor fields
@@ -200,10 +201,14 @@ function parseRuleSection(
       {} as Record<string, unknown>,
     );
 
+    const perRuleMeta =
+      hasPerRuleMetadata && typeof perRuleMetadata[ruleId] === "object"
+        ? (perRuleMetadata[ruleId] as Record<string, unknown>)
+        : {};
     rule.vendor = {
       cursor: {
-        ...(unknownFields.length > 0 && { _unknown: unknownObj }),
-        ...(hasPerRuleMetadata ? perRuleMetadata[ruleId] : {}),
+        ...(unknownFields.length > 0 ? { _unknown: unknownObj } : {}),
+        ...perRuleMeta,
       },
     };
   }

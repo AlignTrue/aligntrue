@@ -15,6 +15,7 @@ import type {
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
+import type { ModeHints } from "@aligntrue/core";
 import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
@@ -106,7 +107,7 @@ export class ClaudeMdExporter extends ExporterBase {
   }
 
   private generateClaudeMdContent(
-    modeHints: string,
+    modeHints: ModeHints,
     maxBlocks: number,
     maxTokens: number,
     unresolvedPlugs?: number,

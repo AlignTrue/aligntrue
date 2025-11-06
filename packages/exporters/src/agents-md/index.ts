@@ -13,6 +13,7 @@ import type {
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 import type { AlignRule } from "@aligntrue/schema";
+import type { ModeHints } from "@aligntrue/core";
 import { computeContentHash } from "@aligntrue/schema";
 import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
@@ -124,7 +125,7 @@ export class AgentsMdExporter extends ExporterBase {
    * Generate complete AGENTS.md content with mode hints and caps
    */
   private generateAgentsMdContent(
-    modeHints: string,
+    modeHints: ModeHints,
     maxBlocks: number,
     maxTokens: number,
     unresolvedPlugs?: number,
@@ -179,7 +180,7 @@ export class AgentsMdExporter extends ExporterBase {
    * Applies token caps and mode hints
    */
   private generateRuleSections(
-    modeHints: string,
+    modeHints: ModeHints,
     maxBlocks: number,
     maxTokens: number,
   ): { content: string; warnings: string[] } {
@@ -214,7 +215,7 @@ export class AgentsMdExporter extends ExporterBase {
   private generateRuleSection(
     rule: AlignRule,
     scopePath: string,
-    modeHints: string,
+    modeHints: ModeHints,
   ): string {
     const lines: string[] = [];
 

@@ -69,7 +69,10 @@ export class CrushConfigExporter extends ExporterBase {
 
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    return this.buildResult(filesWritten, config["content_hash"]);
+    return this.buildResult(
+      filesWritten,
+      (config["content_hash"] as string) || "",
+    );
   }
 
   resetState(): void {

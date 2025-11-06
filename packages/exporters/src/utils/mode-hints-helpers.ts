@@ -15,7 +15,7 @@ import { prioritizeRulesForCapExport, renderModeMarkers } from "./index.js";
  * Mode hints configuration extracted from config
  */
 export interface ModeHintsConfig {
-  modeHints: string;
+  modeHints: ModeHints;
   maxBlocks: number;
   maxTokens: number;
 }
@@ -61,7 +61,7 @@ export function extractModeConfig(
  */
 export function applyRulePrioritization(
   rules: AlignRule[],
-  modeHints: string,
+  modeHints: ModeHints,
   maxBlocks: number,
   maxTokens: number,
 ): PrioritizationResult {
@@ -95,7 +95,7 @@ export function applyRulePrioritization(
  * @param modeHints Mode hints setting
  * @returns Array of preface lines to insert after header
  */
-export function generateSessionPreface(modeHints: string): string[] {
+export function generateSessionPreface(modeHints: ModeHints): string[] {
   if (modeHints !== "hints") {
     return [];
   }
