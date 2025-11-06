@@ -20,11 +20,14 @@ export interface MarkdownValidationResult {
 
 /**
  * Validate markdown file containing aligntrue blocks
+ * Supports both fenced ```aligntrue blocks and HTML comment format (AGENTS.md)
  */
-export function validateMarkdown(markdown: string): MarkdownValidationResult {
+export async function validateMarkdown(
+  markdown: string,
+): Promise<MarkdownValidationResult> {
   const errors: MarkdownValidationError[] = [];
 
-  // Step 1: Parse markdown
+  // Step 1: Try parsing as fenced blocks first
   const parseResult = parseMarkdown(markdown);
 
   if (parseResult.errors.length > 0) {
@@ -37,7 +40,12 @@ export function validateMarkdown(markdown: string): MarkdownValidationResult {
     return { valid: false, errors };
   }
 
-  // Step 2: Build IR
+  // If no fenced blocks found, try HTML comment format (AGENTS.md)
+  if (parseResult.blocks.length === 0) {
+    return await validateAgentsMdFormat(markdown);
+  }
+
+  // Step 2: Build IR from fenced blocks
   const irResult = buildIR(parseResult.blocks);
 
   if (irResult.errors.length > 0) {
@@ -64,6 +72,62 @@ export function validateMarkdown(markdown: string): MarkdownValidationResult {
     valid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * Validate AGENTS.md format (HTML comments with metadata)
+ */
+async function validateAgentsMdFormat(
+  markdown: string,
+): Promise<MarkdownValidationResult> {
+  const errors: MarkdownValidationError[] = [];
+
+  // Import parseAgentsMd dynamically
+  try {
+    const { parseAgentsMd } = await import("./parsers/agents-md.js");
+    const result = parseAgentsMd(markdown);
+
+    if (!result.rules || result.rules.length === 0) {
+      errors.push({
+        line: 1,
+        message: "No aligntrue blocks found in markdown",
+      });
+      return { valid: false, errors };
+    }
+
+    // Build minimal IR document for schema validation
+    // Version from AGENTS.md is just "1", convert to semver
+    const version = result.version ? `${result.version}.0.0` : "1.0.0";
+    const irDocument = {
+      id: "validation-check",
+      version,
+      spec_version: "1",
+      rules: result.rules,
+    };
+
+    // Validate against schema
+    const schemaResult = validateAlignSchema(irDocument);
+
+    if (!schemaResult.valid && schemaResult.errors) {
+      errors.push(
+        ...schemaResult.errors.map((err) => ({
+          line: 1,
+          message: `${err.path}: ${err.message}`,
+        })),
+      );
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  } catch (err) {
+    errors.push({
+      line: 1,
+      message: `Failed to parse AGENTS.md format: ${err instanceof Error ? err.message : String(err)}`,
+    });
+    return { valid: false, errors };
+  }
 }
 
 /**
