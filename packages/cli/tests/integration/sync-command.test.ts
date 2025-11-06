@@ -45,7 +45,7 @@ afterEach(async () => {
 
 describe("Sync Command Integration", () => {
   describe("Basic Sync (IR → Agents)", () => {
-    it.skip("reads IR from .aligntrue/rules.md and syncs to exporters", async () => {
+    it.skip("reads IR from .aligntrue/.rules.yaml and syncs to exporters", async () => {
       // TODO: Fix - hitting validation errors with test IR data
       // Setup: Create config and IR
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });

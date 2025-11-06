@@ -48,10 +48,10 @@ Shows validation errors for multiple `aligntrue` blocks (not allowed).
 
 ### Authoring in markdown
 
-1. **Create markdown file:**
+1. **Create markdown file (AGENTS.md or custom markdown):**
 
    ```bash
-   vi .aligntrue/rules.md
+   vi AGENTS.md
    ```
 
 2. **Add fenced code block:**
