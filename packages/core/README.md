@@ -35,7 +35,7 @@ engine.registerExporter(cursorExporter);
 engine.registerExporter(agentsMdExporter);
 
 // Sync IR to agents (default direction)
-const result = await engine.syncToAgents(".aligntrue/rules.md", {
+const result = await engine.syncToAgents(".aligntrue/.rules.yaml", {
   configPath: ".aligntrue/config.yaml",
   dryRun: false,
   backup: true,
@@ -70,7 +70,7 @@ exporters:
   - agents-md
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
   - type: git
     url: https://github.com/AlignTrue/aligntrue
     path: examples/packs/global.yaml
@@ -436,10 +436,10 @@ Mock exporters available in `tests/mocks/`:
 
 ### Default Direction: IR → Agents
 
-By default, sync reads from IR (`.aligntrue/rules.md` or `.aligntrue.yaml`) and writes to agent-specific formats:
+By default, sync reads from IR (`.aligntrue/.rules.yaml` or `.aligntrue.yaml`) and writes to agent-specific formats:
 
 ```typescript
-await engine.syncToAgents(".aligntrue/rules.md");
+await engine.syncToAgents(".aligntrue/.rules.yaml");
 ```
 
 ### Pullback Direction: Agent → IR
@@ -447,7 +447,7 @@ await engine.syncToAgents(".aligntrue/rules.md");
 With `--accept-agent`, sync reads from agent format and updates IR:
 
 ```typescript
-await engine.syncFromAgent("cursor", ".aligntrue/rules.md", {
+await engine.syncFromAgent("cursor", ".aligntrue/.rules.yaml", {
   acceptAgent: "cursor",
 });
 ```
