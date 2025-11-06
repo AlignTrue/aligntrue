@@ -11,6 +11,7 @@ exporters:
   - vscode-mcp
 
 sync:
+  workflow_mode: native_format
   auto_pull: true
   primary_agent: cursor
 

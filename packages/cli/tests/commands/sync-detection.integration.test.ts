@@ -33,7 +33,16 @@ describe("Sync detection integration", () => {
     );
     writeFileSync(
       join(testDir, ".aligntrue/.rules.yaml"),
-      "rules: []\nspec_version: '1'\n",
+      `id: test-project
+version: 1.0.0
+spec_version: '1'
+rules:
+  - id: test.example.rule
+    severity: info
+    applies_to:
+      - "**/*.ts"
+    guidance: Test rule
+`,
     );
   });
 
@@ -65,7 +74,7 @@ describe("Sync detection integration", () => {
     writeFileSync(join(testDir, "AGENTS.md"), "# Test rules");
 
     try {
-      await sync(["--auto-enable", "--dry-run"]);
+      await sync(["--auto-enable"]);
     } catch {
       // Expected to exit
     }
@@ -163,10 +172,11 @@ describe("Sync detection integration", () => {
     // Create multiple detectable agents
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
+    writeFileSync(join(testDir, ".vscode", "mcp.json"), "{}");
     writeFileSync(join(testDir, "CLAUDE.md"), "# Test");
 
     try {
-      await sync(["--auto-enable", "--dry-run"]);
+      await sync(["--auto-enable"]);
     } catch {
       // Expected to exit
     }

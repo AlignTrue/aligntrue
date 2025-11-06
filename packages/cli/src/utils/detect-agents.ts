@@ -12,34 +12,25 @@ import { join } from "path";
  */
 export const AGENT_PATTERNS: Record<string, string[]> = {
   // Phase 1 exporters
-  cursor: [".cursor/", ".cursor/rules/"],
+  cursor: [".cursor/rules/"], // Only detect if rules subdirectory exists
   "agents-md": ["AGENTS.md"],
-  "vscode-mcp": [".vscode/", ".vscode/mcp.json"],
+  "vscode-mcp": [".vscode/mcp.json"], // Only detect if MCP config exists
 
   // MCP config exporters
-  "cursor-mcp": [".cursor/", ".cursor/mcp.json"],
+  "cursor-mcp": [".cursor/mcp.json"], // Only detect if MCP config exists
   "root-mcp": [".mcp.json"],
-  "windsurf-mcp": [".windsurf/", ".windsurf/mcp_config.json"],
-  "amazonq-mcp": [".amazonq/", ".amazonq/mcp.json"],
-  "firebase-mcp": [".idx/", ".idx/mcp.json"],
-  "kilocode-mcp": [".kilocode/", ".kilocode/mcp.json"],
-  "roocode-mcp": [".roo/", ".roo/mcp.json"],
+  "windsurf-mcp": [".windsurf/mcp_config.json"], // Only detect if MCP config exists
+  "amazonq-mcp": [".amazonq/mcp.json"], // Only detect if MCP config exists
+  "firebase-mcp": [".idx/mcp.json"], // Only detect if MCP config exists
+  "kilocode-mcp": [".kilocode/mcp.json"], // Only detect if MCP config exists
+  "roocode-mcp": [".roo/mcp.json"], // Only detect if MCP config exists
 
   // Markdown format exporters
   "claude-md": ["CLAUDE.md"],
   "crush-md": ["CRUSH.md"],
   "warp-md": ["WARP.md"],
-  copilot: ["AGENTS.md"], // Shares AGENTS.md format
-  jules: ["AGENTS.md"],
-  amp: ["AGENTS.md"],
-  "openai-codex": ["AGENTS.md"],
-  "windsurf-md": ["AGENTS.md"],
-  "aider-md": ["AGENTS.md"],
-  "gemini-cli": ["AGENTS.md"],
-  "qwen-code": ["AGENTS.md"],
-  "roocode-md": ["AGENTS.md"],
-  "zed-md": ["AGENTS.md"],
-  "opencode-md": ["AGENTS.md"],
+  // Note: agents that share AGENTS.md are intentionally not auto-detected
+  // Users must explicitly enable them if needed
 
   // Plain text format exporters
   cline: [".clinerules"],
@@ -49,28 +40,28 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   firebender: ["firebender.json"],
   "crush-config": [".crush.json"],
   "opencode-config": ["opencode.json"],
-  "gemini-config": [".gemini/", ".gemini/settings.json"],
-  "qwen-config": [".qwen/", ".qwen/settings.json"],
-  "zed-config": [".zed/", ".zed/settings.json"],
-  "codex-config": [".codex/", ".codex/config.toml"],
+  "gemini-config": [".gemini/settings.json"], // Only detect if config exists
+  "qwen-config": [".qwen/settings.json"], // Only detect if config exists
+  "zed-config": [".zed/settings.json"], // Only detect if config exists
+  "codex-config": [".codex/config.toml"], // Only detect if config exists
   "openhands-config": ["config.toml"],
 
   // Directory-based exporters
-  amazonq: [".amazonq/", ".amazonq/rules/"],
-  augmentcode: [".augment/", ".augment/rules/"],
-  kilocode: [".kilocode/", ".kilocode/rules/"],
-  kiro: [".kiro/", ".kiro/steering/"],
-  "firebase-studio": [".idx/", ".idx/airules.md"],
-  junie: [".junie/", ".junie/guidelines.md"],
-  "trae-ai": [".trae/", ".trae/rules/project_rules.md"],
-  openhands: [".openhands/", ".openhands/microagents/repo.md"],
+  amazonq: [".amazonq/rules/"], // Only detect if rules subdirectory exists
+  augmentcode: [".augment/rules/"], // Only detect if rules subdirectory exists
+  kilocode: [".kilocode/rules/"], // Only detect if rules subdirectory exists
+  kiro: [".kiro/steering/"], // Only detect if steering subdirectory exists
+  "firebase-studio": [".idx/airules.md"], // Only detect if specific file exists
+  junie: [".junie/guidelines.md"], // Only detect if specific file exists
+  "trae-ai": [".trae/rules/project_rules.md"], // Only detect if specific file exists
+  openhands: [".openhands/microagents/repo.md"], // Only detect if specific file exists
 
   // YAML config exporters
   "aider-config": [".aider.conf.yml"],
 };
 
 /**
- * Human-readable display names for agents
+ * Human-readable display names for agents (includes all agents, not just auto-detected)
  */
 const AGENT_DISPLAY_NAMES: Record<string, string> = {
   cursor: "Cursor",
