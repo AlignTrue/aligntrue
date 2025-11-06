@@ -182,4 +182,4 @@ See the IR format reference for complete schema.
 ## Related pages
 
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - IR format and how rules flow to agents
-- [CLI Reference - md commands](/docs/04-reference/cli-reference#development-commands) - md lint, compile, format
+- [CLI Reference - md commands](/docs/04-reference/cli-reference/development#aligntrue-md-lint) - md lint, compile, format

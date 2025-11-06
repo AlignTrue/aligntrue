@@ -590,7 +590,7 @@ AGENTS.md
 Add a note to your README:
 
 ```markdown
-## AI Agent Setup
+## AI agent setup
 
 This project uses AlignTrue for consistent AI agent behavior.
 
