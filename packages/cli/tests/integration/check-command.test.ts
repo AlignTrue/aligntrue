@@ -1,6 +1,9 @@
 /**
  * Integration tests for check command
  * Tests real validation without mocking @aligntrue/* packages
+ *
+ * Note: Skipped on Windows CI due to persistent EBUSY file locking issues
+ * that cannot be reliably worked around. Coverage is provided by Unix CI.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -14,6 +17,10 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-check");
 
+// Skip on Windows due to unreliable file cleanup in CI
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
+
 beforeEach(async () => {
   await cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
@@ -24,7 +31,7 @@ afterEach(async () => {
   await cleanupDir(TEST_DIR);
 });
 
-describe("Check Command Integration", () => {
+describeSkipWindows("Check Command Integration", () => {
   describe("Valid IR", () => {
     it("validates correct IR schema and exits with 0", async () => {
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
