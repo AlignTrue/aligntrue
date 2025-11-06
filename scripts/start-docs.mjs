@@ -87,30 +87,38 @@ async function killProcessesOnPort(port) {
   const failed = [];
 
   for (const pid of pids) {
+    info(`  Attempting to kill PID ${pid} with SIGTERM...`);
+    
     // Try graceful shutdown first
     const gracefulKilled = killProcess(pid, "SIGTERM");
     if (gracefulKilled) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Give it more time to die gracefully
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       // Check if still running
       const stillRunning = getProcessesOnPort(port).includes(pid);
       if (!stillRunning) {
+        success(`  Killed PID ${pid} gracefully`);
         killed.push(pid);
         continue;
       }
+      warn(`  PID ${pid} still running after SIGTERM, trying SIGKILL...`);
     }
 
     // Force kill if graceful failed or not attempted
     const forceKilled = killProcess(pid, "SIGKILL");
     if (forceKilled) {
       // Wait to confirm kill
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const stillRunning = getProcessesOnPort(port).includes(pid);
       if (!stillRunning) {
+        success(`  Force killed PID ${pid}`);
         killed.push(pid);
       } else {
+        error(`  Failed to kill PID ${pid} even with SIGKILL`);
         failed.push(pid);
       }
     } else {
+      error(`  Could not send kill signal to PID ${pid} (permission denied?)`);
       failed.push(pid);
     }
   }
@@ -232,7 +240,7 @@ async function main() {
       `\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`,
     );
     log(`${colors.blue}Press Ctrl+C to stop the server${colors.reset}\n`);
-    process.exit(0);
+    // Don't exit - let the dev server keep running
   } else {
     error(`Server failed to respond after ${MAX_WAIT_MS / 1000}s`);
 
