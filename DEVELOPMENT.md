@@ -1,10 +1,3 @@
-<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
-<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
-
-# Development guide
-
-This guide is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs/development).
-
 # Development setup
 
 ## Prerequisites
