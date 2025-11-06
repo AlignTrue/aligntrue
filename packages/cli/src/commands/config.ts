@@ -101,6 +101,17 @@ async function showConfig(configPath: string): Promise<void> {
 
     if (cfg.sync) {
       console.log(`\n🔄 Sync:`);
+      const workflowMode = cfg.sync.workflow_mode || "auto";
+      console.log(`  Workflow mode: ${workflowMode}`);
+      if (workflowMode === "native_format") {
+        console.log(
+          `    → Edit in primary agent, AlignTrue syncs automatically`,
+        );
+      } else if (workflowMode === "ir_source") {
+        console.log(`    → Edit .aligntrue/rules.md as source of truth`);
+      } else if (workflowMode === "auto") {
+        console.log(`    → Auto-detects based on import source`);
+      }
       console.log(`  Auto-pull: ${cfg.sync.auto_pull ?? "not set"}`);
       if (cfg.sync.primary_agent) {
         console.log(`  Primary agent: ${cfg.sync.primary_agent}`);

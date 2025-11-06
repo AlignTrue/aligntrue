@@ -149,7 +149,9 @@ async function teamStatus(): Promise<void> {
     const lockfileEnabled = config.modules?.lockfile ?? false;
     const lockfileMode = config.lockfile?.mode ?? "off";
     if (lockfileEnabled) {
-      console.log(`Lockfile: ${lockfileMode}`);
+      console.log(
+        `Lockfile validation: ${lockfileMode} (file generation: enabled)`,
+      );
       const lockfilePath = ".aligntrue.lock.json";
       const lockfileExists = existsSync(lockfilePath);
       if (lockfileExists) {
@@ -158,6 +160,9 @@ async function teamStatus(): Promise<void> {
         console.log(`  File: ${lockfilePath} (not generated yet)`);
         console.log("  💡 Run 'aligntrue sync' to generate");
       }
+      console.log(
+        "  ℹ️  Validation mode: off=generate only, soft=warn, strict=block",
+      );
     } else {
       console.log("Lockfile: disabled");
       console.log("  💡 Enable in config: modules.lockfile: true");
@@ -344,9 +349,9 @@ async function teamEnable(
     console.log("  - Team members clone repo and run: aligntrue sync");
     console.log("  - Lockfile ensures identical outputs (deterministic)");
     console.log("  - Drift detection catches configuration divergence");
-    console.log(
-      "\n💡 Tip: Use 'aligntrue team approve' to create an allow list",
-    );
+    console.log("\n💡 Tips:");
+    console.log("  - Use 'aligntrue team approve' to create an allow list");
+    console.log("  - Run 'aligntrue backup create' before major changes");
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {

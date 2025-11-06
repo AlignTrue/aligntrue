@@ -765,23 +765,48 @@ export async function saveMinimalConfig(
     minimalConfig.lockfile = { mode: config.lockfile.mode };
   }
 
+  // Build sync section only if there are non-default values
+  const syncSection: Partial<typeof config.sync> = {};
+  let hasSyncChanges = false;
+
   if (
-    config.sync?.auto_pull !== defaults.sync?.auto_pull ||
-    config.sync?.on_conflict !== defaults.sync?.on_conflict
+    config.sync?.auto_pull !== defaults.sync?.auto_pull &&
+    config.sync?.auto_pull !== undefined
   ) {
-    minimalConfig.sync = {};
-    if (
-      config.sync?.auto_pull !== defaults.sync?.auto_pull &&
-      config.sync?.auto_pull !== undefined
-    ) {
-      minimalConfig.sync.auto_pull = config.sync.auto_pull;
-    }
-    if (
-      config.sync?.on_conflict !== defaults.sync?.on_conflict &&
-      config.sync?.on_conflict !== undefined
-    ) {
-      minimalConfig.sync.on_conflict = config.sync.on_conflict;
-    }
+    syncSection.auto_pull = config.sync.auto_pull;
+    hasSyncChanges = true;
+  }
+  if (
+    config.sync?.on_conflict !== defaults.sync?.on_conflict &&
+    config.sync?.on_conflict !== undefined
+  ) {
+    syncSection.on_conflict = config.sync.on_conflict;
+    hasSyncChanges = true;
+  }
+  if (
+    config.sync?.workflow_mode !== defaults.sync?.workflow_mode &&
+    config.sync?.workflow_mode !== undefined
+  ) {
+    syncSection.workflow_mode = config.sync.workflow_mode;
+    hasSyncChanges = true;
+  }
+  if (
+    config.sync?.primary_agent !== defaults.sync?.primary_agent &&
+    config.sync?.primary_agent !== undefined
+  ) {
+    syncSection.primary_agent = config.sync.primary_agent;
+    hasSyncChanges = true;
+  }
+  if (
+    config.sync?.show_diff_on_pull !== defaults.sync?.show_diff_on_pull &&
+    config.sync?.show_diff_on_pull !== undefined
+  ) {
+    syncSection.show_diff_on_pull = config.sync.show_diff_on_pull;
+    hasSyncChanges = true;
+  }
+
+  if (hasSyncChanges) {
+    minimalConfig.sync = syncSection;
   }
 
   // Sources: only if not default
