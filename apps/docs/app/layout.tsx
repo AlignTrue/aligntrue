@@ -21,6 +21,9 @@ export const metadata: Metadata = {
     "developer tools",
     "AI coding",
   ],
+  icons: {
+    icon: "/favicon.ico",
+  },
   openGraph: {
     type: "website",
     title: "AlignTrue",
