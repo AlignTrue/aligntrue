@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Gemini MD exporter** (`gemini-md`) for Gemini-specific GEMINI.md format (complements gemini-cli AGENTS.md and gemini-config JSON)
 - **Hybrid agent detection** during sync with interactive prompts for newly discovered agents
 - `aligntrue adapters detect` command to manually check for new agents
 - `aligntrue adapters ignore <agent>` command to suppress detection prompts for specific agents
@@ -27,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-fix for rule IDs on import (stores original ID in vendor bag)
 - Backup system enabled by default for sync and import operations
 - All-agent detection in init flow (was first-match only)
+- **Mermaid diagram support** in documentation with AlignTrue brand theming
+- **"How it works" visual flow diagram** on homepage showing AGENTS.md → sync → multiple agents
+- **Sync behavior sequence diagrams** showing IR→Agent and Agent→IR flows with auto-pull
+- **Solo vs team mode architecture comparison diagram** illustrating workflow differences
+- **Workflow decision tree diagram** for choosing sync strategy (auto-pull vs manual review)
+- **Customization decision flowchart** replacing ASCII art with visual Mermaid diagram
 
 ### Fixed
 

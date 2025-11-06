@@ -1,0 +1,12 @@
+{
+  "name": "gemini-md",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Gemini-specific GEMINI.md format",
+  "outputs": ["GEMINI.md"],
+  "handler": "./index.ts",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in GEMINI.md format",
+    "Autofix hints not represented in GEMINI.md format"
+  ]
+}

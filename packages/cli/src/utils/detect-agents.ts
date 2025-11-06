@@ -29,6 +29,7 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   "claude-md": ["CLAUDE.md"],
   "crush-md": ["CRUSH.md"],
   "warp-md": ["WARP.md"],
+  "gemini-md": ["GEMINI.md"],
   // Note: agents that share AGENTS.md are intentionally not auto-detected
   // Users must explicitly enable them if needed
 
@@ -77,6 +78,7 @@ const AGENT_DISPLAY_NAMES: Record<string, string> = {
   "claude-md": "Claude (CLAUDE.md)",
   "crush-md": "Crush (CRUSH.md)",
   "warp-md": "Warp (WARP.md)",
+  "gemini-md": "Gemini (GEMINI.md)",
   copilot: "GitHub Copilot",
   jules: "Jules",
   amp: "Amp",
