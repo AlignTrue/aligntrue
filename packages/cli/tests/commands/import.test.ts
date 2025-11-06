@@ -271,12 +271,12 @@ Test guidance.
       expect(e.message).toBe("exit: 0");
     }
 
-    // Check that rules.md was created
-    const rulesPath = join(testWorkspace, ".aligntrue", "rules.md");
+    // Check that .rules.yaml was created
+    const rulesPath = join(testWorkspace, ".aligntrue", ".rules.yaml");
     expect(existsSync(rulesPath)).toBe(true);
 
     const content = readFileSync(rulesPath, "utf-8");
-    expect(content).toContain("```aligntrue");
+    expect(content).toContain("spec_version:");
     expect(content).toContain("id: test-rule");
     expect(content).toContain("severity: warn");
     expect(content).toContain("Test guidance");
