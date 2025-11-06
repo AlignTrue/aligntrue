@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed cross-platform path handling in docs validation script (Windows backslash support)
+- Fixed CSS formatting in homepage stylesheet
+
 ### Removed
 
 - Removed catalog concept and catalog source provider
