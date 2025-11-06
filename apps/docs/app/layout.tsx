@@ -1,7 +1,4 @@
 // apps/docs/app/layout.tsx
-import "nextra-theme-docs/style.css";
-import "@aligntrue/ui/nextra/nextra.css";
-import "./globals.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Head } from "nextra/components";
