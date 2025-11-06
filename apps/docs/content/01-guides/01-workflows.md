@@ -4,6 +4,19 @@ AlignTrue supports two primary editing workflows. Understanding which one fits y
 
 > **Quick guide** for choosing your workflow. For comprehensive sync behavior reference, see [Sync Behavior](/docs/03-concepts/sync-behavior).
 
+## Workflow configuration mapping
+
+**Config values → Workflow names:**
+
+| Config Value                   | Workflow Name     | Edit Source              | Auto-pull | Best For                   |
+| ------------------------------ | ----------------- | ------------------------ | --------- | -------------------------- |
+| `workflow_mode: ir_source`     | Manual Review     | `.aligntrue/.rules.yaml` | ❌ No     | Teams, explicit control    |
+| `workflow_mode: native_format` | AGENTS.md Primary | Agent files              | ✅ Yes    | Solo devs, rapid iteration |
+| `auto_pull: false`             | Manual Review     | Any                      | ❌ No     | Reviewers, approvals       |
+| `auto_pull: true`              | AGENTS.md Primary | Any                      | ✅ Yes    | Quick sync, automatic      |
+
+When you run `aligntrue init`, AlignTrue automatically configures these values based on your choices.
+
 ## The two workflows
 
 ### AGENTS.md (Primary) workflow
