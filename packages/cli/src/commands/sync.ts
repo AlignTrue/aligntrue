@@ -134,13 +134,13 @@ export async function sync(args: string[]): Promise<void> {
       ],
       notes: [
         "Description:",
-        "  Loads rules from .aligntrue/rules.md (or configured source), resolves scopes,",
+        "  Loads rules from .aligntrue/.rules.yaml (internal IR), resolves scopes,",
         "  and syncs to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).",
         "",
         "  In team mode with lockfile enabled, validates lockfile before syncing.",
         "",
-        "  Default direction: IR → agents (rules.md to agent config files)",
-        "  Pullback direction: agents → IR (with --accept-agent flag)",
+        "  Default direction: IR → agents (internal IR to agent config files)",
+        "  Pullback direction: agents → IR (with --accept-agent flag or auto-pull enabled)",
         "",
         "Agent Detection:",
         "  Automatically detects new agents in workspace and prompts to enable them.",
@@ -451,13 +451,13 @@ export async function sync(args: string[]): Promise<void> {
                 options: [
                   {
                     value: "keep-ir",
-                    label: "Keep my edits to rules.md (skip auto-pull)",
-                    hint: "Recommended if you manually edited rules",
+                    label: "Keep my edits to AGENTS.md (skip auto-pull)",
+                    hint: "Recommended if you manually edited AGENTS.md",
                   },
                   {
                     value: "accept-agent",
                     label: `Accept changes from ${autoPullAgent}`,
-                    hint: "Overwrites your rules.md edits",
+                    hint: "Overwrites your AGENTS.md edits",
                   },
                   {
                     value: "abort",
@@ -688,7 +688,7 @@ export async function sync(args: string[]): Promise<void> {
 
         // Wrap rules in AlignPack structure for validation
         const imported = {
-          id: config.sources?.[0]?.path || ".aligntrue/rules.md",
+          id: config.sources?.[0]?.path || ".aligntrue/.rules.yaml",
           version: "1.0.0",
           spec_version: "1",
           rules: importedRules,
@@ -1043,7 +1043,7 @@ export async function sync(args: string[]): Promise<void> {
         message +=
           "Next: Start coding! Your agents will follow the rules automatically.\n\n";
         message +=
-          "Tip: Update rules anytime by editing .aligntrue/rules.md and running: aligntrue sync";
+          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
 
         clack.outro(message);
       }

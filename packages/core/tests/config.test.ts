@@ -50,7 +50,7 @@ exporters:
   - agents-md
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 `,
     );
 
@@ -264,7 +264,7 @@ exporters:
   - agents-md
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
   - type: git
     url: https://github.com/example/rules
 scopes:
@@ -737,12 +737,12 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 `,
     );
 
     const config = await loadConfig(configPath);
-    expect(config.sources[0].path).toBe(".aligntrue/rules.md");
+    expect(config.sources[0].path).toBe(".aligntrue/.rules.yaml");
   });
 
   it("rejects absolute local source paths", async () => {
@@ -770,12 +770,12 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: apps/web/.aligntrue/rules.md
+    path: apps/web/.aligntrue/.rules.yaml
 `,
     );
 
     const config = await loadConfig(configPath);
-    expect(config.sources[0].path).toBe("apps/web/.aligntrue/rules.md");
+    expect(config.sources[0].path).toBe("apps/web/.aligntrue/.rules.yaml");
   });
 
   it("rejects mixed traversal in source paths", async () => {
@@ -786,7 +786,7 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: src/../../outside/rules.md
+    path: src/../../outside/.rules.yaml
 `,
     );
 
@@ -821,7 +821,7 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
   - type: local
     path: ../../malicious.md
 `,
@@ -919,7 +919,7 @@ describe("Config Saving", () => {
         checks: true,
       },
       exporters: ["cursor", "agents-md"],
-      sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
     };
 
     await saveConfig(config, configPath);

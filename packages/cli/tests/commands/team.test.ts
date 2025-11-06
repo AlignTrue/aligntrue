@@ -87,7 +87,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
       vi.mocked(clack.confirm).mockResolvedValue(true);
       vi.mocked(clack.isCancel).mockReturnValue(false);
@@ -109,7 +109,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["enable", "--yes"]);
@@ -136,7 +136,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["enable", "--non-interactive"]);
@@ -165,7 +165,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: true, bundle: true },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["enable"]);
@@ -182,7 +182,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
       vi.mocked(clack.confirm).mockResolvedValue(false);
       vi.mocked(clack.isCancel).mockReturnValue(false);
@@ -202,7 +202,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
       vi.mocked(clack.confirm).mockResolvedValue(Symbol("cancel") as any);
       vi.mocked(clack.isCancel).mockReturnValue(true);
@@ -222,7 +222,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
       vi.mocked(clack.confirm).mockResolvedValue(true);
       vi.mocked(clack.isCancel).mockReturnValue(false);
@@ -267,7 +267,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
       vi.mocked(clack.confirm).mockResolvedValue(true);
       vi.mocked(clack.isCancel).mockReturnValue(false);
@@ -302,7 +302,7 @@ describe("team command", () => {
         lockfile: { mode: "strict" },
         exporters: ["cursor", "agents-md"],
         sources: [
-          { type: "local", path: ".aligntrue/rules.md" },
+          { type: "local", path: ".aligntrue/.rules.yaml" },
           { type: "git", url: "https://github.com/example/rules.git" },
         ],
       });
@@ -339,7 +339,7 @@ describe("team command", () => {
         mode: "solo",
         modules: { lockfile: false, bundle: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);
@@ -363,7 +363,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: false },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);
@@ -388,7 +388,7 @@ describe("team command", () => {
         modules: { lockfile: true },
         lockfile: { mode: "soft" },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);
@@ -415,7 +415,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: true },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);
@@ -443,7 +443,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: true },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       vi.mocked(parseAllowList).mockImplementation(() => {
@@ -470,7 +470,7 @@ describe("team command", () => {
         modules: { lockfile: true },
         exporters: ["cursor"],
         sources: [
-          { type: "local", path: ".aligntrue/rules.md" },
+          { type: "local", path: ".aligntrue/.rules.yaml" },
           { type: "git", url: "https://github.com/example/rules.git" },
         ],
       });
@@ -481,7 +481,7 @@ describe("team command", () => {
         expect.stringContaining("Sources: 2 configured"),
       );
       expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining("local:.aligntrue/rules.md"),
+        expect.stringContaining("local:.aligntrue/.rules.yaml"),
       );
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("git:https://github.com/example/rules.git"),
@@ -497,7 +497,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: true },
         exporters: ["cursor", "agents-md", "vscode-mcp"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);
@@ -535,7 +535,7 @@ describe("team command", () => {
         mode: "team",
         modules: { lockfile: true },
         exporters: ["cursor"],
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
       });
 
       await team(["status"]);

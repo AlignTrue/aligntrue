@@ -316,10 +316,10 @@ Test.
     }
 
     const output = logSpy.mock.calls.map((call) => call.join(" ")).join("\n");
-    expect(output).toContain("Preview of .aligntrue/rules.md");
+    expect(output).toContain("Preview of .aligntrue/.rules.yaml");
 
-    // Check that rules.md was NOT created
-    const rulesPath = join(testWorkspace, ".aligntrue", "rules.md");
+    // Check that .rules.yaml was NOT created
+    const rulesPath = join(testWorkspace, ".aligntrue", ".rules.yaml");
     expect(existsSync(rulesPath)).toBe(false);
 
     exitSpy.mockRestore();

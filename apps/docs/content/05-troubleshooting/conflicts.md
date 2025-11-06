@@ -183,34 +183,34 @@ See [File watcher setup](/docs/04-reference/file-watcher-setup) for automatic sy
 ### Scenario 1: Accidentally edited both files
 
 **Problem:**
-You edited rules.md, then forgot and also edited Cursor rules.
+You edited AGENTS.md, then forgot and also edited Cursor rules.
 
 **Solution:**
 
 1. Check timestamps to see which is more recent
 2. Choose the more recent edit
-3. Set workflow mode to prevent future accidents
+3. Enable bidirectional sync to prevent future conflicts
 
 ```bash
-ls -la .aligntrue/.rules.yaml
+ls -la AGENTS.md
 ls -la .cursor/rules/aligntrue.mdc
 
 # Keep newer file's changes
 aligntrue sync --accept-agent cursor  # if agent is newer
-aligntrue sync --no-auto-pull         # if rules.md is newer
+aligntrue sync --no-auto-pull         # if AGENTS.md is newer
 ```
 
-### Scenario 2: Team member pushed rules.md changes
+### Scenario 2: Team member pushed AGENTS.md changes
 
 **Problem:**
-You pulled from git, rules.md changed, but your agent file is different.
+You pulled from git, AGENTS.md changed, but your agent file is different.
 
 **Solution:**
-Accept the team's rules.md changes:
+Accept the team's AGENTS.md changes:
 
 ```bash
 git pull
-aligntrue sync --no-auto-pull  # Push rules.md to agents
+aligntrue sync --no-auto-pull  # Push AGENTS.md to agents
 ```
 
 ### Scenario 3: Experimented in agent, want to keep some changes
@@ -221,7 +221,7 @@ You tested multiple rule variations in Cursor, want to keep some but not all.
 **Solution:**
 
 1. Back up current state
-2. Manually edit rules.md to include desired changes
+2. Manually edit AGENTS.md to include desired changes
 3. Sync without auto-pull
 
 ```bash
@@ -244,7 +244,7 @@ Haven't synced in days, both files diverged significantly.
 
 ```bash
 aligntrue backup create
-diff .aligntrue/rules.md .cursor/rules/aligntrue.mdc
+diff AGENTS.md .cursor/rules/aligntrue.mdc
 # Manually merge in your editor
 aligntrue sync --no-auto-pull
 ```
@@ -265,10 +265,10 @@ aligntrue backup list
 aligntrue backup restore --to <timestamp> --destination /tmp/last-clean
 
 # Compare
-diff3 .aligntrue/rules.md /tmp/last-clean/rules.md .cursor/rules/aligntrue.mdc
+diff3 AGENTS.md /tmp/last-clean/AGENTS.md .cursor/rules/aligntrue.mdc
 
 # Manually resolve in editor
-vim .aligntrue/rules.md
+vim AGENTS.md
 
 # Sync
 aligntrue sync --no-auto-pull
@@ -280,9 +280,9 @@ For teams with specific conflict policies:
 
 ```bash
 #!/bin/bash
-# always-prefer-rules-md.sh
+# always-prefer-agents-md.sh
 
-# Always keep rules.md changes, never auto-pull
+# Always keep AGENTS.md changes, never auto-pull
 aligntrue sync --no-auto-pull
 ```
 
@@ -334,8 +334,8 @@ If you didn't have backups enabled:
 1. Check git history:
 
    ```bash
-   git log -p .aligntrue/rules.md
-   git checkout HEAD~1 .aligntrue/rules.md
+   git log -p AGENTS.md
+   git checkout HEAD~1 AGENTS.md
    ```
 
 2. If agent file matters:
@@ -354,7 +354,7 @@ If you didn't have backups enabled:
    ```
 
 2. **Use version control:**
-   Commit rules.md regularly
+   Commit AGENTS.md regularly
 
 3. **Set workflow mode:**
    Avoid conflicts by choosing one editing location
