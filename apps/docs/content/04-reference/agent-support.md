@@ -3,7 +3,7 @@ title: Agent support
 description: Complete compatibility matrix for AlignTrue's 44 exporters supporting 28+ AI coding agents
 ---
 
-# Agent Support
+# Agent support
 
 AlignTrue supports **28+ AI coding agents** through **44 specialized exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 

@@ -1,9 +1,9 @@
 ---
-title: YAML Library Design
+title: YAML library design
 description: Design decisions for YAML parsing in AlignTrue.
 ---
 
-# YAML Library Design
+# YAML library design
 
 AlignTrue uses specific YAML parsing strategies for determinism and compatibility.
 
