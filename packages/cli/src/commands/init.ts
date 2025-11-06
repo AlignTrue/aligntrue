@@ -608,7 +608,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     lines.push("2. **Customize for your project** - Edit as needed");
     lines.push("3. **Sync to agents** - Run `aligntrue sync`");
     lines.push("");
-    lines.push("Learn more: https://aligntrue.dev/docs");
+    lines.push("Learn more: https://aligntrue.ai/docs");
 
     const content = lines.join("\n");
     const rulesTempPath = `${rulesPath}.tmp`;
@@ -681,7 +681,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       message += `   Edit .aligntrue/rules.md as source of truth`;
     }
 
-    message += `\n\nLearn more: https://aligntrue.dev/docs/getting-started/quickstart`;
+    message += `\n\nLearn more: https://aligntrue.ai/docs/getting-started/quickstart`;
 
     clack.outro(message);
   }
