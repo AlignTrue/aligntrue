@@ -181,6 +181,5 @@ See the IR format reference for complete schema.
 
 ## Related pages
 
-- [IR Format Standards](/docs/04-reference) - Complete schema reference
+- [Sync Behavior](/docs/03-concepts/sync-behavior) - IR format and how rules flow to agents
 - [CLI Reference - md commands](/docs/04-reference/cli-reference#development-commands) - md lint, compile, format
-- [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules flow to agents
