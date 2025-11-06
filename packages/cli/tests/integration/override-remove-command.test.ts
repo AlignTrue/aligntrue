@@ -1,5 +1,8 @@
 /**
  * Integration tests for override-remove command
+ *
+ * Note: Skipped on Windows CI due to persistent EBUSY file locking issues
+ * that cannot be reliably worked around. Coverage is provided by Unix CI.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -14,6 +17,10 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 vi.mock("@clack/prompts");
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-remove");
+
+// Skip on Windows due to unreliable file cleanup in CI
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -37,7 +44,7 @@ afterEach(async () => {
   await cleanupDir(TEST_DIR);
 });
 
-describe("Override Remove Command Integration", () => {
+describeSkipWindows("Override Remove Command Integration", () => {
   describe("Basic Removal", () => {
     it("removes override by index", async () => {
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
