@@ -55,7 +55,7 @@ rules:
 
       try {
         await check(["--ci"]);
-      } catch (e) {
+      } catch {
         // Expected exit if called
       }
 
@@ -96,7 +96,7 @@ rules:
 
       try {
         await check(["--ci"]);
-      } catch (e) {
+      } catch {
         // Expected exit
       }
 
@@ -111,7 +111,7 @@ rules:
 
       try {
         await check(["--ci"]);
-      } catch (e) {
+      } catch {
         // Expected exit
       }
 
@@ -147,7 +147,7 @@ rules:
 
       try {
         await check([]);
-      } catch (e) {
+      } catch {
         // Expected exit
       }
 

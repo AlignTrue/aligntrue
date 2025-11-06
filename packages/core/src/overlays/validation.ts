@@ -4,7 +4,7 @@
  * plug conflicts, and size limit violations
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { AlignPack, AlignRule } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import type {
   OverlayDefinition,
@@ -161,7 +161,7 @@ function checkPlugConflicts(
     return undefined;
   }
 
-  const rule = result.targetValue as any;
+  const rule = result.targetValue as AlignRule;
 
   // Check if rule has plugs
   if (!rule.plugs || !Array.isArray(rule.plugs) || rule.plugs.length === 0) {
@@ -298,7 +298,7 @@ export function detectRedundantOverlays(
       continue; // Skip if selector doesn't match
     }
 
-    const target = result.targetValue as any;
+    const target = result.targetValue as Record<string, unknown>;
     let hasChanges = false;
 
     // Check set operations

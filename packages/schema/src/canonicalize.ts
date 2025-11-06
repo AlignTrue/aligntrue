@@ -37,8 +37,8 @@ function filterVolatileVendorFields(data: unknown): unknown {
   }
 
   if (data && typeof data === "object") {
-    const obj = data as Record<string, any>;
-    const result: Record<string, any> = {};
+    const obj = data as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
 
     // Check if this object has vendor._meta.volatile
     if (
@@ -69,10 +69,10 @@ function filterVolatileVendorFields(data: unknown): unknown {
  * Paths use dot notation, e.g., "cursor.session_id"
  */
 function filterVolatilePaths(
-  vendor: Record<string, any>,
+  vendor: Record<string, unknown>,
   volatilePaths: string[],
-): Record<string, any> {
-  const result: Record<string, any> = {};
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
   for (const key in vendor) {
     if (key === "_meta") {
@@ -82,7 +82,7 @@ function filterVolatilePaths(
     }
 
     if (typeof vendor[key] === "object" && vendor[key] !== null) {
-      const subResult: Record<string, any> = {};
+      const subResult: Record<string, unknown> = {};
       for (const subKey in vendor[key]) {
         const path = `${key}.${subKey}`;
         if (!volatilePaths.includes(path)) {

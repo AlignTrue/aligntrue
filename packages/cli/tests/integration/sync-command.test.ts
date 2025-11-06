@@ -80,7 +80,7 @@ rules:
       // Execute sync
       try {
         await sync([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -133,7 +133,7 @@ rules:
       // Execute sync
       try {
         await sync([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -184,7 +184,7 @@ rules:
       // Execute sync
       try {
         await sync([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -226,7 +226,7 @@ rules:
       // Execute sync with dry-run
       try {
         await sync(["--dry-run"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -244,10 +244,10 @@ rules:
       try {
         try {
           await sync([]);
-        } catch (e) {
+        } catch {
           // May throw from process.exit if command fails
         }
-      } catch (e) {
+      } catch {
         // Expected exit
       }
 
@@ -274,10 +274,10 @@ rules:
       try {
         try {
           await sync([]);
-        } catch (e) {
+        } catch {
           // May throw from process.exit if command fails
         }
-      } catch (e) {
+      } catch {
         // Expected exit
       }
 
@@ -320,7 +320,7 @@ rules:
       // Execute sync with custom config
       try {
         await sync(["--config", "custom/my-config.yaml"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -372,7 +372,7 @@ rules:
       // Execute sync
       try {
         await sync([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 

@@ -70,7 +70,7 @@ rules:
 
       try {
         await team(["init", "--yes"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -107,7 +107,7 @@ rules:
 
       try {
         await team(["init", "--yes"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -133,7 +133,7 @@ rules:
 
       try {
         await team(["approve", "github.com/org/repo"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 

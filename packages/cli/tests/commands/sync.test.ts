@@ -10,7 +10,7 @@ describe("sync command - smoke tests", () => {
   it("shows help with --help flag", async () => {
     try {
       await sync(["--help"]);
-    } catch (e) {
+    } catch {
       // Expected - help calls process.exit(0)
     }
   });
