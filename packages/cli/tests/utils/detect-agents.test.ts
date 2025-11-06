@@ -30,7 +30,7 @@ describe("detectAgents", () => {
   });
 
   it("detects cursor when .cursor directory exists", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
     const result = detectAgents(testDir);
 
@@ -47,9 +47,10 @@ describe("detectAgents", () => {
   });
 
   it("detects multiple agents simultaneously", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test rules");
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
+    writeFileSync(join(testDir, ".vscode", "mcp.json"), "{}");
 
     const result = detectAgents(testDir);
 
@@ -65,8 +66,9 @@ describe("detectAgents", () => {
   });
 
   it("provides display names for all detected agents", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     mkdirSync(join(testDir, ".windsurf"), { recursive: true });
+    writeFileSync(join(testDir, ".windsurf", "mcp_config.json"), "{}");
 
     const result = detectAgents(testDir);
 
@@ -90,7 +92,7 @@ describe("detectNewAgents", () => {
   });
 
   it("returns only agents not in config", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
     const newAgents = detectNewAgents(testDir, ["cursor"], []);
@@ -101,7 +103,7 @@ describe("detectNewAgents", () => {
   });
 
   it("excludes ignored agents", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
     const newAgents = detectNewAgents(testDir, [], ["cursor"]);
@@ -111,7 +113,7 @@ describe("detectNewAgents", () => {
   });
 
   it("returns empty array when all detected agents are enabled", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
     const newAgents = detectNewAgents(testDir, ["cursor", "agents-md"], []);
@@ -120,7 +122,7 @@ describe("detectNewAgents", () => {
   });
 
   it("returns empty array when all detected agents are ignored", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
     const newAgents = detectNewAgents(testDir, [], ["cursor", "agents-md"]);
@@ -129,22 +131,20 @@ describe("detectNewAgents", () => {
   });
 
   it("includes file paths for display", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
     const newAgents = detectNewAgents(testDir, [], []);
 
     expect(newAgents).toHaveLength(1);
     expect(newAgents[0].filePath).toBeTruthy();
-    expect(
-      newAgents[0].filePath === ".cursor/" ||
-        newAgents[0].filePath === ".cursor/rules/",
-    ).toBe(true);
+    expect(newAgents[0].filePath).toBe(".cursor/rules/");
   });
 
   it("filters both config and ignored list", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
+    writeFileSync(join(testDir, ".vscode", "mcp.json"), "{}");
 
     const newAgents = detectNewAgents(testDir, ["cursor"], ["agents-md"]);
 
@@ -153,7 +153,7 @@ describe("detectNewAgents", () => {
   });
 
   it("handles empty current exporters and ignored agents", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
     const newAgents = detectNewAgents(testDir, [], []);
 
@@ -162,7 +162,7 @@ describe("detectNewAgents", () => {
   });
 
   it("provides display name for each new agent", () => {
-    mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
     const newAgents = detectNewAgents(testDir, [], []);
 

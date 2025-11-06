@@ -631,10 +631,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       primary_agent: importedFromAgent,
     };
   } else {
-    // Fresh start: use native_format workflow (edit AGENTS.md, auto-sync enabled)
+    // Fresh start: use ir_source workflow (IR as source of truth)
     config.sync = {
-      workflow_mode: "native_format",
-      auto_pull: true,
+      workflow_mode: "ir_source",
+      auto_pull: false,
     };
   }
 
