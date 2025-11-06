@@ -93,27 +93,20 @@ scopes:
 
 Use this flowchart to choose the right customization mechanism:
 
-```
-Need to customize rules?
-│
-├─ Different values per project/stack?
-│  (test commands, paths, URLs)
-│  └─ YES → Use PLUGS
-│     Examples: test.cmd, docs.url, config.path
-│
-├─ Modify upstream rule behavior?
-│  (severity, inputs, autofix)
-│  └─ YES → Use OVERLAYS
-│     Examples: Change severity, adjust thresholds, disable autofix
-│
-├─ Different rules per directory?
-│  (monorepo, multi-stack)
-│  └─ YES → Use SCOPES
-│     Examples: Frontend vs backend, new vs legacy code
-│
-└─ Need to change check logic?
-   └─ YES → FORK or create custom pack
-      (Customization features don't support logic changes)
+```mermaid
+graph TD
+    Start[Need to customize rules?] --> Q1{Different values per project?}
+    Q1 -->|Yes| Plugs[Use PLUGS<br/>test commands, paths, URLs]
+    Q1 -->|No| Q2{Modify upstream behavior?}
+    Q2 -->|Yes| Overlays[Use OVERLAYS<br/>severity, inputs, autofix]
+    Q2 -->|No| Q3{Different rules per directory?}
+    Q3 -->|Yes| Scopes[Use SCOPES<br/>monorepo, multi-stack]
+    Q3 -->|No| Fork[FORK or create custom pack]
+
+    style Plugs fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style Overlays fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style Scopes fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style Fork fill:#f5f5f5,stroke:#666,stroke-width:1px
 ```
 
 ## Feature comparison

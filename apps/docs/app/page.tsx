@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -819,10 +820,54 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Features section */}
+          {/* How it works section */}
           <section
             style={{
               backgroundColor: "var(--bg-muted)",
+              padding: "4rem 1.5rem",
+            }}
+            aria-labelledby="how-it-works-heading"
+          >
+            <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+              <h2
+                id="how-it-works-heading"
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  marginTop: "0.5rem",
+                  marginBottom: "1.25rem",
+                }}
+              >
+                How it works
+              </h2>
+
+              <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
+                <HowItWorksDiagram />
+              </div>
+
+              <p
+                style={{
+                  textAlign: "center",
+                  marginTop: "2rem",
+                  fontSize: "1rem",
+                  color: "var(--fg-muted)",
+                  maxWidth: "48rem",
+                  margin: "2rem auto 0",
+                }}
+              >
+                Write your rules once in <code>Cursor's .mdc</code>,{" "}
+                <code>AGENTS.md</code>, or <code>CLAUDE.md</code>, etc. & run{" "}
+                <code>aligntrue sync</code>. AlignTrue automatically generates
+                agent-specific formats for all your tools.
+              </p>
+            </div>
+          </section>
+
+          {/* Features section */}
+          <section
+            style={{
+              backgroundColor: "var(--bg-default)",
               borderTop: "1px solid var(--border-color)",
               borderBottom: "1px solid var(--border-color)",
               padding: "4rem 1.5rem",
