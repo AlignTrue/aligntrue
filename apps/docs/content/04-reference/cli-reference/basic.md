@@ -1,0 +1,651 @@
+# Basic commands
+
+Commands you'll use most often for day-to-day development.
+
+## `aligntrue init`
+
+Set up AlignTrue in your project with automatic agent detection and import support.
+
+**Usage:**
+
+```bash
+aligntrue init [options]
+```
+
+**Flags:**
+
+| Flag                 | Description                                  | Default |
+| -------------------- | -------------------------------------------- | ------- |
+| `--import <agent>`   | Import from agent format (cursor, agents-md) | -       |
+| `--yes`, `-y`        | Non-interactive mode (uses defaults)         | `false` |
+| `--project-id <id>`  | Project identifier (default: auto-detected)  | -       |
+| `--exporters <list>` | Comma-separated list of exporters            | -       |
+
+**What it does:**
+
+1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
+2. Detects existing agent rules and offers to import them
+3. Creates `.aligntrue/config.yaml` with detected agents enabled
+4. Creates `.aligntrue/.rules.yaml` (internal IR) and `AGENTS.md` (user-editable)
+5. Auto-configures sync settings based on initialization choice
+
+**Interactive prompts:**
+
+- **Import existing rules?** - If Cursor `.mdc` or `AGENTS.md` detected
+- **Preview coverage?** - Show import coverage report before importing
+- **Agents detected** - Choose which agents to enable (auto-enables if ≤3 detected)
+- **Project ID** - Identifier for your project (used in rule IDs)
+- **Create files?** - Confirm before writing
+
+**Examples:**
+
+```bash
+# Fresh project setup
+aligntrue init
+
+# Import existing Cursor rules (interactive)
+aligntrue init
+# Detects .cursor/rules/*.mdc and offers import
+
+# Import existing rules (non-interactive)
+aligntrue init --yes --import cursor
+
+# Import from AGENTS.md
+aligntrue init --import agents-md
+
+# Skip import, use fresh template
+aligntrue init
+# Select "Start fresh" when prompted
+```
+
+**Workflow mode auto-configuration:**
+
+- **Imported rules** → `workflow_mode: native_format` (auto-pull enabled)
+- **Fresh start** → `workflow_mode: ir_source` (auto-pull disabled)
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Already initialized (shows guidance for team join vs re-init)
+- `2` - System error (permissions, disk space, etc.)
+
+**See also:**
+
+- [Quickstart Guide](/docs/00-getting-started/00-quickstart) for step-by-step walkthrough
+- [Workflows Guide](/docs/01-guides/01-workflows) for workflow mode details
+
+---
+
+## `aligntrue import`
+
+Analyze and import rules from agent-specific formats with coverage analysis.
+
+**Usage:**
+
+```bash
+aligntrue import <agent> [options]
+```
+
+**Arguments:**
+
+- `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
+
+**Flags:**
+
+| Flag            | Description                                      | Default |
+| --------------- | ------------------------------------------------ | ------- |
+| `--coverage`    | Show import coverage report                      | `true`  |
+| `--no-coverage` | Skip coverage report                             | `false` |
+| `--write`       | Write imported rules to `.aligntrue/.rules.yaml` | `false` |
+| `--dry-run`     | Preview without writing files                    | `false` |
+
+**What it does:**
+
+1. Loads rules from agent-specific format (`.cursor/rules/*.mdc` or `AGENTS.md`)
+2. Parses agent format to IR (Intermediate Representation)
+3. Generates coverage report showing field-level mapping
+4. Calculates coverage percentage and confidence level
+5. Optionally writes rules to `.aligntrue/.rules.yaml`
+
+**Coverage Report:**
+
+The coverage report shows:
+
+- **Rules imported** - Number of rules found in agent format
+- **Field mapping** - Which IR fields are mapped from agent format
+- **Unmapped fields** - Fields that cannot be mapped (preserved in `vendor.*`)
+- **Coverage percentage** - (mapped fields / total IR fields) × 100
+- **Confidence level** - high (≥90%), medium (70-89%), low (<70%)
+- **Vendor preservation** - Whether agent-specific metadata is preserved
+
+**Examples:**
+
+```bash
+# Analyze Cursor rules
+aligntrue import cursor
+
+# Import from AGENTS.md
+aligntrue import agents-md
+
+# Import and write to IR file
+aligntrue import cursor --write
+
+# Preview import without writing
+aligntrue import cursor --write --dry-run
+
+# Skip coverage report
+aligntrue import cursor --no-coverage
+```
+
+**Supported Agents:**
+
+- **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
+- **cursorrules** - `.cursorrules` legacy single-file format (same as `.mdc`)
+- **agents-md** - `AGENTS.md` universal markdown format (case-insensitive)
+- **claude-md** - `CLAUDE.md` format (case-insensitive)
+- **crush-md** - `CRUSH.md` format (case-insensitive)
+- **warp-md** - `WARP.md` format (case-insensitive)
+- **copilot** - AGENTS.md format (alias)
+- **claude-code** - AGENTS.md format (alias)
+- **aider** - AGENTS.md format (alias)
+
+See [Import Workflow Guide](/docs/04-reference/import-workflow) for step-by-step migration instructions.
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Error (agent not found, no rules, unsupported agent)
+
+**See also:** [Sync Behavior](/docs/03-concepts/sync-behavior) for two-way sync details.
+
+---
+
+## `aligntrue sync`
+
+Sync rules between your primary agent and all configured AI coding agents with automatic change detection.
+
+**Usage:**
+
+```bash
+aligntrue sync [options]
+```
+
+**Flags:**
+
+| Flag                    | Description                                   | Default                  |
+| ----------------------- | --------------------------------------------- | ------------------------ |
+| `--dry-run`             | Preview changes without writing files         | `false`                  |
+| `--force`               | Override performance limits and safety checks | `false`                  |
+| `--accept-agent <name>` | Pull changes from agent back to IR            | -                        |
+| `--no-auto-pull`        | Disable auto-pull for this sync               | `false`                  |
+| `--show-auto-pull-diff` | Show full diff when auto-pull executes        | `false`                  |
+| `--no-detect`           | Skip agent detection                          | `false`                  |
+| `--auto-enable`         | Auto-enable detected agents without prompting | `false`                  |
+| `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Loads configuration from `.aligntrue/config.yaml`
+2. Detects new agents in workspace and prompts to enable them (unless `--no-detect`)
+3. Auto-pulls changes from primary agent (if enabled and no conflicts)
+4. Shows diff summary of what changed during auto-pull
+5. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
+6. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+7. Detects conflicts if multiple files were manually edited
+8. Updates lockfile (team mode only)
+
+**Auto-pull behavior:**
+
+Auto-pull automatically imports changes from your primary agent before syncing. It runs when:
+
+- `sync.auto_pull` is `true` in config (default for solo mode)
+- Primary agent is configured (auto-detected on init)
+- No conflicts detected between primary agent and other agent files
+
+See [Auto-pull guide](/docs/01-guides/00-auto-pull) for details.
+
+**Agent detection:**
+
+Sync automatically detects new AI agents in your workspace by scanning for their files (e.g., `AGENTS.md`, `.windsurf/`, etc.). When a new agent is found, you'll be prompted:
+
+```
+⚠ New agent detected: Windsurf
+  Found: .windsurf/rules.md
+
+? Would you like to enable Windsurf?
+  > Yes, enable and export
+    No, skip for now
+    Never ask about this agent
+```
+
+Responses:
+
+- **Yes** - Adds agent to exporters and syncs rules
+- **No** - Skips for now (asks again next time)
+- **Never** - Adds to ignored list in config
+
+Skip detection with `--no-detect` or auto-enable all detected agents with `--auto-enable`.
+
+Configure behavior in `.aligntrue/config.yaml`:
+
+```yaml
+detection:
+  auto_enable: false # Auto-enable without prompting
+  ignored_agents: # Agents to never prompt about
+    - windsurf
+    - aider-md
+```
+
+**Conflict detection:**
+
+If multiple agent files were modified since last sync, you'll see:
+
+```
+⚠ Conflict detected:
+  - You edited AGENTS.md (primary agent)
+  - Changes also found in .cursor/rules/aligntrue.mdc
+
+? How would you like to resolve this conflict?
+  > Keep my edits to AGENTS.md (skip auto-pull)
+    Accept changes from cursor and pull to AGENTS.md
+    Abort sync and review manually
+```
+
+See [Resolving conflicts](/docs/05-troubleshooting/conflicts) for resolution strategies.
+
+**Workflow modes:**
+
+Configure your preferred workflow to avoid conflict prompts:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  workflow_mode: "native_format" # auto | ir_source | native_format
+```
+
+See [Workflows guide](/docs/01-guides/01-workflows) for choosing your workflow.
+
+**Examples:**
+
+```bash
+# Standard sync (with auto-pull if enabled)
+aligntrue sync
+
+# Disable auto-pull for this sync
+aligntrue sync --no-auto-pull
+
+# Show full diff of auto-pull changes
+aligntrue sync --show-auto-pull-diff
+
+# Skip agent detection
+aligntrue sync --no-detect
+
+# Auto-enable detected agents without prompting
+aligntrue sync --auto-enable
+
+# Pull changes from agent to IR (manual)
+aligntrue sync --accept-agent cursor
+
+# Standard sync
+aligntrue sync
+
+# Preview without writing
+aligntrue sync --dry-run
+
+# Non-interactive (for CI)
+aligntrue sync --force
+
+# Pull changes from Cursor back to AGENTS.md
+aligntrue sync --accept-agent cursor
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Validation error (config not found, source missing, lockfile drift)
+- `2` - System error (permissions, disk space, etc.)
+
+**Conflict resolution:**
+
+If sync detects manual edits to generated files, you'll see:
+
+```
+⚠ Conflict detected in .cursor/rules/aligntrue.mdc
+
+[i] Keep IR (discard manual edits)
+[a] Accept agent (pull manual edits to AGENTS.md)
+[d] Show diff
+[q] Quit
+```
+
+**Team mode behavior:**
+
+When `mode: team` is enabled in config:
+
+- Validates lockfile before sync (soft/strict mode)
+- Regenerates lockfile after successful sync
+- Detects drift and suggests resolution
+
+**See also:** [Sync Behavior](/docs/03-concepts/sync-behavior) for detailed contract.
+
+---
+
+## `aligntrue check`
+
+Validate rules and lockfile without syncing. Great for CI/CD pipelines.
+
+**Usage:**
+
+```bash
+aligntrue check --ci [options]
+```
+
+**Flags:**
+
+| Flag              | Description                                  | Default                  |
+| ----------------- | -------------------------------------------- | ------------------------ |
+| `--ci`            | CI mode (non-interactive, strict exit codes) | `false`                  |
+| `--config <path>` | Custom config file path                      | `.aligntrue/config.yaml` |
+
+**What it validates:**
+
+1. **Schema validation** - `.aligntrue/.rules.yaml` matches JSON Schema
+2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
+
+**Important:** The `--ci` flag is required for all check operations. It ensures non-interactive validation with explicit intent, making it safe for CI/CD pipelines and automation.
+
+**Examples:**
+
+```bash
+# Validate configuration
+aligntrue check --ci
+
+# Validate with custom config
+aligntrue check --ci --config .aligntrue/config.yaml
+
+# Output JSON for parsing results
+aligntrue check --ci --json
+```
+
+**Exit codes:**
+
+- `0` - All checks pass
+- `1` - Validation failed (schema errors, lockfile drift)
+- `2` - System error (file not found, permissions, etc.)
+
+**CI Integration:**
+
+**Pre-commit hook:**
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+aligntrue check --ci
+```
+
+**GitHub Actions:**
+
+```yaml
+- name: Validate AlignTrue rules
+  run: |
+    pnpm install
+    aligntrue check --ci
+```
+
+**See also:** [Troubleshooting Guide](/docs/05-troubleshooting#check-issues-ci) for common check failures.
+
+---
+
+## `aligntrue backup`
+
+Create, list, restore, and clean up backups of your `.aligntrue/` directory.
+
+**Usage:**
+
+```bash
+aligntrue backup <subcommand>
+```
+
+**Subcommands:**
+
+- `create` - Create a new backup
+- `list` - List all available backups
+- `restore` - Restore from a backup
+- `cleanup` - Remove old backups
+
+### `aligntrue backup create`
+
+Create a manual backup of your `.aligntrue/` directory.
+
+**Usage:**
+
+```bash
+aligntrue backup create [--notes "description"]
+```
+
+**Flags:**
+
+| Flag             | Description                         | Default |
+| ---------------- | ----------------------------------- | ------- |
+| `--notes <text>` | Optional description for the backup | (none)  |
+
+**What it does:**
+
+1. Creates timestamped directory in `.aligntrue/.backups/<timestamp>/`
+2. Copies all files from `.aligntrue/` (except `.cache/`, `.backups/`, telemetry)
+3. Generates `manifest.json` with metadata
+4. Displays backup timestamp and restore command
+
+**Examples:**
+
+```bash
+# Basic backup
+aligntrue backup create
+
+# With notes
+aligntrue backup create --notes "Before experimental changes"
+aligntrue backup create --notes "Working state before refactor"
+```
+
+**Output:**
+
+```
+✔ Creating backup
+✔ Backup created: 2025-10-29T14-30-00-000
+
+Backed up 2 files:
+  config.yaml
+  .rules.yaml
+
+Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
+```
+
+### `aligntrue backup list`
+
+List all available backups from newest to oldest.
+
+**Usage:**
+
+```bash
+aligntrue backup list
+```
+
+**What it does:**
+
+1. Scans `.aligntrue/.backups/` directory
+2. Reads manifest from each backup
+3. Displays backups sorted by timestamp (newest first)
+4. Shows total count
+
+**Example output:**
+
+```
+Available backups:
+
+  2025-10-29T14-30-00-000
+    Created: Oct 29, 2025 at 2:30:00 PM
+    Files: 2 (config.yaml, .rules.yaml)
+    Notes: Before experimental changes
+
+  2025-10-29T12-15-45-123
+    Created: Oct 29, 2025 at 12:15:45 PM
+    Files: 3 (config.yaml, .rules.yaml, privacy-consent.json)
+    Notes: Auto-backup before sync
+
+3 backups found
+```
+
+### `aligntrue backup restore`
+
+Restore files from a backup. Creates temporary backup before restore for safety.
+
+**Usage:**
+
+```bash
+# Restore most recent backup
+aligntrue backup restore
+
+# Restore specific backup
+aligntrue backup restore --to <timestamp>
+```
+
+**Flags:**
+
+| Flag               | Description               | Default     |
+| ------------------ | ------------------------- | ----------- |
+| `--to <timestamp>` | Specific backup timestamp | Most recent |
+
+**What it does:**
+
+1. Creates temporary backup of current state (safety net)
+2. Removes existing files in `.aligntrue/`
+3. Copies files from backup
+4. Validates restore success
+5. Cleans up temporary backup
+
+**Rollback behavior:**
+
+If restore fails:
+
+- Automatically restores from temporary backup
+- Original state preserved
+- Error message displayed
+
+**Examples:**
+
+```bash
+# Restore most recent
+aligntrue backup restore
+
+# Restore specific backup (timestamp from `backup list`)
+aligntrue backup restore --to 2025-10-29T14-30-00-000
+```
+
+**Output:**
+
+```
+✔ Creating temporary backup
+✔ Restoring backup: 2025-10-29T14-30-00-000
+✔ Restore complete
+
+Restored 2 files:
+  config.yaml
+  .rules.yaml
+```
+
+**Warning:** This overwrites your current `.aligntrue/` directory. Use `backup list` to verify timestamp before restoring.
+
+### `aligntrue backup cleanup`
+
+Remove old backups, keeping only the most recent N backups.
+
+**Usage:**
+
+```bash
+# Use keep_count from config (default: 10)
+aligntrue backup cleanup
+
+# Keep specific number
+aligntrue backup cleanup --keep 5
+```
+
+**Flags:**
+
+| Flag              | Description               | Default           |
+| ----------------- | ------------------------- | ----------------- |
+| `--keep <number>` | Number of backups to keep | From config or 10 |
+
+**What it does:**
+
+1. Lists all backups sorted by timestamp
+2. Identifies backups older than keep count
+3. Prompts for confirmation
+4. Removes old backup directories
+5. Displays count removed and kept
+
+**Examples:**
+
+```bash
+# Keep default number (from config)
+aligntrue backup cleanup
+
+# Keep only most recent 5
+aligntrue backup cleanup --keep 5
+```
+
+**Example output:**
+
+```
+Found 12 backups (keeping 5 most recent)
+
+Remove 7 old backups? (yes/no): yes
+
+✔ Cleanup complete
+  Removed: 7 backups
+  Kept: 5 backups
+```
+
+### Auto-backup configuration
+
+Enable automatic backups before destructive operations in `.aligntrue/config.yaml`:
+
+```yaml
+backup:
+  # Enable auto-backup before operations
+  auto_backup: false # Set to true to enable
+
+  # Commands that trigger auto-backup
+  backup_on:
+    - sync
+    - import
+    - restore
+
+  # Number of backups to keep (older ones auto-deleted)
+  keep_count: 10
+```
+
+**Auto-backup workflow:**
+
+When enabled, AlignTrue automatically:
+
+1. Creates backup before operation
+2. Displays backup timestamp
+3. Executes operation
+4. Cleans up old backups on success
+
+**Example with auto-backup:**
+
+```bash
+$ aligntrue sync
+
+✔ Creating backup
+✔ Backup created: 2025-10-29T14-30-00-000
+  Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
+
+✔ Syncing to agents
+✔ Wrote 3 files
+
+✔ Cleaned up 2 old backups
+```
+
+**See also:** [Backup and Restore Guide](/docs/04-reference/backup-restore) for detailed usage and troubleshooting.

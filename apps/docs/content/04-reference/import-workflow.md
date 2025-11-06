@@ -484,7 +484,7 @@ Interactive conflict resolution during import:
 
 ## Command reference
 
-For detailed flag documentation, see [Command Reference](/docs/04-reference/cli-reference#aligntrue-import).
+For detailed flag documentation, see [Command Reference](/docs/04-reference/cli-reference/basic#aligntrue-import).
 
 **Common commands:**
 

@@ -716,7 +716,7 @@ aligntrue sync
 aligntrue update
 ```
 
-See [CLI Reference](/docs/04-reference/cli-reference#overlay-commands) for complete command documentation.
+See [CLI Reference](/docs/04-reference/cli-reference/overlays) for complete command documentation.
 
 ## Best practices
 
@@ -864,7 +864,7 @@ See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehens
 - [Scopes Guide](/docs/02-customization/scopes) - Path-based rule application
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Overlay policies and approval workflows
 - [Drift Detection](/docs/03-concepts/drift-detection) - Detect overlay staleness
-- [CLI Reference](/docs/04-reference/cli-reference#overlay-commands) - Complete CLI reference
+- [CLI Reference](/docs/04-reference/cli-reference/overlays) - Complete CLI reference
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with overlays
 - [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with overlays
 
