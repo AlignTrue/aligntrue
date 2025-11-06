@@ -573,6 +573,29 @@ export default function HomePage() {
       <SiteFooter />
 
       {/* Responsive styles and accessibility enhancements */}
+      <style jsx global>{`
+        /* Homepage-specific CSS variable mappings */
+        :root {
+          --bg-default: #ffffff;
+          --bg-muted: #f6f8fa;
+          --border-color: #d1d9e0;
+          --fg-default: #1f2328;
+          --fg-muted: #59636e;
+          --brand-accent: #f5a623;
+          --text-secondary: #59636e;
+          --bg-secondary: #f6f8fa;
+        }
+
+        :root.dark {
+          --bg-default: #0d1117;
+          --bg-muted: #161b22;
+          --border-color: #30363d;
+          --fg-default: #f0f6fc;
+          --fg-muted: #9198a1;
+          --text-secondary: #9198a1;
+          --bg-secondary: #161b22;
+        }
+      `}</style>
       <style jsx>{`
         .skip-to-content {
           position: absolute;
