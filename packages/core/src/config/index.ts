@@ -48,6 +48,11 @@ export interface BackupConfig {
   backup_on?: Array<"sync" | "restore" | "import">;
 }
 
+export interface DetectionConfig {
+  auto_enable?: boolean;
+  ignored_agents?: string[];
+}
+
 export interface AlignTrueConfig {
   version: string | undefined;
   mode: AlignTrueMode;
@@ -92,6 +97,7 @@ export interface AlignTrueConfig {
   performance?: PerformanceConfig;
   export?: ExportConfig;
   backup?: BackupConfig;
+  detection?: DetectionConfig;
   overlays?: OverlayConfig;
 }
 
@@ -371,6 +377,13 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   result.backup.keep_count = result.backup.keep_count ?? 5;
   result.backup.backup_on = result.backup.backup_on ?? ["sync", "import"];
 
+  // Apply detection defaults
+  if (!result.detection) {
+    result.detection = {};
+  }
+  result.detection.auto_enable = result.detection.auto_enable ?? false;
+  result.detection.ignored_agents = result.detection.ignored_agents ?? [];
+
   return result;
 }
 
@@ -395,6 +408,7 @@ function checkUnknownFields(
     "performance",
     "export",
     "backup",
+    "detection",
     "overlays",
   ]);
 
@@ -828,6 +842,29 @@ export async function saveMinimalConfig(
     config.overlays.length > 0
   ) {
     minimalConfig.overlays = config.overlays;
+  }
+
+  // Detection: include if non-default values
+  const detectionSection: Partial<typeof config.detection> = {};
+  let hasDetectionChanges = false;
+
+  if (
+    config.detection?.auto_enable !== defaults.detection?.auto_enable &&
+    config.detection?.auto_enable !== undefined
+  ) {
+    detectionSection.auto_enable = config.detection.auto_enable;
+    hasDetectionChanges = true;
+  }
+  if (
+    config.detection?.ignored_agents &&
+    config.detection.ignored_agents.length > 0
+  ) {
+    detectionSection.ignored_agents = config.detection.ignored_agents;
+    hasDetectionChanges = true;
+  }
+
+  if (hasDetectionChanges) {
+    minimalConfig.detection = detectionSection;
   }
 
   const yamlContent = yaml.dump(minimalConfig);

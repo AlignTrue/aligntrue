@@ -19,6 +19,7 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { detectNewAgents } from "../utils/detect-agents.js";
 
 // Import AdapterManifest type from exporters package
 type AdapterManifest = {
@@ -75,6 +76,8 @@ export async function adapters(args: string[]): Promise<void> {
         "aligntrue adapters enable cursor",
         "aligntrue adapters enable cursor claude-md vscode-mcp",
         "aligntrue adapters disable cursor",
+        "aligntrue adapters detect",
+        "aligntrue adapters ignore windsurf",
       ],
       notes: [
         "Adapter Status:",
@@ -104,6 +107,12 @@ export async function adapters(args: string[]): Promise<void> {
       break;
     case "disable":
       await disableAdapter(subArgs);
+      break;
+    case "detect":
+      await detectNewAgentsCommand();
+      break;
+    case "ignore":
+      await ignoreAgent(subArgs);
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
@@ -468,4 +477,81 @@ async function disableAdapter(args: string[]): Promise<void> {
   });
 
   console.log(`✓ Disabled adapter: ${adapterName}`);
+}
+
+/**
+ * Manually detect new agents
+ */
+async function detectNewAgentsCommand(): Promise<void> {
+  const { config } = await discoverAndCategorize();
+  const cwd = process.cwd();
+
+  const newAgents = detectNewAgents(
+    cwd,
+    config.exporters || [],
+    config.detection?.ignored_agents || [],
+  );
+
+  if (newAgents.length === 0) {
+    console.log("✓ No new agents detected");
+    console.log("\nAll detected agents are already enabled or ignored.");
+    return;
+  }
+
+  console.log(`\nDetected ${newAgents.length} new agent(s):\n`);
+
+  for (const agent of newAgents) {
+    console.log(`  - ${agent.displayName}`);
+    console.log(`    File: ${agent.filePath}`);
+  }
+
+  console.log("\nTo enable:");
+  console.log("  aligntrue adapters enable <agent-name>");
+  console.log("\nTo ignore:");
+  console.log("  aligntrue adapters ignore <agent-name>");
+}
+
+/**
+ * Add agent to ignored list
+ */
+async function ignoreAgent(args: string[]): Promise<void> {
+  const agentName = args[0];
+
+  if (!agentName) {
+    console.error("✗ Missing agent name");
+    console.error("  Usage: aligntrue adapters ignore <agent>");
+    process.exit(1);
+  }
+
+  const { config } = await discoverAndCategorize();
+
+  // Check if already ignored
+  const ignoredAgents = config.detection?.ignored_agents || [];
+  if (ignoredAgents.includes(agentName)) {
+    console.log(`✓ Agent already ignored: ${agentName}`);
+    return;
+  }
+
+  // Add to ignored list
+  if (!config.detection) config.detection = {};
+  if (!config.detection.ignored_agents) config.detection.ignored_agents = [];
+  config.detection.ignored_agents.push(agentName);
+
+  // Save config
+  try {
+    if (config.mode === "solo") {
+      await saveMinimalConfig(config);
+    } else {
+      await saveConfig(config);
+    }
+  } catch (_error) {
+    console.error("✗ Failed to save config");
+    console.error(
+      `  ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
+    process.exit(1);
+  }
+
+  console.log(`✓ Added to ignored list: ${agentName}`);
+  console.log("\nThis agent will no longer trigger prompts during sync.");
 }
