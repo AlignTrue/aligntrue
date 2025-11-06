@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { validateMarkdown } from "../src/validator.js";
 
 describe("validateMarkdown", () => {
-  it("validates markdown with valid IR", () => {
+  it("validates markdown with valid IR", async () => {
     const markdown = `## Testing Rules
 
 All features need tests.
@@ -18,13 +18,13 @@ rules:
     guidance: "Write tests"
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
 
-  it("reports parse errors with line numbers", () => {
+  it("reports parse errors with line numbers", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
@@ -37,27 +37,27 @@ More text
 id: test2
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0]?.message).toContain("contains 2 aligntrue blocks");
   });
 
-  it("reports IR build errors", () => {
+  it("reports IR build errors", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
 invalid: yaml: {{{
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("reports schema validation errors", () => {
+  it("reports schema validation errors", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
@@ -69,14 +69,14 @@ rules:
     severity: warn
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     // Should report missing applies_to and invalid id pattern
   });
 
-  it("handles vendor bags correctly", () => {
+  it("handles vendor bags correctly", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
@@ -92,12 +92,12 @@ rules:
         ai_hint: "Test hint"
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(true);
   });
 
-  it("validates source_format field", () => {
+  it("validates source_format field", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
@@ -111,12 +111,12 @@ rules:
     applies_to: ["**/*.ts"]
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(true);
   });
 
-  it("maps errors to markdown line numbers", () => {
+  it("maps errors to markdown line numbers", async () => {
     const markdown = `## Testing Rules
 
 Some guidance text.
@@ -128,7 +128,7 @@ spec_version: "1"
 rules: []
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     // All errors should reference line 5 (block start)
     if (result.errors.length > 0) {
@@ -136,27 +136,27 @@ rules: []
     }
   });
 
-  it("includes section info in errors", () => {
+  it("includes section info in errors", async () => {
     const markdown = `## Testing Rules
 
 \`\`\`aligntrue
 invalid yaml
 \`\`\`
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(false);
     expect(result.errors[0]?.section).toBe("Testing Rules");
   });
 
-  it("handles unclosed fences gracefully", () => {
+  it("handles unclosed fences gracefully", async () => {
     const markdown = `## Testing
 
 \`\`\`aligntrue
 id: test
 version: 1.0.0
 `;
-    const result = validateMarkdown(markdown);
+    const result = await validateMarkdown(markdown);
 
     expect(result.valid).toBe(false);
     expect(result.errors[0]?.message).toContain("Unclosed");
