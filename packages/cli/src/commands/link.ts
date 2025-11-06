@@ -49,6 +49,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Vendor location path (default: vendor/<repo-name>)",
   },
   {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Auto-grant consent without prompting",
+  },
+  {
     flag: "--config",
     alias: "-c",
     hasValue: true,
