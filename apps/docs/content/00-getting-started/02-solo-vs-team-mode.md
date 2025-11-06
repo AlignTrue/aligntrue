@@ -1,5 +1,5 @@
 ---
-title: Choosing a mode
+title: Solo vs. team mode
 description: Decide between solo and team mode for your AlignTrue workflow
 ---
 
