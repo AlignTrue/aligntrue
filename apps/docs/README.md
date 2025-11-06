@@ -46,11 +46,10 @@ The site includes:
 pnpm dev
 ```
 
-## Sitemaps
+## Sitemap
 
-- `/sitemap.xml` - Main sitemap including homepage and all docs routes
-- `/sitemap.docs.xml` - Legacy docs-specific sitemap
-- All paths are prefixed with `/docs` for public URLs
+- `/sitemap.xml` - Unified sitemap including homepage (`/`) and all docs routes (`/docs/*`)
+- Homepage is served at root (`/`), documentation at `/docs`
 - Requires `NEXT_PUBLIC_SITE_URL` to be set to the public origin
 
 ## Testing
