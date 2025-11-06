@@ -63,6 +63,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Use cache only, no network operations",
   },
   {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Auto-grant consent without prompting",
+  },
+  {
     flag: "--config",
     alias: "-c",
     hasValue: true,
@@ -145,6 +151,7 @@ export async function pull(args: string[]): Promise<void> {
   const runSync = parsed.flags["sync"] as boolean | undefined;
   const dryRun = parsed.flags["dry-run"] as boolean | undefined;
   const offline = parsed.flags["offline"] as boolean | undefined;
+  const autoYes = parsed.flags["yes"] as boolean | undefined;
   const configPath =
     (parsed.flags["config"] as string | undefined) ?? ".aligntrue/config.yaml";
 
@@ -198,7 +205,13 @@ export async function pull(args: string[]): Promise<void> {
     }
 
     // Execute pull
-    const results = await executePull(url, ref, offline ?? false, configPath);
+    const results = await executePull(
+      url,
+      ref,
+      offline ?? false,
+      configPath,
+      autoYes,
+    );
 
     // Display results
     displayPullResults(results);
@@ -240,6 +253,7 @@ async function executePull(
   ref: string,
   offline: boolean,
   configPath: string,
+  autoYes?: boolean,
 ): Promise<PullResults> {
   const spinner = clack.spinner();
   spinner.start(`Pulling from ${url} (ref: ${ref})`);
@@ -248,27 +262,35 @@ async function executePull(
   const consentManager = createConsentManager();
 
   // Check privacy consent before network operations (unless offline)
+  // Auto-grant if --yes flag or CI environment
+  const isCI = process.env["CI"] === "true" || process.env["CI"] === "1";
   if (!offline && !consentManager.checkConsent("git")) {
-    spinner.stop("Consent required");
+    if (autoYes || isCI) {
+      // Auto-grant consent
+      consentManager.grantConsent("git");
+    } else {
+      spinner.stop("Consent required");
 
-    // Prompt for consent
-    const shouldGrant = await clack.confirm({
-      message: "Git clone requires network access. Grant consent?",
-      initialValue: false,
-    });
+      // Prompt for consent
+      const shouldGrant = await clack.confirm({
+        message: "Git clone requires network access. Grant consent?",
+        initialValue: false,
+      });
 
-    if (clack.isCancel(shouldGrant) || !shouldGrant) {
-      throw new Error(
-        "Network operation requires consent\n" +
-          `  Repository: ${url}\n` +
-          `  Grant consent with: aligntrue privacy grant git\n` +
-          `  Or run with --offline to use cache only`,
-      );
+      if (clack.isCancel(shouldGrant) || !shouldGrant) {
+        throw new Error(
+          "Network operation requires consent\n" +
+            `  Repository: ${url}\n` +
+            `  Grant consent with: aligntrue privacy grant git\n` +
+            `  Or run with --yes to auto-grant\n` +
+            `  Or run with --offline to use cache only`,
+        );
+      }
+
+      // Grant consent
+      consentManager.grantConsent("git");
+      spinner.start(`Pulling from ${url} (ref: ${ref})`);
     }
-
-    // Grant consent
-    consentManager.grantConsent("git");
-    spinner.start(`Pulling from ${url} (ref: ${ref})`);
   }
 
   try {
