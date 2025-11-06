@@ -64,7 +64,7 @@ describe("EditDetector", () => {
   });
 
   it("should detect conflicts when both files modified", async () => {
-    const irPath = join(tempDir, ".aligntrue", "rules.md");
+    const irPath = join(tempDir, ".aligntrue", ".rules.yaml");
     const agentPath = join(tempDir, ".cursor", "rules", "aligntrue.mdc");
 
     // Create .aligntrue directory
@@ -96,7 +96,7 @@ describe("EditDetector", () => {
   });
 
   it("should not detect conflict when only IR modified", async () => {
-    const irPath = join(tempDir, ".aligntrue", "rules.md");
+    const irPath = join(tempDir, ".aligntrue", ".rules.yaml");
     const agentPath = join(tempDir, ".cursor", "rules", "aligntrue.mdc");
 
     // Create directories
@@ -124,7 +124,7 @@ describe("EditDetector", () => {
   });
 
   it("should not detect conflict when only agent modified", async () => {
-    const irPath = join(tempDir, ".aligntrue", "rules.md");
+    const irPath = join(tempDir, ".aligntrue", ".rules.yaml");
     const agentPath = join(tempDir, ".cursor", "rules", "aligntrue.mdc");
 
     // Create directories
