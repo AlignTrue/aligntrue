@@ -204,5 +204,5 @@ These files should be in `.gitignore` for solo mode, but committed in team mode.
 ## Related pages
 
 - [Workflows guide](/docs/01-guides/01-workflows) - Choose between IR-source and native-format workflows
-- [Sync behavior](/docs/02-concepts/sync-behavior) - Technical details of sync engine
-- [Troubleshooting conflicts](/docs/04-troubleshooting/conflicts) - Detailed conflict resolution
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Technical details of sync engine
+- [Troubleshooting conflicts](/docs/05-troubleshooting/conflicts) - Detailed conflict resolution

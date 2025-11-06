@@ -77,4 +77,4 @@ Works with Cursor, GitHub Copilot, Claude Code, Aider, Windsurf, and 23+ more th
 
 Ready to get started? Follow the [Quickstart Guide](/docs/00-getting-started/00-quickstart) and be up and running in 60 seconds.
 
-Want to understand how it works? Read about [Sync Behavior](/docs/02-concepts/sync-behavior).
+Want to understand how it works? Read about [Sync Behavior](/docs/03-concepts/sync-behavior).

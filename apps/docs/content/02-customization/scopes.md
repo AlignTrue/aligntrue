@@ -558,7 +558,7 @@ Validates:
 - Merge order values
 - Ruleset references
 
-See [CLI Reference](/docs/03-reference/cli-reference#aligntrue-scopes) for complete command documentation.
+See [CLI Reference](/docs/04-reference/cli-reference#aligntrue-scopes) for complete command documentation.
 
 ## Path validation
 
@@ -785,10 +785,10 @@ scopes:
 - [Customization Overview](/docs/02-customization) - When to use scopes vs plugs vs overlays
 - [Plugs Guide](/docs/02-customization/plugs) - Stack-specific values
 - [Overlays Guide](/docs/02-customization/overlays) - Rule property overrides
-- [Team Mode Guide](/docs/02-concepts/team-mode) - Team collaboration with scopes
-- [CLI Reference](/docs/03-reference/cli-reference#aligntrue-scopes) - Complete command docs
-- [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with scopes
-- [Team Guide](/docs/01-guides/team-guide) - Team collaboration with scopes
+- [Team Mode Guide](/docs/03-concepts/team-mode) - Team collaboration with scopes
+- [CLI Reference](/docs/04-reference/cli-reference#aligntrue-scopes) - Complete command docs
+- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with scopes
+- [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with scopes
 
 ## Summary
 

@@ -199,7 +199,7 @@ Available token categories:
 - `--borderColor-*` - Border colors
 - `--color-neutral-*` - Neutral scale (50-950)
 
-See [workspace structure](/docs/07-development/workspace) for complete documentation.
+See [workspace structure](/docs/08-development/workspace) for complete documentation.
 
 ### Testing themes
 
@@ -354,6 +354,6 @@ Example: `feat: Add new command` or `fix: Resolve memory leak`
 
 ## Next steps
 
-- Review [workspace structure](/docs/07-development/workspace)
-- Understand [architecture concepts](/docs/07-development/architecture)
-- See [setup guide](/docs/07-development/setup) for installation
+- Review [workspace structure](/docs/08-development/workspace)
+- Understand [architecture concepts](/docs/08-development/architecture)
+- See [setup guide](/docs/08-development/setup) for installation

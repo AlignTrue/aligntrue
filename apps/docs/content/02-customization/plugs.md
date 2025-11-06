@@ -344,7 +344,7 @@ Next step:
   Run: aligntrue sync
 ```
 
-See [CLI Reference](/docs/03-reference/cli-reference#plugs-commands) for complete command documentation.
+See [CLI Reference](/docs/04-reference/cli-reference#plugs-commands) for complete command documentation.
 
 ## Scenario-based examples
 
@@ -681,6 +681,6 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 - [Customization Overview](/docs/02-customization) - When to use plugs vs overlays vs scopes
 - [Overlays Guide](/docs/02-customization/overlays) - Modify rule properties without forking
 - [Scopes Guide](/docs/02-customization/scopes) - Apply different rules per directory
-- [CLI Reference](/docs/03-reference/cli-reference#plugs-commands) - Complete command docs
-- [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with plugs
-- [Team Guide](/docs/01-guides/team-guide) - Team collaboration with plugs
+- [CLI Reference](/docs/04-reference/cli-reference#plugs-commands) - Complete command docs
+- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with plugs
+- [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with plugs

@@ -566,7 +566,7 @@ Team mode tracks overlays in lockfile for review:
 }
 ```
 
-See [Team Mode Guide](/docs/02-concepts/team-mode) for team mode workflows.
+See [Team Mode Guide](/docs/03-concepts/team-mode) for team mode workflows.
 
 ### Overlay dashboard
 
@@ -643,7 +643,7 @@ aligntrue drift
 #   - Recommendation: Run aligntrue sync to apply latest
 ```
 
-See [Drift Detection](/docs/02-concepts/drift-detection) for full drift capabilities.
+See [Drift Detection](/docs/03-concepts/drift-detection) for full drift capabilities.
 
 ## CLI commands
 
@@ -716,7 +716,7 @@ aligntrue sync
 aligntrue update
 ```
 
-See [CLI Reference](/docs/03-reference/cli-reference#overlay-commands) for complete command documentation.
+See [CLI Reference](/docs/04-reference/cli-reference#overlay-commands) for complete command documentation.
 
 ## Best practices
 
@@ -855,18 +855,18 @@ aligntrue override diff
 
 **Fix:** Update selectors to match new upstream rule IDs. Run `aligntrue override remove` for stale overlays and re-add with correct selectors.
 
-See [Troubleshooting Overlays](/docs/04-troubleshooting/overlays) for comprehensive troubleshooting.
+See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehensive troubleshooting.
 
 ## Related documentation
 
 - [Customization Overview](/docs/02-customization) - When to use overlays vs plugs vs scopes
 - [Plugs Guide](/docs/02-customization/plugs) - Stack-specific customization
 - [Scopes Guide](/docs/02-customization/scopes) - Path-based rule application
-- [Team Mode Guide](/docs/02-concepts/team-mode) - Overlay policies and approval workflows
-- [Drift Detection](/docs/02-concepts/drift-detection) - Detect overlay staleness
-- [CLI Reference](/docs/03-reference/cli-reference#overlay-commands) - Complete CLI reference
-- [Solo Developer Guide](/docs/01-guides/solo-developer-guide) - Solo workflow with overlays
-- [Team Guide](/docs/01-guides/team-guide) - Team collaboration with overlays
+- [Team Mode Guide](/docs/03-concepts/team-mode) - Overlay policies and approval workflows
+- [Drift Detection](/docs/03-concepts/drift-detection) - Detect overlay staleness
+- [CLI Reference](/docs/04-reference/cli-reference#overlay-commands) - Complete CLI reference
+- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with overlays
+- [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with overlays
 
 ## Summary
 

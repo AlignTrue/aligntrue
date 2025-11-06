@@ -186,11 +186,11 @@ aligntrue override add rule-id --set severity=warning
 aligntrue override add rule-id --set enabled=false
 ```
 
-See [Overlays Guide](/docs/02-concepts/overlays) for details.
+See [Overlays Guide](/docs/02-customization/overlays) for details.
 
 ## Contributing packs
 
-Want to share your rules with the community? See [Creating Packs](/docs/05-contributing/creating-packs) for guidelines.
+Want to share your rules with the community? See [Creating Packs](/docs/06-contributing/creating-packs) for guidelines.
 
 ---
 
