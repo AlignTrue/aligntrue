@@ -36,13 +36,13 @@ describe("Fresh user experience", () => {
 
     // Check that files were created
     expect(existsSync(join(testDir, ".aligntrue/config.yaml"))).toBe(true);
-    expect(existsSync(join(testDir, ".aligntrue/rules.md"))).toBe(true);
+    expect(existsSync(join(testDir, ".aligntrue/.rules.yaml"))).toBe(true);
     expect(
       existsSync(join(testDir, ".cursor/rules/aligntrue-starter.mdc")),
     ).toBe(true);
 
     // Load and validate IR
-    const irPath = join(testDir, ".aligntrue/rules.md");
+    const irPath = join(testDir, ".aligntrue/.rules.yaml");
     const irContent = readFileSync(irPath, "utf-8");
 
     // Extract YAML from markdown
@@ -231,7 +231,7 @@ describe("Validation safeguards", () => {
     });
 
     // Manually corrupt the IR with invalid rule ID
-    const irPath = join(testDir, ".aligntrue/rules.md");
+    const irPath = join(testDir, ".aligntrue/.rules.yaml");
     let irContent = readFileSync(irPath, "utf-8");
 
     // Replace a valid ID with an invalid one
@@ -296,7 +296,7 @@ Valid rule.
     );
 
     // Read generated IR
-    const irPath = join(testDir, ".aligntrue/rules.md");
+    const irPath = join(testDir, ".aligntrue/.rules.yaml");
     const irContent = readFileSync(irPath, "utf-8");
 
     // Should have exactly one fenced block
@@ -321,7 +321,7 @@ Valid rule.
     });
 
     // Read all generated files
-    const irPath = join(testDir, ".aligntrue/rules.md");
+    const irPath = join(testDir, ".aligntrue/.rules.yaml");
     const cursorPath = join(testDir, ".cursor/rules/aligntrue-starter.mdc");
 
     const irContent = readFileSync(irPath, "utf-8");

@@ -66,7 +66,7 @@ export function mockCoreModule() {
     applyOverlays: vi.fn(() => ({ success: true, appliedCount: 0 })),
     getAlignTruePaths: vi.fn((cwd = process.cwd()) => ({
       config: `${cwd}/.aligntrue/config.yaml`,
-      rules: `${cwd}/.aligntrue/rules.md`,
+      rules: `${cwd}/.aligntrue/.rules.yaml`,
       lockfile: `${cwd}/.aligntrue.lock.json`,
       bundle: `${cwd}/.aligntrue.bundle.yaml`,
       aligntrueDir: `${cwd}/.aligntrue`,
