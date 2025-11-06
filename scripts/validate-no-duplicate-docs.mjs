@@ -10,7 +10,7 @@
  */
 
 import { readdir } from "node:fs/promises";
-import { join, basename, extname } from "node:path";
+import { join, basename, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -36,13 +36,14 @@ async function findMarkdownFiles(dir, files = []) {
 }
 
 /**
- * Group files by their base name (without extension)
+ * Group files by their base name (without extension) within the same directory.
+ * Uses path.dirname() to handle cross-platform paths correctly (Windows backslashes, Unix slashes).
  */
 function groupByBaseName(files) {
   const groups = new Map();
 
   for (const file of files) {
-    const dir = file.substring(0, file.lastIndexOf("/"));
+    const dir = dirname(file);
     const name = basename(file, extname(file));
     const key = `${dir}/${name}`;
 
