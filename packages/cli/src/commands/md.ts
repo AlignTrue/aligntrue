@@ -107,7 +107,7 @@ export async function md(args: string[]): Promise<void> {
 async function mdLint(file: string): Promise<void> {
   try {
     const content = readFileSync(file, "utf-8");
-    const result = validateMarkdown(content);
+    const result = await validateMarkdown(content);
 
     if (result.valid) {
       console.log(`✓ ${file} is valid`);
