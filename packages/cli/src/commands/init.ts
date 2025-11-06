@@ -28,6 +28,7 @@ import {
 } from "../utils/command-utilities.js";
 import { executeImport } from "../utils/import-helper.js";
 import { execSync } from "child_process";
+import { DOCS_BASE_URL, DOCS_QUICKSTART } from "../constants.js";
 import { basename } from "path";
 import { AlignRule } from "@aligntrue/schema";
 
@@ -608,7 +609,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     lines.push("2. **Customize for your project** - Edit as needed");
     lines.push("3. **Sync to agents** - Run `aligntrue sync`");
     lines.push("");
-    lines.push("Learn more: https://aligntrue.ai/docs");
+    lines.push(`Learn more: ${DOCS_BASE_URL}`);
 
     const content = lines.join("\n");
     const rulesTempPath = `${rulesPath}.tmp`;
@@ -681,7 +682,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       message += `   Edit .aligntrue/rules.md as source of truth`;
     }
 
-    message += `\n\nLearn more: https://aligntrue.ai/docs/getting-started/quickstart`;
+    message += `\n\nLearn more: ${DOCS_QUICKSTART}`;
 
     clack.outro(message);
   }
