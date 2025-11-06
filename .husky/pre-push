@@ -1,22 +1,12 @@
 set -e
 
-echo "🔍 Running pre-push validation... (this may take 30-60 seconds)"
+echo "🔍 Running pre-push validation..."
+echo "Tip: Use 'git push --no-verify' to skip these checks in emergencies"
 echo ""
 
-echo "📝 Type checking all packages..."
-pnpm typecheck
-echo "✅ Type checking passed."
-echo ""
+# Run pre-CI validation (builds, typechecks, lints, formats, and tests)
+pnpm pre-ci
 
-echo "🧪 Running the full test suite..."
-pnpm test
-echo "✅ All tests passed."
 echo ""
-
-echo "🔨 Building all packages..."
-pnpm build
-echo "✅ Build successful."
-echo ""
-
 echo "🎉 All pre-push checks passed! Your code is ready to push."
 

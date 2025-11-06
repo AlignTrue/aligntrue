@@ -38,7 +38,10 @@ const steps = [
   { name: "Run tests", cmd: "pnpm test --reporter=dot" },
 ];
 
-console.log("🔍 Running pre-CI validation...\n");
+console.log("🔍 Running pre-CI validation...");
+console.log("This catches CI failures locally before you push\n");
+
+const totalStart = Date.now();
 
 for (const step of steps) {
   const start = Date.now();
@@ -58,8 +61,12 @@ for (const step of steps) {
     console.error(
       err.stdout?.toString() || err.stderr?.toString() || err.message,
     );
+    console.error(`\n💡 Fix the errors above and run 'pnpm pre-ci' again`);
+    console.error(`   Or use 'git push --no-verify' to skip validation\n`);
     process.exit(1);
   }
 }
 
-console.log("\n✅ All pre-CI checks passed!");
+const totalDuration = ((Date.now() - totalStart) / 1000).toFixed(1);
+console.log(`\n✅ All pre-CI checks passed in ${totalDuration}s!`);
+console.log("   Your code is ready to push to CI\n");
