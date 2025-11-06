@@ -1,18 +1,19 @@
 /**
- * IR loading with support for markdown and YAML formats
+ * IR loading with YAML format support
  */
 
 import { readFileSync, existsSync } from "fs";
 import { extname } from "path";
 import * as yaml from "js-yaml";
-import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
 import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode } from "../config/index.js";
 
 /**
- * Load IR from a markdown or YAML file
- * Auto-detects format based on file extension
+ * Load IR from a YAML file
+ *
+ * Note: The IR file (.aligntrue/.rules.yaml) is internal and auto-generated.
+ * Users should edit agent files (AGENTS.md, .cursor/*.mdc) instead.
  *
  * @param sourcePath - Path to the source file
  * @param options - Loading options (mode, max size, force flag)
@@ -51,49 +52,11 @@ export async function loadIR(
     );
   }
 
-  // Auto-detect format based on extension
+  // Validate file extension
   const ext = extname(sourcePath).toLowerCase();
   let ir: unknown;
 
-  if (ext === ".md" || ext === ".markdown") {
-    // Parse markdown with fenced blocks
-    try {
-      const parseResult = parseMarkdown(content);
-
-      // Check for parsing errors
-      if (parseResult.errors.length > 0) {
-        const errorList = parseResult.errors
-          .map((err) => `  - Line ${err.line}: ${err.message}`)
-          .join("\n");
-        throw new Error(`Markdown parsing errors:\n${errorList}`);
-      }
-
-      const buildResult = buildIR(parseResult.blocks);
-
-      // Check for IR build errors
-      if (buildResult.errors.length > 0) {
-        const errorList = buildResult.errors
-          .map(
-            (err) =>
-              `  - Line ${err.line}: ${err.message}${err.section ? ` (section: ${err.section})` : ""}`,
-          )
-          .join("\n");
-        throw new Error(`IR build errors:\n${errorList}`);
-      }
-
-      if (!buildResult.document) {
-        throw new Error("Failed to build IR document from markdown blocks");
-      }
-
-      ir = buildResult.document;
-    } catch (_err) {
-      throw new Error(
-        `Failed to parse markdown in ${sourcePath}\n` +
-          `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
-          `  Check for syntax errors in fenced \`\`\`aligntrue blocks.`,
-      );
-    }
-  } else if (ext === ".yaml" || ext === ".yml") {
+  if (ext === ".yaml" || ext === ".yml") {
     // Parse YAML directly
     try {
       ir = yaml.load(content);
@@ -112,8 +75,9 @@ export async function loadIR(
   } else {
     throw new Error(
       `Unsupported file format: ${ext}\n` +
-        `  Supported formats: .md, .markdown, .yaml, .yml\n` +
-        `  Source: ${sourcePath}`,
+        `  IR files must be in YAML format (.yaml or .yml)\n` +
+        `  Source: ${sourcePath}\n` +
+        `  Note: Users should edit agent files (AGENTS.md, .cursor/*.mdc), not the IR file directly.`,
     );
   }
 

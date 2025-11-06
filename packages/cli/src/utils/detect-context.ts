@@ -20,13 +20,27 @@ export type ProjectContext =
   | "fresh-start"; // No existing rules or config
 
 /**
+ * Detected agent information
+ */
+export interface DetectedAgent {
+  /** Agent name (cursor, agents-md, claude, etc.) */
+  agent: string;
+  /** Files found for this agent */
+  files: string[];
+  /** Estimated rule count (if available) */
+  ruleCount?: number;
+}
+
+/**
  * Result of context detection
  */
 export interface ContextResult {
-  /** Detected context type */
+  /** Detected context type (primary context for backwards compat) */
   context: ProjectContext;
-  /** Existing files found */
+  /** Existing files found (all files from all agents) */
   existingFiles: string[];
+  /** All detected agents */
+  allDetectedAgents: DetectedAgent[];
 }
 
 /**
@@ -35,6 +49,7 @@ export interface ContextResult {
  * @returns Context result with detected type and existing files
  */
 export function detectContext(cwd: string = process.cwd()): ContextResult {
+  const allDetectedAgents: DetectedAgent[] = [];
   const existingFiles: string[] = [];
 
   // Check for .aligntrue/ directory
@@ -44,74 +59,103 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
     return {
       context: "already-initialized",
       existingFiles,
+      allDetectedAgents: [],
     };
   }
 
-  // Check for .cursor/rules/ directory (Priority 1: Most specific format)
+  // Check for .cursor/rules/ directory
   const cursorRulesPath = join(cwd, ".cursor", "rules");
   if (existsSync(cursorRulesPath) && statSync(cursorRulesPath).isDirectory()) {
-    // Check if it has any .mdc files
     try {
       const files = readdirSync(cursorRulesPath);
       const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
       if (mdcFiles.length > 0) {
+        allDetectedAgents.push({
+          agent: "cursor",
+          files: [".cursor/rules/"],
+        });
         existingFiles.push(".cursor/rules/");
-        return {
-          context: "import-cursor",
-          existingFiles,
-        };
       }
     } catch {
       // Directory not readable, continue
     }
   }
 
-  // Check for legacy .cursorrules file (Priority 2: Legacy Cursor format)
+  // Check for legacy .cursorrules file
   const cursorrulesPath = join(cwd, ".cursorrules");
   if (existsSync(cursorrulesPath)) {
+    allDetectedAgents.push({
+      agent: "cursorrules",
+      files: [".cursorrules"],
+    });
     existingFiles.push(".cursorrules");
-    return {
-      context: "import-cursorrules",
-      existingFiles,
-    };
   }
 
-  // Check for markdown format files (Priority 2-5: Case-insensitive)
-  // Order: AGENTS.md, CLAUDE.md, CRUSH.md, WARP.md
+  // Check for markdown format files (case-insensitive)
   const markdownFormats = [
     {
       baseNames: ["AGENTS", "agents", "Agents"],
-      context: "import-agents" as const,
+      agent: "agents-md",
     },
     {
       baseNames: ["CLAUDE", "claude", "Claude"],
-      context: "import-claude" as const,
+      agent: "claude",
     },
     {
       baseNames: ["CRUSH", "crush", "Crush"],
-      context: "import-crush" as const,
+      agent: "crush",
     },
-    { baseNames: ["WARP", "warp", "Warp"], context: "import-warp" as const },
+    {
+      baseNames: ["WARP", "warp", "Warp"],
+      agent: "warp",
+    },
   ];
 
-  for (const { baseNames, context } of markdownFormats) {
+  for (const { baseNames, agent } of markdownFormats) {
     for (const baseName of baseNames) {
       const fileName = `${baseName}.md`;
       const filePath = join(cwd, fileName);
       if (existsSync(filePath)) {
+        allDetectedAgents.push({
+          agent,
+          files: [fileName],
+        });
         existingFiles.push(fileName);
-        return {
-          context,
-          existingFiles,
-        };
+        break; // Only add once per agent
       }
     }
   }
 
-  // Default: fresh start
+  // Determine primary context (highest priority agent for backwards compat)
+  let context: ProjectContext = "fresh-start";
+  if (allDetectedAgents.length > 0 && allDetectedAgents[0]) {
+    const firstAgent = allDetectedAgents[0].agent;
+    switch (firstAgent) {
+      case "cursor":
+        context = "import-cursor";
+        break;
+      case "cursorrules":
+        context = "import-cursorrules";
+        break;
+      case "agents-md":
+        context = "import-agents";
+        break;
+      case "claude":
+        context = "import-claude";
+        break;
+      case "crush":
+        context = "import-crush";
+        break;
+      case "warp":
+        context = "import-warp";
+        break;
+    }
+  }
+
   return {
-    context: "fresh-start",
-    existingFiles: [],
+    context,
+    existingFiles,
+    allDetectedAgents,
   };
 }
 

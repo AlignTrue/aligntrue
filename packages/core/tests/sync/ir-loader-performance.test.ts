@@ -109,11 +109,9 @@ rules:
     expect(ir.id).toBe("test-pack");
   });
 
-  it("checks markdown files for size", async () => {
-    const filePath = join(testDir, "rules.md");
-    const validMarkdown = `
-\`\`\`aligntrue
-id: test-pack
+  it("checks YAML files for size", async () => {
+    const filePath = join(testDir, "rules.yaml");
+    const validYaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -121,19 +119,16 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
-    writeFileSync(filePath, validMarkdown, "utf-8");
+    writeFileSync(filePath, validYaml, "utf-8");
 
     const ir = await loadIR(filePath, { mode: "solo", maxFileSizeMb: 10 });
     expect(ir.id).toBe("test-pack");
   });
 
-  it("checks markdown files for size limit exceeds", async () => {
-    const filePath = join(testDir, "large.md");
-    const validMarkdown = `
-\`\`\`aligntrue
-id: test-pack
+  it("checks YAML files for size limit exceeds", async () => {
+    const filePath = join(testDir, "large.yaml");
+    const validYaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -141,10 +136,9 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
-    // Create 11MB file with markdown
-    const largeContent = validMarkdown + "\n# ".repeat(11 * 1024 * 512);
+    // Create 11MB file with YAML
+    const largeContent = validYaml + "\n# ".repeat(11 * 1024 * 512);
     writeFileSync(filePath, largeContent, "utf-8");
 
     await expect(

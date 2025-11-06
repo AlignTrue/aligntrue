@@ -18,9 +18,9 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 ## Quickstart
 
 ```bash
-npx aligntrue init  # Auto-detect agents, create .aligntrue.yaml
-# Edit .aligntrue.yaml (optional)
-aligntrue sync           # Generate all agent files
+npx aligntrue init  # Creates AGENTS.md with starter rules
+# Edit AGENTS.md to customize
+aligntrue sync      # Syncs to all your agents
 ```
 
 **Installation options:**
@@ -33,7 +33,7 @@ aligntrue sync           # Generate all agent files
 
 **Platform support:** macOS, Windows, Linux (Node.js 20+)
 
-**Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
+**Result:** `.cursor/rules/aligntrue.mdc`, `.vscode/mcp.json`, and more - all synced from AGENTS.md.
 
 Read the [Quickstart Guide](https://aligntrue.ai/docs/00-getting-started/00-quickstart) for detailed instructions.
 
@@ -72,10 +72,10 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 
 ## How it works
 
-1. **Write rules** in `.aligntrue/rules.md` using simple markdown
+1. **Write rules** in `AGENTS.md` or any agent file (`.cursor/*.mdc`, etc.)
 2. **Run sync** - AlignTrue detects installed agents and generates optimized formats
 3. **Agent-specific exports** - Each agent gets its native format (.mdc, .json, .yml, etc.)
-4. **Stay aligned** - Edit markdown or agent files; sync keeps everything consistent
+4. **Stay aligned** - Edit any agent file; sync keeps everything consistent
 
 ## Common workflows
 

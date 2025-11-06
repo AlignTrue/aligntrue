@@ -7,10 +7,14 @@ import { existsSync, mkdirSync, writeFileSync, renameSync } from "fs";
 import { dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
-import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
+import {
+  getAlignTruePaths,
+  type AlignTrueConfig,
+  importFromAgent,
+} from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import { detectAgents } from "../utils/detect-agents.js";
-import { getStarterTemplate } from "../templates/starter-rules.js";
+import { STARTER_RULES_CANONICAL } from "../templates/starter-rules-canonical.js";
 import {
   generateCursorStarter,
   getCursorStarterPath,
@@ -26,9 +30,9 @@ import {
   shouldUseInteractive,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { executeImport } from "../utils/import-helper.js";
+import { importAndMergeFromMultipleAgents } from "../utils/import-helper.js";
 import { execSync } from "child_process";
-import { DOCS_BASE_URL, DOCS_QUICKSTART } from "../constants.js";
+import { DOCS_QUICKSTART } from "../constants.js";
 import { basename } from "path";
 import { AlignRule } from "@aligntrue/schema";
 
@@ -213,36 +217,87 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   let importedRules: AlignRule[] | null = null;
   let importedFromAgent: string | null = null;
   let shouldImport = false;
+  let shouldMergeMultiple = false;
 
   // Determine if we should import
   if (importAgent) {
     // Explicit --import flag
     shouldImport = true;
     importedFromAgent = importAgent;
-  } else if (
-    contextResult.context === "import-cursor" ||
-    contextResult.context === "import-cursorrules" ||
-    contextResult.context === "import-agents" ||
-    contextResult.context === "import-claude" ||
-    contextResult.context === "import-crush" ||
-    contextResult.context === "import-warp"
-  ) {
-    // Detected existing agent files - map context to agent name
-    const contextToAgent: Record<string, string> = {
-      "import-cursor": "cursor",
-      "import-cursorrules": "cursorrules",
-      "import-agents": "agents-md",
-      "import-claude": "claude-md",
-      "import-crush": "crush-md",
-      "import-warp": "warp-md",
-    };
-    const detectedAgent = contextToAgent[contextResult.context];
+  } else if (contextResult.allDetectedAgents.length > 1) {
+    // Multiple agents detected - offer merge
+    if (nonInteractive) {
+      console.log(
+        `\nDetected rules in ${contextResult.allDetectedAgents.length} agents:`,
+      );
+      for (const { agent, files } of contextResult.allDetectedAgents) {
+        console.log(`  • ${agent}: ${files.join(", ")}`);
+      }
+      console.log("Non-interactive mode: continuing with fresh start template");
+      console.log("Tip: Use --import <agent> to import from a specific agent");
+    } else {
+      console.log("");
+      clack.log.info("Found rules in multiple agents:");
+      for (const { agent, files } of contextResult.allDetectedAgents) {
+        console.log(`  • ${agent}: ${files.join(", ")}`);
+      }
+      console.log("");
 
-    if (!detectedAgent) {
-      // Safety check: context should always map to an agent
-      clack.log.warn("Could not map context to agent");
-      return;
+      const choice = await clack.select({
+        message: "What would you like to do?",
+        options: [
+          {
+            value: "merge",
+            label: "Import and merge all (recommended)",
+            hint: "Keeps all rules, renames duplicates",
+          },
+          {
+            value: "choose",
+            label: "Choose one agent as source",
+            hint: "Others will be overwritten",
+          },
+          {
+            value: "fresh",
+            label: "Start fresh (ignore existing rules)",
+            hint: "Create new template",
+          },
+        ],
+      });
+
+      if (clack.isCancel(choice)) {
+        clack.cancel("Init cancelled");
+        process.exit(0);
+      }
+
+      if (choice === "merge") {
+        shouldMergeMultiple = true;
+      } else if (choice === "choose") {
+        // Let user pick one agent
+        const agentChoice = await clack.select({
+          message: "Which agent should be the source?",
+          options: contextResult.allDetectedAgents.map(({ agent, files }) => ({
+            value: agent,
+            label: agent,
+            hint: files.join(", "),
+          })),
+        });
+
+        if (clack.isCancel(agentChoice)) {
+          clack.cancel("Init cancelled");
+          process.exit(0);
+        }
+
+        shouldImport = true;
+        importedFromAgent = agentChoice as string;
+      }
+      // choice === "fresh": do nothing
     }
+  } else if (
+    contextResult.allDetectedAgents.length === 1 &&
+    contextResult.allDetectedAgents[0]
+  ) {
+    // Single agent detected
+    const detectedAgent = contextResult.allDetectedAgents[0].agent;
 
     if (nonInteractive) {
       // Non-interactive without --import flag: skip import (safe default)
@@ -290,15 +345,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       if (choice === "preview") {
         // Show coverage report, then ask again
         try {
-          const previewResult = await executeImport(detectedAgent, cwd, {
-            showCoverage: true,
-            writeToIR: false,
-            interactive: true,
-          });
+          const previewRules = await importFromAgent(detectedAgent, cwd);
 
           console.log("");
+          clack.log.info(
+            `Found ${previewRules.length} rules in ${detectedAgent}`,
+          );
+
           const confirmImport = await clack.confirm({
-            message: `Import ${previewResult.rules.length} rules?`,
+            message: `Import ${previewRules.length} rules?`,
             initialValue: true,
           });
 
@@ -307,7 +362,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
           } else {
             shouldImport = true;
             importedFromAgent = detectedAgent;
-            importedRules = previewResult.rules;
+            importedRules = previewRules;
           }
         } catch (_error) {
           clack.log.error(
@@ -323,31 +378,61 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  // Execute import if requested
-  if (shouldImport && importedFromAgent) {
+  // Execute multi-agent merge if requested
+  if (shouldMergeMultiple) {
     try {
-      const importResult = await executeImport(importedFromAgent, cwd, {
-        showCoverage: !nonInteractive,
-        writeToIR: false, // We'll write later with proper config
-        interactive: !nonInteractive,
-        projectId: projectId || detectProjectId(),
-      });
+      console.log("");
+      clack.log.step("Importing and merging rules from all agents...");
 
-      importedRules = importResult.rules;
+      const mergeResult = await importAndMergeFromMultipleAgents(
+        contextResult.allDetectedAgents,
+        cwd,
+      );
+
+      importedRules = mergeResult.rules;
+
+      console.log("");
+      clack.log.success(
+        `Merged ${mergeResult.stats.totalRules} rules from ${contextResult.allDetectedAgents.length} agents`,
+      );
+      console.log(`  • ${mergeResult.stats.uniqueRules} unique rules`);
+
+      if (mergeResult.duplicates.length > 0) {
+        console.log(
+          `  • ${mergeResult.duplicates.length} duplicates renamed\n`,
+        );
+        clack.log.warn("Duplicate rules found (kept both versions):");
+        for (const dup of mergeResult.duplicates) {
+          console.log(`  - ${dup.originalId} → ${dup.renamedId}`);
+        }
+        console.log(
+          "\nNote: We match duplicates by rule ID only, not by content.",
+        );
+        console.log("Review your rules and remove duplicates you don't need.");
+        console.log(
+          "Edit in any agent file (AGENTS.md, .cursor/*.mdc, etc.) - they stay synced.",
+        );
+      }
+    } catch (_error) {
+      clack.log.error(
+        `Merge failed: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+      clack.log.info("Continuing with fresh start template");
+      importedRules = null;
+    }
+  } else if (shouldImport && importedFromAgent) {
+    // Execute single-agent import if requested
+    try {
+      importedRules = await importFromAgent(importedFromAgent, cwd);
 
       if (!nonInteractive) {
         console.log("");
         clack.log.success(
-          `Imported ${importResult.rules.length} rules from ${importedFromAgent}`,
+          `Imported ${importedRules.length} rules from ${importedFromAgent}`,
         );
-        if (importResult.coverage) {
-          clack.log.info(
-            `Coverage: ${importResult.coverage.coveragePercentage}% (${importResult.coverage.confidence} confidence)`,
-          );
-        }
       } else {
         console.log(
-          `Imported ${importResult.rules.length} rules from ${importedFromAgent}`,
+          `Imported ${importedRules.length} rules from ${importedFromAgent}`,
         );
       }
     } catch (_error) {
@@ -559,70 +644,51 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   // Create native format template or IR fallback
   const createdFiles: string[] = [".aligntrue/config.yaml"];
 
-  // Create IR file (either from imported rules or template)
+  // Create IR file (.aligntrue/.rules.yaml) - internal, auto-generated
   const rulesPath = paths.rules;
-  if (importedRules && importedRules.length > 0) {
-    // Write imported rules to IR
-    const pack = {
-      id: projectIdValue,
-      version: "1.0.0",
-      spec_version: "1",
-      rules: importedRules.map((rule: AlignRule) => {
-        const ruleData: Partial<AlignRule> = {
-          id: rule.id,
-          severity: rule.severity,
-          applies_to: rule.applies_to,
-        };
+  const pack = {
+    id: `${projectIdValue}-rules`,
+    version: "1.0.0",
+    spec_version: "1",
+    rules: (importedRules || STARTER_RULES_CANONICAL).map((rule: AlignRule) => {
+      const ruleData: Partial<AlignRule> = {
+        id: rule.id,
+        severity: rule.severity,
+        applies_to: rule.applies_to,
+      };
 
-        if (rule.guidance) ruleData["guidance"] = rule.guidance;
-        if (rule.tags && rule.tags.length > 0) ruleData["tags"] = rule.tags;
-        if (rule.mode) ruleData["mode"] = rule.mode;
-        if (rule.title) ruleData["title"] = rule.title;
-        if (rule.description) ruleData["description"] = rule.description;
-        if (rule.vendor) ruleData["vendor"] = rule.vendor;
-        if (rule.check) ruleData["check"] = rule.check;
-        if (rule.autofix) ruleData["autofix"] = rule.autofix;
+      if (rule.guidance) ruleData["guidance"] = rule.guidance;
+      if (rule.tags && rule.tags.length > 0) ruleData["tags"] = rule.tags;
+      if (rule.mode) ruleData["mode"] = rule.mode;
+      if (rule.title) ruleData["title"] = rule.title;
+      if (rule.description) ruleData["description"] = rule.description;
+      if (rule.vendor) ruleData["vendor"] = rule.vendor;
+      if (rule.check) ruleData["check"] = rule.check;
+      if (rule.autofix) ruleData["autofix"] = rule.autofix;
 
-        return ruleData;
-      }),
-    };
+      return ruleData;
+    }),
+  };
 
-    const yamlContent = yaml.stringify(pack, {
-      lineWidth: 0,
-      indent: 2,
-    });
+  // Write pure YAML to .aligntrue/.rules.yaml (internal)
+  const yamlContent = yaml.stringify(pack, {
+    lineWidth: 0,
+    indent: 2,
+  });
 
-    const lines: string[] = [];
-    lines.push("# AlignTrue Rules");
-    lines.push("");
-    lines.push(`Rules imported from ${importedFromAgent}.`);
-    lines.push("");
-    lines.push("```aligntrue");
-    lines.push(yamlContent.trim());
-    lines.push("```");
-    lines.push("");
-    lines.push("---");
-    lines.push("");
-    lines.push("## Next steps");
-    lines.push("");
-    lines.push("1. **Review imported rules** - Check the rules above");
-    lines.push("2. **Customize for your project** - Edit as needed");
-    lines.push("3. **Sync to agents** - Run `aligntrue sync`");
-    lines.push("");
-    lines.push(`Learn more: ${DOCS_BASE_URL}`);
+  const rulesTempPath = `${rulesPath}.tmp`;
+  writeFileSync(rulesTempPath, yamlContent, "utf-8");
+  renameSync(rulesTempPath, rulesPath);
+  createdFiles.push(".aligntrue/.rules.yaml (internal)");
 
-    const content = lines.join("\n");
-    const rulesTempPath = `${rulesPath}.tmp`;
-    writeFileSync(rulesTempPath, content, "utf-8");
-    renameSync(rulesTempPath, rulesPath);
-    createdFiles.push(".aligntrue/rules.md");
-  } else {
-    // Use starter template
-    const template = getStarterTemplate(projectIdValue);
-    const rulesTempPath = `${rulesPath}.tmp`;
-    writeFileSync(rulesTempPath, template, "utf-8");
-    renameSync(rulesTempPath, rulesPath);
-    createdFiles.push(".aligntrue/rules.md");
+  // Create AGENTS.md as primary user-editable file (if not imported)
+  if (!importedRules) {
+    const agentsMdContent = generateAgentsMdStarter();
+    const agentsMdPath = `${cwd}/AGENTS.md`;
+    const agentsMdTempPath = `${agentsMdPath}.tmp`;
+    writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
+    renameSync(agentsMdTempPath, agentsMdPath);
+    createdFiles.push("AGENTS.md");
   }
 
   // Create native format template if applicable (and not imported)
@@ -666,20 +732,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       // Imported workflow message
       message += `📝 Next steps:\n`;
       message += `  1. Run: aligntrue sync\n`;
-      message += `     → Syncs rules to other agents (AGENTS.md, etc.)\n`;
-      message += `  2. Continue editing in ${importedFromAgent === "cursor" ? "Cursor" : importedFromAgent} or .aligntrue/rules.md\n`;
-      message += `     → Auto-pull keeps everything in sync\n\n`;
-      message += `💡 Workflow: native_format\n`;
-      message += `   Edit in ${importedFromAgent === "cursor" ? "Cursor" : importedFromAgent}, AlignTrue syncs automatically`;
+      message += `     → Syncs rules to all agents (AGENTS.md, Cursor, etc.)\n`;
+      message += `  2. Edit rules in any agent file - they stay synced\n`;
+      message += `     → Edit AGENTS.md, .cursor/*.mdc, or other agent files\n\n`;
+      message += `💡 Your imported rules are ready!\n`;
+      message += `   AlignTrue keeps all agent files in sync automatically`;
     } else {
       // Fresh start workflow message
-      const _editPath = nativeTemplatePath || ".aligntrue/rules.md";
       message += `📝 Next steps:\n`;
-      message += `  1. Review: .aligntrue/rules.md\n`;
+      message += `  1. Review: AGENTS.md (your starter rules)\n`;
       message += `  2. Customize for your project\n`;
-      message += `  3. Run: aligntrue sync\n\n`;
-      message += `💡 Workflow: ir_source\n`;
-      message += `   Edit .aligntrue/rules.md as source of truth`;
+      message += `  3. Run: aligntrue sync\n`;
+      message += `     → Syncs to all your agents\n\n`;
+      message += `💡 Edit rules in any agent file\n`;
+      message += `   AGENTS.md, .cursor/*.mdc, etc. - AlignTrue keeps them synced`;
     }
 
     message += `\n\nLearn more: ${DOCS_QUICKSTART}`;
