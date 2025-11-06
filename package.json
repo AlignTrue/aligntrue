@@ -31,7 +31,8 @@
     "prepare": "husky",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && changeset publish",
+    "setup-release": "node scripts/setup-release.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

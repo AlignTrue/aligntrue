@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Automated release workflow** using Changesets and GitHub Actions
+- Release documentation at `docs/development/release-process.md` and `RELEASING.md`
+
 ### Changed (Breaking)
 
 - **IR format changed** from `.aligntrue/rules.md` to `.aligntrue/.rules.yaml` (internal file)
