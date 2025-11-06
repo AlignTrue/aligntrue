@@ -53,10 +53,7 @@ describe("Team Command Integration", () => {
         "utf-8",
       );
 
-      const ir = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-project
+      const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -64,7 +61,6 @@ rules:
     severity: error
     applies_to: "**/*.ts"
     guidance: Test guidance
-\`\`\`
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
@@ -90,10 +86,7 @@ rules:
         "utf-8",
       );
 
-      const ir = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-project
+      const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -101,7 +94,6 @@ rules:
     severity: error
     applies_to: "**/*.ts"
     guidance: Test guidance
-\`\`\`
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 

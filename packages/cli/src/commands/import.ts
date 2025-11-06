@@ -77,17 +77,12 @@ function generateCoverageReport(
 }
 
 /**
- * Write imported rules to IR file in single-block format
+ * Write imported rules to IR file in pure YAML format
  *
- * Format: Markdown with one fenced ```aligntrue block containing full pack
+ * Format: Pure YAML (no markdown, no fenced blocks)
  *
  * Example output:
- * ```markdown
- * # AlignTrue Rules
- *
- * Rules imported from agent format.
- *
- * ```aligntrue
+ * ```yaml
  * id: imported-rules
  * version: 1.0.0
  * spec_version: "1"
@@ -99,12 +94,9 @@ function generateCoverageReport(
  *     severity: error
  *     ...
  * ```
- * ```
  *
- * CRITICAL: Must use single-block format
- * - Parser expects ONE aligntrue block per section
- * - Multi-block format (one block per rule) will fail validation
- * - See: packages/markdown-parser for block parsing rules
+ * Note: .rules.yaml is internal IR (auto-generated, don't edit directly)
+ * Users should edit AGENTS.md or agent-specific files instead
  *
  * @param rules - Imported rules from agent format
  * @param dryRun - Preview only, don't write file
@@ -117,7 +109,7 @@ async function writeToIRFile(
   const irPath = paths.rules;
   const yaml = await import("yaml");
 
-  // Generate single-block IR format
+  // Generate pure YAML IR format
   const pack = {
     id: "imported-rules",
     version: "1.0.0",
@@ -165,34 +157,21 @@ async function writeToIRFile(
     }),
   };
 
-  // Generate markdown with single fenced block
-  const lines: string[] = [];
-  lines.push("# AlignTrue Rules");
-  lines.push("");
-  lines.push("Rules imported from agent format.");
-  lines.push("");
-  lines.push("```aligntrue");
-
-  // Convert to YAML and add to lines
+  // Write pure YAML to .rules.yaml (internal IR)
   const yamlContent = yaml.stringify(pack, {
     lineWidth: 0, // Don't wrap long lines
     indent: 2,
   });
 
-  lines.push(yamlContent.trim());
-  lines.push("```");
-
-  const content = lines.join("\n");
-
   if (dryRun) {
-    console.log("\nPreview of AGENTS.md:");
+    console.log("\nPreview of .rules.yaml:");
     console.log("─".repeat(50));
-    console.log(content.split("\n").slice(0, 30).join("\n"));
-    if (content.split("\n").length > 30) {
+    console.log(yamlContent.split("\n").slice(0, 30).join("\n"));
+    if (yamlContent.split("\n").length > 30) {
       console.log("... (truncated)");
     }
   } else {
-    await writeFile(irPath, content, "utf-8");
+    await writeFile(irPath, yamlContent, "utf-8");
     clack.log.success(`Wrote ${rules.length} rules to ${irPath}`);
   }
 }

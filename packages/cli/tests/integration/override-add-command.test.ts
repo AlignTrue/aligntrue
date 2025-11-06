@@ -13,14 +13,14 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-add");
 
-beforeEach(() => {
-  cleanupDir(TEST_DIR);
+beforeEach(async () => {
+  await cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 });
 
-afterEach(() => {
-  cleanupDir(TEST_DIR);
+afterEach(async () => {
+  await cleanupDir(TEST_DIR);
 });
 
 describe("Override Add Command Integration", () => {
