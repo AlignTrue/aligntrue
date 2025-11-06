@@ -69,7 +69,7 @@ docs/pre-1.0-policy.md
 
 # Test artifacts (should not be committed)
 packages/**/.aligntrue-test-*/
-packages/**/.test-output/
+packages/**/.test-output*/
 **/.last-sync
 **/.team-onboarding-complete
 *.lock.json.test
