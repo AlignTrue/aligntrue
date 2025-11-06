@@ -1,4 +1,3 @@
-// apps/docs/app/docs/layout.tsx
 import "nextra-theme-docs/style.css";
 import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";

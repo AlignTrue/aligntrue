@@ -1,5 +1,4 @@
 // apps/docs/app/layout.tsx
-import "./homepage.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Head } from "nextra/components";
