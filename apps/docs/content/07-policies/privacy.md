@@ -184,7 +184,7 @@ sources:
 - **First-time consent:** Explicit consent required for git operations
 - Clear disclosure of external repository URL
 
-See [Git Sources Guide](/docs/03-reference/git-sources) for full documentation on configuration, caching, and troubleshooting.
+See [Git Sources Guide](/docs/04-reference/git-sources) for full documentation on configuration, caching, and troubleshooting.
 
 #### Telemetry sending (when implemented)
 

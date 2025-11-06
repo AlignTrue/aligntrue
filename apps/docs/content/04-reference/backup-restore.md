@@ -430,7 +430,7 @@ Backup considerations:
 
 ## See also
 
-- [Sync behavior](/docs/02-concepts/sync-behavior) - How sync operations work
-- [Commands reference](/docs/03-reference/cli-reference) - All CLI commands
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync operations work
+- [Commands reference](/docs/04-reference/cli-reference) - All CLI commands
 - [Configuration](/docs/00-getting-started/00-quickstart#configuration) - Config file format
-- [Git sources](/docs/03-reference/git-sources) - Using git for rule sharing
+- [Git sources](/docs/04-reference/git-sources) - Using git for rule sharing

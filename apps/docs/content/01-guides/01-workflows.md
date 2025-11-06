@@ -334,6 +334,6 @@ aligntrue config get sync.auto_pull
 ## Related pages
 
 - [Auto-pull behavior](/docs/01-guides/00-auto-pull) - How auto-pull works
-- [Sync behavior](/docs/02-concepts/sync-behavior) - Technical sync details
-- [Troubleshooting conflicts](/docs/04-troubleshooting/conflicts) - Resolving conflicts
-- [Team mode](/docs/02-concepts/team-mode) - Team workflows and lockfiles
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Technical sync details
+- [Troubleshooting conflicts](/docs/05-troubleshooting/conflicts) - Resolving conflicts
+- [Team mode](/docs/03-concepts/team-mode) - Team workflows and lockfiles

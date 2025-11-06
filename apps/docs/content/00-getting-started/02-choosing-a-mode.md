@@ -269,8 +269,8 @@ Start with solo mode. It's simpler and you can always upgrade later. The switch 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Complete solo mode workflows
 - [Team Guide](/docs/01-guides/05-team-guide) - Complete team mode workflows
-- [Team Mode Concepts](/docs/02-concepts/team-mode) - Technical details of team mode
-- [FAQ](/docs/00-getting-started/02-faq) - Common questions
+- [Team Mode Concepts](/docs/03-concepts/team-mode) - Technical details of team mode
+- [FAQ](/docs/00-getting-started/03-faq) - Common questions
 
 ## Summary
 

@@ -251,6 +251,6 @@ And a footer linking back to the docs site:
 
 ## Questions?
 
-- See [getting started](/docs/05-contributing/getting-started) for development setup
-- See [workspace structure](/docs/07-development/workspace) for repo layout
-- See [architecture](/docs/07-development/architecture) for design principles
+- See [getting started](/docs/06-contributing/getting-started) for development setup
+- See [workspace structure](/docs/08-development/workspace) for repo layout
+- See [architecture](/docs/08-development/architecture) for design principles

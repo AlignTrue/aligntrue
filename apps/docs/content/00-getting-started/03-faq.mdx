@@ -27,7 +27,7 @@ Yes! AlignTrue is MIT-licensed open source. The CLI and all core features are fr
 - VS Code MCP, Amazon Q, Firebase Studio, OpenHands, Zed
 - And 18+ more
 
-[View full compatibility matrix →](/docs/03-reference/agent-support)
+[View full compatibility matrix →](/docs/04-reference/agent-support)
 
 ## Getting started
 
@@ -97,7 +97,7 @@ See [Workflows guide](/docs/01-guides/01-workflows) for choosing your workflow.
 
 Only when rules change. Set up auto-sync with file watchers if you want automatic syncing on save.
 
-See [File watcher setup](/docs/03-reference/file-watcher-setup).
+See [File watcher setup](/docs/04-reference/file-watcher-setup).
 
 ### What if I have conflicts?
 
@@ -122,7 +122,7 @@ Yes! Enable team mode for lockfiles, drift detection, and allow lists:
 aligntrue team enable
 ```
 
-See [Team mode guide](/docs/02-concepts/team-mode).
+See [Team mode guide](/docs/03-concepts/team-mode).
 
 ### How do teams share rules?
 
@@ -132,7 +132,7 @@ Three ways:
 2. **Git sources** - Pull rules from separate repository
 3. **Vendoring** - Use git submodules/subtrees
 
-See [Git workflows](/docs/02-concepts/git-workflows).
+See [Git workflows](/docs/03-concepts/git-workflows).
 
 ### What's a lockfile?
 
@@ -146,7 +146,7 @@ Drift detection monitors when upstream rules change. Useful for teams pulling ru
 aligntrue drift --gates  # Fail CI if drift detected
 ```
 
-See [Drift detection guide](/docs/02-concepts/drift-detection).
+See [Drift detection guide](/docs/03-concepts/drift-detection).
 
 ## Multi-agent usage
 
@@ -182,7 +182,7 @@ rules:
         mode: "assistant"
 ```
 
-See [Vendor Bags reference](/docs/03-reference/vendor-bags).
+See [Vendor Bags reference](/docs/04-reference/vendor-bags).
 
 ### Should I use solo or team mode?
 
@@ -190,7 +190,7 @@ See [Vendor Bags reference](/docs/03-reference/vendor-bags).
 
 **Team mode** for collaborative projects - lockfiles, drift detection, reproducible builds.
 
-See [Choosing Your Mode](/docs/00-getting-started/03-choosing-your-mode) for detailed comparison.
+See [Choosing Your Mode](/docs/00-getting-started/02-choosing-a-mode) for detailed comparison.
 
 ## Technical
 
@@ -284,7 +284,7 @@ vendor:
 
 ### More issues?
 
-See [Troubleshooting guide](/docs/04-troubleshooting) for comprehensive solutions.
+See [Troubleshooting guide](/docs/05-troubleshooting) for comprehensive solutions.
 
 ## Privacy & security
 
@@ -297,7 +297,7 @@ aligntrue telemetry status  # Check status
 aligntrue telemetry on      # Enable (optional)
 ```
 
-See [Privacy policy](/docs/06-policies/privacy).
+See [Privacy policy](/docs/07-policies/privacy).
 
 ### What data is collected (if enabled)?
 
@@ -326,17 +326,17 @@ Yes:
 - Audit trails (git integration)
 - No external dependencies at runtime
 
-See [Security policy](/docs/06-policies/index).
+See [Security policy](/docs/07-policies/index).
 
 ## Contributing
 
 ### Can I add support for my agent?
 
-Yes! See [Adding exporters guide](/docs/05-contributing/adding-exporters).
+Yes! See [Adding exporters guide](/docs/06-contributing/adding-exporters).
 
 ### Can I contribute rule packs?
 
-Yes! See [Creating packs guide](/docs/05-contributing/creating-packs).
+Yes! See [Creating packs guide](/docs/06-contributing/creating-packs).
 
 ### Where do I report bugs?
 
@@ -349,5 +349,5 @@ Yes! See [Creating packs guide](/docs/05-contributing/creating-packs).
 ## Still have questions?
 
 - [Quickstart guide](/docs/00-getting-started/00-quickstart) - Get started in 60 seconds
-- [Troubleshooting](/docs/04-troubleshooting) - Common issues
+- [Troubleshooting](/docs/05-troubleshooting) - Common issues
 - [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions) - Ask the community

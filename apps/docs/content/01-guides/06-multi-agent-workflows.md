@@ -623,12 +623,12 @@ This project uses AlignTrue for consistent AI agent behavior.
 
 ## Related documentation
 
-- [Choosing Your Mode](/docs/00-getting-started/03-choosing-your-mode) - Solo vs team mode
+- [Choosing Your Mode](/docs/00-getting-started/02-choosing-a-mode) - Solo vs team mode
 - [Workflows Guide](/docs/01-guides/01-workflows) - IR-source vs native-format
-- [Import Workflow](/docs/03-reference/import-workflow) - Migrating existing configs
-- [Agent Support](/docs/03-reference/agent-support) - Full agent compatibility matrix
-- [Vendor Bags Reference](/docs/03-reference/vendor-bags) - Agent-specific settings
-- [Sync Behavior](/docs/02-concepts/sync-behavior) - Technical sync details
+- [Import Workflow](/docs/04-reference/import-workflow) - Migrating existing configs
+- [Agent Support](/docs/04-reference/agent-support) - Full agent compatibility matrix
+- [Vendor Bags Reference](/docs/04-reference/vendor-bags) - Agent-specific settings
+- [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 
 ## Summary
 

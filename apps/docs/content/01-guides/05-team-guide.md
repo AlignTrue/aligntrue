@@ -830,9 +830,9 @@ Tested by: @dev1, @dev2, @dev3"
 - [Plugs Guide](/docs/02-customization/plugs) - Team-specific values
 - [Overlays Guide](/docs/02-customization/overlays) - Team severity preferences
 - [Scopes Guide](/docs/02-customization/scopes) - Team boundaries in monorepo
-- [Team Mode](/docs/02-concepts/team-mode) - Team mode concepts
-- [Drift Detection](/docs/02-concepts/drift-detection) - Drift detection details
-- [CLI Reference](/docs/03-reference/cli-reference) - Complete command docs
+- [Team Mode](/docs/03-concepts/team-mode) - Team mode concepts
+- [Drift Detection](/docs/03-concepts/drift-detection) - Drift detection details
+- [CLI Reference](/docs/04-reference/cli-reference) - Complete command docs
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow
 
 ## Summary
@@ -857,6 +857,6 @@ Tested by: @dev1, @dev2, @dev3"
 
 **Next steps:**
 
-- Set up [CI/CD integration](/docs/01-guides/ci-cd-integration)
-- Configure [drift detection](/docs/02-concepts/drift-detection)
-- Review [team mode concepts](/docs/02-concepts/team-mode)
+- Set up [CI/CD integration](/docs/01-guides/03-ci-cd-integration)
+- Configure [drift detection](/docs/03-concepts/drift-detection)
+- Review [team mode concepts](/docs/03-concepts/team-mode)

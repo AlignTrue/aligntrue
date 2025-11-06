@@ -252,9 +252,9 @@ Apps depend on multiple packages as needed.
 
 ## Working across packages
 
-See [development commands](/docs/07-development/commands) for package build workflows and watch mode.
+See [development commands](/docs/08-development/commands) for package build workflows and watch mode.
 
 ## Next steps
 
-- Learn [development commands](/docs/07-development/commands)
-- Understand [architecture concepts](/docs/07-development/architecture)
+- Learn [development commands](/docs/08-development/commands)
+- Understand [architecture concepts](/docs/08-development/architecture)
