@@ -13,9 +13,10 @@ import { rmSync, existsSync } from "fs";
 export async function cleanupDir(dir: string): Promise<void> {
   if (!existsSync(dir)) return;
 
-  // Windows CI needs more aggressive retry strategy
-  const maxRetries = process.platform === "win32" ? 10 : 1;
-  const retryDelay = 100; // ms - doubled for CI environments
+  // Windows CI needs retry strategy that fits within 10s hook timeout
+  // 6 retries with 100ms base = max ~6.3s total (100 * (1+2+4+8+16+32))
+  const maxRetries = process.platform === "win32" ? 6 : 1;
+  const retryDelay = 100; // ms
 
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -25,7 +26,7 @@ export async function cleanupDir(dir: string): Promise<void> {
       const error = err as { code?: string };
       if (error.code === "EBUSY" && i < maxRetries - 1) {
         // Exponential backoff with proper async delay
-        // Max delay: 100 * 2^9 = 51.2 seconds (but typically resolves in 1-2 retries)
+        // Stays under Vitest's 10s hook timeout
         await new Promise((resolve) =>
           setTimeout(resolve, retryDelay * Math.pow(2, i)),
         );
