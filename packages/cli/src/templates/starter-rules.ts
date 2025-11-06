@@ -5,6 +5,7 @@
 
 import { STARTER_RULES_CANONICAL } from "./starter-rules-canonical.js";
 import * as yaml from "yaml";
+import { DOCS_BASE_URL } from "../constants.js";
 
 /**
  * Get the comprehensive starter template
@@ -58,7 +59,7 @@ ${yamlContent.trim()}
 1. **Customize these rules** - Edit the rules above to match your project
 2. **Add more rules** - Copy a rule block and modify it
 3. **Run sync** - \`aligntrue sync\` to update your agent configs
-4. **Learn more** - https://aligntrue.ai/docs
+4. **Learn more** - ${DOCS_BASE_URL}
 
 ## Rule format reference
 
