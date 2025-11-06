@@ -5,9 +5,8 @@ This example demonstrates syncing the same rules to multiple AI coding agents (C
 ## What's inside
 
 - **`.aligntrue/config.yaml`** - Multiple exporters configuration
-- **`.aligntrue/rules.md`** - Rules with vendor bags for agent-specific hints
+- **`AGENTS.md`** - Primary user-editable rules file with vendor bags for agent-specific hints
 - **`.cursor/rules/aligntrue.mdc`** - Generated Cursor format
-- **`AGENTS.md`** - Generated universal format
 - **`.github/copilot-instructions.md`** - Generated Copilot format
 - **`.vscode/mcp.json`** - Generated VS Code MCP config
 - **`COMPARISON.md`** - Side-by-side agent outputs
@@ -31,7 +30,7 @@ You'll see multiple exporters:
 ### 2. View rules with vendor bags
 
 ```bash
-cat .aligntrue/rules.md
+cat AGENTS.md
 ```
 
 Rules include vendor bags for agent-specific hints:
@@ -97,7 +96,7 @@ Each file contains the same rules in agent-specific format with appropriate fide
 
 **With AlignTrue:**
 
-- Edit `.aligntrue/rules.md` once
+- Edit `AGENTS.md` once
 - Run `aligntrue sync`
 - All agents get updated automatically
 - Rules stay consistent
@@ -217,11 +216,11 @@ aligntrue config set exporters.4 windsurf-md
 
 ### IR-source workflow (recommended)
 
-Edit `.aligntrue/rules.md` as single source of truth:
+Edit `AGENTS.md` as single source of truth:
 
 ```bash
 # 1. Edit rules
-vi .aligntrue/rules.md
+vi AGENTS.md
 
 # 2. Sync to all agents
 aligntrue sync

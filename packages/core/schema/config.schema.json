@@ -92,7 +92,7 @@
         "workflow_mode": {
           "type": "string",
           "enum": ["auto", "ir_source", "native_format"],
-          "description": "Editing workflow preference: auto (ask on conflict), ir_source (edit rules.md), native_format (edit agent files)"
+          "description": "Editing workflow preference: auto (ask on conflict), ir_source (edit .rules.yaml or AGENTS.md), native_format (edit agent files)"
         },
         "show_diff_on_pull": {
           "type": "boolean",

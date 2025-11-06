@@ -150,7 +150,7 @@ try {
 **Accepted patterns:**
 
 - `src/components`
-- `apps/web/.aligntrue/rules.md`
+- `apps/web/.aligntrue/.rules.yaml`
 - `.` (current directory)
 - Paths with dots in filenames (e.g., `config.test.ts`)
 
@@ -171,7 +171,7 @@ try {
 ```yaml
 sources:
   - type: local
-    path: /tmp/rules.md # ❌ Rejected: absolute path not allowed
+    path: /tmp/.rules.yaml # ❌ Rejected: absolute path not allowed
 ```
 
 ---

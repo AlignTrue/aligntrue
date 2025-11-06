@@ -5,7 +5,7 @@ This example demonstrates fork-safe customization of upstream rule packs using o
 ## What's inside
 
 - **`.aligntrue/config.yaml`** - Solo mode configuration with local source
-- **`.aligntrue/rules.md`** - Base rules with overlays applied
+- **`AGENTS.md`** - Primary user-editable file with base rules and overlays applied
 - **`upstream-pack.yaml`** - Simulated upstream pack (3 rules)
 - **`SCENARIOS.md`** - Detailed scenarios with expected outputs
 - **`test-overlays.sh`** - Validation script
@@ -27,7 +27,7 @@ You'll see 3 rules from a simulated upstream pack:
 ### 2. View overlays
 
 ```bash
-cat .aligntrue/rules.md
+cat AGENTS.md
 ```
 
 The overlays section shows customizations:
