@@ -3,12 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { overrideRemove } from "../../src/commands/override-remove.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
+import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 vi.mock("@clack/prompts");
 
@@ -17,9 +18,7 @@ const TEST_DIR = join(tmpdir(), "aligntrue-test-override-remove");
 beforeEach(() => {
   vi.clearAllMocks();
 
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 
@@ -35,9 +34,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
 });
 
 describe("Override Remove Command Integration", () => {

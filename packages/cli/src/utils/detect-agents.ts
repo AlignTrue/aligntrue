@@ -205,7 +205,7 @@ export function detectNewAgents(
       newAgents.push({
         name: agentName,
         displayName: allDetected.displayNames.get(agentName) || agentName,
-        filePath: foundPath,
+        filePath: foundPath || "",
       });
     }
   }
