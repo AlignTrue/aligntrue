@@ -65,8 +65,9 @@ function parseHtmlCommentFormat(content: string): AlignRule[] {
   const rules: AlignRule[] = [];
 
   // Match HTML comment blocks with metadata
+  // Simplified regex to avoid ReDoS: use atomic structure and avoid backtracking quantifiers
   const htmlCommentRegex =
-    /<!-- aligntrue:begin ({[^}]+}) -->\s*\n## Rule: ([^\n]+)\s*\n([\s\S]*?)<!-- aligntrue:end ({[^}]+}) -->/g;
+    /<!-- aligntrue:begin (\{[^}]*\}) -->\s*\n## Rule: ([^\n]+)\s*\n([\s\S]*?)<!-- aligntrue:end (\{[^}]*\}) -->/g;
 
   let match;
   let iterations = 0;

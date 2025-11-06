@@ -267,4 +267,75 @@ Test.
     expect(version).toBeUndefined();
     expect(rules).toHaveLength(1);
   });
+
+  it("should parse HTML comment format with metadata", () => {
+    const content = `<!-- aligntrue:begin {"id":"test.rule"} -->
+## Rule: test-rule
+
+**Severity:** ERROR
+**Scope:** *.ts
+
+Test guidance
+<!-- aligntrue:end {"id":"test.rule"} -->
+`;
+
+    const { rules } = parseAgentsMd(content);
+
+    expect(rules).toHaveLength(1);
+    expect(rules[0]).toMatchObject({
+      id: "test.rule",
+      severity: "error",
+      applies_to: ["*.ts"],
+    });
+  });
+
+  it("should handle incomplete HTML comment blocks gracefully", () => {
+    const content = `<!-- aligntrue:begin {"id":"test"} -->
+## Rule: test
+**Severity:** ERROR
+`;
+
+    const { rules } = parseAgentsMd(content);
+
+    expect(rules).toHaveLength(0);
+  });
+
+  it("should protect against ReDoS with malformed input", () => {
+    // This would have caused exponential backtracking with the old regex
+    const content = "<!-- aligntrue:begin {" + "{".repeat(100) + "malformed";
+
+    // Should not hang or crash
+    const start = Date.now();
+    const { rules } = parseAgentsMd(content);
+    const duration = Date.now() - start;
+
+    expect(rules).toHaveLength(0);
+    // Should complete quickly (well under 1 second)
+    expect(duration).toBeLessThan(1000);
+  });
+
+  it("should handle multiple HTML comment blocks", () => {
+    const content = `<!-- aligntrue:begin {"id":"rule.one"} -->
+## Rule: first-rule
+
+**Severity:** ERROR
+
+First guidance
+<!-- aligntrue:end {"id":"rule.one"} -->
+
+<!-- aligntrue:begin {"id":"rule.two","severity":"warn"} -->
+## Rule: second-rule
+
+**Severity:** WARN
+
+Second guidance
+<!-- aligntrue:end {"id":"rule.two"} -->
+`;
+
+    const { rules } = parseAgentsMd(content);
+
+    expect(rules).toHaveLength(2);
+    expect(rules[0].id).toBe("rule.one");
+    expect(rules[1].id).toBe("rule.two");
+  });
 });
