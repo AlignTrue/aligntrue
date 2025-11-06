@@ -181,13 +181,17 @@ export class CursorExporter extends ExporterBase {
       lines.push("cursor:");
       Object.entries(cursorPerRuleMetadata).forEach(([ruleId, metadata]) => {
         lines.push(`  ${ruleId}:`);
-        Object.entries(metadata).forEach(([key, value]) => {
-          if (typeof value === "string") {
-            lines.push(`    ${key}: "${value}"`);
-          } else {
-            lines.push(`    ${key}: ${JSON.stringify(value)}`);
-          }
-        });
+        if (metadata && typeof metadata === "object") {
+          Object.entries(metadata as Record<string, unknown>).forEach(
+            ([key, value]) => {
+              if (typeof value === "string") {
+                lines.push(`    ${key}: "${value}"`);
+              } else {
+                lines.push(`    ${key}: ${JSON.stringify(value)}`);
+              }
+            },
+          );
+        }
       });
     }
 

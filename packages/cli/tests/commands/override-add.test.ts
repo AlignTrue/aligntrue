@@ -18,7 +18,7 @@ describe("override-add command - smoke tests", () => {
   it("requires selector argument", async () => {
     try {
       await overrideAdd([]);
-    } catch {
+    } catch (e) {
       // Expected to throw on error
       expect(e).toBeDefined();
     }
@@ -27,7 +27,7 @@ describe("override-add command - smoke tests", () => {
   it("requires --set or --remove operation", async () => {
     try {
       await overrideAdd(["--selector", "rule[id=test]"]);
-    } catch {
+    } catch (e) {
       // Expected to throw on error
       expect(e).toBeDefined();
     }

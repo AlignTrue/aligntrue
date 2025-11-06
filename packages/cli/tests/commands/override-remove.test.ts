@@ -18,7 +18,7 @@ describe("override-remove command - smoke tests", () => {
   it("requires index argument", async () => {
     try {
       await overrideRemove([]);
-    } catch {
+    } catch (e) {
       // Expected to throw on error
       expect(e).toBeDefined();
     }
