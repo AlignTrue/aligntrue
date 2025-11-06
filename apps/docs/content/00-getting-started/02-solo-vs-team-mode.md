@@ -238,7 +238,7 @@ Yes! This is the recommended approach. Start with solo mode to learn AlignTrue, 
 
 ### What happens to my rules when I switch modes?
 
-Your rules stay the same. Only the validation and workflow change. Your `.aligntrue/rules.md` file is unchanged.
+Your rules stay the same. Only the validation and workflow change. Your `.aligntrue/.rules.yaml` file is unchanged.
 
 ### Do I need team mode for open source projects?
 

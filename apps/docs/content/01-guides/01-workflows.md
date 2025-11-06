@@ -6,20 +6,45 @@ AlignTrue supports two primary editing workflows. Understanding which one fits y
 
 ## The two workflows
 
-### IR-source workflow
+### AGENTS.md (Primary) workflow
 
-**You edit rules.md as your source of truth.**
+**You edit AGENTS.md or agent files as your source of truth.**
 
-- Rules are written in `.aligntrue/rules.md` (literate markdown format)
-- Auto-pull is disabled to prevent overwriting your edits
-- Changes flow one direction: rules.md → agent files
-- Use `--accept-agent` explicitly when you want to pull from agents
+- Rules are written in `AGENTS.md` (universal markdown format) or agent-specific files
+- Auto-pull is enabled to sync changes across all agents
+- Changes flow both directions seamlessly
+- AlignTrue automatically resolves changes
 
 **Best for:**
 
-- Teams where rules need review before merging
+- Solo developers who want minimal friction
+- Quick experimentation and iteration
+- When you prefer editing in agent-native formats
+- Workflows where you trust automatic syncing
+
+**Setup:**
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  primary_agent: "agents-md"
+  auto_pull: true
+```
+
+### Manual Review workflow
+
+**You review changes before syncing to all agents.**
+
+- Edit rules in `AGENTS.md` or a specific agent format
+- Auto-pull is disabled to give you control
+- Use `aligntrue sync --dry-run` to preview changes
+- Manually approve with `aligntrue sync` or restore with backups
+
+**Best for:**
+
+- Teams where rules need review before going live
 - Documentation-focused workflows
-- When you want full control over sync direction
+- When you want full control over sync timing
 - Projects where rules are treated as code
 
 **Setup:**
@@ -27,64 +52,40 @@ AlignTrue supports two primary editing workflows. Understanding which one fits y
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  workflow_mode: "ir_source"
+  primary_agent: "agents-md"
   auto_pull: false
-```
-
-### Native-format workflow
-
-**You edit agent files directly (e.g., Cursor .mdc files).**
-
-- Edit rules in your agent's native format (`.cursor/rules/*.mdc`)
-- Auto-pull automatically syncs changes to rules.md
-- Changes flow both directions seamlessly
-- AlignTrue keeps everything in sync
-
-**Best for:**
-
-- Solo developers who prefer their agent's native format
-- Quick experimentation and iteration
-- When you trust the agent format
-- Workflows where rules.md is just a backup
-
-**Setup:**
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  workflow_mode: "native_format"
-  auto_pull: true
-  primary_agent: "cursor"
+backup:
+  auto_backup: true
 ```
 
 ## Comparison
 
-| Aspect           | IR-source               | Native-format              |
-| ---------------- | ----------------------- | -------------------------- |
-| Edit location    | `.aligntrue/rules.md`   | Agent files (`.cursor/*`)  |
-| Auto-pull        | Disabled                | Enabled                    |
-| Sync direction   | One-way (IR → agents)   | Two-way (IR ↔ agents)     |
-| Manual control   | High                    | Low                        |
-| Conflict prompts | Rare                    | Occasional                 |
-| Best for         | Teams, review workflows | Solo devs, rapid iteration |
+| Aspect           | AGENTS.md (Primary)        | Manual Review              |
+| ---------------- | -------------------------- | -------------------------- |
+| Edit location    | `AGENTS.md` or agent files | `AGENTS.md` or agent files |
+| Auto-pull        | Enabled                    | Disabled                   |
+| Sync direction   | Two-way (automatic)        | Manual (with preview)      |
+| Manual control   | Low                        | High                       |
+| Conflict prompts | Rare (auto-resolved)       | Explicit (you choose)      |
+| Best for         | Solo devs, rapid iteration | Teams, review workflows    |
 
 ## Choosing your workflow
 
-### Choose IR-source if you:
+### Choose Manual Review if you:
 
 - Work in a team that reviews rule changes
-- Want rules versioned and reviewed like code
-- Need to document rule rationale in markdown
-- Prefer explicit control over sync operations
-- Use version control workflows (PRs, branches)
+- Want to preview changes before syncing
+- Need to control when rules deploy to all agents
+- Use PR-based workflows for approvals
+- Want full control over sync timing
 
-### Choose native-format if you:
+### Choose AGENTS.md (Primary) if you:
 
 - Work solo and want minimal friction
-- Prefer editing in your agent's native UI
-- Trust auto-sync to handle changes correctly
+- Prefer automatic syncing and less friction
+- Trust auto-pull to handle changes correctly
 - Want AlignTrue to "just work" in the background
-- Iterate quickly and don't need explicit control
+- Iterate quickly and need changes reflected everywhere
 
 ## Configuring your workflow
 
@@ -107,9 +108,9 @@ aligntrue init
 ```bash
 aligntrue init
 # No existing rules detected
-# Creates starter template
-# Sets workflow_mode: ir_source
-# Disables auto_pull
+# Creates AGENTS.md starter template
+# Sets primary_agent: agents-md
+# Enables auto_pull
 ```
 
 **Explicit import:**
@@ -128,8 +129,8 @@ On your first conflict, AlignTrue will prompt you:
 💡 This is your first conflict. Let's configure your workflow.
 
 ? Which workflow do you prefer?
-  > Edit native agent formats (recommended for solo devs)
-    Edit rules.md as source of truth
+  > AGENTS.md (Primary) - automatic syncing
+    Manual Review - explicit control
     Let me decide each time
 ```
 
@@ -141,10 +142,11 @@ Edit `.aligntrue/config.yaml`:
 
 ```yaml
 sync:
-  # Choose one:
-  workflow_mode: "ir_source"      # Edit rules.md
-  workflow_mode: "native_format"  # Edit agent files
-  workflow_mode: "auto"           # Prompt each time (default)
+  # Primary agent to pull from during auto-pull
+  primary_agent: "agents-md" # Use AGENTS.md as source
+  # or "cursor"               # Use Cursor files as source
+  auto_pull: true # Enable automatic syncing
+  # Set auto_pull: false for Manual Review workflow
 ```
 
 ### Changing workflows
@@ -152,65 +154,40 @@ sync:
 You can change at any time:
 
 ```bash
-# Switch to IR-source
-aligntrue config set sync.workflow_mode ir_source
+# Switch primary agent
+aligntrue config set sync.primary_agent agents-md
 
-# Switch to native-format
-aligntrue config set sync.workflow_mode native_format
+# Enable auto-pull (AGENTS.md Primary)
+aligntrue config set sync.auto_pull true
 
-# Reset to auto (prompt mode)
-aligntrue config set sync.workflow_mode auto
+# Disable auto-pull (Manual Review)
+aligntrue config set sync.auto_pull false
 ```
 
 ## Workflow tips
 
-### IR-source workflow tips
+### Manual Review workflow tips
 
 **1. Disable auto-pull explicitly:**
 
 ```yaml
 sync:
-  workflow_mode: "ir_source"
-  auto_pull: false # Be explicit
+  primary_agent: "agents-md"
+  auto_pull: false # Manual control
 ```
 
-**2. Pull from agents manually:**
-
-```bash
-aligntrue sync --accept-agent cursor
-```
-
-**3. Use dry-run to preview:**
+**2. Preview changes before syncing:**
 
 ```bash
 aligntrue sync --dry-run
 ```
 
-**4. Commit rules.md to version control:**
+**3. Commit AGENTS.md to version control:**
 
 ```bash
-git add .aligntrue/rules.md
+git add AGENTS.md .aligntrue/config.yaml
 git commit -m "feat: Add security rules"
 ```
-
-### Native-format workflow tips
-
-**1. Enable diff summaries:**
-
-```yaml
-sync:
-  workflow_mode: "native_format"
-  show_diff_on_pull: true # See what changed
-```
-
-**2. Review diffs regularly:**
-
-```bash
-aligntrue sync --show-auto-pull-diff
-```
-
-**3. Trust but verify:**
-Check rules.md occasionally to ensure auto-sync is working correctly.
 
 **4. Keep backups enabled:**
 
@@ -220,67 +197,102 @@ backup:
   backup_on: ["sync"]
 ```
 
+### AGENTS.md (Primary) workflow tips
+
+**1. Enable auto-pull for seamless syncing:**
+
+```yaml
+sync:
+  primary_agent: "agents-md"
+  auto_pull: true # Automatic sync
+```
+
+**2. Review changes regularly:**
+
+```bash
+aligntrue sync --show-diff
+```
+
+**3. Trust the automatic syncing:**
+
+AlignTrue keeps all agent files in sync automatically when you edit AGENTS.md or any agent file.
+
+**4. Restore backups if needed:**
+
+```bash
+aligntrue backup list
+aligntrue backup restore --to <timestamp>
+```
+
 ## Mixed workflows (advanced)
 
 You can use both workflows in the same project:
 
-1. **Different directories:** IR-source for `/team-rules`, native-format for `/personal-rules`
-2. **Different branches:** IR-source on `main`, native-format on `feature/*`
+1. **Different directories:** Manual Review for `/team-rules`, AGENTS.md Primary for `/personal-rules`
+2. **Different branches:** Manual Review on `main`, AGENTS.md Primary on `feature/*`
 3. **Different team members:** Let each dev choose their preferred workflow
 
 **Note:** Mixed workflows require careful coordination to avoid conflicts.
 
 ## Conflict handling
 
-### In IR-source mode
+### In Manual Review mode
 
-Conflicts are rare because auto-pull is disabled. If you manually pull:
+Conflicts are rare because auto-pull is disabled. If you manually sync:
 
 ```bash
-aligntrue sync --accept-agent cursor
+aligntrue sync
 ```
 
-You'll see a prompt if both files were modified.
-
-### In native-format mode
-
-Conflicts happen when you edit both rules.md AND agent files between syncs:
+You'll be prompted with options if changes were detected in multiple files:
 
 ```
-⚠ Conflict detected:
-  - You edited .aligntrue/rules.md
-  - Changes also found in .cursor/rules/aligntrue.mdc
-
-Workflow: Native-format (accepting cursor changes)
+? Multiple agent files have changes. How to proceed?
+  > Preview changes (--dry-run)
+    Accept and sync all changes
+    Abort and review manually
 ```
 
-AlignTrue automatically resolves based on your workflow mode.
+### In AGENTS.md (Primary) mode
 
-### In auto mode
-
-You're prompted every time:
+Conflicts happen when you edit different agent files between syncs:
 
 ```
-? How would you like to resolve this conflict?
-  > Keep my edits to rules.md (skip auto-pull)
-    Accept changes from cursor
-    Abort sync and review manually
+⚠ Sync complete with auto-pull
+  - Updated from primary agent (agents-md)
+  - Synced to all other agents
+```
+
+AlignTrue automatically resolves based on your primary_agent setting.
+
+### Manually reviewing conflicts
+
+You can always preview before syncing:
+
+```bash
+aligntrue sync --dry-run
+```
+
+And restore previous versions if needed:
+
+```bash
+aligntrue backup restore --to <timestamp>
 ```
 
 ## Team considerations
 
 ### Solo mode
 
-Either workflow works. Choose based on your preference.
+AGENTS.md (Primary) workflow works best. Choose based on your preference.
 
 ### Team mode
 
-**Recommended: IR-source workflow**
+**Recommended: Manual Review workflow**
 
 Reasons:
 
-- Rules reviewed before syncing to agents
-- Clear source of truth (rules.md)
+- Changes reviewed before syncing to all agents
+- Clear control over when rules deploy
 - Easier to track changes in version control
 - Prevents accidental overwrites
 
@@ -289,9 +301,11 @@ Configuration for teams:
 ```yaml
 mode: team
 sync:
-  workflow_mode: "ir_source"
+  primary_agent: "agents-md"
   auto_pull: false
-  on_conflict: "prompt" # Explicit resolution
+  backup:
+    auto_backup: true
+    keep_count: 10
 lockfile:
   mode: "strict"
 git:
@@ -302,27 +316,29 @@ git:
 
 ### "I keep getting conflict prompts"
 
-Set a workflow mode to auto-resolve:
+Disable auto-pull for explicit control:
 
 ```bash
-aligntrue config set sync.workflow_mode native_format
+aligntrue config set sync.auto_pull false
 ```
 
-### "Auto-pull overwrote my rules.md edits"
+Then use `aligntrue sync --dry-run` to preview before syncing.
 
-Switch to IR-source mode:
+### "Auto-pull synced changes I didn't expect"
+
+Switch to Manual Review mode:
 
 ```bash
-aligntrue config set sync.workflow_mode ir_source
+aligntrue config set sync.auto_pull false
 aligntrue backup restore --to <timestamp>
 ```
 
 ### "Changes not syncing"
 
-Check your workflow mode:
+Check your primary agent:
 
 ```bash
-aligntrue config get sync.workflow_mode
+aligntrue config get sync.primary_agent
 ```
 
 Verify auto-pull setting:

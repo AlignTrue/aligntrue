@@ -23,15 +23,16 @@ AlignTrue's workflow is simple:
 
 1. **Initialize** (`aligntrue init`)
    - Detects installed agents (Cursor, Copilot, Claude Code, etc.)
-   - Offers to import existing rules OR creates starter template
-   - Creates `.aligntrue/rules.md` as your source of truth
+   - **If existing rules found:** Offers to import them
+   - **If no rules found:** Creates `AGENTS.md` starter template
+   - Creates `.aligntrue/config.yaml` and `.aligntrue/.rules.yaml` (internal)
 
 2. **Sync** (`aligntrue sync`)
    - Converts rules to agent-specific formats
-   - Generates `.cursor/rules/*.mdc`, `AGENTS.md`, `.vscode/mcp.json`, etc.
+   - Generates `.cursor/rules/*.mdc`, `.vscode/mcp.json`, etc.
    - Keeps everything aligned when you make changes
 
-**The key decision:** If you already have agent-specific rules (like `.cursor/rules/*.mdc` or `AGENTS.md`), init will offer to import them. Otherwise, it creates a starter template with common best practices.
+**The key decision:** `AGENTS.md` is your primary editing file. The `.aligntrue/.rules.yaml` file is auto-generated - don't edit it directly.
 
 ## Prerequisites
 
@@ -77,10 +78,11 @@ Initialize a new configuration:
 aligntrue init
 ```
 
-This creates `.aligntrue/config.yaml` and `.aligntrue/rules.md` with:
+This creates `.aligntrue/config.yaml`, `.aligntrue/.rules.yaml` (internal), and `AGENTS.md` with:
 
 - Configuration file with your org/user namespace and default exporters
-- Starter rules file with base global rules and example patterns
+- Internal IR file (auto-generated from your rules)
+- `AGENTS.md` starter template with example rules
 
 Sync your first export:
 
@@ -92,27 +94,19 @@ This creates `.cursor/rules/*.mdc` files ready for Cursor.
 
 ### 2. Customize your rules
 
-Open `.aligntrue/rules.md` and edit the starter rules for your project:
+Open `AGENTS.md` and edit the starter rules for your project:
 
-````markdown
-# My project rules
+```markdown
+# AGENTS.md
 
-## Global standards
+## Rule: use-typescript-strict
 
-```aligntrue
-id: my-project.global.code-style
-version: "1.0.0"
-spec_version: "1"
-rules:
-  - id: use-typescript-strict
-    summary: Use TypeScript strict mode in all files
-    severity: error
-    applies_to:
-      patterns: ["**/*.ts", "**/*.tsx"]
-    guidance: |
-      Enable strict mode in tsconfig.json for better type safety.
+**ID:** use-typescript-strict
+**Severity:** ERROR
+**Scope:** **/*.ts, **/*.tsx
+
+Enable strict mode in tsconfig.json for better type safety.
 ```
-````
 
 The starter template includes examples for:
 
@@ -129,7 +123,7 @@ Run this command (in your project directory) to generate agent-specific files:
 aligntrue sync
 ```
 
-**What this does:** Converts your rules from `.aligntrue/rules.md` into formats that each AI agent understands.
+**What this does:** Converts your rules from `AGENTS.md` (or agent files) into formats that each AI agent understands.
 
 **Example output:**
 
@@ -204,6 +198,6 @@ No setup needed! These agents automatically read `AGENTS.md` from your project r
 
 **Basic workflow:**
 
-1. Edit rules in `.aligntrue/rules.md`
+1. Edit rules in `AGENTS.md` or any agent file
 2. Run `aligntrue sync`
 3. Your AI agents now follow your project's standards

@@ -9,7 +9,7 @@ description: Frequently asked questions
 
 ### What is AlignTrue?
 
-AlignTrue is a tool that syncs AI coding rules across multiple agents. Write rules once in `.aligntrue/rules.md`, and AlignTrue generates agent-specific formats for Cursor, GitHub Copilot, Claude Code, and 25+ other agents.
+AlignTrue is a tool that syncs AI coding rules across multiple agents. Write rules once in `AGENTS.md` or any agent file, and AlignTrue keeps them synced across Cursor, GitHub Copilot, Claude Code, and 25+ other agents.
 
 ### Why do I need AlignTrue?
 
@@ -74,7 +74,7 @@ See [Migration guide](/docs/01-guides/02-migration) for details.
 
 ### Where do I write rules?
 
-In `.aligntrue/rules.md` (markdown format) or `.aligntrue.yaml` (YAML format). Most users prefer markdown for readability.
+In `AGENTS.md` or any agent-specific file (`.cursor/*.mdc`, etc.). AlignTrue keeps them all synced. The `.aligntrue/.rules.yaml` file is internal and auto-generated - don't edit it directly.
 
 ### How do I sync rules to agents?
 
@@ -86,12 +86,12 @@ This generates agent-specific files like `.cursor/rules/*.mdc`, `AGENTS.md`, etc
 
 ### Can I edit agent files directly?
 
-Yes! AlignTrue supports two-way sync. Edit either:
+Yes! AlignTrue supports two-way sync. Edit any file:
 
-- `.aligntrue/rules.md` (default workflow)
-- Agent files like `.cursor/*.mdc` (with auto-pull enabled)
+- `AGENTS.md` (universal format)
+- Agent files like `.cursor/*.mdc` (agent-specific)
 
-See [Workflows guide](/docs/01-guides/01-workflows) for choosing your workflow.
+Auto-pull is enabled by default, so changes flow both directions. See [Workflows guide](/docs/01-guides/01-workflows) for details.
 
 ### Do I need to run sync every time?
 
@@ -101,15 +101,16 @@ See [File watcher setup](/docs/04-reference/file-watcher-setup).
 
 ### What if I have conflicts?
 
-AlignTrue detects conflicts when both rules.md and agent files are edited. You'll be prompted to choose which version to keep.
+AlignTrue detects conflicts when multiple agent files have different changes. You'll be prompted to choose which version to keep.
 
-Configure workflow mode to avoid prompts:
+Configure primary agent to avoid prompts:
 
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  workflow_mode: "ir_source" # Always keep rules.md
-  # or "native_format"  # Always keep agent files
+  primary_agent: "agents-md"  # Use AGENTS.md as source
+  # or "cursor"  # Use Cursor files as source
+  auto_pull: true  # Pull from primary before syncing
 ```
 
 ## Team usage
@@ -205,7 +206,8 @@ You'll be prompted for consent before any network operation.
 ### Where does AlignTrue store data?
 
 - **Config:** `.aligntrue/config.yaml`
-- **Rules:** `.aligntrue/rules.md`
+- **Rules (internal):** `.aligntrue/.rules.yaml` (auto-generated)
+- **Rules (user-editable):** `AGENTS.md` or agent files
 - **Lockfile:** `.aligntrue.lock.json` (team mode)
 - **Cache:** `.aligntrue/.cache/` (git sources)
 
@@ -222,7 +224,7 @@ See [CI/CD integration guide](/docs/01-guides/03-ci-cd-integration).
 
 ### What's the IR (Intermediate Representation)?
 
-The IR is AlignTrue's internal format that all exporters use. When you write rules in `.aligntrue/rules.md`, they're parsed to IR, then exported to agent-specific formats.
+The IR is AlignTrue's internal format stored in `.aligntrue/.rules.yaml`. When you write rules in `AGENTS.md` or agent files, they're converted to IR, then synced to all other agents. The IR file is auto-generated - you don't need to edit it directly.
 
 ### How does AlignTrue handle agent-specific features?
 

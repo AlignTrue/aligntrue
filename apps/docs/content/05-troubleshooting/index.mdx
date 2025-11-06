@@ -253,7 +253,7 @@ exporters:
   - agents-md
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 ```
 
 ---
@@ -263,10 +263,10 @@ sources:
 **Error:**
 
 ```
-✖ Source file not found: .aligntrue/rules.md
+✖ Source file not found: .aligntrue/.rules.yaml
 
 Check 'sources' in .aligntrue/config.yaml
-Hint: Create rules.md or update source path
+Hint: Create .rules.yaml or update source path
 ```
 
 **Cause:** Rules file doesn't exist or path is wrong in config.
@@ -281,7 +281,7 @@ aligntrue init
 
 # Or create minimal file manually
 mkdir -p .aligntrue
-echo '# My Rules' > .aligntrue/rules.md
+echo 'rules: []' > .aligntrue/.rules.yaml
 ```
 
 **2. Fix path in config:**
@@ -290,13 +290,13 @@ echo '# My Rules' > .aligntrue/rules.md
 # .aligntrue/config.yaml
 sources:
   - type: local
-    path: .aligntrue/rules.md # Check this path
+    path: .aligntrue/.rules.yaml # Check this path
 ```
 
 **3. Verify file exists:**
 
 ```bash
-ls -la .aligntrue/rules.md
+ls -la .aligntrue/.rules.yaml
 ```
 
 ---
@@ -344,10 +344,10 @@ aligntrue sync
 
 ```bash
 # Check what changed
-git diff .aligntrue/rules.md
+git diff .aligntrue/.rules.yaml
 
 # Revert unwanted changes
-git checkout .aligntrue/rules.md
+git checkout .aligntrue/.rules.yaml
 
 # Sync again
 aligntrue sync
@@ -422,7 +422,7 @@ exporters:
   - agents-md
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 ```
 
 ---
@@ -569,8 +569,8 @@ All validations passed. Safe to merge.
 
 ```yaml
 # ✅ Both work on Windows
-path: .aligntrue/rules.md
-path: .aligntrue\rules.md
+path: .aligntrue/.rules.yaml
+path: .aligntrue\.rules.yaml
 
 # Internally converted to forward slashes
 ```
@@ -600,7 +600,7 @@ chmod 755 .aligntrue/
 
 # Fix file permissions
 chmod 644 .aligntrue/config.yaml
-chmod 644 .aligntrue/rules.md
+chmod 644 .aligntrue/.rules.yaml
 
 # Verify ownership
 ls -la .aligntrue/
