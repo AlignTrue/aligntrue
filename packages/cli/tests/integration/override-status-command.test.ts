@@ -74,7 +74,7 @@ describe("Override Status Command Integration", () => {
 
       try {
         await overrideStatus([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -101,7 +101,7 @@ describe("Override Status Command Integration", () => {
 
       try {
         await overrideStatus([]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -141,7 +141,7 @@ describe("Override Status Command Integration", () => {
 
       try {
         await overrideStatus(["--json"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 

@@ -49,7 +49,7 @@ describe("drift command", () => {
     it("errors when config not found", async () => {
       try {
         await drift([]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -64,7 +64,7 @@ describe("drift command", () => {
 
       try {
         await drift([]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -366,7 +366,7 @@ sources:
 
       try {
         await drift(["--gates"]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       expect(exitSpy).toHaveBeenCalledWith(2);
@@ -402,7 +402,7 @@ sources:
 
       try {
         await drift(["--gates"]);
-      } catch (e) {
+      } catch {
         // Only expect error when there's drift
         throw e;
       }
@@ -417,7 +417,7 @@ sources:
 
       try {
         await drift([]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       expect(consoleErrorSpy).toHaveBeenCalledWith(

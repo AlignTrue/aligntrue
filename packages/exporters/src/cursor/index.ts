@@ -149,7 +149,7 @@ export class CursorExporter extends ExporterBase {
     if (firstRule.vendor?.["cursor"]?.["_unknown"]) {
       const unknown = firstRule.vendor["cursor"]["_unknown"] as Record<
         string,
-        any
+        unknown
       >;
       Object.entries(unknown).forEach(([key, value]) => {
         if (typeof value === "string") {
@@ -168,7 +168,7 @@ export class CursorExporter extends ExporterBase {
     }
 
     // Extract per-rule vendor.cursor metadata (excluding _unknown)
-    const cursorPerRuleMetadata: Record<string, any> = {};
+    const cursorPerRuleMetadata: Record<string, unknown> = {};
     rules.forEach((rule) => {
       const vendorCursor = this.extractPerRuleVendorCursor(rule);
       if (Object.keys(vendorCursor).length > 0) {
@@ -237,13 +237,13 @@ export class CursorExporter extends ExporterBase {
    * Extract per-rule vendor.cursor metadata from a rule
    * Excludes file-level fields (alwaysApply, intelligent, description, globs) and _unknown
    */
-  private extractPerRuleVendorCursor(rule: AlignRule): Record<string, any> {
+  private extractPerRuleVendorCursor(rule: AlignRule): Record<string, unknown> {
     if (!rule.vendor || !rule.vendor["cursor"]) {
       return {};
     }
 
-    const cursor = rule.vendor["cursor"] as Record<string, any>;
-    const metadata: Record<string, any> = {};
+    const cursor = rule.vendor["cursor"] as Record<string, unknown>;
+    const metadata: Record<string, unknown> = {};
     const excludedFields = new Set([
       "alwaysApply",
       "intelligent",

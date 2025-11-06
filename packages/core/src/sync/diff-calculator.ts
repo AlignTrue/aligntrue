@@ -104,8 +104,8 @@ function compareRules(before: AlignRule, after: AlignRule): string[] {
   }
 
   // Compare mode (if present)
-  const beforeMode = (before as any).mode;
-  const afterMode = (after as any).mode;
+  const beforeMode = (before as AlignRule).mode;
+  const afterMode = (after as AlignRule).mode;
 
   if (beforeMode !== afterMode) {
     if (!beforeMode && afterMode) {

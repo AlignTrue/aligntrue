@@ -194,7 +194,7 @@ describe("telemetry command", () => {
 
       try {
         await telemetry(["status"]);
-      } catch (e) {
+      } catch {
         // Not expected to throw - error is handled gracefully
       }
 

@@ -3,6 +3,7 @@ import "nextra-theme-docs/style.css";
 import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
+import type { PageMapItem } from "nextra";
 import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
 
 /**
@@ -112,12 +113,15 @@ export default async function DocsLayout({
   const rawPageMap = await getPageMap();
 
   // Recursively add /docs prefix to all route paths
-  const prefixRoutes = (items: any[], prefix: string): any[] => {
+  const prefixRoutes = (
+    items: PageMapItem[],
+    prefix: string,
+  ): PageMapItem[] => {
     return items.map((item) => {
-      if (item.route) {
+      if ("route" in item && item.route) {
         item = { ...item, route: prefix + item.route };
       }
-      if (item.children) {
+      if ("children" in item && item.children) {
         item = { ...item, children: prefixRoutes(item.children, prefix) };
       }
       return item;

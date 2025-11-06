@@ -86,7 +86,7 @@ describe("adapters command", () => {
     it("shows help with no args", async () => {
       try {
         await adapters([]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       // Commands don't call process.exit(0) on success
@@ -97,7 +97,7 @@ describe("adapters command", () => {
       const args = mockCommandArgs({ help: true });
       try {
         await adapters(args);
-      } catch (e) {
+      } catch {
         // Expected
       }
       // Commands don't call process.exit(0) on success
@@ -111,7 +111,7 @@ describe("adapters command", () => {
 
       try {
         await adapters(["list"]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       // Commands don't call process.exit(0) on success
@@ -128,7 +128,7 @@ describe("adapters command", () => {
 
       try {
         await adapters(["list"]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       // Commands don't call process.exit(0) on success
@@ -140,7 +140,7 @@ describe("adapters command", () => {
 
       try {
         await adapters(["list"]);
-      } catch (e) {
+      } catch {
         // Expected
       }
       // Commands don't call process.exit(0) on success
@@ -264,7 +264,7 @@ describe("adapters command", () => {
 
       try {
         await adapters(["enable", "--interactive"]);
-      } catch (e) {
+      } catch {
         // Expected
       }
     });

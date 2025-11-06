@@ -10,7 +10,7 @@ describe("override-remove command - smoke tests", () => {
   it("shows help with --help flag", async () => {
     try {
       await overrideRemove(["--help"]);
-    } catch (e) {
+    } catch {
       // Expected - help calls process.exit(0)
     }
   });
@@ -18,7 +18,7 @@ describe("override-remove command - smoke tests", () => {
   it("requires index argument", async () => {
     try {
       await overrideRemove([]);
-    } catch (e) {
+    } catch {
       // Expected to throw on error
       expect(e).toBeDefined();
     }

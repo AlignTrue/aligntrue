@@ -29,7 +29,7 @@ export function renderModeMarkers(
   }
 
   // Build marker object with only present fields
-  const marker: Record<string, any> = {
+  const marker: Record<string, unknown> = {
     id: rule.id,
   };
 
