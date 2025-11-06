@@ -297,7 +297,7 @@ aligntrue sync --force
 **What it does:**
 
 1. Loads `.aligntrue/config.yaml` configuration
-2. Validates source file exists (default: `.aligntrue/rules.md`)
+2. Validates source file exists (default: `.aligntrue/.rules.yaml`)
 3. Discovers and loads exporters from registry
 4. Resolves hierarchical scopes (if configured)
 5. Validates lockfile (team mode only)
@@ -314,7 +314,7 @@ When `sync.auto_pull: true` (default), AlignTrue automatically pulls changes fro
 
 ```bash
 # Edit .cursor/rules/aligntrue.mdc directly
-# Changes automatically sync back to .aligntrue/rules.md
+# Changes automatically sync back to .aligntrue/.rules.yaml
 aligntrue sync
 ```
 
@@ -384,7 +384,7 @@ Run: aligntrue init
 **Source file not found:**
 
 ```
-✗ Source file not found: .aligntrue/rules.md
+✗ Source file not found: .aligntrue/.rules.yaml
 Check your config.yaml sources section
 ```
 
