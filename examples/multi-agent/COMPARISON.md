@@ -292,14 +292,14 @@ Fidelity Notes:
 
 ### 1. Use IR-source workflow
 
-Edit `.aligntrue/rules.md` as single source of truth:
+Edit `AGENTS.md` or `.aligntrue/.rules.yaml` as single source of truth:
 
 ```bash
-vi .aligntrue/rules.md
+vi AGENTS.md
 aligntrue sync
 ```
 
-**Why:** Prevents conflicts between agent files.
+**Why:** Prevents conflicts between agent files. `AGENTS.md` is primary (user-editable), `.aligntrue/.rules.yaml` is internal IR.
 
 ### 2. Use vendor bags sparingly
 
@@ -391,7 +391,7 @@ tail -20 AGENTS.md
 **Check:**
 
 ```bash
-grep -A 5 "vendor:" .aligntrue/rules.md
+grep -A 5 "vendor:" .aligntrue/.rules.yaml
 ```
 
 **Fix:** Ensure vendor namespace is correct:
@@ -411,7 +411,7 @@ cursor:
 
 **Multi-agent workflow benefits:**
 
-- ✅ Single source of truth (`.aligntrue/rules.md`)
+- ✅ Single source of truth (`AGENTS.md` with auto-generated `.aligntrue/.rules.yaml`)
 - ✅ Sync to all agents automatically
 - ✅ Consistent rules across agents
 - ✅ Agent-specific hints via vendor bags

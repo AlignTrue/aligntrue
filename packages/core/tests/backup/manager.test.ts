@@ -21,7 +21,7 @@ describe("BackupManager", () => {
       "utf-8",
     );
     writeFileSync(
-      join(aligntrueDir, "rules.md"),
+      join(aligntrueDir, ".rules.yaml"),
       "# Rules\n\nTest rules",
       "utf-8",
     );
@@ -51,7 +51,7 @@ describe("BackupManager", () => {
       );
       expect(backup.manifest.version).toBe("1");
       expect(backup.manifest.files).toContain("config.yaml");
-      expect(backup.manifest.files).toContain("rules.md");
+      expect(backup.manifest.files).toContain(".rules.yaml");
       expect(backup.manifest.files).toContain("subdir/test.txt");
       expect(backup.manifest.created_by).toBe("manual");
     });

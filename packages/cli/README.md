@@ -81,7 +81,7 @@ aligntrue init
 **What it creates:**
 
 - `.aligntrue/config.yaml` - Configuration with solo mode defaults
-- `.aligntrue/rules.md` - Starter template with educational examples
+- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
 
 **Scenarios handled:**
 
@@ -104,20 +104,20 @@ aligntrue init
 │
 ◇  Will create:
 │    - .aligntrue/config.yaml
-│    - .aligntrue/rules.md
+│    - .aligntrue/.rules.yaml
 │
 ◇  Continue?
 │  Yes
 │
 ◇  Files created
 │  ✓ Created .aligntrue/config.yaml
-│  ✓ Created .aligntrue/rules.md
+│  ✓ Created .aligntrue/.rules.yaml
 │
 ◇  Run sync now?
 │  Yes
 │
 └  Next steps:
-     1. Edit rules: .aligntrue/rules.md
+     1. Edit rules: AGENTS.md or .aligntrue/.rules.yaml
      2. Run sync: aligntrue sync
 ```
 
@@ -147,7 +147,7 @@ aligntrue import <agent> [options]
 
 - `--coverage` - Show import coverage report (default: true)
 - `--no-coverage` - Skip coverage report
-- `--write` - Write imported rules to .aligntrue/rules.md
+- `--write` - Write imported rules to .aligntrue/.rules.yaml
 - `--dry-run` - Preview without writing files
 - `--help, -h` - Show help message
 
