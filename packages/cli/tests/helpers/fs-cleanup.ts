@@ -9,7 +9,7 @@ import { rmSync, existsSync } from "fs";
  * Cleanup directory with retry logic for Windows file locking
  * Windows keeps file handles open longer than Unix, causing EBUSY errors
  */
-export function cleanupDir(dir: string): void {
+export async function cleanupDir(dir: string): Promise<void> {
   if (!existsSync(dir)) return;
 
   const maxRetries = process.platform === "win32" ? 5 : 1;
@@ -22,13 +22,10 @@ export function cleanupDir(dir: string): void {
     } catch (err) {
       const error = err as { code?: string };
       if (error.code === "EBUSY" && i < maxRetries - 1) {
-        // Wait with exponential backoff on Windows
-        const delay = retryDelay * Math.pow(2, i);
-        // Use synchronous sleep via busy wait (acceptable for tests)
-        const start = Date.now();
-        while (Date.now() - start < delay) {
-          // Busy wait
-        }
+        // Proper async delay that yields to OS
+        await new Promise((resolve) =>
+          setTimeout(resolve, retryDelay * Math.pow(2, i)),
+        );
         continue;
       }
       throw err;
