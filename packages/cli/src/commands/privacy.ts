@@ -43,12 +43,14 @@ export async function privacyCommand(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue privacy audit",
+        "aligntrue privacy grant git",
         "aligntrue privacy revoke git",
         "aligntrue privacy revoke --all",
       ],
       notes: [
         "Subcommands:",
         "  audit              List all consents with timestamps",
+        "  grant <operation>  Grant consent for operation (git)",
         "  revoke <operation> Revoke specific consent (git)",
         "  revoke --all       Revoke all consents",
       ],
@@ -59,6 +61,9 @@ export async function privacyCommand(args: string[]): Promise<void> {
   switch (subcommand) {
     case "audit":
       await auditCommand();
+      break;
+    case "grant":
+      await grantCommand(parsed.positional.slice(1));
       break;
     case "revoke":
       await revokeCommand(
@@ -115,6 +120,49 @@ async function auditCommand(): Promise<void> {
 
   console.log();
   console.log(`Use 'aligntrue privacy revoke <operation>' to revoke`);
+}
+
+/**
+ * Grant command - grant consent for operation
+ */
+async function grantCommand(operations: string[]): Promise<void> {
+  const manager = createConsentManager();
+  const operation = operations[0];
+
+  if (!operation) {
+    exitWithError({
+      title: "Missing operation",
+      message: "Specify operation to grant: git",
+      hint: "Example: aligntrue privacy grant git",
+      code: "ERR_MISSING_ARGUMENT",
+    });
+    return;
+  }
+
+  if (operation !== "git") {
+    exitWithError({
+      title: "Invalid operation",
+      message: `Unknown operation: ${operation}`,
+      hint: "Valid operation: git",
+      code: "ERR_INVALID_ARGUMENT",
+    });
+    return;
+  }
+
+  // Check if already granted
+  if (manager.checkConsent(operation)) {
+    clack.log.info(`Consent for '${operation}' already granted`);
+    console.log();
+    console.log('Run "aligntrue privacy audit" to see all consents.');
+    return;
+  }
+
+  manager.grantConsent(operation);
+  clack.log.success(`Granted consent for '${operation}'`);
+  console.log();
+  console.log(
+    `Network operations for ${operation} will now proceed without prompts.`,
+  );
 }
 
 /**
