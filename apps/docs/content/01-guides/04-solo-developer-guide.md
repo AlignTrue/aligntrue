@@ -262,7 +262,7 @@ my-monorepo/
 **Configuration:**
 
 ```yaml
-# .aligntrue/rules.md
+# .aligntrue/config.yaml
 sources:
   - git: https://github.com/org/base-rules
     ref: v1.0.0
@@ -288,8 +288,8 @@ plugs:
 **Workflow:**
 
 ```bash
-# 1. Set up scopes
-# (edit .aligntrue/rules.md as above)
+# 1. Set up scopes in config
+# (edit .aligntrue/config.yaml as above)
 
 # 2. Sync
 aligntrue sync
@@ -473,10 +473,10 @@ git commit -m "chore: Add AlignTrue rules"
 
 **What to commit:**
 
-- `.aligntrue/rules.md` - Your rules configuration
+- `AGENTS.md` - Your rules (primary editing file)
 - `.aligntrue/config.yaml` - Configuration settings
+- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
 - `.cursor/rules/` - Exported Cursor rules (optional)
-- `AGENTS.md` - Universal agent format (optional)
 
 **What NOT to commit:**
 
@@ -521,7 +521,7 @@ rules:
 EOF
 
 # Use your pack instead
-# .aligntrue/rules.md:
+# .aligntrue/config.yaml:
 sources:
   - local: ./my-custom-pack/rules.yaml
 ```

@@ -291,7 +291,7 @@ Some exporters create one file per scope:
 **Cursor (`.cursor/rules/*.mdc`):**
 
 ```
-.aligntrue/rules.md (with scopes):
+.aligntrue/.rules.yaml (with scopes):
   - default scope → .cursor/rules/aligntrue.mdc
   - apps/web scope → .cursor/rules/apps-web.mdc
   - packages/core scope → .cursor/rules/packages-core.mdc
@@ -318,7 +318,7 @@ Other exporters merge all scopes into one file:
 **AGENTS.md:**
 
 ```
-.aligntrue/rules.md (with scopes):
+.aligntrue/.rules.yaml (with scopes):
   - default scope
   - apps/web scope
   - packages/core scope
@@ -409,7 +409,7 @@ aligntrue sync --dry-run
 
 Audit trail:
   [2025-10-27T12:00:00Z] Loaded config from .aligntrue/config.yaml
-  [2025-10-27T12:00:01Z] Parsed 3 rules from .aligntrue/rules.md
+  [2025-10-27T12:00:01Z] Parsed 3 rules from .aligntrue/.rules.yaml
   [2025-10-27T12:00:02Z] Resolved 2 scopes
   [2025-10-27T12:00:03Z] Exported to cursor (1 file)
   [2025-10-27T12:00:04Z] Exported to agents-md (1 file)
@@ -612,7 +612,7 @@ aligntrue sync
     {
       "rule_id": "my-project.backend.use-typescript",
       "content_hash": "a3b2c1d4e5f6...",
-      "source": "local:.aligntrue/rules.md"
+      "source": "local:.aligntrue/.rules.yaml"
     }
   ],
   "bundle_hash": "e5f6a7b8c9d0..."
@@ -732,7 +732,7 @@ aligntrue check --ci
 
 ```bash
 # Check file sizes
-ls -lh .aligntrue/rules.md
+ls -lh AGENTS.md .aligntrue/.rules.yaml
 
 # Run with dry-run to test
 aligntrue sync --dry-run
@@ -749,19 +749,19 @@ aligntrue sync --dry-run
 
 **Fix:**
 
-**Option 1: IR-only workflow (recommended)**
+**Option 1: Native format workflow (recommended)**
 
-- Edit `.aligntrue/rules.md` only
-- Run `aligntrue sync` to update agents
-- Don't edit generated files
+- Edit `AGENTS.md` or any agent file
+- Run `aligntrue sync` to propagate changes
+- Enable bidirectional sync with `auto_pull: true`
 
-**Option 2: Agent-only workflow**
+**Option 2: Manual control**
 
-- Edit agent files (`.cursor/*.mdc`, etc.)
-- Run `aligntrue sync --accept-agent <name>` to pull changes
-- Don't edit `.aligntrue/rules.md` directly
+- Edit `AGENTS.md` as primary file
+- Run `aligntrue sync` to update other agents
+- Disable auto-pull with `auto_pull: false`
 
-**Don't mix workflows** - Pick one source of truth.
+**Tip:** Use native format workflow for flexibility - edit any file, changes sync everywhere.
 
 ---
 

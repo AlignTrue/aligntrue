@@ -123,7 +123,7 @@ export async function init(args: string[] = []): Promise<void> {
         "aligntrue init --non-interactive --project-id my-app --exporters cursor,agents-md",
       ],
       notes: [
-        "- Creates .aligntrue/rules.md (source of truth)",
+        "- Creates AGENTS.md (primary editing file) and .aligntrue/.rules.yaml (internal)",
         "- Detects existing agent files and offers import",
         "- Use --import <agent> to import from specific format",
         "- In non-interactive mode, detected agents are auto-enabled",
@@ -167,7 +167,7 @@ export async function init(args: string[] = []): Promise<void> {
 Looks like you're joining an existing team setup.
 
 Next steps:
-  1. Review rules: .aligntrue/rules.md
+  1. Review rules: AGENTS.md or .aligntrue/.rules.yaml
   2. Run sync: aligntrue sync
 
 Already have local rules to merge? Run: aligntrue import
@@ -576,7 +576,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   if (nonInteractive) {
     console.log("\nCreating files:");
     console.log("  - .aligntrue/config.yaml (minimal solo config)");
-    console.log("  - .aligntrue/rules.md (source of truth)");
+    console.log("  - .aligntrue/.rules.yaml (internal IR, auto-generated)");
+    console.log("  - AGENTS.md (primary editing file)");
     if (nativeTemplatePath && nativeTemplate) {
       console.log(
         `  - ${nativeTemplatePath} (5 starter rules in native format)`,
@@ -585,7 +586,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else {
     clack.log.info("\nWill create:");
     clack.log.info(`  - .aligntrue/config.yaml (minimal solo config)`);
-    clack.log.info(`  - .aligntrue/rules.md (source of truth)`);
+    clack.log.info(`  - .aligntrue/.rules.yaml (internal IR, auto-generated)`);
+    clack.log.info(`  - AGENTS.md (primary editing file)`);
 
     if (nativeTemplatePath && nativeTemplate) {
       clack.log.info(
@@ -629,10 +631,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       primary_agent: importedFromAgent,
     };
   } else {
-    // Fresh start: use ir_source workflow (edit rules.md, auto-sync disabled)
+    // Fresh start: use native_format workflow (edit AGENTS.md, auto-sync enabled)
     config.sync = {
-      workflow_mode: "ir_source",
-      auto_pull: false,
+      workflow_mode: "native_format",
+      auto_pull: true,
     };
   }
 

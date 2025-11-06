@@ -66,7 +66,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       try {
         await team(["init", "--yes"]);
@@ -103,7 +103,7 @@ rules:
     guidance: Test guidance
 \`\`\`
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", "rules.md"), ir, "utf-8");
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       try {
         await team(["init", "--yes"]);

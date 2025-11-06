@@ -52,7 +52,7 @@ describe("Sync detection integration", () => {
     // Run with --no-detect to skip prompts
     try {
       await sync(["--no-detect", "--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 
@@ -66,7 +66,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--auto-enable", "--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 
@@ -90,7 +90,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 
@@ -126,7 +126,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 
@@ -150,7 +150,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 
@@ -167,7 +167,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--auto-enable", "--dry-run"]);
-    } catch (_err) {
+    } catch {
       // Expected to exit
     }
 

@@ -684,8 +684,8 @@ export default function HomePage() {
                       textAlign: "center",
                     }}
                   >
-                    Auto-detects agents, imports existing rules, or scaffolds{" "}
-                    <code>.aligntrue/rules.md</code>.
+                    Auto-detects agents, imports existing rules, or creates{" "}
+                    <code>AGENTS.md</code>.
                   </p>
                 </div>
 
@@ -988,10 +988,10 @@ export default function HomePage() {
                   <FileText size={24} stroke="white" aria-hidden="true" />
                 </div>
                 <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-                  One source of truth
+                  Edit anywhere, sync everywhere
                 </h3>
                 <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                  Edit: <code>.aligntrue/rules.md</code>
+                  Edit: <code>AGENTS.md</code> or any agent file
                   <br />
                   Sync: <code>aligntrue sync</code>
                 </p>

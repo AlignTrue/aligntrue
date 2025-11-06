@@ -825,7 +825,7 @@ export async function saveMinimalConfig(
 
   // Sources: only if not default
   const defaultSources = JSON.stringify([
-    { type: "local", path: ".aligntrue/rules.md" },
+    { type: "local", path: ".aligntrue/.rules.yaml" },
   ]);
   const currentSources = JSON.stringify(config.sources);
   if (currentSources !== defaultSources && config.sources !== undefined) {

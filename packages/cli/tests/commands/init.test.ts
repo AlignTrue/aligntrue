@@ -209,7 +209,7 @@ describe("init command utilities", () => {
         sources: [
           {
             type: "local",
-            path: ".aligntrue/rules.md",
+            path: ".aligntrue/.rules.yaml",
           },
         ],
         exporters: ["cursor", "agents-md"],
@@ -218,7 +218,7 @@ describe("init command utilities", () => {
       const yamlString = yaml.stringify(config);
       expect(yamlString).toContain("mode: solo");
       expect(yamlString).toContain("type: local");
-      expect(yamlString).toContain("path: .aligntrue/rules.md");
+      expect(yamlString).toContain("path: .aligntrue/.rules.yaml");
 
       // Verify it round-trips correctly
       const parsed = yaml.parse(yamlString);
@@ -230,7 +230,7 @@ describe("init command utilities", () => {
       const config = {
         version: "1",
         mode: "solo",
-        sources: [{ type: "local", path: ".aligntrue/rules.md" }],
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
         exporters: ["cursor", "agents-md", "vscode-mcp"],
       };
 

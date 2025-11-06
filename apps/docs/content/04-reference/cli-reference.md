@@ -355,7 +355,7 @@ aligntrue sync --dry-run
 # Non-interactive (for CI)
 aligntrue sync --force
 
-# Pull changes from Cursor back to rules.md (mock data)
+# Pull changes from Cursor back to AGENTS.md
 aligntrue sync --accept-agent cursor
 ```
 
@@ -373,7 +373,7 @@ If sync detects manual edits to generated files, you'll see:
 ⚠ Conflict detected in .cursor/rules/aligntrue.mdc
 
 [i] Keep IR (discard manual edits)
-[a] Accept agent (pull manual edits to rules.md - mock data)
+[a] Accept agent (pull manual edits to AGENTS.md)
 [d] Show diff
 [q] Quit
 ```
@@ -510,7 +510,7 @@ aligntrue backup create --notes "Working state before refactor"
 
 Backed up 2 files:
   config.yaml
-  rules.md
+  .rules.yaml
 
 Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
 ```
@@ -539,12 +539,12 @@ Available backups:
 
   2025-10-29T14-30-00-000
     Created: Oct 29, 2025 at 2:30:00 PM
-    Files: 2 (config.yaml, rules.md)
+    Files: 2 (config.yaml, .rules.yaml)
     Notes: Before experimental changes
 
   2025-10-29T12-15-45-123
     Created: Oct 29, 2025 at 12:15:45 PM
-    Files: 3 (config.yaml, rules.md, privacy-consent.json)
+    Files: 3 (config.yaml, .rules.yaml, privacy-consent.json)
     Notes: Auto-backup before sync
 
 3 backups found
@@ -605,7 +605,7 @@ aligntrue backup restore --to 2025-10-29T14-30-00-000
 
 Restored 2 files:
   config.yaml
-  rules.md
+  .rules.yaml
 ```
 
 **Warning:** This overwrites your current `.aligntrue/` directory. Use `backup list` to verify timestamp before restoring.
@@ -1006,7 +1006,7 @@ Prevent prompts for agents you don't use even though their files exist in your w
 
 ### `aligntrue md lint`
 
-Check markdown syntax in `.aligntrue/rules.md`.
+Check markdown syntax in `AGENTS.md` or agent files.
 
 **Usage:**
 
@@ -1127,7 +1127,7 @@ aligntrue md generate <file> [--output <path>] [--preserve-style] [--canonical] 
 aligntrue md generate aligntrue.yaml
 
 # Generate and save to file
-aligntrue md generate aligntrue.yaml --output rules.md
+aligntrue md generate aligntrue.yaml --output AGENTS.md
 
 # Generate with custom header
 aligntrue md generate aligntrue.yaml --header "## My Project Rules"
@@ -1140,12 +1140,12 @@ aligntrue md generate aligntrue.yaml --canonical
 
 ```bash
 # Start with markdown
-aligntrue md compile rules.md --output aligntrue.yaml
+aligntrue md compile AGENTS.md --output aligntrue.yaml
 
 # Edit YAML as needed
 
 # Generate back to markdown
-aligntrue md generate aligntrue.yaml --output rules.md --preserve-style
+aligntrue md generate aligntrue.yaml --output AGENTS.md --preserve-style
 ```
 
 **Output format:**
@@ -1186,7 +1186,7 @@ aligntrue plugs audit [--config <path>]
 
 | Flag              | Description                       | Default                  |
 | ----------------- | --------------------------------- | ------------------------ |
-| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+| `--config <path>` | Custom rules file path            | `AGENTS.md`    |
 
 **What it shows:**
 
@@ -1251,7 +1251,7 @@ aligntrue plugs resolve [--config <path>] [--dry-run]
 
 | Flag              | Description                       | Default                  |
 | ----------------- | --------------------------------- | ------------------------ |
-| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+| `--config <path>` | Custom rules file path            | `AGENTS.md`    |
 | `--dry-run`       | Preview without writing (default) | `true`                   |
 
 **What it does:**
@@ -1319,7 +1319,7 @@ aligntrue plugs set <key> <value> [--config <path>]
 
 | Flag              | Description                       | Default                  |
 | ----------------- | --------------------------------- | ------------------------ |
-| `--config <path>` | Custom rules file path            | `.aligntrue/rules.md`    |
+| `--config <path>` | Custom rules file path            | `AGENTS.md`    |
 
 **What it does:**
 
@@ -1356,7 +1356,7 @@ aligntrue plugs set config.file "config/settings.json"
 ```
 ✓ Set plug fill: test.cmd = "pnpm test"
 
-Updated: .aligntrue/rules.md
+Updated: AGENTS.md
 
 Next step:
   Run: aligntrue sync
@@ -2661,7 +2661,7 @@ These errors indicate missing files, permissions, or system issues:
   ```
   ✗ Rules file not found
 
-  Could not locate: .aligntrue/rules.md
+  Could not locate: .aligntrue/.rules.yaml
 
   Hint: Run 'aligntrue init' to create initial rules
 
@@ -2692,7 +2692,7 @@ These errors indicate invalid configuration, rules, or data:
   ```
   ✗ Validation failed
 
-  Errors in .aligntrue/rules.md
+  Errors in AGENTS.md
 
   Details:
     - spec_version: Missing required field

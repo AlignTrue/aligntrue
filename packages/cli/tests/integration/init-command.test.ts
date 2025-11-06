@@ -48,7 +48,7 @@ describe("Init Command Integration", () => {
       expect(config.sync.workflow_mode).toBe("ir_source");
     });
 
-    it("creates .aligntrue/rules.md with starter template", async () => {
+    it("creates .aligntrue/.rules.yaml with starter template", async () => {
       await init(["--yes", "--project-id", "test-project"]);
 
       const rulesPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
@@ -152,7 +152,7 @@ describe("Init Command Integration", () => {
       // Check no .tmp files exist
       const files = [
         join(TEST_DIR, ".aligntrue", "config.yaml.tmp"),
-        join(TEST_DIR, ".aligntrue", "rules.md.tmp"),
+        join(TEST_DIR, ".aligntrue", ".rules.yaml.tmp"),
         join(TEST_DIR, ".cursor", "rules", "aligntrue-starter.mdc.tmp"),
       ];
 

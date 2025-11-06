@@ -168,14 +168,14 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 
 exporters:
   - agents-md # Universal format only
 
 sync:
-  workflow_mode: "ir_source"
-  auto_pull: false
+  workflow_mode: "native_format"
+  auto_pull: true
 
 git:
   mode: commit
@@ -380,12 +380,12 @@ aligntrue init
 
 - Deduplicates identical rules
 - Preserves agent-specific settings in vendor bags
-- Creates unified `.aligntrue/rules.md`
+- Creates unified `AGENTS.md` and `.aligntrue/.rules.yaml`
 
 **Step 3: Review merged rules**
 
 ```bash
-cat .aligntrue/rules.md
+cat AGENTS.md
 ```
 
 **Step 4: Sync to all agents**
@@ -512,38 +512,39 @@ Fidelity Notes:
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  workflow_mode: "ir_source" # Edit rules.md only
-  auto_pull: false # Disable auto-pull
+  workflow_mode: "native_format" # Edit agent files
+  auto_pull: true # Enable bidirectional sync
 ```
 
 **Workflow:**
 
 ```bash
-# 1. If you edited agent files, pull manually
-aligntrue sync --accept-agent cursor  # Choose one
+# 1. Enable bidirectional sync
+aligntrue config set sync.workflow_mode native_format
+aligntrue config set sync.auto_pull true
 
-# 2. Switch to IR-source workflow
-aligntrue config set sync.workflow_mode ir_source
-aligntrue config set sync.auto_pull false
+# 2. Edit any agent file
+vi AGENTS.md
+# or
+vi .cursor/rules/aligntrue.mdc
 
-# 3. Edit rules.md going forward
-vi .aligntrue/rules.md
+# 3. Sync propagates changes to all agents
 aligntrue sync
 ```
 
 ## Best practices
 
-### 1. Use IR-source workflow for multiple agents
+### 1. Use native format workflow for flexibility
 
-Edit `.aligntrue/rules.md` as single source of truth. Avoid editing agent files directly.
+Edit `AGENTS.md` or any agent file. AlignTrue keeps them all synced.
 
-**Why:** Prevents conflicts, maintains consistency, simplifies workflow.
+**Why:** Edit in the format you're most comfortable with, changes sync everywhere.
 
-### 2. Edit rules.md as single source of truth
+### 2. Primary editing file: AGENTS.md
 
-Don't edit `.cursor/*.mdc` or `AGENTS.md` directly when using multiple agents.
+Use `AGENTS.md` as your main editing file for universal compatibility.
 
-**Why:** Changes in one agent file won't propagate to others without manual intervention.
+**Why:** Works with all agents, simple format, easy to read and edit.
 
 ### 3. Use vendor bags sparingly
 
@@ -636,13 +637,13 @@ This project uses AlignTrue for consistent AI agent behavior.
 **Multi-agent workflow checklist:**
 
 - ✅ Configure multiple exporters in config.yaml
-- ✅ Use IR-source workflow (edit rules.md)
-- ✅ Disable auto-pull to avoid conflicts
+- ✅ Edit AGENTS.md or any agent file
+- ✅ Enable bidirectional sync for flexibility
 - ✅ Use vendor bags only for agent-specific settings
 - ✅ Test with --dry-run before syncing
 - ✅ Commit strategy (agent files or not)
 - ✅ Document setup for team members
 
-**Key takeaway:** AlignTrue makes multi-agent workflows simple by maintaining one source of truth (rules.md) that syncs to all agents automatically.
+**Key takeaway:** AlignTrue makes multi-agent workflows simple by keeping all agent files synced automatically. Edit any file, changes flow everywhere.
 
 ```
