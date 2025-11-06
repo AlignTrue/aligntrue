@@ -124,6 +124,8 @@ export async function pull(args: string[]): Promise<void> {
         "Use --save to add source to config permanently",
         "--sync requires --save (cannot sync temporary pulls)",
         "--dry-run shows preview without network operations",
+        "--yes auto-grants consent (useful for CI/automation)",
+        "CI environments (CI=true) auto-grant consent",
       ],
     });
     process.exit(0);

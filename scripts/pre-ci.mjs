@@ -30,7 +30,7 @@ const steps = [
   },
   {
     name: "Build packages",
-    cmd: "pnpm --filter @aligntrue/schema build && pnpm -r --filter './packages/*' --sort build",
+    cmd: 'pnpm -r --filter "./packages/*" build',
   },
   { name: "Type check", cmd: "pnpm typecheck" },
   { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
