@@ -4,19 +4,18 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { init } from "../../src/commands/init.js";
 import * as yaml from "yaml";
+import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-init");
 
 beforeEach(() => {
   // Create fresh test directory
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
 
   // Change to test directory
@@ -25,9 +24,7 @@ beforeEach(() => {
 
 afterEach(() => {
   // Cleanup
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
 });
 
 describe("Init Command Integration", () => {

@@ -23,6 +23,7 @@
     "lint:strict": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "pre-ci": "node scripts/pre-ci.mjs",
     "pre-refactor": "node scripts/pre-refactor.mjs",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist archive/*/node_modules archive/*/.next archive/*/dist",
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
