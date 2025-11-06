@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed cross-platform path handling in docs validation script (Windows backslash support)
 - Fixed CSS formatting in homepage stylesheet
+- Suppressed known Nextra 4.6.0 + React 19 type incompatibilities (awaiting Nextra 5 release)
 
 ### Removed
 
