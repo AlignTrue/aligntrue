@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+
+/**
+ * Pre-CI validation script
+ * Runs locally before push to catch CI failures early
+ */
+
+import { execSync } from "child_process";
+import { rmSync, readdirSync, statSync, existsSync } from "fs";
+import { join } from "path";
+
+const steps = [
+  {
+    name: "Clean dist directories",
+    cmd: () => {
+      const packagesDir = join(process.cwd(), "packages");
+      const packages = readdirSync(packagesDir);
+      let cleanedCount = 0;
+
+      packages.forEach((pkg) => {
+        const distPath = join(packagesDir, pkg, "dist");
+        if (existsSync(distPath) && statSync(distPath).isDirectory()) {
+          rmSync(distPath, { recursive: true, force: true });
+          cleanedCount++;
+        }
+      });
+
+      console.log(`✓ Cleaned ${cleanedCount} dist directories`);
+    },
+  },
+  {
+    name: "Build packages",
+    cmd: "pnpm -r --filter './packages/*' --sort build",
+  },
+  { name: "Type check", cmd: "pnpm typecheck" },
+  { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
+  { name: "Format check", cmd: "pnpm format:check" },
+  { name: "Run tests", cmd: "pnpm test --reporter=dot" },
+];
+
+console.log("🔍 Running pre-CI validation...\n");
+
+for (const step of steps) {
+  const start = Date.now();
+  process.stdout.write(`${step.name}...`);
+
+  try {
+    if (typeof step.cmd === "function") {
+      step.cmd();
+    } else {
+      execSync(step.cmd, { stdio: "pipe" });
+    }
+    const duration = ((Date.now() - start) / 1000).toFixed(1);
+    console.log(` ✓ (${duration}s)`);
+  } catch (err) {
+    console.log(` ✗`);
+    console.error(`\n❌ ${step.name} failed\n`);
+    console.error(
+      err.stdout?.toString() || err.stderr?.toString() || err.message,
+    );
+    process.exit(1);
+  }
+}
+
+console.log("\n✅ All pre-CI checks passed!");

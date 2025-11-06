@@ -4,13 +4,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { sync } from "../../src/commands/sync.js";
 import { mockProcessExit } from "../helpers/exit-mock.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
+import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 vi.mock("@clack/prompts");
 
@@ -20,9 +21,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   // Create fresh test directory
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
 
   // Change to test directory
@@ -41,9 +40,7 @@ beforeEach(() => {
 
 afterEach(() => {
   // Cleanup
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
 });
 
 describe("Sync Command Integration", () => {

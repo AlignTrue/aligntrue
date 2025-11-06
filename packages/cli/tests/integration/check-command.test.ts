@@ -4,27 +4,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { check } from "../../src/commands/check.js";
 import { mockProcessExit } from "../helpers/exit-mock.js";
 import * as yaml from "yaml";
+import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-check");
 
 beforeEach(() => {
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 });
 
 afterEach(() => {
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  cleanupDir(TEST_DIR);
 });
 
 describe("Check Command Integration", () => {
