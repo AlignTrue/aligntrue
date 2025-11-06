@@ -12,7 +12,6 @@ describe("Sync detection integration", () => {
   let testDir: string;
   let originalCwd: string;
   let originalExit: typeof process.exit;
-  let exitCode: number | undefined;
 
   beforeEach(() => {
     testDir = join(tmpdir(), `aligntrue-detection-test-${Date.now()}`);
@@ -22,9 +21,7 @@ describe("Sync detection integration", () => {
 
     // Mock process.exit
     originalExit = process.exit;
-    exitCode = undefined;
     process.exit = ((code?: number) => {
-      exitCode = code ?? 0;
       throw new Error(`process.exit: ${code ?? 0}`);
     }) as never;
 
@@ -55,7 +52,7 @@ describe("Sync detection integration", () => {
     // Run with --no-detect to skip prompts
     try {
       await sync(["--no-detect", "--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
@@ -69,7 +66,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--auto-enable", "--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
@@ -93,7 +90,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
@@ -129,7 +126,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
@@ -153,7 +150,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
@@ -170,7 +167,7 @@ describe("Sync detection integration", () => {
 
     try {
       await sync(["--auto-enable", "--dry-run"]);
-    } catch (err) {
+    } catch (_err) {
       // Expected to exit
     }
 
