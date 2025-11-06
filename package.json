@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "build:packages": "pnpm -r --filter './packages/*' build",
+    "build:packages": "pnpm -r --filter ./packages/* build",
     "dev": "pnpm --filter @aligntrue/docs dev",
-    "dev:packages": "pnpm -r --filter './packages/*' --parallel build --watch",
+    "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",
     "start:docs": "node scripts/start-docs.mjs",
     "test": "pnpm -r test",
     "test:fast": "pnpm -r test --reporter=dot --pool=threads",
