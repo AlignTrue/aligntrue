@@ -569,8 +569,10 @@ If you have v1 packs:
 ```
 .aligntrue/
 ├── config.yaml          # mode: solo
-├── rules.md             # literate markdown (optional)
-└── aligntrue.yaml       # IR (generated from rules.md or direct)
+├── .rules.yaml          # IR (auto-generated or direct)
+└── .gitignore           # ignore generated files
+
+AGENTS.md                # Primary user-editable rules file (optional)
 ```
 
 ### Team Mode
@@ -578,11 +580,11 @@ If you have v1 packs:
 ```
 .aligntrue/
 ├── config.yaml          # mode: team
-├── rules.md             # literate markdown source
-├── aligntrue.yaml       # IR (canonical)
+├── .rules.yaml          # IR (canonical)
 └── .gitignore           # ignore generated files
 
 .aligntrue.lock.json     # lockfile with canonical hashes (committed)
+AGENTS.md                # Primary user-editable rules file (optional)
 ```
 
 ### Exports (all modes)
