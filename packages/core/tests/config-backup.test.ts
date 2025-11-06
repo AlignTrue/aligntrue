@@ -27,9 +27,9 @@ describe("Config - Backup Configuration", () => {
     const config = await loadConfig(configPath);
 
     expect(config.backup).toBeDefined();
-    expect(config.backup?.auto_backup).toBe(false);
-    expect(config.backup?.keep_count).toBe(10);
-    expect(config.backup?.backup_on).toEqual(["sync"]);
+    expect(config.backup?.auto_backup).toBe(true);
+    expect(config.backup?.keep_count).toBe(5);
+    expect(config.backup?.backup_on).toEqual(["sync", "import"]);
   });
 
   it("should accept custom backup configuration", async () => {

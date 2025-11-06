@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Breaking)
+
+- **IR format changed** from `.aligntrue/rules.md` to `.aligntrue/.rules.yaml` (internal file)
+- **Users now edit** `AGENTS.md` or agent-specific files (`.cursor/*.mdc`) instead of rules.md
+- **Multi-agent import** now merges all detected agents by default (was single-agent only)
+- **Auto-backup enabled** by default (keeps last 5 backups before sync/import)
+- **Rule IDs auto-fixed** on import (no more validation failures for non-conforming IDs)
+
+### Added
+
+- Multi-agent import with automatic merge and duplicate handling
+- Auto-fix for rule IDs on import (stores original ID in vendor bag)
+- Backup system enabled by default for sync and import operations
+- All-agent detection in init flow (was first-match only)
+
 ### Fixed
 
 - Fixed cross-platform path handling in docs validation script (Windows backslash support)
@@ -18,17 +33,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed catalog concept and catalog source provider
 - Deleted archived catalog website (`/.archive/`)
 - Removed `type: "catalog"` from config source types
+- Removed markdown parsing for IR files (YAML-only now)
 
-### Changed
+### Migration
 
-- Simplified to two clear features: Git imports (from any GitHub repo) and local examples
-- Updated all documentation to clarify Git imports vs Examples
-- Example packs now referenced via git sources or local files
-- Updated team mode examples to use git URLs instead of catalog IDs
-- Removed catalog-specific validation and CLI logic
+**For alpha users:**
+
+This is a breaking change. To migrate existing projects:
+
+1. Delete `.aligntrue/rules.md` (if it exists)
+2. Run `aligntrue init` to recreate with new structure
+3. Your rules will be imported from existing agent files automatically
+
+**New file structure:**
+
+- `.aligntrue/.rules.yaml` - Internal IR (auto-generated, don't edit)
+- `AGENTS.md` - Primary user-editable file (created by init)
+- `.cursor/*.mdc`, etc. - Edit any agent file, they stay synced
 
 ### Documentation
 
+- Updated README quickstart to show AGENTS.md workflow
 - Deleted `apps/docs/content/03-concepts/catalog.md`
 - Updated all guides to use git imports for external rules
 - Clarified that `/examples/packs/` contains local example files only
