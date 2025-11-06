@@ -3,10 +3,6 @@
   "version": "0.1.0-alpha.4",
   "description": "AlignTrue CLI shim - AI alignment rules for developers",
   "type": "module",
-  "bin": {
-    "aligntrue": "./dist/index.js",
-    "at": "./dist/index.js"
-  },
   "main": "./dist/index.js",
   "files": [
     "dist",
