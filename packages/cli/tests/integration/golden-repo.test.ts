@@ -243,7 +243,7 @@ Content Hash:`,
 
     // Verify edit was synced to IR
     const rulesContent = await fs.readFile(
-      join(projectDir, ".aligntrue/rules.md"),
+      join(projectDir, ".aligntrue/.rules.yaml"),
       "utf8",
     );
     expect(rulesContent).toContain("comprehensive unit tests");

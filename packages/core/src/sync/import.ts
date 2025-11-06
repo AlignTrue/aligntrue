@@ -7,7 +7,39 @@ import { readdir, readFile } from "fs/promises";
 import { join, extname } from "path";
 import { existsSync } from "fs";
 import type { AlignRule } from "@aligntrue/schema";
+import { validateRuleId } from "@aligntrue/schema";
 import { parseCursorMdcFiles, parseAgentsMd } from "@aligntrue/markdown-parser";
+
+/**
+ * Ensure rule ID is valid, auto-fixing if necessary
+ *
+ * @param originalId - Original rule ID from agent file
+ * @param context - Context about the agent source
+ * @returns Fixed ID information
+ */
+function ensureValidRuleId(
+  originalId: string,
+  context: { agent: string },
+): { id: string; wasFixed: boolean; originalId?: string } {
+  const validation = validateRuleId(originalId);
+
+  if (validation.valid) {
+    return { id: originalId, wasFixed: false };
+  }
+
+  // Auto-generate valid ID: imported.<agent>.<sanitized-id>
+  const sanitized = originalId
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return {
+    id: `imported.${context.agent}.${sanitized}`,
+    wasFixed: true,
+    originalId: originalId,
+  };
+}
 
 /**
  * Import rules from agent-specific format
@@ -67,7 +99,22 @@ async function importFromCursor(workspaceRoot: string): Promise<AlignRule[]> {
     throw new Error(`No .mdc files found in ${cursorDir}`);
   }
 
-  return parseCursorMdcFiles(files);
+  const rules = parseCursorMdcFiles(files);
+
+  // Auto-fix rule IDs if needed
+  return rules.map((rule) => {
+    const result = ensureValidRuleId(rule.id, { agent: "cursor" });
+
+    if (result.wasFixed) {
+      // Store original ID in vendor bag for round-trip
+      rule.vendor = rule.vendor || {};
+      rule.vendor["cursor"] = rule.vendor["cursor"] || {};
+      rule.vendor["cursor"].original_id = result.originalId;
+      rule.id = result.id;
+    }
+
+    return rule;
+  });
 }
 
 /**
@@ -89,7 +136,22 @@ async function importFromCursorrules(
   const files = new Map<string, string>();
   files.set(cursorrulesPath, content);
 
-  return parseCursorMdcFiles(files);
+  const rules = parseCursorMdcFiles(files);
+
+  // Auto-fix rule IDs if needed
+  return rules.map((rule) => {
+    const result = ensureValidRuleId(rule.id, { agent: "cursorrules" });
+
+    if (result.wasFixed) {
+      // Store original ID in vendor bag for round-trip
+      rule.vendor = rule.vendor || {};
+      rule.vendor["cursorrules"] = rule.vendor["cursorrules"] || {};
+      rule.vendor["cursorrules"].original_id = result.originalId;
+      rule.id = result.id;
+    }
+
+    return rule;
+  });
 }
 
 /**
@@ -109,7 +171,20 @@ async function importFromAgentsMd(workspaceRoot: string): Promise<AlignRule[]> {
     throw new Error(`No rules found in ${agentsMdPath}`);
   }
 
-  return rules;
+  // Auto-fix rule IDs if needed
+  return rules.map((rule) => {
+    const result = ensureValidRuleId(rule.id, { agent: "agents-md" });
+
+    if (result.wasFixed) {
+      // Store original ID in vendor bag for round-trip
+      rule.vendor = rule.vendor || {};
+      rule.vendor["agents-md"] = rule.vendor["agents-md"] || {};
+      rule.vendor["agents-md"].original_id = result.originalId;
+      rule.id = result.id;
+    }
+
+    return rule;
+  });
 }
 
 /**
@@ -149,7 +224,21 @@ async function importFromMarkdownFile(
     throw new Error(`No rules found in ${filePath}`);
   }
 
-  return rules;
+  // Auto-fix rule IDs if needed
+  const agentName = baseFileName.toLowerCase().replace(".md", "");
+  return rules.map((rule) => {
+    const result = ensureValidRuleId(rule.id, { agent: agentName });
+
+    if (result.wasFixed) {
+      // Store original ID in vendor bag for round-trip
+      rule.vendor = rule.vendor || {};
+      rule.vendor[agentName] = rule.vendor[agentName] || {};
+      rule.vendor[agentName].original_id = result.originalId;
+      rule.id = result.id;
+    }
+
+    return rule;
+  });
 }
 
 /**

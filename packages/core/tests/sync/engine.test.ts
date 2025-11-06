@@ -108,10 +108,7 @@ exporters:
 
       await engine.loadConfiguration(configPath);
 
-      const markdown = `# Test Pack
-
-\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -119,10 +116,9 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
-      const irPath = join(TEST_DIR, "rules.md");
-      writeFileSync(irPath, markdown, "utf8");
+      const irPath = join(TEST_DIR, "rules.yaml");
+      writeFileSync(irPath, yaml, "utf8");
 
       await expect(engine.loadIRFromSource(irPath)).resolves.not.toThrow();
     });
@@ -192,8 +188,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -201,12 +196,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const mockExporter = new MockExporter("test-exporter").setFilesToWrite([
         join(TEST_DIR, "output.txt"),
@@ -235,8 +229,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -244,12 +237,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const mockExporter = new MockExporter("test-exporter").setFilesToWrite([
         join(TEST_DIR, "output.txt"),
@@ -275,8 +267,7 @@ exporters:
   - exporter1
   - exporter2
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -284,12 +275,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const exporter1 = new MockExporter("exporter1");
       const exporter2 = new MockExporter("exporter2");
@@ -319,8 +309,7 @@ scopes:
     include:
       - "**/*.ts"
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -328,12 +317,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const mockExporter = new MockExporter("test-exporter");
       engine.registerExporter(mockExporter);
@@ -357,8 +345,7 @@ exporters:
   - missing-exporter
   - test-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -366,12 +353,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const mockExporter = new MockExporter("test-exporter");
       engine.registerExporter(mockExporter);
@@ -397,8 +383,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -406,12 +391,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const mockExporter = new MockExporter("test-exporter").setFidelityNotes([
         "Feature X not supported",
@@ -439,8 +423,7 @@ mode: solo
 exporters:
   - missing-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -448,12 +431,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       // Execute
       const result = await engine.syncToAgents(irPath, {
@@ -475,8 +457,7 @@ mode: solo
 exporters:
   - failing-exporter
 `;
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -484,12 +465,11 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const irPath = join(TEST_DIR, "rules.md");
+      const irPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
-      writeFileSync(irPath, markdown, "utf8");
+      writeFileSync(irPath, yaml, "utf8");
 
       const failingExporter = new FailingExporter("failing-exporter", true);
       engine.registerExporter(failingExporter);
@@ -513,11 +493,10 @@ rules:
 mode: solo
 sources:
   - type: local
-    path: rules.md
+    path: rules.yaml
 exporters: ['cursor']
 `;
-      const rules = `\`\`\`aligntrue
-id: test-pack
+      const rules = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -525,10 +504,9 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
       const configPath = join(CONFIG_DIR, "config.yaml");
-      const rulesPath = join(TEST_DIR, "rules.md");
+      const rulesPath = join(TEST_DIR, "rules.yaml");
       writeFileSync(configPath, config, "utf8");
       writeFileSync(rulesPath, rules, "utf8");
 
@@ -583,8 +561,7 @@ exporters:
 
       await engine.loadConfiguration(configPath);
 
-      const markdown = `\`\`\`aligntrue
-id: test-pack
+      const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -592,10 +569,9 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule
-\`\`\`
 `;
-      const irPath = join(TEST_DIR, "rules.md");
-      writeFileSync(irPath, markdown, "utf8");
+      const irPath = join(TEST_DIR, "rules.yaml");
+      writeFileSync(irPath, yaml, "utf8");
 
       await engine.loadIRFromSource(irPath);
       engine.clear();

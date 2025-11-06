@@ -201,7 +201,12 @@ Test.
       for (const agent of ["copilot", "claude-code", "aider", "agents-md"]) {
         const rules = await importFromAgent(agent, tmpDir);
         expect(rules).toHaveLength(1);
-        expect(rules[0].id).toBe("test");
+        // Rule ID "test" gets auto-fixed to "imported.<agent>.test" because it doesn't meet 3+ segment requirement
+        expect(rules[0].id).toMatch(
+          /^imported\.(copilot|claude-code|aider|agents-md)\.test$/,
+        );
+        // Original ID is preserved in vendor bag (all these agents use agents-md parser)
+        expect(rules[0].vendor?.["agents-md"]?.original_id).toBe("test");
       }
     });
 

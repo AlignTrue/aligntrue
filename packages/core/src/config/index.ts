@@ -350,7 +350,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
 
   // Apply source defaults
   if (!result.sources || result.sources.length === 0) {
-    result.sources = [{ type: "local", path: ".aligntrue/rules.md" }];
+    result.sources = [{ type: "local", path: ".aligntrue/.rules.yaml" }];
   }
 
   // Apply performance defaults
@@ -367,9 +367,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (!result.backup) {
     result.backup = {};
   }
-  result.backup.auto_backup = result.backup.auto_backup ?? false;
-  result.backup.keep_count = result.backup.keep_count ?? 10;
-  result.backup.backup_on = result.backup.backup_on ?? ["sync"];
+  result.backup.auto_backup = result.backup.auto_backup ?? true;
+  result.backup.keep_count = result.backup.keep_count ?? 5;
+  result.backup.backup_on = result.backup.backup_on ?? ["sync", "import"];
 
   return result;
 }

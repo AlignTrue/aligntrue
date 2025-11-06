@@ -408,7 +408,7 @@ describe("Default Application", () => {
     const withDefaults = applyDefaults(config);
     expect(withDefaults.sources).toHaveLength(1);
     expect(withDefaults.sources![0].type).toBe("local");
-    expect(withDefaults.sources![0].path).toBe(".aligntrue/rules.md");
+    expect(withDefaults.sources![0].path).toBe(".aligntrue/.rules.yaml");
   });
 
   it("merge preserves user-specified fields", () => {

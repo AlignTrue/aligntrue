@@ -25,8 +25,8 @@ export function getAlignTruePaths(cwd: string = process.cwd()) {
     /** Path to main config file: .aligntrue/config.yaml */
     config: join(cwd, ".aligntrue", "config.yaml"),
 
-    /** Path to rules markdown file: .aligntrue/rules.md */
-    rules: join(cwd, ".aligntrue", "rules.md"),
+    /** Path to rules IR file (internal): .aligntrue/.rules.yaml */
+    rules: join(cwd, ".aligntrue", ".rules.yaml"),
 
     /** Path to lockfile: .aligntrue.lock.json */
     lockfile: join(cwd, ".aligntrue.lock.json"),

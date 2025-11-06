@@ -20,7 +20,7 @@ describe("getAlignTruePaths", () => {
 
   it("should generate rules path", () => {
     const paths = getAlignTruePaths(testCwd);
-    expect(paths.rules).toBe(join(testCwd, ".aligntrue", "rules.md"));
+    expect(paths.rules).toBe(join(testCwd, ".aligntrue", ".rules.yaml"));
   });
 
   it("should generate lockfile path", () => {
