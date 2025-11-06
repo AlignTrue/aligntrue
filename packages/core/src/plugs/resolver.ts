@@ -12,7 +12,7 @@
  * 5. Ensure single trailing LF
  */
 
-import type { Plugs } from "@aligntrue/schema";
+import type { Plugs, PlugSlot } from "@aligntrue/schema";
 import {
   validatePlugKey,
   validatePlugValue,
@@ -62,7 +62,7 @@ function generateTODO(key: string, example?: string): string {
 export function mergePlugs(
   plugsSources: Array<{ plugs?: Plugs | undefined; source: string }>,
 ): Plugs {
-  const mergedSlots: Record<string, unknown> = {};
+  const mergedSlots: Record<string, PlugSlot> = {};
   const mergedFills: Record<string, string> = {};
 
   // Sort sources for deterministic merge order

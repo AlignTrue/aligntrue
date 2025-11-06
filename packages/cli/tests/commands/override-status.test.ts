@@ -20,7 +20,7 @@ describe("override-status command - smoke tests", () => {
     try {
       process.chdir("/tmp");
       await overrideStatus([]);
-    } catch {
+    } catch (e) {
       // Expected to throw on error
       expect(e).toBeDefined();
     } finally {

@@ -41,15 +41,21 @@ function filterVolatileVendorFields(data: unknown): unknown {
     const result: Record<string, unknown> = {};
 
     // Check if this object has vendor._meta.volatile
-    if (
-      obj["vendor"] &&
-      typeof obj["vendor"] === "object" &&
-      obj["vendor"]["_meta"]?.["volatile"]
-    ) {
-      const volatilePaths = obj["vendor"]["_meta"]["volatile"] as string[];
-      result["vendor"] = filterVolatilePaths(obj["vendor"], volatilePaths);
-    } else if (obj["vendor"]) {
-      result["vendor"] = filterVolatileVendorFields(obj["vendor"]);
+    const vendor = obj["vendor"];
+    if (vendor && typeof vendor === "object") {
+      const vendorObj = vendor as Record<string, unknown>;
+      const meta = vendorObj["_meta"];
+      if (meta && typeof meta === "object") {
+        const metaObj = meta as Record<string, unknown>;
+        if (metaObj["volatile"]) {
+          const volatilePaths = metaObj["volatile"] as string[];
+          result["vendor"] = filterVolatilePaths(vendorObj, volatilePaths);
+        } else {
+          result["vendor"] = filterVolatileVendorFields(vendor);
+        }
+      } else {
+        result["vendor"] = filterVolatileVendorFields(vendor);
+      }
     }
 
     // Process all other keys
@@ -81,19 +87,21 @@ function filterVolatilePaths(
       continue;
     }
 
-    if (typeof vendor[key] === "object" && vendor[key] !== null) {
+    const vendorValue = vendor[key];
+    if (typeof vendorValue === "object" && vendorValue !== null) {
+      const subVendor = vendorValue as Record<string, unknown>;
       const subResult: Record<string, unknown> = {};
-      for (const subKey in vendor[key]) {
+      for (const subKey in subVendor) {
         const path = `${key}.${subKey}`;
         if (!volatilePaths.includes(path)) {
-          subResult[subKey] = vendor[key][subKey];
+          subResult[subKey] = subVendor[subKey];
         }
       }
       if (Object.keys(subResult).length > 0) {
         result[key] = subResult;
       }
     } else {
-      result[key] = vendor[key];
+      result[key] = vendorValue;
     }
   }
 

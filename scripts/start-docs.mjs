@@ -88,7 +88,7 @@ async function killProcessesOnPort(port) {
 
   for (const pid of pids) {
     info(`  Attempting to kill PID ${pid} with SIGTERM...`);
-    
+
     // Try graceful shutdown first
     const gracefulKilled = killProcess(pid, "SIGTERM");
     if (gracefulKilled) {

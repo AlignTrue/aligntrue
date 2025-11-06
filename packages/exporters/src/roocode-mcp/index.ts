@@ -68,7 +68,7 @@ export class RooCodeMcpExporter extends ExporterBase {
     }
 
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-    const contentHash = mcpConfig["content_hash"];
+    const contentHash = (mcpConfig["content_hash"] as string) || "";
 
     if (!dryRun) {
       mkdirSync(dirname(outputPath), { recursive: true });

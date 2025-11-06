@@ -163,16 +163,22 @@ function checkPlugConflicts(
 
   const rule = result.targetValue as AlignRule;
 
-  // Check if rule has plugs
-  if (!rule.plugs || !Array.isArray(rule.plugs) || rule.plugs.length === 0) {
+  // Check if rule has plugs (currently rules don't have plugs per spec, future enhancement)
+  // Plugs are defined at pack level, not rule level. This check is for future compatibility.
+  const ruleObj = rule as unknown as Record<string, unknown>;
+  const plugs = ruleObj["plugs"];
+  if (!plugs || !Array.isArray(plugs) || plugs.length === 0) {
     return undefined;
   }
 
   // Extract plug slot names from plugs array
   const plugSlots = new Set<string>();
-  for (const plug of rule.plugs) {
-    if (plug && typeof plug === "object" && "slot" in plug) {
-      plugSlots.add(String(plug.slot));
+  for (const plug of plugs) {
+    if (plug && typeof plug === "object") {
+      const plugObj = plug as Record<string, unknown>;
+      if ("slot" in plugObj) {
+        plugSlots.add(String(plugObj["slot"]));
+      }
     }
   }
 

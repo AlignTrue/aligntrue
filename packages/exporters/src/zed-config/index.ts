@@ -77,7 +77,7 @@ export class ZedConfigExporter extends ExporterBase {
     return {
       success: true,
       filesWritten: dryRun ? [] : [outputPath],
-      contentHash: config["content_hash"],
+      contentHash: (config["content_hash"] as string) || "",
     };
   }
 

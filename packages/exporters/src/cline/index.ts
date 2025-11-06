@@ -13,6 +13,7 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
+import type { ModeHints } from "@aligntrue/core";
 import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
@@ -98,7 +99,7 @@ export class ClineExporter extends ExporterBase {
   }
 
   private generateClineRulesContent(
-    modeHints: string,
+    modeHints: ModeHints,
     maxBlocks: number,
     maxTokens: number,
     options: ExportOptions,

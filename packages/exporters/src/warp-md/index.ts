@@ -13,6 +13,7 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignRule } from "@aligntrue/schema";
+import type { ModeHints } from "@aligntrue/core";
 import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
@@ -102,7 +103,7 @@ export class WarpMdExporter extends ExporterBase {
   }
 
   private generateWarpMdContent(
-    modeHints: string,
+    modeHints: ModeHints,
     maxBlocks: number,
     maxTokens: number,
     unresolvedPlugs?: number,
