@@ -1,8 +1,11 @@
 /**
  * SiteFooter Component
  *
- * Simple center-aligned footer for AlignTrue homepage and docs site.
- * Displays copyright, licensing info, build & status badges, and tagline.
+ * @deprecated This component has been moved inline to:
+ * - Homepage: apps/docs/app/page.tsx (SiteFooter)
+ * - Docs: apps/docs/app/docs/layout.tsx (DocsFooter)
+ *
+ * Kept here for reference only. Do not import from @aligntrue/ui.
  */
 
 export function SiteFooter() {

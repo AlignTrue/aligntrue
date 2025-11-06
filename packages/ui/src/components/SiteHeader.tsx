@@ -1,9 +1,10 @@
 /**
  * SiteHeader Component
  *
- * Unified header for AlignTrue homepage and docs site.
- * Provides logo, navigation links, and theme toggle.
- * Includes mobile-responsive hamburger menu.
+ * @deprecated This component has been moved inline to apps/docs/app/page.tsx
+ * for better independence between homepage and docs styling.
+ *
+ * Kept here for reference only. Do not import from @aligntrue/ui.
  */
 
 "use client";
