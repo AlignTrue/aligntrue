@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { SiteHeader, SiteFooter } from "@aligntrue/ui";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { AlignTrueLogo } from "@aligntrue/ui";
 import {
   Zap,
   RefreshCw,
@@ -11,6 +12,10 @@ import {
   Shuffle,
   Users,
   Settings,
+  Menu,
+  X,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 function CopyButton({ text }: { text: string }) {
@@ -49,6 +54,362 @@ function CopyButton({ text }: { text: string }) {
     >
       {copied ? "✓ Copied" : "Copy"}
     </button>
+  );
+}
+
+/**
+ * SiteHeader Component (Homepage-specific)
+ *
+ * Header for AlignTrue homepage with logo, navigation, and theme toggle.
+ * Includes mobile-responsive hamburger menu.
+ */
+function SiteHeader() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when window is resized to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  return (
+    <>
+      <header
+        style={{
+          borderBottom: "1px solid var(--border-color)",
+          padding: "1rem 1.5rem",
+          position: "relative",
+          zIndex: 50,
+          backgroundColor: "var(--bg-default)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "72rem",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              textDecoration: "none",
+            }}
+            aria-label="AlignTrue home"
+          >
+            <AlignTrueLogo size="md" />
+          </Link>
+
+          <>
+            {/* Desktop Navigation */}
+            <nav className="desktop-nav" aria-label="Main navigation">
+              <a
+                href="/docs"
+                style={{
+                  fontSize: "0.875rem",
+                  textDecoration: "none",
+                  color: "var(--fg-default)",
+                }}
+              >
+                Docs
+              </a>
+              <a
+                href="https://github.com/AlignTrue/aligntrue"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontSize: "0.875rem",
+                  textDecoration: "none",
+                  color: "var(--fg-default)",
+                }}
+              >
+                GitHub
+              </a>
+              <ThemeToggle />
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="mobile-nav-controls">
+              <ThemeToggle />
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                style={{
+                  padding: "0.5rem",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "0.375rem",
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--fg-default)",
+                }}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                className="mobile-menu-button"
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Menu */}
+      {mobileMenuOpen && (
+        <nav
+          id="mobile-menu"
+          className="mobile-nav"
+          style={{
+            position: "fixed",
+            top: "73px",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "var(--bg-default)",
+            zIndex: 40,
+            padding: "1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            borderTop: "1px solid var(--border-color)",
+          }}
+          aria-label="Mobile navigation"
+        >
+          <a
+            href="/docs"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              padding: "0.75rem 1rem",
+              fontSize: "1rem",
+              textDecoration: "none",
+              color: "var(--fg-default)",
+              borderRadius: "0.375rem",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--bg-muted)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            Docs
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              padding: "0.75rem 1rem",
+              fontSize: "1rem",
+              textDecoration: "none",
+              color: "var(--fg-default)",
+              borderRadius: "0.375rem",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--bg-muted)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            GitHub
+          </a>
+        </nav>
+      )}
+
+      {/* Responsive styles */}
+      <style>{`
+        /* Desktop: Show desktop nav, hide mobile controls */
+        .desktop-nav {
+          display: flex !important;
+          align-items: center;
+          gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+          .desktop-nav {
+            display: none !important;
+          }
+        }
+
+        /* Mobile: Show mobile controls, hide desktop nav */
+        .mobile-nav-controls {
+          display: none;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-nav-controls {
+            display: flex !important;
+          }
+        }
+      `}</style>
+    </>
+  );
+}
+
+/**
+ * ThemeToggle Component
+ *
+ * Button to toggle between light and dark themes.
+ * Handles hydration safely with mounted state.
+ */
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const handleClick = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      style={{
+        padding: "0.375rem",
+        border: "1px solid var(--border-color)",
+        borderRadius: "0.375rem",
+        backgroundColor: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+    </button>
+  );
+}
+
+/**
+ * SiteFooter Component (Homepage-specific)
+ *
+ * Simple center-aligned footer for AlignTrue homepage.
+ * Displays copyright, licensing info, build & status badges, and tagline.
+ */
+function SiteFooter() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer
+      style={{
+        borderTop: "1px solid var(--border-color)",
+        marginTop: "4rem",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "2rem 1.5rem",
+          textAlign: "center",
+          fontSize: "0.875rem",
+          color: "var(--fg-muted)",
+        }}
+      >
+        <p>
+          © {currentYear} AlignTrue.{" "}
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            style={{ textDecoration: "underline" }}
+          >
+            MIT License
+          </a>
+          .
+        </p>
+        <p style={{ marginTop: "0.5rem" }}>Made with ❤️ + hash determinism.</p>
+
+        {/* Build & Status Badges */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "1rem",
+            marginTop: "1.5rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <a
+            href="https://www.npmjs.com/package/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/npm/v/aligntrue?label=npm&color=CB3837&logo=npm"
+              alt="npm version"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/badge/license-MIT-blue?logo=github"
+              alt="MIT License"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/actions"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=tests&logo=github"
+              alt="test status"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -110,8 +471,8 @@ export default function HomePage() {
                   backgroundColor: "var(--bg-default)",
                   border: "1px solid var(--border-color)",
                   borderRadius: "0.75rem",
-                  padding: "2rem",
                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  padding: "2rem",
                 }}
               >
                 <div
@@ -197,8 +558,8 @@ export default function HomePage() {
                   backgroundColor: "var(--bg-default)",
                   border: "1px solid var(--border-color)",
                   borderRadius: "0.75rem",
-                  padding: "2rem",
                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  padding: "2rem",
                 }}
               >
                 <div
@@ -572,30 +933,7 @@ export default function HomePage() {
 
       <SiteFooter />
 
-      {/* Responsive styles and accessibility enhancements */}
-      <style jsx global>{`
-        /* Homepage-specific CSS variable mappings */
-        :root {
-          --bg-default: #ffffff;
-          --bg-muted: #f6f8fa;
-          --border-color: #d1d9e0;
-          --fg-default: #1f2328;
-          --fg-muted: #59636e;
-          --brand-accent: #f5a623;
-          --text-secondary: #59636e;
-          --bg-secondary: #f6f8fa;
-        }
-
-        :root.dark {
-          --bg-default: #0d1117;
-          --bg-muted: #161b22;
-          --border-color: #30363d;
-          --fg-default: #f0f6fc;
-          --fg-muted: #9198a1;
-          --text-secondary: #9198a1;
-          --bg-secondary: #161b22;
-        }
-      `}</style>
+      {/* Component-specific styles */}
       <style jsx>{`
         .skip-to-content {
           position: absolute;

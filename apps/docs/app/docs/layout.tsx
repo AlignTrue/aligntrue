@@ -4,7 +4,97 @@ import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
-import { SiteFooter } from "@aligntrue/ui";
+
+/**
+ * DocsFooter Component (Docs-specific)
+ *
+ * Simple footer for AlignTrue docs site using Nextra theming.
+ * Independent from homepage footer.
+ */
+function DocsFooter() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer
+      style={{
+        borderTop: "1px solid var(--nextra-border, #e5e7eb)",
+        marginTop: "4rem",
+        padding: "2rem 1.5rem",
+        textAlign: "center",
+        fontSize: "0.875rem",
+        color: "var(--nextra-fg-muted, #6b7280)",
+      }}
+    >
+      <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+        <p>
+          © {currentYear} AlignTrue.{" "}
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            style={{ textDecoration: "underline" }}
+          >
+            MIT License
+          </a>
+          .
+        </p>
+        <p style={{ marginTop: "0.5rem" }}>Made with ❤️ + hash determinism.</p>
+
+        {/* Build & Status Badges */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "1rem",
+            marginTop: "1.5rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <a
+            href="https://www.npmjs.com/package/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/npm/v/aligntrue?label=npm&color=CB3837&logo=npm"
+              alt="npm version"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/badge/license-MIT-blue?logo=github"
+              alt="MIT License"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/actions"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=tests&logo=github"
+              alt="test status"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 export default async function DocsLayout({
   children,
@@ -45,7 +135,7 @@ export default async function DocsLayout({
           projectLink="https://github.com/AlignTrue/aligntrue"
         />
       }
-      footer={<SiteFooter />}
+      footer={<DocsFooter />}
       docsRepositoryBase={themeConfig.docsRepositoryBase}
       editLink="Edit this page on GitHub"
       navigation
