@@ -24,6 +24,7 @@ export default async function Page(props: {
   const { wrapper: Wrapper } = useMDXComponents();
 
   return (
+    // @ts-expect-error Nextra 4.6.0 types don't fully support React 19 wrapper component signature
     <Wrapper toc={toc} metadata={metadata} sourceCode={sourceCode}>
       <MDXContent {...props} params={params} />
     </Wrapper>
