@@ -46,7 +46,7 @@ describe("Performance Benchmarks", () => {
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 exporters:
   - cursor
 git:
@@ -54,11 +54,10 @@ git:
 `,
     );
 
-    // Minimal rules file
+    // Minimal rules file (YAML format)
     await fs.writeFile(
-      join(projectDir, ".aligntrue/rules.md"),
-      `\`\`\`aligntrue
-id: perf-test
+      join(projectDir, ".aligntrue/.rules.yaml"),
+      `id: perf-test
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -66,7 +65,6 @@ rules:
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test
-\`\`\`
 `,
     );
 
