@@ -285,6 +285,25 @@
         }
       }
     },
+    "detection": {
+      "type": "object",
+      "description": "Agent detection configuration for automatic discovery during sync",
+      "additionalProperties": false,
+      "properties": {
+        "auto_enable": {
+          "type": "boolean",
+          "description": "Auto-enable detected agents without prompting (default: false)"
+        },
+        "ignored_agents": {
+          "type": "array",
+          "description": "Agents to never prompt about during detection",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "overlays": {
       "type": "object",
       "description": "Overlay configuration for declarative customization of upstream rules (Phase 3.5)",

@@ -239,17 +239,20 @@ aligntrue sync [options]
 | `--accept-agent <name>` | Pull changes from agent back to IR            | -                        |
 | `--no-auto-pull`        | Disable auto-pull for this sync               | `false`                  |
 | `--show-auto-pull-diff` | Show full diff when auto-pull executes        | `false`                  |
+| `--no-detect`           | Skip agent detection                          | `false`                  |
+| `--auto-enable`         | Auto-enable detected agents without prompting | `false`                  |
 | `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **What it does:**
 
 1. Loads configuration from `.aligntrue/config.yaml`
-2. Auto-pulls changes from primary agent (if enabled and no conflicts)
-3. Shows diff summary of what changed during auto-pull
-4. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
-5. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-6. Detects conflicts if multiple files were manually edited
-7. Updates lockfile (team mode only)
+2. Detects new agents in workspace and prompts to enable them (unless `--no-detect`)
+3. Auto-pulls changes from primary agent (if enabled and no conflicts)
+4. Shows diff summary of what changed during auto-pull
+5. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
+6. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+7. Detects conflicts if multiple files were manually edited
+8. Updates lockfile (team mode only)
 
 **Auto-pull behavior:**
 
@@ -260,6 +263,38 @@ Auto-pull automatically imports changes from your primary agent before syncing. 
 - No conflicts detected between primary agent and other agent files
 
 See [Auto-pull guide](/docs/01-guides/00-auto-pull) for details.
+
+**Agent detection:**
+
+Sync automatically detects new AI agents in your workspace by scanning for their files (e.g., `AGENTS.md`, `.windsurf/`, etc.). When a new agent is found, you'll be prompted:
+
+```
+⚠ New agent detected: Windsurf
+  Found: .windsurf/rules.md
+
+? Would you like to enable Windsurf?
+  > Yes, enable and export
+    No, skip for now
+    Never ask about this agent
+```
+
+Responses:
+
+- **Yes** - Adds agent to exporters and syncs rules
+- **No** - Skips for now (asks again next time)
+- **Never** - Adds to ignored list in config
+
+Skip detection with `--no-detect` or auto-enable all detected agents with `--auto-enable`.
+
+Configure behavior in `.aligntrue/config.yaml`:
+
+```yaml
+detection:
+  auto_enable: false # Auto-enable without prompting
+  ignored_agents: # Agents to never prompt about
+    - windsurf
+    - aider-md
+```
 
 **Conflict detection:**
 
@@ -301,6 +336,12 @@ aligntrue sync --no-auto-pull
 
 # Show full diff of auto-pull changes
 aligntrue sync --show-auto-pull-diff
+
+# Skip agent detection
+aligntrue sync --no-detect
+
+# Auto-enable detected agents without prompting
+aligntrue sync --auto-enable
 
 # Pull changes from agent to IR (manual)
 aligntrue sync --accept-agent cursor
@@ -686,6 +727,8 @@ aligntrue adapters <subcommand>
 - `enable <adapter>` - Enable an adapter in config
 - `enable --interactive` - Choose adapters with multiselect UI
 - `disable <adapter>` - Disable an adapter in config
+- `detect` - Manually detect new agents in workspace
+- `ignore <adapter>` - Add agent to ignored list (no detection prompts)
 
 ---
 
@@ -848,6 +891,116 @@ aligntrue adapters disable nonexistent
 
 - `0` - Success
 - `1` - Adapter not enabled, last adapter, or config error
+
+---
+
+#### `aligntrue adapters detect`
+
+Manually detect new agents in your workspace. Shows agents that have files present but are not yet in config and not on the ignored list.
+
+**Usage:**
+
+```bash
+aligntrue adapters detect
+```
+
+**What it does:**
+
+1. Scans workspace for agent-specific files (`.cursor/`, `AGENTS.md`, `.windsurf/`, etc.)
+2. Filters out agents already in config
+3. Filters out agents on the ignored list
+4. Displays new agents with their file paths
+5. Shows commands to enable or ignore each agent
+
+**Example output:**
+
+```
+Detected 2 new agent(s):
+
+  - Windsurf
+    File: .windsurf/rules.md
+  - GitHub Copilot
+    File: AGENTS.md
+
+To enable:
+  aligntrue adapters enable <agent-name>
+
+To ignore:
+  aligntrue adapters ignore <agent-name>
+```
+
+**No new agents:**
+
+```
+✓ No new agents detected
+
+All detected agents are already enabled or ignored.
+```
+
+**Use case:**
+
+Run after installing a new AI coding agent to see if AlignTrue can export to it automatically.
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config not found
+
+---
+
+#### `aligntrue adapters ignore`
+
+Add an agent to the ignored list so it never triggers detection prompts during sync.
+
+**Usage:**
+
+```bash
+aligntrue adapters ignore <agent>
+```
+
+**What it does:**
+
+1. Validates config exists
+2. Checks if agent already ignored (shows message, exits 0)
+3. Adds agent to `detection.ignored_agents` array in config
+4. Saves config atomically
+5. Shows success message
+
+**Examples:**
+
+```bash
+# Ignore an agent
+aligntrue adapters ignore windsurf
+
+# Already ignored
+aligntrue adapters ignore windsurf
+# Output: ✓ Agent already ignored: windsurf
+```
+
+**Example output:**
+
+```
+✓ Added to ignored list: windsurf
+
+This agent will no longer trigger prompts during sync.
+```
+
+**Config result:**
+
+```yaml
+detection:
+  ignored_agents:
+    - windsurf
+```
+
+**Use case:**
+
+Prevent prompts for agents you don't use even though their files exist in your workspace.
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Missing agent name or config error
 
 ---
 

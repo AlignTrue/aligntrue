@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Hybrid agent detection** during sync with interactive prompts for newly discovered agents
+- `aligntrue adapters detect` command to manually check for new agents
+- `aligntrue adapters ignore <agent>` command to suppress detection prompts for specific agents
+- `detection.auto_enable` config to auto-enable detected agents without prompting (useful for CI)
+- `detection.ignored_agents` config array to track agents that should not trigger prompts
+- `--no-detect` and `--auto-enable` flags for sync command
 - Multi-agent import with automatic merge and duplicate handling
 - Auto-fix for rule IDs on import (stores original ID in vendor bag)
 - Backup system enabled by default for sync and import operations

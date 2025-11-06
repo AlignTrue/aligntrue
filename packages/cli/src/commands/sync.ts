@@ -16,6 +16,7 @@ import {
   canImportFromAgent,
   getImportSourcePath,
   importFromAgent,
+  saveMinimalConfig,
 } from "@aligntrue/core";
 import { parseAllowList } from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
@@ -40,6 +41,7 @@ import {
   formatFullDiff,
 } from "@aligntrue/core/sync";
 import { WorkflowDetector } from "../utils/workflow-detector.js";
+import { detectNewAgents } from "../utils/detect-agents.js";
 
 // ANSI color codes for diff output
 const colors = {
@@ -94,6 +96,16 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Show detailed fidelity notes and warnings",
   },
   {
+    flag: "--no-detect",
+    hasValue: false,
+    description: "Skip agent detection",
+  },
+  {
+    flag: "--auto-enable",
+    hasValue: false,
+    description: "Auto-enable detected agents without prompting",
+  },
+  {
     flag: "--help",
     alias: "-h",
     hasValue: false,
@@ -129,6 +141,10 @@ export async function sync(args: string[]): Promise<void> {
         "",
         "  Default direction: IR → agents (rules.md to agent config files)",
         "  Pullback direction: agents → IR (with --accept-agent flag)",
+        "",
+        "Agent Detection:",
+        "  Automatically detects new agents in workspace and prompts to enable them.",
+        "  Use --no-detect to skip detection or --auto-enable to enable without prompting.",
       ],
     });
     return;
@@ -243,6 +259,99 @@ export async function sync(args: string[]): Promise<void> {
     );
   }
 
+  // Step 3.5: Detect new agents (unless --no-detect or --dry-run)
+  const noDetect = (parsed.flags["no-detect"] as boolean | undefined) || false;
+  const autoEnable =
+    (parsed.flags["auto-enable"] as boolean | undefined) || false;
+  const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
+
+  if (!noDetect && !dryRun) {
+    const newAgents = detectNewAgents(
+      cwd,
+      config.exporters || [],
+      config.detection?.ignored_agents || [],
+    );
+
+    if (newAgents.length > 0) {
+      const shouldAutoEnable = autoEnable || config.detection?.auto_enable;
+
+      if (shouldAutoEnable) {
+        // Auto-enable without prompting
+        clack.log.info(
+          `Auto-enabling ${newAgents.length} detected agent(s)...`,
+        );
+        for (const agent of newAgents) {
+          config.exporters!.push(agent.name);
+          clack.log.success(`Enabled: ${agent.displayName}`);
+        }
+        await saveMinimalConfig(config, configPath);
+      } else {
+        // Prompt for each new agent
+        const toEnable: string[] = [];
+        const toIgnore: string[] = [];
+
+        for (const agent of newAgents) {
+          clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
+          clack.log.info(`  Found: ${agent.filePath}`);
+
+          const response = await clack.select({
+            message: `Would you like to enable ${agent.displayName}?`,
+            options: [
+              {
+                value: "yes",
+                label: "Yes, enable and export",
+                hint: "Add to config and sync rules",
+              },
+              {
+                value: "no",
+                label: "No, skip for now",
+                hint: "Ask again next time",
+              },
+              {
+                value: "never",
+                label: "Never ask about this agent",
+                hint: "Add to ignored list",
+              },
+            ],
+          });
+
+          if (clack.isCancel(response)) {
+            clack.cancel("Detection cancelled");
+            break;
+          }
+
+          if (response === "yes") {
+            toEnable.push(agent.name);
+          } else if (response === "never") {
+            toIgnore.push(agent.name);
+          }
+        }
+
+        // Update config with choices
+        if (toEnable.length > 0 || toIgnore.length > 0) {
+          if (toEnable.length > 0) {
+            config.exporters!.push(...toEnable);
+            clack.log.success(
+              `Enabled ${toEnable.length} agent(s): ${toEnable.join(", ")}`,
+            );
+          }
+
+          if (toIgnore.length > 0) {
+            if (!config.detection) config.detection = {};
+            if (!config.detection.ignored_agents)
+              config.detection.ignored_agents = [];
+            config.detection.ignored_agents.push(...toIgnore);
+            clack.log.info(
+              `Ignoring ${toIgnore.length} agent(s): ${toIgnore.join(", ")}`,
+            );
+          }
+
+          await saveMinimalConfig(config, configPath);
+        }
+      }
+    }
+  }
+
   /**
    * Step 4: Auto-pull logic with conflict detection
    *
@@ -265,7 +374,6 @@ export async function sync(args: string[]): Promise<void> {
   let shouldAutoPull = false;
   let autoPullAgent: string | undefined;
   const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
-  const dryRun = (parsed.flags["dry-run"] as boolean | undefined) || false;
   const noAutoPull =
     (parsed.flags["no-auto-pull"] as boolean | undefined) || false;
   const showAutoPullDiff =
