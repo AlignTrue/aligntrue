@@ -42,8 +42,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# cursor
+# AI agents
 .cursor/
+AGENTS.md
 
 # aligntrue local data (user-specific, never commit)
 .aligntrue/telemetry.json
