@@ -23,7 +23,7 @@ export async function auditPlugs(options: {
 }): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue/rules.md";
+    const irPath = options.config || ".aligntrue/.rules.yaml";
     if (!existsSync(irPath)) {
       return {
         success: false,
@@ -152,7 +152,7 @@ export async function resolvePlugs(options: {
 }): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue/rules.md";
+    const irPath = options.config || ".aligntrue/.rules.yaml";
     if (!existsSync(irPath)) {
       return {
         success: false,
@@ -292,7 +292,7 @@ export async function setPlug(
 ): Promise<{ success: boolean; message?: string }> {
   try {
     // Load IR
-    const irPath = options.config || ".aligntrue/rules.md";
+    const irPath = options.config || ".aligntrue/.rules.yaml";
     if (!existsSync(irPath)) {
       return {
         success: false,
