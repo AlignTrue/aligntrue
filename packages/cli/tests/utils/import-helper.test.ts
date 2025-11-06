@@ -288,7 +288,7 @@ Always write tests for new features.
 Use camelCase for variables.
 `;
 
-      writeFileSync(join(tmpDir, "claude.md"), claudeMdContent, "utf-8");
+      writeFileSync(join(tmpDir, "CLAUDE.md"), claudeMdContent, "utf-8");
 
       const result = await executeImport("claude-md", tmpDir, {
         showCoverage: false,
@@ -312,7 +312,7 @@ Use camelCase for variables.
 No hardcoded secrets.
 `;
 
-      writeFileSync(join(tmpDir, "Claude.md"), claudeMdContent, "utf-8");
+      writeFileSync(join(tmpDir, "CLAUDE.md"), claudeMdContent, "utf-8");
 
       const result = await executeImport("claude-md", tmpDir, {
         showCoverage: false,
