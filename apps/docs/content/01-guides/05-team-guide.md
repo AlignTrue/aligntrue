@@ -136,7 +136,7 @@ git push
 
 **What to commit:**
 
-- `.aligntrue/rules.md` - Rules configuration
+- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
 - `.aligntrue/config.yaml` - Team configuration
 - `.aligntrue/allow.yaml` - Approved sources
 - `.aligntrue.lock.json` - Lockfile with pinned hashes
@@ -238,7 +238,7 @@ git push
 cd ~/projects/team-project
 aligntrue init
 
-# Add to .aligntrue/rules.md:
+# Add to .aligntrue/.rules.yaml:
 sources:
   - git: https://github.com/org/team-standards
     ref: v1.0.0
@@ -261,7 +261,7 @@ git commit -m "Add team standards"
 **Setup:**
 
 ```yaml
-# .aligntrue/rules.md
+# .aligntrue/.rules.yaml
 sources:
   - git: https://github.com/community/typescript-pack
     ref: v1.0.0
@@ -284,7 +284,7 @@ overlays:
 
 ```bash
 # 1. Team lead adds overlays
-# (edit .aligntrue/rules.md)
+# (edit .aligntrue/.rules.yaml)
 
 # 2. Sync and test
 aligntrue sync
@@ -326,7 +326,7 @@ company-monorepo/
 **Configuration:**
 
 ```yaml
-# .aligntrue/rules.md
+# .aligntrue/.rules.yaml
 sources:
   - git: https://github.com/company/base-standards
     ref: v2.0.0

@@ -86,8 +86,8 @@ aligntrue init [options]
 1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
 2. Detects existing agent rules and offers to import them
 3. Creates `.aligntrue/config.yaml` with detected agents enabled
-4. Creates `.aligntrue/rules.md` (from import or starter template)
-5. Auto-configures workflow mode based on initialization choice
+4. Creates `.aligntrue/.rules.yaml` (internal IR) and `AGENTS.md` (user-editable)
+5. Auto-configures sync settings based on initialization choice
 
 **Interactive prompts:**
 
@@ -152,12 +152,12 @@ aligntrue import <agent> [options]
 
 **Flags:**
 
-| Flag            | Description                                   | Default |
-| --------------- | --------------------------------------------- | ------- |
-| `--coverage`    | Show import coverage report                   | `true`  |
-| `--no-coverage` | Skip coverage report                          | `false` |
-| `--write`       | Write imported rules to `.aligntrue/rules.md` | `false` |
-| `--dry-run`     | Preview without writing files                 | `false` |
+| Flag            | Description                                      | Default |
+| --------------- | ------------------------------------------------ | ------- |
+| `--coverage`    | Show import coverage report                      | `true`  |
+| `--no-coverage` | Skip coverage report                             | `false` |
+| `--write`       | Write imported rules to `.aligntrue/.rules.yaml` | `false` |
+| `--dry-run`     | Preview without writing files                    | `false` |
 
 **What it does:**
 
@@ -165,7 +165,7 @@ aligntrue import <agent> [options]
 2. Parses agent format to IR (Intermediate Representation)
 3. Generates coverage report showing field-level mapping
 4. Calculates coverage percentage and confidence level
-5. Optionally writes rules to `.aligntrue/rules.md`
+5. Optionally writes rules to `.aligntrue/.rules.yaml`
 
 **Coverage Report:**
 
@@ -222,7 +222,7 @@ See [Import Workflow Guide](/docs/04-reference/import-workflow) for step-by-step
 
 ### `aligntrue sync`
 
-Sync rules between `.aligntrue/rules.md` and your AI coding agents with automatic change detection.
+Sync rules between your primary agent and all configured AI coding agents with automatic change detection.
 
 **Usage:**
 
@@ -246,9 +246,9 @@ aligntrue sync [options]
 1. Loads configuration from `.aligntrue/config.yaml`
 2. Auto-pulls changes from primary agent (if enabled and no conflicts)
 3. Shows diff summary of what changed during auto-pull
-4. Parses rules from `.aligntrue/rules.md`
+4. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
 5. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-6. Detects conflicts if files were manually edited
+6. Detects conflicts if multiple files were manually edited
 7. Updates lockfile (team mode only)
 
 **Auto-pull behavior:**
@@ -257,22 +257,22 @@ Auto-pull automatically imports changes from your primary agent before syncing. 
 
 - `sync.auto_pull` is `true` in config (default for solo mode)
 - Primary agent is configured (auto-detected on init)
-- No conflicts detected between rules.md and agent files
+- No conflicts detected between primary agent and other agent files
 
 See [Auto-pull guide](/docs/01-guides/00-auto-pull) for details.
 
 **Conflict detection:**
 
-If both rules.md and agent files were modified since last sync, you'll see:
+If multiple agent files were modified since last sync, you'll see:
 
 ```
 ⚠ Conflict detected:
-  - You edited .aligntrue/rules.md
+  - You edited AGENTS.md (primary agent)
   - Changes also found in .cursor/rules/aligntrue.mdc
 
 ? How would you like to resolve this conflict?
-  > Keep my edits to rules.md (skip auto-pull)
-    Accept changes from cursor
+  > Keep my edits to AGENTS.md (skip auto-pull)
+    Accept changes from cursor and pull to AGENTS.md
     Abort sync and review manually
 ```
 
@@ -368,7 +368,7 @@ aligntrue check [options]
 
 **What it validates:**
 
-1. **Schema validation** - `.aligntrue/rules.md` matches JSON Schema
+1. **Schema validation** - `.aligntrue/.rules.yaml` matches JSON Schema
 2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
 
 **Examples:**

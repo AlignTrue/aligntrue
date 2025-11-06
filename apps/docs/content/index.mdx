@@ -30,7 +30,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 npx aligntrue init
 ```
 
-→ Auto-detects agents, imports existing rules or scaffolds new ones into `.aligntrue/rules.md`
+→ Auto-detects agents, imports rules, or creates `AGENTS.md` starter template
 
 ### 2. Align
 
@@ -81,10 +81,10 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 
 ## How it works
 
-1. **Write rules** in `.aligntrue/rules.md` using simple markdown
-2. **Run sync** - AlignTrue detects installed agents and generates optimized formats
+1. **Write rules** in `AGENTS.md` or any agent format (no YAML required)
+2. **Run sync** - AlignTrue updates internal IR and syncs to all configured agents
 3. **Agent-specific exports** - Each agent gets its native format (.mdc, .json, .yml, etc.)
-4. **Stay aligned** - Edit markdown or agent files; sync keeps everything consistent
+4. **Stay aligned** - Edit agent files; sync keeps everything consistent
 
 ## Common workflows
 
@@ -104,8 +104,8 @@ aligntrue check   # Validate in CI
 
 **Two-way sync:**
 
-- Edit `.aligntrue/rules.md` → sync to agents (default)
-- Edit agent files → auto-pull to rules.md (optional, enabled by default)
+- Edit `AGENTS.md` or agent files → sync to other agents (default)
+- Auto-pull enabled for `primary_agent` by default
 
 See [workflows guide](/docs/01-guides/01-workflows) for details.
 

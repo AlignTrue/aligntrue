@@ -18,10 +18,16 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 ## Quickstart
 
 ```bash
-npx aligntrue init  # Creates AGENTS.md with starter rules
+npx aligntrue init  # Auto-detects agents, imports existing rules OR creates AGENTS.md
 # Edit AGENTS.md to customize
 aligntrue sync      # Syncs to all your agents
 ```
+
+**What `init` does:**
+
+- Detects existing agents (Cursor, Copilot, Claude, etc.)
+- **If rules found:** Offers to import them into AlignTrue
+- **If no rules:** Creates `AGENTS.md` with starter template
 
 **Installation options:**
 
@@ -95,8 +101,8 @@ aligntrue check   # Validate in CI
 
 **Two-way sync:**
 
-- Edit `.aligntrue/rules.md` → sync to agents (default)
-- Edit agent files → auto-pull to rules.md (optional, enabled by default)
+- Edit `AGENTS.md` or agent files → sync keeps everything aligned
+- Auto-pull enabled by default (pulls changes from primary agent before syncing)
 
 See [workflows guide](https://aligntrue.ai/docs/01-guides/01-workflows) for details.
 

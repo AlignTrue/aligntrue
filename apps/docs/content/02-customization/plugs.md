@@ -338,7 +338,7 @@ aligntrue plugs set test.cmd "pnpm test"
 ```
 ✓ Set plug fill: test.cmd = "pnpm test"
 
-Updated: .aligntrue/rules.md
+Updated: .aligntrue/.rules.yaml
 
 Next step:
   Run: aligntrue sync
@@ -464,12 +464,12 @@ plugs:
 **Scope-specific fills:**
 
 ```yaml
-# apps/web/.aligntrue/rules.md
+# apps/web/.aligntrue/.rules.yaml
 plugs:
   fills:
     test.cmd: "pnpm test:web"
 
-# services/api/.aligntrue/rules.md
+# services/api/.aligntrue/.rules.yaml
 plugs:
   fills:
     test.cmd: "pytest -q"
@@ -569,7 +569,7 @@ aligntrue plugs set config.file "config/production.json"  # ✓
 aligntrue plugs set correct.key "value"
 
 # Option 2: Remove orphan fill
-# Edit .aligntrue/rules.md and remove the fill
+# Edit .aligntrue/.rules.yaml and remove the fill
 ```
 
 ### Multi-line values
@@ -666,7 +666,7 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 1. **Set fills early** - Run `aligntrue plugs audit` after init
 2. **Use stack packs** - Let stack packs provide sensible defaults
 3. **Override selectively** - Only set fills when defaults don't work
-4. **Document decisions** - Add comments in rules.md explaining custom fills
+4. **Document decisions** - Add comments in .aligntrue/.rules.yaml explaining custom fills
 
 ### For teams
 

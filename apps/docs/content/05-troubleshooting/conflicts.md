@@ -1,6 +1,6 @@
 # Resolving conflicts
 
-Conflicts occur when both your rules.md and agent files have been modified since the last sync. This guide helps you understand and resolve them effectively.
+Conflicts occur when multiple agent files (or your primary agent and other agents) have been modified since the last sync. This guide helps you understand and resolve them effectively.
 
 ## Understanding conflicts
 
@@ -17,51 +17,51 @@ A conflict is detected when:
 
 ```
 ⚠ Conflict detected:
-  - You edited .aligntrue/rules.md
+  - You edited AGENTS.md (primary agent)
   - Changes also found in .cursor/rules/aligntrue.mdc
 
 ? How would you like to resolve this conflict?
-  > Keep my edits to rules.md (skip auto-pull)
-    Accept changes from cursor
+  > Accept changes from primary agent
+    Keep other agent changes (skip auto-pull)
     Abort sync and review manually
 ```
 
 ## Resolution strategies
 
-### 1. Keep IR edits (skip auto-pull)
+### 1. Accept primary agent (auto-pull)
 
 **When to use:**
 
-- You manually edited rules.md
-- Your rules.md changes are more important
-- You want to preserve your work
+- You edited your primary agent (e.g., AGENTS.md)
+- Your primary agent changes are more important
+- You want to sync to all other agents
 
 **What happens:**
 
-- Auto-pull is skipped
-- Your rules.md edits are kept
-- Sync proceeds IR → agents (your changes overwrite agent files)
+- Auto-pull pulls from primary agent
+- Your primary agent edits are kept
+- Sync proceeds with primary agent as source (pushes to all agents)
 
 ```bash
 # Or use flag to skip auto-pull entirely
 aligntrue sync --no-auto-pull
 ```
 
-### 2. Accept agent changes
+### 2. Keep non-primary agent changes (skip auto-pull)
 
 **When to use:**
 
-- Agent file edits are more recent or important
-- You want to pull those changes into rules.md
-- You're okay with rules.md being overwritten
+- You edited a non-primary agent (e.g., Cursor) and it's more important
+- You want to pull those changes to the IR
+- You're okay with primary agent being overwritten
 
 **What happens:**
 
-- Agent changes are pulled into rules.md
-- Your rules.md edits are overwritten
-- Sync proceeds normally
+- Auto-pull is skipped
+- Non-primary agent changes are preserved
+- Manual resolution needed before next sync
 
-**Note:** Consider backing up first if your rules.md edits matter.
+**Note:** Consider backing up first if your agent changes matter.
 
 ### 3. Abort and review manually
 
@@ -87,28 +87,28 @@ aligntrue backup create --notes "Before manual conflict resolution"
 
 ### Step 2: Review changes
 
-Compare the two files:
+Compare the files:
 
 ```bash
-# View rules.md
-cat .aligntrue/rules.md
+# View primary agent (AGENTS.md)
+cat AGENTS.md
 
 # View agent file (example: Cursor)
 cat .cursor/rules/aligntrue.mdc
 
-# Or use diff tool
-diff .aligntrue/rules.md <(aligntrue export cursor --dry-run)
+# Or use dry-run to preview
+aligntrue sync --dry-run
 ```
 
 ### Step 3: Choose resolution
 
-**Option A: Keep rules.md, discard agent changes**
+**Option A: Keep primary agent, discard other agent changes**
 
 ```bash
 aligntrue sync --no-auto-pull
 ```
 
-**Option B: Keep agent changes, discard rules.md**
+**Option B: Keep other agent changes, pull to IR**
 
 ```bash
 aligntrue sync --accept-agent cursor
@@ -116,7 +116,7 @@ aligntrue sync --accept-agent cursor
 
 **Option C: Merge manually**
 
-1. Edit rules.md to include both changes
+1. Edit AGENTS.md or agent file to include both changes
 2. Run sync without auto-pull:
    ```bash
    aligntrue sync --no-auto-pull
@@ -148,30 +148,30 @@ See [Workflows guide](/docs/01-guides/01-workflows) for details.
 
 ### 2. Edit only one source
 
-**IR-source workflow:**
+**Manual Review workflow:**
 
-- Edit: `.aligntrue/rules.md`
-- Don't edit: Agent files
-- Pull manually: `aligntrue sync --accept-agent cursor`
+- Edit: AGENTS.md or your chosen agent format
+- Auto-pull: Disabled for explicit control
+- Sync: Use `aligntrue sync --dry-run` to preview
 
-**Native-format workflow:**
+**AGENTS.md (Primary) workflow:**
 
-- Edit: Agent files (`.cursor/rules/*.mdc`)
-- Don't edit: `.aligntrue/rules.md`
-- Let auto-pull handle it
+- Edit: AGENTS.md or any agent file
+- Auto-pull: Enabled for automatic syncing
+- Sync: Automatic resolution by primary_agent setting
 
 ### 3. Sync frequently
 
 Run `aligntrue sync` often to keep files in sync:
 
 ```bash
-# After editing rules
-vim .aligntrue/rules.md
+# After editing AGENTS.md
+vim AGENTS.md
 aligntrue sync
 
-# After editing agent files (if native-format workflow)
+# After editing agent files (AGENTS.md Primary workflow)
 # Edit in Cursor...
-aligntrue sync
+aligntrue sync  # auto-pull handles it
 ```
 
 ### 4. Use file watchers (advanced)
@@ -192,7 +192,7 @@ You edited rules.md, then forgot and also edited Cursor rules.
 3. Set workflow mode to prevent future accidents
 
 ```bash
-ls -la .aligntrue/rules.md
+ls -la .aligntrue/.rules.yaml
 ls -la .cursor/rules/aligntrue.mdc
 
 # Keep newer file's changes
@@ -226,7 +226,7 @@ You tested multiple rule variations in Cursor, want to keep some but not all.
 
 ```bash
 aligntrue backup create
-vim .aligntrue/rules.md  # Add desired rules from agent
+vim AGENTS.md            # Add desired rules from agent
 aligntrue sync --no-auto-pull
 ```
 

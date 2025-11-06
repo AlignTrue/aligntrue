@@ -1,16 +1,16 @@
 # Auto-pull behavior
 
-Auto-pull is a feature that automatically imports changes from your primary agent (like Cursor) before syncing rules. This keeps your rules.md file in sync with any edits made directly to agent configuration files.
+Auto-pull is a feature that automatically imports changes from your primary agent (like Cursor or AGENTS.md) before syncing rules. This keeps all your agent files in sync when you edit rules in your preferred format.
 
 ## How auto-pull works
 
 When you run `aligntrue sync`, the CLI:
 
 1. Checks if auto-pull is enabled in your config
-2. Detects if both rules.md and your agent files have been modified since the last sync
-3. If no conflict exists, automatically pulls changes from the agent
+2. Detects if both the primary agent and other agent files have been modified since the last sync
+3. If no conflict exists, automatically pulls changes from the primary agent
 4. Shows you a brief summary of what changed
-5. Proceeds with the normal sync (IR → agents)
+5. Proceeds with the normal sync (IR → all agents)
 
 ## When auto-pull runs
 
@@ -27,7 +27,7 @@ Auto-pull runs automatically when:
 AlignTrue uses timestamp-based conflict detection to prevent data loss:
 
 - Stores the last sync timestamp in `.aligntrue/.last-sync`
-- Compares modification times of rules.md and agent files
+- Compares modification times of primary agent and other agent files
 - If both have been modified since last sync, shows a conflict prompt
 
 ### Conflict resolution strategies
@@ -36,16 +36,16 @@ When a conflict is detected, you'll see:
 
 ```
 ⚠ Conflict detected:
-  - You edited .aligntrue/rules.md
+  - Primary agent (AGENTS.md) was modified
   - Changes also found in .cursor/rules/aligntrue.mdc
 
 ? How would you like to resolve this conflict?
-  > Keep my edits to rules.md (skip auto-pull)
-    Accept changes from cursor
+  > Accept changes from primary agent
+    Keep other agent changes (skip auto-pull)
     Abort sync and review manually
 ```
 
-Your choice depends on your workflow mode (see [Workflows guide](/docs/01-guides/01-workflows)).
+Your choice depends on your configured primary_agent (see [Workflows guide](/docs/01-guides/01-workflows)).
 
 ## Configuration
 
@@ -66,38 +66,34 @@ Set your preferred workflow to avoid conflict prompts:
 
 ```yaml
 sync:
-  workflow_mode: "native_format" # auto | ir_source | native_format
+  primary_agent: "agents-md" # or "cursor", "claude", etc.
+  auto_pull: true # true | false
 ```
 
-Modes:
+Options:
 
-- `auto`: Prompt on each conflict (default)
-- `ir_source`: Always keep rules.md edits, never auto-pull
-- `native_format`: Always accept agent changes, auto-pull enabled
+- `auto_pull: true`: Always accept primary agent changes (default for solo)
+- `auto_pull: false`: Always review before syncing (Manual Review mode)
+- `primary_agent`: Which agent to pull from during auto-pull
 
 ## Choosing your workflow mode
 
 ### Decision guide
 
-**Use `ir_source` if:**
+**Use `auto_pull: false` (Manual Review) if:**
 
-- You prefer editing `.aligntrue/rules.md` directly in markdown
-- You want explicit control over sync direction
-- You're comfortable with markdown/YAML syntax
-- You want rules.md as single source of truth
+- You want explicit control over when changes sync to all agents
+- You're in a team and need to review changes before they deploy
+- You want to preview changes with `--dry-run` first
+- You prefer explicit confirmation for each sync
 
-**Use `native_format` if:**
+**Use `auto_pull: true` (AGENTS.md Primary) if:**
 
-- You prefer editing `.cursor/*.mdc` files directly in your IDE
+- You're a solo developer and want minimal friction
+- You prefer editing in your agent's native format (Cursor, AGENTS.md, etc.)
 - You want seamless two-way sync without prompts
-- You're migrating from existing Cursor rules
-- You edit rules while coding in Cursor
-
-**Use `auto` (default) if:**
-
-- You're still exploring which workflow fits you
-- You want to be prompted when conflicts occur
-- You're not sure which source you'll edit more often
+- You're migrating from existing agent rules
+- Changes should flow automatically to all agents
 
 ### Setting your workflow mode
 
@@ -105,10 +101,11 @@ Edit `.aligntrue/config.yaml`:
 
 ```yaml
 sync:
-  workflow_mode: "ir_source" # or "native_format" or "auto"
+  primary_agent: "agents-md" # Your preferred editing format
+  auto_pull: true # or false for Manual Review
 ```
 
-Once set, AlignTrue will remember your preference and avoid conflict prompts.
+Once set, AlignTrue will remember your preference and handle conflicts accordingly.
 
 ### Show diff summaries
 
@@ -162,18 +159,19 @@ Check:
 
 This happens when both files are modified between syncs. Solutions:
 
-1. **Choose a workflow mode** to avoid prompts (see [Workflows guide](/docs/01-guides/01-workflows))
-2. **Edit only one source**: Either rules.md OR agent files, not both
-3. **Use `--no-auto-pull`** when you know you've edited rules.md manually
+1. **Choose a configuration** (see [Workflows guide](/docs/01-guides/01-workflows))
+2. **Edit consistently**: Pick your primary agent and edit there most of the time
+3. **Use `--no-auto-pull`** flag when you want to skip auto-pull for one sync
 
 ### Missing changes after sync
 
-If you edited an agent file but don't see changes in rules.md:
+If you edited an agent file but don't see changes synced to other agents:
 
 1. Check if auto-pull actually ran (look for "Auto-pull from..." message)
 2. Verify agent file format is valid (try `aligntrue check`)
 3. Look for validation errors in the sync output
 4. Check `.aligntrue/.last-sync` timestamp to confirm sync completed
+5. Verify the agent is not the primary_agent (primary sources don't auto-pull to themselves)
 
 ### Diff not showing
 

@@ -23,24 +23,26 @@ You copy-paste rules between projects. You maintain separate configs for each ag
 **Write rules once. Sync everywhere.**
 
 ```bash
-# One source of truth
-.aligntrue/rules.md
+# Edit rules in your preferred format
+# (AGENTS.md shown, or any agent file)
+AGENTS.md
 
 # Syncs to all your agents
 aligntrue sync
 
 # Result:
-✓ .cursor/rules/aligntrue.mdc
-✓ AGENTS.md
-✓ .vscode/mcp.json
-✓ .aider.conf.yml
+✓ .aligntrue/.rules.yaml (internal IR)
+✓ .cursor/rules/aligntrue.mdc (synced)
+✓ AGENTS.md (synced)
+✓ .vscode/mcp.json (synced)
+✓ .aider.conf.yml (synced)
 ```
 
 ## Key benefits
 
-### 1. Single source of truth
+### 1. Edit in your preferred format
 
-Edit rules in one place (`.aligntrue/rules.md`). AlignTrue generates agent-specific formats automatically.
+Write rules in `AGENTS.md`, Cursor's `.mdc`, or any agent format. AlignTrue keeps everything synchronized automatically.
 
 ### 2. Consistent behavior
 
