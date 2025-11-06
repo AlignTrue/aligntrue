@@ -161,7 +161,7 @@ AlignTrue operates **offline-first** and only makes network calls when explicitl
 
 By default, AlignTrue makes **zero network requests**:
 
-- ✅ Local rules (`.aligntrue/rules.md`)
+- ✅ Local rules (`.aligntrue/.rules.yaml`)
 - ✅ Telemetry storage (local-only)
 - ✅ All sync operations
 - ✅ All exporter outputs

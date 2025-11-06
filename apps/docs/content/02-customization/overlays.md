@@ -14,7 +14,7 @@ Overlays let you customize third-party packs without forking. Change severity, a
 **Scenario:** You use `@acme/standards` but want to treat one check as an error.
 
 ```yaml
-# .aligntrue/rules.md
+# .aligntrue/.rules.yaml
 sources:
   - git: https://github.com/acme/standards
     ref: v1.2.0
@@ -363,7 +363,7 @@ overlays:
 ```bash
 # 1. Team lead adds overlays
 # 2. Commit to git
-git add .aligntrue/rules.md
+git add .aligntrue/.rules.yaml
 git commit -m "chore: Enforce stricter console.log and any-type rules"
 
 # 3. Team members pull and sync

@@ -35,7 +35,7 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 
 exporters:
   - cursor # Cursor IDE
@@ -45,13 +45,13 @@ exporters:
   - windsurf-md # Windsurf
 
 sync:
-  workflow_mode: "ir_source" # Edit rules.md as source
+  primary_agent: "agents-md" # Use AGENTS.md as source
   auto_pull: false # Disable for multi-agent
 ```
 
 ### Workflow
 
-1. **Edit rules** in `.aligntrue/rules.md`:
+1. **Edit rules** in `AGENTS.md` or agent files:
 
 ````markdown
 # My project rules
@@ -112,7 +112,7 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 
 exporters:
   - cursor # Primary editor
@@ -121,15 +121,14 @@ exporters:
   - agents-md # Universal fallback
 
 sync:
-  workflow_mode: "ir_source"
+  primary_agent: "cursor"
   auto_pull: false
-  primary_agent: "cursor" # If you enable auto-pull later
 
 git:
   mode: commit # Commit all agent files
 ```
 
-**Result:** All three agents get the same rules. Edit `.aligntrue/rules.md` once, sync to all.
+**Result:** All three agents get the same rules. Edit `AGENTS.md` once, sync to all.
 
 ### Example 2: VS Code ecosystem
 
@@ -141,7 +140,7 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/.rules.yaml
 
 exporters:
   - vscode-mcp # VS Code MCP config
@@ -150,7 +149,7 @@ exporters:
   - cline # Cline extension
 
 sync:
-  workflow_mode: "ir_source"
+  primary_agent: "agents-md"
   auto_pull: false
 
 git:
@@ -197,23 +196,23 @@ git:
 
 ## Choosing your workflow
 
-### IR-source workflow (recommended)
+### Manual Review workflow (recommended)
 
 **Best for multi-agent setups.**
 
-Edit `.aligntrue/rules.md` as your single source of truth. All agents get updates on sync.
+Edit `AGENTS.md` or any agent file as your source. Review changes before syncing to other agents.
 
 **Configuration:**
 
 ```yaml
 sync:
-  workflow_mode: "ir_source"
+  primary_agent: "agents-md"
   auto_pull: false # Important: disable for multi-agent
 ```
 
 **Why this works:**
 
-- Single source of truth (rules.md)
+- Single source of truth (AGENTS.md or agent files)
 - No conflicts between agents
 - Clear edit → sync → deploy flow
 - Works with any number of agents
@@ -222,29 +221,31 @@ sync:
 
 ```bash
 # 1. Edit rules
-vi .aligntrue/rules.md
+vi AGENTS.md
 
-# 2. Sync to all agents
+# 2. Review changes (dry-run)
+aligntrue sync --dry-run
+
+# 3. Sync to all agents
 aligntrue sync
 
-# 3. Commit changes
+# 4. Commit changes
 git add .aligntrue/ .cursor/ AGENTS.md
 git commit -m "Update rules"
 ```
 
-### Native-format workflow (advanced)
+### Agent-native workflow (advanced)
 
 **Use with caution for multi-agent setups.**
 
-Edit agent files directly. AlignTrue pulls changes back to rules.md.
+Edit agent files directly. AlignTrue pulls changes back to internal IR.
 
 **Configuration:**
 
 ```yaml
 sync:
-  workflow_mode: "native_format"
-  auto_pull: true
   primary_agent: "cursor" # Only one agent for auto-pull
+  auto_pull: true
 ```
 
 **Limitations with multiple agents:**

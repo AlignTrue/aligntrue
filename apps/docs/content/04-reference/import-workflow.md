@@ -121,7 +121,7 @@ This generates a detailed coverage report without writing any files.
   Next Steps:
     1. Review coverage above
     2. Run with --write to import rules
-    3. Verify output in .aligntrue/rules.md
+    3. Verify output in .aligntrue/.rules.yaml
 ```
 
 ### 3. Review coverage and vendor metadata
@@ -166,14 +166,14 @@ Once you're satisfied with the coverage report:
 aligntrue import cursor --write
 ```
 
-This creates `.aligntrue/rules.md` with imported rules in AlignTrue's literate markdown format.
+This creates `.aligntrue/.rules.yaml` with imported rules in the internal IR format.
 
 **Example output:**
 
 ```
 ◇ Importing 3 rules from Cursor...
 │
-◆ Wrote .aligntrue/rules.md:
+◆ Wrote .aligntrue/.rules.yaml:
 │  • 3 rules imported
 │  • Vendor metadata preserved
 │  • Ready for sync
@@ -189,7 +189,7 @@ Use `--dry-run` to preview output without creating files:
 aligntrue import cursor --write --dry-run
 ```
 
-Shows the markdown that would be written to `.aligntrue/rules.md`.
+Shows the YAML that would be written to `.aligntrue/.rules.yaml`.
 
 ### 5. Verify and sync
 
@@ -297,7 +297,7 @@ cursor:
 Avoid 'any' type...
 ```
 
-Imported to AlignTrue IR (`.aligntrue/rules.md`):
+Imported to AlignTrue IR (`.aligntrue/.rules.yaml`):
 
 ```yaml
 id: my-project
@@ -446,7 +446,7 @@ Full round-trip validation (import → edit → export → reimport) will be add
 
 ### Conflict resolution
 
-Import currently overwrites existing `.aligntrue/rules.md`:
+Import currently overwrites existing `.aligntrue/.rules.yaml`:
 
 - ⚠️ No merge with existing rules
 - ⚠️ No conflict detection

@@ -8,8 +8,8 @@ Complete reference for AlignTrue's two-way sync system, conflict resolution, and
 
 AlignTrue synchronizes rules between three locations:
 
-1. **Intermediate Representation (IR)** - `.aligntrue/rules.md` (canonical source)
-2. **AI Coding Agents** - `.cursor/*.mdc`, `AGENTS.md`, `.vscode/mcp.json`, etc.
+1. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated)
+2. **User-Editable Files** - `AGENTS.md`, `.cursor/*.mdc`, `.vscode/mcp.json`, etc.
 3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only)
 
 The sync engine maintains consistency while allowing both IR→agent and agent→IR flows.
@@ -23,13 +23,13 @@ The sync engine maintains consistency while allowing both IR→agent and agent�
 **Flow:**
 
 ```
-.aligntrue/rules.md → Parse → Validate → Export → Agent files
+IR (.aligntrue/.rules.yaml) → Parse → Validate → Export → Agent files
 ```
 
 **What happens:**
 
 1. Load configuration from `.aligntrue/config.yaml`
-2. Parse rules from `.aligntrue/rules.md` (markdown or YAML)
+2. Parse rules from `.aligntrue/.rules.yaml` (internal IR)
 3. Validate against JSON Schema
 4. Resolve scopes and merge rules
 5. Export to each enabled agent (Cursor, AGENTS.md, etc.)
@@ -105,17 +105,17 @@ sync:
 **Flow:**
 
 ```
-Agent files → Parse → Detect conflicts → Resolve → .aligntrue/rules.md
+Agent files → Parse → Detect conflicts → Resolve → IR (.aligntrue/.rules.yaml)
 ```
 
 **What happens:**
 
-1. Load existing IR from `.aligntrue/rules.md`
+1. Load existing IR from `.aligntrue/.rules.yaml`
 2. Parse agent files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
 3. Detect conflicts (field-level comparison in team mode, auto-accept in solo mode)
 4. Prompt for resolution (interactive mode)
 5. Apply changes to IR
-6. Write updated `.aligntrue/rules.md`
+6. Write updated `.aligntrue/.rules.yaml`
 
 **Example:**
 
@@ -132,7 +132,7 @@ See [Import Workflow Guide](/docs/04-reference/import-workflow) for detailed mig
 **Output:**
 
 ```
-◇ Loading IR from .aligntrue/rules.md...
+◇ Loading IR from .aligntrue/.rules.yaml...
 ◇ Parsing Cursor rules from .cursor/rules/*.mdc...
 ◇ Detecting conflicts...
 │
@@ -152,7 +152,7 @@ See [Import Workflow Guide](/docs/04-reference/import-workflow) for detailed mig
 
 ### IR wins by default
 
-**.aligntrue/rules.md is the authoritative source.**
+**.aligntrue/.rules.yaml is the internal authority.**
 
 If you edit both IR and agent files:
 
@@ -161,9 +161,9 @@ If you edit both IR and agent files:
 
 **Recommended workflow:**
 
-1. Edit `.aligntrue/rules.md`
+1. Edit `AGENTS.md` or agent files
 2. Run `aligntrue sync`
-3. Agent files updated automatically
+3. All agent files updated automatically
 
 ### Explicit pullback required
 
@@ -278,7 +278,7 @@ Choice:
 - Stores hash in `.aligntrue/.checksums.json`
 - Compares before overwriting
 
-**Best practice:** Edit `.aligntrue/rules.md`, not generated files.
+**Best practice:** Edit `AGENTS.md` or agent files, not generated exports.
 
 ---
 

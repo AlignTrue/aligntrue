@@ -180,8 +180,7 @@ aligntrue backup cleanup
 Backups include files from the `.aligntrue/` directory:
 
 - `.aligntrue/config.yaml` - Configuration
-- `.aligntrue/rules.md` - Rules (if exists)
-- `.aligntrue/rules.yaml` - Rules (if exists)
+- `.aligntrue/.rules.yaml` - Internal IR
 - `.aligntrue/privacy-consent.json` - Privacy settings (if exists)
 - Any other files in `.aligntrue/` directory
 
@@ -202,11 +201,11 @@ Backups are stored locally in `.aligntrue/.backups/`:
     2025-10-29T14-30-00-000/
       manifest.json
       config.yaml
-      rules.md
+      .rules.yaml
     2025-10-29T12-15-45-123/
       manifest.json
       config.yaml
-      rules.md
+      .rules.yaml
 ```
 
 ### Manifest format
@@ -217,7 +216,7 @@ Each backup includes a `manifest.json`:
 {
   "version": "1",
   "timestamp": "2025-10-29T14-30-00-000",
-  "files": ["config.yaml", "rules.md"],
+  "files": ["config.yaml", ".rules.yaml"],
   "created_by": "manual",
   "notes": "Before experimental changes"
 }

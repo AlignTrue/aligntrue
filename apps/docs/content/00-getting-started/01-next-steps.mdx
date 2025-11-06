@@ -77,7 +77,7 @@ Use nodemon to watch for changes:
 **Run nodemon:**
 
 ```bash
-nodemon --watch .aligntrue/rules.md --exec "aligntrue sync"
+nodemon --watch AGENTS.md --exec "aligntrue sync"
 ```
 
 **Platform-specific guides:** [File Watcher Setup](/docs/04-reference/file-watcher-setup)
@@ -246,7 +246,7 @@ aligntrue import cursor --write
 ```bash
 # Daily workflow
 cd your-project
-vim .aligntrue/rules.md  # Edit rules
+vim AGENTS.md           # Edit rules
 aligntrue sync           # Update agents
 git add .
 git commit -m "Update project rules"

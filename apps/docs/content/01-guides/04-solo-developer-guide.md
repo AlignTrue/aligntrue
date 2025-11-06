@@ -79,7 +79,7 @@ cursor .
 
 **What happened:**
 
-- Created `.aligntrue/rules.md` with base rules
+- Created `.aligntrue/.rules.yaml` (internal) and `AGENTS.md` (user-editable)
 - Pulled example packs from local examples
 - Exported to `.cursor/rules/` and `AGENTS.md`
 - Auto-pull enabled (pulls updates on sync)
@@ -180,7 +180,7 @@ git push -u origin main
 cd ~/projects/project-a
 aligntrue init
 
-# Add to .aligntrue/rules.md:
+# Add to .aligntrue/.rules.yaml:
 sources:
   - git: https://github.com/you/my-standards
     ref: main
@@ -223,7 +223,7 @@ aligntrue sync
 
 ```bash
 # 1. Pull third-party pack
-# .aligntrue/rules.md:
+# .aligntrue/.rules.yaml:
 sources:
   - git: https://github.com/community/typescript-standards
     ref: v1.0.0
