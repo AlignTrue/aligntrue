@@ -41,7 +41,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--write",
     hasValue: false,
-    description: "Write imported rules to .aligntrue/rules.md",
+    description: "Write imported rules to AGENTS.md",
   },
   {
     flag: "--dry-run",
@@ -185,7 +185,7 @@ async function writeToIRFile(
   const content = lines.join("\n");
 
   if (dryRun) {
-    console.log("\nPreview of .aligntrue/rules.md:");
+    console.log("\nPreview of AGENTS.md:");
     console.log("─".repeat(50));
     console.log(content.split("\n").slice(0, 30).join("\n"));
     if (content.split("\n").length > 30) {
@@ -324,12 +324,10 @@ export async function importCommand(args: string[]): Promise<void> {
         );
         console.log("");
         console.log("Next steps:");
-        console.log("  1. Review imported rules: .aligntrue/rules.md");
+        console.log("  1. Review imported rules: AGENTS.md");
         console.log("  2. Sync to other agents: aligntrue sync");
         console.log("");
-        console.log(
-          "Tip: Edit .aligntrue/rules.md to customize rules for your project",
-        );
+        console.log("Tip: Edit AGENTS.md to customize rules for your project");
       }
     } catch (_error) {
       clack.log.error(

@@ -56,10 +56,10 @@ export async function md(args: string[]): Promise<void> {
       usage: "aligntrue md <subcommand> <file> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue md lint rules.md",
-        "aligntrue md format rules.md",
-        "aligntrue md compile rules.md --output rules.yaml",
-        "aligntrue md generate rules.yaml --output rules.md",
+        "aligntrue md lint AGENTS.md",
+        "aligntrue md format AGENTS.md",
+        "aligntrue md compile AGENTS.md --output rules.yaml",
+        "aligntrue md generate rules.yaml --output AGENTS.md",
       ],
       notes: [
         "Subcommands:",

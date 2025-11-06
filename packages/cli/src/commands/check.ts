@@ -122,7 +122,7 @@ export async function check(args: string[]): Promise<void> {
     const config: AlignTrueConfig = await tryLoadConfig(configPath);
 
     // Step 2: Validate IR schema
-    const rulesPath = config.sources?.[0]?.path || ".aligntrue/rules.md";
+    const rulesPath = config.sources?.[0]?.path || ".aligntrue/.rules.yaml";
     const resolvedRulesPath = resolve(rulesPath);
 
     if (!existsSync(resolvedRulesPath)) {

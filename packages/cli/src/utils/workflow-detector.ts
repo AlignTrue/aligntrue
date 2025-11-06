@@ -43,7 +43,7 @@ export class WorkflowDetector {
     clack.log.info("🎯 Choose your editing workflow");
     clack.log.info("");
     clack.log.info("AlignTrue supports two workflows:");
-    clack.log.info("  1. IR-source: Edit rules.md as your source of truth");
+    clack.log.info("  1. IR-source: Edit AGENTS.md as your source of truth");
     clack.log.info("     (Auto-pull disabled, manual control)");
     clack.log.info("");
     clack.log.info("  2. Native-format: Edit agent files directly");
@@ -60,7 +60,7 @@ export class WorkflowDetector {
         },
         {
           value: "ir_source",
-          label: "Edit rules.md as source of truth",
+          label: "Edit AGENTS.md as source of truth",
           hint: "Auto-pull disabled - manual control over sync",
         },
         {
@@ -130,14 +130,14 @@ export class WorkflowDetector {
 
     if (mode === "ir_source") {
       clack.log.info("  ✓ Auto-pull disabled");
-      clack.log.info("  ✓ Edit .aligntrue/rules.md as your source");
+      clack.log.info("  ✓ Edit AGENTS.md as your source");
       clack.log.info("  ✓ Use --accept-agent to pull from agents explicitly");
     } else if (mode === "native_format") {
       clack.log.info("  ✓ Auto-pull enabled");
       clack.log.info(
         "  ✓ Edit agent files directly (e.g., .cursor/rules/*.mdc)",
       );
-      clack.log.info("  ✓ Changes sync to rules.md automatically");
+      clack.log.info("  ✓ Changes sync to AGENTS.md automatically");
     } else {
       clack.log.info("  ✓ Manual conflict resolution enabled");
       clack.log.info("  ✓ You'll be prompted when conflicts occur");

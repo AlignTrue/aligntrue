@@ -36,7 +36,7 @@ describe("backup command", () => {
 
     // Create sample files
     writeFileSync(join(aligntrueDir, "config.yaml"), "mode: solo", "utf-8");
-    writeFileSync(join(aligntrueDir, "rules.md"), "# Rules", "utf-8");
+    writeFileSync(join(aligntrueDir, ".rules.yaml"), "# Rules", "utf-8");
 
     process.chdir(testDir);
   });

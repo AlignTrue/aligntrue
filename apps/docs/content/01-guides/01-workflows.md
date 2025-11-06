@@ -330,7 +330,7 @@ If a new agent is detected (not in config and not ignored), you'll be prompted:
 
 ```
 ⚠ New agent detected: Windsurf
-  Found: .windsurf/rules.md
+  Found: AGENTS.md
 
 ? Would you like to enable Windsurf?
   > Yes, enable and export
