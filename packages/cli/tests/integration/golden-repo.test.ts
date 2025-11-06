@@ -294,4 +294,74 @@ Content Hash:`,
 
     expect(cursorExists).toBe(false);
   });
+
+  it("Edit AGENTS.md → sync workflow updates IR and other agents", async () => {
+    // Setup
+    const projectDir = join(testDir, "agents-md-edit");
+    await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
+
+    // Copy hidden directories
+    const hiddenDirs = [".aligntrue", ".cursor", ".vscode"];
+    for (const dir of hiddenDirs) {
+      const srcDir = join(GOLDEN_REPO_SOURCE, dir);
+      const dstDir = join(projectDir, dir);
+      try {
+        await fs.cp(srcDir, dstDir, { recursive: true });
+      } catch {
+        // Directory might not exist, continue
+      }
+    }
+
+    // Update config to use agents-md as primary agent
+    const configPath = join(projectDir, ".aligntrue/config.yaml");
+    const configContent = await fs.readFile(configPath, "utf8");
+    const updatedConfig = configContent.replace(
+      "primary_agent: cursor",
+      "primary_agent: agents-md",
+    );
+    await fs.writeFile(configPath, updatedConfig);
+
+    // Initial sync
+    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+
+    // Edit AGENTS.md (primary user-editable file)
+    const agentsMdPath = join(projectDir, "AGENTS.md");
+    const agentsMdContent = await fs.readFile(agentsMdPath, "utf8");
+    const modifiedAgentsMd = agentsMdContent.replace(
+      "Every new feature must include unit tests",
+      "Every new feature must include comprehensive unit tests with 80%+ coverage",
+    );
+    await fs.writeFile(agentsMdPath, modifiedAgentsMd);
+
+    // Sync - should pull from AGENTS.md and update IR + other agents
+    execSync(`node ${CLI_PATH} sync --force`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
+
+    // Verify edit was preserved in AGENTS.md
+    const finalAgentsMd = await fs.readFile(agentsMdPath, "utf8");
+    expect(finalAgentsMd).toContain(
+      "comprehensive unit tests with 80%+ coverage",
+    );
+
+    // Verify edit was synced to IR (check for the key phrase, accounting for YAML formatting)
+    const rulesContent = await fs.readFile(
+      join(projectDir, ".aligntrue/.rules.yaml"),
+      "utf8",
+    );
+    // YAML may format this as multiline, so check for the key phrase
+    expect(rulesContent.replace(/\s+/g, " ")).toContain(
+      "comprehensive unit tests with 80%+ coverage",
+    );
+
+    // Verify edit was synced to Cursor
+    const cursorContent = await fs.readFile(
+      join(projectDir, ".cursor/rules/aligntrue.mdc"),
+      "utf8",
+    );
+    expect(cursorContent).toContain(
+      "comprehensive unit tests with 80%+ coverage",
+    );
+  });
 });
