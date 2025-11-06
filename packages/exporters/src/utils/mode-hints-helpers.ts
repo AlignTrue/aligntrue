@@ -7,6 +7,7 @@ import type { AlignRule } from "@aligntrue/schema";
 import {
   getModeHints as getConfigModeHints,
   type AlignTrueConfig,
+  type ModeHints,
 } from "@aligntrue/core";
 import { prioritizeRulesForCapExport, renderModeMarkers } from "./index.js";
 
@@ -119,9 +120,9 @@ export function generateSessionPreface(modeHints: string): string[] {
 export function wrapRuleWithMarkers(
   rule: AlignRule,
   content: string,
-  modeHints: string,
+  modeHints: ModeHints,
 ): string {
-  const { prefix, suffix } = renderModeMarkers(rule, modeHints as any);
+  const { prefix, suffix } = renderModeMarkers(rule, modeHints);
   return prefix + content + suffix;
 }
 

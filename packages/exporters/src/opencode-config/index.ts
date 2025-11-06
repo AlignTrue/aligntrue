@@ -44,7 +44,7 @@ export class OpencodeConfigExporter extends ExporterBase {
     rules.forEach((rule) => this.state.allRules.push({ rule, scopePath }));
 
     const outputPath = join(outputDir, "opencode.json");
-    const config: Record<string, any> = {
+    const config: Record<string, unknown> = {
       version: "v1",
       generated_by: "AlignTrue",
       content_hash: computeContentHash({

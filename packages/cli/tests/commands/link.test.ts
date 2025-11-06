@@ -37,7 +37,7 @@ describe("link command - smoke tests", () => {
       // Help shows and exits - implementation detail may throw or return
       try {
         await link(["--help"]);
-      } catch (_e) {
+      } catch {
         // Expected - help exits early
       }
     });
@@ -45,7 +45,7 @@ describe("link command - smoke tests", () => {
     it("shows help with -h flag without crashing", async () => {
       try {
         await link(["-h"]);
-      } catch (_e) {
+      } catch {
         // Expected - help exits early
       }
     });

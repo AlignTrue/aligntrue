@@ -45,7 +45,7 @@ export class FirebaseMcpExporter extends ExporterBase {
     rules.forEach((rule) => this.state.allRules.push({ rule, scopePath }));
 
     const outputPath = join(outputDir, ".idx", "mcp.json");
-    const mcpConfig: Record<string, any> = {
+    const mcpConfig: Record<string, unknown> = {
       version: "v1",
       generated_by: "AlignTrue",
       content_hash: computeContentHash({

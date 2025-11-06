@@ -10,7 +10,7 @@ describe("override-add command - smoke tests", () => {
   it("shows help with --help flag", async () => {
     try {
       await overrideAdd(["--help"]);
-    } catch (e) {
+    } catch {
       // Expected - help calls process.exit(0)
     }
   });
@@ -18,7 +18,7 @@ describe("override-add command - smoke tests", () => {
   it("requires selector argument", async () => {
     try {
       await overrideAdd([]);
-    } catch (e) {
+    } catch {
       // Expected to throw on error
       expect(e).toBeDefined();
     }
@@ -27,7 +27,7 @@ describe("override-add command - smoke tests", () => {
   it("requires --set or --remove operation", async () => {
     try {
       await overrideAdd(["--selector", "rule[id=test]"]);
-    } catch (e) {
+    } catch {
       // Expected to throw on error
       expect(e).toBeDefined();
     }

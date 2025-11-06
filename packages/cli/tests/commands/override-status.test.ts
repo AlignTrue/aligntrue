@@ -10,7 +10,7 @@ describe("override-status command - smoke tests", () => {
   it("shows help with --help flag", async () => {
     try {
       await overrideStatus(["--help"]);
-    } catch (e) {
+    } catch {
       // Expected - help calls process.exit(0)
     }
   });
@@ -20,7 +20,7 @@ describe("override-status command - smoke tests", () => {
     try {
       process.chdir("/tmp");
       await overrideStatus([]);
-    } catch (e) {
+    } catch {
       // Expected to throw on error
       expect(e).toBeDefined();
     } finally {

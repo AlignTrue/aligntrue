@@ -8,7 +8,7 @@ import type { AlignRule } from "@aligntrue/schema";
 
 export interface CursorParseResult {
   rules: AlignRule[];
-  vendorMetadata: Record<string, any>;
+  vendorMetadata: Record<string, unknown>;
 }
 
 /**
@@ -16,13 +16,16 @@ export interface CursorParseResult {
  */
 export function parseCursorMdc(content: string): CursorParseResult {
   const rules: AlignRule[] = [];
-  const vendorMetadata: Record<string, any> = {};
-  const fileLevelMetadata: Record<string, any> = {};
+  const vendorMetadata: Record<string, unknown> = {};
+  const fileLevelMetadata: Record<string, unknown> = {};
 
   // Extract frontmatter
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (frontmatterMatch && frontmatterMatch[1]) {
-    const frontmatter = parseYaml(frontmatterMatch[1]) as Record<string, any>;
+    const frontmatter = parseYaml(frontmatterMatch[1]) as Record<
+      string,
+      unknown
+    >;
 
     if (frontmatter) {
       // Capture file-level Cursor execution mode fields
@@ -109,8 +112,8 @@ function normalizeRuleId(id: string): {
 function parseRuleSection(
   ruleId: string,
   body: string,
-  fileLevelMetadata: Record<string, any>,
-  perRuleMetadata: Record<string, any>,
+  fileLevelMetadata: Record<string, unknown>,
+  perRuleMetadata: Record<string, unknown>,
 ): AlignRule | null {
   // Normalize rule ID
   const { normalized, converted } = normalizeRuleId(ruleId);
@@ -194,7 +197,7 @@ function parseRuleSection(
         acc[k] = fileLevelMetadata[k];
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<string, unknown>,
     );
 
     rule.vendor = {
@@ -215,7 +218,7 @@ export function parseCursorMdcFiles(files: Map<string, string>): AlignRule[] {
   const allRules: AlignRule[] = [];
   const seenIds = new Set<string>();
 
-  for (const [filepath, content] of files.entries()) {
+  for (const [_filepath, content] of files.entries()) {
     const { rules } = parseCursorMdc(content);
 
     // Deduplicate by ID (last wins)

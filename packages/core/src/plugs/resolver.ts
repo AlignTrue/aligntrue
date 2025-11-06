@@ -62,7 +62,7 @@ function generateTODO(key: string, example?: string): string {
 export function mergePlugs(
   plugsSources: Array<{ plugs?: Plugs | undefined; source: string }>,
 ): Plugs {
-  const mergedSlots: Record<string, any> = {};
+  const mergedSlots: Record<string, unknown> = {};
   const mergedFills: Record<string, string> = {};
 
   // Sort sources for deterministic merge order

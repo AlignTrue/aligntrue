@@ -68,7 +68,7 @@ describe("Override Remove Command Integration", () => {
 
       try {
         await overrideRemove(["rule[id=test-1]"]);
-      } catch (e) {
+      } catch {
         // May throw from process.exit if command fails
       }
 
@@ -99,7 +99,7 @@ describe("Override Remove Command Integration", () => {
 
       try {
         await overrideRemove(["0"]);
-      } catch (e) {
+      } catch {
         // Not expected - should handle gracefully
       }
 
