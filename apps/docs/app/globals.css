@@ -1,12 +1,3 @@
-/* Import AlignTrue design tokens */
-@import "@aligntrue/ui/styles/tokens.css";
-
-/* Map design tokens to homepage-specific variable names for backwards compatibility */
-:root {
-  --bg-default: var(--bgColor-default);
-  --bg-muted: var(--bgColor-muted);
-  --border-color: var(--borderColor-default);
-  --fg-default: var(--fgColor-default);
-  --fg-muted: var(--fgColor-muted);
-  --brand-accent: var(--brand-orange);
-}
+/* Intentionally empty - Nextra provides all needed theme CSS */
+/* Homepage styles are scoped to page.tsx */
+/* Docs pages use Nextra's built-in theming */
