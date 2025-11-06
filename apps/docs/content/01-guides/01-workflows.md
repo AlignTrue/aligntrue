@@ -312,6 +312,178 @@ git:
   mode: "commit"
 ```
 
+## Agent detection
+
+AlignTrue automatically detects new AI agents in your workspace during sync. This helps you stay aligned with all coding agents you use without manual configuration.
+
+### How it works
+
+When you run `aligntrue sync`, AlignTrue scans your workspace for agent-specific files:
+
+- `.cursor/` - Cursor
+- `AGENTS.md` - Universal format (GitHub Copilot, Jules, Amp, etc.)
+- `.windsurf/` - Windsurf
+- `.vscode/mcp.json` - VS Code MCP
+- And 40+ other agents
+
+If a new agent is detected (not in config and not ignored), you'll be prompted:
+
+```
+⚠ New agent detected: Windsurf
+  Found: .windsurf/rules.md
+
+? Would you like to enable Windsurf?
+  > Yes, enable and export
+    No, skip for now
+    Never ask about this agent
+```
+
+### Response options
+
+**Yes, enable and export**
+
+- Adds agent to `exporters` in config
+- Syncs rules to the new agent immediately
+- Agent will be included in future syncs
+
+**No, skip for now**
+
+- Doesn't enable the agent
+- Will prompt again next time you run sync
+- Useful for agents you're evaluating
+
+**Never ask about this agent**
+
+- Adds agent to `detection.ignored_agents` in config
+- Won't prompt about this agent again
+- Useful for agents you don't use even though files exist
+
+### Configuring detection
+
+#### Skip detection entirely
+
+```bash
+# Skip detection for this sync
+aligntrue sync --no-detect
+
+# Or configure in config
+sync:
+  no_detect: true
+```
+
+#### Auto-enable detected agents
+
+```bash
+# Auto-enable without prompting (useful for CI)
+aligntrue sync --auto-enable
+
+# Or configure in config
+detection:
+  auto_enable: true
+```
+
+#### Manage ignored agents
+
+```bash
+# Add agent to ignored list
+aligntrue adapters ignore windsurf
+
+# Manually check for new agents
+aligntrue adapters detect
+
+# Output shows new agents not in config or ignored list
+```
+
+### Configuration
+
+```yaml
+# .aligntrue/config.yaml
+detection:
+  auto_enable: false # Auto-enable detected agents without prompting
+  ignored_agents: # Agents to never prompt about
+    - windsurf
+    - aider-md
+```
+
+### Use cases
+
+**Solo developer with multiple agents:**
+
+- Detection helps you discover and enable agents automatically
+- Use "Yes" for agents you want to use
+- Use "Never" for agents you installed but don't use for this project
+
+**Team environment:**
+
+- Set `detection.auto_enable: true` in team config
+- New team members with different agents get auto-enabled
+- Ensures everyone exports to all team agents
+
+**CI/CD:**
+
+- Use `--auto-enable` or `detection.auto_enable: true`
+- Automatically handles new agents without manual intervention
+- Prevents sync from hanging on prompts
+
+### Examples
+
+**Enabling new agent:**
+
+```bash
+$ aligntrue sync
+
+⚠ New agent detected: Windsurf
+  Found: .windsurf/rules.md
+
+? Would you like to enable Windsurf?
+  > Yes, enable and export
+
+✓ Enabled 1 agent(s): windsurf
+◇ Syncing to agents...
+✓ Wrote 3 files:
+  - .windsurf/rules.md
+  - .cursor/rules/aligntrue.mdc
+  - AGENTS.md
+```
+
+**Ignoring agent:**
+
+```bash
+$ aligntrue sync
+
+⚠ New agent detected: Aider
+  Found: .aider.conf.yml
+
+? Would you like to enable Aider?
+  > Never ask about this agent
+
+✓ Ignoring 1 agent(s): aider-md
+
+# Config updated:
+# detection:
+#   ignored_agents:
+#     - aider-md
+```
+
+**Manual detection:**
+
+```bash
+$ aligntrue adapters detect
+
+Detected 2 new agent(s):
+
+  - Windsurf
+    File: .windsurf/rules.md
+  - GitHub Copilot
+    File: AGENTS.md
+
+To enable:
+  aligntrue adapters enable <agent-name>
+
+To ignore:
+  aligntrue adapters ignore <agent-name>
+```
+
 ## Troubleshooting
 
 ### "I keep getting conflict prompts"

@@ -342,6 +342,109 @@ describe("adapters command", () => {
     });
   });
 
+  describe("detect subcommand", () => {
+    it("shows new agents with file paths", async () => {
+      createConfig(["cursor"]);
+
+      // Create a detectable agent file
+      writeFileSync(join(tempDir, "AGENTS.md"), "# Test rules");
+
+      // Capture console output
+      const originalLog = console.log;
+      const logs: string[] = [];
+      console.log = (...args: unknown[]) => {
+        logs.push(args.join(" "));
+      };
+
+      try {
+        await adapters(["detect"]);
+      } finally {
+        console.log = originalLog;
+      }
+
+      // Should show detected agent
+      expect(logs.join("\n")).toContain("agent");
+      expect(logs.join("\n")).toContain("AGENTS.md");
+    });
+
+    it("shows message when no new agents", async () => {
+      createConfig(["cursor", "agents-md"]);
+
+      // Create agent files that are already enabled
+      mkdirSync(join(tempDir, ".cursor"), { recursive: true });
+      writeFileSync(join(tempDir, "AGENTS.md"), "# Test");
+
+      const originalLog = console.log;
+      const logs: string[] = [];
+      console.log = (...args: unknown[]) => {
+        logs.push(args.join(" "));
+      };
+
+      try {
+        await adapters(["detect"]);
+      } finally {
+        console.log = originalLog;
+      }
+
+      expect(logs.join("\n")).toContain("No new agents detected");
+    });
+
+    it("handles missing config", async () => {
+      await expect(adapters(["detect"])).rejects.toThrow("process.exit: 1");
+      expect(exitCode).toBe(1);
+    });
+  });
+
+  describe("ignore subcommand", () => {
+    it("adds agent to ignored list", async () => {
+      createConfig(["cursor"]);
+
+      await adapters(["ignore", "windsurf"]);
+
+      // Verify config updated
+      const config = readFileSync(".aligntrue/config.yaml", "utf-8");
+      expect(config).toContain("detection:");
+      expect(config).toContain("ignored_agents:");
+      expect(config).toContain("- windsurf");
+    });
+
+    it("shows message if already ignored", async () => {
+      createConfig(["cursor"]);
+      writeFileSync(
+        ".aligntrue/config.yaml",
+        "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - windsurf\n",
+      );
+
+      const originalLog = console.log;
+      const logs: string[] = [];
+      console.log = (...args: unknown[]) => {
+        logs.push(args.join(" "));
+      };
+
+      try {
+        await adapters(["ignore", "windsurf"]);
+      } finally {
+        console.log = originalLog;
+      }
+
+      expect(logs.join("\n")).toContain("already ignored");
+    });
+
+    it("fails with helpful error when agent name missing", async () => {
+      createConfig(["cursor"]);
+
+      await expect(adapters(["ignore"])).rejects.toThrow("process.exit: 1");
+      expect(exitCode).toBe(1);
+    });
+
+    it("handles missing config", async () => {
+      await expect(adapters(["ignore", "windsurf"])).rejects.toThrow(
+        "process.exit: 1",
+      );
+      expect(exitCode).toBe(1);
+    });
+  });
+
   describe("error handling", () => {
     it("handles missing config for enable", async () => {
       await expect(adapters(["enable", "cursor"])).rejects.toThrow(

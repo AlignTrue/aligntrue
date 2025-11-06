@@ -10,7 +10,7 @@ import { join } from "path";
  * Detection patterns for all 28 agents
  * Maps agent name to detection patterns (files/directories to check)
  */
-const AGENT_PATTERNS: Record<string, string[]> = {
+export const AGENT_PATTERNS: Record<string, string[]> = {
   // Phase 1 exporters
   cursor: [".cursor/", ".cursor/rules/"],
   "agents-md": ["AGENTS.md"],
@@ -171,4 +171,44 @@ export function getAgentDisplayName(agentName: string): string {
  */
 export function getAllAgents(): string[] {
   return Object.keys(AGENT_PATTERNS);
+}
+
+/**
+ * Detect agents not in config and not ignored
+ * @param cwd - Directory to check
+ * @param currentExporters - Currently enabled exporters
+ * @param ignoredAgents - Agents user has chosen to ignore
+ * @returns New agents with file paths
+ */
+export function detectNewAgents(
+  cwd: string,
+  currentExporters: string[],
+  ignoredAgents: string[],
+): Array<{ name: string; displayName: string; filePath: string }> {
+  const allDetected = detectAgents(cwd);
+  const currentSet = new Set(currentExporters);
+  const ignoredSet = new Set(ignoredAgents);
+
+  const newAgents: Array<{
+    name: string;
+    displayName: string;
+    filePath: string;
+  }> = [];
+
+  for (const agentName of allDetected.detected) {
+    if (!currentSet.has(agentName) && !ignoredSet.has(agentName)) {
+      // Get first matching file path for display
+      const patterns = AGENT_PATTERNS[agentName] || [];
+      const foundPath =
+        patterns.find((p) => existsSync(join(cwd, p))) || patterns[0];
+
+      newAgents.push({
+        name: agentName,
+        displayName: allDetected.displayNames.get(agentName) || agentName,
+        filePath: foundPath,
+      });
+    }
+  }
+
+  return newAgents;
 }
