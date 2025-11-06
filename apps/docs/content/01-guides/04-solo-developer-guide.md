@@ -664,7 +664,7 @@ See [Team Guide](/docs/01-guides/05-team-guide) for team collaboration workflows
 - [Plugs Guide](/docs/02-customization/plugs) - Stack-specific values
 - [Overlays Guide](/docs/02-customization/overlays) - Rule customization
 - [Scopes Guide](/docs/02-customization/scopes) - Monorepo support
-- [CLI Reference](/docs/03-reference/cli-reference) - Complete command docs
+- [CLI Reference](/docs/04-reference/cli-reference) - Complete command docs
 - [Team Guide](/docs/01-guides/05-team-guide) - Upgrade to team collaboration
 
 ## Summary

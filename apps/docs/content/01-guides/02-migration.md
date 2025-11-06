@@ -563,11 +563,11 @@ vendor:
 After migration:
 
 - [Workflows guide](/docs/01-guides/01-workflows) - Choose your workflow
-- [Team mode](/docs/02-concepts/team-mode) - Enable team features
-- [Git workflows](/docs/02-concepts/git-workflows) - Share rules via git
+- [Team mode](/docs/03-concepts/team-mode) - Enable team features
+- [Git workflows](/docs/03-concepts/git-workflows) - Share rules via git
 
 ## See also
 
-- [Import workflow reference](/docs/03-reference/import-workflow) - Detailed import documentation
-- [Sync behavior](/docs/02-concepts/sync-behavior) - How sync works
-- [Troubleshooting](/docs/04-troubleshooting) - Common issues
+- [Import workflow reference](/docs/04-reference/import-workflow) - Detailed import documentation
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
+- [Troubleshooting](/docs/05-troubleshooting) - Common issues

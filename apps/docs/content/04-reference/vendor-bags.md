@@ -409,7 +409,7 @@ vendor:
 
 For complete list of agent-specific fields, see:
 
-- [Adding Exporters Guide](/docs/05-contributing/adding-exporters)
+- [Adding Exporters Guide](/docs/06-contributing/adding-exporters)
 - Individual exporter source code in `packages/exporters/src/`
 
 ## Best practices
@@ -525,9 +525,9 @@ tail -20 .cursor/rules/aligntrue.mdc
 ## Related documentation
 
 - [Multi-Agent Workflows](/docs/01-guides/06-multi-agent-workflows) - Using multiple agents
-- [Import Workflow](/docs/03-reference/import-workflow) - Importing with vendor bags
-- [Adding Exporters](/docs/05-contributing/adding-exporters) - Creating exporters with vendor bags
-- [Sync Behavior](/docs/02-concepts/sync-behavior) - Technical sync details
+- [Import Workflow](/docs/04-reference/import-workflow) - Importing with vendor bags
+- [Adding Exporters](/docs/06-contributing/adding-exporters) - Creating exporters with vendor bags
+- [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 
 ## Summary
 

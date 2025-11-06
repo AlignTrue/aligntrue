@@ -176,7 +176,7 @@ aligntrue sync
 
 ### 4. Use file watchers (advanced)
 
-See [File watcher setup](/docs/03-reference/file-watcher-setup) for automatic sync on file changes.
+See [File watcher setup](/docs/04-reference/file-watcher-setup) for automatic sync on file changes.
 
 ## Common conflict scenarios
 
@@ -372,5 +372,5 @@ If you didn't have backups enabled:
 
 - [Auto-pull behavior](/docs/01-guides/00-auto-pull) - Understanding auto-pull
 - [Workflows guide](/docs/01-guides/01-workflows) - Choosing your workflow
-- [Backup and restore](/docs/03-reference/backup-restore) - Using backups
-- [Sync behavior](/docs/02-concepts/sync-behavior) - How sync works
+- [Backup and restore](/docs/04-reference/backup-restore) - Using backups
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
