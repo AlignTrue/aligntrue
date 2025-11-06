@@ -150,6 +150,101 @@ Anchor links are preserved:
 See [installation](#installation) below.
 ```
 
+## Adding diagrams
+
+AlignTrue documentation uses Mermaid for diagrams. Diagrams render as static content at build time with AlignTrue brand theming.
+
+### Mermaid syntax
+
+Use standard Mermaid code blocks in your markdown:
+
+````markdown
+```mermaid
+graph LR
+    A[Start] --> B[Process]
+    B --> C[End]
+```
+````
+
+### Diagram types
+
+Mermaid supports multiple diagram types:
+
+**Flowcharts:**
+
+````markdown
+```mermaid
+graph TD
+    Start[Need help?] --> Q1{Question type?}
+    Q1 -->|Bug| Bug[File issue]
+    Q1 -->|Feature| Feature[Discussion]
+```
+````
+
+**Sequence diagrams:**
+
+````markdown
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Agent
+
+    User->>CLI: aligntrue sync
+    CLI->>Agent: Export rules
+    Agent->>User: ✓ Complete
+```
+````
+
+**Architecture diagrams:**
+
+````markdown
+```mermaid
+graph TD
+    subgraph Solo Mode
+        S1[AGENTS.md] --> S2[IR]
+        S2 --> S3[Exports]
+    end
+```
+````
+
+### AlignTrue branding
+
+Diagrams automatically use AlignTrue brand colors:
+
+- **Primary nodes:** Orange (#F5A623) with white text
+- **Secondary nodes:** Light gray with dark borders
+- **Theme-aware:** Adapts to light/dark mode
+
+To highlight key nodes with brand colors:
+
+````markdown
+```mermaid
+graph LR
+    A[Input] --> B[Process]
+
+    style B fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+```
+````
+
+### Best practices
+
+1. **Keep diagrams simple** - Focus on key concepts, avoid clutter
+2. **Use consistent terminology** - Match docs language (IR, agents, sync)
+3. **Add context** - Include brief explanation before/after diagram
+4. **Test rendering** - Verify in both light and dark modes
+5. **Mobile-friendly** - Ensure diagrams are readable on small screens
+
+### Examples in docs
+
+See these pages for diagram examples:
+
+- [How it works](/docs) - Homepage flow diagram
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Sequence diagrams
+- [Workflows](/docs/01-guides/01-workflows) - Decision tree
+- [Solo vs team](/docs/00-getting-started/02-solo-vs-team-mode) - Architecture comparison
+- [Customization](/docs/02-customization) - Decision flowchart
+
 ## Testing locally
 
 ### Test docs site

@@ -69,6 +69,27 @@ backup:
 | Conflict prompts | Rare (auto-resolved)       | Explicit (you choose)      |
 | Best for         | Solo devs, rapid iteration | Teams, review workflows    |
 
+### Visual workflow comparison
+
+```mermaid
+graph TD
+    Start[Choose your workflow] --> Q1{Work solo or in team?}
+    Q1 -->|Solo| Q2{Want automatic syncing?}
+    Q1 -->|Team| Manual[Manual Review workflow<br/>auto_pull: false]
+    Q2 -->|Yes| Primary[AGENTS.md Primary workflow<br/>auto_pull: true]
+    Q2 -->|No| Manual
+
+    Primary --> R1[Edit AGENTS.md or agent files]
+    R1 --> R2[Changes sync automatically]
+
+    Manual --> M1[Edit AGENTS.md]
+    M1 --> M2[Preview with --dry-run]
+    M2 --> M3[Manually approve sync]
+
+    style Primary fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style Manual fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+```
+
 ## Choosing your workflow
 
 ### Choose Manual Review if you:

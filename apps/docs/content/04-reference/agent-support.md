@@ -1,17 +1,17 @@
 ---
 title: Agent support
-description: Complete compatibility matrix for AlignTrue's 43 exporters supporting 28+ AI coding agents
+description: Complete compatibility matrix for AlignTrue's 44 exporters supporting 28+ AI coding agents
 ---
 
 # Agent Support
 
-AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
+AlignTrue supports **28+ AI coding agents** through **44 specialized exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 
 ## Coverage statistics
 
-- **43 total exporters** supporting **28+ agents**
+- **44 total exporters** supporting **28+ agents**
 - **8 MCP configurations** for protocol-based agents
-- **15 unique format exporters** for agent-specific formats
+- **16 unique format exporters** for agent-specific formats
 - **11 universal format agents** using AGENTS.md
 - **9 dual-output agents** with both universal + specific formats
 
@@ -72,6 +72,7 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 | **Zed**             | zed-md           | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements zed-config                      |
 | **Zed**             | zed-config       | Agent-Specific   | `.zed/settings.json`             | Zed JSON configuration                               | JSON format limitations                     |
 | **Gemini CLI**      | gemini-cli       | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
+| **Gemini**          | gemini-md        | Agent-Specific   | `GEMINI.md`                      | Gemini-specific markdown format                      | Machine-checkable rules not represented     |
 | **Gemini**          | gemini-config    | Agent-Specific   | `.gemini/settings.json`          | Gemini JSON configuration                            | JSON format limitations                     |
 | **Qwen Code**       | qwen-code        | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
 | **Qwen**            | qwen-config      | Agent-Specific   | `.qwen/settings.json`            | Qwen JSON configuration                              | JSON format limitations                     |

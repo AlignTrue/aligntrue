@@ -31,6 +31,33 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | **Maintenance overhead** | Minimal               | Low to medium                     |
 | **Best for**             | Individual developers | Teams and organizations           |
 
+### Architecture comparison
+
+**Solo Mode** (default - fast iteration, local-first):
+
+```mermaid
+graph TD
+    S1[AGENTS.md] --> S2[.aligntrue/.rules.yaml]
+    S2 --> S3[Agent exports]
+    S4[Auto-pull enabled] -.-> S2
+
+    style S2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+```
+
+**Team Mode** (reproducible, collaborative):
+
+```mermaid
+graph TD
+    T1[AGENTS.md] --> T2[.aligntrue/.rules.yaml]
+    T2 --> T3[.aligntrue.lock.json]
+    T3 --> T4[Agent exports]
+    T5[CI validation] -.-> T3
+    T6[Drift detection] -.-> T3
+
+    style T2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style T3 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+```
+
 ## Scenario-based recommendations
 
 ### Solo developer, personal projects

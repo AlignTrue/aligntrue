@@ -26,6 +26,26 @@ The sync engine maintains consistency while allowing both IR→agent and agent�
 IR (.aligntrue/.rules.yaml) → Parse → Validate → Export → Agent files
 ```
 
+### Visual flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as aligntrue sync
+    participant IR as .aligntrue/.rules.yaml
+    participant Cursor as .cursor/rules/*.mdc
+    participant AGENTS as AGENTS.md
+    participant MCP as .vscode/mcp.json
+
+    User->>CLI: aligntrue sync
+    CLI->>IR: Load rules
+    IR->>CLI: Parse & validate
+    CLI->>Cursor: Export .mdc format
+    CLI->>AGENTS: Export universal format
+    CLI->>MCP: Export MCP config
+    CLI->>User: ✓ Sync complete
+```
+
 **What happens:**
 
 1. Load configuration from `.aligntrue/config.yaml`
@@ -106,6 +126,24 @@ sync:
 
 ```
 Agent files → Parse → Detect conflicts → Resolve → IR (.aligntrue/.rules.yaml)
+```
+
+### Auto-pull flow
+
+```mermaid
+graph LR
+    A[Edit .cursor/rules/*.mdc] --> B{Auto-pull enabled?}
+    B -->|Yes| C[aligntrue sync]
+    C --> D[Pull from Cursor]
+    D --> E[Update IR]
+    E --> F[Sync to other agents]
+    F --> G[AGENTS.md updated]
+    F --> H[MCP config updated]
+
+    style A fill:#f5f5f5,stroke:#666,stroke-width:1px
+    style C fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style D fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
+    style E fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
 ```
 
 **What happens:**
