@@ -31,7 +31,7 @@ AGENTS.md
 aligntrue sync
 
 # Result:
-✓ .aligntrue/.rules.yaml (internal IR)
+✓ .aligntrue/.rules.yaml (internal IR, pure YAML)
 ✓ .cursor/rules/aligntrue.mdc (synced)
 ✓ AGENTS.md (synced)
 ✓ .vscode/mcp.json (synced)

@@ -13,18 +13,18 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-init");
 
-beforeEach(() => {
+beforeEach(async () => {
   // Create fresh test directory
-  cleanupDir(TEST_DIR);
+  await cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
 
   // Change to test directory
   process.chdir(TEST_DIR);
 });
 
-afterEach(() => {
+afterEach(async () => {
   // Cleanup
-  cleanupDir(TEST_DIR);
+  await cleanupDir(TEST_DIR);
 });
 
 describe("Init Command Integration", () => {

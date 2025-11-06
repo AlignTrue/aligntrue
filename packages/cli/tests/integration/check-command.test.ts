@@ -14,14 +14,14 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-check");
 
-beforeEach(() => {
-  cleanupDir(TEST_DIR);
+beforeEach(async () => {
+  await cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 });
 
-afterEach(() => {
-  cleanupDir(TEST_DIR);
+afterEach(async () => {
+  await cleanupDir(TEST_DIR);
 });
 
 describe("Check Command Integration", () => {
@@ -35,10 +35,7 @@ describe("Check Command Integration", () => {
         "utf-8",
       );
 
-      const ir = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-project
+      const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -46,7 +43,6 @@ rules:
     severity: error
     applies_to: ["**/*.ts"]
     guidance: Test guidance
-\`\`\`
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
@@ -72,16 +68,12 @@ rules:
         "utf-8",
       );
 
-      const invalidIr = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-project
+      const invalidIr = `id: test-project
 version: 1.0.0
 rules:
   - id: test.rule.example
     severity: error
     applies_to: ["**/*.ts"]
-\`\`\`
 `;
       writeFileSync(
         join(TEST_DIR, ".aligntrue", ".rules.yaml"),
@@ -125,10 +117,7 @@ rules:
         "utf-8",
       );
 
-      const ir = `# AlignTrue Rules
-
-\`\`\`aligntrue
-id: test-project
+      const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -136,7 +125,6 @@ rules:
     severity: error
     applies_to: ["**/*.ts"]
     guidance: Test guidance
-\`\`\`
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 

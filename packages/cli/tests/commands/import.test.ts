@@ -316,7 +316,7 @@ Test.
     }
 
     const output = logSpy.mock.calls.map((call) => call.join(" ")).join("\n");
-    expect(output).toContain("Preview of AGENTS.md");
+    expect(output).toContain("Preview of .rules.yaml");
 
     // Check that .rules.yaml was NOT created
     const rulesPath = join(testWorkspace, ".aligntrue", ".rules.yaml");

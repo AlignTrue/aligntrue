@@ -15,10 +15,10 @@ vi.mock("@clack/prompts");
 
 const TEST_DIR = join(tmpdir(), "aligntrue-test-override-remove");
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
 
-  cleanupDir(TEST_DIR);
+  await cleanupDir(TEST_DIR);
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 
@@ -33,8 +33,8 @@ beforeEach(() => {
   vi.mocked(clack.isCancel).mockReturnValue(false);
 });
 
-afterEach(() => {
-  cleanupDir(TEST_DIR);
+afterEach(async () => {
+  await cleanupDir(TEST_DIR);
 });
 
 describe("Override Remove Command Integration", () => {
