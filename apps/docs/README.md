@@ -56,5 +56,18 @@ pnpm dev
 ## Testing
 
 ```bash
+# Run all tests (includes link checker)
 pnpm test
+
+# Run standalone link checker from repo root
+pnpm validate:docs-links
 ```
+
+The test suite includes automated link validation that:
+
+- Scans all `.md` and `.mdx` files in `content/`
+- Validates internal `/docs/` links against actual file structure
+- Reports broken links with file location and line number
+- Runs automatically in CI
+
+See `lib/check-links.ts` for the link validation module.

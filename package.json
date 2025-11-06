@@ -17,6 +17,7 @@
     "validate:ui-tsconfig": "node scripts/validate-ui-tsconfig.mjs",
     "validate:transpile-packages": "node scripts/validate-transpile-packages.mjs",
     "validate:no-duplicate-docs": "node scripts/validate-no-duplicate-docs.mjs",
+    "validate:docs-links": "node scripts/check-docs-links.js",
     "lint": "eslint . --max-warnings 100",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings 0",
