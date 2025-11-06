@@ -51,11 +51,10 @@ describe("Init Command Integration", () => {
     it("creates .aligntrue/rules.md with starter template", async () => {
       await init(["--yes", "--project-id", "test-project"]);
 
-      const rulesPath = join(TEST_DIR, ".aligntrue", "rules.md");
+      const rulesPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
       expect(existsSync(rulesPath)).toBe(true);
 
       const rulesContent = readFileSync(rulesPath, "utf-8");
-      expect(rulesContent).toContain("```aligntrue");
       expect(rulesContent).toContain("spec_version:");
       expect(rulesContent).toContain("rules:");
     });
@@ -113,7 +112,7 @@ describe("Init Command Integration", () => {
     it("uses provided project-id in rules", async () => {
       await init(["--yes", "--project-id", "my-custom-project"]);
 
-      const rulesPath = join(TEST_DIR, ".aligntrue", "rules.md");
+      const rulesPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
       const rulesContent = readFileSync(rulesPath, "utf-8");
 
       expect(rulesContent).toContain("my-custom-project");
