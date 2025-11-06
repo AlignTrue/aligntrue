@@ -10,6 +10,7 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { DOCS_SCOPES } from "../constants.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [];
 
@@ -68,7 +69,7 @@ export async function scopes(args: string[]): Promise<void> {
       console.log("    exclude:");
       console.log('      - "**/*.test.ts"');
       console.log("");
-      console.log("Learn more: https://aligntrue.ai/docs/concepts/scopes");
+      console.log(`Learn more: ${DOCS_SCOPES}`);
       return;
     }
 

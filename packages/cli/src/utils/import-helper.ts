@@ -20,6 +20,7 @@ import {
   type CoverageReport,
 } from "@aligntrue/markdown-parser";
 import type { AlignRule } from "@aligntrue/schema";
+import { DOCS_BASE_URL } from "../constants.js";
 
 /**
  * Import execution options
@@ -297,7 +298,7 @@ async function writeToIRFile(
   lines.push("2. **Customize for your project** - Edit as needed");
   lines.push("3. **Sync to agents** - Run `aligntrue sync`");
   lines.push("");
-  lines.push("Learn more: https://aligntrue.ai/docs");
+  lines.push(`Learn more: ${DOCS_BASE_URL}`);
 
   const content = lines.join("\n");
   await writeFile(irPath, content, "utf-8");

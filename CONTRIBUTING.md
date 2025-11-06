@@ -39,7 +39,7 @@ Pick the appropriate namespace for your pack:
   - Example: `packs/stacks/nextjs-app-router`, `packs/stacks/django-backend`
   - Use when: Your rules target a specific tech stack
 
-See [POLICY.md](https://aligntrue.ai/docs/policies) for complete namespacing rules.
+See [POLICY.md](POLICY.md) for complete namespacing rules.
 
 ### Minimal example
 
@@ -226,7 +226,7 @@ Users should be able to copy-paste your hint and make progress.
   - TODO comments
   - Formatting preferences
 
-See [POLICY.md](https://aligntrue.ai/docs/policies) for complete severity guidelines.
+See [POLICY.md](POLICY.md) for complete severity guidelines.
 
 ## Pull request checklist
 
@@ -257,9 +257,7 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 Stuck? Here's how to get help:
 
 - **Documentation**: Read the full docs at [aligntrue.ai/docs](https://aligntrue.ai/docs)
-  - [Align Spec v1](https://aligntrue.ai/docs/spec) - Complete specification
-  - [Checks reference](https://aligntrue.ai/docs/checks) - All check types explained
-  - [Canonicalization](https://aligntrue.ai/docs/canonicalization) - How hashing works
+  - [Align Spec v1](spec/align-spec-v1.md) - Complete specification
 
 - **Examples**: Browse existing packs in [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns)
   - [base-testing](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-testing.aligntrue.yaml) - Testing rules
