@@ -86,12 +86,12 @@ This generates agent-specific files like `.cursor/rules/*.mdc`, `AGENTS.md`, etc
 
 ### Can I edit agent files directly?
 
-Yes! AlignTrue supports two-way sync. Edit any file:
+Yes! AlignTrue supports two-way sync in solo mode:
 
 - `AGENTS.md` (universal format)
 - Agent files like `.cursor/*.mdc` (agent-specific)
 
-Auto-pull is enabled by default, so changes flow both directions. See [Workflows guide](/docs/01-guides/01-workflows) for details.
+In solo mode, auto-pull is enabled by default, so changes flow both directions. In team mode, manually pull changes with `aligntrue sync --accept-agent`. See [Workflows guide](/docs/01-guides/01-workflows) for details.
 
 ### Do I need to run sync every time?
 
