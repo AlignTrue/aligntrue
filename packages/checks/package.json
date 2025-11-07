@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/checks",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.1-alpha.3",
   "description": "Check runner engine for AlignTrue Align packs",
   "type": "module",
   "main": "./dist/index.js",
