@@ -4,6 +4,7 @@ import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import type { PageMapItem } from "nextra";
 import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import { AlphaBanner } from "../components/AlphaBanner";
 
 /**
  * DocsFooter Component (Docs-specific)
@@ -130,22 +131,25 @@ export default async function DocsLayout({
   const pageMap = prefixRoutes(rawPageMap, "/docs");
 
   return (
-    <Layout
-      pageMap={pageMap}
-      navbar={
-        <Navbar
-          logo={themeConfig.logo}
-          projectLink="https://github.com/AlignTrue/aligntrue"
-        />
-      }
-      footer={<DocsFooter />}
-      docsRepositoryBase={themeConfig.docsRepositoryBase}
-      editLink="Edit this page on GitHub"
-      navigation
-      sidebar={themeConfig.sidebar}
-      toc={themeConfig.toc}
-    >
-      {children}
-    </Layout>
+    <>
+      <AlphaBanner />
+      <Layout
+        pageMap={pageMap}
+        navbar={
+          <Navbar
+            logo={themeConfig.logo}
+            projectLink="https://github.com/AlignTrue/aligntrue"
+          />
+        }
+        footer={<DocsFooter />}
+        docsRepositoryBase={themeConfig.docsRepositoryBase}
+        editLink="Edit this page on GitHub"
+        navigation
+        sidebar={themeConfig.sidebar}
+        toc={themeConfig.toc}
+      >
+        {children}
+      </Layout>
+    </>
   );
 }
