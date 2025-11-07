@@ -18,6 +18,7 @@ import {
   Moon,
 } from "lucide-react";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
+import { AlphaBanner } from "./components/AlphaBanner";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -511,6 +512,7 @@ export default function HomePage() {
 
           .command-wrapper {
             flex-wrap: wrap;
+            justify-content: center !important;
           }
 
           .hero-buttons {
@@ -531,6 +533,11 @@ export default function HomePage() {
 
           .feature-card {
             text-align: center;
+          }
+
+          /* Center step headers on mobile */
+          .step-card > div:first-child {
+            justify-content: center !important;
           }
         }
 
@@ -559,6 +566,7 @@ export default function HomePage() {
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
+        <AlphaBanner />
         <SiteHeader />
 
         <main id="main-content">
@@ -948,7 +956,7 @@ export default function HomePage() {
                     Two-way sync
                   </h3>
                   <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                    Edit rules OR agent files, changes sync both ways. No manual
+                    Sync rule changes to all agents automatically. No manual
                     copying or outdated rules.
                   </p>
                 </div>

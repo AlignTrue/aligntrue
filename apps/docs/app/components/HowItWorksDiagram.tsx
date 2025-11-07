@@ -65,7 +65,7 @@ export function HowItWorksDiagram() {
 
     const diagramDefinition = `
 graph TD
-    A[Write in any format<br/>AGENTS, CLAUDE, etc.] --> B[run <code>aligntrue sync</code>]
+    A[Write in any format<br/>AGENTS, CLAUDE, etc.] --> B[Run <code>aligntrue sync</code>]
     B --> C[Cursor .mdc]
     B --> D[GitHub Copilot]
     B --> E[Claude Code]
