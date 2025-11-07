@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation clarity:** Updated sync and mode terminology to accurately reflect solo vs team mode behavior
+  - Clarified that two-way sync with auto-pull is solo mode only (disabled in team mode)
+  - Replaced "contributors" with "users" and "team members" (contributors term now reserved for contributing to AlignTrue)
+  - Renamed "Solo developer, open source projects" section to "Flexible rules for distributed users"
+  - Updated homepage, FAQ, workflows guide, and about page to reflect accurate sync behavior
+
 ### Added
 
+- **Alpha banner** on homepage and all docs pages with GitHub link for updates
 - **Automated release workflow** using Changesets and GitHub Actions
 - Release documentation at `docs/development/release-process.md` and `RELEASING.md`
 

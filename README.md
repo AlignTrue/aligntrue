@@ -13,7 +13,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 
 - **Write once, sync everywhere** - One markdown file generates agent-specific formats for 28+ AI coding tools
 - **60-second setup** - Auto-detects your agents and creates starter rules in under a minute
-- **Two-way sync** - Edit rules OR agent files; changes flow both directions automatically
+- **Solo & team modes** - Solo mode for fast iteration, team mode for reproducible builds.
 
 ## Quickstart
 
@@ -128,14 +128,14 @@ aligntrue check                # Validate rules (great for CI)
 - [Drift Detection](https://aligntrue.ai/docs/02-concepts/drift-detection) - Track alignment changes over time
 - [Git Workflows](https://aligntrue.ai/docs/02-concepts/git-workflows) - Pull and share rules via git
 - [Overlays](https://aligntrue.ai/docs/02-concepts/overlays) - Customize third-party packs safely
-- [Examples](https://aligntrue.ai/docs/examples) - Browse 11 curated rule packs
+- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule packs
 
 ## Reference
 
 - [CLI Commands](https://aligntrue.ai/docs/03-reference/cli-reference) - Complete command reference
-- [Import Workflow](https://aligntrue.ai/docs/03-reference/import-workflow) - Migrate from existing agent configs
-- [Troubleshooting](https://aligntrue.ai/docs/04-troubleshooting) - Common issues and solutions
-- [Privacy Controls](https://aligntrue.ai/docs/06-policies/privacy) - Network consent and telemetry
+- [Import Workflow](https://aligntrue.ai/docs/04-reference/import-workflow) - Migrate from existing agent configs
+- [Troubleshooting](https://aligntrue.ai/docs/05-troubleshooting) - Common issues and solutions
+- [Privacy Controls](https://aligntrue.ai/docs/07-policies/privacy) - Network consent and telemetry
 
 ## Contributing
 
@@ -149,15 +149,15 @@ Want to contribute? Check out the guides:
 
 Setting up AlignTrue for local development:
 
-- [Setup](https://aligntrue.ai/docs/07-development/setup) - Prerequisites and installation
-- [Workspace](https://aligntrue.ai/docs/07-development/workspace) - Monorepo structure and packages
-- [Commands](https://aligntrue.ai/docs/07-development/commands) - Development commands and scripts
-- [Architecture](https://aligntrue.ai/docs/07-development/architecture) - Key architectural concepts
+- [Setup](https://aligntrue.ai/docs/08-development/setup) - Prerequisites and installation
+- [Workspace](https://aligntrue.ai/docs/08-development/workspace) - Monorepo structure and packages
+- [Commands](https://aligntrue.ai/docs/08-development/commands) - Development commands and scripts
+- [Architecture](https://aligntrue.ai/docs/08-development/architecture) - Key architectural concepts
 
 ## Learn more
 
 - [GitHub repository](https://github.com/AlignTrue/aligntrue)
-- [Examples](https://aligntrue.ai/docs/examples) - Browse 11 curated rule packs
+- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule packs
 - [Security policy](https://github.com/AlignTrue/aligntrue/blob/main/SECURITY.md)
 
 ## Support

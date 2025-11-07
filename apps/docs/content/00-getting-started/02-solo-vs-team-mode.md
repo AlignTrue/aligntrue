@@ -78,21 +78,21 @@ aligntrue init  # Creates solo mode config by default
 aligntrue sync  # Fast, no validation overhead
 ```
 
-### Solo developer, open source projects
+### Flexible rules for distributed users
 
-**Recommended:** Solo mode (or team mode if you want reproducibility)
+**Recommended:** Solo mode
 
 **Why:**
 
-- Solo mode: Fast iteration, contributors can customize
-- Team mode: Reproducible builds, consistent contributor experience
+- Solo mode: Fast iteration, each user can customize rules locally
+- Team mode: Reproducible builds, consistent rules for all team members
 
-**Example use case:** You maintain an open source project and want contributors to follow the same coding standards.
+**Example use case:** You maintain a project (internal or open source) and want users to adapt rules for their environment without enforcing uniformity.
 
 **Solo mode approach:**
 
 ```bash
-# Commit rules, contributors can customize
+# Commit rules, users can customize locally
 git add .aligntrue/
 git commit -m "Add AlignTrue rules"
 ```
@@ -267,11 +267,11 @@ Yes! This is the recommended approach. Start with solo mode to learn AlignTrue, 
 
 Your rules stay the same. Only the validation and workflow change. Your `.aligntrue/.rules.yaml` file is unchanged.
 
-### Do I need team mode for open source projects?
+### Do I need team mode for projects with multiple users?
 
-Not necessarily. Solo mode works fine for most open source projects. Use team mode if you want:
+Not necessarily. Solo mode works fine when you want users to customize locally. Use team mode if you want:
 
-- Reproducible builds for contributors
+- Reproducible builds for all team members
 - Strict enforcement of approved sources
 - Drift detection in CI
 
