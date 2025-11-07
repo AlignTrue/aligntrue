@@ -101,4 +101,4 @@ After pushing these files:
 
 - [GitHub Dependabot docs](https://docs.github.com/en/code-security/dependabot)
 - [GitHub auto-merge API](https://docs.github.com/en/rest/pulls/merges?apiVersion=2022-11-28#enable-auto-merge-for-a-pull-request)
-- [AlignTrue CI configuration](./../DEVELOPMENT.md#ci-pipeline)
+- [AlignTrue CI configuration](../DEVELOPMENT.md) - See CI/CD section for workflow details

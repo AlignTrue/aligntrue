@@ -24,9 +24,9 @@ When you run `aligntrue init`, AlignTrue automatically configures these values b
 **You edit AGENTS.md or agent files as your source of truth.**
 
 - Rules are written in `AGENTS.md` (universal markdown format) or agent-specific files
-- Auto-pull is enabled to sync changes across all agents
-- Changes flow both directions seamlessly
-- AlignTrue automatically resolves changes
+- Auto-pull is enabled by default (solo mode only) to sync from primary agent back to IR
+- IR automatically syncs to all configured agents
+- AlignTrue detects and helps resolve conflicts
 
 **Best for:**
 

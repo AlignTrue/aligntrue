@@ -42,7 +42,7 @@ aligntrue sync
 
 ### 1. Edit in your preferred format
 
-Write rules in `AGENTS.md`, Cursor's `.mdc`, or any agent format. AlignTrue keeps everything synchronized automatically.
+Write rules in `AGENTS.md`, Cursor's `.mdc`, or any agent format. In solo mode, changes sync across all agents automatically via auto-pull.
 
 ### 2. Consistent behavior
 
@@ -52,9 +52,9 @@ All your AI agents follow the same rules. No more "it works in Cursor but not Co
 
 Share rules across projects, teams, and machines. Git-based workflows with lockfiles and drift detection.
 
-### 4. Two-way sync
+### 4. Two-way sync (in solo mode)
 
-Edit rules OR agent files. AlignTrue keeps them in sync automatically.
+Edit rules in `AGENTS.md` or agent files. Auto-pull syncs changes automatically in solo mode (disabled in team mode for explicit reviews).
 
 ### 5. 28+ agents supported
 

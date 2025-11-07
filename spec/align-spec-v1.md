@@ -617,7 +617,6 @@ AGENTS.md                # Universal agent format
 
 ## References
 
-- [Align Spec v1](./align-spec-v1.md) - Catalog-first design (superseded)
 - [JCS (RFC 8785)](https://www.rfc-editor.org/rfc/rfc8785) - Canonicalization algorithm
 - [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) - Check output format
 
