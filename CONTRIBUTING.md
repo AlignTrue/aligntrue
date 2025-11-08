@@ -82,7 +82,7 @@ For more examples, browse existing packs in the [`AlignTrue/aligns`](https://git
 
 You'll need:
 
-- Node.js 20+ and pnpm 9+
+- Node.js 22+ and pnpm 9+
 - Both repositories cloned:
   - `AlignTrue/aligntrue` (this repo with validation tools)
   - `AlignTrue/aligns` (the registry repo for your pack)

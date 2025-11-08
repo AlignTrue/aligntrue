@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli
@@ -47,7 +47,7 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 aligntrue:
-  image: node:20
+  image: node:22
   script:
     - npm install -g @aligntrue/cli
     - aligntrue check --ci
@@ -68,7 +68,7 @@ version: 2.1
 jobs:
   validate:
     docker:
-      - image: cimg/node:20.0
+      - image: cimg/node:22.0
     steps:
       - checkout
       - run:
@@ -228,7 +228,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm install -g @aligntrue/cli
       - run: aligntrue check --ci
 ```
@@ -255,7 +255,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli
@@ -300,7 +300,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm install -g @aligntrue/cli
       - run: aligntrue check --ci --scope ${{ matrix.scope }}
 ```
@@ -328,7 +328,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli
@@ -382,7 +382,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli
@@ -421,7 +421,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli

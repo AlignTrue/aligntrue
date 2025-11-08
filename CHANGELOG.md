@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Node.js requirement:** Updated from Node 20 to Node 22 across all packages, CI workflows, and documentation
+  - Updated `.node-version` file to 22.14.0
+  - Changed test pool from `threads` to `forks` for Node 22 compatibility with `process.chdir()`
+  - All 13 packages now require Node >=22
+
+### Changed (Previously)
+
 - **Documentation clarity:** Updated sync and mode terminology to accurately reflect solo vs team mode behavior
   - Clarified that two-way sync with auto-pull is solo mode only (disabled in team mode)
   - Replaced "contributors" with "users" and "team members" (contributors term now reserved for contributing to AlignTrue)

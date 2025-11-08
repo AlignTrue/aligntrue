@@ -9,7 +9,7 @@ This guide helps you set up your development environment and understand the cont
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - pnpm 8+
 - Git
 

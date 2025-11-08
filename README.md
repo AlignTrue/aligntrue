@@ -35,9 +35,9 @@ aligntrue sync      # Syncs to all your agents
 - `yarn global add aligntrue` - yarn
 - `pnpm add -g aligntrue` - pnpm
 - `bun install -g aligntrue` - bun
-- `npx aligntrue` - try without installing (requires Node.js 20+)
+- `npx aligntrue` - try without installing (requires Node.js 22+)
 
-**Platform support:** macOS, Windows, Linux (Node.js 20+)
+**Platform support:** macOS, Windows, Linux (Node.js 22+)
 
 **Result:** `.cursor/rules/aligntrue.mdc`, `.vscode/mcp.json`, and more - all synced from AGENTS.md.
 
