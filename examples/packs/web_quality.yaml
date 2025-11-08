@@ -18,7 +18,7 @@ scope:
     ]
 rules:
   - id: "lcp-target"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -30,7 +30,7 @@ rules:
       hint: "Optimize hero image, reduce TTFB, or prioritize critical resources"
 
   - id: "use-next-image"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -42,7 +42,7 @@ rules:
       hint: "Replace <img> with next/image and set width/height or fill + sizes"
 
   - id: "use-next-font"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -54,7 +54,7 @@ rules:
       hint: "Use next/font/google or next/font/local instead of @font-face"
 
   - id: "a11y-eslint-required"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -65,7 +65,7 @@ rules:
       hint: "Add eslint-plugin-jsx-a11y and extend plugin:jsx-a11y/recommended"
 
   - id: "a11y-critical-violations"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:

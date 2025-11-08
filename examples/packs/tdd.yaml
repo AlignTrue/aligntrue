@@ -11,7 +11,7 @@ scope:
   excludes: ["vendor/**", "node_modules/**", "dist/**"]
 rules:
   - id: "test-before-implementation"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:
@@ -22,7 +22,7 @@ rules:
       hint: "Write failing test first, then implement"
 
   - id: "tests-are-deterministic"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -34,7 +34,7 @@ rules:
       hint: "Freeze time, seed randomness, stub I/O and network"
 
   - id: "minimal-changes-to-pass"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:

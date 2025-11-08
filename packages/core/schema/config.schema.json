@@ -121,6 +121,10 @@
             "type": "string",
             "description": "Remote URL (required for type: git or url)"
           },
+          "ref": {
+            "type": "string",
+            "description": "Git branch, tag, or commit SHA (for type: git, defaults to 'main')"
+          },
           "id": {
             "type": "string",
             "description": "Catalog pack ID (required for type: catalog)"

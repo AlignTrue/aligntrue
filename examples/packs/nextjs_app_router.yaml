@@ -10,7 +10,7 @@ scope:
   includes: ["app/**", "pages/**", "next.config.*", "middleware.ts", "src/**"]
 rules:
   - id: "server-components-by-default"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -22,7 +22,7 @@ rules:
       hint: "Remove 'use client' unless component uses useState, useEffect, or browser APIs"
 
   - id: "explicit-caching-strategy"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "regex"
       inputs:
@@ -34,7 +34,7 @@ rules:
       hint: 'Add ''export const revalidate = N'' or ''export const dynamic = "force-static"'''
 
   - id: "validate-server-action-inputs"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -46,7 +46,7 @@ rules:
       hint: "Add schema validation before processing FormData or action inputs"
 
   - id: "no-default-exports-in-lib"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -58,7 +58,7 @@ rules:
       hint: "Use named exports only in shared library code"
 
   - id: "colocate-route-files"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "path_convention"
       inputs:

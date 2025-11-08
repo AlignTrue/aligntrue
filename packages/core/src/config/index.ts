@@ -80,6 +80,7 @@ export interface AlignTrueConfig {
     type: "local" | "git" | "url";
     path?: string;
     url?: string;
+    ref?: string; // Git branch/tag/commit
     id?: string;
     version?: string;
   }>;

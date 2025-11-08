@@ -10,7 +10,7 @@ scope:
   excludes: ["vendor/**", "third_party/**", "node_modules/**", "dist/**"]
 rules:
   - id: "no-committed-secrets"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -22,7 +22,7 @@ rules:
       hint: "Remove secrets, add to .gitignore, rotate credentials, add regression check"
 
   - id: "require-lockfile"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "file_presence"
       inputs:
@@ -32,7 +32,7 @@ rules:
       hint: "Generate lockfile and commit it"
 
   - id: "audit-dependencies"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -44,7 +44,7 @@ rules:
       hint: "Run pnpm audit fix or explicitly waive with tracked issue"
 
   - id: "no-floating-versions"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -56,7 +56,7 @@ rules:
       hint: "Pin exact versions or use lockfile-enforced ranges"
 
   - id: "env-example-exists"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "file_presence"
       inputs:

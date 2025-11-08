@@ -18,18 +18,20 @@ scope:
       "*.ipynb_checkpoints/**",
     ]
 rules:
-  - id: "require-ci-gates"
-    severity: "MUST"
+  - id: "ci.gates.require"
+    severity: "error"
+    applies_to: ["**/*"]
     check:
       type: "file_presence"
       inputs:
-        pattern: ".github/workflows/*.{yml,yaml}"
+        paths: [".github/workflows/*.yml", ".github/workflows/*.yaml"]
       evidence: "Missing CI workflow configuration"
     autofix:
       hint: "Add CI workflow that runs tests and lints on every PR"
 
-  - id: "conventional-commits"
-    severity: "SHOULD"
+  - id: "git.commits.conventional"
+    severity: "warn"
+    applies_to: ["**/*"]
     check:
       type: "regex"
       inputs:
@@ -40,8 +42,9 @@ rules:
     autofix:
       hint: "Use format: 'type(scope): description' e.g. 'feat: add server pagination'"
 
-  - id: "no-generated-artifacts-in-vcs"
-    severity: "MUST"
+  - id: "vcs.artifacts.exclude"
+    severity: "error"
+    applies_to: ["**/*"]
     check:
       type: "command_runner"
       inputs:
