@@ -4,6 +4,9 @@
  * AlignTrue CLI - Main entry point
  */
 
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import {
   init,
   importCommand,
@@ -27,12 +30,20 @@ import {
   override,
 } from "./commands/index.js";
 
+// Get version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, "../package.json"), "utf8"),
+);
+const VERSION = packageJson.version;
+
 async function main() {
   const args = process.argv.slice(2);
 
   // Handle version flag
   if (args[0] === "--version" || args[0] === "-v") {
-    console.log("0.1.0-alpha.2");
+    console.log(VERSION);
     process.exit(0);
   }
 
