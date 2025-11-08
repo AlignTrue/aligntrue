@@ -85,7 +85,7 @@ For more examples, browse existing packs in the [`examples/packs/`](https://gith
 
 You'll need:
 
-- Node.js 20+ and pnpm 9+
+- Node.js 22+ and pnpm 9+
 - The `AlignTrue/aligntrue` repository cloned
 
 ### Validate your pack
