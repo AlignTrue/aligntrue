@@ -259,8 +259,3 @@ export class ExporterRegistry {
     this.manifests.clear();
   }
 }
-
-/**
- * Global singleton registry instance
- */
-export const registry = new ExporterRegistry();
