@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join, dirname } from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,7 +47,7 @@ sources:
 
     // Run check command
     try {
-      execSync(`node ${CLI_BIN} check --ci`, {
+      execFileSync("node", [CLI_BIN, "check", "--ci"], {
         cwd: TEST_DIR,
         encoding: "utf8",
         stdio: "pipe",
@@ -79,7 +79,7 @@ sources:
 
     // Run check command
     try {
-      execSync(`node ${CLI_BIN} check --ci`, {
+      execFileSync("node", [CLI_BIN, "check", "--ci"], {
         cwd: TEST_DIR,
         encoding: "utf8",
         stdio: "pipe",
@@ -116,7 +116,7 @@ rules:
     );
 
     // Run check command - should succeed
-    const output = execSync(`node ${CLI_BIN} check --ci`, {
+    const output = execFileSync("node", [CLI_BIN, "check", "--ci"], {
       cwd: TEST_DIR,
       encoding: "utf8",
     });
