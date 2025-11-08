@@ -174,8 +174,13 @@ async function teamStatus(): Promise<void> {
         console.log(`  File: ${lockfilePath} (not generated yet)`);
         console.log("  💡 Run 'aligntrue sync' to generate");
       }
+      console.log("  ℹ️  Lockfile Modes:");
+      console.log("    off    - Generate lockfile but skip validation");
       console.log(
-        "  ℹ️  Validation mode: off=generate only, soft=warn, strict=block",
+        "    soft   - Warn about drift and unapproved hashes, but allow sync",
+      );
+      console.log(
+        "    strict - Block sync if lockfile validation fails or hash not approved",
       );
     } else {
       console.log("Lockfile: disabled");
@@ -203,8 +208,8 @@ async function teamStatus(): Promise<void> {
       console.log("  💡 Run 'aligntrue team approve <source>' to create");
     }
 
-    // Drift status (placeholder for Session 6)
-    console.log("Drift Status: Run 'aligntrue drift' to check (Session 6)");
+    // Drift status
+    console.log("Drift Status: Run 'aligntrue drift' to check");
 
     // Team members (placeholder - no git detection)
     console.log("Team Members: (configure in .aligntrue/config.yaml)");

@@ -50,7 +50,10 @@ export function enforceLockfile(
     console.warn("\n⚠️  Lockfile drift detected (soft mode):\n");
     console.warn(message);
     console.warn(
-      "\nSync will continue. Run `aligntrue lock` to update the lockfile.\n",
+      "\nSync will continue. To approve these changes:\n" +
+        "  1. Review the changes above\n" +
+        "  2. Run: aligntrue team approve --current\n" +
+        "  3. Commit .aligntrue/allow.yaml to version control\n",
     );
 
     return {
@@ -65,7 +68,10 @@ export function enforceLockfile(
     console.error("\n❌ Lockfile validation failed (strict mode):\n");
     console.error(message);
     console.error(
-      "\nSync aborted. Run `aligntrue lock` to update the lockfile.\n",
+      "\nSync aborted. To approve these changes:\n" +
+        "  1. Review the changes above\n" +
+        "  2. Run: aligntrue team approve --current\n" +
+        "  3. Commit .aligntrue/allow.yaml to version control\n",
     );
 
     return {

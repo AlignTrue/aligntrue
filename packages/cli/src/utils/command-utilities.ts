@@ -145,7 +145,7 @@ export function parseCommonArgs(
           flags[key] = nextArg;
           i++; // Skip next arg (it's the value)
         } else {
-          flags[key] = true; // Flag present but no value
+          throw new Error(`Flag ${def.flag} requires a value`);
         }
       } else {
         // Boolean flag

@@ -18,7 +18,11 @@ import {
   importFromAgent,
   saveMinimalConfig,
 } from "@aligntrue/core";
-import { parseAllowList } from "@aligntrue/core/team/allow.js";
+import {
+  parseAllowList,
+  addSourceToAllowList,
+  writeAllowList,
+} from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import {
   validateRuleId,
@@ -222,13 +226,71 @@ export async function sync(args: string[]): Promise<void> {
           );
 
           if (!isApproved && !force) {
-            console.error("✗ Bundle hash not in allow list (team mode)");
-            console.error(`  Current bundle: ${bundleHash.slice(0, 19)}...`);
-            console.error("\nTo approve this bundle:");
-            console.error("  aligntrue team approve --current");
-            console.error("\nOr bypass this check (not recommended):");
-            console.error("  aligntrue sync --force");
-            process.exit(1);
+            const lockfileMode = config.lockfile?.mode || "soft";
+
+            if (lockfileMode === "soft") {
+              // Soft mode: warn but allow to proceed
+              clack.log.warn("⚠ Bundle hash not in allow list (soft mode)");
+              clack.log.warn(`  Current bundle: ${bundleHash.slice(0, 19)}...`);
+              clack.log.info("  Sync will continue. To approve:");
+              clack.log.info("    aligntrue team approve --current");
+            } else if (lockfileMode === "strict") {
+              // Strict mode: check if interactive
+              const isTTY = Boolean(
+                process.stdin.isTTY && process.stdout.isTTY,
+              );
+
+              if (isTTY) {
+                // Interactive strict mode: prompt to approve
+                clack.log.warn(
+                  "⚠ Bundle hash not in allow list (strict mode)",
+                );
+                clack.log.info(
+                  `  Current bundle: ${bundleHash.slice(0, 19)}...`,
+                );
+
+                const shouldApprove = await clack.confirm({
+                  message: "Approve this bundle and continue sync?",
+                  initialValue: false,
+                });
+
+                if (clack.isCancel(shouldApprove) || !shouldApprove) {
+                  console.error("\nSync cancelled. To approve later:");
+                  console.error("  aligntrue team approve --current");
+                  process.exit(1);
+                }
+
+                // User approved - add to allow list
+                try {
+                  const updatedAllowList = await addSourceToAllowList(
+                    bundleHash,
+                    allowList,
+                  );
+                  writeAllowList(allowListPath, updatedAllowList);
+                  clack.log.success(
+                    "✓ Bundle approved and added to allow list",
+                  );
+                  clack.log.info("  Remember to commit .aligntrue/allow.yaml");
+                } catch (err) {
+                  console.error("✗ Failed to update allow list");
+                  console.error(
+                    `  ${err instanceof Error ? err.message : String(err)}`,
+                  );
+                  process.exit(1);
+                }
+              } else {
+                // Non-interactive strict mode: show error and exit
+                console.error("✗ Bundle hash not in allow list (strict mode)");
+                console.error(
+                  `  Current bundle: ${bundleHash.slice(0, 19)}...`,
+                );
+                console.error("\nTo approve this bundle:");
+                console.error("  aligntrue team approve --current");
+                console.error("\nOr bypass this check (not recommended):");
+                console.error("  aligntrue sync --force");
+                process.exit(1);
+              }
+            }
           }
 
           if (!isApproved && force) {
@@ -1097,12 +1159,13 @@ export async function sync(args: string[]): Promise<void> {
     // Show helpful suggestions
     if (error instanceof Error) {
       if (error.message.includes("lockfile")) {
-        clack.log.info("Lockfile drift detected. Options:");
+        clack.log.info("Lockfile drift detected. To approve these changes:");
+        clack.log.info("  1. Review the changes above");
+        clack.log.info("  2. Run: aligntrue team approve --current");
+        clack.log.info("  3. Commit .aligntrue/allow.yaml to version control");
+        clack.log.info("");
         clack.log.info(
-          "  1. Review changes and update lockfile: aligntrue lock",
-        );
-        clack.log.info(
-          "  2. Set lockfile.mode: soft in config for warnings only",
+          "Or set lockfile.mode: soft in config for warnings only",
         );
       } else if (error.message.includes("exporter")) {
         clack.log.info(

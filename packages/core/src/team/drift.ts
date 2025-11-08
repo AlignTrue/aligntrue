@@ -251,7 +251,7 @@ export function detectSeverityRemapDrift(
       rule_id: "_team_policy",
       message: "Team severity remapping policy has changed",
       suggestion:
-        "Review changes and regenerate lockfile if approved: aligntrue lock",
+        "Review changes and approve if correct: aligntrue team approve --current",
     });
   }
 
@@ -280,7 +280,8 @@ export function detectOverlayDrift(
         category: "overlay",
         rule_id: entry.rule_id,
         message: "Overlay configuration has changed since lockfile generation",
-        suggestion: "Regenerate lockfile: aligntrue lock",
+        suggestion:
+          "Review changes and approve if correct: aligntrue team approve --current",
         overlay_hash: entry.overlay_hash,
         expected_overlay_hash: currentOverlayHash,
       });
