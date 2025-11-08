@@ -17,11 +17,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Git source support in sync command:** Sync now supports git repositories as rule sources
+  - Pull rules from remote git repositories with automatic caching
+  - Support for multiple sources with automatic bundle merging
+  - Cache reuse for faster subsequent syncs
+  - Commit SHA tracking in merge info output
+  - Example config:
+    ```yaml
+    sources:
+      - type: git
+        url: https://github.com/AlignTrue/examples
+        path: global.yaml
+    ```
 - **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes
   - Reduces workflow from 5 steps to 2 steps (approve during sync instead of separate command)
   - Auto-adds approved hash to allow list and reminds to commit
   - Non-interactive mode still shows error with manual approval instructions
 - **Comprehensive team mode tests:** Added 6 new error handling tests covering flag validation, error messages, and team command validation
+- **Evergreen test repository:** Documented https://github.com/AlignTrue/examples as stable test repo for git source integration testing
 
 ### Changed
 

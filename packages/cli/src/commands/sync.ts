@@ -46,6 +46,7 @@ import {
 } from "@aligntrue/core/sync";
 import { WorkflowDetector } from "../utils/workflow-detector.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
+import { resolveAndMergeSources } from "../utils/source-resolver.js";
 
 // ANSI color codes for diff output
 const colors = {
@@ -144,8 +145,14 @@ export async function sync(args: string[]): Promise<void> {
       ],
       notes: [
         "Description:",
-        "  Loads rules from .aligntrue/.rules.yaml (internal IR), resolves scopes,",
-        "  and syncs to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).",
+        "  Loads rules from configured sources (local files, git repositories),",
+        "  resolves scopes, merges multiple sources if configured, and syncs to",
+        "  configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).",
+        "",
+        "  Supports:",
+        "  - Local sources: .aligntrue/.rules.yaml or custom paths",
+        "  - Git sources: remote repositories with automatic caching",
+        "  - Multiple sources: automatic bundle merging with conflict resolution",
         "",
         "  In team mode with lockfile enabled, validates lockfile before syncing.",
         "",
@@ -306,15 +313,65 @@ export async function sync(args: string[]): Promise<void> {
     }
   }
 
-  // Step 3: Validate source path
-  const sourcePath = config.sources?.[0]?.path || paths.rules;
-  const absoluteSourcePath = resolve(cwd, sourcePath);
+  // Step 3: Resolve sources (local, git, or bundle merge)
+  spinner.start("Resolving sources");
 
-  if (!existsSync(absoluteSourcePath)) {
+  let sourcePath: string;
+  let absoluteSourcePath: string;
+  let bundleResult: Awaited<ReturnType<typeof resolveAndMergeSources>>;
+
+  try {
+    bundleResult = await resolveAndMergeSources(config, {
+      cwd,
+      offlineMode: false,
+      warnConflicts: true,
+    });
+
+    // Use first source path for conflict detection and display
+    // (In case of multiple sources, this is the primary/first declared source)
+    sourcePath =
+      config.sources?.[0]?.type === "local"
+        ? config.sources[0].path || paths.rules
+        : bundleResult.sources[0]?.sourcePath || ".aligntrue/.rules.yaml";
+
+    absoluteSourcePath =
+      config.sources?.[0]?.type === "local"
+        ? resolve(cwd, sourcePath)
+        : sourcePath;
+
+    spinner.stop(
+      bundleResult.sources.length > 1
+        ? `Resolved and merged ${bundleResult.sources.length} sources`
+        : "Source resolved",
+    );
+
+    // Show merge info if multiple sources
+    if (bundleResult.sources.length > 1) {
+      clack.log.info("Sources merged:");
+      bundleResult.sources.forEach((src, idx) => {
+        const prefix = idx === 0 ? "  Base:" : "  Overlay:";
+        clack.log.info(
+          `${prefix} ${src.sourcePath}${src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : ""}`,
+        );
+      });
+
+      if (bundleResult.conflicts && bundleResult.conflicts.length > 0) {
+        clack.log.warn(
+          `⚠ ${bundleResult.conflicts.length} merge conflict${bundleResult.conflicts.length !== 1 ? "s" : ""} resolved`,
+        );
+      }
+    }
+  } catch (err) {
+    spinner.stop("Source resolution failed");
     exitWithError(
       {
-        ...Errors.rulesNotFound(sourcePath),
-        details: [`Expected path: ${absoluteSourcePath}`],
+        ...Errors.fileWriteFailed(
+          config.sources?.[0]?.type === "local"
+            ? config.sources[0].path || "unknown"
+            : config.sources?.[0]?.url || "unknown",
+          err instanceof Error ? err.message : String(err),
+        ),
+        hint: "Check your source configuration in .aligntrue/config.yaml",
       },
       2,
     );
@@ -620,13 +677,11 @@ export async function sync(args: string[]): Promise<void> {
     );
   }
 
-  // Step 5.5: Load and validate rule IDs in IR
+  // Step 5.5: Validate rule IDs in resolved bundle
   spinner.start("Validating rules");
 
   try {
-    const ir = await loadIR(absoluteSourcePath);
-
-    // Collect all invalid rule IDs
+    // Collect all invalid rule IDs from the merged bundle
     const invalidRules: Array<{
       index: number;
       id: string;
@@ -634,7 +689,7 @@ export async function sync(args: string[]): Promise<void> {
       suggestion?: string;
     }> = [];
 
-    const rules = ir.rules || [];
+    const rules = bundleResult.pack.rules || [];
     for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
       if (!rule) continue;
@@ -666,7 +721,7 @@ export async function sync(args: string[]): Promise<void> {
       console.log("");
       clack.log.error("Validation failed");
       console.log("");
-      clack.log.error(`Invalid rule IDs in ${sourcePath}:`);
+      clack.log.error(`Invalid rule IDs in bundle:`);
       console.log("");
 
       invalidRules.forEach(({ index, id, error, suggestion }) => {
@@ -692,9 +747,39 @@ export async function sync(args: string[]): Promise<void> {
     spinner.stop("Validation failed");
     exitWithError(
       Errors.syncFailed(
-        `Failed to load or validate rules: ${_error instanceof Error ? _error.message : String(_error)}`,
+        `Failed to validate rules: ${_error instanceof Error ? _error.message : String(_error)}`,
       ),
     );
+  }
+
+  // Step 5.75: Write merged bundle to local IR (if sources resolved successfully)
+  // This updates the local .rules.yaml with the merged bundle before syncing to agents
+  if (bundleResult.sources.length > 0) {
+    try {
+      const yaml = await import("yaml");
+      const bundleYaml = yaml.stringify(bundleResult.pack);
+
+      // For local sources, write to the specified path
+      // For git/remote sources, write to default .aligntrue/.rules.yaml
+      const targetPath =
+        config.sources?.[0]?.type === "local"
+          ? resolve(cwd, config.sources[0].path || paths.rules)
+          : resolve(cwd, paths.rules);
+
+      writeFileSync(targetPath, bundleYaml, "utf-8");
+
+      // Update absoluteSourcePath to point to the local file we just wrote
+      // This ensures SyncEngine reads from the correct local path
+      absoluteSourcePath = targetPath;
+    } catch (err) {
+      exitWithError(
+        Errors.fileWriteFailed(
+          "merged bundle",
+          err instanceof Error ? err.message : String(err),
+        ),
+        2,
+      );
+    }
   }
 
   // Step 6: Auto-backup (if configured and not dry-run)
