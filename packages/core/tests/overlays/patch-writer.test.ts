@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, mkdirSync, rmdirSync, readdirSync } from "fs";
+import { existsSync, mkdirSync, rmSync, readdirSync } from "fs";
 import { join } from "path";
 import {
   writePatchFile,
@@ -22,7 +22,7 @@ describe("writePatchFile", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 
@@ -33,7 +33,7 @@ describe("writePatchFile", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 
@@ -168,7 +168,7 @@ describe("listPatchFiles", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 
@@ -178,7 +178,7 @@ describe("listPatchFiles", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 
@@ -243,7 +243,7 @@ describe("deletePatchFile", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 
@@ -253,7 +253,7 @@ describe("deletePatchFile", () => {
       for (const file of files) {
         deletePatchFile(join(TEST_ARTIFACTS_DIR, file));
       }
-      rmdirSync(TEST_ARTIFACTS_DIR);
+      rmSync(TEST_ARTIFACTS_DIR, { recursive: true, force: true });
     }
   });
 

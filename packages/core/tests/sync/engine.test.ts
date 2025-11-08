@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, mkdirSync, rmdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { MockExporter } from "../mocks/mock-exporter.js";
@@ -32,7 +32,7 @@ describe("SyncEngine", () => {
     // Clean up test files
     if (existsSync(TEST_DIR)) {
       try {
-        rmdirSync(TEST_DIR, { recursive: true });
+        rmSync(TEST_DIR, { recursive: true, force: true });
       } catch {
         // Ignore errors
       }

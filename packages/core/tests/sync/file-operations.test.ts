@@ -8,7 +8,7 @@ import {
   readFileSync,
   unlinkSync,
   mkdirSync,
-  rmdirSync,
+  rmSync,
   existsSync,
 } from "fs";
 import { join } from "path";
@@ -51,7 +51,7 @@ describe("File Operations", () => {
       }
 
       try {
-        rmdirSync(TEST_DIR, { recursive: true });
+        rmSync(TEST_DIR, { recursive: true, force: true });
       } catch {
         // Ignore errors
       }
