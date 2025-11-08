@@ -11,7 +11,7 @@ scope:
   excludes: ["vendor/**", "node_modules/**", "dist/**"]
 rules:
   - id: "require-readme"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "file_presence"
       inputs:
@@ -21,7 +21,7 @@ rules:
       hint: "Create README.md with: what it is, how to try it, how to run tests, how to build, how to contribute"
 
   - id: "readme-has-quickstart"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -33,7 +33,7 @@ rules:
       hint: "Add quickstart section with runnable commands"
 
   - id: "behavior-change-updates-docs"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -44,7 +44,7 @@ rules:
       hint: "Update relevant docs in the same PR"
 
   - id: "no-broken-links"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:

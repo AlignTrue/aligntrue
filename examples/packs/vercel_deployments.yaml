@@ -18,7 +18,7 @@ scope:
     ]
 rules:
   - id: "no-client-secrets"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -30,7 +30,7 @@ rules:
       hint: "Only read process.env.NEXT_PUBLIC_* in Client Components"
 
   - id: "no-committed-env-files"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -41,7 +41,7 @@ rules:
       hint: "Remove .env* from git and add to .gitignore"
 
   - id: "edge-runtime-requirements"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "regex"
       inputs:
@@ -53,7 +53,7 @@ rules:
       hint: "Remove Node-only APIs or switch to Node runtime"
 
   - id: "preview-url-in-pr"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "regex"
       inputs:

@@ -563,8 +563,21 @@ export async function sync(args: string[]): Promise<void> {
 
   try {
     // Discover adapters from exporters package
-    // Look for manifests in the exporters dist directory
-    const exportersDistPath = resolve(__dirname, "../../../exporters/dist");
+    // Use import.meta.resolve to find the installed package location
+    let exportersDistPath: string;
+    try {
+      // Try to resolve the exporters package using Node's module resolution
+      const exportersPackagePath = await import.meta.resolve(
+        "@aligntrue/exporters",
+      );
+      // Convert file:// URL to path and get the package directory
+      const exportersIndexPath = fileURLToPath(exportersPackagePath);
+      // The resolved path points to dist/index.js, we want the dist directory
+      exportersDistPath = dirname(exportersIndexPath);
+    } catch {
+      // Fallback to relative path for development (workspace)
+      exportersDistPath = resolve(__dirname, "../../../exporters/dist");
+    }
     const manifestPaths = registry.discoverAdapters(exportersDistPath);
 
     // Load manifests and handlers for configured exporters

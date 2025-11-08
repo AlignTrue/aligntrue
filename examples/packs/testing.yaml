@@ -11,7 +11,7 @@ scope:
   excludes: ["vendor/**", "node_modules/**", "dist/**"]
 rules:
   - id: "test-pyramid-balance"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:
@@ -22,7 +22,7 @@ rules:
       hint: "Add more unit tests; prefer unit over integration over e2e"
 
   - id: "no-sleeps-in-tests"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -34,7 +34,7 @@ rules:
       hint: "Wait on explicit conditions with timeouts instead"
 
   - id: "tests-are-fast"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:
@@ -46,7 +46,7 @@ rules:
       hint: "Optimize test or use isolated units and local fakes"
 
   - id: "coverage-threshold"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "command_runner"
       inputs:
@@ -58,7 +58,7 @@ rules:
       hint: "Add tests for critical paths and public APIs"
 
   - id: "no-flaky-tests-without-issue"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:

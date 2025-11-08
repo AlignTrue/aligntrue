@@ -10,7 +10,7 @@ scope:
   excludes: ["vendor/**", "third_party/**", "node_modules/**"]
 rules:
   - id: "reproduce-before-fixing"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "file_presence"
       inputs:
@@ -20,7 +20,7 @@ rules:
       hint: "Create a minimal repro script showing the exact failure"
 
   - id: "regression-test-before-fix"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -31,7 +31,7 @@ rules:
       hint: "Add a failing test that proves the bug before implementing the fix"
 
   - id: "no-temp-debug-artifacts"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
