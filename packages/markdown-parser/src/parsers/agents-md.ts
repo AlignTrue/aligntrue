@@ -60,31 +60,44 @@ export function parseAgentsMd(content: string): AgentsMdParseResult {
 /**
  * Parse HTML comment format (new format with JSON metadata)
  * Format: <!-- aligntrue:begin {...} --> ... <!-- aligntrue:end {...} -->
+ *
+ * Uses split-based parsing to avoid ReDoS (Regular Expression Denial of Service)
+ * vulnerability. String.split() is linear in input length with no backtracking.
  */
 function parseHtmlCommentFormat(content: string): AlignRule[] {
   const rules: AlignRule[] = [];
 
-  // Match HTML comment blocks with metadata
-  // Simplified regex to avoid ReDoS: use atomic structure and avoid backtracking quantifiers
-  const htmlCommentRegex =
-    /<!-- aligntrue:begin (\{[^}]*\}) -->\s*\n## Rule: ([^\n]+)\s*\n([\s\S]*?)<!-- aligntrue:end (\{[^}]*\}) -->/g;
+  // Use string splitting to avoid ReDoS vulnerability with complex regex
+  // Split by opening delimiter to find all blocks
+  const blocks = content.split(/<!-- aligntrue:begin (\{[^}]*\}) -->/);
 
-  let match;
   let iterations = 0;
   const maxIterations = 1000;
 
-  while ((match = htmlCommentRegex.exec(content)) !== null) {
+  // Process blocks (odd indices contain metadata, even indices contain content after)
+  for (let i = 1; i < blocks.length; i += 2) {
     if (++iterations > maxIterations) {
       throw new Error(
         `Parser exceeded maximum iterations (${maxIterations}). This may indicate malformed content.`,
       );
     }
 
-    const beginMetadata = match[1];
-    const ruleName = match[2]?.trim();
-    const ruleBody = match[3]?.trim();
+    const beginMetadata = blocks[i];
+    const contentAfter = blocks[i + 1] || "";
 
-    if (!beginMetadata || !ruleName || !ruleBody) {
+    // Extract the rule content and closing tag
+    const endMatch = contentAfter.match(
+      /\n## Rule: ([^\n]+)\s*\n([\s\S]*?)<!-- aligntrue:end (\{[^}]*\}) -->/,
+    );
+
+    if (!endMatch || !endMatch[1] || !endMatch[2] || !beginMetadata) {
+      continue;
+    }
+
+    const ruleName = endMatch[1]?.trim();
+    const ruleBody = endMatch[2]?.trim();
+
+    if (!ruleName || !ruleBody) {
       continue;
     }
 

@@ -4,9 +4,8 @@ export * from "./config/index.js";
 // Two-way sync engine
 export * from "./sync/index.js";
 
-// Scopes and bundling
+// Scopes and lockfile
 export * from "./scope.js";
-export * from "./bundle.js";
 export * from "./lockfile.js";
 
 // Performance monitoring and optimization
