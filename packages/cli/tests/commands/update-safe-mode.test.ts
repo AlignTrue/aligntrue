@@ -8,7 +8,7 @@ import {
   existsSync,
   writeFileSync,
   mkdirSync,
-  rmdirSync,
+  rmSync,
   unlinkSync,
   readdirSync,
 } from "fs";
@@ -200,7 +200,7 @@ function cleanupTestDir(dir: string): void {
     const fullPath = join(dir, file.name);
     if (file.isDirectory()) {
       cleanupTestDir(fullPath);
-      rmdirSync(fullPath);
+      rmSync(fullPath, { recursive: true, force: true });
     } else {
       unlinkSync(fullPath);
     }
@@ -208,7 +208,7 @@ function cleanupTestDir(dir: string): void {
 
   if (existsSync(dir)) {
     try {
-      rmdirSync(dir);
+      rmSync(dir, { recursive: true, force: true });
     } catch {
       // May fail if not empty, that's ok
     }

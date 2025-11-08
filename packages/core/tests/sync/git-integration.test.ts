@@ -3,13 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  writeFileSync,
-  mkdirSync,
-  rmdirSync,
-  existsSync,
-  readFileSync,
-} from "fs";
+import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 import { GitIntegration } from "../../src/sync/git-integration.js";
@@ -24,7 +18,7 @@ describe("GitIntegration", () => {
 
   beforeEach(() => {
     if (existsSync(TEST_DIR)) {
-      rmdirSync(TEST_DIR, { recursive: true });
+      rmSync(TEST_DIR, { recursive: true, force: true });
     }
     mkdirSync(TEST_DIR, { recursive: true });
     gitIntegration = new GitIntegration();
@@ -33,7 +27,7 @@ describe("GitIntegration", () => {
   afterEach(() => {
     if (existsSync(TEST_DIR)) {
       try {
-        rmdirSync(TEST_DIR, { recursive: true });
+        rmSync(TEST_DIR, { recursive: true, force: true });
       } catch {
         // Ignore errors
       }
