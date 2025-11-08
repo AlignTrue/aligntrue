@@ -9,7 +9,7 @@ describe("YAML Parsing Edge Cases", () => {
   it("parses empty YAML", () => {
     const result = parseYamlToJson("");
     console.log("Empty YAML:", typeof result, result);
-    expect(result).toBeDefined();
+    expect(result).toBeUndefined();
   });
 
   it("parses YAML with only comments", () => {
@@ -43,7 +43,7 @@ version: 1.0.0`;
 id: test1
 ---
 id: test2`;
-    const result = parseYamlToJson(yaml);
-    console.log("Multiple docs:", typeof result, result);
+    // js-yaml doesn't support multiple documents; expect it to throw
+    expect(() => parseYamlToJson(yaml)).toThrow();
   });
 });

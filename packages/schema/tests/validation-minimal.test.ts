@@ -12,7 +12,7 @@ describe("Minimal Pack Validation", () => {
 version: 1.0.0
 spec_version: "1"
 rules:
-  - id: test.rule
+  - id: test.rule.linting
     severity: warn
     applies_to: ["**/*.ts"]
     guidance: Test rule`;
@@ -37,7 +37,7 @@ rules:
       spec_version: "1",
       rules: [
         {
-          id: "test.rule",
+          id: "test.rule.linting",
           severity: "warn",
           applies_to: ["**/*.ts"],
           guidance: "Test rule",
