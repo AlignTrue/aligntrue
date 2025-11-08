@@ -11,7 +11,7 @@
     "./vscode-mcp": "./dist/vscode-mcp/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"const fs=require('fs'),path=require('path');function copyManifests(dir){fs.readdirSync(dir,{withFileTypes:true}).forEach(e=>{const p=path.join(dir,e.name);if(e.isDirectory())copyManifests(p);else if(e.name==='manifest.json'){const t=p.replace('src','dist');fs.mkdirSync(path.dirname(t),{recursive:true});const content=fs.readFileSync(p,'utf8');const fixed=content.replace(/\\\"\\.\\/index\\.ts\\\"/g,'\\\"./index.js\\\"');fs.writeFileSync(t,fixed)}})};copyManifests('src')\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
