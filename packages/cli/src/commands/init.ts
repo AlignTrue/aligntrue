@@ -138,6 +138,7 @@ export async function init(args: string[] = []): Promise<void> {
   const forceNonInteractive =
     (parsed.flags["non-interactive"] as boolean | undefined) ||
     (parsed.flags["yes"] as boolean | undefined) ||
+    process.env["CI"] === "true" ||
     false;
   const useInteractive = shouldUseInteractive(forceNonInteractive);
   const nonInteractive = !useInteractive;

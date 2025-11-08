@@ -267,6 +267,7 @@ async function teamEnable(
   const nonInteractive =
     (flags["yes"] as boolean | undefined) ||
     (flags["non-interactive"] as boolean | undefined) ||
+    process.env["CI"] === "true" ||
     false;
 
   // Check if config exists

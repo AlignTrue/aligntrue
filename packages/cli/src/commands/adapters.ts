@@ -41,12 +41,12 @@ function getExportersPath(): string {
       "@aligntrue/exporters/package.json",
     );
     const exportersRoot = dirname(exportersPackage);
-    return join(exportersRoot, "src");
+    return join(exportersRoot, "dist");
   } catch {
     // Fallback to relative path (dev/tests)
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    return join(__dirname, "../../../exporters/src");
+    return join(__dirname, "../../../exporters/dist");
   }
 }
 

@@ -378,6 +378,15 @@ async function validateVendoredPack(
   try {
     const content = readFileSync(packPath, "utf8");
     const pack = parseYamlToJson(content);
+
+    // Handle edge cases: empty YAML returns undefined, comments-only returns null
+    if (pack === undefined || pack === null) {
+      return {
+        valid: false,
+        error: "Empty or invalid pack file",
+      };
+    }
+
     const validation = validateAlignSchema(pack);
 
     if (!validation.valid) {
