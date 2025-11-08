@@ -7,12 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Team mode critical fixes:**
+  - Fixed `--accept-agent` crash when value is missing (now throws clear error)
+  - Fixed error messages referencing non-existent `aligntrue lock` command (now suggests `aligntrue team approve`)
+  - Removed "Session 6" debug artifact from team status output
+  - Allow list now enforced in both soft and strict modes (soft warns, strict blocks)
+
+### Added
+
+- **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes
+  - Reduces workflow from 5 steps to 2 steps (approve during sync instead of separate command)
+  - Auto-adds approved hash to allow list and reminds to commit
+  - Non-interactive mode still shows error with manual approval instructions
+- **Comprehensive team mode tests:** Added 6 new error handling tests covering flag validation, error messages, and team command validation
+
 ### Changed
 
 - **Node.js requirement:** Updated from Node 20 to Node 22 across all packages, CI workflows, and documentation
   - Updated `.node-version` file to 22.14.0
   - Changed test pool from `threads` to `forks` for Node 22 compatibility with `process.chdir()`
   - All 13 packages now require Node >=22
+- **Improved error messages:** All lockfile validation errors now show correct approval workflow
+  - Soft mode: warns about unapproved hash but allows sync to proceed
+  - Strict mode: blocks sync and shows clear 3-step approval process
+- **Enhanced team status output:** Clarified lockfile mode descriptions (off/soft/strict)
 
 ### Changed (Previously)
 
