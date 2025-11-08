@@ -73,6 +73,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <Head faviconGlyph=":">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>{`
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        `}</style>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
