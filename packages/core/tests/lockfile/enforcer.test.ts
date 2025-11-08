@@ -84,11 +84,11 @@ describe("lockfile enforcer", () => {
       );
     });
 
-    it("suggests running aligntrue lock", () => {
+    it("suggests running aligntrue team approve", () => {
       enforceLockfile("soft", invalidResult);
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("aligntrue lock"),
+        expect.stringContaining("aligntrue team approve"),
       );
     });
 
@@ -136,11 +136,11 @@ describe("lockfile enforcer", () => {
       );
     });
 
-    it("suggests running aligntrue lock", () => {
+    it("suggests running aligntrue team approve", () => {
       enforceLockfile("strict", invalidResult);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("aligntrue lock"),
+        expect.stringContaining("aligntrue team approve"),
       );
     });
 

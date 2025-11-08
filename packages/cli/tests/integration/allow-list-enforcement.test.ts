@@ -124,6 +124,12 @@ describe("Allow List Enforcement", () => {
   it("shows helpful error message when bundle not approved", async () => {
     await init(["--yes"]);
     await team(["enable", "--yes"]);
+
+    // Set strict mode for enforcement
+    const config = readFileSync(".aligntrue/config.yaml", "utf-8");
+    const updatedConfig = config.replace("mode: soft", "mode: strict");
+    writeFileSync(".aligntrue/config.yaml", updatedConfig, "utf-8");
+
     await sync(["--yes"]);
 
     // Create allow list with different hash
@@ -133,6 +139,12 @@ describe("Allow List Enforcement", () => {
     };
     writeFileSync(".aligntrue/allow.yaml", stringifyYaml(allowList), "utf-8");
 
+    // Mock non-interactive mode
+    const originalStdinIsTTY = process.stdin.isTTY;
+    const originalStdoutIsTTY = process.stdout.isTTY;
+    (process.stdin as any).isTTY = undefined;
+    (process.stdout as any).isTTY = undefined;
+
     // Capture console.error output
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -140,6 +152,10 @@ describe("Allow List Enforcement", () => {
       await sync(["--yes"]);
     } catch {
       // Expected to throw
+    } finally {
+      // Restore TTY
+      (process.stdin as any).isTTY = originalStdinIsTTY;
+      (process.stdout as any).isTTY = originalStdoutIsTTY;
     }
 
     // Verify helpful error message was shown
