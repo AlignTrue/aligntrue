@@ -2,7 +2,13 @@
  * Team mode management commands
  */
 
-import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
+import {
+  existsSync,
+  writeFileSync,
+  mkdirSync,
+  renameSync,
+  readFileSync,
+} from "fs";
 import { dirname } from "path";
 import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
@@ -19,6 +25,7 @@ import {
   removeSourceFromAllowList,
   writeAllowList,
 } from "@aligntrue/core/team/allow.js";
+import { applyDefaults } from "@aligntrue/core";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -32,6 +39,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     alias: "-n",
     hasValue: false,
     description: "Same as --yes",
+  },
+  {
+    flag: "--current",
+    hasValue: false,
+    description: "Approve current bundle hash from lockfile",
   },
 ];
 const ALLOW_LIST_PATH = ".aligntrue/allow.yaml";
@@ -49,7 +61,8 @@ export async function team(args: string[]): Promise<void> {
         "aligntrue team enable",
         "aligntrue team enable --yes",
         "aligntrue team status",
-        "aligntrue team approve https://github.com/yourorg/rules",
+        "aligntrue team approve --current",
+        "aligntrue team approve sha256:abc123...",
         "aligntrue team list-allowed",
         "aligntrue team remove sha256:abc123...",
       ],
@@ -75,7 +88,7 @@ export async function team(args: string[]): Promise<void> {
       await teamStatus();
       break;
     case "approve":
-      await teamApprove(parsed.positional.slice(1));
+      await teamApprove(parsed.positional.slice(1), parsed.flags);
       break;
     case "list-allowed":
       await teamListAllowed();
@@ -93,7 +106,8 @@ export async function team(args: string[]): Promise<void> {
           "aligntrue team enable",
           "aligntrue team enable --yes",
           "aligntrue team status",
-          "aligntrue team approve https://github.com/yourorg/rules",
+          "aligntrue team approve --current",
+          "aligntrue team approve sha256:abc123...",
           "aligntrue team list-allowed",
           "aligntrue team remove sha256:abc123...",
         ],
@@ -319,8 +333,20 @@ async function teamEnable(
       bundle: true,
     };
 
+    // Ensure lockfile config exists and set soft mode as default for team
+    if (!config.lockfile) {
+      config.lockfile = {};
+    }
+    // Explicitly set to soft if not already configured
+    if (!config.lockfile.mode || config.lockfile.mode === "off") {
+      config.lockfile.mode = "soft";
+    }
+
+    // Apply defaults to fill in other missing fields
+    const configWithDefaults = applyDefaults(config);
+
     // Write config back atomically
-    const yamlContent = stringifyYaml(config);
+    const yamlContent = stringifyYaml(configWithDefaults);
     const tempPath = `${configPath}.tmp`;
 
     // Ensure directory exists
@@ -366,12 +392,48 @@ async function teamEnable(
 /**
  * Approve source(s) for team allow list
  */
-async function teamApprove(sources: string[]): Promise<void> {
+async function teamApprove(
+  sources: string[],
+  flags: Record<string, string | boolean | undefined>,
+): Promise<void> {
   try {
-    // Check if at least one source provided
+    const current = flags["current"] as boolean | undefined;
+
+    // Handle --current flag
+    if (current) {
+      const lockfilePath = ".aligntrue.lock.json";
+      if (!existsSync(lockfilePath)) {
+        console.error("✗ Lockfile not found: .aligntrue.lock.json");
+        console.error("  Run: aligntrue sync");
+        console.error("  This generates the lockfile with bundle hash");
+        process.exit(1);
+      }
+
+      try {
+        const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
+        if (!lockfile.bundle_hash) {
+          console.error("✗ Lockfile missing bundle_hash");
+          process.exit(1);
+        }
+
+        const bundleHash = `sha256:${lockfile.bundle_hash}`;
+        sources = [bundleHash];
+
+        clack.log.info(
+          `Approving current bundle: ${bundleHash.slice(0, 19)}...`,
+        );
+      } catch (err) {
+        console.error("✗ Failed to read lockfile");
+        console.error(`  ${err instanceof Error ? err.message : String(err)}`);
+        process.exit(1);
+      }
+    }
+
+    // Check if at least one source provided (after --current handling)
     if (sources.length === 0) {
       console.error("✗ No sources provided");
       console.error("  Usage: aligntrue team approve <source> [<source2> ...]");
+      console.error("  Or: aligntrue team approve --current");
       console.error(
         "  Example: aligntrue team approve https://github.com/yourorg/rules",
       );

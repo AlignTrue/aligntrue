@@ -3,7 +3,7 @@
  * Orchestrates loading config, pulling sources, and syncing IR to/from agents
  */
 
-import { existsSync, writeFileSync, unlinkSync } from "fs";
+import { existsSync, writeFileSync, unlinkSync, readFileSync } from "fs";
 import { dirname, resolve, join } from "path";
 import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
@@ -106,6 +106,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Auto-enable detected agents without prompting",
   },
   {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Accept all prompts (use with --accept-agent for conflicts)",
+  },
+  {
     flag: "--help",
     alias: "-h",
     hasValue: false,
@@ -179,15 +185,14 @@ export async function sync(args: string[]): Promise<void> {
       ".team-onboarding-complete",
     );
 
-    // Check if allow list exists first
+    // Check if allow list exists
     if (!existsSync(allowListPath)) {
-      // Only show full warning if marker doesn't exist
+      // Only show full warning if marker doesn't exist (first time)
       if (!existsSync(teamOnboardingMarker)) {
-        clack.log.info("ℹ No allow list found (team mode)");
-        clack.log.info(
-          "  Sources will be validated once allow list is created",
-        );
-        clack.log.info("  Run: aligntrue team approve <source>");
+        clack.log.warn("⚠ No allow list found (team mode)");
+        clack.log.info("  Allow list will be required for future syncs");
+        clack.log.info("  Run: aligntrue team approve --current");
+        clack.log.info("  Or: aligntrue team approve <source>");
 
         // Create marker file to suppress future warnings
         try {
@@ -196,50 +201,44 @@ export async function sync(args: string[]): Promise<void> {
           // Silently fail if we can't write marker
         }
       } else {
-        // Show condensed tip
+        // Condensed tip for subsequent syncs
         clack.log.info(
-          "💡 Tip: Run 'aligntrue team approve <source>' to create allow list",
+          "💡 Tip: Run 'aligntrue team approve --current' to create allow list",
         );
       }
     } else {
+      // Allow list exists - enforce it
       try {
-        const _allowList = parseAllowList(allowListPath);
+        const allowList = parseAllowList(allowListPath);
 
-        // Validate each source in config
-        const unapprovedSources: string[] = [];
+        // Validate lockfile bundle hash against allow list
+        const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
+        if (existsSync(lockfilePath)) {
+          const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
+          const bundleHash = `sha256:${lockfile.bundle_hash}`;
 
-        if (config.sources) {
-          for (const source of config.sources) {
-            // For now, just check path-based sources
-            // TODO Phase 3.5: Check git sources once implemented
-            if (source.path && source.path !== paths.rules) {
-              // External source path - would need approval if pulling from git
-              // For local paths, skip validation
-              continue;
-            }
+          const isApproved = allowList.sources.some(
+            (s) => s.value === bundleHash || s.value === lockfile.bundle_hash,
+          );
+
+          if (!isApproved && !force) {
+            console.error("✗ Bundle hash not in allow list (team mode)");
+            console.error(`  Current bundle: ${bundleHash.slice(0, 19)}...`);
+            console.error("\nTo approve this bundle:");
+            console.error("  aligntrue team approve --current");
+            console.error("\nOr bypass this check (not recommended):");
+            console.error("  aligntrue sync --force");
+            process.exit(1);
+          }
+
+          if (!isApproved && force) {
+            clack.log.warn("⚠ Bypassing allow list validation (--force)");
+            clack.log.warn("  Bundle hash not approved");
           }
         }
-
-        if (unapprovedSources.length > 0 && !force) {
-          console.error("✗ Unapproved sources in team mode:");
-          unapprovedSources.forEach((src) => console.error(`  - ${src}`));
-          console.error("\nTo approve sources:");
-          console.error("  aligntrue team approve <source>");
-          console.error("\nOr bypass this check (not recommended):");
-          console.error("  aligntrue sync --force");
-          process.exit(1);
-        }
-
-        if (unapprovedSources.length > 0 && force) {
-          clack.log.warn("⚠ Bypassing allow list validation (--force)");
-          clack.log.warn(
-            `  ${unapprovedSources.length} unapproved source${unapprovedSources.length !== 1 ? "s" : ""}`,
-          );
-        }
-      } catch (_err) {
-        // Parsing error - log but don't fail
+      } catch (err) {
         clack.log.warn(
-          `⚠ Failed to validate allow list: ${_err instanceof Error ? _err.message : String(_err)}`,
+          `⚠ Failed to validate allow list: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     }
@@ -650,18 +649,28 @@ export async function sync(args: string[]): Promise<void> {
 
   // Step 7: Execute sync (with auto-pull if enabled)
   try {
+    const yes = (parsed.flags["yes"] as boolean | undefined) || false;
+    const nonInteractive =
+      (parsed.flags["non-interactive"] as boolean | undefined) || false;
+
     const syncOptions: {
       configPath: string;
       dryRun: boolean;
       force: boolean;
       interactive: boolean;
       acceptAgent?: string;
+      defaultResolutionStrategy?: string;
     } = {
       configPath,
       dryRun: dryRun,
       force: force,
-      interactive: !force,
+      interactive: !force && !yes && !nonInteractive,
     };
+
+    // Only set defaultResolutionStrategy if we have a value
+    if (force || yes || nonInteractive) {
+      syncOptions.defaultResolutionStrategy = "accept_agent";
+    }
 
     if (acceptAgent !== undefined) {
       syncOptions.acceptAgent = acceptAgent;
