@@ -50,6 +50,7 @@ export interface SyncOptions {
   interactive?: boolean;
   defaultResolutionStrategy?: string;
   strict?: boolean; // Fail if required plugs are unresolved
+  onConflictsDetected?: (conflicts: Conflict[]) => Promise<void>;
 }
 
 /**
@@ -687,6 +688,11 @@ export class SyncEngine {
           timestamp: new Date().toISOString(),
           details: `Detected ${conflictResult.conflicts.length} conflict(s)`,
         });
+
+        // Notify CLI to stop spinner before interactive prompts
+        if (options.onConflictsDetected) {
+          await options.onConflictsDetected(conflictResult.conflicts);
+        }
 
         // If dry-run, just return conflicts
         if (options.dryRun) {
