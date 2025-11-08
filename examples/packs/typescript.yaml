@@ -17,7 +17,7 @@ scope:
     ]
 rules:
   - id: "require-strict-tsconfig"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:
@@ -28,7 +28,7 @@ rules:
       hint: "Enable strict, noUncheckedIndexedAccess, and other safety flags per typescript.mdc baseline"
 
   - id: "no-explicit-any"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "regex"
       inputs:
@@ -40,7 +40,7 @@ rules:
       hint: "Replace 'any' with 'unknown' and narrow the type"
 
   - id: "prefer-type-imports"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "regex"
       inputs:
@@ -52,7 +52,7 @@ rules:
       hint: "Use 'import type' for types to avoid runtime weight"
 
   - id: "no-default-exports"
-    severity: "SHOULD"
+    severity: "warn"
     check:
       type: "regex"
       inputs:
@@ -64,7 +64,7 @@ rules:
       hint: "Convert to named export"
 
   - id: "validate-external-inputs"
-    severity: "MUST"
+    severity: "error"
     check:
       type: "command_runner"
       inputs:

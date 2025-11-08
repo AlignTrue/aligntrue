@@ -1,391 +1,343 @@
 /**
- * CLI commands for plugs management
+ * Plugs command - List, resolve, and validate plugs in rules
  *
- * Commands:
- * - audit: List slots, fills, and resolution status
- * - resolve: Preview resolution with current fills (--dry-run)
- * - set: Write repo-local fill with validation
+ * Plugs allow stack-agnostic rule authoring with configurable slots and fills.
+ * This command helps users understand and test plug resolution.
  */
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { extname } from "path";
-import { load, dump } from "js-yaml";
 import { resolvePlugsForPack } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
-import { validatePlugValue } from "@aligntrue/schema";
-import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
+import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
+import { tryLoadConfig } from "../utils/config-loader.js";
+import { exitWithError } from "../utils/error-formatter.js";
+import { CommonErrors as Errors } from "../utils/common-errors.js";
+import {
+  parseCommonArgs,
+  showStandardHelp,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
+import { resolveSource } from "../utils/source-resolver.js";
 
 /**
- * Audit command: List all slots, fills, and resolution status
+ * Argument definitions for plugs command
  */
-export async function auditPlugs(options: {
-  config?: string;
-}): Promise<{ success: boolean; message?: string }> {
-  try {
-    // Load IR
-    const irPath = options.config || ".aligntrue/.rules.yaml";
-    if (!existsSync(irPath)) {
-      return {
-        success: false,
-        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
-      };
-    }
-
-    const irContent = readFileSync(irPath, "utf-8");
-    let ir: AlignPack;
-
-    // Detect file format and parse
-    const ext = extname(irPath).toLowerCase();
-    if (ext === ".md" || ext === ".markdown") {
-      // Parse markdown with fenced blocks
-      const parseResult = parseMarkdown(irContent);
-      if (parseResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `Markdown parsing errors in ${irPath}`,
-        };
-      }
-
-      const buildResult = buildIR(parseResult.blocks);
-      if (buildResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `IR build errors in ${irPath}`,
-        };
-      }
-
-      if (!buildResult.document) {
-        return {
-          success: false,
-          message: `No aligntrue blocks found in ${irPath}`,
-        };
-      }
-
-      ir = buildResult.document as AlignPack;
-    } else {
-      // Parse as YAML
-      ir = load(irContent) as AlignPack;
-    }
-
-    if (!ir.plugs || (!ir.plugs.slots && !ir.plugs.fills)) {
-      console.log("No plugs defined in this pack.");
-      return { success: true };
-    }
-
-    const slots = ir.plugs.slots || {};
-    const fills = ir.plugs.fills || {};
-
-    console.log("\n📌 Plugs Audit\n");
-    console.log("━".repeat(80));
-
-    // Show slots
-    const slotKeys = Object.keys(slots);
-    if (slotKeys.length > 0) {
-      console.log("\nSlots declared:");
-      for (const key of slotKeys.sort()) {
-        const slot = slots[key];
-        if (!slot) continue;
-
-        const fill = fills[key];
-        const status = fill
-          ? "✓ filled"
-          : slot.required
-            ? "⚠ required"
-            : "○ optional";
-
-        console.log(`\n  ${key}`);
-        console.log(`    Description: ${slot.description}`);
-        console.log(`    Format:      ${slot.format}`);
-        console.log(`    Required:    ${slot.required}`);
-        if (slot.example) {
-          console.log(`    Example:     ${slot.example}`);
-        }
-        console.log(`    Status:      ${status}`);
-        if (fill) {
-          console.log(`    Fill:        ${fill}`);
-        }
-      }
-    }
-
-    // Show fills without slots (warnings)
-    const fillKeys = Object.keys(fills);
-    const orphanFills = fillKeys.filter((k) => !slots[k]);
-    if (orphanFills.length > 0) {
-      console.log("\n⚠️  Fills without declared slots:");
-      for (const key of orphanFills.sort()) {
-        console.log(`  ${key}: ${fills[key]}`);
-      }
-    }
-
-    // Summary
-    console.log("\n" + "━".repeat(80));
-    const requiredSlots = slotKeys.filter((k) => slots[k]?.required);
-    const filledRequired = requiredSlots.filter((k) => fills[k]);
-    const unfilledRequired = requiredSlots.filter((k) => !fills[k]);
-
-    console.log(`\nSummary:`);
-    console.log(`  Total slots:      ${slotKeys.length}`);
-    console.log(`  Required slots:   ${requiredSlots.length}`);
-    console.log(`  Filled required:  ${filledRequired.length}`);
-    if (unfilledRequired.length > 0) {
-      console.log(`  ⚠ Unfilled required: ${unfilledRequired.length}`);
-      console.log(`    ${unfilledRequired.join(", ")}`);
-    }
-
-    console.log("");
-
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-}
-
-/**
- * Resolve command: Preview resolution with current fills
- */
-export async function resolvePlugs(options: {
-  config?: string;
-  dryRun?: boolean;
-}): Promise<{ success: boolean; message?: string }> {
-  try {
-    // Load IR
-    const irPath = options.config || ".aligntrue/.rules.yaml";
-    if (!existsSync(irPath)) {
-      return {
-        success: false,
-        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
-      };
-    }
-
-    const irContent = readFileSync(irPath, "utf-8");
-    let ir: AlignPack;
-
-    // Detect file format and parse
-    const ext = extname(irPath).toLowerCase();
-    if (ext === ".md" || ext === ".markdown") {
-      // Parse markdown with fenced blocks
-      const parseResult = parseMarkdown(irContent);
-      if (parseResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `Markdown parsing errors in ${irPath}`,
-        };
-      }
-
-      const buildResult = buildIR(parseResult.blocks);
-      if (buildResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `IR build errors in ${irPath}`,
-        };
-      }
-
-      if (!buildResult.document) {
-        return {
-          success: false,
-          message: `No aligntrue blocks found in ${irPath}`,
-        };
-      }
-
-      ir = buildResult.document as AlignPack;
-    } else {
-      // Parse as YAML
-      ir = load(irContent) as AlignPack;
-    }
-
-    if (!ir.plugs) {
-      console.log("No plugs defined in this pack.");
-      return { success: true };
-    }
-
-    // Resolve plugs
-    const result = resolvePlugsForPack(ir);
-
-    if (!result.success) {
-      console.error("\n❌ Plug resolution failed:\n");
-      if (result.errors) {
-        for (const error of result.errors) {
-          console.error(`  ${error}`);
-        }
-      }
-      return { success: false };
-    }
-
-    console.log("\n📋 Plugs Resolution Preview\n");
-    console.log("━".repeat(80));
-
-    // Show resolved rules
-    for (const resolvedRule of result.rules) {
-      if (resolvedRule.resolutions.length === 0) continue;
-
-      console.log(`\nRule: ${resolvedRule.ruleId}`);
-
-      for (const resolution of resolvedRule.resolutions) {
-        if (resolution.resolved) {
-          console.log(`  ✓ [[plug:${resolution.key}]] → "${resolution.value}"`);
-        } else if (resolution.todo) {
-          console.log(
-            `  ⚠ [[plug:${resolution.key}]] → TODO (required but unresolved)`,
-          );
-        } else {
-          console.log(
-            `  ○ [[plug:${resolution.key}]] → (optional, not filled)`,
-          );
-        }
-      }
-
-      if (resolvedRule.guidance && options.dryRun) {
-        console.log(`\n  Resolved guidance:`);
-        const lines = resolvedRule.guidance.split("\n");
-        for (const line of lines) {
-          if (line.trim()) {
-            console.log(`    ${line}`);
-          }
-        }
-      }
-    }
-
-    // Summary
-    console.log("\n" + "━".repeat(80));
-    const totalResolutions = result.rules.reduce(
-      (sum, r) => sum + r.resolutions.length,
-      0,
-    );
-    const resolvedCount = result.rules.reduce(
-      (sum, r) => sum + r.resolutions.filter((res) => res.resolved).length,
-      0,
-    );
-    const unresolvedCount = result.unresolvedRequired.length;
-
-    console.log(`\nSummary:`);
-    console.log(`  Total plugs:      ${totalResolutions}`);
-    console.log(`  Resolved:         ${resolvedCount}`);
-    if (unresolvedCount > 0) {
-      console.log(`  ⚠ Unresolved required: ${unresolvedCount}`);
-      console.log(`    ${result.unresolvedRequired.join(", ")}`);
-    }
-
-    console.log("");
-
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-}
-
-/**
- * Set command: Write repo-local fill with validation
- */
-export async function setPlug(
-  key: string,
-  value: string,
-  options: {
-    config?: string;
-    force?: boolean;
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--config",
+    description: "Path to config file (default: .aligntrue/config.yaml)",
+    hasValue: true,
   },
-): Promise<{ success: boolean; message?: string }> {
+  {
+    flag: "--help",
+    description: "Show help for plugs command",
+    hasValue: false,
+  },
+];
+
+/**
+ * Show help for plugs command
+ */
+function showHelp() {
+  showStandardHelp({
+    name: "plugs",
+    description: "List, resolve, and validate plugs in rules",
+    usage: "aligntrue plugs <list|resolve|validate> [options]",
+    args: ARG_DEFINITIONS,
+    examples: [
+      "aligntrue plugs list                # List all slots and fills",
+      "aligntrue plugs resolve             # Resolve plugs and show output",
+      "aligntrue plugs validate            # Validate plugs",
+    ],
+    notes: [
+      "Subcommands:",
+      "  list      - List declared slots and fills",
+      "  resolve   - Resolve plugs in rules and show output",
+      "  validate  - Check for undeclared or unresolved plugs",
+    ],
+  });
+}
+
+/**
+ * Plugs command handler
+ */
+export async function plugsCommand(args: string[]): Promise<void> {
+  const { flags, positional } = parseCommonArgs(args, ARG_DEFINITIONS);
+
+  if (flags["--help"]) {
+    showHelp();
+    process.exit(0);
+  }
+
+  const subcommand = positional[0];
+  if (!subcommand) {
+    console.error("Error: Subcommand required\n");
+    console.error("Usage: aligntrue plugs <list|resolve|validate>\n");
+    console.error("Run 'aligntrue plugs --help' for more information\n");
+    process.exit(2);
+  }
+
+  const validSubcommands = ["list", "resolve", "validate"];
+  if (!validSubcommands.includes(subcommand)) {
+    console.error(`Error: Unknown subcommand "${subcommand}"\n`);
+    console.error("Valid subcommands: list, resolve, validate\n");
+    console.error("Run 'aligntrue plugs --help' for more information\n");
+    process.exit(2);
+  }
+
+  const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
+
   try {
-    // Load IR
-    const irPath = options.config || ".aligntrue/.rules.yaml";
-    if (!existsSync(irPath)) {
-      return {
-        success: false,
-        message: `Rules file not found: ${irPath}. Run 'aligntrue init' first.`,
-      };
-    }
+    // Load config
+    const config = await tryLoadConfig(configPath);
 
-    const irContent = readFileSync(irPath, "utf-8");
-    let ir: AlignPack;
-
-    // Detect file format and parse
-    const ext = extname(irPath).toLowerCase();
-    if (ext === ".md" || ext === ".markdown") {
-      // Parse markdown with fenced blocks
-      const parseResult = parseMarkdown(irContent);
-      if (parseResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `Markdown parsing errors in ${irPath}`,
-        };
-      }
-
-      const buildResult = buildIR(parseResult.blocks);
-      if (buildResult.errors.length > 0) {
-        return {
-          success: false,
-          message: `IR build errors in ${irPath}`,
-        };
-      }
-
-      if (!buildResult.document) {
-        return {
-          success: false,
-          message: `No aligntrue blocks found in ${irPath}`,
-        };
-      }
-
-      ir = buildResult.document as AlignPack;
-    } else {
-      // Parse as YAML
-      ir = load(irContent) as AlignPack;
-    }
-
-    // Check if slot exists
-    const slot = ir.plugs?.slots?.[key];
-    if (!slot && !options.force) {
-      return {
-        success: false,
-        message: `Slot '${key}' not declared. Declare it first, or use --force to add anyway.`,
-      };
-    }
-
-    // Validate value against slot format
-    if (slot) {
-      const validation = validatePlugValue(value, slot.format);
-      if (!validation.valid) {
-        return {
-          success: false,
-          message: `Invalid value for slot '${key}': ${validation.error}`,
-        };
-      }
-      value = validation.sanitized || value;
-    }
-
-    // Initialize plugs if needed
-    if (!ir.plugs) {
-      ir.plugs = {};
-    }
-    if (!ir.plugs.fills) {
-      ir.plugs.fills = {};
-    }
-
-    // Set fill
-    const isNew = !ir.plugs.fills[key];
-    ir.plugs.fills[key] = value;
-
-    // Write back to file
-    const yamlOutput = dump(ir, {
-      indent: 2,
-      lineWidth: 120,
-      noRefs: true,
-    });
-    writeFileSync(irPath, yamlOutput, "utf-8");
-
-    console.log(
-      `\n${isNew ? "✓" : "↻"} ${isNew ? "Added" : "Updated"} fill: ${key} = "${value}"\n`,
-    );
-
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
+    // Resolve source
+    const source = config.sources?.[0] || {
+      type: "local" as const,
+      path: ".aligntrue/.rules.yaml",
     };
+
+    let pack: AlignPack;
+    try {
+      const resolved = await resolveSource(source);
+      pack = parseYamlToJson(resolved.content) as AlignPack;
+    } catch (err) {
+      exitWithError(
+        Errors.fileWriteFailed(
+          source.type === "local"
+            ? source.path || "unknown"
+            : source.url || "unknown",
+          err instanceof Error ? err.message : String(err),
+        ),
+        2,
+      );
+    }
+
+    // Execute subcommand
+    switch (subcommand) {
+      case "list":
+        await listPlugs(pack);
+        break;
+      case "resolve":
+        await resolvePlugs(pack);
+        break;
+      case "validate":
+        await validatePlugs(pack);
+        break;
+    }
+  } catch (error) {
+    exitWithError(
+      Errors.fileWriteFailed(
+        "plugs command",
+        error instanceof Error ? error.message : String(error),
+      ),
+      1,
+    );
+  }
+}
+
+/**
+ * List all slots and fills in the pack
+ */
+async function listPlugs(pack: AlignPack): Promise<void> {
+  console.log("┌  Plugs in Pack\n│");
+
+  if (!pack.plugs) {
+    console.log("│  No plugs defined\n│");
+    console.log("└  ✓ Complete\n");
+    return;
+  }
+
+  // List slots
+  if (pack.plugs.slots && Object.keys(pack.plugs.slots).length > 0) {
+    console.log("◆  Slots\n│");
+    for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
+      const required = slotDef.required ? "required" : "optional";
+      console.log(`●    ${slotName} (${slotDef.format}, ${required})`);
+      console.log(`│      ${slotDef.description}`);
+      if (slotDef.example) {
+        console.log(`│      Example: ${slotDef.example}`);
+      }
+      console.log("│");
+    }
+  } else {
+    console.log("◆  No slots declared\n│");
+  }
+
+  // List fills
+  if (pack.plugs.fills && Object.keys(pack.plugs.fills).length > 0) {
+    console.log("◆  Fills\n│");
+    for (const [slotName, fillValue] of Object.entries(pack.plugs.fills)) {
+      console.log(`●    ${slotName} = "${fillValue}"`);
+    }
+    console.log("│");
+  } else {
+    console.log("◆  No fills provided\n│");
+  }
+
+  console.log("└  ✓ Complete\n");
+}
+
+/**
+ * Resolve plugs and show the output
+ */
+async function resolvePlugs(pack: AlignPack): Promise<void> {
+  console.log("┌  Resolving Plugs\n│");
+
+  if (!pack.plugs) {
+    console.log("│  No plugs to resolve\n│");
+    console.log("└  ✓ Complete\n");
+    return;
+  }
+
+  try {
+    const resolved = resolvePlugsForPack(pack);
+
+    if (!resolved.success) {
+      console.log("✗  Resolution failed\n│");
+      if (resolved.errors && resolved.errors.length > 0) {
+        console.log("◆  Errors\n│");
+        for (const error of resolved.errors) {
+          console.log(`●    ${error}`);
+        }
+        console.log("│");
+      }
+      if (resolved.unresolvedRequired.length > 0) {
+        console.log("◆  Unresolved Required Plugs\n│");
+        for (const plug of resolved.unresolvedRequired) {
+          console.log(`●    {{${plug}}}`);
+        }
+        console.log("│");
+      }
+      console.log("└  ✗ Resolution incomplete\n");
+      process.exit(1);
+    }
+
+    console.log("◆  Resolved Rules\n│");
+    console.log(`●    Total: ${resolved.rules.length}`);
+    console.log("│");
+
+    // Show sample of resolved rules
+    if (resolved.rules.length > 0) {
+      console.log("◆  Sample Resolved Rules\n│");
+      const sampleSize = Math.min(3, resolved.rules.length);
+      for (let i = 0; i < sampleSize; i++) {
+        const rule = resolved.rules[i];
+        if (!rule) continue;
+
+        console.log(`●    ${rule.ruleId}`);
+        if (rule.guidance) {
+          const preview = rule.guidance.substring(0, 60);
+          console.log(
+            `│      Guidance: ${preview}${rule.guidance.length > 60 ? "..." : ""}`,
+          );
+        }
+        if (rule.resolutions.length > 0) {
+          console.log(`│      Resolutions: ${rule.resolutions.length}`);
+        }
+        console.log("│");
+      }
+      if (resolved.rules.length > sampleSize) {
+        console.log(
+          `●    ... and ${resolved.rules.length - sampleSize} more rules\n│`,
+        );
+      }
+    }
+
+    console.log("└  ✓ Plugs resolved successfully\n");
+  } catch (error) {
+    console.error("✗  Failed to resolve plugs\n");
+    console.error(
+      `   ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Validate plugs (check for undeclared or unresolved)
+ */
+async function validatePlugs(pack: AlignPack): Promise<void> {
+  console.log("┌  Validating Plugs\n│");
+
+  if (!pack.plugs) {
+    console.log("│  No plugs to validate\n│");
+    console.log("└  ✓ Complete\n");
+    return;
+  }
+
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // Check for required slots without fills
+  if (pack.plugs.slots) {
+    for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
+      if (slotDef.required) {
+        const hasFill = pack.plugs.fills && pack.plugs.fills[slotName];
+        if (!hasFill) {
+          errors.push(`Required slot "${slotName}" has no fill`);
+        }
+      }
+    }
+  }
+
+  // Check for fills without declared slots
+  if (pack.plugs.fills) {
+    for (const slotName of Object.keys(pack.plugs.fills)) {
+      const isDeclared = pack.plugs.slots && pack.plugs.slots[slotName];
+      if (!isDeclared) {
+        warnings.push(`Fill "${slotName}" has no declared slot`);
+      }
+    }
+  }
+
+  // Check if plugs are used in rules
+  const plugPattern = /\{\{([^}]+)\}\}/g;
+  const usedPlugs = new Set<string>();
+
+  for (const rule of pack.rules) {
+    if (rule.guidance) {
+      const matches = Array.from(rule.guidance.matchAll(plugPattern));
+      for (const match of matches) {
+        const plugName = match[1];
+        if (plugName) {
+          usedPlugs.add(plugName);
+        }
+      }
+    }
+  }
+
+  // Check for undeclared plugs used in rules
+  for (const plugName of usedPlugs) {
+    const isDeclared = pack.plugs.slots && pack.plugs.slots[plugName];
+    if (!isDeclared) {
+      errors.push(`Plug "{{${plugName}}}" used in rules but not declared`);
+    }
+  }
+
+  // Report results
+  if (errors.length > 0) {
+    console.log("✗  Validation failed\n│");
+    console.log("◆  Errors\n│");
+    for (const error of errors) {
+      console.log(`●    ${error}`);
+    }
+    console.log("│");
+  }
+
+  if (warnings.length > 0) {
+    console.log("◆  Warnings\n│");
+    for (const warning of warnings) {
+      console.log(`●    ${warning}`);
+    }
+    console.log("│");
+  }
+
+  if (errors.length === 0 && warnings.length === 0) {
+    console.log("✓  All plugs valid\n│");
+  }
+
+  console.log("└  ✓ Validation complete\n");
+
+  if (errors.length > 0) {
+    process.exit(1);
   }
 }

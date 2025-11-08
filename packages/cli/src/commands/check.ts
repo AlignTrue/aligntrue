@@ -4,11 +4,10 @@
  */
 
 import { existsSync } from "fs";
-import { resolve, extname } from "path";
+import { resolve } from "path";
 import { type AlignTrueConfig } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import { validateAlignSchema } from "@aligntrue/schema";
-import { readFileSync } from "fs";
 import {
   readLockfile,
   validateLockfile,
@@ -25,6 +24,7 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { resolveSource } from "../utils/source-resolver.js";
 
 /**
  * Argument definitions for check command
@@ -121,28 +121,25 @@ export async function check(args: string[]): Promise<void> {
     // Step 1: Load config (with standardized error handling)
     const config: AlignTrueConfig = await tryLoadConfig(configPath);
 
-    // Step 2: Validate IR schema
-    const rulesPath = config.sources?.[0]?.path || ".aligntrue/.rules.yaml";
-    const resolvedRulesPath = resolve(rulesPath);
+    // Step 2: Resolve source (local or git)
+    const source = config.sources?.[0] || {
+      type: "local" as const,
+      path: ".aligntrue/.rules.yaml",
+    };
 
-    if (!existsSync(resolvedRulesPath)) {
-      exitWithError(
-        {
-          ...Errors.rulesNotFound(rulesPath),
-          details: [`Expected: ${rulesPath}`, `Resolved: ${resolvedRulesPath}`],
-        },
-        2,
-      );
-    }
-
-    // Load and parse rules file
     let rulesContent: string;
+    let rulesPath: string;
+
     try {
-      rulesContent = readFileSync(resolvedRulesPath, "utf8");
+      const resolved = await resolveSource(source);
+      rulesContent = resolved.content;
+      rulesPath = resolved.sourcePath;
     } catch (err) {
       exitWithError(
         Errors.fileWriteFailed(
-          resolvedRulesPath,
+          source.type === "local"
+            ? source.path || "unknown"
+            : source.url || "unknown",
           err instanceof Error ? err.message : String(err),
         ),
         2,
@@ -150,10 +147,13 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Detect file format and parse
-    const ext = extname(resolvedRulesPath).toLowerCase();
+    const ext =
+      rulesPath.endsWith(".md") || rulesPath.endsWith(".markdown")
+        ? ".md"
+        : ".yaml";
     let alignData: unknown;
 
-    if (ext === ".md" || ext === ".markdown") {
+    if (ext === ".md") {
       // Parse markdown with fenced blocks
       const { parseMarkdown, buildIR } = await import(
         "@aligntrue/markdown-parser"
