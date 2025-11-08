@@ -61,43 +61,59 @@ export function parseAgentsMd(content: string): AgentsMdParseResult {
  * Parse HTML comment format (new format with JSON metadata)
  * Format: <!-- aligntrue:begin {...} --> ... <!-- aligntrue:end {...} -->
  *
- * Uses split-based parsing to avoid ReDoS (Regular Expression Denial of Service)
- * vulnerability. String.split() is linear in input length with no backtracking.
+ * Uses iterative string parsing (indexOf) to avoid ReDoS vulnerability.
+ * This is safer than complex regex with nested quantifiers.
  */
 function parseHtmlCommentFormat(content: string): AlignRule[] {
   const rules: AlignRule[] = [];
 
-  // Use string splitting to avoid ReDoS vulnerability with complex regex
-  // Split by opening delimiter to find all blocks
-  const blocks = content.split(/<!-- aligntrue:begin (\{[^}]*\}) -->/);
-
+  let pos = 0;
   let iterations = 0;
   const maxIterations = 1000;
+  const beginDelim = "<!-- aligntrue:begin ";
+  const beginEnd = " -->";
+  const ruleHeader = "\n## Rule: ";
+  const endDelim = "<!-- aligntrue:end ";
 
-  // Process blocks (odd indices contain metadata, even indices contain content after)
-  for (let i = 1; i < blocks.length; i += 2) {
+  while (true) {
     if (++iterations > maxIterations) {
       throw new Error(
         `Parser exceeded maximum iterations (${maxIterations}). This may indicate malformed content.`,
       );
     }
 
-    const beginMetadata = blocks[i];
-    const contentAfter = blocks[i + 1] || "";
+    // Find opening tag
+    const beginIdx = content.indexOf(beginDelim, pos);
+    if (beginIdx === -1) break;
 
-    // Extract the rule content and closing tag
-    const endMatch = contentAfter.match(
-      /\n## Rule: ([^\n]+)\s*\n([\s\S]*?)<!-- aligntrue:end (\{[^}]*\}) -->/,
-    );
+    // Find end of opening tag (get metadata)
+    const metaStart = beginIdx + beginDelim.length;
+    const metaEnd = content.indexOf(beginEnd, metaStart);
+    if (metaEnd === -1) break;
 
-    if (!endMatch || !endMatch[1] || !endMatch[2] || !beginMetadata) {
-      continue;
-    }
+    const beginMetadata = content.substring(metaStart, metaEnd);
+    pos = metaEnd + beginEnd.length;
 
-    const ruleName = endMatch[1]?.trim();
-    const ruleBody = endMatch[2]?.trim();
+    // Find rule header
+    const ruleHeaderIdx = content.indexOf(ruleHeader, pos);
+    if (ruleHeaderIdx === -1) break;
+
+    const ruleNameStart = ruleHeaderIdx + ruleHeader.length;
+    const ruleNameEnd = content.indexOf("\n", ruleNameStart);
+    if (ruleNameEnd === -1) break;
+
+    const ruleName = content.substring(ruleNameStart, ruleNameEnd).trim();
+
+    // Find end tag - scan from current position
+    const endDelimIdx = content.indexOf(endDelim, ruleNameEnd);
+    if (endDelimIdx === -1) break;
+
+    // Extract body between rule header line and end tag
+    const bodyStart = ruleNameEnd + 1;
+    const ruleBody = content.substring(bodyStart, endDelimIdx).trim();
 
     if (!ruleName || !ruleBody) {
+      pos = endDelimIdx + 1;
       continue;
     }
 
@@ -120,8 +136,11 @@ function parseHtmlCommentFormat(content: string): AlignRule[] {
         `Failed to parse HTML comment metadata for rule ${ruleName}:`,
         err,
       );
-      continue;
     }
+
+    // Move position past the end tag
+    const endTagEnd = content.indexOf(" -->", endDelimIdx);
+    pos = endTagEnd !== -1 ? endTagEnd + 4 : endDelimIdx + endDelim.length;
   }
 
   return rules;
