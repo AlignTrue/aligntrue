@@ -6,7 +6,7 @@ export * from "./sync/index.js";
 
 // Scopes and lockfile
 export * from "./scope.js";
-export * from "./lockfile.js";
+export * from "./lockfile/index.js";
 
 // Performance monitoring and optimization
 export * from "./performance/index.js";
