@@ -764,10 +764,19 @@ export async function sync(args: string[]): Promise<void> {
                 interactive: false, // Auto-pull is non-interactive
                 defaultResolutionStrategy:
                   config.sync?.on_conflict || "accept_agent",
+                onConflictsDetected: async (conflicts) => {
+                  spinner.stop("Conflicts detected during auto-pull");
+                  clack.log.warn(
+                    `⚠ ${conflicts.length} conflict${conflicts.length !== 1 ? "s" : ""} in auto-pull`,
+                  );
+                },
               },
             );
 
-            spinner.stop(`Auto-pull complete from ${autoPullAgent}`);
+            // Only stop spinner if it wasn't already stopped by callback
+            if (!pullResult.conflicts || pullResult.conflicts.length === 0) {
+              spinner.stop(`Auto-pull complete from ${autoPullAgent}`);
+            }
 
             if (!pullResult.success) {
               clack.log.warn(
@@ -854,18 +863,28 @@ export async function sync(args: string[]): Promise<void> {
       spinner.start(
         dryRun ? "Previewing import" : `Importing from ${acceptAgent}`,
       );
-      result = await engine.syncFromAgent(
-        acceptAgent,
-        absoluteSourcePath,
-        syncOptions,
-      );
+      result = await engine.syncFromAgent(acceptAgent, absoluteSourcePath, {
+        ...syncOptions,
+        onConflictsDetected: async (conflicts) => {
+          // Stop spinner before interactive prompts
+          spinner.stop("Conflicts detected");
+
+          // Show conflict summary
+          clack.log.warn(
+            `⚠ ${conflicts.length} conflict${conflicts.length !== 1 ? "s" : ""} detected`,
+          );
+        },
+      });
     } else {
       // IR → agents sync (default)
       spinner.start(dryRun ? "Previewing changes" : "Syncing to agents");
       result = await engine.syncToAgents(absoluteSourcePath, syncOptions);
     }
 
-    spinner.stop(dryRun ? "Preview complete" : "Sync complete");
+    // Only stop spinner if it's still running (wasn't stopped by callback)
+    if (!acceptAgent || !result.conflicts || result.conflicts.length === 0) {
+      spinner.stop(dryRun ? "Preview complete" : "Sync complete");
+    }
 
     // Step 8: Remove starter file after first successful sync (if applicable)
     if (!dryRun && result.success && !acceptAgent) {
