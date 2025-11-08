@@ -192,6 +192,19 @@ export async function check(args: string[]): Promise<void> {
       // Parse as YAML
       try {
         alignData = parseYamlToJson(rulesContent);
+
+        // Handle edge cases: empty YAML returns undefined, comments-only returns null
+        if (alignData === undefined || alignData === null) {
+          console.error("✗ Empty or invalid rules file\n");
+          console.error(`  File: ${rulesPath}`);
+          console.error(
+            `  The rules file must contain a valid Align pack (id, version, spec_version, rules)\n`,
+          );
+          console.error(
+            "  Run 'aligntrue init' to create a valid rules file\n",
+          );
+          process.exit(1);
+        }
       } catch (_err) {
         console.error("✗ Invalid YAML in rules file\n");
         console.error(

@@ -501,9 +501,9 @@ export async function sync(args: string[]): Promise<void> {
 
   try {
     // Discover adapters from exporters package
-    // Look for manifests in the exporters src directory
-    const exportersSrcPath = resolve(__dirname, "../../../exporters/src");
-    const manifestPaths = registry.discoverAdapters(exportersSrcPath);
+    // Look for manifests in the exporters dist directory
+    const exportersDistPath = resolve(__dirname, "../../../exporters/dist");
+    const manifestPaths = registry.discoverAdapters(exportersDistPath);
 
     // Load manifests and handlers for configured exporters
     const exporterNames = config.exporters || ["cursor", "agents-md"];
