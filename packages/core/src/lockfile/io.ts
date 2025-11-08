@@ -50,8 +50,38 @@ export function readLockfile(path: string): Lockfile | null {
  *
  * @param path - Path to lockfile (typically .aligntrue.lock.json)
  * @param lockfile - Lockfile object to write
+ * @param options - Optional write options
  */
-export function writeLockfile(path: string, lockfile: Lockfile): void {
+export function writeLockfile(
+  path: string,
+  lockfile: Lockfile,
+  options?: { silent?: boolean },
+): void {
+  // Check if this is a migration from old hash format
+  // (Temporary for Phase 4.5 - remove after 1-2 releases)
+  if (existsSync(path) && !options?.silent) {
+    try {
+      const oldLockfile = JSON.parse(readFileSync(path, "utf-8"));
+      if (
+        oldLockfile.bundle_hash &&
+        oldLockfile.bundle_hash !== lockfile.bundle_hash
+      ) {
+        console.warn("ℹ Lockfile regenerated with corrected hash computation");
+        console.warn(
+          "  Old hash: " + oldLockfile.bundle_hash.slice(0, 12) + "...",
+        );
+        console.warn(
+          "  New hash: " + lockfile.bundle_hash.slice(0, 12) + "...",
+        );
+        console.warn(
+          "  This is a one-time migration for determinism improvements",
+        );
+      }
+    } catch {
+      // Ignore errors reading old lockfile
+    }
+  }
+
   // Ensure parent directory exists
   const dir = dirname(path);
   if (!existsSync(dir)) {

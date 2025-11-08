@@ -36,21 +36,29 @@ This updates `.aligntrue/config.yaml`:
 - `mode: solo` → `mode: team`
 - Enables `modules.lockfile` and `modules.bundle`
 
-### 2. Create allow list
-
-```bash
-aligntrue team approve sha256:abc123...
-```
-
-This creates `.aligntrue/allow.yaml` with approved rule sources.
-
-### 3. Sync with validation
+### 2. Generate lockfile
 
 ```bash
 aligntrue sync
 ```
 
-Team mode validates all sources against the allow list before syncing.
+This generates `.aligntrue.lock.json` with deterministic bundle hash.
+
+### 3. Create allow list
+
+```bash
+aligntrue team approve --current
+```
+
+This creates `.aligntrue/allow.yaml` and approves your current bundle hash.
+
+### 4. Sync with validation
+
+```bash
+aligntrue sync
+```
+
+Team mode validates bundle hash against the allow list before syncing.
 
 ## Allow list
 
@@ -118,6 +126,41 @@ Example: `sha256:abc123def456...`
 
 - **External sources:** Use `id@version` format for clarity and semantic updates
 - **Vendored packs:** Use `sha256:hash` format for immutability
+
+## Allow List Management
+
+### Quick approve current bundle
+
+```bash
+# After sync, approve what you have
+aligntrue team approve --current
+```
+
+This reads the bundle hash from `.aligntrue.lock.json` and adds it to the allow list.
+
+### Manual approve by hash
+
+```bash
+# Approve specific bundle hash
+aligntrue team approve sha256:abc123...
+```
+
+### Enforcement
+
+In team mode with an allow list:
+
+- Sync validates bundle hash against allow list
+- Unapproved bundles are rejected
+- Use `--force` to bypass (not recommended)
+
+### First-time setup
+
+When you first enable team mode:
+
+1. Run `aligntrue sync` to generate lockfile
+2. Run `aligntrue team approve --current` to approve it
+3. Commit both files to git
+4. Team members clone and sync normally
 
 ## CLI commands
 
