@@ -17,19 +17,19 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 
 ## Feature comparison
 
-| Feature                  | Solo mode             | Team mode                         |
-| ------------------------ | --------------------- | --------------------------------- |
-| **Lockfile**             | ❌ Disabled           | ✅ Enabled (.aligntrue.lock.json) |
-| **Auto-pull**            | ✅ Enabled (default)  | ❌ Disabled (explicit updates)    |
-| **Allow lists**          | ❌ Not required       | ✅ Required (approved sources)    |
-| **Drift detection**      | ❌ Not available      | ✅ Available (aligntrue drift)    |
-| **Bundle generation**    | ❌ Disabled           | ✅ Enabled (dependency merging)   |
-| **Backup/restore**       | ✅ Available          | ✅ Available                      |
-| **Git integration**      | ✅ Optional           | ✅ Recommended                    |
-| **CI/CD validation**     | ✅ Basic checks       | ✅ Full validation + drift gates  |
-| **Setup complexity**     | Low (60 seconds)      | Medium (5 minutes)                |
-| **Maintenance overhead** | Minimal               | Low to medium                     |
-| **Best for**             | Individual developers | Teams and organizations           |
+| Feature                  | Solo mode             | Team mode                               |
+| ------------------------ | --------------------- | --------------------------------------- |
+| **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default) |
+| **Auto-pull**            | ✅ Enabled (default)  | ❌ Disabled (explicit updates)          |
+| **Allow lists**          | ❌ Not required       | ✅ Required (approved sources)          |
+| **Drift detection**      | ❌ Not available      | ✅ Available (aligntrue drift)          |
+| **Bundle generation**    | ❌ Disabled           | ✅ Enabled (dependency merging)         |
+| **Backup/restore**       | ✅ Available          | ✅ Available                            |
+| **Git integration**      | ✅ Optional           | ✅ Recommended                          |
+| **CI/CD validation**     | ✅ Basic checks       | ✅ Full validation + drift gates        |
+| **Setup complexity**     | Low (60 seconds)      | Medium (5 minutes)                      |
+| **Maintenance overhead** | Minimal               | Low to medium                           |
+| **Best for**             | Individual developers | Teams and organizations                 |
 
 ### Architecture comparison
 
@@ -115,7 +115,7 @@ git commit -m "Enable AlignTrue team mode"
 
 - Reproducible builds across team members
 - Drift detection for upstream changes
-- Soft lockfile warns but doesn't block
+- Soft lockfile warns on drift (doesn't block)
 - Allow lists for approved sources
 
 **Example use case:** Small startup team wants consistent AI agent behavior without strict enforcement.
@@ -123,10 +123,9 @@ git commit -m "Enable AlignTrue team mode"
 ```bash
 # Repository owner
 aligntrue team enable
-# Edit config: lockfile.mode: soft
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
 aligntrue sync
-git add .aligntrue/ .aligntrue.lock.json
+aligntrue team approve --current
+git add .aligntrue/ .aligntrue.lock.json .aligntrue/allow.yaml
 git commit -m "Enable team mode (soft)"
 
 # Team members
@@ -201,16 +200,32 @@ Switch to team mode when:
 # Enable team mode
 aligntrue team enable
 
-# Approve current sources
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-
 # Generate lockfile
 aligntrue sync
+
+# Approve current bundle
+aligntrue team approve --current
 
 # Commit team files
 git add .aligntrue/config.yaml .aligntrue/allow.yaml .aligntrue.lock.json
 git commit -m "Switch to team mode"
 ```
+
+### Allow list quick start
+
+```bash
+# After enabling team mode and first sync
+aligntrue team approve --current
+
+# This approves your current bundle hash
+# Team members can now sync with confidence
+```
+
+**Why use allow lists:**
+
+- Security: Only approved rule sources can be used
+- Compliance: Audit trail of approved changes
+- Collaboration: Team lead approves, members sync
 
 ### Team → Solo: When forking for personal use
 
