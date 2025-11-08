@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { readFileSync, rmSync, existsSync, mkdirSync } from "fs";
+import { rmSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { CursorExporter, generateMdcFooter } from "../src/cursor/index.js";
 import type {
@@ -12,7 +12,7 @@ import type {
   ResolvedScope,
 } from "../src/types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { parseYamlToJson } from "@aligntrue/schema";
+import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
 const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-cursor-test-output");
@@ -46,7 +46,7 @@ describe("CursorExporter", () => {
 
   describe("Basic Export", () => {
     it("exports single rule to .mdc file", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -69,7 +69,7 @@ describe("CursorExporter", () => {
     });
 
     it("exports multiple rules to single .mdc file", async () => {
-      const fixture = loadFixture("multiple-rules.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "multiple-rules.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -103,7 +103,7 @@ describe("CursorExporter", () => {
 
   describe("Vendor.cursor Metadata Extraction", () => {
     it("extracts vendor.cursor fields to frontmatter", async () => {
-      const fixture = loadFixture("with-vendor-cursor.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "with-vendor-cursor.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -122,7 +122,7 @@ describe("CursorExporter", () => {
     });
 
     it("handles mixed vendor namespaces", async () => {
-      const fixture = loadFixture("mixed-vendor.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "mixed-vendor.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -145,7 +145,7 @@ describe("CursorExporter", () => {
 
   describe("Fidelity Notes", () => {
     it("includes fidelity notes in footer", async () => {
-      const fixture = loadFixture("multiple-rules.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "multiple-rules.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -165,7 +165,7 @@ describe("CursorExporter", () => {
     });
 
     it("tracks cross-agent vendor fields", async () => {
-      const fixture = loadFixture("mixed-vendor.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "mixed-vendor.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -184,7 +184,7 @@ describe("CursorExporter", () => {
 
   describe("Scope-to-Filename Mapping", () => {
     it("maps default scope to aligntrue.mdc", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -197,7 +197,7 @@ describe("CursorExporter", () => {
     });
 
     it("maps named scope to scoped filename", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const scope: ResolvedScope = {
         path: "apps/web",
         normalizedPath: "apps/web",
@@ -216,7 +216,7 @@ describe("CursorExporter", () => {
     });
 
     it("normalizes paths with slashes to hyphens", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const scope: ResolvedScope = {
         path: "packages/core/src",
         normalizedPath: "packages/core/src",
@@ -236,7 +236,7 @@ describe("CursorExporter", () => {
 
   describe("Content Hash", () => {
     it("computes deterministic SHA-256 hash", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -256,7 +256,7 @@ describe("CursorExporter", () => {
     });
 
     it("includes content hash in footer", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -273,7 +273,7 @@ describe("CursorExporter", () => {
 
   describe("Dry Run Mode", () => {
     it("does not write files in dry run mode", async () => {
-      const fixture = loadFixture("single-rule.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -293,7 +293,7 @@ describe("CursorExporter", () => {
 
   describe("All Severities", () => {
     it("handles error, warn, and info severities", async () => {
-      const fixture = loadFixture("all-severities.yaml");
+      const fixture = loadFixture(FIXTURES_DIR, "all-severities.yaml");
       const request = createRequest(fixture.rules, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
@@ -566,7 +566,7 @@ describe("CursorExporter", () => {
     it("should always use native mode regardless of config", async () => {
       const config = { export: { mode_hints: { default: "hints" } } };
       const request = createRequest(
-        loadFixture("single-rule.yaml").rules,
+        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
         createDefaultScope(),
       );
       const result = await exporter.export(request, { ...options, config });
@@ -636,7 +636,7 @@ describe("CursorExporter", () => {
         },
       };
       const request = createRequest(
-        loadFixture("single-rule.yaml").rules,
+        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
         createDefaultScope(),
       );
       const result = await exporter.export(request, { ...options, config });
@@ -682,13 +682,6 @@ describe("generateMdcFooter", () => {
 
 // Helper functions
 
-function loadFixture(filename: string): { rules: AlignRule[] } {
-  const filepath = join(FIXTURES_DIR, filename);
-  const yaml = readFileSync(filepath, "utf-8");
-  const data = parseYamlToJson(yaml) as any;
-  return { rules: data.rules };
-}
-
 function createRequest(
   rules: AlignRule[],
   scope: ResolvedScope,
@@ -697,15 +690,6 @@ function createRequest(
     scope,
     rules,
     outputPath: join(TEST_OUTPUT_DIR, ".cursor", "rules", "aligntrue.mdc"),
-  };
-}
-
-function createDefaultScope(): ResolvedScope {
-  return {
-    path: ".",
-    normalizedPath: ".",
-    isDefault: true,
-    include: ["**/*"],
   };
 }
 

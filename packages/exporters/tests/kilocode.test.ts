@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { readFileSync, rmSync, existsSync, mkdirSync } from "fs";
+import { rmSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { KiloCodeExporter } from "../src/kilocode/index.js";
 import type {
@@ -12,7 +12,7 @@ import type {
   ResolvedScope,
 } from "../src/types.js";
 import type { AlignRule } from "@aligntrue/schema";
-import { parseYamlToJson } from "@aligntrue/schema";
+import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
 const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-kilocode-test-output");
@@ -83,7 +83,7 @@ describe("KiloCodeExporter", () => {
     it("should support off mode (no markers)", async () => {
       const config = { export: { mode_hints: { default: "off" } } };
       const request = createRequest(
-        loadFixture("single-rule.yaml").rules,
+        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
         createDefaultScope(),
       );
       const result = await exporter.export(request, { ...options, config });
@@ -95,7 +95,7 @@ describe("KiloCodeExporter", () => {
     it("should support metadata_only mode (markers, no hints)", async () => {
       const config = { export: { mode_hints: { default: "metadata_only" } } };
       const request = createRequest(
-        loadFixture("single-rule.yaml").rules,
+        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
         createDefaultScope(),
       );
       const result = await exporter.export(request, { ...options, config });
@@ -108,7 +108,7 @@ describe("KiloCodeExporter", () => {
     it("should support hints mode (markers + visible intent)", async () => {
       const config = { export: { mode_hints: { default: "hints" } } };
       const request = createRequest(
-        loadFixture("single-rule.yaml").rules,
+        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
         createDefaultScope(),
       );
       const result = await exporter.export(request, { ...options, config });
@@ -122,13 +122,6 @@ describe("KiloCodeExporter", () => {
 
 // Helper functions
 
-function loadFixture(filename: string): { rules: AlignRule[] } {
-  const filepath = join(FIXTURES_DIR, filename);
-  const yaml = readFileSync(filepath, "utf-8");
-  const data = parseYamlToJson(yaml) as any;
-  return { rules: data.rules };
-}
-
 function createRequest(
   rules: AlignRule[],
   scope: ResolvedScope,
@@ -137,14 +130,5 @@ function createRequest(
     scope,
     rules,
     outputPath: join(TEST_OUTPUT_DIR, ".kilocode", "rules", "rules.md"),
-  };
-}
-
-function createDefaultScope(): ResolvedScope {
-  return {
-    path: ".",
-    normalizedPath: ".",
-    isDefault: true,
-    include: ["**/*"],
   };
 }
