@@ -1,5 +1,11 @@
 # @aligntrue/markdown-parser
 
+## Unreleased
+
+### Security
+
+- Fixed polynomial ReDoS vulnerability in HTML comment format parser. Replaced complex regex with linear split-based parsing to prevent catastrophic backtracking on malformed input.
+
 ## 0.1.1-alpha.3
 
 ### Patch Changes
