@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, mkdirSync, rmdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { LocalProvider } from "../../src/providers/local.js";
 
@@ -22,7 +22,7 @@ describe("LocalProvider", () => {
   afterEach(() => {
     if (existsSync(TEST_DIR)) {
       try {
-        rmdirSync(TEST_DIR, { recursive: true });
+        rmSync(TEST_DIR, { recursive: true, force: true });
       } catch {
         // Ignore errors
       }
