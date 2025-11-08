@@ -14,7 +14,7 @@ import type {
 import type { AlignRule } from "@aligntrue/schema";
 import { createDefaultScope } from "./helpers/test-fixtures.js";
 
-const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
+const _FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
 const TEST_OUTPUT_DIR = join(
   import.meta.dirname,
   "temp-firebender-test-output",

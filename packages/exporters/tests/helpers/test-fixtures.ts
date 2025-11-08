@@ -19,8 +19,8 @@ export function loadFixture(
 ): { rules: AlignRule[] } {
   const filepath = join(fixturesDir, filename);
   const yaml = readFileSync(filepath, "utf-8");
-  const data = parseYamlToJson(yaml) as any;
-  return { rules: data.rules };
+  const data = parseYamlToJson(yaml) as Record<string, unknown>;
+  return { rules: data.rules as AlignRule[] };
 }
 
 /**
