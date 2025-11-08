@@ -66,7 +66,7 @@ The complete YAML document format that combines metadata with a collection of ru
 
 "Aligns" is the formal name for the complete specification format, used in the Align Spec v1 documentation.
 
-**Related:** [Align Spec v1](/docs/spec/align-spec-v1.md)
+**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md)
 
 ---
 
