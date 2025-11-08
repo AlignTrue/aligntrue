@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** 20 or later (`.node-version` file included for Volta/asdf/nvm)
+- **Node.js** 22 or later (`.node-version` file included for Volta/asdf/nvm)
 - **pnpm** 9 or later
 
 Install pnpm if you don't have it:

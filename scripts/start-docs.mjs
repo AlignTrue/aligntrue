@@ -226,7 +226,7 @@ async function main() {
     error(err.message);
     log(
       `\n${colors.yellow}Troubleshooting:${colors.reset}\n` +
-        `  1. Check Node version: node -v (need 20+)\n` +
+        `  1. Check Node version: node -v (need 22+)\n` +
         `  2. Clean install: rm -rf node_modules && pnpm install\n` +
         `  3. Check logs above for build errors\n`,
     );
