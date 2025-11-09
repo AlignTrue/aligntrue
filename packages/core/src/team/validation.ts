@@ -162,8 +162,6 @@ export function validateTeamSources(
           });
         }
       }
-
-      // Catalog sources no longer supported - removed in favor of git imports
     }
   } catch (_err) {
     errors.push({

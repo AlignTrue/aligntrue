@@ -8,10 +8,6 @@ import { parseAllowList } from "./allow.js";
 import type { AllowList, AllowListSource } from "./types.js";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 
-// TODO (Phase 4): Add catalog source support
-// When catalog is available, resolve id@version to latest catalog entry
-// and compare to lockfile entry. Git resolution pattern can be reused.
-
 /**
  * Individual update finding
  */
@@ -39,8 +35,7 @@ export interface UpdateResult {
 
 /**
  * Detect upstream updates by comparing lockfile to allowed sources
- * Phase 3.5: Uses base_hash when available for overlay-aware detection
- * Git-only for Phase 3; catalog support deferred to Phase 4
+ * Uses base_hash when available for overlay-aware detection
  */
 export function detectUpstreamUpdates(
   lockfile: Lockfile,
