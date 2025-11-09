@@ -36,6 +36,19 @@ AlignTrue's workflow is simple:
 
 **The key decision:** `AGENTS.md` is your primary editing file. The `.aligntrue/.rules.yaml` file is auto-generated - don't edit it directly.
 
+{/* prettier-ignore-start */}
+
+<Callout type="warning">
+**Important:** `.aligntrue/.rules.yaml` is auto-generated. Edit `AGENTS.md` or agent files instead.
+
+AlignTrue keeps everything in sync automatically:
+
+- Edit `AGENTS.md` or `.cursor/*.mdc` → sync updates all agents
+- Never edit `.aligntrue/.rules.yaml` directly
+
+</Callout>
+{/* prettier-ignore-end */}
+
 ## Prerequisites
 
 - **Node.js 22+** - [Download](https://nodejs.org/)
