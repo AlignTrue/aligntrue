@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import type { PageMapItem } from "nextra";
-import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import themeConfig from "../../theme.config";
 import { AlphaBanner } from "../components/AlphaBanner";
 
 /**
@@ -102,13 +102,6 @@ export default async function DocsLayout({
 }: {
   children: ReactNode;
 }) {
-  // Create branded Nextra theme config
-  const themeConfig = createAlignTrueNextraTheme({
-    docsRepositoryBase:
-      "https://github.com/AlignTrue/aligntrue/tree/main/apps/docs",
-    logoSize: "md",
-  });
-
   // Get page map and prefix all routes with /docs since we're in a nested route
   const rawPageMap = await getPageMap();
 
@@ -138,15 +131,10 @@ export default async function DocsLayout({
         navbar={
           <Navbar
             logo={themeConfig.logo}
-            projectLink="https://github.com/AlignTrue/aligntrue"
+            projectLink={themeConfig.project.link}
           />
         }
         footer={<DocsFooter />}
-        docsRepositoryBase={themeConfig.docsRepositoryBase}
-        editLink="Edit this page on GitHub"
-        navigation
-        sidebar={themeConfig.sidebar}
-        toc={themeConfig.toc}
       >
         {children}
       </Layout>

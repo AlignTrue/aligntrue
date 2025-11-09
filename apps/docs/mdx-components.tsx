@@ -1,5 +1,5 @@
 import { useMDXComponents as getDocsMDXComponents } from "nextra-theme-docs";
-import { Tabs } from "nextra/components";
+import { Tabs, Callout, Cards, Steps } from "nextra/components";
 
 type MDXComponents = Record<string, React.ComponentType>;
 
@@ -9,5 +9,8 @@ export function useMDXComponents(components?: MDXComponents): MDXComponents {
     // This is expected - will be fixed when Nextra 5 releases with React 19 support
     ...getDocsMDXComponents(components),
     Tabs,
+    Callout,
+    Cards,
+    Steps,
   };
 }
