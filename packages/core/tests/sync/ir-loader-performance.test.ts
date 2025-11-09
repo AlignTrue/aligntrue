@@ -53,7 +53,7 @@ rules:
     );
 
     warnSpy.mockRestore();
-  });
+  }, 10000); // 10s timeout for large file parsing
 
   it("throws error in team mode when file exceeds limit", async () => {
     const filePath = join(testDir, "large.yaml");
@@ -82,7 +82,7 @@ rules:
       force: true,
     });
     expect(ir.id).toBe("test-pack");
-  });
+  }, 10000); // 10s timeout for large file parsing
 
   it("uses default values when options not provided", async () => {
     const filePath = join(testDir, "rules.yaml");

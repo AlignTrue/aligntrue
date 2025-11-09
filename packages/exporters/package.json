@@ -22,11 +22,8 @@
     "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1"
-  },
-  "devDependencies": {
-    "@types/js-yaml": "^4.0.9",
-    "js-yaml": "^4.1.0"
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.1"
   },
   "engines": {
     "node": ">=22"

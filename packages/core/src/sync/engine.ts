@@ -631,7 +631,7 @@ export class SyncEngine {
         if (!options.dryRun) {
           const { writeFile } = await import("fs/promises");
           const { extname } = await import("path");
-          const yaml = await import("js-yaml");
+          const { stringify: stringifyYaml } = await import("yaml");
 
           // Detect source format and preserve it
           const ext = extname(irPath).toLowerCase();
@@ -656,7 +656,7 @@ export class SyncEngine {
             });
           } else {
             // Write as YAML
-            content = yaml.dump(this.ir);
+            content = stringifyYaml(this.ir);
           }
 
           await writeFile(irPath, content, "utf-8");
