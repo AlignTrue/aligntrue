@@ -24,12 +24,22 @@ export function AlphaBanner() {
     }
   }, []);
 
-  if (!mounted || dismissed) return null;
-
   const handleDismiss = () => {
     setDismissed(true);
     localStorage.setItem("aligntrue-alpha-banner-dismissed", "true");
   };
+
+  // Set CSS custom property for banner height
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.style.setProperty(
+        "--banner-height",
+        dismissed ? "0px" : "48px",
+      );
+    }
+  }, [mounted, dismissed]);
+
+  if (!mounted || dismissed) return null;
 
   return (
     <div
