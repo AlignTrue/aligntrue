@@ -90,6 +90,8 @@ OPTIONS
   --help, -h       Show this help message
 
 DRIFT TYPES
+  lockfile        Rules changed since last lockfile generation
+  agent_file      Agent files modified after IR (team mode)
   upstream        Rule content changed in allowed sources
   severity_remap  Severity remapping policy violations
   vendorized      Vendored pack integrity issues
@@ -255,6 +257,8 @@ function outputJson(results: DriftDetectionResult): void {
           return acc;
         },
         {
+          lockfile: 0,
+          agent_file: 0,
           upstream: 0,
           severity_remap: 0,
           vendorized: 0,

@@ -19,7 +19,9 @@ export type DriftCategory =
   | "result" // result_hash differs: unexpected application result
   | "severity_remap" // Severity remapping rules changed (Session 7)
   | "vendorized" // Vendored pack differs from source
-  | "local_overlay"; // Legacy: use "overlay" instead
+  | "local_overlay" // Legacy: use "overlay" instead
+  | "lockfile" // Lockfile bundle hash differs from current rules
+  | "agent_file"; // Agent files modified after IR
 
 /**
  * Individual drift finding
@@ -59,6 +61,8 @@ export interface DriftResult {
       severity_remap: number;
       vendorized: number;
       local_overlay: number;
+      lockfile: number;
+      agent_file: number;
     };
   };
 }
@@ -333,6 +337,95 @@ export function detectResultDrift(
 }
 
 /**
+ * Detect lockfile drift
+ * Compares current bundle hash (computed from rules) with lockfile bundle hash
+ * Indicates rules have changed since last lock
+ */
+export function detectLockfileDrift(
+  lockfile: Lockfile,
+  currentBundleHash: string,
+): DriftFinding[] {
+  const findings: DriftFinding[] = [];
+
+  // Compare lockfile bundle hash with current bundle hash
+  if (lockfile.bundle_hash !== currentBundleHash) {
+    findings.push({
+      category: "lockfile",
+      rule_id: "_bundle",
+      message: "Rules have changed since last lockfile generation",
+      suggestion: "Run: aligntrue sync (to regenerate lockfile)",
+      lockfile_hash: lockfile.bundle_hash,
+      expected_hash: currentBundleHash,
+    });
+  }
+
+  return findings;
+}
+
+/**
+ * Detect agent file drift
+ * Checks if agent files (AGENTS.md, .cursor/rules/*.mdc) have been modified after IR
+ * Only relevant when auto_pull is disabled (team mode default)
+ */
+export function detectAgentFileDrift(
+  basePath: string = ".",
+  lastSyncTimestamp?: number,
+): DriftFinding[] {
+  const findings: DriftFinding[] = [];
+  const { statSync } = require("fs");
+
+  // Agent files to check
+  const agentFiles = [
+    { path: "AGENTS.md", agent: "agents-md" },
+    { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
+  ];
+
+  // Get IR file timestamp
+  const irPath = join(basePath, ".aligntrue/.rules.yaml");
+  let irTimestamp: number;
+  try {
+    const irStats = statSync(irPath);
+    irTimestamp = irStats.mtimeMs;
+  } catch {
+    // IR file doesn't exist - no drift to detect
+    return findings;
+  }
+
+  // Use last sync timestamp if provided, otherwise use IR timestamp
+  const referenceTimestamp = lastSyncTimestamp || irTimestamp;
+
+  // Check each agent file
+  for (const { path, agent } of agentFiles) {
+    const fullPath = join(basePath, path);
+
+    // Skip if file doesn't exist
+    if (!existsSync(fullPath)) {
+      continue;
+    }
+
+    try {
+      const stats = statSync(fullPath);
+      const agentTimestamp = stats.mtimeMs;
+
+      // Agent file modified after reference timestamp
+      if (agentTimestamp > referenceTimestamp) {
+        findings.push({
+          category: "agent_file",
+          rule_id: `_agent_${agent}`,
+          message: `${path} modified after last sync`,
+          suggestion: `Run: aligntrue sync --accept-agent ${agent}`,
+        });
+      }
+    } catch {
+      // File exists but can't stat - skip
+      continue;
+    }
+  }
+
+  return findings;
+}
+
+/**
  * Detect local overlay drift (legacy)
  * Deprecated: Use detectOverlayDrift instead
  */
@@ -348,7 +441,7 @@ export function detectLocalOverlayDrift(
  * High-level drift detection for CLI usage
  * Takes config object and handles file paths internally
  */
-export function detectDriftForConfig(config: unknown): Promise<{
+export async function detectDriftForConfig(config: unknown): Promise<{
   driftDetected: boolean;
   mode: string;
   lockfilePath: string;
@@ -371,7 +464,28 @@ export function detectDriftForConfig(config: unknown): Promise<{
   const allowListPath = configAsAny.allowListPath || ".aligntrue/allow.yaml";
 
   try {
-    const result = detectDrift(lockfilePath, allowListPath, basePath);
+    // Compute current bundle hash for lockfile drift detection
+    let currentBundleHash: string | undefined;
+    try {
+      // Load current rules and compute bundle hash
+      const irPath = join(basePath, ".aligntrue/.rules.yaml");
+      if (existsSync(irPath)) {
+        const { loadIR } = await import("../sync/ir-loader.js");
+        const { generateLockfile } = await import("../lockfile/index.js");
+        const ir = await loadIR(irPath);
+        const tempLockfile = generateLockfile(ir, "team");
+        currentBundleHash = tempLockfile.bundle_hash;
+      }
+    } catch {
+      // Can't compute current hash - skip lockfile drift detection
+    }
+
+    const result = detectDrift(
+      lockfilePath,
+      allowListPath,
+      basePath,
+      currentBundleHash,
+    );
 
     return Promise.resolve({
       driftDetected: result.has_drift,
@@ -414,6 +528,7 @@ export function detectDrift(
   lockfilePath: string,
   allowListPath: string,
   basePath: string = ".",
+  currentBundleHash?: string,
 ): DriftResult {
   // Check if lockfile exists
   if (!existsSync(lockfilePath)) {
@@ -429,6 +544,8 @@ export function detectDrift(
           severity_remap: 0,
           vendorized: 0,
           local_overlay: 0,
+          lockfile: 0,
+          agent_file: 0,
         },
       },
     };
@@ -448,6 +565,8 @@ export function detectDrift(
           severity_remap: 0,
           vendorized: 0,
           local_overlay: 0,
+          lockfile: 0,
+          agent_file: 0,
         },
       },
     };
@@ -481,6 +600,12 @@ export function detectDrift(
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));
 
+  // New drift detection types
+  if (currentBundleHash) {
+    findings.push(...detectLockfileDrift(lockfile, currentBundleHash));
+  }
+  findings.push(...detectAgentFileDrift(basePath));
+
   // Calculate summary (Phase 3.5: includes new categories)
   const by_category = {
     upstream: findings.filter((f) => f.category === "upstream").length,
@@ -491,6 +616,8 @@ export function detectDrift(
     vendorized: findings.filter((f) => f.category === "vendorized").length,
     local_overlay: findings.filter((f) => f.category === "local_overlay")
       .length,
+    lockfile: findings.filter((f) => f.category === "lockfile").length,
+    agent_file: findings.filter((f) => f.category === "agent_file").length,
   };
 
   return {
