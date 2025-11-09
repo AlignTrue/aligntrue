@@ -449,6 +449,289 @@ git push
 
 **Result:** Team updates to new version with full visibility into changes.
 
+## Drift detection
+
+Team mode provides comprehensive drift detection to catch misalignment early. The `aligntrue drift` command detects three types of drift:
+
+### 1. Lockfile drift
+
+**What it detects:** Rules have changed since last lockfile generation.
+
+**When it happens:**
+
+- Someone edited `.aligntrue/.rules.yaml` directly
+- Rules were imported from agent files (`--accept-agent`)
+- Bundle dependencies changed
+
+**How to detect:**
+
+```bash
+aligntrue drift
+
+# Output:
+# LOCKFILE DRIFT:
+#   _bundle
+#     Rules have changed since last lockfile generation
+#     Old bundle: sha256:abc123...
+#     New bundle: sha256:def456...
+#     Suggestion: Run: aligntrue sync (to regenerate lockfile)
+```
+
+**How to resolve:**
+
+```bash
+# Regenerate lockfile with new bundle hash
+aligntrue sync
+
+# Approve the new hash (if in strict mode)
+aligntrue team approve --current
+
+# Commit the updated lockfile
+git add .aligntrue.lock.json .aligntrue/allow.yaml
+git commit -m "chore: Update lockfile after rule changes"
+```
+
+**Lockfile modes:**
+
+- **`off`** - No validation (like solo mode)
+- **`soft`** - Warn on drift, allow sync to continue
+- **`strict`** - Block sync until hash is approved
+
+**Interactive vs CI behavior:**
+
+In **strict mode**:
+
+- **Interactive terminal** - Prompts to approve new hash
+- **CI/non-interactive** - Exits with code 1, requires manual approval
+
+```yaml
+# .aligntrue/config.yaml
+lockfile:
+  mode: strict # Block unapproved changes
+```
+
+### 2. Agent file drift
+
+**What it detects:** Agent files (AGENTS.md, .cursor/rules/\*.mdc) modified after IR.
+
+**When it happens:**
+
+- Developer edited AGENTS.md directly in team mode
+- Cursor rules file modified outside of AlignTrue sync
+
+**Why it matters:** In team mode, IR (`.aligntrue/.rules.yaml`) is the single source of truth. Editing agent files directly bypasses lockfile validation and can cause divergence.
+
+**How to detect:**
+
+```bash
+aligntrue drift
+
+# Output:
+# AGENT FILE DRIFT:
+#   _agent_agents-md
+#     AGENTS.md modified after last sync
+#     Suggestion: Run: aligntrue sync --accept-agent agents-md
+```
+
+**How to resolve:**
+
+Option 1: Accept agent changes (pull into IR):
+
+```bash
+# Import changes from agent file into IR
+aligntrue sync --accept-agent agents-md
+
+# This will:
+# 1. Parse AGENTS.md
+# 2. Update .aligntrue/.rules.yaml
+# 3. Regenerate lockfile
+# 4. Prompt to approve new bundle hash (if strict mode)
+```
+
+Option 2: Discard agent changes (overwrite from IR):
+
+```bash
+# Sync IR to agents (overwrites AGENTS.md)
+aligntrue sync
+
+# Agent file will be regenerated from IR
+```
+
+**Prevention:** In team mode, `aligntrue sync` shows a warning when agent files are newer than IR:
+
+```bash
+aligntrue sync
+
+# Output:
+# ⚠ AGENTS.md modified after IR
+#   In team mode, edit .aligntrue/.rules.yaml instead
+#   Or run: aligntrue sync --accept-agent agents-md
+```
+
+### 3. Upstream drift
+
+**What it detects:** Upstream pack content changed since lockfile generation.
+
+**When it happens:**
+
+- Upstream pack repository updated
+- New version published to catalog
+- Git source ref changed
+
+**How to detect:**
+
+```bash
+aligntrue drift
+
+# Output:
+# UPSTREAM DRIFT:
+#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+#     Upstream pack has been updated (base_hash differs)
+#     Lockfile: sha256:abc123...
+#     Allowed: sha256:def456...
+#     Suggestion: Run: aligntrue update apply
+```
+
+**How to resolve:**
+
+```bash
+# Check what changed
+aligntrue update check
+
+# Apply update
+aligntrue update apply
+
+# Approve new hash
+aligntrue team approve --current
+```
+
+### Drift detection in CI
+
+**Exit codes:**
+
+```bash
+aligntrue drift          # Exit 0 (always)
+aligntrue drift --gates  # Exit 2 if drift detected
+```
+
+**CI integration:**
+
+```yaml
+# .github/workflows/pr.yml
+- name: Detect drift
+  run: aligntrue drift --gates
+# Fails PR if any drift detected
+```
+
+**JSON output for tooling:**
+
+```bash
+aligntrue drift --json
+
+# Output:
+{
+  "mode": "team",
+  "has_drift": true,
+  "lockfile_path": ".aligntrue.lock.json",
+  "findings": [
+    {
+      "category": "lockfile",
+      "ruleId": "_bundle",
+      "description": "Rules have changed since last lockfile generation",
+      "suggestion": "Run: aligntrue sync (to regenerate lockfile)",
+      "lockfile_hash": "abc123...",
+      "expected_hash": "def456..."
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "by_category": {
+      "lockfile": 1,
+      "agent_file": 0,
+      "upstream": 0,
+      "severity_remap": 0,
+      "vendorized": 0
+    }
+  }
+}
+```
+
+### Drift detection best practices
+
+**1. Run drift checks regularly:**
+
+```bash
+# Before starting work
+aligntrue drift
+
+# Before committing
+aligntrue drift --gates
+```
+
+**2. Set up automated drift detection:**
+
+```yaml
+# .github/workflows/drift.yml
+name: Drift Detection
+
+on:
+  schedule:
+    - cron: "0 9 * * MON" # Every Monday at 9am
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install AlignTrue CLI
+        run: npm install -g @aligntrue/cli@next
+      - name: Check for drift
+        run: aligntrue drift --gates
+```
+
+**3. Document drift resolution in commits:**
+
+```bash
+git commit -m "fix: Resolve lockfile drift
+
+- Regenerated lockfile after rule changes
+- Approved new bundle hash: sha256:abc123...
+- Tested with: aligntrue check && aligntrue sync"
+```
+
+**4. Use strict mode in production:**
+
+```yaml
+# .aligntrue/config.yaml
+lockfile:
+  mode: strict # Block unapproved changes
+```
+
+**5. Review drift in PRs:**
+
+```yaml
+# .github/workflows/pr.yml
+- name: Detect drift
+  run: |
+    aligntrue drift --json > drift-report.json
+    cat drift-report.json
+
+- name: Comment on PR
+  if: failure()
+  uses: actions/github-script@v6
+  with:
+    script: |
+      const fs = require('fs');
+      const drift = JSON.parse(fs.readFileSync('drift-report.json'));
+
+      github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: `⚠️ Drift detected:\n\`\`\`json\n${JSON.stringify(drift, null, 2)}\n\`\`\``
+      });
+```
+
 ## Customization patterns
 
 ### Plugs: Team-specific values
