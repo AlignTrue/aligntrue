@@ -985,20 +985,22 @@ export async function sync(args: string[]): Promise<void> {
 
           if (invalidIds.length > 0) {
             spinner.stop("Auto-pull validation failed");
-            clack.log.warn(
-              `Cannot auto-pull from ${autoPullAgent}: invalid rule IDs`,
+            clack.log.error(
+              `⚠️  Cannot auto-pull: ${invalidIds.length} rule${invalidIds.length !== 1 ? "s" : ""} with invalid IDs`,
             );
 
             invalidIds.forEach(({ id, error, suggestion }) => {
-              clack.log.warn(`  - "${id}": ${error}`);
+              clack.log.error(`  ✗ "${id}": ${error}`);
               if (suggestion) {
-                clack.log.info(`    Try: ${suggestion}`);
+                clack.log.info(`    💡 Try: ${suggestion}`);
               }
             });
 
-            clack.log.info(
-              `\nFix rule IDs in ${autoPullAgent} files and run: aligntrue sync --accept-agent ${autoPullAgent}`,
-            );
+            clack.log.info("");
+            clack.log.info(`Fix rule IDs in ${autoPullAgent} and run:`);
+            clack.log.info(`  aligntrue import ${autoPullAgent} --write`);
+            clack.log.info("");
+            clack.log.info("Continuing sync with existing IR rules...");
           } else {
             // Safe to write - proceed with actual sync
             const pullResult = await engine.syncFromAgent(

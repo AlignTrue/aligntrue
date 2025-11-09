@@ -4,11 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { parseCursorMdc } from "@aligntrue/markdown-parser";
 import { parseAgentsMd } from "@aligntrue/markdown-parser";
+import { importCommand } from "../../src/commands/import.js";
 
 const TEST_DIR = join(tmpdir(), "aligntrue-agent-import-test");
 
@@ -277,6 +278,65 @@ No severity field
       expect(existsSync(agentsMdPath)).toBe(true);
 
       // In reality, importFromAgent('agents-md', TEST_DIR) would be called
+    });
+  });
+
+  describe("Import Command Integration", () => {
+    it("import --write creates .aligntrue directory if missing (Issue #1 fix)", async () => {
+      const testDir = join(tmpdir(), `aligntrue-import-test-${Date.now()}`);
+      mkdirSync(testDir, { recursive: true });
+
+      try {
+        // Create Cursor file but NO .aligntrue directory
+        const cursorDir = join(testDir, ".cursor", "rules");
+        mkdirSync(cursorDir, { recursive: true });
+        writeFileSync(
+          join(cursorDir, "test.mdc"),
+          `---
+description: Test
+---
+
+## Rule: test.rule.one
+
+**Severity:** warn
+
+**Applies to:**
+- **/*.ts
+
+Test guidance`,
+          "utf-8",
+        );
+
+        // Change to test directory
+        const originalCwd = process.cwd();
+        process.chdir(testDir);
+
+        try {
+          // Run import --write (should create .aligntrue directory)
+          await importCommand(["cursor", "--write"]);
+
+          // Verify .aligntrue directory and .rules.yaml created
+          expect(existsSync(join(testDir, ".aligntrue"))).toBe(true);
+          expect(existsSync(join(testDir, ".aligntrue", ".rules.yaml"))).toBe(
+            true,
+          );
+
+          // Verify content
+          const irContent = readFileSync(
+            join(testDir, ".aligntrue", ".rules.yaml"),
+            "utf-8",
+          );
+          expect(irContent).toContain("spec_version:");
+          expect(irContent).toContain("test.rule.one");
+        } finally {
+          process.chdir(originalCwd);
+        }
+      } finally {
+        // Cleanup
+        if (existsSync(testDir)) {
+          rmSync(testDir, { recursive: true, force: true });
+        }
+      }
     });
   });
 });
