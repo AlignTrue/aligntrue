@@ -6,7 +6,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { load as parseYaml, dump as stringifyYaml } from "js-yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { dirname } from "path";
 import { mkdirSync } from "fs";
 import type {

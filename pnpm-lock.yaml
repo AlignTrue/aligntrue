@@ -162,13 +162,9 @@ importers:
       '@clack/prompts':
         specifier: ^0.11.0
         version: 0.11.0
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
-    devDependencies:
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
+      yaml:
+        specifier: ^2.6.1
+        version: 2.8.1
 
   packages/core:
     dependencies:
@@ -196,16 +192,13 @@ importers:
       ignore:
         specifier: ^7.0.5
         version: 7.0.5
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       micromatch:
         specifier: ^4.0.8
         version: 4.0.8
+      yaml:
+        specifier: ^2.6.1
+        version: 2.8.1
     devDependencies:
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/micromatch':
         specifier: ^4.0.9
         version: 4.0.10
@@ -230,13 +223,9 @@ importers:
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
-    devDependencies:
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
+      yaml:
+        specifier: ^2.6.1
+        version: 2.8.1
 
   packages/file-utils: {}
 
@@ -263,13 +252,10 @@ importers:
       canonicalize:
         specifier: ^2.1.0
         version: 2.1.0
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
+      yaml:
+        specifier: ^2.6.1
+        version: 2.8.1
     devDependencies:
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
@@ -1474,9 +1460,6 @@ packages:
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
-
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -5203,8 +5186,6 @@ snapshots:
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
-
-  '@types/js-yaml@4.0.9': {}
 
   '@types/json-schema@7.0.15': {}
 

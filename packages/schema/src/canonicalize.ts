@@ -1,12 +1,14 @@
 import { createHash } from "crypto";
-import { load as parseYaml } from "js-yaml";
+import { parse as parseYaml } from "yaml";
 import canonicalize from "canonicalize";
 
 /**
  * Parse YAML string to plain JavaScript object
  */
 export function parseYamlToJson(yaml: string): unknown {
-  return parseYaml(yaml);
+  const result = parseYaml(yaml, { merge: true });
+  // yaml package returns null for empty documents, convert to undefined for consistency
+  return result === null && yaml.trim() === "" ? undefined : result;
 }
 
 /**

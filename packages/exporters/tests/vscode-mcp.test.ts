@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { load as loadYaml } from "js-yaml";
+import { parse as parseYaml } from "yaml";
 import { VsCodeMcpExporter } from "../src/vscode-mcp/index.js";
 import type {
   ScopedExportRequest,
@@ -19,7 +19,7 @@ import type { AlignRule } from "@aligntrue/schema";
 function loadFixture(name: string): { rules: AlignRule[] } {
   const fixturePath = join(__dirname, "fixtures", "vscode-mcp", `${name}.yaml`);
   const content = readFileSync(fixturePath, "utf-8");
-  const data = loadYaml(content) as any;
+  const data = parseYaml(content) as any;
   return { rules: data.rules || [] };
 }
 

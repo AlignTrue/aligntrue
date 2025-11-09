@@ -6,7 +6,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { load as parseYaml } from "js-yaml";
+import { parse as parseYaml } from "yaml";
 import { join } from "path";
 
 /**
@@ -68,7 +68,7 @@ export function parseTeamYaml(path: string): TeamYaml {
     );
   }
 
-  // Handle empty file (parsed as null by js-yaml)
+  // Handle empty file (parsed as null by yaml parser)
   if (!parsed) {
     return { severity_remaps: [] };
   }

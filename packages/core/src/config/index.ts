@@ -12,7 +12,7 @@ import {
 } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import * as yaml from "js-yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import Ajv, { type ValidateFunction, type ErrorObject } from "ajv";
 import addFormats from "ajv-formats";
 import {
@@ -639,7 +639,7 @@ export async function loadConfig(
   }
 
   try {
-    config = yaml.load(content);
+    config = parseYaml(content);
   } catch (_err) {
     const yamlErr = _err as { mark?: { line?: number; column?: number } };
     const location = yamlErr.mark
@@ -684,7 +684,7 @@ export async function saveConfig(
 ): Promise<void> {
   const paths = getAlignTruePaths(cwd);
   const path = configPath || paths.config;
-  const yamlContent = yaml.dump(config);
+  const yamlContent = stringifyYaml(config);
   const tempPath = `${path}.tmp`;
 
   // Ensure directory exists
@@ -868,7 +868,7 @@ export async function saveMinimalConfig(
     minimalConfig.detection = detectionSection;
   }
 
-  const yamlContent = yaml.dump(minimalConfig);
+  const yamlContent = stringifyYaml(minimalConfig);
   const tempPath = `${path}.tmp`;
 
   mkdirSync(dirname(path), { recursive: true });

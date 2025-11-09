@@ -350,8 +350,8 @@ async function getPlugsInfo(configPath?: string): Promise<{
     }
 
     const irContent = readFileSync(irPath, "utf-8");
-    const { load } = await import("js-yaml");
-    const ir = load(irContent) as {
+    const { parse: parseYaml } = await import("yaml");
+    const ir = parseYaml(irContent) as {
       plugs?: {
         slots?: Record<string, { required?: boolean }>;
         fills?: Record<string, unknown>;
