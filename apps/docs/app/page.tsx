@@ -462,6 +462,29 @@ export default function HomePage() {
           font-family: var(--font-mono);
         }
 
+        /* Typography optimization for mobile */
+        h1,
+        h2,
+        h3 {
+          text-wrap: balance;
+        }
+
+        p {
+          text-wrap: pretty;
+        }
+
+        .hero-title {
+          text-wrap: balance;
+          max-width: 20ch;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .hero-description {
+          text-wrap: pretty;
+          max-width: 65ch;
+        }
+
         /* Component-specific styles */
         .skip-to-content {
           position: absolute;
@@ -499,10 +522,17 @@ export default function HomePage() {
 
           .hero-title {
             font-size: 2rem !important;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
           }
 
           .hero-description {
             font-size: 1rem !important;
+            line-height: 1.65;
+          }
+
+          p {
+            line-height: 1.65;
           }
 
           .quickstart-steps {
@@ -583,6 +613,7 @@ export default function HomePage() {
                   fontWeight: "bold",
                   marginBottom: "1.5rem",
                   lineHeight: "1.2",
+                  textWrap: "balance",
                 }}
               >
                 Sync rules across AI agents, projects & teams.
@@ -593,9 +624,10 @@ export default function HomePage() {
                   fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
                   color: "var(--fg-muted)",
                   marginBottom: "2rem",
-                  maxWidth: "52rem",
+                  maxWidth: "48rem",
                   margin: "0 auto 2rem",
                   lineHeight: "1.6",
+                  textWrap: "pretty",
                 }}
               >
                 Write once, sync everywhere. 28+ agents supported. Extensible.{" "}
@@ -690,6 +722,10 @@ export default function HomePage() {
                       margin: 0,
                       lineHeight: "1.5",
                       textAlign: "center",
+                      textWrap: "pretty",
+                      maxWidth: "32ch",
+                      marginLeft: "auto",
+                      marginRight: "auto",
                     }}
                   >
                     Auto-detects agents, imports existing rules, or creates{" "}
@@ -776,6 +812,10 @@ export default function HomePage() {
                       margin: 0,
                       lineHeight: "1.5",
                       textAlign: "center",
+                      textWrap: "pretty",
+                      maxWidth: "32ch",
+                      marginLeft: "auto",
+                      marginRight: "auto",
                     }}
                   >
                     Generates & updates each agent's native files (Cursor,
@@ -921,7 +961,13 @@ export default function HomePage() {
                   >
                     60-second setup
                   </h3>
-                  <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
+                  <p
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "var(--fg-muted)",
+                      textWrap: "pretty",
+                    }}
+                  >
                     Auto-detects your agents & creates starter rules in under a
                     minute. No config required.
                   </p>
@@ -987,7 +1033,13 @@ export default function HomePage() {
                   >
                     28+ agents supported
                   </h3>
-                  <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
+                  <p
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "var(--fg-muted)",
+                      textWrap: "pretty",
+                    }}
+                  >
                     Cursor, Codex, Claude Code, Copilot, Claude, Aider,
                     Windsurf, VS Code MCP & 20+ more.
                   </p>
