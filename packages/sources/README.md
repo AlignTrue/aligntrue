@@ -122,21 +122,13 @@ If you see `Network unavailable, using cached pack`:
 - Cache will be refreshed on next online sync
 - Use `--force-refresh` to bypass cache when online (future CLI)
 
-### Pack Not Found
-
-If you see `Pack not found in catalog`:
-
-- Check pack ID spelling
-- Verify pack exists in AlignTrue/aligns repository
-- See available packs in error message
-
 ### Cache Issues
 
 If cache seems stale or corrupted:
 
-- Delete `.aligntrue/.cache/catalog/` directory
+- Delete `.aligntrue/.cache/git/` directory
 - Run sync again to rebuild cache
 
 ## Package Status
 
-✅ **Phase 1, Stage 3, Step 27** - Catalog provider complete with 33 tests passing
+✅ **Phase 1, Stage 3, Step 27** - Git provider complete with 33 tests passing

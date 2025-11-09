@@ -1,7 +1,7 @@
 /**
  * Privacy consent manager
  *
- * Handles user consent for network operations (catalog fetches, git clones).
+ * Handles user consent for network operations (git clones).
  * Consent is stored locally in .aligntrue/privacy-consent.json (git-ignored).
  * Users are prompted once per operation type, not repeatedly.
  */

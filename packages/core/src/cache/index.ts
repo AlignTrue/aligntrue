@@ -5,7 +5,6 @@
 export {
   CacheManager,
   gitCacheKey,
-  catalogCacheKey,
   validationCacheKey,
   estimateSize,
 } from "./manager.js";

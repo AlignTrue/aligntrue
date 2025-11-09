@@ -289,13 +289,6 @@ export function gitCacheKey(url: string, ref: string): string {
 }
 
 /**
- * Create cache key from pack ID and version
- */
-export function catalogCacheKey(id: string, version: string): string {
-  return `catalog:${id}@${version}`;
-}
-
-/**
  * Create cache key from content hash
  */
 export function validationCacheKey(contentHash: string): string {
