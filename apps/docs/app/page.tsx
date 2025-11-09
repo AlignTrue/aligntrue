@@ -187,7 +187,7 @@ function SiteHeader() {
           className="mobile-nav"
           style={{
             position: "fixed",
-            top: "73px",
+            top: "calc(100px + var(--banner-height, 0px))",
             left: 0,
             right: 0,
             bottom: 0,
@@ -197,7 +197,6 @@ function SiteHeader() {
             display: "flex",
             flexDirection: "column",
             gap: "1rem",
-            borderTop: "1px solid var(--border-color)",
           }}
           aria-label="Mobile navigation"
         >
