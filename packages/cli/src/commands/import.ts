@@ -16,7 +16,8 @@ import {
   formatCoverageReport,
   type CoverageReport,
 } from "@aligntrue/markdown-parser";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
+import { dirname } from "path";
 import type { AlignRule } from "@aligntrue/schema";
 import {
   parseCommonArgs,
@@ -179,6 +180,10 @@ async function writeToIRFile(
       console.log("... (truncated)");
     }
   } else {
+    // Ensure .aligntrue directory exists before writing
+    const irDir = dirname(irPath);
+    await mkdir(irDir, { recursive: true });
+
     await writeFile(irPath, yamlContent, "utf-8");
     clack.log.success(`Wrote ${rules.length} rules to ${irPath}`);
   }
