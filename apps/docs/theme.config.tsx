@@ -1,8 +1,7 @@
 // apps/docs/theme.config.tsx
-import type { DocsThemeConfig } from "nextra-theme-docs";
 import { AlignTrueLogo } from "@aligntrue/ui";
 
-const config: DocsThemeConfig = {
+const config = {
   logo: <AlignTrueLogo size="md" />,
   project: {
     link: "https://github.com/AlignTrue/aligntrue",
