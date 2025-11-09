@@ -13,7 +13,7 @@ import { generatePatchFile, type MergeConflict } from "./merge.js";
 export interface PatchWriterOptions {
   /** Base directory for artifacts (defaults to .aligntrue/artifacts) */
   artifactsDir?: string;
-  /** Source identifier (git URL, catalog ID, etc) */
+  /** Source identifier (git URL, etc) */
   source?: string;
   /** Custom filename (defaults to merge-conflicts-TIMESTAMP.md) */
   filename?: string;

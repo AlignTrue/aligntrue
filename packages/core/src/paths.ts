@@ -48,7 +48,7 @@ export function getAlignTruePaths(cwd: string = process.cwd()) {
     /** Path to VS Code MCP config file */
     vscodeMcp: (): string => join(cwd, ".vscode", "mcp.json"),
 
-    /** Path to cache directory for given type (catalog, git, etc.) */
+    /** Path to cache directory for given type (git, etc.) */
     cache: (type: string): string => join(cwd, ".aligntrue", ".cache", type),
 
     /** Path to privacy consent storage */
@@ -98,7 +98,7 @@ export function getAlignTrueDir(cwd: string = process.cwd()): string {
 /**
  * Get cache directory path for a specific provider type
  *
- * @param type - Cache type (catalog, git, etc.)
+ * @param type - Cache type (git, etc.)
  * @param cwd - Current working directory (default: process.cwd())
  * @returns Path to cache directory
  */

@@ -5,7 +5,7 @@
 /**
  * Source format in allow list
  * - type: 'id' for id@profile@version format, 'hash' for raw sha256:... format
- * - value: The source identifier (e.g., "base-global@aligntrue/catalog@v1.0.0" or "sha256:abc...")
+ * - value: The source identifier (e.g., "base-global@org/repo@v1.0.0" or "sha256:abc...")
  * - resolved_hash: Computed hash for 'id' type sources (optional, populated on resolution)
  * - comment: Optional human-readable description
  */

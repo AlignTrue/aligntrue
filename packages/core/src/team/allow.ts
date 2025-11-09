@@ -1,8 +1,7 @@
 /**
  * Allow list management for team mode
  *
- * Phase 3: Git-based source resolution only
- * Phase 4: Add catalog API resolution as primary source
+ * Git-based source resolution for shared rule packs
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -96,7 +95,7 @@ export function validateAllowList(list: AllowList): AllowListValidationResult {
  */
 export function parseSourceId(source: string): ParsedSourceId | null {
   // Format: id@profile@version
-  // Example: base-global@aligntrue/catalog@v1.0.0
+  // Example: base-global@org/repo@v1.0.0
   const parts = source.split("@");
   if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
     return null;
@@ -112,8 +111,7 @@ export function parseSourceId(source: string): ParsedSourceId | null {
 /**
  * Resolve source to concrete hash
  *
- * Phase 3: Git-only resolution
- * Phase 4: TODO: Add catalog API resolution as primary source
+ * Git-based resolution for shared rule packs
  */
 export async function resolveSource(
   source: string,
@@ -139,8 +137,7 @@ export async function resolveSource(
   }
 
   try {
-    // Phase 3: Git resolution only
-    // TODO Phase 4: Try catalog API first, fall back to git
+    // Resolve via git clone and hash computation
     const hash = await resolveSourceViaGit(parsed);
 
     return {
@@ -159,9 +156,6 @@ export async function resolveSource(
 
 /**
  * Resolve source via git clone and hash computation
- *
- * Phase 3: Main resolution path
- * Phase 4: Fallback when catalog API unavailable
  */
 async function resolveSourceViaGit(parsed: ParsedSourceId): Promise<string> {
   // TODO: Implement git-based resolution
