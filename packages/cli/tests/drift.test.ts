@@ -1,0 +1,389 @@
+/**
+ * Tests for drift command
+ * Verifies detection of lockfile drift, agent file drift, and upstream drift
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync, utimesSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
+import { drift } from "../src/commands/drift.js";
+
+describe("drift command", () => {
+  let testDir: string;
+  let originalCwd: string;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-drift-test-"));
+    process.chdir(testDir);
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it("detects lockfile drift when bundle hash differs", async () => {
+    // Setup: Create config, IR, lockfile, and allow list
+    const aligntrueDir = join(testDir, ".aligntrue");
+    const { mkdirSync } = require("fs");
+    mkdirSync(aligntrueDir, { recursive: true });
+
+    // Write config (team mode)
+    writeFileSync(
+      join(aligntrueDir, "config.yaml"),
+      `
+mode: team
+exporters: []
+modules:
+  lockfile: true
+`,
+    );
+
+    // Write IR
+    writeFileSync(
+      join(aligntrueDir, ".rules.yaml"),
+      `
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    guidance: "Current guidance"
+`,
+    );
+
+    // Write lockfile with OLD bundle hash (simulating drift)
+    writeFileSync(
+      join(testDir, ".aligntrue.lock.json"),
+      JSON.stringify(
+        {
+          version: "1",
+          generated_at: "2025-01-01T00:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule.one",
+              content_hash: "abc123",
+            },
+          ],
+          bundle_hash: "old_bundle_hash_12345",
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Write allow list
+    writeFileSync(
+      join(aligntrueDir, "allow.yaml"),
+      `
+sources:
+  - value: sha256:old_bundle_hash_12345
+    approved_by: test-user
+    approved_at: 2025-01-01T00:00:00Z
+`,
+    );
+
+    // Capture stdout
+    let output = "";
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      output += args.join(" ") + "\n";
+    };
+
+    try {
+      await drift([]);
+    } finally {
+      console.log = originalLog;
+    }
+
+    // Verify lockfile drift was detected
+    expect(output).toContain("LOCKFILE DRIFT");
+    expect(output).toContain("_bundle");
+    expect(output).toContain(
+      "Rules have changed since last lockfile generation",
+    );
+  });
+
+  it("detects agent file drift when agent files are newer than IR", async () => {
+    // Setup
+    const aligntrueDir = join(testDir, ".aligntrue");
+    const { mkdirSync } = require("fs");
+    mkdirSync(aligntrueDir, { recursive: true });
+
+    // Write config (team mode)
+    writeFileSync(
+      join(aligntrueDir, "config.yaml"),
+      `
+mode: team
+exporters: []
+modules:
+  lockfile: true
+`,
+    );
+
+    // Write IR
+    const irPath = join(aligntrueDir, ".rules.yaml");
+    writeFileSync(
+      irPath,
+      `
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    guidance: "Test guidance"
+`,
+    );
+
+    // Set IR timestamp to past
+    const pastTime = Date.now() - 60000; // 1 minute ago
+    utimesSync(irPath, new Date(pastTime), new Date(pastTime));
+
+    // Write AGENTS.md (newer than IR)
+    const agentsPath = join(testDir, "AGENTS.md");
+    writeFileSync(
+      agentsPath,
+      `
+# AlignTrue Rules
+
+\`\`\`aligntrue
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    guidance: "Modified in AGENTS.md"
+\`\`\`
+`,
+    );
+
+    // Write lockfile
+    writeFileSync(
+      join(testDir, ".aligntrue.lock.json"),
+      JSON.stringify(
+        {
+          version: "1",
+          generated_at: "2025-01-01T00:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule.one",
+              content_hash: "abc123",
+            },
+          ],
+          bundle_hash: "test_bundle_hash",
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Write allow list
+    writeFileSync(
+      join(aligntrueDir, "allow.yaml"),
+      `
+sources:
+  - value: sha256:test_bundle_hash
+    approved_by: test-user
+    approved_at: 2025-01-01T00:00:00Z
+`,
+    );
+
+    // Capture stdout
+    let output = "";
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      output += args.join(" ") + "\n";
+    };
+
+    try {
+      await drift([]);
+    } finally {
+      console.log = originalLog;
+    }
+
+    // Verify agent file drift was detected
+    expect(output).toContain("AGENT FILE DRIFT");
+    expect(output).toContain("AGENTS.md modified after last sync");
+    expect(output).toContain("aligntrue sync --accept-agent agents-md");
+  });
+
+  it("exits with code 2 when --gates flag used and drift detected", async () => {
+    // Setup
+    const aligntrueDir = join(testDir, ".aligntrue");
+    const { mkdirSync } = require("fs");
+    mkdirSync(aligntrueDir, { recursive: true });
+
+    // Write config (team mode)
+    writeFileSync(
+      join(aligntrueDir, "config.yaml"),
+      `
+mode: team
+exporters: []
+modules:
+  lockfile: true
+`,
+    );
+
+    // Write IR
+    writeFileSync(
+      join(aligntrueDir, ".rules.yaml"),
+      `
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    guidance: "Current guidance"
+`,
+    );
+
+    // Write lockfile with OLD bundle hash
+    writeFileSync(
+      join(testDir, ".aligntrue.lock.json"),
+      JSON.stringify(
+        {
+          version: "1",
+          generated_at: "2025-01-01T00:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule.one",
+              content_hash: "abc123",
+            },
+          ],
+          bundle_hash: "old_bundle_hash",
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Write allow list
+    writeFileSync(
+      join(aligntrueDir, "allow.yaml"),
+      `
+sources:
+  - value: sha256:old_bundle_hash
+    approved_by: test-user
+    approved_at: 2025-01-01T00:00:00Z
+`,
+    );
+
+    // Mock process.exit
+    let exitCode = 0;
+    const originalExit = process.exit;
+    process.exit = ((code?: number) => {
+      exitCode = code || 0;
+      throw new Error(`process.exit(${code})`);
+    }) as never;
+
+    try {
+      await drift(["--gates"]);
+    } catch (err) {
+      // Expected to throw due to process.exit
+      if (err instanceof Error && err.message.includes("process.exit")) {
+        // Expected
+      } else {
+        throw err;
+      }
+    } finally {
+      process.exit = originalExit;
+    }
+
+    // Should exit with code 2
+    expect(exitCode).toBe(2);
+  });
+
+  it("outputs JSON format with new drift categories", async () => {
+    // Setup
+    const aligntrueDir = join(testDir, ".aligntrue");
+    const { mkdirSync } = require("fs");
+    mkdirSync(aligntrueDir, { recursive: true });
+
+    // Write config (team mode)
+    writeFileSync(
+      join(aligntrueDir, "config.yaml"),
+      `
+mode: team
+exporters: []
+modules:
+  lockfile: true
+`,
+    );
+
+    // Write IR
+    writeFileSync(
+      join(aligntrueDir, ".rules.yaml"),
+      `
+id: test-rules
+version: 1.0.0
+spec_version: "1"
+rules:
+  - id: test.rule.one
+    severity: error
+    guidance: "Current guidance"
+`,
+    );
+
+    // Write lockfile with OLD bundle hash
+    writeFileSync(
+      join(testDir, ".aligntrue.lock.json"),
+      JSON.stringify(
+        {
+          version: "1",
+          generated_at: "2025-01-01T00:00:00Z",
+          mode: "team",
+          rules: [
+            {
+              rule_id: "test.rule.one",
+              content_hash: "abc123",
+            },
+          ],
+          bundle_hash: "old_bundle_hash",
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Write allow list
+    writeFileSync(
+      join(aligntrueDir, "allow.yaml"),
+      `
+sources:
+  - value: sha256:old_bundle_hash
+    approved_by: test-user
+    approved_at: 2025-01-01T00:00:00Z
+`,
+    );
+
+    // Capture stdout
+    let output = "";
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      output += args.join(" ") + "\n";
+    };
+
+    try {
+      await drift(["--json"]);
+    } finally {
+      console.log = originalLog;
+    }
+
+    // Parse JSON output
+    const jsonOutput = JSON.parse(output);
+
+    // Verify structure includes new categories
+    expect(jsonOutput.summary.by_category).toHaveProperty("lockfile");
+    expect(jsonOutput.summary.by_category).toHaveProperty("agent_file");
+    expect(jsonOutput.summary.by_category.lockfile).toBeGreaterThan(0);
+  });
+});
