@@ -4,7 +4,7 @@
 
 import { readFileSync, existsSync } from "fs";
 import { extname } from "path";
-import * as yaml from "js-yaml";
+import { parse as parseYaml } from "yaml";
 import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode } from "../config/index.js";
@@ -59,7 +59,7 @@ export async function loadIR(
   if (ext === ".yaml" || ext === ".yml") {
     // Parse YAML directly
     try {
-      ir = yaml.load(content);
+      ir = parseYaml(content);
     } catch (_err) {
       const yamlErr = _err as { mark?: { line?: number; column?: number } };
       const location = yamlErr.mark
