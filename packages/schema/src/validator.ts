@@ -278,23 +278,6 @@ export interface AlignPack {
 }
 
 /**
- * Rule (legacy format used by markdown parsers)
- * Represents a single rule parsed from agent formats (Cursor, AGENTS.md, etc.)
- */
-export interface AlignRule {
-  id: string;
-  severity?: string;
-  applies_to?: string[];
-  mode?: string;
-  description?: string;
-  guidance?: string;
-  title?: string;
-  tags?: string[];
-  vendor?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-
-/**
  * Natural markdown section (new format)
  */
 export interface AlignSection {

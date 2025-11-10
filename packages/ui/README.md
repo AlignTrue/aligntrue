@@ -94,4 +94,4 @@ sm, base (default), md, lg, xl
 
 ## Notes
 
-Current tokens are minimal placeholders for Phase 1. These can be refined when branding is finalized without breaking consuming code.
+Current tokens are minimal placeholders. These can be refined when branding is finalized without breaking consuming code.

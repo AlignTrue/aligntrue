@@ -57,16 +57,12 @@ CLAUDE.md
 temp-*
 logs/
 
-# Work-in-progress files (phase work, incomplete implementations)
+# Work-in-progress files
 packages/cli/src/commands/*-wip.ts
 packages/cli/tests/commands/*-wip.test.ts
 
 # internal docs (moved temporary documentation)
 .internal_docs/
-docs/pre-1.0-policy.md
-
-# Archived components (Phase 4 deferred features)
-.archive/
 
 # Test artifacts (should not be committed)
 packages/**/.aligntrue-test-*/

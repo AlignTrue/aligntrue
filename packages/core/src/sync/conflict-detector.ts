@@ -3,7 +3,7 @@
  * Compares IR vs agent state and generates structured diffs
  */
 
-import type { AlignSection } from "/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 
 /**
