@@ -206,9 +206,10 @@ describe("Lockfile Provenance Tracking", () => {
         ...originalPack,
         sections: [
           {
-            id: "base.no.console",
-            severity: "error",
-            guidance: "Modified",
+            heading: "Base No Console",
+            level: 2,
+            content: "Modified",
+            fingerprint: "base-no-console",
           },
         ],
       };
@@ -217,7 +218,7 @@ describe("Lockfile Provenance Tracking", () => {
       const message = formatValidationResult(validation);
 
       expect(message).toContain("Lockfile validation failed");
-      expect(message).toContain("base.no.console");
+      expect(message).toContain("base-no-console");
       expect(message).toContain("owner=aligntrue");
       expect(message).toContain("source=github.com/AlignTrue/aligns");
       expect(message).toContain("sha=abc123d"); // First 7 chars
@@ -233,9 +234,10 @@ describe("Lockfile Provenance Tracking", () => {
         spec_version: "1",
         sections: [
           {
-            id: "test.rule.one",
-            severity: "error",
-            guidance: "Original",
+            heading: "Test Rule One",
+            level: 2,
+            content: "Original",
+            fingerprint: "test-rule-one",
           },
         ],
       };
@@ -246,9 +248,10 @@ describe("Lockfile Provenance Tracking", () => {
         ...pack,
         sections: [
           {
-            id: "test.rule.one",
-            severity: "error",
-            guidance: "Modified",
+            heading: "Test Rule One",
+            level: 2,
+            content: "Modified",
+            fingerprint: "test-rule-one",
           },
         ],
       };
@@ -257,7 +260,7 @@ describe("Lockfile Provenance Tracking", () => {
       const message = formatValidationResult(validation);
 
       expect(message).toContain("Lockfile validation failed");
-      expect(message).toContain("test.rule.one");
+      expect(message).toContain("test-rule-one");
       expect(message).not.toContain("owner=");
       expect(message).not.toContain("source=");
       expect(message).not.toContain("sha=");
