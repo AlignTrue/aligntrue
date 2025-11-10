@@ -226,8 +226,8 @@ describe("findStaleSelectors", () => {
     const duplicateIR: AlignPack = {
       ...mockIR,
       sections: [
-        { id: "dup", severity: "error", applies_to: ["*"], guidance: "A" },
-        { id: "dup", severity: "warn", applies_to: ["*"], guidance: "B" },
+        { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },
+        { heading: "Dup B", level: 2, content: "B", fingerprint: "dup" },
       ],
     };
     const selectors = ["rule[id=dup]", "rule[id=missing]"];
@@ -242,11 +242,11 @@ describe("findAmbiguousSelectors", () => {
     const duplicateIR: AlignPack = {
       ...mockIR,
       sections: [
-        { id: "dup", severity: "error", applies_to: ["*"], guidance: "A" },
-        { id: "dup", severity: "warn", applies_to: ["*"], guidance: "B" },
-        { id: "triple", severity: "info", applies_to: ["*"], guidance: "C" },
-        { id: "triple", severity: "error", applies_to: ["*"], guidance: "D" },
-        { id: "triple", severity: "warn", applies_to: ["*"], guidance: "E" },
+        { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },
+        { heading: "Dup B", level: 2, content: "B", fingerprint: "dup" },
+        { heading: "Triple C", level: 2, content: "C", fingerprint: "triple" },
+        { heading: "Triple D", level: 2, content: "D", fingerprint: "triple" },
+        { heading: "Triple E", level: 2, content: "E", fingerprint: "triple" },
       ],
     };
     const selectors = ["rule[id=dup]", "rule[id=triple]", "rule[id=unique]"];

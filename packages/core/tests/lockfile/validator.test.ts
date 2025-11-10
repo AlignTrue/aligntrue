@@ -363,9 +363,10 @@ describe("lockfile validator", () => {
         version: "1",
         generated_at: new Date().toISOString(),
         mode: "team",
-        sections: [
+        bundle_hash: "sha256:def...",
+        rules: [
           {
-            rule_id: "test.rule",
+            rule_id: "test-rule",
             content_hash: "sha256:abc...",
             // No source field
           },
