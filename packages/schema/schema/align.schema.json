@@ -48,14 +48,14 @@
         "type": "string",
         "pattern": "^[a-z0-9-]+$"
       },
-      "description": "Categorization tags (catalog mode, Phase 4)"
+      "description": "Categorization tags (catalog mode - removed from roadmap)"
     },
     "deps": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Pack dependencies with optional version constraints (catalog mode, Phase 4)"
+      "description": "Pack dependencies with optional version constraints (catalog mode - removed from roadmap)"
     },
     "scope": {
       "type": "object",
@@ -83,7 +83,7 @@
           "description": "Glob patterns to exclude"
         }
       },
-      "description": "Scope definition (catalog mode, Phase 4)"
+      "description": "Scope definition (catalog mode - removed from roadmap)"
     },
     "sections": {
       "type": "array",

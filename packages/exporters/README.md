@@ -14,7 +14,7 @@ This package implements the `ExporterPlugin` interface defined in `@aligntrue/pl
 - **Dynamic Loading** - Handler modules loaded on-demand with ESM imports
 - **Fidelity Notes** - Surface semantic mapping limitations in exports
 
-## Phase 1 Exporters
+## Core Exporters
 
 - ✅ **Cursor** (.mdc) - Scope-based .cursor/rules/\*.mdc files with vendor.cursor frontmatter
 - ✅ **AGENTS.md** - Universal single-file format for multiple agents
@@ -234,7 +234,7 @@ export class MyAdapterExporter implements ExporterPlugin {
     options: ExportOptions,
   ): Promise<ExportResult> {
     // request.scope - Scope this export is for
-    // request.rules - Pre-merged rules for this scope
+    // request.pack - Pack with sections for this scope
     // request.outputPath - Suggested output path
 
     // options.outputDir - Base output directory
@@ -325,7 +325,7 @@ interface ExporterPlugin {
 ```typescript
 interface ScopedExportRequest {
   scope: ResolvedScope; // Scope this export is for
-  rules: AlignRule[]; // Pre-merged rules for this scope
+  pack: AlignPack; // Pack with sections for this scope
   outputPath: string; // Suggested output path
 }
 ```
@@ -395,7 +395,7 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 ✅ **Step 12 Complete** - AGENTS.md formatter with v1 format  
 ✅ **Step 13 Complete** - VS Code MCP config exporter
 
-**All 3 Phase 1 exporters complete!**
+**All core exporters implemented!**
 
 **Test Coverage:**
 
@@ -411,7 +411,7 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 
 ## Security Expectations
 
-**Status:** Trust-based contract (Phase 1)  
+**Status:** Trust-based contract (implemented)  
 **See also:** `packages/core/docs/SECURITY.md`
 
 ### Guidelines for Exporter Implementations
@@ -470,7 +470,7 @@ const outputPath = join(options.outputDir, ".cursor/rules.mdc");
 return {
   success: true,
   filesWritten: [outputPath],
-  content: generatedContent,
+  contentHash: "sha256-...",
 };
 ```
 
@@ -501,8 +501,8 @@ execSync('git commit -m "Update"'); // Violation
 
 ```typescript
 // Pure transformation only
-function transformRules(rules: AlignRule[]): string {
-  return rules.map(formatRule).join("\n");
+function transformSections(sections: AlignSection[]): string {
+  return sections.map(formatSection).join("\n");
 }
 ```
 
@@ -569,9 +569,9 @@ return {
 
 ### Runtime Enforcement (Future)
 
-**Phase 1:** Trust-based expectations with documentation and code review.
+**Current:** Trust-based expectations with documentation and code review.
 
-**Phase 2+:** Runtime sandboxing may be added:
+**Future:** Runtime sandboxing may be added:
 
 - Block network access (no `fetch`, `http`, `https`)
 - Block file system access outside workspace

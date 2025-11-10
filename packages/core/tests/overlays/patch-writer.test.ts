@@ -1,5 +1,5 @@
 /**
- * Tests for patch file writer (Phase 3.5, Session 4)
+ * Tests for patch file writer (Overlays system)
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

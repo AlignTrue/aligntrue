@@ -1,5 +1,5 @@
 /**
- * Tests for overlay configuration schema validation (Phase 3.5)
+ * Tests for overlay configuration schema validation (Overlays system)
  */
 
 import { describe, it, expect } from "vitest";

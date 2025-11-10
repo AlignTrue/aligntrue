@@ -1,5 +1,5 @@
 /**
- * Three-way merge algorithm for overlays (Phase 3.5, Session 4)
+ * Three-way merge algorithm for overlays (Overlays system)
  * Merges upstream updates while preserving local overlays
  *
  * Algorithm: base + overlay + new_base → result

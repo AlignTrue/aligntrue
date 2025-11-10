@@ -18,11 +18,11 @@ plugs:
       description: "Documentation URL"
       format: url
       required: false
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
-    guidance: "Run [[plug:test.cmd]] to verify"
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run [[plug:test.cmd]] to verify"
+    fingerprint: "testing-abc"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -41,10 +41,11 @@ plugs:
   fills:
     test.cmd: "pnpm test"
     docs.url: "https://docs.example.com"
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests for verification"
+    fingerprint: "testing-xyz"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -67,10 +68,11 @@ plugs:
       required: true
   fills:
     test.cmd: "pnpm test"
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests and build"
+    fingerprint: "testing-combined"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -85,10 +87,11 @@ rules:
 id: "test/no-plugs"
 version: "1.0.0"
 spec_version: "1"
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests"
+    fingerprint: "testing-plain"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -108,10 +111,11 @@ plugs:
     test.cmd:
       description: "Test command"
       # missing format and required
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests"
+    fingerprint: "testing-invalid"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -133,10 +137,11 @@ plugs:
       description: "Test command"
       format: invalid_format
       required: true
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests"
+    fingerprint: "testing-badformat"
 `;
 
     const obj = parseYamlToJson(yaml);
@@ -154,10 +159,11 @@ spec_version: "1"
 plugs:
   fills:
     test.cmd: ""
-rules:
-  - id: "test.require.tests"
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Run tests"
+    fingerprint: "testing-emptyfill"
 `;
 
     const obj = parseYamlToJson(yaml);

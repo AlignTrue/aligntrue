@@ -272,7 +272,7 @@ describe("Bundle Merging", () => {
     expect(() => mergePacks([])).toThrow("Cannot merge empty pack array");
   });
 
-  // Phase 8: Section-based bundle merging tests
+  // Team mode enhancements: Section-based bundle merging tests
   describe("section-based merging", () => {
     const mockSection1: AlignSection = {
       heading: "Testing Guidelines",

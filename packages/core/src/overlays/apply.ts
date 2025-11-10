@@ -1,5 +1,5 @@
 /**
- * Overlay application algorithm (Phase 3.5)
+ * Overlay application algorithm (Overlays system)
  * Applies overlays to IR in deterministic order
  */
 

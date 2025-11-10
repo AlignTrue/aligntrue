@@ -1,7 +1,7 @@
 /**
  * Incremental validation support (foundation)
  *
- * Phase 3 Session 10: Performance optimization
+ * Team mode development: Performance optimization
  *
  * This is a foundation for incremental validation that can be expanded
  * as performance needs arise. Full git integration deferred.

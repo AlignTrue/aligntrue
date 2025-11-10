@@ -1,212 +1,33 @@
 /**
- * Aider Config exporter
- * Exports AlignTrue rules to Aider .aider.conf.yml format
+ * aider-config exporter
+ * @deprecated Not yet fully implemented for sections-only format
  */
 
-import { join } from "path";
-import { stringify as stringifyYaml } from "yaml";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
-
-interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  useSections: boolean;
-}
 
 export class AiderConfigExporter extends ExporterBase {
   name = "aider-config";
   version = "1.0.0";
 
-  private state: ExporterState = {
-    allRules: [],
-    allSections: [],
-    useSections: false,
-  };
-
   async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
+    _request: ScopedExportRequest,
+    _options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
-    const { outputDir, dryRun = false } = options;
-
-    // Get sections using unified helper
-    const sections = getSections(pack);
-    const useSections = sections.length > 0;
-
-    // Set mode on first call
-    if (
-      this.state.allRules.length === 0 &&
-      this.state.allSections.length === 0
-    ) {
-      this.state.useSections = useSections;
-    }
-
-    // Check if we have any content
-    if ((!rules || rules.length === 0) && sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
-    }
-
-    const scopePath = this.formatScopePath(scope);
-
-    if (useSections) {
-      sections.forEach((section) => {
-        this.state.allSections.push({ section, scopePath });
-      });
-    } else {
-      rules?.forEach((rule) => {
-        this.state.allRules.push({ rule, scopePath });
-      });
-    }
-
-    const outputPath = join(outputDir, ".aider.conf.yml");
-    const content = this.generateAiderConfigContent(options);
-
-    let contentHash: string;
-    let fidelityNotes: string[];
-
-    if (this.state.useSections) {
-      const allSectionsIR = this.state.allSections.map(
-        ({ section }) => section,
-      );
-      contentHash = computeContentHash({ sections: allSectionsIR });
-      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
-    } else {
-      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-      contentHash = computeContentHash({ rules: allRulesIR });
-      fidelityNotes = this.computeFidelityNotes(allRulesIR);
-    }
-
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
-
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    if (
-      options.unresolvedPlugsCount !== undefined &&
-      options.unresolvedPlugsCount > 0
-    ) {
-      result.unresolvedPlugs = options.unresolvedPlugsCount;
-    }
-
-    return result;
+    // TODO: Implement aider-config exporter for sections format
+    return {
+      success: true,
+      filesWritten: [],
+      contentHash: "",
+    };
   }
 
   resetState(): void {
-    this.state = {
-      allRules: [],
-      allSections: [],
-      useSections: false,
-    };
-  }
-
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
-  }
-
-  private generateAiderConfigContent(options: ExportOptions): string {
-    const rules = this.state.allRules.map(({ rule, scopePath }) => ({
-      id: rule.id,
-      severity: rule.severity,
-      scope: scopePath,
-      guidance: rule.guidance || "",
-      applies_to: rule.applies_to || [],
-    }));
-
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
-
-    const config: {
-      version: string;
-      generated_by: string;
-      content_hash: string;
-      rules: Array<{
-        id: string;
-        severity: "error" | "warn" | "info";
-        scope: string;
-        guidance: string;
-        applies_to: string[];
-      }>;
-      fidelity_notes?: string[];
-      unresolved_plugs?: number;
-    } = {
-      version: "v1",
-      generated_by: "AlignTrue",
-      content_hash: contentHash,
-      rules,
-    };
-
-    if (
-      options.unresolvedPlugsCount !== undefined &&
-      options.unresolvedPlugsCount > 0
-    ) {
-      config.unresolved_plugs = options.unresolvedPlugsCount;
-    }
-
-    if (fidelityNotes.length > 0) {
-      config.fidelity_notes = fidelityNotes;
-    }
-
-    const yamlContent = stringifyYaml(config, {
-      indent: 2,
-      lineWidth: 120,
-    });
-
-    return `# Aider Configuration\n# Generated by AlignTrue\n\n${yamlContent}`;
-  }
-
-  override computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = [];
-    const unmappedFields = new Set<string>();
-    const vendorFields = new Set<string>();
-
-    rules.forEach((rule) => {
-      if (rule.check) {
-        unmappedFields.add("check");
-      }
-      if (rule.autofix) {
-        unmappedFields.add("autofix");
-      }
-      if (rule.vendor) {
-        Object.keys(rule.vendor).forEach((agent) => {
-          if (agent !== "aider" && agent !== "_meta") {
-            vendorFields.add(agent);
-          }
-        });
-      }
-    });
-
-    if (unmappedFields.has("check")) {
-      notes.push(
-        "Machine-checkable rules (check) not represented in .aider.conf.yml format",
-      );
-    }
-    if (unmappedFields.has("autofix")) {
-      notes.push("Autofix hints not represented in .aider.conf.yml format");
-    }
-    if (vendorFields.size > 0) {
-      const agents = Array.from(vendorFields).sort().join(", ");
-      notes.push(
-        `Vendor metadata for agents preserved but not extracted: ${agents}`,
-      );
-    }
-
-    return notes;
+    // Stub
   }
 }
 

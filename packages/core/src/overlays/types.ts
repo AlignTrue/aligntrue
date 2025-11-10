@@ -1,5 +1,5 @@
 /**
- * Types for overlay system (Phase 3.5)
+ * Types for overlay system (Overlays system)
  * Enables declarative customization of upstream rules without forking
  */
 

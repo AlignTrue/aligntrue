@@ -10,7 +10,6 @@ import { loadConfig } from "../config/index.js";
 import { resolveScopes } from "../scope.js";
 import { loadIR } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { ConflictDetector, type Conflict } from "./conflict-detector.js";
 import { posix, resolve as resolvePath } from "path";
 import {
   readLockfile,
@@ -50,7 +49,6 @@ export interface SyncOptions {
   interactive?: boolean;
   defaultResolutionStrategy?: string;
   strict?: boolean; // Fail if required plugs are unresolved
-  onConflictsDetected?: (conflicts: Conflict[]) => Promise<void>;
 }
 
 /**
@@ -76,7 +74,6 @@ export interface AuditEntry {
  */
 export interface SyncResult {
   success: boolean;
-  conflicts?: Conflict[];
   written: string[];
   warnings?: string[];
   exportResults?: Map<string, ExportResult>;
@@ -90,27 +87,27 @@ export class SyncEngine {
   private config: AlignTrueConfig | null = null;
   private ir: AlignPack | null = null;
   private fileWriter: AtomicFileWriter;
-  private conflictDetector: ConflictDetector;
   private exporters: Map<string, ExporterPlugin> = new Map();
-  private unresolvedPlugsCount: number = 0; // Track unresolved required plugs count (Phase 2.5)
+  private unresolvedPlugsCount: number = 0; // Track unresolved required plugs count (Plugs system)
 
   constructor() {
     this.fileWriter = new AtomicFileWriter();
-    this.conflictDetector = new ConflictDetector();
 
     // Set checksum handler for interactive prompts
     this.fileWriter.setChecksumHandler(
-      async (filePath, lastChecksum, currentChecksum, interactive, force) => {
-        const { promptOnChecksumMismatch } = await import(
-          "./conflict-prompt.js"
-        );
-        return promptOnChecksumMismatch(
-          filePath,
-          lastChecksum,
-          currentChecksum,
-          interactive,
-          force,
-        );
+      async (
+        _filePath,
+        _lastChecksum,
+        _currentChecksum,
+        interactive,
+        force,
+      ) => {
+        // Simplified: always overwrite in non-interactive mode, prompt in interactive
+        if (!interactive || force) {
+          return "overwrite";
+        }
+        // In interactive mode without force, default to safe (don't overwrite)
+        return "keep";
       },
     );
   }
@@ -155,7 +152,7 @@ export class SyncEngine {
 
     const warnings: string[] = [];
 
-    // Resolve plugs (Phase 2.5)
+    // Resolve plugs (Plugs system)
     if (this.ir.plugs) {
       const plugsResult = resolvePlugsForPack(
         this.ir,
@@ -170,12 +167,15 @@ export class SyncEngine {
         };
       }
 
-      // Update rules with resolved guidance (only if rules exist)
-      if (this.ir.rules) {
+      // Update sections with resolved guidance (only if sections exist)
+      if (this.ir.sections) {
         for (const resolvedRule of plugsResult.rules) {
-          const rule = this.ir.rules.find((r) => r.id === resolvedRule.ruleId);
-          if (rule && resolvedRule.guidance) {
-            rule.guidance = resolvedRule.guidance;
+          const section = this.ir.sections.find(
+            (s) => s.heading === resolvedRule.ruleId,
+          );
+          if (section && resolvedRule.guidance) {
+            // Guidance in sections is embedded in content, not a separate field
+            // This is a no-op for sections format
           }
         }
       }
@@ -235,10 +235,8 @@ export class SyncEngine {
       }
 
       // Audit trail: IR loaded with provenance
-      const rulesCount = this.ir.rules?.length || 0;
       const sectionsCount = this.ir.sections?.length || 0;
-      const contentType =
-        sectionsCount > 0 ? `${sectionsCount} sections` : `${rulesCount} rules`;
+      const contentType = `${sectionsCount} sections`;
 
       auditTrail.push({
         action: "update",
@@ -253,7 +251,7 @@ export class SyncEngine {
         },
       });
 
-      // Apply overlays (Phase 3.5) - before export, after plugs resolution
+      // Apply overlays (Overlays system) - before export, after plugs resolution
       if (
         this.ir &&
         this.config.overlays?.overrides &&
@@ -420,15 +418,12 @@ export class SyncEngine {
           "local",
         ];
 
-        // Simple implementation: use all IR content for now
-        // TODO: Enhance this when per-scope rule filtering is needed
-        const scopedRules = this.ir.rules || [];
-
-        // Build scoped pack (contains either rules or sections)
+        // Build scoped pack (sections-only)
         const scopedPack: AlignPack = {
           id: this.ir.id,
           version: this.ir.version,
           spec_version: this.ir.spec_version,
+          sections: this.ir.sections,
           ...(this.ir.summary && { summary: this.ir.summary }),
           ...(this.ir.owner && { owner: this.ir.owner }),
           ...(this.ir.source && { source: this.ir.source }),
@@ -438,9 +433,6 @@ export class SyncEngine {
           ...(this.ir.tags && { tags: this.ir.tags }),
           ...(this.ir.deps && { deps: this.ir.deps }),
           ...(this.ir.scope && { scope: this.ir.scope }),
-          ...(scopedRules.length > 0 && { rules: scopedRules }),
-          ...(this.ir.sections &&
-            this.ir.sections.length > 0 && { sections: this.ir.sections }),
           ...(this.ir.plugs && { plugs: this.ir.plugs }),
           ...(this.ir.integrity && { integrity: this.ir.integrity }),
           ...(this.ir._markdown_meta && {
@@ -462,8 +454,7 @@ export class SyncEngine {
 
           const request: ScopedExportRequest = {
             scope,
-            rules: scopedRules, // For backward compatibility
-            pack: scopedPack, // New: full pack with rules or sections
+            pack: scopedPack,
             outputPath,
           };
 
@@ -471,7 +462,7 @@ export class SyncEngine {
             outputDir: process.cwd(),
             dryRun: options.dryRun || false,
             backup: options.backup || false,
-            unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Phase 2.5)
+            unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
           };
 
           try {
@@ -556,7 +547,7 @@ export class SyncEngine {
             source: "lockfile",
             hash: lockfile.bundle_hash,
             timestamp: new Date().toISOString(),
-            details: `Generated lockfile with ${lockfile.rules.length} rule hashes`,
+            details: `Generated lockfile with ${lockfile.rules?.length || 0} entry hashes`,
           });
         } catch (_err) {
           warnings.push(
@@ -641,23 +632,21 @@ export class SyncEngine {
         details: `Loaded ${agentRules.length} rules from agent`,
       });
 
-      // Check if we should use solo mode fast path
-      const { shouldUseSoloFastPath } = await import("./conflict-detector.js");
-      const useFastPath =
-        this.config && shouldUseSoloFastPath(this.config, agent);
+      // TODO: Implement conflict detection for sections format
+      // For now, skip conflict detection and accept agent changes directly
+      auditTrail.push({
+        action: "update",
+        target: irPath,
+        source: agent,
+        timestamp: new Date().toISOString(),
+        details: `Accepting all changes from ${agent} (conflict detection not yet implemented for sections)`,
+      });
 
-      // Solo mode fast path: skip conflict detection, directly accept agent rules
-      if (useFastPath) {
-        auditTrail.push({
-          action: "update",
-          target: irPath,
-          source: agent,
-          timestamp: new Date().toISOString(),
-          details: `Solo mode fast path: accepting all changes from ${agent}`,
-        });
-
-        // Directly update IR with agent rules
-        this.ir.rules = agentRules;
+      // In sections-only mode, accept imported sections directly
+      // TODO: Implement proper merging strategy
+      if (false) {
+        // Directly update IR with agent sections
+        // this.ir.sections = agentSections;
 
         // Write updated IR if not dry-run
         if (!options.dryRun) {
@@ -704,14 +693,13 @@ export class SyncEngine {
       }
 
       // Team mode: full conflict detection
-      const irRules = this.ir.rules || [];
-      const conflictResult = this.conflictDetector.detectConflicts(
-        agent,
-        irRules,
-        agentRules,
-      );
+      // Sections are used now instead of rules
+      const conflictResult = {
+        status: "success" as const,
+        conflicts: [],
+      };
 
-      if (conflictResult.hasConflicts) {
+      if (conflictResult.conflicts.length > 0) {
         // Audit trail: Conflicts detected
         auditTrail.push({
           action: "conflict",
@@ -721,47 +709,8 @@ export class SyncEngine {
           details: `Detected ${conflictResult.conflicts.length} conflict(s)`,
         });
 
-        // Notify CLI to stop spinner before interactive prompts
-        if (options.onConflictsDetected) {
-          await options.onConflictsDetected(conflictResult.conflicts);
-        }
-
-        // If dry-run, just return conflicts
-        if (options.dryRun) {
-          return {
-            success: true,
-            conflicts: conflictResult.conflicts,
-            written: [],
-            warnings,
-            auditTrail,
-          };
-        }
-
-        // Handle conflicts (interactive or default strategy)
-        const resolutions = await this.resolveConflicts(
-          conflictResult.conflicts,
-          options,
-        );
-
-        // Apply resolutions to IR
-        const updatedRules = this.conflictDetector.applyResolutions(
-          irRules,
-          Array.from(resolutions.values()),
-        );
-
-        // Update IR with resolved rules
-        this.ir.rules = updatedRules;
-
-        // Audit trail: Resolutions applied
-        for (const resolution of resolutions.values()) {
-          auditTrail.push({
-            action: "update",
-            target: resolution.ruleId,
-            source: agent,
-            timestamp: resolution.timestamp,
-            details: `Applied ${resolution.strategy} for field ${resolution.field}`,
-          });
-        }
+        // Conflict detection removed - not needed for sections-only format
+        // In sections-only format, we use last-write-wins (auto-pull)
       }
 
       // Write updated IR (if not dry-run)
@@ -775,13 +724,12 @@ export class SyncEngine {
           target: irPath,
           source: agent,
           timestamp: new Date().toISOString(),
-          details: `Updated IR with ${agentRules.length} rules from agent`,
+          details: `Updated IR from agent (sections-only)`,
         });
       }
 
       return {
         success: true,
-        conflicts: conflictResult.conflicts,
         written,
         warnings,
         auditTrail,
@@ -797,95 +745,16 @@ export class SyncEngine {
   }
 
   /**
-   * Load agent rules (mock implementation for Step 14)
-   * In Step 17, this will use real parsers
+   * Load agent sections
+   * @deprecated Import removed - not needed for sections-only format
    */
   private async loadAgentRules(
     agent: string,
     _options: SyncOptions,
-  ): Promise<AlignRule[]> {
-    // Import from agent-specific format using parsers
-    const { importFromAgent, canImportFromAgent } = await import("./import.js");
-
-    if (!canImportFromAgent(agent)) {
-      throw new Error(`Agent ${agent} does not support import`);
-    }
-
-    return await importFromAgent(agent, process.cwd());
-  }
-
-  /**
-   * Resolve conflicts using interactive prompts or default strategy
-   */
-  private async resolveConflicts(
-    conflicts: Conflict[],
-    options: SyncOptions,
-  ): Promise<Map<string, import("./conflict-detector.js").ConflictResolution>> {
-    const resolutions = new Map<
-      string,
-      import("./conflict-detector.js").ConflictResolution
-    >();
-
-    // Import ConflictResolutionStrategy dynamically to avoid circular dependency
-    const { ConflictResolutionStrategy } = await import(
-      "./conflict-detector.js"
+  ): Promise<import("@aligntrue/schema").AlignSection[]> {
+    throw new Error(
+      `Import from ${agent} not implemented. Author rules in AGENTS.md directly.`,
     );
-    const { promptForConflicts, isInteractive } = await import(
-      "./conflict-prompt.js"
-    );
-
-    // Determine if interactive
-    const interactive = options.interactive ?? isInteractive();
-
-    // Determine default strategy
-    const defaultStrategyStr = options.defaultResolutionStrategy || "keep_ir";
-    const defaultStrategy =
-      defaultStrategyStr === "accept_agent"
-        ? ConflictResolutionStrategy.ACCEPT_AGENT
-        : ConflictResolutionStrategy.KEEP_IR;
-
-    // Use conflict prompts to resolve
-    try {
-      const strategyMap = await promptForConflicts(conflicts, {
-        interactive,
-        defaultStrategy,
-        batchMode: true,
-      });
-
-      // Convert strategy map to resolution map
-      for (const conflict of conflicts) {
-        const key = `${conflict.ruleId}:${conflict.field}`;
-        const strategy = strategyMap.get(key) || defaultStrategy;
-        const resolution = this.conflictDetector.resolveConflict(
-          conflict,
-          strategy,
-        );
-        resolutions.set(key, resolution);
-      }
-    } catch (_err) {
-      // User aborted or error in prompts
-      throw new Error(
-        `Conflict resolution failed: ${_err instanceof Error ? _err.message : String(_err)}`,
-      );
-    }
-
-    return resolutions;
-  }
-
-  /**
-   * Detect conflicts between IR and agent state
-   */
-  detectConflicts(
-    agentName: string,
-    irRules: AlignRule[],
-    agentRules: AlignRule[],
-  ): Conflict[] {
-    const result = this.conflictDetector.detectConflicts(
-      agentName,
-      irRules,
-      agentRules,
-    );
-    return result.conflicts;
   }
 
   /**

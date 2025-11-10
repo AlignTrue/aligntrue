@@ -27,7 +27,7 @@ By keeping contracts separate from implementations:
 
 ## Plugin Types
 
-### Exporters (Phase 1)
+### Exporters (Core exporters)
 
 Exporters convert AlignTrue IR (Intermediate Representation) to agent-specific formats.
 
@@ -67,9 +67,9 @@ export class MyExporter implements ExporterPlugin {
 
 ### Future Plugin Types
 
-- **Importers:** Convert agent-specific formats back to IR (Phase 2)
-- **Sources:** Fetch rules from git, catalog, URLs (expanded in Phase 2)
-- **MCP Servers:** Model Context Protocol integrations (Phase 2+)
+- **Importers:** Convert agent-specific formats back to IR (stubbed)
+- **Sources:** Fetch rules from git, catalog, URLs (git sources implemented)
+- **MCP Servers:** Model Context Protocol integrations (implemented)
 
 ## Usage
 

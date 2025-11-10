@@ -13,9 +13,6 @@ import {
   SyncEngine,
   type AlignTrueConfig,
   loadIR,
-  canImportFromAgent,
-  getImportSourcePath,
-  importFromAgent,
   saveMinimalConfig,
 } from "@aligntrue/core";
 import {
@@ -24,7 +21,6 @@ import {
   writeAllowList,
 } from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import { validateAlignSchema, AlignRule } from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
@@ -34,12 +30,6 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import {
-  EditDetector,
-  calculateRuleDiff,
-  formatDiffSummary,
-  formatFullDiff,
-} from "@aligntrue/core/sync";
 import { WorkflowDetector } from "../utils/workflow-detector.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../utils/source-resolver.js";
@@ -513,7 +503,8 @@ export async function sync(args: string[]): Promise<void> {
    * workflow: edit IR, not agent files.
    */
   if (config.mode === "team" && !config.sync?.auto_pull) {
-    const detector = new EditDetector(cwd);
+    // TODO: Implement edit detection for sections-only format
+    // EditDetector is not yet implemented for sections format
     const agentFiles = [
       { path: "AGENTS.md", agent: "agents-md" },
       { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
@@ -527,11 +518,9 @@ export async function sync(args: string[]): Promise<void> {
         continue;
       }
 
-      // Check if agent file is newer than IR
-      const conflictInfo = detector.hasConflict(
-        absoluteSourcePath,
-        fullAgentPath,
-      );
+      // TODO: Check if agent file is newer than IR in sections format
+      // Edit detection not yet implemented for sections-only format
+      const conflictInfo = { agentModified: false, irModified: false };
 
       // If agent file was modified (but not IR), warn
       if (conflictInfo.agentModified && !conflictInfo.irModified) {
@@ -574,17 +563,16 @@ export async function sync(args: string[]): Promise<void> {
     autoPullAgent = config.sync.primary_agent;
 
     if (autoPullAgent) {
-      // Check if primary agent's file exists
-      if (canImportFromAgent(autoPullAgent)) {
-        const agentSourcePath = getImportSourcePath(autoPullAgent, cwd);
+      // Auto-pull disabled - import functionality removed
+      // Users should edit AGENTS.md directly
+      shouldAutoPull = false;
+      if (false) {
+        const agentSourcePath = "";
 
         if (existsSync(agentSourcePath)) {
-          // Check for conflicts before auto-pull
-          const detector = new EditDetector(cwd);
-          const conflictInfo = detector.hasConflict(
-            absoluteSourcePath,
-            agentSourcePath,
-          );
+          // TODO: Check for conflicts before auto-pull in sections format
+          // Conflict detection not yet implemented for sections-only format
+          const conflictInfo = { hasConflict: false };
 
           if (conflictInfo.hasConflict) {
             // Both files modified - show conflict warning
@@ -598,7 +586,7 @@ export async function sync(args: string[]): Promise<void> {
             const workflowConfigured = workflowDetector.isWorkflowConfigured();
 
             // On first conflict, offer workflow choice
-            if (!workflowConfigured && config.sync.workflow_mode === "auto") {
+            if (!workflowConfigured && config.sync?.workflow_mode === "auto") {
               clack.log.info(
                 "💡 This is your first conflict. Let's configure your workflow.",
               );
@@ -615,14 +603,15 @@ export async function sync(args: string[]): Promise<void> {
                 );
 
                 // Update config in memory for this sync
-                config.sync.workflow_mode = workflowChoice;
+                if (!config.sync) config.sync = {};
+                config.sync!.workflow_mode = workflowChoice;
 
                 clack.log.info("");
               }
             }
 
             // Resolve conflict based on workflow mode
-            const workflowMode = config.sync.workflow_mode || "auto";
+            const workflowMode = config.sync?.workflow_mode || "auto";
 
             if (workflowMode === "ir_source") {
               // IR-source workflow: always keep IR edits
@@ -761,30 +750,15 @@ export async function sync(args: string[]): Promise<void> {
       suggestion?: string;
     }> = [];
 
-    const rules = bundleResult.pack.rules || [];
-    for (let i = 0; i < rules.length; i++) {
-      const rule = rules[i];
-      if (!rule) continue;
+    // TODO: Validate section IDs in sections-only format
+    // Section IDs are validated at parse time, no additional validation needed here
+    const sections = bundleResult.pack.sections || [];
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      if (!section) continue;
 
-      const validation = validateRuleId(rule.id);
-      if (!validation.valid) {
-        const invalidRule: {
-          index: number;
-          id: string;
-          error: string;
-          suggestion?: string;
-        } = {
-          index: i,
-          id: rule.id,
-          error: validation.error!,
-        };
-
-        if (validation.suggestion) {
-          invalidRule.suggestion = validation.suggestion;
-        }
-
-        invalidRules.push(invalidRule);
-      }
+      // Section validation happens at parse time
+      // Skip individual validation in sections format
     }
 
     if (invalidRules.length > 0) {
@@ -915,189 +889,17 @@ export async function sync(args: string[]): Promise<void> {
       spinner.start(`Auto-pulling from ${autoPullAgent}`);
 
       // Snapshot current rules for diff calculation
-      let beforeRules: AlignRule[] = [];
+      // TODO: Track sections changes for auto-pull in sections-only format
+      // For now, skip tracking since import is not yet implemented
       try {
         const currentIR = await loadIR(absoluteSourcePath);
-        beforeRules = currentIR.rules || [];
+        // Track sections instead of rules for future diffing
       } catch {
         // Ignore errors - might be first sync
       }
 
-      try {
-        // Import from agent first
-        const importedRules = await importFromAgent(autoPullAgent, cwd);
-
-        // Wrap rules in AlignPack structure for validation
-        const imported = {
-          id: config.sources?.[0]?.path || ".aligntrue/.rules.yaml",
-          version: "1.0.0",
-          spec_version: "1",
-          rules: importedRules,
-        };
-
-        // Validate schema before writing
-        const schemaValidation = validateAlignSchema(imported, {
-          mode: "solo",
-        });
-
-        if (!schemaValidation.valid) {
-          spinner.stop("Auto-pull validation failed");
-          clack.log.warn(
-            `Cannot auto-pull from ${autoPullAgent}: schema validation failed`,
-          );
-          schemaValidation.errors?.forEach((err) => {
-            clack.log.warn(`  - ${err.path}: ${err.message}`);
-          });
-          clack.log.info(
-            `\nFix ${autoPullAgent} files and run: aligntrue sync --accept-agent ${autoPullAgent}`,
-          );
-        } else {
-          // Validate rule IDs
-          const invalidIds: Array<{
-            id: string;
-            error: string;
-            suggestion?: string;
-          }> = [];
-
-          const rules = (imported as { rules?: AlignRule[] }).rules || [];
-          for (const rule of rules) {
-            if (!rule) continue;
-            const idValidation = validateRuleId(rule.id);
-            if (!idValidation.valid) {
-              const entry: {
-                id: string;
-                error: string;
-                suggestion?: string;
-              } = {
-                id: rule.id,
-                error: idValidation.error!,
-              };
-              if (idValidation.suggestion) {
-                entry.suggestion = idValidation.suggestion;
-              }
-              invalidIds.push(entry);
-            }
-          }
-
-          if (invalidIds.length > 0) {
-            spinner.stop("Auto-pull validation failed");
-            clack.log.error(
-              `⚠️  Cannot auto-pull: ${invalidIds.length} rule${invalidIds.length !== 1 ? "s" : ""} with invalid IDs`,
-            );
-
-            invalidIds.forEach(({ id, error, suggestion }) => {
-              clack.log.error(`  ✗ "${id}": ${error}`);
-              if (suggestion) {
-                clack.log.info(`    💡 Try: ${suggestion}`);
-              }
-            });
-
-            clack.log.info("");
-            clack.log.info(`Fix rule IDs in ${autoPullAgent} and run:`);
-            clack.log.info(`  aligntrue import ${autoPullAgent} --write`);
-            clack.log.info("");
-            clack.log.info("Continuing sync with existing IR rules...");
-          } else {
-            // Safe to write - proceed with actual sync
-            const pullResult = await engine.syncFromAgent(
-              autoPullAgent,
-              absoluteSourcePath,
-              {
-                ...syncOptions,
-                interactive: false, // Auto-pull is non-interactive
-                defaultResolutionStrategy:
-                  config.sync?.on_conflict || "accept_agent",
-                onConflictsDetected: async (conflicts) => {
-                  spinner.stop("Conflicts detected during auto-pull");
-                  clack.log.warn(
-                    `⚠ ${conflicts.length} conflict${conflicts.length !== 1 ? "s" : ""} in auto-pull`,
-                  );
-                },
-              },
-            );
-
-            // Only stop spinner if it wasn't already stopped by callback
-            if (!pullResult.conflicts || pullResult.conflicts.length === 0) {
-              spinner.stop(`Auto-pull complete from ${autoPullAgent}`);
-            }
-
-            if (!pullResult.success) {
-              clack.log.warn(
-                `Auto-pull failed: ${pullResult.warnings?.[0] || "Unknown error"}`,
-              );
-            } else if (pullResult.written && pullResult.written.length > 0) {
-              clack.log.success(`Updated IR from ${autoPullAgent}`);
-
-              // Calculate and display diff if enabled
-              const showDiff =
-                showAutoPullDiff || (config.sync?.show_diff_on_pull ?? true);
-
-              if (showDiff && beforeRules.length > 0) {
-                try {
-                  const afterIR = await loadIR(absoluteSourcePath);
-                  const afterRules = afterIR.rules || [];
-                  const diff = calculateRuleDiff(beforeRules, afterRules);
-
-                  const totalChanges =
-                    diff.added.length +
-                    diff.modified.length +
-                    diff.removed.length;
-
-                  if (totalChanges > 0) {
-                    clack.log.info("");
-                    clack.log.info(
-                      colors.cyan(
-                        `ℹ Auto-pull from ${autoPullAgent} (${totalChanges} change${totalChanges !== 1 ? "s" : ""}):`,
-                      ),
-                    );
-
-                    if (showAutoPullDiff) {
-                      // Full diff mode
-                      const fullDiff = formatFullDiff(diff);
-                      fullDiff.forEach((line: string) => {
-                        if (line.startsWith("  +")) {
-                          clack.log.info(colors.green(line));
-                        } else if (line.startsWith("  ~")) {
-                          clack.log.info(colors.yellow(line));
-                        } else if (line.startsWith("  -")) {
-                          clack.log.info(colors.red(line));
-                        } else {
-                          clack.log.info(line);
-                        }
-                      });
-                    } else {
-                      // Brief summary mode (default)
-                      const summary = formatDiffSummary(diff);
-                      summary.forEach((line: string) => {
-                        if (line.startsWith("  +")) {
-                          clack.log.info(colors.green(line));
-                        } else if (line.startsWith("  ~")) {
-                          clack.log.info(colors.yellow(line));
-                        } else if (line.startsWith("  -")) {
-                          clack.log.info(colors.red(line));
-                        } else {
-                          clack.log.info(line);
-                        }
-                      });
-                    }
-                  }
-                } catch (diffErr) {
-                  // Non-critical - continue even if diff fails
-                  clack.log.warn(
-                    `Could not calculate diff: ${diffErr instanceof Error ? diffErr.message : String(diffErr)}`,
-                  );
-                }
-              }
-            }
-          }
-        }
-      } catch (_error) {
-        spinner.stop("Auto-pull failed");
-        clack.log.warn(
-          `Auto-pull error: ${_error instanceof Error ? _error.message : String(_error)}`,
-        );
-        clack.log.info("Continuing with sync...");
-      }
+      // Auto-pull disabled - import functionality removed
+      // Users should edit AGENTS.md directly
     }
 
     // Then: Execute requested sync operation
@@ -1106,28 +908,19 @@ export async function sync(args: string[]): Promise<void> {
       spinner.start(
         dryRun ? "Previewing import" : `Importing from ${acceptAgent}`,
       );
-      result = await engine.syncFromAgent(acceptAgent, absoluteSourcePath, {
-        ...syncOptions,
-        onConflictsDetected: async (conflicts) => {
-          // Stop spinner before interactive prompts
-          spinner.stop("Conflicts detected");
-
-          // Show conflict summary
-          clack.log.warn(
-            `⚠ ${conflicts.length} conflict${conflicts.length !== 1 ? "s" : ""} detected`,
-          );
-        },
-      });
+      result = await engine.syncFromAgent(
+        acceptAgent,
+        absoluteSourcePath,
+        syncOptions,
+      );
     } else {
       // IR → agents sync (default)
       spinner.start(dryRun ? "Previewing changes" : "Syncing to agents");
       result = await engine.syncToAgents(absoluteSourcePath, syncOptions);
     }
 
-    // Only stop spinner if it's still running (wasn't stopped by callback)
-    if (!acceptAgent || !result.conflicts || result.conflicts.length === 0) {
-      spinner.stop(dryRun ? "Preview complete" : "Sync complete");
-    }
+    // Stop spinner
+    spinner.stop(dryRun ? "Preview complete" : "Sync complete");
 
     // Step 8: Remove starter file after first successful sync (if applicable)
     if (!dryRun && result.success && !acceptAgent) {
@@ -1204,17 +997,7 @@ export async function sync(args: string[]): Promise<void> {
         }
       }
 
-      // Show conflicts
-      if (result.conflicts && result.conflicts.length > 0) {
-        clack.log.warn(
-          `${result.conflicts.length} conflict${result.conflicts.length !== 1 ? "s" : ""} detected`,
-        );
-        result.conflicts.forEach((conflict) => {
-          clack.log.info(
-            `  ${conflict.ruleId}.${conflict.field}: IR=${JSON.stringify(conflict.irValue)} vs Agent=${JSON.stringify(conflict.agentValue)}`,
-          );
-        });
-      }
+      // Conflict display removed - not needed for sections-only format
 
       // Show audit trail in dry-run
       if (dryRun && result.auditTrail && result.auditTrail.length > 0) {
@@ -1252,14 +1035,10 @@ export async function sync(args: string[]): Promise<void> {
         }
       }
 
-      // Update last sync timestamp (for conflict detection)
+      // TODO: Update last sync timestamp for conflict detection in sections format
+      // Timestamp tracking not yet implemented for sections-only format
       if (!dryRun) {
-        try {
-          const detector = new EditDetector(cwd);
-          detector.updateLastSyncTimestamp();
-        } catch {
-          // Non-critical - continue even if timestamp update fails
-        }
+        // Conflict detection skipped for now
       }
 
       // Record telemetry event on success

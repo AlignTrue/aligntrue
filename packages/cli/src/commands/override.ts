@@ -1,6 +1,6 @@
 /**
  * Override command - Manage overlays for customizing upstream rules
- * Phase 3.5 Session 11: Migrated to CLI framework (no Commander)
+ * Overlays system: Migrated to CLI framework (no Commander)
  */
 
 import { showStandardHelp } from "../utils/command-utilities.js";

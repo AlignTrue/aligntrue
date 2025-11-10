@@ -159,7 +159,7 @@ export async function resolveSource(
  */
 async function resolveSourceViaGit(parsed: ParsedSourceId): Promise<string> {
   // TODO: Implement git-based resolution
-  // 1. Use existing git provider from Phase 2 to clone repo
+  // 1. Use existing git provider (implemented) to clone repo
   // 2. Checkout specified version (tag/branch)
   // 3. Compute hash of pack content
   // 4. Return sha256:... hash

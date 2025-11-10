@@ -1,6 +1,9 @@
 /**
  * Windsurf MCP config exporter
- * Exports AlignTrue rules to .windsurf/mcp_config.json format
+ * Exports AlignTrue sections to .windsurf/mcp_config.json format
+ *
+ * TODO: Implement MCP config generation for sections format
+ * Currently stub implementation.
  */
 
 import { join, dirname } from "path";
@@ -12,13 +15,11 @@ import type {
   ResolvedScope,
 } from "../types.js";
 import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash, getSections } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
   allSections: Array<{ section: AlignSection; scopePath: string }>;
-  useSections: boolean;
   seenScopes: Set<string>;
 }
 
@@ -27,16 +28,16 @@ interface McpConfig {
   generated_by: string;
   content_hash: string;
   unresolved_plugs?: number;
-  rules: McpRule[];
+  sections: McpSection[];
   fidelity_notes?: string[];
 }
 
-interface McpRule {
-  id: string;
-  severity: "error" | "warn" | "info";
-  guidance: string;
+interface McpSection {
+  heading: string;
+  level: number;
+  content: string;
+  fingerprint: string;
   scope?: string;
-  applies_to?: string[];
   [key: string]: unknown;
 }
 
@@ -45,9 +46,7 @@ export class WindsurfMcpExporter extends ExporterBase {
   version = "1.0.0";
 
   private state: ExporterState = {
-    allRules: [],
     allSections: [],
-    useSections: false,
     seenScopes: new Set(),
   };
 
@@ -55,19 +54,11 @@ export class WindsurfMcpExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
-    const sections = getSections(pack);
-    const useSections = sections.length > 0;
-
-    if (
-      this.state.allRules.length === 0 &&
-      this.state.allSections.length === 0
-    ) {
-      this.state.useSections = useSections;
-    }
+    const { scope, pack } = request;
+    const sections = pack.sections;
     const { outputDir, dryRun = false } = options;
 
-    if (!rules || rules.length === 0) {
+    if (sections.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -76,8 +67,8 @@ export class WindsurfMcpExporter extends ExporterBase {
     }
 
     const scopePath = this.formatScopePath(scope);
-    rules.forEach((rule) => {
-      this.state.allRules.push({ rule, scopePath });
+    sections.forEach((section) => {
+      this.state.allSections.push({ section, scopePath });
     });
     this.state.seenScopes.add(scopePath);
 
@@ -86,75 +77,36 @@ export class WindsurfMcpExporter extends ExporterBase {
     const mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
-
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
-
     if (!dryRun) {
       const windsurfDirPath = dirname(outputPath);
       mkdirSync(windsurfDirPath, { recursive: true });
     }
 
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const allSectionsIR = this.state.allSections.map(({ section }) => section);
+    const contentHash = computeContentHash({ sections: allSectionsIR });
 
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    return result;
-  }
-
-  resetState(): void {
-    this.state = {
-      allRules: [],
-      allSections: [],
-      useSections: false,
-      seenScopes: new Set(),
-    };
-  }
-
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
+    return this.buildResult(filesWritten, contentHash);
   }
 
   private generateMcpConfig(unresolvedPlugs?: number): McpConfig {
-    const rules: McpRule[] = this.state.allRules.map(({ rule, scopePath }) => {
-      const mcpRule: McpRule = {
-        id: rule.id,
-        severity: rule.severity,
-        guidance: rule.guidance || "",
-        scope: scopePath,
-        applies_to: rule.applies_to || [],
-      };
+    const allSectionsIR = this.state.allSections.map(({ section }) => section);
+    const contentHash = computeContentHash({ sections: allSectionsIR });
+    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
 
-      if (rule.vendor && rule.vendor["windsurf"]) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const windsurfVendor = rule.vendor["windsurf"] as Record<string, any>;
-        Object.entries(windsurfVendor).forEach(([key, value]) => {
-          if (key !== "_meta") {
-            mcpRule[key] = value;
-          }
-        });
-      }
-
-      return mcpRule;
-    });
-
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    const mcpSections = this.state.allSections.map(({ section, scopePath }) =>
+      this.mapSectionToMcpFormat(section, scopePath),
+    );
 
     const config: McpConfig = {
       version: "v1",
       generated_by: "AlignTrue",
       content_hash: contentHash,
-      rules,
+      sections: mcpSections,
     };
 
     if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config["unresolved_plugs"] = unresolvedPlugs;
+      config.unresolved_plugs = unresolvedPlugs;
     }
 
     if (fidelityNotes.length > 0) {
@@ -164,45 +116,36 @@ export class WindsurfMcpExporter extends ExporterBase {
     return config;
   }
 
-  override computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = [];
-    const unmappedFields = new Set<string>();
-    const crossAgentVendors = new Set<string>();
+  private mapSectionToMcpFormat(
+    section: AlignSection,
+    scopePath: string,
+  ): McpSection {
+    const mcpSection: McpSection = {
+      heading: section.heading,
+      level: section.level,
+      content: section.content,
+      fingerprint: section.fingerprint,
+    };
 
-    rules.forEach((rule) => {
-      if (rule.check) {
-        unmappedFields.add("check");
-      }
-      if (rule.autofix) {
-        unmappedFields.add("autofix");
-      }
-
-      if (rule.vendor) {
-        Object.keys(rule.vendor).forEach((agent) => {
-          if (agent !== "windsurf" && agent !== "_meta") {
-            crossAgentVendors.add(agent);
-          }
-        });
-      }
-    });
-
-    if (unmappedFields.has("check")) {
-      notes.push(
-        "Machine-checkable rules (check) not represented in MCP config format",
-      );
-    }
-    if (unmappedFields.has("autofix")) {
-      notes.push("Autofix hints not represented in MCP config format");
+    if (scopePath !== "all files") {
+      mcpSection.scope = scopePath;
     }
 
-    if (crossAgentVendors.size > 0) {
-      const agents = Array.from(crossAgentVendors).sort().join(", ");
-      notes.push(
-        `Vendor-specific metadata for other agents not extracted to MCP config: ${agents}`,
-      );
-    }
+    return mcpSection;
+  }
 
-    return notes;
+  resetState(): void {
+    this.state = {
+      allSections: [],
+      seenScopes: new Set(),
+    };
+  }
+
+  private formatScopePath(scope: ResolvedScope): string {
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "all files";
+    }
+    return scope.path;
   }
 }
 

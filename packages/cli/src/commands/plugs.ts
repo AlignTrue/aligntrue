@@ -293,16 +293,15 @@ async function validatePlugs(pack: AlignPack): Promise<void> {
   const plugPattern = /\{\{([^}]+)\}\}/g;
   const usedPlugs = new Set<string>();
 
-  // Skip if no rules (section-based packs)
-  if (pack.rules) {
-    for (const rule of pack.rules) {
-      if (rule.guidance) {
-        const matches = Array.from(rule.guidance.matchAll(plugPattern));
-        for (const match of matches) {
-          const plugName = match[1];
-          if (plugName) {
-            usedPlugs.add(plugName);
-          }
+  // TODO: Extract plugs from section content in sections-only format
+  // For now, skip plug extraction since sections-only format uses natural markdown
+  for (const section of pack.sections) {
+    if (section.content) {
+      const matches = Array.from(section.content.matchAll(plugPattern));
+      for (const match of matches) {
+        const plugName = match[1];
+        if (plugName) {
+          usedPlugs.add(plugName);
         }
       }
     }

@@ -219,7 +219,7 @@ describe("lockfile generator", () => {
     });
   });
 
-  describe("base_hash field (Phase 3.5 prep)", () => {
+  describe("base_hash field (Overlays system)", () => {
     it("captures base_hash from git sources (source_sha)", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const entry = lockfile.rules[0];
@@ -274,7 +274,7 @@ describe("lockfile generator", () => {
     });
   });
 
-  describe("triple-hash format (Phase 3.5)", () => {
+  describe("triple-hash format (Overlays system)", () => {
     const basePack: AlignPack = {
       id: "test.pack",
       version: "1.0.0",
@@ -526,7 +526,7 @@ describe("lockfile generator", () => {
     });
   });
 
-  // Phase 8: Section-based lockfile tests
+  // Team mode enhancements: Section-based lockfile tests
   describe("section-based lockfiles", () => {
     const mockSection: AlignSection = {
       heading: "Testing Guidelines",

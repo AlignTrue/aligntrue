@@ -29,7 +29,7 @@ export interface CLIError {
 
 /**
  * Validation error with field context
- * Phase 4.5: Standardized validation error format
+ * Standardized validation error format (Code consolidation)
  */
 export interface ValidationError {
   /** Field path (e.g., "profile.id", "rules[0].applies_to") */
@@ -106,7 +106,7 @@ export function exitWithError(error: CLIError, exitCode: number = 1): never {
 
 /**
  * Format validation errors into CLI error
- * Phase 4.5: Consolidate validation error formatting
+ * Consolidate validation error formatting (Code consolidation)
  *
  * @param errors - Array of validation errors
  * @returns Structured CLI error
@@ -136,7 +136,7 @@ export function formatValidationErrors(errors: ValidationError[]): CLIError {
 
 /**
  * Common error: Config file not found
- * Phase 4.5: Standardized error pattern
+ * Standardized error pattern (Code consolidation)
  */
 export function configNotFoundError(path: string): CLIError {
   return {
@@ -149,7 +149,7 @@ export function configNotFoundError(path: string): CLIError {
 
 /**
  * Common error: Git source error
- * Phase 4.5: Standardized error pattern
+ * Standardized error pattern (Code consolidation)
  */
 export function gitSourceError(url: string, reason: string): CLIError {
   return {
@@ -163,7 +163,7 @@ export function gitSourceError(url: string, reason: string): CLIError {
 
 /**
  * Common error: Exporter failed
- * Phase 4.5: Standardized error pattern
+ * Standardized error pattern (Code consolidation)
  */
 export function exporterFailedError(name: string, details: string[]): CLIError {
   return {
@@ -177,7 +177,7 @@ export function exporterFailedError(name: string, details: string[]): CLIError {
 
 /**
  * Common error: Source not trusted
- * Phase 4.5: Standardized error pattern
+ * Standardized error pattern (Code consolidation)
  */
 export function sourceUntrustedError(source: string, hint: string): CLIError {
   return {

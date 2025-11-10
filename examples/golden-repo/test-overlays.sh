@@ -196,7 +196,7 @@ else
 fi
 
 # Note: Full conflict detection requires CLI commands (override status, override diff)
-# These are documented but not yet implemented in Phase 3.5
+# These are documented but not yet implemented
 info "Full conflict detection available via: aln override status / aln override diff"
 
 echo

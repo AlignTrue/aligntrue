@@ -1,5 +1,5 @@
 /**
- * Integration tests for update command with safe mode (Phase 3.5, Session 4)
+ * Integration tests for update command with safe mode (Overlays system)
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

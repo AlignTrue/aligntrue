@@ -1,7 +1,7 @@
 /**
  * Command: aln override diff
  * Show the effect of overlays on IR
- * Phase 3.5, Session 11: Migrated to CLI framework
+ * Overlays system: Migrated to CLI framework
  */
 
 import {

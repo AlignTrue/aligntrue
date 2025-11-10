@@ -1,30 +1,63 @@
 /**
  * Shared utilities for exporters
+ *
+ * TODO: Implement utilities for sections-only format
+ * These utilities are not yet implemented for the natural markdown sections format.
  */
 
-export {
-  canonicalJson,
-  globSpecificity,
-  rulePriority,
-  estimateRuleTokens,
-  prioritizeRulesForCapExport,
-  type TokenEstimate,
-  type PrioritizationResult,
-} from "./token-budget.js";
+// Stub exports - utilities not yet implemented for sections format
+export function canonicalJson(): unknown {
+  throw new Error("canonicalJson not yet implemented");
+}
 
-export {
-  renderModeMarkers,
-  extractMarkerPairs,
-  type MarkerResult,
-  type ExtractedMarker,
-  type MarkerExtractionResult,
-} from "./mode-markers.js";
+export function globSpecificity(): unknown {
+  throw new Error("globSpecificity not yet implemented");
+}
 
-export {
-  extractModeConfig,
-  applyRulePrioritization,
-  generateSessionPreface,
-  wrapRuleWithMarkers,
-  shouldIncludeRule,
-  type ModeHintsConfig,
-} from "./mode-hints-helpers.js";
+export function rulePriority(): unknown {
+  throw new Error("rulePriority not yet implemented");
+}
+
+export function estimateRuleTokens(): number {
+  throw new Error("estimateRuleTokens not yet implemented");
+}
+
+export function prioritizeRulesForCapExport(): unknown {
+  throw new Error("prioritizeRulesForCapExport not yet implemented");
+}
+
+export function renderModeMarkers(): unknown {
+  throw new Error("renderModeMarkers not yet implemented");
+}
+
+export function extractMarkerPairs(): unknown {
+  throw new Error("extractMarkerPairs not yet implemented");
+}
+
+export function extractModeConfig(): unknown {
+  throw new Error("extractModeConfig not yet implemented");
+}
+
+export function applyRulePrioritization(): unknown {
+  throw new Error("applyRulePrioritization not yet implemented");
+}
+
+export function generateSessionPreface(): string[] {
+  return [];
+}
+
+export function wrapRuleWithMarkers(): string {
+  throw new Error("wrapRuleWithMarkers not yet implemented");
+}
+
+export function shouldIncludeRule(): boolean {
+  throw new Error("shouldIncludeRule not yet implemented");
+}
+
+// Stub types
+export type TokenEstimate = unknown;
+export type PrioritizationResult = unknown;
+export type MarkerResult = unknown;
+export type ExtractedMarker = unknown;
+export type MarkerExtractionResult = unknown;
+export type ModeHintsConfig = unknown;

@@ -222,7 +222,7 @@ git add -A
 git commit -m "docs: Update documentation"
 ```
 
-**Important:** Never manually edit `README.md`, `DEVELOPMENT.md`, `POLICY.md`, or `CONTRIBUTING.md` - they're auto-generated from docs sources.
+**Important:** Never manually edit `README.md`, `DEVELOPMENT.md`, or `CONTRIBUTING.md` - they're auto-generated from docs sources.
 
 ### Missing DOM types in UI packages
 
@@ -939,7 +939,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 **Only canonicalize when determinism is required:**
 
 - **Lockfile generation** (`aligntrue lock` in team mode) - Produce canonical hash for drift detection
-- **Catalog publishing** (`aligntrue publish` in Phase 4) - Produce integrity hash for distribution
+- **Catalog publishing** (`aligntrue publish` - removed from roadmap) - Produce integrity hash for distribution
 - **NOT during:** init, sync, export, import, normal file operations
 
 **Why:**

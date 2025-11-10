@@ -7,20 +7,17 @@ import { describe, it, expect } from "vitest";
 import { validateAlignSchema, parseYamlToJson } from "../src/index.js";
 
 describe("Minimal Pack Validation", () => {
-  it("validates minimal YAML pack", () => {
+  it("validates minimal YAML pack with sections", () => {
     const yaml = `id: test-project
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.linting
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Test rule`;
+sections:
+  - heading: "Linting"
+    level: 2
+    content: "Enforce linting standards"
+    fingerprint: "linting-abc123"`;
 
     const parsed = parseYamlToJson(yaml);
-    console.log("Parsed type:", typeof parsed);
-    console.log("Parsed value:", JSON.stringify(parsed, null, 2));
-
     const result = validateAlignSchema(parsed);
 
     if (!result.valid) {
@@ -30,17 +27,17 @@ rules:
     expect(result.valid).toBe(true);
   });
 
-  it("validates minimal object pack", () => {
+  it("validates minimal object pack with sections", () => {
     const pack = {
       id: "test-project",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.linting",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
-          guidance: "Test rule",
+          heading: "Linting",
+          level: 2,
+          content: "Enforce linting standards",
+          fingerprint: "linting-xyz789",
         },
       ],
     };

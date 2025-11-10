@@ -1,5 +1,5 @@
 /**
- * Selector evaluation engine for overlays (Phase 3.5)
+ * Selector evaluation engine for overlays (Overlays system)
  * Evaluates selectors against AlignPack IR to find targets for overlay application
  */
 

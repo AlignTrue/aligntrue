@@ -14,7 +14,7 @@ apps/docs/content/ (canonical source - edit here)
   ↓
 scripts/generate-repo-files.ts (transformation)
   ↓
-README.md, CONTRIBUTING.md, DEVELOPMENT.md, POLICY.md (generated - don't edit)
+README.md, CONTRIBUTING.md, DEVELOPMENT.md (generated - don't edit)
 ```
 
 This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Representation), and repo files are exports.
@@ -26,7 +26,6 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 | `apps/docs/content/index.mdx`                      | `README.md`       | GitHub landing page              |
 | `apps/docs/content/contributing/creating-packs.md` | `CONTRIBUTING.md` | Contribution guide               |
 | `apps/docs/content/development/*.md`               | `DEVELOPMENT.md`  | Development guide (concatenated) |
-| `apps/docs/content/06-policies/index.md`           | `POLICY.md`       | Registry policy                  |
 
 ## Editing workflow
 
@@ -46,9 +45,6 @@ apps/docs/content/development/setup.md
 apps/docs/content/development/workspace.md
 apps/docs/content/development/commands.md
 apps/docs/content/development/architecture.md
-
-# Edit policy (becomes POLICY.md)
-apps/docs/content/06-policies/index.md
 ```
 
 ### 2. Generate repo files
@@ -71,18 +67,24 @@ This script:
 
 Check that generated files look correct:
 
-```bash
-git diff README.md CONTRIBUTING.md DEVELOPMENT.md POLICY.md
-```
+````bash
+git diff README.md CONTRIBUTING.md DEVELOPMENT.md
+```</xai:function_call">---
+
+<xai:function_call name="search_replace">
+<parameter name="file_path">apps/docs/content/06-contributing/editing-docs.md
 
 ### 4. Commit both
 
 Commit both the docs source and generated files:
 
 ```bash
-git add apps/docs/content/ README.md CONTRIBUTING.md DEVELOPMENT.md POLICY.md
+git add apps/docs/content/ README.md CONTRIBUTING.md DEVELOPMENT.md
 git commit -m "docs: Update documentation"
-```
+```</xai:function_call">---
+
+<xai:function_call name="read_file">
+<parameter name="target_file">apps/docs/content/06-contributing/editing-docs.md
 
 ## Link handling
 
@@ -101,7 +103,7 @@ git commit -m "docs: Update documentation"
 
 [Team Mode](./team-mode)
 [Team Mode](../concepts/team-mode)
-```
+````
 
 **Why absolute paths?**
 
@@ -275,7 +277,7 @@ CI enforces the docs-first workflow by validating that repo files match their ge
 
 ### Validation script
 
-The validation script (`scripts/validate-repo-files.ts`) will be added in Phase 3 to:
+The validation script (`scripts/validate-repo-files.ts`) will be added in team mode development to:
 
 - Run generation in dry-run mode
 - Compare generated output with committed files
@@ -283,7 +285,7 @@ The validation script (`scripts/validate-repo-files.ts`) will be added in Phase 
 
 ### What happens if you edit repo files directly
 
-If you manually edit `README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, or `POLICY.md`:
+If you manually edit `README.md`, `CONTRIBUTING.md`, or `DEVELOPMENT.md`:
 
 1. Local workflow works fine
 2. CI fails with validation error

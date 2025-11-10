@@ -3,7 +3,7 @@
  * Analyzes field mapping coverage from agent formats to IR
  */
 
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 
 /**
  * Field mapping information
@@ -52,7 +52,9 @@ const IR_FIELDS = [
 /**
  * Analyze Cursor .mdc import coverage
  */
-export function analyzeCursorCoverage(rules: AlignRule[]): CoverageReport {
+export function analyzeCursorCoverage(
+  sections: AlignSection[],
+): CoverageReport {
   const mappedFields: FieldMapping[] = [
     { irField: "id", agentSource: "Rule header (## Rule: <id>)", mapped: true },
     {
@@ -92,12 +94,14 @@ export function analyzeCursorCoverage(rules: AlignRule[]): CoverageReport {
   const coveragePercentage = Math.round((mappedCount / IR_FIELDS.length) * 100);
   const confidence = calculateConfidence(mappedCount, IR_FIELDS.length);
 
-  // Check if any rules have vendor.cursor metadata
-  const vendorPreserved = rules.some((r) => r.vendor?.["cursor"] !== undefined);
+  // Check if any sections have vendor.cursor metadata
+  const vendorPreserved = sections.some(
+    (s) => s.vendor?.["cursor"] !== undefined,
+  );
 
   return {
     agent: "cursor",
-    rulesImported: rules.length,
+    rulesImported: sections.length,
     mappedFields,
     unmappedFields,
     coveragePercentage,
@@ -109,7 +113,9 @@ export function analyzeCursorCoverage(rules: AlignRule[]): CoverageReport {
 /**
  * Analyze AGENTS.md import coverage
  */
-export function analyzeAgentsMdCoverage(rules: AlignRule[]): CoverageReport {
+export function analyzeAgentsMdCoverage(
+  sections: AlignSection[],
+): CoverageReport {
   const mappedFields: FieldMapping[] = [
     { irField: "id", agentSource: "**ID:** metadata", mapped: true },
     {
@@ -150,7 +156,7 @@ export function analyzeAgentsMdCoverage(rules: AlignRule[]): CoverageReport {
 
   return {
     agent: "agents-md",
-    rulesImported: rules.length,
+    rulesImported: sections.length,
     mappedFields,
     unmappedFields,
     coveragePercentage,

@@ -9,17 +9,17 @@ export interface LockfileEntry {
   owner?: string;
   source?: string;
   source_sha?: string;
-  // Phase 3.5: Triple-hash format for overlay tracking
+  // Triple-hash format for overlay tracking (Overlays system)
   // base_hash: Hash of upstream pack (before overlays)
   // overlay_hash: Hash of overlay configuration (when overlays applied)
   // result_hash: Hash of final result (after overlays applied)
   base_hash?: string;
   overlay_hash?: string;
   result_hash?: string;
-  // Vendoring provenance (Phase 3, Session 5)
+  // Vendoring provenance (Team mode)
   vendor_path?: string; // Path where pack is vendored
   vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
-  // Plugs tracking (Phase 2.5)
+  // Plugs tracking (Plugs system)
   pre_resolution_hash?: string; // Hash before plug resolution (template)
   post_resolution_hash?: string; // Hash after plug resolution (with fills)
   unresolved_plugs_count?: number; // Count of unresolved required plugs
@@ -33,11 +33,11 @@ export interface Lockfile {
   bundle_hash: string; // hash of all rule hashes combined
   /**
    * SHA-256 of .aligntrue.team.yaml at lockfile generation time
-   * Used for detecting severity remapping drift (Phase 3, Session 7)
+   * Used for detecting severity remapping drift (Team mode)
    */
   team_yaml_hash?: string;
   /**
-   * Total count of unresolved required plugs across all packs (Phase 2.5)
+   * Total count of unresolved required plugs across all packs (Plugs system)
    */
   total_unresolved_plugs?: number;
 }
@@ -52,7 +52,7 @@ export interface Mismatch {
   owner?: string;
   source?: string;
   source_sha?: string;
-  // Phase 3.5: Triple-hash comparison details
+  // Triple-hash comparison details (Overlays system)
   hash_type?: "base" | "overlay" | "result"; // Which hash mismatched
   base_hash?: string;
   overlay_hash?: string;

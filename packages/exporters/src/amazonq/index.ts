@@ -67,9 +67,6 @@ export class AmazonQExporter extends ExporterBase {
     lines.push(`# ${scopeDesc}`);
     lines.push("");
 
-    // Add session preface if needed
-    lines.push(...generateSessionPreface(modeHints));
-
     // Render sections as natural markdown
     const sectionsMarkdown = this.renderSections(sections, false);
     lines.push(sectionsMarkdown);
