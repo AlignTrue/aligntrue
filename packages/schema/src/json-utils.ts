@@ -7,7 +7,7 @@
  * - Type-safe parsing with error handling
  * - Comparison utilities
  *
- * Phase 4.5: Eliminates 100+ duplicate patterns
+ * Eliminates 100+ duplicate patterns (Code consolidation)
  */
 
 import { canonicalizeJson, computeHash } from "./canonicalize.js";

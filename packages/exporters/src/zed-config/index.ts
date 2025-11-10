@@ -1,6 +1,9 @@
 /**
  * Zed Config exporter
- * Exports AlignTrue rules to .zed/settings.json format
+ * Exports AlignTrue sections to .zed/settings.json format
+ *
+ * TODO: Implement settings generation for sections format
+ * Currently stub implementation.
  */
 
 import { join, dirname } from "path";
@@ -11,14 +14,12 @@ import type {
   ExportResult,
 } from "../types.js";
 import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash, getSections } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
   allSections: Array<{ section: AlignSection; scopePath: string }>;
-  useSections: boolean;
 }
 
 export class ZedConfigExporter extends ExporterBase {
@@ -26,28 +27,18 @@ export class ZedConfigExporter extends ExporterBase {
   version = "1.0.0";
 
   private state: ExporterState = {
-    allRules: [],
     allSections: [],
-    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
-    const sections = getSections(pack);
-    const useSections = sections.length > 0;
-
-    if (
-      this.state.allRules.length === 0 &&
-      this.state.allSections.length === 0
-    ) {
-      this.state.useSections = useSections;
-    }
+    const { scope, pack } = request;
+    const sections = pack.sections;
     const { outputDir, dryRun = false } = options;
 
-    if (!rules || rules.length === 0) {
+    if (sections.length === 0) {
       return { success: true, filesWritten: [], contentHash: "" };
     }
 
@@ -55,21 +46,24 @@ export class ZedConfigExporter extends ExporterBase {
       scope.isDefault || scope.path === "." || scope.path === ""
         ? "all files"
         : scope.path;
-    rules.forEach((rule) => this.state.allRules.push({ rule, scopePath }));
+    sections.forEach((section) =>
+      this.state.allSections.push({ section, scopePath }),
+    );
 
     const outputPath = join(outputDir, ".zed", "settings.json");
+    const allSectionsIR = this.state.allSections.map(({ section }) => section);
     const config: Record<string, unknown> = {
       version: "v1",
       generated_by: "AlignTrue",
       content_hash: computeContentHash({
-        rules: this.state.allRules.map(({ rule }) => rule),
+        sections: allSectionsIR,
       }),
-      rules: this.state.allRules.map(({ rule, scopePath: sp }) => ({
-        id: rule.id,
-        severity: rule.severity,
-        guidance: rule.guidance || "",
+      sections: this.state.allSections.map(({ section, scopePath: sp }) => ({
+        heading: section.heading,
+        level: section.level,
+        content: section.content,
+        fingerprint: section.fingerprint,
         scope: sp,
-        applies_to: rule.applies_to || [],
       })),
     };
 
@@ -96,9 +90,7 @@ export class ZedConfigExporter extends ExporterBase {
 
   resetState(): void {
     this.state = {
-      allRules: [],
       allSections: [],
-      useSections: false,
     };
   }
 }

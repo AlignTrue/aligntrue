@@ -1,5 +1,5 @@
 /**
- * Patch file writer for merge conflicts (Phase 3.5, Session 4)
+ * Patch file writer for merge conflicts (Overlays system)
  * Writes conflict patches to artifacts/ directory
  */
 

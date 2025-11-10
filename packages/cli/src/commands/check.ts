@@ -239,25 +239,12 @@ export async function check(args: string[]): Promise<void> {
       );
     }
 
-    // Step 2.5: Validate rule IDs
-    const { validateRuleId } = await import("@aligntrue/schema");
+    // Step 2.5: Validate section IDs (rules field no longer used - sections only)
+    // TODO: Implement section ID validation for sections-only format
     const alignPack = alignData as AlignPack;
 
-    for (const rule of alignPack.rules || []) {
-      const validation = validateRuleId(rule.id);
-      if (!validation.valid) {
-        console.error("✗ Invalid rule ID\n");
-        console.error(`  Rule: ${rule.id}`);
-        console.error(`  Error: ${validation.error}`);
-        if (validation.suggestion) {
-          console.error(`  ${validation.suggestion}`);
-        }
-        console.error(
-          `\n  Fix the rule ID and run 'aligntrue check --ci' again.\n`,
-        );
-        process.exit(1);
-      }
-    }
+    // In sections-only format, validation happens at parse time
+    // No additional ID validation needed here
 
     // Step 3: Validate lockfile if team mode + lockfile enabled
     let _lockfileValid = true;

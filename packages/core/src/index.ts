@@ -28,7 +28,7 @@ export * from "./team/index.js";
 // Plugs system
 export * from "./plugs/index.js";
 
-// Overlay system (Phase 3.5)
+// Overlay system (Overlays system)
 export * from "./overlays/index.js";
 
 // Source caching

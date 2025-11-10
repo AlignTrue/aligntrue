@@ -80,7 +80,7 @@ sources:
 
 - `local` - Read from local filesystem (requires `path`)
 - `git` - Clone from git repo (requires `url`, optional `path`)
-- `url` - Fetch from HTTP URL (Phase 2+, requires `url`)
+- `url` - Fetch from HTTP URL (future enhancement, requires `url`)
 
 **Git Sources:**
 Git sources fetch rules from any git repository:

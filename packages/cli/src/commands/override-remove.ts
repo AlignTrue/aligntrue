@@ -1,7 +1,7 @@
 /**
  * Command: aln override remove
  * Remove an overlay
- * Phase 3.5, Session 11: Migrated to CLI framework
+ * Overlays system: Migrated to CLI framework
  */
 
 import { loadConfig, saveConfig } from "@aligntrue/core";

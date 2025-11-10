@@ -1,5 +1,5 @@
 /**
- * Tests for selector engine (Phase 3.5)
+ * Tests for selector engine (Overlays system)
  */
 
 import { describe, it, expect } from "vitest";

@@ -385,7 +385,7 @@ describe("detectSeverityRemapDrift", () => {
 });
 
 describe("detectLocalOverlayDrift", () => {
-  it("returns empty array (placeholder for Phase 3.5)", () => {
+  it("returns empty array (legacy placeholder)", () => {
     const lockfile: Lockfile = {
       version: "1",
       generated_at: "2025-10-29T12:00:00Z",
@@ -700,7 +700,7 @@ sources:
     });
   });
 
-  describe("triple-hash drift detection (Phase 3.5)", () => {
+  describe("triple-hash drift detection (Overlays system)", () => {
     describe("detectOverlayDrift", () => {
       it("detects no drift when overlay_hash matches", async () => {
         const { detectOverlayDrift } = await import("../../src/team/drift.js");

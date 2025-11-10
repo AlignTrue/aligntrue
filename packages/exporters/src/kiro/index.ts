@@ -1,221 +1,33 @@
-import type { AlignTrueConfig } from "@aligntrue/core";
-
 /**
- * Kiro exporter
- * Exports AlignTrue rules to Kiro .kiro/steering/ directory format
+ * kiro exporter
+ * @deprecated Not yet fully implemented for sections-only format
  */
 
-import { join } from "path";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import type { ModeHints } from "@aligntrue/core";
-import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
-import {
-  extractModeConfig,
-  applyRulePrioritization,
-  generateSessionPreface,
-  wrapRuleWithMarkers,
-  shouldIncludeRule,
-} from "../utils/index.js";
-
-interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  useSections: boolean;
-}
 
 export class KiroExporter extends ExporterBase {
   name = "kiro";
   version = "1.0.0";
 
-  private state: ExporterState = {
-    allRules: [],
-    allSections: [],
-    useSections: false,
-  };
-
   async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
+    _request: ScopedExportRequest,
+    _options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
-    const sections = getSections(pack);
-    const useSections = sections.length > 0;
-
-    if (
-      this.state.allRules.length === 0 &&
-      this.state.allSections.length === 0
-    ) {
-      this.state.useSections = useSections;
-    }
-    const { outputDir, dryRun = false, config } = options;
-
-    if (!rules || rules.length === 0) {
-      throw new Error("KiroExporter requires at least one rule to export");
-    }
-
-    const filename = this.getScopeFilename(scope);
-    const outputPath = join(outputDir, ".kiro", "steering", filename);
-
-    const { modeHints, maxBlocks, maxTokens } = extractModeConfig(
-      this.name,
-      config as AlignTrueConfig | undefined,
-    );
-    const { content, warnings } = this.generateRuleContent(
-      scope,
-      rules,
-      modeHints,
-      maxBlocks,
-      maxTokens,
-      options.unresolvedPlugsCount,
-    );
-
-    const contentHash = computeContentHash({ scope, rules });
-
-    const fidelityNotes = this.computeFidelityNotes(rules);
-
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
-
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    if (warnings.length > 0) {
-      result.warnings = warnings;
-    }
-
-    return result;
-  }
-
-  resetState(): void {
-    this.state = {
-      allRules: [],
-      allSections: [],
-      useSections: false,
+    // TODO: Implement kiro exporter for sections format
+    return {
+      success: true,
+      filesWritten: [],
+      contentHash: "",
     };
   }
 
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "rules.md";
-    }
-
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.md`;
-  }
-
-  private generateRuleContent(
-    scope: ResolvedScope,
-    rules: AlignRule[],
-    modeHints: ModeHints,
-    maxBlocks: number,
-    maxTokens: number,
-    unresolvedPlugs?: number,
-  ): { content: string; warnings: string[] } {
-    const lines: string[] = [];
-
-    const scopeDesc = scope.isDefault
-      ? "Kiro steering rules (default scope)"
-      : `Kiro steering rules for ${scope.path}`;
-    lines.push(`# ${scopeDesc}`);
-
-    // Add session preface if needed
-    lines.push(...generateSessionPreface(modeHints));
-
-    // Apply prioritization
-    const { includedIds, warnings } = applyRulePrioritization(
-      rules,
-      modeHints,
-      maxBlocks,
-      maxTokens,
-    );
-
-    // Generate rule sections
-    rules.forEach((rule) => {
-      if (!shouldIncludeRule(rule.id, includedIds)) {
-        return;
-      }
-
-      // Build rule content
-      const ruleLines: string[] = [];
-      ruleLines.push(`## Rule: ${rule.id}`);
-      ruleLines.push("");
-      ruleLines.push(`**Severity:** ${rule.severity}`);
-      ruleLines.push("");
-
-      if (rule.applies_to && rule.applies_to.length > 0) {
-        ruleLines.push(`**Applies to:**`);
-        rule.applies_to.forEach((pattern) => {
-          ruleLines.push(`- \`${pattern}\``);
-        });
-        ruleLines.push("");
-      }
-
-      if (rule.guidance) {
-        ruleLines.push(rule.guidance.trim());
-        ruleLines.push("");
-      }
-      ruleLines.push("---");
-
-      // Wrap with markers and add to output
-      const ruleContent = ruleLines.join("\n");
-      lines.push(wrapRuleWithMarkers(rule, ruleContent, modeHints));
-      lines.push("");
-    });
-
-    const contentHash = computeContentHash({ scope, rules });
-    const fidelityNotes = this.computeFidelityNotes(rules);
-
-    lines.push("**Generated by AlignTrue**");
-    lines.push(`Content Hash: ${contentHash}`);
-
-    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      lines.push(`Unresolved Plugs: ${unresolvedPlugs}`);
-    }
-
-    if (fidelityNotes.length > 0) {
-      lines.push("");
-      lines.push("**Fidelity Notes:**");
-      fidelityNotes.forEach((note) => {
-        lines.push(`- ${note}`);
-      });
-    }
-
-    lines.push("");
-    return { content: lines.join("\n"), warnings };
-  }
-
-  override computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = [];
-    const unmappedFields = new Set<string>();
-
-    rules.forEach((rule) => {
-      if (rule.check) {
-        unmappedFields.add("check");
-      }
-      if (rule.autofix) {
-        unmappedFields.add("autofix");
-      }
-    });
-
-    if (unmappedFields.has("check")) {
-      notes.push(
-        "Machine-checkable rules (check) not represented in .kiro/steering/ format",
-      );
-    }
-    if (unmappedFields.has("autofix")) {
-      notes.push("Autofix hints not represented in .kiro/steering/ format");
-    }
-
-    notes.push(
-      "applies_to patterns preserved in metadata but not enforced by Kiro",
-    );
-
-    return notes;
+  resetState(): void {
+    // Stub
   }
 }
 

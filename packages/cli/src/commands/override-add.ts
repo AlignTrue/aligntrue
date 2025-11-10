@@ -1,7 +1,7 @@
 /**
  * Command: aln override add
  * Add an overlay to customize rules without forking
- * Phase 3.5, Session 11: Migrated to CLI framework
+ * Overlays system: Migrated to CLI framework
  */
 
 import {

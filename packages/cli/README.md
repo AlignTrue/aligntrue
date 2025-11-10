@@ -693,7 +693,7 @@ aligntrue telemetry on
 - Rule content or code
 - Personally identifiable information (PII)
 
-**Storage:** Local only in Phase 1 (`.aligntrue/telemetry-events.json`), with optional sending in Phase 2+ after explicit consent.
+**Storage:** Local only (`.aligntrue/telemetry-events.json`), with optional sending after explicit consent (Privacy consent).
 
 See [docs/PRIVACY.md](../../docs/PRIVACY.md) for complete details.
 
@@ -932,7 +932,7 @@ Fix the errors listed in the output. Common issues:
 
 AlignTrue automatically detects 28 AI coding agents:
 
-**Phase 1 Exporters:**
+**Core Exporters (Implemented):**
 
 - Cursor (`.cursor/`)
 - Universal AGENTS.md
@@ -961,4 +961,4 @@ Each rule demonstrates key features and best practices.
 
 ## Package status
 
-✅ **Phase 1, Step 22 Complete** - Init command fully implemented with auto-detection and comprehensive UX
+✅ **Init command implemented** - Fully implemented with auto-detection and comprehensive UX

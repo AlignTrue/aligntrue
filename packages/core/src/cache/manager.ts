@@ -10,7 +10,7 @@
  * - Size limits with LRU eviction
  * - In-memory caching (future: persistent cache)
  *
- * Phase 3 Session 10: Performance optimization
+ * Team mode development: Performance optimization
  */
 
 export interface CacheEntry<T> {

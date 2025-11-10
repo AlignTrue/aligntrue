@@ -133,7 +133,7 @@ Team mode configuration with:
 
 Approved rule sources for the team. Two formats:
 
-1. **id@profile@version** - Resolved to hash by CLI (catalog, Phase 4)
+1. **id@profile@version** - Resolved to hash by CLI (catalog - removed from roadmap)
 2. **sha256:...** - Raw hash (what lockfile uses)
 
 CLI commands automatically resolve id@version to hashes and write to lockfile.

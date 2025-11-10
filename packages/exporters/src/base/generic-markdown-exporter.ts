@@ -126,19 +126,30 @@ export class GenericMarkdownExporter extends ExporterBase {
     content: string;
     warnings: string[];
   } {
-    const header = this.generateHeader();
+    // TODO: Implement generateHeader and generateFooter methods in subclasses
     const allSections = this.state.allSections.map(({ section }) => section);
     const sectionsMarkdown = this.renderSections(allSections, false);
     const contentHash = computeContentHash({ sections: allSections });
     const fidelityNotes = this.computeSectionFidelityNotes(allSections);
-    const footer = this.generateFooter(
-      contentHash,
-      fidelityNotes,
-      unresolvedPlugs,
-    );
+
+    // Build footer with hash and fidelity notes
+    const footerLines: string[] = [];
+    footerLines.push("---");
+    footerLines.push(`**Content Hash:** ${contentHash}`);
+    if (fidelityNotes.length > 0) {
+      footerLines.push("");
+      footerLines.push("**Fidelity Notes:**");
+      fidelityNotes.forEach((note) => {
+        footerLines.push(`- ${note}`);
+      });
+    }
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      footerLines.push(`**Unresolved Plugs:** ${unresolvedPlugs}`);
+    }
+    const footer = footerLines.join("\n");
 
     return {
-      content: `${header}\n\n${sectionsMarkdown}\n\n${footer}`,
+      content: `${sectionsMarkdown}\n\n${footer}`,
       warnings: [],
     };
   }

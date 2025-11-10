@@ -507,7 +507,7 @@ describe("lockfile validator", () => {
     });
   });
 
-  // Phase 8: Section-based validation tests
+  // Team mode enhancements: Section-based validation tests
   describe("section-based validation", () => {
     const mockSection: AlignSection = {
       heading: "Testing Guidelines",

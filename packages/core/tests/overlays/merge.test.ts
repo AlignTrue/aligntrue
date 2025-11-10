@@ -1,5 +1,5 @@
 /**
- * Tests for three-way merge algorithm (Phase 3.5, Session 4)
+ * Tests for three-way merge algorithm (Overlays system)
  */
 
 import { describe, it, expect } from "vitest";

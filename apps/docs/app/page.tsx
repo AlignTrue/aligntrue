@@ -1031,7 +1031,7 @@ export default function HomePage() {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    28+ agents supported
+                    20+ agents supported
                   </h3>
                   <p
                     style={{

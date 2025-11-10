@@ -1,5 +1,5 @@
 /**
- * Overlay validation rules for CI gates (Phase 3.5, Session 5)
+ * Overlay validation rules for CI gates (Overlays system)
  * Validates overlays against IR to detect stale selectors, ambiguous matches,
  * plug conflicts, and size limit violations
  */

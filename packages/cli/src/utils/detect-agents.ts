@@ -11,7 +11,7 @@ import { join } from "path";
  * Maps agent name to detection patterns (files/directories to check)
  */
 export const AGENT_PATTERNS: Record<string, string[]> = {
-  // Phase 1 exporters
+  // Core exporters
   cursor: [".cursor/rules/"], // Only detect if rules subdirectory exists
   "agents-md": ["AGENTS.md"],
   "vscode-mcp": [".vscode/mcp.json"], // Only detect if MCP config exists

@@ -1,6 +1,6 @@
 /**
  * Lockfile generator with per-section and bundle hashing
- * Phase 3.5: Supports triple-hash format for overlay tracking
+ * Supports triple-hash format for overlay tracking (Overlays system)
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -14,7 +14,7 @@ import type { OverlayDefinition } from "../overlays/types.js";
  * Generate lockfile from an AlignPack bundle
  *
  * Uses canonical JSON (JCS) with vendor.volatile fields excluded
- * Phase 3.5: Supports triple-hash format when overlays are present
+ * Supports triple-hash format when overlays are present (Overlays system)
  *
  * @param pack - AlignPack to generate lockfile from
  * @param mode - Config mode (team or enterprise)
@@ -33,13 +33,13 @@ export function generateLockfile(
   const entries: LockfileEntry[] = [];
   const contentHashes: string[] = [];
 
-  // Compute dual hashes for plugs (Phase 2.5)
+  // Compute dual hashes for plugs (Plugs system)
   let dualHashResult: ReturnType<typeof computeDualHash> | undefined;
   if (pack.plugs) {
     dualHashResult = computeDualHash(pack);
   }
 
-  // Compute overlay hash if overlays present (Phase 3.5)
+  // Compute overlay hash if overlays present (Overlays system)
   const overlayHash =
     overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
 
@@ -47,7 +47,7 @@ export function generateLockfile(
   for (const section of pack.sections) {
     const resultHash = hashSection(section);
 
-    // Compute base hash if base pack provided (Phase 3.5)
+    // Compute base hash if base pack provided (Overlays system)
     let baseHash: string | undefined;
     if (basePack) {
       const baseSection = basePack.sections.find(
@@ -64,16 +64,16 @@ export function generateLockfile(
       ...(pack.owner && { owner: pack.owner }),
       ...(pack.source && { source: pack.source }),
       ...(pack.source_sha && { source_sha: pack.source_sha }),
-      // Phase 3.5: Triple-hash format when overlays present
+      // Triple-hash format when overlays present (Overlays system)
       ...(baseHash && { base_hash: baseHash }),
       ...(overlayHash && { overlay_hash: overlayHash }),
       ...(overlayHash && { result_hash: resultHash }),
-      // Phase 3, Session 5: Capture vendoring provenance
+      // Team mode: Capture vendoring provenance
       ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
       ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
     };
 
-    // Add plugs hashes if pack has plugs (Phase 2.5)
+    // Add plugs hashes if pack has plugs (Plugs system)
     if (dualHashResult) {
       entry.pre_resolution_hash = dualHashResult.preResolutionHash;
       if (dualHashResult.postResolutionHash) {
@@ -91,7 +91,7 @@ export function generateLockfile(
   // Generate bundle hash from sorted content hashes
   const bundleHash = computeBundleHash(contentHashes.sort());
 
-  // Phase 3, Session 7: Capture team.yaml hash if file exists
+  // Team mode: Capture team.yaml hash if file exists
   const teamYamlHash = teamYamlPath
     ? computeTeamYamlHash(teamYamlPath)
     : undefined;
@@ -110,7 +110,7 @@ export function generateLockfile(
     lockfile.team_yaml_hash = teamYamlHash;
   }
 
-  // Phase 2.5: Add total unresolved plugs count
+  // Plugs system: Add total unresolved plugs count
   if (dualHashResult && dualHashResult.unresolvedRequired.length > 0) {
     lockfile.total_unresolved_plugs = dualHashResult.unresolvedRequired.length;
   }
@@ -120,7 +120,7 @@ export function generateLockfile(
 
 /**
  * Hash a single section using canonical JSON
- * Phase 8: Section hashing for natural markdown support
+ * Section hashing for natural markdown support (Team mode enhancements)
  */
 export function hashSection(section: AlignSection): string {
   return computeContentHash(section, true);
@@ -152,7 +152,7 @@ function computeTeamYamlHash(path: string): string | undefined {
 }
 
 /**
- * Compute hash of overlay configuration (Phase 3.5)
+ * Compute hash of overlay configuration (Overlays system)
  * Uses canonical JSON for deterministic hashing
  *
  * @param overlays - Array of overlay definitions

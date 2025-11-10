@@ -51,7 +51,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 **Only canonicalize when determinism is required:**
 
 - **Lockfile generation** (`aligntrue lock` in team mode) - Produce canonical hash for drift detection
-- **Catalog publishing** (`aligntrue publish` in Phase 4) - Produce integrity hash for distribution
+- **Catalog publishing** (`aligntrue publish` - removed from roadmap) - Produce integrity hash for distribution
 - **NOT during:** init, sync, export, import, normal file operations
 
 **Why:**

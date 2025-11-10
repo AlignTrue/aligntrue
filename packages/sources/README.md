@@ -6,7 +6,7 @@ Multi-source rule pulling with caching for AlignTrue.
 
 - **Local provider** - Read rules from local filesystem
 - **Git provider** - Clone and read from git repos with local caching
-- **URL provider** - Fetch from arbitrary URLs (Phase 2+)
+- **URL provider** - Fetch from arbitrary URLs (future enhancement)
 - **Cache management** - Local cache in .aligntrue/.cache/
 
 ## Providers
@@ -71,7 +71,7 @@ const yaml = await provider.fetch();
 - Rejects `file://` protocol
 - Rejects URLs with path traversal (`..`)
 - Validates https/ssh URL formats
-- Privacy TODOs for Phase 2 Step 10 (consent system)
+- Privacy TODOs for consent system (implemented)
 
 **Example Config:**
 

@@ -3,80 +3,43 @@ title: About
 description: A bit about AlignTrue.
 ---
 
-# About
+# About AlignTrue
 
-## The problem
+## What
 
-You're using AI coding agents to boost productivity. Maybe Cursor, GitHub Copilot, Claude Code, or Aider. Each one is powerful, but they have a problem:
+AlignTrue makes it easy to sync rules across AI agents, projects and teams:
 
-**Every agent has its own config format.**
+- Solo devs: Keeping rules aligned across multiple agents (Cursor .mdc files, AGENTS.md, CLAUDE.md, etc.) or multiple projects
+- Teams: Keeping rules aligned across team members using different IDEs and agents to enforce best practices and consistency.
 
-- Cursor uses `.cursor/rules/*.mdc` files
-- GitHub Copilot reads `AGENTS.md`
-- VS Code MCP agents need `.vscode/mcp.json`
-- Aider wants `.aider.conf.yml`
+It's ([MIT Licensed](LICENSE). I'm trying to make the project largely self-documenting, so if you see any issues in the documentation or otherwise, PRs welcome!
 
-You copy-paste rules between projects. You maintain separate configs for each agent. Rules drift out of sync. You waste time keeping everything aligned.
+## Who
 
-## The AlignTrue solution
+I'm [Gabe Mays](https://gmays.com/about/) and I like to build things.
 
-**Write rules once. Sync everywhere.**
+## Why
 
-```bash
-# Edit rules in your preferred format
-# (AGENTS.md shown, or any agent file)
-AGENTS.md
+### TL;DR
 
-# Syncs to all your agents
-aligntrue sync
+Shortly before starting the project I went deep with AI agents. I spent billions of tokens in a matter of weeks. This gave me insight into the insane power and capabilities of AI, but also the gaps.
 
-# Result:
-✓ .aligntrue/.rules.yaml (internal IR, pure YAML)
-✓ .cursor/rules/aligntrue.mdc (synced)
-✓ AGENTS.md (synced)
-✓ .vscode/mcp.json (synced)
-✓ .aider.conf.yml (synced)
-```
+And the biggest gap is failing to guide the AI with rules. And this proved to be much harder than it should have been, so I decided to fix it.
 
-## Key benefits
+### Diving into AI
 
-### 1. Edit in your preferred format
+I've been investing in AI-related companies and building AI products since early 2023 when I built one of the first AI products at my company.
 
-Write rules in `AGENTS.md`, Cursor's `.mdc`, or any agent format. In solo mode, changes sync across all agents automatically via auto-pull.
+I also [started studying math daily](https://gmays.com/how-im-relearning-math-as-an-adult/) to understand how AI works. **My streak is at 769 days** as of 11/9/2025. I shared my [500 day update here](https://gmays.com/500-days-of-math/).
 
-### 2. Consistent behavior
+### An observation
 
-All your AI agents follow the same rules. No more "it works in Cursor but not Copilot."
+What's interesting is how some thrive with AI and others struggle to adopt it meaningfully, kind of like the attempt to electrify steam factories in the late 1800's.
 
-### 3. Easy sharing
+I've thought a lot about the blockers to unlock more GDP growth from AI.
 
-Share rules across projects, teams, and machines. Git-based workflows with lockfiles and drift detection.
+A blocker in regulated industries is AI interpretability and explainability, because you can't deploy what you can't explain. I explored that with [GlassAlpha](https://glassalpha.com).
 
-### 4. Two-way sync (in solo mode)
+But the bigger problem is that most people and companies just aren't effective at using AI yet.
 
-Edit rules in `AGENTS.md` or agent files. Auto-pull syncs changes automatically in solo mode (disabled in team mode for explicit reviews).
-
-### 5. 28+ agents supported
-
-Works with Cursor, GitHub Copilot, Claude Code, Aider, Windsurf, and 23+ more through 43 specialized exporters.
-
-## Who is this for?
-
-**Solo developers:**
-
-- Keep personal AI rules consistent across projects
-- Sync rules across multiple machines
-- Try different agents without reconfiguring
-
-**Teams:**
-
-- Share approved rule sets via git
-- Enforce standards with lockfiles
-- Detect drift with CI validation
-- Onboard new developers faster
-
-## What's next?
-
-Ready to get started? Follow the [Quickstart Guide](/docs/00-getting-started/00-quickstart) and be up and running in 60 seconds.
-
-Want to understand how it works? Read about [Sync Behavior](/docs/03-concepts/sync-behavior).
+This is a broad problem and I see massive opportunities to solve it. I'm starting with rules since it seems like the most tractable thing, and have some other things lined up to tackle next.
