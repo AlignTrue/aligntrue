@@ -4,25 +4,37 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { createHash } from "crypto";
 import { AgentsMdExporter } from "../src/agents-md/index.js";
 import type {
   ScopedExportRequest,
   ExportOptions,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import { mkdtempSync, rmSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+
+/**
+ * Generate a stable fingerprint for tests
+ */
+function generateFingerprint(heading: string, content: string): string {
+  const combined = `${heading}::${content}`;
+  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+}
 
 describe("Duplicate content bug fix", () => {
   let tempDir: string;
   let exporter: AgentsMdExporter;
 
-  const testRule: AlignRule = {
-    id: "test.rule.one",
-    severity: "error",
-    applies_to: ["**/*.ts"],
-    guidance: "Test guidance for rule one",
+  const testSection: AlignSection = {
+    heading: "test.rule.one",
+    level: 2,
+    content: "Test guidance for rule one",
+    fingerprint: generateFingerprint(
+      "test.rule.one",
+      "Test guidance for rule one",
+    ),
   };
 
   const defaultScope = {
@@ -49,15 +61,14 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should produce identical output on multiple syncs", async () => {
-    const rules = [testRule];
+    const sections = [testSection];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules,
       pack: {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules,
+        sections,
       },
       outputPath: "AGENTS.md",
     };
@@ -101,15 +112,14 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should not accumulate rules without resetState", async () => {
-    const rules = [testRule];
+    const sections = [testSection];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules,
       pack: {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules,
+        sections,
       },
       outputPath: "AGENTS.md",
     };
@@ -141,7 +151,7 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should not have duplicate HTML comment tags", async () => {
-    const rules = [testRule];
+    const sections = [testRule];
     const request: ScopedExportRequest = {
       scope: defaultScope,
       rules,
@@ -149,7 +159,7 @@ describe("Duplicate content bug fix", () => {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules,
+        sections,
       },
       outputPath: "AGENTS.md",
     };
@@ -207,7 +217,7 @@ describe("Duplicate content bug fix", () => {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules,
+        sections,
       },
       outputPath: "AGENTS.md",
     };
