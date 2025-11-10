@@ -61,14 +61,14 @@ describe("lockfile validator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const modifiedPack: AlignPack = {
         ...mockPack,
-        sections: [{ ...mockRule, guidance: "Modified guidance" }],
+        sections: [{ ...mockRule, content: "Modified guidance" }],
       };
 
       const result = validateLockfile(lockfile, modifiedPack);
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1);
-      expect(result.mismatches[0].rule_id).toBe("test.rule.one");
+      expect(result.mismatches[0].rule_id).toBe("test-rule-one");
       expect(result.mismatches[0].expected_hash).toBeDefined();
       expect(result.mismatches[0].actual_hash).toBeDefined();
       expect(result.mismatches[0].expected_hash).not.toBe(
@@ -80,20 +80,36 @@ describe("lockfile validator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const packWithNewRule: AlignPack = {
         ...mockPack,
-        sections: [mockRule, { ...mockRule, id: "test.rule.new" }],
+        sections: [
+          mockRule,
+          {
+            heading: "New Rule",
+            level: 2,
+            content: "New guidance",
+            fingerprint: "test-rule-new",
+          },
+        ],
       };
 
       const result = validateLockfile(lockfile, packWithNewRule);
 
       expect(result.valid).toBe(false);
       expect(result.newRules).toHaveLength(1);
-      expect(result.newRules[0]).toBe("test.rule.new");
+      expect(result.newRules[0]).toBe("test-rule-new");
     });
 
     it("detects deleted rules", () => {
       const packWithTwoRules: AlignPack = {
         ...mockPack,
-        sections: [mockRule, { ...mockRule, id: "test.rule.deleted" }],
+        sections: [
+          mockRule,
+          {
+            heading: "Deleted Rule",
+            level: 2,
+            content: "Deleted guidance",
+            fingerprint: "test-rule-deleted",
+          },
+        ],
       };
       const lockfile = generateLockfile(packWithTwoRules, "team");
 
@@ -101,15 +117,20 @@ describe("lockfile validator", () => {
 
       expect(result.valid).toBe(false);
       expect(result.deletedRules).toHaveLength(1);
-      expect(result.deletedRules[0]).toBe("test.rule.deleted");
+      expect(result.deletedRules[0]).toBe("test-rule-deleted");
     });
 
     it("detects multiple types of changes", () => {
       const originalPack: AlignPack = {
         ...mockPack,
         sections: [
-          { ...mockRule, id: "test.rule.one" },
-          { ...mockRule, id: "test.rule.two" },
+          mockRule,
+          {
+            heading: "Rule Two",
+            level: 2,
+            content: "Second guidance",
+            fingerprint: "test-rule-two",
+          },
         ],
       };
       const lockfile = generateLockfile(originalPack, "team");
@@ -117,9 +138,14 @@ describe("lockfile validator", () => {
       const modifiedPack: AlignPack = {
         ...mockPack,
         sections: [
-          { ...mockRule, id: "test.rule.one", guidance: "Modified" }, // Modified
-          { ...mockRule, id: "test.rule.three" }, // New
-          // test.rule.two is deleted
+          { ...mockRule, content: "Modified guidance" }, // Modified
+          {
+            heading: "Rule Three",
+            level: 2,
+            content: "Third guidance",
+            fingerprint: "test-rule-three",
+          }, // New
+          // test-rule-two is deleted
         ],
       };
 
@@ -127,11 +153,11 @@ describe("lockfile validator", () => {
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1);
-      expect(result.mismatches[0].rule_id).toBe("test.rule.one");
+      expect(result.mismatches[0].rule_id).toBe("test-rule-one");
       expect(result.newRules).toHaveLength(1);
-      expect(result.newRules[0]).toBe("test.rule.three");
+      expect(result.newRules[0]).toBe("test-rule-three");
       expect(result.deletedRules).toHaveLength(1);
-      expect(result.deletedRules[0]).toBe("test.rule.two");
+      expect(result.deletedRules[0]).toBe("test-rule-two");
     });
 
     it("handles empty rule arrays", () => {
