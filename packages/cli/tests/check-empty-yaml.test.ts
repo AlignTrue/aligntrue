@@ -39,11 +39,11 @@ describe("Check Command - Empty YAML Handling", () => {
       `mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.yaml`,
+    path: .aligntrue/.rules.yaml`,
     );
 
     // Create empty rules file
-    writeFileSync(join(TEST_DIR, ".aligntrue/rules.yaml"), "");
+    writeFileSync(join(TEST_DIR, ".aligntrue/.rules.yaml"), "");
 
     // Run check command
     try {
@@ -67,12 +67,12 @@ sources:
       `mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.yaml`,
+    path: .aligntrue/.rules.yaml`,
     );
 
     // Create comments-only rules file
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/rules.yaml"),
+      join(TEST_DIR, ".aligntrue/.rules.yaml"),
       `# Just comments
 # No actual content`,
     );
@@ -99,12 +99,12 @@ sources:
       `mode: solo
 sources:
   - type: local
-    path: .aligntrue/rules.yaml`,
+    path: .aligntrue/.rules.yaml`,
     );
 
     // Create valid rules file
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/rules.yaml"),
+      join(TEST_DIR, ".aligntrue/.rules.yaml"),
       `id: test-pack
 version: 1.0.0
 spec_version: "1"

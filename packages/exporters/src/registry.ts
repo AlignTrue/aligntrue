@@ -103,14 +103,24 @@ export class ExporterRegistry {
       let absolutePath = resolve(handlerPath);
 
       // If the path points to src/, replace with dist/ for built files
-      // This happens when manifests reference ./index.ts but runtime needs ./index.js from dist/
+      // This handles both local dev and installed npm packages
       // Normalize path separators for cross-platform support
       const normalizedPath = absolutePath.replace(/\\/g, "/");
-      if (normalizedPath.includes("/src/")) {
-        absolutePath = normalizedPath
+      if (normalizedPath.includes("/src/") && handlerPath.endsWith(".ts")) {
+        const distPath = normalizedPath
           .replace("/src/", "/dist/")
           .replace(/\.ts$/, ".js")
           .replace(/\//g, sep);
+
+        // Check if dist version exists, use it if available
+        // This prevents "stripping types" errors in production
+        const { existsSync } = await import("node:fs");
+        if (existsSync(distPath)) {
+          absolutePath = distPath;
+        } else {
+          // Fallback: try original path (for dev with ts-node)
+          absolutePath = normalizedPath.replace(/\//g, sep);
+        }
       }
 
       const fileUrl = pathToFileURL(absolutePath).href;

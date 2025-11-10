@@ -197,6 +197,22 @@ export async function check(args: string[]): Promise<void> {
           );
           process.exit(1);
         }
+
+        // Verify it's actually an object (not a string, array, or primitive)
+        if (typeof alignData !== "object" || Array.isArray(alignData)) {
+          console.error("✗ Invalid rules file structure\n");
+          console.error(`  File: ${rulesPath}`);
+          console.error(
+            `  Expected: YAML object with id, version, spec_version, rules or sections`,
+          );
+          console.error(
+            `  Got: ${typeof alignData}${Array.isArray(alignData) ? " (array)" : ""}\n`,
+          );
+          console.error(
+            "  Run 'aligntrue init' to create a valid rules file\n",
+          );
+          process.exit(1);
+        }
       } catch (_err) {
         console.error("✗ Invalid YAML in rules file\n");
         console.error(
