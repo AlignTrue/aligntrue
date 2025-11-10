@@ -1,97 +1,66 @@
 /**
- * Zed Config exporter
- * Exports AlignTrue sections to .zed/settings.json format
- *
- * TODO: Implement settings generation for sections format
- * Currently stub implementation.
+ * Zed config exporter
+ * Exports AlignTrue rules to .zed/settings.json configuration format (project root)
+ * Note: Never use $HOME - always project root
  */
 
-import { join, dirname } from "path";
-import { mkdirSync } from "fs";
+import { join } from "path";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ExporterBase } from "../base/index.js";
 
-interface ExporterState {
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
+interface ZedSettings {
+  version: string;
+  generated_by: string;
+  content_hash: string;
+  rules: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export class ZedConfigExporter extends ExporterBase {
   name = "zed-config";
   version = "1.0.0";
 
-  private state: ExporterState = {
-    allSections: [],
-  };
-
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
-    const sections = pack.sections;
+    const { pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    if (sections.length === 0) {
-      return { success: true, filesWritten: [], contentHash: "" };
-    }
+    const sections = pack.sections;
 
-    const scopePath =
-      scope.isDefault || scope.path === "." || scope.path === ""
-        ? "all files"
-        : scope.path;
-    sections.forEach((section) =>
-      this.state.allSections.push({ section, scopePath }),
-    );
+    if (sections.length === 0) {
+      return {
+        success: true,
+        filesWritten: [],
+        contentHash: "",
+      };
+    }
 
     const outputPath = join(outputDir, ".zed", "settings.json");
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const config: Record<string, unknown> = {
+    const contentHash = computeContentHash({ sections });
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
+
+    const config: ZedSettings = {
       version: "v1",
       generated_by: "AlignTrue",
-      content_hash: computeContentHash({
-        sections: allSectionsIR,
-      }),
-      sections: this.state.allSections.map(({ section, scopePath: sp }) => ({
-        heading: section.heading,
-        level: section.level,
-        content: section.content,
-        fingerprint: section.fingerprint,
-        scope: sp,
-      })),
+      content_hash: contentHash,
+      rules: sections.map((s) => s.heading),
     };
-
-    if (
-      options.unresolvedPlugsCount !== undefined &&
-      options.unresolvedPlugsCount > 0
-    ) {
-      config["unresolved_plugs"] = options.unresolvedPlugsCount;
-    }
 
     const content = JSON.stringify(config, null, 2) + "\n";
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    if (!dryRun) {
-      mkdirSync(dirname(outputPath), { recursive: true });
-      new AtomicFileWriter().write(outputPath, content);
-    }
-
-    return {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash: (config["content_hash"] as string) || "",
-    };
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
 
   resetState(): void {
-    this.state = {
-      allSections: [],
-    };
+    // Stateless exporter
   }
 }
 

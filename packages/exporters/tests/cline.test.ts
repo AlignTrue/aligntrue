@@ -1,11 +1,11 @@
 /**
- * AugmentCode exporter tests with mode hints support
+ * Cline exporter tests
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { rmSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import { AugmentCodeExporter } from "../src/augmentcode/index.js";
+import { ClineExporter } from "../src/cline/index.js";
 import type {
   ScopedExportRequest,
   ExportOptions,
@@ -15,16 +15,13 @@ import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
-const TEST_OUTPUT_DIR = join(
-  import.meta.dirname,
-  "temp-augmentcode-test-output",
-);
+const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-cline-test-output");
 
-describe("AugmentCodeExporter", () => {
-  let exporter: AugmentCodeExporter;
+describe("ClineExporter", () => {
+  let exporter: ClineExporter;
 
   beforeEach(() => {
-    exporter = new AugmentCodeExporter();
+    exporter = new ClineExporter();
     // Clean up test output directory
     if (existsSync(TEST_OUTPUT_DIR)) {
       rmSync(TEST_OUTPUT_DIR, { recursive: true });
@@ -41,14 +38,14 @@ describe("AugmentCodeExporter", () => {
 
   describe("Plugin Interface", () => {
     it("implements ExporterPlugin interface", () => {
-      expect(exporter.name).toBe("augmentcode");
+      expect(exporter.name).toBe("cline");
       expect(exporter.version).toBe("1.0.0");
       expect(typeof exporter.export).toBe("function");
     });
   });
 
   describe("Basic Export", () => {
-    it("exports sections to .augment/rules/ directory", async () => {
+    it("exports sections to .clinerules/rules.md", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.sections, createDefaultScope());
       const options: ExportOptions = {
@@ -58,13 +55,9 @@ describe("AugmentCodeExporter", () => {
       const result = await exporter.export(request, options);
 
       expect(result.success).toBe(true);
-      // Should write 2 files: primary .augment/rules/rules.md and legacy .augment-guidelines
-      expect(result.filesWritten).toHaveLength(2);
+      expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.augment\/rules\/rules\.md$/,
-      );
-      expect(result.filesWritten[1].replace(/\\/g, "/")).toMatch(
-        /\.augment-guidelines$/,
+        /\.clinerules\/rules\.md$/,
       );
     });
   });
@@ -86,6 +79,6 @@ function createRequest(
   return {
     scope,
     pack,
-    outputPath: join(TEST_OUTPUT_DIR, ".augment", "rules", "rules.md"),
+    outputPath: join(TEST_OUTPUT_DIR, ".clinerules", "rules.md"),
   };
 }
