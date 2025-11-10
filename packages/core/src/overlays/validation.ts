@@ -4,7 +4,7 @@
  * plug conflicts, and size limit violations
  */
 
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import type {
   OverlayDefinition,
@@ -161,58 +161,8 @@ function checkPlugConflicts(
     return undefined;
   }
 
-  const rule = result.targetValue as AlignRule;
-
-  // Check if rule has plugs (currently rules don't have plugs per spec, future enhancement)
-  // Plugs are defined at pack level, not rule level. This check is for future compatibility.
-  const ruleObj = rule as unknown as Record<string, unknown>;
-  const plugs = ruleObj["plugs"];
-  if (!plugs || !Array.isArray(plugs) || plugs.length === 0) {
-    return undefined;
-  }
-
-  // Extract plug slot names from plugs array
-  const plugSlots = new Set<string>();
-  for (const plug of plugs) {
-    if (plug && typeof plug === "object") {
-      const plugObj = plug as Record<string, unknown>;
-      if ("slot" in plugObj) {
-        plugSlots.add(String(plugObj["slot"]));
-      }
-    }
-  }
-
-  if (plugSlots.size === 0) {
-    return undefined;
-  }
-
-  // Check if overlay modifies plug-provided keys
-  const conflicts: string[] = [];
-
-  if (overlay.set) {
-    for (const key of Object.keys(overlay.set)) {
-      if (plugSlots.has(key)) {
-        conflicts.push(key);
-      }
-    }
-  }
-
-  if (overlay.remove) {
-    for (const key of overlay.remove) {
-      if (plugSlots.has(key)) {
-        conflicts.push(key);
-      }
-    }
-  }
-
-  if (conflicts.length > 0) {
-    return {
-      selector: overlay.selector,
-      type: "plug_conflict",
-      message: `Overlay modifies plug-provided keys: ${conflicts.join(", ")}. The plug's values will be overridden by this overlay.`,
-    };
-  }
-
+  // Sections don't have plugs - plugs are defined at pack level only
+  // Return early (no plug conflicts to check at section level)
   return undefined;
 }
 

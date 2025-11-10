@@ -3,7 +3,7 @@
  * Evaluates selectors against AlignPack IR to find targets for overlay application
  */
 
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import { parseSelector } from "./selector-parser.js";
 import { SelectorMatch } from "./types.js";
 
@@ -49,23 +49,15 @@ export function evaluateSelector(
 }
 
 /**
- * Evaluate rule[id=...] selector
- * Searches for rule with matching ID in pack.rules array
+ * Evaluate section[fingerprint=...] selector
+ * Searches for section with matching fingerprint in pack.sections array
  */
 function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
-  if (!ir.rules || !Array.isArray(ir.rules)) {
-    return {
-      success: false,
-      error: "IR does not contain rules array",
-      matchCount: 0,
-    };
-  }
-
-  const matches: Array<{ index: number; rule: AlignRule }> = [];
-  for (let i = 0; i < ir.rules.length; i++) {
-    const rule = ir.rules[i];
-    if (rule && rule.id === ruleId) {
-      matches.push({ index: i, rule });
+  const matches: Array<{ index: number; fingerprint: string }> = [];
+  for (let i = 0; i < ir.sections.length; i++) {
+    const section = ir.sections[i];
+    if (section && section.fingerprint === ruleId) {
+      matches.push({ index: i, fingerprint: section.fingerprint });
     }
   }
 
@@ -95,8 +87,8 @@ function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
   }
   return {
     success: true,
-    targetPath: ["rules", String(match.index)],
-    targetValue: match.rule,
+    targetPath: ["sections", String(match.index)],
+    targetValue: match.fingerprint,
     matchCount: 1,
   };
 }

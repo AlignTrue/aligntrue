@@ -15,7 +15,7 @@ import {
   type ScopeConfig,
   type ResolvedScope,
 } from "../src/scope.js";
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 
 describe("normalizePath", () => {
   it("converts backslashes to forward slashes", () => {

@@ -12,7 +12,7 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import type { ModeHints } from "@aligntrue/core";
 import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { join } from "path";

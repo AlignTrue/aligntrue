@@ -22,22 +22,14 @@ export {
   validateAlignSchema,
   validateAlignIntegrity,
   validateAlign,
-  validateRuleId,
   type ValidationResult,
   type ValidationError,
   type IntegrityResult,
   type AlignPack,
-  type AlignScope,
   type AlignRule,
+  type AlignScope,
   type AlignSection,
-  type AlignCheck,
-  type AlignAutofix,
   type AlignIntegrity,
-  isSectionBasedPack,
-  isRuleBasedPack,
-  getSections,
-  getRules,
-  convertRuleToSection,
 } from "./validator.js";
 
 // Re-export scope types for cross-package consistency

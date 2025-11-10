@@ -24,11 +24,7 @@ import {
   writeAllowList,
 } from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import {
-  validateRuleId,
-  validateAlignSchema,
-  AlignRule,
-} from "@aligntrue/schema";
+import { validateAlignSchema, AlignRule } from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";

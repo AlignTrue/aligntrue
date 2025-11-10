@@ -54,31 +54,23 @@ export function resolvePlugsForPack(
     const allUnresolvedRequired: string[] = [];
     const errors: string[] = [];
 
-    // Only process rules if they exist (skip section-based packs)
-    if (!pack.rules) {
-      return {
-        success: true,
-        rules: [],
-        unresolvedRequired: [],
-      };
-    }
-
-    for (const rule of pack.rules) {
-      if (rule.guidance) {
+    // Process sections from pack
+    for (const section of pack.sections) {
+      if (section.content) {
         // Check for undeclared plugs
-        const undeclared = findUndeclaredPlugs(rule.guidance, declaredSlots);
+        const undeclared = findUndeclaredPlugs(section.content, declaredSlots);
         if (undeclared.length > 0) {
           errors.push(
-            `Rule '${rule.id}' references undeclared plugs: ${undeclared.join(", ")}`,
+            `Section '${section.fingerprint}' references undeclared plugs: ${undeclared.join(", ")}`,
           );
           continue;
         }
 
         // Resolve plugs
-        const result = resolveText(rule.guidance, mergedPlugs);
+        const result = resolveText(section.content, mergedPlugs);
 
         resolvedRules.push({
-          ruleId: rule.id,
+          ruleId: section.fingerprint,
           guidance: result.text,
           resolutions: result.resolutions,
         });
@@ -86,9 +78,9 @@ export function resolvePlugsForPack(
         // Track unresolved required
         allUnresolvedRequired.push(...result.unresolvedRequired);
       } else {
-        // No guidance, no resolution needed
+        // No content, no resolution needed
         resolvedRules.push({
-          ruleId: rule.id,
+          ruleId: section.fingerprint,
           resolutions: [],
         });
       }

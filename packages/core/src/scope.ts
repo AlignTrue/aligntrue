@@ -4,7 +4,7 @@
 
 import { posix } from "path";
 import micromatch from "micromatch";
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { ResolvedScope } from "@aligntrue/plugin-contracts";
 
 /**
@@ -40,11 +40,11 @@ export interface ScopeConfig {
 }
 
 /**
- * Result of applying scopes to rules
+ * Result of applying scopes to sections
  */
 export interface ScopedRules {
   scopePath: string;
-  rules: AlignRule[];
+  rules: AlignSection[];
 }
 
 /**
@@ -214,122 +214,45 @@ function matchFileToScope(file: string, scope: ResolvedScope): boolean {
 }
 
 /**
- * Deep merge rules by ID with precedence order
- * Later rules in order override earlier ones
+ * Merge sections by fingerprint with precedence order
+ * Later sections in order override earlier ones (last-write-wins)
  */
 export function applyScopeMerge(
-  rulesByLevel: Map<"root" | "path" | "local", AlignRule[]>,
+  rulesByLevel: Map<"root" | "path" | "local", AlignSection[]>,
   order: MergeOrder = ["root", "path", "local"],
-): AlignRule[] {
-  const mergedRulesById = new Map<string, AlignRule>();
+): AlignSection[] {
+  const mergedSectionsByFingerprint = new Map<string, AlignSection>();
 
-  // Process rules in order (earlier are base, later override)
+  // Process sections in order (later override earlier)
   for (const level of order) {
-    const rules = rulesByLevel.get(level) || [];
+    const sections = rulesByLevel.get(level) || [];
 
-    for (const rule of rules) {
-      const existing = mergedRulesById.get(rule.id);
-
-      if (existing) {
-        // Deep merge: combine properties, later overrides earlier
-        mergedRulesById.set(rule.id, deepMergeRules(existing, rule));
-      } else {
-        // New rule: clone to avoid mutation
-        mergedRulesById.set(rule.id, { ...rule });
-      }
+    for (const section of sections) {
+      // Later sections override earlier ones
+      mergedSectionsByFingerprint.set(section.fingerprint, section);
     }
   }
 
-  return Array.from(mergedRulesById.values());
+  return Array.from(mergedSectionsByFingerprint.values()).sort((a, b) =>
+    a.fingerprint.localeCompare(b.fingerprint),
+  );
 }
 
 /**
- * Deep merge two rules (newRule properties override oldRule)
- */
-function deepMergeRules(oldRule: AlignRule, newRule: AlignRule): AlignRule {
-  // Start with base properties
-  const merged: AlignRule = {
-    id: newRule.id,
-    severity: newRule.severity,
-    applies_to: newRule.applies_to || oldRule.applies_to,
-  };
-
-  // Add optional guidance
-  const guidance = newRule.guidance ?? oldRule.guidance;
-  if (guidance !== undefined) {
-    merged.guidance = guidance;
-  }
-
-  // Deep merge vendor bags (later overrides earlier, but merge nested objects)
-  if (newRule.vendor || oldRule.vendor) {
-    const oldVendor = oldRule.vendor || {};
-    const newVendor = newRule.vendor || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mergedVendor: Record<string, any> = {};
-
-    // Collect all vendor keys
-    const allKeys = new Set([
-      ...Object.keys(oldVendor),
-      ...Object.keys(newVendor),
-    ]);
-
-    for (const key of allKeys) {
-      const oldVal = oldVendor[key];
-      const newVal = newVendor[key];
-
-      // If both exist and both are objects, deep merge them
-      if (
-        oldVal &&
-        newVal &&
-        typeof oldVal === "object" &&
-        typeof newVal === "object" &&
-        !Array.isArray(oldVal) &&
-        !Array.isArray(newVal)
-      ) {
-        mergedVendor[key] = { ...oldVal, ...newVal };
-      } else if (newVal !== undefined) {
-        mergedVendor[key] = newVal;
-      } else {
-        mergedVendor[key] = oldVal;
-      }
-    }
-
-    merged.vendor = mergedVendor;
-  }
-
-  // Keep newRule's check if present, otherwise oldRule's
-  const check = newRule.check ?? oldRule.check;
-  if (check !== undefined) {
-    merged.check = check;
-  }
-
-  // Keep newRule's autofix if present, otherwise oldRule's
-  const autofix = newRule.autofix ?? oldRule.autofix;
-  if (autofix !== undefined) {
-    merged.autofix = autofix;
-  }
-
-  return merged;
-}
-
-/**
- * Group rules by their source level (root/path/local)
- * This is a helper for callers who need to organize rules before merging
+ * Group sections by their source level (root/path/local)
+ * This is a helper for callers who need to organize sections before merging
  */
 export function groupRulesByLevel(
   packs: Array<{ pack: AlignPack; level: "root" | "path" | "local" }>,
-): Map<"root" | "path" | "local", AlignRule[]> {
-  const grouped = new Map<"root" | "path" | "local", AlignRule[]>();
+): Map<"root" | "path" | "local", AlignSection[]> {
+  const grouped = new Map<"root" | "path" | "local", AlignSection[]>();
   grouped.set("root", []);
   grouped.set("path", []);
   grouped.set("local", []);
 
   for (const { pack, level } of packs) {
     const existing = grouped.get(level)!;
-    // Only push rules if they exist (skip section-based packs)
-    if (pack.rules) {
-      existing.push(...pack.rules);
-    }
+    existing.push(...pack.sections);
   }
 
   return grouped;

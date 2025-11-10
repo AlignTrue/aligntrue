@@ -176,48 +176,49 @@ function detectChanges(
 ): Map<string, PropertyChange[]> {
   const changes = new Map<string, PropertyChange[]>();
 
-  // Compare rules by ID
-  const oldRules = new Map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (oldIR.rules || []).map((r) => [r.id, r] as [string, any]),
+  // Compare sections by fingerprint
+  const oldSections = new Map(
+    oldIR.sections.map((s) => [s.fingerprint, s] as const),
   );
-  const newRules = new Map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (newIR.rules || []).map((r) => [r.id, r] as [string, any]),
+  const newSections = new Map(
+    newIR.sections.map((s) => [s.fingerprint, s] as const),
   );
 
-  // Check all rule IDs (old + new)
-  const allRuleIds = new Set([...oldRules.keys(), ...newRules.keys()]);
+  // Check all section fingerprints (old + new)
+  const allFingerprints = new Set([
+    ...oldSections.keys(),
+    ...newSections.keys(),
+  ]);
 
-  for (const ruleId of allRuleIds) {
-    const oldRule = oldRules.get(ruleId);
-    const newRule = newRules.get(ruleId);
-    const ruleChanges: PropertyChange[] = [];
+  for (const fingerprint of allFingerprints) {
+    const oldSection = oldSections.get(fingerprint);
+    const newSection = newSections.get(fingerprint);
+    const sectionChanges: PropertyChange[] = [];
 
-    if (!oldRule && newRule) {
-      // Rule added
-      ruleChanges.push({
+    if (!oldSection && newSection) {
+      // Section added
+      sectionChanges.push({
         path: [],
         oldValue: undefined,
-        newValue: newRule,
+        newValue: newSection,
         changeType: "added",
       });
-    } else if (oldRule && !newRule) {
-      // Rule removed
-      ruleChanges.push({
+    } else if (oldSection && !newSection) {
+      // Section removed
+      sectionChanges.push({
         path: [],
-        oldValue: oldRule,
+        oldValue: oldSection,
         newValue: undefined,
         changeType: "removed",
       });
-    } else if (oldRule && newRule) {
-      // Rule exists in both - compare properties
-      const propertyChanges = compareObjects(oldRule, newRule, []);
-      ruleChanges.push(...propertyChanges);
+    } else if (oldSection && newSection) {
+      // Section exists in both - compare properties
+      const propertyChanges = compareObjects(oldSection, newSection, []);
+      sectionChanges.push(...propertyChanges);
     }
 
-    if (ruleChanges.length > 0) {
-      changes.set(ruleId, ruleChanges);
+    if (sectionChanges.length > 0) {
+      changes.set(fingerprint, sectionChanges);
     }
   }
 

@@ -14,7 +14,7 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { getAlignTruePaths } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
