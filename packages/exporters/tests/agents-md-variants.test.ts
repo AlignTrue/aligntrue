@@ -88,16 +88,23 @@ describe("AGENTS.md-based exporter variants", () => {
       const outputPath = join(testRoot, variant);
       mkdirSync(outputPath, { recursive: true });
 
+      const rules = [
+        {
+          id: "test-rule",
+          severity: "MUST",
+          guidance: "Test rule for " + variant,
+        },
+      ];
       const result = await exporter!.export(
         {
           scope: { root: ".", applies_to: ["**/*.ts"] },
-          rules: [
-            {
-              id: "test-rule",
-              severity: "MUST",
-              guidance: "Test rule for " + variant,
-            },
-          ],
+          rules,
+          pack: {
+            id: "test-pack",
+            version: "1.0.0",
+            spec_version: "1",
+            rules,
+          },
         },
         {
           outputDir: outputPath,
@@ -129,23 +136,30 @@ describe("AGENTS.md-based exporter variants", () => {
     const outputPath = join(testRoot, "copilot-fidelity");
     mkdirSync(outputPath, { recursive: true });
 
+    const rules = [
+      {
+        id: "test-rule",
+        severity: "MUST",
+        guidance: "Test rule with check",
+        check: {
+          type: "regex",
+          pattern: "test",
+        },
+        autofix: {
+          description: "Auto-fix hint",
+        },
+      },
+    ];
     const result = await exporter!.export(
       {
         scope: { root: ".", applies_to: ["**/*.ts"] },
-        rules: [
-          {
-            id: "test-rule",
-            severity: "MUST",
-            guidance: "Test rule with check",
-            check: {
-              type: "regex",
-              pattern: "test",
-            },
-            autofix: {
-              description: "Auto-fix hint",
-            },
-          },
-        ],
+        rules,
+        pack: {
+          id: "test-pack",
+          version: "1.0.0",
+          spec_version: "1",
+          rules,
+        },
       },
       {
         outputDir: outputPath,

@@ -326,7 +326,10 @@ export function groupRulesByLevel(
 
   for (const { pack, level } of packs) {
     const existing = grouped.get(level)!;
-    existing.push(...pack.rules);
+    // Only push rules if they exist (skip section-based packs)
+    if (pack.rules) {
+      existing.push(...pack.rules);
+    }
   }
 
   return grouped;

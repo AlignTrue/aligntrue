@@ -11,12 +11,14 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
+  useSections: boolean;
 }
 
 interface McpConfig {
@@ -40,13 +42,25 @@ export class AmazonQMcpExporter extends ExporterBase {
 
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
+    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
+    const sections = getSections(pack);
+    if (
+      this.state.allRules.length === 0 &&
+      this.state.allSections.length === 0
+    ) {
+      this.state.useSections = sections.length > 0;
+    }
+    if ((!rules || rules.length === 0) && sections.length === 0) {
+      return { success: true, filesWritten: [], contentHash: "" };
+    }
     const { outputDir, dryRun = false } = options;
 
     if (!rules || rules.length === 0) {
@@ -87,6 +101,8 @@ export class AmazonQMcpExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
+      useSections: false,
     };
   }
 

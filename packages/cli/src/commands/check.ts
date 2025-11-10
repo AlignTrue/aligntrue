@@ -154,28 +154,17 @@ export async function check(args: string[]): Promise<void> {
     let alignData: unknown;
 
     if (ext === ".md") {
-      // Parse markdown with fenced blocks
-      const { parseMarkdown, buildIR } = await import(
-        "@aligntrue/markdown-parser"
-      );
-      const parseResult = parseMarkdown(rulesContent);
+      // Parse markdown - supports both fenced blocks and natural markdown
+      const { buildIRAuto } = await import("@aligntrue/markdown-parser");
 
-      if (parseResult.errors.length > 0) {
-        const errorList = parseResult.errors
-          .map((err) => `  Line ${err.line}: ${err.message}`)
-          .join("\n");
-        console.error("✗ Invalid markdown structure\n");
-        console.error(errorList + "\n");
-        process.exit(1);
-      }
-
-      const buildResult = buildIR(parseResult.blocks);
+      // Auto-detect format (fenced blocks vs natural sections)
+      const buildResult = buildIRAuto(rulesContent);
 
       if (buildResult.errors.length > 0) {
         const errorList = buildResult.errors
           .map((err) => `  Line ${err.line}: ${err.message}`)
           .join("\n");
-        console.error("✗ IR build errors\n");
+        console.error("✗ Markdown validation errors\n");
         console.error(errorList + "\n");
         console.error(`  Check for syntax errors in ${rulesPath}\n`);
         process.exit(1);
@@ -183,7 +172,10 @@ export async function check(args: string[]): Promise<void> {
 
       if (!buildResult.document) {
         console.error("✗ Failed to build IR from markdown\n");
-        console.error(`  No aligntrue blocks found in ${rulesPath}\n`);
+        console.error(`  No valid content found in ${rulesPath}\n`);
+        console.error(
+          "  Ensure file has either fenced ```aligntrue blocks or natural markdown sections with frontmatter\n",
+        );
         process.exit(1);
       }
 

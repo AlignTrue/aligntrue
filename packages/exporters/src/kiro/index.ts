@@ -12,9 +12,9 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
 import type { ModeHints } from "@aligntrue/core";
-import { computeContentHash } from "@aligntrue/schema";
+import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
@@ -24,15 +24,36 @@ import {
   shouldIncludeRule,
 } from "../utils/index.js";
 
+interface ExporterState {
+  allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
+  useSections: boolean;
+}
+
 export class KiroExporter extends ExporterBase {
   name = "kiro";
   version = "1.0.0";
+
+  private state: ExporterState = {
+    allRules: [],
+    allSections: [],
+    useSections: false,
+  };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
+    const sections = getSections(pack);
+    const useSections = sections.length > 0;
+
+    if (
+      this.state.allRules.length === 0 &&
+      this.state.allSections.length === 0
+    ) {
+      this.state.useSections = useSections;
+    }
     const { outputDir, dryRun = false, config } = options;
 
     if (!rules || rules.length === 0) {
@@ -68,6 +89,14 @@ export class KiroExporter extends ExporterBase {
     }
 
     return result;
+  }
+
+  resetState(): void {
+    this.state = {
+      allRules: [],
+      allSections: [],
+      useSections: false,
+    };
   }
 
   private getScopeFilename(scope: ResolvedScope): string {

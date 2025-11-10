@@ -3,8 +3,9 @@
  */
 
 import type { AlignPack } from "@aligntrue/schema";
+import { getSections } from "@aligntrue/schema";
 import type { Lockfile, ValidationResult, Mismatch } from "./types.js";
-import { hashRule } from "./generator.js";
+import { hashRule, hashSection } from "./generator.js";
 import { existsSync } from "fs";
 import { parseAllowList } from "../team/allow.js";
 
@@ -28,54 +29,98 @@ export function validateLockfile(
   const newRules: string[] = [];
   const deletedRules: string[] = [];
 
+  // Determine if pack uses sections or rules
+  const sections = getSections(currentPack);
+  const useSections = sections.length > 0;
+
   // Build maps for efficient lookup
   const lockfileMap = new Map(
     lockfile.rules.map((entry) => [entry.rule_id, entry]),
   );
-  const currentRules = currentPack.rules || [];
-  const currentRuleIds = new Set(currentRules.map((r) => r.id));
 
-  // Check for mismatches and new rules
-  for (const rule of currentRules) {
-    const lockfileEntry = lockfileMap.get(rule.id);
+  if (useSections) {
+    // Phase 8: Validate section-based pack using fingerprints
+    const currentSectionIds = new Set(sections.map((s) => s.fingerprint));
 
-    if (!lockfileEntry) {
-      // Check if ID might have been renamed (aliases matching lockfile entries)
-      const possibleRename = lockfile.rules.find((lr) =>
-        rule.aliases?.includes(lr.rule_id),
-      );
+    // Check for mismatches and new sections
+    for (const section of sections) {
+      const lockfileEntry = lockfileMap.get(section.fingerprint);
 
-      if (possibleRename) {
-        // Rule was renamed, suggest using aliases
-        newRules.push(rule.id);
-        // Store hint for enhanced error message (will be shown in format function)
+      if (!lockfileEntry) {
+        // New section not in lockfile
+        newRules.push(section.fingerprint);
       } else {
-        // New rule not in lockfile
-        newRules.push(rule.id);
-      }
-    } else {
-      // Check if hash matches
-      const currentHash = hashRule(rule);
-      if (currentHash !== lockfileEntry.content_hash) {
-        mismatches.push({
-          rule_id: rule.id,
-          expected_hash: lockfileEntry.content_hash,
-          actual_hash: currentHash,
-          // Include full provenance for context
-          ...(lockfileEntry.owner && { owner: lockfileEntry.owner }),
-          ...(lockfileEntry.source && { source: lockfileEntry.source }),
-          ...(lockfileEntry.source_sha && {
-            source_sha: lockfileEntry.source_sha,
-          }),
-        });
+        // Check if hash matches
+        const currentHash = hashSection(section);
+        if (currentHash !== lockfileEntry.content_hash) {
+          mismatches.push({
+            rule_id: section.fingerprint,
+            expected_hash: lockfileEntry.content_hash,
+            actual_hash: currentHash,
+            // Include full provenance for context
+            ...(lockfileEntry.owner && { owner: lockfileEntry.owner }),
+            ...(lockfileEntry.source && { source: lockfileEntry.source }),
+            ...(lockfileEntry.source_sha && {
+              source_sha: lockfileEntry.source_sha,
+            }),
+          });
+        }
       }
     }
-  }
 
-  // Check for deleted rules
-  for (const entry of lockfile.rules) {
-    if (!currentRuleIds.has(entry.rule_id)) {
-      deletedRules.push(entry.rule_id);
+    // Check for deleted sections
+    for (const entry of lockfile.rules) {
+      if (!currentSectionIds.has(entry.rule_id)) {
+        deletedRules.push(entry.rule_id);
+      }
+    }
+  } else {
+    // Legacy: Validate rule-based pack
+    const currentRules = currentPack.rules || [];
+    const currentRuleIds = new Set(currentRules.map((r) => r.id));
+
+    // Check for mismatches and new rules
+    for (const rule of currentRules) {
+      const lockfileEntry = lockfileMap.get(rule.id);
+
+      if (!lockfileEntry) {
+        // Check if ID might have been renamed (aliases matching lockfile entries)
+        const possibleRename = lockfile.rules.find((lr) =>
+          rule.aliases?.includes(lr.rule_id),
+        );
+
+        if (possibleRename) {
+          // Rule was renamed, suggest using aliases
+          newRules.push(rule.id);
+          // Store hint for enhanced error message (will be shown in format function)
+        } else {
+          // New rule not in lockfile
+          newRules.push(rule.id);
+        }
+      } else {
+        // Check if hash matches
+        const currentHash = hashRule(rule);
+        if (currentHash !== lockfileEntry.content_hash) {
+          mismatches.push({
+            rule_id: rule.id,
+            expected_hash: lockfileEntry.content_hash,
+            actual_hash: currentHash,
+            // Include full provenance for context
+            ...(lockfileEntry.owner && { owner: lockfileEntry.owner }),
+            ...(lockfileEntry.source && { source: lockfileEntry.source }),
+            ...(lockfileEntry.source_sha && {
+              source_sha: lockfileEntry.source_sha,
+            }),
+          });
+        }
+      }
+    }
+
+    // Check for deleted rules
+    for (const entry of lockfile.rules) {
+      if (!currentRuleIds.has(entry.rule_id)) {
+        deletedRules.push(entry.rule_id);
+      }
     }
   }
 
@@ -139,7 +184,7 @@ export function formatValidationResult(
       lines.push(`  + ${ruleId}`);
 
       // Check if this might be a renamed rule
-      if (currentPack) {
+      if (currentPack?.rules) {
         const rule = currentPack.rules.find((r) => r.id === ruleId);
         if (rule?.aliases && rule.aliases.length > 0) {
           lines.push(`    (was: ${rule.aliases.join(", ")})`);

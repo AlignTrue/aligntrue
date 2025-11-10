@@ -11,12 +11,14 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
+  useSections: boolean;
   seenScopes: Set<string>;
 }
 
@@ -44,6 +46,8 @@ export class RootMcpExporter extends ExporterBase {
 
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
+    useSections: false,
     seenScopes: new Set(),
   };
 
@@ -51,7 +55,16 @@ export class RootMcpExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
+    const sections = getSections(pack);
+    const useSections = sections.length > 0;
+
+    if (
+      this.state.allRules.length === 0 &&
+      this.state.allSections.length === 0
+    ) {
+      this.state.useSections = useSections;
+    }
     const { outputDir, dryRun = false } = options;
 
     if (!rules || rules.length === 0) {
@@ -88,6 +101,8 @@ export class RootMcpExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
+      useSections: false,
       seenScopes: new Set(),
     };
   }

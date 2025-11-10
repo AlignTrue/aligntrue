@@ -170,11 +170,13 @@ export class SyncEngine {
         };
       }
 
-      // Update rules with resolved guidance
-      for (const resolvedRule of plugsResult.rules) {
-        const rule = this.ir.rules.find((r) => r.id === resolvedRule.ruleId);
-        if (rule && resolvedRule.guidance) {
-          rule.guidance = resolvedRule.guidance;
+      // Update rules with resolved guidance (only if rules exist)
+      if (this.ir.rules) {
+        for (const resolvedRule of plugsResult.rules) {
+          const rule = this.ir.rules.find((r) => r.id === resolvedRule.ruleId);
+          if (rule && resolvedRule.guidance) {
+            rule.guidance = resolvedRule.guidance;
+          }
         }
       }
 
@@ -233,12 +235,17 @@ export class SyncEngine {
       }
 
       // Audit trail: IR loaded with provenance
+      const rulesCount = this.ir.rules?.length || 0;
+      const sectionsCount = this.ir.sections?.length || 0;
+      const contentType =
+        sectionsCount > 0 ? `${sectionsCount} sections` : `${rulesCount} rules`;
+
       auditTrail.push({
         action: "update",
         target: irPath,
         source: "IR",
         timestamp: new Date().toISOString(),
-        details: `Loaded ${this.ir.rules?.length || 0} rules from IR`,
+        details: `Loaded ${contentType} from IR`,
         provenance: {
           ...(this.ir.owner && { owner: this.ir.owner }),
           ...(this.ir.source && { source: this.ir.source }),
@@ -413,11 +420,35 @@ export class SyncEngine {
           "local",
         ];
 
-        // Simple implementation: use all IR rules for now
+        // Simple implementation: use all IR content for now
         // TODO: Enhance this when per-scope rule filtering is needed
         const scopedRules = this.ir.rules || [];
 
-        // Call each exporter with scoped rules
+        // Build scoped pack (contains either rules or sections)
+        const scopedPack: AlignPack = {
+          id: this.ir.id,
+          version: this.ir.version,
+          spec_version: this.ir.spec_version,
+          ...(this.ir.summary && { summary: this.ir.summary }),
+          ...(this.ir.owner && { owner: this.ir.owner }),
+          ...(this.ir.source && { source: this.ir.source }),
+          ...(this.ir.source_sha && { source_sha: this.ir.source_sha }),
+          ...(this.ir.vendor_path && { vendor_path: this.ir.vendor_path }),
+          ...(this.ir.vendor_type && { vendor_type: this.ir.vendor_type }),
+          ...(this.ir.tags && { tags: this.ir.tags }),
+          ...(this.ir.deps && { deps: this.ir.deps }),
+          ...(this.ir.scope && { scope: this.ir.scope }),
+          ...(scopedRules.length > 0 && { rules: scopedRules }),
+          ...(this.ir.sections &&
+            this.ir.sections.length > 0 && { sections: this.ir.sections }),
+          ...(this.ir.plugs && { plugs: this.ir.plugs }),
+          ...(this.ir.integrity && { integrity: this.ir.integrity }),
+          ...(this.ir._markdown_meta && {
+            _markdown_meta: this.ir._markdown_meta,
+          }),
+        };
+
+        // Call each exporter with scoped pack
         for (const exporter of activeExporters) {
           const outputPath = `.${exporter.name}/${scope.path === "." ? "root" : scope.path}`;
 
@@ -431,7 +462,8 @@ export class SyncEngine {
 
           const request: ScopedExportRequest = {
             scope,
-            rules: scopedRules,
+            rules: scopedRules, // For backward compatibility
+            pack: scopedPack, // New: full pack with rules or sections
             outputPath,
           };
 

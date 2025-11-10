@@ -12,9 +12,9 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
 import type { ModeHints } from "@aligntrue/core";
-import { computeContentHash } from "@aligntrue/schema";
+import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 import {
@@ -30,28 +30,41 @@ import {
  */
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
   seenScopes: Set<string>;
+  useSections: boolean; // Track if we're in section mode
 }
 
 export class AgentsMdExporter extends ExporterBase {
   name = "agents-md";
   version = "1.0.0";
 
-  // State for accumulating rules across multiple scope calls
+  // State for accumulating rules/sections across multiple scope calls
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
     seenScopes: new Set(),
+    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false, config } = options;
 
+    // Detect if pack explicitly uses sections (not converted from rules)
+    const useSections = isSectionBasedPack(pack);
+    const sections = useSections ? pack.sections! : [];
+
+    // Set mode on first call
+    if (this.state.seenScopes.size === 0) {
+      this.state.useSections = useSections;
+    }
+
     // Validate inputs
-    if (!rules || rules.length === 0) {
+    if ((!rules || rules.length === 0) && !useSections) {
       // Empty scope is allowed, just skip accumulation
       return {
         success: true,
@@ -60,12 +73,21 @@ export class AgentsMdExporter extends ExporterBase {
       };
     }
 
-    // Accumulate rules with their scope information
-    // Since AGENTS.md is a single merged file, we need to collect from all scopes
+    // Accumulate content with scope information
     const scopePath = this.formatScopePath(scope);
-    rules.forEach((rule) => {
-      this.state.allRules.push({ rule, scopePath });
-    });
+
+    if (useSections) {
+      // Natural markdown sections
+      sections.forEach((section) => {
+        this.state.allSections.push({ section, scopePath });
+      });
+    } else {
+      // Legacy rule-based format
+      rules?.forEach((rule) => {
+        this.state.allRules.push({ rule, scopePath });
+      });
+    }
+
     this.state.seenScopes.add(scopePath);
 
     // For AGENTS.md, we generate the file only on the first export call
@@ -82,20 +104,40 @@ export class AgentsMdExporter extends ExporterBase {
       config as AlignTrueConfig | undefined,
     );
 
-    // Generate AGENTS.md content with all accumulated rules
-    const { content, warnings } = this.generateAgentsMdContent(
-      modeHints,
-      maxBlocks,
-      maxTokens,
-      options.unresolvedPlugsCount,
-    );
+    // Generate AGENTS.md content based on mode
+    let content: string;
+    let warnings: string[] = [];
+    let contentHash: string;
+    let fidelityNotes: string[];
 
-    // Compute content hash from canonical IR of all rules
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
+    if (this.state.useSections) {
+      // Natural markdown mode - simple rendering
+      const result = this.generateSectionsContent(options.unresolvedPlugsCount);
+      content = result.content;
+      warnings = result.warnings;
 
-    // Compute fidelity notes
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+      // Compute content hash from sections
+      const allSectionsIR = this.state.allSections.map(
+        ({ section }) => section,
+      );
+      contentHash = computeContentHash({ sections: allSectionsIR });
+      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    } else {
+      // Legacy rule mode
+      const result = this.generateAgentsMdContent(
+        modeHints,
+        maxBlocks,
+        maxTokens,
+        options.unresolvedPlugsCount,
+      );
+      content = result.content;
+      warnings = result.warnings;
+
+      // Compute content hash from rules
+      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+      contentHash = computeContentHash({ rules: allRulesIR });
+      fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    }
 
     // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
@@ -119,6 +161,35 @@ export class AgentsMdExporter extends ExporterBase {
       return "all files";
     }
     return scope.path;
+  }
+
+  /**
+   * Generate AGENTS.md content from natural markdown sections
+   * Much simpler than rule-based format - just render sections as-is
+   */
+  private generateSectionsContent(unresolvedPlugs?: number): {
+    content: string;
+    warnings: string[];
+  } {
+    const header = this.generateHeader();
+
+    // Render all sections as natural markdown
+    const allSections = this.state.allSections.map(({ section }) => section);
+    const sectionsMarkdown = this.renderSections(allSections, false);
+
+    // Compute content hash and fidelity notes for footer
+    const contentHash = computeContentHash({ sections: allSections });
+    const fidelityNotes = this.computeSectionFidelityNotes(allSections);
+    const footer = this.generateFooter(
+      contentHash,
+      fidelityNotes,
+      unresolvedPlugs,
+    );
+
+    return {
+      content: `${header}\n\n${sectionsMarkdown}\n\n${footer}`,
+      warnings: [],
+    };
   }
 
   /**
@@ -366,7 +437,9 @@ export class AgentsMdExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
       seenScopes: new Set(),
+      useSections: false,
     };
   }
 }

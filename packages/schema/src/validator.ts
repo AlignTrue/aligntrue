@@ -255,7 +255,9 @@ export interface AlignPack {
   deps?: string[];
   scope?: AlignScope;
 
-  rules: AlignRule[];
+  // Content: rules (deprecated) OR sections (new)
+  rules?: AlignRule[]; // Deprecated: use sections instead
+  sections?: AlignSection[]; // New: natural markdown sections
   integrity?: AlignIntegrity;
 
   // Plugs v1.1 (Phase 2.5)
@@ -274,6 +276,23 @@ export interface AlignPack {
 
   // Markdown metadata (for round-trip preservation)
   _markdown_meta?: MarkdownMetadata;
+}
+
+/**
+ * Natural markdown section (new format)
+ */
+export interface AlignSection {
+  heading: string; // Section heading (e.g., "Testing instructions")
+  level: number; // Heading level: 2 for ##, 3 for ###, etc.
+  content: string; // Full markdown content under this heading
+  fingerprint: string; // Auto-generated stable identifier
+
+  // Optional explicit metadata
+  explicitId?: string; // User-specified ID via HTML comment
+
+  // Agent-specific metadata (for round-trip preservation)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vendor?: Record<string, any>;
 }
 
 export interface MarkdownMetadata {
@@ -327,6 +346,103 @@ export interface AlignAutofix {
 export interface AlignIntegrity {
   algo: "jcs-sha256";
   value: string;
+}
+
+/**
+ * Check if a pack uses the new section-based format
+ */
+export function isSectionBasedPack(pack: AlignPack): boolean {
+  return !!pack.sections && pack.sections.length > 0;
+}
+
+/**
+ * Check if a pack uses the legacy rule-based format
+ */
+export function isRuleBasedPack(pack: AlignPack): boolean {
+  return !!pack.rules && pack.rules.length > 0;
+}
+
+/**
+ * Get sections from a pack (converts rules if necessary)
+ * Provides a unified way to access content regardless of format
+ */
+export function getSections(pack: AlignPack): AlignSection[] {
+  if (pack.sections) {
+    return pack.sections;
+  }
+
+  // Legacy: convert rules to sections for backward compatibility
+  if (pack.rules) {
+    return pack.rules.map((rule) => convertRuleToSection(rule));
+  }
+
+  return [];
+}
+
+/**
+ * Get rules from a pack (for backward compatibility)
+ * @deprecated Use getSections() instead
+ */
+export function getRules(pack: AlignPack): AlignRule[] {
+  if (pack.rules) {
+    return pack.rules;
+  }
+
+  // If pack only has sections, cannot convert back to rules
+  // This is a one-way migration
+  return [];
+}
+
+/**
+ * Convert a legacy rule to a section (for backward compatibility)
+ */
+export function convertRuleToSection(rule: AlignRule): AlignSection {
+  // Generate heading from rule title or ID
+  const heading =
+    rule.title || rule.id.split(".").map(capitalizeFirst).join(" ");
+
+  // Build content from rule fields
+  const contentParts: string[] = [];
+
+  if (rule.description) {
+    contentParts.push(rule.description);
+    contentParts.push("");
+  }
+
+  if (rule.guidance) {
+    contentParts.push(rule.guidance);
+    contentParts.push("");
+  }
+
+  // Add metadata as a note
+  contentParts.push(`*Severity: ${rule.severity}*`);
+  if (rule.applies_to && rule.applies_to.length > 0) {
+    contentParts.push(`*Applies to: ${rule.applies_to.join(", ")}*`);
+  }
+
+  const content = contentParts.join("\n").trim();
+
+  const section: AlignSection = {
+    heading,
+    level: 2,
+    content,
+    fingerprint: rule.id, // Use rule ID as fingerprint for stability
+    explicitId: rule.id,
+  };
+
+  // Only add vendor if it exists (exactOptionalPropertyTypes: true requirement)
+  if (rule.vendor) {
+    section.vendor = rule.vendor;
+  }
+
+  return section;
+}
+
+/**
+ * Helper to capitalize first letter
+ */
+function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**

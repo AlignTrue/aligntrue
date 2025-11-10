@@ -5,5 +5,6 @@
   "03-ci-cd-integration": "CI/CD integration",
   "04-solo-developer-guide": "Solo developer guide",
   "05-team-guide": "Team guide",
-  "06-multi-agent-workflows": "Multi-agent workflows"
+  "06-multi-agent-workflows": "Multi-agent workflows",
+  "natural-markdown-workflow": "Natural Markdown Workflow"
 }

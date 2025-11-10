@@ -11,7 +11,7 @@ import type {
   ExportOptions,
   ResolvedScope,
 } from "../src/types.js";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignPack } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
@@ -125,9 +125,17 @@ function createRequest(
   rules: AlignRule[],
   scope: ResolvedScope,
 ): ScopedExportRequest {
+  const pack: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
+    spec_version: "1",
+    rules,
+  };
+
   return {
     scope,
     rules,
+    pack,
     outputPath: join(TEST_OUTPUT_DIR, ".openhands", "microagents", "repo.md"),
   };
 }
