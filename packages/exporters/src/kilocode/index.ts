@@ -10,7 +10,7 @@ import type {
 } from "../types.js";
 import { ExporterBase } from "../base/index.js";
 
-export class KilocodeExporter extends ExporterBase {
+export class KiloCodeExporter extends ExporterBase {
   name = "kilocode";
   version = "1.0.0";
 
@@ -31,4 +31,7 @@ export class KilocodeExporter extends ExporterBase {
   }
 }
 
-export default KilocodeExporter;
+// Maintain backward compatibility
+export { KiloCodeExporter as KilocodeExporter };
+
+export default KiloCodeExporter;

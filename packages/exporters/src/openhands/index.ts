@@ -10,7 +10,7 @@ import type {
 } from "../types.js";
 import { ExporterBase } from "../base/index.js";
 
-export class OpenhandsExporter extends ExporterBase {
+export class OpenHandsExporter extends ExporterBase {
   name = "openhands";
   version = "1.0.0";
 
@@ -31,4 +31,7 @@ export class OpenhandsExporter extends ExporterBase {
   }
 }
 
-export default OpenhandsExporter;
+// Maintain backward compatibility
+export { OpenHandsExporter as OpenhandsExporter };
+
+export default OpenHandsExporter;

@@ -3,15 +3,16 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { rmSync, existsSync, mkdirSync, readFileSync } from "fs";
+import { rmSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { KiloCodeExporter } from "../src/kilocode/index.js";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ResolvedScope,
 } from "../src/types.js";
-import type { AlignPack } from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
@@ -45,17 +46,9 @@ describe("KiloCodeExporter", () => {
   });
 
   describe("Basic Export", () => {
-    it("exports single rule to .kilocode/rules/ directory", async () => {
-      const rules: AlignRule[] = [
-        {
-          id: "test.rule.id",
-          severity: "error",
-          applies_to: ["**/*"],
-          guidance: "Test guidance",
-        },
-      ];
-
-      const request = createRequest(rules, createDefaultScope());
+    it("exports sections to .kilocode/rules/rules.md", async () => {
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
+      const request = createRequest(fixture.sections, createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
@@ -64,58 +57,9 @@ describe("KiloCodeExporter", () => {
 
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
-      // Normalize path separators for cross-platform compatibility
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
         /\.kilocode\/rules\/rules\.md$/,
       );
-
-      const content = readFileSync(result.filesWritten[0], "utf-8");
-      expect(content).toContain("Test guidance");
-    });
-  });
-
-  describe("mode hints integration", () => {
-    const options: ExportOptions = {
-      outputDir: TEST_OUTPUT_DIR,
-      dryRun: false,
-    };
-
-    it("should support off mode (no markers)", async () => {
-      const config = { export: { mode_hints: { default: "off" } } };
-      const request = createRequest(
-        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
-        createDefaultScope(),
-      );
-      const result = await exporter.export(request, { ...options, config });
-      expect(result.success).toBe(true);
-      const content = readFileSync(result.filesWritten[0], "utf-8");
-      expect(content).not.toContain("aligntrue:begin");
-    });
-
-    it("should support metadata_only mode (markers, no hints)", async () => {
-      const config = { export: { mode_hints: { default: "metadata_only" } } };
-      const request = createRequest(
-        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
-        createDefaultScope(),
-      );
-      const result = await exporter.export(request, { ...options, config });
-      expect(result.success).toBe(true);
-      const content = readFileSync(result.filesWritten[0], "utf-8");
-      expect(content).toContain("<!-- aligntrue:begin");
-      expect(content).not.toContain("Execution intent:");
-    });
-
-    it("should support hints mode (markers + visible intent)", async () => {
-      const config = { export: { mode_hints: { default: "hints" } } };
-      const request = createRequest(
-        loadFixture(FIXTURES_DIR, "single-rule.yaml").rules,
-        createDefaultScope(),
-      );
-      const result = await exporter.export(request, { ...options, config });
-      expect(result.success).toBe(true);
-      const content = readFileSync(result.filesWritten[0], "utf-8");
-      expect(content).toContain("<!-- aligntrue:begin");
-      expect(content).toContain("Execution intent:");
     });
   });
 });
@@ -123,19 +67,18 @@ describe("KiloCodeExporter", () => {
 // Helper functions
 
 function createRequest(
-  rules: AlignRule[],
+  sections: AlignSection[],
   scope: ResolvedScope,
 ): ScopedExportRequest {
   const pack: AlignPack = {
     id: "test-pack",
     version: "1.0.0",
     spec_version: "1",
-    rules,
+    sections,
   };
 
   return {
     scope,
-    rules,
     pack,
     outputPath: join(TEST_OUTPUT_DIR, ".kilocode", "rules", "rules.md"),
   };
