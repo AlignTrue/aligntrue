@@ -53,7 +53,7 @@ See [Agent Support](/docs/04-reference/agent-support) for all 43 available expor
 
 **Default:** `[{ type: "local", path: ".aligntrue/.rules.yaml" }]`
 
-Where to load rules from. Supports local files, git repos, URLs, and catalog packs.
+Where to load rules from. Supports local files and git repositories.
 
 ```yaml
 sources:

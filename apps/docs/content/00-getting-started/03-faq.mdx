@@ -46,19 +46,19 @@ Just Node.js 22+ and the AlignTrue CLI:
 
 <Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
 
-<Tabs.Tab>```bash npm install -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash yarn global add @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash yarn global add aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash pnpm add -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash pnpm add -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash bun install -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>
-  ```bash npx @aligntrue/cli init # Try without installing ```
-</Tabs.Tab>
+<Tabs.Tab>```bash npx aligntrue init # Try without installing ```</Tabs.Tab>
 
 </Tabs>
+
+**Note:** `aligntrue` is a convenience package that installs `@aligntrue/cli`. You can also install `@aligntrue/cli` directly if preferred.
 
 ### What if I already have agent configs?
 
@@ -74,7 +74,11 @@ See [Migration guide](/docs/01-guides/02-migration) for details.
 
 ### Where do I write rules?
 
-In `AGENTS.md` or any agent-specific file (`.cursor/*.mdc`, etc.). AlignTrue keeps them all synced. The `.aligntrue/.rules.yaml` file is internal and auto-generated - don't edit it directly.
+**Edit `AGENTS.md`** - This is your primary rules file in natural markdown format.
+
+You can also edit agent-specific files (`.cursor/*.mdc`, etc.) and AlignTrue will sync changes back in solo mode.
+
+**Don't edit `.aligntrue/.rules.yaml`** - This is auto-generated (like a build artifact). Think of it like `package-lock.json` - it exists for tooling, not for editing.
 
 ### How do I sync rules to agents?
 
@@ -246,17 +250,15 @@ Install globally:
 
 <Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
 
-<Tabs.Tab>```bash npm install -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash yarn global add @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash yarn global add aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash pnpm add -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash pnpm add -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash bun install -g @aligntrue/cli ```</Tabs.Tab>
+<Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>
-  ```bash npx @aligntrue/cli --help # Try without installing ```
-</Tabs.Tab>
+<Tabs.Tab>```bash npx aligntrue --help # Try without installing ```</Tabs.Tab>
 
 </Tabs>
 
