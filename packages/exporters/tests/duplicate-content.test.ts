@@ -10,7 +10,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
 } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
+import type { AlignSection, AlignPack } from "@aligntrue/schema";
 import { mkdtempSync, rmSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -151,16 +151,15 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should not have duplicate HTML comment tags", async () => {
-    const sections = [testRule];
+    const sections = [testSection];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules,
       pack: {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
         sections,
-      },
+      } as AlignPack,
       outputPath: "AGENTS.md",
     };
 
@@ -188,37 +187,36 @@ describe("Duplicate content bug fix", () => {
     expect(beginTags).toHaveLength(1);
   });
 
-  it("should handle multiple rules without duplication", async () => {
-    const rules: AlignRule[] = [
+  it("should handle multiple sections without duplication", async () => {
+    const sections: AlignSection[] = [
       {
-        id: "test.rule.one",
-        severity: "error",
-        applies_to: ["**/*.ts"],
-        guidance: "First rule",
+        heading: "test.rule.one",
+        level: 2,
+        content: "First rule",
+        fingerprint: generateFingerprint("test.rule.one", "First rule"),
       },
       {
-        id: "test.rule.two",
-        severity: "warn",
-        applies_to: ["**/*.js"],
-        guidance: "Second rule",
+        heading: "test.rule.two",
+        level: 2,
+        content: "Second rule",
+        fingerprint: generateFingerprint("test.rule.two", "Second rule"),
       },
       {
-        id: "test.rule.three",
-        severity: "info",
-        applies_to: ["**/*.tsx"],
-        guidance: "Third rule",
+        heading: "test.rule.three",
+        level: 2,
+        content: "Third rule",
+        fingerprint: generateFingerprint("test.rule.three", "Third rule"),
       },
     ];
 
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules,
       pack: {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
         sections,
-      },
+      } as AlignPack,
       outputPath: "AGENTS.md",
     };
 
