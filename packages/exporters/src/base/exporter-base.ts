@@ -61,54 +61,38 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
-   * Generate fidelity notes for unmapped/unsupported fields
+   * Generate fidelity notes for sections-based format
    *
-   * Checks rules for features that cannot be represented in the target
+   * Analyzes sections for features that cannot be represented in the target
    * agent format and generates user-friendly notes.
    *
    * Common checks:
-   * - Unmapped IR fields (check, autofix, etc.)
    * - Cross-agent vendor fields
-   * - Unsupported severity levels
+   * - Unsupported metadata
    *
-   * @param rules - Rules to analyze for fidelity issues
+   * @param sections - Sections to analyze for fidelity issues
    * @returns Array of human-readable fidelity notes
    *
    * @example
    * ```typescript
-   * const notes = this.computeFidelityNotes(rules);
-   * // ["Field 'check' not supported in agent format"]
+   * const notes = this.computeSectionFidelityNotes(sections);
+   * // ["Vendor-specific fields for other agents preserved: cursor"]
    * ```
    */
-  protected computeFidelityNotes(rules: AlignRule[]): string[] {
+  protected computeSectionFidelityNotes(sections: AlignSection[]): string[] {
     const notes: string[] = [];
-    const unmappedFields = new Set<string>();
     const crossAgentVendors = new Set<string>();
 
-    rules.forEach((rule) => {
-      // Check for unmapped fields
-      if (rule.check) {
-        unmappedFields.add("check");
-      }
-      if (rule.autofix) {
-        unmappedFields.add("autofix");
-      }
-
+    sections.forEach((section) => {
       // Check for cross-agent vendor fields
-      if (rule.vendor) {
-        Object.keys(rule.vendor).forEach((agent) => {
+      if (section.vendor) {
+        Object.keys(section.vendor).forEach((agent) => {
           if (agent !== this.name && agent !== "_meta") {
             crossAgentVendors.add(agent);
           }
         });
       }
     });
-
-    // Generate notes for unmapped fields
-    if (unmappedFields.size > 0) {
-      const fields = Array.from(unmappedFields).join(", ");
-      notes.push(`Fields not supported in ${this.name} format: ${fields}`);
-    }
 
     // Generate notes for cross-agent vendor fields
     if (crossAgentVendors.size > 0) {
@@ -119,6 +103,14 @@ export abstract class ExporterBase implements ExporterPlugin {
     }
 
     return notes;
+  }
+
+  /**
+   * @deprecated Legacy method for rule-based format (removed). Returns empty array.
+   * Use computeSectionFidelityNotes() instead.
+   */
+  protected computeFidelityNotes(): string[] {
+    return [];
   }
 
   /**
@@ -170,47 +162,6 @@ export abstract class ExporterBase implements ExporterPlugin {
     });
 
     return rendered.join("\n\n");
-  }
-
-  /**
-   * Compute fidelity notes for sections
-   *
-   * Checks sections for agent-specific vendor metadata that may not be
-   * supported in the target format.
-   *
-   * @param sections - Sections to analyze
-   * @returns Array of human-readable fidelity notes
-   *
-   * @example
-   * ```typescript
-   * const notes = this.computeSectionFidelityNotes(sections);
-   * // ["Vendor-specific metadata for other agents preserved: cursor"]
-   * ```
-   */
-  protected computeSectionFidelityNotes(sections: AlignSection[]): string[] {
-    const notes: string[] = [];
-    const crossAgentVendors = new Set<string>();
-
-    sections.forEach((section) => {
-      // Check for cross-agent vendor fields
-      if (section.vendor) {
-        Object.keys(section.vendor).forEach((agent) => {
-          if (agent !== this.name && agent !== "_meta") {
-            crossAgentVendors.add(agent);
-          }
-        });
-      }
-    });
-
-    // Generate notes for cross-agent vendor fields
-    if (crossAgentVendors.size > 0) {
-      const agents = Array.from(crossAgentVendors).join(", ");
-      notes.push(
-        `Vendor-specific fields for other agents preserved: ${agents}`,
-      );
-    }
-
-    return notes;
   }
 
   /**

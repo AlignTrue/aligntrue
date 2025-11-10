@@ -1,7 +1,7 @@
 /**
  * BrandLogo Component
  *
- * Simple text-based placeholder logo for Phase 1.
+ * Simple text-based placeholder logo.
  * Can be swapped for SVG when brand assets are ready.
  */
 
