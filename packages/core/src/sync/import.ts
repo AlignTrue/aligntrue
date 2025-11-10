@@ -6,8 +6,8 @@
 import { readdir, readFile } from "fs/promises";
 import { join, extname } from "path";
 import { existsSync } from "fs";
-import type { AlignRule } from "@aligntrue/schema";
-import { validateRuleId } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
+import { validateAlignSchema } from "@aligntrue/schema";
 import { parseCursorMdcFiles, parseAgentsMd } from "@aligntrue/markdown-parser";
 
 /**
@@ -21,7 +21,7 @@ function ensureValidRuleId(
   originalId: string,
   context: { agent: string },
 ): { id: string; wasFixed: boolean; originalId?: string } {
-  const validation = validateRuleId(originalId);
+  const validation = validateAlignSchema(originalId);
 
   if (validation.valid) {
     return { id: originalId, wasFixed: false };
@@ -47,7 +47,7 @@ function ensureValidRuleId(
 export async function importFromAgent(
   agentName: string,
   workspaceRoot: string = process.cwd(),
-): Promise<AlignRule[]> {
+): Promise<AlignSection[]> {
   switch (agentName.toLowerCase()) {
     case "cursor":
       return await importFromCursor(workspaceRoot);
@@ -77,7 +77,9 @@ export async function importFromAgent(
 /**
  * Import rules from .cursor/*.mdc files
  */
-async function importFromCursor(workspaceRoot: string): Promise<AlignRule[]> {
+async function importFromCursor(
+  workspaceRoot: string,
+): Promise<AlignSection[]> {
   const cursorDir = join(workspaceRoot, ".cursor", "rules");
 
   if (!existsSync(cursorDir)) {
@@ -122,7 +124,7 @@ async function importFromCursor(workspaceRoot: string): Promise<AlignRule[]> {
  */
 async function importFromCursorrules(
   workspaceRoot: string,
-): Promise<AlignRule[]> {
+): Promise<AlignSection[]> {
   const cursorrulesPath = join(workspaceRoot, ".cursorrules");
 
   if (!existsSync(cursorrulesPath)) {
@@ -157,7 +159,9 @@ async function importFromCursorrules(
 /**
  * Import rules from AGENTS.md
  */
-async function importFromAgentsMd(workspaceRoot: string): Promise<AlignRule[]> {
+async function importFromAgentsMd(
+  workspaceRoot: string,
+): Promise<AlignSection[]> {
   const agentsMdPath = join(workspaceRoot, "AGENTS.md");
 
   if (!existsSync(agentsMdPath)) {
@@ -194,7 +198,7 @@ async function importFromAgentsMd(workspaceRoot: string): Promise<AlignRule[]> {
 async function importFromMarkdownFile(
   workspaceRoot: string,
   baseFileName: string,
-): Promise<AlignRule[]> {
+): Promise<AlignSection[]> {
   // Try case variations
   const variations = [
     baseFileName, // e.g., CLAUDE.md

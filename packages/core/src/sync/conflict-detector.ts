@@ -3,7 +3,7 @@
  * Compares IR vs agent state and generates structured diffs
  */
 
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignSection } from "/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 
 /**
@@ -69,7 +69,7 @@ function isVolatileField(
 /**
  * Extract volatile fields from vendor._meta.volatile
  */
-function getVolatileFields(rule: AlignRule): string[] {
+function getVolatileFields(rule: AlignSection): string[] {
   const vendor = rule.vendor as Record<string, unknown> | undefined;
   if (!vendor || typeof vendor !== "object") {
     return [];
@@ -249,8 +249,8 @@ export class ConflictDetector {
    */
   detectConflicts(
     agentName: string,
-    irRules: AlignRule[],
-    agentRules: AlignRule[],
+    irRules: AlignSection[],
+    agentRules: AlignSection[],
   ): ConflictDetectionResult {
     const conflicts: Conflict[] = [];
 
@@ -367,9 +367,9 @@ export class ConflictDetector {
    * Apply resolutions to IR rules, returning updated rules
    */
   applyResolutions(
-    irRules: AlignRule[],
+    irRules: AlignSection[],
     resolutions: ConflictResolution[],
-  ): AlignRule[] {
+  ): AlignSection[] {
     // Create a mutable copy of rules
     const updatedRules = irRules.map((rule) => ({ ...rule }));
     const ruleMap = new Map(updatedRules.map((r) => [r.id, r]));

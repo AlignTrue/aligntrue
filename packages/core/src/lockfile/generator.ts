@@ -1,15 +1,11 @@
 /**
- * Lockfile generator with per-rule and bundle hashing
+ * Lockfile generator with per-section and bundle hashing
  * Phase 3.5: Supports triple-hash format for overlay tracking
  */
 
 import { existsSync, readFileSync } from "fs";
-import type { AlignPack, AlignRule, AlignSection } from "@aligntrue/schema";
-import {
-  computeContentHash,
-  computeHash,
-  getSections,
-} from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
 import type { OverlayDefinition } from "../overlays/types.js";
@@ -37,10 +33,6 @@ export function generateLockfile(
   const entries: LockfileEntry[] = [];
   const contentHashes: string[] = [];
 
-  // Determine if pack uses sections or rules
-  const sections = getSections(pack);
-  const useSections = sections.length > 0;
-
   // Compute dual hashes for plugs (Phase 2.5)
   let dualHashResult: ReturnType<typeof computeDualHash> | undefined;
   if (pack.plugs) {
@@ -51,90 +43,46 @@ export function generateLockfile(
   const overlayHash =
     overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
 
-  if (useSections) {
-    // Phase 8: Generate entries from sections using fingerprints
-    for (const section of sections) {
-      const resultHash = hashSection(section);
+  // Generate entries from sections using fingerprints
+  for (const section of pack.sections) {
+    const resultHash = hashSection(section);
 
-      // Compute base hash if base pack provided (Phase 3.5)
-      let baseHash: string | undefined;
-      if (basePack) {
-        const baseSections = getSections(basePack);
-        const baseSection = baseSections.find(
-          (s) => s.fingerprint === section.fingerprint,
-        );
-        if (baseSection) {
-          baseHash = hashSection(baseSection);
-        }
+    // Compute base hash if base pack provided (Phase 3.5)
+    let baseHash: string | undefined;
+    if (basePack) {
+      const baseSection = basePack.sections.find(
+        (s) => s.fingerprint === section.fingerprint,
+      );
+      if (baseSection) {
+        baseHash = hashSection(baseSection);
       }
-
-      const entry: LockfileEntry = {
-        rule_id: section.fingerprint, // Use fingerprint as ID for sections
-        content_hash: resultHash, // Alias to result_hash for backward compatibility
-        ...(pack.owner && { owner: pack.owner }),
-        ...(pack.source && { source: pack.source }),
-        ...(pack.source_sha && { source_sha: pack.source_sha }),
-        // Phase 3.5: Triple-hash format when overlays present
-        ...(baseHash && { base_hash: baseHash }),
-        ...(overlayHash && { overlay_hash: overlayHash }),
-        ...(overlayHash && { result_hash: resultHash }),
-        // Phase 3, Session 5: Capture vendoring provenance
-        ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
-        ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
-      };
-
-      // Add plugs hashes if pack has plugs (Phase 2.5)
-      if (dualHashResult) {
-        entry.pre_resolution_hash = dualHashResult.preResolutionHash;
-        if (dualHashResult.postResolutionHash) {
-          entry.post_resolution_hash = dualHashResult.postResolutionHash;
-        }
-      }
-
-      entries.push(entry);
-      contentHashes.push(resultHash);
     }
-  } else {
-    // Generate per-rule hashes with full provenance (legacy)
-    for (const rule of pack.rules || []) {
-      const resultHash = hashRule(rule);
 
-      // Compute base hash if base pack provided (Phase 3.5)
-      let baseHash: string | undefined;
-      if (basePack) {
-        const baseRule = basePack.rules?.find((r) => r.id === rule.id);
-        if (baseRule) {
-          baseHash = hashRule(baseRule);
-        }
+    const entry: LockfileEntry = {
+      rule_id: section.fingerprint, // Use fingerprint as ID for sections
+      content_hash: resultHash, // Alias to result_hash for backward compatibility
+      ...(pack.owner && { owner: pack.owner }),
+      ...(pack.source && { source: pack.source }),
+      ...(pack.source_sha && { source_sha: pack.source_sha }),
+      // Phase 3.5: Triple-hash format when overlays present
+      ...(baseHash && { base_hash: baseHash }),
+      ...(overlayHash && { overlay_hash: overlayHash }),
+      ...(overlayHash && { result_hash: resultHash }),
+      // Phase 3, Session 5: Capture vendoring provenance
+      ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
+      ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
+    };
+
+    // Add plugs hashes if pack has plugs (Phase 2.5)
+    if (dualHashResult) {
+      entry.pre_resolution_hash = dualHashResult.preResolutionHash;
+      if (dualHashResult.postResolutionHash) {
+        entry.post_resolution_hash = dualHashResult.postResolutionHash;
       }
-
-      const entry: LockfileEntry = {
-        rule_id: rule.id,
-        content_hash: resultHash, // Alias to result_hash for backward compatibility
-        ...(pack.owner && { owner: pack.owner }),
-        ...(pack.source && { source: pack.source }),
-        ...(pack.source_sha && { source_sha: pack.source_sha }),
-        // Phase 3.5: Triple-hash format when overlays present
-        ...(baseHash && { base_hash: baseHash }),
-        ...(overlayHash && { overlay_hash: overlayHash }),
-        ...(overlayHash && { result_hash: resultHash }),
-        // Phase 3, Session 5: Capture vendoring provenance
-        ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
-        ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
-      };
-
-      // Add plugs hashes if pack has plugs (Phase 2.5)
-      if (dualHashResult) {
-        entry.pre_resolution_hash = dualHashResult.preResolutionHash;
-        if (dualHashResult.postResolutionHash) {
-          entry.post_resolution_hash = dualHashResult.postResolutionHash;
-        }
-        // Note: We track unresolved count at pack level, not per-rule
-      }
-
-      entries.push(entry);
-      contentHashes.push(resultHash);
     }
+
+    entries.push(entry);
+    contentHashes.push(resultHash);
   }
 
   // Sort entries by rule_id for determinism
@@ -168,13 +116,6 @@ export function generateLockfile(
   }
 
   return lockfile;
-}
-
-/**
- * Hash a single rule using canonical JSON (excludes vendor.volatile)
- */
-export function hashRule(rule: AlignRule): string {
-  return computeContentHash(rule, true);
 }
 
 /**

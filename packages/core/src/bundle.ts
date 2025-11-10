@@ -2,13 +2,13 @@
  * Bundle merging - combine multiple AlignPacks into a single pack
  *
  * Merge strategy:
- * - Rules with same ID: last source wins (with warning)
+ * - Sections with same fingerprint: last source wins (with warning)
  * - Metadata: merge with last-wins precedence
  * - Plugs: merge fills, validate no slot conflicts
  * - Scopes: union of all scopes
  */
 
-import type { AlignPack, AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 
 export interface BundleOptions {
   /**
@@ -37,8 +37,8 @@ export interface BundleResult {
    * Conflicts detected during merge
    */
   conflicts: Array<{
-    ruleId: string;
-    sources: string[]; // Which sources had this rule
+    fingerprint: string;
+    sources: string[]; // Which sources had this section
     resolution: string; // Which source won
   }>;
 
@@ -98,133 +98,54 @@ export function mergePacks(
   if (!firstPack) {
     throw new Error("First pack is undefined");
   }
-  // Check if pack explicitly has sections (not converted from rules)
-  const useSections = !!firstPack.sections;
 
-  // Validate all packs use the same format
-  for (let i = 1; i < packs.length; i++) {
+  // Merge section-based packs using fingerprints
+  const sectionMap = new Map<
+    string,
+    {
+      section: AlignSection;
+      source: string;
+      sourceIndex: number;
+    }
+  >();
+
+  for (let i = 0; i < packs.length; i++) {
     const pack = packs[i];
     if (!pack) continue;
-    const packUseSections = !!pack.sections;
-    if (packUseSections !== useSections) {
-      warnings.push(
-        `Pack format mismatch: "${pack.id || `source-${i}`}" uses ${packUseSections ? "sections" : "rules"} while first pack uses ${useSections ? "sections" : "rules"}. Skipping this pack.`,
-      );
+
+    const sourceName = pack.id || `source-${i}`;
+
+    for (const section of pack.sections) {
+      const existing = sectionMap.get(section.fingerprint);
+
+      if (existing) {
+        // Conflict detected
+        conflicts.push({
+          fingerprint: section.fingerprint,
+          sources: [existing.source, sourceName],
+          resolution: sourceName,
+        });
+
+        if (warnConflicts) {
+          warnings.push(
+            `Section conflict: "${section.heading}" (${section.fingerprint}) defined in both "${existing.source}" and "${sourceName}". Using "${sourceName}".`,
+          );
+        }
+      }
+
+      // Last source wins
+      sectionMap.set(section.fingerprint, {
+        section,
+        source: sourceName,
+        sourceIndex: i,
+      });
     }
   }
 
-  let mergedRules: AlignRule[] = [];
-  let mergedSections: AlignSection[] = [];
-
-  if (useSections) {
-    // Phase 8: Merge section-based packs using fingerprints
-    const sectionMap = new Map<
-      string,
-      {
-        section: AlignSection;
-        source: string;
-        sourceIndex: number;
-      }
-    >();
-
-    for (let i = 0; i < packs.length; i++) {
-      const pack = packs[i];
-      if (!pack) continue;
-
-      const sourceName = pack.id || `source-${i}`;
-
-      // Skip if wrong format
-      if (!pack.sections) {
-        continue;
-      }
-
-      for (const section of pack.sections) {
-        const existing = sectionMap.get(section.fingerprint);
-
-        if (existing) {
-          // Conflict detected
-          conflicts.push({
-            ruleId: section.fingerprint,
-            sources: [existing.source, sourceName],
-            resolution: sourceName,
-          });
-
-          if (warnConflicts) {
-            warnings.push(
-              `Section conflict: "${section.heading}" (${section.fingerprint}) defined in both "${existing.source}" and "${sourceName}". Using "${sourceName}".`,
-            );
-          }
-        }
-
-        // Last source wins
-        sectionMap.set(section.fingerprint, {
-          section,
-          source: sourceName,
-          sourceIndex: i,
-        });
-      }
-    }
-
-    // Extract merged sections (sorted by fingerprint for determinism)
-    mergedSections = Array.from(sectionMap.values())
-      .sort((a, b) =>
-        a.section.fingerprint.localeCompare(b.section.fingerprint),
-      )
-      .map((entry) => entry.section);
-  } else {
-    // Legacy: Merge rule-based packs
-    const ruleMap = new Map<
-      string,
-      {
-        rule: AlignRule;
-        source: string;
-        sourceIndex: number;
-      }
-    >();
-
-    for (let i = 0; i < packs.length; i++) {
-      const pack = packs[i];
-      if (!pack) continue;
-
-      const sourceName = pack.id || `source-${i}`;
-
-      // Skip packs without rules
-      if (!pack.rules) {
-        continue;
-      }
-
-      for (const rule of pack.rules) {
-        const existing = ruleMap.get(rule.id);
-
-        if (existing) {
-          // Conflict detected
-          conflicts.push({
-            ruleId: rule.id,
-            sources: [existing.source, sourceName],
-            resolution: sourceName,
-          });
-
-          if (warnConflicts) {
-            warnings.push(
-              `Rule conflict: "${rule.id}" defined in both "${existing.source}" and "${sourceName}". Using "${sourceName}".`,
-            );
-          }
-        }
-
-        // Last source wins
-        ruleMap.set(rule.id, {
-          rule,
-          source: sourceName,
-          sourceIndex: i,
-        });
-      }
-    }
-
-    // Extract merged rules (sorted by ID for determinism)
-    mergedRules = Array.from(ruleMap.values())
-      .sort((a, b) => a.rule.id.localeCompare(b.rule.id))
-      .map((entry) => entry.rule);
-  }
+  // Extract merged sections (sorted by fingerprint for determinism)
+  const mergedSections = Array.from(sectionMap.values())
+    .sort((a, b) => a.section.fingerprint.localeCompare(b.section.fingerprint))
+    .map((entry) => entry.section);
 
   // Merge metadata (last source wins)
   const lastPack = packs[packs.length - 1];
@@ -249,7 +170,7 @@ export function mergePacks(
     id: bundleId,
     version: bundleVersion,
     spec_version: "1",
-    ...(useSections ? { sections: mergedSections } : { rules: mergedRules }),
+    sections: mergedSections,
   };
 
   // Add optional fields from last pack

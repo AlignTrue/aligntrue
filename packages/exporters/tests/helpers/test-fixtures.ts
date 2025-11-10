@@ -4,7 +4,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { parseYamlToJson } from "@aligntrue/schema";
-import type { AlignRule, AlignPack } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
   ResolvedScope,

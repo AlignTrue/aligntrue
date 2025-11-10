@@ -3,17 +3,17 @@
  * Compares before/after rule sets to show what changed during auto-pull
  */
 
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignSection } from "/schema";
 
 export interface RuleChange {
-  rule: AlignRule;
+  rule: AlignSection;
   changes: string[];
 }
 
 export interface RuleDiff {
-  added: AlignRule[];
+  added: AlignSection[];
   modified: RuleChange[];
-  removed: AlignRule[];
+  removed: AlignSection[];
 }
 
 /**
@@ -21,8 +21,8 @@ export interface RuleDiff {
  * Returns added, modified, and removed rules with change details
  */
 export function calculateRuleDiff(
-  before: AlignRule[],
-  after: AlignRule[],
+  before: AlignSection[],
+  after: AlignSection[],
 ): RuleDiff {
   const diff: RuleDiff = {
     added: [],
@@ -31,8 +31,8 @@ export function calculateRuleDiff(
   };
 
   // Create maps for efficient lookup
-  const beforeMap = new Map<string, AlignRule>();
-  const afterMap = new Map<string, AlignRule>();
+  const beforeMap = new Map<string, AlignSection>();
+  const afterMap = new Map<string, AlignSection>();
 
   for (const rule of before) {
     beforeMap.set(rule.id, rule);
@@ -79,7 +79,7 @@ export function calculateRuleDiff(
 /**
  * Compare two rules and return list of changes
  */
-function compareRules(before: AlignRule, after: AlignRule): string[] {
+function compareRules(before: AlignSection, after: AlignSection): string[] {
   const changes: string[] = [];
 
   // Compare severity
@@ -104,8 +104,8 @@ function compareRules(before: AlignRule, after: AlignRule): string[] {
   }
 
   // Compare mode (if present)
-  const beforeMode = (before as AlignRule).mode;
-  const afterMode = (after as AlignRule).mode;
+  const beforeMode = (before as AlignSection).mode;
+  const afterMode = (after as AlignSection).mode;
 
   if (beforeMode !== afterMode) {
     if (!beforeMode && afterMode) {
