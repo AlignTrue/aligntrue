@@ -534,7 +534,7 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 ### Documentation
 
 - [Command Reference](/docs/04-reference/cli-reference) - CLI usage
-- [Migration Guide](/docs/01-guides/02-migration) - Migrate from existing agent rules
+- [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How exports are triggered
 - [Technical CONTRIBUTING.md](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/CONTRIBUTING.md) - Detailed requirements
 

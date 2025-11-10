@@ -525,7 +525,7 @@ tail -20 .cursor/rules/aligntrue.mdc
 ## Related documentation
 
 - [Multi-Agent Workflows](/docs/01-guides/06-multi-agent-workflows) - Using multiple agents
-- [Migration Guide](/docs/01-guides/02-migration) - Migrating existing rules
+- [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Adding Exporters](/docs/06-contributing/adding-exporters) - Creating exporters with vendor bags
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 

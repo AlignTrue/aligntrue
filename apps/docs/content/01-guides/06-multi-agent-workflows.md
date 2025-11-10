@@ -627,7 +627,7 @@ This project uses AlignTrue for consistent AI agent behavior.
 
 - [Solo vs. team mode](/docs/00-getting-started/02-solo-vs-team-mode) - Solo vs team mode
 - [Workflows Guide](/docs/01-guides/01-workflows) - IR-source vs native-format
-- [Migration Guide](/docs/01-guides/02-migration) - Migrating existing configs
+- [Quickstart](/docs/00-getting-started/00-quickstart) - Get started quickly
 - [Agent Support](/docs/04-reference/agent-support) - Full agent compatibility matrix
 - [Vendor Bags Reference](/docs/04-reference/vendor-bags) - Agent-specific settings
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
