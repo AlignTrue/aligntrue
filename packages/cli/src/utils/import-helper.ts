@@ -1,19 +1,21 @@
 /**
  * Multi-agent import and merge helper
+ *
+ * TODO: Implement for sections-only format
+ * Currently, import is not yet implemented for the sections-only format.
  */
 
-import type { AlignRule } from "@aligntrue/schema";
-import { importFromAgent } from "@aligntrue/core";
+import type { AlignSection } from "@aligntrue/schema";
 
 /**
- * Duplicate rule information
+ * Duplicate section information
  */
 export interface DuplicateInfo {
-  /** Original rule ID */
+  /** Original section fingerprint */
   originalId: string;
   /** Renamed ID with suffix */
   renamedId: string;
-  /** Agents where this rule was found */
+  /** Agents where this section was found */
   agents: string[];
 }
 
@@ -21,9 +23,9 @@ export interface DuplicateInfo {
  * Import statistics
  */
 export interface ImportStats {
-  /** Total rules after merge */
+  /** Total sections after merge */
   totalRules: number;
-  /** Unique rules (no duplicates) */
+  /** Unique sections (no duplicates) */
   uniqueRules: number;
   /** Number of duplicates found */
   duplicateCount: number;
@@ -33,69 +35,28 @@ export interface ImportStats {
  * Result of multi-agent import
  */
 export interface MultiAgentImportResult {
-  /** Merged rules */
-  rules: AlignRule[];
-  /** Duplicate rules that were renamed */
+  /** Merged sections */
+  rules: AlignSection[];
+  /** Duplicate sections that were renamed */
   duplicates: DuplicateInfo[];
   /** Import statistics */
   stats: ImportStats;
 }
 
 /**
- * Import and merge rules from multiple agents
+ * Import and merge sections from multiple agents
  *
+ * @deprecated Not yet implemented for sections-only format
  * @param agents - List of agents to import from
  * @param workspaceRoot - Workspace root directory
- * @returns Merged rules with duplicate handling
+ * @returns Empty result - import not yet implemented
  */
 export async function importAndMergeFromMultipleAgents(
   agents: Array<{ agent: string; files: string[] }>,
   workspaceRoot: string,
 ): Promise<MultiAgentImportResult> {
-  const allRules = new Map<string, AlignRule>();
-  const duplicates: DuplicateInfo[] = [];
-
-  for (const { agent } of agents) {
-    try {
-      const rules = await importFromAgent(agent, workspaceRoot);
-
-      for (const rule of rules) {
-        if (allRules.has(rule.id)) {
-          // Duplicate found - rename with suffix
-          let suffix = 1;
-          let newId = `${rule.id}.duplicate-${suffix}`;
-
-          while (allRules.has(newId)) {
-            suffix++;
-            newId = `${rule.id}.duplicate-${suffix}`;
-          }
-
-          duplicates.push({
-            originalId: rule.id,
-            renamedId: newId,
-            agents: [agent, "previous"],
-          });
-
-          rule.id = newId;
-        }
-
-        allRules.set(rule.id, rule);
-      }
-    } catch (err) {
-      // Log error but continue with other agents
-      console.warn(
-        `Warning: Failed to import from ${agent}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  }
-
-  return {
-    rules: Array.from(allRules.values()),
-    duplicates,
-    stats: {
-      totalRules: allRules.size,
-      uniqueRules: allRules.size - duplicates.length,
-      duplicateCount: duplicates.length,
-    },
-  };
+  // TODO: Implement multi-agent import for sections format
+  throw new Error(
+    "Multi-agent import is not yet implemented for sections-only format",
+  );
 }

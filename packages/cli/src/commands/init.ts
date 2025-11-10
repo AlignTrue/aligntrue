@@ -7,11 +7,7 @@ import { existsSync, mkdirSync, writeFileSync, renameSync } from "fs";
 import { dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
-import {
-  getAlignTruePaths,
-  type AlignTrueConfig,
-  importFromAgent,
-} from "@aligntrue/core";
+import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import { detectAgents } from "../utils/detect-agents.js";
 import {
@@ -34,7 +30,7 @@ import { execSync } from "child_process";
 import { DOCS_QUICKSTART } from "../constants.js";
 import { basename } from "path";
 import type { IRDocument } from "@aligntrue/markdown-parser";
-import type { AlignRule } from "@aligntrue/schema";
+// AlignRule removed - sections-only format now
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -215,7 +211,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 4: Handle import flows
-  let importedRules: AlignRule[] | null = null;
+  // TODO: Implement import for sections-only format
+  let importedRules: unknown[] | null = null;
   let importedFromAgent: string | null = null;
   let shouldImport = false;
   let shouldMergeMultiple = false;
@@ -345,32 +342,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
       if (choice === "preview") {
         // Show coverage report, then ask again
-        try {
-          const previewRules = await importFromAgent(detectedAgent, cwd);
-
-          console.log("");
-          clack.log.info(
-            `Found ${previewRules.length} rules in ${detectedAgent}`,
-          );
-
-          const confirmImport = await clack.confirm({
-            message: `Import ${previewRules.length} rules?`,
-            initialValue: true,
-          });
-
-          if (clack.isCancel(confirmImport) || !confirmImport) {
-            clack.log.info("Continuing with fresh start template");
-          } else {
-            shouldImport = true;
-            importedFromAgent = detectedAgent;
-            importedRules = previewRules;
-          }
-        } catch (_error) {
-          clack.log.error(
-            `Preview failed: ${_error instanceof Error ? _error.message : String(_error)}`,
-          );
-          clack.log.info("Continuing with fresh start template");
-        }
+        // Import disabled - not implemented for sections-only format
+        clack.log.error(
+          "Import not implemented. Author rules in AGENTS.md directly.",
+        );
+        clack.log.info("Continuing with fresh start template");
       } else if (choice === "import") {
         shouldImport = true;
         importedFromAgent = detectedAgent;
@@ -422,35 +398,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       importedRules = null;
     }
   } else if (shouldImport && importedFromAgent) {
-    // Execute single-agent import if requested
-    try {
-      importedRules = await importFromAgent(importedFromAgent, cwd);
-
-      if (!nonInteractive) {
-        console.log("");
-        clack.log.success(
-          `Imported ${importedRules.length} rules from ${importedFromAgent}`,
-        );
-      } else {
-        console.log(
-          `Imported ${importedRules.length} rules from ${importedFromAgent}`,
-        );
-      }
-    } catch (_error) {
-      if (!nonInteractive) {
-        clack.log.error(
-          `Import failed: ${_error instanceof Error ? _error.message : String(_error)}`,
-        );
-        clack.log.info("Continuing with fresh start template");
-      } else {
-        console.error(
-          `Import failed: ${_error instanceof Error ? _error.message : String(_error)}`,
-        );
-        console.log("Continuing with fresh start template");
-      }
-      importedRules = null;
-      importedFromAgent = null;
+    // Import disabled - not implemented for sections-only format
+    if (!nonInteractive) {
+      clack.log.error(
+        "Import not implemented. Author rules in AGENTS.md directly.",
+      );
+      clack.log.info("Continuing with fresh start template");
+    } else {
+      console.error(
+        "Import not implemented. Author rules in AGENTS.md directly.",
+      );
+      console.log("Continuing with fresh start template");
     }
+    importedRules = null;
+    importedFromAgent = null;
   }
 
   // Step 5: Select agents to enable

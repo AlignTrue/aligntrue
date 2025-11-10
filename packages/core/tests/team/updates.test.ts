@@ -252,7 +252,7 @@ describe("detectUpstreamUpdates", () => {
     expect(updates).toHaveLength(0);
   });
 
-  describe("triple-hash overlay support (Phase 3.5)", () => {
+  describe("triple-hash overlay support (Overlays system)", () => {
     it("uses base_hash when available for update detection", () => {
       const lockfile: Lockfile = {
         version: "1",

@@ -318,7 +318,7 @@ Path-based rule application for monorepos. Allows different rules to apply to di
 
 ### Plugs
 
-Parameterized rule templates that accept configuration inputs. (Phase 2.5 feature)
+Parameterized rule templates that accept configuration inputs. (Plugs system)
 
 **Purpose:**
 

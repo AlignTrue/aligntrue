@@ -1,5 +1,5 @@
 /**
- * Overlays module for Phase 3.5 Fork-Safe Customization
+ * Overlays module for Fork-Safe Customization (Overlays system)
  * Enables declarative customization of upstream rules without forking
  */
 

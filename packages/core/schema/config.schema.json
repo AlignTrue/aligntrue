@@ -35,7 +35,7 @@
         },
         "mcp": {
           "type": "boolean",
-          "description": "Enable MCP server for editor integration (Phase 2+)"
+          "description": "Enable MCP server for editor integration (implemented)"
         }
       }
     },
@@ -310,7 +310,7 @@
     },
     "overlays": {
       "type": "object",
-      "description": "Overlay configuration for declarative customization of upstream rules (Phase 3.5)",
+      "description": "Overlay configuration for declarative customization of upstream rules (Overlays system)",
       "additionalProperties": false,
       "properties": {
         "overrides": {

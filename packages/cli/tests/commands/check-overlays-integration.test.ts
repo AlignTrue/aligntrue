@@ -1,5 +1,5 @@
 /**
- * Integration tests for check command with overlay validation (Phase 3.5, Session 5)
+ * Integration tests for check command with overlay validation (Overlays system)
  * These tests verify end-to-end behavior with real file I/O
  */
 

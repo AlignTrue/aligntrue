@@ -25,6 +25,8 @@ import { ExporterBase } from "../base/index.js";
 interface ExporterState {
   allSections: Array<{ section: AlignSection; scopePath: string }>;
   seenScopes: Set<string>;
+  // Deprecated: allRules was for rule-based format
+  allRules?: Array<{ rule: unknown; scopePath: string }>;
 }
 
 /**
@@ -129,36 +131,6 @@ export class VsCodeMcpExporter extends ExporterBase {
   }
 
   /**
-   * Generate complete MCP configuration object
-   */
-  private generateMcpConfig(unresolvedPlugs?: number): McpConfig {
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
-
-    const mcpRules = this.state.allRules.map(({ rule, scopePath }) =>
-      this.mapRuleToMcpFormat(rule, scopePath),
-    );
-
-    const config: McpConfig = {
-      version: "v1",
-      generated_by: "AlignTrue",
-      content_hash: contentHash,
-      rules: mcpRules,
-    };
-
-    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config["unresolved_plugs"] = unresolvedPlugs;
-    }
-
-    if (fidelityNotes.length > 0) {
-      config.fidelity_notes = fidelityNotes;
-    }
-
-    return config;
-  }
-
-  /**
    * Generate MCP configuration from natural markdown sections
    */
   private generateMcpConfigFromSections(unresolvedPlugs?: number): McpConfig {
@@ -238,112 +210,12 @@ export class VsCodeMcpExporter extends ExporterBase {
   }
 
   /**
-   * Map AlignRule to MCP format with vendor.vscode extraction
-   */
-  private mapRuleToMcpFormat(rule: AlignRule, scopePath: string): McpRule {
-    const mcpRule: McpRule = {
-      id: rule.id,
-      severity: rule.severity,
-      guidance: rule.guidance || "",
-    };
-
-    // Add scope if not default
-    if (scopePath !== "all files") {
-      mcpRule.scope = scopePath;
-    }
-
-    // Add applies_to patterns if present
-    if (rule.applies_to && rule.applies_to.length > 0) {
-      mcpRule.applies_to = rule.applies_to;
-    }
-
-    // Extract vendor.vscode fields to top level
-    const vscodeFields = this.extractVendorVscode(rule);
-    Object.assign(mcpRule, vscodeFields);
-
-    return mcpRule;
-  }
-
-  /**
-   * Extract and flatten vendor.vscode fields
-   * Returns object with vendor.vscode fields at top level
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private extractVendorVscode(rule: AlignRule): Record<string, any> {
-    if (!rule.vendor || !rule.vendor["vscode"]) {
-      return {};
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const vscodeFields: Record<string, any> = {};
-    const vscodeVendor = rule.vendor["vscode"];
-
-    // Flatten all vendor.vscode fields to top level
-    for (const [key, value] of Object.entries(vscodeVendor)) {
-      vscodeFields[key] = value;
-    }
-
-    return vscodeFields;
-  }
-
-  /**
-   * Compute fidelity notes for unmapped fields (custom for VS Code MCP)
-   * Overrides base class to add VS Code MCP-specific messages
-   */
-  override computeFidelityNotes(rules: AlignRule[]): string[] {
-    const notes: string[] = [];
-    const unmappedFields = new Set<string>();
-    const vendorAgents = new Set<string>();
-
-    rules.forEach((rule) => {
-      // Check for unmapped fields
-      if (rule.check) {
-        unmappedFields.add("check");
-      }
-      if (rule.autofix) {
-        unmappedFields.add("autofix");
-      }
-
-      // Check for vendor-specific metadata (excluding vscode since we extract it)
-      if (rule.vendor) {
-        Object.keys(rule.vendor).forEach((agent) => {
-          if (agent !== "_meta" && agent !== "vscode") {
-            vendorAgents.add(agent);
-          }
-        });
-      }
-    });
-
-    // Add notes for unmapped fields
-    if (unmappedFields.has("check")) {
-      notes.push(
-        "Machine-checkable rules (check) not represented in MCP config format",
-      );
-    }
-    if (unmappedFields.has("autofix")) {
-      notes.push("Autofix hints not represented in MCP config format");
-    }
-
-    // Add notes for non-vscode vendor metadata
-    if (vendorAgents.size > 0) {
-      const agents = Array.from(vendorAgents).sort().join(", ");
-      notes.push(
-        `Vendor-specific metadata for other agents not extracted to MCP config: ${agents}`,
-      );
-    }
-
-    return notes;
-  }
-
-  /**
    * Reset internal state (useful for testing)
    */
   resetState(): void {
     this.state = {
-      allRules: [],
       allSections: [],
       seenScopes: new Set(),
-      useSections: false,
     };
   }
 }

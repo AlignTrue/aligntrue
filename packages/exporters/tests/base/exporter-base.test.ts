@@ -1,5 +1,5 @@
 /**
- * Tests for ExporterBase (Phase 4.5)
+ * Tests for ExporterBase (Code consolidation)
  *
  * Validates common exporter functionality consolidated in base class.
  */

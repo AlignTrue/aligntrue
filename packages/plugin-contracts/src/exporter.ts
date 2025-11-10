@@ -45,7 +45,7 @@ export interface ExportOptions {
   dryRun?: boolean;
   backup?: boolean;
   config?: unknown; // Optional AlignTrue config for mode hints and caps
-  unresolvedPlugsCount?: number; // Count of unresolved required plugs (Phase 2.5)
+  unresolvedPlugsCount?: number; // Count of unresolved required plugs (Plugs system)
 }
 
 /**
@@ -57,7 +57,7 @@ export interface ExportResult {
   fidelityNotes?: string[];
   contentHash: string;
   warnings?: string[]; // Optional warnings (e.g., dropped rules due to caps)
-  unresolvedPlugs?: number; // Count of unresolved required plugs (Phase 2.5)
+  unresolvedPlugs?: number; // Count of unresolved required plugs (Plugs system)
 }
 
 /**

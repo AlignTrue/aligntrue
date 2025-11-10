@@ -60,7 +60,6 @@ The following files are auto-generated from documentation source and cannot be d
 - `README.md` (generated from `apps/docs/content/index.mdx`)
 - `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-packs.md`)
 - `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
-- `POLICY.md` (generated from `apps/docs/content/06-policies/index.md`)
 
 **Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
 
@@ -79,7 +78,6 @@ The following files are auto-generated from documentation source and cannot be d
    README.md
    CONTRIBUTING.md
    DEVELOPMENT.md
-   POLICY.md
 
 🔄 Correct workflow:
    1. Edit source files in apps/docs/content/

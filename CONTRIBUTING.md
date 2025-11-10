@@ -39,8 +39,6 @@ Pick the appropriate namespace for your pack:
   - Example: `packs/stacks/nextjs-app-router`, `packs/stacks/django-backend`
   - Use when: Your rules target a specific tech stack
 
-See [POLICY.md](POLICY.md) for complete namespacing rules.
-
 ### Minimal example
 
 Here's a minimal Align pack with one rule:
@@ -225,8 +223,6 @@ Users should be able to copy-paste your hint and make progress.
   - console.log statements
   - TODO comments
   - Formatting preferences
-
-See [POLICY.md](POLICY.md) for complete severity guidelines.
 
 ## Pull request checklist
 

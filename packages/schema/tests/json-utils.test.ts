@@ -1,5 +1,5 @@
 /**
- * Tests for JSON utilities (Phase 4.5)
+ * Tests for JSON utilities (Code consolidation)
  *
  * Consolidation of common JSON patterns with comprehensive test coverage.
  */

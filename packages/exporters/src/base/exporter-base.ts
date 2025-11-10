@@ -1,5 +1,5 @@
 /**
- * Base class for exporters (Phase 4.5)
+ * Base class for exporters (Code consolidation)
  *
  * Consolidates common patterns across all 43 exporters:
  * - Content hash computation from canonical IR
@@ -103,14 +103,6 @@ export abstract class ExporterBase implements ExporterPlugin {
     }
 
     return notes;
-  }
-
-  /**
-   * @deprecated Legacy method for rule-based format (removed). Returns empty array.
-   * Use computeSectionFidelityNotes() instead.
-   */
-  protected computeFidelityNotes(): string[] {
-    return [];
   }
 
   /**

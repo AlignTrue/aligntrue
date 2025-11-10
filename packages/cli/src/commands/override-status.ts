@@ -1,7 +1,7 @@
 /**
  * Command: aln override status
  * View dashboard of all overlays with health status
- * Phase 3.5, Session 11: Migrated to CLI framework
+ * Migrated to CLI framework (Overlays system)
  */
 
 import {
@@ -131,7 +131,10 @@ async function runOverrideStatus(
     // TypeScript strict mode: type guard for IR
     if (ir && typeof ir === "object" && "rules" in ir) {
       try {
-        const match = evaluateSelector(overlay.selector, ir as AlignPack);
+        const match = evaluateSelector(
+          overlay.selector,
+          ir as unknown as AlignPack,
+        );
         if (match.success) {
           health = "healthy";
           healthyCount++;

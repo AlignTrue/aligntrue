@@ -123,25 +123,6 @@ importers:
         specifier: workspace:*
         version: link:../cli
 
-  packages/checks:
-    dependencies:
-      '@aligntrue/core':
-        specifier: workspace:*
-        version: link:../core
-      '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
-    devDependencies:
-      minimatch:
-        specifier: ^10.1.1
-        version: 10.1.1
-      tsx:
-        specifier: ^4.20.6
-        version: 4.20.6
-
   packages/cli:
     dependencies:
       '@aligntrue/core':
@@ -274,9 +255,6 @@ importers:
 
   packages/testkit:
     dependencies:
-      '@aligntrue/checks':
-        specifier: workspace:*
-        version: link:../checks
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema

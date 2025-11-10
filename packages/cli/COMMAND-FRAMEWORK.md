@@ -33,7 +33,7 @@ The CLI command framework provides reusable utilities for:
 - `override diff` - Show overlay effects
 - `override remove` - Remove overlay
 
-**Status:** ✅ All CLI commands now use shared command framework (Phase 3.5, Session 11 complete)
+**Status:** ✅ All CLI commands now use shared command framework (Overlays system complete)
 
 **Commander dependency removed** - No longer using Commander library for any commands
 

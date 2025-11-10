@@ -1,5 +1,5 @@
 /**
- * Tests for overlay operations (Phase 3.5)
+ * Tests for overlay operations (Overlays system)
  */
 
 import { describe, it, expect } from "vitest";

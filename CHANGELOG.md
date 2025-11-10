@@ -21,14 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Phase 8: Team Mode Updates for Sections**
+- **Team mode enhancements (implemented)**
   - Lockfile generator now supports section-based packs with fingerprint-based tracking
   - Lockfile validator detects modified, new, and deleted sections
   - Bundle merger handles section-based pack merging and conflict resolution
   - Drift detection works seamlessly with fingerprints and sections
   - Full test coverage for section-based lockfile operations (21 new tests)
 
-- **Phase 9: Example Packs Migration**
+- **Example packs migration (implemented)**
   - Migrated all 11 example packs from YAML to natural markdown format
   - Updated `packs.yaml` registry to reference markdown files
   - Example packs now use YAML frontmatter with natural markdown content

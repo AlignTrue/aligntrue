@@ -1,5 +1,5 @@
 /**
- * Overlay operations: set and remove (Phase 3.5)
+ * Overlay operations: set and remove (Overlays system)
  * Implements deterministic modifications to IR structures
  */
 

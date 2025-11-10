@@ -1,5 +1,5 @@
 /**
- * Exporter base class exports (Phase 4.5)
+ * Exporter base class exports (Code consolidation)
  */
 
 export { ExporterBase } from "./exporter-base.js";

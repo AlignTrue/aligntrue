@@ -58,7 +58,7 @@ export function writeLockfile(
   options?: { silent?: boolean },
 ): void {
   // Check if this is a migration from old hash format
-  // (Temporary for Phase 4.5 - remove after 1-2 releases)
+  // (Temporary migration code - remove after 1-2 releases)
   if (existsSync(path) && !options?.silent) {
     try {
       const oldLockfile = JSON.parse(readFileSync(path, "utf-8"));

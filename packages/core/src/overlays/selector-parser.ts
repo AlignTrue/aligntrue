@@ -1,5 +1,5 @@
 /**
- * Selector parser for overlays (Phase 3.5)
+ * Selector parser for overlays (Overlays system)
  * Parses deterministic selector syntax: rule[id=...], property paths, array indices
  * No wildcards, no computed functions, no regex
  */

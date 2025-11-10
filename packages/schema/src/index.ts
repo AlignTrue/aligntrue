@@ -7,7 +7,7 @@ export {
   verifyAlignHash,
 } from "./canonicalize.js";
 
-// JSON utilities (Phase 4.5 consolidation)
+// JSON utilities (Code consolidation)
 export {
   stringifyCanonical,
   computeContentHash,
@@ -36,7 +36,7 @@ export {
 // For config-level scopes, see @aligntrue/core/scope
 export type { AlignScope as AlignIRScope } from "./validator.js";
 
-// Plugs v1.1 (Phase 2.5)
+// Plugs v1.1 (Plugs system)
 export {
   validatePlugKey,
   validatePlugValue,

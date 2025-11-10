@@ -11,7 +11,7 @@ import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
 
 /**
- * Drift categories (Phase 3.5 enhanced)
+ * Drift categories (Overlays system enhanced)
  */
 export type DriftCategory =
   | "upstream" // base_hash differs: upstream pack updated
@@ -37,7 +37,7 @@ export interface DriftFinding {
   source?: string;
   vendor_path?: string;
   vendor_type?: "submodule" | "subtree" | "manual";
-  // Phase 3.5: Triple-hash details for granular drift
+  // Overlays system: Triple-hash details for granular drift
   base_hash?: string;
   overlay_hash?: string;
   result_hash?: string;
@@ -68,7 +68,7 @@ export interface DriftResult {
 }
 
 /**
- * Detect upstream drift (Phase 3.5 enhanced)
+ * Detect upstream drift (Overlays system enhanced)
  * Compares base_hash (when available) with allowed source hashes
  * Falls back to content_hash for backward compatibility
  */
@@ -107,7 +107,7 @@ export function detectUpstreamDrift(
     }
 
     // Check if resolved hash exists and differs
-    // Phase 3.5: Use base_hash if available (more precise for overlays)
+    // Overlays system: Use base_hash if available (more precise for overlays)
     const hashToCompare = entry.base_hash || entry.content_hash;
     if (allowedSource.resolved_hash) {
       if (hashToCompare !== allowedSource.resolved_hash) {
@@ -263,7 +263,7 @@ export function detectSeverityRemapDrift(
 }
 
 /**
- * Detect overlay drift (Phase 3.5)
+ * Detect overlay drift (Overlays system)
  * Checks if overlay_hash differs, indicating overlay config changed
  */
 export function detectOverlayDrift(
@@ -296,7 +296,7 @@ export function detectOverlayDrift(
 }
 
 /**
- * Detect result drift (Phase 3.5)
+ * Detect result drift (Overlays system)
  * Checks if result_hash differs while base_hash and overlay_hash match
  * Indicates unexpected behavior in overlay application
  */
@@ -433,7 +433,7 @@ export function detectLocalOverlayDrift(
   _lockfile: Lockfile,
   _basePath: string = ".",
 ): DriftFinding[] {
-  // Legacy placeholder - use detectOverlayDrift for Phase 3.5
+  // Legacy placeholder - use detectOverlayDrift for Overlays system
   return [];
 }
 
@@ -606,7 +606,7 @@ export function detectDrift(
   }
   findings.push(...detectAgentFileDrift(basePath));
 
-  // Calculate summary (Phase 3.5: includes new categories)
+  // Calculate summary (Overlays system: includes new categories)
   const by_category = {
     upstream: findings.filter((f) => f.category === "upstream").length,
     overlay: findings.filter((f) => f.category === "overlay").length,

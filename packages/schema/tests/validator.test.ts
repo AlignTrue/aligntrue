@@ -11,18 +11,12 @@ describe("validateAlignSchema (v1)", () => {
     id: "test-valid",
     version: "1.0.0",
     spec_version: "1",
-    rules: [
+    sections: [
       {
-        id: "testing.example.rule",
-        severity: "warn",
-        applies_to: ["**/*.test.ts"],
-        check: {
-          type: "file_presence",
-          inputs: {
-            paths: ["**/*.test.ts"],
-          },
-          evidence: "Missing test file",
-        },
+        heading: "Testing",
+        level: 2,
+        content: "Ensure tests exist for all code changes",
+        fingerprint: "testing-abc123",
       },
     ],
   };
@@ -35,11 +29,12 @@ describe("validateAlignSchema (v1)", () => {
     owner: "mycompany/platform",
     source: "github.com/mycompany/rules",
     source_sha: "abc123def456",
-    rules: [
+    sections: [
       {
-        id: "testing.example.rule",
-        severity: "error",
-        applies_to: ["**/*.ts"],
+        heading: "Testing",
+        level: 2,
+        content: "Team testing guidelines",
+        fingerprint: "team-testing-xyz",
       },
     ],
   };
@@ -89,173 +84,16 @@ describe("validateAlignSchema (v1)", () => {
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects pack with empty rules array", () => {
-    const invalid = { ...validSoloPack, rules: [] };
+  it("rejects pack with empty sections array", () => {
+    const invalid = { ...validSoloPack, sections: [] };
 
     const result = validateAlignSchema(invalid);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects rule with invalid severity", () => {
-    const invalid = {
-      ...validSoloPack,
-      rules: [
-        {
-          ...validSoloPack.rules[0],
-          severity: "CRITICAL",
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(invalid);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeDefined();
-  });
-
-  it("rejects rule with invalid check type", () => {
-    const invalid = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          check: {
-            type: "unknown_check_type",
-            inputs: {},
-            evidence: "test",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(invalid);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeDefined();
-  });
-
-  it("validates file_presence check with required fields", () => {
-    const align = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.check",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          check: {
-            type: "file_presence",
-            inputs: {
-              paths: ["**/*.test.ts"],
-            },
-            evidence: "Missing test",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(align);
-    expect(result.valid).toBe(true);
-  });
-
-  it("validates path_convention check with required fields", () => {
-    const align = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.check",
-          severity: "warn",
-          applies_to: ["src/**"],
-          check: {
-            type: "path_convention",
-            inputs: {
-              pattern: "^[a-z0-9-]+$",
-              include: ["src/**"],
-            },
-            evidence: "Bad file name",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(align);
-    expect(result.valid).toBe(true);
-  });
-
-  it("validates manifest_policy check with required fields", () => {
-    const align = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.check",
-          severity: "error",
-          applies_to: ["package.json"],
-          check: {
-            type: "manifest_policy",
-            inputs: {
-              manifest: "package.json",
-              lockfile: "pnpm-lock.yaml",
-              require_pinned: true,
-            },
-            evidence: "Unpinned dependency",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(align);
-    expect(result.valid).toBe(true);
-  });
-
-  it("validates regex check with required fields", () => {
-    const align = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.check",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
-          check: {
-            type: "regex",
-            inputs: {
-              include: ["**/*.ts"],
-              pattern: "TODO",
-              allow: false,
-            },
-            evidence: "TODO found",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(align);
-    expect(result.valid).toBe(true);
-  });
-
-  it("validates command_runner check with required fields", () => {
-    const align = {
-      ...validSoloPack,
-      rules: [
-        {
-          id: "testing.example.check",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          check: {
-            type: "command_runner",
-            inputs: {
-              command: "pnpm test",
-              timeout_ms: 60000,
-              expect_exit_code: 0,
-            },
-            evidence: "Tests failed",
-          },
-        },
-      ],
-    };
-
-    const result = validateAlignSchema(align);
-    expect(result.valid).toBe(true);
-  });
+  // Rule-specific validation tests removed in sections-only refactor (implemented)
+  // Check type validation deferred to future when rules format is reintroduced
 
   it("rejects integrity with wrong algo", () => {
     const invalid = {
@@ -304,15 +142,11 @@ describe("validateAlignIntegrity", () => {
 id: "test-integrity"
 version: "1.0.0"
 spec_version: "1"
-rules:
-  - id: "testing.example.rule"
-    severity: "error"
-    applies_to: ["**/*.test.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["**/*.test.ts"]
-      evidence: "Missing tests"
+sections:
+  - heading: "Testing"
+    level: 2
+    content: "Ensure tests exist for all code changes"
+    fingerprint: "testing-abc123"
 integrity:
   algo: "jcs-sha256"
   value: "PLACEHOLDER"
@@ -355,10 +189,11 @@ integrity:
 id: "test-solo"
 version: "1.0.0"
 spec_version: "1"
-rules:
-  - id: "testing.example.rule"
-    severity: "warn"
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: "Guidelines"
+    level: 2
+    content: "Solo development guidelines"
+    fingerprint: "guidelines-xyz"
 `;
 
     // Solo mode doesn't require integrity, so should compute hash successfully
@@ -381,15 +216,11 @@ id: "test-combined"
 version: "1.0.0"
 spec_version: "1"
 summary: "Test pack for combined validation"
-rules:
-  - id: "testing.example.rule"
-    severity: "error"
-    applies_to: ["**/*.test.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["**/*.test.ts"]
-      evidence: "Missing tests"
+sections:
+  - heading: "Quality"
+    level: 2
+    content: "Enforce code quality standards"
+    fingerprint: "quality-def456"
 integrity:
   algo: "jcs-sha256"
   value: "PLACEHOLDER"
@@ -446,11 +277,12 @@ describe("provenance fields validation", () => {
       owner: "mycompany/platform",
       source: "github.com/mycompany/rules",
       source_sha: "abc123def456",
-      rules: [
+      sections: [
         {
-          id: "testing.example.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Testing",
+          level: 2,
+          content: "Team testing standards",
+          fingerprint: "testing-abc",
         },
       ],
     };
@@ -464,11 +296,12 @@ describe("provenance fields validation", () => {
       id: "solo-pack",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "testing.example.rule",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
+          heading: "Guidelines",
+          level: 2,
+          content: "Solo development guidelines",
+          fingerprint: "guidelines-xyz",
         },
       ],
     };
@@ -485,11 +318,12 @@ describe("provenance fields validation", () => {
       owner: "mycompany/platform",
       source: "github.com/mycompany/rules",
       source_sha: "abc123",
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Testing",
+          level: 2,
+          content: "Team standards",
+          fingerprint: "team-abc",
         },
       ],
       // missing summary
@@ -509,11 +343,12 @@ describe("provenance fields validation", () => {
       source: "github.com/test/rules",
       source_sha: "abc123",
       // missing owner
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Code",
+          level: 2,
+          content: "Code standards",
+          fingerprint: "code-xyz",
         },
       ],
     };
@@ -532,11 +367,12 @@ describe("provenance fields validation", () => {
       owner: "mycompany/platform",
       source: "github.com/test/rules",
       // missing source_sha
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Standards",
+          level: 2,
+          content: "Development standards",
+          fingerprint: "standards-123",
         },
       ],
     };
@@ -553,11 +389,12 @@ describe("mode-dependent validation", () => {
       id: "solo",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "info",
-          applies_to: ["**/*.ts"],
+          heading: "Guidelines",
+          level: 2,
+          content: "Development guidelines",
+          fingerprint: "guidelines-123",
         },
       ],
     };
@@ -572,11 +409,12 @@ describe("mode-dependent validation", () => {
       version: "1.0.0",
       spec_version: "1",
       summary: "Test",
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Catalog",
+          level: 2,
+          content: "Catalog guidelines",
+          fingerprint: "catalog-xyz",
         },
       ],
       // missing: owner, source, source_sha, tags, integrity
@@ -597,11 +435,12 @@ describe("mode-dependent validation", () => {
       source: "github.com/test/rules",
       source_sha: "abc123",
       tags: ["test"],
-      rules: [
+      sections: [
         {
-          id: "testing.example.test",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Testing",
+          level: 2,
+          content: "Run tests.",
+          fingerprint: "testing-abc",
         },
       ],
       integrity: {
@@ -616,18 +455,19 @@ describe("mode-dependent validation", () => {
 });
 
 describe("vendor bags in validation", () => {
-  it("accepts rules with vendor metadata", () => {
+  it("accepts sections with vendor metadata", () => {
     const pack = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "testing.example.rule",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
+          heading: "Testing",
+          level: 2,
+          content: "Run tests.",
+          fingerprint: "testing-abc",
           vendor: {
-            cursor: { ai_hint: "test" },
+            cursor: { mode: "always" },
             aider: { priority: "high" },
           },
         },
@@ -638,16 +478,17 @@ describe("vendor bags in validation", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("accepts vendor._meta.volatile field", () => {
+  it("accepts sections with vendor._meta field", () => {
     const pack = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "testing.example.rule",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
+          heading: "Security",
+          level: 2,
+          content: "Never commit secrets.",
+          fingerprint: "security-abc",
           vendor: {
             cursor: { session_id: "xyz" },
             _meta: { volatile: ["cursor.session_id"] },

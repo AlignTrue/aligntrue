@@ -246,11 +246,11 @@ export interface AlignPack {
   source?: string;
   source_sha?: string;
 
-  // Vendored pack metadata (Phase 3)
+  // Vendored pack metadata (Team mode)
   vendor_path?: string;
   vendor_type?: "submodule" | "subtree" | "manual";
 
-  // Catalog mode (Phase 4)
+  // Catalog mode (removed from roadmap)
   tags?: string[];
   deps?: string[];
   scope?: AlignScope;
@@ -259,7 +259,7 @@ export interface AlignPack {
   sections: AlignSection[];
   integrity?: AlignIntegrity;
 
-  // Plugs v1.1 (Phase 2.5)
+  // Plugs v1.1 (Plugs system)
   plugs?: {
     slots?: Record<
       string,

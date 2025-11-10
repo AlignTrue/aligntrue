@@ -16,7 +16,7 @@ This package provides the core validation and canonicalization utilities for Ali
 **Important:** Canonicalization is ONLY performed at boundaries where determinism is required:
 
 - **Lockfile generation** (`aligntrue lock` in team mode)
-- **Catalog publishing** (`aligntrue publish` in Phase 4)
+- **Catalog publishing** (`aligntrue publish` - removed from roadmap)
 
 **NOT used during:** init, sync, export, import, or normal file operations.
 
@@ -184,24 +184,24 @@ Export types for Align pack structure:
 import type {
   AlignPack,
   AlignScope,
-  AlignRule,
-  AlignCheck,
-  AlignAutofix,
+  AlignSection,
   AlignIntegrity,
 } from "@aligntrue/schema";
 
 const pack: AlignPack = {
   id: "packs/test/example",
   version: "1.0.0",
-  profile: "align",
   spec_version: "1",
   summary: "Example pack",
   tags: ["test"],
-  deps: [],
-  scope: {
-    applies_to: ["*"],
-  },
-  rules: [],
+  sections: [
+    {
+      id: "section-1",
+      heading: "Getting started",
+      level: 1,
+      content: "Introduction to the pack",
+    },
+  ],
   integrity: {
     algo: "jcs-sha256",
     value: "<computed>",

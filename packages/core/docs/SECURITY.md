@@ -2,7 +2,7 @@
 
 **Package:** `@aligntrue/core`  
 **Last Updated:** 2025-10-27 (Step 20)  
-**Status:** Phase 1 security posture complete
+**Status:** Security posture implemented
 
 This document describes the security guarantees, boundaries, and expectations for the AlignTrue core package.
 
@@ -191,8 +191,8 @@ sources:
 
 ## Exporter Safety Expectations
 
-**Status:** Trust-based contract (Phase 1)  
-**Runtime enforcement:** Deferred to Phase 2+
+**Status:** Trust-based contract (implemented)
+**Runtime enforcement:** Future enhancement
 
 ### Expectations for Exporter Implementations
 
@@ -294,7 +294,7 @@ return {
 
 ## Validation Happens at Engine Level
 
-**Current approach (Phase 1):** Sync engine validates paths before calling exporters.
+**Current approach:** Sync engine validates paths before calling exporters.
 
 **Location:** `packages/core/src/sync/engine.ts`
 
@@ -308,13 +308,13 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 }
 ```
 
-**Future (Phase 2+):** Runtime enforcement may be added (sandbox, network blocking, etc.).
+**Future:** Runtime enforcement may be added (sandbox, network blocking, etc.).
 
 ---
 
 ## Threat Model
 
-### In Scope (Phase 1)
+### In Scope
 
 **Accidental misconfiguration:**
 
@@ -337,7 +337,7 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 
 ---
 
-### Out of Scope (Phase 1)
+### Out of Scope
 
 **Malicious exporters:**
 
@@ -345,13 +345,13 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 - Exporter executing shell commands
 - Exporter writing to arbitrary paths
 
-**Mitigation (Phase 1):**
+**Mitigation:**
 
 - Trust-based expectations documented
 - Code review for official exporters
 - Community reputation/vetting
 
-**Future (Phase 2+):**
+**Future:**
 
 - Runtime sandboxing (no network, no exec, path restrictions)
 - Exporter signing and verification
@@ -364,7 +364,7 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 - Compromised npm dependencies
 - Malicious YAML in catalog packs
 
-**Mitigation (Phase 1):**
+**Mitigation:**
 
 - Standard npm security practices
 - Catalog integrity hashes (Step 27)
@@ -435,7 +435,7 @@ Before releasing new features:
 
 ---
 
-## Future Enhancements (Phase 2+)
+## Future Enhancements
 
 **Runtime Sandboxing:**
 

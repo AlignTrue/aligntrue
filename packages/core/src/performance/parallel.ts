@@ -1,7 +1,7 @@
 /**
  * Parallel operations support (foundation)
  *
- * Phase 3 Session 10: Performance optimization
+ * Team mode development: Performance optimization
  *
  * Provides utilities for parallel source processing with error aggregation.
  */

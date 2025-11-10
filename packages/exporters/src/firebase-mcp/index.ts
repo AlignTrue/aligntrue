@@ -1,106 +1,33 @@
 /**
- * Firebase Studio MCP config exporter
- * Exports AlignTrue rules to .idx/mcp.json format
+ * firebase-mcp exporter
+ * @deprecated Not yet fully implemented for sections-only format
  */
 
-import { join, dirname } from "path";
-import { mkdirSync } from "fs";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash, getSections } from "@aligntrue/schema";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ExporterBase } from "../base/index.js";
-
-interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  useSections: boolean;
-}
 
 export class FirebaseMcpExporter extends ExporterBase {
   name = "firebase-mcp";
   version = "1.0.0";
 
-  private state: ExporterState = {
-    allRules: [],
-    allSections: [],
-    useSections: false,
-  };
-
   async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
+    _request: ScopedExportRequest,
+    _options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
-    const { outputDir, dryRun = false } = options;
-    const sections = getSections(pack);
-    const useSections = sections.length > 0;
-
-    if (
-      this.state.allRules.length === 0 &&
-      this.state.allSections.length === 0
-    ) {
-      this.state.useSections = useSections;
-    }
-
-    if (!rules || rules.length === 0) {
-      return { success: true, filesWritten: [], contentHash: "" };
-    }
-
-    const scopePath =
-      scope.isDefault || scope.path === "." || scope.path === ""
-        ? "all files"
-        : scope.path;
-    rules.forEach((rule) => this.state.allRules.push({ rule, scopePath }));
-
-    const outputPath = join(outputDir, ".idx", "mcp.json");
-    const mcpConfig: Record<string, unknown> = {
-      version: "v1",
-      generated_by: "AlignTrue",
-      content_hash: computeContentHash({
-        rules: this.state.allRules.map(({ rule }) => rule),
-      }),
-      rules: this.state.allRules.map(({ rule, scopePath: sp }) => ({
-        id: rule.id,
-        severity: rule.severity,
-        guidance: rule.guidance || "",
-        scope: sp,
-        applies_to: rule.applies_to || [],
-      })),
-    };
-
-    if (
-      options.unresolvedPlugsCount !== undefined &&
-      options.unresolvedPlugsCount > 0
-    ) {
-      mcpConfig["unresolved_plugs"] = options.unresolvedPlugsCount;
-    }
-
-    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-    const contentHash = (mcpConfig["content_hash"] as string) || "";
-
-    if (!dryRun) {
-      mkdirSync(dirname(outputPath), { recursive: true });
-      new AtomicFileWriter().write(outputPath, content);
-    }
-
+    // TODO: Implement firebase-mcp exporter for sections format
     return {
       success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      contentHash,
+      filesWritten: [],
+      contentHash: "",
     };
   }
 
   resetState(): void {
-    this.state = {
-      allRules: [],
-      allSections: [],
-      useSections: false,
-    };
+    // Stub
   }
 }
 

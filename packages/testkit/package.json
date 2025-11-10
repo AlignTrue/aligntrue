@@ -26,7 +26,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/checks": "workspace:*",
     "@aligntrue/schema": "workspace:*"
   },
   "devDependencies": {

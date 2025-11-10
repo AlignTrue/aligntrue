@@ -70,7 +70,7 @@ export function detectUpstreamUpdates(
     }
 
     // Compare current hash to allowed hash
-    // Phase 3.5: Use base_hash if available (more precise for overlays)
+    // Overlays system: Use base_hash if available (more precise for overlays)
     const firstEntry = entries[0];
     if (!firstEntry) continue; // TypeScript guard
 

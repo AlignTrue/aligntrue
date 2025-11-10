@@ -89,7 +89,7 @@ export function createIgnoreFilter(
   };
 }
 
-// Phase 3 Session 10: Additional performance utilities
+// Team mode development: Additional performance utilities
 export {
   loadValidationState,
   saveValidationState,
