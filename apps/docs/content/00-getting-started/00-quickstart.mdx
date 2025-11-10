@@ -5,56 +5,14 @@ description: "Get AlignTrue running in 60 seconds. Auto-detect agents and sync y
 
 # Quickstart guide
 
-Get AlignTrue running in under 60 seconds. No prior knowledge required.
-
-## What is AlignTrue?
-
-AlignTrue helps you control how AI coding assistants behave in your project. You write rules once in a simple format, and AlignTrue converts them into each agent's specific format automatically.
-
-**Key terms:**
-
-- **Rules** - Guidelines that tell AI agents how to work in your project (e.g., "use TypeScript strict mode")
-- **Sync** - Convert your rules into agent-specific formats (like `.cursor/rules/*.mdc` or `AGENTS.md`)
-- **Agents** - AI coding assistants like Cursor, GitHub Copilot, Claude Code, etc.
-
-See the [Glossary](/docs/03-concepts/glossary) for complete terminology and additional concepts like packs, bundles, and team mode.
-
-## The two-step workflow
-
-AlignTrue's workflow is simple:
-
-1. **Initialize** (`aligntrue init`)
-   - Detects installed agents (Cursor, Copilot, Claude Code, etc.)
-   - **If existing rules found:** Offers to import them
-   - **If no rules found:** Creates `AGENTS.md` starter template
-   - Creates `.aligntrue/config.yaml` and `.aligntrue/.rules.yaml` (internal)
-
-2. **Sync** (`aligntrue sync`)
-   - Converts rules to agent-specific formats
-   - Generates `.cursor/rules/*.mdc`, `.vscode/mcp.json`, etc.
-   - Keeps everything aligned when you make changes
-
-**The key decision:** `AGENTS.md` is your primary editing file. The `.aligntrue/.rules.yaml` file is auto-generated - don't edit it directly.
-
-{/* prettier-ignore-start */}
-
-<Callout type="warning">
-**Important:** `.aligntrue/.rules.yaml` is auto-generated. Edit `AGENTS.md` or agent files instead.
-
-AlignTrue keeps everything in sync automatically:
-
-- Edit `AGENTS.md` or `.cursor/*.mdc` → sync updates all agents
-- Never edit `.aligntrue/.rules.yaml` directly
-
-</Callout>
-{/* prettier-ignore-end */}
+Get AlignTrue running in under 60 seconds with three commands.
 
 ## Prerequisites
 
 - **Node.js 22+** - [Download](https://nodejs.org/)
 - **An AI coding agent** - Cursor, GitHub Copilot, Claude Code, or any of [28+ supported agents](/docs/04-reference/agent-support)
 
-## Installation
+## Install AlignTrue
 
 <Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
 
@@ -67,47 +25,39 @@ AlignTrue keeps everything in sync automatically:
 <Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
 <Tabs.Tab>
-  ```bash npx aligntrue --help # Use directly without installing ```
+  ```bash npx aligntrue init # Use directly without installing ```
 </Tabs.Tab>
 
 </Tabs>
 
-## Which mode should I use?
+## Quick start (3 commands)
 
-AlignTrue has two modes optimized for different workflows:
-
-| Mode     | Best for               | Key features                                    |
-| -------- | ---------------------- | ----------------------------------------------- |
-| **Solo** | Individual developers  | Fast iteration, auto-pull, no lockfile overhead |
-| **Team** | Collaborative projects | Lockfile, drift detection, approved sources     |
-
-**Default:** Solo mode (perfect for getting started)
-
-**Need help deciding?** See [Solo vs. team mode](/docs/00-getting-started/02-solo-vs-team-mode) for detailed comparison.
-
-## Quick start (60 seconds)
-
-Initialize a new configuration:
+### 1. Initialize
 
 ```bash
+cd your-project
 aligntrue init
 ```
 
-This creates `.aligntrue/config.yaml`, `.aligntrue/.rules.yaml` (internal), and `AGENTS.md` with:
+This detects your agents and creates:
 
-- Configuration file with your org/user namespace and default exporters
-- Internal IR file (auto-generated from your rules)
-- `AGENTS.md` starter template with example rules
+- `AGENTS.md` - Your rules file (editable markdown)
+- `.aligntrue/config.yaml` - Configuration
+- `.aligntrue/.rules.yaml` - Internal format (auto-generated, don't edit)
 
-Sync your first export:
+### 2. Sync to your agents
 
 ```bash
 aligntrue sync
 ```
 
-This creates `.cursor/rules/*.mdc` files ready for Cursor.
+This generates agent-specific files:
 
-### 2. Customize your rules
+- `.cursor/rules/aligntrue.mdc` (for Cursor)
+- `AGENTS.md` (for Copilot, Claude, Aider, etc.)
+- `.vscode/mcp.json` (for VS Code MCP agents)
+
+### 3. Customize your rules
 
 Open `AGENTS.md` and edit the starter rules for your project:
 
@@ -131,36 +81,19 @@ Set these in tsconfig.json:
 - strictFunctionTypes: true
 ```
 
-The starter template includes examples for:
+**That's it!** Run `aligntrue sync` again whenever you update your rules.
 
-- Code style enforcement
-- Testing requirements
-- Documentation standards
-- Security practices
+{/* prettier-ignore-start */}
 
-### 3. Sync to your agents
-
-Run this command (in your project directory) to generate agent-specific files:
-
-```bash
-aligntrue sync
-```
-
-**What this does:** Converts your rules from `AGENTS.md` (or agent files) into formats that each AI agent understands.
-
-**Example output:**
+<Callout type="info">
+**Where to edit:** Always edit `AGENTS.md` (not `.aligntrue/.rules.yaml`). The .rules.yaml file is auto-generated like a build artifact.
 
 ```
-◇ Loading configuration...
-◇ Parsing rules...
-◇ Syncing to 2 agents...
-│
-◆ Files written:
-│  • .cursor/rules/aligntrue.mdc (3 rules)
-│  • AGENTS.md (3 rules)
-│
-◇ Sync complete! No conflicts detected.
+AGENTS.md (you edit) → .rules.yaml (generated) → Agent files (exported)
 ```
+
+</Callout>
+{/* prettier-ignore-end */}
 
 ## What you get
 
@@ -178,53 +111,89 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 
 - `.vscode/mcp.json` - Model Context Protocol configuration (if enabled)
 
-## Enabling rules in your agents
+## Verify it works
 
-### Cursor
+Let's confirm your agent is using the rules:
+
+### Cursor verification
 
 1. Open Cursor Settings (Cmd/Ctrl + ,)
 2. Navigate to Features > Cursor Rules
-3. Enable "Rules folder" option
-4. Restart Cursor to load rules from `.cursor/rules/`
+3. Enable "Rules folder" option (if not already enabled)
+4. Restart Cursor
+5. Open a file and start a chat
+6. Ask: "What are the TypeScript rules for this project?"
+7. Cursor should reference your rules from `AGENTS.md`
 
-### GitHub Copilot / Claude Code / Aider
+**Expected:** Cursor responds with your project's rules
 
-No setup needed! These agents automatically read `AGENTS.md` from your project root.
+**Problem?** See [Troubleshooting: Rules not showing](#rules-not-showing)
 
-### VS Code with MCP
+### GitHub Copilot / Claude Code verification
 
-1. Install VS Code extension that supports MCP
-2. Extension will automatically detect `.vscode/mcp.json`
-3. Restart VS Code to load configuration
+These agents automatically read `AGENTS.md` from your project root - no setup needed!
 
-### Windsurf
+1. Open a file
+2. Start typing code that might violate a rule
+3. Watch for suggestions that follow your rules
 
-1. Open Windsurf settings
-2. MCP configuration automatically loaded from `.windsurf/mcp_config.json`
+**Problem?** Make sure `AGENTS.md` exists in your project root:
+
+```bash
+ls -la AGENTS.md  # Should show the file
+```
+
+### Common issues
+
+**Rules not showing in my agent:**
+
+1. Verify files were created: `ls .cursor/rules/` or `ls AGENTS.md`
+2. Restart your IDE completely
+3. Check agent settings to ensure rules are enabled
+4. Run `aligntrue sync` again to regenerate files
+
+**Still not working?** See the full [Troubleshooting guide](/docs/05-troubleshooting).
+
+## How it works
+
+AlignTrue uses a simple three-step process:
+
+1. **Write rules** - Edit `AGENTS.md` in natural markdown
+2. **Generate IR** - AlignTrue converts to internal format (`.aligntrue/.rules.yaml`)
+3. **Export** - Rules sync to all configured agents (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+
+**Workflow:**
+
+```
+AGENTS.md (you edit) → .aligntrue/.rules.yaml (auto-generated) → Agent exports
+```
+
+**Key concepts:**
+
+- **Rules** - Guidelines for AI agents (e.g., "use TypeScript strict mode")
+- **Sync** - Convert rules into each agent's native format
+- **Agents** - AI coding assistants (Cursor, Copilot, Claude Code, etc.)
+
+See the [Glossary](/docs/03-concepts/glossary) for complete terminology.
 
 ## Next steps
 
-**Want to try a working example first?** See the [Golden Repository Example](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo) for a complete working demo.
+**Learn more:**
 
-**Ready to learn more?** Check out [Next Steps](/docs/00-getting-started/01-next-steps) for:
+- [Next Steps](/docs/00-getting-started/01-next-steps) - Auto-sync, team mode, git workflows
+- [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Authoring guide
+- [Solo vs. Team Mode](/docs/00-getting-started/02-solo-vs-team-mode) - Choosing your mode
 
-- Auto-sync on save
-- Team collaboration features
-- Git-based rule sharing
-- Custom exporters
+**Examples:**
 
-**Run into issues?** See [Troubleshooting Guide](/docs/05-troubleshooting) for common solutions.
+- [Golden Repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo) - Complete working demo
+- [Example Packs](/docs/04-reference/examples) - 11 curated rule packs
+
+**Need help?**
+
+- [FAQ](/docs/00-getting-started/03-faq) - Common questions
+- [Troubleshooting](/docs/05-troubleshooting) - Common issues
 
 ---
 
 **That's it!** You now have consistent AI rules across all your coding agents.
-
-**Basic workflow:**
-
-1. Edit rules in `AGENTS.md` or any agent file
-2. Run `aligntrue sync`
-3. Your AI agents now follow your project's standards
-
-## Next: Author your own rules
-
-The starter template uses natural markdown format with YAML frontmatter and section headings. For more details on authoring rules, see the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) or the [Markdown authoring guide](/docs/04-reference/markdown-authoring) for the legacy fenced block format.

@@ -13,13 +13,13 @@ This guide shows how solo developers use AlignTrue to maintain consistent AI age
 
 <Tabs items={["npm", "yarn", "pnpm", "bun"]}>
 
-<Tabs.Tab>`bash npm install -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash npm install -g aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash yarn global add @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash yarn global add aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash pnpm add -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash pnpm add -g aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash bun install -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash bun install -g aligntrue `</Tabs.Tab>
 
 </Tabs>
 
@@ -649,10 +649,10 @@ aligntrue team enable
 
 # Creates:
 # - .aligntrue.lock.json (lockfile for reproducibility)
-# - .aligntrue/allow.yaml (approved sources)
+# - .aligntrue.allow (approved sources)
 
 # Commit team files
-git add .aligntrue.lock.json .aligntrue/allow.yaml
+git add .aligntrue.lock.json .aligntrue.allow
 git commit -m "Enable AlignTrue team mode"
 ```
 

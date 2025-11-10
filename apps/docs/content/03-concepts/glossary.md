@@ -56,17 +56,17 @@ Packs can be:
 
 ### Aligns
 
-The complete YAML document format that combines metadata with a collection of rules. An Align defines:
+**Note:** "Aligns" is the formal specification name. In everyday use, we call these **"packs"** (e.g., "testing pack", "TypeScript pack").
 
-- **ID** - Unique identifier for the pack or rules
+An Align/pack is a YAML document that combines metadata with a collection of rules:
+
+- **ID** - Unique identifier for the pack
 - **Version** - Semantic versioning (e.g., `1.0.0`)
 - **Summary** - Brief description
 - **Rules** - Array of rule objects
 - **Optional metadata** - Owner, source, tags, scope, etc.
 
-"Aligns" is the formal name for the complete specification format, used in the Align Spec v1 documentation.
-
-**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md)
+**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Packs](/docs/06-contributing/creating-packs)
 
 ---
 
@@ -77,12 +77,13 @@ The complete YAML document format that combines metadata with a collection of ru
 The primary user-editable file where you write and maintain rules in markdown format. Contains:
 
 - Human-readable rule descriptions
-- Fenced ```aligntrue code blocks with YAML rule definitions
+- Natural markdown sections with YAML frontmatter
+- Optional fenced ```aligntrue code blocks with YAML (legacy format)
 - Optional narrative sections explaining your project's standards
 
-`AGENTS.md` serves as the bridge between human-readable documentation and machine-parseable rules.
+`AGENTS.md` is where you write your rules. AlignTrue automatically converts them to other agent formats.
 
-**Related:** [Markdown authoring](/docs/04-reference/markdown-authoring)
+**Related:** [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow), [Markdown authoring](/docs/04-reference/markdown-authoring)
 
 ### Intermediate Representation (IR)
 
@@ -92,14 +93,16 @@ The internal YAML format that AlignTrue uses internally. Stored in `.aligntrue/.
 
 - Auto-generated from AGENTS.md or imported from agent files
 - Machine-parseable, pure YAML (no markdown)
-- Canonical source for rule validation and export
-- Not intended for direct editing
+- Used internally for validation and export
+- **Do not edit directly** - always edit AGENTS.md or agent files instead
 
 The IR sits between user-editable files and exported agent formats:
 
 ```
-AGENTS.md (user-editable) → IR (.rules.yaml) → Agent exports (.mdc, MCP configs, etc.)
+AGENTS.md (you edit) → IR (.rules.yaml - auto-generated) → Agent exports (.mdc, MCP configs, etc.)
 ```
+
+**Important:** Think of `.aligntrue/.rules.yaml` like a lock file or build artifact - it's generated automatically and shouldn't be manually edited.
 
 ### Cursor Rules (.mdc)
 
@@ -254,7 +257,7 @@ In team mode, a list of approved sources (git repos, URLs) from which rules can 
 Main AlignTrue configuration stored in `.aligntrue/config.yaml`. Defines:
 
 - **Mode** - `solo` or `team`
-- **Sources** - Where rules come from (local, git, catalog)
+- **Sources** - Where rules come from (local files, git repositories)
 - **Exporters** - Which agent formats to export to
 - **Scopes** - Path-based rule application (monorepos)
 - **Modules** - Feature toggles (lockfile, bundle, auto-pull)

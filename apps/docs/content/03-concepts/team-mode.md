@@ -70,7 +70,7 @@ Section fingerprints are stable identifiers generated from the heading and conte
 aligntrue team approve --current
 ```
 
-This creates `.aligntrue/allow.yaml` and approves your current bundle hash.
+This creates `.aligntrue.allow` and approves your current bundle hash.
 
 ### 4. Sync with validation
 
@@ -84,11 +84,11 @@ Team mode validates bundle hash against the allow list before syncing.
 
 ### What is an allow list?
 
-The allow list (`.aligntrue/allow.yaml`) specifies which rule sources your team has approved. In team mode, sync operations validate sources against this list.
+The allow list (`.aligntrue.allow`) specifies which rule sources your team has approved. In team mode, sync operations validate sources against this list.
 
 ### File format
 
-`.aligntrue/allow.yaml`:
+`.aligntrue.allow`:
 
 ```yaml
 version: 1
@@ -215,7 +215,7 @@ aligntrue team approve custom-pack@myorg/rules@v2.1.0
 
 1. Parses source format
 2. Resolves ID@version to concrete hash
-3. Adds to `.aligntrue/allow.yaml`
+3. Adds to `.aligntrue.allow`
 4. Shows resolved hash
 
 **Interactive mode:** If resolution fails, prompts to continue with remaining sources.
@@ -283,7 +283,7 @@ aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs
 aligntrue sync
 
 # 4. Commit team files
-git add .aligntrue/config.yaml .aligntrue/allow.yaml .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
 git commit -m "Enable AlignTrue team mode"
 git push
 ```
@@ -314,7 +314,7 @@ aligntrue team approve new-pack@vendor/rules@v1.0.0
 aligntrue sync
 
 # 4. Commit allow list and lockfile
-git add .aligntrue/allow.yaml .aligntrue.lock.json
+git add .aligntrue.allow .aligntrue.lock.json
 git commit -m "Add new rule source: new-pack"
 git push
 ```
@@ -342,7 +342,7 @@ aligntrue sync
 aligntrue team remove old-pack@vendor/rules@v1.0.0
 
 # 4. Commit
-git add .aligntrue/config.yaml .aligntrue/allow.yaml .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
 git commit -m "Remove old rule source"
 git push
 ```
@@ -431,13 +431,13 @@ aligntrue team approve <source>
 1. Check YAML syntax:
 
    ```bash
-   cat .aligntrue/allow.yaml
+   cat .aligntrue.allow
    ```
 
 2. Fix syntax or restore from git:
 
    ```bash
-   git checkout .aligntrue/allow.yaml
+   git checkout .aligntrue.allow
    ```
 
 3. Re-approve sources via CLI (safer than manual edits)
@@ -696,7 +696,7 @@ Git source resolution:
 aligntrue team status
 
 # Check allow list exists
-cat .aligntrue/allow.yaml
+cat .aligntrue.allow
 
 # Re-approve sources if needed
 aligntrue team approve <source>
