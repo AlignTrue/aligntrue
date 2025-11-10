@@ -52,8 +52,8 @@ export interface MultiAgentImportResult {
  * @returns Empty result - import not yet implemented
  */
 export async function importAndMergeFromMultipleAgents(
-  agents: Array<{ agent: string; files: string[] }>,
-  workspaceRoot: string,
+  _agents: Array<{ agent: string; files: string[] }>,
+  _workspaceRoot: string,
 ): Promise<MultiAgentImportResult> {
   // TODO: Implement multi-agent import for sections format
   throw new Error(
