@@ -9,6 +9,15 @@ import { dirname, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync, rmSync } from "fs";
 import { readFileSync } from "fs";
+import { createHash } from "crypto";
+
+/**
+ * Generate a stable fingerprint for tests
+ */
+function generateFingerprint(heading: string, content: string): string {
+  const combined = `${heading}::${content}`;
+  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -88,23 +97,27 @@ describe("AGENTS.md-based exporter variants", () => {
       const outputPath = join(testRoot, variant);
       mkdirSync(outputPath, { recursive: true });
 
-      const rules = [
+      const sections: AlignSection[] = [
         {
-          id: "test-rule",
-          severity: "MUST",
-          guidance: "Test rule for " + variant,
+          heading: "test-rule",
+          level: 2,
+          content: "Test rule for " + variant,
+          fingerprint: generateFingerprint(
+            "test-rule",
+            "Test rule for " + variant,
+          ),
         },
       ];
       const result = await exporter!.export(
         {
-          scope: { root: ".", applies_to: ["**/*.ts"] },
-          rules,
+          scope: { path: ".", isDefault: true, normalizedPath: "." },
           pack: {
             id: "test-pack",
             version: "1.0.0",
             spec_version: "1",
-            rules,
+            sections,
           },
+          outputPath: join(outputPath, "AGENTS.md"),
         },
         {
           outputDir: outputPath,
@@ -136,30 +149,30 @@ describe("AGENTS.md-based exporter variants", () => {
     const outputPath = join(testRoot, "copilot-fidelity");
     mkdirSync(outputPath, { recursive: true });
 
-    const rules = [
+    const sections: AlignSection[] = [
       {
-        id: "test-rule",
-        severity: "MUST",
-        guidance: "Test rule with check",
-        check: {
-          type: "regex",
-          pattern: "test",
-        },
-        autofix: {
-          description: "Auto-fix hint",
+        heading: "test-rule",
+        level: 2,
+        content: "Test rule with check",
+        fingerprint: generateFingerprint("test-rule", "Test rule with check"),
+        vendor: {
+          cursor: {
+            check: { type: "regex", pattern: "test" },
+            autofix: { description: "Auto-fix hint" },
+          },
         },
       },
     ];
     const result = await exporter!.export(
       {
-        scope: { root: ".", applies_to: ["**/*.ts"] },
-        rules,
+        scope: { path: ".", isDefault: true, normalizedPath: "." },
         pack: {
           id: "test-pack",
           version: "1.0.0",
           spec_version: "1",
-          rules,
+          sections,
         },
+        outputPath: join(outputPath, "AGENTS.md"),
       },
       {
         outputDir: outputPath,

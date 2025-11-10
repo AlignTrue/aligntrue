@@ -3,45 +3,83 @@
  */
 import { readFileSync } from "fs";
 import { join } from "path";
+import { createHash } from "crypto";
 import { parseYamlToJson } from "@aligntrue/schema";
-import type { AlignPack } from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 
 /**
- * Load test fixture YAML file and extract rules
+ * Generate a stable fingerprint for test fixtures
+ */
+function generateFingerprint(heading: string, content: string): string {
+  const combined = `${heading}::${content}`;
+  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+}
+
+/**
+ * Load test fixture YAML file and convert to AlignSection format
  */
 export function loadFixture(
   fixturesDir: string,
   filename: string,
-): { rules: AlignRule[] } {
+): { sections: AlignSection[] } {
   const filepath = join(fixturesDir, filename);
   const yaml = readFileSync(filepath, "utf-8");
   const data = parseYamlToJson(yaml) as Record<string, unknown>;
-  return { rules: data.rules as AlignRule[] };
+
+  // Handle both old rules format (for backward compat) and new sections format
+  const sections = data.sections as AlignSection[] | undefined;
+  if (sections) {
+    return { sections };
+  }
+
+  // Legacy: convert rules to sections if needed
+  const rules = data.rules as Array<{
+    id: string;
+    summary?: string;
+    description?: string;
+    [key: string]: unknown;
+  }>;
+
+  if (Array.isArray(rules)) {
+    const converted = rules.map((rule, idx) => {
+      const heading = rule.id || `Rule ${idx + 1}`;
+      const content = rule.description || rule.summary || "";
+      const fingerprint = generateFingerprint(heading, content);
+
+      return {
+        heading,
+        level: 2,
+        content,
+        fingerprint,
+      } as AlignSection;
+    });
+    return { sections: converted };
+  }
+
+  return { sections: [] };
 }
 
 /**
  * Create scoped export request for testing
- * Note: Tests can keep local createRequest() if they need custom outputPath logic
  */
 export function createRequest(
-  rules: AlignRule[],
+  sections: AlignSection[],
   scope: ResolvedScope,
-  outputPath: string,
+  outputPath: string = "test-output",
 ): ScopedExportRequest {
   const pack: AlignPack = {
     id: "test-pack",
     version: "1.0.0",
     spec_version: "1",
-    rules,
+    sections,
   };
 
   return {
     scope,
-    rules,
     pack,
     outputPath,
   };

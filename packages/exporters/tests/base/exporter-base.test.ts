@@ -11,7 +11,7 @@ import type {
   ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 
 /**
  * Test exporter implementation
@@ -24,14 +24,15 @@ class TestExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { rules } = request;
+    const { pack } = request;
+    const { sections } = pack;
     const { outputDir, dryRun = false } = options;
 
     const content = "test export content";
     const outputPath = `${outputDir}/test.txt`;
 
-    const contentHash = this.computeHash({ rules });
-    const fidelityNotes = this.computeFidelityNotes(rules);
+    const contentHash = this.computeHash({ sections });
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
     return this.buildResult(filesWritten, contentHash, fidelityNotes);
@@ -90,76 +91,34 @@ describe("ExporterBase", () => {
     });
   });
 
-  describe("computeFidelityNotes", () => {
-    it("returns empty array for rules without unmapped fields", () => {
-      const rules: AlignRule[] = [
+  describe("computeSectionFidelityNotes", () => {
+    it("returns empty array for sections without cross-agent vendors", () => {
+      const sections: AlignSection[] = [
         {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
+          heading: "rule1",
+          level: 2,
+          content: "test guidance",
+          fingerprint: "abc123",
         },
       ];
-      const notes = exporter["computeFidelityNotes"](rules);
+      const notes = exporter["computeSectionFidelityNotes"](sections);
       expect(notes).toEqual([]);
     });
 
-    it("notes unmapped 'check' field", () => {
-      const rules: AlignRule[] = [
-        {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
-          check: { command: "npm test" },
-        },
-      ];
-      const notes = exporter["computeFidelityNotes"](rules);
-      expect(notes.length).toBeGreaterThan(0);
-      expect(notes[0]).toContain("check");
-    });
-
-    it("notes unmapped 'autofix' field", () => {
-      const rules: AlignRule[] = [
-        {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
-          autofix: { command: "npm run fix" },
-        },
-      ];
-      const notes = exporter["computeFidelityNotes"](rules);
-      expect(notes.length).toBeGreaterThan(0);
-      expect(notes[0]).toContain("autofix");
-    });
-
-    it("notes multiple unmapped fields", () => {
-      const rules: AlignRule[] = [
-        {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
-          check: { command: "npm test" },
-          autofix: { command: "npm run fix" },
-        },
-      ];
-      const notes = exporter["computeFidelityNotes"](rules);
-      expect(notes.length).toBeGreaterThan(0);
-      expect(notes[0]).toContain("check");
-      expect(notes[0]).toContain("autofix");
-    });
-
     it("notes cross-agent vendor fields", () => {
-      const rules: AlignRule[] = [
+      const sections: AlignSection[] = [
         {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
+          heading: "rule1",
+          level: 2,
+          content: "test guidance",
+          fingerprint: "abc123",
           vendor: {
             cursor: { mode: "native" },
             aider: { style: "diff" },
           },
         },
       ];
-      const notes = exporter["computeFidelityNotes"](rules);
+      const notes = exporter["computeSectionFidelityNotes"](sections);
       expect(notes.length).toBeGreaterThan(0);
       const vendorNote = notes.find((n) => n.includes("Vendor-specific"));
       expect(vendorNote).toBeDefined();
@@ -168,34 +127,36 @@ describe("ExporterBase", () => {
     });
 
     it("ignores own vendor fields", () => {
-      const rules: AlignRule[] = [
+      const sections: AlignSection[] = [
         {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
+          heading: "rule1",
+          level: 2,
+          content: "test guidance",
+          fingerprint: "abc123",
           vendor: {
             test: { custom: "field" }, // Should be ignored (matches exporter name)
           },
         },
       ];
-      const notes = exporter["computeFidelityNotes"](rules);
+      const notes = exporter["computeSectionFidelityNotes"](sections);
       // Should not note vendor.test since it's this exporter's namespace
       const vendorNote = notes.find((n) => n.includes("Vendor-specific"));
       expect(vendorNote).toBeUndefined();
     });
 
     it("ignores vendor._meta", () => {
-      const rules: AlignRule[] = [
+      const sections: AlignSection[] = [
         {
-          id: "rule1",
-          guidance: "test guidance",
-          applies_to: ["**/*"],
+          heading: "rule1",
+          level: 2,
+          content: "test guidance",
+          fingerprint: "abc123",
           vendor: {
             _meta: { volatile: ["test.session"] },
           },
         },
       ];
-      const notes = exporter["computeFidelityNotes"](rules);
+      const notes = exporter["computeSectionFidelityNotes"](sections);
       expect(notes).toEqual([]);
     });
   });
@@ -255,13 +216,20 @@ describe("ExporterBase", () => {
           isDefault: true,
           normalizedPath: "default",
         },
-        rules: [
-          {
-            id: "rule1",
-            guidance: "test guidance",
-            applies_to: ["**/*"],
-          },
-        ],
+        pack: {
+          id: "test-pack",
+          version: "1.0.0",
+          spec_version: "1",
+          sections: [
+            {
+              heading: "rule1",
+              level: 2,
+              content: "test guidance",
+              fingerprint: "abc123",
+            },
+          ],
+        },
+        outputPath: "/tmp/test",
       };
 
       const options: ExportOptions = {
@@ -277,21 +245,31 @@ describe("ExporterBase", () => {
       expect(result.fidelityNotes).toBeUndefined(); // no unmapped fields
     });
 
-    it("generates fidelity notes for unmapped fields", async () => {
+    it("generates fidelity notes for cross-agent vendor fields", async () => {
       const request: ScopedExportRequest = {
         scope: {
           path: ".",
           isDefault: true,
           normalizedPath: "default",
         },
-        rules: [
-          {
-            id: "rule1",
-            guidance: "test guidance",
-            applies_to: ["**/*"],
-            check: { command: "npm test" },
-          },
-        ],
+        pack: {
+          id: "test-pack",
+          version: "1.0.0",
+          spec_version: "1",
+          sections: [
+            {
+              heading: "rule1",
+              level: 2,
+              content: "test guidance",
+              fingerprint: "abc123",
+              vendor: {
+                cursor: { mode: "native" },
+                aider: { style: "diff" },
+              },
+            },
+          ],
+        },
+        outputPath: "/tmp/test",
       };
 
       const options: ExportOptions = {
@@ -304,7 +282,7 @@ describe("ExporterBase", () => {
       expect(result.success).toBe(true);
       expect(result.fidelityNotes).toBeDefined();
       expect(result.fidelityNotes!.length).toBeGreaterThan(0);
-      expect(result.fidelityNotes![0]).toContain("check");
+      expect(result.fidelityNotes![0]).toContain("Vendor-specific");
     });
   });
 });
