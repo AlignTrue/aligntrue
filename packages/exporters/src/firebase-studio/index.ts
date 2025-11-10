@@ -1,33 +1,36 @@
 /**
- * firebase-studio exporter
- * @deprecated Not yet fully implemented for sections-only format
+ * Firebase Studio exporter
+ * Delegates to GenericMarkdownExporter with Firebase Studio-specific configuration
  */
 
 import type {
+  ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-} from "../types.js";
-import { ExporterBase } from "../base/index.js";
+} from "@aligntrue/plugin-contracts";
+import { GenericMarkdownExporter } from "../base/generic-markdown-exporter.js";
 
-export class FirebaseStudioExporter extends ExporterBase {
+export class FirebaseStudioExporter implements ExporterPlugin {
   name = "firebase-studio";
   version = "1.0.0";
 
+  private delegate = new GenericMarkdownExporter(
+    "firebase-studio",
+    ".idx/airules.md",
+    "Firebase Studio Rules",
+    "for Firebase Studio",
+  );
+
   async export(
-    _request: ScopedExportRequest,
-    _options: ExportOptions,
+    request: ScopedExportRequest,
+    options: ExportOptions,
   ): Promise<ExportResult> {
-    // TODO: Implement firebase-studio exporter for sections format
-    return {
-      success: true,
-      filesWritten: [],
-      contentHash: "",
-    };
+    return this.delegate.export(request, options);
   }
 
   resetState(): void {
-    // Stub
+    this.delegate.resetState();
   }
 }
 

@@ -137,17 +137,17 @@ describe("Duplicate content bug fix", () => {
 
     const contentAfterTwo = readFileSync(join(tempDir, "AGENTS.md"), "utf-8");
 
-    // Should have duplicate rules (this demonstrates the bug)
-    const ruleMatches = contentAfterTwo.match(/## Rule: test\.rule\.one/g);
-    expect(ruleMatches).toHaveLength(2); // Bug: rule appears twice!
+    // Should have duplicate sections (this demonstrates the bug)
+    const sectionMatches = contentAfterTwo.match(/## test\.rule\.one/g);
+    expect(sectionMatches).toHaveLength(2); // Bug: section appears twice!
 
     // Third sync WITHOUT reset
     await exporter.export(request, options);
 
     const contentAfterThree = readFileSync(join(tempDir, "AGENTS.md"), "utf-8");
 
-    const ruleMatches2 = contentAfterThree.match(/## Rule: test\.rule\.one/g);
-    expect(ruleMatches2).toHaveLength(3); // Bug: rule appears three times!
+    const sectionMatches2 = contentAfterThree.match(/## test\.rule\.one/g);
+    expect(sectionMatches2).toHaveLength(3); // Bug: section appears three times!
   });
 
   it("should not have duplicate HTML comment tags", async () => {
@@ -176,15 +176,11 @@ describe("Duplicate content bug fix", () => {
 
     const content = readFileSync(join(tempDir, "AGENTS.md"), "utf-8");
 
-    // Check for duplicate aligntrue:end tags
-    const endTags = content.match(/<!-- aligntrue:end/g);
+    // Check for duplicate section headings
+    const sectionHeadings = content.match(/## test\.rule\.one/g);
 
-    // Should have exactly one end tag per rule
-    expect(endTags).toHaveLength(1);
-
-    // Check for duplicate aligntrue:begin tags
-    const beginTags = content.match(/<!-- aligntrue:begin/g);
-    expect(beginTags).toHaveLength(1);
+    // Should have exactly one heading per section
+    expect(sectionHeadings).toHaveLength(1);
   });
 
   it("should handle multiple sections without duplication", async () => {
@@ -232,13 +228,9 @@ describe("Duplicate content bug fix", () => {
 
     const content = readFileSync(join(tempDir, "AGENTS.md"), "utf-8");
 
-    // Each rule should appear exactly once
-    expect(content.match(/## Rule: test\.rule\.one/g)).toHaveLength(1);
-    expect(content.match(/## Rule: test\.rule\.two/g)).toHaveLength(1);
-    expect(content.match(/## Rule: test\.rule\.three/g)).toHaveLength(1);
-
-    // Total of 3 begin and 3 end tags
-    expect(content.match(/<!-- aligntrue:begin/g)).toHaveLength(3);
-    expect(content.match(/<!-- aligntrue:end/g)).toHaveLength(3);
+    // Each section should appear exactly once
+    expect(content.match(/## test\.rule\.one/g)).toHaveLength(1);
+    expect(content.match(/## test\.rule\.two/g)).toHaveLength(1);
+    expect(content.match(/## test\.rule\.three/g)).toHaveLength(1);
   });
 });

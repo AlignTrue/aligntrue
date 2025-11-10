@@ -1,13 +1,9 @@
 /**
- * Windsurf MCP config exporter
- * Exports AlignTrue sections to .windsurf/mcp_config.json format
- *
- * TODO: Implement MCP config generation for sections format
- * Currently stub implementation.
+ * Windsurf MCP exporter
+ * Exports AlignTrue rules to .windsurf/mcp_config.json MCP configuration format
  */
 
-import { join, dirname } from "path";
-import { mkdirSync } from "fs";
+import { join } from "path";
 import type {
   ScopedExportRequest,
   ExportOptions,
@@ -55,8 +51,9 @@ export class WindsurfMcpExporter extends ExporterBase {
     options: ExportOptions,
   ): Promise<ExportResult> {
     const { scope, pack } = request;
-    const sections = pack.sections;
     const { outputDir, dryRun = false } = options;
+
+    const sections = pack.sections;
 
     if (sections.length === 0) {
       return {
@@ -73,20 +70,22 @@ export class WindsurfMcpExporter extends ExporterBase {
     this.state.seenScopes.add(scopePath);
 
     const outputPath = join(outputDir, ".windsurf", "mcp_config.json");
-
     const mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
-    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-
-    if (!dryRun) {
-      const windsurfDirPath = dirname(outputPath);
-      mkdirSync(windsurfDirPath, { recursive: true });
-    }
-
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
     const allSectionsIR = this.state.allSections.map(({ section }) => section);
     const contentHash = computeContentHash({ sections: allSectionsIR });
+    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
 
-    return this.buildResult(filesWritten, contentHash);
+    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
+  }
+
+  private formatScopePath(scope: ResolvedScope): string {
+    if (scope.isDefault || scope.path === "." || scope.path === "") {
+      return "all files";
+    }
+    return scope.path;
   }
 
   private generateMcpConfig(unresolvedPlugs?: number): McpConfig {
@@ -106,7 +105,7 @@ export class WindsurfMcpExporter extends ExporterBase {
     };
 
     if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config.unresolved_plugs = unresolvedPlugs;
+      config["unresolved_plugs"] = unresolvedPlugs;
     }
 
     if (fidelityNotes.length > 0) {
@@ -139,13 +138,6 @@ export class WindsurfMcpExporter extends ExporterBase {
       allSections: [],
       seenScopes: new Set(),
     };
-  }
-
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
   }
 }
 
