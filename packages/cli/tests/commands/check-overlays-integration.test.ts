@@ -35,8 +35,8 @@ describe("check command overlay validation - integration", () => {
     const config = `
 mode: solo
 sources:
-  - type: file
-    path: .aligntrue/rules.yaml
+  - type: local
+    path: .aligntrue/.rules.yaml
 overlays:
   overrides:
     - selector: 'rule[id="test-rule"]'
@@ -78,8 +78,8 @@ rules:
     const config = `
 mode: solo
 sources:
-  - type: file
-    path: .aligntrue/rules.yaml
+  - type: local
+    path: .aligntrue/.rules.yaml
 overlays:
   overrides:
     - selector: 'rule[id="non-existent"]'
@@ -129,8 +129,8 @@ rules:
     const config = `
 mode: solo
 sources:
-  - type: file
-    path: .aligntrue/rules.yaml
+  - type: local
+    path: .aligntrue/.rules.yaml
 overlays:
   overrides:
 ${overlays}
@@ -170,8 +170,8 @@ rules:
     const config = `
 mode: solo
 sources:
-  - type: file
-    path: .aligntrue/rules.yaml
+  - type: local
+    path: .aligntrue/.rules.yaml
 overlays:
   overrides:
     - selector: 'rule[id="test-rule"]'
