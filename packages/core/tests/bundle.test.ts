@@ -12,11 +12,12 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.one",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Test Rule One",
+          level: 2,
+          content: "Error rule for TypeScript files",
+          fingerprint: "fp:test-rule-one",
         },
       ],
     };
@@ -25,18 +26,19 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.two",
-          severity: "warn",
-          applies_to: ["**/*.js"],
+          heading: "Test Rule Two",
+          level: 2,
+          content: "Warning rule for JavaScript files",
+          fingerprint: "fp:test-rule-two",
         },
       ],
     };
 
     const result = mergePacks([pack1, pack2]);
 
-    expect(result.pack.rules).toHaveLength(2);
+    expect(result.pack.sections).toHaveLength(2);
     expect(result.conflicts).toHaveLength(0);
     expect(result.warnings).toHaveLength(0);
   });
@@ -46,11 +48,12 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.conflict",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Test Conflict Rule",
+          level: 2,
+          content: "Error rule for conflicting section",
+          fingerprint: "fp:test-rule-conflict",
         },
       ],
     };
@@ -59,21 +62,24 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.conflict",
-          severity: "warn",
-          applies_to: ["**/*.js"],
+          heading: "Test Conflict Rule",
+          level: 2,
+          content: "Warning rule for conflicting section",
+          fingerprint: "fp:test-rule-conflict",
         },
       ],
     };
 
     const result = mergePacks([pack1, pack2]);
 
-    expect(result.pack.rules).toHaveLength(1);
-    expect(result.pack.rules[0].severity).toBe("warn"); // pack2 wins
+    expect(result.pack.sections).toHaveLength(1);
+    expect(result.pack.sections[0].content).toBe(
+      "Warning rule for conflicting section",
+    ); // pack2 wins
     expect(result.conflicts).toHaveLength(1);
-    expect(result.conflicts[0].ruleId).toBe("test.rule.conflict");
+    expect(result.conflicts[0].fingerprint).toBe("fp:test-rule-conflict");
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 
@@ -82,7 +88,7 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       plugs: {
         slots: {
           slot1: {
@@ -101,7 +107,7 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       plugs: {
         slots: {
           slot2: {
@@ -130,7 +136,7 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       scope: {
         applies_to: ["src/**/*.ts"],
         excludes: ["**/*.test.ts"],
@@ -141,7 +147,7 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       scope: {
         applies_to: ["lib/**/*.ts"],
         excludes: ["**/*.spec.ts"],
@@ -162,7 +168,7 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       tags: ["typescript", "testing"],
     };
 
@@ -170,7 +176,7 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       tags: ["testing", "security"], // "testing" is duplicate
     };
 
@@ -188,7 +194,7 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       deps: ["dep1", "dep2"],
     };
 
@@ -196,7 +202,7 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [],
+      sections: [],
       deps: ["dep2", "dep3"], // "dep2" is duplicate
     };
 
@@ -212,16 +218,18 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.zebra",
-          severity: "error",
-          applies_to: ["**/*"],
+          heading: "Zebra Rule",
+          level: 2,
+          content: "Error rule with zebra fingerprint",
+          fingerprint: "fp:test-rule-zebra",
         },
         {
-          id: "test.rule.alpha",
-          severity: "warn",
-          applies_to: ["**/*"],
+          heading: "Alpha Rule",
+          level: 2,
+          content: "Warning rule with alpha fingerprint",
+          fingerprint: "fp:test-rule-alpha",
         },
       ],
     };
@@ -230,21 +238,22 @@ describe("Bundle Merging", () => {
       id: "pack2",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.middle",
-          severity: "info",
-          applies_to: ["**/*"],
+          heading: "Middle Rule",
+          level: 2,
+          content: "Info rule with middle fingerprint",
+          fingerprint: "fp:test-rule-middle",
         },
       ],
     };
 
     const result = mergePacks([pack1, pack2]);
 
-    expect(result.pack.rules).toHaveLength(3);
-    expect(result.pack.rules[0].id).toBe("test.rule.alpha");
-    expect(result.pack.rules[1].id).toBe("test.rule.middle");
-    expect(result.pack.rules[2].id).toBe("test.rule.zebra");
+    expect(result.pack.sections).toHaveLength(3);
+    expect(result.pack.sections[0].fingerprint).toBe("fp:test-rule-alpha");
+    expect(result.pack.sections[1].fingerprint).toBe("fp:test-rule-middle");
+    expect(result.pack.sections[2].fingerprint).toBe("fp:test-rule-zebra");
   });
 
   it("should handle single pack (no merging)", () => {
@@ -252,11 +261,12 @@ describe("Bundle Merging", () => {
       id: "pack1",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule.one",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Test Rule One",
+          level: 2,
+          content: "Error rule for TypeScript files",
+          fingerprint: "fp:test-rule-one",
         },
       ],
     };
@@ -330,7 +340,7 @@ describe("Bundle Merging", () => {
       expect(result.pack.sections).toHaveLength(1);
       expect(result.pack.sections?.[0]?.content).toBe("Content from pack2");
       expect(result.conflicts).toHaveLength(1);
-      expect(result.conflicts[0].ruleId).toBe("fp:testing-guidelines");
+      expect(result.conflicts[0].fingerprint).toBe("fp:testing-guidelines");
       expect(result.warnings).toHaveLength(1);
     });
 
@@ -357,33 +367,6 @@ describe("Bundle Merging", () => {
 
       expect(result.pack.sections?.[0]?.fingerprint).toBe("fp:aaa-first");
       expect(result.pack.sections?.[1]?.fingerprint).toBe("fp:zzz-last");
-    });
-
-    it("should warn when mixing section-based and rule-based packs", () => {
-      const sectionPack: AlignPack = {
-        id: "section-pack",
-        version: "1.0.0",
-        spec_version: "1",
-        sections: [mockSection1],
-      };
-
-      const rulePack: AlignPack = {
-        id: "rule-pack",
-        version: "1.0.0",
-        spec_version: "1",
-        rules: [
-          {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-          },
-        ],
-      };
-
-      const result = mergePacks([sectionPack, rulePack]);
-
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain("format mismatch");
     });
 
     it("should handle single section-based pack", () => {

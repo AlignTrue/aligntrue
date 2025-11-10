@@ -1,62 +1,31 @@
-# All five check types pack
-# Tests: complete coverage of all check types
+# All five check types pack (legacy)
+# Tests: converted to sections-only format
 
-id: "packs/testkit/all-five-check-types"
-version: "1.0.0"
+id: packs/testkit/all-five-check-types
+version: 1.0.0
 spec_version: "1"
-summary: "Tests all five check types"
-rules:
-  - id: "checks.example.file-presence"
-    severity: "error"
-    applies_to: ["**/*.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["package.json"]
-      evidence: "Root package.json required"
-
-  - id: "checks.example.path-convention"
-    severity: "warn"
-    applies_to: ["src/**/*.ts"]
-    check:
-      type: "path_convention"
-      inputs:
-        include: ["src/**"]
-        pattern: "^[a-z0-9-]+\\.ts$"
-      evidence: "File names must be lowercase with hyphens"
-
-  - id: "checks.example.manifest-policy"
-    severity: "warn"
-    applies_to: ["**/package.json"]
-    check:
-      type: "manifest_policy"
-      inputs:
-        manifest: "package.json"
-        lockfile: "pnpm-lock.yaml"
-        require_pinned: true
-      evidence: "Package.json must match standard schema"
-
-  - id: "checks.example.regex"
-    severity: "info"
-    applies_to: ["**/*.md"]
-    check:
-      type: "regex"
-      inputs:
-        include: ["**/*.md"]
-        pattern: "^# "
-        allow: true
-      evidence: "Markdown files should start with h1"
-
-  - id: "checks.example.command-runner"
-    severity: "warn"
-    applies_to: ["**/Makefile"]
-    check:
-      type: "command_runner"
-      inputs:
-        command: "make --version"
-        timeout_ms: 5000
-      evidence: "Make must be installed"
-
+summary: Tests all five check types
+sections:
+  - heading: "File Presence"
+    level: 2
+    content: Root package.json required for all projects.
+    fingerprint: file-presence
+  - heading: "Path Convention"
+    level: 2
+    content: File names must be lowercase with hyphens.
+    fingerprint: path-convention
+  - heading: "Manifest Policy"
+    level: 2
+    content: Maintain version consistency in manifest files.
+    fingerprint: manifest-policy
+  - heading: "Regex Rules"
+    level: 2
+    content: Use consistent configuration schemas.
+    fingerprint: regex-rules
+  - heading: "Command Validation"
+    level: 2
+    content: Follow naming conventions in code.
+    fingerprint: command-validation
 integrity:
-  algo: "jcs-sha256"
-  value: "f8bbbfa21ed6a9e8aeaf28dfacd0dedce3d75c8cfc6c4173cf339dc1487f0864"
+  algo: jcs-sha256
+  value: "4137801ba8f969812e70c3d8ff9adfd512afdd89264e8790c593cac7b060467b"

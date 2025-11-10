@@ -300,7 +300,7 @@ Run tests.
     const markdown = `
 \`\`\`aligntrue
 id: test
-rules:
+sections:
   - id: testing
 \`\`\`
 `;

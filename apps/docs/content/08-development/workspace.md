@@ -179,16 +179,6 @@ Plugin interface definitions.
 - AdapterManifest types
 - No implementations (just contracts)
 
-### packages/checks
-
-Machine-checkable rules engine.
-
-**Responsibilities:**
-
-- Execute check types (file_presence, regex, etc.)
-- Generate evidence and autofix hints
-- Report findings with severity
-
 ### packages/testkit
 
 Conformance vectors and golden tests.

@@ -16,15 +16,17 @@ const mockIR: AlignPack = {
   id: "test-pack",
   version: "1.0.0",
   spec_version: "1",
-  rules: [
+  sections: [
     {
       id: "rule-one",
+      fingerprint: "rule-one",
       severity: "error",
       applies_to: ["*.ts"],
       guidance: "First rule",
     },
     {
       id: "rule-two",
+      fingerprint: "rule-two",
       severity: "warn",
       applies_to: ["*.js"],
       guidance: "Second rule",
@@ -47,7 +49,7 @@ describe("applyOverlays", () => {
 
     const result = applyOverlays(mockIR, overlays);
     expect(result.success).toBe(true);
-    expect(result.modifiedIR?.rules[0].severity).toBe("warn");
+    expect(result.modifiedIR?.sections[0].severity).toBe("warn");
     expect(result.appliedCount).toBe(1);
   });
 
@@ -65,8 +67,8 @@ describe("applyOverlays", () => {
 
     const result = applyOverlays(mockIR, overlays);
     expect(result.success).toBe(true);
-    expect(result.modifiedIR?.rules[0].severity).toBe("warn");
-    expect(result.modifiedIR?.rules[1].severity).toBe("info");
+    expect(result.modifiedIR?.sections[0].severity).toBe("warn");
+    expect(result.modifiedIR?.sections[1].severity).toBe("info");
     expect(result.appliedCount).toBe(2);
   });
 
@@ -80,8 +82,8 @@ describe("applyOverlays", () => {
 
     const result = applyOverlays(mockIR, overlays);
     expect(result.success).toBe(true);
-    expect(result.modifiedIR?.rules[1]).not.toHaveProperty("check");
-    expect(result.modifiedIR?.rules[1].severity).toBe("warn"); // Other properties intact
+    expect(result.modifiedIR?.sections[1]).not.toHaveProperty("check");
+    expect(result.modifiedIR?.sections[1].severity).toBe("warn"); // Other properties intact
   });
 
   it("applies both set and remove operations", () => {
@@ -95,8 +97,8 @@ describe("applyOverlays", () => {
 
     const result = applyOverlays(mockIR, overlays);
     expect(result.success).toBe(true);
-    expect(result.modifiedIR?.rules[1].severity).toBe("error");
-    expect(result.modifiedIR?.rules[1]).not.toHaveProperty("check");
+    expect(result.modifiedIR?.sections[1].severity).toBe("error");
+    expect(result.modifiedIR?.sections[1]).not.toHaveProperty("check");
   });
 
   it("does not mutate original IR", () => {
@@ -107,9 +109,9 @@ describe("applyOverlays", () => {
       },
     ];
 
-    const originalSeverity = mockIR.rules[0].severity;
+    const originalSeverity = mockIR.sections[0].severity;
     applyOverlays(mockIR, overlays);
-    expect(mockIR.rules[0].severity).toBe(originalSeverity);
+    expect(mockIR.sections[0].severity).toBe(originalSeverity);
   });
 
   it("fails on stale selector", () => {
@@ -175,7 +177,7 @@ describe("applyOverlays", () => {
       "Multiple overlays modify same properties",
     );
     // Last wins
-    expect(result.modifiedIR?.rules[0].severity).toBe("info");
+    expect(result.modifiedIR?.sections[0].severity).toBe("info");
   });
 });
 
@@ -185,7 +187,7 @@ describe("normalizeLineEndings", () => {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
           id: "rule",
           severity: "error",
@@ -196,7 +198,7 @@ describe("normalizeLineEndings", () => {
     };
 
     const normalized = normalizeLineEndings(ir);
-    expect(normalized.rules[0].guidance).toBe("Line one\nLine two\n");
+    expect(normalized.sections[0].guidance).toBe("Line one\nLine two\n");
   });
 
   it("ensures single trailing LF", () => {
@@ -204,7 +206,7 @@ describe("normalizeLineEndings", () => {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
           id: "rule",
           severity: "error",
@@ -215,7 +217,7 @@ describe("normalizeLineEndings", () => {
     };
 
     const normalized = normalizeLineEndings(ir);
-    expect(normalized.rules[0].guidance).toBe("Text\n");
+    expect(normalized.sections[0].guidance).toBe("Text\n");
   });
 });
 

@@ -8,7 +8,7 @@ Tools for working with markdown rules, managing adapters, and validating syntax.
 
 - **For authoring:** Use fenced ```aligntrue blocks in your own markdown files
 - **For generated files:** AlignTrue automatically uses HTML comment markers for round-trip fidelity
-- **To edit generated files:** Use `aligntrue import` to pull changes back to IR, not the md commands
+- **To edit generated files:** Use `aligntrue sync --accept-agent <agent>` to pull changes back to IR
 
 **Authoring workflow:**
 
@@ -44,7 +44,7 @@ Then use `aligntrue md lint`, `aligntrue md compile`, and `aligntrue md format` 
 <!-- aligntrue:end -->
 ```
 
-To edit these files, use `aligntrue import` or edit directly and run `aligntrue sync --accept-agent agents-md`.
+To edit these files, edit directly and run `aligntrue sync --accept-agent agents-md` to pull changes back to IR.
 
 ---
 

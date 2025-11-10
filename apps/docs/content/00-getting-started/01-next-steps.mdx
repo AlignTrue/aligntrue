@@ -221,23 +221,20 @@ Add support for new agents by creating custom exporters.
 
 **Extension guide:** [Adding Exporters](/docs/06-contributing/adding-exporters)
 
-## Importing existing rules
+## Migrating existing rules
 
-Migrate from existing agent configurations to AlignTrue.
+Copy rules from existing agent files to AlignTrue.
 
-### Detect and analyze
+### Manual migration
 
-```bash
-aligntrue import cursor --dry-run
-```
-
-### Import with coverage report
+Copy your existing rules from agent files (Cursor `.mdc`, `AGENTS.md`, etc.) and paste into your `AGENTS.md` file.
 
 ```bash
-aligntrue import cursor --write
+# After copying rules to AGENTS.md
+aligntrue sync
 ```
 
-**Complete migration guide:** [Import Workflow](/docs/04-reference/import-workflow)
+**Complete migration guide:** [Migration Guide](/docs/01-guides/02-migration)
 
 ## Workflow examples
 
@@ -300,7 +297,7 @@ Common issues and solutions:
 
 - First-time git source access requires consent
 - Use `--offline` flag to skip network operations
-- See [Privacy Guide](/docs/07-policies/privacy)
+- Run `aligntrue privacy grant git` to enable network access
 
 **Full troubleshooting:** [Troubleshooting Guide](/docs/05-troubleshooting)
 
@@ -316,7 +313,6 @@ Common issues and solutions:
 ### Reference
 
 - [CLI Reference](/docs/04-reference/cli-reference) - Complete command documentation
-- [Privacy Controls](/docs/07-policies/privacy) - Network consent and telemetry
 
 ### Contributing
 

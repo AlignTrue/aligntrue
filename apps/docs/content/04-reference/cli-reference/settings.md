@@ -180,8 +180,6 @@ We NEVER collect:
 - State: `.aligntrue/telemetry.json`
 - Events: `.aligntrue/telemetry-events.json` (last 1000 events)
 
-**See also:** [Privacy Policy](/docs/07-policies/privacy) for complete details.
-
 ---
 
 ## `aligntrue privacy audit|revoke`
@@ -253,7 +251,6 @@ The `pull` command supports `--offline` flag to use cache only without network o
 
 **See also:**
 
-- [Privacy Policy](/docs/07-policies/privacy) - Complete privacy details
 - [Pull command](/docs/04-reference/cli-reference/team#aligntrue-pull) - Offline mode documentation
 
 ---

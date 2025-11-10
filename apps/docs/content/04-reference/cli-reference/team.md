@@ -406,7 +406,6 @@ aligntrue sync --dry-run
 
 - [Git Workflows Guide](/docs/03-concepts/git-workflows) - Complete pull command workflows
 - [Git Sources Guide](/docs/04-reference/git-sources) - Config-based permanent git sources
-- [Privacy Guide](/docs/07-policies/privacy) - Network consent management
 
 ---
 
@@ -586,4 +585,3 @@ Required fields: `id`, `version`, `spec_version`, `profile.id`
 
 - [Git Workflows Guide - Vendoring](/docs/03-concepts/git-workflows#vendoring-workflows) - Complete vendoring workflows
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Team approval workflows
-- [Privacy Guide](/docs/07-policies/privacy) - Network consent management

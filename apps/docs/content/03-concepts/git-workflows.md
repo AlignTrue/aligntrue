@@ -317,7 +317,7 @@ aligntrue privacy grant git
 aligntrue pull https://github.com/yourorg/rules --offline
 ```
 
-See [Privacy guide](/docs/07-policies/privacy) for full consent documentation.
+Run `aligntrue privacy grant git` to enable network access for git sources.
 
 ## Vendoring workflows
 
@@ -575,5 +575,4 @@ aligntrue pull https://github.com/yourorg/rules
 
 - [Git sources guide](/docs/04-reference/git-sources) - Config-based permanent git sources
 - [Command reference](/docs/04-reference/cli-reference) - Full `aligntrue pull` flag reference
-- [Privacy guide](/docs/07-policies/privacy) - Network consent and privacy management
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Initial setup and workflows

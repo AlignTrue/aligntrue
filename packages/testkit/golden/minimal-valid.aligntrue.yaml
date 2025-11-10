@@ -1,19 +1,15 @@
 # Minimal valid Align pack
 # Tests: absolute minimum required fields for a valid pack
 
-id: "packs/testkit/minimal-valid"
-version: "1.0.0"
+id: packs/testkit/minimal-valid
+version: 1.0.0
 spec_version: "1"
-summary: "Minimal valid pack for conformance testing"
-rules:
-  - id: "minimal.example.rule"
-    severity: "warn"
-    applies_to: ["**/*.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["package.json"]
-      evidence: "Package must exist"
+summary: Minimal valid pack for conformance testing
+sections:
+  - heading: "Minimal Example"
+    level: 2
+    content: Write tests for all features.
+    fingerprint: minimal-example
 integrity:
-  algo: "jcs-sha256"
-  value: "d8700c52b383e2fb8c31753668c504afd6323357f2421b3a43f5af66360f9eda"
+  algo: jcs-sha256
+  value: "8be5b8117613a94852305864c1a281f4404a7122834200457cb643cbb97532f7"

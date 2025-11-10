@@ -20,9 +20,10 @@ describe("validateOverlays", () => {
       name: "Test Pack",
       version: "1.0.0",
     },
-    rules: [
+    sections: [
       {
         id: "rule-alpha",
+        fingerprint: "rule-alpha",
         description: "First rule",
         severity: "error",
         enabled: true,
@@ -30,6 +31,7 @@ describe("validateOverlays", () => {
       },
       {
         id: "rule-beta",
+        fingerprint: "rule-beta",
         description: "Second rule",
         severity: "warning",
         enabled: true,
@@ -37,6 +39,7 @@ describe("validateOverlays", () => {
       },
       {
         id: "rule-gamma",
+        fingerprint: "rule-gamma",
         description: "Third rule with plugs",
         severity: "info",
         enabled: true,
@@ -127,7 +130,7 @@ describe("validateOverlays", () => {
     it("detects ambiguous selector (duplicate rule IDs)", () => {
       const irWithDuplicates: AlignPack = {
         ...baseIR,
-        rules: [
+        sections: [
           {
             id: "duplicate-id",
             description: "First",
@@ -432,7 +435,7 @@ describe("validateOverlays", () => {
 
       const irWithPlugs: AlignPack = {
         ...baseIR,
-        rules: [
+        sections: [
           {
             id: "rule-alpha",
             description: "Rule with plugs",
@@ -462,7 +465,7 @@ describe("detectRedundantOverlays", () => {
       name: "Test Pack",
       version: "1.0.0",
     },
-    rules: [
+    sections: [
       {
         id: "rule-alpha",
         description: "Test rule",
@@ -553,7 +556,7 @@ describe("areOverlaysValid", () => {
       name: "Test Pack",
       version: "1.0.0",
     },
-    rules: [
+    sections: [
       {
         id: "rule-alpha",
         description: "Test rule",
@@ -589,7 +592,7 @@ describe("areOverlaysValid", () => {
   it("returns true despite warnings (warnings don't fail validation)", () => {
     const irWithPlugs: AlignPack = {
       ...baseIR,
-      rules: [
+      sections: [
         {
           id: "rule-alpha",
           description: "Rule with plugs",

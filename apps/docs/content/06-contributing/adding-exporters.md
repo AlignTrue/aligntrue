@@ -215,16 +215,15 @@ describe("MyAgentExporter", () => {
           id: "test.rule",
           summary: "Test",
           severity: "error",
-          check: { type: "file_presence", paths: ["README.md"] },
+          guidance: "Ensure README.md exists in the project root.",
         },
       ],
       config: {},
       dryRun: true,
     });
 
-    expect(result.fidelityNotes).toContain(
-      "Rule 'test.rule': machine checks not supported",
-    );
+    // Check that export handles sections correctly
+    expect(result.files).toHaveLength(1);
   });
 });
 ```
@@ -535,7 +534,7 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 ### Documentation
 
 - [Command Reference](/docs/04-reference/cli-reference) - CLI usage
-- [Import Workflow](/docs/04-reference/import-workflow) - Migrate from existing agent rules
+- [Migration Guide](/docs/01-guides/02-migration) - Migrate from existing agent rules
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How exports are triggered
 - [Technical CONTRIBUTING.md](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/CONTRIBUTING.md) - Detailed requirements
 
