@@ -10,7 +10,7 @@ import type {
 } from "../types.js";
 import { ExporterBase } from "../base/index.js";
 
-export class AugmentcodeExporter extends ExporterBase {
+export class AugmentCodeExporter extends ExporterBase {
   name = "augmentcode";
   version = "1.0.0";
 
@@ -31,4 +31,7 @@ export class AugmentcodeExporter extends ExporterBase {
   }
 }
 
-export default AugmentcodeExporter;
+// Maintain backward compatibility
+export { AugmentCodeExporter as AugmentcodeExporter };
+
+export default AugmentCodeExporter;
