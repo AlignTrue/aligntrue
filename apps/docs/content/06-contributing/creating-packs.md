@@ -44,36 +44,36 @@ Pick the appropriate namespace for your pack:
 
 ### Minimal example
 
-Here's a minimal Align pack with one rule:
+Here's a minimal pack using natural markdown sections:
 
-```yaml
-id: "packs/base/base-example"
-version: "1.0.0"
-profile: "align"
-spec_version: "1"
-summary: "Ensure all TypeScript projects have proper configuration"
-tags: ["typescript", "configuration"]
-deps: []
+````markdown
+# TypeScript Configuration Pack
 
-scope:
-  applies_to: ["backend", "frontend"]
+## Ensure TypeScript Configuration
 
-rules:
-  - id: require-tsconfig
-    severity: MUST
-    check:
-      type: file_presence
-      inputs:
-        pattern: "tsconfig.json"
-        must_exist: true
-      evidence: "TypeScript project missing tsconfig.json"
-    autofix:
-      hint: "Run `npx tsc --init` to create tsconfig.json"
+All TypeScript projects should have a properly configured `tsconfig.json` file.
 
-integrity:
-  algo: "jcs-sha256"
-  value: "<computed>"
+### Setup
+
+Run `npx tsc --init` to create a tsconfig.json if missing.
+
+### Recommended Configuration
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
 ```
+````
+
+Enable strict mode for better type safety and fewer runtime errors.
+
+````
 
 For more examples, browse existing packs in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory.
 
@@ -96,7 +96,7 @@ pnpm install
 
 # Validate your pack
 pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
-```
+````
 
 ### Verify deterministic hash
 
@@ -123,88 +123,57 @@ pnpm --filter @aligntrue/schema compute-hash path/to/your-pack.yaml
 
 Copy the hash from the output and paste it into your pack's `integrity.value` field.
 
-## Machine-checkable rules
+## Writing effective guidance
 
-All rules in AlignTrue must be machine-checkable. No vibes, no subjective judgments.
+Packs use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
 
-### The 5 check types
+### Clear and specific
 
-Every rule must use one of these check types:
+Write guidance that answers:
 
-1. **`file_presence`** - Check if files exist or don't exist
+- **What** should be done
+- **Why** it matters
+- **How** to do it (with examples)
 
-   ```yaml
-   check:
-     type: file_presence
-     inputs:
-       pattern: "README.md"
-       must_exist: true
-   ```
+**Good example:**
 
-2. **`path_convention`** - Validate file paths match patterns
+````markdown
+## Use TypeScript Strict Mode
 
-   ```yaml
-   check:
-     type: path_convention
-     inputs:
-       pattern: "src/**/*.test.{ts,tsx}"
-       convention: "kebab-case"
-   ```
+Enable strict mode in all TypeScript projects for better type safety.
 
-3. **`manifest_policy`** - Check package.json or lockfile constraints
+### Why
 
-   ```yaml
-   check:
-     type: manifest_policy
-     inputs:
-       manifest: "package.json"
-       lockfile: "pnpm-lock.yaml"
-       require_pinned: true
-   ```
+Strict mode catches more errors at compile time and prevents common runtime issues.
 
-4. **`regex`** - Pattern matching in file contents
+### How
 
-   ```yaml
-   check:
-     type: regex
-     inputs:
-       include: ["**/*.ts"]
-       pattern: "\\bconsole\\.log\\("
-       allow: false
-   ```
+Add to `tsconfig.json`:
 
-5. **`command_runner`** - Execute commands and check exit codes
-   ```yaml
-   check:
-     type: command_runner
-     inputs:
-       command: "pnpm typecheck"
-       expect_exit_code: 0
-   ```
+```json
+{
+  "compilerOptions": {
+    "strict": true
+  }
+}
+```
+````
 
-See the checks documentation for complete details on each type.
+Run `npx tsc --init` to create a new config if needed.
 
-### Evidence messages
+````
 
-Evidence messages must be actionable and specific:
+### Actionable instructions
 
-- **Bad**: "Validation failed"
-- **Good**: "Missing test file for src/utils/parser.ts"
+Make it easy for developers to follow your guidance:
 
-- **Bad**: "Fix your configuration"
-- **Good**: "tsconfig.json missing 'strict: true' in compilerOptions"
+- **Bad**: "Fix your tests"
+- **Good**: "Run `pnpm test` before committing to catch errors early"
 
-Include file names, line numbers, or specific missing values when available.
+- **Bad**: "Use better logging"
+- **Good**: "Replace `console.log()` with `logger.info()` for structured logging"
 
-### Autofix hints
-
-When you provide an autofix hint, make it concrete:
-
-- **Bad**: "Add tests"
-- **Good**: "Run `pnpm test --init src/utils/parser.test.ts`"
-
-- **Bad**: "Use a logger"
-- **Good**: "Replace with `logger.debug()` or remove the statement"
+Include specific commands, file names, and code examples.
 
 Users should be able to copy-paste your hint and make progress.
 
@@ -236,7 +205,7 @@ sources:
   - type: git
     url: https://github.com/yourorg/rules-repo
     path: packs/your-pack.yaml
-```
+````
 
 2. **Share raw URL** - Users can download directly:
 
@@ -330,16 +299,25 @@ scope:
 
 This helps users understand when to use your pack.
 
-### Testing check runners
+### Testing your pack
 
-You can test check runners locally with:
+To test your pack locally:
 
-```bash
-# From the aligntrue repository
-pnpm --filter @aligntrue/checks run-checks ../aligns/packs/base/your-pack.aligntrue.yaml /path/to/test/repo
+1. **Add to `.aligntrue/config.yaml`:**
+
+```yaml
+sources:
+  - type: local
+    path: ./your-pack.md
 ```
 
-This runs your checks against a test repository and shows findings.
+2. **Sync to agents:**
+
+```bash
+aligntrue sync
+```
+
+3. **Verify the output** in your agent files to ensure guidance displays correctly.
 
 ## Questions?
 

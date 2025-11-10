@@ -1,30 +1,19 @@
 # Dependency chain pack
 # Tests: rules that depend on each other
 
-id: "packs/testkit/dependency-chain"
-version: "1.0.0"
+id: packs/testkit/dependency-chain
+version: 1.0.0
 spec_version: "1"
-summary: "Tests rule dependencies"
-rules:
-  - id: "deps.example.nodejs"
-    severity: "error"
-    applies_to: ["**/*.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["package.json"]
-      evidence: "Node.js project detected"
-
-  - id: "deps.example.pnpm"
-    severity: "warn"
-    applies_to: ["**/package.json"]
-    check:
-      type: "path_convention"
-      inputs:
-        include: ["**/"]
-        pattern: "pnpm-lock"
-      evidence: "pnpm lock file recommended"
-
+summary: Tests rule dependencies
+sections:
+  - heading: "Node.js Project"
+    level: 2
+    content: Projects must have package.json for Node.js setup.
+    fingerprint: nodejs-project
+  - heading: "Package Manager"
+    level: 2
+    content: Use pnpm lock file for deterministic dependencies.
+    fingerprint: package-manager
 integrity:
-  algo: "jcs-sha256"
-  value: "fca3c8d6bdae0a082ed6974a10c66c95de99e6262a01676b69b9238f13760100"
+  algo: jcs-sha256
+  value: "f110c1d9ffdce062845a3857e4bda607a7887a2f6d5e314b7b6f89869c3720f7"

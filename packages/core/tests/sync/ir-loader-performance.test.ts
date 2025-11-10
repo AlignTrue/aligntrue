@@ -22,11 +22,11 @@ describe("IR Loader - Performance Guardrails", () => {
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Test rule
+sections:
+  - heading: "Testing instructions"
+    level: 2
+    content: "Test rule"
+    fingerprint: "testing-example-rule"
 `;
 
   it("loads file under size limit successfully", async () => {
@@ -114,9 +114,11 @@ rules:
     const validYaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
+sections:
+  - heading: "Testing instructions"
+    level: 2
+    content: "Test"
+    fingerprint: "testing-example-rule"
     applies_to: ["**/*.ts"]
     guidance: Test rule
 `;
@@ -131,7 +133,7 @@ rules:
     const validYaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
+sections:
   - id: testing.example.rule
     severity: warn
     applies_to: ["**/*.ts"]

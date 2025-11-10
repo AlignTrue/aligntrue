@@ -22,7 +22,7 @@ describe("plugs hashing", () => {
             },
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -56,7 +56,7 @@ describe("plugs hashing", () => {
             "test.cmd": "npm test",
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -102,7 +102,7 @@ describe("plugs hashing", () => {
             "test.cmd": "npm test",
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -135,7 +135,7 @@ describe("plugs hashing", () => {
             "test.cmd": "npm test",
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -173,7 +173,7 @@ describe("plugs hashing", () => {
             "test.cmd": "/absolute/path", // Invalid for file format
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -207,7 +207,7 @@ describe("plugs hashing", () => {
             "test.cmd": "npm test",
           },
         },
-        rules: [
+        sections: [
           {
             id: "test.rule",
             severity: "error",
@@ -245,12 +245,12 @@ describe("plugs hashing", () => {
             },
           },
         },
-        rules: [
+        sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]] then [[plug:build.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]] then [[plug:build.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };

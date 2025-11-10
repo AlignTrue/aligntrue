@@ -40,11 +40,11 @@ describe("IR Loader", () => {
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Test rule
+sections:
+  - heading: "Testing instructions"
+    level: 2
+    content: "Test rule guidance content"
+    fingerprint: "testing-example-rule"
 `;
       const path = join(TEST_DIR, "valid.yaml");
       writeFileSync(path, yaml, "utf8");
@@ -54,18 +54,18 @@ rules:
       expect(ir.id).toBe("test-pack");
       expect(ir.version).toBe("1.0.0");
       expect(ir.spec_version).toBe("1");
-      expect(ir.rules).toHaveLength(1);
-      expect(ir.rules![0].id).toBe("testing.example.rule");
+      expect(ir.sections).toHaveLength(1);
+      expect(ir.sections[0].heading).toBe("Testing instructions");
     });
 
     it("fails on invalid YAML syntax", async () => {
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
-    guidance: "unclosed string
+sections:
+  - heading: "Test"
+    level: 2
+    content: "unclosed string
 `;
       const path = join(TEST_DIR, "invalid-yaml.yaml");
       writeFileSync(path, yaml, "utf8");
@@ -77,9 +77,9 @@ rules:
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: invalid rule id
-    severity: warn
+sections:
+  - heading: "Test"
+    level: 2
 `;
       const path = join(TEST_DIR, "invalid-yaml.yaml");
       writeFileSync(path, yaml, "utf8");
@@ -93,11 +93,11 @@ rules:
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Test rule
+sections:
+  - heading: "Testing instructions"
+    level: 2
+    content: "Test rule guidance"
+    fingerprint: "testing-example-rule"
 `;
       const path = join(TEST_DIR, "valid.yaml");
       writeFileSync(path, yaml, "utf8");
@@ -125,7 +125,7 @@ rules:
       const yaml = `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
+sections:
   - id: testing.example.rule
     severity: invalid_severity
 `;

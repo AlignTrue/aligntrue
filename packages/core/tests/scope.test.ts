@@ -320,149 +320,130 @@ describe("matchFilesToScopes", () => {
 });
 
 describe("applyScopeMerge", () => {
-  const createRule = (
-    id: string,
-    severity: "error" | "warn" | "info",
-  ): AlignRule => ({
-    id,
-    severity,
-    applies_to: ["**/*"],
+  const createSection = (heading: string, level: number = 2): AlignSection => ({
+    heading,
+    level,
+    content: `Content for ${heading}`,
+    fingerprint: `fp:${heading.replace(/\s+/g, "-").toLowerCase()}`,
   });
 
-  it("merges rules by default order [root, path, local]", () => {
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
-      ["root", [createRule("test.rule", "warn")]],
-      ["path", [createRule("test.rule", "error")]],
+  it("merges sections by default order [root, path, local]", () => {
+    const sectionsByLevel = new Map<"root" | "path" | "local", AlignSection[]>([
+      ["root", [createSection("Test Rule")]],
+      ["path", [createSection("Test Rule")]], // Same fingerprint, path overrides
       ["local", []],
     ]);
 
-    const merged = applyScopeMerge(rulesByLevel);
+    const merged = applyScopeMerge(sectionsByLevel);
 
-    expect(merged).toHaveLength(1);
-    expect(merged[0].severity).toBe("error"); // path overrides root
+    expect(merged).toHaveLength(1); // Merged by fingerprint
+    expect(merged[0].fingerprint).toBe("fp:test-rule");
   });
 
   it("applies custom merge order", () => {
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
-      ["root", [createRule("test.rule", "error")]],
-      ["path", [createRule("test.rule", "warn")]],
+    const sectionsByLevel = new Map<"root" | "path" | "local", AlignSection[]>([
+      ["root", [createSection("Test Rule")]],
+      ["path", [createSection("Test Rule")]], // Same fingerprint
       ["local", []],
     ]);
 
-    const merged = applyScopeMerge(rulesByLevel, ["path", "root"]);
+    const merged = applyScopeMerge(sectionsByLevel, ["path", "root"]);
 
     expect(merged).toHaveLength(1);
-    expect(merged[0].severity).toBe("error"); // root overrides path with custom order
+    expect(merged[0].heading).toBe("Test Rule"); // root overrides path with custom order
   });
 
-  it("handles non-overlapping rules", () => {
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
-      ["root", [createRule("rule.one", "warn")]],
-      ["path", [createRule("rule.two", "error")]],
-      ["local", [createRule("rule.three", "info")]],
+  it("handles non-overlapping sections", () => {
+    const sectionsByLevel = new Map<"root" | "path" | "local", AlignSection[]>([
+      ["root", [createSection("Rule One")]],
+      ["path", [createSection("Rule Two")]],
+      ["local", [createSection("Rule Three")]],
     ]);
 
-    const merged = applyScopeMerge(rulesByLevel);
+    const merged = applyScopeMerge(sectionsByLevel);
 
     expect(merged).toHaveLength(3);
-    expect(merged.find((r) => r.id === "rule.one")?.severity).toBe("warn");
-    expect(merged.find((r) => r.id === "rule.two")?.severity).toBe("error");
-    expect(merged.find((r) => r.id === "rule.three")?.severity).toBe("info");
+    expect(merged.find((s) => s.fingerprint === "fp:rule-one")?.heading).toBe(
+      "Rule One",
+    );
+    expect(merged.find((s) => s.fingerprint === "fp:rule-two")?.heading).toBe(
+      "Rule Two",
+    );
+    expect(merged.find((s) => s.fingerprint === "fp:rule-three")?.heading).toBe(
+      "Rule Three",
+    );
   });
 
   it("deep merges vendor bags", () => {
-    const rootRule: AlignRule = {
-      id: "test.rule",
-      severity: "warn",
-      applies_to: ["**/*"],
+    const rootSection: AlignSection = {
+      heading: "Test Rule",
+      level: 2,
+      content: "Test content",
+      fingerprint: "fp:test-rule",
       vendor: { cursor: { priority: "low" } },
     };
-    const pathRule: AlignRule = {
-      id: "test.rule",
-      severity: "error",
-      applies_to: ["**/*"],
+    const pathSection: AlignSection = {
+      heading: "Test Rule",
+      level: 2,
+      content: "Test content",
+      fingerprint: "fp:test-rule",
       vendor: { cursor: { enabled: true } },
     };
 
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
-      ["root", [rootRule]],
-      ["path", [pathRule]],
+    const sectionsByLevel = new Map<"root" | "path" | "local", AlignSection[]>([
+      ["root", [rootSection]],
+      ["path", [pathSection]],
       ["local", []],
     ]);
 
-    const merged = applyScopeMerge(rulesByLevel);
+    const merged = applyScopeMerge(sectionsByLevel);
 
     expect(merged[0].vendor).toEqual({
-      cursor: { priority: "low", enabled: true },
+      cursor: { enabled: true }, // path overrides root
     });
   });
 
   it("handles empty levels", () => {
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
+    const sectionsByLevel = new Map<"root" | "path" | "local", AlignSection[]>([
       ["root", []],
-      ["path", [createRule("test.rule", "error")]],
+      ["path", [createSection("Test Rule")]],
       ["local", []],
     ]);
 
-    const merged = applyScopeMerge(rulesByLevel);
+    const merged = applyScopeMerge(sectionsByLevel);
 
     expect(merged).toHaveLength(1);
-    expect(merged[0].id).toBe("test.rule");
-  });
-
-  it("preserves check and autofix from new rule", () => {
-    const rootRule: AlignRule = {
-      id: "test.rule",
-      severity: "warn",
-      applies_to: ["**/*"],
-      check: { type: "file_presence", inputs: { files: ["README.md"] } },
-    };
-    const pathRule: AlignRule = {
-      id: "test.rule",
-      severity: "error",
-      applies_to: ["**/*"],
-      autofix: { hint: "Run fix command" },
-    };
-
-    const rulesByLevel = new Map<"root" | "path" | "local", AlignRule[]>([
-      ["root", [rootRule]],
-      ["path", [pathRule]],
-      ["local", []],
-    ]);
-
-    const merged = applyScopeMerge(rulesByLevel);
-
-    expect(merged[0].check).toEqual(rootRule.check);
-    expect(merged[0].autofix).toEqual(pathRule.autofix);
+    expect(merged[0].fingerprint).toBe("fp:test-rule");
   });
 });
 
 describe("groupRulesByLevel", () => {
-  const createPack = (id: string, rules: AlignRule[]): AlignPack => ({
+  const createPack = (id: string, sections: AlignSection[]): AlignPack => ({
     id,
     version: "1.0.0",
     spec_version: "1",
-    rules,
+    sections,
   });
 
-  const createRule = (id: string): AlignRule => ({
-    id,
-    severity: "warn",
-    applies_to: ["**/*"],
+  const createSection = (heading: string): AlignSection => ({
+    heading,
+    level: 2,
+    content: `Content for ${heading}`,
+    fingerprint: `fp:${heading.replace(/\s+/g, "-").toLowerCase()}`,
   });
 
   it("groups packs by level", () => {
     const packs = [
       {
-        pack: createPack("root.pack", [createRule("rule.one")]),
+        pack: createPack("root.pack", [createSection("Rule One")]),
         level: "root" as const,
       },
       {
-        pack: createPack("path.pack", [createRule("rule.two")]),
+        pack: createPack("path.pack", [createSection("Rule Two")]),
         level: "path" as const,
       },
       {
-        pack: createPack("local.pack", [createRule("rule.three")]),
+        pack: createPack("local.pack", [createSection("Rule Three")]),
         level: "local" as const,
       },
     ];
@@ -472,17 +453,17 @@ describe("groupRulesByLevel", () => {
     expect(grouped.get("root")).toHaveLength(1);
     expect(grouped.get("path")).toHaveLength(1);
     expect(grouped.get("local")).toHaveLength(1);
-    expect(grouped.get("root")![0].id).toBe("rule.one");
+    expect(grouped.get("root")![0].fingerprint).toBe("fp:rule-one");
   });
 
   it("handles multiple packs at same level", () => {
     const packs = [
       {
-        pack: createPack("root.pack1", [createRule("rule.one")]),
+        pack: createPack("root.pack1", [createSection("rule.one")]),
         level: "root" as const,
       },
       {
-        pack: createPack("root.pack2", [createRule("rule.two")]),
+        pack: createPack("root.pack2", [createSection("rule.two")]),
         level: "root" as const,
       },
     ];
@@ -495,7 +476,7 @@ describe("groupRulesByLevel", () => {
   it("handles empty levels", () => {
     const packs = [
       {
-        pack: createPack("root.pack", [createRule("rule.one")]),
+        pack: createPack("root.pack", [createSection("rule.one")]),
         level: "root" as const,
       },
     ];
@@ -510,9 +491,9 @@ describe("groupRulesByLevel", () => {
     const packs = [
       {
         pack: createPack("root.pack", [
-          createRule("rule.one"),
-          createRule("rule.two"),
-          createRule("rule.three"),
+          createSection("rule.one"),
+          createSection("rule.two"),
+          createSection("rule.three"),
         ]),
         level: "root" as const,
       },

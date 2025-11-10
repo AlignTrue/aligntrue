@@ -25,12 +25,12 @@ describe("lockfile integration", () => {
     owner: "test-org",
     source: "https://github.com/test-org/aligns",
     source_sha: "abc123",
-    rules: [
+    sections: [
       {
-        id: "test.rule.one",
-        severity: "error",
-        applies_to: ["*.ts"],
-        guidance: "Test rule one",
+        heading: "Test Rule One",
+        level: 2,
+        content: "Test rule one",
+        fingerprint: "test-rule-one",
       },
     ],
   };
@@ -83,7 +83,7 @@ describe("lockfile integration", () => {
       // Modify pack
       const modifiedPack: AlignPack = {
         ...mockPack,
-        rules: [{ ...mockPack.rules[0], guidance: "Modified guidance" }],
+        sections: [{ ...mockPack.sections[0], guidance: "Modified guidance" }],
       };
 
       // Validate should detect mismatch
@@ -108,9 +108,13 @@ describe("lockfile integration", () => {
 
       const packWithNewRule: AlignPack = {
         ...mockPack,
-        rules: [
-          ...mockPack.rules,
-          { ...mockPack.rules[0], id: "test.rule.new" },
+        sections: [
+          ...mockPack.sections,
+          {
+            ...mockPack.sections[0],
+            id: "test.rule.new",
+            fingerprint: "test.rule.new",
+          },
         ],
       };
 
@@ -123,9 +127,13 @@ describe("lockfile integration", () => {
     it("handles deleted rules", () => {
       const packWithTwoRules: AlignPack = {
         ...mockPack,
-        rules: [
-          mockPack.rules[0],
-          { ...mockPack.rules[0], id: "test.rule.deleted" },
+        sections: [
+          mockPack.sections[0],
+          {
+            ...mockPack.sections[0],
+            id: "test.rule.deleted",
+            fingerprint: "test.rule.deleted",
+          },
         ],
       };
       const lockfile = generateLockfile(packWithTwoRules, "team");
@@ -145,7 +153,7 @@ describe("lockfile integration", () => {
       // Modify pack and regenerate
       const modifiedPack: AlignPack = {
         ...mockPack,
-        rules: [{ ...mockPack.rules[0], guidance: "Modified guidance" }],
+        sections: [{ ...mockPack.sections[0], guidance: "Modified guidance" }],
       };
       const lockfile2 = generateLockfile(modifiedPack, "team");
       writeLockfile(lockfilePath, lockfile2);
@@ -164,9 +172,9 @@ describe("lockfile integration", () => {
     it("excludes volatile fields from hash", () => {
       const packWithVolatile: AlignPack = {
         ...mockPack,
-        rules: [
+        sections: [
           {
-            ...mockPack.rules[0],
+            ...mockPack.sections[0],
             vendor: {
               cursor: { stable: "value", session_id: "abc123" },
               _meta: { volatile: ["cursor.session_id"] },
@@ -177,9 +185,9 @@ describe("lockfile integration", () => {
 
       const packWithDifferentVolatile: AlignPack = {
         ...mockPack,
-        rules: [
+        sections: [
           {
-            ...mockPack.rules[0],
+            ...mockPack.sections[0],
             vendor: {
               cursor: { stable: "value", session_id: "def456" },
               _meta: { volatile: ["cursor.session_id"] },
@@ -193,8 +201,8 @@ describe("lockfile integration", () => {
 
       // Hashes should be identical (volatile field excluded)
       expect(lockfile1.bundle_hash).toBe(lockfile2.bundle_hash);
-      expect(lockfile1.rules[0].content_hash).toBe(
-        lockfile2.rules[0].content_hash,
+      expect(lockfile1.sections[0].content_hash).toBe(
+        lockfile2.sections[0].content_hash,
       );
     });
   });

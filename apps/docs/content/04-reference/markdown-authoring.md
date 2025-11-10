@@ -206,17 +206,17 @@ rules:
 Write clean code...
 ````
 
-3. **Use the import command:**
+3. **Manual migration:**
 
-The `aligntrue import` command automatically converts to natural markdown format:
+Copy your existing rules from agent files and paste into `AGENTS.md`:
 
 ```bash
-# Import and convert to natural markdown
-aligntrue import cursor
-# Creates AGENTS.md with natural markdown sections
+# After copying rules to AGENTS.md
+aligntrue sync
+# Syncs to all configured agents
 ```
 
-See the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) for complete migration instructions.
+See the [Migration Guide](/docs/01-guides/02-migration) for complete migration instructions.
 
 ## Troubleshooting
 

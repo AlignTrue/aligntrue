@@ -17,12 +17,12 @@ describe("lockfile I/O", () => {
     owner: "test-org",
     source: "https://github.com/test-org/aligns",
     source_sha: "abc123",
-    rules: [
+    sections: [
       {
-        id: "test.rule.one",
-        severity: "error",
-        applies_to: ["*.ts"],
-        guidance: "Test rule",
+        heading: "Test Rule",
+        level: 2,
+        content: "Test rule guidance",
+        fingerprint: "test-rule-one",
       },
     ],
   };
@@ -112,7 +112,7 @@ describe("lockfile I/O", () => {
       const lockfile2 = generateLockfile(
         {
           ...mockPack,
-          rules: [{ ...mockPack.rules[0], guidance: "Modified" }],
+          sections: [{ ...mockPack.sections[0], guidance: "Modified" }],
         },
         "team",
       );
@@ -220,10 +220,18 @@ describe("lockfile I/O", () => {
     it("handles multiple rules", () => {
       const packWithMultipleRules: AlignPack = {
         ...mockPack,
-        rules: [
-          mockPack.rules[0],
-          { ...mockPack.rules[0], id: "test.rule.two" },
-          { ...mockPack.rules[0], id: "test.rule.three" },
+        sections: [
+          mockPack.sections[0],
+          {
+            ...mockPack.sections[0],
+            id: "test.rule.two",
+            fingerprint: "test.rule.two",
+          },
+          {
+            ...mockPack.sections[0],
+            id: "test.rule.three",
+            fingerprint: "test.rule.three",
+          },
         ],
       };
       const original = generateLockfile(packWithMultipleRules, "team");

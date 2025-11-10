@@ -61,9 +61,9 @@ export function computePostResolutionHash(pack: AlignPack): string | undefined {
   // Create a copy with resolved guidance
   const packCopy = JSON.parse(JSON.stringify(pack));
 
-  // Update rules with resolved guidance
+  // Update sections with resolved guidance
   for (const resolvedRule of resolveResult.rules) {
-    const rule = packCopy.rules.find(
+    const rule = packCopy.sections.find(
       (r: { id: string }) => r.id === resolvedRule.ruleId,
     );
     if (rule && resolvedRule.guidance) {

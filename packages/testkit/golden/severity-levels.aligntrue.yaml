@@ -1,41 +1,23 @@
 # Severity levels pack
 # Tests: all three severity levels (error, warn, info)
 
-id: "packs/testkit/severity-levels"
-version: "1.0.0"
+id: packs/testkit/severity-levels
+version: 1.0.0
 spec_version: "1"
-summary: "Tests all severity levels"
-rules:
-  - id: "severity.example.error"
-    severity: "error"
-    applies_to: ["**/*.ts"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["tsconfig.json"]
-      evidence: "TypeScript config must exist"
-
-  - id: "severity.example.warn"
-    severity: "warn"
-    applies_to: ["**/*.js"]
-    check:
-      type: "path_convention"
-      inputs:
-        include: ["**/*.js"]
-        pattern: "^[a-z0-9-]+\\.js$"
-      evidence: "JavaScript files should use kebab-case"
-
-  - id: "severity.example.info"
-    severity: "info"
-    applies_to: ["**/*.md"]
-    check:
-      type: "regex"
-      inputs:
-        include: ["**/*.md"]
-        pattern: "^# "
-        allow: true
-      evidence: "Markdown documentation is helpful"
-
+summary: Tests all severity levels
+sections:
+  - heading: "Critical: TypeScript Config"
+    level: 2
+    content: TypeScript configuration is required for all projects.
+    fingerprint: typescript-config
+  - heading: "Warning: JavaScript Naming"
+    level: 2
+    content: JavaScript files should use kebab-case naming convention.
+    fingerprint: javascript-naming
+  - heading: "Info: Documentation"
+    level: 2
+    content: Markdown documentation is helpful for projects.
+    fingerprint: documentation
 integrity:
-  algo: "jcs-sha256"
-  value: "6c36aa871de5ba729fdc15ecdc0918e12297346a9fe5038fd5d089469b96eb1d"
+  algo: jcs-sha256
+  value: "8c9e39fa337bb9b793c11f2274156b8e74dfb496d1ef3148d6166dd4f2d5e0dc"

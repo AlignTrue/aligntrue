@@ -20,16 +20,18 @@ describe("Lockfile Provenance Tracking", () => {
         owner: "mycompany/platform",
         source: "github.com/mycompany/rules",
         source_sha: "abc123def456",
-        rules: [
+        sections: [
           {
-            id: "test.rule.one",
-            severity: "error",
-            guidance: "Test rule one",
+            heading: "Rule One",
+            level: 2,
+            content: "Test rule one",
+            fingerprint: "test-rule-one",
           },
           {
-            id: "test.rule.two",
-            severity: "warn",
-            guidance: "Test rule two",
+            heading: "Rule Two",
+            level: 2,
+            content: "Test rule two",
+            fingerprint: "test-rule-two",
           },
         ],
       };
@@ -38,14 +40,14 @@ describe("Lockfile Provenance Tracking", () => {
 
       expect(lockfile.rules).toHaveLength(2);
       expect(lockfile.rules[0]).toMatchObject({
-        rule_id: "test.rule.one",
+        rule_id: "test-rule-one",
         owner: "mycompany/platform",
         source: "github.com/mycompany/rules",
         source_sha: "abc123def456",
       });
       expect(lockfile.rules[0].content_hash).toBeTruthy();
       expect(lockfile.rules[1]).toMatchObject({
-        rule_id: "test.rule.two",
+        rule_id: "test-rule-two",
         owner: "mycompany/platform",
         source: "github.com/mycompany/rules",
         source_sha: "abc123def456",
@@ -58,9 +60,10 @@ describe("Lockfile Provenance Tracking", () => {
         version: "1.0.0",
         spec_version: "1",
         source: "github.com/mycompany/rules",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
+            fingerprint: "test.rule.one",
             severity: "error",
             guidance: "Test rule",
           },
@@ -82,9 +85,10 @@ describe("Lockfile Provenance Tracking", () => {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
+            fingerprint: "test.rule.one",
             severity: "error",
             guidance: "Test rule",
           },
@@ -112,9 +116,10 @@ describe("Lockfile Provenance Tracking", () => {
         owner: "mycompany/platform",
         source: "github.com/mycompany/rules",
         source_sha: "abc123",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
+            fingerprint: "test.rule.one",
             severity: "error",
             guidance: "Original guidance",
           },
@@ -125,9 +130,10 @@ describe("Lockfile Provenance Tracking", () => {
 
       const modifiedPack: AlignPack = {
         ...originalPack,
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
+            fingerprint: "test.rule.one",
             severity: "error",
             guidance: "Modified guidance",
           },
@@ -159,7 +165,7 @@ describe("Lockfile Provenance Tracking", () => {
         owner: "mycompany/platform",
         source: "github.com/mycompany/rules",
         source_sha: "abc123",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
@@ -185,7 +191,7 @@ describe("Lockfile Provenance Tracking", () => {
         owner: "aligntrue",
         source: "github.com/AlignTrue/aligns",
         source_sha: "abc123def456",
-        rules: [
+        sections: [
           {
             id: "base.no.console",
             severity: "error",
@@ -198,7 +204,7 @@ describe("Lockfile Provenance Tracking", () => {
 
       const modifiedPack: AlignPack = {
         ...originalPack,
-        rules: [
+        sections: [
           {
             id: "base.no.console",
             severity: "error",
@@ -225,7 +231,7 @@ describe("Lockfile Provenance Tracking", () => {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
@@ -238,7 +244,7 @@ describe("Lockfile Provenance Tracking", () => {
 
       const modifiedPack: AlignPack = {
         ...pack,
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
@@ -263,7 +269,7 @@ describe("Lockfile Provenance Tracking", () => {
         version: "1.0.0",
         spec_version: "1",
         source: "github.com/mycompany/rules",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
@@ -276,7 +282,7 @@ describe("Lockfile Provenance Tracking", () => {
 
       const modifiedPack: AlignPack = {
         ...pack,
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
@@ -311,14 +317,14 @@ describe("Lockfile Provenance Tracking", () => {
         owner: "mycompany",
         source: "github.com/mycompany/rules",
         source_sha: "abc123",
-        rules: baseRules,
+        sections: baseRules,
       };
 
       const packWithoutProvenance: AlignPack = {
         id: "test-pack",
         version: "1.0.0",
         spec_version: "1",
-        rules: baseRules,
+        sections: baseRules,
       };
 
       const lockfile1 = generateLockfile(packWithProvenance, "team");
@@ -343,7 +349,7 @@ describe("Lockfile Provenance Tracking", () => {
         spec_version: "1",
         source: "github.com/mycompany/rules",
         source_sha: "abc123",
-        rules: [
+        sections: [
           {
             id: "test.rule.one",
             severity: "error",
