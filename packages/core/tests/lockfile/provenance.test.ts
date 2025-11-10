@@ -193,9 +193,10 @@ describe("Lockfile Provenance Tracking", () => {
         source_sha: "abc123def456",
         sections: [
           {
-            id: "base.no.console",
-            severity: "error",
-            guidance: "Original",
+            heading: "Base No Console",
+            level: 2,
+            content: "Original",
+            fingerprint: "base-no-console",
           },
         ],
       };

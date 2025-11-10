@@ -201,8 +201,8 @@ describe("lockfile integration", () => {
 
       // Hashes should be identical (volatile field excluded)
       expect(lockfile1.bundle_hash).toBe(lockfile2.bundle_hash);
-      expect(lockfile1.sections[0].content_hash).toBe(
-        lockfile2.sections[0].content_hash,
+      expect(lockfile1.rules[0].content_hash).toBe(
+        lockfile2.rules[0].content_hash,
       );
     });
   });

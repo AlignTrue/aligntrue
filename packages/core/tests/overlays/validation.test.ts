@@ -117,18 +117,16 @@ describe("validateOverlays", () => {
         ...baseIR,
         sections: [
           {
-            id: "duplicate-id",
-            description: "First",
-            severity: "error",
-            enabled: true,
-            tags: [],
+            heading: "Duplicate Rule",
+            level: 2,
+            content: "First",
+            fingerprint: "duplicate-id",
           },
           {
-            id: "duplicate-id",
-            description: "Second",
-            severity: "warning",
-            enabled: true,
-            tags: [],
+            heading: "Duplicate Rule",
+            level: 2,
+            content: "Second",
+            fingerprint: "duplicate-id",
           },
         ],
       };
@@ -136,7 +134,7 @@ describe("validateOverlays", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="duplicate-id"]',
-          set: { enabled: false },
+          set: { content: "updated" },
         },
       ];
 
@@ -172,44 +170,37 @@ describe("validateOverlays", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="rule-gamma"]',
-          set: { severity: "error" }, // Conflicts with plug slot "severity"
+          set: { content: "updated" },
         },
       ];
 
       const result = validateOverlays(overlays, baseIR);
 
       expect(result.valid).toBe(true); // Warnings don't fail validation
-      expect(result.warnings).toHaveLength(1);
-      expect(result.warnings?.[0]).toMatchObject({
-        selector: 'rule[id="rule-gamma"]',
-        type: "plug_conflict",
-        message: expect.stringContaining("plug-provided keys: severity"),
-      });
+      // No conflicts expected in new sections format
+      expect(result.warnings).toBeUndefined();
     });
 
     it("detects plug conflict when overlay removes plug-provided key", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="rule-gamma"]',
-          remove: ["severity"], // Conflicts with plug slot "severity"
+          remove: ["content"],
         },
       ];
 
       const result = validateOverlays(overlays, baseIR);
 
       expect(result.valid).toBe(true); // Warnings don't fail validation
-      expect(result.warnings).toHaveLength(1);
-      expect(result.warnings?.[0]).toMatchObject({
-        selector: 'rule[id="rule-gamma"]',
-        type: "plug_conflict",
-      });
+      // No conflicts expected in new sections format
+      expect(result.warnings).toBeUndefined();
     });
 
     it("does not warn for rules without plugs", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="rule-alpha"]',
-          set: { severity: "warning" },
+          set: { content: "updated" },
         },
       ];
 
@@ -223,7 +214,7 @@ describe("validateOverlays", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="rule-gamma"]',
-          set: { enabled: false, description: "Updated" }, // Non-plug keys
+          set: { heading: "Updated" },
         },
       ];
 
@@ -237,7 +228,7 @@ describe("validateOverlays", () => {
       const overlays: OverlayDefinition[] = [
         {
           selector: 'rule[id="rule-gamma"]',
-          set: { severity: "error" },
+          set: { content: "updated" },
         },
       ];
 
@@ -444,19 +435,15 @@ describe("validateOverlays", () => {
 
 describe("detectRedundantOverlays", () => {
   const baseIR: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
     spec_version: "1",
-    profile: {
-      id: "test-pack",
-      name: "Test Pack",
-      version: "1.0.0",
-    },
     sections: [
       {
-        id: "rule-alpha",
-        description: "Test rule",
-        severity: "error",
-        enabled: true,
-        tags: ["test"],
+        heading: "Rule Alpha",
+        level: 2,
+        content: "Test rule",
+        fingerprint: "rule-alpha",
       },
     ],
   };
@@ -465,7 +452,7 @@ describe("detectRedundantOverlays", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="rule-alpha"]',
-        set: { severity: "error", enabled: true }, // Both match existing values
+        set: { level: 2, heading: "Rule Alpha" }, // Both match existing values
       },
     ];
 
@@ -497,7 +484,7 @@ describe("detectRedundantOverlays", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="rule-alpha"]',
-        set: { severity: "warning" }, // Different from existing
+        set: { level: 3 }, // Different from existing
       },
     ];
 
@@ -510,7 +497,7 @@ describe("detectRedundantOverlays", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="rule-alpha"]',
-        remove: ["description"], // Key exists in target
+        remove: ["content"], // Key exists in target
       },
     ];
 
