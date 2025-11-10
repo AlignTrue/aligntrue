@@ -16,6 +16,7 @@ import {
   X,
   Sun,
   Moon,
+  Github,
 } from "lucide-react";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 import { AlphaBanner } from "./components/AlphaBanner";
@@ -138,16 +139,29 @@ function SiteHeader() {
                 Docs
               </a>
               <a
-                href="https://github.com/AlignTrue/aligntrue"
-                target="_blank"
-                rel="noreferrer"
+                href="/docs/about"
                 style={{
                   fontSize: "0.875rem",
                   textDecoration: "none",
                   color: "var(--fg-default)",
                 }}
               >
-                GitHub
+                About
+              </a>
+              <a
+                href="https://github.com/AlignTrue/aligntrue"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--fg-default)",
+                }}
+                aria-label="AlignTrue GitHub repository"
+              >
+                <Github size={20} />
               </a>
               <ThemeToggle />
             </nav>
@@ -219,6 +233,26 @@ function SiteHeader() {
             }}
           >
             Docs
+          </a>
+          <a
+            href="/docs/about"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              padding: "0.75rem 1rem",
+              fontSize: "1rem",
+              textDecoration: "none",
+              color: "var(--fg-default)",
+              borderRadius: "0.375rem",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--bg-muted)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            About
           </a>
           <a
             href="https://github.com/AlignTrue/aligntrue"
