@@ -35,7 +35,7 @@ import { detectNewAgents } from "../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../utils/source-resolver.js";
 
 // ANSI color codes for diff output
-const colors = {
+const _colors = {
   cyan: (str: string) => `\x1b[36m${str}\x1b[0m`,
   green: (str: string) => `\x1b[32m${str}\x1b[0m`,
   yellow: (str: string) => `\x1b[33m${str}\x1b[0m`,
@@ -555,7 +555,7 @@ export async function sync(args: string[]): Promise<void> {
   const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
   const noAutoPull =
     (parsed.flags["no-auto-pull"] as boolean | undefined) || false;
-  const showAutoPullDiff =
+  const _showAutoPullDiff =
     (parsed.flags["show-auto-pull-diff"] as boolean | undefined) || false;
 
   if (config.sync?.auto_pull && !acceptAgent && !noAutoPull) {
@@ -892,7 +892,7 @@ export async function sync(args: string[]): Promise<void> {
       // TODO: Track sections changes for auto-pull in sections-only format
       // For now, skip tracking since import is not yet implemented
       try {
-        const currentIR = await loadIR(absoluteSourcePath);
+        const _currentIR = await loadIR(absoluteSourcePath);
         // Track sections instead of rules for future diffing
       } catch {
         // Ignore errors - might be first sync

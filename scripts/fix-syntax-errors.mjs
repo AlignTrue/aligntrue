@@ -9,10 +9,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { readdirSync, statSync } from "fs";
 import { resolve, join } from "path";
 
-const EXPORTERS_DIR = resolve(
-  process.cwd(),
-  "packages/exporters/src"
-);
+const EXPORTERS_DIR = resolve(process.cwd(), "packages/exporters/src");
 
 // Exporters with cleanup issues
 const NEEDS_FIXES = [
@@ -37,7 +34,7 @@ NEEDS_FIXES.forEach((exporterName) => {
 
     // Remove lines with rules references that don't have proper context
     const lines = content.split("\n");
-    const filtered: string[] = [];
+    const filtered = [];
     let braceDepth = 0;
     let inBrokenMethod = false;
 
@@ -47,7 +44,13 @@ NEEDS_FIXES.forEach((exporterName) => {
 
       // Skip lines that reference 'rules' variable which was removed
       if (trimmed.includes("rules.") || trimmed.includes("rules,")) {
-        if (trimmed.startsWith("const") || trimmed.startsWith("if") || trimmed.startsWith("for") || trimmed.startsWith(".map") || trimmed.startsWith(".forEach")) {
+        if (
+          trimmed.startsWith("const") ||
+          trimmed.startsWith("if") ||
+          trimmed.startsWith("for") ||
+          trimmed.startsWith(".map") ||
+          trimmed.startsWith(".forEach")
+        ) {
           // Skip these lines - they reference the removed rules variable
           continue;
         }
@@ -94,4 +97,3 @@ NEEDS_FIXES.forEach((exporterName) => {
 
 console.log(`\n📊 Fixed ${fixedCount} files`);
 console.log("\n▶️  Manually inspect files for remaining issues\n");
-
