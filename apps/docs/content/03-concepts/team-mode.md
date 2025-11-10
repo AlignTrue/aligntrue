@@ -44,6 +44,26 @@ aligntrue sync
 
 This generates `.aligntrue.lock.json` with deterministic bundle hash.
 
+### Lockfile with sections
+
+Lockfiles track section fingerprints for natural markdown packs:
+
+```json
+{
+  "rules": [
+    {
+      "rule_id": "fp:code-quality-a1b2c3", // Section fingerprint
+      "content_hash": "sha256:...",
+      "source": "..."
+    }
+  ]
+}
+```
+
+For rule-based packs, `rule_id` contains the explicit rule ID. For section-based packs, it contains the section fingerprint (prefixed with `fp:`).
+
+Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
+
 ### 3. Create allow list
 
 ```bash
