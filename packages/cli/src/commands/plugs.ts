@@ -293,13 +293,16 @@ async function validatePlugs(pack: AlignPack): Promise<void> {
   const plugPattern = /\{\{([^}]+)\}\}/g;
   const usedPlugs = new Set<string>();
 
-  for (const rule of pack.rules) {
-    if (rule.guidance) {
-      const matches = Array.from(rule.guidance.matchAll(plugPattern));
-      for (const match of matches) {
-        const plugName = match[1];
-        if (plugName) {
-          usedPlugs.add(plugName);
+  // Skip if no rules (section-based packs)
+  if (pack.rules) {
+    for (const rule of pack.rules) {
+      if (rule.guidance) {
+        const matches = Array.from(rule.guidance.matchAll(plugPattern));
+        for (const match of matches) {
+          const plugName = match[1];
+          if (plugName) {
+            usedPlugs.add(plugName);
+          }
         }
       }
     }

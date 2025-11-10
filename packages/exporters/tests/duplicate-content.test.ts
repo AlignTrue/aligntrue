@@ -49,9 +49,16 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should produce identical output on multiple syncs", async () => {
+    const rules = [testRule];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules: [testRule],
+      rules,
+      pack: {
+        id: "test-pack",
+        version: "1.0.0",
+        spec_version: "1",
+        rules,
+      },
       outputPath: "AGENTS.md",
     };
 
@@ -94,9 +101,16 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should not accumulate rules without resetState", async () => {
+    const rules = [testRule];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules: [testRule],
+      rules,
+      pack: {
+        id: "test-pack",
+        version: "1.0.0",
+        spec_version: "1",
+        rules,
+      },
       outputPath: "AGENTS.md",
     };
 
@@ -127,9 +141,16 @@ describe("Duplicate content bug fix", () => {
   });
 
   it("should not have duplicate HTML comment tags", async () => {
+    const rules = [testRule];
     const request: ScopedExportRequest = {
       scope: defaultScope,
-      rules: [testRule],
+      rules,
+      pack: {
+        id: "test-pack",
+        version: "1.0.0",
+        spec_version: "1",
+        rules,
+      },
       outputPath: "AGENTS.md",
     };
 
@@ -182,6 +203,12 @@ describe("Duplicate content bug fix", () => {
     const request: ScopedExportRequest = {
       scope: defaultScope,
       rules,
+      pack: {
+        id: "test-pack",
+        version: "1.0.0",
+        spec_version: "1",
+        rules,
+      },
       outputPath: "AGENTS.md",
     };
 

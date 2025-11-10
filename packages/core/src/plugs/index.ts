@@ -54,6 +54,15 @@ export function resolvePlugsForPack(
     const allUnresolvedRequired: string[] = [];
     const errors: string[] = [];
 
+    // Only process rules if they exist (skip section-based packs)
+    if (!pack.rules) {
+      return {
+        success: true,
+        rules: [],
+        unresolvedRequired: [],
+      };
+    }
+
     for (const rule of pack.rules) {
       if (rule.guidance) {
         // Check for undeclared plugs

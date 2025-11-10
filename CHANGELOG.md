@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 8: Team Mode Updates for Sections**
+  - Lockfile generator now supports section-based packs with fingerprint-based tracking
+  - Lockfile validator detects modified, new, and deleted sections
+  - Bundle merger handles section-based pack merging and conflict resolution
+  - Drift detection works seamlessly with fingerprints and sections
+  - Full test coverage for section-based lockfile operations (21 new tests)
+
+- **Phase 9: Example Packs Migration**
+  - Migrated all 11 example packs from YAML to natural markdown format
+  - Updated `packs.yaml` registry to reference markdown files
+  - Example packs now use YAML frontmatter with natural markdown content
+  - Improved readability and AI-friendliness of example documentation
+
+- **Natural Markdown Support**
+  - Natural markdown sections with YAML frontmatter as primary authoring format
+  - Section fingerprinting for stable identity without explicit IDs
+  - All 43 exporters support section-based packs
+  - Team mode lockfiles track sections via fingerprints
+  - Bundle merging handles section-based pack conflicts
+  - All 11 example packs use natural markdown format
+  - Documentation: Natural Markdown Workflow guide and technical reference
+
 ### Fixed
 
 - **Team mode critical fixes:**
@@ -14,8 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed error messages referencing non-existent `aligntrue lock` command (now suggests `aligntrue team approve`)
   - Removed "Session 6" debug artifact from team status output
   - Allow list now enforced in both soft and strict modes (soft warns, strict blocks)
-
-### Added
 
 - **Git source support in sync command:** Sync now supports git repositories as rule sources
   - Pull rules from remote git repositories with automatic caching
@@ -27,12 +49,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     sources:
       - type: git
         url: https://github.com/AlignTrue/examples
-        path: global.yaml
+        path: examples/packs/global.md
     ```
+
 - **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes
   - Reduces workflow from 5 steps to 2 steps (approve during sync instead of separate command)
   - Auto-adds approved hash to allow list and reminds to commit
   - Non-interactive mode still shows error with manual approval instructions
+
 - **Comprehensive team mode tests:** Added 6 new error handling tests covering flag validation, error messages, and team command validation
 - **Evergreen test repository:** Documented https://github.com/AlignTrue/examples as stable test repo for git source integration testing
 

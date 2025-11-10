@@ -11,12 +11,14 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
+  useSections: boolean;
 }
 
 export class AiderConfigExporter extends ExporterBase {
@@ -25,16 +27,31 @@ export class AiderConfigExporter extends ExporterBase {
 
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
+    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    if (!rules || rules.length === 0) {
+    // Get sections using unified helper
+    const sections = getSections(pack);
+    const useSections = sections.length > 0;
+
+    // Set mode on first call
+    if (
+      this.state.allRules.length === 0 &&
+      this.state.allSections.length === 0
+    ) {
+      this.state.useSections = useSections;
+    }
+
+    // Check if we have any content
+    if ((!rules || rules.length === 0) && sections.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -43,17 +60,34 @@ export class AiderConfigExporter extends ExporterBase {
     }
 
     const scopePath = this.formatScopePath(scope);
-    rules.forEach((rule) => {
-      this.state.allRules.push({ rule, scopePath });
-    });
+
+    if (useSections) {
+      sections.forEach((section) => {
+        this.state.allSections.push({ section, scopePath });
+      });
+    } else {
+      rules?.forEach((rule) => {
+        this.state.allRules.push({ rule, scopePath });
+      });
+    }
 
     const outputPath = join(outputDir, ".aider.conf.yml");
     const content = this.generateAiderConfigContent(options);
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
+    let contentHash: string;
+    let fidelityNotes: string[];
 
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    if (this.state.useSections) {
+      const allSectionsIR = this.state.allSections.map(
+        ({ section }) => section,
+      );
+      contentHash = computeContentHash({ sections: allSectionsIR });
+      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    } else {
+      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+      contentHash = computeContentHash({ rules: allRulesIR });
+      fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    }
 
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
@@ -72,6 +106,8 @@ export class AiderConfigExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
+      useSections: false,
     };
   }
 

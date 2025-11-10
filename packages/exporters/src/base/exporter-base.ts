@@ -17,7 +17,7 @@ import type {
   ExportResult,
   AdapterManifest,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { readFileSync } from "fs";
@@ -109,6 +109,98 @@ export abstract class ExporterBase implements ExporterPlugin {
       const fields = Array.from(unmappedFields).join(", ");
       notes.push(`Fields not supported in ${this.name} format: ${fields}`);
     }
+
+    // Generate notes for cross-agent vendor fields
+    if (crossAgentVendors.size > 0) {
+      const agents = Array.from(crossAgentVendors).join(", ");
+      notes.push(
+        `Vendor-specific fields for other agents preserved: ${agents}`,
+      );
+    }
+
+    return notes;
+  }
+
+  /**
+   * Render sections as natural markdown
+   *
+   * Converts AlignSection[] to clean markdown format with proper heading levels.
+   * Preserves vendor metadata in HTML comments for round-trip compatibility.
+   *
+   * @param sections - Sections to render
+   * @param includeVendor - Whether to include vendor metadata as HTML comments
+   * @returns Rendered markdown string
+   *
+   * @example
+   * ```typescript
+   * const markdown = this.renderSections(sections, false);
+   * // ## Testing
+   * //
+   * // Run tests before committing.
+   * ```
+   */
+  protected renderSections(
+    sections: AlignSection[],
+    includeVendor = false,
+  ): string {
+    if (sections.length === 0) {
+      return "";
+    }
+
+    const rendered = sections.map((section) => {
+      const lines: string[] = [];
+
+      // Heading with proper level
+      const headingPrefix = "#".repeat(section.level);
+      lines.push(`${headingPrefix} ${section.heading}`);
+      lines.push("");
+
+      // Add vendor metadata as HTML comment if requested and present
+      if (includeVendor && section.vendor) {
+        lines.push(
+          `<!-- aligntrue:vendor ${JSON.stringify(section.vendor)} -->`,
+        );
+        lines.push("");
+      }
+
+      // Content
+      lines.push(section.content.trim());
+
+      return lines.join("\n");
+    });
+
+    return rendered.join("\n\n");
+  }
+
+  /**
+   * Compute fidelity notes for sections
+   *
+   * Checks sections for agent-specific vendor metadata that may not be
+   * supported in the target format.
+   *
+   * @param sections - Sections to analyze
+   * @returns Array of human-readable fidelity notes
+   *
+   * @example
+   * ```typescript
+   * const notes = this.computeSectionFidelityNotes(sections);
+   * // ["Vendor-specific metadata for other agents preserved: cursor"]
+   * ```
+   */
+  protected computeSectionFidelityNotes(sections: AlignSection[]): string[] {
+    const notes: string[] = [];
+    const crossAgentVendors = new Set<string>();
+
+    sections.forEach((section) => {
+      // Check for cross-agent vendor fields
+      if (section.vendor) {
+        Object.keys(section.vendor).forEach((agent) => {
+          if (agent !== this.name && agent !== "_meta") {
+            crossAgentVendors.add(agent);
+          }
+        });
+      }
+    });
 
     // Generate notes for cross-agent vendor fields
     if (crossAgentVendors.size > 0) {

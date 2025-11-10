@@ -12,9 +12,9 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
 import type { ModeHints } from "@aligntrue/core";
-import { computeContentHash } from "@aligntrue/schema";
+import { computeContentHash, getSections } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
@@ -26,6 +26,8 @@ import {
 
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
+  useSections: boolean;
 }
 
 export class ClineExporter extends ExporterBase {
@@ -34,16 +36,28 @@ export class ClineExporter extends ExporterBase {
 
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
+    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false, config } = options;
 
-    if (!rules || rules.length === 0) {
+    const sections = getSections(pack);
+    const useSections = sections.length > 0;
+
+    if (
+      this.state.allRules.length === 0 &&
+      this.state.allSections.length === 0
+    ) {
+      this.state.useSections = useSections;
+    }
+
+    if ((!rules || rules.length === 0) && sections.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -51,10 +65,21 @@ export class ClineExporter extends ExporterBase {
       };
     }
 
-    const scopePath = this.formatScopePath(scope);
-    rules.forEach((rule) => {
-      this.state.allRules.push({ rule, scopePath });
-    });
+    if (useSections) {
+      sections.forEach((section) => {
+        this.state.allSections.push({
+          section,
+          scopePath: this.formatScopePath(scope),
+        });
+      });
+    } else {
+      rules?.forEach((rule) => {
+        this.state.allRules.push({
+          rule,
+          scopePath: this.formatScopePath(scope),
+        });
+      });
+    }
 
     const outputPath = join(outputDir, ".clinerules");
 
@@ -69,10 +94,20 @@ export class ClineExporter extends ExporterBase {
       options,
     );
 
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
+    let contentHash: string;
+    let fidelityNotes: string[];
 
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    if (this.state.useSections) {
+      const allSectionsIR = this.state.allSections.map(
+        ({ section }) => section,
+      );
+      contentHash = computeContentHash({ sections: allSectionsIR });
+      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    } else {
+      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+      contentHash = computeContentHash({ rules: allRulesIR });
+      fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    }
 
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
@@ -88,6 +123,8 @@ export class ClineExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
+      useSections: false,
     };
   }
 
