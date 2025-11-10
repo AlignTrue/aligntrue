@@ -182,6 +182,10 @@ describe("VsCodeMcpExporter", () => {
       };
 
       const result1 = await exporter.export(request1, options);
+
+      // Reset state between exports (simulating what SyncEngine does)
+      exporter.resetState();
+
       const result2 = await exporter.export(request2, options);
 
       expect(result1.contentHash).toBe(result2.contentHash);
