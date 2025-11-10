@@ -337,11 +337,8 @@ sync:
 In team mode, IR is the single source of truth. Agent edits require explicit approval:
 
 ```bash
-# Explicit import from agent
+# Accept rules from agent (pullback into IR)
 aligntrue sync --accept-agent cursor
-
-# Or use import command
-aligntrue import cursor --write
 ```
 
 **Primary Agent**

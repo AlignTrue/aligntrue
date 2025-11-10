@@ -9,7 +9,6 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
   init,
-  importCommand,
   migrate,
   md,
   sync,
@@ -102,11 +101,6 @@ async function main() {
   // Handle implemented commands
   if (command === "init") {
     await init(commandArgs);
-    return;
-  }
-
-  if (command === "import") {
-    await importCommand(commandArgs);
     return;
   }
 
