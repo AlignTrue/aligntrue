@@ -45,6 +45,7 @@ next-env.d.ts
 # AI agents
 .cursor/
 AGENTS.md
+CLAUDE.md
 
 # aligntrue local data (user-specific, never commit)
 .aligntrue/telemetry.json
