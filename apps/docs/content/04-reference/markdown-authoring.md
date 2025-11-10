@@ -1,17 +1,35 @@
 # Markdown authoring guide
 
-Learn how to author rules in literate markdown format using fenced code blocks.
+Learn how to author AlignTrue rules in markdown format.
+
+{/_ prettier-ignore-start _/}
+<Callout type="info">
+**Looking for the recommended format?** See the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) for the modern, streamlined approach using YAML frontmatter and section headings.
+
+This guide documents the **legacy fenced block format** which is still fully supported for backward compatibility.
+</Callout>
+{/_ prettier-ignore-end _/}
 
 ## Overview
 
-AlignTrue supports two markdown formats:
+AlignTrue supports two markdown authoring formats:
 
-- **Literate markdown** - Author your own rules using fenced ```aligntrue blocks
-- **Generated exports** - Files created by AlignTrue using HTML comment markers
+1. **Natural Markdown (Recommended)** - YAML frontmatter + section headings (`##`). No fenced blocks required.
+2. **Legacy Fenced Blocks** - Markdown with ` ```aligntrue` fenced code blocks containing YAML (documented here)
 
-This guide covers **literate markdown authoring**. For generated exports, see the sync behavior documentation.
+**For new projects, we recommend natural markdown.** It's simpler, more readable, and easier for AI agents to understand.
 
-## Literate markdown format
+## When to use fenced blocks
+
+The legacy fenced block format is useful when:
+
+- You need to maintain existing packs that use this format
+- You're working with tools that expect literate markdown
+- You want explicit YAML rule definitions with machine-checkable fields
+
+For most use cases, [natural markdown](/docs/01-guides/natural-markdown-workflow) is simpler and more maintainable.
+
+## Literate markdown format (legacy)
 
 Use fenced code blocks with the `aligntrue` language tag to define rules:
 
@@ -35,13 +53,11 @@ rules:
 ```
 ````
 
-````
-
 ## File structure
 
-**One block per file** - Each literate markdown file should contain ONE fenced ```aligntrue block:
+**One block per file** - Each literate markdown file should contain ONE fenced ` ```aligntrue` block:
 
-```markdown
+````markdown
 # My Project Rules
 
 This file defines all project rules.
@@ -51,10 +67,9 @@ id: my-rules
 version: 1.0.0
 spec_version: "1"
 rules: [...]
-````
+```
 
 Additional markdown content below (optional).
-
 ````
 
 ## Validation
@@ -70,7 +85,7 @@ aligntrue md format my-rules.md
 
 # Compile to IR (Intermediate Representation)
 aligntrue md compile my-rules.md
-````
+```
 
 ## Round-trip workflow
 
@@ -127,11 +142,9 @@ rules:
 ```
 ````
 
-````
-
 ### Testing requirements
 
-```markdown
+````markdown
 # Testing Guide
 
 ```aligntrue
@@ -148,15 +161,69 @@ rules:
     severity: info
     applies_to: ["src/**"]
     guidance: Aim for >80% code coverage
+```
 ````
 
+## Migrating to natural markdown
+
+To convert from fenced blocks to natural markdown:
+
+1. **Extract metadata to frontmatter:**
+
+````markdown
+# Before (fenced blocks)
+
+```aligntrue
+id: my-rules
+version: 1.0.0
+spec_version: "1"
+```
 ````
+
+# After (natural markdown)
+
+---
+
+id: "my-rules"
+version: "1.0.0"
+spec_version: "1"
+
+---
+
+````
+
+2. **Convert rules to sections:**
+
+```markdown
+# Before (fenced blocks)
+rules:
+  - id: code.quality
+    guidance: Write clean code...
+
+# After (natural markdown)
+## Code Quality
+
+Write clean code...
+````
+
+3. **Use the import command:**
+
+The `aligntrue import` command automatically converts to natural markdown format:
+
+```bash
+# Import and convert to natural markdown
+aligntrue import cursor
+# Creates AGENTS.md with natural markdown sections
+```
+
+See the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) for complete migration instructions.
 
 ## Troubleshooting
 
 **"No aligntrue blocks found"**
 
 Ensure:
+
 - The block uses exactly ` ```aligntrue` (with language tag)
 - Only ONE block per file
 - YAML content is valid
@@ -164,9 +231,10 @@ Ensure:
 **"Invalid YAML"**
 
 Use a YAML linter to validate:
+
 ```bash
 aligntrue md lint my-rules.md
-````
+```
 
 **"Missing required field"**
 
@@ -181,5 +249,7 @@ See the IR format reference for complete schema.
 
 ## Related pages
 
-- [Sync Behavior](/docs/03-concepts/sync-behavior) - IR format and how rules flow to agents
+- [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Recommended modern format
+- [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Technical reference
+- [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules flow to agents
 - [CLI Reference - md commands](/docs/04-reference/cli-reference/development#aligntrue-md-lint) - md lint, compile, format

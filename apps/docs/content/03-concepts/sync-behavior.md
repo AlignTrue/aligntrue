@@ -8,11 +8,11 @@ Complete reference for AlignTrue's two-way sync system, conflict resolution, and
 
 AlignTrue synchronizes rules between three locations:
 
-1. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated, pure YAML format)
-2. **User-Editable Files** - `AGENTS.md`, `.cursor/*.mdc`, `.vscode/mcp.json`, etc.
-3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only)
+1. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated, pure YAML format with section fingerprints)
+2. **User-Editable Files** - `AGENTS.md` (natural markdown with YAML frontmatter), `.cursor/*.mdc`, `.vscode/mcp.json`, etc.
+3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only, tracks section fingerprints)
 
-The sync engine maintains consistency while allowing both IR→agent and agent→IR flows.
+The sync engine maintains consistency while allowing both IR→agent and agent→IR flows. For details on authoring rules in natural markdown format, see the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow).
 
 ## Sync directions
 
@@ -826,6 +826,8 @@ Volatile fields won't cause lockfile drift.
 
 ## See also
 
+- [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Authoring rules with sections and fingerprints
+- [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Technical reference for section-based format
 - [Command Reference](/docs/04-reference/cli-reference) - Detailed flag documentation
 - [Import Workflow](/docs/04-reference/import-workflow) - Migrate from existing agent rules
 - [Git Sources Guide](/docs/04-reference/git-sources) - Pull rules from repositories

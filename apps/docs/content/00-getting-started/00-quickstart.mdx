@@ -112,15 +112,23 @@ This creates `.cursor/rules/*.mdc` files ready for Cursor.
 Open `AGENTS.md` and edit the starter rules for your project:
 
 ```markdown
-# AGENTS.md
+---
+id: "project-rules"
+version: "1.0.0"
+summary: "Project rules and standards"
+---
 
-## Rule: use-typescript-strict
+# Project Rules
 
-**ID:** use-typescript-strict
-**Severity:** ERROR
-**Scope:** **/\*.ts, **/\*.tsx
+## Use TypeScript Strict Mode
 
-Enable strict mode in tsconfig.json for better type safety.
+Enable strict mode in tsconfig.json for better type safety. This catches more errors at compile time and makes refactoring safer.
+
+Set these in tsconfig.json:
+
+- noImplicitAny: true
+- strictNullChecks: true
+- strictFunctionTypes: true
 ```
 
 The starter template includes examples for:
@@ -219,4 +227,4 @@ No setup needed! These agents automatically read `AGENTS.md` from your project r
 
 ## Next: Author your own rules
 
-The starter template uses a simple markdown format. To author rules in fenced code blocks (literate markdown), see the [Markdown authoring guide](/docs/04-reference/markdown-authoring).
+The starter template uses natural markdown format with YAML frontmatter and section headings. For more details on authoring rules, see the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) or the [Markdown authoring guide](/docs/04-reference/markdown-authoring) for the legacy fenced block format.
