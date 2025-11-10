@@ -165,7 +165,7 @@ aligntrue sync --accept-agent cursor
 aligntrue sync --accept-agent agents-md
 ```
 
-See [Import Workflow Guide](/docs/04-reference/import-workflow) for detailed migration strategies and coverage analysis.
+See [Migration Guide](/docs/01-guides/02-migration) for migrating existing rules to AlignTrue.
 
 **Output:**
 
@@ -829,7 +829,7 @@ Volatile fields won't cause lockfile drift.
 - [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Authoring rules with sections and fingerprints
 - [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Technical reference for section-based format
 - [Command Reference](/docs/04-reference/cli-reference) - Detailed flag documentation
-- [Import Workflow](/docs/04-reference/import-workflow) - Migrate from existing agent rules
+- [Migration Guide](/docs/01-guides/02-migration) - Migrate from existing agent rules
 - [Git Sources Guide](/docs/04-reference/git-sources) - Pull rules from repositories
 - [Troubleshooting](/docs/05-troubleshooting) - Common sync issues
 - [Extending AlignTrue](/docs/06-contributing/adding-exporters) - Create custom exporters

@@ -17,28 +17,24 @@ const mockIR: AlignPack = {
   version: "1.0.0",
   spec_version: "1",
   summary: "Test pack for overlay engine",
-  rules: [
+  sections: [
     {
-      id: "rule-one",
-      severity: "error",
-      applies_to: ["*.ts"],
-      guidance: "First rule",
+      heading: "Rule One",
+      level: 2,
+      content: "First rule",
+      fingerprint: "rule-one",
     },
     {
-      id: "rule-two",
-      severity: "warn",
-      applies_to: ["*.js"],
-      guidance: "Second rule",
-      check: {
-        type: "regex",
-        inputs: { pattern: "test", files: ["src/**/*.js"] },
-      },
+      heading: "Rule Two",
+      level: 2,
+      content: "Second rule",
+      fingerprint: "rule-two",
     },
     {
-      id: "rule-three",
-      severity: "info",
-      applies_to: ["*.md"],
-      guidance: "Third rule",
+      heading: "Rule Three",
+      level: 2,
+      content: "Third rule",
+      fingerprint: "rule-three",
     },
   ],
 };
@@ -47,15 +43,15 @@ describe("evaluateSelector - rule selectors", () => {
   it("matches single rule by id", () => {
     const result = evaluateSelector("rule[id=rule-one]", mockIR);
     expect(result.success).toBe(true);
-    expect(result.targetPath).toEqual(["rules", "0"]);
-    expect(result.targetValue).toEqual(mockIR.rules[0]);
+    expect(result.targetPath).toEqual(["sections", "0"]);
+    expect(result.targetValue).toEqual(mockIR.sections[0]);
     expect(result.matchCount).toBe(1);
   });
 
   it("matches rule at different index", () => {
     const result = evaluateSelector("rule[id=rule-two]", mockIR);
     expect(result.success).toBe(true);
-    expect(result.targetPath).toEqual(["rules", "1"]);
+    expect(result.targetPath).toEqual(["sections", "1"]);
     expect(result.matchCount).toBe(1);
   });
 
@@ -66,19 +62,24 @@ describe("evaluateSelector - rule selectors", () => {
     expect(result.matchCount).toBe(0);
   });
 
-  it("fails when IR has no rules array", () => {
-    const emptyIR = { id: "test", version: "1.0.0", spec_version: "1" } as any;
+  it("fails when IR has no sections array", () => {
+    const emptyIR = {
+      id: "test",
+      version: "1.0.0",
+      spec_version: "1",
+      sections: [],
+    } as any;
     const result = evaluateSelector("rule[id=test]", emptyIR);
     expect(result.success).toBe(false);
-    expect(result.error).toContain("does not contain rules array");
+    expect(result.error).toContain("No rule found");
   });
 
   it("detects multiple matching rules (ambiguous)", () => {
     const duplicateIR: AlignPack = {
       ...mockIR,
-      rules: [
-        { id: "dup", severity: "error", applies_to: ["*"], guidance: "A" },
-        { id: "dup", severity: "warn", applies_to: ["*"], guidance: "B" },
+      sections: [
+        { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },
+        { heading: "Dup B", level: 2, content: "B", fingerprint: "dup" },
       ],
     };
     const result = evaluateSelector("rule[id=dup]", duplicateIR);
@@ -97,10 +98,10 @@ describe("evaluateSelector - property path selectors", () => {
   });
 
   it("matches nested property", () => {
-    const result = evaluateSelector("rules", mockIR);
+    const result = evaluateSelector("sections", mockIR);
     expect(result.success).toBe(true);
-    expect(result.targetPath).toEqual(["rules"]);
-    expect(result.targetValue).toEqual(mockIR.rules);
+    expect(result.targetPath).toEqual(["sections"]);
+    expect(result.targetValue).toEqual(mockIR.sections);
   });
 
   it("fails when property does not exist", () => {
@@ -124,21 +125,21 @@ describe("evaluateSelector - property path selectors", () => {
 
 describe("evaluateSelector - array index selectors", () => {
   it("matches array element by index", () => {
-    const result = evaluateSelector("rules[0]", mockIR);
+    const result = evaluateSelector("sections[0]", mockIR);
     expect(result.success).toBe(true);
-    expect(result.targetPath).toEqual(["rules", "0"]);
-    expect(result.targetValue).toEqual(mockIR.rules[0]);
+    expect(result.targetPath).toEqual(["sections", "0"]);
+    expect(result.targetValue).toEqual(mockIR.sections[0]);
   });
 
   it("matches array element at different index", () => {
-    const result = evaluateSelector("rules[2]", mockIR);
+    const result = evaluateSelector("sections[2]", mockIR);
     expect(result.success).toBe(true);
-    expect(result.targetPath).toEqual(["rules", "2"]);
-    expect(result.targetValue).toEqual(mockIR.rules[2]);
+    expect(result.targetPath).toEqual(["sections", "2"]);
+    expect(result.targetValue).toEqual(mockIR.sections[2]);
   });
 
   it("fails when array index out of bounds", () => {
-    const result = evaluateSelector("rules[99]", mockIR);
+    const result = evaluateSelector("sections[99]", mockIR);
     expect(result.success).toBe(false);
     expect(result.error).toContain("out of bounds");
   });
@@ -150,7 +151,7 @@ describe("evaluateSelector - array index selectors", () => {
   });
 
   it("matches nested array element", () => {
-    const result = evaluateSelector("rules[1]", mockIR);
+    const result = evaluateSelector("sections[1]", mockIR);
     expect(result.success).toBe(true);
     // Verify we can access nested properties of the matched rule
     const rule = result.targetValue as any;
@@ -224,7 +225,7 @@ describe("findStaleSelectors", () => {
   it("excludes ambiguous selectors from stale list", () => {
     const duplicateIR: AlignPack = {
       ...mockIR,
-      rules: [
+      sections: [
         { id: "dup", severity: "error", applies_to: ["*"], guidance: "A" },
         { id: "dup", severity: "warn", applies_to: ["*"], guidance: "B" },
       ],
@@ -240,7 +241,7 @@ describe("findAmbiguousSelectors", () => {
   it("finds selectors that match multiple targets", () => {
     const duplicateIR: AlignPack = {
       ...mockIR,
-      rules: [
+      sections: [
         { id: "dup", severity: "error", applies_to: ["*"], guidance: "A" },
         { id: "dup", severity: "warn", applies_to: ["*"], guidance: "B" },
         { id: "triple", severity: "info", applies_to: ["*"], guidance: "C" },

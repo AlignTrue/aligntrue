@@ -17,9 +17,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
           },
@@ -36,9 +37,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning", // Unchanged
             description: "Added description", // New field
@@ -58,9 +60,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
           },
         ],
@@ -76,9 +79,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             description: "New description", // Added upstream
           },
@@ -97,9 +101,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
           },
@@ -116,9 +121,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "critical", // Upstream change (different from base and overlay)
           },
@@ -137,9 +143,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
             enabled: true,
@@ -157,9 +164,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
             // enabled removed upstream
@@ -179,9 +187,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             deprecated: true,
           },
@@ -198,9 +207,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             deprecated: false, // Upstream changed value
           },
@@ -220,9 +230,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
           },
@@ -239,9 +250,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "critical",
           },
@@ -263,9 +275,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
           },
@@ -282,9 +295,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "critical",
           },
@@ -304,9 +318,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "warning",
           },
@@ -323,9 +338,10 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
             severity: "critical",
           },
@@ -345,14 +361,16 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Rule 1",
             severity: "warning",
           },
           {
             id: "rule2",
+            fingerprint: "rule2",
             name: "Rule 2",
             enabled: true,
           },
@@ -373,14 +391,16 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Rule 1",
             severity: "warning",
           },
           {
             id: "rule2",
+            fingerprint: "rule2",
             name: "Rule 2",
             enabled: true,
           },
@@ -398,14 +418,16 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Rule 1",
             severity: "warning",
           },
           {
             id: "rule2",
+            fingerprint: "rule2",
             name: "Rule 2",
             severity: "info",
           },
@@ -426,14 +448,16 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Rule 1",
             severity: "critical", // Changed upstream
           },
           {
             id: "rule2",
+            fingerprint: "rule2",
             name: "Rule 2",
             severity: "error", // Changed upstream
           },
@@ -452,13 +476,13 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [],
+        sections: [],
       };
 
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [],
+        sections: [],
       };
 
       const result = threeWayMerge(base, [], newBase);
@@ -471,9 +495,10 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [
+        sections: [
           {
             id: "rule1",
+            fingerprint: "rule1",
             name: "Test Rule",
           },
         ],
@@ -496,7 +521,7 @@ describe("threeWayMerge", () => {
       const base: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
-        rules: [],
+        sections: [],
       };
 
       const overlays: OverlayDefinition[] = [
@@ -509,7 +534,7 @@ describe("threeWayMerge", () => {
       const newBase: AlignPack = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
-        rules: [],
+        sections: [],
       };
 
       const result = threeWayMerge(base, overlays, newBase);

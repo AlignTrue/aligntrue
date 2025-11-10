@@ -286,10 +286,10 @@ volatile: ["*.temp_*", "*.cache_*"]
 
 Vendor bags are preserved during:
 
-### Import from agent
+### Pull from agent
 
 ```bash
-aligntrue import cursor --write
+aligntrue sync --accept-agent cursor
 ```
 
 Cursor-specific fields → `vendor.cursor` namespace
@@ -459,10 +459,10 @@ vendor:
 Verify vendor bags are preserved:
 
 ```bash
-# Import
-aligntrue import cursor --write
+# Pull from agent
+aligntrue sync --accept-agent cursor
 
-# Export
+# Export back
 aligntrue sync
 
 # Check preserved
@@ -525,7 +525,7 @@ tail -20 .cursor/rules/aligntrue.mdc
 ## Related documentation
 
 - [Multi-Agent Workflows](/docs/01-guides/06-multi-agent-workflows) - Using multiple agents
-- [Import Workflow](/docs/04-reference/import-workflow) - Importing with vendor bags
+- [Migration Guide](/docs/01-guides/02-migration) - Migrating existing rules
 - [Adding Exporters](/docs/06-contributing/adding-exporters) - Creating exporters with vendor bags
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 

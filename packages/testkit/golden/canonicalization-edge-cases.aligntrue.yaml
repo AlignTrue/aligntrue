@@ -1,41 +1,23 @@
 # Canonicalization edge cases pack
 # Tests: deterministic hashing with various data types
 
-id: "packs/testkit/canonicalization-edge-cases"
-version: "1.0.0"
+id: packs/testkit/canonicalization-edge-cases
+version: 1.0.0
 spec_version: "1"
-summary: "Tests canonicalization edge cases"
-rules:
-  - id: "canon.example.nulls"
-    severity: "info"
-    applies_to: ["**/*"]
-    check:
-      type: "file_presence"
-      inputs:
-        paths: ["test.txt"]
-      evidence: "Null handling test"
-
-  - id: "canon.example.unicode"
-    severity: "warn"
-    applies_to: ["**/*.ts"]
-    check:
-      type: "regex"
-      inputs:
-        include: ["**/*.ts"]
-        pattern: "[ñáéíóú]"
-        allow: false
-      evidence: "Unicode normalization test"
-
-  - id: "canon.example.floats"
-    severity: "error"
-    applies_to: ["**/Makefile"]
-    check:
-      type: "path_convention"
-      inputs:
-        include: ["**/"]
-        pattern: "[a-z0-9]+"
-      evidence: "Float precision test"
-
+summary: Tests canonicalization edge cases
+sections:
+  - heading: "Null Handling"
+    level: 2
+    content: Tests deterministic hashing with null values.
+    fingerprint: null-handling
+  - heading: "Unicode Normalization"
+    level: 2
+    content: Ensure consistent unicode normalization in hashes.
+    fingerprint: unicode-normalization
+  - heading: "Numeric Precision"
+    level: 2
+    content: Verify float precision in canonical JSON serialization.
+    fingerprint: numeric-precision
 integrity:
-  algo: "jcs-sha256"
-  value: "840dd6266c46666b0933e3fe238a55f338509fa1bbca87b53ff949e5dcbbc85b"
+  algo: jcs-sha256
+  value: "56f1038dab920e70a9435e7763cbaa0d88a34347a9a01dca39d0835829d4fd42"

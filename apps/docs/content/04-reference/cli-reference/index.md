@@ -34,7 +34,6 @@ Quick lookup table for all CLI commands:
 | Command                     | Description                             | Category                                                                    |
 | --------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
 | `aligntrue init`            | Initialize project with agent detection | [Basic](./basic#aligntrue-init)                                             |
-| `aligntrue import`          | Import from agent formats               | [Basic](./basic#aligntrue-import)                                           |
 | `aligntrue sync`            | Sync rules to agents                    | [Basic](./basic#aligntrue-sync)                                             |
 | `aligntrue check`           | Validate rules                          | [Basic](./basic#aligntrue-check)                                            |
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
@@ -77,12 +76,6 @@ aligntrue init
 
 ```bash
 aligntrue sync
-```
-
-**Import existing Cursor rules:**
-
-```bash
-aligntrue import --from cursor
 ```
 
 **Check rules for errors:**

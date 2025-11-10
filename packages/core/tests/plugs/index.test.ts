@@ -20,18 +20,18 @@ describe("resolvePlugsForPack", () => {
           "test.cmd": "npm test",
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.require.tests",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Run [[plug:test.cmd]] to verify",
+          heading: "Test Rule 1",
+          level: 2,
+          content: "Run [[plug:test.cmd]] to verify",
+          fingerprint: "test-rule-1",
         },
         {
-          id: "test.another.rule",
-          severity: "warn",
-          applies_to: ["**/*.ts"],
-          guidance: "Use [[plug:test.cmd]] for testing",
+          heading: "Test Rule 2",
+          level: 2,
+          content: "Use [[plug:test.cmd]] for testing",
+          fingerprint: "test-rule-2",
         },
       ],
     };
@@ -50,11 +50,12 @@ describe("resolvePlugsForPack", () => {
       id: "test/pack",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
+          heading: "Simple Rule",
+          level: 2,
+          content: "",
+          fingerprint: "simple-rule",
         },
       ],
     };
@@ -87,12 +88,12 @@ describe("resolvePlugsForPack", () => {
           },
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Run [[plug:test.cmd]] then [[plug:build.cmd]]",
+          heading: "Test Rule",
+          level: 2,
+          content: "Run [[plug:test.cmd]] then [[plug:build.cmd]]",
+          fingerprint: "test-rule",
         },
       ],
     };
@@ -120,12 +121,12 @@ describe("resolvePlugsForPack", () => {
           },
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Run [[plug:test.cmd]]",
+          heading: "Test Rule",
+          level: 2,
+          content: "Run [[plug:test.cmd]]",
+          fingerprint: "test-rule",
         },
       ],
     };
@@ -154,12 +155,12 @@ describe("resolvePlugsForPack", () => {
           },
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Run [[plug:test.cmd]]",
+          heading: "Test Rule",
+          level: 2,
+          content: "Run [[plug:test.cmd]]",
+          fingerprint: "test-rule",
         },
       ],
     };
@@ -189,12 +190,12 @@ describe("resolvePlugsForPack", () => {
           },
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Run [[plug:undeclared.cmd]]",
+          heading: "Test Rule",
+          level: 2,
+          content: "Run [[plug:undeclared.cmd]]",
+          fingerprint: "test-rule",
         },
       ],
     };
@@ -212,12 +213,12 @@ describe("resolvePlugsForPack", () => {
       id: "test/pack",
       version: "1.0.0",
       spec_version: "1",
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "No plugs here",
+          heading: "Test Rule",
+          level: 2,
+          content: "No plugs here\n",
+          fingerprint: "test-rule",
         },
       ],
     };
@@ -246,12 +247,12 @@ describe("resolvePlugsForPack", () => {
           "test.file": "/absolute/path", // Invalid
         },
       },
-      rules: [
+      sections: [
         {
-          id: "test.rule",
-          severity: "error",
-          applies_to: ["**/*.ts"],
-          guidance: "Check [[plug:test.file]]",
+          heading: "Test Rule",
+          level: 2,
+          content: "Check [[plug:test.file]]",
+          fingerprint: "test-rule",
         },
       ],
     };

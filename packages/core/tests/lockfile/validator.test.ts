@@ -8,7 +8,7 @@ import {
   formatLockfileTeamErrors,
 } from "../../src/lockfile/validator.js";
 import { generateLockfile } from "../../src/lockfile/generator.js";
-import type { AlignPack, AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignPack, AlignSection, AlignSection } from "@aligntrue/schema";
 import type { Lockfile } from "../../src/lockfile/types.js";
 import * as fs from "fs";
 
@@ -28,11 +28,11 @@ vi.mock("../../src/team/allow.js", () => ({
 }));
 
 describe("lockfile validator", () => {
-  const mockRule: AlignRule = {
-    id: "test.rule.one",
-    severity: "error",
-    applies_to: ["*.ts"],
-    guidance: "Test rule guidance",
+  const mockRule: AlignSection = {
+    heading: "Test Rule One",
+    level: 2,
+    content: "Test rule guidance",
+    fingerprint: "test-rule-one",
   };
 
   const mockPack: AlignPack = {
@@ -43,7 +43,7 @@ describe("lockfile validator", () => {
     owner: "test-org",
     source: "https://github.com/test-org/aligns",
     source_sha: "abc123",
-    rules: [mockRule],
+    sections: [mockRule],
   };
 
   describe("validateLockfile", () => {
@@ -61,7 +61,7 @@ describe("lockfile validator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const modifiedPack: AlignPack = {
         ...mockPack,
-        rules: [{ ...mockRule, guidance: "Modified guidance" }],
+        sections: [{ ...mockRule, guidance: "Modified guidance" }],
       };
 
       const result = validateLockfile(lockfile, modifiedPack);
@@ -80,7 +80,7 @@ describe("lockfile validator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const packWithNewRule: AlignPack = {
         ...mockPack,
-        rules: [mockRule, { ...mockRule, id: "test.rule.new" }],
+        sections: [mockRule, { ...mockRule, id: "test.rule.new" }],
       };
 
       const result = validateLockfile(lockfile, packWithNewRule);
@@ -93,7 +93,7 @@ describe("lockfile validator", () => {
     it("detects deleted rules", () => {
       const packWithTwoRules: AlignPack = {
         ...mockPack,
-        rules: [mockRule, { ...mockRule, id: "test.rule.deleted" }],
+        sections: [mockRule, { ...mockRule, id: "test.rule.deleted" }],
       };
       const lockfile = generateLockfile(packWithTwoRules, "team");
 
@@ -107,7 +107,7 @@ describe("lockfile validator", () => {
     it("detects multiple types of changes", () => {
       const originalPack: AlignPack = {
         ...mockPack,
-        rules: [
+        sections: [
           { ...mockRule, id: "test.rule.one" },
           { ...mockRule, id: "test.rule.two" },
         ],
@@ -116,7 +116,7 @@ describe("lockfile validator", () => {
 
       const modifiedPack: AlignPack = {
         ...mockPack,
-        rules: [
+        sections: [
           { ...mockRule, id: "test.rule.one", guidance: "Modified" }, // Modified
           { ...mockRule, id: "test.rule.three" }, // New
           // test.rule.two is deleted
@@ -135,7 +135,7 @@ describe("lockfile validator", () => {
     });
 
     it("handles empty rule arrays", () => {
-      const emptyPack: AlignPack = { ...mockPack, rules: [] };
+      const emptyPack: AlignPack = { ...mockPack, sections: [] };
       const lockfile = generateLockfile(emptyPack, "team");
 
       const result = validateLockfile(lockfile, emptyPack);
@@ -150,7 +150,7 @@ describe("lockfile validator", () => {
       const lockfile = generateLockfile(mockPack, "team");
       const modifiedPack: AlignPack = {
         ...mockPack,
-        rules: [{ ...mockRule, guidance: "Modified" }],
+        sections: [{ ...mockRule, guidance: "Modified" }],
       };
 
       const result = validateLockfile(lockfile, modifiedPack);
@@ -337,7 +337,7 @@ describe("lockfile validator", () => {
         version: "1",
         generated_at: new Date().toISOString(),
         mode: "team",
-        rules: [
+        sections: [
           {
             rule_id: "test.rule",
             content_hash: "sha256:abc...",

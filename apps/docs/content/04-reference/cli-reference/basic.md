@@ -14,25 +14,21 @@ aligntrue init [options]
 
 **Flags:**
 
-| Flag                 | Description                                  | Default |
-| -------------------- | -------------------------------------------- | ------- |
-| `--import <agent>`   | Import from agent format (cursor, agents-md) | -       |
-| `--yes`, `-y`        | Non-interactive mode (uses defaults)         | `false` |
-| `--project-id <id>`  | Project identifier (default: auto-detected)  | -       |
-| `--exporters <list>` | Comma-separated list of exporters            | -       |
+| Flag                 | Description                                 | Default |
+| -------------------- | ------------------------------------------- | ------- |
+| `--yes`, `-y`        | Non-interactive mode (uses defaults)        | `false` |
+| `--project-id <id>`  | Project identifier (default: auto-detected) | -       |
+| `--exporters <list>` | Comma-separated list of exporters           | -       |
 
 **What it does:**
 
 1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
-2. Detects existing agent rules and offers to import them
-3. Creates `.aligntrue/config.yaml` with detected agents enabled
-4. Creates `.aligntrue/.rules.yaml` (internal IR with sections) and `AGENTS.md` (natural markdown with frontmatter + sections)
-5. Auto-configures sync settings based on initialization choice
+2. Creates `.aligntrue/config.yaml` with detected agents enabled
+3. Creates `.aligntrue/.rules.yaml` (internal IR) and `AGENTS.md` (primary user-editable file)
+4. Auto-configures sync settings
 
 **Interactive prompts:**
 
-- **Import existing rules?** - If Cursor `.mdc` or `AGENTS.md` detected
-- **Preview coverage?** - Show import coverage report before importing
 - **Agents detected** - Choose which agents to enable (auto-enables if ≤3 detected)
 - **Project ID** - Identifier for your project (used in rule IDs)
 - **Create files?** - Confirm before writing
@@ -40,28 +36,18 @@ aligntrue init [options]
 **Examples:**
 
 ```bash
-# Fresh project setup
+# Interactive setup
 aligntrue init
 
-# Import existing Cursor rules (interactive)
-aligntrue init
-# Detects .cursor/rules/*.mdc and offers import
+# Non-interactive with defaults
+aligntrue init --yes
 
-# Import existing rules (non-interactive)
-aligntrue init --yes --import cursor
+# Specify project ID
+aligntrue init --project-id my-project
 
-# Import from AGENTS.md
-aligntrue init --import agents-md
-
-# Skip import, use fresh template
-aligntrue init
-# Select "Start fresh" when prompted
+# Specify exporters
+aligntrue init --exporters cursor,agents-md,windsurf
 ```
-
-**Workflow mode auto-configuration:**
-
-- **Imported rules** → `workflow_mode: native_format` (auto-pull enabled)
-- **Fresh start** → `workflow_mode: ir_source` (auto-pull disabled)
 
 **Exit codes:**
 
@@ -72,93 +58,7 @@ aligntrue init
 **See also:**
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) for step-by-step walkthrough
-- [Workflows Guide](/docs/01-guides/01-workflows) for workflow mode details
-
----
-
-## `aligntrue import`
-
-Analyze and import rules from agent-specific formats with coverage analysis.
-
-**Usage:**
-
-```bash
-aligntrue import <agent> [options]
-```
-
-**Arguments:**
-
-- `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
-
-**Flags:**
-
-| Flag            | Description                                      | Default |
-| --------------- | ------------------------------------------------ | ------- |
-| `--coverage`    | Show import coverage report                      | `true`  |
-| `--no-coverage` | Skip coverage report                             | `false` |
-| `--write`       | Write imported rules to `.aligntrue/.rules.yaml` | `false` |
-| `--dry-run`     | Preview without writing files                    | `false` |
-
-**What it does:**
-
-1. Loads rules from agent-specific format (`.cursor/rules/*.mdc` or `AGENTS.md`)
-2. Parses agent format to IR (Intermediate Representation)
-3. Converts rules to sections (natural markdown format)
-4. Generates `AGENTS.md` with YAML frontmatter + markdown sections
-5. Writes `.aligntrue/.rules.yaml` with section-based IR (not rule-based)
-6. Generates coverage report showing field-level mapping
-7. Calculates coverage percentage and confidence level
-
-**Coverage Report:**
-
-The coverage report shows:
-
-- **Rules imported** - Number of rules found in agent format
-- **Field mapping** - Which IR fields are mapped from agent format
-- **Unmapped fields** - Fields that cannot be mapped (preserved in `vendor.*`)
-- **Coverage percentage** - (mapped fields / total IR fields) × 100
-- **Confidence level** - high (≥90%), medium (70-89%), low (<70%)
-- **Vendor preservation** - Whether agent-specific metadata is preserved
-
-**Examples:**
-
-```bash
-# Analyze Cursor rules
-aligntrue import cursor
-
-# Import from AGENTS.md
-aligntrue import agents-md
-
-# Import and write to IR file
-aligntrue import cursor --write
-
-# Preview import without writing
-aligntrue import cursor --write --dry-run
-
-# Skip coverage report
-aligntrue import cursor --no-coverage
-```
-
-**Supported Agents:**
-
-- **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
-- **cursorrules** - `.cursorrules` legacy single-file format (same as `.mdc`)
-- **agents-md** - `AGENTS.md` universal markdown format (case-insensitive)
-- **claude-md** - `CLAUDE.md` format (case-insensitive)
-- **crush-md** - `CRUSH.md` format (case-insensitive)
-- **warp-md** - `WARP.md` format (case-insensitive)
-- **copilot** - AGENTS.md format (alias)
-- **claude-code** - AGENTS.md format (alias)
-- **aider** - AGENTS.md format (alias)
-
-See [Import Workflow Guide](/docs/04-reference/import-workflow) for step-by-step migration instructions.
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Error (agent not found, no rules, unsupported agent)
-
-**See also:** [Sync Behavior](/docs/03-concepts/sync-behavior) for two-way sync details.
+- [Migration Guide](/docs/01-guides/02-migration) for migrating existing rules
 
 ---
 

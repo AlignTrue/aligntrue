@@ -158,11 +158,11 @@ describe("deepClone", () => {
   });
 
   it("clones arrays", () => {
-    const obj = { rules: [{ id: "a" }, { id: "b" }] };
+    const obj = { sections: [{ id: "a" }, { id: "b" }] };
     const cloned = deepClone(obj);
     expect(cloned).toEqual(obj);
-    expect(cloned.rules).not.toBe(obj.rules);
-    expect(cloned.rules[0]).not.toBe(obj.rules[0]);
+    expect(cloned.sections).not.toBe(obj.sections);
+    expect(cloned.sections[0]).not.toBe(obj.sections[0]);
   });
 });
 

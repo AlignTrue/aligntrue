@@ -88,7 +88,7 @@ function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
   return {
     success: true,
     targetPath: ["sections", String(match.index)],
-    targetValue: match.fingerprint,
+    targetValue: ir.sections[match.index],
     matchCount: 1,
   };
 }
