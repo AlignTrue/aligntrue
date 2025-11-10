@@ -14,42 +14,27 @@ import type { OverlayDefinition } from "../../src/overlays/types.js";
 
 describe("validateOverlays", () => {
   const baseIR: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
     spec_version: "1",
-    profile: {
-      id: "test-pack",
-      name: "Test Pack",
-      version: "1.0.0",
-    },
     sections: [
       {
-        id: "rule-alpha",
+        heading: "Rule Alpha",
+        level: 2,
+        content: "First rule",
         fingerprint: "rule-alpha",
-        description: "First rule",
-        severity: "error",
-        enabled: true,
-        tags: ["test"],
       },
       {
-        id: "rule-beta",
+        heading: "Rule Beta",
+        level: 2,
+        content: "Second rule",
         fingerprint: "rule-beta",
-        description: "Second rule",
-        severity: "warning",
-        enabled: true,
-        tags: ["test"],
       },
       {
-        id: "rule-gamma",
+        heading: "Rule Gamma",
+        level: 2,
+        content: "Third rule with plugs",
         fingerprint: "rule-gamma",
-        description: "Third rule with plugs",
-        severity: "info",
-        enabled: true,
-        tags: ["test"],
-        plugs: [
-          {
-            slot: "severity",
-            description: "Severity level",
-          },
-        ],
       },
     ],
   };
@@ -550,19 +535,15 @@ describe("detectRedundantOverlays", () => {
 
 describe("areOverlaysValid", () => {
   const baseIR: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
     spec_version: "1",
-    profile: {
-      id: "test-pack",
-      name: "Test Pack",
-      version: "1.0.0",
-    },
     sections: [
       {
-        id: "rule-alpha",
-        description: "Test rule",
-        severity: "error",
-        enabled: true,
-        tags: [],
+        heading: "Rule Alpha",
+        level: 2,
+        content: "Test rule",
+        fingerprint: "rule-alpha",
       },
     ],
   };
@@ -571,7 +552,7 @@ describe("areOverlaysValid", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="rule-alpha"]',
-        set: { severity: "warning" },
+        set: { content: "updated content" },
       },
     ];
 
@@ -582,7 +563,7 @@ describe("areOverlaysValid", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="non-existent"]',
-        set: { severity: "error" },
+        set: { content: "error" },
       },
     ];
 
@@ -594,12 +575,10 @@ describe("areOverlaysValid", () => {
       ...baseIR,
       sections: [
         {
-          id: "rule-alpha",
-          description: "Rule with plugs",
-          severity: "error",
-          enabled: true,
-          tags: [],
-          plugs: [{ slot: "severity", description: "Severity" }],
+          heading: "Rule Alpha",
+          level: 2,
+          content: "Rule with plugs",
+          fingerprint: "rule-alpha",
         },
       ],
     };
@@ -607,7 +586,7 @@ describe("areOverlaysValid", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: 'rule[id="rule-alpha"]',
-        set: { severity: "warning" }, // Plug conflict warning
+        set: { content: "updated" },
       },
     ];
 

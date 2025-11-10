@@ -155,8 +155,8 @@ describe("evaluateSelector - array index selectors", () => {
     expect(result.success).toBe(true);
     // Verify we can access nested properties of the matched rule
     const rule = result.targetValue as any;
-    expect(rule.check).toBeDefined();
-    expect(rule.check.inputs.files).toEqual(["src/**/*.js"]);
+    expect(rule.heading).toBe("Rule Two");
+    expect(rule.fingerprint).toBe("rule-two");
   });
 });
 
