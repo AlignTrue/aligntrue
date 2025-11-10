@@ -1,5 +1,5 @@
 /**
- * Convert markdown fenced blocks to canonical IR
+ * Convert markdown fenced blocks OR natural sections to canonical IR
  */
 
 import { parse as parseYaml } from "yaml";
@@ -9,7 +9,8 @@ export interface IRDocument {
   id: string;
   version: string;
   spec_version: string;
-  rules: unknown[];
+  rules?: unknown[]; // Deprecated: use sections
+  sections?: unknown[]; // New: natural markdown sections
   source_format?: "markdown" | "yaml";
   guidance?: string;
   _markdown_meta?: MarkdownMetadata;
@@ -323,4 +324,131 @@ export function extractHeaderPrefix(
   }
 
   return undefined;
+}
+
+/**
+ * Build IR from natural markdown (new format - no fenced blocks)
+ * Uses section extraction from @aligntrue/core
+ *
+ * @param markdown - Raw markdown content with optional YAML frontmatter
+ * @param defaultId - Default pack ID if not specified
+ * @returns IR document with sections
+ */
+export function buildIRFromNaturalMarkdown(
+  markdown: string,
+  defaultId?: string,
+): IRBuildResult {
+  try {
+    // Import natural markdown parser from core
+    // This is a lazy import to avoid circular dependencies
+    const {
+      parseNaturalMarkdown,
+    } = require("@aligntrue/core/parsing/natural-markdown");
+
+    const result = parseNaturalMarkdown(markdown, defaultId);
+
+    if (result.errors.length > 0) {
+      return {
+        errors: result.errors.map(
+          (err: { line: number; message: string }, idx: number) => ({
+            blockIndex: idx,
+            line: err.line,
+            message: err.message,
+          }),
+        ),
+      };
+    }
+
+    // Build IR document from parsed result
+    const document: IRDocument = {
+      id: result.metadata.id || defaultId || "unnamed-pack",
+      version: result.metadata.version || "1.0.0",
+      spec_version: "1",
+      sections: result.sections,
+      source_format: "markdown",
+    };
+
+    // Add optional metadata (use bracket notation for index signature)
+    if (result.metadata.summary) {
+      document["summary"] = result.metadata.summary;
+    }
+    if (result.metadata.tags) {
+      document["tags"] = result.metadata.tags;
+    }
+    if (result.metadata.owner) {
+      document["owner"] = result.metadata.owner;
+    }
+    if (result.metadata.source) {
+      document["source"] = result.metadata.source;
+    }
+    if (result.metadata.source_sha) {
+      document["source_sha"] = result.metadata.source_sha;
+    }
+
+    // Detect if markdown is legacy fenced format or new natural format
+    const hasNaturalSections =
+      result.sections.length > 0 && !markdown.includes("```aligntrue");
+
+    if (hasNaturalSections) {
+      document._markdown_meta = {
+        original_structure: "single-block",
+        whitespace_style: {
+          indent: "spaces",
+          indent_size: 2,
+          line_endings: detectLineEndings(markdown),
+        },
+      };
+    }
+
+    return { document, errors: [] };
+  } catch (err) {
+    return {
+      errors: [
+        {
+          blockIndex: 0,
+          line: 1,
+          message:
+            err instanceof Error
+              ? err.message
+              : "Failed to parse natural markdown",
+        },
+      ],
+    };
+  }
+}
+
+/**
+ * Auto-detect markdown format and build appropriate IR
+ * Supports both legacy fenced blocks and new natural sections
+ */
+export function buildIRAuto(
+  markdown: string,
+  defaultId?: string,
+): IRBuildResult {
+  // Check if markdown contains fenced aligntrue blocks (legacy)
+  if (markdown.includes("```aligntrue")) {
+    // Legacy format - parse fenced blocks
+    const { parseMarkdown } = require("./parser");
+    const parseResult = parseMarkdown(markdown);
+
+    if (parseResult.errors.length > 0) {
+      return {
+        errors: parseResult.errors.map(
+          (err: { line: number; message: string }, idx: number) => ({
+            blockIndex: idx,
+            line: err.line,
+            message: err.message,
+          }),
+        ),
+      };
+    }
+
+    return buildIR(parseResult.blocks, {
+      captureMetadata: true,
+      originalMarkdown: markdown,
+    });
+  }
+
+  // New format - parse natural markdown sections
+  return buildIRFromNaturalMarkdown(markdown, defaultId);
 }

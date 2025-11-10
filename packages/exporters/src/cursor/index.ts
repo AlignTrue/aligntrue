@@ -9,8 +9,8 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { getAlignTruePaths } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 
@@ -26,12 +26,18 @@ export class CursorExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false } = options;
 
+    // Detect if pack explicitly uses sections (not converted from rules)
+    const useSections = isSectionBasedPack(pack);
+    const sections = useSections ? pack.sections! : [];
+
     // Validate inputs
-    if (!rules || rules.length === 0) {
-      throw new Error("CursorExporter requires at least one rule to export");
+    if ((!rules || rules.length === 0) && sections.length === 0) {
+      throw new Error(
+        "CursorExporter requires at least one rule or section to export",
+      );
     }
 
     // Cursor always uses native frontmatter format, ignore config
@@ -45,14 +51,30 @@ export class CursorExporter extends ExporterBase {
       scope.isDefault ? "default" : scope.normalizedPath,
     );
 
-    // Generate .mdc content
-    const content = this.generateMdcContent(scope, rules);
+    // Generate .mdc content based on mode
+    let content: string;
+    let contentHash: string;
+    let fidelityNotes: string[];
 
-    // Compute content hash from canonical IR
-    const contentHash = computeContentHash({ scope, rules });
-
-    // Compute fidelity notes
-    const fidelityNotes = this.computeFidelityNotes(rules);
+    if (useSections) {
+      // Natural markdown mode
+      content = this.generateMdcFromSections(
+        scope,
+        sections,
+        options.unresolvedPlugsCount,
+      );
+      contentHash = computeContentHash({ scope, sections });
+      fidelityNotes = this.computeSectionFidelityNotes(sections);
+    } else {
+      // Legacy rule mode
+      content = this.generateMdcContent(
+        scope,
+        rules,
+        options.unresolvedPlugsCount,
+      );
+      contentHash = computeContentHash({ scope, rules });
+      fidelityNotes = this.computeFidelityNotes(rules || []);
+    }
 
     // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
@@ -73,6 +95,97 @@ export class CursorExporter extends ExporterBase {
     // Normalize path: replace slashes with hyphens
     const normalized = scope.normalizedPath.replace(/\//g, "-");
     return `${normalized}.mdc`;
+  }
+
+  /**
+   * Generate .mdc content from natural markdown sections
+   * Extracts Cursor-specific frontmatter from vendor metadata, applies smart defaults
+   */
+  private generateMdcFromSections(
+    scope: ResolvedScope,
+    sections: AlignSection[],
+    unresolvedPlugs?: number,
+  ): string {
+    // Extract Cursor-specific metadata from first section's vendor bag
+    const frontmatter = this.generateFrontmatterFromSections(scope, sections);
+
+    // Render sections as clean markdown (no vendor metadata)
+    const sectionsMarkdown = this.renderSections(sections, false);
+
+    // Generate footer
+    const contentHash = computeContentHash({ scope, sections });
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
+    const footer = generateMdcFooter(
+      contentHash,
+      fidelityNotes,
+      unresolvedPlugs,
+    );
+
+    return `${frontmatter}\n${sectionsMarkdown}\n${footer}`;
+  }
+
+  /**
+   * Generate Cursor frontmatter from sections
+   * Extracts vendor.cursor metadata or applies smart defaults
+   */
+  private generateFrontmatterFromSections(
+    scope: ResolvedScope,
+    sections: AlignSection[],
+  ): string {
+    const lines: string[] = ["---"];
+
+    // Check first section for Cursor-specific vendor metadata
+    const firstSection = sections[0];
+    const cursorVendor = firstSection?.vendor?.["cursor"] as
+      | Record<string, unknown>
+      | undefined;
+
+    // Smart defaults for Cursor
+    if (cursorVendor) {
+      // Use explicit vendor metadata if present (bracket notation for index signature)
+      if (cursorVendor["alwaysApply"]) {
+        lines.push("alwaysApply: true");
+      } else if (cursorVendor["intelligent"]) {
+        lines.push("intelligent: true");
+        if (cursorVendor["description"]) {
+          lines.push(`description: ${cursorVendor["description"]}`);
+        }
+      }
+
+      // Globs
+      const globs = cursorVendor["globs"];
+      if (globs && Array.isArray(globs) && globs.length > 0) {
+        const hasSpecificGlobs = !(globs.length === 1 && globs[0] === "**/*");
+        if (hasSpecificGlobs) {
+          lines.push(`globs:`);
+          globs.forEach((glob: string) => {
+            lines.push(`  - "${glob}"`);
+          });
+        }
+      }
+
+      // Title and tags
+      if (cursorVendor["title"]) {
+        lines.push(`title: ${cursorVendor["title"]}`);
+      }
+      if (
+        cursorVendor["tags"] &&
+        Array.isArray(cursorVendor["tags"]) &&
+        cursorVendor["tags"].length > 0
+      ) {
+        lines.push("tags:");
+        cursorVendor["tags"].forEach((tag: string) => {
+          lines.push(`  - ${tag}`);
+        });
+      }
+    } else {
+      // Apply smart defaults for generic markdown
+      // Default to "always" mode for natural markdown (most user-friendly)
+      lines.push("alwaysApply: true");
+    }
+
+    lines.push("---");
+    return lines.join("\n");
   }
 
   /**

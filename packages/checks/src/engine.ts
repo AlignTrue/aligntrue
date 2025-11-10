@@ -49,6 +49,14 @@ export async function runChecks(
 
   const results: CheckResult[] = [];
 
+  // Skip packs without rules (section-based packs)
+  // Section-based packs don't have executable checks
+  if (!alignPack.rules) {
+    // For section-based packs, validation happens at parse time
+    // No executable checks to run
+    return results;
+  }
+
   for (const rule of alignPack.rules) {
     const result = await runCheck(rule, alignPack.id, context);
     results.push(result);
@@ -97,7 +105,7 @@ export async function runChecks(
  * Run a single check based on its type
  */
 async function runCheck(
-  rule: AlignPack["rules"][0],
+  rule: NonNullable<AlignPack["rules"]>[0],
   packId: string,
   context: CheckContext,
 ): Promise<CheckResult> {

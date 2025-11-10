@@ -4,12 +4,24 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { ExporterRegistry } from "../src/registry.js";
+import type { AlignPack } from "@aligntrue/schema";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync, rmSync, readFileSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Helper to create request with pack
+function createTestRequest(rules: any[], scope: any): any {
+  const pack: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
+    spec_version: "1",
+    rules,
+  };
+  return { scope, rules, pack };
+}
 
 describe("GeminiMdExporter", () => {
   let registry: ExporterRegistry;
@@ -51,16 +63,16 @@ describe("GeminiMdExporter", () => {
 
     // Test export
     const result = await exporter!.export(
-      {
-        scope: { root: ".", applies_to: ["**/*.ts"] },
-        rules: [
+      createTestRequest(
+        [
           {
             id: "test-rule",
             severity: "error",
             guidance: "This is a test rule for Gemini",
           },
         ],
-      },
+        { root: ".", applies_to: ["**/*.ts"] },
+      ),
       { outputDir: testRoot, dryRun: false },
     );
 
@@ -106,7 +118,11 @@ describe("GeminiMdExporter", () => {
 
     // Export twice, resetting state between exports
     const result1 = await exporter!.export(
-      { scope, rules },
+      {
+        scope,
+        rules,
+        pack: { id: "test-pack", version: "1.0.0", spec_version: "1", rules },
+      },
       { outputDir: join(testRoot, "run1"), dryRun: false },
     );
     if (exporter && "resetState" in exporter) {
@@ -114,7 +130,11 @@ describe("GeminiMdExporter", () => {
     }
 
     const result2 = await exporter!.export(
-      { scope, rules },
+      {
+        scope,
+        rules,
+        pack: { id: "test-pack", version: "1.0.0", spec_version: "1", rules },
+      },
       { outputDir: join(testRoot, "run2"), dryRun: false },
     );
 
@@ -132,8 +152,13 @@ describe("GeminiMdExporter", () => {
     await registry.registerFromManifest(manifestPath);
     const exporter = registry.get("gemini-md");
 
+    const rules: any[] = [];
     const result = await exporter!.export(
-      { scope: { root: ".", applies_to: ["**/*.ts"] }, rules: [] },
+      {
+        scope: { root: ".", applies_to: ["**/*.ts"] },
+        rules,
+        pack: { id: "test-pack", version: "1.0.0", spec_version: "1", rules },
+      },
       { outputDir: testRoot, dryRun: false },
     );
 
@@ -146,16 +171,18 @@ describe("GeminiMdExporter", () => {
     await registry.registerFromManifest(manifestPath);
     const exporter = registry.get("gemini-md");
 
+    const rules = [
+      {
+        id: "test-rule",
+        severity: "error",
+        guidance: "Test",
+      },
+    ];
     const result = await exporter!.export(
       {
         scope: { root: ".", applies_to: ["**/*.ts"] },
-        rules: [
-          {
-            id: "test-rule",
-            severity: "error",
-            guidance: "Test",
-          },
-        ],
+        rules,
+        pack: { id: "test-pack", version: "1.0.0", spec_version: "1", rules },
       },
       { outputDir: testRoot, dryRun: false, unresolvedPlugsCount: 3 },
     );

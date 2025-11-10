@@ -29,9 +29,15 @@ export {
   type AlignPack,
   type AlignScope,
   type AlignRule,
+  type AlignSection,
   type AlignCheck,
   type AlignAutofix,
   type AlignIntegrity,
+  isSectionBasedPack,
+  isRuleBasedPack,
+  getSections,
+  getRules,
+  convertRuleToSection,
 } from "./validator.js";
 
 // Re-export scope types for cross-package consistency

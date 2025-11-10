@@ -14,8 +14,8 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { getAlignTruePaths } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 
@@ -24,7 +24,9 @@ import { ExporterBase } from "../base/index.js";
  */
 interface ExporterState {
   allRules: Array<{ rule: AlignRule; scopePath: string }>;
+  allSections: Array<{ section: AlignSection; scopePath: string }>;
   seenScopes: Set<string>;
+  useSections: boolean;
 }
 
 /**
@@ -35,7 +37,8 @@ interface McpConfig {
   generated_by: string;
   content_hash: string;
   unresolved_plugs?: number;
-  rules: McpRule[];
+  rules?: McpRule[]; // Legacy format
+  sections?: McpSection[]; // Natural markdown format
   fidelity_notes?: string[];
 }
 
@@ -51,25 +54,48 @@ interface McpRule {
   [key: string]: unknown; // Additional vendor.vscode fields
 }
 
+/**
+ * MCP section for natural markdown format
+ */
+interface McpSection {
+  heading: string;
+  level: number;
+  content: string;
+  fingerprint: string;
+  scope?: string;
+  [key: string]: unknown; // Additional vendor.vscode fields
+}
+
 export class VsCodeMcpExporter extends ExporterBase {
   name = "vscode-mcp";
   version = "1.0.0";
 
-  // State for accumulating rules across multiple scope calls
+  // State for accumulating rules/sections across multiple scope calls
   private state: ExporterState = {
     allRules: [],
+    allSections: [],
     seenScopes: new Set(),
+    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false } = options;
 
+    // Detect if pack explicitly uses sections (not converted from rules)
+    const useSections = isSectionBasedPack(pack);
+    const sections = useSections ? pack.sections! : [];
+
+    // Set mode on first call
+    if (this.state.seenScopes.size === 0) {
+      this.state.useSections = useSections;
+    }
+
     // Validate inputs
-    if (!rules || rules.length === 0) {
+    if ((!rules || rules.length === 0) && sections.length === 0) {
       // Empty scope is allowed, just skip accumulation
       return {
         success: true,
@@ -78,27 +104,51 @@ export class VsCodeMcpExporter extends ExporterBase {
       };
     }
 
-    // Accumulate rules with their scope information
+    // Accumulate content with scope information
     const scopePath = this.formatScopePath(scope);
-    rules.forEach((rule) => {
-      this.state.allRules.push({ rule, scopePath });
-    });
+
+    if (useSections) {
+      // Natural markdown sections
+      sections.forEach((section) => {
+        this.state.allSections.push({ section, scopePath });
+      });
+    } else {
+      // Legacy rule-based format
+      rules?.forEach((rule) => {
+        this.state.allRules.push({ rule, scopePath });
+      });
+    }
+
     this.state.seenScopes.add(scopePath);
 
-    // Generate .vscode/mcp.json with all accumulated rules
+    // Generate .vscode/mcp.json with all accumulated content
     const paths = getAlignTruePaths(outputDir);
     const outputPath = paths.vscodeMcp();
 
-    // Generate MCP config JSON
-    const mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
+    // Generate MCP config JSON based on mode
+    let mcpConfig: McpConfig;
+    let contentHash: string;
+    let fidelityNotes: string[];
+
+    if (this.state.useSections) {
+      // Natural markdown mode
+      mcpConfig = this.generateMcpConfigFromSections(
+        options.unresolvedPlugsCount,
+      );
+      const allSectionsIR = this.state.allSections.map(
+        ({ section }) => section,
+      );
+      contentHash = computeContentHash({ sections: allSectionsIR });
+      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    } else {
+      // Legacy rule mode
+      mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
+      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
+      contentHash = computeContentHash({ rules: allRulesIR });
+      fidelityNotes = this.computeFidelityNotes(allRulesIR);
+    }
+
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-
-    // Compute content hash from canonical IR of all rules
-    const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-    const contentHash = computeContentHash({ rules: allRulesIR });
-
-    // Compute fidelity notes
-    const fidelityNotes = this.computeFidelityNotes(allRulesIR);
 
     // Write file atomically if not dry-run
     if (!dryRun) {
@@ -152,6 +202,85 @@ export class VsCodeMcpExporter extends ExporterBase {
     }
 
     return config;
+  }
+
+  /**
+   * Generate MCP configuration from natural markdown sections
+   */
+  private generateMcpConfigFromSections(unresolvedPlugs?: number): McpConfig {
+    const allSectionsIR = this.state.allSections.map(({ section }) => section);
+    const contentHash = computeContentHash({ sections: allSectionsIR });
+    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+
+    const mcpSections = this.state.allSections.map(({ section, scopePath }) =>
+      this.mapSectionToMcpFormat(section, scopePath),
+    );
+
+    const config: McpConfig = {
+      version: "v1",
+      generated_by: "AlignTrue",
+      content_hash: contentHash,
+      sections: mcpSections,
+    };
+
+    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
+      config["unresolved_plugs"] = unresolvedPlugs;
+    }
+
+    if (fidelityNotes.length > 0) {
+      config.fidelity_notes = fidelityNotes;
+    }
+
+    return config;
+  }
+
+  /**
+   * Map AlignSection to MCP format with vendor.vscode extraction
+   */
+  private mapSectionToMcpFormat(
+    section: AlignSection,
+    scopePath: string,
+  ): McpSection {
+    const mcpSection: McpSection = {
+      heading: section.heading,
+      level: section.level,
+      content: section.content,
+      fingerprint: section.fingerprint,
+    };
+
+    // Add scope if not default
+    if (scopePath !== "all files") {
+      mcpSection.scope = scopePath;
+    }
+
+    // Extract vendor.vscode fields to top level
+    const vscodeFields = this.extractVendorVscodeFromSection(section);
+    Object.assign(mcpSection, vscodeFields);
+
+    return mcpSection;
+  }
+
+  /**
+   * Extract and flatten vendor.vscode fields from section
+   * Returns object with vendor.vscode fields at top level
+   */
+
+  private extractVendorVscodeFromSection(
+    section: AlignSection,
+  ): Record<string, unknown> {
+    if (!section.vendor || !section.vendor["vscode"]) {
+      return {};
+    }
+
+    const vscodeFields: Record<string, unknown> = {};
+    const vscodeVendor = section.vendor["vscode"];
+
+    // Flatten all vendor.vscode fields to top level
+    for (const [key, value] of Object.entries(vscodeVendor)) {
+      vscodeFields[key] = value;
+    }
+
+    return vscodeFields;
   }
 
   /**
@@ -258,7 +387,9 @@ export class VsCodeMcpExporter extends ExporterBase {
   resetState(): void {
     this.state = {
       allRules: [],
+      allSections: [],
       seenScopes: new Set(),
+      useSections: false,
     };
   }
 }

@@ -12,9 +12,9 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignSection } from "@aligntrue/schema";
 import type { ModeHints } from "@aligntrue/core";
-import { computeContentHash } from "@aligntrue/schema";
+import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import {
   extractModeConfig,
@@ -32,11 +32,16 @@ export class AmazonQExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules } = request;
+    const { scope, rules, pack } = request;
     const { outputDir, dryRun = false, config } = options;
 
-    if (!rules || rules.length === 0) {
-      throw new Error("AmazonQExporter requires at least one rule to export");
+    const useSections = isSectionBasedPack(pack);
+    const sections = useSections ? pack.sections! : [];
+
+    if ((!rules || rules.length === 0) && sections.length === 0) {
+      throw new Error(
+        "AmazonQExporter requires at least one rule or section to export",
+      );
     }
 
     const filename = this.getScopeFilename(scope);
@@ -46,18 +51,36 @@ export class AmazonQExporter extends ExporterBase {
       this.name,
       config as AlignTrueConfig | undefined,
     );
-    const { content, warnings } = this.generateRuleContent(
-      scope,
-      rules,
-      modeHints,
-      maxBlocks,
-      maxTokens,
-      options.unresolvedPlugsCount,
-    );
 
-    const contentHash = computeContentHash({ scope, rules });
+    let content: string;
+    let warnings: string[];
+    let contentHash: string;
+    let fidelityNotes: string[];
 
-    const fidelityNotes = this.computeFidelityNotes(rules);
+    if (useSections) {
+      // Generate content from sections
+      const { content: sectionsContent, warnings: sectionsWarnings } =
+        this.generateSectionContent(scope, sections, modeHints);
+      content = sectionsContent;
+      warnings = sectionsWarnings;
+      contentHash = computeContentHash({ scope, sections });
+      fidelityNotes = this.computeSectionFidelityNotes(sections);
+    } else {
+      // Generate content from rules
+      const { content: rulesContent, warnings: rulesWarnings } =
+        this.generateRuleContent(
+          scope,
+          rules,
+          modeHints,
+          maxBlocks,
+          maxTokens,
+          options.unresolvedPlugsCount,
+        );
+      content = rulesContent;
+      warnings = rulesWarnings;
+      contentHash = computeContentHash({ scope, rules });
+      fidelityNotes = this.computeFidelityNotes(rules);
+    }
 
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
@@ -68,6 +91,32 @@ export class AmazonQExporter extends ExporterBase {
     }
 
     return result;
+  }
+
+  /**
+   * Generate Amazon Q content from sections (natural markdown)
+   */
+  private generateSectionContent(
+    scope: ResolvedScope,
+    sections: AlignSection[],
+    modeHints: ModeHints,
+  ): { content: string; warnings: string[] } {
+    const lines: string[] = [];
+
+    const scopeDesc = scope.isDefault
+      ? "Amazon Q rules (default scope)"
+      : `Amazon Q rules for ${scope.path}`;
+    lines.push(`# ${scopeDesc}`);
+    lines.push("");
+
+    // Add session preface if needed
+    lines.push(...generateSessionPreface(modeHints));
+
+    // Render sections as natural markdown
+    const sectionsMarkdown = this.renderSections(sections, false);
+    lines.push(sectionsMarkdown);
+
+    return { content: lines.join("\n"), warnings: [] };
   }
 
   private getScopeFilename(scope: ResolvedScope): string {

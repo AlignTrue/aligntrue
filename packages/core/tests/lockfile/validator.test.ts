@@ -8,7 +8,7 @@ import {
   formatLockfileTeamErrors,
 } from "../../src/lockfile/validator.js";
 import { generateLockfile } from "../../src/lockfile/generator.js";
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack, AlignRule, AlignSection } from "@aligntrue/schema";
 import type { Lockfile } from "../../src/lockfile/types.js";
 import * as fs from "fs";
 
@@ -504,6 +504,120 @@ describe("lockfile validator", () => {
 
       const formatted = formatLockfileTeamErrors(result);
       expect(formatted).toContain("passes team mode validation");
+    });
+  });
+
+  // Phase 8: Section-based validation tests
+  describe("section-based validation", () => {
+    const mockSection: AlignSection = {
+      heading: "Testing Guidelines",
+      level: 2,
+      content: "Write comprehensive tests for all features.",
+      fingerprint: "fp:testing-guidelines-abc123",
+    };
+
+    const mockSectionPack: AlignPack = {
+      id: "test.section.pack",
+      version: "1.0.0",
+      spec_version: "1",
+      summary: "Test section pack",
+      owner: "test-org",
+      source: "https://github.com/test-org/aligns",
+      source_sha: "def456",
+      sections: [mockSection],
+    };
+
+    it("validates matching section-based lockfile", () => {
+      const lockfile = generateLockfile(mockSectionPack, "team");
+      const result = validateLockfile(lockfile, mockSectionPack);
+
+      expect(result.valid).toBe(true);
+      expect(result.mismatches).toHaveLength(0);
+      expect(result.newRules).toHaveLength(0);
+      expect(result.deletedRules).toHaveLength(0);
+    });
+
+    it("detects modified sections", () => {
+      const lockfile = generateLockfile(mockSectionPack, "team");
+      const modifiedPack: AlignPack = {
+        ...mockSectionPack,
+        sections: [{ ...mockSection, content: "Modified content" }],
+      };
+
+      const result = validateLockfile(lockfile, modifiedPack);
+
+      expect(result.valid).toBe(false);
+      expect(result.mismatches).toHaveLength(1);
+      expect(result.mismatches[0].rule_id).toBe("fp:testing-guidelines-abc123");
+    });
+
+    it("detects new sections", () => {
+      const lockfile = generateLockfile(mockSectionPack, "team");
+      const expandedPack: AlignPack = {
+        ...mockSectionPack,
+        sections: [
+          mockSection,
+          {
+            ...mockSection,
+            fingerprint: "fp:new-section",
+            heading: "New Section",
+          },
+        ],
+      };
+
+      const result = validateLockfile(lockfile, expandedPack);
+
+      expect(result.valid).toBe(false);
+      expect(result.newRules).toHaveLength(1);
+      expect(result.newRules[0]).toBe("fp:new-section");
+    });
+
+    it("detects deleted sections", () => {
+      const packWithTwo: AlignPack = {
+        ...mockSectionPack,
+        sections: [
+          mockSection,
+          {
+            ...mockSection,
+            fingerprint: "fp:second-section",
+            heading: "Second Section",
+          },
+        ],
+      };
+
+      const lockfile = generateLockfile(packWithTwo, "team");
+      const result = validateLockfile(lockfile, mockSectionPack);
+
+      expect(result.valid).toBe(false);
+      expect(result.deletedRules).toHaveLength(1);
+      expect(result.deletedRules[0]).toBe("fp:second-section");
+    });
+
+    it("handles multiple section changes", () => {
+      const originalPack: AlignPack = {
+        ...mockSectionPack,
+        sections: [
+          { ...mockSection, fingerprint: "fp:one", content: "Content 1" },
+          { ...mockSection, fingerprint: "fp:two", content: "Content 2" },
+        ],
+      };
+
+      const lockfile = generateLockfile(originalPack, "team");
+
+      const modifiedPack: AlignPack = {
+        ...mockSectionPack,
+        sections: [
+          { ...mockSection, fingerprint: "fp:one", content: "Modified 1" },
+          { ...mockSection, fingerprint: "fp:three", content: "Content 3" },
+        ],
+      };
+
+      const result = validateLockfile(lockfile, modifiedPack);
+
+      expect(result.valid).toBe(false);
+      expect(result.mismatches).toHaveLength(1); // fp:one modified
+      expect(result.newRules).toHaveLength(1); // fp:three added
+      expect(result.deletedRules).toHaveLength(1); // fp:two deleted
     });
   });
 });

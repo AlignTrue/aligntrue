@@ -78,26 +78,11 @@ function generateCoverageReport(
 }
 
 /**
- * Write imported rules to IR file in pure YAML format
+ * Write imported rules to AGENTS.md (natural markdown) and IR file
  *
- * Format: Pure YAML (no markdown, no fenced blocks)
- *
- * Example output:
- * ```yaml
- * id: imported-rules
- * version: 1.0.0
- * spec_version: "1"
- * rules:
- *   - id: quality.typescript.strict
- *     severity: error
- *     ...
- *   - id: style.naming.conventions
- *     severity: error
- *     ...
- * ```
- *
- * Note: .rules.yaml is internal IR (auto-generated, don't edit directly)
- * Users should edit AGENTS.md or agent-specific files instead
+ * Creates:
+ * 1. AGENTS.md - Natural markdown with sections (user-editable)
+ * 2. .aligntrue/.rules.yaml - IR with sections (auto-generated)
  *
  * @param rules - Imported rules from agent format
  * @param dryRun - Preview only, don't write file
@@ -108,54 +93,42 @@ async function writeToIRFile(
 ): Promise<void> {
   const paths = getAlignTruePaths();
   const irPath = paths.rules;
+  const agentsMdPath = "AGENTS.md";
   const yaml = await import("yaml");
+  const { convertRuleToSection } = await import("@aligntrue/schema");
 
-  // Generate pure YAML IR format
+  // Convert rules to sections
+  const sections = rules.map((rule) => convertRuleToSection(rule));
+
+  // Generate natural markdown for AGENTS.md
+  const frontmatter = {
+    id: "imported-rules",
+    version: "1.0.0",
+    summary: "Rules imported from agent format",
+    tags: ["imported"],
+  };
+
+  let markdownContent = "---\n";
+  markdownContent += `id: "${frontmatter.id}"\n`;
+  markdownContent += `version: "${frontmatter.version}"\n`;
+  markdownContent += `summary: "${frontmatter.summary}"\n`;
+  markdownContent += `tags: [${frontmatter.tags.map((t) => `"${t}"`).join(", ")}]\n`;
+  markdownContent += "---\n\n";
+  markdownContent += "# Imported Rules\n\n";
+  markdownContent += "These rules were imported from an agent format.\n\n";
+
+  // Add each section
+  for (const section of sections) {
+    markdownContent += `${"#".repeat(section.level)} ${section.heading}\n\n`;
+    markdownContent += `${section.content.trim()}\n\n`;
+  }
+
+  // Generate IR pack with sections
   const pack = {
     id: "imported-rules",
     version: "1.0.0",
     spec_version: "1",
-    rules: rules.map((rule) => {
-      const ruleData: Partial<AlignRule> = {
-        id: rule.id,
-        severity: rule.severity,
-        applies_to: rule.applies_to,
-      };
-
-      if (rule.guidance) {
-        ruleData["guidance"] = rule.guidance;
-      }
-
-      if (rule.tags && rule.tags.length > 0) {
-        ruleData["tags"] = rule.tags;
-      }
-
-      if (rule.mode) {
-        ruleData["mode"] = rule.mode;
-      }
-
-      if (rule.title) {
-        ruleData["title"] = rule.title;
-      }
-
-      if (rule.description) {
-        ruleData["description"] = rule.description;
-      }
-
-      if (rule.vendor) {
-        ruleData["vendor"] = rule.vendor;
-      }
-
-      if (rule.check) {
-        ruleData["check"] = rule.check;
-      }
-
-      if (rule.autofix) {
-        ruleData["autofix"] = rule.autofix;
-      }
-
-      return ruleData;
-    }),
+    sections,
   };
 
   // Write pure YAML to .rules.yaml (internal IR)
@@ -173,6 +146,12 @@ async function writeToIRFile(
     });
 
   if (dryRun) {
+    console.log("\nPreview of AGENTS.md:");
+    console.log("─".repeat(50));
+    console.log(markdownContent.split("\n").slice(0, 30).join("\n"));
+    if (markdownContent.split("\n").length > 30) {
+      console.log("... (truncated)");
+    }
     console.log("\nPreview of .rules.yaml:");
     console.log("─".repeat(50));
     console.log(yamlContent.split("\n").slice(0, 30).join("\n"));
@@ -184,8 +163,15 @@ async function writeToIRFile(
     const irDir = dirname(irPath);
     await mkdir(irDir, { recursive: true });
 
+    // Write AGENTS.md
+    await writeFile(agentsMdPath, markdownContent, "utf-8");
+    clack.log.success(`Wrote ${sections.length} sections to ${agentsMdPath}`);
+
+    // Write IR file
     await writeFile(irPath, yamlContent, "utf-8");
-    clack.log.success(`Wrote ${rules.length} rules to ${irPath}`);
+    clack.log.success(
+      `Wrote ${sections.length} sections to ${irPath} (internal IR)`,
+    );
   }
 }
 

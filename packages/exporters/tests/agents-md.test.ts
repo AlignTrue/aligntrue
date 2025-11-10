@@ -13,7 +13,7 @@ import type {
   ExportOptions,
   ResolvedScope,
 } from "../src/types.js";
-import type { AlignRule } from "@aligntrue/schema";
+import type { AlignRule, AlignPack } from "@aligntrue/schema";
 
 // Helper to load YAML fixture
 function loadFixture(name: string): { rules: AlignRule[] } {
@@ -42,9 +42,17 @@ function createRequest(
   scope: ResolvedScope,
   rules: AlignRule[],
 ): ScopedExportRequest {
+  const pack: AlignPack = {
+    id: "test-pack",
+    version: "1.0.0",
+    spec_version: "1",
+    rules,
+  };
+
   return {
     scope,
     rules,
+    pack,
     outputPath: "/test/output",
   };
 }

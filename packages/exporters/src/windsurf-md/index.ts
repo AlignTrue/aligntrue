@@ -1,29 +1,36 @@
 /**
- * Windsurf markdown exporter (uses AGENTS.md format)
+ * WINDSURF.md exporter
+ * Delegates to GenericMarkdownExporter with Windsurf-specific configuration
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
+import { GenericMarkdownExporter } from "../base/generic-markdown-exporter.js";
 
-/**
- * Windsurf markdown exporter - wraps AgentsMdExporter with windsurf-md-specific metadata
- */
 export class WindsurfMdExporter implements ExporterPlugin {
   name = "windsurf-md";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new GenericMarkdownExporter(
+    "windsurf-md",
+    "WINDSURF.md",
+    "WINDSURF.md",
+    "for Windsurf",
+  );
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
     return this.delegate.export(request, options);
+  }
+
+  resetState(): void {
+    this.delegate.resetState();
   }
 }
 
