@@ -125,7 +125,7 @@ git commit -m "Enable AlignTrue team mode"
 aligntrue team enable
 aligntrue sync
 aligntrue team approve --current
-git add .aligntrue/ .aligntrue.lock.json .aligntrue/allow.yaml
+git add .aligntrue/ .aligntrue.lock.json .aligntrue.allow
 git commit -m "Enable team mode (soft)"
 
 # Team members
@@ -207,7 +207,7 @@ aligntrue sync
 aligntrue team approve --current
 
 # Commit team files
-git add .aligntrue/config.yaml .aligntrue/allow.yaml .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
 git commit -m "Switch to team mode"
 ```
 
@@ -242,7 +242,7 @@ Switch to solo mode when:
 # Change: mode: team → mode: solo
 
 # Remove team files (optional)
-rm .aligntrue.lock.json .aligntrue/allow.yaml
+rm .aligntrue.lock.json .aligntrue.allow
 
 # Sync
 aligntrue sync
@@ -252,14 +252,14 @@ aligntrue sync
 
 ### Solo → Team changes
 
-| What changes     | Before (solo) | After (team)                                    |
-| ---------------- | ------------- | ----------------------------------------------- |
-| **Config**       | `mode: solo`  | `mode: team`                                    |
-| **New files**    | None          | `.aligntrue.lock.json`, `.aligntrue/allow.yaml` |
-| **Auto-pull**    | Enabled       | Disabled                                        |
-| **Validation**   | Basic schema  | Schema + allow list + lockfile                  |
-| **Sync speed**   | Fast          | Slightly slower (validation)                    |
-| **Git workflow** | Optional      | Recommended (commit lockfile)                   |
+| What changes     | Before (solo) | After (team)                               |
+| ---------------- | ------------- | ------------------------------------------ |
+| **Config**       | `mode: solo`  | `mode: team`                               |
+| **New files**    | None          | `.aligntrue.lock.json`, `.aligntrue.allow` |
+| **Auto-pull**    | Enabled       | Disabled                                   |
+| **Validation**   | Basic schema  | Schema + allow list + lockfile             |
+| **Sync speed**   | Fast          | Slightly slower (validation)               |
+| **Git workflow** | Optional      | Recommended (commit lockfile)              |
 
 ### Team → Solo changes
 

@@ -39,7 +39,7 @@ AlignTrue uses a pnpm workspace with the following packages:
 - `packages/schema` - IR validation and canonicalization
 - `packages/exporters` - Agent-specific exporters (43 adapters)
 - `packages/markdown-parser` - Markdown to IR conversion
-- `packages/sources` - Multi-source pulling (local, git, catalog)
+- `packages/sources` - Multi-source pulling (local, git)
 - `apps/docs` - Documentation site (Nextra)
 
 See [workspace guide](./workspace) for detailed package descriptions.

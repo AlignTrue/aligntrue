@@ -59,7 +59,7 @@ aligntrue team enable
 **What it does:**
 
 - Creates `.aligntrue.lock.json` (lockfile)
-- Creates `.aligntrue/allow.yaml` (allow list)
+- Creates `.aligntrue.allow` (allow list)
 - Sets mode to `team` in config
 - Enables lockfile validation (soft by default)
 
@@ -88,7 +88,7 @@ aligntrue team list-allowed
 **Allow list format:**
 
 ```yaml
-# .aligntrue/allow.yaml
+# .aligntrue.allow
 allowed_sources:
   - type: git
     value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
@@ -138,7 +138,7 @@ git push
 
 - `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
 - `.aligntrue/config.yaml` - Team configuration
-- `.aligntrue/allow.yaml` - Approved sources
+- `.aligntrue.allow` - Approved sources
 - `.aligntrue.lock.json` - Lockfile with pinned hashes
 - `.cursor/rules/` - Exported Cursor rules (optional)
 - `AGENTS.md` - Universal agent format (optional)
@@ -166,13 +166,13 @@ cd project
 
 <Tabs items={["npm", "yarn", "pnpm", "bun"]}>
 
-<Tabs.Tab>`bash npm install -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash npm install -g aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash yarn global add @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash yarn global add aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash pnpm add -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash pnpm add -g aligntrue `</Tabs.Tab>
 
-<Tabs.Tab>`bash bun install -g @aligntrue/cli@next `</Tabs.Tab>
+<Tabs.Tab>`bash bun install -g aligntrue `</Tabs.Tab>
 
 </Tabs>
 
@@ -487,7 +487,7 @@ aligntrue sync
 aligntrue team approve --current
 
 # Commit the updated lockfile
-git add .aligntrue.lock.json .aligntrue/allow.yaml
+git add .aligntrue.lock.json .aligntrue.allow
 git commit -m "chore: Update lockfile after rule changes"
 ```
 
@@ -684,7 +684,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install AlignTrue CLI
-        run: npm install -g @aligntrue/cli@next
+        run: npm install -g aligntrue
       - name: Check for drift
         run: aligntrue drift --gates
 ```
@@ -849,7 +849,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install AlignTrue CLI
-        run: npm install -g @aligntrue/cli@next
+        run: npm install -g aligntrue
 
       - name: Validate lockfile
         run: aligntrue check --ci
@@ -882,7 +882,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install AlignTrue CLI
-        run: npm install -g @aligntrue/cli@next
+        run: npm install -g aligntrue
 
       - name: Check for drift
         run: aligntrue drift --json > drift-report.json
@@ -919,7 +919,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install AlignTrue CLI
-        run: npm install -g @aligntrue/cli@next
+        run: npm install -g aligntrue
 
       - name: Validate sources
         run: |
