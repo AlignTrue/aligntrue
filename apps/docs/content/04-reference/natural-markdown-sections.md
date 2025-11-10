@@ -285,7 +285,7 @@ To convert from rule-based to section-based:
 4. **Run sync** - AlignTrue will detect the change
 5. **Verify** - Check that all sections are recognized
 
-See [Migration Guide](/docs/01-guides/02-migration) for detailed instructions.
+See the [Quickstart](/docs/00-getting-started/00-quickstart) for setup instructions.
 
 ## Limitations
 
@@ -302,4 +302,3 @@ For complex rule definitions with machine-checkable conditions, use rule-based f
 - [Markdown Authoring](/docs/04-reference/markdown-authoring) - Fenced code block format
 - [Getting Started](/docs/00-getting-started/00-quickstart) - Quick start guide
 - [Example Packs](/docs/04-reference/examples) - Curated example packs
-- [Migration Guide](/docs/01-guides/02-migration) - Converting between formats

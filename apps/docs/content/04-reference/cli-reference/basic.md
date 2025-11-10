@@ -58,7 +58,7 @@ aligntrue init --exporters cursor,agents-md,windsurf
 **See also:**
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) for step-by-step walkthrough
-- [Migration Guide](/docs/01-guides/02-migration) for migrating existing rules
+- [Quickstart](/docs/00-getting-started/00-quickstart) to get started
 
 ---
 

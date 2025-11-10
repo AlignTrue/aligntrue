@@ -216,7 +216,7 @@ aligntrue sync
 # Syncs to all configured agents
 ```
 
-See the [Migration Guide](/docs/01-guides/02-migration) for complete migration instructions.
+See the [Quickstart](/docs/00-getting-started/00-quickstart) to get started with AlignTrue.
 
 ## Troubleshooting
 
