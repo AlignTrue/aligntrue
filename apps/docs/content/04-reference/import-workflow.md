@@ -4,12 +4,14 @@ Migrate existing agent-specific rules to AlignTrue's universal format.
 
 ## Overview
 
-If you already have rules in Cursor's `.mdc` format or the `AGENTS.md` universal format, AlignTrue can import them to its intermediate representation (IR). This enables:
+If you already have rules in Cursor's `.mdc` format or the `AGENTS.md` universal format, AlignTrue can import them to its intermediate representation (IR) using natural markdown sections. This enables:
 
 - **Consolidation** - Merge rules from multiple agents into one source
-- **Migration** - Transition existing projects to AlignTrue
+- **Migration** - Transition existing projects to AlignTrue with automatic section generation
 - **Analysis** - Understand field coverage and metadata preservation
 - **Validation** - Verify rules before committing to the migration
+
+Imported rules are automatically converted to natural markdown sections with YAML frontmatter. See the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) for details on the section-based format.
 
 ## When to use import
 
@@ -506,6 +508,8 @@ aligntrue import cursor --no-coverage --write
 
 ## See also
 
+- [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Authoring rules with sections and fingerprints
+- [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Technical reference for section-based format
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Starting fresh with AlignTrue
 - [Command Reference](/docs/04-reference/cli-reference) - Full CLI documentation
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules export to agents

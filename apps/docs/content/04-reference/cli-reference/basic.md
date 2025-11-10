@@ -26,7 +26,7 @@ aligntrue init [options]
 1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
 2. Detects existing agent rules and offers to import them
 3. Creates `.aligntrue/config.yaml` with detected agents enabled
-4. Creates `.aligntrue/.rules.yaml` (internal IR) and `AGENTS.md` (user-editable)
+4. Creates `.aligntrue/.rules.yaml` (internal IR with sections) and `AGENTS.md` (natural markdown with frontmatter + sections)
 5. Auto-configures sync settings based on initialization choice
 
 **Interactive prompts:**
@@ -103,9 +103,11 @@ aligntrue import <agent> [options]
 
 1. Loads rules from agent-specific format (`.cursor/rules/*.mdc` or `AGENTS.md`)
 2. Parses agent format to IR (Intermediate Representation)
-3. Generates coverage report showing field-level mapping
-4. Calculates coverage percentage and confidence level
-5. Optionally writes rules to `.aligntrue/.rules.yaml`
+3. Converts rules to sections (natural markdown format)
+4. Generates `AGENTS.md` with YAML frontmatter + markdown sections
+5. Writes `.aligntrue/.rules.yaml` with section-based IR (not rule-based)
+6. Generates coverage report showing field-level mapping
+7. Calculates coverage percentage and confidence level
 
 **Coverage Report:**
 
@@ -353,6 +355,20 @@ aligntrue check --ci [options]
 2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
 
 **Important:** The `--ci` flag is required for all check operations. It ensures non-interactive validation with explicit intent, making it safe for CI/CD pipelines and automation.
+
+### Format detection
+
+Check automatically detects file format:
+
+- `.md` files → Natural markdown or fenced blocks (auto-detected)
+- `.yaml`/`.yml` files → Pure YAML IR format
+
+**Example:**
+
+```bash
+aligntrue check --ci AGENTS.md     # Validates natural markdown
+aligntrue check --ci rules.yaml    # Validates YAML IR
+```
 
 **Examples:**
 
