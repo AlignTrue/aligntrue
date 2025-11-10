@@ -9,8 +9,8 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
-import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { getAlignTruePaths } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 
@@ -26,18 +26,14 @@ export class CursorExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
+    const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    // Detect if pack explicitly uses sections (not converted from rules)
-    const useSections = isSectionBasedPack(pack);
-    const sections = useSections ? pack.sections! : [];
+    const sections = pack.sections;
 
     // Validate inputs
-    if ((!rules || rules.length === 0) && sections.length === 0) {
-      throw new Error(
-        "CursorExporter requires at least one rule or section to export",
-      );
+    if (sections.length === 0) {
+      throw new Error("CursorExporter requires at least one section to export");
     }
 
     // Cursor always uses native frontmatter format, ignore config
@@ -51,30 +47,14 @@ export class CursorExporter extends ExporterBase {
       scope.isDefault ? "default" : scope.normalizedPath,
     );
 
-    // Generate .mdc content based on mode
-    let content: string;
-    let contentHash: string;
-    let fidelityNotes: string[];
-
-    if (useSections) {
-      // Natural markdown mode
-      content = this.generateMdcFromSections(
-        scope,
-        sections,
-        options.unresolvedPlugsCount,
-      );
-      contentHash = computeContentHash({ scope, sections });
-      fidelityNotes = this.computeSectionFidelityNotes(sections);
-    } else {
-      // Legacy rule mode
-      content = this.generateMdcContent(
-        scope,
-        rules,
-        options.unresolvedPlugsCount,
-      );
-      contentHash = computeContentHash({ scope, rules });
-      fidelityNotes = this.computeFidelityNotes(rules || []);
-    }
+    // Generate .mdc content
+    const content = this.generateMdcFromSections(
+      scope,
+      sections,
+      options.unresolvedPlugsCount,
+    );
+    const contentHash = computeContentHash({ scope, sections });
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
 
     // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);

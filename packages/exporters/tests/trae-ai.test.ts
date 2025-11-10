@@ -11,7 +11,7 @@ import type {
   ExportOptions,
   ResolvedScope,
 } from "../src/types.js";
-import type { AlignRule, AlignPack } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");

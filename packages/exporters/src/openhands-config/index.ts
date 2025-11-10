@@ -11,7 +11,7 @@ import type {
   ExportOptions,
   ExportResult,
 } from "../types.js";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash, getSections } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { ExporterBase } from "../base/index.js";

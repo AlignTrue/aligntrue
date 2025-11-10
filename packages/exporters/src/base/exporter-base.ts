@@ -17,7 +17,7 @@ import type {
   ExportResult,
   AdapterManifest,
 } from "@aligntrue/plugin-contracts";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { readFileSync } from "fs";

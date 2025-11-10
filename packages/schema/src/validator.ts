@@ -255,9 +255,8 @@ export interface AlignPack {
   deps?: string[];
   scope?: AlignScope;
 
-  // Content: rules (deprecated) OR sections (new)
-  rules?: AlignRule[]; // Deprecated: use sections instead
-  sections?: AlignSection[]; // New: natural markdown sections
+  // Content: natural markdown sections
+  sections: AlignSection[];
   integrity?: AlignIntegrity;
 
   // Plugs v1.1 (Phase 2.5)
@@ -276,6 +275,23 @@ export interface AlignPack {
 
   // Markdown metadata (for round-trip preservation)
   _markdown_meta?: MarkdownMetadata;
+}
+
+/**
+ * Rule (legacy format used by markdown parsers)
+ * Represents a single rule parsed from agent formats (Cursor, AGENTS.md, etc.)
+ */
+export interface AlignRule {
+  id: string;
+  severity?: string;
+  applies_to?: string[];
+  mode?: string;
+  description?: string;
+  guidance?: string;
+  title?: string;
+  tags?: string[];
+  vendor?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 /**
@@ -312,169 +328,7 @@ export interface AlignScope {
   excludes?: string[];
 }
 
-export interface AlignRule {
-  id: string;
-  aliases?: string[];
-  severity: "error" | "warn" | "info";
-  applies_to: string[];
-  guidance?: string;
-  mode?: "always" | "manual" | "intelligent" | "files";
-  title?: string;
-  description?: string;
-  tags?: string[];
-  check?: AlignCheck;
-  autofix?: AlignAutofix;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vendor?: Record<string, any>; // Agent-specific metadata
-}
-
-export interface AlignCheck {
-  type:
-    | "file_presence"
-    | "path_convention"
-    | "manifest_policy"
-    | "regex"
-    | "command_runner";
-  inputs: Record<string, unknown>;
-  evidence?: string;
-}
-
-export interface AlignAutofix {
-  hint: string;
-}
-
 export interface AlignIntegrity {
   algo: "jcs-sha256";
   value: string;
-}
-
-/**
- * Check if a pack uses the new section-based format
- */
-export function isSectionBasedPack(pack: AlignPack): boolean {
-  return !!pack.sections && pack.sections.length > 0;
-}
-
-/**
- * Check if a pack uses the legacy rule-based format
- */
-export function isRuleBasedPack(pack: AlignPack): boolean {
-  return !!pack.rules && pack.rules.length > 0;
-}
-
-/**
- * Get sections from a pack (converts rules if necessary)
- * Provides a unified way to access content regardless of format
- */
-export function getSections(pack: AlignPack): AlignSection[] {
-  if (pack.sections) {
-    return pack.sections;
-  }
-
-  // Legacy: convert rules to sections for backward compatibility
-  if (pack.rules) {
-    return pack.rules.map((rule) => convertRuleToSection(rule));
-  }
-
-  return [];
-}
-
-/**
- * Get rules from a pack (for backward compatibility)
- * @deprecated Use getSections() instead
- */
-export function getRules(pack: AlignPack): AlignRule[] {
-  if (pack.rules) {
-    return pack.rules;
-  }
-
-  // If pack only has sections, cannot convert back to rules
-  // This is a one-way migration
-  return [];
-}
-
-/**
- * Convert a legacy rule to a section (for backward compatibility)
- */
-export function convertRuleToSection(rule: AlignRule): AlignSection {
-  // Generate heading from rule title or ID
-  const heading =
-    rule.title || rule.id.split(".").map(capitalizeFirst).join(" ");
-
-  // Build content from rule fields
-  const contentParts: string[] = [];
-
-  if (rule.description) {
-    contentParts.push(rule.description);
-    contentParts.push("");
-  }
-
-  if (rule.guidance) {
-    contentParts.push(rule.guidance);
-    contentParts.push("");
-  }
-
-  // Add metadata as a note
-  contentParts.push(`*Severity: ${rule.severity}*`);
-  if (rule.applies_to && rule.applies_to.length > 0) {
-    contentParts.push(`*Applies to: ${rule.applies_to.join(", ")}*`);
-  }
-
-  const content = contentParts.join("\n").trim();
-
-  const section: AlignSection = {
-    heading,
-    level: 2,
-    content,
-    fingerprint: rule.id, // Use rule ID as fingerprint for stability
-    explicitId: rule.id,
-  };
-
-  // Only add vendor if it exists (exactOptionalPropertyTypes: true requirement)
-  if (rule.vendor) {
-    section.vendor = rule.vendor;
-  }
-
-  return section;
-}
-
-/**
- * Helper to capitalize first letter
- */
-function capitalizeFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * Validate rule ID format
- *
- * @param id - Rule identifier to validate
- * @returns Validation result with optional error message and suggestion
- */
-export function validateRuleId(id: string): {
-  valid: boolean;
-  error?: string;
-  suggestion?: string;
-} {
-  const pattern = /^[a-z0-9]+(\.[a-z0-9-]+){2,}$/;
-
-  if (pattern.test(id)) {
-    return { valid: true };
-  }
-
-  // Suggest conversion from kebab-case
-  if (/^[a-z0-9]+(-[a-z0-9]+)+$/.test(id)) {
-    const suggestion = id.replace(/-/g, ".");
-    return {
-      valid: false,
-      error: `Rule ID must use dot notation with 3+ segments`,
-      suggestion: `Try: ${suggestion}`,
-    };
-  }
-
-  return {
-    valid: false,
-    error: `Rule ID must match pattern: category.subcategory.rule-name`,
-    suggestion: `Examples: testing.require.tests, security.no.secrets, docs.public.api`,
-  };
 }

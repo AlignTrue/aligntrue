@@ -12,7 +12,7 @@ import type {
   ExportResult,
   ResolvedScope,
 } from "../types.js";
-import type { AlignRule, AlignSection } from "@aligntrue/schema";
+import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash, getSections } from "@aligntrue/schema";
 import { extractModeConfig, applyRulePrioritization } from "../utils/index.js";
 import { ExporterBase } from "../base/index.js";

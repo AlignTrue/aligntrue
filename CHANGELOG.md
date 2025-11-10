@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- **⚠️ Removed legacy `rules` format** (pre-1.0 schema evolution)
+  - AlignTrue now **only** supports section-based packs (`sections` field required in IR)
+  - Removed `rules` field from schema and TypeScript types
+  - Removed conversion helpers: `getSections()`, `getRules()`, `convertRuleToSection()`, `isSectionBasedPack()`, `isRuleBasedPack()`
+  - Removed `AlignRule`, `AlignCheck`, `AlignAutofix` types
+  - All exporters now work directly with `pack.sections`
+  - Simplified codebase: ~500-800 LOC removed, single format path
+  - **Rationale:** No users yet (alpha release), so no migration burden. Premature backward compatibility eliminated.
+  - **Migration:** If you have any files with the old `rules:` format, they will fail validation. Convert to natural markdown sections format (see documentation).
+
 ### Added
 
 - **Phase 8: Team Mode Updates for Sections**

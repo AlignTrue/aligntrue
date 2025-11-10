@@ -4,7 +4,7 @@
   "title": "Align Pack v1",
   "description": "Schema for AlignTrue Align packs (Spec v1, CLI-first)",
   "type": "object",
-  "required": ["id", "version", "spec_version", "rules"],
+  "required": ["id", "version", "spec_version", "sections"],
   "properties": {
     "id": {
       "type": "string",
@@ -85,12 +85,13 @@
       },
       "description": "Scope definition (catalog mode, Phase 4)"
     },
-    "rules": {
+    "sections": {
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "#/$defs/rule"
-      }
+        "$ref": "#/$defs/section"
+      },
+      "description": "Content sections with natural markdown headings and content"
     },
     "integrity": {
       "type": "object",
@@ -169,253 +170,39 @@
     }
   },
   "$defs": {
-    "rule": {
+    "section": {
       "type": "object",
-      "required": ["id", "severity", "applies_to"],
+      "required": ["heading", "level", "content", "fingerprint"],
       "properties": {
-        "id": {
+        "heading": {
           "type": "string",
-          "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+){2,}$",
-          "description": "Rule identifier with dot notation (min 3 segments): category.subcategory.rule-name"
+          "minLength": 1,
+          "description": "Section heading text (without markdown ## prefix)"
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
-          },
-          "description": "Previous IDs for this rule (backwards compatibility after renames)"
+        "level": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 6,
+          "description": "Heading level (2-6, corresponding to ## through ######)"
         },
-        "severity": {
+        "content": {
           "type": "string",
-          "enum": ["error", "warn", "info"],
-          "description": "Severity level: error (blocking), warn (should fix), info (advisory)"
+          "description": "Natural language content in markdown format"
         },
-        "applies_to": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "description": "Glob patterns defining which files this rule applies to"
-        },
-        "guidance": {
+        "fingerprint": {
           "type": "string",
-          "description": "Human-readable explanation in Markdown format"
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Stable content-based identifier for change tracking"
         },
-        "check": {
-          "$ref": "#/$defs/check"
-        },
-        "autofix": {
-          "$ref": "#/$defs/autofix"
-        },
-        "mode": {
+        "explicitId": {
           "type": "string",
-          "enum": ["always", "manual", "intelligent", "files"],
-          "description": "Execution mode: always (apply to all edits), manual (user selects), intelligent (relevance-based), files (glob-matched)"
-        },
-        "title": {
-          "type": "string",
-          "maxLength": 100,
-          "description": "Optional display name for the rule"
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 500,
-          "description": "Description for intelligent mode relevance detection and user guidance. Persisted for all modes (some agents use it universally)."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z0-9-]+$"
-          },
-          "description": "Categorization tags for filtering and organization"
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Optional user-provided ID via HTML comment"
         },
         "vendor": {
           "type": "object",
-          "description": "Agent-specific metadata for lossless round-trips. Use _meta.volatile to exclude fields from hashing.",
+          "description": "Agent-specific metadata for lossless round-trips",
           "additionalProperties": true
-        }
-      }
-    },
-    "check": {
-      "type": "object",
-      "required": ["type", "inputs"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "file_presence",
-            "path_convention",
-            "manifest_policy",
-            "regex",
-            "command_runner"
-          ]
-        },
-        "inputs": {
-          "type": "object"
-        },
-        "evidence": {
-          "type": "string"
-        }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "file_presence"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "inputs": {
-                "type": "object",
-                "required": ["paths"],
-                "properties": {
-                  "paths": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "minItems": 1
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "path_convention"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "inputs": {
-                "type": "object",
-                "required": ["include", "pattern"],
-                "properties": {
-                  "include": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "minItems": 1
-                  },
-                  "pattern": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "manifest_policy"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "inputs": {
-                "type": "object",
-                "required": ["manifest", "lockfile"],
-                "properties": {
-                  "manifest": {
-                    "type": "string"
-                  },
-                  "lockfile": {
-                    "type": "string"
-                  },
-                  "require_pinned": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "regex"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "inputs": {
-                "type": "object",
-                "required": ["include", "pattern", "allow"],
-                "properties": {
-                  "include": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "minItems": 1
-                  },
-                  "pattern": {
-                    "type": "string"
-                  },
-                  "allow": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "command_runner"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "inputs": {
-                "type": "object",
-                "required": ["command"],
-                "properties": {
-                  "command": {
-                    "type": "string"
-                  },
-                  "working_dir": {
-                    "type": "string"
-                  },
-                  "timeout_ms": {
-                    "type": "number"
-                  },
-                  "expect_exit_code": {
-                    "type": "number"
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "autofix": {
-      "type": "object",
-      "required": ["hint"],
-      "properties": {
-        "hint": {
-          "type": "string",
-          "description": "Human-readable hint for fixing the violation"
         }
       }
     },

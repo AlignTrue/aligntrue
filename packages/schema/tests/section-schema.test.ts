@@ -3,14 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  type AlignPack,
-  type AlignSection,
-  isSectionBasedPack,
-  isRuleBasedPack,
-  getSections,
-  getRules,
-} from "../src/index.js";
+import { type AlignPack, type AlignSection, getRules } from "../src/index.js";
 
 describe("AlignSection type", () => {
   it("accepts valid section structure", () => {
