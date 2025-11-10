@@ -12,7 +12,7 @@ description: About AlignTrue.
 - **Solo devs:** One source of truth for Cursor `.mdc`, `AGENTS.md`, `CLAUDE.md`, and whatever else you use.
 - **Teams:** Shared rules that actually stay aligned across IDEs, agents, and repos, so best practices are practiced and not just vibes.
 
-AlignTrue is [MIT licensed](LICENSE) and mostly self-documenting. If something is broken, outdated, or missing, open a PR.
+AlignTrue is [MIT licensed](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE) and mostly self-documenting. If something is broken, outdated, or missing, open a PR.
 
 ## Why
 
