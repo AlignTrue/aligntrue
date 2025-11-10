@@ -3,7 +3,7 @@
  * Coordinates IR loading, scope resolution, exporter execution, and conflict detection
  */
 
-import type { AlignPack, AlignRule } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { ResolvedScope, Scope, MergeOrder } from "../scope.js";
 import { loadConfig } from "../config/index.js";

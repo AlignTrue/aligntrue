@@ -3,7 +3,7 @@
  * Compares before/after rule sets to show what changed during auto-pull
  */
 
-import type { AlignSection } from "/schema";
+import type { AlignSection } from "@aligntrue/schema";
 
 export interface RuleChange {
   rule: AlignSection;

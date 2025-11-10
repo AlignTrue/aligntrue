@@ -15,7 +15,7 @@ import type {
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
 import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash, isSectionBasedPack } from "@aligntrue/schema";
+import { computeContentHash } from "@aligntrue/schema";
 import { getAlignTruePaths } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 
@@ -23,10 +23,8 @@ import { ExporterBase } from "../base/index.js";
  * State for collecting all scopes before generating single merged file
  */
 interface ExporterState {
-  allRules: Array<{ rule: AlignRule; scopePath: string }>;
   allSections: Array<{ section: AlignSection; scopePath: string }>;
   seenScopes: Set<string>;
-  useSections: boolean;
 }
 
 /**
@@ -37,21 +35,8 @@ interface McpConfig {
   generated_by: string;
   content_hash: string;
   unresolved_plugs?: number;
-  rules?: McpRule[]; // Legacy format
-  sections?: McpSection[]; // Natural markdown format
+  sections: McpSection[]; // Natural markdown format
   fidelity_notes?: string[];
-}
-
-/**
- * MCP rule with vendor.vscode fields flattened to top level
- */
-interface McpRule {
-  id: string;
-  severity: "error" | "warn" | "info";
-  guidance: string;
-  scope?: string;
-  applies_to?: string[];
-  [key: string]: unknown; // Additional vendor.vscode fields
 }
 
 /**
@@ -72,30 +57,21 @@ export class VsCodeMcpExporter extends ExporterBase {
 
   // State for accumulating rules/sections across multiple scope calls
   private state: ExporterState = {
-    allRules: [],
     allSections: [],
     seenScopes: new Set(),
-    useSections: false,
   };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, rules, pack } = request;
+    const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    // Detect if pack explicitly uses sections (not converted from rules)
-    const useSections = isSectionBasedPack(pack);
-    const sections = useSections ? pack.sections! : [];
-
-    // Set mode on first call
-    if (this.state.seenScopes.size === 0) {
-      this.state.useSections = useSections;
-    }
+    const sections = pack.sections;
 
     // Validate inputs
-    if ((!rules || rules.length === 0) && sections.length === 0) {
+    if (sections.length === 0) {
       // Empty scope is allowed, just skip accumulation
       return {
         success: true,
@@ -107,17 +83,10 @@ export class VsCodeMcpExporter extends ExporterBase {
     // Accumulate content with scope information
     const scopePath = this.formatScopePath(scope);
 
-    if (useSections) {
-      // Natural markdown sections
-      sections.forEach((section) => {
-        this.state.allSections.push({ section, scopePath });
-      });
-    } else {
-      // Legacy rule-based format
-      rules?.forEach((rule) => {
-        this.state.allRules.push({ rule, scopePath });
-      });
-    }
+    // Natural markdown sections
+    sections.forEach((section) => {
+      this.state.allSections.push({ section, scopePath });
+    });
 
     this.state.seenScopes.add(scopePath);
 
@@ -125,28 +94,13 @@ export class VsCodeMcpExporter extends ExporterBase {
     const paths = getAlignTruePaths(outputDir);
     const outputPath = paths.vscodeMcp();
 
-    // Generate MCP config JSON based on mode
-    let mcpConfig: McpConfig;
-    let contentHash: string;
-    let fidelityNotes: string[];
-
-    if (this.state.useSections) {
-      // Natural markdown mode
-      mcpConfig = this.generateMcpConfigFromSections(
-        options.unresolvedPlugsCount,
-      );
-      const allSectionsIR = this.state.allSections.map(
-        ({ section }) => section,
-      );
-      contentHash = computeContentHash({ sections: allSectionsIR });
-      fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
-    } else {
-      // Legacy rule mode
-      mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
-      const allRulesIR = this.state.allRules.map(({ rule }) => rule);
-      contentHash = computeContentHash({ rules: allRulesIR });
-      fidelityNotes = this.computeFidelityNotes(allRulesIR);
-    }
+    // Generate MCP config JSON - natural markdown mode
+    const mcpConfig = this.generateMcpConfigFromSections(
+      options.unresolvedPlugsCount,
+    );
+    const allSectionsIR = this.state.allSections.map(({ section }) => section);
+    const contentHash = computeContentHash({ sections: allSectionsIR });
+    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
 
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
 

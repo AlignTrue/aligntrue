@@ -26,7 +26,6 @@ export {
   type ValidationError,
   type IntegrityResult,
   type AlignPack,
-  type AlignRule,
   type AlignScope,
   type AlignSection,
   type AlignIntegrity,

@@ -880,7 +880,6 @@ describe("GitProvider - Edge Cases", () => {
 
   it("handles large repository with warning (future .gitignore support)", async () => {
     // This test validates the current behavior
-    // In Phase 2 Step 13, we'll add .gitignore respect
     const provider = new GitProvider(
       {
         type: "git",
@@ -898,7 +897,6 @@ describe("GitProvider - Edge Cases", () => {
     mkdirSync(repoDir, { recursive: true });
     writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
 
-    // Should work, but note for future: Phase 2 Step 13 will add size checks
     const result = await provider.fetch();
     expect(result).toBe(mockRulesYaml);
   });
