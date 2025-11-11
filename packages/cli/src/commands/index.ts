@@ -13,6 +13,8 @@ export { config } from "./config.js";
 export { adapters } from "./adapters.js";
 export { privacyCommand as privacy } from "./privacy.js";
 export { backupCommand as backup } from "./backup.js";
+export { revert } from "./revert.js";
+export { watch } from "./watch.js";
 export { plugsCommand as plugs } from "./plugs.js";
 export { pull } from "./pull.js";
 export { link } from "./link.js";

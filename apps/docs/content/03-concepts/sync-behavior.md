@@ -85,26 +85,24 @@ aligntrue sync --force
 
 ---
 
-### Agent → IR (pullback)
+### Agent → IR (two-way sync)
 
-**When:**
+**When:** Automatic with every `aligntrue sync` (default)
 
-- **Solo mode (auto-pull):** Automatically before every `aligntrue sync` (default)
-- **Team mode (manual):** `aligntrue sync --accept-agent <name>` (explicit opt-in)
+**Two-Way Sync (Default Behavior):**
 
-**Solo Mode Auto-Pull:**
-
-Solo developers editing native agent formats (`.cursor/*.mdc`, `AGENTS.md`) benefit from automatic pull on sync:
+AlignTrue now supports bidirectional sync by default. Edit any agent file (`AGENTS.md`, `.cursor/*.mdc`) and changes automatically merge back to IR, then sync to all other agents.
 
 ```bash
-# Edit native format
-vi .cursor/rules/aligntrue-starter.mdc
+# Edit any agent file
+vi AGENTS.md  # or .cursor/rules/aligntrue-starter.mdc
 
-# Auto-pull happens automatically
+# Two-way sync happens automatically
 aligntrue sync
-# ◇ Auto-pull: pulling from cursor
-# ✓ Updated IR from cursor
-# ✓ Synced to: AGENTS.md
+# ◇ Detected 1 edited file(s)
+# ◇ Merging changes from agent files to IR
+# ✓ Merged changes from agent files to IR
+# ✓ Synced to: .cursor/rules/*.mdc, AGENTS.md
 ```
 
 **Configuration:**
@@ -115,32 +113,38 @@ exporters:
   - cursor
   - agents-md
 
-# Auto-enabled for solo mode
 sync:
-  auto_pull: true # Default for solo mode
-  primary_agent: cursor # Auto-detected from exporters
-  on_conflict: accept_agent # Default for solo mode
+  two_way: true # Default - enable bidirectional sync
 ```
+
+**Section-Level Merging:**
+
+Two-way sync uses section-based merging:
+
+- **Sections matched by heading** (case-insensitive)
+- **Change detection via SHA-256 hash**
+- **User sections preserved** alongside team sections
+- **Last-write-wins** when same section edited in multiple files
 
 **Flow:**
 
 ```
-Agent files → Parse → Detect conflicts → Resolve → IR (.aligntrue/.rules.yaml)
+Any agent file → Parse sections → Merge to IR → Export to all agent files
 ```
 
-### Auto-pull flow
+### Two-way sync flow
 
 ```mermaid
 graph LR
-    A[Edit .cursor/rules/*.mdc] --> B{Auto-pull enabled?}
-    B -->|Yes| C[aligntrue sync]
-    C --> D[Pull from Cursor]
-    D --> E[Update IR]
-    E --> F[Sync to other agents]
-    F --> G[AGENTS.md updated]
-    F --> H[MCP config updated]
+    A[Edit AGENTS.md or .mdc] --> B[aligntrue sync]
+    B --> C[Detect edited files]
+    C --> D[Parse sections by heading]
+    D --> E[Merge to IR last-write-wins]
+    E --> F[Export to all agents]
+    F --> G[All files updated]
 
     style A fill:#f5f5f5,stroke:#666,stroke-width:1px
+    style B fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style C fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style D fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style E fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
@@ -148,41 +152,48 @@ graph LR
 
 **What happens:**
 
-1. Load existing IR from `.aligntrue/.rules.yaml`
-2. Parse agent files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-3. Detect conflicts (field-level comparison in team mode, auto-accept in solo mode)
-4. Prompt for resolution (interactive mode)
-5. Apply changes to IR
-6. Write updated `.aligntrue/.rules.yaml`
+1. Detect edited agent files by modification time
+2. Parse sections from edited files by heading
+3. Merge sections into IR (last-write-wins for conflicts)
+4. Write updated `.aligntrue/.rules.yaml`
+5. Export merged IR to all configured agents
+
+**Team-Managed Sections:**
+
+Team mode can designate sections as managed:
+
+```yaml
+# .aligntrue/config.yaml
+managed:
+  sections:
+    - "Security"
+    - "Compliance"
+  source_url: "https://github.com/company/rules"
+```
+
+Managed sections are marked with 🔒 icon and HTML comments warning against direct edits.
+
+**Disabling Two-Way Sync:**
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  two_way: false # Disable bidirectional sync
+```
+
+With two-way sync disabled, only IR → agent sync occurs.
 
 **Example:**
 
 ```bash
-# Pull changes from Cursor
-aligntrue sync --accept-agent cursor
+# Standard two-way sync (default)
+aligntrue sync
 
-# Pull from AGENTS.md
-aligntrue sync --accept-agent agents-md
+# Watch mode for continuous sync
+aligntrue watch
 ```
 
 See the [Quickstart](/docs/00-getting-started/00-quickstart) to get started.
-
-**Output:**
-
-```
-◇ Loading IR from .aligntrue/.rules.yaml...
-◇ Parsing Cursor rules from .cursor/rules/*.mdc...
-◇ Detecting conflicts...
-│
-⚠ Warning: Using mock data for agent→IR parsing
-│
-◆ Changes detected:
-│  • 2 rules modified
-│  • 1 rule added
-│  • 0 rules deleted
-│
-◇ Conflicts detected. Starting resolution...
-```
 
 ---
 
@@ -216,70 +227,79 @@ aligntrue sync --accept-agent cursor
 
 Without `--accept-agent`, IR always wins.
 
-### Conflict detection
+### Section-level merging behavior
 
-Conflicts detected when:
+Two-way sync uses section-based merging instead of field-level conflict detection:
 
-- Field values differ between IR and agent file
-- Rule exists in agent but not in IR (new rule)
-- Rule exists in IR but not in agent (deleted rule)
+**Match by heading:**
 
-**Field-level granularity:**
+- Sections matched by heading (case-insensitive, whitespace-trimmed)
+- Content hash (SHA-256) determines if section changed
 
-```
-Conflict in rule 'my-project.backend.use-typescript':
-  Field 'severity':
-    IR:    error
-    Agent: warn
-```
+**Merge actions:**
 
----
+- **Keep:** Section unchanged in both IR and agent file
+- **Update:** Section changed in IR, updates agent file
+- **Add:** New section in IR, adds to agent file
+- **User-added:** Section only in agent file, preserved
 
-## Conflict resolution
+**Example merge:**
 
-### Interactive mode (default)
+```markdown
+# AGENTS.md (edited by user)
 
-When conflicts detected, you'll see:
+## Testing
 
-```
-⚠ Conflict detected in rule 'my-project.backend.use-typescript'
+Run tests before committing.
 
-Field 'severity':
-  IR:    error
-  Agent: warn
+## My Workflow Notes
 
-[i] Keep IR (discard agent change)
-[a] Accept agent (pull agent change to IR)
-[d] Show full diff
-[q] Quit (abort sync)
+Personal notes here.
 
-Choice:
-```
+# .cursor/rules/aligntrue.mdc (from IR)
 
-**Options:**
+## Testing
 
-- `i` - Keep IR value, discard agent change
-- `a` - Accept agent value, update IR
-- `d` - Show complete diff of rule
-- `q` - Abort sync, no changes written
+Run all tests before committing.
 
-### Batch mode
+## Security
 
-Apply same resolution to all conflicts in a rule:
-
-```
-⚠ Multiple conflicts in rule 'my-project.backend.use-typescript'
-
-Apply same resolution to all 3 conflicts? [y/n]: y
-
-[i] Keep IR for all fields
-[a] Accept agent for all fields
-[q] Quit
-
-Choice:
+Validate all input.
 ```
 
-Saves time when you trust one source completely.
+**After sync:**
+
+- "Testing" section updated with IR content
+- "My Workflow Notes" preserved as user-added section
+- "Security" section added from IR
+- Result: All 3 sections in both files
+
+### Conflict resolution
+
+**Last-write-wins strategy:**
+
+When same section edited in multiple agent files:
+
+- Files sorted by modification time (oldest first)
+- Newest version wins
+- Warning logged for conflicts
+
+**Example:**
+
+```
+⚠ Section "Testing" edited in multiple files: AGENTS.md, .cursor/rules/aligntrue.mdc
+  Using version from .cursor/rules/aligntrue.mdc (most recent)
+```
+
+**Team-managed sections:**
+
+Changes to team-managed sections trigger warnings:
+
+```
+⚠ Team-managed section "Security" was modified
+  Reverting to team version
+  To keep your changes, rename the section or submit a PR
+```
 
 ### Non-interactive mode
 

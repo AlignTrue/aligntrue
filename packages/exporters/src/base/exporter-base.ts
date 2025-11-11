@@ -264,4 +264,188 @@ export abstract class ExporterBase implements ExporterPlugin {
 
     return result;
   }
+
+  /**
+   * Read and merge existing file with IR sections
+   *
+   * Enables section-level merging: IR sections + user-added sections coexist.
+   * Used for two-way sync and personal section preservation.
+   *
+   * @param outputPath - Path to existing agent file
+   * @param irSections - Sections from IR
+   * @param formatType - File format for parsing
+   * @param managedSections - Array of team-managed section headings
+   * @returns Merged sections, user sections, stats, and warnings
+   *
+   * @example
+   * ```typescript
+   * const merge = await this.readAndMerge(
+   *   outputPath,
+   *   pack.sections,
+   *   'cursor-mdc',
+   *   config.managed?.sections || []
+   * );
+   * // Use merge.mergedSections for export
+   * ```
+   */
+  protected async readAndMerge(
+    outputPath: string,
+    irSections: AlignSection[],
+    formatType: "agents-md" | "cursor-mdc" | "generic",
+    managedSections: string[] = [],
+  ): Promise<{
+    mergedSections: AlignSection[];
+    userSections: ParsedSection[];
+    stats: MergeStats;
+    warnings: string[];
+  }> {
+    const { existsSync } = await import("fs");
+    const { matchSections, parsedToAlignSection } = await import(
+      "../utils/section-matcher.js"
+    );
+    const { parseAgentsMd, parseCursorMdc, parseGenericMarkdown } =
+      await import("../utils/section-parser.js");
+
+    // If file doesn't exist, just return IR sections
+    if (!existsSync(outputPath)) {
+      return {
+        mergedSections: irSections,
+        userSections: [],
+        stats: {
+          kept: 0,
+          updated: 0,
+          added: irSections.length,
+          userAdded: 0,
+        },
+        warnings: [],
+      };
+    }
+
+    // Read and parse existing file
+    const content = readFileSync(outputPath, "utf-8");
+    let parsed;
+
+    switch (formatType) {
+      case "agents-md":
+        parsed = parseAgentsMd(content);
+        break;
+      case "cursor-mdc":
+        parsed = parseCursorMdc(content);
+        break;
+      case "generic":
+        parsed = parseGenericMarkdown(content);
+        break;
+    }
+
+    // Match IR sections with existing sections
+    const { matches, stats } = matchSections(
+      irSections,
+      parsed.sections,
+      managedSections,
+    );
+
+    // Build merged sections list
+    const mergedSections: AlignSection[] = [];
+    const userSections: ParsedSection[] = [];
+    const warnings: string[] = [];
+
+    // Add all IR sections (keep, update, or add)
+    for (const match of matches) {
+      if (match.action !== "user-added" && match.irSection) {
+        mergedSections.push(match.irSection);
+      }
+    }
+
+    // Add all user-added sections
+    for (const match of matches) {
+      if (match.action === "user-added" && match.existingSection) {
+        userSections.push(match.existingSection);
+        // Convert to AlignSection and add to merged list
+        mergedSections.push(parsedToAlignSection(match.existingSection));
+      }
+    }
+
+    // Generate warnings for merge operations
+    if (stats.userAdded > 0) {
+      warnings.push(
+        `Preserved ${stats.userAdded} personal section${stats.userAdded !== 1 ? "s" : ""}`,
+      );
+    }
+
+    if (stats.updated > 0) {
+      warnings.push(
+        `Updated ${stats.updated} section${stats.updated !== 1 ? "s" : ""} from IR`,
+      );
+    }
+
+    return {
+      mergedSections,
+      userSections,
+      stats,
+      warnings,
+    };
+  }
+
+  /**
+   * Render sections with team-managed markers
+   *
+   * Enhanced version of renderSections that adds team-managed markers
+   * for protected sections.
+   *
+   * @param sections - Sections to render
+   * @param includeVendor - Whether to include vendor metadata
+   * @param managedSections - Array of team-managed section headings
+   * @returns Rendered markdown with team-managed markers
+   */
+  protected renderSectionsWithManaged(
+    sections: AlignSection[],
+    includeVendor: boolean,
+    managedSections: string[] = [],
+  ): string {
+    if (sections.length === 0) {
+      return "";
+    }
+
+    const rendered = sections.map((section) => {
+      const lines: string[] = [];
+
+      // Check if team-managed
+      const isManaged = managedSections.some(
+        (managed) =>
+          managed.toLowerCase().trim() === section.heading.toLowerCase().trim(),
+      );
+
+      if (isManaged) {
+        lines.push(
+          "<!-- 🔒 Team-managed section: Changes will be overwritten -->",
+        );
+        lines.push("");
+      }
+
+      // Heading with proper level
+      const headingPrefix = "#".repeat(section.level);
+      const managedMarker = isManaged ? " 🔒" : "";
+      lines.push(`${headingPrefix} ${section.heading}${managedMarker}`);
+      lines.push("");
+
+      // Add vendor metadata as HTML comment if requested and present
+      if (includeVendor && section.vendor) {
+        lines.push(
+          `<!-- aligntrue:vendor ${JSON.stringify(section.vendor)} -->`,
+        );
+        lines.push("");
+      }
+
+      // Content
+      lines.push(section.content.trim());
+
+      return lines.join("\n");
+    });
+
+    return rendered.join("\n\n");
+  }
 }
+
+// Re-export types for convenience
+import type { ParsedSection, MergeStats } from "../utils/section-matcher.js";
+export type { ParsedSection, MergeStats };

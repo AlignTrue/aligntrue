@@ -26,6 +26,8 @@
     "@aligntrue/schema": "workspace:*",
     "@aligntrue/sources": "workspace:*",
     "@clack/prompts": "^0.11.0",
+    "chokidar": "^4.0.3",
+    "diff": "^8.0.2",
     "yaml": "^2.6.1"
   },
   "engines": {
@@ -33,5 +35,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/diff": "^8.0.0"
   }
 }

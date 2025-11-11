@@ -2,9 +2,9 @@
  * IR loading with YAML format support
  */
 
-import { readFileSync, existsSync } from "fs";
-import { extname } from "path";
-import { parse as parseYaml } from "yaml";
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
+import { extname, dirname } from "path";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode } from "../config/index.js";
@@ -103,4 +103,52 @@ export async function loadIR(
   }
 
   return ir as AlignPack;
+}
+
+/**
+ * Save IR to a YAML file
+ *
+ * @param targetPath - Path to save the IR file
+ * @param pack - AlignPack to save
+ */
+export async function saveIR(
+  targetPath: string,
+  pack: AlignPack,
+): Promise<void> {
+  // Validate pack before saving
+  const validation = validateAlignSchema(pack);
+  if (!validation.valid) {
+    const errorList =
+      validation.errors
+        ?.map((err) => `  - ${err.path}: ${err.message}`)
+        .join("\n") || "  Unknown validation error";
+
+    throw new Error(
+      `Invalid IR pack:\n${errorList}\n` +
+        `  Fix the errors above before saving.`,
+    );
+  }
+
+  // Ensure directory exists
+  const dir = dirname(targetPath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
+  // Convert to YAML
+  const yamlContent = stringifyYaml(pack, {
+    indent: 2,
+    lineWidth: 0, // No line wrapping
+    defaultStringType: "QUOTE_DOUBLE",
+  });
+
+  // Write file
+  try {
+    writeFileSync(targetPath, yamlContent, "utf8");
+  } catch (err) {
+    throw new Error(
+      `Failed to write IR file: ${targetPath}\n` +
+        `  ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
