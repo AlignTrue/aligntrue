@@ -35,8 +35,10 @@ Quick lookup table for all CLI commands:
 | --------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
 | `aligntrue init`            | Initialize project with agent detection | [Basic](./basic#aligntrue-init)                                             |
 | `aligntrue sync`            | Sync rules to agents                    | [Basic](./basic#aligntrue-sync)                                             |
+| `aligntrue watch`           | Watch files and auto-sync on changes    | [Basic](./basic#aligntrue-watch)                                            |
 | `aligntrue check`           | Validate rules                          | [Basic](./basic#aligntrue-check)                                            |
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
+| `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
 | `aligntrue adapters`        | Manage exporters                        | [Development](./development#aligntrue-adapters)                             |
 | `aligntrue md lint`         | Lint markdown                           | [Development](./development#aligntrue-md-lint)                              |
 | `aligntrue md format`       | Format markdown                         | [Development](./development#aligntrue-md-format)                            |

@@ -21,6 +21,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Section-level merging for exporters**
+  - Exporters now merge IR sections with existing agent files to preserve user-added sections
+  - Team sections and personal sections can coexist in the same file
+  - Section matching by heading with hash-based change detection
+  - Team-managed sections marked with 🔒 icon and HTML comments
+  - Merge statistics reported in exporter warnings (preserved/updated counts)
+  - Comprehensive tests for section parsing, matching, and merging
+
+- **Two-way sync architecture**
+  - Edit any agent file (AGENTS.md, Cursor .mdc), changes sync to all others via IR
+  - Section-based detection with last-write-wins strategy
+  - Multi-file parser detects edited files based on mtime
+  - Automatic merge of changes back to IR before exporting to all agents
+  - Config support: `sync.two_way` (default: true)
+
+- **Team-managed content protection**
+  - Config schema for `managed.sections` array to designate protected sections
+  - Team-managed sections marked with 🔒 icon in exported files
+  - HTML comments warn against direct edits to managed content
+  - Clear separation between team rules and personal rules
+
+- **Revert command with diff preview**
+  - New `aligntrue revert` command for interactive backup restoration
+  - Preview changes with colored diff before applying
+  - Selective file restoration support
+  - Interactive backup selection with metadata display
+
+- **BackupManager enhancements**
+  - `listBackupFiles()` method to list files in a specific backup
+  - `readBackupFile()` method to read specific files from backups
+  - Selective file restore via `files` parameter in `RestoreOptions`
+  - Validates requested files exist in backup before restoration
+
 - **Team mode enhancements (implemented)**
   - Lockfile generator now supports section-based packs with fingerprint-based tracking
   - Lockfile validator detects modified, new, and deleted sections

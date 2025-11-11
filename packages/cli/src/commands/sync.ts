@@ -12,7 +12,6 @@ import {
   getAlignTruePaths,
   SyncEngine,
   type AlignTrueConfig,
-  loadIR,
   saveMinimalConfig,
 } from "@aligntrue/core";
 import {
@@ -30,7 +29,6 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { WorkflowDetector } from "../utils/workflow-detector.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../utils/source-resolver.js";
 
@@ -495,185 +493,13 @@ export async function sync(args: string[]): Promise<void> {
     }
   }
 
-  /**
-   * Step 3.9: Agent file drift warning in team mode
-   *
-   * In team mode with auto_pull disabled (default), warn if agent files
-   * have been modified after IR. This guides developers to use the correct
-   * workflow: edit IR, not agent files.
-   */
-  if (config.mode === "team" && !config.sync?.auto_pull) {
-    // TODO: Implement edit detection for sections-only format
-    // EditDetector is not yet implemented for sections format
-    const agentFiles = [
-      { path: "AGENTS.md", agent: "agents-md" },
-      { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
-    ];
-
-    for (const { path: agentPath, agent } of agentFiles) {
-      const fullAgentPath = resolve(cwd, agentPath);
-
-      // Skip if agent file doesn't exist
-      if (!existsSync(fullAgentPath)) {
-        continue;
-      }
-
-      // TODO: Check if agent file is newer than IR in sections format
-      // Edit detection not yet implemented for sections-only format
-      const conflictInfo = { agentModified: false, irModified: false };
-
-      // If agent file was modified (but not IR), warn
-      if (conflictInfo.agentModified && !conflictInfo.irModified) {
-        clack.log.warn(`⚠ ${agentPath} modified after IR`);
-        clack.log.info("  In team mode, edit .aligntrue/.rules.yaml instead");
-        clack.log.info(`  Or run: aligntrue sync --accept-agent ${agent}`);
-      }
-    }
-  }
-
-  /**
-   * Step 4: Auto-pull logic with conflict detection
-   *
-   * If enabled, pulls from primary_agent BEFORE syncing IR to agents.
-   * This keeps IR in sync with any edits made directly to agent config files.
-   *
-   * Conditions for auto-pull:
-   * 1. config.sync.auto_pull is true (default in solo mode)
-   * 2. User didn't manually specify --accept-agent (manual import takes precedence)
-   * 3. primary_agent is configured (auto-detected on init)
-   * 4. primary_agent's file exists and is importable
-   * 5. No conflict detected (both IR and agent modified since last sync)
-   *
-   * Mode defaults:
-   * - Solo: auto_pull ON (enables native-format editing workflow)
-   * - Team: auto_pull OFF (IR is single source of truth)
-   *
-   * See: packages/core/src/config/index.ts (lines 253-303) for mode defaults
-   */
-  let shouldAutoPull = false;
-  let autoPullAgent: string | undefined;
+  // Check for --accept-agent flag
   const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
-  const noAutoPull =
-    (parsed.flags["no-auto-pull"] as boolean | undefined) || false;
-  const _showAutoPullDiff =
-    (parsed.flags["show-auto-pull-diff"] as boolean | undefined) || false;
-
-  if (config.sync?.auto_pull && !acceptAgent && !noAutoPull) {
-    // Auto-pull enabled and user didn't manually specify agent
-    autoPullAgent = config.sync.primary_agent;
-
-    if (autoPullAgent) {
-      // Auto-pull disabled - import functionality removed
-      // Users should edit AGENTS.md directly
-      shouldAutoPull = false;
-      if (false) {
-        const agentSourcePath = "";
-
-        if (existsSync(agentSourcePath)) {
-          // TODO: Check for conflicts before auto-pull in sections format
-          // Conflict detection not yet implemented for sections-only format
-          const conflictInfo = { hasConflict: false };
-
-          if (conflictInfo.hasConflict) {
-            // Both files modified - show conflict warning
-            clack.log.warn("⚠ Conflict detected:");
-            clack.log.warn(`  - You edited ${sourcePath}`);
-            clack.log.warn(`  - Changes also found in ${agentSourcePath}`);
-            clack.log.warn("");
-
-            // Check if workflow has been configured
-            const workflowDetector = new WorkflowDetector(cwd);
-            const workflowConfigured = workflowDetector.isWorkflowConfigured();
-
-            // On first conflict, offer workflow choice
-            if (!workflowConfigured && config.sync?.workflow_mode === "auto") {
-              clack.log.info(
-                "💡 This is your first conflict. Let's configure your workflow.",
-              );
-              clack.log.info("");
-
-              const workflowChoice =
-                await workflowDetector.promptWorkflowChoice();
-
-              if (!clack.isCancel(workflowChoice)) {
-                await workflowDetector.saveWorkflowChoice(
-                  workflowChoice,
-                  config,
-                  configPath,
-                );
-
-                // Update config in memory for this sync
-                if (!config.sync) config.sync = {};
-                config.sync!.workflow_mode = workflowChoice;
-
-                clack.log.info("");
-              }
-            }
-
-            // Resolve conflict based on workflow mode
-            const workflowMode = config.sync?.workflow_mode || "auto";
-
-            if (workflowMode === "ir_source") {
-              // IR-source workflow: always keep IR edits
-              clack.log.info("Workflow: IR-source (keeping your edits)");
-              shouldAutoPull = false;
-            } else if (workflowMode === "native_format") {
-              // Native-format workflow: always accept agent
-              clack.log.info(
-                `Workflow: Native-format (accepting ${autoPullAgent} changes)`,
-              );
-              shouldAutoPull = true;
-            } else {
-              // Auto mode: prompt user for resolution
-              const resolution = await clack.select({
-                message: "How would you like to resolve this conflict?",
-                options: [
-                  {
-                    value: "keep-ir",
-                    label: "Keep my edits to AGENTS.md (skip auto-pull)",
-                    hint: "Recommended if you manually edited AGENTS.md",
-                  },
-                  {
-                    value: "accept-agent",
-                    label: `Accept changes from ${autoPullAgent}`,
-                    hint: "Overwrites your AGENTS.md edits",
-                  },
-                  {
-                    value: "abort",
-                    label: "Abort sync and review manually",
-                    hint: "Exit without making any changes",
-                  },
-                ],
-              });
-
-              if (resolution === "abort" || clack.isCancel(resolution)) {
-                clack.outro("Sync aborted. Review conflicts manually.");
-                return;
-              }
-
-              if (resolution === "keep-ir") {
-                clack.log.info("Skipping auto-pull, keeping your edits");
-                shouldAutoPull = false;
-              } else {
-                clack.log.info(`Accepting changes from ${autoPullAgent}`);
-                shouldAutoPull = true;
-              }
-            }
-          } else {
-            shouldAutoPull = true;
-            clack.log.info(`Auto-pull enabled: pulling from ${autoPullAgent}`);
-          }
-        }
-      }
-    }
-  }
-
-  // Step 5: Check for --accept-agent flag
   if (acceptAgent) {
     clack.log.info(`Manual import from: ${acceptAgent}`);
   }
 
-  // Step 5: Discover and load exporters
+  // Step 4: Discover and load exporters
   spinner.start("Loading exporters");
 
   const engine = new SyncEngine();
@@ -750,8 +576,8 @@ export async function sync(args: string[]): Promise<void> {
       suggestion?: string;
     }> = [];
 
-    // TODO: Validate section IDs in sections-only format
-    // Section IDs are validated at parse time, no additional validation needed here
+    // Section IDs are validated at parse time by the markdown parser
+    // No additional validation needed in the sync command
     const sections = bundleResult.pack.sections || [];
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
@@ -853,6 +679,51 @@ export async function sync(args: string[]): Promise<void> {
     }
   }
 
+  // Step 6.5: Two-way sync - detect and merge agent file edits
+  if (!acceptAgent && config.sync?.two_way !== false) {
+    try {
+      // Dynamic import at runtime
+      const multiFileParser = "@aligntrue/core/sync/multi-file-parser.js";
+      // @ts-ignore - Dynamic import resolved at runtime
+      const { detectEditedFiles } = await import(multiFileParser);
+
+      // Detect edited agent files
+      const editedFiles = await detectEditedFiles(cwd, config);
+
+      if (editedFiles.length > 0) {
+        spinner.start("Merging changes from edited files");
+
+        clack.log.info(
+          `Detected ${editedFiles.length} edited file${editedFiles.length !== 1 ? "s" : ""}:`,
+        );
+        editedFiles.forEach((f: { path: string; sections: unknown[] }) => {
+          clack.log.info(`  - ${f.path}: ${f.sections.length} section(s)`);
+        });
+
+        // Run two-way sync via engine
+        const twoWayResult = await engine.syncFromMultipleAgents(configPath, {
+          dryRun,
+          force,
+        });
+
+        spinner.stop("Changes merged");
+
+        if (twoWayResult.warnings && twoWayResult.warnings.length > 0) {
+          twoWayResult.warnings.forEach((warning) => {
+            clack.log.warn(`⚠ ${warning}`);
+          });
+        }
+
+        clack.log.success("Merged changes from agent files to IR");
+      }
+    } catch (err) {
+      clack.log.warn(
+        `⚠ Two-way sync failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      clack.log.info("Continuing with one-way sync...");
+    }
+  }
+
   // Step 7: Execute sync (with auto-pull if enabled)
   try {
     const yes = (parsed.flags["yes"] as boolean | undefined) || false;
@@ -884,25 +755,7 @@ export async function sync(args: string[]): Promise<void> {
 
     let result;
 
-    // First: Auto-pull from primary agent (if enabled)
-    if (shouldAutoPull && autoPullAgent) {
-      spinner.start(`Auto-pulling from ${autoPullAgent}`);
-
-      // Snapshot current rules for diff calculation
-      // TODO: Track sections changes for auto-pull in sections-only format
-      // For now, skip tracking since import is not yet implemented
-      try {
-        const _currentIR = await loadIR(absoluteSourcePath);
-        // Track sections instead of rules for future diffing
-      } catch {
-        // Ignore errors - might be first sync
-      }
-
-      // Auto-pull disabled - import functionality removed
-      // Users should edit AGENTS.md directly
-    }
-
-    // Then: Execute requested sync operation
+    // Execute sync operation
     if (acceptAgent) {
       // Manual agent → IR sync (pullback)
       spinner.start(
@@ -1033,12 +886,6 @@ export async function sync(args: string[]): Promise<void> {
             }
           });
         }
-      }
-
-      // TODO: Update last sync timestamp for conflict detection in sections format
-      // Timestamp tracking not yet implemented for sections-only format
-      if (!dryRun) {
-        // Conflict detection skipped for now
       }
 
       // Record telemetry event on success

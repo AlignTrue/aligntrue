@@ -758,6 +758,110 @@ export class SyncEngine {
   }
 
   /**
+   * Sync from multiple edited agent files (two-way sync)
+   * Detects edited agent files, merges to IR, then syncs back to all agents
+   */
+  async syncFromMultipleAgents(
+    configPath: string,
+    options: SyncOptions = {},
+  ): Promise<SyncResult> {
+    const auditTrail: AuditEntry[] = [];
+    const written: string[] = [];
+    const warnings: string[] = [];
+
+    try {
+      // Load config
+      const config = await loadConfig(configPath);
+      this.config = config;
+      const cwd = resolvePath(configPath, "..");
+      const paths = require("../paths.js").getAlignTruePaths(cwd);
+
+      // Import multi-file parser
+      const { detectEditedFiles, mergeFromMultipleFiles } = await import(
+        "./multi-file-parser.js"
+      );
+
+      // 1. Detect edited agent files
+      const editedFiles = await detectEditedFiles(cwd, config);
+
+      if (editedFiles.length === 0) {
+        // No edits detected - proceed with normal sync
+        return {
+          success: true,
+          written: [],
+          warnings: ["No agent file edits detected"],
+          auditTrail,
+        };
+      }
+
+      auditTrail.push({
+        action: "update",
+        target: "multi-file-detection",
+        timestamp: new Date().toISOString(),
+        details: `Detected ${editedFiles.length} edited file(s)`,
+      });
+
+      // 2. Load current IR
+      const currentIR = await loadIR(paths.rules);
+
+      // 3. Merge changes from agent files
+      const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
+
+      // 4. Check for conflicts
+      if (mergeResult.conflicts.length > 0) {
+        for (const conflict of mergeResult.conflicts) {
+          warnings.push(
+            `Section "${conflict.heading}" edited in multiple files: ${conflict.files.join(", ")}`,
+          );
+          auditTrail.push({
+            action: "conflict",
+            target: conflict.heading,
+            timestamp: new Date().toISOString(),
+            details: `${conflict.reason}: ${conflict.files.join(", ")}`,
+          });
+        }
+      }
+
+      // 5. Write merged IR
+      if (!options.dryRun) {
+        const { saveIR } = await import("./ir-loader.js");
+        await saveIR(paths.rules, mergeResult.mergedPack);
+        written.push(paths.rules);
+
+        auditTrail.push({
+          action: "update",
+          target: paths.rules,
+          timestamp: new Date().toISOString(),
+          details: `Merged ${editedFiles.length} file(s) to IR`,
+        });
+      }
+
+      // 6. Sync merged IR back to all agents
+      const syncResult = await this.syncToAgents(configPath, options);
+
+      const result: SyncResult = {
+        success: true,
+        written: [...written, ...syncResult.written],
+        warnings: [...warnings, ...(syncResult.warnings || [])],
+        auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
+      };
+
+      if (syncResult.exportResults) {
+        result.exportResults = syncResult.exportResults;
+      }
+
+      return result;
+    } catch (err) {
+      return {
+        success: false,
+        written,
+        warnings: [err instanceof Error ? err.message : String(err)],
+        auditTrail,
+      };
+    }
+  }
+
+  /**
    * Clear internal state
    */
   clear(): void {

@@ -1,11 +1,12 @@
 /**
  * Shared utilities for exporters
- *
- * TODO: Implement utilities for sections-only format
- * These utilities are not yet implemented for the natural markdown sections format.
  */
 
-// Stub exports - utilities not yet implemented for sections format
+// Section merging utilities
+export * from "./section-parser.js";
+export * from "./section-matcher.js";
+
+// Legacy stub exports - utilities not yet implemented for sections format
 export function canonicalJson(): unknown {
   throw new Error("canonicalJson not yet implemented");
 }
