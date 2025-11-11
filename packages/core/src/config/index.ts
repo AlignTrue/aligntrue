@@ -75,6 +75,15 @@ export interface AlignTrueConfig {
     on_conflict?: "prompt" | "keep_ir" | "accept_agent";
     workflow_mode?: "auto" | "ir_source" | "native_format";
     show_diff_on_pull?: boolean;
+    two_way?: boolean; // Default true - enable bidirectional sync
+    watch_enabled?: boolean; // Enable watch mode
+    watch_debounce?: number; // Debounce delay in milliseconds
+    watch_files?: string[]; // Files/patterns to watch
+  };
+  managed?: {
+    files?: string[]; // Full file paths to protect
+    sections?: string[]; // Section headings to protect
+    source_url?: string; // Team repo URL for display
   };
   sources?: Array<{
     type: "local" | "git" | "url";

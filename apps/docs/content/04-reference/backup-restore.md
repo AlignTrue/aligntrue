@@ -66,9 +66,9 @@ backup:
 ### Configuration options
 
 - **`auto_backup`** (boolean): Enable automatic backups before destructive operations
-  - Default: `false`
-  - Solo developers typically disable this for faster workflows
-  - Teams may enable for additional safety
+  - Default: `true`
+  - Recommended for all users to prevent accidental data loss
+  - Minimal performance impact (~10-50ms per backup)
 
 - **`backup_on`** (array): Which commands trigger automatic backups
   - Default: `["sync"]`
@@ -152,6 +152,54 @@ aligntrue backup restore --to 2025-10-29T14-30-00-000
 - Cleans up temporary backup on success
 
 **Warning:** This overwrites current `.aligntrue/` directory contents. Make sure you have the right timestamp.
+
+### `aligntrue revert`
+
+Restore files from backup with preview:
+
+```bash
+# Interactive: choose backup and preview changes
+aligntrue revert
+
+# Restore specific file with diff preview
+aligntrue revert AGENTS.md
+
+# Restore specific file from specific backup
+aligntrue revert AGENTS.md --timestamp 2025-10-29T14-30-00-000
+
+# Skip confirmation
+aligntrue revert AGENTS.md -y
+```
+
+**Options:**
+
+- `--timestamp <id>` or `-t` - Specific backup timestamp
+- `--yes` or `-y` - Skip confirmation prompts
+
+**Features:**
+
+- **Interactive selection** - Choose from available backups
+- **Diff preview** - See exactly what will change before restoring
+- **Selective restore** - Restore single files instead of full backup
+- **Colored diff** - Green for additions, red for removals
+
+**Example workflow:**
+
+```bash
+$ aligntrue revert AGENTS.md
+
+Choose backup to restore:
+  2025-11-11T14-30-00-000 - Auto-backup before sync
+  2025-11-11T12-15-45-123 - Manual backup
+
+Preview of changes to AGENTS.md:
+- ## Security
+- Validate all input
++ ## Security
++ Validate all input and sanitize output
+
+Restore "AGENTS.md" from backup 2025-11-11T14-30-00-000? (y/n):
+```
 
 ### `aligntrue backup cleanup`
 

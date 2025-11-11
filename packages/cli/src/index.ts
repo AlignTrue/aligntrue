@@ -20,6 +20,8 @@ import {
   adapters,
   privacy,
   backup,
+  revert,
+  watch,
   pull,
   link,
   drift,
@@ -53,7 +55,7 @@ async function main() {
     console.log("Basic Commands:");
     console.log("  init           Initialize AlignTrue in current directory");
     console.log("  sync           Sync rules to agents");
-    console.log("  import         Import rules from agent configs");
+    console.log("  watch          Watch files and auto-sync on changes");
     console.log("  check          Validate rules and configuration\n");
 
     console.log("Development Commands:");
@@ -84,6 +86,7 @@ async function main() {
     console.log(
       "  backup         Manage backups (create, list, restore, cleanup)",
     );
+    console.log("  revert         Restore files from backup with preview");
     console.log("  telemetry      Telemetry settings (on, off, status)");
     console.log(
       "  privacy        Privacy and consent management (audit, revoke)",
@@ -116,6 +119,11 @@ async function main() {
 
   if (command === "sync") {
     await sync(commandArgs);
+    return;
+  }
+
+  if (command === "watch") {
+    await watch(commandArgs);
     return;
   }
 
@@ -156,6 +164,11 @@ async function main() {
 
   if (command === "backup") {
     await backup(commandArgs);
+    return;
+  }
+
+  if (command === "revert") {
+    await revert(commandArgs);
     return;
   }
 

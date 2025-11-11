@@ -5,10 +5,26 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./cursor": "./dist/cursor/index.js",
-    "./agents-md": "./dist/agents-md/index.js",
-    "./vscode-mcp": "./dist/vscode-mcp/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cursor": {
+      "types": "./dist/cursor/index.d.ts",
+      "default": "./dist/cursor/index.js"
+    },
+    "./agents-md": {
+      "types": "./dist/agents-md/index.d.ts",
+      "default": "./dist/agents-md/index.js"
+    },
+    "./vscode-mcp": {
+      "types": "./dist/vscode-mcp/index.d.ts",
+      "default": "./dist/vscode-mcp/index.js"
+    },
+    "./utils/section-parser": {
+      "types": "./dist/utils/section-parser.d.ts",
+      "default": "./dist/utils/section-parser.js"
+    }
   },
   "scripts": {
     "build": "tsc && node -e \"const fs=require('fs'),path=require('path');function copyManifests(dir){fs.readdirSync(dir,{withFileTypes:true}).forEach(e=>{const p=path.join(dir,e.name);if(e.isDirectory())copyManifests(p);else if(e.name==='manifest.json'){const t=p.replace('src','dist');fs.mkdirSync(path.dirname(t),{recursive:true});const content=fs.readFileSync(p,'utf8');const fixed=content.replace(/\\\"\\.\\/index\\.ts\\\"/g,'\\\"./index.js\\\"');fs.writeFileSync(t,fixed)}})};copyManifests('src')\"",

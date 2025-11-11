@@ -97,6 +97,53 @@
         "show_diff_on_pull": {
           "type": "boolean",
           "description": "Show diff summary when auto-pull executes (default: true)"
+        },
+        "two_way": {
+          "type": "boolean",
+          "description": "Enable two-way sync: detect edited agent files and merge back to IR (default: true)"
+        },
+        "watch_enabled": {
+          "type": "boolean",
+          "description": "Enable watch mode for auto-sync on file changes (default: false)"
+        },
+        "watch_debounce": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 10000,
+          "description": "Debounce delay in milliseconds for watch mode (default: 500)"
+        },
+        "watch_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File patterns to watch for changes (default: auto-detect from exporters)"
+        }
+      }
+    },
+    "managed": {
+      "type": "object",
+      "description": "Team-managed content protection (team mode)",
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Full file paths to protect from direct edits"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Section headings to protect from direct edits"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Team repository URL for reference"
         }
       }
     },

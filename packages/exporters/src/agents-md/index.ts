@@ -72,28 +72,43 @@ export class AgentsMdExporter extends ExporterBase {
     const paths = getAlignTruePaths(outputDir);
     const outputPath = paths.agentsMd();
 
-    // Generate AGENTS.md content - natural markdown mode
-    const result = this.generateSectionsContent(options.unresolvedPlugsCount);
-    const content = result.content;
-    const warnings = result.warnings;
+    // Get managed sections from options
+    const managedSections =
+      (options as { managedSections?: string[] }).managedSections || [];
 
-    // Compute content hash from sections
+    // Merge with existing file to preserve user-added sections
     const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    const mergeResult = await this.readAndMerge(
+      outputPath,
+      allSectionsIR,
+      "agents-md",
+      managedSections,
+    );
+
+    // Generate AGENTS.md content - natural markdown mode
+    const result = this.generateSectionsContent(
+      mergeResult.mergedSections,
+      options.unresolvedPlugsCount,
+      managedSections,
+    );
+    const content = result.content;
+    const warnings = [...result.warnings, ...mergeResult.warnings];
+
+    // Compute content hash from merged sections
+    const contentHash = computeContentHash({
+      sections: mergeResult.mergedSections,
+    });
+    const fidelityNotes = this.computeSectionFidelityNotes(
+      mergeResult.mergedSections,
+    );
 
     // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    const exportResult = this.buildResult(
-      filesWritten,
-      contentHash,
-      fidelityNotes,
-    );
-
-    if (warnings.length > 0) {
-      exportResult.warnings = warnings;
-    }
+    const exportResult = this.buildResult(filesWritten, contentHash, [
+      ...warnings,
+      ...fidelityNotes,
+    ]);
 
     return exportResult;
   }
@@ -114,19 +129,26 @@ export class AgentsMdExporter extends ExporterBase {
    * Generate AGENTS.md content from natural markdown sections
    * Much simpler than rule-based format - just render sections as-is
    */
-  private generateSectionsContent(unresolvedPlugs?: number): {
+  private generateSectionsContent(
+    sections: AlignSection[],
+    unresolvedPlugs?: number,
+    managedSections: string[] = [],
+  ): {
     content: string;
     warnings: string[];
   } {
     const header = this.generateHeader();
 
-    // Render all sections as natural markdown
-    const allSections = this.state.allSections.map(({ section }) => section);
-    const sectionsMarkdown = this.renderSections(allSections, false);
+    // Render sections with team-managed markers
+    const sectionsMarkdown = this.renderSectionsWithManaged(
+      sections,
+      false,
+      managedSections,
+    );
 
     // Compute content hash and fidelity notes for footer
-    const contentHash = computeContentHash({ sections: allSections });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSections);
+    const contentHash = computeContentHash({ sections });
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
     const footer = this.generateFooter(
       contentHash,
       fidelityNotes,

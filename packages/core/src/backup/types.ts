@@ -41,6 +41,8 @@ export interface RestoreOptions {
   cwd?: string;
   /** Specific timestamp to restore, or undefined for most recent */
   timestamp?: string;
+  /** Specific files to restore (if undefined, restores all files) */
+  files?: string[];
 }
 
 export interface CleanupOptions {

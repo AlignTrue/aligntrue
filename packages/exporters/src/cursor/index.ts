@@ -47,19 +47,38 @@ export class CursorExporter extends ExporterBase {
       scope.isDefault ? "default" : scope.normalizedPath,
     );
 
-    // Generate .mdc content
+    // Merge with existing file to preserve user-added sections
+    const managedSections =
+      (options as { managedSections?: string[] }).managedSections || [];
+    const mergeResult = await this.readAndMerge(
+      outputPath,
+      sections,
+      "cursor-mdc",
+      managedSections,
+    );
+
+    // Generate .mdc content from merged sections
     const content = this.generateMdcFromSections(
       scope,
-      sections,
+      mergeResult.mergedSections,
       options.unresolvedPlugsCount,
+      managedSections,
     );
-    const contentHash = computeContentHash({ scope, sections });
-    const fidelityNotes = this.computeSectionFidelityNotes(sections);
+    const contentHash = computeContentHash({
+      scope,
+      sections: mergeResult.mergedSections,
+    });
+    const fidelityNotes = this.computeSectionFidelityNotes(
+      mergeResult.mergedSections,
+    );
+
+    // Combine merge warnings with fidelity notes
+    const allWarnings = [...mergeResult.warnings, ...fidelityNotes];
 
     // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
-    return this.buildResult(filesWritten, contentHash, fidelityNotes);
+    return this.buildResult(filesWritten, contentHash, allWarnings);
   }
 
   /**
@@ -85,12 +104,17 @@ export class CursorExporter extends ExporterBase {
     scope: ResolvedScope,
     sections: AlignSection[],
     unresolvedPlugs?: number,
+    managedSections: string[] = [],
   ): string {
     // Extract Cursor-specific metadata from first section's vendor bag
     const frontmatter = this.generateFrontmatterFromSections(scope, sections);
 
-    // Render sections as clean markdown (no vendor metadata)
-    const sectionsMarkdown = this.renderSections(sections, false);
+    // Render sections with team-managed markers
+    const sectionsMarkdown = this.renderSectionsWithManaged(
+      sections,
+      false,
+      managedSections,
+    );
 
     // Generate footer
     const contentHash = computeContentHash({ scope, sections });

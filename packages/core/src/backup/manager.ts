@@ -111,6 +111,56 @@ export class BackupManager {
   }
 
   /**
+   * List files in a specific backup
+   */
+  static listBackupFiles(
+    timestamp: string,
+    options: { cwd?: string } = {},
+  ): string[] {
+    const cwd = options.cwd || process.cwd();
+    const backupDir = join(cwd, ".aligntrue", ".backups", timestamp);
+    const manifestPath = join(backupDir, "manifest.json");
+
+    if (!existsSync(manifestPath)) {
+      throw new Error(`Backup not found: ${timestamp}`);
+    }
+
+    try {
+      const manifest = JSON.parse(
+        readFileSync(manifestPath, "utf-8"),
+      ) as BackupManifest;
+      return manifest.files;
+    } catch (err) {
+      throw new Error(
+        `Failed to read backup manifest: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Read a specific file from a backup
+   */
+  static readBackupFile(
+    timestamp: string,
+    filePath: string,
+    options: { cwd?: string } = {},
+  ): string | null {
+    const cwd = options.cwd || process.cwd();
+    const backupDir = join(cwd, ".aligntrue", ".backups", timestamp);
+    const backupFilePath = join(backupDir, filePath);
+
+    if (!existsSync(backupFilePath)) {
+      return null;
+    }
+
+    try {
+      return readFileSync(backupFilePath, "utf-8");
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * List all available backups
    */
   static listBackups(cwd: string = process.cwd()): BackupInfo[] {
@@ -192,8 +242,20 @@ export class BackupManager {
     });
 
     try {
+      // Determine which files to restore
+      const filesToRestore = options.files || backup.manifest.files;
+
+      // Validate requested files exist in backup
+      if (options.files) {
+        for (const file of options.files) {
+          if (!backup.manifest.files.includes(file)) {
+            throw new Error(`File not found in backup: ${file}`);
+          }
+        }
+      }
+
       // First, remove existing files that are being restored
-      for (const file of backup.manifest.files) {
+      for (const file of filesToRestore) {
         const destPath = join(aligntrueDir, file);
         if (existsSync(destPath)) {
           rmSync(destPath, { force: true });
@@ -201,7 +263,7 @@ export class BackupManager {
       }
 
       // Restore files (excluding .backups directory)
-      for (const file of backup.manifest.files) {
+      for (const file of filesToRestore) {
         const srcPath = join(backup.path, file);
         const destPath = join(aligntrueDir, file);
         const destDir = dirname(destPath);

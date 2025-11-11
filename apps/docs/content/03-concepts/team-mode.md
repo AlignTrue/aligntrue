@@ -484,164 +484,182 @@ aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs
 aligntrue team approve sha256:abc123def456...
 ```
 
-## Severity remapping
+## Managed sections
 
-Control how rule severities are enforced in your team environment while maintaining audit trails and policy guardrails.
+Team mode can designate specific sections as centrally managed, preventing local edits and ensuring team alignment.
 
 ### Overview
 
-Severity remapping allows teams to adjust rule enforcement levels without modifying source packs. Common use cases:
+Managed sections protect critical rules from accidental modifications while allowing developers to add personal sections to the same file.
 
-- **Staged rollout:** Start with warnings before enforcing errors
-- **Temporary exceptions:** Downgrade errors during migration periods
-- **Custom policy:** Align enforcement with team standards
+**Use cases:**
 
-**Guardrails:** Lowering `MUST` rules to `info` requires documented rationale to prevent policy regression.
+- Security policies that must stay consistent
+- Compliance requirements
+- Critical coding standards
+- Shared team workflows
 
 ### Configuration
 
-Create `.aligntrue.team.yaml` in your repo root:
+Define managed sections in `.aligntrue/config.yaml`:
 
 ```yaml
-severity_remaps:
-  - rule_id: "security/no-eval"
-    from: "MUST"
-    to: "warn"
-    rationale_file: "docs/rationale/eval-exception.md"
-
-  - rule_id: "style/semicolons"
-    from: "SHOULD"
-    to: "note"
+managed:
+  sections:
+    - "Security"
+    - "Compliance"
+    - "Critical Standards"
+  source_url: "https://github.com/company/rules" # Optional
 ```
 
-### Severity mapping
+### Team-managed markers
 
-AlignTrue uses human-readable severities that map to check levels:
+Managed sections are marked in exported files:
 
-| Source severity | Check level | Behavior              |
-| --------------- | ----------- | --------------------- |
-| `MUST`          | `error`     | Fail checks, block CI |
-| `SHOULD`        | `warn`      | Log warning, continue |
-| `MAY`           | `note`      | Informational only    |
-
-Remapping allows you to override the source severity for specific rules.
-
-### Rationale requirement
-
-**Policy regression guardrail:** Lowering `MUST` rules to `note` (info) requires a rationale file.
-
-Example rationale (`docs/rationale/eval-exception.md`):
+**AGENTS.md:**
 
 ```markdown
-# Rationale: Downgrade security/no-eval to warning
+<!-- 🔒 Team-managed section: Changes will be overwritten -->
 
-**Issue:** #1234
-**Owner:** @security-team  
-**Date:** 2025-10-30
-**Review:** 2025-12-01
+## Security 🔒
 
-## Context
-
-Legacy analytics code uses eval in controlled sandbox contexts. Refactoring will take 2-3 months.
-
-## Approval
-
-Security team approved temporary downgrade with documented migration plan and quarterly reviews.
-
-## Monitoring
-
-Track remaining eval usage with custom lint rule: `@org/no-legacy-eval`
+All input must be validated.
 ```
 
-**Required fields:**
+**Cursor .mdc:**
 
-- Issue link
-- Owner contact
-- Review date
-- Migration plan
-- Approval record
+```markdown
+<!-- 🔒 Team-managed: Security -->
 
-### Drift detection
+## Security 🔒
 
-Changes to `.aligntrue.team.yaml` are detected by drift detection:
+All input must be validated.
+```
+
+**Visual indicators:**
+
+- 🔒 emoji in section heading
+- HTML comment warning before section
+- Clear attribution to team source
+
+### Workflow
+
+**Team members:**
+
+1. Sync to get latest team rules: `aligntrue sync`
+2. Add personal sections with different headings
+3. Do not edit team-managed sections
+
+**Example:**
+
+```markdown
+# AGENTS.md
+
+<!-- 🔒 Team-managed section -->
+
+## Security 🔒
+
+Team security rules here.
+
+## My Workflow Notes
+
+Personal notes - not managed.
+
+## Testing
+
+Personal testing preferences - not managed.
+```
+
+**If you need to change a managed section:**
+
+1. Create PR to team rules repository
+2. Get approval from team lead
+3. Team lead merges changes
+4. All developers sync to get updates
+
+### Two-way sync behavior
+
+With two-way sync enabled (`sync.two_way: true`):
+
+- Personal sections sync bidirectionally
+- Managed sections always overwrite with team version
+- Warnings shown if managed sections edited locally
+
+**Example output:**
 
 ```bash
-aligntrue drift
+$ aligntrue sync
+⚠ Team-managed section "Security" was modified locally
+  Reverting to team version
+  To keep your changes, rename the section or submit a PR to team repo
 ```
 
-Output:
+### Personal vs team sections
 
-```
-SEVERITY_REMAP DRIFT:
-  security/no-eval
-    Team policy changed (hash mismatch)
-    Suggestion: Run aligntrue sync to update lockfile
-```
+| Aspect              | Team-managed sections | Personal sections  |
+| ------------------- | --------------------- | ------------------ |
+| Marked with 🔒      | Yes                   | No                 |
+| Local edits allowed | No (overwritten)      | Yes                |
+| Syncs from agent    | No                    | Yes (two-way sync) |
+| Change process      | PR to team repo       | Edit locally       |
 
-The lockfile tracks `team_yaml_hash` to detect policy changes.
+### Example team setup
 
-### Example workflows
-
-**Staged rollout:**
+**Team repository (company/rules):**
 
 ```yaml
-# Week 1: Introduce as notes
-severity_remaps:
-  - rule_id: "typescript/strict-null-checks"
-    from: "MUST"
-    to: "note"
+# aligntrue.yaml
+sections:
+  - heading: "Security"
+    content: |
+      ## Security
 
-# Week 4: Upgrade to warnings
-severity_remaps:
-  - rule_id: "typescript/strict-null-checks"
-    from: "MUST"
-    to: "warn"
-
-# Week 8: Remove remap (enforce as error)
-severity_remaps: []
+      1. Validate all input
+      2. Use parameterized queries
+      3. Never log sensitive data
 ```
 
-**Temporary exception:**
+**Developer config:**
 
 ```yaml
-severity_remaps:
-  - rule_id: "deprecated/lodash-v3"
-    from: "MUST"
-    to: "warn"
-    rationale_file: "docs/rationale/lodash-migration.md"
-```
+# .aligntrue/config.yaml
+sources:
+  - type: git
+    url: "https://github.com/company/rules"
+    path: "aligntrue.yaml"
 
-Set calendar reminder to remove after migration completes.
+managed:
+  sections:
+    - "Security"
+  source_url: "https://github.com/company/rules"
+
+sync:
+  two_way: true # Personal sections still sync
+```
 
 ### Troubleshooting
 
-**Rationale file missing:**
+**Section not marked as managed:**
 
-```
-Error: MUST->note remap requires rationale
-Rule: security/no-eval
-Missing: docs/rationale/eval-exception.md
-```
+Check:
 
-**Fix:** Create rationale file with required fields.
+1. Section heading matches exactly (case-sensitive)
+2. `managed.sections` array in config
+3. Run `aligntrue sync` to refresh
 
-**Drift detected after remap:**
+**Can't find managed section config:**
 
-```
-SEVERITY_REMAP DRIFT:
-  Team policy changed
+```bash
+aligntrue config show | grep -A5 managed
 ```
 
-**Fix:** Run `aligntrue sync` to update lockfile with new team_yaml_hash.
+**Want to override a managed section:**
 
-**Remap not applied:**
+Options:
 
-```
-Expected: warn
-Got: error
-```
-
-**Fix:** Verify rule_id matches exactly (case-sensitive). Run `aligntrue check --verbose` to see active remaps.
+1. **Rename your section** - Use different heading for personal version
+2. **Disable managed mode** - Remove from `managed.sections` (solo dev only)
+3. **Submit PR** - Request changes to team rules
 
 ## Advanced topics
 
