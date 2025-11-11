@@ -86,11 +86,23 @@ Set these in tsconfig.json:
 {/* prettier-ignore-start */}
 
 <Callout type="info">
-**Where to edit:** Always edit `AGENTS.md` (not `.aligntrue/.rules.yaml`). The .rules.yaml file is auto-generated like a build artifact.
+**Where to edit:** Primary: `AGENTS.md` (you edit directly as markdown)
+
+You can also edit agent files directly (`.cursor/rules/aligntrue.mdc`, etc.) and changes will automatically merge back on the next `aligntrue sync`.
+
+Data flow:
 
 ```
-AGENTS.md (you edit) → .rules.yaml (generated) → Agent files (exported)
+AGENTS.md (primary) or any agent file
+    ↓
+aligntrue sync (detects edits)
+    ↓
+.aligntrue/.rules.yaml (internal IR, auto-generated)
+    ↓
+All agent files (exported and synced)
 ```
+
+**Note:** The `.rules.yaml` file is internal and auto-generated—treat it like a build artifact. Always edit the markdown files.
 
 </Callout>
 {/* prettier-ignore-end */}
