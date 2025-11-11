@@ -32,8 +32,9 @@ interface ParsedSection {
 
 export interface SectionConflict {
   heading: string;
-  files: string[];
+  files: Array<{ path: string; mtime: Date }>;
   reason: string;
+  winner: string; // Path of the file that won (most recent)
 }
 
 /**
@@ -148,12 +149,21 @@ export function mergeFromMultipleFiles(
           (c) => c.heading === section.heading,
         );
         if (conflictIndex >= 0) {
-          conflicts[conflictIndex]!.files.push(file.path);
+          conflicts[conflictIndex]!.files.push({
+            path: file.path,
+            mtime: file.mtime,
+          });
+          // Update winner to most recent
+          conflicts[conflictIndex]!.winner = file.path;
         } else {
           conflicts.push({
             heading: section.heading,
-            files: [existing.file, file.path],
+            files: [
+              { path: existing.file, mtime: existing.mtime },
+              { path: file.path, mtime: file.mtime },
+            ],
             reason: "Same section edited in multiple files",
+            winner: file.path, // Most recent wins
           });
         }
       }

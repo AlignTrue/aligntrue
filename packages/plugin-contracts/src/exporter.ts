@@ -46,6 +46,7 @@ export interface ExportOptions {
   backup?: boolean;
   config?: unknown; // Optional AlignTrue config for mode hints and caps
   unresolvedPlugsCount?: number; // Count of unresolved required plugs (Plugs system)
+  managedSections?: string[]; // List of team-managed section headings
 }
 
 /**

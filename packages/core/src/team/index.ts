@@ -21,3 +21,10 @@ export {
   type UpdateFinding,
   type UpdateResult,
 } from "./updates.js";
+export {
+  compareBundles,
+  compareDetailedBundles,
+  type BundleDiff,
+  type DetailedBundleDiff,
+  type DetailedSectionDiff,
+} from "./bundle-diff.js";

@@ -417,15 +417,20 @@ export abstract class ExporterBase implements ExporterPlugin {
 
       if (isManaged) {
         lines.push(
-          "<!-- 🔒 Team-managed section: Changes will be overwritten -->",
+          "<!-- [TEAM-MANAGED]: This section is managed by your team.",
+        );
+        lines.push(
+          "Local edits will be preserved in backups but may be overwritten on next sync.",
+        );
+        lines.push(
+          "To keep changes, rename the section or remove from managed list. -->",
         );
         lines.push("");
       }
 
       // Heading with proper level
       const headingPrefix = "#".repeat(section.level);
-      const managedMarker = isManaged ? " 🔒" : "";
-      lines.push(`${headingPrefix} ${section.heading}${managedMarker}`);
+      lines.push(`${headingPrefix} ${section.heading}`);
       lines.push("");
 
       // Add vendor metadata as HTML comment if requested and present
