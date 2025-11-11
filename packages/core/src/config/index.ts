@@ -411,6 +411,7 @@ function checkUnknownFields(
     "lockfile",
     "git",
     "sync",
+    "managed",
     "sources",
     "exporters",
     "scopes",

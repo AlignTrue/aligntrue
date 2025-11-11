@@ -409,6 +409,24 @@
           }
         }
       }
+    },
+    "managed": {
+      "type": "object",
+      "description": "Team-managed sections configuration",
+      "additionalProperties": false,
+      "properties": {
+        "sections": {
+          "type": "array",
+          "description": "List of section headings that are team-managed",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_url": {
+          "type": "string",
+          "description": "Optional URL to the source repository for team-managed sections"
+        }
+      }
     }
   }
 }

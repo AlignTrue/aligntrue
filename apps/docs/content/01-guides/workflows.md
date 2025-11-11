@@ -139,13 +139,35 @@ aligntrue sync
 4. Changes exported to all agents
 5. Team lead reviews later
 
-**Next step:** Team lead approves:
+**Next step:** Team lead approves with diff preview:
 
 ```bash
 aligntrue team approve --current
+# Approve Rule Sources
+# Loading bundle diff...
+#
+# Changes in this bundle:
+#
+# Added 1 section(s):
+#   + API Standards (23 lines)
+#
+# Approve these changes? (y/N) › y
+#
 # ✓ Added sha256:abc123... to allow list
 # Remember to commit .aligntrue/allow.yaml
 ```
+
+**Interactive mode** (default when TTY detected):
+
+- Shows diff preview automatically
+- Prompts for confirmation
+- Skip with `--no-preview` flag
+
+**Non-interactive mode** (CI/scripts):
+
+- No diff preview shown
+- No prompts
+- Use `--preview` flag to force preview
 
 ### Scenario: Team member edits, approval required (strict mode)
 
@@ -342,36 +364,43 @@ lockfile:
   mode: soft # Warn but allow drift
 ```
 
+**How team-managed sections work:**
+
+Team-managed sections are marked with `[TEAM-MANAGED]` in exported files:
+
+```markdown
+<!-- [TEAM-MANAGED]: Controlled by team, local edits preserved in backups -->
+
+## Security
+
+[Team content here]
+```
+
 **Workflow:**
 
 ```bash
-# In engineer repo:
-# .aligntrue/allow.yaml has base hash (from central repo)
-
 # Engineer adds personal section
 echo "## My Preferences" >> AGENTS.md
 aligntrue sync
 
-# ⚠ Bundle hash not in allow list (soft mode)
-#   (Engineer's added section changed the hash)
-#
-# Managed sections detected:
-#   • Security (team-managed, marked 🔒 in exports)
-#   • Compliance (team-managed, marked 🔒 in exports)
-#
-# ◇ Synced to 3 agents (including personal section)
-# ✓ Sync complete
+# Team-managed sections detected and marked
+# Personal sections coexist with team sections
 
-# Tip: To reset managed sections to approved version:
-#   aligntrue sync --force
+# If engineer edits team-managed section:
+# - Changes backed up automatically
+# - Warning shown on sync
+# - May be overwritten on next team sync
+# - Recoverable via: aligntrue backup restore
 ```
+
+For details, see [Team-managed sections guide](/docs/01-guides/team-managed-sections).
 
 **Result:**
 
 - Engineer keeps personal section
 - Team sections remain intact from central repo
 - Warning about drift (but allows it in soft mode)
-- Clear marking in exports (🔒) shows what's team-managed
+- Clear marking in exports (`[TEAM-MANAGED]`) shows what's team-controlled
 
 ---
 

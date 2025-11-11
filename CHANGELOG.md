@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Onboarding summaries at end of `aligntrue init` and `aligntrue team enable`
+- `aligntrue config summary` command to view current configuration
+- Lockfile mode prompt during `aligntrue team enable` (soft/strict)
+- Team-managed sections guide in documentation
+- Support for `managed` field in config schema for team-managed sections
+- `managedSections` parameter in ExportOptions interface
+- **Conflict warning system** - Prominent warnings when same section edited in multiple files
+  - Shows which files conflicted with timestamps
+  - Indicates which version was kept (last-write-wins)
+  - Displays conflict summary box at end of sync output
+- `--show-conflicts` flag for `aligntrue sync` to see detailed section content from each conflicting file
+- **Approval diff preview** - Team leads see changes before approving
+  - Shows added/modified/removed sections with line counts
+  - Automatic in interactive mode, skip with `--no-preview`
+  - Force in CI with `--preview` flag
+- Bundle comparison utility (`packages/core/src/team/bundle-diff.ts`) for diff generation
+
+### Changed
+
+- Team-managed section markers changed from emoji (🔒) to text `[TEAM-MANAGED]`
+- Improved team mode onboarding with clear next steps and configuration summary
+- Enhanced documentation for team-managed sections workflow
+- Updated architecture and implementation specs to emphasize team-managed sections
+- Updated quickstart guide with team mode setup instructions
+- **SyncResult interface** now includes `conflicts` field with file timestamps and winner information
+- **SectionConflict interface** enhanced with file mtimes and winner tracking
+- Conflict warnings now show file modification times and which version won
+- Documentation updated with conflict detection examples and approval diff workflow
+
+### Fixed
+
+- Team mode setup now prompts for lockfile mode instead of defaulting silently
+- Config validation now recognizes `managed` field as valid
+- Conflict detection no longer silent - warnings are prominent and actionable
+
 ### Breaking Changes
 
 - **⚠️ Removed legacy `rules` format** (pre-1.0 schema evolution)

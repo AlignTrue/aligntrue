@@ -101,6 +101,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Accept all prompts (use with --accept-agent for conflicts)",
   },
   {
+    flag: "--show-conflicts",
+    hasValue: false,
+    description: "Show detailed conflict information with section content",
+  },
+  {
     flag: "--help",
     alias: "-h",
     hasValue: false,
@@ -904,6 +909,96 @@ export async function sync(args: string[]): Promise<void> {
       } catch {
         // Telemetry errors should not fail the sync command
         // Silently continue
+      }
+
+      // Show conflict summary if any
+      if (result.conflicts && result.conflicts.length > 0) {
+        const showConflicts =
+          (parsed.flags["show-conflicts"] as boolean | undefined) || false;
+
+        console.log("\n");
+        clack.log.warn("⚠️  CONFLICTS DETECTED\n");
+
+        for (const conflict of result.conflicts) {
+          clack.log.warn(
+            `Section "${conflict.heading}" edited in multiple files:`,
+          );
+
+          // Sort files by mtime to show chronologically
+          const sortedFiles = [...conflict.files].sort(
+            (a, b) => a.mtime.getTime() - b.mtime.getTime(),
+          );
+
+          for (const file of sortedFiles) {
+            const timeStr = file.mtime.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+            const isWinner = file.path === conflict.winner;
+            const marker = isWinner ? "✓" : " ";
+            clack.log.message(`  ${marker} ${file.path} (modified ${timeStr})`);
+          }
+
+          clack.log.message(`  → Using: ${conflict.winner} (most recent)\n`);
+
+          // Show detailed content if --show-conflicts flag is present
+          if (showConflicts) {
+            // Read the winning file to show its content
+            try {
+              const { readFileSync } = await import("fs");
+              const { parseAgentsMd, parseCursorMdc } = await import(
+                "@aligntrue/exporters/utils/section-parser"
+              );
+
+              for (const file of sortedFiles) {
+                const content = readFileSync(file.path, "utf-8");
+                let sections;
+
+                if (file.path.endsWith(".md")) {
+                  sections = parseAgentsMd(content).sections;
+                } else if (file.path.endsWith(".mdc")) {
+                  sections = parseCursorMdc(content).sections;
+                } else {
+                  continue;
+                }
+
+                const section = sections.find(
+                  (s: { heading: string }) =>
+                    s.heading.toLowerCase().trim() ===
+                    conflict.heading.toLowerCase().trim(),
+                );
+
+                if (section) {
+                  const isWinner = file.path === conflict.winner;
+                  const marker = isWinner ? "[KEPT]" : "[DISCARDED]";
+                  clack.log.message(`\n  ${marker} Content from ${file.path}:`);
+                  clack.log.message(`  ${"─".repeat(60)}`);
+                  const lines = section.content.split("\n");
+                  lines.slice(0, 10).forEach((line: string) => {
+                    clack.log.message(`  ${line}`);
+                  });
+                  if (lines.length > 10) {
+                    clack.log.message(
+                      `  ... (${lines.length - 10} more lines)`,
+                    );
+                  }
+                  clack.log.message(`  ${"─".repeat(60)}`);
+                }
+              }
+            } catch (err) {
+              clack.log.warn(
+                `  Could not read section content: ${err instanceof Error ? err.message : String(err)}`,
+              );
+            }
+          }
+        }
+
+        if (!showConflicts) {
+          clack.log.info(
+            `Run 'aligntrue sync --show-conflicts' to see detailed changes\n`,
+          );
+        }
       }
 
       // Show success message with next steps

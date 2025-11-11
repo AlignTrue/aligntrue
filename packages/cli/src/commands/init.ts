@@ -705,15 +705,30 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     });
   }
 
-  // Step 10: Show success message and next steps (workflow-specific)
+  // Step 10: Show configuration summary
+  console.log("\n✓ AlignTrue initialized\n");
+  console.log("Current configuration:");
+  console.log(`  Mode: ${config.mode || "solo"}`);
+  console.log(
+    `  Two-way sync: ${config.sync?.two_way !== false ? "enabled" : "disabled"}`,
+  );
+  console.log(`  Merge strategy: last-write-wins (automatic)`);
+  console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
+  if (config.managed?.sections && config.managed.sections.length > 0) {
+    console.log(`  Team-managed sections: ${config.managed.sections.length}`);
+  }
+  console.log("\nTo change settings:");
+  console.log("  Edit: .aligntrue/config.yaml");
+  console.log("  Or run: aligntrue config set <key> <value>");
+
+  // Step 11: Show success message and next steps (workflow-specific)
   if (nonInteractive) {
-    console.log("\nSuccess! Next: aligntrue sync");
+    console.log("\nNext: aligntrue sync");
   } else {
-    let message = "Success! AlignTrue is initialized.\n\n";
+    let message = "\nNext steps:\n";
 
     if (importedRules && importedFromAgent) {
       // Imported workflow message
-      message += `📝 Next steps:\n`;
       message += `  1. Run: aligntrue sync\n`;
       message += `     → Syncs rules to all agents (AGENTS.md, Cursor, etc.)\n`;
       message += `  2. Edit rules in any agent file - they stay synced\n`;
@@ -722,12 +737,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       message += `   AlignTrue keeps all agent files in sync automatically`;
     } else {
       // Fresh start workflow message
-      message += `📝 Next steps:\n`;
-      message += `  1. Review: AGENTS.md (your starter rules)\n`;
-      message += `  2. Customize for your project\n`;
-      message += `  3. Run: aligntrue sync\n`;
-      message += `     → Syncs to all your agents\n\n`;
-      message += `💡 Edit rules in any agent file\n`;
+      message += `  1. Edit rules: AGENTS.md\n`;
+      message += `  2. Sync to agents: aligntrue sync\n`;
+      if (config.mode === "solo") {
+        message += `  3. Enable team mode: aligntrue team enable\n`;
+      }
+      message += `\n💡 Edit rules in any agent file\n`;
       message += `   AGENTS.md, .cursor/*.mdc, etc. - AlignTrue keeps them synced`;
     }
 

@@ -31,7 +31,11 @@ export async function config(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
   // Extract subcommand from positional args
-  const subcommand = parsed.positional[0] as "show" | "edit" | undefined;
+  const subcommand = parsed.positional[0] as
+    | "show"
+    | "edit"
+    | "summary"
+    | undefined;
 
   if (parsed.help || !subcommand) {
     showStandardHelp({
@@ -39,17 +43,24 @@ export async function config(args: string[]): Promise<void> {
       description: "Display or edit configuration",
       usage: "aligntrue config <subcommand>",
       args: ARG_DEFINITIONS,
-      examples: ["aligntrue config show", "aligntrue config edit"],
+      examples: [
+        "aligntrue config show",
+        "aligntrue config edit",
+        "aligntrue config summary",
+      ],
       notes: [
         "Subcommands:",
-        "  show    Display active configuration with mode and effective settings",
-        "  edit    Open config file in default editor",
+        "  show     Display active configuration with mode and effective settings",
+        "  edit     Open config file in default editor",
+        "  summary  Display concise configuration summary",
         "",
         "Description:",
         "  The show command displays your active mode (solo/team/enterprise) and",
         "  effective configuration including defaults.",
         "",
         "  The edit command opens .aligntrue/config.yaml in your default editor.",
+        "",
+        "  The summary command shows a quick overview of key settings.",
       ],
     });
     process.exit(0);
@@ -71,6 +82,8 @@ export async function config(args: string[]): Promise<void> {
     await showConfig(configPath);
   } else if (subcommand === "edit") {
     await editConfig(configPath);
+  } else if (subcommand === "summary") {
+    await showSummary(configPath);
   }
 }
 
@@ -185,4 +198,45 @@ async function editConfig(configPath: string): Promise<void> {
       reject(err);
     });
   });
+}
+
+/**
+ * Show concise configuration summary
+ */
+async function showSummary(configPath: string): Promise<void> {
+  try {
+    const { loadConfig } = await import("@aligntrue/core");
+    const config = await loadConfig(configPath);
+
+    console.log("Current configuration:");
+    console.log(`  Mode: ${config.mode || "solo"}`);
+    console.log(
+      `  Two-way sync: ${config.sync?.two_way !== false ? "enabled" : "disabled"}`,
+    );
+    console.log(`  Merge strategy: last-write-wins (automatic)`);
+    console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
+
+    if (config.mode === "team") {
+      console.log(
+        `  Lockfile: ${config.modules?.lockfile ? "enabled" : "disabled"} (${config.lockfile?.mode || "soft"} mode)`,
+      );
+      console.log(
+        `  Bundle: ${config.modules?.bundle ? "enabled" : "disabled"}`,
+      );
+    }
+
+    if (config.managed?.sections && config.managed.sections.length > 0) {
+      console.log(`  Team-managed sections: ${config.managed.sections.length}`);
+      config.managed.sections.forEach((s) => console.log(`    - ${s}`));
+    }
+
+    console.log("\nTo change settings:");
+    console.log("  Edit: .aligntrue/config.yaml");
+    console.log("  Or run: aligntrue config edit");
+  } catch (err) {
+    clack.log.error(
+      `Failed to load configuration: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    process.exit(1);
+  }
 }
