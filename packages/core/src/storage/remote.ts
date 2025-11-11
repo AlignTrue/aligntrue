@@ -8,7 +8,7 @@ import { join } from "path";
 import { execSync } from "child_process";
 import { IStorageBackend, Rules } from "./backend.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { parseMarkdownToSections } from "@aligntrue/markdown-parser";
+import { parseNaturalMarkdown } from "../parsing/natural-markdown.js";
 
 export class RemoteStorageBackend implements IStorageBackend {
   private fileWriter: AtomicFileWriter;
@@ -40,7 +40,7 @@ export class RemoteStorageBackend implements IStorageBackend {
 
     try {
       const content = readFileSync(this.rulesFile, "utf-8");
-      const parsed = parseMarkdownToSections(content);
+      const parsed = parseNaturalMarkdown(content);
       return parsed.sections || [];
     } catch (err) {
       console.warn(

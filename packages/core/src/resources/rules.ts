@@ -4,7 +4,7 @@
 
 import type { AlignSection } from "@aligntrue/schema";
 import { ResourceManager, type ResourceItem } from "./manager.js";
-import type { StorageBackend } from "../storage/backend.js";
+import type { IStorageBackend } from "../storage/backend.js";
 import type { ResourceConfig } from "../config/index.js";
 
 export interface RuleItem extends ResourceItem {
@@ -25,7 +25,7 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
    * Read rules from storage backend
    */
   protected async readFromBackend(
-    backend: StorageBackend,
+    backend: IStorageBackend,
     scope: string,
   ): Promise<RuleItem[]> {
     const sections = await backend.read();
@@ -44,7 +44,7 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
    * Write rules to storage backend
    */
   protected async writeToBackend(
-    backend: StorageBackend,
+    backend: IStorageBackend,
     items: RuleItem[],
     scope: string,
   ): Promise<void> {
@@ -52,7 +52,7 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
       heading: item.heading,
       content: item.content,
       level: item.level,
-      fingerprint: item.fingerprint,
+      fingerprint: item.fingerprint || "",
     }));
 
     await backend.write(sections);

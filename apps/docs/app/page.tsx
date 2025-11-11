@@ -650,7 +650,7 @@ export default function HomePage() {
                   textWrap: "balance",
                 }}
               >
-                Sync rules across AI agents, projects & teams.
+                Sync + manage rules across AI agents, projects & teams.
               </h1>
               <p
                 className="hero-description"
