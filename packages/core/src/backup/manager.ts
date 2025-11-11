@@ -95,6 +95,9 @@ export class BackupManager {
       files,
       created_by: options.created_by || "manual",
       ...(options.notes && { notes: options.notes }),
+      ...(options.action && { action: options.action }),
+      ...(options.mode && { mode: options.mode }),
+      ...(options.scopes && { scopes: options.scopes }),
     };
 
     writeFileSync(
@@ -347,5 +350,107 @@ export class BackupManager {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Create a scope-specific backup
+   * Stores in .aligntrue/.backups/<scope>/<timestamp>/
+   */
+  static createScopedBackup(
+    scope: string,
+    options: BackupOptions = {},
+  ): BackupInfo {
+    const cwd = options.cwd || process.cwd();
+    const aligntrueDir = join(cwd, ".aligntrue");
+
+    if (!existsSync(aligntrueDir)) {
+      throw new Error(`AlignTrue directory not found: ${aligntrueDir}`);
+    }
+
+    // Create scope-specific backups directory
+    const backupsDir = join(aligntrueDir, ".backups", scope);
+    if (!existsSync(backupsDir)) {
+      mkdirSync(backupsDir, { recursive: true });
+    }
+
+    // Generate timestamp
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/:/g, "-")
+      .replace(/\./g, "-")
+      .replace(/Z$/, "");
+    const backupDir = join(backupsDir, timestamp);
+
+    mkdirSync(backupDir, { recursive: true });
+
+    // Collect files for this scope
+    // For now, backup the entire .aligntrue directory
+    // TODO: Filter by scope
+    const files: string[] = [];
+    const collectFiles = (dir: string, base: string = "") => {
+      const entries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        const relativePath = base ? join(base, entry.name) : entry.name;
+
+        if (relativePath === ".backups") continue;
+
+        if (entry.isDirectory()) {
+          collectFiles(fullPath, relativePath);
+        } else {
+          files.push(relativePath.replace(/\\/g, "/"));
+        }
+      }
+    };
+    collectFiles(aligntrueDir);
+
+    // Copy files
+    for (const file of files) {
+      const srcPath = join(aligntrueDir, file);
+      const destPath = join(backupDir, file);
+      const destDir = dirname(destPath);
+
+      if (!existsSync(destDir)) {
+        mkdirSync(destDir, { recursive: true });
+      }
+
+      cpSync(srcPath, destPath);
+    }
+
+    // Create manifest
+    const manifest: BackupManifest = {
+      version: BACKUP_VERSION,
+      timestamp: new Date().toISOString(),
+      files,
+      created_by: options.created_by || "manual",
+      ...(options.notes && { notes: options.notes }),
+      ...(options.action && { action: options.action }),
+      ...(options.mode && { mode: options.mode }),
+      ...(options.scopes && { scopes: options.scopes }),
+    };
+
+    writeFileSync(
+      join(backupDir, "manifest.json"),
+      JSON.stringify(manifest, null, 2),
+      "utf-8",
+    );
+
+    return {
+      timestamp,
+      path: backupDir,
+      manifest,
+    };
+  }
+
+  /**
+   * Sync backup to remote storage
+   * TODO: Implement git push to remote backup repository
+   */
+  static async syncBackupToRemote(
+    backup: BackupInfo,
+    remoteUrl: string,
+  ): Promise<void> {
+    // TODO: Implement git push
+    // For now, this is a no-op
   }
 }

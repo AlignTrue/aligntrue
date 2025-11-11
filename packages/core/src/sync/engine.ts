@@ -875,6 +875,130 @@ export class SyncEngine {
   }
 
   /**
+   * Scope-aware sync for team mode
+   * Reads from multiple storage backends, merges by scope, and writes back
+   */
+  async syncWithScopes(options: SyncOptions = {}): Promise<SyncResult> {
+    const warnings: string[] = [];
+    const written: string[] = [];
+    const exportResults = new Map<string, ExportResult>();
+    const auditTrail: AuditEntry[] = [];
+
+    try {
+      // Load config
+      await this.loadConfiguration(options.configPath);
+      if (!this.config) {
+        throw new Error("Configuration not loaded");
+      }
+
+      // Check if scope configuration exists
+      const scopeConfig =
+        this.config.scopes || this.config.resources?.rules?.scopes;
+      const storageConfig =
+        this.config.storage || this.config.resources?.rules?.storage;
+
+      if (!scopeConfig || !storageConfig) {
+        // Fall back to regular sync if no scope config
+        const irPath = resolvePath(process.cwd(), ".aligntrue/.rules.yaml");
+        return this.syncToAgents(irPath, options);
+      }
+
+      // Import scope filtering functions
+      const { filterSectionsByScope, mergeScopedSections } = await import(
+        "./multi-file-parser.js"
+      );
+      const { StorageManager } = await import("../storage/manager.js");
+
+      // Initialize storage manager
+      const storageManager = new StorageManager(process.cwd(), storageConfig);
+
+      // Read from all storage backends
+      const allRules = await storageManager.readAll();
+
+      // Merge all sections
+      const allSections: any[] = [];
+      for (const rules of Object.values(allRules)) {
+        allSections.push(...rules);
+      }
+
+      // Filter sections by scope
+      const scopedSections = filterSectionsByScope(allSections, scopeConfig);
+
+      // Determine scope order (team first, then personal, then others)
+      const scopeOrder = [
+        "team",
+        "personal",
+        ...Object.keys(scopeConfig).filter(
+          (s) => s !== "team" && s !== "personal",
+        ),
+      ];
+
+      // Merge sections (later scopes override earlier ones)
+      const mergedSections = mergeScopedSections(scopedSections, scopeOrder);
+
+      // Create IR from merged sections
+      this.ir = {
+        version: "1.0",
+        sections: mergedSections,
+      };
+
+      auditTrail.push({
+        action: "update",
+        target: "IR",
+        source: "multi-scope",
+        timestamp: new Date().toISOString(),
+        details: `Merged ${mergedSections.length} sections from ${Object.keys(scopeConfig).length} scopes`,
+      });
+
+      // Now sync to agents using the merged IR
+      const irPath = resolvePath(process.cwd(), ".aligntrue/.rules.yaml");
+      const syncResult = await this.syncToAgents(irPath, options);
+
+      // Write back to respective storage backends (only team scope in team mode)
+      if (!options.dryRun && this.config.mode === "team") {
+        const teamSections = scopedSections["team"] || [];
+        await storageManager.getBackend("team").write(teamSections);
+        written.push("team storage");
+
+        auditTrail.push({
+          action: "update",
+          target: "team storage",
+          source: "sync",
+          timestamp: new Date().toISOString(),
+          details: `Wrote ${teamSections.length} team sections to storage`,
+        });
+      }
+
+      // Sync to remote if configured
+      if (!options.dryRun) {
+        await storageManager.syncAll();
+        auditTrail.push({
+          action: "update",
+          target: "remote storage",
+          source: "sync",
+          timestamp: new Date().toISOString(),
+          details: "Synced all storage backends to remote",
+        });
+      }
+
+      return {
+        success: syncResult.success,
+        written: [...written, ...syncResult.written],
+        warnings: [...warnings, ...(syncResult.warnings || [])],
+        exportResults,
+        auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
+      };
+    } catch (err) {
+      return {
+        success: false,
+        written: [],
+        warnings: [err instanceof Error ? err.message : String(err)],
+        auditTrail,
+      };
+    }
+  }
+
+  /**
    * Clear internal state
    */
   clear(): void {

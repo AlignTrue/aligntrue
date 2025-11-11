@@ -26,6 +26,9 @@ import type { OverlayConfig } from "../overlays/types.js";
 
 export type AlignTrueMode = "solo" | "team" | "enterprise";
 export type ModeHints = "off" | "metadata_only" | "hints" | "native";
+export type ResourceType = "rules" | "mcps" | "skills";
+export type ScopeType = "team" | "personal" | string; // Allow custom scopes
+export type StorageType = "repo" | "local" | "remote";
 
 export interface PerformanceConfig {
   max_file_size_mb?: number;
@@ -51,6 +54,27 @@ export interface BackupConfig {
 export interface DetectionConfig {
   auto_enable?: boolean;
   ignored_agents?: string[];
+}
+
+export interface ScopeConfig {
+  sections: string[] | "*";
+}
+
+export interface StorageConfig {
+  type: StorageType;
+  url?: string; // For remote storage
+  branch?: string; // For remote storage
+  path?: string; // Subdirectory in remote
+}
+
+export interface ResourceConfig {
+  scopes: Record<string, ScopeConfig>;
+  storage: Record<string, StorageConfig>;
+}
+
+export interface ApprovalConfig {
+  internal?: "pr_approval" | "allowlist";
+  external?: "pr_approval" | "allowlist";
 }
 
 export interface AlignTrueConfig {
@@ -109,6 +133,15 @@ export interface AlignTrueConfig {
   backup?: BackupConfig;
   detection?: DetectionConfig;
   overlays?: OverlayConfig;
+
+  // New: Resource-based configuration
+  resources?: Record<ResourceType, ResourceConfig>;
+
+  // Backward compatibility (maps to resources.rules)
+  storage?: Record<string, StorageConfig>;
+
+  // Approval configuration
+  approval?: ApprovalConfig;
 }
 
 /**
