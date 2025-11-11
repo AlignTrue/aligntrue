@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Rationale:** No users yet (alpha release), so no migration burden. Premature backward compatibility eliminated.
   - **Migration:** If you have any files with the old `rules:` format, they will fail validation. Convert to natural markdown sections format (see documentation).
 
+### Documentation
+
+- **Clarified two-way sync behavior**
+  - Removed misleading auto-pull documentation that promised features not implemented
+  - Added clear documentation of actual behavior: last-write-wins merging, no conflict detection, no prompts
+  - New guides: "Two-way sync" for practical examples, "Workflows and scenarios" for real use cases
+  - Added "How sync actually works" technical reference with complete truth about defaults and behavior
+  - Updated architecture and implementation specs to match actual codebase behavior
+  - Quickstart updated to clarify edit locations and data flow
+
 ### Added
 
 - **Section-level merging for exporters**
