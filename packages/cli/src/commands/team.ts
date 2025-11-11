@@ -341,6 +341,21 @@ async function teamEnable(
       }
     }
 
+    // Create backup before making changes
+    if (!nonInteractive) {
+      const { BackupManager } = await import(
+        "@aligntrue/core/backup/manager.js"
+      );
+      const backup = BackupManager.createBackup({
+        cwd: process.cwd(),
+        created_by: "team-enable",
+        notes: "Before enabling team mode",
+        action: "team-enable",
+        mode: "solo",
+      });
+      clack.log.success(`Backup created: ${backup.timestamp}`);
+    }
+
     // Update config
     config.mode = "team";
     config.modules = {
@@ -349,16 +364,32 @@ async function teamEnable(
       bundle: true,
     };
 
+    // Set default approval to pr_approval (relaxed)
+    if (!config.approval) {
+      config.approval = {
+        internal: "pr_approval",
+        external: "allowlist",
+      };
+    }
+
     // Prompt for lockfile mode (interactive only)
     let lockfileMode: "soft" | "strict" = "soft";
     if (!nonInteractive) {
+      // Explain team mode benefits first
+      clack.log.info(`Team Mode Benefits:
+  ✓ Reproducible builds with lockfiles
+  ✓ Git-based collaboration workflow
+  ✓ Separate team and personal rules
+  ✓ Drift detection in CI
+`);
+
       const lockfileModeResponse = await clack.select({
         message: "Lockfile validation mode:",
         options: [
           {
             value: "soft",
             label: "Soft (warn on drift, allow sync)",
-            hint: "Fast iteration, team lead approves after",
+            hint: "Recommended: Fast iteration, team lead approves via PR",
           },
           {
             value: "strict",
@@ -401,6 +432,14 @@ async function teamEnable(
     // Record telemetry event
     recordEvent({ command_name: "team-enable", align_hashes_used: [] });
 
+    // Run migration wizard for personal rules (interactive only)
+    if (!nonInteractive) {
+      const { runTeamMigrationWizard } = await import(
+        "../wizards/team-migration.js"
+      );
+      await runTeamMigrationWizard(process.cwd());
+    }
+
     // Show configuration summary
     console.log("\n✓ Team mode enabled\n");
     console.log("Current configuration:");
@@ -410,6 +449,9 @@ async function teamEnable(
     );
     console.log(`  Bundle: enabled`);
     console.log(
+      `  Approval: ${config.approval?.internal || "pr_approval"} (internal), ${config.approval?.external || "allowlist"} (external)`,
+    );
+    console.log(
       `  Two-way sync: ${config.sync?.two_way !== false ? "enabled" : "disabled"}`,
     );
     if (config.managed?.sections && config.managed.sections.length > 0) {
@@ -418,17 +460,18 @@ async function teamEnable(
     }
 
     console.log("\nNext steps:");
-    console.log("  1. Define team-managed sections (optional):");
-    console.log("     Edit .aligntrue/config.yaml:");
-    console.log("     managed:");
-    console.log("       sections:");
-    console.log('         - "Security"');
-    console.log('         - "Compliance"');
-    console.log("  2. Run first sync: aligntrue sync");
-    console.log("  3. Approve bundle: aligntrue team approve --current");
-    console.log("  4. Commit: git add .aligntrue/allow.yaml && git commit");
+    console.log("  1. Run first sync: aligntrue sync");
+    console.log("  2. Review generated lockfile: .aligntrue.lock.json");
+    console.log("  3. Commit changes:");
+    console.log("     git add .aligntrue/");
+    console.log("     git commit -m 'feat: Enable AlignTrue team mode'");
+    console.log(
+      "  4. Team members run: aligntrue init (will detect team mode)",
+    );
 
-    clack.outro("Team mode ready!");
+    if (!nonInteractive) {
+      clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
+    }
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
