@@ -78,6 +78,12 @@ export interface SyncResult {
   warnings?: string[];
   exportResults?: Map<string, ExportResult>;
   auditTrail?: AuditEntry[];
+  conflicts?: Array<{
+    heading: string;
+    files: Array<{ path: string; mtime: Date }>;
+    reason: string;
+    winner: string;
+  }>;
 }
 
 /**
@@ -463,6 +469,7 @@ export class SyncEngine {
             dryRun: options.dryRun || false,
             backup: options.backup || false,
             unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
+            managedSections: this.config?.managed?.sections || [], // Pass team-managed sections to exporters
           };
 
           try {
@@ -808,16 +815,18 @@ export class SyncEngine {
       const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
 
       // 4. Check for conflicts
-      if (mergeResult.conflicts.length > 0) {
-        for (const conflict of mergeResult.conflicts) {
+      const conflicts = mergeResult.conflicts;
+      if (conflicts.length > 0) {
+        for (const conflict of conflicts) {
+          const fileList = conflict.files.map((f) => f.path).join(", ");
           warnings.push(
-            `Section "${conflict.heading}" edited in multiple files: ${conflict.files.join(", ")}`,
+            `Section "${conflict.heading}" edited in multiple files: ${fileList}`,
           );
           auditTrail.push({
             action: "conflict",
             target: conflict.heading,
             timestamp: new Date().toISOString(),
-            details: `${conflict.reason}: ${conflict.files.join(", ")}`,
+            details: `${conflict.reason}: ${fileList}`,
           });
         }
       }
@@ -845,6 +854,10 @@ export class SyncEngine {
         warnings: [...warnings, ...(syncResult.warnings || [])],
         auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
       };
+
+      if (conflicts.length > 0) {
+        result.conflicts = conflicts;
+      }
 
       if (syncResult.exportResults) {
         result.exportResults = syncResult.exportResults;

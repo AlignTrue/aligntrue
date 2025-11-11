@@ -153,7 +153,7 @@ function parseMarkdownSections(
     }
 
     // Check for heading
-    const headingMatch = line.match(/^(#{1,6})\s+(.+?)(\s+🔒)?$/);
+    const headingMatch = line.match(/^(#{1,6})\s+(.+?)$/);
 
     if (headingMatch) {
       // Save previous section
@@ -163,10 +163,16 @@ function parseMarkdownSections(
         sections.push(currentSection as ParsedSection);
       }
 
+      // Check if previous line(s) contain team-managed marker
+      const prevLine = lineIndex > 0 ? lines[lineIndex - 1] : "";
+      const isTeamManaged = !!(
+        prevLine?.includes("[TEAM-MANAGED]") ||
+        prevLine?.includes("team-managed")
+      );
+
       // Start new section
       const level = headingMatch[1]?.length || 1;
       const heading = headingMatch[2]?.trim() || "";
-      const isTeamManaged = !!headingMatch[3];
 
       currentSection = {
         id: heading.toLowerCase().replace(/\s+/g, "-"),

@@ -45,6 +45,16 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     hasValue: false,
     description: "Approve current bundle hash from lockfile",
   },
+  {
+    flag: "--preview",
+    hasValue: false,
+    description: "Show diff before approving (approve only)",
+  },
+  {
+    flag: "--no-preview",
+    hasValue: false,
+    description: "Skip diff preview in interactive mode (approve only)",
+  },
 ];
 const ALLOW_LIST_PATH = ".aligntrue/allow.yaml";
 
@@ -339,14 +349,38 @@ async function teamEnable(
       bundle: true,
     };
 
-    // Ensure lockfile config exists and set soft mode as default for team
-    if (!config.lockfile) {
-      config.lockfile = {};
+    // Prompt for lockfile mode (interactive only)
+    let lockfileMode: "soft" | "strict" = "soft";
+    if (!nonInteractive) {
+      const lockfileModeResponse = await clack.select({
+        message: "Lockfile validation mode:",
+        options: [
+          {
+            value: "soft",
+            label: "Soft (warn on drift, allow sync)",
+            hint: "Fast iteration, team lead approves after",
+          },
+          {
+            value: "strict",
+            label: "Strict (block until approved)",
+            hint: "Changes blocked until team lead approves",
+          },
+        ],
+        initialValue: "soft",
+      });
+
+      if (clack.isCancel(lockfileModeResponse)) {
+        clack.cancel("Team mode setup cancelled");
+        process.exit(0);
+      }
+
+      lockfileMode = lockfileModeResponse as "soft" | "strict";
     }
-    // Explicitly set to soft if not already configured
-    if (!config.lockfile.mode || config.lockfile.mode === "off") {
-      config.lockfile.mode = "soft";
-    }
+
+    // Ensure lockfile config exists and set chosen mode
+    config.lockfile = {
+      mode: lockfileMode,
+    };
 
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
@@ -367,23 +401,34 @@ async function teamEnable(
     // Record telemetry event
     recordEvent({ command_name: "team-enable", align_hashes_used: [] });
 
-    clack.outro("✓ Team mode enabled");
+    // Show configuration summary
+    console.log("\n✓ Team mode enabled\n");
+    console.log("Current configuration:");
+    console.log(`  Mode: team`);
+    console.log(
+      `  Lockfile: enabled (${config.lockfile?.mode || "soft"} mode)`,
+    );
+    console.log(`  Bundle: enabled`);
+    console.log(
+      `  Two-way sync: ${config.sync?.two_way !== false ? "enabled" : "disabled"}`,
+    );
+    if (config.managed?.sections && config.managed.sections.length > 0) {
+      console.log(`  Team-managed sections: ${config.managed.sections.length}`);
+      config.managed.sections.forEach((s) => console.log(`    - ${s}`));
+    }
 
-    console.log("\n📋 Next steps:");
-    console.log("  1. Run: aligntrue sync");
-    console.log("     → Generates lockfile for reproducibility");
-    console.log("  2. Run: aligntrue team status");
-    console.log("     → Check team mode configuration");
-    console.log("  3. Commit files to version control:");
-    console.log("     - .aligntrue/config.yaml");
-    console.log("     - .aligntrue.lock.json");
-    console.log("\n👥 Team collaboration:");
-    console.log("  - Team members clone repo and run: aligntrue sync");
-    console.log("  - Lockfile ensures identical outputs (deterministic)");
-    console.log("  - Drift detection catches configuration divergence");
-    console.log("\n💡 Tips:");
-    console.log("  - Use 'aligntrue team approve' to create an allow list");
-    console.log("  - Run 'aligntrue backup create' before major changes");
+    console.log("\nNext steps:");
+    console.log("  1. Define team-managed sections (optional):");
+    console.log("     Edit .aligntrue/config.yaml:");
+    console.log("     managed:");
+    console.log("       sections:");
+    console.log('         - "Security"');
+    console.log('         - "Compliance"');
+    console.log("  2. Run first sync: aligntrue sync");
+    console.log("  3. Approve bundle: aligntrue team approve --current");
+    console.log("  4. Commit: git add .aligntrue/allow.yaml && git commit");
+
+    clack.outro("Team mode ready!");
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
@@ -450,6 +495,96 @@ async function teamApprove(
     let allowList = parseAllowList(ALLOW_LIST_PATH);
 
     clack.intro("Approve Rule Sources");
+
+    // Show diff preview if requested or in interactive mode
+    const showPreview = flags["preview"] as boolean | undefined;
+    const noPreview = flags["no-preview"] as boolean | undefined;
+    const isInteractive = process.stdout.isTTY && !noPreview;
+
+    if ((showPreview || isInteractive) && current) {
+      try {
+        const { compareBundles } = await import("@aligntrue/core/team");
+        const cwd = process.cwd();
+
+        clack.log.info("Loading bundle diff...");
+
+        // Compare with empty previous (MVP - no bundle history yet)
+        const diff = await compareBundles("", sources[0] || "", cwd);
+
+        if (
+          diff.added.length > 0 ||
+          diff.modified.length > 0 ||
+          diff.removed.length > 0
+        ) {
+          console.log("\nChanges in this bundle:\n");
+
+          if (diff.added.length > 0) {
+            clack.log.success(`Added ${diff.added.length} section(s):`);
+            diff.added.forEach(
+              (section: { heading: string; lines: number }) => {
+                clack.log.message(
+                  `  + ${section.heading} (${section.lines} lines)`,
+                );
+              },
+            );
+            console.log("");
+          }
+
+          if (diff.modified.length > 0) {
+            clack.log.warn(`Modified ${diff.modified.length} section(s):`);
+            diff.modified.forEach(
+              (section: {
+                heading: string;
+                linesAdded: number;
+                linesRemoved: number;
+              }) => {
+                const changes = [];
+                if (section.linesAdded > 0)
+                  changes.push(`+${section.linesAdded}`);
+                if (section.linesRemoved > 0)
+                  changes.push(`-${section.linesRemoved}`);
+                clack.log.message(
+                  `  ~ ${section.heading} (${changes.join(", ")} lines)`,
+                );
+              },
+            );
+            console.log("");
+          }
+
+          if (diff.removed.length > 0) {
+            clack.log.error(`Removed ${diff.removed.length} section(s):`);
+            diff.removed.forEach(
+              (section: { heading: string; lines: number }) => {
+                clack.log.message(
+                  `  - ${section.heading} (${section.lines} lines)`,
+                );
+              },
+            );
+            console.log("");
+          }
+
+          // Prompt for confirmation in interactive mode
+          if (isInteractive) {
+            const shouldProceed = await clack.confirm({
+              message: "Approve these changes?",
+              initialValue: false,
+            });
+
+            if (clack.isCancel(shouldProceed) || !shouldProceed) {
+              clack.cancel("Approval cancelled");
+              process.exit(0);
+            }
+          }
+        } else {
+          clack.log.info("No changes detected in bundle");
+        }
+      } catch (err) {
+        clack.log.warn(
+          `Could not load diff preview: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        clack.log.info("Continuing with approval...");
+      }
+    }
 
     // Process each source
     for (const source of sources) {

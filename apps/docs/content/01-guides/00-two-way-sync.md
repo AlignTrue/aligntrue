@@ -57,6 +57,50 @@ Result: Last-write-wins
 
 **Best practice:** Edit consistently in one file to avoid confusion. Pick `AGENTS.md` for the primary source, or configure a different primary agent in your workflow.
 
+### Conflict detection
+
+When the same section is edited in multiple files, AlignTrue detects the conflict and shows a prominent warning:
+
+```bash
+aligntrue sync
+
+⚠️  CONFLICTS DETECTED
+
+Section "Security practices" edited in multiple files:
+    AGENTS.md (modified 10:30 AM)
+  ✓ .cursor/rules/aligntrue.mdc (modified 11:00 AM)
+  → Using: .cursor/rules/aligntrue.mdc (most recent)
+
+Run 'aligntrue sync --show-conflicts' to see detailed changes
+```
+
+**What happens:**
+
+- The most recent version wins (last-write-wins)
+- A warning is displayed so you know which version was chosen
+- Your changes are preserved in automatic backups
+
+**To see detailed differences:**
+
+```bash
+aligntrue sync --show-conflicts
+```
+
+This shows the actual content from each conflicting file, helping you verify the right version was kept.
+
+**To recover discarded changes:**
+
+```bash
+# List backups
+aligntrue backup list
+
+# Restore from backup
+aligntrue backup restore --to <timestamp>
+
+# Or preview changes
+aligntrue revert --preview
+```
+
 ## Disabling two-way sync
 
 To sync **only** IR → agents (no agent file edits detected):
@@ -77,6 +121,10 @@ In team mode with lockfile validation:
 - **But** changes are validated against the lockfile
 - Team lead must approve via `aligntrue team approve`
 - CI enforces via `aligntrue drift --gates`
+- **Team-managed sections** can be defined to control specific sections
+  - Marked with `[TEAM-MANAGED]` in exports
+  - Local edits preserved in backups
+  - See [Team-managed sections guide](/docs/01-guides/team-managed-sections)
 
 Example:
 
