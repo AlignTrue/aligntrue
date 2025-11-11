@@ -324,7 +324,17 @@ async function migratePersonal(
 
   clack.intro("Migrate personal rules to remote storage");
 
-  // TODO: Implement personal migration logic
+  const { loadConfig } = await import("@aligntrue/core");
+  const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
+  const config = await loadConfig(configPath);
+
+  // Check if personal storage is already remote
+  const storage = config.storage || config.resources?.rules?.storage;
+  if (storage?.personal?.type === "remote") {
+    clack.log.success("Personal rules are already using remote storage");
+    return;
+  }
+
   clack.log.info(
     "This will move all personal rules to your personal remote repository.",
   );
@@ -339,6 +349,20 @@ async function migratePersonal(
       clack.cancel("Migration cancelled");
       return;
     }
+  }
+
+  if (dryRun) {
+    clack.log.info("[DRY RUN] Would update personal storage to remote");
+    return;
+  }
+
+  // Run remote setup wizard
+  const { runRemoteSetupWizard } = await import("../wizards/remote-setup.js");
+  const result = await runRemoteSetupWizard("personal", cwd);
+
+  if (!result.success || result.skipped) {
+    clack.cancel("Migration cancelled or skipped");
+    return;
   }
 
   clack.outro("Personal rules migrated to remote storage");
@@ -358,7 +382,17 @@ async function migrateTeam(
 
   clack.intro("Migrate team rules to remote storage");
 
-  // TODO: Implement team migration logic
+  const { loadConfig } = await import("@aligntrue/core");
+  const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
+  const config = await loadConfig(configPath);
+
+  // Check if team storage is already remote
+  const storage = config.storage || config.resources?.rules?.storage;
+  if (storage?.team?.type === "remote") {
+    clack.log.success("Team rules are already using remote storage");
+    return;
+  }
+
   clack.log.info("This will move all team rules to a team remote repository.");
 
   if (!yes && !dryRun) {
@@ -373,6 +407,20 @@ async function migrateTeam(
     }
   }
 
+  if (dryRun) {
+    clack.log.info("[DRY RUN] Would update team storage to remote");
+    return;
+  }
+
+  // Run remote setup wizard
+  const { runRemoteSetupWizard } = await import("../wizards/remote-setup.js");
+  const result = await runRemoteSetupWizard("team", cwd);
+
+  if (!result.success || result.skipped) {
+    clack.cancel("Migration cancelled or skipped");
+    return;
+  }
+
   clack.outro("Team rules migrated to remote storage");
 
   recordEvent({ command_name: "migrate-team", align_hashes_used: [] });
@@ -380,45 +428,188 @@ async function migrateTeam(
 
 /**
  * Promote section to team
- * TODO: Implement actual logic
  */
 async function promoteSection(
   sectionHeading: string,
   cwd: string,
 ): Promise<void> {
-  // TODO: Implement
-  // 1. Load IR
-  // 2. Find section by heading
-  // 3. Change scope to team
-  // 4. Change storage to repo
-  // 5. Save IR
+  const { readFileSync, writeFileSync, existsSync } = require("fs");
+  const { join } = require("path");
+  const yaml = require("yaml");
+  const { loadConfig } = await import("@aligntrue/core");
+
+  // Load config
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
+  const config = await loadConfig(configPath);
+
+  // Load IR
+  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  if (!existsSync(irPath)) {
+    throw new Error("IR file not found. Run 'aligntrue init' first.");
+  }
+
+  const irContent = readFileSync(irPath, "utf-8");
+  const ir = yaml.parse(irContent);
+
+  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+    throw new Error("Invalid IR format");
+  }
+
+  // Find section
+  const section = ir.sections.find(
+    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+  );
+
+  if (!section) {
+    throw new Error(`Section not found: ${sectionHeading}`);
+  }
+
+  // Update config to add section to team scope
+  if (!config.scopes) config.scopes = {};
+  if (!config.scopes.team) config.scopes.team = { sections: [] };
+  if (Array.isArray(config.scopes.team.sections)) {
+    if (!config.scopes.team.sections.includes(section.heading)) {
+      config.scopes.team.sections.push(section.heading);
+    }
+  }
+
+  if (!config.storage) config.storage = {};
+  config.storage.team = { type: "repo" };
+
+  // Remove from personal scope if present
+  if (
+    config.scopes.personal &&
+    Array.isArray(config.scopes.personal.sections)
+  ) {
+    config.scopes.personal.sections = config.scopes.personal.sections.filter(
+      (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
+    );
+  }
+
+  // Write updated config
+  const configContent = yaml.stringify(config);
+  writeFileSync(configPath, configContent, "utf-8");
+
+  console.log(`✓ Promoted "${section.heading}" to team scope`);
 }
 
 /**
  * Demote section to personal
- * TODO: Implement actual logic
  */
 async function demoteSection(
   sectionHeading: string,
   cwd: string,
 ): Promise<void> {
-  // TODO: Implement
-  // 1. Load IR
-  // 2. Find section by heading
-  // 3. Change scope to personal
-  // 4. Change storage based on config
-  // 5. Save IR
+  const { readFileSync, writeFileSync, existsSync } = require("fs");
+  const { join } = require("path");
+  const yaml = require("yaml");
+  const { loadConfig } = await import("@aligntrue/core");
+
+  // Load config
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
+  const config = await loadConfig(configPath);
+
+  // Load IR
+  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  if (!existsSync(irPath)) {
+    throw new Error("IR file not found. Run 'aligntrue init' first.");
+  }
+
+  const irContent = readFileSync(irPath, "utf-8");
+  const ir = yaml.parse(irContent);
+
+  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+    throw new Error("Invalid IR format");
+  }
+
+  // Find section
+  const section = ir.sections.find(
+    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+  );
+
+  if (!section) {
+    throw new Error(`Section not found: ${sectionHeading}`);
+  }
+
+  // Update config to add section to personal scope
+  if (!config.scopes) config.scopes = {};
+  if (!config.scopes.personal) config.scopes.personal = { sections: [] };
+  if (Array.isArray(config.scopes.personal.sections)) {
+    if (!config.scopes.personal.sections.includes(section.heading)) {
+      config.scopes.personal.sections.push(section.heading);
+    }
+  }
+
+  // Set storage based on existing personal storage config
+  if (!config.storage) config.storage = {};
+  if (!config.storage.personal) {
+    config.storage.personal = { type: "local" };
+  }
+
+  // Remove from team scope if present
+  if (config.scopes.team && Array.isArray(config.scopes.team.sections)) {
+    config.scopes.team.sections = config.scopes.team.sections.filter(
+      (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
+    );
+  }
+
+  // Write updated config
+  const configContent = yaml.stringify(config);
+  writeFileSync(configPath, configContent, "utf-8");
+
+  console.log(`✓ Demoted "${section.heading}" to personal scope`);
 }
 
 /**
  * Make section local-only
- * TODO: Implement actual logic
  */
 async function makeLocal(sectionHeading: string, cwd: string): Promise<void> {
-  // TODO: Implement
-  // 1. Load IR
-  // 2. Find section by heading
-  // 3. Change storage to local
-  // 4. Move to .aligntrue/.local/
-  // 5. Save IR
+  const { readFileSync, writeFileSync, existsSync } = require("fs");
+  const { join } = require("path");
+  const yaml = require("yaml");
+  const { loadConfig } = await import("@aligntrue/core");
+
+  // Load config
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
+  const config = await loadConfig(configPath);
+
+  // Load IR
+  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  if (!existsSync(irPath)) {
+    throw new Error("IR file not found. Run 'aligntrue init' first.");
+  }
+
+  const irContent = readFileSync(irPath, "utf-8");
+  const ir = yaml.parse(irContent);
+
+  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+    throw new Error("Invalid IR format");
+  }
+
+  // Find section
+  const section = ir.sections.find(
+    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+  );
+
+  if (!section) {
+    throw new Error(`Section not found: ${sectionHeading}`);
+  }
+
+  // Update config to add section to personal scope with local storage
+  if (!config.scopes) config.scopes = {};
+  if (!config.scopes.personal) config.scopes.personal = { sections: [] };
+  if (Array.isArray(config.scopes.personal.sections)) {
+    if (!config.scopes.personal.sections.includes(section.heading)) {
+      config.scopes.personal.sections.push(section.heading);
+    }
+  }
+
+  if (!config.storage) config.storage = {};
+  config.storage.personal = { type: "local" };
+
+  // Write updated config
+  const configContent = yaml.stringify(config);
+  writeFileSync(configPath, configContent, "utf-8");
+
+  console.log(`✓ Made "${section.heading}" local-only`);
 }
