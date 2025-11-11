@@ -16,6 +16,12 @@ export interface BackupMetadata {
 export interface BackupManifest extends BackupMetadata {
   /** Version of backup format (for future compatibility) */
   version: string;
+  /** Action that triggered this backup (e.g., 'team-enable-migration') */
+  action?: string;
+  /** Mode at time of backup */
+  mode?: "solo" | "team" | "enterprise";
+  /** Scope information at time of backup */
+  scopes?: Record<string, { sections: number; storage: string }>;
 }
 
 export interface BackupInfo {
@@ -34,6 +40,12 @@ export interface BackupOptions {
   created_by?: string;
   /** Optional notes */
   notes?: string;
+  /** Action that triggered this backup */
+  action?: string;
+  /** Mode at time of backup */
+  mode?: "solo" | "team" | "enterprise";
+  /** Scope information */
+  scopes?: Record<string, { sections: number; storage: string }>;
 }
 
 export interface RestoreOptions {

@@ -3,10 +3,12 @@
  */
 
 import { BackupManager } from "@aligntrue/core";
+import { loadConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 import { readFileSync, existsSync } from "fs";
-import { resolve } from "path";
+import { resolve, join } from "path";
 import { diffLines } from "diff";
+import type { BackupInfo } from "@aligntrue/core/backup/types.js";
 
 /**
  * Execute revert command
@@ -99,6 +101,17 @@ export async function revert(args: string[]): Promise<void> {
     if (!backup) {
       clack.log.error("Internal error: selected backup not found");
       process.exit(1);
+    }
+
+    // Check for mode mismatch
+    const modeMismatch = await detectModeMismatch(backup, cwd);
+    if (modeMismatch) {
+      const action = await promptMigrationOnRestore(modeMismatch);
+      if (action === "cancel") {
+        clack.cancel("Revert cancelled");
+        process.exit(0);
+      }
+      // TODO: Apply mode change if needed
     }
 
     // Show diff preview
@@ -206,4 +219,81 @@ export async function revert(args: string[]): Promise<void> {
     clack.log.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
+}
+
+/**
+ * Detect mode mismatch between current config and backup
+ */
+async function detectModeMismatch(
+  backup: BackupInfo,
+  cwd: string,
+): Promise<{ currentMode: string; backupMode: string } | null> {
+  // Check if backup has mode information
+  if (!backup.manifest.mode) {
+    return null;
+  }
+
+  // Load current config
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
+  if (!existsSync(configPath)) {
+    return null;
+  }
+
+  try {
+    const config = await loadConfig(configPath);
+    if (config.mode !== backup.manifest.mode) {
+      return {
+        currentMode: config.mode,
+        backupMode: backup.manifest.mode,
+      };
+    }
+  } catch {
+    // Ignore config load errors
+  }
+
+  return null;
+}
+
+/**
+ * Prompt user for action when mode mismatch is detected
+ */
+async function promptMigrationOnRestore(mismatch: {
+  currentMode: string;
+  backupMode: string;
+}): Promise<"switch" | "migrate" | "cancel"> {
+  console.log("\n┌─────────────────────────────────────────────────────────┐");
+  console.log("│ Mode Mismatch Detected                                  │");
+  console.log("│                                                         │");
+  console.log(`│ Current mode: ${mismatch.currentMode.padEnd(44)} │`);
+  console.log(`│ Backup mode: ${mismatch.backupMode.padEnd(45)} │`);
+  console.log("│                                                         │");
+  console.log("│ This backup contains rules from a different mode.      │");
+  console.log("└─────────────────────────────────────────────────────────┘\n");
+
+  const action = await clack.select({
+    message: "What would you like to do?",
+    options: [
+      {
+        value: "switch",
+        label: `Switch back to ${mismatch.backupMode} mode`,
+        hint: "Restores backup as-is and changes mode",
+      },
+      {
+        value: "migrate",
+        label: `Stay in ${mismatch.currentMode} mode and migrate`,
+        hint: "Restores backup and runs migration wizard",
+      },
+      {
+        value: "cancel",
+        label: "Cancel restore",
+        hint: "Keep current state",
+      },
+    ],
+  });
+
+  if (clack.isCancel(action)) {
+    return "cancel";
+  }
+
+  return action as "switch" | "migrate" | "cancel";
 }

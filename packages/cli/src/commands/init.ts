@@ -159,9 +159,112 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Step 2: Handle already-initialized case
   if (contextResult.context === "already-initialized") {
+    // Detect if this is a team setup
+    const paths = getAlignTruePaths(cwd);
+    let isTeamMode = false;
+    let teamConfig: Partial<AlignTrueConfig> | null = null;
+
+    if (existsSync(paths.config)) {
+      try {
+        const configContent = require("fs").readFileSync(paths.config, "utf-8");
+        teamConfig = yaml.parse(configContent);
+        isTeamMode =
+          teamConfig?.mode === "team" || teamConfig?.mode === "enterprise";
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    if (isTeamMode && !nonInteractive) {
+      // Team mode onboarding flow
+      clack.log.info("Detected team mode configuration");
+      console.log("");
+
+      // Show team configuration summary
+      const teamSections =
+        teamConfig?.scopes?.team?.sections ||
+        teamConfig?.resources?.rules?.scopes?.team?.sections ||
+        [];
+      const teamSectionsDisplay = Array.isArray(teamSections)
+        ? teamSections.join(", ")
+        : teamSections === "*"
+          ? "all sections"
+          : "none";
+
+      clack.log.info(`Team Configuration:
+  Mode: ${teamConfig?.mode}
+  Approval: ${teamConfig?.approval?.internal || "pr_approval"} (${teamConfig?.lockfile?.mode === "strict" ? "strict" : "relaxed"})
+  Team sections: ${teamSectionsDisplay}
+`);
+
+      const choice = await clack.select({
+        message: "How would you like to proceed?",
+        options: [
+          {
+            value: "team-only",
+            label: "Use team rules only",
+            hint: "No personal rules",
+          },
+          {
+            value: "personal-local",
+            label: "Add personal rules (local only)",
+            hint: "Private, not version controlled",
+          },
+          {
+            value: "personal-remote",
+            label: "Add personal rules (with remote)",
+            hint: "Private, version controlled",
+          },
+          {
+            value: "exit",
+            label: "Exit (already configured)",
+            hint: "No changes needed",
+          },
+        ],
+      });
+
+      if (clack.isCancel(choice) || choice === "exit") {
+        clack.outro("No changes made. Run 'aligntrue sync' to get started.");
+        process.exit(0);
+      }
+
+      // Handle personal rules setup
+      if (choice === "personal-remote") {
+        const { runRemoteSetupWizard } = await import(
+          "../wizards/remote-setup.js"
+        );
+        await runRemoteSetupWizard(cwd);
+      } else if (choice === "personal-local") {
+        // Update config to add personal local storage
+        if (teamConfig) {
+          if (!teamConfig.storage) {
+            teamConfig.storage = {};
+          }
+          teamConfig.storage.personal = {
+            type: "local",
+          };
+
+          // Write updated config
+          writeFileSync(paths.config, yaml.stringify(teamConfig), "utf-8");
+          clack.log.success("Personal local storage configured");
+        }
+      }
+
+      clack.outro(`Setup complete! Run 'aligntrue sync' to get started.
+
+Next steps:
+  1. Run sync: aligntrue sync
+  2. Review generated files: AGENTS.md, .cursor/rules/
+  3. Make changes and sync again
+
+Learn more: ${DOCS_QUICKSTART}`);
+      process.exit(0);
+    }
+
+    // Non-team mode or non-interactive
     const message = `✗ AlignTrue already initialized in this project
 
-Looks like you're joining an existing team setup.
+${isTeamMode ? "Looks like you're joining an existing team setup." : ""}
 
 Next steps:
   1. Review rules: AGENTS.md or .aligntrue/.rules.yaml
