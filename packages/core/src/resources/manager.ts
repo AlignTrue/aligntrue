@@ -4,7 +4,7 @@
 
 import type { ResourceType, ResourceConfig } from "../config/index.js";
 import { StorageManager } from "../storage/manager.js";
-import type { StorageBackend } from "../storage/backend.js";
+import type { IStorageBackend } from "../storage/backend.js";
 
 export interface ResourceItem {
   id: string;
@@ -14,18 +14,23 @@ export interface ResourceItem {
 
 export abstract class ResourceManager<T extends ResourceItem> {
   protected storageManager: StorageManager;
-  protected backends: Map<string, StorageBackend>;
+  protected backends: Map<string, IStorageBackend>;
 
   constructor(
     protected type: ResourceType,
     protected config: ResourceConfig,
     protected cwd: string,
   ) {
-    this.storageManager = new StorageManager(cwd);
-    this.backends = this.storageManager.getBackends(
-      config.scopes,
-      config.storage,
-    );
+    this.storageManager = new StorageManager(cwd, config.storage);
+    // Initialize backends for each scope
+    this.backends = new Map();
+    for (const scope of Object.keys(config.scopes)) {
+      const storageConfig = config.storage[scope];
+      if (storageConfig) {
+        const backend = this.storageManager.createBackend(scope, storageConfig);
+        this.backends.set(scope, backend);
+      }
+    }
   }
 
   /**
@@ -96,7 +101,7 @@ export abstract class ResourceManager<T extends ResourceItem> {
    * Subclasses implement this to convert storage format to resource format
    */
   protected abstract readFromBackend(
-    backend: StorageBackend,
+    backend: IStorageBackend,
     scope: string,
   ): Promise<T[]>;
 
@@ -105,7 +110,7 @@ export abstract class ResourceManager<T extends ResourceItem> {
    * Subclasses implement this to convert resource format to storage format
    */
   protected abstract writeToBackend(
-    backend: StorageBackend,
+    backend: IStorageBackend,
     items: T[],
     scope: string,
   ): Promise<void>;

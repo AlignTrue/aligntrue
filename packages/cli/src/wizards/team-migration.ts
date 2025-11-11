@@ -4,8 +4,7 @@
  */
 
 import * as clack from "@clack/prompts";
-import { BackupManager } from "@aligntrue/core/backup/manager.js";
-import type { AlignTrueConfig } from "@aligntrue/core";
+import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 
 export interface MigrationResult {
   success: boolean;
@@ -205,29 +204,149 @@ export async function runTeamMigrationWizard(
 
 /**
  * Detect personal rules currently in repo
- * TODO: Implement actual detection logic
  */
 function detectPersonalRulesInRepo(
   config: AlignTrueConfig,
   cwd: string,
 ): Array<{ heading: string; scope: string; storage: string }> {
-  // For now, return empty array
-  // In real implementation, parse IR and check for personal + repo
-  return [];
+  const results: Array<{ heading: string; scope: string; storage: string }> =
+    [];
+
+  try {
+    const { readFileSync, existsSync } = require("fs");
+    const { join } = require("path");
+    const yaml = require("yaml");
+
+    // Check IR file
+    const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+    if (!existsSync(irPath)) {
+      return results;
+    }
+
+    const irContent = readFileSync(irPath, "utf-8");
+    const ir = yaml.parse(irContent);
+
+    if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+      return results;
+    }
+
+    // Check config for scope definitions
+    const scopes = config.scopes || config.resources?.rules?.scopes;
+    const storage = config.storage || config.resources?.rules?.storage;
+
+    if (!scopes || !storage) {
+      return results;
+    }
+
+    // Find sections that are personal scope with repo storage
+    for (const section of ir.sections) {
+      // Check if section matches personal scope
+      const personalConfig = scopes.personal;
+      if (!personalConfig) continue;
+
+      const matchesPersonal =
+        personalConfig.sections === "*" ||
+        (Array.isArray(personalConfig.sections) &&
+          personalConfig.sections.some(
+            (s: string) => s.toLowerCase() === section.heading.toLowerCase(),
+          ));
+
+      if (matchesPersonal) {
+        const personalStorage = storage.personal;
+        if (personalStorage && personalStorage.type === "repo") {
+          results.push({
+            heading: section.heading,
+            scope: "personal",
+            storage: "repo",
+          });
+        }
+      }
+    }
+
+    return results;
+  } catch (err) {
+    console.warn("Failed to detect personal rules:", err);
+    return results;
+  }
 }
 
 /**
  * Apply migration actions
- * TODO: Implement actual migration logic
  */
 async function applyMigrationActions(
   actions: MigrationResult["actions"],
   config: AlignTrueConfig,
   cwd: string,
 ): Promise<void> {
-  // TODO: Implement
-  // For each action:
-  // - promote: Change scope to team, keep in repo
-  // - move: Change storage to remote, move to personal repo
-  // - local: Change storage to local, move to .aligntrue/.local/
+  const { readFileSync, writeFileSync, existsSync } = require("fs");
+  const { join } = require("path");
+  const yaml = require("yaml");
+
+  // Load IR
+  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  if (!existsSync(irPath)) {
+    throw new Error("IR file not found");
+  }
+
+  const irContent = readFileSync(irPath, "utf-8");
+  const ir = yaml.parse(irContent);
+
+  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+    throw new Error("Invalid IR format");
+  }
+
+  // Apply each action
+  for (const action of actions) {
+    const section = ir.sections.find(
+      (s: any) => s.heading.toLowerCase() === action.heading.toLowerCase(),
+    );
+
+    if (!section) {
+      console.warn(`Section not found: ${action.heading}`);
+      continue;
+    }
+
+    switch (action.action) {
+      case "promote":
+        // Change to team scope, keep in repo
+        if (!config.scopes) config.scopes = {};
+        if (!config.scopes.team) config.scopes.team = { sections: [] };
+        if (Array.isArray(config.scopes.team.sections)) {
+          config.scopes.team.sections.push(action.heading);
+        }
+        if (!config.storage) config.storage = {};
+        config.storage.team = { type: "repo" };
+        break;
+
+      case "move":
+        // Change to personal scope with remote storage
+        if (!config.scopes) config.scopes = {};
+        if (!config.scopes.personal) config.scopes.personal = { sections: [] };
+        if (Array.isArray(config.scopes.personal.sections)) {
+          config.scopes.personal.sections.push(action.heading);
+        }
+        // Remote URL should already be configured from wizard
+        break;
+
+      case "local":
+        // Change to personal scope with local storage
+        if (!config.scopes) config.scopes = {};
+        if (!config.scopes.personal) config.scopes.personal = { sections: [] };
+        if (Array.isArray(config.scopes.personal.sections)) {
+          config.scopes.personal.sections.push(action.heading);
+        }
+        if (!config.storage) config.storage = {};
+        config.storage.personal = { type: "local" };
+        break;
+    }
+  }
+
+  // Write updated IR
+  const updatedIr = yaml.stringify(ir);
+  writeFileSync(irPath, updatedIr, "utf-8");
+
+  // Write updated config
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
+  const configContent = yaml.stringify(config);
+  writeFileSync(configPath, configContent, "utf-8");
 }

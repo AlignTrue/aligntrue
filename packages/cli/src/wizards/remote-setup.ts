@@ -4,7 +4,7 @@
  */
 
 import * as clack from "@clack/prompts";
-import { StorageManager } from "@aligntrue/core/storage/manager.js";
+import { StorageManager } from "@aligntrue/core";
 
 export interface RemoteSetupResult {
   success: boolean;

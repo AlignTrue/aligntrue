@@ -33,3 +33,12 @@ export * from "./overlays/index.js";
 
 // Source caching
 export * from "./cache/index.js";
+
+// Storage system
+export * from "./storage/index.js";
+
+// Resource management
+export * from "./resources/index.js";
+
+// Validation
+export * from "./validation/team-mode.js";

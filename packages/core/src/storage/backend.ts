@@ -5,6 +5,16 @@
 
 import type { AlignSection } from "@aligntrue/schema";
 
+// Type alias for rules (array of sections)
+export type Rules = AlignSection[];
+
+// Simple interface for storage backends (used by new implementations)
+export interface IStorageBackend {
+  read(): Promise<Rules>;
+  write(rules: Rules): Promise<void>;
+  sync(): Promise<void>;
+}
+
 export interface StorageMetadata {
   type: "local" | "repo" | "remote";
   location: string;

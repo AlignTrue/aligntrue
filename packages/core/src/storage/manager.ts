@@ -3,21 +3,33 @@
  * Factory for creating and managing storage backends
  */
 
-import { join } from "path";
-import { existsSync, mkdirSync } from "fs";
-import type { StorageBackend } from "./backend.js";
-import { LocalStorage, RepoStorage, RemoteStorage } from "./backend.js";
+import { execSync } from "child_process";
+import type { IStorageBackend, Rules } from "./backend.js";
+import { LocalStorageBackend } from "./local.js";
+import { RepoStorageBackend } from "./repo.js";
+import { RemoteStorageBackend } from "./remote.js";
 import type { StorageConfig } from "../config/index.js";
 
 export class StorageManager {
-  private backends: Map<string, StorageBackend> = new Map();
+  private backends: Map<string, IStorageBackend> = new Map();
 
-  constructor(private cwd: string) {}
+  constructor(
+    private cwd: string,
+    private config: Record<string, StorageConfig>,
+  ) {
+    this.initBackends();
+  }
+
+  private initBackends() {
+    for (const [name, storageConfig] of Object.entries(this.config)) {
+      this.createBackend(name, storageConfig);
+    }
+  }
 
   /**
    * Create storage backend based on configuration
    */
-  createBackend(scope: string, config: StorageConfig): StorageBackend {
+  createBackend(scope: string, config: StorageConfig): IStorageBackend {
     const key = `${scope}:${config.type}`;
 
     // Return cached backend if exists
@@ -25,16 +37,15 @@ export class StorageManager {
       return this.backends.get(key)!;
     }
 
-    let backend: StorageBackend;
+    let backend: IStorageBackend;
 
     switch (config.type) {
       case "local":
-        backend = new LocalStorage(this.cwd, scope);
-        this.ensureLocalDirectory();
+        backend = new LocalStorageBackend(this.cwd, scope);
         break;
 
       case "repo":
-        backend = new RepoStorage(this.cwd, scope);
+        backend = new RepoStorageBackend(this.cwd, scope);
         break;
 
       case "remote":
@@ -43,14 +54,13 @@ export class StorageManager {
             `Remote storage for scope "${scope}" requires url in config`,
           );
         }
-        backend = new RemoteStorage(
+        backend = new RemoteStorageBackend(
           this.cwd,
           scope,
           config.url,
-          config.branch,
-          config.path,
+          config.branch || "main",
+          config.path || "",
         );
-        this.ensureRemoteDirectory(scope);
         break;
 
       default:
@@ -61,82 +71,97 @@ export class StorageManager {
     return backend;
   }
 
-  /**
-   * Get all backends for a resource
-   */
-  getBackends(
-    scopes: Record<string, any>,
-    storage: Record<string, StorageConfig>,
-  ): Map<string, StorageBackend> {
-    const backends = new Map<string, StorageBackend>();
+  public getBackend(name: string): IStorageBackend {
+    const backend = this.backends.get(name);
+    if (!backend) {
+      throw new Error(`Storage backend '${name}' not found.`);
+    }
+    return backend;
+  }
 
-    for (const scope of Object.keys(scopes)) {
-      const storageConfig = storage[scope];
-      if (!storageConfig) {
-        throw new Error(`No storage configuration for scope: ${scope}`);
+  public async readAll(): Promise<Record<string, Rules>> {
+    const allRules: Record<string, Rules> = {};
+    for (const [name, backend] of this.backends.entries()) {
+      allRules[name] = await backend.read();
+    }
+    return allRules;
+  }
+
+  public async writeAll(allRules: Record<string, Rules>): Promise<void> {
+    for (const [name, rules] of Object.entries(allRules)) {
+      const backend = this.backends.get(name);
+      if (backend) {
+        await backend.write(rules);
       }
-
-      const backend = this.createBackend(scope, storageConfig);
-      backends.set(scope, backend);
-    }
-
-    return backends;
-  }
-
-  /**
-   * Ensure .aligntrue/.local/ directory exists
-   */
-  private ensureLocalDirectory(): void {
-    const localDir = join(this.cwd, ".aligntrue", ".local");
-    if (!existsSync(localDir)) {
-      mkdirSync(localDir, { recursive: true });
     }
   }
 
-  /**
-   * Ensure .aligntrue/.remotes/<scope>/ directory exists
-   */
-  private ensureRemoteDirectory(scope: string): void {
-    const remoteDir = join(this.cwd, ".aligntrue", ".remotes", scope);
-    if (!existsSync(remoteDir)) {
-      mkdirSync(remoteDir, { recursive: true });
+  public async syncAll(): Promise<void> {
+    for (const backend of this.backends.values()) {
+      await backend.sync();
     }
-  }
-
-  /**
-   * Clone remote repository
-   */
-  async cloneRemote(
-    scope: string,
-    url: string,
-    branch: string = "main",
-  ): Promise<void> {
-    const remoteDir = join(this.cwd, ".aligntrue", ".remotes", scope);
-
-    // TODO: Implement git clone
-    // For now, just ensure directory exists
-    this.ensureRemoteDirectory(scope);
   }
 
   /**
    * Test if remote URL is accessible
    */
-  async testRemoteAccess(url: string): Promise<boolean> {
-    // TODO: Implement SSH/HTTPS test
-    // For now, return true
-    return true;
-  }
+  async testRemoteAccess(url: string): Promise<{
+    accessible: boolean;
+    error?: string;
+  }> {
+    try {
+      // Test SSH connectivity
+      if (url.startsWith("git@")) {
+        const host = url.split("@")[1]?.split(":")[0];
+        if (!host) {
+          return { accessible: false, error: "Invalid SSH URL format" };
+        }
 
-  /**
-   * Sync all remote backends
-   */
-  async syncAll(): Promise<void> {
-    const remoteBackends = Array.from(this.backends.values()).filter(
-      (backend) => backend.getMetadata().type === "remote",
-    );
+        try {
+          execSync(`ssh -T ${host}`, {
+            timeout: 5000,
+            stdio: "pipe",
+          });
+          return { accessible: true };
+        } catch (err) {
+          // SSH test commands often return non-zero even on success
+          // Check if the error message indicates success
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          if (
+            errorMsg.includes("successfully authenticated") ||
+            errorMsg.includes("You've successfully authenticated")
+          ) {
+            return { accessible: true };
+          }
+          return {
+            accessible: false,
+            error: `SSH connection failed: ${errorMsg}`,
+          };
+        }
+      }
 
-    for (const backend of remoteBackends) {
-      await backend.sync();
+      // Test HTTPS connectivity
+      if (url.startsWith("https://")) {
+        try {
+          execSync(`git ls-remote ${url} HEAD`, {
+            timeout: 10000,
+            stdio: "pipe",
+          });
+          return { accessible: true };
+        } catch (err) {
+          return {
+            accessible: false,
+            error: `HTTPS connection failed: ${err instanceof Error ? err.message : String(err)}`,
+          };
+        }
+      }
+
+      return { accessible: false, error: "Unknown URL format" };
+    } catch (err) {
+      return {
+        accessible: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
     }
   }
 }

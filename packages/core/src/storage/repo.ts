@@ -5,9 +5,11 @@
 
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import * as yaml from "yaml";
 import { IStorageBackend, Rules } from "./backend.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { parseMarkdownToSections } from "@aligntrue/markdown-parser";
+import { parseNaturalMarkdown } from "../parsing/natural-markdown.js";
+import type { AlignSection } from "@aligntrue/schema";
 
 export class RepoStorageBackend implements IStorageBackend {
   private fileWriter: AtomicFileWriter;
@@ -40,13 +42,23 @@ export class RepoStorageBackend implements IStorageBackend {
 
       // If it's YAML IR, parse differently
       if (filePath.endsWith(".yaml")) {
-        // TODO: Parse YAML IR format
-        // For now, return empty
-        return [];
+        try {
+          const parsed = yaml.parse(content);
+          if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+            return parsed.sections as AlignSection[];
+          }
+          return [];
+        } catch (yamlErr) {
+          console.warn(
+            `Failed to parse YAML IR for scope "${this.scope}":`,
+            yamlErr,
+          );
+          return [];
+        }
       }
 
       // Parse markdown
-      const parsed = parseMarkdownToSections(content);
+      const parsed = parseNaturalMarkdown(content);
       return parsed.sections || [];
     } catch (err) {
       console.warn(
