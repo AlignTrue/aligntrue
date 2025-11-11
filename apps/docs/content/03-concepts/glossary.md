@@ -7,7 +7,7 @@ description: AlignTrue terminology and key concepts explained
 
 Essential terms and concepts used throughout AlignTrue documentation and CLI.
 
-## Core Concepts
+## Core concepts
 
 ### Agents
 
@@ -70,7 +70,7 @@ An Align/pack is a YAML document that combines metadata with a collection of rul
 
 ---
 
-## File Types & Formats
+## File types & formats
 
 ### AGENTS.md
 
@@ -266,7 +266,7 @@ Main AlignTrue configuration stored in `.aligntrue/config.yaml`. Defines:
 
 ---
 
-## Advanced Features
+## Advanced features
 
 ### Vendor Bags
 
@@ -330,7 +330,7 @@ Parameterized rule templates that accept configuration inputs. (Plugs system)
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - **Getting started:** [Quickstart guide](/docs/00-getting-started/00-quickstart)
 - **Concepts:** [Sync behavior](/docs/03-concepts/sync-behavior), [Team mode](/docs/03-concepts/team-mode), [Drift detection](/docs/03-concepts/drift-detection)

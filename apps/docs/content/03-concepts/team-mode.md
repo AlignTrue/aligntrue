@@ -147,7 +147,7 @@ Example: `sha256:abc123def456...`
 - **External sources:** Use `id@version` format for clarity and semantic updates
 - **Vendored packs:** Use `sha256:hash` format for immutability
 
-## Allow List Management
+## Allow list management
 
 ### Quick approve current bundle
 

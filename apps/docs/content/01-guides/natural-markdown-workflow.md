@@ -1,4 +1,4 @@
-# Natural Markdown Workflow
+# Natural Markdown workflow
 
 Get started writing rules as natural markdown sections.
 
