@@ -651,56 +651,6 @@ export class SyncEngine {
         details: `Accepting all changes from ${agent} (conflict detection not yet implemented for sections)`,
       });
 
-      // In sections-only mode, accept imported sections directly
-      // TODO: Implement proper merging strategy
-      if (false) {
-        // Directly update IR with agent sections
-        // this.ir.sections = agentSections;
-
-        // Write updated IR if not dry-run
-        if (!options.dryRun) {
-          const { writeFile } = await import("fs/promises");
-          const { extname } = await import("path");
-          const { stringify: stringifyYaml } = await import("yaml");
-
-          // Detect source format and preserve it
-          const ext = extname(irPath).toLowerCase();
-          let content: string;
-
-          if (ext === ".md" || ext === ".markdown") {
-            // Use markdown generator to preserve literate markdown structure
-            const { generateMarkdown } = await import(
-              "@aligntrue/markdown-parser"
-            );
-
-            // Clean IR for markdown generation: remove internal metadata fields
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cleanIr = { ...this.ir } as any;
-
-            // Remove markdown-specific internal fields that shouldn't be in fenced block
-            delete cleanIr.source_format;
-
-            // Keep guidance in IR for generator to handle (it may move it outside block)
-            content = generateMarkdown(cleanIr, {
-              preserveMetadata: true, // Preserve existing markdown formatting if available
-            });
-          } else {
-            // Write as YAML
-            content = stringifyYaml(this.ir);
-          }
-
-          await writeFile(irPath, content, "utf-8");
-          written.push(irPath);
-        }
-
-        return {
-          success: true,
-          written,
-          warnings,
-          auditTrail,
-        };
-      }
-
       // Team mode: full conflict detection
       // Sections are used now instead of rules
       const conflictResult = {
