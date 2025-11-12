@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/testkit",
-  "version": "0.1.1-alpha.3",
+  "version": "0.1.1-alpha.4",
   "description": "Conformance testkit for Align Spec v1 implementations",
   "type": "module",
   "main": "./dist/index.js",
