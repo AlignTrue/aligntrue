@@ -14,8 +14,11 @@ describe("CursorExporter - Section Merging", () => {
   let exporter: CursorExporter;
 
   beforeEach(() => {
-    // Create temp directory for test
-    testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
+    // Create temp directory for test with unique suffix to avoid collisions
+    testDir = join(
+      tmpdir(),
+      `aligntrue-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
     mkdirSync(testDir, { recursive: true });
     mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
