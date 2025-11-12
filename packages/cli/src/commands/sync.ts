@@ -830,10 +830,12 @@ export async function sync(args: string[]): Promise<void> {
 
       // Show written files
       if (result.written && result.written.length > 0) {
+        // Deduplicate file paths (multiple exporters may write to same file)
+        const uniqueFiles = Array.from(new Set(result.written));
         clack.log.success(
-          `${dryRun ? "Would write" : "Wrote"} ${result.written.length} file${result.written.length !== 1 ? "s" : ""}`,
+          `${dryRun ? "Would write" : "Wrote"} ${uniqueFiles.length} file${uniqueFiles.length !== 1 ? "s" : ""}`,
         );
-        result.written.forEach((file) => {
+        uniqueFiles.forEach((file) => {
           clack.log.info(`  ${file}`);
         });
       }
@@ -1024,12 +1026,14 @@ export async function sync(args: string[]): Promise<void> {
           .filter(Boolean);
         const exporterNames = loadedAdapters.map((a) => a.name);
         const writtenFiles = result.written || [];
+        // Deduplicate file paths (multiple exporters may write to same file)
+        const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
 
         let message = "✓ Sync complete\n\n";
 
-        if (writtenFiles.length > 0) {
+        if (uniqueWrittenFiles.length > 0) {
           message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-          writtenFiles.forEach((file) => {
+          uniqueWrittenFiles.forEach((file) => {
             message += `  - ${file}\n`;
           });
           message += "\n";

@@ -30,6 +30,7 @@ import {
 } from "@aligntrue/core";
 import { parseYamlToJson, validateAlignSchema } from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -146,8 +147,12 @@ export async function link(args: string[]): Promise<void> {
   }
 
   // Show spinner
-  const spinner = clack.spinner();
-  spinner.start("Checking git repository...");
+  const spinner = isTTY() ? clack.spinner() : null;
+  if (spinner) {
+    spinner.start("Checking git repository...");
+  } else {
+    console.log("Checking git repository...");
+  }
 
   try {
     // Load config
@@ -160,7 +165,11 @@ export async function link(args: string[]): Promise<void> {
     // a full GitProvider with url/ref. The validation happens when user vendored
     // the repo manually with git submodule/subtree.
 
-    spinner.stop("Git repository validated");
+    if (spinner) {
+      spinner.stop("Git repository validated");
+    } else {
+      console.log("✓ Git repository validated");
+    }
 
     // Detect if vendoring method is already set up
     const vendorInfo = detectVendorType(absoluteVendorPath);
@@ -171,21 +180,41 @@ export async function link(args: string[]): Promise<void> {
       vendorInfo.type !== "unknown"
     ) {
       // Inform user about detected vendoring method
-      clack.note(
-        `Detected ${vendorInfo.type} at ${vendorPath}\n\nAlignTrue will track this vendored pack.\n${getVendorWorkflowGuidance(vendorInfo.type)}`,
-        `📦 ${vendorInfo.type === "submodule" ? "Submodule" : "Subtree"} Detected`,
-      );
+      if (isTTY()) {
+        clack.note(
+          `Detected ${vendorInfo.type} at ${vendorPath}\n\nAlignTrue will track this vendored pack.\n${getVendorWorkflowGuidance(vendorInfo.type)}`,
+          `📦 ${vendorInfo.type === "submodule" ? "Submodule" : "Subtree"} Detected`,
+        );
+      } else {
+        console.log(
+          `\n📦 ${vendorInfo.type === "submodule" ? "Submodule" : "Subtree"} Detected`,
+        );
+        console.log(`Detected ${vendorInfo.type} at ${vendorPath}`);
+        console.log("\nAlignTrue will track this vendored pack.");
+        console.log(getVendorWorkflowGuidance(vendorInfo.type));
+      }
     } else {
       // No existing vendor - user needs to set up manually
-      clack.note(
-        getManualVendorInstructions(gitUrl, vendorPath),
-        "📋 Manual Vendor Setup Required",
-      );
+      if (isTTY()) {
+        clack.note(
+          getManualVendorInstructions(gitUrl, vendorPath),
+          "📋 Manual Vendor Setup Required",
+        );
 
-      clack.log.warn(
-        "AlignTrue link command registers vendored packs but does not execute git operations.\n" +
+        clack.log.warn(
+          "AlignTrue link command registers vendored packs but does not execute git operations.\n" +
+            "Please run the git commands above to vendor the pack first.",
+        );
+      } else {
+        console.log("\n📋 Manual Vendor Setup Required");
+        console.log(getManualVendorInstructions(gitUrl, vendorPath));
+        console.log(
+          "\n⚠ AlignTrue link command registers vendored packs but does not execute git operations.",
+        );
+        console.log(
           "Please run the git commands above to vendor the pack first.",
-      );
+        );
+      }
 
       await recordEvent({
         command_name: "link",
@@ -195,11 +224,19 @@ export async function link(args: string[]): Promise<void> {
     }
 
     // Validate pack integrity at vendor path
-    spinner.start("Validating pack integrity...");
+    if (spinner) {
+      spinner.start("Validating pack integrity...");
+    } else {
+      console.log("Validating pack integrity...");
+    }
     const packValid = await validateVendoredPack(absoluteVendorPath);
 
     if (!packValid.valid) {
-      spinner.stop("Pack validation failed");
+      if (spinner) {
+        spinner.stop("Pack validation failed");
+      } else {
+        console.log("✗ Pack validation failed");
+      }
       exitWithError({
         title: "Invalid pack",
         message: packValid.error || "Pack validation failed",
@@ -208,13 +245,21 @@ export async function link(args: string[]): Promise<void> {
       });
     }
 
-    spinner.stop("Pack validated");
+    if (spinner) {
+      spinner.stop("Pack validated");
+    } else {
+      console.log("✓ Pack validated");
+    }
 
     // Check allow list in team mode (non-blocking warning)
     if (config.mode === "team") {
       const allowListWarning = await checkAllowList(gitUrl, config);
       if (allowListWarning) {
-        clack.log.warn(allowListWarning);
+        if (isTTY()) {
+          clack.log.warn(allowListWarning);
+        } else {
+          console.warn(`Warning: ${allowListWarning}`);
+        }
       }
     }
 
@@ -231,23 +276,32 @@ export async function link(args: string[]): Promise<void> {
     );
 
     // Success message
-    clack.outro(
+    const successMessage =
       `✅ Successfully linked ${gitUrl}\n\n` +
-        `Vendor path: ${vendorPath}\n` +
-        `Vendor type: ${vendorType}\n` +
-        `Profile: ${packValid.profileId}\n\n` +
-        `Next steps:\n` +
-        `1. Commit vendor changes: git add ${vendorPath} .aligntrue/config.yaml\n` +
-        `2. Run sync: aligntrue sync\n` +
-        `3. Update lockfile (if team mode): git add .aligntrue.lock.json`,
-    );
+      `Vendor path: ${vendorPath}\n` +
+      `Vendor type: ${vendorType}\n` +
+      `Profile: ${packValid.profileId}\n\n` +
+      `Next steps:\n` +
+      `1. Commit vendor changes: git add ${vendorPath} .aligntrue/config.yaml\n` +
+      `2. Run sync: aligntrue sync\n` +
+      `3. Update lockfile (if team mode): git add .aligntrue.lock.json`;
+
+    if (isTTY()) {
+      clack.outro(successMessage);
+    } else {
+      console.log("\n" + successMessage);
+    }
 
     await recordEvent({
       command_name: "link",
       align_hashes_used: [],
     });
   } catch (_error) {
-    spinner.stop("Error");
+    if (spinner) {
+      spinner.stop("Error");
+    } else {
+      console.log("✗ Error");
+    }
 
     if (_error && typeof _error === "object" && "code" in _error) {
       throw _error;
