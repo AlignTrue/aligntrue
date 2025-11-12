@@ -340,11 +340,11 @@
       "properties": {
         "auto_backup": {
           "type": "boolean",
-          "description": "Automatically create backup before destructive operations (default: false)"
+          "description": "Automatically create backup before destructive operations (default: true)"
         },
         "keep_count": {
           "type": "number",
-          "description": "Number of backups to keep (older backups auto-deleted, default: 10)",
+          "description": "Number of backups to keep (older backups auto-deleted, default: 20)",
           "minimum": 1,
           "maximum": 100
         },

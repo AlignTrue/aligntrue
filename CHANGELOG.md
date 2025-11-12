@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Increased default backup retention from 5 to 20 backups
+- Removed redundant backup default fallback in sync command
+- Fixed inconsistent backup defaults across codebase
+
 ### Fixed
 
 - **Build and typecheck order** - Established explicit sequential stages with cross-platform compatible package name filters (no quotes for PowerShell compatibility) in both `build:packages` and `typecheck` to resolve dependency graph correctly: schema → {file-utils,markdown-parser,plugin-contracts} → {core,sources,testkit} → {exporters,cli,aligntrue}, fixing race condition and Windows CI failures
@@ -237,7 +243,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **IR format changed** from `.aligntrue/rules.md` to `.aligntrue/.rules.yaml` (internal file)
 - **Users now edit** `AGENTS.md` or agent-specific files (`.cursor/*.mdc`) instead of rules.md
 - **Multi-agent import** now merges all detected agents by default (was single-agent only)
-- **Auto-backup enabled** by default (keeps last 5 backups before sync/import)
+- **Auto-backup enabled** by default (keeps last 20 backups before sync/import)
 - **Rule IDs auto-fixed** on import (no more validation failures for non-conforming IDs)
 
 ### Added

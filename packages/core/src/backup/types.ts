@@ -60,6 +60,6 @@ export interface RestoreOptions {
 export interface CleanupOptions {
   /** Current working directory (defaults to process.cwd()) */
   cwd?: string;
-  /** Number of backups to keep (default: 10) */
+  /** Number of backups to keep (default: 20) */
   keepCount?: number;
 }

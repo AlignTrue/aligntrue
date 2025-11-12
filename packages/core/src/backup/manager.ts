@@ -304,7 +304,7 @@ export class BackupManager {
    */
   static cleanupOldBackups(options: CleanupOptions = {}): number {
     const cwd = options.cwd || process.cwd();
-    const keepCount = options.keepCount ?? 10;
+    const keepCount = options.keepCount ?? 20;
 
     const backups = this.listBackups(cwd);
 

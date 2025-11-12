@@ -28,7 +28,7 @@ describe("Config - Backup Configuration", () => {
 
     expect(config.backup).toBeDefined();
     expect(config.backup?.auto_backup).toBe(true);
-    expect(config.backup?.keep_count).toBe(5);
+    expect(config.backup?.keep_count).toBe(20);
     expect(config.backup?.backup_on).toEqual(["sync", "import"]);
   });
 
@@ -38,7 +38,7 @@ mode: solo
 exporters: [cursor]
 backup:
   auto_backup: true
-  keep_count: 5
+  keep_count: 20
   backup_on: [sync, restore]
 `;
     writeFileSync(configPath, yaml, "utf-8");
@@ -46,7 +46,7 @@ backup:
     const config = await loadConfig(configPath);
 
     expect(config.backup?.auto_backup).toBe(true);
-    expect(config.backup?.keep_count).toBe(5);
+    expect(config.backup?.keep_count).toBe(20);
     expect(config.backup?.backup_on).toEqual(["sync", "restore"]);
   });
 

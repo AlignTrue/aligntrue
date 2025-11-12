@@ -460,7 +460,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.backup = {};
   }
   result.backup.auto_backup = result.backup.auto_backup ?? true;
-  result.backup.keep_count = result.backup.keep_count ?? 5;
+  result.backup.keep_count = result.backup.keep_count ?? 20;
   result.backup.backup_on = result.backup.backup_on ?? ["sync", "import"];
 
   // Apply detection defaults

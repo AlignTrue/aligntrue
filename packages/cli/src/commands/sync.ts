@@ -808,7 +808,8 @@ export async function sync(args: string[]): Promise<void> {
 
     // Step 9: Auto-cleanup old backups (if configured and not dry-run)
     if (!dryRun && config.backup?.auto_backup) {
-      const keepCount = config.backup.keep_count ?? 10;
+      // keep_count always has default from config loader
+      const keepCount = config.backup.keep_count!;
       try {
         const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
         if (removed > 0) {
