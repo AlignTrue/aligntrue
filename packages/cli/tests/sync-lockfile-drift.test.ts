@@ -71,6 +71,7 @@ sections:
     writeFileSync(
       allowListPath,
       `
+version: 1
 sources:
   - value: sha256:${initialBundleHash}
     approved_by: test-user
@@ -170,6 +171,7 @@ sections:
     writeFileSync(
       allowListPath,
       `
+version: 1
 sources:
   - value: sha256:${initialBundleHash}
     approved_by: test-user
@@ -270,6 +272,7 @@ sections:
     writeFileSync(
       allowListPath,
       `
+version: 1
 sources:
   - value: sha256:${initialBundleHash}
     approved_by: test-user

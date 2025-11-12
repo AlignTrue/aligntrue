@@ -82,6 +82,7 @@ sections:
     writeFileSync(
       join(aligntrueDir, "allow.yaml"),
       `
+version: 1
 sources:
   - value: sha256:old_bundle_hash_12345
     approved_by: test-user
@@ -185,6 +186,7 @@ Modified in AGENTS.md
     writeFileSync(
       join(aligntrueDir, "allow.yaml"),
       `
+version: 1
 sources:
   - value: sha256:test_bundle_hash
     approved_by: test-user
@@ -268,6 +270,7 @@ sections:
     writeFileSync(
       join(aligntrueDir, "allow.yaml"),
       `
+version: 1
 sources:
   - value: sha256:old_bundle_hash
     approved_by: test-user
@@ -357,6 +360,7 @@ sections:
     writeFileSync(
       join(aligntrueDir, "allow.yaml"),
       `
+version: 1
 sources:
   - value: sha256:old_bundle_hash
     approved_by: test-user
