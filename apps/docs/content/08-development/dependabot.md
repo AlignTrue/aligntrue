@@ -1,3 +1,8 @@
+---
+title: Dependabot auto-merge
+description: Hybrid approach to automatically merging Dependabot PRs while preserving manual review for higher-risk changes
+---
+
 # Dependabot auto-merge strategy
 
 This document explains AlignTrue's hybrid approach to automatically merging Dependabot PRs.
@@ -48,7 +53,7 @@ GitHub Actions workflow that:
 - Requires passing CI checks before merge
 - Uses squash merge to keep commit history clean
 
-## What Gets Auto-Merged
+## What gets auto-merged
 
 ✅ **Automatically merged once CI passes:**
 
@@ -62,7 +67,7 @@ GitHub Actions workflow that:
 - Production dependencies not explicitly allowed
 - Any PR labeled "requires-review"
 
-## What to Watch For
+## What to watch for
 
 1. **CI failures:** If a Dependabot PR fails CI, auto-merge is blocked. Review the error and decide:
    - Is it a real incompatibility? → Manual fix or manual rejection
@@ -72,13 +77,13 @@ GitHub Actions workflow that:
 
 3. **Monorepo issues:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
 
-## Performance Impact
+## Performance impact
 
 - **Devs:** Zero overhead. PRs auto-merge while you work on other things.
 - **CI:** One full test run per Dependabot PR. Runs on Linux + Windows per `.github/workflows/ci.yml`.
 - **Review time:** ~0 seconds for safe updates, on-demand for risky ones.
 
-## Disabling Auto-Merge
+## Disabling auto-merge
 
 To temporarily disable auto-merge or change the strategy:
 
@@ -86,7 +91,7 @@ To temporarily disable auto-merge or change the strategy:
 2. **Change scopes:** Edit `.github/dependabot.yml` labels and allow/ignore rules
 3. **Change merge method:** Update `dependabot-auto-merge.yml` to use `merge` or `rebase` instead of `squash`
 
-## Testing the Setup
+## Testing the setup
 
 After pushing these files:
 
@@ -97,8 +102,8 @@ After pushing these files:
    - Auto-merge badge once CI passes
 3. Monitor GitHub Actions to see the workflow logs
 
-## Further Reading
+## Related documentation
 
 - [GitHub Dependabot docs](https://docs.github.com/en/code-security/dependabot)
 - [GitHub auto-merge API](https://docs.github.com/en/rest/pulls/merges?apiVersion=2022-11-28#enable-auto-merge-for-a-pull-request)
-- [AlignTrue CI configuration](../DEVELOPMENT.md) - See CI/CD section for workflow details
+- [CI failure prevention](/docs/08-development/ci-failures)

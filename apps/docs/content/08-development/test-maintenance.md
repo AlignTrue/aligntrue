@@ -1,3 +1,8 @@
+---
+title: Test maintenance
+description: How to maintain tests after core format and path changes
+---
+
 # Test maintenance: Core format and path changes
 
 **When to apply**: After commits that change core file formats, paths, or schemas (e.g., YAML vs markdown, `.rules.yaml` vs `rules.md`).
@@ -98,7 +103,7 @@ The pre-push hook catches these failures before they hit `main`, but:
 - Atomic commits make git history cleaner
 - Reviewers see the full picture in one commit
 
-## Related docs
+## Related documentation
 
-- `.cursor/rules/testing.mdc` - Full testing framework
-- `DEVELOPMENT.md` - Development workflow and hooks
+- [Testing guidelines](/docs/08-development/testing-guide)
+- [Development setup](/docs/08-development/setup)

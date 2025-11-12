@@ -2,5 +2,6 @@
   "index": "Overview",
   "plugs": "Plugs",
   "overlays": "Overlays",
-  "scopes": "Scopes"
+  "scopes": "Scopes",
+  "technical-reference": "Technical Reference"
 }

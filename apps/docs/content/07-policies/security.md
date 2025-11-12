@@ -1,11 +1,7 @@
-<!--
-  ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
-
-  This file is generated from documentation source.
-  To make changes, edit the source file and run: pnpm generate:repo-files
-
-  Source: apps/docs/content/07-policies/security.md
--->
+---
+title: Security
+description: Security, privacy, and on-prem practices for AlignTrue
+---
 
 # Security, Privacy, and On-Prem Practices
 
@@ -134,10 +130,6 @@ Security advisories must include:
 
 ## Related Documentation
 
-- [Development Setup](https://aligntrue.ai/docs/08-development/setup)
-- [Architecture](https://aligntrue.ai/docs/08-development/architecture)
-- [CI Failure Prevention](https://aligntrue.ai/docs/08-development/ci-failures)
-
----
-
-_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._
+- [Development Setup](/docs/08-development/setup)
+- [Architecture](/docs/08-development/architecture)
+- [CI Failure Prevention](/docs/08-development/ci-failures)

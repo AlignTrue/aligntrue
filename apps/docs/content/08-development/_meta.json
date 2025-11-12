@@ -2,5 +2,10 @@
   "setup": "Setup",
   "workspace": "Workspace",
   "commands": "Commands",
-  "architecture": "Architecture"
+  "architecture": "Architecture",
+  "release-process": "Release process",
+  "ci-failures": "Preventing CI failures",
+  "test-maintenance": "Test maintenance",
+  "archiving-components": "Archiving components",
+  "dependabot": "Dependabot auto-merge"
 }
