@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Kilo Code .kilocode/rules/ directory format",
   "outputs": [".kilocode/rules/*.md"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Scope-based file organization (one .md per scope)",
