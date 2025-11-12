@@ -52,6 +52,19 @@ jobs:
       - name: Build packages
         run: pnpm build:packages
 
+      - name: Validate shim dependencies before publish
+        run: |
+          echo "Validating shim workspace:* dependencies..."
+          CLI_VERSION=$(jq -r '.version' packages/cli/package.json)
+          SHIM_DEP=$(jq -r '.dependencies["@aligntrue/cli"]' packages/aligntrue/package.json)
+          echo "CLI version: $CLI_VERSION"
+          echo "Shim dependency: $SHIM_DEP"
+          if [ "$SHIM_DEP" != "workspace:*" ]; then
+            echo "ERROR: Shim should use workspace:* for @aligntrue/cli"
+            exit 1
+          fi
+          echo "✓ Shim will resolve to @aligntrue/cli@^$CLI_VERSION at publish time"
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
@@ -65,6 +78,33 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           HUSKY: 0
+
+      - name: Verify published shim dependencies
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          echo "Waiting for npm registry propagation..."
+          sleep 10
+
+          echo "Verifying published shim dependencies..."
+          SHIM_VERSION=$(npm view aligntrue version)
+          CLI_DEP=$(npm view aligntrue@$SHIM_VERSION dependencies --json | jq -r '."@aligntrue/cli"')
+          CLI_VERSION=$(npm view @aligntrue/cli version)
+
+          echo "Published shim version: $SHIM_VERSION"
+          echo "Shim depends on: @aligntrue/cli@$CLI_DEP"
+          echo "Latest CLI version: $CLI_VERSION"
+
+          # Extract version from caret range (e.g., ^0.1.1-alpha.4 -> 0.1.1-alpha.4)
+          CLI_DEP_VERSION="${CLI_DEP#^}"
+
+          if [ "$CLI_DEP_VERSION" != "$CLI_VERSION" ]; then
+            echo "ERROR: Shim dependency mismatch!"
+            echo "Expected: @aligntrue/cli@^$CLI_VERSION"
+            echo "Got: @aligntrue/cli@$CLI_DEP"
+            exit 1
+          fi
+
+          echo "✓ Shim dependencies are correct"
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
