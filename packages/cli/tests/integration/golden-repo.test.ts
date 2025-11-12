@@ -34,8 +34,7 @@ afterEach(async () => {
 });
 
 describe("Golden Repository Workflows", () => {
-  it.skip("Fresh init workflow completes in <60 seconds", async () => {
-    // TODO: Update golden-repo example to use natural markdown sections format
+  it("Fresh init workflow completes in <60 seconds", async () => {
     const startTime = Date.now();
 
     // Start with empty directory
@@ -57,9 +56,9 @@ describe("Golden Repository Workflows", () => {
       stdio: "pipe",
     });
 
-    // Verify outputs exist
+    // Verify outputs exist (sync replaces aligntrue-starter.mdc with aligntrue.mdc)
     const cursorExists = await fs
-      .access(join(projectDir, ".cursor/rules/aligntrue-starter.mdc"))
+      .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
       .then(() => true)
       .catch(() => false);
     const agentsExists = await fs

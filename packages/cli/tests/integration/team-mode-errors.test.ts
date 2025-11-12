@@ -106,6 +106,12 @@ sections: []
   });
 
   describe("Strict mode error messages", () => {
+    // TODO: This test needs investigation - allow list validation has try-catch that swallows errors
+    // The validation logic works in practice (other tests pass), but this specific test case
+    // may be hitting an error path that's being caught. Needs deeper investigation of:
+    // 1. Whether parseAllowList is throwing for this test's YAML format
+    // 2. Whether the try-catch around validation should be more strict
+    // 3. Whether we should split "parsing errors" from "validation errors"
     it.skip("shows correct commands when lockfile validation fails", async () => {
       // Create team mode setup
       mkdirSync(".aligntrue", { recursive: true });
