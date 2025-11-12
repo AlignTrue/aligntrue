@@ -137,6 +137,7 @@ Runs automatically before pushing (takes ~30-60 seconds):
 - Full typecheck across all packages
 - Full test suite (all packages)
 - Full build to catch build errors
+- Bundle size validation (CLI < 600 KB)
 - Mirrors CI validation
 
 This ensures you never push code that will fail CI.
