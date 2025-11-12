@@ -25,7 +25,6 @@ import {
   shouldUseInteractive,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { importAndMergeFromMultipleAgents } from "../utils/import-helper.js";
 import { execSync } from "child_process";
 import { DOCS_QUICKSTART } from "../constants.js";
 import { basename } from "path";
@@ -459,48 +458,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  // Execute multi-agent merge if requested
+  // Multi-agent merge disabled - not implemented for sections-only format
   if (shouldMergeMultiple) {
-    try {
-      console.log("");
-      clack.log.step("Importing and merging rules from all agents...");
-
-      const mergeResult = await importAndMergeFromMultipleAgents(
-        contextResult.allDetectedAgents,
-        cwd,
-      );
-
-      importedRules = mergeResult.rules;
-
-      console.log("");
-      clack.log.success(
-        `Merged ${mergeResult.stats.totalRules} rules from ${contextResult.allDetectedAgents.length} agents`,
-      );
-      console.log(`  • ${mergeResult.stats.uniqueRules} unique rules`);
-
-      if (mergeResult.duplicates.length > 0) {
-        console.log(
-          `  • ${mergeResult.duplicates.length} duplicates renamed\n`,
-        );
-        clack.log.warn("Duplicate rules found (kept both versions):");
-        for (const dup of mergeResult.duplicates) {
-          console.log(`  - ${dup.originalId} → ${dup.renamedId}`);
-        }
-        console.log(
-          "\nNote: We match duplicates by rule ID only, not by content.",
-        );
-        console.log("Review your rules and remove duplicates you don't need.");
-        console.log(
-          "Edit in any agent file (AGENTS.md, .cursor/*.mdc, etc.) - they stay synced.",
-        );
-      }
-    } catch (_error) {
+    if (!nonInteractive) {
       clack.log.error(
-        `Merge failed: ${_error instanceof Error ? _error.message : String(_error)}`,
+        "Merge not implemented. Author rules in AGENTS.md directly.",
       );
       clack.log.info("Continuing with fresh start template");
-      importedRules = null;
+    } else {
+      console.error(
+        "Merge not implemented. Author rules in AGENTS.md directly.",
+      );
+      console.log("Continuing with fresh start template");
     }
+    importedRules = null;
   } else if (shouldImport && importedFromAgent) {
     // Import disabled - not implemented for sections-only format
     if (!nonInteractive) {
@@ -749,12 +720,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       };
     }
   } else {
-    // Legacy: use rules format for imported content
+    // Fallback: should not reach here (import disabled), but ensure sections
     pack = {
       id: `${projectIdValue}-rules`,
       version: "1.0.0",
       spec_version: "1",
-      rules: importedRules || [],
+      sections: [],
     };
   }
 

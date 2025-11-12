@@ -45,7 +45,7 @@ export interface SectionConflict {
 export function matchesEditSource(
   filePath: string,
   editSource: string | string[] | undefined,
-  cwd: string,
+  _cwd: string,
 ): boolean {
   if (!editSource) {
     // Default to AGENTS.md if no edit_source specified

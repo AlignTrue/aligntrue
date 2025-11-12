@@ -112,6 +112,29 @@ function parseMarkdownSections(
     }
   }
 
+  // Pre-process: find all lines within team-managed HTML comments
+  const teamManagedLines = new Set<number>();
+  let inTeamManagedComment = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] || "";
+
+    // Check for comment start with [TEAM-MANAGED]
+    if (line.includes("<!--") && line.includes("[TEAM-MANAGED]")) {
+      inTeamManagedComment = true;
+      teamManagedLines.add(i);
+      // Check if it closes on same line
+      if (line.includes("-->")) {
+        inTeamManagedComment = false;
+      }
+    } else if (inTeamManagedComment) {
+      teamManagedLines.add(i);
+      // Check for comment end
+      if (line.includes("-->")) {
+        inTeamManagedComment = false;
+      }
+    }
+  }
+
   // Parse sections and content
   let inFooter = false;
   const footerLines: string[] = [];
@@ -163,12 +186,28 @@ function parseMarkdownSections(
         sections.push(currentSection as ParsedSection);
       }
 
-      // Check if previous line(s) contain team-managed marker
-      const prevLine = lineIndex > 0 ? lines[lineIndex - 1] : "";
-      const isTeamManaged = !!(
-        prevLine?.includes("[TEAM-MANAGED]") ||
-        prevLine?.includes("team-managed")
-      );
+      // Check if this heading immediately follows a team-managed comment
+      // Look back from this heading until we hit the previous heading (or start of file)
+      let isTeamManaged = false;
+
+      // Find where the previous section starts
+      let prevHeadingLine = -1;
+      for (let i = lineIndex - 1; i >= 0; i--) {
+        const checkLine = (lines[i] || "").trim();
+        if (checkLine.match(/^#{1,6}\s+/)) {
+          prevHeadingLine = i;
+          break;
+        }
+      }
+
+      // Look for team-managed marker between previous heading and this heading
+      const searchStart = prevHeadingLine + 1;
+      for (let i = searchStart; i < lineIndex; i++) {
+        if (teamManagedLines.has(i)) {
+          isTeamManaged = true;
+          break;
+        }
+      }
 
       // Start new section
       const level = headingMatch[1]?.length || 1;
@@ -203,24 +242,19 @@ function parseMarkdownSections(
   footer = footerLines.join("\n");
 
   // Extract content hash from footer
-  const hashMatch = footer.match(/Content Hash:\s*([a-f0-9:]+)/i);
-  if (hashMatch) {
-    contentHash = hashMatch[1];
+  // Format: "Content Hash: sha256:xxx" or "Content Hash: xxx"
+  const hashMatch = footer.match(
+    /Content\s+Hash:\s*(sha256:[a-f0-9]+|[a-f0-9]+)/i,
+  );
+  if (hashMatch && hashMatch[1]) {
+    const hashValue = hashMatch[1];
+    // Ensure it has sha256: prefix
+    contentHash = hashValue.toLowerCase().startsWith("sha256:")
+      ? hashValue
+      : `sha256:${hashValue}`;
   }
 
-  // Check for team-managed markers in HTML comments
-  for (const section of sections) {
-    const sectionStartLine = section.startLine;
-    if (sectionStartLine > 0) {
-      const prevLine = lines[sectionStartLine - 1];
-      if (
-        prevLine?.includes("Team-managed") ||
-        prevLine?.includes("team-managed")
-      ) {
-        section.isTeamManaged = true;
-      }
-    }
-  }
+  // Team-managed markers already detected above during heading parsing
 
   // Compute hash for each section
   for (const section of sections) {
