@@ -104,7 +104,7 @@ Auto-pull automatically imports changes from your primary agent before syncing. 
 - Primary agent is configured (auto-detected on init)
 - No conflicts detected between primary agent and other agent files
 
-See [Auto-pull guide](/docs/01-guides/00-auto-pull) for details.
+See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
 
 **Agent detection:**
 

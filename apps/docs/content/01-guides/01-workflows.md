@@ -556,7 +556,7 @@ aligntrue config get sync.auto_pull
 ## Related pages
 
 - [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Authoring rules with sections and fingerprints
-- [Auto-pull behavior](/docs/01-guides/00-auto-pull) - How auto-pull works
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How auto-pull and sync work
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 - [Troubleshooting conflicts](/docs/05-troubleshooting/conflicts) - Resolving conflicts
 - [Team mode](/docs/03-concepts/team-mode) - Team workflows and lockfiles

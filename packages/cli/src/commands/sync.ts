@@ -688,7 +688,7 @@ export async function sync(args: string[]): Promise<void> {
   if (!acceptAgent && config.sync?.two_way !== false) {
     try {
       // Dynamic import at runtime
-      const multiFileParser = "@aligntrue/core/sync/multi-file-parser.js";
+      const multiFileParser = "@aligntrue/core/sync/multi-file-parser";
       // @ts-ignore - Dynamic import resolved at runtime
       const { detectEditedFiles } = await import(multiFileParser);
 

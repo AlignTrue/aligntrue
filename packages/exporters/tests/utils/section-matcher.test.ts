@@ -12,6 +12,10 @@ import type { ParsedSection } from "../../src/utils/section-parser.js";
 
 describe("matchSections", () => {
   it("should match identical sections as 'keep'", () => {
+    // Hash: SHA256("Testing\nRun tests before committing.")
+    const correctHash =
+      "fdbc822386ef01243069875b4fb5071d384149e3bed5ed96cf6528a256cd9a8b";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -26,7 +30,7 @@ describe("matchSections", () => {
         heading: "Testing",
         content: "Run tests before committing.",
         level: 2,
-        hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        hash: correctHash,
         startLine: 1,
         endLine: 3,
       },
@@ -42,6 +46,10 @@ describe("matchSections", () => {
   });
 
   it("should match modified sections as 'update'", () => {
+    // Hash: SHA256("Testing\nRun tests before committing.") - old content
+    const oldHash =
+      "fdbc822386ef01243069875b4fb5071d384149e3bed5ed96cf6528a256cd9a8b";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -56,7 +64,7 @@ describe("matchSections", () => {
         heading: "Testing",
         content: "Run tests before committing.",
         level: 2,
-        hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        hash: oldHash,
         startLine: 1,
         endLine: 3,
       },
@@ -72,6 +80,10 @@ describe("matchSections", () => {
   });
 
   it("should detect new IR sections as 'add'", () => {
+    // Hash: SHA256("Testing\nRun tests.")
+    const testingHash =
+      "79e78ab26de582b5655a6467f857d2167570dc82fb3a7be9d06699dc6ada61b4";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -91,7 +103,7 @@ describe("matchSections", () => {
         heading: "Testing",
         content: "Run tests.",
         level: 2,
-        hash: "abc123",
+        hash: testingHash,
         startLine: 1,
         endLine: 3,
       },
@@ -169,6 +181,10 @@ describe("matchSections", () => {
   });
 
   it("should handle case-insensitive heading matching", () => {
+    // Hash: SHA256("Testing\nRun tests.")
+    const correctHash =
+      "79e78ab26de582b5655a6467f857d2167570dc82fb3a7be9d06699dc6ada61b4";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -183,7 +199,7 @@ describe("matchSections", () => {
         heading: "TESTING",
         content: "Run tests.",
         level: 2,
-        hash: "abc123",
+        hash: correctHash,
         startLine: 1,
         endLine: 3,
       },
@@ -251,6 +267,12 @@ describe("Advanced matching scenarios", () => {
   });
 
   it("should preserve stats accuracy with mixed operations", () => {
+    // Hashes: SHA256("Testing\nRun tests."), SHA256("Documentation\nOld docs.")
+    const testingHash =
+      "79e78ab26de582b5655a6467f857d2167570dc82fb3a7be9d06699dc6ada61b4";
+    const oldDocsHash =
+      "f450173bfc5df6a25fa54cce750ef8106b09e8584a42f9e31dd714a58de77d28";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -275,7 +297,7 @@ describe("Advanced matching scenarios", () => {
         heading: "Testing",
         content: "Run tests.",
         level: 2,
-        hash: "same-hash",
+        hash: testingHash,
         startLine: 1,
         endLine: 3,
       },
@@ -284,7 +306,7 @@ describe("Advanced matching scenarios", () => {
         heading: "Documentation",
         content: "Old docs.",
         level: 2,
-        hash: "different-hash",
+        hash: oldDocsHash,
         startLine: 5,
         endLine: 7,
       },
@@ -293,7 +315,7 @@ describe("Advanced matching scenarios", () => {
         heading: "My Notes",
         content: "Personal notes.",
         level: 2,
-        hash: "user-hash",
+        hash: "user-hash-arbitrary",
         startLine: 9,
         endLine: 11,
       },
@@ -352,6 +374,10 @@ describe("Advanced matching scenarios", () => {
   });
 
   it("should match headings with whitespace differences", () => {
+    // Hash: SHA256("Testing\nRun tests.")
+    const correctHash =
+      "79e78ab26de582b5655a6467f857d2167570dc82fb3a7be9d06699dc6ada61b4";
+
     const irSections: AlignSection[] = [
       {
         heading: "Testing",
@@ -366,7 +392,7 @@ describe("Advanced matching scenarios", () => {
         heading: "  Testing  ",
         content: "Run tests.",
         level: 2,
-        hash: "abc123",
+        hash: correctHash,
         startLine: 1,
         endLine: 3,
       },

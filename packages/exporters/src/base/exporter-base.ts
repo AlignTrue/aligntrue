@@ -474,7 +474,7 @@ export abstract class ExporterBase implements ExporterPlugin {
   protected renderReadOnlyMarker(
     currentFile: string,
     editSource: string | string[] | undefined,
-    cwd: string,
+    _cwd: string,
   ): string {
     // Import matchesEditSource dynamically to avoid circular dependency
     // For now, implement simple matching logic inline
