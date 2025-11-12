@@ -1,0 +1,155 @@
+/**
+ * Layer 1: Smoke Tests
+ * Fast regression catch on install and basic commands
+ */
+
+import { execSync, type ExecException } from "node:child_process";
+import { writeFileSync } from "node:fs";
+
+interface TestScenario {
+  name: string;
+  command: string;
+  expectedExitCode: number;
+  expectedOutput?: RegExp;
+  maxDuration?: number; // milliseconds
+}
+
+const scenarios: TestScenario[] = [
+  {
+    name: "Help command responds quickly",
+    command: "aligntrue --help",
+    expectedExitCode: 0,
+    expectedOutput: /Usage: aligntrue/,
+    maxDuration: 1000,
+  },
+  {
+    name: "Version command works",
+    command: "aligntrue --version",
+    expectedExitCode: 0,
+    expectedOutput: /\d+\.\d+\.\d+/,
+  },
+  {
+    name: "Check command handles missing config gracefully",
+    command: "aligntrue check",
+    expectedExitCode: 1,
+    expectedOutput: /config.*not found/i,
+  },
+  {
+    name: "Invalid command shows helpful error",
+    command: "aligntrue invalid-command",
+    expectedExitCode: 2,
+    expectedOutput: /Unknown command|invalid/i,
+  },
+];
+
+function runTest(scenario: TestScenario): {
+  passed: boolean;
+  duration: number;
+  output: string;
+  error?: string;
+} {
+  const start = Date.now();
+  let output = "";
+  let exitCode = 0;
+  let error: string | undefined;
+
+  try {
+    output = execSync(scenario.command, {
+      encoding: "utf-8",
+      stdio: "pipe",
+      timeout: scenario.maxDuration || 5000,
+    });
+  } catch (err) {
+    const execErr = err as ExecException;
+    exitCode = execErr.status || 1;
+    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    if (exitCode !== scenario.expectedExitCode) {
+      error = `Exit code mismatch: expected ${scenario.expectedExitCode}, got ${exitCode}`;
+    }
+  }
+
+  const duration = Date.now() - start;
+
+  // Check exit code
+  if (exitCode !== scenario.expectedExitCode && !error) {
+    error = `Exit code mismatch: expected ${scenario.expectedExitCode}, got ${exitCode}`;
+  }
+
+  // Check output pattern
+  if (scenario.expectedOutput && !scenario.expectedOutput.test(output)) {
+    error = error || `Output pattern not found: ${scenario.expectedOutput}`;
+  }
+
+  // Check duration
+  if (scenario.maxDuration && duration > scenario.maxDuration) {
+    error =
+      error || `Duration exceeded: ${duration}ms > ${scenario.maxDuration}ms`;
+  }
+
+  return {
+    passed: !error,
+    duration,
+    output,
+    error,
+  };
+}
+
+function main() {
+  console.log("=== Layer 1: Smoke Tests ===\n");
+
+  const results = scenarios.map((scenario) => {
+    console.log(`Testing: ${scenario.name}`);
+    console.log(`Executing: ${scenario.command}`);
+
+    const result = runTest(scenario);
+
+    console.log(`Exit code: ${result.passed ? 0 : 1}`);
+    console.log(`Duration: ${result.duration}ms`);
+
+    if (result.passed) {
+      console.log("✓ PASS\n");
+    } else {
+      console.log(`✗ FAIL: ${result.error}\n`);
+    }
+
+    return { scenario, result };
+  });
+
+  // Summary
+  const passed = results.filter((r) => r.result.passed).length;
+  const failed = results.length - passed;
+
+  console.log("\n=== Summary ===");
+  console.log(`Total: ${results.length}`);
+  console.log(`Passed: ${passed}`);
+  console.log(`Failed: ${failed}`);
+
+  // Write results to log
+  const logPath = process.env.LOG_FILE || "/tmp/layer-1-results.json";
+  writeFileSync(
+    logPath,
+    JSON.stringify(
+      {
+        layer: 1,
+        timestamp: new Date().toISOString(),
+        results: results.map((r) => ({
+          name: r.scenario.name,
+          command: r.scenario.command,
+          passed: r.result.passed,
+          duration: r.result.duration,
+          error: r.result.error,
+        })),
+      },
+      null,
+      2,
+    ),
+  );
+
+  process.exit(failed > 0 ? 1 : 0);
+}
+
+if (require.main === module) {
+  main();
+}
+
+export { scenarios, runTest };
