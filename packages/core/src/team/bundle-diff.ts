@@ -5,6 +5,7 @@
 import type { AlignSection } from "@aligntrue/schema";
 import { existsSync } from "fs";
 import { resolve } from "path";
+import { loadIR } from "../sync/ir-loader.js";
 
 export interface BundleDiff {
   added: Array<{ heading: string; lines: number }>;
@@ -50,7 +51,6 @@ export async function compareBundles(
 
   // For now, we'll load the current bundle and compare with approved
   // In a full implementation, we'd need to track previous bundles
-  const { loadIR } = await import("../sync/ir-loader.js");
   const rulesPath = resolve(cwd, ".aligntrue/.rules.yaml");
 
   if (!existsSync(rulesPath)) {
