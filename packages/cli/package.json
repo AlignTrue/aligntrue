@@ -17,6 +17,9 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:comprehensive": "tsx tests/comprehensive/run-all-layers.ts",
+    "test:layer": "tsx tests/comprehensive/run-single-layer.ts",
+    "test:report": "tsx tests/comprehensive/generate-report.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
