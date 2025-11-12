@@ -342,21 +342,30 @@ export function buildIRFromNaturalMarkdown(
   defaultId?: string,
 ): IRBuildResult {
   try {
-    // Import natural markdown parser from core
-    // This is a lazy import to avoid circular dependencies
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let parseNaturalMarkdown: any;
-
     // For now, as a workaround for the circular dependency issue,
     // we'll use a simple heuristic: if markdown has a YAML frontmatter block,
     // extract it and use as metadata. Otherwise, treat all content as markdown.
     // The full natural markdown parser from core will be loaded when available.
 
     // Parse YAML frontmatter if present
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let metadata: any = { id: defaultId || "unnamed-pack", version: "1.0.0" };
+    interface Metadata {
+      id: string;
+      version: string;
+      [key: string]: unknown;
+    }
+    interface Section {
+      heading: string;
+      level: number;
+      content: string;
+      fingerprint?: string;
+    }
+
+    let metadata: Metadata = {
+      id: defaultId || "unnamed-pack",
+      version: "1.0.0",
+    };
     let markdownContent = markdown;
-    const sections: any[] = [];
+    const sections: Section[] = [];
 
     // Try to detect and parse YAML frontmatter
     if (markdown.startsWith("---")) {
@@ -364,7 +373,12 @@ export function buildIRFromNaturalMarkdown(
       if (match && match[1]) {
         try {
           const yamlData = parseYaml(match[1]);
-          metadata = { ...metadata, ...(yamlData as any) };
+          if (yamlData && typeof yamlData === "object") {
+            metadata = {
+              ...metadata,
+              ...(yamlData as Record<string, unknown>),
+            };
+          }
           markdownContent = match[2] || "";
         } catch {
           // If YAML fails to parse, treat entire content as markdown
@@ -421,20 +435,20 @@ export function buildIRFromNaturalMarkdown(
       };
 
       // Add optional metadata (use bracket notation for index signature)
-      if (metadata.summary) {
-        document["summary"] = metadata.summary;
+      if (metadata["summary"]) {
+        document["summary"] = metadata["summary"];
       }
-      if (metadata.tags) {
-        document["tags"] = metadata.tags;
+      if (metadata["tags"]) {
+        document["tags"] = metadata["tags"];
       }
-      if (metadata.owner) {
-        document["owner"] = metadata.owner;
+      if (metadata["owner"]) {
+        document["owner"] = metadata["owner"];
       }
-      if (metadata.source) {
-        document["source"] = metadata.source;
+      if (metadata["source"]) {
+        document["source"] = metadata["source"];
       }
-      if (metadata.source_sha) {
-        document["source_sha"] = metadata.source_sha;
+      if (metadata["source_sha"]) {
+        document["source_sha"] = metadata["source_sha"];
       }
 
       return { document, errors: [] };
