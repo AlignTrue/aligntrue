@@ -87,7 +87,6 @@
     },
     "sections": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "$ref": "#/$defs/section"
       },
