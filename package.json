@@ -9,6 +9,7 @@
     "dev": "pnpm --filter @aligntrue/docs dev",
     "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",
     "start:docs": "node scripts/start-docs.mjs",
+    "generate:repo-files": "node scripts/generate-repo-files.mjs",
     "test": "pnpm -r test",
     "test:fast": "pnpm -r test --reporter=dot --pool=forks",
     "verify": "pnpm --filter @aligntrue/testkit test",

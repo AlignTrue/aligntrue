@@ -1,3 +1,8 @@
+---
+title: Preventing CI failures
+description: Validation workflow and tools to catch errors early and prevent CI failures
+---
+
 # Preventing CI failures
 
 This guide explains the validation workflow and tools designed to catch errors early and prevent CI failures.
@@ -291,6 +296,6 @@ pnpm typecheck
 
 ## Related documentation
 
-- [TypeScript guidelines](../../.cursor/rules/typescript.mdc)
-- [Testing guidelines](../../.cursor/rules/testing.mdc)
-- [Pull request standards](../../.cursor/rules/pull_request_standards.mdc)
+- [TypeScript guidelines](/docs/08-development/typescript-guide)
+- [Testing guidelines](/docs/08-development/testing-guide)
+- [Pull request standards](/docs/08-development/pr-standards)
