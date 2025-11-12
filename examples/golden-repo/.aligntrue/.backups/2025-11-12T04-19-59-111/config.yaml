@@ -1,7 +1,0 @@
-version: "1"
-mode: solo
-exporters:
-  - cursor
-  - agents-md
-git:
-  mode: ignore
