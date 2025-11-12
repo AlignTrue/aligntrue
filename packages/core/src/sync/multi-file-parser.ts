@@ -5,6 +5,7 @@
 
 import { existsSync, statSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
+import { createHash } from "crypto";
 import micromatch from "micromatch";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
@@ -381,7 +382,6 @@ export function mergeFromMultipleFiles(
  * Generate fingerprint for section (matching schema behavior)
  */
 function generateFingerprint(heading: string): string {
-  const { createHash } = require("crypto");
   return createHash("sha256")
     .update(heading.toLowerCase().trim(), "utf-8")
     .digest("hex")

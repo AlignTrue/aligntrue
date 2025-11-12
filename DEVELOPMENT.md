@@ -23,6 +23,46 @@ This installs dependencies and builds all packages. You're ready to develop!
 
 **Note:** First-time setup takes ~2-3 minutes depending on your machine.
 
+## Building from source
+
+### First-time build
+
+```bash
+pnpm install
+pnpm build  # Uses correct dependency order
+```
+
+The `build` command automatically builds packages in the correct dependency order:
+
+1. schema, markdown-parser, plugin-contracts, file-utils (base layer)
+2. core, sources, testkit (depends on base layer)
+3. exporters, cli (depends on core layer)
+4. aligntrue (shim package)
+
+### Development workflow
+
+For active development, use watch mode to automatically rebuild on changes:
+
+```bash
+pnpm dev:packages  # Watch mode for all packages
+```
+
+Keep this running in a separate terminal while developing. Changes to source files will automatically trigger rebuilds.
+
+### Manual package builds
+
+Build specific packages when needed:
+
+```bash
+# Build a single package
+pnpm --filter @aligntrue/core build
+
+# Build multiple packages
+pnpm --filter @aligntrue/schema --filter @aligntrue/core build
+```
+
+**Why build order matters:** Packages import from `dist/` directories of their dependencies. If you edit `packages/core/src/` but don't rebuild, other packages will see stale code. The pre-commit hook automatically rebuilds packages when source files change.
+
 ## Getting started
 
 ### 1. Install dependencies

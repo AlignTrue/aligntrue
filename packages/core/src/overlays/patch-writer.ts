@@ -3,7 +3,13 @@
  * Writes conflict patches to artifacts/ directory
  */
 
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import {
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  readdirSync,
+  unlinkSync,
+} from "fs";
 import { join } from "path";
 import { generatePatchFile, type MergeConflict } from "./merge.js";
 
@@ -108,7 +114,6 @@ export function listPatchFiles(artifactsDir?: string): string[] {
   }
 
   try {
-    const { readdirSync } = require("fs");
     const files = readdirSync(dir);
     return files
       .filter(
@@ -128,7 +133,6 @@ export function listPatchFiles(artifactsDir?: string): string[] {
  */
 export function deletePatchFile(path: string): boolean {
   try {
-    const { unlinkSync } = require("fs");
     if (existsSync(path)) {
       unlinkSync(path);
       return true;
