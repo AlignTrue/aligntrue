@@ -41,7 +41,7 @@ modules:
 `,
     );
 
-    // Write IR
+    // Write IR with MODIFIED content (different from lockfile)
     writeFileSync(
       join(aligntrueDir, ".rules.yaml"),
       `
@@ -51,12 +51,13 @@ spec_version: "1"
 sections:
   - heading: Test rule one
     level: 2
-    content: "Current guidance"
+    content: "MODIFIED guidance that produces different hash"
     fingerprint: test-rule-one
 `,
     );
 
-    // Write lockfile with OLD bundle hash (simulating drift)
+    // Write lockfile with OLD bundle hash (from different content)
+    // The hash computed from current IR will differ, triggering drift detection
     writeFileSync(
       join(testDir, ".aligntrue.lock.json"),
       JSON.stringify(
@@ -66,8 +67,8 @@ sections:
           mode: "team",
           rules: [
             {
-              rule_id: "test.rule.one",
-              content_hash: "abc123",
+              rule_id: "test-rule-one",
+              content_hash: "sha256:old_content_hash_abc123",
             },
           ],
           bundle_hash: "old_bundle_hash_12345",
@@ -126,7 +127,7 @@ modules:
 `,
     );
 
-    // Write IR
+    // Write IR with current content
     const irPath = join(aligntrueDir, ".rules.yaml");
     writeFileSync(
       irPath,
@@ -137,7 +138,7 @@ spec_version: "1"
 sections:
   - heading: Test rule one
     level: 2
-    content: "Test guidance"
+    content: "MODIFIED guidance in agent file"
     fingerprint: test-rule-one
 `,
     );
@@ -227,7 +228,7 @@ modules:
 `,
     );
 
-    // Write IR
+    // Write IR with content different from lockfile
     writeFileSync(
       join(aligntrueDir, ".rules.yaml"),
       `
@@ -237,12 +238,12 @@ spec_version: "1"
 sections:
   - heading: Test rule one
     level: 2
-    content: "Current guidance"
+    content: "MODIFIED guidance for gates test"
     fingerprint: test-rule-one
 `,
     );
 
-    // Write lockfile with OLD bundle hash
+    // Write lockfile with OLD bundle hash (from different content)
     writeFileSync(
       join(testDir, ".aligntrue.lock.json"),
       JSON.stringify(
@@ -252,8 +253,8 @@ sections:
           mode: "team",
           rules: [
             {
-              rule_id: "test.rule.one",
-              content_hash: "abc123",
+              rule_id: "test-rule-one",
+              content_hash: "sha256:old_hash_gates",
             },
           ],
           bundle_hash: "old_bundle_hash",
@@ -316,7 +317,7 @@ modules:
 `,
     );
 
-    // Write IR
+    // Write IR with content different from lockfile
     writeFileSync(
       join(aligntrueDir, ".rules.yaml"),
       `
@@ -326,12 +327,12 @@ spec_version: "1"
 sections:
   - heading: Test rule one
     level: 2
-    content: "Current guidance"
+    content: "MODIFIED guidance for JSON output test"
     fingerprint: test-rule-one
 `,
     );
 
-    // Write lockfile with OLD bundle hash
+    // Write lockfile with OLD bundle hash (from different content)
     writeFileSync(
       join(testDir, ".aligntrue.lock.json"),
       JSON.stringify(
@@ -341,8 +342,8 @@ sections:
           mode: "team",
           rules: [
             {
-              rule_id: "test.rule.one",
-              content_hash: "abc123",
+              rule_id: "test-rule-one",
+              content_hash: "sha256:old_hash_json",
             },
           ],
           bundle_hash: "old_bundle_hash",

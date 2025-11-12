@@ -157,7 +157,7 @@ sections:
     expect(result.errors?.some((e) => e.type === "size_limit")).toBe(true);
   });
 
-  it("warns about plug conflicts without failing validation", () => {
+  it("validates overlays without warnings when no conflicts", () => {
     const config = `
 mode: solo
 sources:
@@ -176,9 +176,9 @@ id: test-pack
 version: 1.0.0
 spec_version: "1"
 sections:
-  - heading: Test rule with plugs
+  - heading: Test rule
     level: 2
-    content: Test rule with plugs description
+    content: Test rule description
     fingerprint: test-rule
 `;
     writeFileSync(rulesPath, rules, "utf8");
@@ -193,8 +193,8 @@ sections:
     const overlays: OverlayDefinition[] = configData.overlays.overrides;
     const result = validateOverlays(overlays, rulesData);
 
-    expect(result.valid).toBe(true); // Warnings don't fail validation
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings?.[0]?.type).toBe("plug_conflict");
+    expect(result.valid).toBe(true);
+    // Sections don't have plugs, so no plug conflict warnings expected
+    expect(result.warnings).toBeUndefined();
   });
 });
