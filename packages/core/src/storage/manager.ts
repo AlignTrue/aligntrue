@@ -3,7 +3,7 @@
  * Factory for creating and managing storage backends
  */
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import type { IStorageBackend, Rules } from "./backend.js";
 import { LocalStorageBackend } from "./local.js";
 import { RepoStorageBackend } from "./repo.js";
@@ -118,7 +118,7 @@ export class StorageManager {
         }
 
         try {
-          execSync(`ssh -T ${host}`, {
+          execFileSync("ssh", ["-T", host], {
             timeout: 5000,
             stdio: "pipe",
           });
@@ -143,7 +143,7 @@ export class StorageManager {
       // Test HTTPS connectivity
       if (url.startsWith("https://")) {
         try {
-          execSync(`git ls-remote ${url} HEAD`, {
+          execFileSync("git", ["ls-remote", url, "HEAD"], {
             timeout: 10000,
             stdio: "pipe",
           });

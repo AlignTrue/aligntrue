@@ -275,7 +275,7 @@ export async function detectReadOnlyFileEdits(
  */
 function extractScopeFromPath(filePath: string): string {
   // Cursor scope files
-  const cursorMatch = filePath.match(/\.cursor\/rules\/(.+)\.mdc$/);
+  const cursorMatch = filePath.match(/\.cursor\/rules\/([^.]+)\.mdc$/);
   if (cursorMatch) {
     const scopeName = cursorMatch[1];
     return scopeName === "aligntrue" ? "default" : scopeName || "default";
