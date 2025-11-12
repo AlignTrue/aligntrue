@@ -1,5 +1,13 @@
 # @aligntrue/markdown-parser
 
+## 0.1.1-alpha.4
+
+### Patch Changes
+
+- 97e54ee: Post-alpha.3 improvements: License fields added to all packages, test fixes, Windows compatibility improvements, and continued sections format refinements.
+- Updated dependencies [97e54ee]
+  - @aligntrue/schema@0.1.1-alpha.4
+
 ## Unreleased
 
 ### Security
