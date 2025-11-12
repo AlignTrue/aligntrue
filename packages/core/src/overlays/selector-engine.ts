@@ -49,7 +49,7 @@ export function evaluateSelector(
 }
 
 /**
- * Evaluate section[fingerprint=...] selector
+ * Evaluate rule[id=...] selector
  * Searches for section with matching fingerprint in pack.sections array
  */
 function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {

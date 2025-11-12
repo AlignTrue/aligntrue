@@ -1,17 +1,27 @@
-version: "1"
 mode: solo
+version: "1"
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: ".aligntrue/.rules.yaml"
 
-exporters:
-  - cursor
-  - agents-md
+adapters:
+  - type: cursor
+  - type: agents-md
+  - type: vscode-mcp
 
-sync:
-  workflow_mode: "ir_source"
-  auto_pull: false
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+    - selector: "rule[id=max-complexity]"
+      set:
+        "check.inputs.threshold": 15
+    - selector: "rule[id=prefer-const]"
+      remove:
+        - "autofix"
 
-git:
-  mode: ignore
+  limits:
+    max_overrides: 50
+    max_operations_per_override: 20
