@@ -102,11 +102,30 @@ export class ExporterRegistry {
       // Convert to absolute path and file URL for ESM import
       let absolutePath = resolve(handlerPath);
 
-      // If the path points to src/, replace with dist/ for built files
-      // This handles both local dev and installed npm packages
       // Normalize path separators for cross-platform support
       const normalizedPath = absolutePath.replace(/\\/g, "/");
-      if (normalizedPath.includes("/src/") && handlerPath.endsWith(".ts")) {
+      const { existsSync } = await import("node:fs");
+
+      // Strategy 1: If path already points to .js, use it directly
+      if (handlerPath.endsWith(".js")) {
+        // For npm installations, the manifest should already point to .js
+        if (existsSync(absolutePath)) {
+          // Path exists as-is, use it
+        } else if (normalizedPath.includes("/node_modules/")) {
+          // In node_modules but file doesn't exist - try dist/ variant
+          const distPath = normalizedPath
+            .replace("/src/", "/dist/")
+            .replace(/\//g, sep);
+          if (existsSync(distPath)) {
+            absolutePath = distPath;
+          }
+        }
+      }
+      // Strategy 2: Legacy .ts handling (for old manifests or dev)
+      else if (
+        normalizedPath.includes("/src/") &&
+        handlerPath.endsWith(".ts")
+      ) {
         const distPath = normalizedPath
           .replace("/src/", "/dist/")
           .replace(/\.ts$/, ".js")
@@ -114,7 +133,6 @@ export class ExporterRegistry {
 
         // Check if dist version exists, use it if available
         // This prevents "stripping types" errors in production
-        const { existsSync } = await import("node:fs");
         if (existsSync(distPath)) {
           absolutePath = distPath;
         } else {

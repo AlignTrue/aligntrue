@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Kilo Code .kilocode/mcp.json MCP configuration format",
   "outputs": [".kilocode/mcp.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Machine-checkable rules (check) not represented in MCP config format"

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to OpenAI Codex CLI .codex/config.toml configuration format",
   "outputs": [".codex/config.toml"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "TOML format (basic implementation, may require refinement)",

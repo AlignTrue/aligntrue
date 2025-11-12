@@ -45,6 +45,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Same as --non-interactive",
   },
   {
+    flag: "--no-sync",
+    hasValue: false,
+    description: "Skip automatic sync after initialization",
+  },
+  {
     flag: "--mode",
     hasValue: true,
     description: "Operating mode: solo (default) or team",
@@ -118,6 +123,7 @@ export async function init(args: string[] = []): Promise<void> {
       examples: [
         "aligntrue init",
         "aligntrue init --yes",
+        "aligntrue init --no-sync",
         "aligntrue init --import cursor",
         "aligntrue init --yes --import agents-md",
         "aligntrue init --non-interactive --project-id my-app --exporters cursor,agents-md",
@@ -150,6 +156,7 @@ export async function init(args: string[] = []): Promise<void> {
     ? exportersArg.split(",").map((e) => e.trim())
     : undefined;
   const importAgent = parsed.flags["import"] as string | undefined;
+  const noSync = (parsed.flags["no-sync"] as boolean | undefined) || false;
 
   // Validate mode if provided
   if (mode && mode !== "solo" && mode !== "team") {
@@ -667,6 +674,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Generate config with workflow mode based on init choice
   const config: Partial<AlignTrueConfig> = {
+    sources: [
+      {
+        type: "local",
+        path: "AGENTS.md",
+      },
+    ],
     exporters:
       selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents-md"],
   };
@@ -817,7 +830,17 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   console.log("  Or run: aligntrue config set <key> <value>");
 
   // Step 11: Show success message and next steps (workflow-specific)
-  if (nonInteractive) {
+  if (noSync) {
+    // User explicitly skipped sync
+    if (nonInteractive) {
+      console.log(
+        "\nSkipped sync (--no-sync). Run 'aligntrue sync' when ready.",
+      );
+    } else {
+      const message = `\n✓ Initialization complete\n\nNext: Run 'aligntrue sync' to sync rules to agents\n\nLearn more: ${DOCS_QUICKSTART}`;
+      clack.outro(message);
+    }
+  } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
   } else {
     let message = "\nNext steps:\n";

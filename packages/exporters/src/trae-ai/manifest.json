@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Trae AI .trae/rules/project_rules.md format",
   "outputs": [".trae/rules/project_rules.md"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Machine-checkable rules (check) not represented",

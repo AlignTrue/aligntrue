@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Zed .zed/settings.json configuration format (project root only)",
   "outputs": [".zed/settings.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Settings file location: project root only, never $HOME",

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Cursor .cursor/mcp.json MCP configuration format",
   "outputs": [".cursor/mcp.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Extracts vendor.cursor fields to top level",

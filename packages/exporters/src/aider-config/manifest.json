@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Aider .aider.conf.yml configuration format",
   "outputs": [".aider.conf.yml"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Machine-checkable rules (check) not represented in .aider.conf.yml format",
