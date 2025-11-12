@@ -11,26 +11,12 @@ import { join } from "path";
 
 const steps = [
   {
-    name: "Clean dist directories",
-    cmd: () => {
-      const packagesDir = join(process.cwd(), "packages");
-      const packages = readdirSync(packagesDir);
-      let cleanedCount = 0;
-
-      packages.forEach((pkg) => {
-        const distPath = join(packagesDir, pkg, "dist");
-        if (existsSync(distPath) && statSync(distPath).isDirectory()) {
-          rmSync(distPath, { recursive: true, force: true });
-          cleanedCount++;
-        }
-      });
-
-      console.log(`✓ Cleaned ${cleanedCount} dist directories`);
-    },
+    name: "Install dependencies",
+    cmd: "pnpm install --frozen-lockfile",
   },
   {
     name: "Build packages",
-    cmd: 'pnpm -r --filter "./packages/*" build',
+    cmd: "pnpm build",
   },
   { name: "Type check", cmd: "pnpm typecheck" },
   { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
