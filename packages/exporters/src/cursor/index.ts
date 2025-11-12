@@ -40,45 +40,87 @@ export class CursorExporter extends ExporterBase {
     // This preserves round-trip fidelity for vendor.cursor fields
     const _modeHints = "native"; // Force native, ignore config
 
-    // Compute scope-specific filename using centralized paths
     const paths = getAlignTruePaths(outputDir);
-    const _filename = this.getScopeFilename(scope);
-    const outputPath = paths.cursorRules(
-      scope.isDefault ? "default" : scope.normalizedPath,
-    );
-
-    // Merge with existing file to preserve user-added sections
     const managedSections =
       (options as { managedSections?: string[] }).managedSections || [];
-    const mergeResult = await this.readAndMerge(
-      outputPath,
-      sections,
-      "cursor-mdc",
-      managedSections,
-    );
 
-    // Generate .mdc content from merged sections
-    const content = this.generateMdcFromSections(
-      scope,
-      mergeResult.mergedSections,
-      options.unresolvedPlugsCount,
-      managedSections,
-    );
-    const contentHash = computeContentHash({
-      scope,
-      sections: mergeResult.mergedSections,
-    });
-    const fidelityNotes = this.computeSectionFidelityNotes(
-      mergeResult.mergedSections,
-    );
+    // Group sections by target scope (vendor.aligntrue.source_scope)
+    const sectionsByScope = this.groupSectionsByScope(sections, scope);
 
-    // Combine merge warnings with fidelity notes
-    const allWarnings = [...mergeResult.warnings, ...fidelityNotes];
+    // Export each scope group to its file
+    const allFilesWritten: string[] = [];
+    const allWarnings: string[] = [];
+    let combinedContentHash = "";
 
-    // Write file atomically if not dry-run
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    for (const [targetScope, scopeSections] of sectionsByScope.entries()) {
+      // Determine output path for this scope
+      const outputPath = paths.cursorRules(
+        targetScope === "default" ? "default" : targetScope,
+      );
 
-    return this.buildResult(filesWritten, contentHash, allWarnings);
+      // Merge with existing file to preserve user-added sections
+      const mergeResult = await this.readAndMerge(
+        outputPath,
+        scopeSections,
+        "cursor-mdc",
+        managedSections,
+      );
+
+      // Generate .mdc content from merged sections
+      const content = this.generateMdcFromSections(
+        scope, // Use original scope for metadata
+        mergeResult.mergedSections,
+        options.unresolvedPlugsCount,
+        managedSections,
+      );
+      const contentHash = computeContentHash({
+        scope,
+        sections: mergeResult.mergedSections,
+      });
+      const fidelityNotes = this.computeSectionFidelityNotes(
+        mergeResult.mergedSections,
+      );
+
+      // Combine merge warnings with fidelity notes
+      allWarnings.push(...mergeResult.warnings, ...fidelityNotes);
+
+      // Write file atomically if not dry-run
+      const filesWritten = await this.writeFile(outputPath, content, dryRun);
+      allFilesWritten.push(...filesWritten);
+
+      // Use first scope's hash as combined hash
+      if (!combinedContentHash) {
+        combinedContentHash = contentHash;
+      }
+    }
+
+    return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
+  }
+
+  /**
+   * Group sections by their target scope
+   * Uses vendor.aligntrue.source_scope if present, otherwise uses provided scope
+   */
+  private groupSectionsByScope(
+    sections: AlignSection[],
+    fallbackScope: ResolvedScope,
+  ): Map<string, AlignSection[]> {
+    const sectionsByScope = new Map<string, AlignSection[]>();
+
+    for (const section of sections) {
+      // Check for source_scope in vendor metadata
+      const sourceScope = section.vendor?.aligntrue?.source_scope;
+      const targetScope =
+        sourceScope ||
+        (fallbackScope.isDefault ? "default" : fallbackScope.normalizedPath);
+
+      if (!sectionsByScope.has(targetScope)) {
+        sectionsByScope.set(targetScope, []);
+      }
+      sectionsByScope.get(targetScope)!.push(section);
+    }
+
+    return sectionsByScope;
   }
 
   /**

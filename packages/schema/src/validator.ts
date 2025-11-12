@@ -278,6 +278,16 @@ export interface AlignPack {
 }
 
 /**
+ * AlignTrue-specific vendor metadata for scope tracking
+ * Stored in section.vendor.aligntrue
+ */
+export interface AlignTrueVendorMetadata {
+  source_scope?: string; // Scope this section originated from (e.g., "backend", "frontend", "default")
+  source_file?: string; // Original file path (e.g., ".cursor/rules/backend.mdc")
+  last_modified?: string; // ISO 8601 timestamp of last modification
+}
+
+/**
  * Natural markdown section (new format)
  */
 export interface AlignSection {
@@ -291,7 +301,9 @@ export interface AlignSection {
 
   // Agent-specific metadata (for round-trip preservation)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vendor?: Record<string, any>;
+  vendor?: Record<string, any> & {
+    aligntrue?: AlignTrueVendorMetadata;
+  };
 }
 
 export interface MarkdownMetadata {

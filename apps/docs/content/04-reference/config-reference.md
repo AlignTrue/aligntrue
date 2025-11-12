@@ -69,16 +69,54 @@ sources:
 
 **Default:** Mode-specific (see below)
 
-Controls sync direction, auto-pull, and conflict resolution.
+Controls which files accept edits, sync direction, auto-pull, and conflict resolution.
 
 ```yaml
 sync:
+  edit_source: "AGENTS.md" # Which files accept edits
+  scope_prefixing: "auto" # Scope prefixes in AGENTS.md (off/auto/always)
   auto_pull: true # Auto-import from primary agent
   primary_agent: cursor # Which agent to auto-pull from
   on_conflict: accept_agent # How to resolve conflicts
   workflow_mode: native_format # Editing workflow preference
   show_diff_on_pull: true # Show diff when auto-pull runs
 ```
+
+#### sync.edit_source
+
+**Type:** `string | string[]`
+
+**Default:** Auto-detected during init. Falls back to `"AGENTS.md"` if no agents detected.
+
+**Values:**
+
+- `".rules.yaml"` - IR only (no agent edits detected)
+- `"AGENTS.md"` - Single file editing
+- `".cursor/rules/*.mdc"` - Glob pattern for multiple files
+- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns
+- `"any_agent_file"` - All agent files
+
+Which files accept edits and sync back to IR. Files matching this config are detected for changes; files not matching are marked read-only.
+
+**Deprecated:** `sync.two_way` (auto-migrates: `false` → `".rules.yaml"`, `true` → `"any_agent_file"`)
+
+#### sync.scope_prefixing
+
+**Type:** `string`
+
+**Default:** `"off"`
+
+**Values:** `"off"` | `"auto"` | `"always"`
+
+Add scope prefixes to AGENTS.md section headings when syncing from multi-file sources:
+
+- **off** - No prefixes
+- **auto** - Prefix only when multiple scopes detected
+- **always** - Always prefix non-default scopes
+
+Example: Section from `backend.mdc` becomes "Backend: Security" in AGENTS.md.
+
+Only applies when `edit_source` is `.cursor/rules/*.mdc` or similar multi-file pattern.
 
 #### sync.auto_pull
 

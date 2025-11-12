@@ -449,6 +449,116 @@ export abstract class ExporterBase implements ExporterPlugin {
 
     return rendered.join("\n\n");
   }
+
+  /**
+   * Render read-only file marker
+   *
+   * Adds an HTML comment warning at the top of files that should not be edited.
+   * Files are read-only if they don't match the edit_source configuration.
+   *
+   * @param currentFile - Current file path being exported
+   * @param editSource - Edit source configuration from config
+   * @param cwd - Current working directory for path resolution
+   * @returns HTML comment marker if file is read-only, empty string if editable
+   *
+   * @example
+   * ```typescript
+   * const marker = this.renderReadOnlyMarker(
+   *   "AGENTS.md",
+   *   ".cursor/rules/*.mdc",
+   *   "/path/to/project"
+   * );
+   * // Returns warning comment if AGENTS.md is not in edit_source
+   * ```
+   */
+  protected renderReadOnlyMarker(
+    currentFile: string,
+    editSource: string | string[] | undefined,
+    cwd: string,
+  ): string {
+    // Import matchesEditSource dynamically to avoid circular dependency
+    // For now, implement simple matching logic inline
+    const isEditable = this.matchesEditSource(currentFile, editSource);
+
+    if (isEditable) {
+      return ""; // File is editable, no marker needed
+    }
+
+    // File is read-only - generate warning marker
+    const editableFiles = Array.isArray(editSource)
+      ? editSource
+      : editSource
+        ? [editSource]
+        : ["AGENTS.md"];
+
+    const lines: string[] = [
+      "<!-- WARNING: READ-ONLY FILE - DO NOT EDIT",
+      "",
+      `This file is auto-generated from: ${editableFiles.join(", ")}`,
+      "",
+      "Edits to this file will be LOST on next sync.",
+      "AlignTrue does not track changes to read-only files.",
+      "",
+      "To make changes:",
+      "  Option 1: Edit the source files listed above",
+      "  Option 2: Enable editing this file in config:",
+      "  ",
+      "    # .aligntrue/config.yaml",
+      "    sync:",
+      `      edit_source: ["${currentFile}", "${editableFiles[0]}"]`,
+      "",
+      `Generated: ${new Date().toISOString()}`,
+      "-->",
+      "",
+    ];
+
+    return lines.join("\n");
+  }
+
+  /**
+   * Check if a file matches the edit_source configuration
+   * Simplified version - ideally import from multi-file-parser
+   */
+  private matchesEditSource(
+    filePath: string,
+    editSource: string | string[] | undefined,
+  ): boolean {
+    if (!editSource) {
+      // Default to AGENTS.md if no edit_source specified
+      return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");
+    }
+
+    if (editSource === ".rules.yaml") {
+      // IR only mode - no agent files are editable
+      return false;
+    }
+
+    if (editSource === "any_agent_file") {
+      // All agent files are editable
+      return true;
+    }
+
+    // Single pattern or array of patterns
+    const patterns = Array.isArray(editSource) ? editSource : [editSource];
+
+    // Normalize file path for matching
+    const normalizedPath = filePath.replace(/\\/g, "/");
+
+    // Simple matching - check if file matches any pattern
+    // In production, use micromatch for proper glob matching
+    return patterns.some((pattern) => {
+      // Exact match
+      if (pattern === normalizedPath) return true;
+
+      // Simple wildcard support
+      if (pattern.includes("*")) {
+        const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+        return regex.test(normalizedPath);
+      }
+
+      return false;
+    });
+  }
 }
 
 // Re-export types for convenience

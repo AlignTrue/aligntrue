@@ -100,7 +100,29 @@
         },
         "two_way": {
           "type": "boolean",
-          "description": "Enable two-way sync: detect edited agent files and merge back to IR (default: true)"
+          "description": "DEPRECATED: Use 'edit_source' instead. Enable two-way sync: detect edited agent files and merge back to IR (default: true)",
+          "deprecated": true
+        },
+        "edit_source": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Single file pattern or mode for accepting edits"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Multiple file patterns for accepting edits"
+            }
+          ],
+          "description": "Which file(s) accept edits: '.rules.yaml' (IR only), 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (glob pattern), 'any_agent_file' (all agents), or array of patterns"
+        },
+        "scope_prefixing": {
+          "type": "string",
+          "enum": ["off", "auto", "always"],
+          "description": "Add scope prefixes to section headings in single-file exports: off (no prefixes), auto (prefix when multiple scopes detected), always (always prefix). Default: off"
         },
         "watch_enabled": {
           "type": "boolean",
