@@ -53,6 +53,15 @@ export function evaluateSelector(
  * Searches for section with matching fingerprint in pack.sections array
  */
 function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
+  // Defensive: ensure sections array exists
+  if (!ir.sections || !Array.isArray(ir.sections)) {
+    return {
+      success: false,
+      error: `IR does not contain sections array (got ${typeof ir.sections})`,
+      matchCount: 0,
+    };
+  }
+
   const matches: Array<{ index: number; fingerprint: string }> = [];
   for (let i = 0; i < ir.sections.length; i++) {
     const section = ir.sections[i];

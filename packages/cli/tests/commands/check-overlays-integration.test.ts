@@ -46,17 +46,14 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
+id: test-pack
+version: 1.0.0
 spec_version: "1"
-profile:
-  id: test-pack
-  name: Test Pack
-  version: 1.0.0
-rules:
-  - id: test-rule
-    description: Test rule
-    severity: error
-    enabled: true
-    tags: []
+sections:
+  - heading: Test rule
+    level: 2
+    content: Test rule description
+    fingerprint: test-rule
 `;
     writeFileSync(rulesPath, rules, "utf8");
 
@@ -89,17 +86,14 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
+id: test-pack
+version: 1.0.0
 spec_version: "1"
-profile:
-  id: test-pack
-  name: Test Pack
-  version: 1.0.0
-rules:
-  - id: test-rule
-    description: Test rule
-    severity: error
-    enabled: true
-    tags: []
+sections:
+  - heading: Test rule
+    level: 2
+    content: Test rule description
+    fingerprint: test-rule
 `;
     writeFileSync(rulesPath, rules, "utf8");
 
@@ -138,17 +132,14 @@ ${overlays}
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
+id: test-pack
+version: 1.0.0
 spec_version: "1"
-profile:
-  id: test-pack
-  name: Test Pack
-  version: 1.0.0
-rules:
-  - id: test-rule
-    description: Test rule
-    severity: error
-    enabled: true
-    tags: []
+sections:
+  - heading: Test rule
+    level: 2
+    content: Test rule description
+    fingerprint: test-rule
 `;
     writeFileSync(rulesPath, rules, "utf8");
 
@@ -181,20 +172,14 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
+id: test-pack
+version: 1.0.0
 spec_version: "1"
-profile:
-  id: test-pack
-  name: Test Pack
-  version: 1.0.0
-rules:
-  - id: test-rule
-    description: Test rule with plugs
-    severity: error
-    enabled: true
-    tags: []
-    plugs:
-      - slot: severity
-        description: Severity level
+sections:
+  - heading: Test rule with plugs
+    level: 2
+    content: Test rule with plugs description
+    fingerprint: test-rule
 `;
     writeFileSync(rulesPath, rules, "utf8");
 

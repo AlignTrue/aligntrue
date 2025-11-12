@@ -60,7 +60,7 @@ describeSkipWindows("Init Command Integration", () => {
 
       const rulesContent = readFileSync(rulesPath, "utf-8");
       expect(rulesContent).toContain("spec_version:");
-      expect(rulesContent).toContain("rules:");
+      expect(rulesContent).toContain("sections:");
     });
 
     it("creates .cursor/rules/aligntrue-starter.mdc when cursor is primary exporter", async () => {
