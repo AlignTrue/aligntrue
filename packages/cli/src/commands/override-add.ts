@@ -11,6 +11,7 @@ import {
   saveConfig,
 } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -94,9 +95,15 @@ export async function overrideAdd(args: string[]): Promise<void> {
 
     await runOverrideAdd(options);
   } catch (_error) {
-    clack.log.error(
-      `Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
-    );
+    if (isTTY()) {
+      clack.log.error(
+        `Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    } else {
+      console.error(
+        `Error: Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    }
     process.exit(1);
   }
 }

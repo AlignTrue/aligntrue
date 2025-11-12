@@ -5,6 +5,7 @@
 import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -106,11 +107,19 @@ export async function promote(args: string[]): Promise<void> {
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
 
-  clack.intro(`Promote "${sectionHeading}" to team rule`);
+  if (isTTY()) {
+    clack.intro(`Promote "${sectionHeading}" to team rule`);
+  } else {
+    console.log(`Promote "${sectionHeading}" to team rule`);
+  }
 
   // Create backup
-  const spinner = clack.spinner();
-  spinner.start("Creating backup");
+  const spinner = isTTY() ? clack.spinner() : null;
+  if (spinner) {
+    spinner.start("Creating backup");
+  } else {
+    console.log("Creating backup...");
+  }
 
   const backup = BackupManager.createBackup({
     cwd,
@@ -119,12 +128,25 @@ export async function promote(args: string[]): Promise<void> {
     notes: `Backup before promoting "${sectionHeading}" to team`,
   });
 
-  spinner.stop(
-    `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-  );
+  if (spinner) {
+    spinner.stop(
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  } else {
+    console.log(`✓ Backup created: ${backup.timestamp}`);
+    console.log(
+      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  }
 
   // Confirm
   if (!yes && !dryRun) {
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --yes to skip confirmation");
+      process.exit(1);
+    }
+
     const confirm = await clack.confirm({
       message: `This will share "${sectionHeading}" with all team members. Continue?`,
       initialValue: false,
@@ -138,15 +160,31 @@ export async function promote(args: string[]): Promise<void> {
 
   // Apply changes
   if (!dryRun) {
-    spinner.start("Promoting to team");
+    if (spinner) {
+      spinner.start("Promoting to team");
+    } else {
+      console.log("Promoting to team...");
+    }
     // TODO: Implement actual promotion logic
     await promoteSection(sectionHeading, cwd);
-    spinner.stop("Promotion complete");
+    if (spinner) {
+      spinner.stop("Promotion complete");
+    } else {
+      console.log("✓ Promotion complete");
+    }
   } else {
-    clack.log.info("Dry run - no changes made");
+    if (isTTY()) {
+      clack.log.info("Dry run - no changes made");
+    } else {
+      console.log("Dry run - no changes made");
+    }
   }
 
-  clack.outro(`✓ Promoted "${sectionHeading}" to team rule`);
+  if (isTTY()) {
+    clack.outro(`✓ Promoted "${sectionHeading}" to team rule`);
+  } else {
+    console.log(`✓ Promoted "${sectionHeading}" to team rule`);
+  }
   console.log("\n⚠ This will be shared with all team members");
   console.log("  Commit and push to share:");
   console.log("  git add .aligntrue/");
@@ -188,11 +226,19 @@ export async function demote(args: string[]): Promise<void> {
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
 
-  clack.intro(`Demote "${sectionHeading}" to personal rule`);
+  if (isTTY()) {
+    clack.intro(`Demote "${sectionHeading}" to personal rule`);
+  } else {
+    console.log(`Demote "${sectionHeading}" to personal rule`);
+  }
 
   // Create backup
-  const spinner = clack.spinner();
-  spinner.start("Creating backup");
+  const spinner = isTTY() ? clack.spinner() : null;
+  if (spinner) {
+    spinner.start("Creating backup");
+  } else {
+    console.log("Creating backup...");
+  }
 
   const backup = BackupManager.createBackup({
     cwd,
@@ -201,12 +247,25 @@ export async function demote(args: string[]): Promise<void> {
     notes: `Backup before demoting "${sectionHeading}" to personal`,
   });
 
-  spinner.stop(
-    `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-  );
+  if (spinner) {
+    spinner.stop(
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  } else {
+    console.log(`✓ Backup created: ${backup.timestamp}`);
+    console.log(
+      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  }
 
   // Confirm
   if (!yes && !dryRun) {
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --yes to skip confirmation");
+      process.exit(1);
+    }
+
     const confirm = await clack.confirm({
       message: `This will remove "${sectionHeading}" from team rules. Continue?`,
       initialValue: false,
@@ -220,15 +279,31 @@ export async function demote(args: string[]): Promise<void> {
 
   // Apply changes
   if (!dryRun) {
-    spinner.start("Demoting to personal");
+    if (spinner) {
+      spinner.start("Demoting to personal");
+    } else {
+      console.log("Demoting to personal...");
+    }
     // TODO: Implement actual demotion logic
     await demoteSection(sectionHeading, cwd);
-    spinner.stop("Demotion complete");
+    if (spinner) {
+      spinner.stop("Demotion complete");
+    } else {
+      console.log("✓ Demotion complete");
+    }
   } else {
-    clack.log.info("Dry run - no changes made");
+    if (isTTY()) {
+      clack.log.info("Dry run - no changes made");
+    } else {
+      console.log("Dry run - no changes made");
+    }
   }
 
-  clack.outro(`✓ Demoted "${sectionHeading}" to personal rule`);
+  if (isTTY()) {
+    clack.outro(`✓ Demoted "${sectionHeading}" to personal rule`);
+  } else {
+    console.log(`✓ Demoted "${sectionHeading}" to personal rule`);
+  }
   console.log("\nThis rule is now personal and won't affect team members.");
 
   recordEvent({ command_name: "demote", align_hashes_used: [] });
@@ -266,11 +341,19 @@ export async function local(args: string[]): Promise<void> {
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
 
-  clack.intro(`Make "${sectionHeading}" local-only`);
+  if (isTTY()) {
+    clack.intro(`Make "${sectionHeading}" local-only`);
+  } else {
+    console.log(`Make "${sectionHeading}" local-only`);
+  }
 
   // Create backup
-  const spinner = clack.spinner();
-  spinner.start("Creating backup");
+  const spinner = isTTY() ? clack.spinner() : null;
+  if (spinner) {
+    spinner.start("Creating backup");
+  } else {
+    console.log("Creating backup...");
+  }
 
   const backup = BackupManager.createBackup({
     cwd,
@@ -279,12 +362,25 @@ export async function local(args: string[]): Promise<void> {
     notes: `Backup before making "${sectionHeading}" local-only`,
   });
 
-  spinner.stop(
-    `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-  );
+  if (spinner) {
+    spinner.stop(
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  } else {
+    console.log(`✓ Backup created: ${backup.timestamp}`);
+    console.log(
+      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+  }
 
   // Confirm
   if (!yes && !dryRun) {
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --yes to skip confirmation");
+      process.exit(1);
+    }
+
     const confirm = await clack.confirm({
       message: `This will make "${sectionHeading}" local-only (not backed up). Continue?`,
       initialValue: false,
@@ -298,15 +394,31 @@ export async function local(args: string[]): Promise<void> {
 
   // Apply changes
   if (!dryRun) {
-    spinner.start("Making local-only");
+    if (spinner) {
+      spinner.start("Making local-only");
+    } else {
+      console.log("Making local-only...");
+    }
     // TODO: Implement actual local conversion logic
     await makeLocal(sectionHeading, cwd);
-    spinner.stop("Conversion complete");
+    if (spinner) {
+      spinner.stop("Conversion complete");
+    } else {
+      console.log("✓ Conversion complete");
+    }
   } else {
-    clack.log.info("Dry run - no changes made");
+    if (isTTY()) {
+      clack.log.info("Dry run - no changes made");
+    } else {
+      console.log("Dry run - no changes made");
+    }
   }
 
-  clack.outro(`✓ Made "${sectionHeading}" local-only`);
+  if (isTTY()) {
+    clack.outro(`✓ Made "${sectionHeading}" local-only`);
+  } else {
+    console.log(`✓ Made "${sectionHeading}" local-only`);
+  }
   console.log("\n⚠ This rule will never leave this machine");
   console.log("  Not backed up to any remote");
   console.log("  Lost if machine dies");
@@ -324,7 +436,11 @@ async function migratePersonal(
   const dryRun = flags["dry-run"] as boolean;
   const yes = flags["yes"] as boolean;
 
-  clack.intro("Migrate personal rules to remote storage");
+  if (isTTY()) {
+    clack.intro("Migrate personal rules to remote storage");
+  } else {
+    console.log("Migrate personal rules to remote storage");
+  }
 
   const { loadConfig } = await import("@aligntrue/core");
   const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
@@ -334,15 +450,31 @@ async function migratePersonal(
   const typedConfig = config as unknown as AlignTrueConfig;
   const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
   if (storage?.["personal"]?.type === "remote") {
-    clack.log.success("Personal rules are already using remote storage");
+    if (isTTY()) {
+      clack.log.success("Personal rules are already using remote storage");
+    } else {
+      console.log("✓ Personal rules are already using remote storage");
+    }
     return;
   }
 
-  clack.log.info(
-    "This will move all personal rules to your personal remote repository.",
-  );
+  if (isTTY()) {
+    clack.log.info(
+      "This will move all personal rules to your personal remote repository.",
+    );
+  } else {
+    console.log(
+      "This will move all personal rules to your personal remote repository.",
+    );
+  }
 
   if (!yes && !dryRun) {
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --yes to skip confirmation");
+      process.exit(1);
+    }
+
     const confirm = await clack.confirm({
       message: "Continue with migration?",
       initialValue: true,
@@ -355,7 +487,11 @@ async function migratePersonal(
   }
 
   if (dryRun) {
-    clack.log.info("[DRY RUN] Would update personal storage to remote");
+    if (isTTY()) {
+      clack.log.info("[DRY RUN] Would update personal storage to remote");
+    } else {
+      console.log("[DRY RUN] Would update personal storage to remote");
+    }
     return;
   }
 
@@ -364,11 +500,19 @@ async function migratePersonal(
   const result = await runRemoteSetupWizard("personal", cwd);
 
   if (!result.success || result.skipped) {
-    clack.cancel("Migration cancelled or skipped");
+    if (isTTY()) {
+      clack.cancel("Migration cancelled or skipped");
+    } else {
+      console.log("Migration cancelled or skipped");
+    }
     return;
   }
 
-  clack.outro("Personal rules migrated to remote storage");
+  if (isTTY()) {
+    clack.outro("Personal rules migrated to remote storage");
+  } else {
+    console.log("✓ Personal rules migrated to remote storage");
+  }
 
   recordEvent({ command_name: "migrate-personal", align_hashes_used: [] });
 }
@@ -383,7 +527,11 @@ async function migrateTeam(
   const dryRun = flags["dry-run"] as boolean;
   const yes = flags["yes"] as boolean;
 
-  clack.intro("Migrate team rules to remote storage");
+  if (isTTY()) {
+    clack.intro("Migrate team rules to remote storage");
+  } else {
+    console.log("Migrate team rules to remote storage");
+  }
 
   const { loadConfig } = await import("@aligntrue/core");
   const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
@@ -393,13 +541,29 @@ async function migrateTeam(
   const typedConfig = config as unknown as AlignTrueConfig;
   const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
   if (storage?.["team"]?.type === "remote") {
-    clack.log.success("Team rules are already using remote storage");
+    if (isTTY()) {
+      clack.log.success("Team rules are already using remote storage");
+    } else {
+      console.log("✓ Team rules are already using remote storage");
+    }
     return;
   }
 
-  clack.log.info("This will move all team rules to a team remote repository.");
+  if (isTTY()) {
+    clack.log.info(
+      "This will move all team rules to a team remote repository.",
+    );
+  } else {
+    console.log("This will move all team rules to a team remote repository.");
+  }
 
   if (!yes && !dryRun) {
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --yes to skip confirmation");
+      process.exit(1);
+    }
+
     const confirm = await clack.confirm({
       message: "Continue with migration?",
       initialValue: true,
@@ -412,7 +576,11 @@ async function migrateTeam(
   }
 
   if (dryRun) {
-    clack.log.info("[DRY RUN] Would update team storage to remote");
+    if (isTTY()) {
+      clack.log.info("[DRY RUN] Would update team storage to remote");
+    } else {
+      console.log("[DRY RUN] Would update team storage to remote");
+    }
     return;
   }
 
@@ -421,11 +589,19 @@ async function migrateTeam(
   const result = await runRemoteSetupWizard("team", cwd);
 
   if (!result.success || result.skipped) {
-    clack.cancel("Migration cancelled or skipped");
+    if (isTTY()) {
+      clack.cancel("Migration cancelled or skipped");
+    } else {
+      console.log("Migration cancelled or skipped");
+    }
     return;
   }
 
-  clack.outro("Team rules migrated to remote storage");
+  if (isTTY()) {
+    clack.outro("Team rules migrated to remote storage");
+  } else {
+    console.log("✓ Team rules migrated to remote storage");
+  }
 
   recordEvent({ command_name: "migrate-team", align_hashes_used: [] });
 }

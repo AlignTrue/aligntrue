@@ -6,6 +6,7 @@
 
 import { loadConfig, saveConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -56,9 +57,15 @@ export async function overrideRemove(args: string[]): Promise<void> {
 
     await runOverrideRemove(selectorArg, options);
   } catch (_error) {
-    clack.log.error(
-      `Failed to remove overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
-    );
+    if (isTTY()) {
+      clack.log.error(
+        `Failed to remove overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    } else {
+      console.error(
+        `Error: Failed to remove overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    }
     process.exit(1);
   }
 }
@@ -87,6 +94,14 @@ async function runOverrideRemove(
   let selectorToRemove: string;
 
   if (!selectorArg) {
+    if (!isTTY()) {
+      console.error(
+        "Error: Selector argument required in non-interactive mode",
+      );
+      console.error("Usage: aligntrue override remove <selector>");
+      process.exit(1);
+    }
+
     // Show interactive list
     const choices = overlays.map((o, _idx) => {
       const ops: string[] = [];
@@ -125,7 +140,13 @@ async function runOverrideRemove(
   const matchIndex = overlays.findIndex((o) => o.selector === selectorToRemove);
 
   if (matchIndex === -1) {
-    clack.log.error(`No overlay found with selector: ${selectorToRemove}`);
+    if (isTTY()) {
+      clack.log.error(`No overlay found with selector: ${selectorToRemove}`);
+    } else {
+      console.error(
+        `Error: No overlay found with selector: ${selectorToRemove}`,
+      );
+    }
     process.exit(1);
   }
 
@@ -149,6 +170,12 @@ async function runOverrideRemove(
     }
     if (overlayToRemove.remove) {
       console.log(`  Remove: ${overlayToRemove.remove.join(", ")}`);
+    }
+
+    if (!isTTY()) {
+      console.error("\nError: Confirmation required in non-interactive mode");
+      console.error("Use --force to skip confirmation");
+      process.exit(1);
     }
 
     const confirmed = await clack.confirm({
