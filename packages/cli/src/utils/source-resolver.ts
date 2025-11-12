@@ -4,7 +4,7 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { GitProvider, LocalProvider } from "@aligntrue/sources";
+import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
 import { mergePacks, type BundleResult } from "@aligntrue/core";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
@@ -25,10 +25,14 @@ export async function resolveSource(
   options?: {
     cwd?: string;
     offlineMode?: boolean;
+    forceRefresh?: boolean;
+    config?: AlignTrueConfig;
   },
 ): Promise<ResolvedSource> {
   const cwd = options?.cwd || process.cwd();
   const offlineMode = options?.offlineMode || false;
+  const forceRefresh = options?.forceRefresh || false;
+  const config = options?.config;
 
   if (!source) {
     throw new Error("Source configuration is required");
@@ -73,15 +77,46 @@ export async function resolveSource(
     }
 
     const cacheDir = resolve(cwd, ".aligntrue/.cache/git");
+
+    // Determine check interval based on ref type and config
+    let checkInterval: number | undefined;
+    const sourceWithInterval = source as typeof source & {
+      check_interval?: number;
+    };
+    if (sourceWithInterval.check_interval) {
+      // Per-source override
+      checkInterval = sourceWithInterval.check_interval;
+    } else if (config?.git) {
+      // Use global config based on ref type
+      const gitConfigWithIntervals = config.git as typeof config.git & {
+        branch_check_interval?: number;
+        tag_check_interval?: number;
+      };
+      const refType = source.ref ? detectRefType(source.ref) : "branch";
+      if (refType === "branch") {
+        checkInterval = gitConfigWithIntervals.branch_check_interval ?? 86400;
+      } else if (refType === "tag") {
+        checkInterval = gitConfigWithIntervals.tag_check_interval ?? 604800;
+      }
+      // commits never check, so no interval needed
+    }
+
     const gitConfig: {
       type: "git";
       url: string;
       ref?: string;
       path?: string;
+      forceRefresh?: boolean;
+      checkInterval?: number;
     } = {
       type: "git",
       url: source.url,
+      forceRefresh,
     };
+
+    if (checkInterval !== undefined) {
+      gitConfig.checkInterval = checkInterval;
+    }
 
     if (source.ref) {
       gitConfig.ref = source.ref;
@@ -92,7 +127,7 @@ export async function resolveSource(
 
     const provider = new GitProvider(gitConfig, cacheDir, {
       offlineMode,
-      mode: "solo", // TODO: Get from config
+      mode: config?.mode ?? "solo",
     });
 
     const content = await provider.fetch();
@@ -127,6 +162,7 @@ export async function resolveSources(
   options?: {
     cwd?: string;
     offlineMode?: boolean;
+    forceRefresh?: boolean;
   },
 ): Promise<ResolvedSource[]> {
   const sources = config.sources || [
@@ -137,7 +173,10 @@ export async function resolveSources(
 
   for (const source of sources) {
     try {
-      const resolvedSource = await resolveSource(source, options);
+      const resolvedSource = await resolveSource(source, {
+        ...options,
+        config,
+      });
       resolved.push(resolvedSource);
     } catch (error) {
       throw new Error(
@@ -163,6 +202,7 @@ export async function resolveAndMergeSources(
   options?: {
     cwd?: string;
     offlineMode?: boolean;
+    forceRefresh?: boolean;
     warnConflicts?: boolean;
   },
 ): Promise<BundleResult & { sources: ResolvedSource[] }> {

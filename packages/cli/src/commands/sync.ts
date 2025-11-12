@@ -31,6 +31,7 @@ import {
 } from "../utils/command-utilities.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../utils/source-resolver.js";
+import { UpdatesAvailableError } from "@aligntrue/sources";
 
 // ANSI color codes for diff output
 const _colors = {
@@ -78,6 +79,21 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--force",
     hasValue: false,
     description: "Bypass allow list validation in team mode (use with caution)",
+  },
+  {
+    flag: "--force-refresh",
+    hasValue: false,
+    description: "Force check all git sources for updates (bypass TTL)",
+  },
+  {
+    flag: "--skip-update-check",
+    hasValue: false,
+    description: "Skip git source update checks, use cache only",
+  },
+  {
+    flag: "--offline",
+    hasValue: false,
+    description: "Offline mode: use cache, no network calls",
   },
   {
     flag: "--verbose",
@@ -178,6 +194,11 @@ export async function sync(args: string[]): Promise<void> {
   // Step 2.5: Check allow list in team mode (DEFERRED until after source resolution)
   // We need to compute the NEW bundle hash from current rules before we can validate
   const force = (parsed.flags["force"] as boolean | undefined) || false;
+  const forceRefresh =
+    (parsed.flags["force-refresh"] as boolean | undefined) || false;
+  const skipUpdateCheck =
+    (parsed.flags["skip-update-check"] as boolean | undefined) || false;
+  const offline = (parsed.flags["offline"] as boolean | undefined) || false;
 
   // Step 3: Resolve sources (local, git, or bundle merge)
   spinner.start("Resolving sources");
@@ -189,7 +210,8 @@ export async function sync(args: string[]): Promise<void> {
   try {
     bundleResult = await resolveAndMergeSources(config, {
       cwd,
-      offlineMode: false,
+      offlineMode: offline || skipUpdateCheck,
+      forceRefresh,
       warnConflicts: true,
     });
 
@@ -229,6 +251,43 @@ export async function sync(args: string[]): Promise<void> {
     }
   } catch (err) {
     spinner.stop("Source resolution failed");
+
+    // Handle git source updates available in team mode
+    if (err instanceof UpdatesAvailableError) {
+      const updateErr = err as UpdatesAvailableError;
+      console.log("\n⚠️  Git source has updates available:\n");
+      console.log(`  Repository: ${updateErr.url}`);
+      console.log(`  Ref: ${updateErr.ref}`);
+      console.log(`  Current SHA: ${updateErr.currentSha.slice(0, 7)}`);
+      console.log(`  Latest SHA:  ${updateErr.latestSha.slice(0, 7)}`);
+      if (updateErr.commitsBehind > 0) {
+        console.log(
+          `  Behind by:   ${updateErr.commitsBehind} commit${updateErr.commitsBehind !== 1 ? "s" : ""}`,
+        );
+      }
+      console.log("\n");
+
+      if (config.mode === "team") {
+        console.log("Team mode requires approval before updating git sources.");
+        console.log("\nOptions:");
+        console.log(
+          `  1. Approve updates:     aligntrue team approve ${updateErr.url}`,
+        );
+        console.log(
+          `  2. Skip update check:   aligntrue sync --skip-update-check`,
+        );
+        console.log(`  3. Work offline:        aligntrue sync --offline`);
+        console.log("\n");
+        process.exit(1);
+      }
+
+      // Solo mode should auto-update, so this shouldn't happen
+      // If it does, it's a bug
+      console.error("Unexpected: UpdatesAvailableError in solo mode");
+      process.exit(1);
+    }
+
+    // Other errors
     exitWithError(
       {
         ...Errors.fileWriteFailed(

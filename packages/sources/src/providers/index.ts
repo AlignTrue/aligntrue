@@ -30,3 +30,17 @@ export interface SourceConfig {
 export { GitProvider } from "./git.js";
 export type { GitProviderOptions } from "./git.js";
 export { LocalProvider } from "./local.js";
+
+// Re-export error types
+export { UpdatesAvailableError } from "./errors.js";
+export type { UpdateInfo } from "./errors.js";
+
+// Re-export cache metadata utilities
+export {
+  detectRefType,
+  loadCacheMeta,
+  saveCacheMeta,
+  shouldCheckForUpdates,
+  getUpdateStrategy,
+} from "./cache-meta.js";
+export type { CacheMeta, RefType, UpdateStrategy } from "./cache-meta.js";

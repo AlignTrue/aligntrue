@@ -29,6 +29,7 @@ import {
   plugs,
   onboard,
   override,
+  sources,
 } from "./commands/index.js";
 
 // Get version from package.json
@@ -67,6 +68,9 @@ async function main() {
       "  team           Team mode management (enable, status, approve, list-allowed, remove)",
     );
     console.log("  pull           Pull rules from git repository");
+    console.log(
+      "  sources        Manage git sources (list, status, update, pin)",
+    );
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
     console.log("  update         Check and apply updates (check, apply)");
@@ -204,6 +208,11 @@ async function main() {
 
   if (command === "override") {
     await override(commandArgs);
+    return;
+  }
+
+  if (command === "sources") {
+    await sources(commandArgs);
     return;
   }
 

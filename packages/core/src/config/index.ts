@@ -92,6 +92,9 @@ export interface AlignTrueConfig {
   git?: {
     mode?: "ignore" | "commit" | "branch";
     per_adapter?: Record<string, "ignore" | "commit" | "branch">;
+    branch_check_interval?: number;
+    tag_check_interval?: number;
+    offline_fallback?: boolean;
   };
   sync?: {
     auto_pull?: boolean;
@@ -116,6 +119,7 @@ export interface AlignTrueConfig {
     path?: string;
     url?: string;
     ref?: string; // Git branch/tag/commit
+    check_interval?: number; // Per-source override for git check interval
     id?: string;
     version?: string;
   }>;
@@ -328,6 +332,11 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   } else if (result.mode === "enterprise") {
     result.git.mode = result.git.mode ?? "commit";
   }
+
+  // Apply git source update check interval defaults
+  result.git.branch_check_interval = result.git.branch_check_interval ?? 86400; // 24 hours
+  result.git.tag_check_interval = result.git.tag_check_interval ?? 604800; // 7 days
+  result.git.offline_fallback = result.git.offline_fallback ?? true;
 
   // Apply sync defaults
   if (!result.sync) {
