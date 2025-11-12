@@ -9,6 +9,23 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { sync } from "../src/commands/sync.js";
 
+// Helper to remove temp dirs with retry on Windows
+async function removeTestDir(dir: string, maxRetries = 3): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+      return;
+    } catch (e) {
+      if (i < maxRetries - 1) {
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
 describe("sync lockfile drift detection", () => {
   let testDir: string;
 
@@ -16,8 +33,8 @@ describe("sync lockfile drift detection", () => {
     testDir = mkdtempSync(join(tmpdir(), "aligntrue-sync-lockfile-test-"));
   });
 
-  afterEach(() => {
-    rmSync(testDir, { recursive: true, force: true });
+  afterEach(async () => {
+    await removeTestDir(testDir);
   });
 
   it("detects lockfile drift when rules change", async () => {

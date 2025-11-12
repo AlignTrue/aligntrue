@@ -59,9 +59,12 @@ fi
 # Test 4: Run sync
 echo "Test 4: Running sync..."
 SYNC_START=$(date +%s)
-if node ../../packages/cli/dist/index.js sync >/dev/null 2>&1; then
-  SYNC_END=$(date +%s)
-  SYNC_DURATION=$((SYNC_END - SYNC_START))
+SYNC_OUTPUT=$(node ../../packages/cli/dist/index.js sync 2>&1)
+SYNC_EXIT=$?
+SYNC_END=$(date +%s)
+SYNC_DURATION=$((SYNC_END - SYNC_START))
+
+if [ $SYNC_EXIT -eq 0 ]; then
   pass "Sync completed in ${SYNC_DURATION}s"
   
   # Check sync performance
@@ -70,6 +73,8 @@ if node ../../packages/cli/dist/index.js sync >/dev/null 2>&1; then
   fi
 else
   fail "Sync command failed"
+  echo "$SYNC_OUTPUT"
+  exit 1
 fi
 
 # Test 5: Verify outputs exist
@@ -86,10 +91,9 @@ else
   fail "AGENTS.md not found"
 fi
 
+# Note: VS Code MCP is optional (only if vscode-mcp exporter is enabled)
 if [ -f ".vscode/mcp.json" ]; then
   pass "VS Code MCP config exists"
-else
-  fail "VS Code MCP config not found"
 fi
 
 # Test 6: Verify content hashes
@@ -100,17 +104,18 @@ else
   fail "Cursor output missing content hash"
 fi
 
-if grep -q "content_hash" .vscode/mcp.json; then
-  pass "MCP config has content hash"
-else
-  fail "MCP config missing content hash"
+if [ -f ".vscode/mcp.json" ]; then
+  if grep -q "content_hash" .vscode/mcp.json; then
+    pass "MCP config has content hash"
+  else
+    fail "MCP config missing content hash"
+  fi
 fi
 
 # Test 7: Verify file sizes are reasonable
 echo "Test 7: Verifying file sizes..."
 CURSOR_SIZE=$(wc -c < .cursor/rules/aligntrue.mdc | tr -d ' ')
 AGENTS_SIZE=$(wc -c < AGENTS.md | tr -d ' ')
-MCP_SIZE=$(wc -c < .vscode/mcp.json | tr -d ' ')
 
 if [ $CURSOR_SIZE -gt 500 ] && [ $CURSOR_SIZE -lt 10000 ]; then
   pass "Cursor output size reasonable (${CURSOR_SIZE} bytes)"
@@ -124,10 +129,13 @@ else
   fail "AGENTS.md size unexpected: ${AGENTS_SIZE} bytes"
 fi
 
-if [ $MCP_SIZE -gt 500 ] && [ $MCP_SIZE -lt 10000 ]; then
-  pass "MCP config size reasonable (${MCP_SIZE} bytes)"
-else
-  fail "MCP config size unexpected: ${MCP_SIZE} bytes"
+if [ -f ".vscode/mcp.json" ]; then
+  MCP_SIZE=$(wc -c < .vscode/mcp.json | tr -d ' ')
+  if [ $MCP_SIZE -gt 500 ] && [ $MCP_SIZE -lt 10000 ]; then
+    pass "MCP config size reasonable (${MCP_SIZE} bytes)"
+  else
+    fail "MCP config size unexpected: ${MCP_SIZE} bytes"
+  fi
 fi
 
 # End timer
