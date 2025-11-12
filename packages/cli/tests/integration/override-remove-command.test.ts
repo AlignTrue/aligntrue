@@ -29,6 +29,10 @@ beforeEach(async () => {
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 
+  // Mock TTY to enable interactive mode for tests
+  (process.stdin as any).isTTY = true;
+  (process.stdout as any).isTTY = true;
+
   // Mock process.exit to throw for integration tests
   vi.spyOn(process, "exit").mockImplementation((code?: number) => {
     throw new Error(`process.exit(${code})`);
@@ -41,6 +45,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  // Restore TTY mocks
+  delete (process.stdin as any).isTTY;
+  delete (process.stdout as any).isTTY;
+
   await cleanupDir(TEST_DIR);
 });
 
@@ -71,7 +79,7 @@ describeSkipWindows("Override Remove Command Integration", () => {
       );
 
       try {
-        await overrideRemove(["rule[id=test-1]"]);
+        await overrideRemove(["rule[id=test-1]", "--force"]);
       } catch {
         // May throw from process.exit if command fails
       }
