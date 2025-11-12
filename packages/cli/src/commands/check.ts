@@ -223,8 +223,15 @@ export async function check(args: string[]): Promise<void> {
       }
     }
 
+    // Defensive: Ensure sections array exists (for backward compatibility)
+    // This must be done BEFORE validation since schema requires sections
+    const pack = alignData as AlignPack;
+    if (!pack.sections || !Array.isArray(pack.sections)) {
+      pack.sections = [];
+    }
+
     // Validate against schema
-    const schemaResult = validateAlignSchema(alignData);
+    const schemaResult = validateAlignSchema(pack);
     if (!schemaResult.valid) {
       const details = (schemaResult.errors || []).map(
         (err) => `${err.path}: ${err.message}`,

@@ -68,8 +68,12 @@ export function mergePacks(
     if (!pack) {
       throw new Error("First pack is undefined");
     }
+    // Defensive: Initialize sections to empty array if missing
+    if (!pack.sections || !Array.isArray(pack.sections)) {
+      pack.sections = [];
+    }
     // Sort sections by fingerprint for determinism if pack has sections
-    if (pack.sections && pack.sections.length > 1) {
+    if (pack.sections.length > 1) {
       const sortedSections = [...pack.sections].sort((a, b) =>
         a.fingerprint.localeCompare(b.fingerprint),
       );
@@ -112,6 +116,11 @@ export function mergePacks(
   for (let i = 0; i < packs.length; i++) {
     const pack = packs[i];
     if (!pack) continue;
+
+    // Defensive: Initialize sections to empty array if missing
+    if (!pack.sections || !Array.isArray(pack.sections)) {
+      pack.sections = [];
+    }
 
     const sourceName = pack.id || `source-${i}`;
 
