@@ -125,12 +125,16 @@ export async function validateStorageAccess(
  * Validate scope configuration
  */
 export function validateScopeConfig(
-  scopes: Record<string, any>,
+  scopes: Record<string, unknown>,
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
   for (const [scope, config] of Object.entries(scopes)) {
-    if (!config.sections) {
+    if (!config || typeof config !== "object") {
+      continue;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(config as any).sections) {
       errors.push({
         field: `scopes.${scope}.sections`,
         message: `Scope "${scope}" must have sections defined`,

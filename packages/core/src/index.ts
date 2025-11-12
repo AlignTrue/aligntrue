@@ -1,5 +1,7 @@
 // Core configuration and validation
 export * from "./config/index.js";
+// Explicit re-export to avoid ambiguity with lockfile
+export type { ScopeConfig } from "./config/index.js";
 
 // Two-way sync engine
 export * from "./sync/index.js";
@@ -8,6 +10,8 @@ export * from "./sync/index.js";
 export * from "./scope.js";
 export * from "./bundle.js";
 export * from "./lockfile/index.js";
+// Explicit re-export to avoid ambiguity with sync
+export type { ValidationResult } from "./lockfile/index.js";
 
 // Performance monitoring and optimization
 export * from "./performance/index.js";

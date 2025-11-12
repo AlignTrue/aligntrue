@@ -108,7 +108,7 @@ async function main() {
   }
 
   if (command === "migrate") {
-    await migrate();
+    await migrate(commandArgs);
     return;
   }
 

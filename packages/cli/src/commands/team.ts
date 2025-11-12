@@ -343,9 +343,7 @@ async function teamEnable(
 
     // Create backup before making changes
     if (!nonInteractive) {
-      const { BackupManager } = await import(
-        "@aligntrue/core/backup/manager.js"
-      );
+      const { BackupManager } = await import("@aligntrue/core");
       const backup = BackupManager.createBackup({
         cwd: process.cwd(),
         created_by: "team-enable",
@@ -437,7 +435,7 @@ async function teamEnable(
       const { runTeamMigrationWizard } = await import(
         "../wizards/team-migration.js"
       );
-      await runTeamMigrationWizard(process.cwd());
+      await runTeamMigrationWizard(config, process.cwd());
     }
 
     // Show configuration summary

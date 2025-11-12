@@ -60,6 +60,6 @@ export function createActionableError(
     problem,
     context,
     fixes,
-    learnMoreUrl,
+    learnMoreUrl: learnMoreUrl || "",
   };
 }
