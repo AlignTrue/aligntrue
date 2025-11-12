@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Build order** - Added `--sort` flag to `pnpm build:packages` to enforce topological dependency ordering, fixing intermittent Windows CI failures
+- **Build order** - Ensured `@aligntrue/core` builds before `@aligntrue/exporters` to resolve cyclic dependency race condition, fixing Windows CI build failures
 - **Shell command injection** - Replaced template string shell commands with `execFileSync` array arguments in storage manager, fixing CodeQL alert #41 and #40
 - **Polynomial ReDoS vulnerabilities** - Fixed unsafe regex patterns in multi-file parser and natural markdown detection for better performance and security
 
