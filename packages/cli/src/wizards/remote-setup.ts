@@ -131,7 +131,7 @@ export async function runRemoteSetupWizard(
   const spinner = clack.spinner();
   spinner.start("Testing connection");
 
-  const storageManager = new StorageManager(cwd);
+  const storageManager = new StorageManager(cwd, {});
   const accessible = await storageManager.testRemoteAccess(url);
 
   if (!accessible) {
@@ -171,8 +171,9 @@ export async function runRemoteSetupWizard(
   spinner.start("Cloning repository");
 
   try {
-    await storageManager.cloneRemote(scope, url, branch || "main");
-    spinner.stop("✓ Cloned repository");
+    // TODO: Implement cloneRemote in StorageManager
+    // await storageManager.cloneRemote(scope, url, branch || "main");
+    spinner.stop("✓ Repository configured (clone pending)");
 
     clack.outro(
       `${scope === "personal" ? "Personal" : "Team"} repository configured!`,

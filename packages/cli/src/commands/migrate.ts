@@ -3,13 +3,15 @@
  */
 
 import * as clack from "@clack/prompts";
-import { BackupManager } from "@aligntrue/core/backup/manager.js";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
+import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
+import { recordEvent } from "@aligntrue/core";
 import {
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import type { ParsedIR } from "../types/ir.js";
+import { isValidIR } from "../types/ir.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -99,7 +101,7 @@ export async function promote(args: string[]): Promise<void> {
     return;
   }
 
-  const sectionHeading = parsed.positional[0];
+  const sectionHeading = parsed.positional[0]!;
   const cwd = process.cwd();
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
@@ -181,7 +183,7 @@ export async function demote(args: string[]): Promise<void> {
     return;
   }
 
-  const sectionHeading = parsed.positional[0];
+  const sectionHeading = parsed.positional[0]!;
   const cwd = process.cwd();
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
@@ -259,7 +261,7 @@ export async function local(args: string[]): Promise<void> {
     return;
   }
 
-  const sectionHeading = parsed.positional[0];
+  const sectionHeading = parsed.positional[0]!;
   const cwd = process.cwd();
   const dryRun = parsed.flags["dry-run"] as boolean;
   const yes = parsed.flags["yes"] as boolean;
@@ -329,8 +331,9 @@ async function migratePersonal(
   const config = await loadConfig(configPath);
 
   // Check if personal storage is already remote
-  const storage = config.storage || config.resources?.rules?.storage;
-  if (storage?.personal?.type === "remote") {
+  const typedConfig = config as unknown as AlignTrueConfig;
+  const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
+  if (storage?.["personal"]?.type === "remote") {
     clack.log.success("Personal rules are already using remote storage");
     return;
   }
@@ -387,8 +390,9 @@ async function migrateTeam(
   const config = await loadConfig(configPath);
 
   // Check if team storage is already remote
-  const storage = config.storage || config.resources?.rules?.storage;
-  if (storage?.team?.type === "remote") {
+  const typedConfig = config as unknown as AlignTrueConfig;
+  const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
+  if (storage?.["team"]?.type === "remote") {
     clack.log.success("Team rules are already using remote storage");
     return;
   }
@@ -449,41 +453,62 @@ async function promoteSection(
   }
 
   const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent);
+  const ir = yaml.parse(irContent) as ParsedIR;
 
-  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+  if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
   }
 
   // Find section
   const section = ir.sections.find(
-    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
   );
 
   if (!section) {
     throw new Error(`Section not found: ${sectionHeading}`);
   }
 
-  // Update config to add section to team scope
-  if (!config.scopes) config.scopes = {};
-  if (!config.scopes.team) config.scopes.team = { sections: [] };
-  if (Array.isArray(config.scopes.team.sections)) {
-    if (!config.scopes.team.sections.includes(section.heading)) {
-      config.scopes.team.sections.push(section.heading);
+  // Update config to use resources structure for scopes/storage
+  const typedConfig = config as unknown as AlignTrueConfig;
+  if (!typedConfig.resources) {
+    typedConfig.resources = {
+      rules: { scopes: {}, storage: {} },
+      mcps: { scopes: {}, storage: {} },
+      skills: { scopes: {}, storage: {} },
+    };
+  }
+  if (!typedConfig.resources.rules) {
+    typedConfig.resources.rules = { scopes: {}, storage: {} };
+  }
+  if (!typedConfig.resources.rules.scopes) {
+    typedConfig.resources.rules.scopes = {};
+  }
+  if (!typedConfig.resources.rules.scopes["team"]) {
+    typedConfig.resources.rules.scopes["team"] = { sections: [] };
+  }
+  if (Array.isArray(typedConfig.resources.rules.scopes["team"]?.sections)) {
+    if (
+      !typedConfig.resources.rules.scopes["team"]!.sections.includes(
+        section.heading,
+      )
+    ) {
+      typedConfig.resources.rules.scopes["team"]!.sections.push(
+        section.heading,
+      );
     }
   }
 
-  if (!config.storage) config.storage = {};
-  config.storage.team = { type: "repo" };
+  if (!typedConfig.resources.rules.storage) {
+    typedConfig.resources.rules.storage = {};
+  }
+  typedConfig.resources.rules.storage["team"] = { type: "repo" };
 
   // Remove from personal scope if present
-  if (
-    config.scopes.personal &&
-    Array.isArray(config.scopes.personal.sections)
-  ) {
-    config.scopes.personal.sections = config.scopes.personal.sections.filter(
-      (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
-    );
+  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
+    typedConfig.resources.rules.scopes["personal"]!.sections =
+      typedConfig.resources.rules.scopes["personal"]!.sections.filter(
+        (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
+      );
   }
 
   // Write updated config
@@ -516,41 +541,65 @@ async function demoteSection(
   }
 
   const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent);
+  const ir = yaml.parse(irContent) as ParsedIR;
 
-  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+  if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
   }
 
   // Find section
   const section = ir.sections.find(
-    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
   );
 
   if (!section) {
     throw new Error(`Section not found: ${sectionHeading}`);
   }
 
-  // Update config to add section to personal scope
-  if (!config.scopes) config.scopes = {};
-  if (!config.scopes.personal) config.scopes.personal = { sections: [] };
-  if (Array.isArray(config.scopes.personal.sections)) {
-    if (!config.scopes.personal.sections.includes(section.heading)) {
-      config.scopes.personal.sections.push(section.heading);
+  // Update config to use resources structure for scopes/storage
+  const typedConfig = config as unknown as AlignTrueConfig;
+  if (!typedConfig.resources) {
+    typedConfig.resources = {
+      rules: { scopes: {}, storage: {} },
+      mcps: { scopes: {}, storage: {} },
+      skills: { scopes: {}, storage: {} },
+    };
+  }
+  if (!typedConfig.resources.rules) {
+    typedConfig.resources.rules = { scopes: {}, storage: {} };
+  }
+  if (!typedConfig.resources.rules.scopes) {
+    typedConfig.resources.rules.scopes = {};
+  }
+  if (!typedConfig.resources.rules.scopes["personal"]) {
+    typedConfig.resources.rules.scopes["personal"] = { sections: [] };
+  }
+  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
+    if (
+      !typedConfig.resources.rules.scopes["personal"]!.sections.includes(
+        section.heading,
+      )
+    ) {
+      typedConfig.resources.rules.scopes["personal"]!.sections.push(
+        section.heading,
+      );
     }
   }
 
   // Set storage based on existing personal storage config
-  if (!config.storage) config.storage = {};
-  if (!config.storage.personal) {
-    config.storage.personal = { type: "local" };
+  if (!typedConfig.resources.rules.storage) {
+    typedConfig.resources.rules.storage = {};
+  }
+  if (!typedConfig.resources.rules.storage["personal"]) {
+    typedConfig.resources.rules.storage["personal"] = { type: "local" };
   }
 
   // Remove from team scope if present
-  if (config.scopes.team && Array.isArray(config.scopes.team.sections)) {
-    config.scopes.team.sections = config.scopes.team.sections.filter(
-      (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
-    );
+  if (Array.isArray(typedConfig.resources.rules.scopes["team"]?.sections)) {
+    typedConfig.resources.rules.scopes["team"]!.sections =
+      typedConfig.resources.rules.scopes["team"]!.sections.filter(
+        (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
+      );
   }
 
   // Write updated config
@@ -580,15 +629,15 @@ async function makeLocal(sectionHeading: string, cwd: string): Promise<void> {
   }
 
   const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent);
+  const ir = yaml.parse(irContent) as ParsedIR;
 
-  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+  if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
   }
 
   // Find section
   const section = ir.sections.find(
-    (s: any) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
+    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
   );
 
   if (!section) {
@@ -596,16 +645,39 @@ async function makeLocal(sectionHeading: string, cwd: string): Promise<void> {
   }
 
   // Update config to add section to personal scope with local storage
-  if (!config.scopes) config.scopes = {};
-  if (!config.scopes.personal) config.scopes.personal = { sections: [] };
-  if (Array.isArray(config.scopes.personal.sections)) {
-    if (!config.scopes.personal.sections.includes(section.heading)) {
-      config.scopes.personal.sections.push(section.heading);
+  const typedConfig = config as unknown as AlignTrueConfig;
+  if (!typedConfig.resources) {
+    typedConfig.resources = {
+      rules: { scopes: {}, storage: {} },
+      mcps: { scopes: {}, storage: {} },
+      skills: { scopes: {}, storage: {} },
+    };
+  }
+  if (!typedConfig.resources.rules) {
+    typedConfig.resources.rules = { scopes: {}, storage: {} };
+  }
+  if (!typedConfig.resources.rules.scopes) {
+    typedConfig.resources.rules.scopes = {};
+  }
+  if (!typedConfig.resources.rules.scopes["personal"]) {
+    typedConfig.resources.rules.scopes["personal"] = { sections: [] };
+  }
+  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
+    if (
+      !typedConfig.resources.rules.scopes["personal"]!.sections.includes(
+        section.heading,
+      )
+    ) {
+      typedConfig.resources.rules.scopes["personal"]!.sections.push(
+        section.heading,
+      );
     }
   }
 
-  if (!config.storage) config.storage = {};
-  config.storage.personal = { type: "local" };
+  if (!typedConfig.resources.rules.storage) {
+    typedConfig.resources.rules.storage = {};
+  }
+  typedConfig.resources.rules.storage["personal"] = { type: "local" };
 
   // Write updated config
   const configContent = yaml.stringify(config);

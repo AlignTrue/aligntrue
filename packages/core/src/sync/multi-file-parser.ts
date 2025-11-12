@@ -227,16 +227,21 @@ export function filterSectionsByScope(
     const sectionHeading = section.heading.toLowerCase().trim();
 
     for (const [scope, config] of Object.entries(scopeConfig)) {
+      const scopeArray = result[scope];
+      if (!scopeArray) {
+        continue;
+      }
+
       if (config.sections === "*") {
         // Wildcard - include all sections
-        result[scope].push(section);
+        scopeArray.push(section);
       } else if (Array.isArray(config.sections)) {
         // Check if section heading matches any in the list
         const matches = config.sections.some(
           (pattern) => sectionHeading === pattern.toLowerCase().trim(),
         );
         if (matches) {
-          result[scope].push(section);
+          scopeArray.push(section);
         }
       }
     }

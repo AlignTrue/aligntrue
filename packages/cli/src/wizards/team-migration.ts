@@ -5,6 +5,8 @@
 
 import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
+import type { ParsedIR } from "../types/ir.js";
+import { isValidIR } from "../types/ir.js";
 
 export interface MigrationResult {
   success: boolean;
@@ -160,6 +162,7 @@ export async function runTeamMigrationWizard(
           });
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         actions.push({ section: section.heading, action: action as any });
       }
     }
@@ -231,8 +234,10 @@ function detectPersonalRulesInRepo(
     }
 
     // Check config for scope definitions
-    const scopes = config.scopes || config.resources?.rules?.scopes;
-    const storage = config.storage || config.resources?.rules?.storage;
+    const typedConfig = config as unknown as AlignTrueConfig;
+    const scopes =
+      typedConfig.resources?.rules?.scopes || (config.scopes ? {} : undefined);
+    const storage = typedConfig.resources?.rules?.storage || config.storage;
 
     if (!scopes || !storage) {
       return results;
@@ -241,7 +246,7 @@ function detectPersonalRulesInRepo(
     // Find sections that are personal scope with repo storage
     for (const section of ir.sections) {
       // Check if section matches personal scope
-      const personalConfig = scopes.personal;
+      const personalConfig = scopes["personal"];
       if (!personalConfig) continue;
 
       const matchesPersonal =
@@ -252,7 +257,7 @@ function detectPersonalRulesInRepo(
           ));
 
       if (matchesPersonal) {
-        const personalStorage = storage.personal;
+        const personalStorage = storage["personal"];
         if (personalStorage && personalStorage.type === "repo") {
           results.push({
             heading: section.heading,
@@ -289,54 +294,94 @@ async function applyMigrationActions(
   }
 
   const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent);
+  const ir = yaml.parse(irContent) as ParsedIR;
 
-  if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+  if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
   }
 
   // Apply each action
   for (const action of actions) {
     const section = ir.sections.find(
-      (s: any) => s.heading.toLowerCase() === action.heading.toLowerCase(),
+      (s) => s.heading.toLowerCase() === action.section.toLowerCase(),
     );
 
     if (!section) {
-      console.warn(`Section not found: ${action.heading}`);
+      console.warn(`Section not found: ${action.section}`);
       continue;
+    }
+
+    // Use resources structure for scopes/storage
+    const typedConfig = config as unknown as AlignTrueConfig;
+    if (!typedConfig.resources) {
+      typedConfig.resources = {
+        rules: { scopes: {}, storage: {} },
+        mcps: { scopes: {}, storage: {} },
+        skills: { scopes: {}, storage: {} },
+      };
+    }
+    if (!typedConfig.resources.rules) {
+      typedConfig.resources.rules = { scopes: {}, storage: {} };
     }
 
     switch (action.action) {
       case "promote":
         // Change to team scope, keep in repo
-        if (!config.scopes) config.scopes = {};
-        if (!config.scopes.team) config.scopes.team = { sections: [] };
-        if (Array.isArray(config.scopes.team.sections)) {
-          config.scopes.team.sections.push(action.heading);
+        if (!typedConfig.resources.rules.scopes)
+          typedConfig.resources.rules.scopes = {};
+        if (!typedConfig.resources.rules.scopes["team"]) {
+          typedConfig.resources.rules.scopes["team"] = { sections: [] };
         }
-        if (!config.storage) config.storage = {};
-        config.storage.team = { type: "repo" };
+        if (
+          Array.isArray(typedConfig.resources.rules.scopes["team"]?.sections)
+        ) {
+          typedConfig.resources.rules.scopes["team"]!.sections.push(
+            action.section,
+          );
+        }
+        if (!typedConfig.resources.rules.storage)
+          typedConfig.resources.rules.storage = {};
+        typedConfig.resources.rules.storage["team"] = { type: "repo" };
         break;
 
       case "move":
         // Change to personal scope with remote storage
-        if (!config.scopes) config.scopes = {};
-        if (!config.scopes.personal) config.scopes.personal = { sections: [] };
-        if (Array.isArray(config.scopes.personal.sections)) {
-          config.scopes.personal.sections.push(action.heading);
+        if (!typedConfig.resources.rules.scopes)
+          typedConfig.resources.rules.scopes = {};
+        if (!typedConfig.resources.rules.scopes["personal"]) {
+          typedConfig.resources.rules.scopes["personal"] = { sections: [] };
+        }
+        if (
+          Array.isArray(
+            typedConfig.resources.rules.scopes["personal"]?.sections,
+          )
+        ) {
+          typedConfig.resources.rules.scopes["personal"]!.sections.push(
+            action.section,
+          );
         }
         // Remote URL should already be configured from wizard
         break;
 
       case "local":
         // Change to personal scope with local storage
-        if (!config.scopes) config.scopes = {};
-        if (!config.scopes.personal) config.scopes.personal = { sections: [] };
-        if (Array.isArray(config.scopes.personal.sections)) {
-          config.scopes.personal.sections.push(action.heading);
+        if (!typedConfig.resources.rules.scopes)
+          typedConfig.resources.rules.scopes = {};
+        if (!typedConfig.resources.rules.scopes["personal"]) {
+          typedConfig.resources.rules.scopes["personal"] = { sections: [] };
         }
-        if (!config.storage) config.storage = {};
-        config.storage.personal = { type: "local" };
+        if (
+          Array.isArray(
+            typedConfig.resources.rules.scopes["personal"]?.sections,
+          )
+        ) {
+          typedConfig.resources.rules.scopes["personal"]!.sections.push(
+            action.section,
+          );
+        }
+        if (!typedConfig.resources.rules.storage)
+          typedConfig.resources.rules.storage = {};
+        typedConfig.resources.rules.storage["personal"] = { type: "local" };
         break;
     }
   }

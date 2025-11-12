@@ -892,12 +892,12 @@ export class SyncEngine {
       }
 
       // Check if scope configuration exists
-      const scopeConfig =
+      const scopesArray =
         this.config.scopes || this.config.resources?.rules?.scopes;
       const storageConfig =
         this.config.storage || this.config.resources?.rules?.storage;
 
-      if (!scopeConfig || !storageConfig) {
+      if (!scopesArray || !storageConfig) {
         // Fall back to regular sync if no scope config
         const irPath = resolvePath(process.cwd(), ".aligntrue/.rules.yaml");
         return this.syncToAgents(irPath, options);
@@ -916,10 +916,19 @@ export class SyncEngine {
       const allRules = await storageManager.readAll();
 
       // Merge all sections
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allSections: any[] = [];
       for (const rules of Object.values(allRules)) {
         allSections.push(...rules);
       }
+
+      // Convert scopes array to scope config Record format
+      const scopeConfig: Record<string, { sections: string[] | "*" }> =
+        Array.isArray(scopesArray)
+          ? Object.fromEntries(
+              scopesArray.map((scope) => [scope.path, { sections: "*" }]),
+            )
+          : scopesArray;
 
       // Filter sections by scope
       const scopedSections = filterSectionsByScope(allSections, scopeConfig);
@@ -938,7 +947,9 @@ export class SyncEngine {
 
       // Create IR from merged sections
       this.ir = {
+        id: "merged-scopes",
         version: "1.0",
+        spec_version: "1",
         sections: mergedSections,
       };
 

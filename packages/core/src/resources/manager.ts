@@ -9,6 +9,7 @@ import type { IStorageBackend } from "../storage/backend.js";
 export interface ResourceItem {
   id: string;
   scope: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
