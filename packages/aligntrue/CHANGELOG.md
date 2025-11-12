@@ -1,5 +1,13 @@
 # aligntrue
 
+## 0.1.0-alpha.4
+
+### Patch Changes
+
+- 97e54ee: Post-alpha.3 improvements: License fields added to all packages, test fixes, Windows compatibility improvements, and continued sections format refinements.
+- Updated dependencies [97e54ee]
+  - @aligntrue/cli@0.1.1-alpha.4
+
 ## 0.1.0-alpha.3
 
 ### Patch Changes
