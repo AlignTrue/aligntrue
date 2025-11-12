@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Build order** - Ensured `@aligntrue/core` builds before `@aligntrue/exporters` to resolve cyclic dependency race condition, fixing Windows CI build failures
+- **Build order** - Established explicit build stages to resolve dependency graph correctly: schema → {file-utils,markdown-parser,plugin-contracts} → {core,sources,testkit} → {exporters,cli,aligntrue}, fixing race condition in CI
 - **Shell command injection** - Replaced template string shell commands with `execFileSync` array arguments in storage manager, fixing CodeQL alert #41 and #40
 - **Polynomial ReDoS vulnerabilities** - Fixed unsafe regex patterns in multi-file parser and natural markdown detection for better performance and security
 
