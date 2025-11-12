@@ -1,12 +1,12 @@
-id: upstream-standards
+id: overlay-demo-pack
 version: "1.0.0"
 spec_version: "1"
 
 profile:
-  id: example/upstream-standards
+  id: example/overlay-demo
   version: "1.0.0"
-  name: Upstream Standards Pack
-  summary: Example upstream pack for overlay demonstration
+  name: Overlays Demo Pack
+  summary: Demonstrate fork-safe customization using overlays
 
 sections:
   - heading: "Avoid console.log in production code"
