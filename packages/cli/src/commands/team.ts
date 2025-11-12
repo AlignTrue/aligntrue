@@ -482,6 +482,119 @@ async function teamEnable(
 }
 
 /**
+ * Approve git source update - force refresh and add to allow list
+ */
+async function approveGitSource(
+  _url: string,
+  _flags: Record<string, string | boolean | undefined>,
+): Promise<void> {
+  clack.intro(`Approve Git Source: ${_url}`);
+
+  try {
+    // Load config to get mode
+    const configPath = ".aligntrue/config.yaml";
+
+    if (!existsSync(configPath)) {
+      console.error("✗ Config not found");
+      console.error("  Run: aligntrue init");
+      process.exit(1);
+    }
+
+    const { loadConfig } = await import("@aligntrue/core");
+    const config = await loadConfig(configPath);
+
+    if (config.mode !== "team") {
+      console.error("✗ Team mode not enabled");
+      console.error("  Run: aligntrue team enable");
+      process.exit(1);
+    }
+
+    // Find the git source in config
+    const gitSource = config.sources?.find(
+      (s) => s.type === "git" && s.url === _url,
+    );
+
+    if (!gitSource) {
+      console.error(`✗ Git source not found in config: ${_url}`);
+      console.error("  Add the source to config first:");
+      console.error(`  aligntrue pull ${_url} --save`);
+      process.exit(1);
+    }
+
+    // Force refresh the source
+    const spinner = clack.spinner();
+    spinner.start("Pulling latest from git source...");
+
+    const { GitProvider } = await import("@aligntrue/sources");
+
+    const gitConfig = {
+      type: "git" as const,
+      url: gitSource.url || _url,
+      ref: gitSource.ref || "main",
+      path: gitSource.path || ".aligntrue.yaml",
+      forceRefresh: true,
+    };
+
+    const provider = new GitProvider(
+      {
+        ...gitConfig,
+        checkInterval: 0, // Force immediate check
+      },
+      ".aligntrue/.cache/git",
+      {
+        mode: config.mode,
+      },
+    );
+
+    try {
+      await provider.fetch();
+      const newSha = await provider.getCommitSha();
+
+      spinner.stop(`✓ Pulled latest (${newSha.slice(0, 7)})`);
+
+      // Show what changed
+      console.log("\n📝 Git source updated:");
+      console.log(`  Repository: ${_url}`);
+      console.log(`  Ref: ${gitConfig.ref}`);
+      console.log(`  New SHA: ${newSha}`);
+      console.log("\n");
+
+      // Add to allow list
+      const { parseAllowList, addSourceToAllowList, writeAllowList } =
+        await import("@aligntrue/core/team/allow.js");
+
+      const ALLOW_LIST_PATH = ".aligntrue/allow.yaml";
+      let allowList = parseAllowList(ALLOW_LIST_PATH);
+
+      // Add git source URL to allow list
+      allowList = await addSourceToAllowList(_url, allowList);
+      writeAllowList(ALLOW_LIST_PATH, allowList);
+
+      clack.log.success(`Added to allow list: ${_url}`);
+
+      // Prompt to sync
+      console.log("\nNext steps:");
+      console.log("  aligntrue sync     # Sync with updated source");
+      console.log("\n");
+
+      clack.outro("✓ Git source approved and updated");
+    } catch (error) {
+      spinner.stop("✗ Failed to pull from git source");
+      console.error(
+        `\n${error instanceof Error ? error.message : String(error)}`,
+      );
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error("✗ Failed to approve git source");
+    console.error(
+      `  ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
  * Approve source(s) for team allow list
  */
 async function teamApprove(
@@ -489,6 +602,15 @@ async function teamApprove(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   try {
+    // Handle git source URLs (e.g., https://github.com/org/rules)
+    if (
+      sources.length > 0 &&
+      (sources[0]?.startsWith("https://") || sources[0]?.startsWith("git@"))
+    ) {
+      await approveGitSource(sources[0], flags);
+      return;
+    }
+
     const current = flags["current"] as boolean | undefined;
 
     // Handle --current flag
