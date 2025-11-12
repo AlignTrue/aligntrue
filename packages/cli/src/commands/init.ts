@@ -45,6 +45,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Same as --non-interactive",
   },
   {
+    flag: "--mode",
+    hasValue: true,
+    description: "Operating mode: solo (default) or team",
+  },
+  {
     flag: "--project-id",
     hasValue: true,
     description:
@@ -138,12 +143,19 @@ export async function init(args: string[] = []): Promise<void> {
   const useInteractive = shouldUseInteractive(forceNonInteractive);
   const nonInteractive = !useInteractive;
 
+  const mode = parsed.flags["mode"] as string | undefined;
   const projectId = parsed.flags["project-id"] as string | undefined;
   const exportersArg = parsed.flags["exporters"] as string | undefined;
   const exporters = exportersArg
     ? exportersArg.split(",").map((e) => e.trim())
     : undefined;
   const importAgent = parsed.flags["import"] as string | undefined;
+
+  // Validate mode if provided
+  if (mode && mode !== "solo" && mode !== "team") {
+    console.error(`Error: Invalid mode "${mode}". Must be "solo" or "team".`);
+    process.exit(2);
+  }
 
   if (!nonInteractive) {
     clack.intro("AlignTrue Init");
@@ -658,6 +670,16 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     exporters:
       selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents-md"],
   };
+
+  // Set mode if provided
+  if (mode === "team") {
+    config.mode = "team";
+    // Enable team mode features
+    config.modules = {
+      lockfile: true,
+      bundle: true,
+    };
+  }
 
   // Configure sync settings based on whether we imported
   if (importedRules && importedFromAgent) {
