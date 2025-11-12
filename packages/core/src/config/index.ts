@@ -497,6 +497,7 @@ function checkUnknownFields(
     "backup",
     "detection",
     "overlays",
+    "approval",
   ]);
 
   for (const key of Object.keys(config)) {

@@ -381,7 +381,7 @@ export function mergeFromMultipleFiles(
 /**
  * Generate fingerprint for section (matching schema behavior)
  */
-function generateFingerprint(heading: string): string {
+export function generateFingerprint(heading: string): string {
   return createHash("sha256")
     .update(heading.toLowerCase().trim(), "utf-8")
     .digest("hex")
