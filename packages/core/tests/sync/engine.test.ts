@@ -512,11 +512,9 @@ sections:
         configPath,
       });
 
-      // Should fail because import is not implemented
+      // Should fail because agent file doesn't exist
       expect(result.success).toBe(false);
-      expect(result.warnings?.[0]).toContain(
-        "Import from cursor not implemented",
-      );
+      expect(result.warnings?.[0]).toContain("Agent file not found");
     });
   });
 
