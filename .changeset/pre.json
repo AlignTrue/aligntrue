@@ -15,5 +15,5 @@
     "@aligntrue/testkit": "0.1.1-alpha.3",
     "@aligntrue/ui": "0.1.1-alpha.3"
   },
-  "changesets": ["alpha-3-release"]
+  "changesets": ["alpha-4-release"]
 }
