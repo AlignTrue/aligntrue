@@ -84,12 +84,12 @@ describe("validateAlignSchema (v1)", () => {
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects pack with empty sections array", () => {
-    const invalid = { ...validSoloPack, sections: [] };
+  it("accepts pack with empty sections array (fresh projects)", () => {
+    const emptyPack = { ...validSoloPack, sections: [] };
 
-    const result = validateAlignSchema(invalid);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeDefined();
+    const result = validateAlignSchema(emptyPack);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toBeUndefined();
   });
 
   // Rule-specific validation tests removed in sections-only refactor (implemented)
