@@ -14,31 +14,36 @@ AlignTrue works differently depending on your setup. Here's what actually happen
 ```yaml
 mode: solo # No lockfile/team features
 sync:
-  two_way: true # Edit any file, changes merge automatically
+  edit_source: "AGENTS.md" # Edit AGENTS.md, changes merge automatically
 ```
 
-### Scenario: Two-way sync enabled (default)
+### Scenario: Single-file edit source (AGENTS.md)
 
 **Your workflow:**
 
 ```bash
-# Option A: Edit AGENTS.md (primary rules)
+# Edit AGENTS.md (matches edit_source)
 echo "## New Rule" >> AGENTS.md
 aligntrue sync
 # → Detects AGENTS.md changed
 # → Merges to IR
-# → Exports to .cursor/rules/*.mdc, AGENTS.md, others
+# → Exports to .cursor/rules/*.mdc and other agents
 ```
 
-or
+**OR with Cursor as edit source:**
+
+```yaml
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+```
 
 ```bash
-# Option B: Edit Cursor config directly
-nano .cursor/rules/aligntrue.mdc
+# Edit any Cursor file (matches glob pattern)
+nano .cursor/rules/backend.mdc
 aligntrue sync
-# → Detects .cursor/rules/aligntrue.mdc changed
-# → Merges to IR
-# → Exports to AGENTS.md, other agent files
+# → Detects .cursor/rules/backend.mdc changed
+# → Routes sections back to correct scope file
+# → Exports to AGENTS.md with optional scope prefixes
 ```
 
 **Key points:**
@@ -71,23 +76,23 @@ aligntrue sync
 
 **Best practice:** Edit in one file consistently (usually `AGENTS.md`) to avoid confusion.
 
-### Scenario: Two-way sync disabled
+### Scenario: IR-only mode (advanced)
 
 ```yaml
 sync:
-  two_way: false # Only export IR → agents, no agent→IR merge
+  edit_source: ".rules.yaml" # Only IR accepts edits
 ```
 
 ```bash
 # Edit AGENTS.md
 echo "## New Rule" >> AGENTS.md
 aligntrue sync
-# → IGNORES the edit (two-way off)
+# → IGNORES the edit (IR-only mode)
 # → Only exports IR to agent files
 # → Changes to AGENTS.md are overwritten!
 ```
 
-**Use case:** If you want strict IR-source workflow where agents are read-only exports.
+**Use case:** Strict workflow where agent files are read-only exports. All edits go to `.aligntrue/.rules.yaml`.
 
 ---
 
@@ -101,7 +106,7 @@ modules:
   lockfile: true # All syncs validated
 
 sync:
-  two_way: true # Still works, but validated
+  edit_source: "AGENTS.md" # Edit AGENTS.md with validation
 
 lockfile:
   mode: soft # Warn on drift (default)
@@ -358,7 +363,7 @@ managed:
   source_url: "https://github.com/company/rules"
 
 sync:
-  two_way: true
+  edit_source: "AGENTS.md"
 
 lockfile:
   mode: soft # Warn but allow drift
@@ -406,25 +411,27 @@ For details, see [Team-managed sections guide](/docs/01-guides/team-managed-sect
 
 ## Quick reference: Default behavior
 
-| Scenario                            | Default                 | Behavior                                         |
-| ----------------------------------- | ----------------------- | ------------------------------------------------ |
-| **Solo dev edits AGENTS.md**        | `sync.two_way: true`    | Auto-merges on next sync                         |
-| **Solo dev edits .cursor/\*.mdc**   | `sync.two_way: true`    | Auto-merges on next sync                         |
-| **Team member edits (soft mode)**   | `lockfile.mode: soft`   | Warns, allows export                             |
-| **Team member edits (strict mode)** | `lockfile.mode: strict` | Prompts or blocks                                |
-| **Team lead manages rules**         | Central git source      | Engineers pull, can't edit locally               |
-| **Multiple files edited**           | Last-write-wins         | Most recent file's version used                  |
-| **No sync run**                     | N/A                     | No automatic merging (must run `aligntrue sync`) |
+| Scenario                            | Default                    | Behavior                                         |
+| ----------------------------------- | -------------------------- | ------------------------------------------------ |
+| **Solo dev edits AGENTS.md**        | `edit_source: "AGENTS.md"` | Auto-merges on next sync                         |
+| **Solo dev edits .cursor/\*.mdc**   | `edit_source: "..." `      | Auto-merges with scope awareness                 |
+| **Files NOT in edit_source**        | Read-only warning marker   | Overwritten on next sync                         |
+| **Team member edits (soft mode)**   | `lockfile.mode: soft`      | Warns, allows export                             |
+| **Team member edits (strict mode)** | `lockfile.mode: strict`    | Prompts or blocks                                |
+| **Team lead manages rules**         | Central git source         | Engineers pull, can't edit locally               |
+| **Multiple files in edit_source**   | Last-write-wins            | Most recent file's version used                  |
+| **No sync run**                     | N/A                        | No automatic merging (must run `aligntrue sync`) |
 
 ---
 
 ## Key takeaways
 
-1. **Two-way sync is automatic** - Edit any file, changes merge on next `aligntrue sync`
-2. **No conflict detection** - Just last-write-wins (predictable, deterministic)
-3. **Team governance via lockfile** - Not individual file conflicts
-4. **No prompts by default** - Changes happen automatically (solo mode)
-5. **Strict mode adds control** - For teams that want explicit approvals
-6. **Central source of truth** - Team lead can manage all rules in one repo
+1. **Edit source determines flow** - Only files in `edit_source` sync back to IR on next `aligntrue sync`
+2. **Read-only files protected** - Files not in `edit_source` get HTML comments; edits are overwritten
+3. **Last-write-wins strategy** - When multiple files in `edit_source` edited, newest file wins (predictable, deterministic)
+4. **Team governance via lockfile** - Not individual file conflicts
+5. **No prompts by default** - Changes happen automatically (solo mode)
+6. **Strict mode adds control** - For teams that want explicit approvals
+7. **Central source of truth** - Team lead can manage all rules in one repo
 
 For detailed technical info, see [Sync behavior](/docs/03-concepts/sync-behavior).

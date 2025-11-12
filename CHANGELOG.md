@@ -9,6 +9,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Flexible edit source configuration** (`sync.edit_source`) replaces `two_way` boolean
+  - Single file: `"AGENTS.md"` or `.cursor/rules/*.mdc`
+  - Multiple files: `["AGENTS.md", ".cursor/rules/*.mdc"]`
+  - All agents: `"any_agent_file"`
+  - IR only: `".rules.yaml"`
+  - Glob pattern support for multi-file agents like Cursor
+- **Scope-aware metadata tracking** for multi-file round-trip fidelity
+  - `vendor.aligntrue.source_scope` tracks which Cursor file a section originated from
+  - `vendor.aligntrue.source_file` stores original file path
+  - `vendor.aligntrue.last_modified` timestamp for tracking changes
+- **Scope-aware routing** in Cursor exporter
+  - Sections automatically routed to correct `.cursor/rules/{scope}.mdc` file based on metadata
+  - Enables editing backend.mdc and frontend.mdc separately with proper round-trip sync
+- **Optional scope prefixing** for AGENTS.md exporter (`sync.scope_prefixing`)
+  - `"off"` (default): No prefixes
+  - `"auto"`: Prefix when multiple scopes detected
+  - `"always"`: Always prefix non-default scopes
+  - Format: `Backend: Security` for sections from backend scope
+- **Read-only file markers** in exported files
+  - HTML comments warn when files don't match edit_source
+  - Shows which files are editable and how to change configuration
+  - Prevents accidental edits to auto-generated files
+- **Smart edit source recommendations** during `aligntrue init`
+  - Priority: Cursor > AGENTS.md > other single-file > any_agent_file
+  - Context-aware defaults based on detected agents
+  - Clear descriptions of each option's tradeoffs
+- **Read-only file edit detection** in sync command
+  - Detects when non-editable files have been modified
+  - Prompts for action: backup and continue, discard, or cancel
+  - Prevents data loss from unexpected overwrites
+- Comprehensive emoji usage documentation in documentation rules
+  - Explicit prohibition in synced content (AGENTS.md, IR, exports)
+  - Allowed in docs site, READMEs, and CLI output
+- `detectReadOnlyFileEdits()` function in multi-file-parser
+- `matchesEditSource()` helper with glob pattern support using micromatch
+- `extractScopeFromPath()` function for scope name extraction
+- `recommendEditSource()` function for smart onboarding recommendations
+- `AlignTrueVendorMetadata` type definition in schema
+
+### Changed
+
+- **DEPRECATED** `sync.two_way` boolean in favor of `sync.edit_source`
+  - Migration: `false` → `".rules.yaml"`, `true` → `"any_agent_file"`
+  - Backwards compatible - existing configs still work
+- `detectEditedFiles()` now uses glob patterns to check all Cursor scope files
+  - Previously only checked `.cursor/rules/aligntrue.mdc` (default scope)
+  - Now supports `.cursor/rules/*.mdc` pattern matching
+- `mergeFromMultipleFiles()` adds vendor metadata to track section origins
+- Cursor exporter groups sections by source_scope for multi-file output
+- AGENTS.md exporter optionally prefixes section headings with scope names
+- Team-managed section markers changed from emoji (🔒) to text `[TEAM-MANAGED]`
+- Documentation rules now explicitly prohibit emojis in all synced content
+- Config defaults: Cursor detected → `.cursor/rules/*.mdc`, else → `AGENTS.md`
 - Onboarding summaries at end of `aligntrue init` and `aligntrue team enable`
 - `aligntrue config summary` command to view current configuration
 - Lockfile mode prompt during `aligntrue team enable` (soft/strict)
@@ -25,10 +78,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic in interactive mode, skip with `--no-preview`
   - Force in CI with `--preview` flag
 - Bundle comparison utility (`packages/core/src/team/bundle-diff.ts`) for diff generation
-
-### Changed
-
-- Team-managed section markers changed from emoji (🔒) to text `[TEAM-MANAGED]`
 - Improved team mode onboarding with clear next steps and configuration summary
 - Enhanced documentation for team-managed sections workflow
 - Updated architecture and implementation specs to emphasize team-managed sections

@@ -29,6 +29,7 @@ export {
   type AlignScope,
   type AlignSection,
   type AlignIntegrity,
+  type AlignTrueVendorMetadata,
 } from "./validator.js";
 
 // Re-export scope types for cross-package consistency
