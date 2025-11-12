@@ -478,7 +478,7 @@ Remove old backups, keeping only the most recent N backups.
 **Usage:**
 
 ```bash
-# Use keep_count from config (default: 10)
+# Use keep_count from config (default: 20)
 aligntrue backup cleanup
 
 # Keep specific number
@@ -537,7 +537,7 @@ backup:
     - restore
 
   # Number of backups to keep (older ones auto-deleted)
-  keep_count: 10
+  keep_count: 20
 ```
 
 **Auto-backup workflow:**

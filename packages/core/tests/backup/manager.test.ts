@@ -214,18 +214,18 @@ describe("BackupManager", () => {
       expect(remaining).toHaveLength(3);
     });
 
-    it("should default to keeping 10 backups", async () => {
-      // Create 12 backups with tiny delays to ensure different millisecond timestamps
-      for (let i = 0; i < 12; i++) {
+    it("should default to keeping 20 backups", async () => {
+      // Create 22 backups with tiny delays to ensure different millisecond timestamps
+      for (let i = 0; i < 22; i++) {
         BackupManager.createBackup({ cwd: testDir });
-        if (i < 11) await new Promise((resolve) => setTimeout(resolve, 5));
+        if (i < 21) await new Promise((resolve) => setTimeout(resolve, 5));
       }
 
       const removed = BackupManager.cleanupOldBackups({ cwd: testDir });
 
       expect(removed).toBe(2);
       const remaining = BackupManager.listBackups(testDir);
-      expect(remaining).toHaveLength(10);
+      expect(remaining).toHaveLength(20);
     });
 
     it("should return 0 when backup count is below threshold", () => {
