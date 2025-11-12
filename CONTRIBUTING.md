@@ -1,31 +1,38 @@
-<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
-<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
+<!--
+  ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
 
-# Contributing to AlignTrue
+  This file is generated from documentation source.
+  To make changes, edit the source file and run: pnpm generate:repo-files
+
+  Source: apps/docs/content/06-contributing/creating-packs.md
+-->
+
+# Creating packs
 
 Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Align packs that pass validation and provide value to the community.
 
 ## Quick start
 
-Get started contributing in three steps:
+Get started creating packs:
 
-1. **Fork** the [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns) repository
-2. **Create** your pack following the [template](#template-pack)
-3. **Submit** a PR with passing CI
+1. **Review examples** in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory
+2. **Create** your pack following the [template](#minimal-example)
+3. **Share** via GitHub URL, local file, or your own repository
 
-That's it! Our CI will validate your pack automatically.
+No central registry exists - share packs however works best for your team.
 
-## Authoring your first Align
+## Authoring your first pack
 
-### Use the template
+### Review examples
 
-Start with the template pack at [`packs/templates/starter.aligntrue.yaml`](https://github.com/AlignTrue/aligns/blob/main/packs/templates/starter.aligntrue.yaml) in the `aligns` repository.
+Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) in this repository.
 
-The template includes:
+Examples include:
 
-- All 5 check types with examples
+- Base packs (global, testing, security, etc.)
+- Stack-specific packs (Next.js, Vercel, etc.)
 - Inline comments explaining best practices
-- Properly computed integrity hash
+- Proper pack structure and formatting
 
 ### Choose your namespace
 
@@ -41,38 +48,38 @@ Pick the appropriate namespace for your pack:
 
 ### Minimal example
 
-Here's a minimal Align pack with one rule:
+Here's a minimal pack using natural markdown sections:
 
-```yaml
-id: "packs/base/base-example"
-version: "1.0.0"
-profile: "align"
-spec_version: "1"
-summary: "Ensure all TypeScript projects have proper configuration"
-tags: ["typescript", "configuration"]
-deps: []
+````markdown
+# TypeScript Configuration Pack
 
-scope:
-  applies_to: ["backend", "frontend"]
+## Ensure TypeScript Configuration
 
-rules:
-  - id: require-tsconfig
-    severity: MUST
-    check:
-      type: file_presence
-      inputs:
-        pattern: "tsconfig.json"
-        must_exist: true
-      evidence: "TypeScript project missing tsconfig.json"
-    autofix:
-      hint: "Run `npx tsc --init` to create tsconfig.json"
+All TypeScript projects should have a properly configured `tsconfig.json` file.
 
-integrity:
-  algo: "jcs-sha256"
-  value: "<computed>"
+### Setup
+
+Run `npx tsc --init` to create a tsconfig.json if missing.
+
+### Recommended Configuration
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
 ```
+````
 
-For more examples, browse existing packs in the [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns) repository.
+Enable strict mode for better type safety and fewer runtime errors.
+
+````
+
+For more examples, browse existing packs in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory.
 
 ## Testing locally
 
@@ -81,9 +88,7 @@ For more examples, browse existing packs in the [`AlignTrue/aligns`](https://git
 You'll need:
 
 - Node.js 22+ and pnpm 9+
-- Both repositories cloned:
-  - `AlignTrue/aligntrue` (this repo with validation tools)
-  - `AlignTrue/aligns` (the registry repo for your pack)
+- The `AlignTrue/aligntrue` repository cloned
 
 ### Validate your pack
 
@@ -94,18 +99,18 @@ From the `aligntrue` repository:
 pnpm install
 
 # Validate your pack
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
-```
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
+````
 
 ### Verify deterministic hash
 
 Run validation twice and confirm the integrity hash is identical both times:
 
 ```bash
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 # Note the integrity hash in output
 
-pnpm --filter @aligntrue/schema validate ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 # Hash should match exactly
 ```
 
@@ -117,93 +122,62 @@ If your pack has `<computed>` as the integrity value, compute the real hash:
 
 ```bash
 # From the aligntrue repository
-pnpm --filter @aligntrue/schema compute-hash ../aligns/packs/base/your-pack.aligntrue.yaml
+pnpm --filter @aligntrue/schema compute-hash path/to/your-pack.yaml
 ```
 
 Copy the hash from the output and paste it into your pack's `integrity.value` field.
 
-## Machine-checkable rules
+## Writing effective guidance
 
-All rules in AlignTrue must be machine-checkable. No vibes, no subjective judgments.
+Packs use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
 
-### The 5 check types
+### Clear and specific
 
-Every rule must use one of these check types:
+Write guidance that answers:
 
-1. **`file_presence`** - Check if files exist or don't exist
+- **What** should be done
+- **Why** it matters
+- **How** to do it (with examples)
 
-   ```yaml
-   check:
-     type: file_presence
-     inputs:
-       pattern: "README.md"
-       must_exist: true
-   ```
+**Good example:**
 
-2. **`path_convention`** - Validate file paths match patterns
+````markdown
+## Use TypeScript Strict Mode
 
-   ```yaml
-   check:
-     type: path_convention
-     inputs:
-       pattern: "src/**/*.test.{ts,tsx}"
-       convention: "kebab-case"
-   ```
+Enable strict mode in all TypeScript projects for better type safety.
 
-3. **`manifest_policy`** - Check package.json or lockfile constraints
+### Why
 
-   ```yaml
-   check:
-     type: manifest_policy
-     inputs:
-       manifest: "package.json"
-       lockfile: "pnpm-lock.yaml"
-       require_pinned: true
-   ```
+Strict mode catches more errors at compile time and prevents common runtime issues.
 
-4. **`regex`** - Pattern matching in file contents
+### How
 
-   ```yaml
-   check:
-     type: regex
-     inputs:
-       include: ["**/*.ts"]
-       pattern: "\\bconsole\\.log\\("
-       allow: false
-   ```
+Add to `tsconfig.json`:
 
-5. **`command_runner`** - Execute commands and check exit codes
-   ```yaml
-   check:
-     type: command_runner
-     inputs:
-       command: "pnpm typecheck"
-       expect_exit_code: 0
-   ```
+```json
+{
+  "compilerOptions": {
+    "strict": true
+  }
+}
+```
+````
 
-See the checks documentation for complete details on each type.
+Run `npx tsc --init` to create a new config if needed.
 
-### Evidence messages
+````
 
-Evidence messages must be actionable and specific:
+### Actionable instructions
 
-- **Bad**: "Validation failed"
-- **Good**: "Missing test file for src/utils/parser.ts"
+Make it easy for developers to follow your guidance:
 
-- **Bad**: "Fix your configuration"
-- **Good**: "tsconfig.json missing 'strict: true' in compilerOptions"
+- **Bad**: "Fix your tests"
+- **Good**: "Run `pnpm test` before committing to catch errors early"
 
-Include file names, line numbers, or specific missing values when available.
+- **Bad**: "Use better logging"
+- **Good**: "Replace `console.log()` with `logger.info()` for structured logging"
 
-### Autofix hints
-
-When you provide an autofix hint, make it concrete:
-
-- **Bad**: "Add tests"
-- **Good**: "Run `pnpm test --init src/utils/parser.test.ts`"
-
-- **Bad**: "Use a logger"
-- **Good**: "Replace with `logger.debug()` or remove the statement"
+Include specific commands, file names, and code examples.
 
 Users should be able to copy-paste your hint and make progress.
 
@@ -224,9 +198,37 @@ Users should be able to copy-paste your hint and make progress.
   - TODO comments
   - Formatting preferences
 
-## Pull request checklist
+## Sharing your pack
 
-Before submitting your PR, verify:
+### Via GitHub
+
+1. **Publish to GitHub** - Users can import via git URLs:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules-repo
+    path: packs/your-pack.yaml
+````
+
+2. **Share raw URL** - Users can download directly:
+
+```bash
+curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/packs/your-pack.yaml
+```
+
+### Via local files
+
+Share the YAML file directly - users can copy it to their project:
+
+```bash
+cp your-pack.yaml .aligntrue/rules.yaml
+aligntrue sync
+```
+
+### Quality checklist
+
+Before sharing your pack, verify:
 
 - [ ] Schema validation passes locally
 - [ ] Integrity hash is computed (not `<computed>`)
@@ -235,7 +237,6 @@ Before submitting your PR, verify:
 - [ ] Pack summary clearly states purpose in one sentence
 - [ ] Namespace follows conventions (packs/base or packs/stacks)
 - [ ] All check types use one of the 5 supported types
-- [ ] No linter errors in CI
 
 ## Code of conduct
 
@@ -252,29 +253,30 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 
 Stuck? Here's how to get help:
 
-- **Documentation**: Read the full docs at [aligntrue.ai/docs](https://aligntrue.ai/docs)
-  - [Align Spec v1](spec/align-spec-v1.md) - Complete specification
+- **Documentation**: Read the full docs at [aligntrue.ai/docs](/docs)
+  - [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md) - Complete specification
+  - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and checks
+  - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
 
-- **Examples**: Browse existing packs in [`AlignTrue/aligns`](https://github.com/AlignTrue/aligns)
-  - [base-testing](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-testing.aligntrue.yaml) - Testing rules
-  - [base-security](https://github.com/AlignTrue/aligns/blob/main/packs/base/base-security.aligntrue.yaml) - Security rules
-  - [nextjs-app-router](https://github.com/AlignTrue/aligns/blob/main/packs/stacks/nextjs-app-router.aligntrue.yaml) - Stack-specific rules
+- **Examples**: Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs)
+  - [testing.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/testing.yaml) - Testing rules
+  - [security.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/security.yaml) - Security rules
+  - [nextjs_app_router.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.yaml) - Stack-specific rules
 
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligns/discussions)
+- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-- **Issues**: Report bugs or problems in [GitHub Issues](https://github.com/AlignTrue/aligns/issues)
+- **Issues**: Report bugs or problems in [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
 
-## What happens next?
+## Sharing with the community
 
-After you submit your PR:
+Consider sharing your pack with the community:
 
-1. **Automated checks run**: CI validates schema, checks hash, runs testkit
-2. **Maintainer review**: A maintainer reviews your pack for quality and fit
-3. **Feedback or approval**: You may receive feedback for improvements, or approval
-4. **Merge**: Once approved, your pack is merged and appears in the examples directory
-5. **Verification**: Example packs in `AlignTrue/aligntrue` are automatically verified
+1. **GitHub repository** - Create a public repo with your packs
+2. **Documentation** - Add a README explaining what your packs do
+3. **Examples** - Include usage examples and configuration
+4. **Community** - Share in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-Typical review time is 2-5 days for new packs, faster for updates.
+Well-documented packs help others learn and adopt best practices.
 
 ## Advanced topics
 
@@ -301,24 +303,33 @@ scope:
 
 This helps users understand when to use your pack.
 
-### Testing check runners
+### Testing your pack
 
-You can test check runners locally with:
+To test your pack locally:
 
-```bash
-# From the aligntrue repository
-pnpm --filter @aligntrue/checks run-checks ../aligns/packs/base/your-pack.aligntrue.yaml /path/to/test/repo
+1. **Add to `.aligntrue/config.yaml`:**
+
+```yaml
+sources:
+  - type: local
+    path: ./your-pack.md
 ```
 
-This runs your checks against a test repository and shows findings.
+2. **Sync to agents:**
+
+```bash
+aligntrue sync
+```
+
+3. **Verify the output** in your agent files to ensure guidance displays correctly.
 
 ## Questions?
 
 If this guide doesn't answer your question:
 
-- Check the [documentation](https://aligntrue.ai/docs)
-- Search [existing discussions](https://github.com/AlignTrue/aligns/discussions)
-- Open a [new discussion](https://github.com/AlignTrue/aligns/discussions/new)
+- Check the [documentation](/docs)
+- Search [existing discussions](https://github.com/AlignTrue/aligntrue/discussions)
+- Open a [new discussion](https://github.com/AlignTrue/aligntrue/discussions/new)
 
 We're here to help!
 
@@ -328,5 +339,4 @@ We're here to help!
 
 ---
 
-**This file is auto-generated from the [AlignTrue documentation site](https://aligntrue.ai/docs).**  
-**To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**
+_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._

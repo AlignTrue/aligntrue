@@ -1,14 +1,19 @@
+---
+title: Archiving components
+description: Checklist for safely archiving components to prevent CI failures and maintain clean codebase
+---
+
 # Archiving components checklist
 
 This checklist prevents issues like the transpile validation CI failure that occurred when `apps/web` was archived but scripts still referenced it.
 
-## When to Use
+## When to use
 
 Follow this checklist when moving any component (app, package, or major module) to the `archive/` directory.
 
-## Pre-Archive Checklist
+## Pre-archive checklist
 
-### 1. Search for References
+### 1. Search for references
 
 Search the entire codebase for references to the component being archived:
 
@@ -28,7 +33,7 @@ grep -r "apps/web" .github/workflows/
 grep -r "apps/web" package.json
 ```
 
-### 2. Update or Remove Scripts
+### 2. Update or remove scripts
 
 For each script that references the archived component:
 
@@ -49,7 +54,7 @@ if (config !== null) {
 }
 ```
 
-### 3. Test Affected Scripts
+### 3. Test affected scripts
 
 Run all scripts that might be affected:
 
@@ -64,7 +69,7 @@ pnpm build:packages
 pnpm test
 ```
 
-### 4. Update CI Workflow
+### 4. Update CI workflow
 
 Check `.github/workflows/` for steps that reference the archived component:
 
@@ -73,7 +78,7 @@ Check `.github/workflows/` for steps that reference the archived component:
 - Remove test steps specific to archived component
 - Update validation steps to skip archived components
 
-### 5. Update Package Configuration
+### 5. Update package configuration
 
 Check and update:
 
@@ -89,17 +94,17 @@ Add entry explaining:
 - What was archived and why
 - When it was archived
 - Migration path (if applicable)
-- Restoration triggers (reference `potential_future_features.mdc`)
+- Restoration triggers (if applicable)
 
 **Example:**
 
 ```markdown
 ### Archived
 
-- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated packs. See `.cursor/rules/potential_future_features.mdc` for details.
+- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated packs.
 ```
 
-### 7. Update potential_future_features.mdc
+### 7. Update future features documentation
 
 Document the archived feature with:
 
@@ -109,33 +114,9 @@ Document the archived feature with:
 - Estimated restoration effort
 - Implementation notes for future restoration
 
-**Example structure:**
+## Post-archive verification
 
-```markdown
-## Archived Feature Name
-
-**Archived:** [Date]
-**Location:** `archive/path/to/component`
-
-**What was built:** [Description]
-
-**Why archived:** [Reason]
-
-**Current approach:** [Alternative solution]
-
-**Implementation trigger:**
-
-- [Objective trigger 1], OR
-- [Objective trigger 2], OR
-- [Objective trigger 3]
-
-**Restoration notes (~XXXk tokens):**
-[Implementation guidance]
-```
-
-## Post-Archive Verification
-
-### 1. Local Validation
+### 1. Local validation
 
 ```bash
 # Ensure all validation scripts pass
@@ -152,7 +133,7 @@ pnpm test
 git status
 ```
 
-### 2. CI Validation
+### 2. CI validation
 
 Push to a feature branch and verify:
 
@@ -161,18 +142,18 @@ Push to a feature branch and verify:
 - Build completes successfully
 - Tests pass on all platforms
 
-### 3. Documentation Review
+### 3. Documentation review
 
 Verify documentation is updated:
 
 - CHANGELOG.md has archive entry
-- potential_future_features.mdc has restoration guide
+- Future features doc has restoration guide
 - Development docs reference current structure
 - README (if applicable) updated
 
-## Common Pitfalls
+## Common pitfalls
 
-### Hardcoded Paths
+### Hardcoded paths
 
 **Problem:** Scripts assume directory structure without checking existence
 
@@ -188,7 +169,7 @@ if (existsSync(configPath)) {
 }
 ```
 
-### Validation Scripts
+### Validation scripts
 
 **Problem:** Validators check archived components and fail
 
@@ -201,13 +182,13 @@ if (!existsSync(componentPath)) {
 }
 ```
 
-### Build Scripts
+### Build scripts
 
 **Problem:** Build scripts create archived directories
 
 **Solution:** Delete component-specific build scripts, update paths in shared scripts
 
-### CI Workflows
+### CI workflows
 
 **Problem:** CI runs steps for archived components
 
@@ -230,13 +211,13 @@ This real example shows the process:
 
 5. **Document:**
    - Added CHANGELOG entry
-   - Updated potential_future_features.mdc with restoration triggers
+   - Updated future features doc with restoration triggers
    - Created this checklist
 
 6. **Verify:** Pushed to CI, all checks passed ✅
 
-## Related Documentation
+## Related documentation
 
-- `.cursor/rules/potential_future_features.mdc` - Restoration triggers and implementation notes
-- `docs/development/preventing-ci-failures.md` - CI troubleshooting guide
-- `CHANGELOG.md` - Historical record of changes
+- [CI failure prevention](/docs/08-development/ci-failures)
+- [Development setup](/docs/08-development/setup)
+- [CHANGELOG](/CHANGELOG.md)

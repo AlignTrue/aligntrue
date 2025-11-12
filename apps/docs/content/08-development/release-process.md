@@ -1,3 +1,8 @@
+---
+title: Release process
+description: How to release AlignTrue packages using Changesets for automated version management and npm publishing
+---
+
 # Release process
 
 AlignTrue uses [Changesets](https://github.com/changesets/changesets) for version management and automated npm publishing.

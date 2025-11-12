@@ -32,6 +32,42 @@ async function main() {
     // Non-fatal: continue with commit if this check fails
   }
 
+  // Check for protected files (auto-generated from docs)
+  s.start("Checking for protected file edits...");
+  try {
+    const protectedFiles = ["README.md", "CONTRIBUTING.md", "DEVELOPMENT.md", "SECURITY.md"];
+    const editedProtected = stagedFiles.filter((f) => protectedFiles.includes(f));
+    
+    if (editedProtected.length > 0) {
+      s.stop("❌ Protected files were directly edited.", 1);
+      console.error("");
+      clack.log.error("Protected files were directly edited");
+      console.error("");
+      console.error("📝 These files are generated from docs content:");
+      editedProtected.forEach((file) => {
+        console.error(`   ${file}`);
+      });
+      console.error("");
+      console.error("🔄 Correct workflow:");
+      console.error("   1. Edit source files in apps/docs/content/");
+      console.error("   2. Run: pnpm generate:repo-files");
+      console.error("   3. Commit both docs changes AND generated files");
+      console.error("");
+      console.error("📚 Mappings:");
+      console.error("   • README.md ← apps/docs/content/index.mdx");
+      console.error("   • CONTRIBUTING.md ← apps/docs/content/06-contributing/creating-packs.md");
+      console.error("   • DEVELOPMENT.md ← apps/docs/content/08-development/*.md");
+      console.error("   • SECURITY.md ← apps/docs/content/07-policies/security.md");
+      console.error("");
+      clack.outro("Follow the workflow above and try again.");
+      process.exit(1);
+    }
+    s.stop("✅ No protected files edited.");
+  } catch (error) {
+    // Non-fatal: continue with commit if this check fails
+    s.stop("⚠️  Protected file check skipped.");
+  }
+
   s.start("Formatting and linting staged files...");
   try {
     execSync("pnpm lint-staged", { stdio: "inherit" });

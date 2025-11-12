@@ -21,11 +21,12 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 
 ## File mapping
 
-| Docs Source                                        | Generated File    | Purpose                          |
-| -------------------------------------------------- | ----------------- | -------------------------------- |
-| `apps/docs/content/index.mdx`                      | `README.md`       | GitHub landing page              |
-| `apps/docs/content/contributing/creating-packs.md` | `CONTRIBUTING.md` | Contribution guide               |
-| `apps/docs/content/development/*.md`               | `DEVELOPMENT.md`  | Development guide (concatenated) |
+| Docs Source                                           | Generated File    | Purpose                          |
+| ----------------------------------------------------- | ----------------- | -------------------------------- |
+| `apps/docs/content/index.mdx`                         | `README.md`       | GitHub landing page              |
+| `apps/docs/content/06-contributing/creating-packs.md` | `CONTRIBUTING.md` | Contribution guide               |
+| `apps/docs/content/08-development/*.md`               | `DEVELOPMENT.md`  | Development guide (concatenated) |
+| `apps/docs/content/07-policies/security.md`           | `SECURITY.md`     | Security policy                  |
 
 ## Editing workflow
 
@@ -38,13 +39,16 @@ Edit files in `apps/docs/content/`:
 apps/docs/content/index.mdx
 
 # Edit contribution guide (becomes CONTRIBUTING.md)
-apps/docs/content/contributing/creating-packs.md
+apps/docs/content/06-contributing/creating-packs.md
 
 # Edit development pages (become DEVELOPMENT.md)
-apps/docs/content/development/setup.md
-apps/docs/content/development/workspace.md
-apps/docs/content/development/commands.md
-apps/docs/content/development/architecture.md
+apps/docs/content/08-development/setup.mdx
+apps/docs/content/08-development/workspace.md
+apps/docs/content/08-development/commands.md
+apps/docs/content/08-development/architecture.md
+
+# Edit security policy (becomes SECURITY.md)
+apps/docs/content/07-policies/security.md
 ```
 
 ### 2. Generate repo files
@@ -67,19 +71,16 @@ This script:
 
 Check that generated files look correct:
 
-````bash
-git diff README.md CONTRIBUTING.md DEVELOPMENT.md
-```</xai:function_call">---
-
-<xai:function_call name="search_replace">
-<parameter name="file_path">apps/docs/content/06-contributing/editing-docs.md
+```bash
+git diff README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md
+```
 
 ### 4. Commit both
 
 Commit both the docs source and generated files:
 
-```bash
-git add apps/docs/content/ README.md CONTRIBUTING.md DEVELOPMENT.md
+````bash
+git add apps/docs/content/ README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md
 git commit -m "docs: Update documentation"
 ```</xai:function_call">---
 
