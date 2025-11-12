@@ -13,6 +13,7 @@ import {
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -67,9 +68,15 @@ export async function overrideStatus(args: string[]): Promise<void> {
 
     await runOverrideStatus(options);
   } catch (_error) {
-    clack.log.error(
-      `Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
-    );
+    if (isTTY()) {
+      clack.log.error(
+        `Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    } else {
+      console.error(
+        `Error: Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    }
     process.exit(1);
   }
 }
@@ -115,8 +122,15 @@ async function runOverrideStatus(
     const absoluteSourcePath = resolve(process.cwd(), sourcePath);
     ir = await loadIR(absoluteSourcePath);
   } catch {
-    clack.log.warn("Could not load IR - health status will be unavailable");
-    clack.log.info("Run 'aligntrue sync' to generate IR");
+    if (isTTY()) {
+      clack.log.warn("Could not load IR - health status will be unavailable");
+      clack.log.info("Run 'aligntrue sync' to generate IR");
+    } else {
+      console.warn(
+        "Warning: Could not load IR - health status will be unavailable",
+      );
+      console.log("Run 'aligntrue sync' to generate IR");
+    }
     ir = null;
   }
 

@@ -121,7 +121,8 @@ async function telemetryOff(): Promise<void> {
 async function telemetryStatus(): Promise<void> {
   try {
     const config = readTelemetryConfig();
-    recordEvent({ command_name: "telemetry-status", align_hashes_used: [] });
+    // Don't record event for status check to avoid circular dependency
+    // recordEvent({ command_name: "telemetry-status", align_hashes_used: [] });
 
     console.log(`Telemetry: ${config.enabled ? "enabled" : "disabled"}`);
 

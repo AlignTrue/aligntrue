@@ -13,6 +13,7 @@ import {
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -54,9 +55,15 @@ export async function overrideDiff(args: string[]): Promise<void> {
 
     await runOverrideDiff(selectorFilter, options);
   } catch (_error) {
-    clack.log.error(
-      `Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
-    );
+    if (isTTY()) {
+      clack.log.error(
+        `Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    } else {
+      console.error(
+        `Error: Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+    }
     process.exit(1);
   }
 }

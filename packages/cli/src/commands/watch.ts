@@ -7,6 +7,7 @@ import * as clack from "@clack/prompts";
 import { resolve } from "path";
 import { existsSync } from "fs";
 import { loadConfig } from "@aligntrue/core";
+import { requireTTY, isTTY } from "../utils/tty-helper.js";
 
 /**
  * Execute watch command
@@ -28,11 +29,20 @@ export async function watch(args: string[]): Promise<void> {
     return;
   }
 
+  // Watch requires TTY for live updates
+  requireTTY("watch");
+
   const cwd = process.cwd();
   const configPath = resolve(cwd, ".aligntrue/config.yaml");
 
   if (!existsSync(configPath)) {
-    clack.log.error("Not an AlignTrue project. Run 'aligntrue init' first.");
+    if (isTTY()) {
+      clack.log.error("Not an AlignTrue project. Run 'aligntrue init' first.");
+    } else {
+      console.error(
+        "Error: Not an AlignTrue project. Run 'aligntrue init' first.",
+      );
+    }
     process.exit(1);
   }
 

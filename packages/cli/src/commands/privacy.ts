@@ -5,6 +5,7 @@
 import * as clack from "@clack/prompts";
 import { createConsentManager } from "@aligntrue/core";
 import { exitWithError } from "../utils/error-formatter.js";
+import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -89,7 +90,11 @@ async function auditCommand(): Promise<void> {
   const consents = manager.listConsents();
 
   if (consents.length === 0) {
-    clack.log.info("No privacy consents granted yet");
+    if (isTTY()) {
+      clack.log.info("No privacy consents granted yet");
+    } else {
+      console.log("No privacy consents granted yet");
+    }
     console.log();
     console.log("Network operations will prompt for consent when needed.");
     console.log(
@@ -98,7 +103,11 @@ async function auditCommand(): Promise<void> {
     return;
   }
 
-  clack.log.message("Privacy Consents");
+  if (isTTY()) {
+    clack.log.message("Privacy Consents");
+  } else {
+    console.log("Privacy Consents");
+  }
   console.log();
 
   for (const consent of consents) {
@@ -151,14 +160,22 @@ async function grantCommand(operations: string[]): Promise<void> {
 
   // Check if already granted
   if (manager.checkConsent(operation)) {
-    clack.log.info(`Consent for '${operation}' already granted`);
+    if (isTTY()) {
+      clack.log.info(`Consent for '${operation}' already granted`);
+    } else {
+      console.log(`Consent for '${operation}' already granted`);
+    }
     console.log();
     console.log('Run "aligntrue privacy audit" to see all consents.');
     return;
   }
 
   manager.grantConsent(operation);
-  clack.log.success(`Granted consent for '${operation}'`);
+  if (isTTY()) {
+    clack.log.success(`Granted consent for '${operation}'`);
+  } else {
+    console.log(`✓ Granted consent for '${operation}'`);
+  }
   console.log();
   console.log(
     `Network operations for ${operation} will now proceed without prompts.`,
@@ -179,22 +196,41 @@ async function revokeCommand(
     const consents = manager.listConsents();
 
     if (consents.length === 0) {
-      clack.log.info("No consents to revoke");
+      if (isTTY()) {
+        clack.log.info("No consents to revoke");
+      } else {
+        console.log("No consents to revoke");
+      }
       return;
     }
 
     // Confirm before revoking all
-    const confirmed = await clack.confirm({
-      message: `Revoke all ${consents.length} consent(s)?`,
-    });
+    if (isTTY()) {
+      const confirmed = await clack.confirm({
+        message: `Revoke all ${consents.length} consent(s)?`,
+      });
 
-    if (clack.isCancel(confirmed) || !confirmed) {
-      clack.cancel("Revoke cancelled");
-      return;
+      if (clack.isCancel(confirmed) || !confirmed) {
+        clack.cancel("Revoke cancelled");
+        return;
+      }
+    } else {
+      // Non-interactive mode - require explicit confirmation
+      console.error(
+        "Error: Cannot revoke all consents in non-interactive mode",
+      );
+      console.error(
+        "Please run this command in an interactive terminal or revoke consents individually.",
+      );
+      process.exit(1);
     }
 
     manager.revokeAll();
-    clack.log.success(`Revoked all consents (${consents.length})`);
+    if (isTTY()) {
+      clack.log.success(`Revoked all consents (${consents.length})`);
+    } else {
+      console.log(`✓ Revoked all consents (${consents.length})`);
+    }
     console.log();
     console.log(
       "Network operations will prompt for consent again when needed.",
@@ -227,14 +263,22 @@ async function revokeCommand(
 
   // Check if consent exists
   if (!manager.checkConsent(operation)) {
-    clack.log.info(`No consent for '${operation}' to revoke`);
+    if (isTTY()) {
+      clack.log.info(`No consent for '${operation}' to revoke`);
+    } else {
+      console.log(`No consent for '${operation}' to revoke`);
+    }
     console.log();
     console.log('Run "aligntrue privacy audit" to see all consents.');
     return;
   }
 
   manager.revokeConsent(operation);
-  clack.log.success(`Revoked consent for '${operation}'`);
+  if (isTTY()) {
+    clack.log.success(`Revoked consent for '${operation}'`);
+  } else {
+    console.log(`✓ Revoked consent for '${operation}'`);
+  }
   console.log();
   console.log(`Next sync will prompt for ${operation} consent again.`);
 }

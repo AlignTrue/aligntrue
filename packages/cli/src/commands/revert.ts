@@ -8,6 +8,7 @@ import * as clack from "@clack/prompts";
 import { readFileSync, existsSync } from "fs";
 import { resolve, join } from "path";
 import { diffLines } from "diff";
+import { isTTY } from "../utils/tty-helper.js";
 
 /**
  * Execute revert command
@@ -49,15 +50,24 @@ export async function revert(args: string[]): Promise<void> {
     }
   }
 
-  clack.intro("Revert from backup");
+  if (isTTY()) {
+    clack.intro("Revert from backup");
+  } else {
+    console.log("Revert from backup");
+  }
 
   try {
     // List available backups
     const backups = BackupManager.listBackups(cwd);
 
     if (backups.length === 0) {
-      clack.log.warn("No backups found");
-      clack.outro("Nothing to revert");
+      if (isTTY()) {
+        clack.log.warn("No backups found");
+        clack.outro("Nothing to revert");
+      } else {
+        console.log("No backups found");
+        console.log("Nothing to revert");
+      }
       return;
     }
 
@@ -67,15 +77,33 @@ export async function revert(args: string[]): Promise<void> {
       // Use provided timestamp
       const backup = backups.find((b) => b.timestamp === timestamp);
       if (!backup) {
-        clack.log.error(`Backup not found: ${timestamp}`);
-        clack.log.info("Available backups:");
-        backups.forEach((b) => {
-          clack.log.info(`  ${b.timestamp} - ${b.manifest.created_by}`);
-        });
+        if (isTTY()) {
+          clack.log.error(`Backup not found: ${timestamp}`);
+          clack.log.info("Available backups:");
+          backups.forEach((b) => {
+            clack.log.info(`  ${b.timestamp} - ${b.manifest.created_by}`);
+          });
+        } else {
+          console.error(`Error: Backup not found: ${timestamp}`);
+          console.log("Available backups:");
+          backups.forEach((b) => {
+            console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);
+          });
+        }
         process.exit(1);
       }
       selectedTimestamp = timestamp;
     } else {
+      if (!isTTY()) {
+        console.error("Error: --timestamp required in non-interactive mode");
+        console.error("Usage: aligntrue revert --timestamp <timestamp>");
+        console.log("\nAvailable backups:");
+        backups.forEach((b) => {
+          console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);
+        });
+        process.exit(1);
+      }
+
       // Interactive backup selection
       const backupChoices = backups.map((b) => ({
         value: b.timestamp,
@@ -181,6 +209,12 @@ export async function revert(args: string[]): Promise<void> {
 
     // Confirm restore
     if (!yes) {
+      if (!isTTY()) {
+        console.error("\nError: Confirmation required in non-interactive mode");
+        console.error("Use --yes to skip confirmation");
+        process.exit(1);
+      }
+
       const confirm = await clack.confirm({
         message: targetFile
           ? `Restore ${targetFile} from backup ${selectedTimestamp}?`
@@ -194,8 +228,12 @@ export async function revert(args: string[]): Promise<void> {
     }
 
     // Restore backup
-    const spinner = clack.spinner();
-    spinner.start("Restoring backup");
+    const spinner = isTTY() ? clack.spinner() : null;
+    if (spinner) {
+      spinner.start("Restoring backup");
+    } else {
+      console.log("Restoring backup...");
+    }
 
     const restoreOptions: {
       cwd: string;
@@ -212,10 +250,21 @@ export async function revert(args: string[]): Promise<void> {
 
     BackupManager.restoreBackup(restoreOptions);
 
-    spinner.stop("Backup restored");
-    clack.outro(`✓ Restored from backup ${selectedTimestamp}`);
+    if (spinner) {
+      spinner.stop("Backup restored");
+      clack.outro(`✓ Restored from backup ${selectedTimestamp}`);
+    } else {
+      console.log("✓ Backup restored");
+      console.log(`✓ Restored from backup ${selectedTimestamp}`);
+    }
   } catch (err) {
-    clack.log.error(err instanceof Error ? err.message : String(err));
+    if (isTTY()) {
+      clack.log.error(err instanceof Error ? err.message : String(err));
+    } else {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
     process.exit(1);
   }
 }
