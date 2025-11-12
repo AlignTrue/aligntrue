@@ -356,7 +356,9 @@ export async function sync(args: string[]): Promise<void> {
     );
 
     // Compute NEW bundle hash from current rules
-    const { generateLockfile } = await import("@aligntrue/core/lockfile");
+    const { generateLockfile, writeLockfile } = await import(
+      "@aligntrue/core/lockfile"
+    );
     const newLockfile = generateLockfile(
       bundleResult.pack,
       config.mode as "team" | "enterprise",
@@ -373,6 +375,16 @@ export async function sync(args: string[]): Promise<void> {
       } catch {
         // Corrupted lockfile - will be regenerated
       }
+    }
+
+    // Write new lockfile BEFORE validation so it always reflects current state
+    // This ensures drift detection works correctly even if validation fails
+    try {
+      writeLockfile(lockfilePath, newLockfile, { silent: true });
+    } catch (err) {
+      clack.log.warn(
+        `Failed to write lockfile: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     // Check if allow list exists
