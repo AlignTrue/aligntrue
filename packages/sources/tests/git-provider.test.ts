@@ -39,7 +39,9 @@ vi.mock("simple-git", () => {
     clone: vi.fn(),
     fetch: vi.fn(),
     checkout: vi.fn(),
-    revparse: vi.fn(),
+    revparse: vi.fn().mockResolvedValue("default-sha-123"),
+    reset: vi.fn().mockResolvedValue(undefined),
+    listRemote: vi.fn().mockResolvedValue("default-sha-123\trefs/heads/main"),
   };
 
   return {
@@ -181,6 +183,13 @@ describe("GitProvider - Clone Operations", () => {
     vi.mocked(git.fetch).mockReset();
     vi.mocked(git.checkout).mockReset();
     vi.mocked(git.revparse).mockReset();
+    vi.mocked(git.revparse).mockResolvedValue("default-sha-123");
+    vi.mocked(git.reset).mockReset();
+    vi.mocked(git.reset).mockResolvedValue(undefined);
+    vi.mocked(git.listRemote).mockReset();
+    vi.mocked(git.listRemote).mockResolvedValue(
+      "default-sha-123\trefs/heads/main",
+    );
   });
 
   afterEach(() => {
@@ -442,6 +451,13 @@ describe("GitProvider - Cache Behavior", () => {
     vi.mocked(git.fetch).mockReset();
     vi.mocked(git.checkout).mockReset();
     vi.mocked(git.revparse).mockReset();
+    vi.mocked(git.revparse).mockResolvedValue("default-sha-123");
+    vi.mocked(git.reset).mockReset();
+    vi.mocked(git.reset).mockResolvedValue(undefined);
+    vi.mocked(git.listRemote).mockReset();
+    vi.mocked(git.listRemote).mockResolvedValue(
+      "default-sha-123\trefs/heads/main",
+    );
   });
 
   afterEach(() => {
@@ -557,6 +573,10 @@ describe("GitProvider - Cache Behavior", () => {
     );
 
     const git = simpleGit();
+
+    // Mock reset to fail so it falls back to cloning
+    vi.mocked(git.reset).mockRejectedValueOnce(new Error("reset failed"));
+    vi.mocked(git.fetch).mockResolvedValueOnce(undefined as any);
 
     // Mock clone to create new content
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
@@ -929,7 +949,7 @@ describe("GitProvider - Commit SHA Capture", () => {
 
     const git = simpleGit();
     vi.mocked(git.clone).mockResolvedValueOnce(undefined as any);
-    vi.mocked(git.revparse).mockResolvedValueOnce("abc123def456789");
+    vi.mocked(git.revparse).mockResolvedValue("abc123def456789");
 
     // Create mock cache
     const repoHash = provider["repoHash"];
@@ -955,7 +975,7 @@ describe("GitProvider - Commit SHA Capture", () => {
 
     const git = simpleGit();
     vi.mocked(git.clone).mockResolvedValueOnce(undefined as any);
-    vi.mocked(git.revparse).mockResolvedValueOnce("  abc123def  \n");
+    vi.mocked(git.revparse).mockResolvedValue("  abc123def  \n");
 
     // Create mock cache
     const repoHash = provider["repoHash"];
@@ -994,9 +1014,10 @@ describe("GitProvider - Commit SHA Capture", () => {
 
     const git = simpleGit();
     vi.mocked(git.clone).mockResolvedValueOnce(undefined as any);
-    vi.mocked(git.revparse).mockRejectedValueOnce(
-      new Error("fatal: not a git repository"),
-    );
+    // Mock revparse to succeed during fetch, then fail on explicit call
+    vi.mocked(git.revparse)
+      .mockResolvedValueOnce("success-sha")
+      .mockRejectedValueOnce(new Error("fatal: not a git repository"));
 
     // Create mock cache
     const repoHash = provider["repoHash"];
@@ -1021,7 +1042,7 @@ describe("GitProvider - Commit SHA Capture", () => {
     );
 
     const git = simpleGit();
-    vi.mocked(git.revparse).mockResolvedValueOnce("cached123");
+    vi.mocked(git.revparse).mockResolvedValue("cached123");
 
     // Create mock cache (simulate previous fetch)
     const repoHash = provider["repoHash"];
