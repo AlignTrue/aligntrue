@@ -264,17 +264,16 @@ Values:
 
 **Type:** `object`
 
-**Default:** `{ auto_backup: true, keep_count: 5, backup_on: ["sync", "import"] }`
+**Default:** `{ auto_backup: true, keep_count: 20, backup_on: ["sync"] }`
 
 Automatic backup configuration.
 
 ```yaml
 backup:
   auto_backup: true
-  keep_count: 5
+  keep_count: 20
   backup_on:
     - sync
-    - import
 ```
 
 #### backup.auto_backup

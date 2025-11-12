@@ -32,7 +32,7 @@ Subcommands:
   create              Create a manual backup
   list                List all available backups
   restore             Restore from a backup (most recent by default)
-  cleanup             Remove old backups (keeps 10 most recent by default)
+  cleanup             Remove old backups (keeps 20 most recent by default)
 
 Options:
   --notes <text>      Add notes to backup (create subcommand)
@@ -246,7 +246,7 @@ async function handleCleanup(
   const keepIndex = argv.indexOf("--keep");
   const keepValue =
     keepIndex >= 0 && argv[keepIndex + 1] ? argv[keepIndex + 1] : args.keep;
-  const keepCount = keepValue ? parseInt(keepValue, 10) : 10;
+  const keepCount = keepValue ? parseInt(keepValue, 10) : 20;
 
   if (isNaN(keepCount) || keepCount < 1) {
     throw new Error(

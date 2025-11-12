@@ -58,9 +58,9 @@ backup:
     - import
     - restore
 
-  # Number of backups to keep (default: 10)
+  # Number of backups to keep (default: 20)
   # Older backups are automatically deleted
-  keep_count: 10
+  keep_count: 20
 ```
 
 ### Configuration options
@@ -76,7 +76,7 @@ backup:
   - Only applies when `auto_backup: true`
 
 - **`keep_count`** (number): How many backups to retain
-  - Default: 10
+  - Default: 20
   - Range: 1-100
   - Older backups deleted automatically after successful operations
 
