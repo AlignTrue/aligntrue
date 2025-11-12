@@ -45,11 +45,11 @@ describeSkipWindows("Check Command Integration", () => {
       const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.example
-    severity: error
-    applies_to: ["**/*.ts"]
-    guidance: Test guidance
+sections:
+  - heading: Test rule example
+    level: 2
+    content: Test guidance
+    fingerprint: test-rule-example
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
@@ -77,10 +77,11 @@ rules:
 
       const invalidIr = `id: test-project
 version: 1.0.0
-rules:
-  - id: test.rule.example
-    severity: error
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: Test rule example
+    level: 2
+    content: ""
+    fingerprint: test-rule-example
 `;
       writeFileSync(
         join(TEST_DIR, ".aligntrue", ".rules.yaml"),

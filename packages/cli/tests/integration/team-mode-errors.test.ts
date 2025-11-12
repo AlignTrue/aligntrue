@@ -68,7 +68,7 @@ version: "1"
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules: []
+sections: []
 `,
       );
 
@@ -96,7 +96,7 @@ version: "1"
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules: []
+sections: []
 `,
       );
 

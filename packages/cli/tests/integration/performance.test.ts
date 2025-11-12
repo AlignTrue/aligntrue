@@ -60,11 +60,11 @@ git:
       `id: perf-test
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.example.rule
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Test
+sections:
+  - heading: Testing example rule
+    level: 2
+    content: Test
+    fingerprint: testing-example-rule
 `,
     );
 

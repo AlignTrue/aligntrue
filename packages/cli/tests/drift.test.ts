@@ -48,10 +48,11 @@ modules:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Current guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Current guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -133,10 +134,11 @@ modules:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Test guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Test guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -151,15 +153,9 @@ rules:
       `
 # AlignTrue Rules
 
-\`\`\`aligntrue
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Modified in AGENTS.md"
-\`\`\`
+## Test rule one
+
+Modified in AGENTS.md
 `,
     );
 
@@ -238,10 +234,11 @@ modules:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Current guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Current guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -326,10 +323,11 @@ modules:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Current guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Current guidance"
+    fingerprint: test-rule-one
 `,
     );
 
