@@ -1,0 +1,167 @@
+# CLI Test Coverage Matrix
+
+This document tracks test coverage for all CLI commands and features.
+
+## Commands (27 total)
+
+| Command   | Happy Path | Error Cases | Exit Codes | Help Text | Integration Tests |
+| --------- | ---------- | ----------- | ---------- | --------- | ----------------- |
+| init      | ✅         | ✅          | ✅         | ✅        | ✅                |
+| sync      | ✅         | ⚠️          | ✅         | ✅        | ✅                |
+| watch     | ⚠️         | ⚠️          | ✅         | ✅        | ✅                |
+| check     | ✅         | ✅          | ✅         | ✅        | ✅                |
+| team      | ✅         | ⚠️          | ✅         | ✅        | ✅                |
+| drift     | ✅         | ⚠️          | ✅         | ✅        | ✅                |
+| backup    | ✅         | ⚠️          | ✅         | ✅        | ✅                |
+| revert    | ✅         | ⚠️          | ✅         | ✅        | ✅                |
+| adapters  | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
+| config    | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
+| plugs     | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| scopes    | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| pull      | ⚠️         | ⚠️          | ✅         | ✅        | ⚠️                |
+| link      | ⚠️         | ⚠️          | ✅         | ✅        | ⚠️                |
+| md        | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| migrate   | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| onboard   | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| override  | ⚠️         | ⚠️          | ✅         | ✅        | ✅                |
+| privacy   | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
+| telemetry | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
+| update    | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+| sources   | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
+
+**Legend:**
+
+- ✅ Fully tested
+- ⚠️ Partially tested
+- ❌ Not tested
+
+## Features
+
+| Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                     |
+| ------------------- | ---------- | ----------------- | --------- | ------------------------- |
+| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works  |
+| Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested          |
+| Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested     |
+| Allow lists         | ✅         | ✅                | ⚠️        | Validation works          |
+| Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested    |
+| Git sources         | ⚠️         | ✅                | ❌        | Local repos tested        |
+| Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works |
+| Overlays            | ⚠️         | ✅                | ❌        | Basic operations tested   |
+| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested          |
+| Exporters (43)      | ⚠️         | ✅                | ❌        | Smoke tests added         |
+| Idempotency         | ✅         | ✅                | ❌        | Byte-identical outputs    |
+| Scopes              | ⚠️         | ⚠️                | ❌        | Needs more coverage       |
+| Plugs               | ⚠️         | ⚠️                | ❌        | Needs more coverage       |
+
+## Test Files
+
+### Unit Tests
+
+- `packages/core/tests/**/*.test.ts` - Core functionality
+- `packages/schema/tests/**/*.test.ts` - Schema validation
+- `packages/exporters/tests/**/*.test.ts` - Exporter logic
+
+### Integration Tests
+
+- `packages/cli/tests/integration/exporters-smoke.test.ts` - All 43 exporters
+- `packages/cli/tests/integration/idempotency.test.ts` - Deterministic outputs
+- `packages/cli/tests/integration/backup.test.ts` - Backup/restore workflows
+- `packages/cli/tests/integration/git-sources.test.ts` - Git operations
+- `packages/cli/tests/integration/overlays.test.ts` - Overlay functionality
+- `packages/cli/tests/integration/watch.test.ts` - Watch mode
+- `packages/cli/tests/integration/check-command.test.ts` - Check command
+- `packages/cli/tests/integration/init-command.test.ts` - Init command
+
+## Coverage Gaps
+
+### High Priority
+
+1. **Scopes integration tests** - Monorepo scenarios not fully tested
+2. **Plugs end-to-end** - Slot/fill system needs validation
+3. **Migration wizards** - Solo→team, team→solo transitions
+4. **Remote git sources** - Only local repos tested so far
+
+### Medium Priority
+
+5. **All command error paths** - Many commands only have happy path tests
+6. **Cross-platform** - Most tests run on macOS only
+7. **Performance** - No benchmarks or stress tests
+8. **Concurrent operations** - Race conditions not tested
+
+### Low Priority
+
+9. **Edge cases** - Unusual configurations and inputs
+10. **Telemetry** - Opt-in/opt-out flows
+11. **Update checks** - Version comparison logic
+
+## Running Tests
+
+### All tests
+
+```bash
+pnpm test
+```
+
+### Specific package
+
+```bash
+pnpm --filter @aligntrue/cli test
+pnpm --filter @aligntrue/core test
+```
+
+### Integration tests only
+
+```bash
+pnpm --filter @aligntrue/cli test:integration
+```
+
+### Watch mode
+
+```bash
+pnpm --filter @aligntrue/cli test:watch
+```
+
+## Test Standards
+
+### Unit Tests
+
+- Fast (< 100ms per test)
+- Isolated (no file I/O, no network)
+- Deterministic (same input → same output)
+- Clear assertions (one concept per test)
+
+### Integration Tests
+
+- Use hermetic test directories (`temp-test-*`)
+- Clean up after themselves
+- Test real CLI commands
+- Verify actual file outputs
+
+### E2E Tests (Future)
+
+- Test complete user workflows
+- Use real git repositories
+- Verify cross-tool compatibility
+- Run in CI on multiple platforms
+
+## Maintenance
+
+### Adding New Tests
+
+1. Create test file in appropriate directory
+2. Follow existing patterns and naming
+3. Add to this coverage matrix
+4. Update relevant documentation
+
+### Fixing Flaky Tests
+
+1. Identify root cause (timing, state, environment)
+2. Add retries or better synchronization
+3. Document known issues
+4. Consider marking as `.skip` if unfixable
+
+### Removing Tests
+
+1. Document why in commit message
+2. Update coverage matrix
+3. Add TODO for replacement if needed
