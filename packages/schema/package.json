@@ -30,6 +30,7 @@
   "devDependencies": {
     "tsx": "^4.20.6"
   },
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },

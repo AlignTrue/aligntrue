@@ -16,6 +16,7 @@
     "simple-git": "^3.30.0"
   },
   "devDependencies": {},
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },

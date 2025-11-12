@@ -52,6 +52,7 @@
   "devDependencies": {
     "@types/micromatch": "^4.0.9"
   },
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },
