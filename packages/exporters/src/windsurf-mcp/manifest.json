@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Windsurf .windsurf/mcp_config.json MCP configuration format",
   "outputs": [".windsurf/mcp_config.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Extracts vendor.windsurf fields to top level",

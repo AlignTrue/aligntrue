@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to Gemini CLI .gemini/settings.json configuration format",
   "outputs": [".gemini/settings.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": ["Complements AGENTS.md exporter"]
 }

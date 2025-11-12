@@ -5,8 +5,71 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  rmSync,
+} from "node:fs";
 import { join } from "node:path";
+
+/**
+ * Clean up old test directories
+ * Keeps last 3 test runs or directories newer than 24 hours
+ */
+function cleanupOldTestDirs(): void {
+  try {
+    const tmpDir = "/tmp";
+    const entries = readdirSync(tmpDir);
+    const testDirs = entries
+      .filter((name) => name.startsWith("aligntrue-test-"))
+      .map((name) => {
+        const path = join(tmpDir, name);
+        try {
+          const stats = statSync(path);
+          return {
+            path,
+            name,
+            mtime: stats.mtimeMs,
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+    // Sort by modification time (newest first)
+    testDirs.sort((a, b) => b.mtime - a.mtime);
+
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    let deleted = 0;
+
+    // Keep last 3, delete older than 24 hours
+    testDirs.forEach((dir, index) => {
+      const age = now - dir.mtime;
+      if (index >= 3 && age > oneDayMs) {
+        try {
+          rmSync(dir.path, { recursive: true, force: true });
+          deleted++;
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+    });
+
+    if (deleted > 0) {
+      console.log(
+        `Cleaned up ${deleted} old test director${deleted === 1 ? "y" : "ies"}`,
+      );
+    }
+  } catch {
+    // Ignore cleanup errors - not critical
+  }
+}
 
 const timestamp = Date.now();
 const testDir = `/tmp/aligntrue-test-${timestamp}`;
@@ -14,6 +77,9 @@ const testDir = `/tmp/aligntrue-test-${timestamp}`;
 console.log(`\n=== AlignTrue Comprehensive Testing ===`);
 console.log(`Running all 8 layers`);
 console.log(`Test directory: ${testDir}\n`);
+
+// Clean up old test directories before starting
+cleanupOldTestDirs();
 
 // Create test directory
 mkdirSync(testDir, { recursive: true });
@@ -194,9 +260,12 @@ writeFileSync(reportPath, reportMd + "\n\n" + existingContent);
 
 console.log(`\nReport saved: ${reportPath}`);
 
-// Cleanup
+// Cleanup current test directory
 console.log("\nCleaning up...");
 execSync(`rm -rf ${testDir}`);
+
+// Clean up old test directories again after test run
+cleanupOldTestDirs();
 
 process.exit(failed > 0 ? 1 : 0);
 

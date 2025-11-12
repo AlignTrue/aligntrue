@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Export AlignTrue rules to RooCode .roo/mcp.json MCP configuration format",
   "outputs": [".roo/mcp.json"],
-  "handler": "./index.ts",
+  "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Machine-checkable rules (check) not represented in MCP config format"
