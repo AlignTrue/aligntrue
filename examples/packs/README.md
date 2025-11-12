@@ -1,4 +1,4 @@
-# Example Packs
+# Example packs
 
 These example packs demonstrate proper AlignTrue pack format and can be imported via GitHub URLs or copied locally.
 

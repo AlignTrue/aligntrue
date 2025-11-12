@@ -1,4 +1,4 @@
-# Vercel Path Routing Configuration
+# Vercel path routing configuration
 
 ## Current Architecture (Post-Catalog Archive)
 

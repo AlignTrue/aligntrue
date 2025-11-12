@@ -1,4 +1,4 @@
-# Natural Markdown sections
+# Natural markdown sections
 
 Learn how to write rules as natural markdown sections without explicit rule IDs or metadata.
 

@@ -5,7 +5,7 @@ summary: "Web quality baseline: accessibility, performance, resilience, mobile-f
 tags: ["web", "accessibility", "performance", "quality", "paved-road"]
 ---
 
-# Web Quality Baseline
+# Web quality baseline
 
 Web standards: accessibility, performance, resilience, and mobile-first design.
 

@@ -5,7 +5,7 @@ summary: "Systematic debugging workflow: reproduce, reduce, root-cause, fix, pre
 tags: ["debugging", "troubleshooting", "determinism", "paved-road"]
 ---
 
-# Systematic Debugging Workflow
+# Systematic debugging workflow
 
 This pack establishes systematic debugging practices: reproduce deterministically, reduce to the smallest failing case, classify failures, inspect evidence, and prevent recurrence with tests.
 

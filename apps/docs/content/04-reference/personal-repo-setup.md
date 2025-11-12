@@ -1,9 +1,9 @@
 ---
-title: Personal Repository Setup
+title: Personal repository setup
 description: Guide for setting up a remote repository for personal rules
 ---
 
-# Personal Repository Setup
+# Personal repository setup
 
 When using AlignTrue in team mode, you may want to keep some rules private while still version controlling them. This guide shows you how to set up a remote repository for your personal rules.
 

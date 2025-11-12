@@ -1,4 +1,4 @@
-# Deployment Guide
+# Deployment guide
 
 This guide covers deploying the AlignTrue documentation site to Vercel.
 
