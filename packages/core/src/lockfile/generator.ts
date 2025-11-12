@@ -43,6 +43,13 @@ export function generateLockfile(
   const overlayHash =
     overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
 
+  // Defensive: ensure sections exists
+  if (!pack.sections || !Array.isArray(pack.sections)) {
+    throw new Error(
+      `Pack does not contain valid sections array. Got: ${typeof pack.sections}`,
+    );
+  }
+
   // Generate entries from sections using fingerprints
   for (const section of pack.sections) {
     const resultHash = hashSection(section);

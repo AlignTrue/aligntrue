@@ -50,10 +50,11 @@ lockfile:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Initial guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Initial guidance"
+    fingerprint: test-rule-one
 `;
     writeFileSync(irPath, initialIR);
 
@@ -82,10 +83,11 @@ sources:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Modified guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Modified guidance"
+    fingerprint: test-rule-one
 `;
     writeFileSync(irPath, modifiedIR);
 
@@ -149,10 +151,11 @@ lockfile:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Initial guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Initial guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -181,10 +184,11 @@ sources:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Modified guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Modified guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -247,10 +251,11 @@ lockfile:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Initial guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Initial guidance"
+    fingerprint: test-rule-one
 `,
     );
 
@@ -279,10 +284,11 @@ sources:
 id: test-rules
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test.rule.one
-    severity: error
-    guidance: "Modified guidance"
+sections:
+  - heading: Test rule one
+    level: 2
+    content: "Modified guidance"
+    fingerprint: test-rule-one
 `,
     );
 

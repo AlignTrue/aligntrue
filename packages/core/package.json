@@ -41,6 +41,14 @@
     "yaml": "^2.6.1",
     "micromatch": "^4.0.8"
   },
+  "peerDependencies": {
+    "@aligntrue/exporters": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@aligntrue/exporters": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/micromatch": "^4.0.9"
   },

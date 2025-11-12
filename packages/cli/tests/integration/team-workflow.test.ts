@@ -95,10 +95,9 @@ describe("Team Mode Workflow", () => {
     const ir = parseYaml(
       readFileSync(join(env2, ".aligntrue/.rules.yaml"), "utf-8"),
     );
-    // Change severity to ensure hash changes
-    const ruleToModify = ir.rules.find((r: any) => r.severity === "warn");
-    if (ruleToModify) {
-      ruleToModify.severity = "error";
+    // Change content to ensure hash changes
+    if (ir.sections && ir.sections[0]) {
+      ir.sections[0].content = "Modified content to trigger hash change";
     }
     writeFileSync(
       join(env2, ".aligntrue/.rules.yaml"),
@@ -140,7 +139,9 @@ describe("Team Mode Workflow", () => {
     const ir = parseYaml(
       readFileSync(join(env2, ".aligntrue/.rules.yaml"), "utf-8"),
     );
-    ir.rules[0].severity = "error";
+    if (ir.sections && ir.sections[0]) {
+      ir.sections[0].content = "Modified to error state";
+    }
     writeFileSync(
       join(env2, ".aligntrue/.rules.yaml"),
       stringifyYaml(ir),
@@ -165,7 +166,9 @@ describe("Team Mode Workflow", () => {
     const ir = parseYaml(
       readFileSync(join(env1, ".aligntrue/.rules.yaml"), "utf-8"),
     );
-    ir.rules[0].severity = "error";
+    if (ir.sections && ir.sections[0]) {
+      ir.sections[0].content = "Modified to error severity";
+    }
     writeFileSync(
       join(env1, ".aligntrue/.rules.yaml"),
       stringifyYaml(ir),
