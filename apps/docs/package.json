@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
+    "postbuild": "pagefind --site .next --output-path public/_pagefind",
     "start": "next start -p 3000",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -25,8 +26,10 @@
     "react-dom": "19.2.0"
   },
   "devDependencies": {
+    "@pagefind/default-ui": "^1.1.0",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
-    "fast-xml-parser": "^5.3.1"
+    "fast-xml-parser": "^5.3.1",
+    "pagefind": "^1.1.0"
   }
 }

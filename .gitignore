@@ -70,3 +70,7 @@ packages/**/.test-output*/
 **/.last-sync
 **/.team-onboarding-complete
 *.lock.json.test
+
+# Pagefind search index (generated during build)
+
+apps/docs/public/_pagefind
