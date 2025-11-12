@@ -23,7 +23,7 @@ export interface SkillItem extends ResourceItem {
   scope: string;
   name: string;
   description?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 export class SkillsResourceManager extends ResourceManager<SkillItem> {
@@ -32,8 +32,8 @@ export class SkillsResourceManager extends ResourceManager<SkillItem> {
   }
 
   protected async readFromBackend(
-    backend: IStorageBackend,
-    scope: string,
+    _backend: IStorageBackend,
+    _scope: string,
   ): Promise<SkillItem[]> {
     // Skills support coming in future release
     // For now, returns empty array
@@ -41,9 +41,9 @@ export class SkillsResourceManager extends ResourceManager<SkillItem> {
   }
 
   protected async writeToBackend(
-    backend: IStorageBackend,
-    items: SkillItem[],
-    scope: string,
+    _backend: IStorageBackend,
+    _items: SkillItem[],
+    _scope: string,
   ): Promise<void> {
     // Skills support coming in future release
     // For now, no-op
@@ -53,7 +53,7 @@ export class SkillsResourceManager extends ResourceManager<SkillItem> {
     // Skills support coming in future release
     // For now, simple concatenation
     const merged: SkillItem[] = [];
-    for (const [scope, scopeItems] of items.entries()) {
+    for (const [_scope, scopeItems] of items.entries()) {
       merged.push(...scopeItems);
     }
     return merged;

@@ -65,7 +65,7 @@ export class LocalStorage implements StorageBackend {
     return [];
   }
 
-  async write(sections: AlignSection[]): Promise<void> {
+  async write(_sections: AlignSection[]): Promise<void> {
     // TODO: Implement write to .aligntrue/.local/<scope>.yaml
   }
 
@@ -100,7 +100,7 @@ export class RepoStorage implements StorageBackend {
     return [];
   }
 
-  async write(sections: AlignSection[]): Promise<void> {
+  async write(_sections: AlignSection[]): Promise<void> {
     // TODO: Implement write to .aligntrue/.rules.yaml (merge with other scopes)
   }
 
@@ -138,7 +138,7 @@ export class RemoteStorage implements StorageBackend {
     return [];
   }
 
-  async write(sections: AlignSection[]): Promise<void> {
+  async write(_sections: AlignSection[]): Promise<void> {
     // TODO: Implement write to .aligntrue/.remotes/<scope>/<path>
   }
 

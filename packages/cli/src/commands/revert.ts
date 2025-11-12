@@ -2,13 +2,12 @@
  * Revert command - restore files from backup with preview
  */
 
-import { BackupManager } from "@aligntrue/core";
+import { BackupManager, type BackupInfo } from "@aligntrue/core";
 import { loadConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 import { readFileSync, existsSync } from "fs";
 import { resolve, join } from "path";
 import { diffLines } from "diff";
-import type { BackupInfo } from "@aligntrue/core/backup/types.js";
 
 /**
  * Execute revert command

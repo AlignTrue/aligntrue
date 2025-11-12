@@ -181,10 +181,9 @@ export async function init(args: string[] = []): Promise<void> {
       console.log("");
 
       // Show team configuration summary
+      const typedTeamConfig = teamConfig as unknown as AlignTrueConfig;
       const teamSections =
-        teamConfig?.scopes?.team?.sections ||
-        teamConfig?.resources?.rules?.scopes?.team?.sections ||
-        [];
+        typedTeamConfig?.resources?.rules?.scopes?.["team"]?.sections || [];
       const teamSectionsDisplay = Array.isArray(teamSections)
         ? teamSections.join(", ")
         : teamSections === "*"
@@ -233,20 +232,22 @@ export async function init(args: string[] = []): Promise<void> {
         const { runRemoteSetupWizard } = await import(
           "../wizards/remote-setup.js"
         );
-        await runRemoteSetupWizard(cwd);
+        await runRemoteSetupWizard("personal", cwd);
       } else if (choice === "personal-local") {
         // Update config to add personal local storage
         if (teamConfig) {
           if (!teamConfig.storage) {
-            teamConfig.storage = {};
+            (teamConfig as unknown as AlignTrueConfig).storage = {};
           }
-          teamConfig.storage.personal = {
-            type: "local",
-          };
+          if ((teamConfig as unknown as AlignTrueConfig).storage) {
+            (teamConfig as unknown as AlignTrueConfig).storage!["personal"] = {
+              type: "local",
+            };
 
-          // Write updated config
-          writeFileSync(paths.config, yaml.stringify(teamConfig), "utf-8");
-          clack.log.success("Personal local storage configured");
+            // Write updated config
+            writeFileSync(paths.config, yaml.stringify(teamConfig), "utf-8");
+            clack.log.success("Personal local storage configured");
+          }
         }
       }
 

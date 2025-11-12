@@ -23,7 +23,7 @@ export interface MCPItem extends ResourceItem {
   scope: string;
   name: string;
   url: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 export class MCPsResourceManager extends ResourceManager<MCPItem> {
@@ -32,8 +32,8 @@ export class MCPsResourceManager extends ResourceManager<MCPItem> {
   }
 
   protected async readFromBackend(
-    backend: IStorageBackend,
-    scope: string,
+    _backend: IStorageBackend,
+    _scope: string,
   ): Promise<MCPItem[]> {
     // MCP support coming in future release
     // For now, returns empty array
@@ -41,9 +41,9 @@ export class MCPsResourceManager extends ResourceManager<MCPItem> {
   }
 
   protected async writeToBackend(
-    backend: IStorageBackend,
-    items: MCPItem[],
-    scope: string,
+    _backend: IStorageBackend,
+    _items: MCPItem[],
+    _scope: string,
   ): Promise<void> {
     // MCP support coming in future release
     // For now, no-op
@@ -53,7 +53,7 @@ export class MCPsResourceManager extends ResourceManager<MCPItem> {
     // MCP support coming in future release
     // For now, simple concatenation
     const merged: MCPItem[] = [];
-    for (const [scope, scopeItems] of items.entries()) {
+    for (const [_scope, scopeItems] of items.entries()) {
       merged.push(...scopeItems);
     }
     return merged;

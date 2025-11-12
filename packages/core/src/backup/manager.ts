@@ -447,8 +447,8 @@ export class BackupManager {
    * TODO: Implement git push to remote backup repository
    */
   static async syncBackupToRemote(
-    backup: BackupInfo,
-    remoteUrl: string,
+    _backup: BackupInfo,
+    _remoteUrl: string,
   ): Promise<void> {
     // TODO: Implement git push
     // For now, this is a no-op

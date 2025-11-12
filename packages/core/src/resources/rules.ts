@@ -26,13 +26,13 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
    */
   protected async readFromBackend(
     backend: IStorageBackend,
-    scope: string,
+    _scope: string,
   ): Promise<RuleItem[]> {
     const sections = await backend.read();
 
     return sections.map((section) => ({
       id: section.fingerprint || section.heading,
-      scope,
+      scope: _scope,
       heading: section.heading,
       content: section.content,
       level: section.level,
@@ -46,7 +46,7 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
   protected async writeToBackend(
     backend: IStorageBackend,
     items: RuleItem[],
-    scope: string,
+    _scope: string,
   ): Promise<void> {
     const sections: AlignSection[] = items.map((item) => ({
       heading: item.heading,
@@ -65,7 +65,7 @@ export class RulesResourceManager extends ResourceManager<RuleItem> {
   protected mergeItems(items: Map<string, RuleItem[]>): RuleItem[] {
     const merged: RuleItem[] = [];
 
-    for (const [scope, scopeItems] of items.entries()) {
+    for (const [_scope, scopeItems] of items.entries()) {
       merged.push(...scopeItems);
     }
 
