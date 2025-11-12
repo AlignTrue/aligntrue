@@ -1,4 +1,4 @@
-# Quick Release Guide
+# Quick release guide
 
 ## Setup (one time only)
 

@@ -5,7 +5,7 @@ summary: "Vercel deployment best practices: environment management, performance,
 tags: ["vercel", "deployment", "nextjs", "paved-road"]
 ---
 
-# Vercel Deployment Guide
+# Vercel deployment guide
 
 Best practices for deploying Next.js apps on Vercel: environment management, performance optimization, and reliability.
 

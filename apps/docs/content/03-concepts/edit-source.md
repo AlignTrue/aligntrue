@@ -1,9 +1,9 @@
 ---
-title: Edit Source Configuration
+title: Edit source configuration
 description: Control which files accept edits and sync to the internal representation
 ---
 
-# Edit Source Configuration
+# Edit source configuration
 
 The `sync.edit_source` configuration controls which files can be edited and will sync back to AlignTrue's internal representation (IR).
 
