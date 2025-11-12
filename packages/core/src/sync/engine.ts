@@ -6,6 +6,7 @@
 import type { AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { ResolvedScope, Scope, MergeOrder } from "../scope.js";
+import type { SectionConflict } from "./multi-file-parser.js";
 import { loadConfig } from "../config/index.js";
 import { resolveScopes } from "../scope.js";
 import { loadIR } from "./ir-loader.js";
@@ -760,9 +761,40 @@ export class SyncEngine {
     agent: string,
     _options: SyncOptions,
   ): Promise<import("@aligntrue/schema").AlignSection[]> {
-    throw new Error(
-      `Import from ${agent} not implemented. Author rules in AGENTS.md directly.`,
+    const cwd = process.cwd();
+    const paths = getAlignTruePaths(cwd);
+    const { join } = await import("path");
+    const { existsSync } = await import("fs");
+
+    // Map agent name to file path
+    const agentFilePaths: Record<string, string> = {
+      "agents-md": paths.agentsMd(),
+      cursor: join(cwd, ".cursor/rules/aligntrue.mdc"),
+    };
+
+    const filePath = agentFilePaths[agent];
+    if (!filePath || !existsSync(filePath)) {
+      throw new Error(`Agent file not found: ${agent}`);
+    }
+
+    // Parse the agent file
+    const { detectEditedFiles, generateFingerprint } = await import(
+      "./multi-file-parser.js"
     );
+    const editedFiles = await detectEditedFiles(cwd, this.config!, new Date(0)); // Use epoch to get all files
+
+    const targetFile = editedFiles.find((f) => f.absolutePath === filePath);
+    if (!targetFile) {
+      throw new Error(`Could not parse agent file: ${agent}`);
+    }
+
+    // Convert parsed sections to AlignSection format
+    return targetFile.sections.map((s) => ({
+      heading: s.heading,
+      content: s.content,
+      level: s.level,
+      fingerprint: generateFingerprint(s.heading),
+    }));
   }
 
   /**
@@ -776,6 +808,7 @@ export class SyncEngine {
     const auditTrail: AuditEntry[] = [];
     const written: string[] = [];
     const warnings: string[] = [];
+    let conflicts: SectionConflict[] = [];
 
     try {
       // Load config
@@ -793,60 +826,56 @@ export class SyncEngine {
       const editedFiles = await detectEditedFiles(cwd, config);
 
       if (editedFiles.length === 0) {
-        // No edits detected - proceed with normal sync
-        return {
-          success: true,
-          written: [],
-          warnings: ["No agent file edits detected"],
-          auditTrail,
-        };
-      }
+        // No edits detected - proceed with normal IR-to-agents sync
+        warnings.push("No agent file edits detected");
+        // Continue to export step (don't return early)
+      } else {
+        auditTrail.push({
+          action: "update",
+          target: "multi-file-detection",
+          timestamp: new Date().toISOString(),
+          details: `Detected ${editedFiles.length} edited file(s)`,
+        });
 
-      auditTrail.push({
-        action: "update",
-        target: "multi-file-detection",
-        timestamp: new Date().toISOString(),
-        details: `Detected ${editedFiles.length} edited file(s)`,
-      });
+        // 2. Load current IR
+        const currentIR = await loadIR(paths.rules);
 
-      // 2. Load current IR
-      const currentIR = await loadIR(paths.rules);
+        // 3. Merge changes from agent files
+        const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
 
-      // 3. Merge changes from agent files
-      const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
+        // 4. Check for conflicts
+        conflicts = mergeResult.conflicts;
+        if (conflicts.length > 0) {
+          for (const conflict of conflicts) {
+            const fileList = conflict.files.map((f) => f.path).join(", ");
+            warnings.push(
+              `Section "${conflict.heading}" edited in multiple files: ${fileList}`,
+            );
+            auditTrail.push({
+              action: "conflict",
+              target: conflict.heading,
+              timestamp: new Date().toISOString(),
+              details: `${conflict.reason}: ${fileList}`,
+            });
+          }
+        }
 
-      // 4. Check for conflicts
-      const conflicts = mergeResult.conflicts;
-      if (conflicts.length > 0) {
-        for (const conflict of conflicts) {
-          const fileList = conflict.files.map((f) => f.path).join(", ");
-          warnings.push(
-            `Section "${conflict.heading}" edited in multiple files: ${fileList}`,
-          );
+        // 5. Write merged IR
+        if (!options.dryRun) {
+          const { saveIR } = await import("./ir-loader.js");
+          await saveIR(paths.rules, mergeResult.mergedPack);
+          written.push(paths.rules);
+
           auditTrail.push({
-            action: "conflict",
-            target: conflict.heading,
+            action: "update",
+            target: paths.rules,
             timestamp: new Date().toISOString(),
-            details: `${conflict.reason}: ${fileList}`,
+            details: `Merged ${editedFiles.length} file(s) to IR`,
           });
         }
       }
 
-      // 5. Write merged IR
-      if (!options.dryRun) {
-        const { saveIR } = await import("./ir-loader.js");
-        await saveIR(paths.rules, mergeResult.mergedPack);
-        written.push(paths.rules);
-
-        auditTrail.push({
-          action: "update",
-          target: paths.rules,
-          timestamp: new Date().toISOString(),
-          details: `Merged ${editedFiles.length} file(s) to IR`,
-        });
-      }
-
-      // 6. Sync merged IR back to all agents
+      // 6. Export IR to all configured agents (always run)
       const syncResult = await this.syncToAgents(configPath, options);
 
       const result: SyncResult = {
