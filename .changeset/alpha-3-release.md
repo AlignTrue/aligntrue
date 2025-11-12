@@ -7,7 +7,6 @@
 "@aligntrue/sources": patch
 "@aligntrue/file-utils": patch
 "@aligntrue/plugin-contracts": patch
-"@aligntrue/checks": patch
 "@aligntrue/testkit": patch
 "@aligntrue/ui": patch
 "aligntrue": patch

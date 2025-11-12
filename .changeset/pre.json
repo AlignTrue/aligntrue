@@ -2,19 +2,18 @@
   "mode": "pre",
   "tag": "alpha",
   "initialVersions": {
-    "@aligntrue/docs": "0.1.0",
-    "aligntrue": "0.1.0-alpha.2",
-    "@aligntrue/checks": "0.1.0-alpha.2",
-    "@aligntrue/cli": "0.1.0-alpha.2",
-    "@aligntrue/core": "0.1.0-alpha.2",
-    "@aligntrue/exporters": "0.1.0-alpha.2",
-    "@aligntrue/file-utils": "0.1.0-alpha.2",
-    "@aligntrue/markdown-parser": "0.1.0-alpha.2",
-    "@aligntrue/plugin-contracts": "0.1.0-alpha.2",
-    "@aligntrue/schema": "0.1.0-alpha.2",
-    "@aligntrue/sources": "0.1.0-alpha.2",
-    "@aligntrue/testkit": "0.1.0-alpha.2",
-    "@aligntrue/ui": "0.1.0"
+    "@aligntrue/docs": "0.1.1-alpha.3",
+    "aligntrue": "0.1.0-alpha.3",
+    "@aligntrue/cli": "0.1.1-alpha.3",
+    "@aligntrue/core": "0.1.1-alpha.3",
+    "@aligntrue/exporters": "0.1.1-alpha.3",
+    "@aligntrue/file-utils": "0.1.1-alpha.3",
+    "@aligntrue/markdown-parser": "0.1.1-alpha.3",
+    "@aligntrue/plugin-contracts": "0.1.1-alpha.3",
+    "@aligntrue/schema": "0.1.1-alpha.3",
+    "@aligntrue/sources": "0.1.1-alpha.3",
+    "@aligntrue/testkit": "0.1.1-alpha.3",
+    "@aligntrue/ui": "0.1.1-alpha.3"
   },
   "changesets": ["alpha-3-release"]
 }

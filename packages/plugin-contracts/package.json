@@ -21,6 +21,7 @@
     "@aligntrue/schema": "workspace:*"
   },
   "devDependencies": {},
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },

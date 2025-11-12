@@ -41,6 +41,7 @@
     "ajv-formats": "^3.0.1",
     "yaml": "^2.6.1"
   },
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },
