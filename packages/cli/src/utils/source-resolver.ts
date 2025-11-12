@@ -176,6 +176,10 @@ export async function resolveAndMergeSources(
       throw new Error("First resolved source is undefined");
     }
     const pack = parseYamlToJson(firstSource.content) as AlignPack;
+    // Defensive: Initialize sections to empty array if missing
+    if (!pack.sections || !Array.isArray(pack.sections)) {
+      pack.sections = [];
+    }
     return {
       pack,
       conflicts: [],
@@ -189,6 +193,10 @@ export async function resolveAndMergeSources(
   for (const source of resolved) {
     try {
       const pack = parseYamlToJson(source.content) as AlignPack;
+      // Defensive: Initialize sections to empty array if missing
+      if (!pack.sections || !Array.isArray(pack.sections)) {
+        pack.sections = [];
+      }
       packs.push(pack);
     } catch (error) {
       throw new Error(

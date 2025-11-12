@@ -89,7 +89,14 @@ export async function loadIR(
     );
   }
 
-  const validation = validateAlignSchema(ir);
+  // Defensive: Ensure sections array exists (for backward compatibility)
+  // This must be done BEFORE validation since schema requires sections
+  const pack = ir as AlignPack;
+  if (!pack.sections) {
+    pack.sections = [];
+  }
+
+  const validation = validateAlignSchema(pack);
   if (!validation.valid) {
     const errorList =
       validation.errors
@@ -102,7 +109,7 @@ export async function loadIR(
     );
   }
 
-  return ir as AlignPack;
+  return pack;
 }
 
 /**

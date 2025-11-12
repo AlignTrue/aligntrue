@@ -108,11 +108,11 @@ sources:
       `id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: quality.typescript.strict
-    severity: error
-    applies_to: ["**/*.ts"]
-    guidance: Use strict TypeScript configuration`,
+sections:
+  - heading: TypeScript Quality
+    level: 2
+    content: Use strict TypeScript configuration
+    fingerprint: quality-typescript-strict`,
     );
 
     // Run check command - should succeed
