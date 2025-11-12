@@ -76,6 +76,11 @@ export class AgentsMdExporter extends ExporterBase {
     const managedSections =
       (options as { managedSections?: string[] }).managedSections || [];
 
+    // Get scope prefixing config from options
+    const scopePrefixing =
+      (options as { scopePrefixing?: "off" | "auto" | "always" })
+        .scopePrefixing || "off";
+
     // Merge with existing file to preserve user-added sections
     const allSectionsIR = this.state.allSections.map(({ section }) => section);
     const mergeResult = await this.readAndMerge(
@@ -90,6 +95,7 @@ export class AgentsMdExporter extends ExporterBase {
       mergeResult.mergedSections,
       options.unresolvedPlugsCount,
       managedSections,
+      scopePrefixing,
     );
     const content = result.content;
     const warnings = [...result.warnings, ...mergeResult.warnings];
@@ -128,22 +134,24 @@ export class AgentsMdExporter extends ExporterBase {
   /**
    * Generate AGENTS.md content from natural markdown sections
    * Much simpler than rule-based format - just render sections as-is
+   * Optionally adds scope prefixes based on config
    */
   private generateSectionsContent(
     sections: AlignSection[],
     unresolvedPlugs?: number,
     managedSections: string[] = [],
+    scopePrefixing: "off" | "auto" | "always" = "off",
   ): {
     content: string;
     warnings: string[];
   } {
     const header = this.generateHeader();
 
-    // Render sections with team-managed markers
-    const sectionsMarkdown = this.renderSectionsWithManaged(
+    // Render sections with team-managed markers and optional scope prefixes
+    const sectionsMarkdown = this.renderSectionsWithPrefixes(
       sections,
-      false,
       managedSections,
+      scopePrefixing,
     );
 
     // Compute content hash and fidelity notes for footer
@@ -159,6 +167,79 @@ export class AgentsMdExporter extends ExporterBase {
       content: `${header}\n\n${sectionsMarkdown}\n\n${footer}`,
       warnings: [],
     };
+  }
+
+  /**
+   * Render sections with optional scope prefixes
+   * Adds scope prefixes to headings based on vendor.aligntrue.source_scope
+   */
+  private renderSectionsWithPrefixes(
+    sections: AlignSection[],
+    managedSections: string[] = [],
+    scopePrefixing: "off" | "auto" | "always" = "off",
+  ): string {
+    if (sections.length === 0) {
+      return "";
+    }
+
+    // Check if we need prefixing
+    const shouldPrefix = scopePrefixing !== "off";
+
+    // For "auto" mode, check if multiple scopes are present
+    const hasMultipleScopes =
+      scopePrefixing === "auto" &&
+      new Set(sections.map((s) => s.vendor?.aligntrue?.source_scope)).size > 1;
+
+    const rendered = sections.map((section) => {
+      const lines: string[] = [];
+
+      // Check if team-managed
+      const isManaged = managedSections.some(
+        (managed) =>
+          managed.toLowerCase().trim() === section.heading.toLowerCase().trim(),
+      );
+
+      if (isManaged) {
+        lines.push(
+          "<!-- [TEAM-MANAGED]: This section is managed by your team.",
+        );
+        lines.push(
+          "Local edits will be preserved in backups but may be overwritten on next sync.",
+        );
+        lines.push(
+          "To keep changes, rename the section or remove from managed list. -->",
+        );
+        lines.push("");
+      }
+
+      // Determine heading with optional scope prefix
+      let heading = section.heading;
+      const sourceScope = section.vendor?.aligntrue?.source_scope;
+
+      if (shouldPrefix && sourceScope && sourceScope !== "default") {
+        // Add prefix if:
+        // - scopePrefixing is "always", OR
+        // - scopePrefixing is "auto" AND multiple scopes detected
+        if (scopePrefixing === "always" || hasMultipleScopes) {
+          // Capitalize first letter of scope
+          const scopeName =
+            sourceScope.charAt(0).toUpperCase() + sourceScope.slice(1);
+          heading = `${scopeName}: ${heading}`;
+        }
+      }
+
+      // Heading with proper level
+      const headingPrefix = "#".repeat(section.level);
+      lines.push(`${headingPrefix} ${heading}`);
+      lines.push("");
+
+      // Content
+      lines.push(section.content.trim());
+
+      return lines.join("\n");
+    });
+
+    return rendered.join("\n\n");
   }
 
   /**

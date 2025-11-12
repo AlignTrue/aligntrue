@@ -99,7 +99,9 @@ export interface AlignTrueConfig {
     on_conflict?: "prompt" | "keep_ir" | "accept_agent";
     workflow_mode?: "auto" | "ir_source" | "native_format";
     show_diff_on_pull?: boolean;
-    two_way?: boolean; // Default true - enable bidirectional sync
+    two_way?: boolean; // DEPRECATED: Use edit_source instead
+    edit_source?: string | string[]; // Which files accept edits: ".rules.yaml", "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
+    scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
@@ -330,6 +332,47 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   // Apply sync defaults
   if (!result.sync) {
     result.sync = {};
+  }
+
+  /**
+   * Migrate two_way to edit_source
+   *
+   * Migration rules:
+   * - two_way: false → edit_source: ".rules.yaml" (IR only)
+   * - two_way: true → edit_source: "any_agent_file" (all agent files)
+   * - two_way: undefined → set default based on detection
+   */
+  if (
+    result.sync.two_way !== undefined &&
+    result.sync.edit_source === undefined
+  ) {
+    result.sync.edit_source = result.sync.two_way
+      ? "any_agent_file"
+      : ".rules.yaml";
+    // Keep two_way for backwards compatibility, but it's deprecated
+  }
+
+  /**
+   * Set edit_source default if not specified
+   *
+   * Default logic:
+   * - If Cursor detected (has cursor exporter) → ".cursor/rules/*.mdc"
+   * - Else → "AGENTS.md"
+   *
+   * Note: Detection happens during init, not here. For existing configs
+   * without edit_source, default to AGENTS.md for safety.
+   */
+  if (result.sync.edit_source === undefined) {
+    // Check if cursor is in exporters
+    const hasCursor = result.exporters?.includes("cursor") || false;
+    result.sync.edit_source = hasCursor ? ".cursor/rules/*.mdc" : "AGENTS.md";
+  }
+
+  /**
+   * Set scope_prefixing default
+   */
+  if (result.sync.scope_prefixing === undefined) {
+    result.sync.scope_prefixing = "off";
   }
 
   /**

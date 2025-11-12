@@ -85,19 +85,21 @@ aligntrue sync --force
 
 ---
 
-### Agent → IR (two-way sync)
+### Agent → IR (edit source sync)
 
-**When:** Automatic with every `aligntrue sync` (default)
+**When:** Automatic with every `aligntrue sync` (when files match `edit_source`)
 
-**Two-Way Sync (Default Behavior):**
+**Edit Source Configuration:**
 
-AlignTrue now supports bidirectional sync by default. Edit any agent file (`AGENTS.md`, `.cursor/*.mdc`) and changes automatically merge back to IR, then sync to all other agents.
+Edit files matching your `sync.edit_source` configuration and changes automatically merge back to IR, then sync to all other agents.
 
 ```bash
-# Edit any agent file
-vi AGENTS.md  # or .cursor/rules/aligntrue-starter.mdc
+# Edit files in your edit_source
+vi AGENTS.md
+# or
+vi .cursor/rules/backend.mdc
 
-# Two-way sync happens automatically
+# Sync detects edits and merges automatically
 aligntrue sync
 # ◇ Detected 1 edited file(s)
 # ◇ Merging changes from agent files to IR
@@ -114,7 +116,21 @@ exporters:
   - agents-md
 
 sync:
-  two_way: true # Default - enable bidirectional sync
+  edit_source: "AGENTS.md"  # Single file
+  # OR
+  edit_source: ".cursor/rules/*.mdc"  # Glob pattern
+  # OR
+  edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]  # Multiple
+  # OR
+  edit_source: "any_agent_file"  # All agents
+```
+
+**Deprecated:**
+
+```yaml
+# OLD (still works, auto-migrates)
+sync:
+  two_way: true # → edit_source: "any_agent_file"
 ```
 
 **Section-Level Merging:**
@@ -173,15 +189,15 @@ managed:
 
 Managed sections are marked with 🔒 icon and HTML comments warning against direct edits.
 
-**Disabling Two-Way Sync:**
+**IR-Only Mode:**
 
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  two_way: false # Disable bidirectional sync
+  edit_source: ".rules.yaml" # Only IR accepts edits
 ```
 
-With two-way sync disabled, only IR → agent sync occurs.
+With IR-only mode, agent → IR sync is disabled, and only IR → agent sync occurs.
 
 **Example:**
 

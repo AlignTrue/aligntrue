@@ -1,45 +1,91 @@
 ---
-title: "Two-way sync"
-description: "How two-way sync works: Edit any agent file and changes automatically merge back to IR on next sync."
+title: "Edit source configuration"
+description: "Control which files accept edits and sync to the internal rules. Use edit_source to configure single, multiple, or flexible edit workflows."
 ---
 
-# Two-way sync
+# Edit source configuration
 
-By default, AlignTrue enables bidirectional sync between your agent config files and the internal rules (IR). This means you can edit any agent file directly—Cursor, AGENTS.md, VS Code MCP config, etc.—and your changes automatically merge back when you run `aligntrue sync`.
+The `sync.edit_source` setting controls which agent files accept your edits and will sync back to AlignTrue's internal rules (IR). By default, AlignTrue detects your agents and recommends the best edit source for your workflow.
+
+**Deprecation notice:** The `sync.two_way` boolean is deprecated. Use `sync.edit_source` instead. Existing configs automatically migrate:
+
+- `two_way: false` → `edit_source: ".rules.yaml"`
+- `two_way: true` → `edit_source: "any_agent_file"`
 
 ## How it works
 
 When you run `aligntrue sync`:
 
-1. **Detect edited files** - Checks which agent files were modified more recently than the last sync
-2. **Merge sections** - Combines sections from all edited files back into the IR
-3. **Merge strategy** - Uses last-write-wins: the most recently modified file's version of each section is used
-4. **Export to all agents** - Regenerates all agent files from the updated IR
+1. **Detect edited files** - Checks which files match your `edit_source` configuration and were modified since last sync
+2. **Merge sections** - Combines edited sections back into the IR using last-write-wins strategy
+3. **Export to all agents** - Regenerates all agent files from the updated IR
+4. **Mark read-only files** - Files not in `edit_source` get HTML comments warning against edits
 
-**No prompts. No conflicts. Automatic.**
+**Fast. Safe. Automatic.**
 
-## Example workflow
+## Example workflows
 
-### Solo developer
+### Single-file editing (recommended for most)
 
-```bash
-# 1. Edit your primary rules file
-nano AGENTS.md  # Add a new section
+Edit AGENTS.md as your primary source:
 
-# 2. Later, edit in Cursor config
-# (via UI or manual edit to .cursor/rules/aligntrue.mdc)
-
-# 3. Sync everything
-aligntrue sync
-# Output: Detected 2 edited files: AGENTS.md, .cursor/rules/aligntrue.mdc
-#         Merged and re-exported to 3 agents
+```yaml
+# .aligntrue/config.yaml
+sync:
+  edit_source: "AGENTS.md"
 ```
 
-What happened:
+```bash
+# Edit your rules file
+nano AGENTS.md  # Add a new section
 
-- Sections from AGENTS.md merged into IR (with most recent version used if both files had edits)
-- Both agent files regenerated from the updated IR
-- All agents now have consistent rules
+# Sync everywhere
+aligntrue sync
+# Output: Detected edit to AGENTS.md
+#         Updated all agents
+```
+
+### Multi-file with Cursor
+
+Edit Cursor rules in separate scope files:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+  scope_prefixing: "auto"
+```
+
+```bash
+# Edit backend-specific rules
+nano .cursor/rules/backend.mdc
+
+# Sync to all agents with scope awareness
+aligntrue sync
+# Output: Detected edit to .cursor/rules/backend.mdc
+#         Routed sections to correct scope
+#         Updated AGENTS.md with scope prefixes
+```
+
+### Flexible multi-file
+
+Allow editing any agent file:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]
+```
+
+```bash
+# Can edit either file
+nano AGENTS.md
+# OR
+nano .cursor/rules/backend.mdc
+
+# Changes merge automatically
+aligntrue sync
+```
 
 ### Multiple files edited
 
@@ -101,17 +147,17 @@ aligntrue backup restore --to <timestamp>
 aligntrue revert --preview
 ```
 
-## Disabling two-way sync
+## IR-only mode (advanced)
 
 To sync **only** IR → agents (no agent file edits detected):
 
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  two_way: false
+  edit_source: ".rules.yaml"
 ```
 
-Then `aligntrue sync` will only export IR to agent files, ignoring any edits to agent configs.
+Then `aligntrue sync` will only export IR to agent files, ignoring any edits to agent configs. Agent files become read-only with warning markers.
 
 ## Team mode implications
 
@@ -154,71 +200,97 @@ Output shows:
 - What the merged IR would look like
 - Which files would be written
 
-## Configuration
+## Choosing an edit source
 
-The default configuration enables two-way sync:
+### Recommended defaults (auto-detected)
+
+During `aligntrue init`, AlignTrue recommends based on detected agents:
+
+1. **Cursor detected** → `edit_source: ".cursor/rules/*.mdc"`
+   - Full feature support with scopes
+   - Multi-file editing with scope awareness
+
+2. **AGENTS.md detected** → `edit_source: "AGENTS.md"`
+   - Universal format
+   - Single source of truth
+
+3. **Nothing detected** → `edit_source: "AGENTS.md"`
+   - Safe default
+   - File will be created
+
+### Configuration options
 
 ```yaml
+# Single file (most common)
 sync:
-  two_way: true # Default - enable bidirectional sync
+  edit_source: "AGENTS.md"
+
+# Glob pattern for multiple Cursor files
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+
+# Multiple files (allow editing either)
+sync:
+  edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]
+
+# Any agent file (maximum flexibility)
+sync:
+  edit_source: "any_agent_file"
+
+# IR only (advanced)
+sync:
+  edit_source: ".rules.yaml"
 ```
-
-No additional configuration needed. When you run `aligntrue sync`, it automatically:
-
-- Detects edited agent files
-- Merges them back to IR (last-write-wins)
-- Exports to all configured agents
-
-## When to use one-way sync
-
-Set `sync.two_way: false` if you want to:
-
-- Always edit IR directly (`.aligntrue/.rules.yaml`)
-- Never allow agent files to feed back changes
-- Treat agent files as read-only exports
-
-In this case, `aligntrue sync` only does IR → agents export.
 
 ## How merge conflicts are resolved
 
-When multiple agent files have the same section but with different content:
+When multiple files in your `edit_source` have the same section:
 
-1. Sort by modification time (oldest first)
+1. Files are sorted by modification time (oldest first)
 2. Newest file's version wins (last-write-wins)
-3. **No prompts or warnings** - automatic and deterministic
+3. Conflicts are logged with file names and timestamps
+4. Changes are automatically backed up
 
-This design prioritizes simplicity and predictability. If you want explicit control over conflicts, use `--dry-run` to review changes before syncing.
+**Deterministic and repeatable.** Use `--dry-run` to preview conflicts before syncing.
 
 ## Troubleshooting
 
-### I edited an agent file but don't see changes in other agents
+### Changes not syncing to other agents
 
-1. Did you run `aligntrue sync`? (two-way sync happens on sync, not continuously)
-2. Check if two-way sync is enabled: `aligntrue config get sync.two_way`
-3. Verify the agent file exists: `ls -la .cursor/rules/aligntrue.mdc`
+1. Did you run `aligntrue sync`? (sync doesn't run continuously)
+2. Check your `edit_source`: `aligntrue config get sync.edit_source`
+3. Verify the file you edited is in `edit_source`
 4. Check sync output for validation errors
 
-### I edited multiple files and lost some changes
+Example: If `edit_source: "AGENTS.md"` but you edited `.cursor/rules/backend.mdc`, changes won't sync. Edit AGENTS.md instead.
 
-This is last-write-wins behavior:
+### Lost changes when editing multiple files
 
-- File A edited at 10:00 AM
-- File B edited at 11:00 AM
-- Sections from File B take precedence
+This is last-write-wins behavior. When editing multiple files in `edit_source`:
 
-**Best practice:** Pick one file as your primary editor. Most teams use `AGENTS.md`.
+- Newest file's modification time wins
+- Older changes are still in backups
 
-### Team mode: My changes are blocked after sync
+**Best practice:** Use single `edit_source` for clarity, or set `edit_source: ".rules.yaml"` for IR-only editing.
 
-This is expected in strict lockfile mode:
+### Files marked as read-only
+
+Files not in your `edit_source` are read-only and will be regenerated on next sync. To edit them:
+
+1. Check current `edit_source`: `aligntrue config get sync.edit_source`
+2. Add the file to `edit_source` in `.aligntrue/config.yaml`
+3. Run `aligntrue sync` again
+
+### Team mode: Changes blocked after sync
+
+In strict lockfile mode, new edits create a new hash:
 
 ```bash
-# Your changes create a new bundle hash
-# which isn't approved yet
-
-# Solution: Ask team lead to approve
+# Team lead must approve
 aligntrue team approve --current
 ```
+
+See [Team Mode](/docs/03-concepts/team-mode) for details.
 
 ## Related pages
 

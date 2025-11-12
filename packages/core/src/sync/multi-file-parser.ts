@@ -3,7 +3,9 @@
  * Detects edited agent files and merges them back to IR
  */
 
-import { existsSync, statSync, readFileSync } from "fs";
+import { existsSync, statSync, readFileSync, readdirSync } from "fs";
+import { join } from "path";
+import micromatch from "micromatch";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import { getAlignTruePaths } from "../paths.js";
@@ -38,6 +40,67 @@ export interface SectionConflict {
 }
 
 /**
+ * Check if a file path matches the edit_source configuration
+ */
+export function matchesEditSource(
+  filePath: string,
+  editSource: string | string[] | undefined,
+  cwd: string,
+): boolean {
+  if (!editSource) {
+    // Default to AGENTS.md if no edit_source specified
+    return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");
+  }
+
+  if (editSource === ".rules.yaml") {
+    // IR only mode - no agent files accept edits
+    return false;
+  }
+
+  if (editSource === "any_agent_file") {
+    // All agent files accept edits
+    return isAgentFile(filePath);
+  }
+
+  // Single pattern or array of patterns
+  const patterns = Array.isArray(editSource) ? editSource : [editSource];
+
+  // Normalize file path for matching
+  const normalizedPath = filePath.replace(/\\/g, "/");
+
+  // Try matching with micromatch
+  return micromatch.isMatch(normalizedPath, patterns, {
+    dot: true,
+    nocase: false,
+  });
+}
+
+/**
+ * Check if a file is a known agent file
+ */
+function isAgentFile(filePath: string): boolean {
+  const agentPatterns = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CRUSH.md",
+    "WARP.md",
+    "GEMINI.md",
+    ".cursor/rules/**/*.mdc",
+    ".vscode/mcp.json",
+    ".windsurf/mcp_config.json",
+    ".clinerules",
+    ".goosehints",
+    // Add more patterns as needed
+  ];
+
+  const normalizedPath = filePath.replace(/\\/g, "/");
+  return micromatch.isMatch(normalizedPath, agentPatterns, {
+    dot: true,
+    nocase: false,
+  });
+}
+
+/**
  * Detect edited agent files based on mtime
  * Returns files that were modified after last sync
  */
@@ -48,15 +111,24 @@ export async function detectEditedFiles(
 ): Promise<EditedFile[]> {
   const editedFiles: EditedFile[] = [];
   const paths = getAlignTruePaths(cwd);
+  const editSource = config.sync?.edit_source;
 
-  // Skip detection if two-way sync is disabled
-  if (config.sync?.two_way === false) {
+  // Skip detection if edit_source is ".rules.yaml" (IR only mode)
+  if (editSource === ".rules.yaml") {
     return [];
   }
 
-  // Check AGENTS.md
+  // Backwards compatibility: check two_way if edit_source not set
+  if (editSource === undefined && config.sync?.two_way === false) {
+    return [];
+  }
+
+  // Check AGENTS.md if it matches edit_source
   const agentsMdPath = paths.agentsMd();
-  if (existsSync(agentsMdPath)) {
+  if (
+    existsSync(agentsMdPath) &&
+    matchesEditSource("AGENTS.md", editSource, cwd)
+  ) {
     const stats = statSync(agentsMdPath);
     if (!lastSyncTime || stats.mtime > lastSyncTime) {
       // Dynamic import at runtime (exporters is a peer dependency)
@@ -83,32 +155,49 @@ export async function detectEditedFiles(
     }
   }
 
-  // Check Cursor .mdc files (default scope)
-  const cursorPath = paths.cursorRules("default");
-  if (existsSync(cursorPath)) {
-    const stats = statSync(cursorPath);
-    if (!lastSyncTime || stats.mtime > lastSyncTime) {
-      // Dynamic import at runtime (exporters is a peer dependency)
-      const parseModule = "@aligntrue/exporters/utils/section-parser";
-      // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
-      const { parseCursorMdc } = await import(parseModule);
-      const content = readFileSync(cursorPath, "utf-8");
-      const parsed = parseCursorMdc(content);
+  // Check Cursor .mdc files with glob pattern support
+  const cursorRulesDir = join(cwd, ".cursor", "rules");
+  if (existsSync(cursorRulesDir)) {
+    try {
+      const files = readdirSync(cursorRulesDir);
+      const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
 
-      if (parsed.sections.length > 0) {
-        editedFiles.push({
-          path: ".cursor/rules/aligntrue.mdc",
-          absolutePath: cursorPath,
-          format: "cursor-mdc",
-          sections: parsed.sections.map((s: ParsedSectionResult) => ({
-            heading: s.heading,
-            content: s.content,
-            level: s.level,
-            hash: s.hash,
-          })),
-          mtime: stats.mtime,
-        });
+      for (const mdcFile of mdcFiles) {
+        const relativePath = `.cursor/rules/${mdcFile}`;
+        const absolutePath = join(cursorRulesDir, mdcFile);
+
+        // Check if this file matches edit_source
+        if (!matchesEditSource(relativePath, editSource, cwd)) {
+          continue;
+        }
+
+        const stats = statSync(absolutePath);
+        if (!lastSyncTime || stats.mtime > lastSyncTime) {
+          // Dynamic import at runtime (exporters is a peer dependency)
+          const parseModule = "@aligntrue/exporters/utils/section-parser";
+          // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
+          const { parseCursorMdc } = await import(parseModule);
+          const content = readFileSync(absolutePath, "utf-8");
+          const parsed = parseCursorMdc(content);
+
+          if (parsed.sections.length > 0) {
+            editedFiles.push({
+              path: relativePath,
+              absolutePath,
+              format: "cursor-mdc",
+              sections: parsed.sections.map((s: ParsedSectionResult) => ({
+                heading: s.heading,
+                content: s.content,
+                level: s.level,
+                hash: s.hash,
+              })),
+              mtime: stats.mtime,
+            });
+          }
+        }
       }
+    } catch {
+      // Directory not readable, continue
     }
   }
 
@@ -116,8 +205,90 @@ export async function detectEditedFiles(
 }
 
 /**
+ * Detect edits to read-only files (files not in edit_source)
+ * Returns list of read-only files that have been edited
+ */
+export async function detectReadOnlyFileEdits(
+  cwd: string,
+  config: AlignTrueConfig,
+  lastSyncTime?: Date,
+): Promise<string[]> {
+  const readOnlyEdited: string[] = [];
+  const paths = getAlignTruePaths(cwd);
+  const editSource = config.sync?.edit_source;
+
+  // If edit_source is "any_agent_file", no files are read-only
+  if (editSource === "any_agent_file") {
+    return [];
+  }
+
+  // Check common agent files that might have been edited
+  const candidateFiles = [
+    { path: "AGENTS.md", absolutePath: paths.agentsMd() },
+  ];
+
+  // Add Cursor files if they exist
+  const cursorRulesDir = join(cwd, ".cursor", "rules");
+  if (existsSync(cursorRulesDir)) {
+    try {
+      const files = readdirSync(cursorRulesDir);
+      const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
+      for (const mdcFile of mdcFiles) {
+        candidateFiles.push({
+          path: `.cursor/rules/${mdcFile}`,
+          absolutePath: join(cursorRulesDir, mdcFile),
+        });
+      }
+    } catch {
+      // Directory not readable
+    }
+  }
+
+  // Check each candidate file
+  for (const { path, absolutePath } of candidateFiles) {
+    // Skip if file doesn't exist
+    if (!existsSync(absolutePath)) {
+      continue;
+    }
+
+    // Skip if file matches edit_source (it's editable)
+    if (matchesEditSource(path, editSource, cwd)) {
+      continue;
+    }
+
+    // Check if file was modified
+    const stats = statSync(absolutePath);
+    if (lastSyncTime && stats.mtime > lastSyncTime) {
+      readOnlyEdited.push(path);
+    }
+  }
+
+  return readOnlyEdited;
+}
+
+/**
+ * Extract scope name from file path
+ * Examples:
+ *   .cursor/rules/backend.mdc → backend
+ *   .cursor/rules/aligntrue.mdc → default
+ *   AGENTS.md → default
+ */
+function extractScopeFromPath(filePath: string): string {
+  // Cursor scope files
+  const cursorMatch = filePath.match(/\.cursor\/rules\/(.+)\.mdc$/);
+  if (cursorMatch) {
+    const scopeName = cursorMatch[1];
+    return scopeName === "aligntrue" ? "default" : scopeName || "default";
+  }
+
+  // Default scope for all other files
+  return "default";
+}
+
+/**
  * Merge sections from multiple edited files into IR
  * Uses last-write-wins strategy based on file mtime
+ * Adds vendor.aligntrue metadata for scope tracking
  */
 export function mergeFromMultipleFiles(
   editedFiles: EditedFile[],
@@ -139,6 +310,8 @@ export function mergeFromMultipleFiles(
 
   // Process each file's sections
   for (const file of sortedFiles) {
+    const sourceScope = extractScopeFromPath(file.path);
+
     for (const section of file.sections) {
       const key = section.heading.toLowerCase().trim();
       const existing = sectionsByHeading.get(key);
@@ -169,12 +342,20 @@ export function mergeFromMultipleFiles(
       }
 
       // Last-write-wins: replace with newer version
+      // Add vendor metadata for scope tracking
       sectionsByHeading.set(key, {
         section: {
           heading: section.heading,
           content: section.content,
           level: section.level,
           fingerprint: generateFingerprint(section.heading),
+          vendor: {
+            aligntrue: {
+              source_scope: sourceScope,
+              source_file: file.path,
+              last_modified: file.mtime.toISOString(),
+            },
+          },
         },
         file: file.path,
         mtime: file.mtime,
