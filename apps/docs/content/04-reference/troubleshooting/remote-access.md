@@ -1,9 +1,9 @@
 ---
-title: Remote Access Troubleshooting
+title: Remote access troubleshooting
 description: Solutions for common remote repository access issues
 ---
 
-# Remote Access Troubleshooting
+# Remote access troubleshooting
 
 This guide helps you resolve common issues when using remote repositories for personal rules in AlignTrue.
 

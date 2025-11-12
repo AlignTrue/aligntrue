@@ -1,4 +1,4 @@
-# Dependabot Auto-Merge Strategy
+# Dependabot auto-merge strategy
 
 This document explains AlignTrue's hybrid approach to automatically merging Dependabot PRs.
 

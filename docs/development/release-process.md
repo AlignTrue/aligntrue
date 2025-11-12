@@ -1,4 +1,4 @@
-# Release Process
+# Release process
 
 AlignTrue uses [Changesets](https://github.com/changesets/changesets) for version management and automated npm publishing.
 

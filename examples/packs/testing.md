@@ -5,7 +5,7 @@ summary: "Testing baseline: fast, deterministic, useful tests with clear strateg
 tags: ["testing", "quality", "determinism", "paved-road"]
 ---
 
-# Testing Baseline
+# Testing baseline
 
 This pack establishes testing standards for fast, deterministic, and useful tests. It complements the global baseline and TDD practices while deferring to security requirements.
 

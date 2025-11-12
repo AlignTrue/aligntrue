@@ -1,4 +1,4 @@
-# Contributing Adapters to AlignTrue
+# Contributing adapters to AlignTrue
 
 Thank you for contributing to AlignTrue! This guide covers how to create and submit new exporter adapters.
 

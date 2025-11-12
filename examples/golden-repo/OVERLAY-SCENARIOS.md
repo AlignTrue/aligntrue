@@ -1,4 +1,4 @@
-# Overlay Scenarios for Golden Repository
+# Overlay scenarios for golden repository
 
 This document demonstrates overlay workflows using the golden repository as a base.
 

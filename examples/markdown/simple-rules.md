@@ -1,4 +1,4 @@
-# Simple AlignTrue Rules
+# Simple AlignTrue rules
 
 This is an example of literate markdown authoring for AlignTrue rules.
 

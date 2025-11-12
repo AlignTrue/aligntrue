@@ -5,7 +5,7 @@ summary: "Rule authoring guideline: clear scope, actionable directives, explicit
 tags: ["meta", "rule-authoring", "governance", "paved-road"]
 ---
 
-# Rule Authoring Guideline
+# Rule authoring guideline
 
 Guidelines for writing clear, actionable, and maintainable rules with explicit scope and precedence.
 

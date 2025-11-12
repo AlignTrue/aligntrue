@@ -5,7 +5,7 @@ summary: "Global baseline for AI-assisted repos: CI gates, contribution workflow
 tags: ["global", "baseline", "ci", "paved-road"]
 ---
 
-# Global Baseline for AI-Assisted Repos
+# Global baseline for AI-assisted repos
 
 This pack establishes paved-road commands and consistent workflow patterns for AI-assisted repositories. It complements docs, testing, and TDD packs while deferring to security requirements.
 

@@ -1,4 +1,4 @@
-# Core Package Tests
+# Core package tests
 
 Test suite for `@aligntrue/core` sync engine, configuration, scope resolution, and file operations.
 
