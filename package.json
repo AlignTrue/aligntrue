@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm build:packages",
     "build:packages": "pnpm -r --filter @aligntrue/schema build && pnpm -r --filter @aligntrue/markdown-parser --filter @aligntrue/plugin-contracts --filter @aligntrue/file-utils build && pnpm -r --filter @aligntrue/core --filter @aligntrue/sources --filter @aligntrue/testkit build && pnpm -r --filter @aligntrue/exporters --filter @aligntrue/cli --filter aligntrue build",
     "dev": "pnpm --filter @aligntrue/docs dev",
     "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",

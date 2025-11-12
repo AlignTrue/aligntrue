@@ -3,7 +3,7 @@
  * Detects misalignment between lockfile and approved sources
  */
 
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, statSync } from "fs";
 import { parseAllowList } from "./allow.js";
 import type { AllowList, AllowListSource } from "./types.js";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
@@ -372,7 +372,6 @@ export function detectAgentFileDrift(
   lastSyncTimestamp?: number,
 ): DriftFinding[] {
   const findings: DriftFinding[] = [];
-  const { statSync } = require("fs");
 
   // Agent files to check
   const agentFiles = [

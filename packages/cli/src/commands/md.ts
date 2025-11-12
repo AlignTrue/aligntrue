@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync, renameSync } from "fs";
 import {
   parseMarkdown,
   buildIR,
-  validateMarkdown,
+  buildIRAuto,
   normalizeWhitespace,
   generateMarkdown,
 } from "@aligntrue/markdown-parser";
@@ -63,7 +63,7 @@ export async function md(args: string[]): Promise<void> {
       ],
       notes: [
         "Subcommands:",
-        "  lint <file>       Validate markdown aligntrue blocks",
+        "  lint <file>       Validate markdown (natural sections or fenced blocks)",
         "  format <file>     Normalize whitespace in aligntrue blocks",
         "  compile <file>    Convert markdown to aligntrue.yaml",
         "  generate <file>   Convert YAML to markdown (round-trip)",
@@ -107,15 +107,13 @@ export async function md(args: string[]): Promise<void> {
 async function mdLint(file: string): Promise<void> {
   try {
     const content = readFileSync(file, "utf-8");
-    const result = await validateMarkdown(content);
 
-    if (result.valid) {
-      console.log(`✓ ${file} is valid`);
-      recordEvent({ command_name: "md-lint", align_hashes_used: [] });
-      process.exit(0);
-    } else {
+    // Auto-detect format (fenced blocks vs natural sections)
+    const buildResult = buildIRAuto(content);
+
+    if (buildResult.errors.length > 0) {
       console.error(`✗ ${file} has errors:\n`);
-      for (const error of result.errors) {
+      for (const error of buildResult.errors) {
         const location = error.section
           ? `Line ${error.line} (${error.section})`
           : `Line ${error.line}`;
@@ -123,6 +121,19 @@ async function mdLint(file: string): Promise<void> {
       }
       process.exit(1);
     }
+
+    if (!buildResult.document) {
+      console.error(`✗ ${file} validation failed\n`);
+      console.error("  No valid content found\n");
+      console.error(
+        "  Ensure file has either fenced ```aligntrue blocks or natural markdown sections with frontmatter\n",
+      );
+      process.exit(1);
+    }
+
+    console.log(`✓ ${file} is valid`);
+    recordEvent({ command_name: "md-lint", align_hashes_used: [] });
+    process.exit(0);
   } catch (err) {
     console.error(
       `Error reading file: ${err instanceof Error ? err.message : "Unknown error"}`,

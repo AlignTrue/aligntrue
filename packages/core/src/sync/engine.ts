@@ -20,6 +20,7 @@ import {
 } from "../lockfile/index.js";
 import { resolvePlugsForPack } from "../plugs/index.js";
 import { applyOverlays } from "../overlays/index.js";
+import { getAlignTruePaths } from "../paths.js";
 
 // Import types from plugin-contracts package
 import type {
@@ -781,7 +782,7 @@ export class SyncEngine {
       const config = await loadConfig(configPath);
       this.config = config;
       const cwd = resolvePath(configPath, "..");
-      const paths = require("../paths.js").getAlignTruePaths(cwd);
+      const paths = getAlignTruePaths(cwd);
 
       // Import multi-file parser
       const { detectEditedFiles, mergeFromMultipleFiles } = await import(

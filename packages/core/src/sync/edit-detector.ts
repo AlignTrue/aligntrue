@@ -3,8 +3,14 @@
  * Detects when files have been manually modified to prevent auto-pull from overwriting changes
  */
 
-import { statSync, existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import {
+  statSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+} from "fs";
+import { join, dirname } from "path";
 
 export interface EditInfo {
   filePath: string;
@@ -143,8 +149,6 @@ export class EditDetector {
   updateLastSyncTimestamp(): void {
     const timestamp = Date.now();
     try {
-      const { mkdirSync } = require("fs");
-      const { dirname } = require("path");
       mkdirSync(dirname(this.lastSyncFile), { recursive: true });
       writeFileSync(this.lastSyncFile, timestamp.toString(), "utf-8");
     } catch {
