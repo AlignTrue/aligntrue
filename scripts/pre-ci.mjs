@@ -22,6 +22,10 @@ const steps = [
   { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
   { name: "Format check", cmd: "pnpm format:check" },
   { name: "Run tests", cmd: "pnpm test --reporter=dot" },
+  {
+    name: "Validate bundle sizes",
+    cmd: "node scripts/validate-bundle-sizes.mjs",
+  },
 ];
 
 console.log("🔍 Running pre-CI validation...");
