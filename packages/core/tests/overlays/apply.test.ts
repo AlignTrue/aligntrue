@@ -18,18 +18,20 @@ const mockIR: AlignPack = {
   spec_version: "1",
   sections: [
     {
-      id: "rule-one",
+      heading: "First Rule",
+      level: 2,
+      content: "First rule guidance",
       fingerprint: "rule-one",
       severity: "error",
       applies_to: ["*.ts"],
-      guidance: "First rule",
     },
     {
-      id: "rule-two",
+      heading: "Second Rule",
+      level: 2,
+      content: "Second rule guidance",
       fingerprint: "rule-two",
       severity: "warn",
       applies_to: ["*.js"],
-      guidance: "Second rule",
       check: {
         type: "regex",
         inputs: { pattern: "test" },
@@ -189,16 +191,16 @@ describe("normalizeLineEndings", () => {
       spec_version: "1",
       sections: [
         {
-          id: "rule",
-          severity: "error",
-          applies_to: ["*"],
-          guidance: "Line one\r\nLine two\r\n",
+          heading: "Test Rule",
+          level: 2,
+          content: "Line one\r\nLine two\r\n",
+          fingerprint: "test-rule",
         },
       ],
     };
 
     const normalized = normalizeLineEndings(ir);
-    expect(normalized.sections[0].guidance).toBe("Line one\nLine two\n");
+    expect(normalized.sections[0].content).toBe("Line one\nLine two\n");
   });
 
   it("ensures single trailing LF", () => {
@@ -208,16 +210,16 @@ describe("normalizeLineEndings", () => {
       spec_version: "1",
       sections: [
         {
-          id: "rule",
-          severity: "error",
-          applies_to: ["*"],
-          guidance: "Text\n\n\n",
+          heading: "Test Rule",
+          level: 2,
+          content: "Text\n\n\n",
+          fingerprint: "test-rule",
         },
       ],
     };
 
     const normalized = normalizeLineEndings(ir);
-    expect(normalized.sections[0].guidance).toBe("Text\n");
+    expect(normalized.sections[0].content).toBe("Text\n");
   });
 });
 
