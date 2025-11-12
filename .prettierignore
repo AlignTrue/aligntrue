@@ -24,3 +24,5 @@ coverage/
 temp-*
 *.tmp
 
+packages/cli/tests/fixtures/invalid-config.yaml
+

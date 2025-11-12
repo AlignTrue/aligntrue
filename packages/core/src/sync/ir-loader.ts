@@ -100,12 +100,30 @@ export async function loadIR(
   if (!validation.valid) {
     const errorList =
       validation.errors
-        ?.map((err) => `  - ${err.path}: ${err.message}`)
+        ?.map((err) => {
+          // Make error messages more helpful
+          if (
+            err.path === "(root)" &&
+            err.message.includes("required property")
+          ) {
+            const match = err.message.match(/required property '(\w+)'/);
+            if (match && match[1]) {
+              const field = match[1];
+              const hints: Record<string, string> = {
+                id: 'Pack identifier (e.g., "my-project")',
+                version: 'Semantic version (e.g., "1.0.0")',
+                spec_version: 'Must be "1"',
+              };
+              return `  - Missing required field: ${field}\n    ${hints[field] || ""}`;
+            }
+          }
+          return `  - ${err.path}: ${err.message}`;
+        })
         .join("\n") || "  Unknown validation error";
 
     throw new Error(
-      `Invalid IR in ${sourcePath}:\n${errorList}\n` +
-        `  Fix the errors above and try again.`,
+      `✗ Invalid IR file: ${sourcePath}\n\n${errorList}\n\n` +
+        `Fix: Edit ${sourcePath} to add missing fields, or run 'aligntrue init' to regenerate.`,
     );
   }
 
@@ -127,12 +145,30 @@ export async function saveIR(
   if (!validation.valid) {
     const errorList =
       validation.errors
-        ?.map((err) => `  - ${err.path}: ${err.message}`)
+        ?.map((err) => {
+          // Make error messages more helpful
+          if (
+            err.path === "(root)" &&
+            err.message.includes("required property")
+          ) {
+            const match = err.message.match(/required property '(\w+)'/);
+            if (match && match[1]) {
+              const field = match[1];
+              const hints: Record<string, string> = {
+                id: 'Pack identifier (e.g., "my-project")',
+                version: 'Semantic version (e.g., "1.0.0")',
+                spec_version: 'Must be "1"',
+              };
+              return `  - Missing required field: ${field}\n    ${hints[field] || ""}`;
+            }
+          }
+          return `  - ${err.path}: ${err.message}`;
+        })
         .join("\n") || "  Unknown validation error";
 
     throw new Error(
-      `Invalid IR pack:\n${errorList}\n` +
-        `  Fix the errors above before saving.`,
+      `✗ Invalid IR pack:\n\n${errorList}\n\n` +
+        `Fix: Add missing fields before saving.`,
     );
   }
 

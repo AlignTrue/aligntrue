@@ -659,20 +659,18 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents-md"],
   };
 
-  // Configure workflow mode based on whether we imported
+  // Configure sync settings based on whether we imported
   if (importedRules && importedFromAgent) {
-    // Imported: use native_format workflow (edit agent files, auto-sync enabled)
+    // Imported: set primary agent for reference
+    // Let config defaults handle workflow_mode and auto_pull
     config.sync = {
-      workflow_mode: "native_format",
-      auto_pull: true,
       primary_agent: importedFromAgent,
     };
   } else {
-    // Fresh start: use ir_source workflow (IR as source of truth)
-    config.sync = {
-      workflow_mode: "ir_source",
-      auto_pull: false,
-    };
+    // Fresh start: let config defaults apply
+    // Config will set appropriate edit_source based on enabled exporters
+    // and appropriate auto_pull based on mode (solo vs team)
+    config.sync = {};
   }
 
   // Write config atomically (temp + rename)
