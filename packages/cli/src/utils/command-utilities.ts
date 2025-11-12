@@ -78,6 +78,7 @@ export interface LifecycleOptions {
  *
  * @param args - Raw argument array (typically from process.argv.slice(2))
  * @param definitions - Argument definitions for this command
+ * @param options - Parsing options (strict mode, etc.)
  * @returns Parsed flags and positional arguments
  *
  * @example
@@ -96,6 +97,7 @@ export interface LifecycleOptions {
 export function parseCommonArgs(
   args: string[],
   definitions: ArgDefinition[] = [],
+  options?: { strict?: boolean },
 ): ParsedArgs {
   const flags: Record<string, boolean | string | undefined> = {};
   const positional: string[] = [];
@@ -152,9 +154,20 @@ export function parseCommonArgs(
         flags[key] = true;
       }
     } else if (arg.startsWith("-")) {
-      // Unknown flag - still parse as boolean
-      const key = arg.replace(/^--?/, "");
-      flags[key] = true;
+      // Unknown flag
+      if (options?.strict) {
+        // In strict mode, reject unknown flags
+        const validFlags = definitions
+          .map((d) => (d.alias ? `${d.flag}, ${d.alias}` : d.flag))
+          .join(", ");
+        throw new Error(
+          `Unknown flag: ${arg}\nValid flags: ${validFlags}\nUse --help to see all options`,
+        );
+      } else {
+        // In non-strict mode, accept unknown flags as boolean (backward compatibility)
+        const key = arg.replace(/^--?/, "");
+        flags[key] = true;
+      }
     } else {
       // Positional argument
       positional.push(arg);
