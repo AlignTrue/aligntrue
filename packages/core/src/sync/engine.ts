@@ -714,7 +714,7 @@ export class SyncEngine {
     const cwd = process.cwd();
     const paths = getAlignTruePaths(cwd);
     const { join } = await import("path");
-    const { existsSync } = await import("fs");
+    const { existsSync, readFileSync } = await import("fs");
 
     // Map agent name to file path
     const agentFilePaths: Record<string, string> = {
@@ -727,19 +727,33 @@ export class SyncEngine {
       throw new Error(`Agent file not found: ${agent}`);
     }
 
-    // Parse the agent file
-    const { detectEditedFiles, generateFingerprint } = await import(
-      "./multi-file-parser.js"
-    );
-    const editedFiles = await detectEditedFiles(cwd, this.config!, new Date(0)); // Use epoch to get all files
+    // For explicit --accept-agent, parse directly (bypass edit_source check)
+    const content = readFileSync(filePath, "utf-8");
+    const { generateFingerprint } = await import("./multi-file-parser.js");
 
-    const targetFile = editedFiles.find((f) => f.absolutePath === filePath);
-    if (!targetFile) {
-      throw new Error(`Could not parse agent file: ${agent}`);
+    // Dynamic import of parser from exporters package
+    const parseModule = "@aligntrue/exporters/utils/section-parser";
+    // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
+    const parsers = await import(parseModule);
+
+    let parsed: {
+      sections: Array<{
+        heading: string;
+        content: string;
+        level: number;
+        hash: string;
+      }>;
+    };
+    if (agent === "agents-md") {
+      parsed = parsers.parseAgentsMd(content);
+    } else if (agent === "cursor") {
+      parsed = parsers.parseCursorMdc(content);
+    } else {
+      throw new Error(`Unsupported agent for import: ${agent}`);
     }
 
     // Convert parsed sections to AlignSection format
-    return targetFile.sections.map((s) => ({
+    return parsed.sections.map((s) => ({
       heading: s.heading,
       content: s.content,
       level: s.level,
@@ -826,7 +840,7 @@ export class SyncEngine {
       }
 
       // 6. Export IR to all configured agents (always run)
-      const syncResult = await this.syncToAgents(configPath, options);
+      const syncResult = await this.syncToAgents(paths.rules, options);
 
       const result: SyncResult = {
         success: true,
