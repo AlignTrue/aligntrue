@@ -4,37 +4,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "fs";
+import { mkdtempSync, writeFileSync, readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { sync } from "../src/commands/sync.js";
-
-// Helper to remove temp dirs with retry on Windows
-async function removeTestDir(dir: string, maxRetries = 3): Promise<void> {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      rmSync(dir, { recursive: true, force: true });
-      return;
-    } catch (e) {
-      if (i < maxRetries - 1) {
-        // Wait before retrying
-        await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
-      } else {
-        throw e;
-      }
-    }
-  }
-}
+import { cleanupDir } from "./helpers/fs-cleanup.js";
 
 describe("sync lockfile drift detection", () => {
   let testDir: string;
+  let originalCwd: string;
 
   beforeEach(() => {
+    originalCwd = process.cwd();
     testDir = mkdtempSync(join(tmpdir(), "aligntrue-sync-lockfile-test-"));
   });
 
   afterEach(async () => {
-    await removeTestDir(testDir);
+    process.chdir(originalCwd);
+    await cleanupDir(testDir);
   });
 
   it("detects lockfile drift when rules change", async () => {
