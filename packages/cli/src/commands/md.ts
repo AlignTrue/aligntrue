@@ -63,10 +63,13 @@ export async function md(args: string[]): Promise<void> {
       ],
       notes: [
         "Subcommands:",
-        "  lint <file>       Validate markdown (natural sections or fenced blocks)",
+        "  lint <file>       Validate source markdown with frontmatter or fenced blocks",
         "  format <file>     Normalize whitespace in aligntrue blocks",
         "  compile <file>    Convert markdown to aligntrue.yaml",
         "  generate <file>   Convert YAML to markdown (round-trip)",
+        "",
+        "Note: Use 'md lint' for source files only. For validating synced exports,",
+        "      use 'aligntrue check --ci' instead.",
       ],
     });
     process.exit(0);
