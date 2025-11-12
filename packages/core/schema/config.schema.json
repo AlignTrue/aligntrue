@@ -432,6 +432,23 @@
         }
       }
     },
+    "approval": {
+      "type": "object",
+      "description": "Approval workflow configuration for team mode",
+      "additionalProperties": false,
+      "properties": {
+        "internal": {
+          "type": "string",
+          "enum": ["pr_approval", "allowlist"],
+          "description": "Approval mode for internal team repository changes"
+        },
+        "external": {
+          "type": "string",
+          "enum": ["pr_approval", "allowlist"],
+          "description": "Approval mode for external dependency sources"
+        }
+      }
+    },
     "managed": {
       "type": "object",
       "description": "Team-managed sections configuration",
