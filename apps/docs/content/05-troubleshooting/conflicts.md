@@ -370,7 +370,7 @@ If you didn't have backups enabled:
 
 ## Related pages
 
-- [Auto-pull behavior](/docs/01-guides/00-auto-pull) - Understanding auto-pull
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Understanding auto-pull and sync
 - [Workflows guide](/docs/01-guides/01-workflows) - Choosing your workflow
 - [Backup and restore](/docs/04-reference/backup-restore) - Using backups
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
