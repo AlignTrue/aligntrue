@@ -68,6 +68,20 @@
             "type": "string",
             "enum": ["ignore", "commit", "branch"]
           }
+        },
+        "branch_check_interval": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Interval in seconds to check branches for updates (default: 86400 = 24 hours)"
+        },
+        "tag_check_interval": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Interval in seconds to check tags for updates (default: 604800 = 7 days)"
+        },
+        "offline_fallback": {
+          "type": "boolean",
+          "description": "Use cache if network unavailable (default: true)"
         }
       }
     },
@@ -193,6 +207,11 @@
           "ref": {
             "type": "string",
             "description": "Git branch, tag, or commit SHA (for type: git, defaults to 'main')"
+          },
+          "check_interval": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Override global check interval for this git source (seconds). Branches default to 24h, tags to 7 days, commits never check."
           },
           "id": {
             "type": "string",

@@ -4,7 +4,7 @@
  * Strategy:
  * - Clones repository to .aligntrue/.cache/git/<repo-hash>/
  * - Uses shallow clone (--depth 1) for speed and space
- * - Caches indefinitely (manual forceRefresh only)
+ * - Smart caching with TTL based on ref type (branches check daily, tags weekly, commits never)
  * - Falls back to cache when network unavailable
  * - Supports https and ssh URLs, branch/tag/commit refs
  *
@@ -21,6 +21,15 @@ import simpleGit, { SimpleGit, GitError } from "simple-git";
 import type { SourceProvider } from "./index.js";
 import type { ConsentManager } from "@aligntrue/core";
 import { checkFileSize, createIgnoreFilter } from "@aligntrue/core/performance";
+import {
+  detectRefType,
+  loadCacheMeta,
+  saveCacheMeta,
+  shouldCheckForUpdates,
+  getUpdateStrategy,
+  type CacheMeta,
+} from "./cache-meta.js";
+import { UpdatesAvailableError } from "./errors.js";
 
 /**
  * Git source configuration
@@ -31,6 +40,7 @@ export interface GitSourceConfig {
   ref?: string; // branch/tag/commit (default: 'main')
   path?: string; // path to rules file in repo (default: '.aligntrue.yaml')
   forceRefresh?: boolean; // bypass cache
+  checkInterval?: number; // override default check interval (seconds)
 }
 
 /**
@@ -42,6 +52,7 @@ export interface GitProviderOptions {
   ref: string;
   path: string;
   forceRefresh: boolean;
+  checkInterval: number;
   offlineMode?: boolean;
   consentManager?: ConsentManager;
 }
@@ -56,6 +67,7 @@ export class GitProvider implements SourceProvider {
   private ref: string;
   private path: string;
   private forceRefresh: boolean;
+  private checkInterval: number;
   private repoHash: string;
   private repoDir: string;
   private offlineMode: boolean;
@@ -73,12 +85,15 @@ export class GitProvider implements SourceProvider {
       mode?: "solo" | "team" | "enterprise";
       maxFileSizeMb?: number;
       force?: boolean;
+      checkInterval?: number;
     },
   ) {
     this.url = config.url;
     this.ref = config.ref ?? "main";
     this.path = config.path ?? ".aligntrue.yaml";
     this.forceRefresh = config.forceRefresh ?? false;
+    this.checkInterval =
+      config.checkInterval ?? options?.checkInterval ?? 86400; // Default 24 hours
     this.offlineMode = options?.offlineMode ?? false;
     this.mode = options?.mode ?? "solo";
     this.maxFileSizeMb = options?.maxFileSizeMb ?? 10;
@@ -97,7 +112,7 @@ export class GitProvider implements SourceProvider {
     this.cacheDir = baseCacheDir;
     this.repoDir = join(this.cacheDir, this.repoHash);
 
-    // Validate cache directory path (security check from Step 20)
+    // Validate cache directory path (security check)
     this.validateCachePath(this.cacheDir);
 
     // Ensure cache directory exists
@@ -107,50 +122,52 @@ export class GitProvider implements SourceProvider {
   }
 
   /**
-   * Fetch rules from git repository
+   * Fetch rules from git repository with smart caching
    *
    * Flow:
-   * 1. Check cache (unless forceRefresh)
-   * 2. Clone or pull repository
-   * 3. Checkout specified ref
-   * 4. Read rules file
-   * 5. Return content
+   * 1. Determine ref type (branch/tag/commit)
+   * 2. Check if update check is needed based on TTL
+   * 3. If check needed, compare local vs remote SHA
+   * 4. If updates available, auto-pull (solo) or throw error (team)
+   * 5. Return cached content
    */
   async fetch(ref?: string): Promise<string> {
-    // Use provided ref or fall back to constructor ref
     const targetRef = ref ?? this.ref;
+    const refType = detectRefType(targetRef);
 
-    // Check cache first (unless forceRefresh)
-    if (!this.forceRefresh && existsSync(this.repoDir)) {
+    // Load cache metadata
+    let meta = loadCacheMeta(this.repoDir);
+
+    // Initialize metadata if not exists (first fetch or migration)
+    if (!meta && existsSync(this.repoDir)) {
+      // Migrate existing cache: detect current SHA
       try {
-        const content = this.readRulesFile();
-        console.warn(
-          `Using cached repository: ${this.url} (ref: ${targetRef})\n` +
-            `  Use forceRefresh: true to update`,
-        );
-        return content;
-      } catch (error) {
-        // Cache corrupted or file missing, will re-clone
-        console.warn(
-          `Cache corrupted or file missing, will re-clone: ${this.url}\n` +
-            `  ${error instanceof Error ? error.message : String(error)}`,
-        );
+        const currentSha = await this.getCommitSha();
+        meta = {
+          url: this.url,
+          ref: targetRef,
+          refType,
+          resolvedSha: currentSha,
+          lastFetched: new Date().toISOString(),
+          lastChecked: new Date().toISOString(),
+          updateStrategy: getUpdateStrategy(refType),
+        };
+        saveCacheMeta(this.repoDir, meta);
+      } catch {
+        // Corrupted cache, will re-clone
+        meta = null;
       }
+    }
+
+    // Commit SHAs never change, use cache immediately
+    if (refType === "commit" && existsSync(this.repoDir)) {
+      return this.readRulesFile();
     }
 
     // Offline mode: use cache only, no network operations
     if (this.offlineMode) {
       if (existsSync(this.repoDir)) {
-        try {
-          const content = this.readRulesFile();
-          return content;
-        } catch (error) {
-          throw new Error(
-            `Offline mode: cache exists but cannot read rules file\n` +
-              `  Repository: ${this.url}\n` +
-              `  Error: ${error instanceof Error ? error.message : String(error)}`,
-          );
-        }
+        return this.readRulesFile();
       }
       throw new Error(
         `Offline mode: no cache available for repository\n` +
@@ -159,8 +176,27 @@ export class GitProvider implements SourceProvider {
       );
     }
 
+    // ForceRefresh: bypass all checks and pull
+    if (this.forceRefresh) {
+      await this.pullUpdates(targetRef);
+      return this.readRulesFile();
+    }
+
+    // Check if we should check for updates based on TTL
+    if (meta && !shouldCheckForUpdates(meta, this.checkInterval)) {
+      // TTL not expired, use cache
+      return this.readRulesFile();
+    }
+
     // Privacy consent check before network operation
     if (this.consentManager && !this.consentManager.checkConsent("git")) {
+      if (existsSync(this.repoDir)) {
+        // Have cache, use it with warning
+        console.warn(
+          `Network operation requires consent, using cached repository: ${this.url}`,
+        );
+        return this.readRulesFile();
+      }
       throw new Error(
         `Network operation requires consent\n` +
           `  Repository: ${this.url}\n` +
@@ -169,37 +205,47 @@ export class GitProvider implements SourceProvider {
       );
     }
 
+    // Check for updates
     try {
-      // Clone or update repository
-      await this.ensureRepository(targetRef);
+      const updateInfo = await this.checkRemoteUpdates(targetRef);
 
-      // Read rules file
-      const content = this.readRulesFile();
-      return content;
+      if (updateInfo.hasUpdates) {
+        // Team mode: block and require approval
+        if (this.mode === "team") {
+          throw new UpdatesAvailableError({
+            url: this.url,
+            ref: targetRef,
+            currentSha: updateInfo.currentSha,
+            latestSha: updateInfo.latestSha,
+            commitsBehind: updateInfo.commitsBehind,
+          });
+        }
+
+        // Solo mode: auto-pull updates
+        console.log(
+          `Updates available for ${this.url} (${targetRef}), pulling latest...`,
+        );
+        await this.pullUpdates(targetRef);
+      } else {
+        // No updates, just update last checked timestamp
+        this.updateCacheMeta({ lastChecked: new Date().toISOString() });
+      }
+
+      return this.readRulesFile();
     } catch (error) {
       // Network error - try cache fallback
       if (this.isNetworkError(error)) {
         if (existsSync(this.repoDir)) {
-          try {
-            const content = this.readRulesFile();
-            console.warn(
-              `Network unavailable, using cached repository: ${this.url}\n` +
-                `  Cache may be stale. Will retry on next sync.`,
-            );
-            return content;
-          } catch (readError) {
-            // Cache exists but file missing/corrupted
-            throw new Error(
-              `Failed to fetch from ${this.url} and cache is corrupted\n` +
-                `  Network error: ${error instanceof Error ? error.message : String(error)}\n` +
-                `  Cache error: ${readError instanceof Error ? readError.message : String(readError)}`,
-            );
-          }
+          console.warn(
+            `Network unavailable, using cached repository: ${this.url}\n` +
+              `  Cache may be stale. Will retry on next sync.`,
+          );
+          return this.readRulesFile();
         }
 
         // No cache available
         throw new Error(
-          `Failed to clone repository and no cache available\n` +
+          `Failed to check repository and no cache available\n` +
             `  URL: ${this.url}\n` +
             `  Ref: ${targetRef}\n` +
             `  Network error: ${error instanceof Error ? error.message : String(error)}\n` +
@@ -207,13 +253,117 @@ export class GitProvider implements SourceProvider {
         );
       }
 
-      // Not a network error, rethrow with context
+      // Rethrow non-network errors (including UpdatesAvailableError)
+      throw error;
+    }
+  }
+
+  /**
+   * Check remote for updates using lightweight git ls-remote
+   * Returns update information without pulling
+   */
+  private async checkRemoteUpdates(ref: string): Promise<{
+    hasUpdates: boolean;
+    currentSha: string;
+    latestSha: string;
+    commitsBehind: number;
+  }> {
+    // If no cache exists, we need to clone
+    if (!existsSync(this.repoDir)) {
+      await this.ensureRepository(ref);
+      const sha = await this.getCommitSha();
+      return {
+        hasUpdates: false,
+        currentSha: sha,
+        latestSha: sha,
+        commitsBehind: 0,
+      };
+    }
+
+    // Get current local SHA
+    const currentSha = await this.getCommitSha();
+
+    // Get remote SHA using git ls-remote (lightweight, no fetch)
+    const git = simpleGit();
+    try {
+      const result = await git.listRemote([this.url, ref]);
+      const lines = result.trim().split("\n");
+      const remoteSha = lines[0]?.split("\t")[0] ?? "";
+
+      if (!remoteSha) {
+        throw new Error(`Could not determine remote SHA for ${ref}`);
+      }
+
+      const hasUpdates = currentSha !== remoteSha;
+
+      // Calculate commits behind (rough estimate, would need full fetch for exact count)
+      const commitsBehind = hasUpdates ? 1 : 0; // Simplified, real impl would count commits
+
+      return {
+        hasUpdates,
+        currentSha,
+        latestSha: remoteSha,
+        commitsBehind,
+      };
+    } catch (error) {
       throw new Error(
-        `Failed to fetch from git repository\n` +
+        `Failed to check remote updates\n` +
           `  URL: ${this.url}\n` +
-          `  Ref: ${targetRef}\n` +
+          `  Ref: ${ref}\n` +
           `  ${error instanceof Error ? error.message : String(error)}`,
       );
+    }
+  }
+
+  /**
+   * Pull updates from remote repository
+   * Clones if cache doesn't exist, otherwise fetches and resets
+   */
+  private async pullUpdates(ref: string): Promise<void> {
+    if (!existsSync(this.repoDir)) {
+      // Clone for first time
+      await this.ensureRepository(ref);
+    } else {
+      // Update existing repository
+      const git = simpleGit(this.repoDir);
+      try {
+        // Fetch latest
+        await git.fetch(["origin", ref, "--depth", "1"]);
+        // Hard reset to remote ref
+        await git.reset(["--hard", `origin/${ref}`]);
+      } catch (error) {
+        // Fetch/reset failed, try re-cloning
+        console.warn(
+          `Failed to update repository, re-cloning: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        rmSync(this.repoDir, { recursive: true, force: true });
+        await this.ensureRepository(ref);
+      }
+    }
+
+    // Update metadata
+    const sha = await this.getCommitSha();
+    const refType = detectRefType(ref);
+    const now = new Date().toISOString();
+
+    saveCacheMeta(this.repoDir, {
+      url: this.url,
+      ref,
+      refType,
+      resolvedSha: sha,
+      lastFetched: now,
+      lastChecked: now,
+      updateStrategy: getUpdateStrategy(refType),
+    });
+  }
+
+  /**
+   * Update cache metadata with partial updates
+   */
+  private updateCacheMeta(partial: Partial<CacheMeta>): void {
+    const meta = loadCacheMeta(this.repoDir);
+    if (meta) {
+      saveCacheMeta(this.repoDir, { ...meta, ...partial });
     }
   }
 
@@ -222,45 +372,6 @@ export class GitProvider implements SourceProvider {
    */
   private async ensureRepository(ref: string): Promise<void> {
     const git: SimpleGit = simpleGit();
-
-    // If forceRefresh, clone to temp location first, then replace on success
-    if (this.forceRefresh && existsSync(this.repoDir)) {
-      const tempDir = `${this.repoDir}.tmp`;
-
-      try {
-        // Clone to temp directory
-        await git.clone(this.url, tempDir, [
-          "--depth",
-          "1",
-          "--branch",
-          ref,
-          "--single-branch",
-        ]);
-
-        // Success! Now replace old cache
-        rmSync(this.repoDir, { recursive: true, force: true });
-        const { renameSync } = require("fs");
-        renameSync(tempDir, this.repoDir);
-      } catch (error) {
-        // Clean up temp on error, keep old cache for fallback
-        if (existsSync(tempDir)) {
-          rmSync(tempDir, { recursive: true, force: true });
-        }
-
-        // Add helpful context to error
-        if (error instanceof GitError) {
-          throw new Error(
-            `Git clone failed: ${error.message}\n` +
-              `  URL: ${this.url}\n` +
-              `  Ref: ${ref}\n` +
-              this.getGitErrorHint(error),
-          );
-        }
-
-        throw error;
-      }
-      return;
-    }
 
     if (!existsSync(this.repoDir)) {
       // Clone repository (shallow)
@@ -272,6 +383,21 @@ export class GitProvider implements SourceProvider {
           ref,
           "--single-branch",
         ]);
+
+        // Initialize metadata
+        const sha = await this.getCommitSha();
+        const refType = detectRefType(ref);
+        const now = new Date().toISOString();
+
+        saveCacheMeta(this.repoDir, {
+          url: this.url,
+          ref,
+          refType,
+          resolvedSha: sha,
+          lastFetched: now,
+          lastChecked: now,
+          updateStrategy: getUpdateStrategy(refType),
+        });
       } catch (error) {
         // Clean up partial clone on error
         if (existsSync(this.repoDir)) {
@@ -467,7 +593,7 @@ export class GitProvider implements SourceProvider {
   }
 
   /**
-   * Validate cache directory path (security check from Step 20)
+   * Validate cache directory path (security check)
    */
   private validateCachePath(cachePath: string): void {
     // Check for path traversal attempts
