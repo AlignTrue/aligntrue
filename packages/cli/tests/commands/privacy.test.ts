@@ -33,6 +33,10 @@ describe("privacy command", () => {
     // Change to test directory
     process.chdir(testDir);
 
+    // Mock TTY to enable interactive mode for tests
+    (process.stdin as any).isTTY = true;
+    (process.stdout as any).isTTY = true;
+
     // Clear mocks
     vi.clearAllMocks();
   });
@@ -40,6 +44,10 @@ describe("privacy command", () => {
   afterEach(() => {
     // Restore directory
     process.chdir(join(testDir, ".."));
+
+    // Restore TTY mocks
+    delete (process.stdin as any).isTTY;
+    delete (process.stdout as any).isTTY;
 
     // Clean up
     if (existsSync(testDir)) {
