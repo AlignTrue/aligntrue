@@ -848,11 +848,11 @@ export async function sync(args: string[]): Promise<void> {
           });
         } else {
           // Show summary count for fidelity notes, full text for other warnings
-          const fidelityNotes = result.warnings.filter((w) =>
-            w.startsWith("["),
+          const fidelityNotes = result.warnings.filter(
+            (w) => w.startsWith("[") && w.length > 3,
           );
           const otherWarnings = result.warnings.filter(
-            (w) => !w.startsWith("["),
+            (w) => !w.startsWith("[") || w.length <= 3,
           );
 
           if (fidelityNotes.length > 0) {

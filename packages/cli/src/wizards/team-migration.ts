@@ -3,6 +3,9 @@
  * Guides users through solo → team mode conversion
  */
 
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { join } from "path";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
@@ -216,10 +219,6 @@ function detectPersonalRulesInRepo(
     [];
 
   try {
-    const { readFileSync, existsSync } = require("fs");
-    const { join } = require("path");
-    const yaml = require("yaml");
-
     // Check IR file
     const irPath = join(cwd, ".aligntrue", ".rules.yaml");
     if (!existsSync(irPath)) {
@@ -227,7 +226,7 @@ function detectPersonalRulesInRepo(
     }
 
     const irContent = readFileSync(irPath, "utf-8");
-    const ir = yaml.parse(irContent);
+    const ir = parseYaml(irContent);
 
     if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
       return results;
@@ -283,10 +282,6 @@ async function applyMigrationActions(
   config: AlignTrueConfig,
   cwd: string,
 ): Promise<void> {
-  const { readFileSync, writeFileSync, existsSync } = require("fs");
-  const { join } = require("path");
-  const yaml = require("yaml");
-
   // Load IR
   const irPath = join(cwd, ".aligntrue", ".rules.yaml");
   if (!existsSync(irPath)) {
@@ -294,7 +289,7 @@ async function applyMigrationActions(
   }
 
   const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent) as ParsedIR;
+  const ir = parseYaml(irContent) as ParsedIR;
 
   if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
@@ -387,11 +382,11 @@ async function applyMigrationActions(
   }
 
   // Write updated IR
-  const updatedIr = yaml.stringify(ir);
+  const updatedIr = stringifyYaml(ir);
   writeFileSync(irPath, updatedIr, "utf-8");
 
   // Write updated config
   const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const configContent = yaml.stringify(config);
+  const configContent = stringifyYaml(config);
   writeFileSync(configPath, configContent, "utf-8");
 }
