@@ -1,0 +1,13 @@
+exporters:
+  - cursor
+  - agents-md
+
+sync:
+  auto_pull: true
+  on_conflict: accept_agent
+
+backup:
+  auto_backup: true
+  backup_on:
+    - sync
+  max_backups: 10
