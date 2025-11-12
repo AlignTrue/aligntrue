@@ -1,0 +1,7 @@
+{
+  "version": "1",
+  "timestamp": "2025-11-12T04:19:59.113Z",
+  "files": [".rules.yaml", "config.yaml"],
+  "created_by": "sync",
+  "notes": "Auto-backup before sync"
+}
