@@ -10,6 +10,17 @@ import { execSync } from "child_process";
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "config-commands-test");
 const CLI_PATH = join(process.cwd(), "dist", "index.js");
 
+/**
+ * Helper to safely run CLI commands with proper path handling
+ */
+function runCli(args: string[], options: { encoding?: string } = {}): string {
+  const cmd = [process.execPath, CLI_PATH, ...args].join(" ");
+  return execSync(cmd, {
+    cwd: TEST_DIR,
+    encoding: options.encoding || "utf-8",
+  });
+}
+
 describe("Config Commands", () => {
   beforeEach(() => {
     // Create test directory
@@ -51,36 +62,24 @@ sync:
 
   describe("config get", () => {
     it("should get a top-level value", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get mode`,
-        { encoding: "utf-8" },
-      );
+      const result = runCli(["config", "get", "mode"]);
       expect(result.trim()).toBe("solo");
     });
 
     it("should get a nested value using dot notation", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get sync.edit_source`,
-        { encoding: "utf-8" },
-      );
+      const result = runCli(["config", "get", "sync.edit_source"]);
       expect(result.trim()).toBe("AGENTS.md");
     });
 
     it("should get an array value", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get exporters`,
-        { encoding: "utf-8" },
-      );
+      const result = runCli(["config", "get", "exporters"]);
       const parsed = JSON.parse(result.trim());
       expect(parsed).toEqual(["cursor", "agents-md"]);
     });
 
     it("should fail with exit code 1 for non-existent key", () => {
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config get nonexistent`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "get", "nonexistent"], {});
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(1);
@@ -91,10 +90,7 @@ sync:
 
     it("should fail with exit code 2 when key argument is missing", () => {
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config get`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "get"], {});
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(2);
@@ -106,62 +102,32 @@ sync:
 
   describe("config set", () => {
     it("should set a top-level string value", () => {
-      execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config set mode team`, {
-        encoding: "utf-8",
-      });
-
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get mode`,
-        { encoding: "utf-8" },
-      );
+      runCli(["config", "set", "mode", "team"]);
+      const result = runCli(["config", "get", "mode"]);
       expect(result.trim()).toBe("team");
     });
 
     it("should set a nested value using dot notation", () => {
-      execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config set sync.auto_pull true`,
-        { encoding: "utf-8" },
-      );
-
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get sync.auto_pull`,
-        { encoding: "utf-8" },
-      );
+      runCli(["config", "set", "sync.auto_pull", "true"]);
+      const result = runCli(["config", "get", "sync.auto_pull"]);
       expect(result.trim()).toBe("true");
     });
 
     it("should set a boolean value", () => {
-      execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config set sync.auto_pull true`,
-        { encoding: "utf-8" },
-      );
-
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get sync.auto_pull`,
-        { encoding: "utf-8" },
-      );
+      runCli(["config", "set", "sync.auto_pull", "true"]);
+      const result = runCli(["config", "get", "sync.auto_pull"]);
       expect(result.trim()).toBe("true");
     });
 
     it("should set a number value", () => {
-      execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config set performance.max_file_size_mb 20`,
-        { encoding: "utf-8" },
-      );
-
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get performance.max_file_size_mb`,
-        { encoding: "utf-8" },
-      );
+      runCli(["config", "set", "performance.max_file_size_mb", "20"]);
+      const result = runCli(["config", "get", "performance.max_file_size_mb"]);
       expect(result.trim()).toBe("20");
     });
 
     it("should fail validation for invalid mode", () => {
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config set mode invalid`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "set", "mode", "invalid"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(1);
@@ -172,10 +138,7 @@ sync:
 
     it("should fail with exit code 2 when arguments are missing", () => {
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config set mode`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "set", "mode"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(2);
@@ -187,11 +150,7 @@ sync:
 
   describe("config list", () => {
     it("should list all config values", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config list`,
-        { encoding: "utf-8" },
-      );
-
+      const result = runCli(["config", "list"]);
       expect(result).toContain("mode = solo");
       expect(result).toContain("exporters = ");
       expect(result).toContain("sync.edit_source = AGENTS.md");
@@ -199,11 +158,7 @@ sync:
     });
 
     it("should show all nested keys with dot notation", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config list`,
-        { encoding: "utf-8" },
-      );
-
+      const result = runCli(["config", "list"]);
       // Should use dot notation for nested keys
       expect(result).toContain("sync.edit_source");
       expect(result).toContain("sync.auto_pull");
@@ -213,24 +168,15 @@ sync:
   describe("config unset", () => {
     it("should remove an optional config value", () => {
       // First verify the value exists
-      const before = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config get sync.edit_source`,
-        { encoding: "utf-8" },
-      );
+      const before = runCli(["config", "get", "sync.edit_source"]);
       expect(before.trim()).toBe("AGENTS.md");
 
       // Unset it
-      execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config unset sync.edit_source`,
-        { encoding: "utf-8" },
-      );
+      runCli(["config", "unset", "sync.edit_source"]);
 
       // Verify it's gone
       try {
-        execSync(
-          `cd ${TEST_DIR} && node ${CLI_PATH} config get sync.edit_source`,
-          { encoding: "utf-8", stdio: "pipe" },
-        );
+        runCli(["config", "get", "sync.edit_source"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(1);
@@ -240,20 +186,13 @@ sync:
     });
 
     it("should succeed with warning when key doesn't exist", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} config unset nonexistent.key`,
-        { encoding: "utf-8", stdio: "pipe" },
-      );
-
+      const result = runCli(["config", "unset", "nonexistent.key"]);
       expect(result).toContain("Key not found");
     });
 
     it("should fail with exit code 2 when key argument is missing", () => {
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config unset`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "unset"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(2);
@@ -267,10 +206,7 @@ sync:
     it("should validate config after set operation", () => {
       // Try to set an invalid exporters value (not an array)
       try {
-        execSync(
-          `cd ${TEST_DIR} && node ${CLI_PATH} config set exporters "not-an-array"`,
-          { encoding: "utf-8", stdio: "pipe" },
-        );
+        runCli(["config", "set", "exporters", "not-an-array"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(1);
@@ -282,10 +218,7 @@ sync:
     it("should validate config after unset operation", () => {
       // Try to unset a required field
       try {
-        execSync(`cd ${TEST_DIR} && node ${CLI_PATH} config unset mode`, {
-          encoding: "utf-8",
-          stdio: "pipe",
-        });
+        runCli(["config", "unset", "mode"]);
         expect.fail("Should have thrown an error");
       } catch (err: any) {
         expect(err.status).toBe(1);

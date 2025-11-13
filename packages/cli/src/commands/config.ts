@@ -462,6 +462,10 @@ function setNestedValue(
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]!;
+    // Prevent prototype pollution by checking for unsafe keys
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      throw new Error(`Invalid key: ${key}`);
+    }
     if (!(key in current) || typeof current[key] !== "object") {
       current[key] = {};
     }
@@ -469,6 +473,14 @@ function setNestedValue(
   }
 
   const lastKey = keys[keys.length - 1]!;
+  // Prevent prototype pollution on final key
+  if (
+    lastKey === "__proto__" ||
+    lastKey === "constructor" ||
+    lastKey === "prototype"
+  ) {
+    throw new Error(`Invalid key: ${lastKey}`);
+  }
   current[lastKey] = value;
 }
 
