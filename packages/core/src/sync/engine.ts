@@ -466,10 +466,21 @@ export class SyncEngine {
             outputPath,
           };
 
+          // Get backup options from config
+          const { getBackupOptions } = await import("./file-operations.js");
+          const backupOptions = this.config
+            ? getBackupOptions(
+                this.config.mode,
+                this.config.sync?.backup_on_overwrite,
+                this.config.sync?.backup_extension,
+              )
+            : { enabled: false, skipIfIdentical: true, extension: ".bak" };
+
           const exportOptions: ExportOptions = {
             outputDir: process.cwd(),
             dryRun: options.dryRun || false,
             backup: options.backup || false,
+            backupOptions,
             unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
             managedSections: this.config?.managed?.sections || [], // Pass team-managed sections to exporters
           };

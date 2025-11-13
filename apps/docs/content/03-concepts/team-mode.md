@@ -561,7 +561,7 @@ All input must be validated.
 
 Team security rules here.
 
-## My workflow notes
+## My Workflow Notes
 
 Personal notes - not managed.
 

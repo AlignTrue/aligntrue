@@ -15,7 +15,7 @@ AlignTrue supports intelligent git source management with automatic update check
 
 Git sources automatically check for updates based on ref type:
 
-### Branch references (auto-update)
+### Branch References (Auto-Update)
 
 ```yaml
 sources:
@@ -27,7 +27,7 @@ sources:
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
 **Team mode**: Blocks sync and requires approval with `aligntrue team approve`
 
-### Tag references (stable)
+### Tag References (Stable)
 
 ```yaml
 sources:
@@ -38,7 +38,7 @@ sources:
 
 Tags are treated as stable but checked occasionally to detect force-pushes.
 
-### Commit SHAs (pinned)
+### Commit SHAs (Pinned)
 
 ```yaml
 sources:
@@ -51,7 +51,7 @@ Commit SHAs are immutable and never check for updates.
 
 ## Configuration
 
-### Global defaults
+### Global Defaults
 
 ```yaml
 git:
@@ -60,7 +60,7 @@ git:
   offline_fallback: true # Use cache if network fails
 ```
 
-### Per-source override
+### Per-Source Override
 
 ```yaml
 sources:
@@ -70,7 +70,7 @@ sources:
     check_interval: 3600 # Check hourly instead of daily
 ```
 
-### Command flags
+### Command Flags
 
 ```bash
 # Force check now (bypass TTL)
@@ -83,7 +83,7 @@ aligntrue sync --skip-update-check
 aligntrue sync --offline
 ```
 
-## Pull command
+## Pull Command
 
 The `aligntrue pull` command enables flexible git-based workflows:
 
@@ -652,7 +652,7 @@ aligntrue privacy grant git
 aligntrue pull https://github.com/yourorg/rules
 ```
 
-## Sources command
+## Sources Command
 
 Manage git sources with the `aligntrue sources` command:
 
@@ -697,7 +697,7 @@ aligntrue sources pin https://github.com/company/rules abc1234
 
 Pins a git source to a specific commit SHA in config.
 
-## Team mode workflows
+## Team Mode Workflows
 
 ### Solo Developer Tracking Latest
 

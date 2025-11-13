@@ -233,25 +233,50 @@ lockfile:
 
 ## `aligntrue scopes`
 
-List configured scopes from config.
+List and discover scopes in your workspace.
 
 **Usage:**
 
 ```bash
-aligntrue scopes
+aligntrue scopes [subcommand] [options]
 ```
 
-**What it shows:**
+**Subcommands:**
+
+| Subcommand | Description                                    |
+| ---------- | ---------------------------------------------- |
+| (none)     | List configured scopes                         |
+| `discover` | Auto-discover nested `.aligntrue/` directories |
+
+**Flags:**
+
+| Flag          | Description                                | Default |
+| ------------- | ------------------------------------------ | ------- |
+| `--yes`, `-y` | Skip confirmation prompts (for `discover`) | `false` |
+
+**What it shows (list mode):**
 
 - Scope paths
 - Include/exclude patterns
 - Configured rulesets
+
+**What it does (discover mode):**
+
+1. Searches for nested `.aligntrue/` directories
+2. Shows discovered directories with rule status
+3. Optionally adds them as scopes to config
 
 **Examples:**
 
 ```bash
 # List all scopes
 aligntrue scopes
+
+# Discover nested scopes
+aligntrue scopes discover
+
+# Discover and add without prompts
+aligntrue scopes discover --yes
 ```
 
 **Output:**

@@ -44,7 +44,7 @@ Your Options:
   3. Add personal rules (with remote backup)
 ```
 
-### Option 1: Team rules only
+### Option 1: Team Rules Only
 
 Select this if you don't need any personal rules:
 
@@ -54,7 +54,7 @@ aligntrue init --team-only
 
 This is the simplest setup. All rules come from the team repository.
 
-### Option 2: Personal rules (local)
+### Option 2: Personal Rules (Local)
 
 Select this if you want personal rules but don't need version control:
 
@@ -64,7 +64,7 @@ aligntrue init --with-personal-local
 
 Your personal rules will be stored in `.aligntrue/.local/personal/` and git-ignored.
 
-### Option 3: Personal rules (remote)
+### Option 3: Personal Rules (Remote)
 
 Select this if you want personal rules with version control and backup:
 
@@ -74,7 +74,7 @@ aligntrue init --with-personal-remote
 
 You'll be prompted to set up a remote repository. See [Personal Repository Setup](/reference/personal-repo-setup) for details.
 
-## Step 3: Initial sync
+## Step 3: Initial Sync
 
 After initialization, sync the rules to your agent files:
 
@@ -89,7 +89,7 @@ This will:
 3. Merge them together
 4. Export to agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
 
-## Step 4: Verify setup
+## Step 4: Verify Setup
 
 Check that rules were exported correctly:
 
@@ -254,7 +254,7 @@ aligntrue sync
 git status
 ```
 
-### Personal rules not showing
+### Personal rules Not Showing
 
 **Cause:** Personal rules might not be configured correctly.
 
@@ -268,7 +268,7 @@ aligntrue config get storage.personal
 aligntrue init --with-personal-local
 ```
 
-### Agent files not generated
+### Agent files Not Generated
 
 **Cause:** Exporters might not be enabled.
 
