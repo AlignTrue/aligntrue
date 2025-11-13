@@ -86,16 +86,17 @@ describe("CursorExporter", () => {
       expect(content).toContain("---");
     });
 
-    it("throws error when sections array is empty", async () => {
+    it("returns empty result when sections array is empty", async () => {
       const request = createRequest([], createDefaultScope());
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
       };
 
-      await expect(exporter.export(request, options)).rejects.toThrow(
-        "CursorExporter requires at least one section to export",
-      );
+      const result = await exporter.export(request, options);
+      expect(result.success).toBe(true);
+      expect(result.filesWritten).toEqual([]);
+      expect(result.contentHash).toBe("");
     });
   });
 

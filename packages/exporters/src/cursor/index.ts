@@ -31,9 +31,13 @@ export class CursorExporter extends ExporterBase {
 
     const sections = pack.sections;
 
-    // Validate inputs
+    // Handle empty sections gracefully (valid in early setup)
     if (sections.length === 0) {
-      throw new Error("CursorExporter requires at least one section to export");
+      return {
+        success: true,
+        filesWritten: [],
+        contentHash: "",
+      };
     }
 
     // Cursor always uses native frontmatter format, ignore config

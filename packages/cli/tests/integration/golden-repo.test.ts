@@ -56,9 +56,11 @@ describe("Golden Repository Workflows", () => {
       stdio: "pipe",
     });
 
-    // Verify outputs exist (sync replaces aligntrue-starter.mdc with aligntrue.mdc)
-    const cursorExists = await fs
-      .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
+    // Verify outputs exist
+    // Note: Since no rules were added, Cursor exporter returns early
+    // The starter file created by init remains at aligntrue-starter.mdc
+    const starterCursorExists = await fs
+      .access(join(projectDir, ".cursor/rules/aligntrue-starter.mdc"))
       .then(() => true)
       .catch(() => false);
     const agentsExists = await fs
@@ -70,7 +72,7 @@ describe("Golden Repository Workflows", () => {
       .then(() => true)
       .catch(() => false);
 
-    expect(cursorExists).toBe(true);
+    expect(starterCursorExists).toBe(true);
     expect(agentsExists).toBe(true);
     expect(irExists).toBe(true);
 
