@@ -2,6 +2,43 @@
 
 This document tracks test coverage for all CLI commands and features.
 
+## Test Scripts
+
+### Local Build Testing
+
+**Script:** `pnpm test:local`  
+**Location:** `tests/scripts/test-local-build.sh`
+
+This script ensures we always test the local build, not an outdated npm package:
+
+1. Builds all packages from source (`pnpm build`)
+2. Creates isolated test environment in `/tmp`
+3. Uses local CLI binary (not npm)
+4. Runs smoke tests (init, check, config commands)
+5. Generates structured report in `.internal_docs/TEST_LOG_LOCAL.md`
+6. Cleans up automatically
+
+**Usage:**
+
+```bash
+cd packages/cli
+pnpm test:local
+```
+
+**When to use:**
+
+- Before releasing new versions
+- After making changes to core sync logic
+- When comprehensive tests report false positives
+- To validate fixes work in the actual built CLI
+
+### Comprehensive Testing
+
+**Script:** `pnpm test:comprehensive`  
+**Location:** `tests/comprehensive/run-all-layers.ts`
+
+Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_testing_playbook.mdc` for details.
+
 ## Commands (27 total)
 
 | Command   | Happy Path | Error Cases | Exit Codes | Help Text | Integration Tests |
