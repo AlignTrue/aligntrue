@@ -91,11 +91,9 @@ export async function config(args: string[]): Promise<void> {
  * Show configuration with mode and effective settings
  */
 async function showConfig(configPath: string): Promise<void> {
-  // Wrap all output in try-catch to handle EPIPE errors gracefully
-  // This occurs when output is piped to commands like grep that exit early
-  try {
-    clack.intro("AlignTrue Configuration");
+  clack.intro("AlignTrue Configuration");
 
+  try {
     const { loadConfig } = await import("@aligntrue/core");
     const cfg = await loadConfig(configPath);
 
@@ -161,17 +159,6 @@ async function showConfig(configPath: string): Promise<void> {
 
     clack.outro("Configuration displayed");
   } catch (_error) {
-    // Handle EPIPE errors (broken pipe) gracefully - occurs when piping to grep, head, etc.
-    if (
-      _error instanceof Error &&
-      "code" in _error &&
-      _error.code === "EPIPE"
-    ) {
-      // Exit cleanly without error message when pipe is broken
-      process.exit(0);
-    }
-
-    // Handle other errors normally
     clack.log.error(
       `Failed to load config: ${_error instanceof Error ? _error.message : String(_error)}`,
     );

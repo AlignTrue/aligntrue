@@ -16,11 +16,11 @@ summary: "Project coding standards"
 tags: ["project", "standards"]
 ---
 
-# Project Rules
+# Project rules
 
 Standards for our team.
 
-## Code Quality
+## Code quality
 
 Write clean, maintainable code. Follow the single responsibility principle. Keep functions small and focused.
 
@@ -28,7 +28,7 @@ Write clean, maintainable code. Follow the single responsibility principle. Keep
 - Use descriptive names
 - Avoid nested logic beyond 3 levels
 
-## Testing Baseline
+## Testing baseline
 
 Every feature needs tests. Follow the test pyramid: unit tests form the base, integration tests are selective, and end-to-end tests are minimal.
 
@@ -68,7 +68,7 @@ aligntrue sync
 Add new `##` headings anywhere in the document:
 
 ```markdown
-## New Section Title
+## New section title
 
 Content for this section goes here.
 ```
@@ -84,7 +84,7 @@ aligntrue sync
 Edit content under any section heading:
 
 ```markdown
-## Code Quality
+## Code quality
 
 ### Before
 
@@ -107,7 +107,7 @@ Delete the section heading and content:
 ```markdown
 # Before
 
-## Code Quality
+## Code quality
 
 Content...
 
@@ -131,11 +131,11 @@ When you rename a heading, the fingerprint changes:
 ```markdown
 # Before
 
-## Code Quality Standards
+## Code quality Standards
 
 # After
 
-## Code Quality Guide
+## Code quality Guide
 ```
 
 This is treated as:
@@ -165,7 +165,7 @@ tags: ["project", "standards"]
 Use `##` (level 2) for rule sections:
 
 ```markdown
-## Section Title
+## Section title
 
 Content here...
 ```
@@ -184,7 +184,7 @@ Write natural language guidance in markdown:
 ### Example
 
 ```markdown
-## Use TypeScript Strict Mode
+## Use TypeScript strict mode
 
 Enable strict mode in `tsconfig.json` for better type safety. This catches more errors at compile time and makes refactoring safer.
 
@@ -341,7 +341,7 @@ Show concrete examples when possible.
 **Good:**
 
 ```markdown
-## Use Descriptive Variable Names
+## Use descriptive variable names
 
 Prefer clear, descriptive names over abbreviations.
 

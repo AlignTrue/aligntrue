@@ -268,7 +268,7 @@ Two-way sync uses section-based merging instead of field-level conflict detectio
 
 Run tests before committing.
 
-## My Workflow Notes
+## My workflow notes
 
 Personal notes here.
 
