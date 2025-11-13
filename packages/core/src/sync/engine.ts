@@ -11,7 +11,7 @@ import { loadConfig } from "../config/index.js";
 import { resolveScopes } from "../scope.js";
 import { loadIR } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { posix, resolve as resolvePath } from "path";
+import { posix, resolve as resolvePath, dirname } from "path";
 import {
   readLockfile,
   writeLockfile,
@@ -827,7 +827,11 @@ export class SyncEngine {
       // Load config
       const config = await loadConfig(configPath);
       this.config = config;
-      const cwd = resolvePath(configPath, "..");
+      // Get the project root (parent of .aligntrue directory)
+      // configPath is typically .aligntrue/config.yaml, so we need to go up twice
+      const absoluteConfigPath = resolvePath(configPath);
+      const aligntrueDir = dirname(absoluteConfigPath);
+      const cwd = dirname(aligntrueDir);
       const paths = getAlignTruePaths(cwd);
 
       // Import multi-file parser

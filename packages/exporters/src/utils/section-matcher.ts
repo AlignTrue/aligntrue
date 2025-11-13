@@ -10,7 +10,12 @@ import { createHash } from "crypto";
 // Re-export ParsedSection for convenience
 export type { ParsedSection };
 
-export type MatchAction = "keep" | "update" | "add" | "user-added";
+export type MatchAction =
+  | "keep"
+  | "update"
+  | "add"
+  | "user-added"
+  | "preserve-edit";
 
 export interface MatchResult {
   irSection?: AlignSection;
@@ -25,6 +30,7 @@ export interface MergeStats {
   updated: number; // Hash differs, IR wins
   added: number; // New from IR
   userAdded: number; // In file but not in IR
+  preservedEdits: number; // User edited existing section, preserved
 }
 
 /**
@@ -45,6 +51,7 @@ export function matchSections(
     updated: 0,
     added: 0,
     userAdded: 0,
+    preservedEdits: 0,
   };
 
   // Create lookup map for existing sections by normalized heading
@@ -94,15 +101,33 @@ export function matchSections(
         });
         stats.kept++;
       } else {
-        // Content differs - update with IR version
-        matches.push({
-          irSection,
-          existingSection: existing,
-          action: "update",
-          reason: "Content changed in IR",
-          isTeamManaged,
-        });
-        stats.updated++;
+        // Content differs - check if this was a user edit that should be preserved
+        // If IR section has vendor.aligntrue.last_modified, it came from an agent file edit
+        // In that case, we should use the IR version (which already has the user's edit)
+        const hasRecentEdit = irSection.vendor?.aligntrue?.last_modified;
+
+        if (hasRecentEdit) {
+          // This section was edited in an agent file and merged to IR
+          // Use the IR version (which contains the user's edit)
+          matches.push({
+            irSection,
+            existingSection: existing,
+            action: "preserve-edit",
+            reason: "User edited this section, using merged IR version",
+            isTeamManaged,
+          });
+          stats.preservedEdits++;
+        } else {
+          // Normal update from IR (no recent user edit)
+          matches.push({
+            irSection,
+            existingSection: existing,
+            action: "update",
+            reason: "Content changed in IR",
+            isTeamManaged,
+          });
+          stats.updated++;
+        }
       }
     }
   }
