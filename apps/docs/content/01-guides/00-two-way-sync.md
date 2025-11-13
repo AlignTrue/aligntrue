@@ -1,11 +1,13 @@
 ---
-title: "Edit source configuration"
-description: "Control which files accept edits and sync to the internal rules. Use edit_source to configure single, multiple, or flexible edit workflows."
+title: "Two-way sync & edit source"
+description: "Configure bidirectional sync: choose which files to edit and how changes merge back to rules. Supports single file, multiple files, or flexible workflows."
 ---
 
-# Edit source configuration
+# Two-way sync and edit source
 
 The `sync.edit_source` setting controls which agent files accept your edits and will sync back to AlignTrue's internal rules (IR). By default, AlignTrue detects your agents and recommends the best edit source for your workflow.
+
+**Quick navigation:** For technical details about how sync actually works, see [Sync behavior](/docs/03-concepts/sync-behavior). For practical workflows, stay here.
 
 **Deprecation notice:** The `sync.two_way` boolean is deprecated. Use `sync.edit_source` instead. Existing configs automatically migrate:
 
@@ -200,6 +202,53 @@ Output shows:
 - What the merged IR would look like
 - Which files would be written
 
+## Scope-Aware Multi-File Editing
+
+When using Cursor with multiple scope files (e.g., `backend.mdc`, `frontend.mdc`), AlignTrue tracks which file each section originated from using metadata.
+
+### Example Workflow
+
+1. Edit `.cursor/rules/backend.mdc` - add "Backend Security" section
+2. Edit `.cursor/rules/frontend.mdc` - add "Frontend Security" section
+3. Run `aligntrue sync`
+4. Both sections sync to AGENTS.md (optionally with scope prefixes)
+5. Next sync routes sections back to correct Cursor files
+
+### Scope Prefixing
+
+Add scope prefixes to AGENTS.md when syncing from multiple Cursor files:
+
+```yaml
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+  scope_prefixing: "auto" # or "always" or "off"
+```
+
+Result in AGENTS.md:
+
+```markdown
+## Backend: Security
+
+Use authentication for all endpoints.
+
+## Frontend: Security
+
+Sanitize all user inputs.
+```
+
+### Managed Sections
+
+Team-managed sections work with any edit_source:
+
+```yaml
+managed:
+  sections:
+    - "Security"
+    - "Compliance"
+```
+
+These sections remain protected regardless of edit_source.
+
 ## Choosing an edit source
 
 ### Recommended defaults (auto-detected)
@@ -209,6 +258,7 @@ During `aligntrue init`, AlignTrue recommends based on detected agents:
 1. **Cursor detected** → `edit_source: ".cursor/rules/*.mdc"`
    - Full feature support with scopes
    - Multi-file editing with scope awareness
+   - Best round-trip fidelity
 
 2. **AGENTS.md detected** → `edit_source: "AGENTS.md"`
    - Universal format
@@ -218,7 +268,48 @@ During `aligntrue init`, AlignTrue recommends based on detected agents:
    - Safe default
    - File will be created
 
-### Configuration options
+### Cursor Priority
+
+If you use Cursor, set:
+
+```yaml
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+```
+
+**Benefits:**
+
+- Full feature support (frontmatter, globs, vendor metadata)
+- Multi-scope organization
+- Best round-trip fidelity
+
+### AGENTS.md Priority
+
+For universal compatibility:
+
+```yaml
+sync:
+  edit_source: "AGENTS.md"
+```
+
+**Benefits:**
+
+- Single file simplicity
+- Works with all AI assistants
+- Easy to review in one place
+
+### Both (Flexible)
+
+Allow editing either:
+
+```yaml
+sync:
+  edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]
+```
+
+**Tradeoff:** May cause conflicts if same section edited in both places.
+
+### All configuration options
 
 ```yaml
 # Single file (most common)

@@ -1,9 +1,9 @@
 ---
-title: Multi-File Rule Organization
+title: Multi-file rule organization
 description: Organize rules across multiple markdown files for better maintainability
 ---
 
-# Multi-File Rule Organization
+# Multi-file rule organization
 
 Instead of maintaining all rules in a single `AGENTS.md` file, AlignTrue supports organizing rules across multiple markdown files. This is especially useful for large projects with many rules or teams where different people own different rule categories.
 

@@ -1,8 +1,8 @@
 {
-  "00-two-way-sync": "Two-way sync",
+  "00-two-way-sync": "Two-way sync and edit source",
+  "01-workflows": "Workflows and scenarios",
   "04-solo-developer-guide": "Solo developer guide",
   "05-team-guide": "Team guide",
   "03-ci-cd-integration": "CI/CD integration",
-  "06-multi-agent-workflows": "Multi-agent workflows",
-  "workflows": "Workflows and scenarios"
+  "06-multi-agent-workflows": "Multi-agent workflows"
 }
