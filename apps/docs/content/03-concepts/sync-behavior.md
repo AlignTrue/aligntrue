@@ -17,9 +17,11 @@ Complete technical reference for AlignTrue's two-way sync system, conflict resol
 1. **Load config** from `.aligntrue/config.yaml`
 2. **Check for team mode** - if enabled, validate lockfile
 3. **Detect edited agent files** by checking modification times (mtime)
-4. **Merge edited files** using last-write-wins strategy (no conflicts, no prompts)
-5. **Export** merged rules to all configured agent files
-6. **Done** - no interaction required
+4. **Check edit_source** - warn if edited files aren't in `edit_source` configuration
+5. **Create backup** (if enabled) - backs up both internal state and agent files
+6. **Merge edited files** using last-write-wins strategy (no conflicts, no prompts)
+7. **Export** merged rules to all configured agent files
+8. **Done** - no interaction required
 
 **Key facts:**
 

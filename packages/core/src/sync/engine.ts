@@ -840,7 +840,21 @@ export class SyncEngine {
       );
 
       // 1. Detect edited agent files
-      const editedFiles = await detectEditedFiles(cwd, config);
+      const detectionResult = await detectEditedFiles(cwd, config);
+      const editedFiles = detectionResult.files;
+      const editSourceWarnings = detectionResult.warnings;
+
+      // Display edit_source warnings if any
+      if (editSourceWarnings.length > 0) {
+        for (const warning of editSourceWarnings) {
+          warnings.push(
+            `Warning: ${warning.filePath} was edited but is not in edit_source.\n` +
+              `  ${warning.reason}\n` +
+              `  Changes will not be synced. To enable editing this file, run:\n` +
+              `    ${warning.suggestedFix}`,
+          );
+        }
+      }
 
       if (editedFiles.length === 0) {
         // No edits detected - proceed with normal IR-to-agents sync
@@ -853,15 +867,40 @@ export class SyncEngine {
           details: `Detected ${editedFiles.length} edited file(s)`,
         });
 
-        // 2. Load current IR
+        // 2. Create backup before merging (if backup enabled)
+        const shouldBackup =
+          config.backup?.auto_backup !== false &&
+          config.backup?.backup_on?.includes("sync");
+
+        if (shouldBackup && !options.dryRun) {
+          try {
+            const { BackupManager } = await import("../backup/manager.js");
+            BackupManager.createBackup({
+              cwd,
+              created_by: "sync",
+              notes: "Automatic backup before sync with edited agent files",
+              action: "pre-sync",
+              mode: config.mode,
+              includeAgentFiles: true,
+              editSource: config.sync?.edit_source || null,
+            });
+          } catch (backupErr) {
+            // Log warning but don't fail sync
+            warnings.push(
+              `Warning: Failed to create backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
+            );
+          }
+        }
+
+        // 3. Load current IR
         const currentIR = await loadIR(paths.rules, {
           config: this.config,
         });
 
-        // 3. Merge changes from agent files
+        // 4. Merge changes from agent files
         const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
 
-        // 4. Check for conflicts
+        // 5. Check for conflicts
         conflicts = mergeResult.conflicts;
         if (conflicts.length > 0) {
           for (const conflict of conflicts) {
@@ -878,7 +917,7 @@ export class SyncEngine {
           }
         }
 
-        // 5. Write merged IR
+        // 6. Write merged IR
         if (!options.dryRun) {
           const { saveIR } = await import("./ir-loader.js");
           await saveIR(paths.rules, mergeResult.mergedPack);
@@ -893,10 +932,10 @@ export class SyncEngine {
         }
       }
 
-      // 6. Export IR to all configured agents (always run)
+      // 7. Export IR to all configured agents (always run)
       const syncResult = await this.syncToAgents(paths.rules, options);
 
-      // 7. Update last sync timestamp on success
+      // 8. Update last sync timestamp on success
       if (syncResult.success && !options.dryRun) {
         const { EditDetector } = await import("./edit-detector.js");
         const detector = new EditDetector(cwd);

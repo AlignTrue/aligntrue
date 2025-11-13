@@ -370,17 +370,39 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   /**
    * Set edit_source default if not specified
    *
-   * Default logic:
-   * - If Cursor detected (has cursor exporter) → ".cursor/rules/*.mdc"
-   * - Else → "AGENTS.md"
+   * Default logic (inclusive):
+   * - Build array of patterns from all enabled exporters
+   * - If multiple exporters → array of patterns
+   * - If single exporter → single pattern
+   * - Fallback → "AGENTS.md"
    *
-   * Note: Detection happens during init, not here. For existing configs
-   * without edit_source, default to AGENTS.md for safety.
+   * This prevents accidental read-only files when users enable multiple exporters.
    */
   if (result.sync.edit_source === undefined) {
-    // Check if cursor is in exporters
-    const hasCursor = result.exporters?.includes("cursor") || false;
-    result.sync.edit_source = hasCursor ? ".cursor/rules/*.mdc" : "AGENTS.md";
+    const exporterToPattern: Record<string, string> = {
+      cursor: ".cursor/rules/*.mdc",
+      "agents-md": "AGENTS.md",
+      copilot: ".github/copilot-instructions.md",
+      "claude-code": "CLAUDE.md",
+      aider: ".aider.conf.yml",
+    };
+
+    const patterns: string[] = [];
+    for (const exporter of result.exporters || []) {
+      const pattern = exporterToPattern[exporter];
+      if (pattern && !patterns.includes(pattern)) {
+        patterns.push(pattern);
+      }
+    }
+
+    // Set edit_source based on number of patterns
+    if (patterns.length === 0) {
+      result.sync.edit_source = "AGENTS.md" as string | string[];
+    } else if (patterns.length === 1) {
+      result.sync.edit_source = patterns[0] as string | string[];
+    } else {
+      result.sync.edit_source = patterns;
+    }
   }
 
   /**

@@ -726,18 +726,42 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     };
   }
 
+  // Build inclusive edit_source based on selected exporters
+  const exporterToPattern: Record<string, string> = {
+    cursor: ".cursor/rules/*.mdc",
+    "agents-md": "AGENTS.md",
+    copilot: ".github/copilot-instructions.md",
+    "claude-code": "CLAUDE.md",
+    aider: ".aider.conf.yml",
+  };
+
+  const editSourcePatterns: string[] = [];
+  for (const exporter of selectedAgents) {
+    const pattern = exporterToPattern[exporter];
+    if (pattern) {
+      editSourcePatterns.push(pattern);
+    }
+  }
+
   // Configure sync settings based on whether we imported
   if (importedRules && importedFromAgent) {
     // Imported: set primary agent for reference
     // Let config defaults handle workflow_mode and auto_pull
     config.sync = {
       primary_agent: importedFromAgent,
+      edit_source:
+        editSourcePatterns.length > 1
+          ? editSourcePatterns
+          : editSourcePatterns[0] || "AGENTS.md",
     };
   } else {
-    // Fresh start: let config defaults apply
-    // Config will set appropriate edit_source based on enabled exporters
-    // and appropriate auto_pull based on mode (solo vs team)
-    config.sync = {};
+    // Fresh start: set inclusive edit_source based on enabled exporters
+    config.sync = {
+      edit_source:
+        editSourcePatterns.length > 1
+          ? editSourcePatterns
+          : editSourcePatterns[0] || "AGENTS.md",
+    };
   }
 
   // Write config atomically (temp + rename)
@@ -855,6 +879,13 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   );
   console.log(`  Merge strategy: last-write-wins (automatic)`);
   console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
+
+  // Show editable files based on edit_source
+  const editSourceDisplay = Array.isArray(config.sync?.edit_source)
+    ? config.sync.edit_source.join(", ")
+    : config.sync?.edit_source || "AGENTS.md";
+  console.log(`  You can edit: ${editSourceDisplay}`);
+
   if (config.managed?.sections && config.managed.sections.length > 0) {
     console.log(`  Team-managed sections: ${config.managed.sections.length}`);
   }

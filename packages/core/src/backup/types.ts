@@ -22,6 +22,8 @@ export interface BackupManifest extends BackupMetadata {
   mode?: "solo" | "team" | "enterprise";
   /** Scope information at time of backup */
   scopes?: Record<string, { sections: number; storage: string }>;
+  /** Agent files backed up (relative paths from workspace root) */
+  agent_files?: string[];
 }
 
 export interface BackupInfo {
@@ -46,6 +48,10 @@ export interface BackupOptions {
   mode?: "solo" | "team" | "enterprise";
   /** Scope information */
   scopes?: Record<string, { sections: number; storage: string }>;
+  /** Include agent files matching edit_source patterns (default: true) */
+  includeAgentFiles?: boolean;
+  /** Edit source patterns to determine which agent files to back up */
+  editSource?: string | string[] | null;
 }
 
 export interface RestoreOptions {
