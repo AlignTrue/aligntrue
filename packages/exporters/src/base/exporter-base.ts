@@ -193,7 +193,7 @@ export abstract class ExporterBase implements ExporterPlugin {
       await writeFileWithBackup(path, content, backupOptions);
     } else {
       const writer = new AtomicFileWriter();
-      writer.write(path, content);
+      await writer.write(path, content);
     }
 
     return [path];
