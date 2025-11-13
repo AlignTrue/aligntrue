@@ -1,9 +1,9 @@
 ---
-title: Package Exports
+title: Package exports
 description: Documentation of all package exports in the AlignTrue monorepo
 ---
 
-# Package Exports
+# Package exports
 
 This document lists all public exports from AlignTrue packages. All exports must be documented here before being added to `package.json`.
 
@@ -77,7 +77,7 @@ This document lists all public exports from AlignTrue packages. All exports must
 | ----------- | --------------------------- | ----------------------------------------------- |
 | `.`         | UI components for docs site | `import { AlignTrueLogo } from '@aligntrue/ui'` |
 
-## Adding New Exports
+## Adding new exports
 
 When adding a new export:
 
@@ -86,7 +86,7 @@ When adding a new export:
 3. **Build and test** - Verify the export works: `pnpm build && pnpm test`
 4. **Update CHANGELOG** - Add entry describing the new export
 
-### Export Format
+### Export format
 
 ```json
 {

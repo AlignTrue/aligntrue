@@ -208,7 +208,7 @@ Output shows:
 
 When using Cursor with multiple scope files (e.g., `backend.mdc`, `frontend.mdc`), AlignTrue tracks which file each section originated from using metadata.
 
-### Example Workflow
+### Example workflow
 
 1. Edit `.cursor/rules/backend.mdc` - add "Backend Security" section
 2. Edit `.cursor/rules/frontend.mdc` - add "Frontend Security" section
@@ -216,7 +216,7 @@ When using Cursor with multiple scope files (e.g., `backend.mdc`, `frontend.mdc`
 4. Both sections sync to AGENTS.md (optionally with scope prefixes)
 5. Next sync routes sections back to correct Cursor files
 
-### Scope Prefixing
+### Scope prefixing
 
 Add scope prefixes to AGENTS.md when syncing from multiple Cursor files:
 
@@ -238,7 +238,7 @@ Use authentication for all endpoints.
 Sanitize all user inputs.
 ```
 
-### Managed Sections
+### Managed sections
 
 Team-managed sections work with any edit_source:
 
@@ -270,7 +270,7 @@ During `aligntrue init`, AlignTrue recommends based on detected agents:
    - Safe default
    - File will be created
 
-### Cursor Priority
+### Cursor priority
 
 If you use Cursor, set:
 
@@ -285,7 +285,7 @@ sync:
 - Multi-scope organization
 - Best round-trip fidelity
 
-### AGENTS.md Priority
+### AGENTS.md priority
 
 For universal compatibility:
 
@@ -300,7 +300,7 @@ sync:
 - Works with all AI assistants
 - Easy to review in one place
 
-### Both (Flexible)
+### Both (flexible)
 
 Allow editing either:
 

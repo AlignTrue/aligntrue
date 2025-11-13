@@ -129,7 +129,7 @@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
    ssh -T git@github.com
    ```
 
-## Clone Issues
+## Clone issues
 
 ### Repository Not Found
 
@@ -381,7 +381,7 @@ remote: Invalid username or password.
    # Next push will prompt for new token
    ```
 
-## Network Issues
+## Network issues
 
 ### Connection Timeout
 
@@ -448,7 +448,7 @@ git config --global http.sslVerify false
 
 SSH doesn't use SSL certificates, so this avoids the issue entirely.
 
-## Branch Issues
+## Branch issues
 
 ### Branch Not Found
 
@@ -492,7 +492,7 @@ cd ../../../
 aligntrue sync
 ```
 
-## Permission Issues
+## Permission issues
 
 ### Permission Denied (Repository)
 
@@ -545,7 +545,7 @@ rm -rf .aligntrue/.remotes/personal
 aligntrue sync
 ```
 
-## Configuration Issues
+## Configuration issues
 
 ### Invalid URL Format
 
@@ -589,7 +589,7 @@ storage:
     branch: main
 ```
 
-## Getting More Help
+## Getting more help
 
 If you're still stuck:
 
@@ -623,7 +623,7 @@ If you're still stuck:
    - GitHub: [githubstatus.com](https://www.githubstatus.com/)
    - GitLab: [status.gitlab.com](https://status.gitlab.com/)
 
-## Related Documentation
+## Related documentation
 
 - [Personal Repository Setup](/reference/personal-repo-setup)
 - [Joining a Team](/guides/join-team)

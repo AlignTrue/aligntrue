@@ -181,7 +181,7 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 - **CI:** Tested on linux:node20, macos:node20, windows:node20
 - **Distribution:** npm, pnpm, yarn, bun, npx
 
-## Related Documentation
+## Related documentation
 
 - [Architecture](/docs/08-development/architecture)
 - [Security](/docs/07-policies/security)
