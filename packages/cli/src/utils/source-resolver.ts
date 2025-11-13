@@ -216,9 +216,14 @@ export async function resolveAndMergeSources(
       throw new Error("First resolved source is undefined");
     }
     const pack = parseYamlToJson(firstSource.content) as AlignPack;
-    // Defensive: Initialize sections to empty array if missing
-    if (!pack.sections || !Array.isArray(pack.sections)) {
+    // Defensive: Initialize sections to empty array ONLY if missing or invalid
+    if (pack.sections === undefined || pack.sections === null) {
       pack.sections = [];
+    } else if (!Array.isArray(pack.sections)) {
+      throw new Error(
+        `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
+          `  Source: ${firstSource.sourcePath}`,
+      );
     }
     return {
       pack,
@@ -233,9 +238,14 @@ export async function resolveAndMergeSources(
   for (const source of resolved) {
     try {
       const pack = parseYamlToJson(source.content) as AlignPack;
-      // Defensive: Initialize sections to empty array if missing
-      if (!pack.sections || !Array.isArray(pack.sections)) {
+      // Defensive: Initialize sections to empty array ONLY if missing or invalid
+      if (pack.sections === undefined || pack.sections === null) {
         pack.sections = [];
+      } else if (!Array.isArray(pack.sections)) {
+        throw new Error(
+          `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
+            `  Source: ${source.sourcePath}`,
+        );
       }
       packs.push(pack);
     } catch (error) {
