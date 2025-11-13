@@ -148,7 +148,10 @@ sections:
     const pastTime = Date.now() - 60000; // 1 minute ago
     utimesSync(irPath, new Date(pastTime), new Date(pastTime));
 
-    // Write AGENTS.md (newer than IR)
+    // Write .last-sync file (for drift detection baseline)
+    writeFileSync(join(aligntrueDir, ".last-sync"), pastTime.toString());
+
+    // Write AGENTS.md (newer than IR and .last-sync)
     const agentsPath = join(testDir, "AGENTS.md");
     writeFileSync(
       agentsPath,
