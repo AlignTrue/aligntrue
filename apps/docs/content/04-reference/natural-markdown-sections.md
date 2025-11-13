@@ -1,3 +1,8 @@
+---
+title: "Natural markdown sections"
+description: "Write rules as natural markdown with headings and content. Learn section format, fingerprints, change detection, and lockfile integration."
+---
+
 # Natural markdown sections
 
 Learn how to write rules as natural markdown sections without explicit rule IDs or metadata.

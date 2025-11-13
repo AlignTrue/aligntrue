@@ -1,4 +1,9 @@
-# Backup and restore
+---
+title: "Backup & restore"
+description: "Manual and automatic backup functionality to protect configuration and rules. Create backups before sync, restore specific files, and manage backup retention."
+---
+
+# Backup & restore
 
 AlignTrue provides backup and restore functionality to protect your configuration and rules from accidental changes. This is particularly useful before making potentially destructive changes like sync operations or imports.
 

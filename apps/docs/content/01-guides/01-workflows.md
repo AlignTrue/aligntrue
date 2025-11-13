@@ -1,5 +1,5 @@
 ---
-title: "Choose your AlignTrue workflow"
+title: "Choose a workflow"
 description: "Pick the right editing workflow and map it to configuration, with quick guidance and links."
 ---
 
