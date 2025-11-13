@@ -5,7 +5,7 @@
  * of the .aligntrue/ directory.
  */
 
-import { join, dirname } from "path";
+import { join, dirname, relative } from "path";
 import {
   existsSync,
   mkdirSync,
@@ -14,7 +14,9 @@ import {
   writeFileSync,
   rmSync,
   cpSync,
+  statSync,
 } from "fs";
+import micromatch from "micromatch";
 import type {
   BackupManifest,
   BackupInfo,
@@ -27,7 +29,7 @@ const BACKUP_VERSION = "1";
 
 export class BackupManager {
   /**
-   * Create a backup of the .aligntrue/ directory
+   * Create a backup of the .aligntrue/ directory and optionally agent files
    */
   static createBackup(options: BackupOptions = {}): BackupInfo {
     const cwd = options.cwd || process.cwd();
@@ -88,6 +90,86 @@ export class BackupManager {
       cpSync(srcPath, destPath);
     }
 
+    // Backup agent files if requested (default: true)
+    const agentFiles: string[] = [];
+    const includeAgentFiles = options.includeAgentFiles !== false;
+
+    if (includeAgentFiles && options.editSource) {
+      // Create agent-files subdirectory in backup
+      const agentFilesDir = join(backupDir, "agent-files");
+      mkdirSync(agentFilesDir, { recursive: true });
+
+      // Resolve patterns from edit_source
+      const patterns = Array.isArray(options.editSource)
+        ? options.editSource
+        : [options.editSource];
+
+      // Find all matching agent files
+      const agentFilePaths = new Set<string>();
+
+      for (const pattern of patterns) {
+        // Expand glob patterns to find matching files
+        if (pattern.includes("*")) {
+          // Handle glob patterns like ".cursor/rules/*.mdc"
+          const parts = pattern.split("/");
+          let searchDir = cwd;
+
+          // Navigate to the directory containing the glob
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!parts[i]!.includes("*")) {
+              searchDir = join(searchDir, parts[i]!);
+            } else {
+              break;
+            }
+          }
+
+          if (existsSync(searchDir)) {
+            try {
+              const entries = readdirSync(searchDir, { withFileTypes: true });
+              for (const entry of entries) {
+                if (entry.isFile()) {
+                  const filePath = join(searchDir, entry.name);
+                  const relativePath = relative(cwd, filePath).replace(
+                    /\\/g,
+                    "/",
+                  );
+                  if (micromatch.isMatch(relativePath, pattern)) {
+                    agentFilePaths.add(relativePath);
+                  }
+                }
+              }
+            } catch {
+              // Directory not readable, skip
+            }
+          }
+        } else {
+          // Direct file path (e.g., "AGENTS.md")
+          const filePath = join(cwd, pattern);
+          if (existsSync(filePath) && statSync(filePath).isFile()) {
+            agentFilePaths.add(pattern);
+          }
+        }
+      }
+
+      // Copy agent files to backup
+      for (const agentFile of agentFilePaths) {
+        const srcPath = join(cwd, agentFile);
+        const destPath = join(agentFilesDir, agentFile);
+        const destDir = dirname(destPath);
+
+        if (!existsSync(destDir)) {
+          mkdirSync(destDir, { recursive: true });
+        }
+
+        try {
+          cpSync(srcPath, destPath);
+          agentFiles.push(agentFile);
+        } catch {
+          // File not readable or doesn't exist, skip
+        }
+      }
+    }
+
     // Create manifest
     const manifest: BackupManifest = {
       version: BACKUP_VERSION,
@@ -98,6 +180,7 @@ export class BackupManager {
       ...(options.action && { action: options.action }),
       ...(options.mode && { mode: options.mode }),
       ...(options.scopes && { scopes: options.scopes }),
+      ...(agentFiles.length > 0 && { agent_files: agentFiles }),
     };
 
     writeFileSync(
@@ -276,6 +359,40 @@ export class BackupManager {
         }
 
         cpSync(srcPath, destPath);
+      }
+
+      // Restore agent files if present in backup
+      if (
+        backup.manifest.agent_files &&
+        backup.manifest.agent_files.length > 0
+      ) {
+        const agentFilesDir = join(backup.path, "agent-files");
+
+        if (existsSync(agentFilesDir)) {
+          for (const agentFile of backup.manifest.agent_files) {
+            const srcPath = join(agentFilesDir, agentFile);
+            const destPath = join(cwd, agentFile);
+
+            // Skip if file doesn't exist in backup (safety check)
+            if (!existsSync(srcPath)) {
+              continue;
+            }
+
+            const destDir = dirname(destPath);
+            if (!existsSync(destDir)) {
+              mkdirSync(destDir, { recursive: true });
+            }
+
+            try {
+              cpSync(srcPath, destPath);
+            } catch {
+              // Log but don't fail entire restore if one agent file fails
+              console.warn(
+                `Warning: Failed to restore agent file: ${agentFile}`,
+              );
+            }
+          }
+        }
       }
 
       // Clean up temp backup on success

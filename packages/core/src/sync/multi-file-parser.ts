@@ -40,6 +40,17 @@ export interface SectionConflict {
   winner: string; // Path of the file that won (most recent)
 }
 
+export interface EditSourceWarning {
+  filePath: string;
+  reason: string;
+  suggestedFix: string;
+}
+
+export interface DetectedFilesResult {
+  files: EditedFile[];
+  warnings: EditSourceWarning[];
+}
+
 /**
  * Check if a file path matches the edit_source configuration
  */
@@ -103,25 +114,26 @@ function isAgentFile(filePath: string): boolean {
 
 /**
  * Detect edited agent files based on mtime
- * Returns files that were modified after last sync
+ * Returns files that were modified after last sync, plus warnings for files edited outside edit_source
  */
 export async function detectEditedFiles(
   cwd: string,
   config: AlignTrueConfig,
   lastSyncTime?: Date,
-): Promise<EditedFile[]> {
+): Promise<DetectedFilesResult> {
   const editedFiles: EditedFile[] = [];
+  const warnings: EditSourceWarning[] = [];
   const paths = getAlignTruePaths(cwd);
   const editSource = config.sync?.edit_source;
 
   // Skip detection if edit_source is ".rules.yaml" (IR only mode)
   if (editSource === ".rules.yaml") {
-    return [];
+    return { files: [], warnings: [] };
   }
 
   // Backwards compatibility: check two_way if edit_source not set
   if (editSource === undefined && config.sync?.two_way === false) {
-    return [];
+    return { files: [], warnings: [] };
   }
 
   // NEW: Check source files if configured (multi-file support)
@@ -154,33 +166,49 @@ export async function detectEditedFiles(
     }
   }
 
-  // Check AGENTS.md if it matches edit_source
+  // Check AGENTS.md
   const agentsMdPath = paths.agentsMd();
-  if (
-    existsSync(agentsMdPath) &&
-    matchesEditSource("AGENTS.md", editSource, cwd)
-  ) {
+  if (existsSync(agentsMdPath)) {
     const stats = statSync(agentsMdPath);
-    if (!lastSyncTime || stats.mtime > lastSyncTime) {
-      // Dynamic import at runtime (exporters is a peer dependency)
-      const parseModule = "@aligntrue/exporters/utils/section-parser";
-      // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
-      const { parseAgentsMd } = await import(parseModule);
-      const content = readFileSync(agentsMdPath, "utf-8");
-      const parsed = parseAgentsMd(content);
+    const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
+    const matchesEdit = matchesEditSource("AGENTS.md", editSource, cwd);
 
-      if (parsed.sections.length > 0) {
-        editedFiles.push({
-          path: "AGENTS.md",
-          absolutePath: agentsMdPath,
-          format: "agents-md",
-          sections: parsed.sections.map((s: ParsedSectionResult) => ({
-            heading: s.heading,
-            content: s.content,
-            level: s.level,
-            hash: s.hash,
-          })),
-          mtime: stats.mtime,
+    if (wasEdited) {
+      if (matchesEdit) {
+        // File edited and is in edit_source - include it
+        // Dynamic import at runtime (exporters is a peer dependency)
+        const parseModule = "@aligntrue/exporters/utils/section-parser";
+        // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
+        const { parseAgentsMd } = await import(parseModule);
+        const content = readFileSync(agentsMdPath, "utf-8");
+        const parsed = parseAgentsMd(content);
+
+        if (parsed.sections.length > 0) {
+          editedFiles.push({
+            path: "AGENTS.md",
+            absolutePath: agentsMdPath,
+            format: "agents-md",
+            sections: parsed.sections.map((s: ParsedSectionResult) => ({
+              heading: s.heading,
+              content: s.content,
+              level: s.level,
+              hash: s.hash,
+            })),
+            mtime: stats.mtime,
+          });
+        }
+      } else {
+        // File edited but NOT in edit_source - add warning
+        const currentEditSource = Array.isArray(editSource)
+          ? editSource
+          : [editSource || "AGENTS.md"];
+        const suggestedPatterns = [...currentEditSource, "AGENTS.md"].filter(
+          (p, i, arr) => arr.indexOf(p) === i,
+        );
+        warnings.push({
+          filePath: "AGENTS.md",
+          reason: "File was edited but is not in edit_source configuration",
+          suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(suggestedPatterns.length === 1 ? suggestedPatterns[0] : suggestedPatterns)}'`,
         });
       }
     }
@@ -197,32 +225,47 @@ export async function detectEditedFiles(
         const relativePath = `.cursor/rules/${mdcFile}`;
         const absolutePath = join(cursorRulesDir, mdcFile);
 
-        // Check if this file matches edit_source
-        if (!matchesEditSource(relativePath, editSource, cwd)) {
-          continue;
-        }
-
         const stats = statSync(absolutePath);
-        if (!lastSyncTime || stats.mtime > lastSyncTime) {
-          // Dynamic import at runtime (exporters is a peer dependency)
-          const parseModule = "@aligntrue/exporters/utils/section-parser";
-          // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
-          const { parseCursorMdc } = await import(parseModule);
-          const content = readFileSync(absolutePath, "utf-8");
-          const parsed = parseCursorMdc(content);
+        const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
+        const matchesEdit = matchesEditSource(relativePath, editSource, cwd);
 
-          if (parsed.sections.length > 0) {
-            editedFiles.push({
-              path: relativePath,
-              absolutePath,
-              format: "cursor-mdc",
-              sections: parsed.sections.map((s: ParsedSectionResult) => ({
-                heading: s.heading,
-                content: s.content,
-                level: s.level,
-                hash: s.hash,
-              })),
-              mtime: stats.mtime,
+        if (wasEdited) {
+          if (matchesEdit) {
+            // File edited and is in edit_source - include it
+            // Dynamic import at runtime (exporters is a peer dependency)
+            const parseModule = "@aligntrue/exporters/utils/section-parser";
+            // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
+            const { parseCursorMdc } = await import(parseModule);
+            const content = readFileSync(absolutePath, "utf-8");
+            const parsed = parseCursorMdc(content);
+
+            if (parsed.sections.length > 0) {
+              editedFiles.push({
+                path: relativePath,
+                absolutePath,
+                format: "cursor-mdc",
+                sections: parsed.sections.map((s: ParsedSectionResult) => ({
+                  heading: s.heading,
+                  content: s.content,
+                  level: s.level,
+                  hash: s.hash,
+                })),
+                mtime: stats.mtime,
+              });
+            }
+          } else {
+            // File edited but NOT in edit_source - add warning
+            const currentEditSource = Array.isArray(editSource)
+              ? editSource
+              : [editSource || "AGENTS.md"];
+            const suggestedPatterns = [
+              ...currentEditSource,
+              ".cursor/rules/*.mdc",
+            ].filter((p, i, arr) => arr.indexOf(p) === i);
+            warnings.push({
+              filePath: relativePath,
+              reason: "File was edited but is not in edit_source configuration",
+              suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(suggestedPatterns.length === 1 ? suggestedPatterns[0] : suggestedPatterns)}'`,
             });
           }
         }
@@ -232,7 +275,7 @@ export async function detectEditedFiles(
     }
   }
 
-  return editedFiles;
+  return { files: editedFiles, warnings };
 }
 
 /**
