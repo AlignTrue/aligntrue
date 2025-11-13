@@ -149,11 +149,19 @@ export class SyncEngine {
     }
 
     try {
+      // When loading IR from a specific path, don't use multi-file loading
+      // Clear source_files to prevent loadIR from using loadSourceFiles
+      const loadConfig = { ...this.config };
+      if (loadConfig.sync) {
+        loadConfig.sync = { ...loadConfig.sync };
+        delete loadConfig.sync.source_files;
+      }
+
       this.ir = await loadIR(sourcePath, {
         mode: this.config.mode,
         maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
         force: force || false,
-        config: this.config,
+        config: loadConfig,
       });
     } catch (err) {
       return {

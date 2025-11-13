@@ -35,12 +35,17 @@ export async function discoverSourceFiles(
   const allFiles: SourceFile[] = [];
 
   for (const pattern of patternArray) {
-    // Use glob to find matching files
-    const matches = await glob(pattern, {
-      cwd,
-      nodir: true,
-      absolute: false,
-    });
+    // Skip glob for exact filenames (avoid Windows filesystem cache issues)
+    const hasWildcard =
+      pattern.includes("*") || pattern.includes("?") || pattern.includes("[");
+
+    const matches = hasWildcard
+      ? await glob(pattern, {
+          cwd,
+          nodir: true,
+          absolute: false,
+        })
+      : [pattern]; // Use filename directly
 
     for (const relativePath of matches) {
       const absolutePath = join(cwd, relativePath);
