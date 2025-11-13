@@ -9,17 +9,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, rmSync, existsSync } from "fs";
 import { join } from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "sync-validation-test");
 const CLI_PATH = join(process.cwd(), "dist", "index.js");
 
 /**
  * Helper to safely run CLI commands with proper path handling
+ * Uses execFileSync to avoid shell injection vulnerabilities
  */
 function runCli(args: string[], options: { encoding?: string } = {}): string {
-  const cmd = [process.execPath, CLI_PATH, ...args].join(" ");
-  return execSync(cmd, {
+  return execFileSync(process.execPath, [CLI_PATH, ...args], {
     cwd: TEST_DIR,
     encoding: options.encoding || "utf-8",
   });

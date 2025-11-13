@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
 import { join } from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 export type GitMode = "ignore" | "commit" | "branch";
 
@@ -180,17 +180,17 @@ export class GitIntegration {
     const branch = branchName || `aligntrue/sync-${timestamp}`;
 
     try {
-      // Create and checkout new branch
-      execSync(`git checkout -b "${branch}"`, {
+      // Create and checkout new branch using execFileSync to avoid shell injection
+      execFileSync("git", ["checkout", "-b", branch], {
         cwd: workspaceRoot,
         stdio: "pipe",
       });
 
-      // Stage the generated files
+      // Stage the generated files using execFileSync to avoid shell injection
       for (const file of files) {
         const fullPath = join(workspaceRoot, file);
         if (existsSync(fullPath)) {
-          execSync(`git add "${file}"`, {
+          execFileSync("git", ["add", file], {
             cwd: workspaceRoot,
             stdio: "pipe",
           });
