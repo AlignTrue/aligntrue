@@ -40,6 +40,8 @@ sources:
 - `url` - Repository URL (HTTPS or SSH)
 - `ref` - Branch, tag, or commit SHA (default: `main`)
 - `path` - File path within the repository (default: `.aligntrue.yaml`)
+  - Supports YAML files: `.aligntrue.yaml`, `rules.yaml`
+  - Supports natural markdown: `AGENTS.md`, `RULES.md`, `rules/typescript.md`
 
 ### Branch, tag, and commit support
 
@@ -69,7 +71,7 @@ sources:
 
 ## Examples
 
-### Public GitHub repository
+### Public GitHub repository (YAML format)
 
 ```yaml
 sources:
@@ -80,6 +82,18 @@ sources:
 ```
 
 First sync will prompt for privacy consent. AlignTrue clones the repository and extracts the specified file. Run `aligntrue privacy grant git` to enable network access.
+
+### Public GitHub repository (natural markdown)
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourfriend/coding-rules
+    ref: main
+    path: AGENTS.md
+```
+
+Pull natural markdown files directly from GitHub. Perfect for sharing rules in readable format.
 
 ### Private repository with SSH
 

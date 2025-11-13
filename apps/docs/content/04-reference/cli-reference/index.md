@@ -45,10 +45,6 @@ Quick lookup table for all CLI commands:
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
 | `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
 | `aligntrue adapters`        | Manage exporters                        | [Development](./development#aligntrue-adapters)                             |
-| `aligntrue md lint`         | Lint markdown                           | [Development](./development#aligntrue-md-lint)                              |
-| `aligntrue md format`       | Format markdown                         | [Development](./development#aligntrue-md-format)                            |
-| `aligntrue md compile`      | Compile to IR                           | [Development](./development#aligntrue-md-compile)                           |
-| `aligntrue md generate`     | Generate markdown                       | [Development](./development#aligntrue-md-generate)                          |
 | `aligntrue plugs audit`     | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-audit)                                      |
 | `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)                                    |
 | `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                                        |
