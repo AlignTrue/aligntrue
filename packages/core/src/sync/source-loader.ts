@@ -56,9 +56,7 @@ export async function discoverSourceFiles(
 
       // Parse sections from markdown
       // Use the same parser as agents-md exporter
-      const { parseAgentsMd } = await import(
-        "@aligntrue/exporters/utils/section-parser"
-      );
+      const { parseAgentsMd } = await import("@aligntrue/schema");
       const parsed = parseAgentsMd(content);
 
       // Convert parsed sections to AlignSection format

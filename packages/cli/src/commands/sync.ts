@@ -1146,7 +1146,7 @@ export async function sync(args: string[]): Promise<void> {
             try {
               const { readFileSync } = await import("fs");
               const { parseAgentsMd, parseCursorMdc } = await import(
-                "@aligntrue/exporters/utils/section-parser"
+                "@aligntrue/schema"
               );
 
               for (const file of sortedFiles) {
