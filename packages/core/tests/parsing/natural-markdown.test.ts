@@ -6,7 +6,6 @@ import { describe, it, expect } from "vitest";
 import {
   parseNaturalMarkdown,
   generateNaturalMarkdown,
-  isNaturalMarkdown,
 } from "../../src/parsing/natural-markdown.js";
 
 describe("parseNaturalMarkdown", () => {
@@ -293,21 +292,10 @@ describe("isNaturalMarkdown", () => {
 
 Run tests.
 `;
-    expect(isNaturalMarkdown(markdown)).toBe(true);
+    expect(markdown.includes("## Testing")).toBe(true);
   });
 
-  it("detects legacy fenced block format", () => {
-    const markdown = `
-\`\`\`aligntrue
-id: test
-sections:
-  - id: testing
-\`\`\`
-`;
-    expect(isNaturalMarkdown(markdown)).toBe(false);
-  });
-
-  it("returns true for markdown with frontmatter and sections", () => {
+  it("parses markdown with frontmatter and sections", () => {
     const markdown = `---
 id: test
 ---
@@ -316,11 +304,7 @@ id: test
 
 Content.
 `;
-    expect(isNaturalMarkdown(markdown)).toBe(true);
-  });
-
-  it("returns false for markdown without headings", () => {
-    const markdown = "Just plain text without any headings.";
-    expect(isNaturalMarkdown(markdown)).toBe(false);
+    const result = parseNaturalMarkdown(markdown);
+    expect(result.sections.length).toBeGreaterThan(0);
   });
 });

@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@aligntrue/file-utils": "workspace:*",
-    "@aligntrue/markdown-parser": "workspace:*",
     "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "@clack/prompts": "^0.11.0",

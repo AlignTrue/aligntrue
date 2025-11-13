@@ -28,8 +28,17 @@ import {
 import { execSync } from "child_process";
 import { DOCS_QUICKSTART } from "../constants.js";
 import { basename } from "path";
-import type { IRDocument } from "@aligntrue/markdown-parser";
-// AlignRule removed - sections-only format now
+import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
+import type { Section } from "@aligntrue/core";
+
+// IRDocument type for internal use
+interface IRDocument {
+  id: string;
+  version: string;
+  spec_version: string;
+  sections: Section[];
+  [key: string]: unknown;
+}
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -753,19 +762,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Parse AGENTS.md to create IR with sections (if we created it)
-  let pack: IRDocument | undefined;
+  let pack: IRDocument;
   if (agentsMdContent) {
-    // Use natural markdown parser
-    const { buildIRFromNaturalMarkdown } = await import(
-      "@aligntrue/markdown-parser"
-    );
-    const parseResult = buildIRFromNaturalMarkdown(
+    const parseResult = parseNaturalMarkdown(
       agentsMdContent,
       `${projectIdValue}-rules`,
     );
 
-    if (parseResult.document) {
-      pack = parseResult.document;
+    if (parseResult.sections.length > 0) {
+      pack = {
+        id: parseResult.metadata.id || `${projectIdValue}-rules`,
+        version: parseResult.metadata.version || "1.0.0",
+        spec_version: "1",
+        sections: parseResult.sections,
+      };
     } else {
       // Fallback to empty pack if parsing failed
       pack = {
