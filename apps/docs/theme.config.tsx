@@ -16,8 +16,8 @@ const config = {
 
   // Sidebar configuration
   sidebar: {
-    defaultMenuCollapseLevel: 2,
-    autoCollapse: false,
+    defaultMenuCollapseLevel: 1,
+    autoCollapse: true,
     toggleButton: true,
   },
 

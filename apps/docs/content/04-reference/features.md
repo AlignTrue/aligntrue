@@ -11,9 +11,9 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 ### Core platform
 
-- Natural markdown authoring in `AGENTS.md` or agent files (`.cursor/*.mdc`, etc.)
+- Natural markdown authoring in your detected agent format or universal `AGENTS.md`
 - Two-way sync engine with section-based merging (IR ↔ agents)
-- 43 exporters supporting 28+ AI coding agents
+- 43 exporters supporting 28+ AI coding agents with auto-detection
 - Lockfiles and bundles for team mode (reproducible builds)
 - Drift detection for CI validation
 - Hierarchical scopes for monorepos
@@ -78,8 +78,8 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Core format & architecture
 
 - **Natural markdown sections** - Primary content format, all 43 exporters support it
-- **AGENTS.md authoring** - Primary user-editable file with natural markdown syntax
-- **IR (`.aligntrue/.rules.yaml`)** - Internal representation, auto-generated from AGENTS.md
+- **Agent-native editing** - Edit in your detected agent format (Cursor `.mdc`, etc.) or universal `AGENTS.md`
+- **IR (`.aligntrue/.rules.yaml`)** - Internal representation, auto-generated from your edits
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
 - **Canonical JSON (JCS)** - Deterministic hashing for lockfiles and drift detection
 

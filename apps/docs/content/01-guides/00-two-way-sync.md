@@ -29,21 +29,23 @@ When you run `aligntrue sync`:
 
 ### Single-file editing (recommended for most)
 
-Edit AGENTS.md as your primary source:
+Edit your detected agent file (or AGENTS.md) as your primary source:
 
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  edit_source: "AGENTS.md"
+  edit_source: "AGENTS.md" # or auto-detected agent format
 ```
 
 ```bash
-# Edit your rules file
-nano AGENTS.md  # Add a new section
+# Edit your rules file (AlignTrue auto-detects format during init)
+nano AGENTS.md  # Universal format
+# OR
+nano .cursor/rules/aligntrue.mdc  # Cursor native format
 
 # Sync everywhere
 aligntrue sync
-# Output: Detected edit to AGENTS.md
+# Output: Detected edit to [your file]
 #         Updated all agents
 ```
 
@@ -103,7 +105,7 @@ Result: Last-write-wins
 - (because it has a newer mtime)
 ```
 
-**Best practice:** Edit consistently in one file to avoid confusion. Pick `AGENTS.md` for the primary source, or configure a different primary agent in your workflow.
+**Best practice:** Edit consistently in one file to avoid confusion. Use your detected agent format (auto-configured during init) or `AGENTS.md` for universal compatibility.
 
 ### Conflict detection
 
