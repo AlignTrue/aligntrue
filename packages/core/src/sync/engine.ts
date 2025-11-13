@@ -565,6 +565,14 @@ export class SyncEngine {
         }
       }
 
+      // Update last sync timestamp on success
+      if (!options.dryRun) {
+        const cwd = resolvePath(irPath, "..", "..");
+        const { EditDetector } = await import("./edit-detector.js");
+        const detector = new EditDetector(cwd);
+        detector.updateLastSyncTimestamp();
+      }
+
       const result: SyncResult = {
         success: true,
         written,
@@ -791,8 +799,7 @@ export class SyncEngine {
 
       if (editedFiles.length === 0) {
         // No edits detected - proceed with normal IR-to-agents sync
-        warnings.push("No agent file edits detected");
-        // Continue to export step (don't return early)
+        // This is the expected path when IR is the source of truth
       } else {
         auditTrail.push({
           action: "update",
@@ -841,6 +848,13 @@ export class SyncEngine {
 
       // 6. Export IR to all configured agents (always run)
       const syncResult = await this.syncToAgents(paths.rules, options);
+
+      // 7. Update last sync timestamp on success
+      if (syncResult.success && !options.dryRun) {
+        const { EditDetector } = await import("./edit-detector.js");
+        const detector = new EditDetector(cwd);
+        detector.updateLastSyncTimestamp();
+      }
 
       const result: SyncResult = {
         success: true,
