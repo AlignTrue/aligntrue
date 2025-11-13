@@ -61,19 +61,21 @@ async function main() {
     console.log("Development Commands:");
     console.log("  adapters       Manage exporters (list, enable, disable)\n");
 
+    console.log("Organization Commands:");
+    console.log(
+      "  sources        Manage multi-file rule organization (list, split)",
+    );
+    console.log("  scopes         Manage scopes (list, discover)\n");
+
     console.log("Team Commands:");
     console.log(
       "  team           Team mode management (enable, status, approve, list-allowed, remove)",
     );
     console.log("  pull           Pull rules from git repository");
-    console.log(
-      "  sources        Manage git sources (list, status, update, pin)",
-    );
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
     console.log("  update         Check and apply updates (check, apply)");
     console.log("  onboard        Generate developer onboarding checklist");
-    console.log("  scopes         List configured scopes");
     console.log(
       "  override       Manage overlays for fork-safe customization (add, status, diff, remove)\n",
     );

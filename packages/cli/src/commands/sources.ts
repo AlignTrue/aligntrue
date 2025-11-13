@@ -1,338 +1,291 @@
 /**
- * Sources command - Manage git and local sources
- * List status, update sources, and pin to specific versions
+ * Source file management commands
+ * List, split, and manage multi-file rule organization
  */
 
-import { existsSync } from "fs";
 import * as clack from "@clack/prompts";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { join, basename } from "path";
 import { loadConfig, saveConfig } from "@aligntrue/core";
-import { GitProvider, loadCacheMeta, detectRefType } from "@aligntrue/sources";
-import {
-  parseCommonArgs,
-  showStandardHelp,
-  type ArgDefinition,
-} from "../utils/command-utilities.js";
-import { exitWithError } from "../utils/error-formatter.js";
-import { CommonErrors as Errors } from "../utils/common-errors.js";
-
-const ARG_DEFINITIONS: ArgDefinition[] = [
-  {
-    flag: "--all",
-    hasValue: false,
-    description: "Apply operation to all sources",
-  },
-  {
-    flag: "--config",
-    alias: "-c",
-    hasValue: true,
-    description: "Custom config file path",
-  },
-  {
-    flag: "--help",
-    alias: "-h",
-    hasValue: false,
-    description: "Show this help message",
-  },
-];
+// Telemetry placeholder - not implemented yet
+async function recordEvent(_event: {
+  event: string;
+  properties?: Record<string, unknown>;
+}): Promise<void> {
+  // TODO: Implement telemetry when available
+  return Promise.resolve();
+}
 
 /**
- * Sources command entry point
+ * Main sources command handler
  */
 export async function sources(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
-
-  if (parsed.help || parsed.positional.length === 0) {
-    showStandardHelp({
-      name: "sources",
-      description: "Manage git and local rule sources",
-      usage: "aligntrue sources <subcommand> [options]",
-      args: ARG_DEFINITIONS,
-      examples: [
-        "aligntrue sources list",
-        "aligntrue sources status",
-        "aligntrue sources update https://github.com/org/rules",
-        "aligntrue sources update --all",
-        "aligntrue sources pin https://github.com/org/rules abc1234",
-      ],
-      notes: [
-        "Subcommands:",
-        "  list    - Show all configured sources",
-        "  status  - Show detailed status with update info",
-        "  update  - Force update specific source or all",
-        "  pin     - Pin git source to specific commit SHA",
-      ],
-    });
-    return;
-  }
-
-  const subcommand = parsed.positional[0];
+  const subcommand = args[0];
+  const flags = parseFlags(args.slice(1));
 
   switch (subcommand) {
     case "list":
-      await sourcesList(parsed.flags);
+      await listSources(flags);
       break;
-    case "status":
-      await sourcesStatus(parsed.flags);
+    case "split":
+      await splitSources(flags);
       break;
-    case "update":
-      await sourcesUpdate(parsed.positional.slice(1), parsed.flags);
-      break;
-    case "pin":
-      await sourcesPin(parsed.positional.slice(1), parsed.flags);
+    case undefined:
+    case "--help":
+    case "-h":
+      showHelp();
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error("Run 'aligntrue sources --help' for usage");
+      showHelp();
       process.exit(1);
   }
 }
 
 /**
- * List all configured sources
+ * List all source files with section counts
  */
-async function sourcesList(
-  flags: Record<string, string | boolean | undefined>,
-): Promise<void> {
-  const configPath =
-    (flags["config"] as string | undefined) || ".aligntrue/config.yaml";
+async function listSources(_flags: Record<string, unknown>): Promise<void> {
+  const cwd = process.cwd();
 
-  if (!existsSync(configPath)) {
-    exitWithError(Errors.configNotFound(configPath), 2);
-  }
+  try {
+    clack.intro("Source files");
 
-  const config = await loadConfig(configPath);
-  const sources = config.sources || [];
+    // Load config
+    const config = await loadConfig(undefined, cwd);
 
-  if (sources.length === 0) {
-    console.log("No sources configured\n");
-    return;
-  }
+    // Get source file patterns
+    const sourceFiles = config.sync?.source_files || "AGENTS.md";
+    const sourceOrder = config.sync?.source_order;
 
-  console.log("\nConfigured Sources:\n");
-
-  for (const [index, source] of sources.entries()) {
-    const num = index + 1;
-    if (source.type === "local") {
-      console.log(`${num}. Local: ${source.path}`);
-    } else if (source.type === "git") {
-      const ref = source.ref || "main";
-      console.log(`${num}. Git: ${source.url} (${ref})`);
-    }
-  }
-
-  console.log();
-}
-
-/**
- * Show detailed status of all sources
- */
-async function sourcesStatus(
-  flags: Record<string, string | boolean | undefined>,
-): Promise<void> {
-  const configPath =
-    (flags["config"] as string | undefined) || ".aligntrue/config.yaml";
-
-  if (!existsSync(configPath)) {
-    exitWithError(Errors.configNotFound(configPath), 2);
-  }
-
-  const config = await loadConfig(configPath);
-  const sources = config.sources || [];
-
-  if (sources.length === 0) {
-    console.log("No sources configured\n");
-    return;
-  }
-
-  clack.intro("Sources Status");
-
-  for (const source of sources) {
-    if (source.type === "local") {
-      console.log(`\n📄 Local: ${source.path}`);
-      const exists = existsSync(source.path || "");
-      console.log(`  Status: ${exists ? "✓ Exists" : "✗ Not found"}`);
-    } else if (source.type === "git") {
-      const url = source.url || "";
-      const ref = source.ref || "main";
-      const refType = detectRefType(ref);
-
-      console.log(`\n📦 Git: ${url}`);
-      console.log(`  Ref: ${ref} (${refType})`);
-
-      // Check cache
-      const { createHash } = await import("crypto");
-      const repoHash = createHash("sha256")
-        .update(url)
-        .digest("hex")
-        .substring(0, 16);
-      const repoDir = `.aligntrue/.cache/git/${repoHash}`;
-
-      if (existsSync(repoDir)) {
-        const meta = loadCacheMeta(repoDir);
-        if (meta) {
-          console.log(`  Cached SHA: ${meta.resolvedSha.slice(0, 7)}`);
-          console.log(
-            `  Last checked: ${new Date(meta.lastChecked).toLocaleString()}`,
-          );
-          console.log(
-            `  Last fetched: ${new Date(meta.lastFetched).toLocaleString()}`,
-          );
-
-          // Check if TTL expired
-          const now = new Date();
-          const lastChecked = new Date(meta.lastChecked);
-          const hoursSinceCheck =
-            (now.getTime() - lastChecked.getTime()) / (1000 * 60 * 60);
-
-          if (hoursSinceCheck > 24) {
-            console.log(
-              `  ⚠️  Check overdue (${Math.round(hoursSinceCheck)}h since last check)`,
-            );
-          } else {
-            console.log(`  ✓ Up to date`);
-          }
-        } else {
-          console.log(`  Status: Cached (no metadata)`);
-        }
-      } else {
-        console.log(`  Status: Not cached`);
-      }
-    }
-  }
-
-  console.log();
-  clack.outro("Use 'aligntrue sources update' to refresh git sources");
-}
-
-/**
- * Update (force refresh) git sources
- */
-async function sourcesUpdate(
-  urls: string[],
-  flags: Record<string, string | boolean | undefined>,
-): Promise<void> {
-  const configPath =
-    (flags["config"] as string | undefined) || ".aligntrue/config.yaml";
-  const all = flags["all"] as boolean | undefined;
-
-  if (!existsSync(configPath)) {
-    exitWithError(Errors.configNotFound(configPath), 2);
-  }
-
-  const config = await loadConfig(configPath);
-  const sources = config.sources || [];
-
-  // Determine which sources to update
-  let toUpdate: typeof sources = [];
-  if (all) {
-    toUpdate = sources.filter((s) => s.type === "git");
-  } else if (urls.length > 0) {
-    toUpdate = sources.filter(
-      (s) => s.type === "git" && urls.includes(s.url || ""),
+    // Display configuration
+    clack.log.info(
+      `Source patterns: ${Array.isArray(sourceFiles) ? sourceFiles.join(", ") : sourceFiles}`,
     );
-  } else {
-    console.error("✗ No sources specified");
-    console.error("  Usage: aligntrue sources update <url>");
-    console.error("  Or: aligntrue sources update --all");
-    process.exit(1);
-  }
+    if (sourceOrder && sourceOrder.length > 0) {
+      clack.log.info(`Custom order: ${sourceOrder.join(", ")}`);
+    }
 
-  if (toUpdate.length === 0) {
-    console.log("No git sources to update\n");
-    return;
-  }
+    // Discover actual files
+    const { discoverSourceFiles, orderSourceFiles } = await import(
+      "@aligntrue/core"
+    );
+    const discovered = await discoverSourceFiles(cwd, config);
+    const ordered = orderSourceFiles(discovered, sourceOrder);
 
-  clack.intro(`Update Git Sources (${toUpdate.length})`);
+    if (ordered.length === 0) {
+      clack.log.warn("No source files found");
+      clack.outro("Done");
+      return;
+    }
 
-  for (const source of toUpdate) {
-    if (source.type !== "git" || !source.url) continue;
-
-    const spinner = clack.spinner();
-    spinner.start(`Updating ${source.url}...`);
-
-    try {
-      const gitConfig = {
-        type: "git" as const,
-        url: source.url,
-        ref: source.ref || "main",
-        path: source.path || ".aligntrue.yaml",
-        forceRefresh: true,
-        checkInterval: 0,
-      };
-
-      const provider = new GitProvider(gitConfig, ".aligntrue/.cache/git", {
-        mode: config.mode || "solo",
-      });
-
-      await provider.fetch();
-      const sha = await provider.getCommitSha();
-
-      spinner.stop(`✓ Updated ${source.url} (${sha.slice(0, 7)})`);
-    } catch (error) {
-      spinner.stop(`✗ Failed to update ${source.url}`);
-      console.error(
-        `  ${error instanceof Error ? error.message : String(error)}`,
+    // Display files with section counts
+    clack.log.success(
+      `Found ${ordered.length} source file${ordered.length !== 1 ? "s" : ""}:\n`,
+    );
+    for (const file of ordered) {
+      const sectionCount = file.sections.length;
+      console.log(
+        `  ${file.path} (${sectionCount} section${sectionCount !== 1 ? "s" : ""})`,
       );
     }
-  }
 
-  clack.outro("✓ Updates complete");
-}
+    // Record telemetry
+    await recordEvent({
+      event: "sources_list",
+      properties: {
+        file_count: ordered.length,
+      },
+    });
 
-/**
- * Pin git source to specific commit SHA
- */
-async function sourcesPin(
-  args: string[],
-  flags: Record<string, string | boolean | undefined>,
-): Promise<void> {
-  if (args.length < 2) {
-    console.error("✗ Usage: aligntrue sources pin <url> <sha>");
-    console.error(
-      "  Example: aligntrue sources pin https://github.com/org/rules abc1234",
+    clack.outro("Done");
+  } catch (error) {
+    clack.log.error(
+      `Failed to list sources: ${error instanceof Error ? error.message : String(error)}`,
     );
     process.exit(1);
   }
+}
 
-  const url = args[0];
-  const sha = args[1];
+/**
+ * Split AGENTS.md into multiple files
+ */
+async function splitSources(flags: Record<string, unknown>): Promise<void> {
+  const cwd = process.cwd();
+  const yes = flags["yes"] || false;
 
-  const configPath =
-    (flags["config"] as string | undefined) || ".aligntrue/config.yaml";
+  try {
+    clack.intro("Split AGENTS.md into multiple files");
 
-  if (!existsSync(configPath)) {
-    exitWithError(Errors.configNotFound(configPath), 2);
-  }
+    // Check if AGENTS.md exists
+    const agentsMdPath = join(cwd, "AGENTS.md");
+    if (!existsSync(agentsMdPath)) {
+      clack.log.error("AGENTS.md not found in current directory");
+      process.exit(1);
+    }
 
-  const config = await loadConfig(configPath);
-  const sources = config.sources || [];
+    // Parse AGENTS.md
+    const content = readFileSync(agentsMdPath, "utf-8");
+    const { parseAgentsMd } = await import(
+      "@aligntrue/exporters/utils/section-parser"
+    );
+    const parsed = parseAgentsMd(content);
 
-  // Find the source
-  const sourceIndex = sources.findIndex(
-    (s) => s.type === "git" && s.url === url,
-  );
+    if (parsed.sections.length === 0) {
+      clack.log.warn("AGENTS.md has no sections to split");
+      clack.outro("Nothing to do");
+      return;
+    }
 
-  if (sourceIndex === -1) {
-    console.error(`✗ Source not found: ${url}`);
+    // Show sections
+    clack.log.info(`Found ${parsed.sections.length} sections in AGENTS.md:\n`);
+    for (const section of parsed.sections) {
+      console.log(`  - ${section.heading}`);
+    }
+
+    // Ask for confirmation
+    if (!yes) {
+      const confirm = await clack.confirm({
+        message: "Split these sections into separate files?",
+        initialValue: true,
+      });
+
+      if (clack.isCancel(confirm) || !confirm) {
+        clack.cancel("Split cancelled");
+        process.exit(0);
+      }
+    }
+
+    // Ask for target directory
+    let targetDir = "rules";
+    if (!yes) {
+      const dirInput = await clack.text({
+        message: "Target directory for split files?",
+        initialValue: "rules",
+        placeholder: "rules",
+      });
+
+      if (clack.isCancel(dirInput)) {
+        clack.cancel("Split cancelled");
+        process.exit(0);
+      }
+
+      targetDir = dirInput as string;
+    }
+
+    // Create target directory
+    const targetPath = join(cwd, targetDir);
+    mkdirSync(targetPath, { recursive: true });
+
+    // Split sections into files
+    const createdFiles: string[] = [];
+    for (const section of parsed.sections) {
+      // Generate filename from heading
+      const filename = section.heading
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const filePath = join(targetPath, `${filename}.md`);
+
+      // Write section to file
+      const fileContent = `# ${section.heading}\n\n${section.content}`;
+      writeFileSync(filePath, fileContent, "utf-8");
+      createdFiles.push(`${targetDir}/${basename(filePath)}`);
+
+      clack.log.success(`Created ${targetDir}/${basename(filePath)}`);
+    }
+
+    // Update config
+    const config = await loadConfig(undefined, cwd);
+    config.sync = config.sync || {};
+    config.sync.source_files = `${targetDir}/*.md`;
+    await saveConfig(config, undefined, cwd);
+
+    clack.log.success(
+      `\nUpdated config: sync.source_files = "${targetDir}/*.md"`,
+    );
+
+    // Ask about backing up AGENTS.md
+    if (!yes) {
+      const backup = await clack.confirm({
+        message: "Move AGENTS.md to AGENTS.md.bak?",
+        initialValue: true,
+      });
+
+      if (!clack.isCancel(backup) && backup) {
+        const backupPath = join(cwd, "AGENTS.md.bak");
+        writeFileSync(backupPath, content, "utf-8");
+        // Don't delete AGENTS.md yet - let user do it manually
+        clack.log.info("Backed up AGENTS.md → AGENTS.md.bak");
+        clack.log.info("You can now delete AGENTS.md if desired");
+      }
+    }
+
+    // Record telemetry
+    await recordEvent({
+      event: "sources_split",
+      properties: {
+        section_count: parsed.sections.length,
+        target_dir: targetDir,
+      },
+    });
+
+    clack.outro(
+      "Split complete! Run 'aligntrue sync' to regenerate agent files.",
+    );
+  } catch (error) {
+    clack.log.error(
+      `Failed to split sources: ${error instanceof Error ? error.message : String(error)}`,
+    );
     process.exit(1);
   }
+}
 
-  // Update ref to SHA
-  const source = sources[sourceIndex];
-  if (source && source.type === "git") {
-    source.ref = sha as string;
+/**
+ * Show help text
+ */
+function showHelp(): void {
+  console.log(`
+aligntrue sources - Manage multi-file rule organization
+
+USAGE
+  aligntrue sources <subcommand> [options]
+
+SUBCOMMANDS
+  list              List all source files with section counts
+  split             Split AGENTS.md into multiple files
+
+OPTIONS
+  --yes, -y         Skip confirmation prompts
+  --help, -h        Show this help
+
+EXAMPLES
+  # List current source files
+  aligntrue sources list
+
+  # Split AGENTS.md into multiple files
+  aligntrue sources split
+
+  # Split without prompts
+  aligntrue sources split --yes
+`);
+}
+
+/**
+ * Parse command-line flags
+ */
+function parseFlags(args: string[]): Record<string, unknown> {
+  const flags: Record<string, unknown> = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--yes" || arg === "-y") {
+      flags["yes"] = true;
+    } else if (arg === "--help" || arg === "-h") {
+      flags["help"] = true;
+    }
   }
-  config.sources = sources;
 
-  // Save config
-  await saveConfig(config, configPath);
-
-  console.log("\n✓ Pinned git source:");
-  console.log(`  Repository: ${url}`);
-  console.log(`  SHA: ${sha}`);
-  console.log("\nNext steps:");
-  console.log(
-    "  aligntrue sync --force-refresh   # Fetch and sync with pinned version",
-  );
-  console.log();
+  return flags;
 }

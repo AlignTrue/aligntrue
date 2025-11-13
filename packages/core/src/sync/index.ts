@@ -17,6 +17,13 @@ export {
 export { writeFileWithBackup, getBackupOptions } from "./file-operations.js";
 export type { BackupOptions, BackupResult } from "./file-operations.js";
 export { loadIR } from "./ir-loader.js";
+export {
+  discoverSourceFiles,
+  orderSourceFiles,
+  mergeSourceFiles,
+  loadSourceFiles,
+} from "./source-loader.js";
+export type { SourceFile } from "./source-loader.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();

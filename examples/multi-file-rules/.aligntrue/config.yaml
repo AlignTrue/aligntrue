@@ -1,0 +1,10 @@
+exporters:
+  - cursor
+  - agents-md
+
+sync:
+  source_files: "rules/*.md"
+  source_order:
+    - architecture.md
+    - security.md
+    - coding-standards.md

@@ -152,6 +152,7 @@ export class SyncEngine {
       mode: this.config.mode,
       maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
       force: force || false,
+      config: this.config,
     });
 
     if (!this.ir) {
@@ -820,7 +821,9 @@ export class SyncEngine {
         });
 
         // 2. Load current IR
-        const currentIR = await loadIR(paths.rules);
+        const currentIR = await loadIR(paths.rules, {
+          config: this.config,
+        });
 
         // 3. Merge changes from agent files
         const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
