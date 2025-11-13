@@ -86,21 +86,21 @@ Set these in tsconfig.json:
 - strictFunctionTypes: true
 ```
 
-**That's it!** Run `aligntrue sync` again whenever you update your rules.
+**That's it!** Run `aligntrue sync` whenever you update your rules.
 
 {/* prettier-ignore-start */}
 
 <Callout type="info">
 **Where to edit:** Your detected agent files (`.cursor/rules/*.mdc`, etc.) or universal `AGENTS.md`
 
-AlignTrue auto-detects your agents during init and lets you edit in your native format. Changes sync automatically to all other agents.
+AlignTrue auto-detects your agents during init and lets you edit in your native format. When you run `aligntrue sync`, changes are automatically detected and synced to all other agents.
 
 Data flow:
 
 ```
 Edit any agent file (Cursor .mdc, AGENTS.md, etc.)
     ↓
-aligntrue sync (detects edits)
+aligntrue sync (auto-detects edits, merges changes)
     ↓
 .aligntrue/.rules.yaml (internal IR, auto-generated)
     ↓
@@ -108,6 +108,8 @@ All agent files (synced in native formats)
 ```
 
 **Note:** The `.rules.yaml` file is internal and auto-generated—treat it like a build artifact. Always edit your agent files.
+
+**Want continuous auto-sync?** Run `aligntrue watch` to automatically sync on file save. See [File Watcher Setup](/docs/04-reference/file-watcher-setup).
 
 </Callout>
 {/* prettier-ignore-end */}
