@@ -105,5 +105,4 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 ## Related documentation
 
-- [Testing guidelines](/docs/08-development/testing-guide)
 - [Development setup](/docs/08-development/setup)

@@ -14,7 +14,7 @@ Natural markdown lets you write rules as readable markdown sections instead of s
 - Markdown structure is automatically fingerprinted for change detection
 - Easier for AI agents to read and understand
 
-## Section Format
+## Section format
 
 Write sections with level 2 headings (`##`):
 
@@ -30,7 +30,7 @@ tags: ["example", "sections"]
 
 This pack establishes our project standards.
 
-## Testing Requirements
+## Testing requirements
 
 Write comprehensive tests for all features. Aim for unit tests covering the happy path, error cases, and edge conditions. Use the test pyramid: more unit tests, fewer integration tests, minimal e2e.
 
@@ -38,7 +38,7 @@ Write comprehensive tests for all features. Aim for unit tests covering the happ
 - Use descriptive test names
 - Keep tests deterministic and fast
 
-## Performance Standards
+## Performance standards
 
 Optimize for user-perceived performance. Profile before optimizing. Keep API responses under 200ms for user-facing operations.
 
@@ -46,7 +46,7 @@ Optimize for user-perceived performance. Profile before optimizing. Keep API res
 - Cache aggressively for static content
 - Use CDN for global distribution
 
-## Security Baseline
+## Security baseline
 
 Never commit secrets to version control. Use environment variables or a secrets manager for runtime configuration.
 
@@ -111,7 +111,7 @@ Fingerprints change when:
 - Heading text is renamed
 - Section is moved to different level
 
-## Change Detection
+## Change detection
 
 AlignTrue detects three types of changes:
 
@@ -135,7 +135,7 @@ section removed - in lockfile but not in current document
 
 See [Lockfile](#lockfile-integration) for how changes are tracked.
 
-## Lockfile Integration
+## Lockfile integration
 
 In team mode, lockfile entries use section fingerprints:
 
@@ -159,14 +159,14 @@ Changes are detected by comparing content hashes:
 - **Missing hash** - Section was deleted
 - **New hash** - Section was added
 
-## Writing Guidelines
+## Writing guidelines
 
-### Be Clear and Actionable
+### Be clear and actionable
 
 Write sections as guidance that agents can understand:
 
 ```markdown
-## Code Quality Standards
+## Code quality standards
 
 Enforce consistent code style through linting. Run prettier on save and eslint in CI.
 Fix all issues before merging.
@@ -176,12 +176,12 @@ Fix all issues before merging.
 - No manual formatting allowed
 ```
 
-### Include Examples
+### Include examples
 
 Show concrete examples when helpful:
 
 ```markdown
-## Commit Message Format
+## Commit message format
 
 Use conventional commits format:
 ```
@@ -204,7 +204,7 @@ feat(auth): add two-factor authentication
 
 ```
 
-### Section Hierarchy
+### Section hierarchy
 
 Use H2 (`##`) for main sections (becomes rules):
 
@@ -229,16 +229,77 @@ Use H3 (`###`) for subsections (part of parent section content):
 
 All code must follow security best practices.
 
-### Input Validation
+### Input validation
 
 Never trust user input. Validate all inputs...
 
-### Error Handling
+### Error handling
 
 Never expose internal errors to users...
 ```
 
-## Example Packs
+## Advanced examples
+
+### Multi-section pack
+
+Create packs with many sections organized hierarchically:
+
+```markdown
+---
+id: "packs/my-org/comprehensive"
+version: "1.0.0"
+summary: "Comprehensive coding standards"
+tags: ["standards", "comprehensive"]
+---
+
+# Comprehensive Standards
+
+## Code style
+
+Guidelines for code formatting and naming.
+
+### TypeScript
+
+Use strict TypeScript. Enable all strict compiler flags.
+
+### Python
+
+Follow PEP 8 with 4-space indentation.
+
+## Testing
+
+Comprehensive testing requirements.
+
+### Unit tests
+
+Fast, focused tests of individual units.
+
+### Integration tests
+
+Test boundaries between components.
+
+## Documentation
+
+Clear, maintained documentation.
+
+### Inline comments
+
+When code intent is unclear, add comments.
+
+### README
+
+Every project needs a README with quickstart.
+```
+
+Each `##` heading becomes a separate rule:
+
+- `Code style`
+- `Testing`
+- `Documentation`
+
+Subsections under each rule (`###`) are included in the parent rule's content.
+
+### Included example packs
 
 Example packs in `examples/packs/` demonstrate natural markdown:
 
@@ -248,7 +309,7 @@ Example packs in `examples/packs/` demonstrate natural markdown:
 - `security.md` - Security baseline
 - `docs.md` - Documentation standards
 
-## Backward Compatibility
+## Backward compatibility
 
 Natural markdown sections coexist with rule-based packs:
 

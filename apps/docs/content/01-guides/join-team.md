@@ -1,9 +1,9 @@
 ---
-title: Joining an Existing Team
+title: Joining an existing team
 description: Guide for team members joining a project with AlignTrue team mode
 ---
 
-# Joining an Existing Team
+# Joining an existing team
 
 This guide walks you through joining a project that already uses AlignTrue in team mode.
 
@@ -13,7 +13,7 @@ This guide walks you through joining a project that already uses AlignTrue in te
 - Access to the team's repository
 - Git configured with your credentials
 
-## Step 1: Clone the Repository
+## Step 1: Clone the repository
 
 ```bash
 git clone git@github.com:yourteam/project.git
@@ -44,7 +44,7 @@ Your Options:
   3. Add personal rules (with remote backup)
 ```
 
-### Option 1: Team Rules Only
+### Option 1: Team rules only
 
 Select this if you don't need any personal rules:
 
@@ -54,7 +54,7 @@ aligntrue init --team-only
 
 This is the simplest setup. All rules come from the team repository.
 
-### Option 2: Personal Rules (Local)
+### Option 2: Personal rules (local)
 
 Select this if you want personal rules but don't need version control:
 
@@ -64,7 +64,7 @@ aligntrue init --with-personal-local
 
 Your personal rules will be stored in `.aligntrue/.local/personal/` and git-ignored.
 
-### Option 3: Personal Rules (Remote)
+### Option 3: Personal rules (remote)
 
 Select this if you want personal rules with version control and backup:
 
@@ -74,7 +74,7 @@ aligntrue init --with-personal-remote
 
 You'll be prompted to set up a remote repository. See [Personal Repository Setup](/reference/personal-repo-setup) for details.
 
-## Step 3: Initial Sync
+## Step 3: Initial sync
 
 After initialization, sync the rules to your agent files:
 
@@ -89,7 +89,7 @@ This will:
 3. Merge them together
 4. Export to agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
 
-## Step 4: Verify Setup
+## Step 4: Verify setup
 
 Check that rules were exported correctly:
 
@@ -254,7 +254,7 @@ aligntrue sync
 git status
 ```
 
-### Personal rules Not Showing
+### Personal rules not showing
 
 **Cause:** Personal rules might not be configured correctly.
 
@@ -268,7 +268,7 @@ aligntrue config get storage.personal
 aligntrue init --with-personal-local
 ```
 
-### Agent files Not Generated
+### Agent files not generated
 
 **Cause:** Exporters might not be enabled.
 

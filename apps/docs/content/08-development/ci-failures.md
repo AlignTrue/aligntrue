@@ -293,9 +293,3 @@ pnpm typecheck
 3. **Fix type errors immediately** - Don't let them accumulate
 4. **Use the right import paths** - Check source files for canonical exports
 5. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
-
-## Related documentation
-
-- [TypeScript guidelines](/docs/08-development/typescript-guide)
-- [Testing guidelines](/docs/08-development/testing-guide)
-- [Pull request standards](/docs/08-development/pr-standards)

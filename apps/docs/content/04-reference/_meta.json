@@ -1,14 +1,14 @@
 {
   "features": "Features & Implementation Status",
-  "examples": "Examples",
   "cli-reference": "CLI reference",
+  "agent-support": "Agent support",
+  "examples": "Examples",
+  "auto-updates": "Auto updates",
+  "backup-restore": "Backup & restore",
+  "file-watcher-setup": "File watcher setup",
+  "git-sources": "Git sources",
   "markdown-authoring": "Markdown authoring",
   "natural-markdown-sections": "Natural Markdown sections",
-  "agent-support": "Agent support",
   "vendor-bags": "Vendor bags",
-  "git-sources": "Git sources",
-  "backup-restore": "Backup & restore",
-  "auto-updates": "Auto updates",
-  "file-watcher-setup": "File watcher setup",
   "yaml-libraries": "YAML libraries"
 }
