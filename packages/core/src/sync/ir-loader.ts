@@ -122,8 +122,10 @@ export async function loadIR(
         .join("\n") || "  Unknown validation error";
 
     throw new Error(
-      `✗ Invalid IR file: ${sourcePath}\n\n${errorList}\n\n` +
-        `Fix: Edit ${sourcePath} to add missing fields, or run 'aligntrue init' to regenerate.`,
+      `✗ Invalid IR schema\n\n` +
+        `File: ${sourcePath}\n` +
+        `${errorList}\n\n` +
+        `Fix: Edit ${sourcePath} to add missing fields, or run 'aligntrue init' to regenerate the IR.`,
     );
   }
 
