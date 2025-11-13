@@ -275,8 +275,10 @@ export async function detectReadOnlyFileEdits(
  *   AGENTS.md → default
  */
 function extractScopeFromPath(filePath: string): string {
-  // Cursor scope files
-  const cursorMatch = filePath.match(/\.cursor\/rules\/([^.]+)\.mdc$/);
+  // Cursor scope files - use non-capturing group and bounded quantifier to avoid ReDoS
+  const cursorMatch = filePath.match(
+    /\.cursor\/rules\/([a-zA-Z0-9_-]{1,255})\.mdc$/,
+  );
   if (cursorMatch) {
     const scopeName = cursorMatch[1];
     return scopeName === "aligntrue" ? "default" : scopeName || "default";

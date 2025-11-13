@@ -190,6 +190,7 @@ export function isNaturalMarkdown(markdown: string): boolean {
   }
 
   // Check for ## headings (natural format)
-  const hasHeadings = /^#{2,6}\s+\S+/m.test(markdown);
+  // Use [^\n] instead of \s+ to avoid ReDoS with backtracking
+  const hasHeadings = /^#{2,6}\s+[^\n\s]/m.test(markdown);
   return hasHeadings;
 }
