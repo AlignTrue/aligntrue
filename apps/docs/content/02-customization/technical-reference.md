@@ -352,5 +352,5 @@ aligntrue sync
 - [Overlays Guide](/docs/02-customization/overlays)
 - [Scopes Guide](/docs/02-customization/scopes)
 - [CLI Reference](/docs/04-reference/cli-reference)
-- [Solo Developer Guide](/docs/01-guides/solo-developer-guide)
-- [Team Guide](/docs/01-guides/team-guide)
+- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide)
+- [Team Guide](/docs/01-guides/05-team-guide)

@@ -4,7 +4,7 @@ Learn how to author AlignTrue rules in markdown format.
 
 {/_ prettier-ignore-start _/}
 <Callout type="info">
-**Looking for the recommended format?** See the [Natural Markdown Workflow guide](/docs/01-guides/natural-markdown-workflow) for the modern, streamlined approach using YAML frontmatter and section headings.
+**Looking for the recommended format?** See [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) for the modern, streamlined approach using YAML frontmatter and section headings.
 
 This guide documents the **legacy fenced block format** which is still fully supported for backward compatibility.
 </Callout>
@@ -27,7 +27,7 @@ The legacy fenced block format is useful when:
 - You're working with tools that expect literate markdown
 - You want explicit YAML rule definitions with machine-checkable fields
 
-For most use cases, [natural markdown](/docs/01-guides/natural-markdown-workflow) is simpler and more maintainable.
+For most use cases, [natural markdown](/docs/04-reference/natural-markdown-sections) is simpler and more maintainable.
 
 ## Literate markdown format (legacy)
 
@@ -249,7 +249,7 @@ See the IR format reference for complete schema.
 
 ## Related pages
 
-- [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow) - Recommended modern format
+- [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Recommended modern format
 - [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Technical reference
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules flow to agents
 - [CLI Reference - md commands](/docs/04-reference/cli-reference/development#aligntrue-md-lint) - md lint, compile, format

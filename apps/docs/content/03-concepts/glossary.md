@@ -83,7 +83,7 @@ The primary user-editable file where you write and maintain rules in markdown fo
 
 `AGENTS.md` is where you write your rules. AlignTrue automatically converts them to other agent formats.
 
-**Related:** [Natural Markdown Workflow](/docs/01-guides/natural-markdown-workflow), [Markdown authoring](/docs/04-reference/markdown-authoring)
+**Related:** [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections), [Markdown authoring](/docs/04-reference/markdown-authoring)
 
 ### Intermediate Representation (IR)
 

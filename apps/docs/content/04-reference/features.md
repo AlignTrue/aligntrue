@@ -1,15 +1,13 @@
----
-title: Features & Implementation Status
-description: Current capabilities and implementation status of AlignTrue (evergreen, always updated)
----
+title: "AlignTrue features and implementation status"
+description: "Up-to-date feature list: two‑way sync, lockfile, deterministic exports, multi‑agent support, and more."
 
-# Features & Implementation Status
+# AlignTrue features and implementation status
 
 **Update criteria:** This page should be updated whenever features are implemented, removed, or significantly changed. It serves as the single source of truth for AlignTrue's current capabilities.
 
-## Production Ready
+## Production ready
 
-### Core Platform
+### Core platform
 
 - Natural markdown authoring in `AGENTS.md` or agent files (`.cursor/*.mdc`, etc.)
 - Two-way sync engine with section-based merging (IR ↔ agents)
@@ -70,7 +68,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - 11 curated example packs
 - Agent compatibility matrix
 
-## Core Format & Architecture
+## Core format & architecture
 
 - **Natural markdown sections** - Primary content format, all 43 exporters support it
 - **AGENTS.md authoring** - Primary user-editable file with natural markdown syntax
@@ -78,7 +76,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
 - **Canonical JSON (JCS)** - Deterministic hashing for lockfiles and drift detection
 
-## Team Mode (Fully Implemented)
+## Team mode (fully implemented)
 
 - **Lockfile generation** (`.aligntrue.lock.json`) - SHA-256 content hashes, reproducible builds
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
@@ -94,7 +92,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 See [Team Mode](/docs/03-concepts/team-mode) for complete documentation.
 
-## Exporters (43 Agents Supported)
+## Exporters (43 agents supported)
 
 All exporters support natural markdown sections format with fidelity notes:
 
@@ -113,7 +111,7 @@ All exporters support natural markdown sections format with fidelity notes:
 
 See [Agent Support](/docs/04-reference/agent-support) for complete compatibility matrix.
 
-## Sync Engine
+## Sync engine
 
 - **Two-way sync** - IR ↔ agents (bidirectional), section-based merging, last-write-wins
 - **Section-based merging** - Sections matched by heading/content hash, user sections preserved
@@ -126,7 +124,7 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 
 See [Sync Behavior](/docs/03-concepts/sync-behavior) for details.
 
-## Customization System
+## Customization system
 
 - **Plugs** - Dynamic value slots with validation (slots + fills)
 - **Overlays** - Surgical modifications to packs (set/remove operations)
@@ -135,7 +133,7 @@ See [Sync Behavior](/docs/03-concepts/sync-behavior) for details.
 
 See [Customization](/docs/02-customization) for complete guides.
 
-## Scope Resolution (Monorepos)
+## Scope resolution (monorepos)
 
 - **Hierarchical scopes** - Path-based rule organization
 - **Include/exclude patterns** - Glob-based file matching with micromatch
@@ -144,7 +142,7 @@ See [Customization](/docs/02-customization) for complete guides.
 
 See [Scopes](/docs/02-customization/scopes) for details.
 
-## Git Sources
+## Git sources
 
 - **Git provider** - Pull rules from remote repositories with caching
 - **Vendoring** - Git submodule/subtree support via `aligntrue link`
@@ -153,7 +151,7 @@ See [Scopes](/docs/02-customization/scopes) for details.
 
 See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 
-## Design Principles
+## Design principles
 
 - **Local first** — Git is the source of truth. All exports are derived and read-only. No cloud required for core workflows.
 - **Deterministic** — Identical inputs produce identical bundles, hashes, and exports. Byte-identical outputs for CI.
@@ -162,29 +160,29 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 - **Multi-agent parity** — Preserve semantics across 28+ exporters; emit clear fidelity notes when translation is lossy.
 - **OSS and MIT** — Free forever. No vendor lock-in. Community extensible.
 
-## Schema Evolution and Versioning
+## Schema evolution and versioning
 
 - **Spec version** — Governs IR format. Pre-1.0 schema may evolve freely. Post-1.0 follows SemVer.
 - **Lock schema** — `.aligntrue.lock.json` versioned independently for team mode.
 - **Exporter contracts** — Each exporter pins its output version. Breaking changes → exporter major version bump.
 - **Migrations** — `aligntrue migrate` prints safe transforms and diffs. Requires `--write` to modify.
 
-## Platform Support
+## Platform support
 
 - **Required:** Node 20+ (LTS)
 - **Supported OSes:** macOS, Linux, Windows (first-class support, cross-platform determinism)
 - **CI:** Tested on linux:node20, macos:node20, windows:node20
 - **Distribution:** npm, pnpm, yarn, bun, npx
 
-## Recently Completed (January 2025)
+## Recently completed (January 2025)
 
-### Storage Backend System
+### Storage backend system
 
 - **YAML IR parsing** - RepoStorageBackend now parses `.aligntrue/.rules.yaml` format
 - **Remote access validation** - StorageManager tests SSH/HTTPS connectivity before operations
 - **Storage exports** - All storage backends properly exported from core package
 
-### Migration Wizards
+### Migration wizards
 
 - **detectPersonalRulesInRepo()** - Scans IR and config to find personal rules in main repo
 - **applyMigrationActions()** - Applies promote/move/local actions to sections and config
@@ -192,7 +190,7 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 - **getPersonalRemote()** - Retrieves personal remote URL from config
 - **applySoloMigration()** - Handles keep/delete/separate actions for team→solo migration
 
-### Migrate Commands
+### Migrate commands
 
 - **promoteSection()** - Moves section from personal to team scope
 - **demoteSection()** - Moves section from team to personal scope
@@ -200,11 +198,11 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 - **migratePersonal()** - Migrates all personal rules to remote storage
 - **migrateTeam()** - Migrates all team rules to remote storage
 
-## Not Implemented (Removed)
+## Not implemented (removed)
 
 These features were designed for the legacy `rules` format and have been removed from the codebase:
 
-### Import Functionality
+### Import functionality
 
 **Status:** Removed entirely
 
@@ -226,7 +224,7 @@ These features were designed for the legacy `rules` format and have been removed
 - `aligntrue init` creates starter AGENTS.md template
 - Copy/paste from existing agent files if needed
 
-### Checks Engine
+### Checks engine
 
 **Status:** Package removed entirely
 
@@ -248,7 +246,7 @@ These features were designed for the legacy `rules` format and have been removed
 - Drift detection validates lockfile integrity and team alignment
 - No file-level policy enforcement (sections are guidance, not policies)
 
-### Edit/Conflict Detection
+### Edit/conflict detection
 
 **Status:** Removed entirely
 
@@ -270,9 +268,9 @@ These features were designed for the legacy `rules` format and have been removed
 - Team mode: lockfile validation catches drift at pack level
 - Manual conflict resolution by editing AGENTS.md directly
 
-## Never Planned
+## Never planned
 
-### Cloud Features
+### Cloud features
 
 - Hosted sync and analytics
 - Organization dashboards
@@ -281,7 +279,7 @@ These features were designed for the legacy `rules` format and have been removed
 
 **Status:** Not planned for OSS repo
 
-### Catalog/Registry
+### Catalog/registry
 
 - Public pack registry
 - Pack discovery and ratings
@@ -338,6 +336,5 @@ aligntrue scopes
 ## Related Documentation
 
 - [Architecture](/docs/08-development/architecture)
-- [Testing](/docs/08-development/testing-guide)
 - [Security](/docs/07-policies/security)
 - [Customization](/docs/02-customization)

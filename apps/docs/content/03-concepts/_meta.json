@@ -1,7 +1,7 @@
 {
-  "glossary": "Glossary",
+  "sync-behavior": "Sync behavior",
   "team-mode": "Team mode",
-  "git-workflows": "Git workflows",
   "drift-detection": "Drift detection",
-  "sync-behavior": "Sync behavior"
+  "git-workflows": "Git workflows",
+  "glossary": "Glossary"
 }
