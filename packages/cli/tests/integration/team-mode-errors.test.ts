@@ -205,49 +205,6 @@ sources:
         (process.stdout as any).isTTY = originalStdoutIsTTY;
       }
     });
-
-    it.skip("shows helpful guidance when allow list missing in strict mode", async () => {
-      // Create team mode setup without allow list
-      mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(
-        ".aligntrue/config.yaml",
-        `
-exporters:
-  - cursor
-mode: team
-version: "1"
-modules:
-  lockfile: true
-  bundle: true
-lockfile:
-  mode: strict
-`,
-      );
-      writeFileSync(
-        ".aligntrue/.rules.yaml",
-        `
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule one
-    level: 2
-    content: "Test rule guidance"
-    fingerprint: test-rule-one
-`,
-      );
-
-      const logInfoSpy = vi
-        .spyOn(clack.log, "info")
-        .mockImplementation(() => {});
-
-      // Sync should succeed but show tip
-      await sync([]);
-
-      // Check that tip was shown
-      const infoCalls = logInfoSpy.mock.calls.flat().join(" ");
-      expect(infoCalls).toContain("aligntrue team approve");
-    });
   });
 
   describe("Team command validation", () => {
