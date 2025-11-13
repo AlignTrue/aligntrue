@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Circular dependency between core and exporters** - Moved section parser to schema package
+  - Core no longer imports from exporters, resolving build failure
+  - Section parser available as shared utility in @aligntrue/schema
+  - All imports updated in core, cli, and exporters
+
 ### Added
 
 - **Strict IR validation** - IR validation errors now block sync with exit code 1 by default

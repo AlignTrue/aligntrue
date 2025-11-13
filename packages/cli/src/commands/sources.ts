@@ -126,9 +126,7 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
 
     // Parse AGENTS.md
     const content = readFileSync(agentsMdPath, "utf-8");
-    const { parseAgentsMd } = await import(
-      "@aligntrue/exporters/utils/section-parser"
-    );
+    const { parseAgentsMd } = await import("@aligntrue/schema");
     const parsed = parseAgentsMd(content);
 
     if (parsed.sections.length === 0) {
