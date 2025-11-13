@@ -135,6 +135,11 @@ export default async function DocsLayout({
           />
         }
         footer={<DocsFooter />}
+        sidebar={{
+          defaultMenuCollapseLevel: 1,
+          autoCollapse: true,
+          toggleButton: true,
+        }}
       >
         {children}
       </Layout>
