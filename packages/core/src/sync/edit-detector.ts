@@ -50,7 +50,7 @@ export class EditDetector {
       const modified = stats.mtimeMs > timestamp;
 
       // Debug logging for change detection (can be removed after issue is resolved)
-      if (process.env.DEBUG_CHANGE_DETECTION) {
+      if (process.env["DEBUG_CHANGE_DETECTION"]) {
         console.log(`Change detection for ${filePath}:`, {
           fileModified: new Date(stats.mtimeMs).toISOString(),
           lastSync: new Date(timestamp).toISOString(),
@@ -61,7 +61,7 @@ export class EditDetector {
 
       return modified;
     } catch (err) {
-      if (process.env.DEBUG_CHANGE_DETECTION) {
+      if (process.env["DEBUG_CHANGE_DETECTION"]) {
         console.warn(`Failed to check modification time for ${filePath}:`, err);
       }
       return false;
