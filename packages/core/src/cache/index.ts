@@ -1,15 +1,7 @@
 /**
- * Cache module exports
+ * Cache module
+ * Exports caching utilities for agent detection and other features
  */
-
-export {
-  CacheManager,
-  gitCacheKey,
-  validationCacheKey,
-  estimateSize,
-} from "./manager.js";
-
-export type { CacheEntry, CacheOptions, CacheStats } from "./manager.js";
 
 export { loadDetectionCache, saveDetectionCache } from "./agent-detection.js";
 
