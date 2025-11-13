@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Dependabot security patch auto-merge** - Security patches (CVE fixes) now auto-merge after CI passes
+  - Enables automatic merging of all security severity levels (low, medium, high, critical)
+  - Reduces exposure window for known vulnerabilities
+  - Maintains full CI validation before merge
+  - Identified via GitHub's native security labels and metadata
+  - Security-specific approval comments explain the rationale
+
 ### Fixed
 
 - **CRITICAL: Sync destroys user edits** - Fixed exporters overwriting user modifications to existing sections
