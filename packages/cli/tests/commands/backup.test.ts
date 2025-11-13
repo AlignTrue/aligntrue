@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { backupCommand } from "../../src/commands/backup";
 import { BackupManager } from "@aligntrue/core";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 // Mock clack
@@ -85,6 +85,9 @@ describe("backup command", () => {
   describe("restore subcommand", () => {
     it("should restore most recent backup", async () => {
       const _backup = BackupManager.createBackup({ cwd: testDir });
+
+      // Small delay to ensure different timestamps (backups use milliseconds)
+      await new Promise((resolve) => setTimeout(resolve, 2));
 
       // Modify files
       writeFileSync(join(aligntrueDir, "config.yaml"), "mode: team", "utf-8");
