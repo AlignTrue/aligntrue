@@ -7,7 +7,7 @@ description: Guide for setting up a remote repository for personal rules
 
 When using AlignTrue in team mode, you may want to keep some rules private while still version controlling them. This guide shows you how to set up a remote repository for your personal rules.
 
-## Why Use a Personal Remote?
+## Why use a personal remote?
 
 In team mode, personal rules cannot be stored in the main repository (to prevent leaking private information). You have two options:
 
@@ -55,7 +55,7 @@ Using a remote gives you:
 
 SSH is the recommended method because it doesn't require entering credentials repeatedly.
 
-### Check Existing SSH Keys
+### Check existing SSH keys
 
 ```bash
 ls -la ~/.ssh
@@ -63,7 +63,7 @@ ls -la ~/.ssh
 
 Look for files like `id_rsa.pub`, `id_ed25519.pub`, or `id_ecdsa.pub`.
 
-### Generate New SSH Key (if needed)
+### Generate new SSH key (if needed)
 
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com"
@@ -71,7 +71,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 
 Press Enter to accept the default location. Optionally set a passphrase.
 
-### Add SSH Key to Your Git Host
+### Add SSH key to your git host
 
 **GitHub:**
 
@@ -89,7 +89,7 @@ Press Enter to accept the default location. Optionally set a passphrase.
 2. Go to your GitLab profile → SSH Keys
 3. Paste the key and save
 
-### Test SSH Connection
+### Test SSH connection
 
 ```bash
 # GitHub
@@ -103,7 +103,7 @@ You should see a success message.
 
 ## Step 3: Configure AlignTrue
 
-### During Team Migration
+### During team migration
 
 When you run `aligntrue team enable`, the wizard will prompt you:
 
@@ -116,7 +116,7 @@ What should we do with personal rules?
 
 Select "Move to remote" and follow the prompts.
 
-### Manual Configuration
+### Manual configuration
 
 Edit `.aligntrue/config.yaml`:
 
@@ -193,7 +193,7 @@ git log
 3. Check SSH agent is running: `ssh-add -l`
 4. Add key to agent: `ssh-add ~/.ssh/id_ed25519`
 
-### Clone Fails
+### Clone fails
 
 **Error:** `Repository not found`
 
@@ -204,7 +204,7 @@ git log
 3. Check you have access to the repository
 4. For private repos, ensure SSH key or credentials are configured
 
-### Push Fails
+### Push fails
 
 **Error:** `failed to push some refs`
 
@@ -214,7 +214,7 @@ git log
 2. Resolve any conflicts manually
 3. Run `aligntrue sync` again
 
-### Wrong Branch
+### Wrong branch
 
 **Error:** `Remote branch 'main' not found`
 
@@ -230,7 +230,7 @@ storage:
     branch: master # Changed from main
 ```
 
-## Using HTTPS Instead of SSH
+## Using HTTPS instead of SSH
 
 If you prefer HTTPS over SSH:
 
@@ -251,7 +251,7 @@ git config --global credential.helper store
 # Or use SSH (recommended)
 ```
 
-## Syncing Across Multiple Machines
+## Syncing across multiple machines
 
 Once your personal rules are in a remote repository, you can sync them across machines:
 
@@ -260,7 +260,7 @@ Once your personal rules are in a remote repository, you can sync them across ma
 
 AlignTrue automatically handles pull/push during sync.
 
-## Backup Considerations
+## Backup considerations
 
 Your personal rules are now backed up in two places:
 
@@ -275,7 +275,7 @@ aligntrue revert
 
 Select a backup with `scope: personal` to restore only personal rules.
 
-## Security Notes
+## Security notes
 
 - Always use **private** repositories for personal rules
 - Use SSH keys instead of passwords
@@ -283,7 +283,7 @@ Select a backup with `scope: personal` to restore only personal rules.
 - Review repository access permissions regularly
 - Consider using a dedicated SSH key for AlignTrue
 
-## Next Steps
+## Next steps
 
 - [Join an Existing Team](/guides/join-team)
 - [Team Mode Concepts](/concepts/team-mode)

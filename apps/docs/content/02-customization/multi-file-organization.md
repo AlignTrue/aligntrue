@@ -223,7 +223,7 @@ If you see "Section conflict" warnings:
 2. Rename one of the headings to make them unique
 3. Or merge the duplicate sections into one file
 
-## Related Features
+## Related features
 
 - [Two-Way Sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos

@@ -363,7 +363,7 @@ Natural markdown sections:
 
 For complex rule definitions with machine-checkable conditions, use rule-based format with fenced blocks.
 
-## Related Pages
+## Related pages
 
 - [Getting Started](/docs/00-getting-started/00-quickstart) - Quick start guide
 - [Example Packs](/docs/04-reference/examples) - Curated example packs

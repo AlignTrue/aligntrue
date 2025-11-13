@@ -140,7 +140,7 @@ aln override add \
 
 **Symptom:** Multiple overlays target the same check or upstream changes conflict with overlay.
 
-### Multiple Overlays for Same Check
+### Multiple overlays for same check
 
 **Problem:**
 
@@ -389,7 +389,7 @@ Add to CI:
 
 **Symptom:** Overlay and plug both try to customize same field.
 
-### Problem Example
+### Problem example
 
 **Overlay:**
 
@@ -587,7 +587,7 @@ git submodule add https://github.com/yourorg/my-standards vendor/my-standards
 aln link https://github.com/yourorg/my-standards --path vendor/my-standards
 ```
 
-### Hybrid Approach
+### Hybrid approach
 
 Fork for major changes, overlay for minor tweaks:
 
@@ -637,7 +637,7 @@ aln sync --dry-run
 aln drift
 ```
 
-### Inspect Lockfile
+### Inspect lockfile
 
 ```bash
 # View overlay hashes in lockfile

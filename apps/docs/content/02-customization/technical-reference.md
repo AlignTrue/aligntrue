@@ -36,14 +36,14 @@ This page provides technical implementation details for working with plugs, over
 - Declared in `.aligntrue/config.yaml` only (under `scopes:`)
 - Applied at load time before plugs/overlays
 
-## Authoring Formats
+## Authoring formats
 
 AlignTrue supports two authoring formats:
 
 ### Markdown with Fenced Blocks (Recommended for Packs)
 
 ````markdown
-# Testing Pack
+# Testing pack
 
 Use consistent test commands across your project.
 
@@ -67,7 +67,7 @@ rules:
 ```
 ````
 
-### Direct YAML (Internal IR Format)
+### Direct YAML (internal IR format)
 
 ```yaml
 # .aligntrue/.rules.yaml (generated/maintained by system)
@@ -84,7 +84,7 @@ rules:
     guidance: "Run tests: [[plug:test.cmd]]"
 ```
 
-### Data Flow
+### Data flow
 
 ```
 Pack files (.md) → System parses → Internal IR (.rules.yaml) → Exporters → Agent formats (AGENTS.md, .mdc)
@@ -118,7 +118,7 @@ Without example:
 TODO(plug:<key>): Provide a value for this plug.
 ```
 
-### Merge Order
+### Merge order
 
 Base < stack pack(s) < repo. Last writer wins.
 
@@ -141,9 +141,9 @@ Base < stack pack(s) < repo. Last writer wins.
 - By property path: `profile.version`
 - By array index: `rules[0]` (less common, prefer ID)
 
-## Overlays Operations
+## Overlays operations
 
-### Set Operation (Supports Dot Notation)
+### Set operation (supports dot notation)
 
 ```yaml
 overlays:
@@ -155,7 +155,7 @@ overlays:
         autofix: false # Disable autofix
 ```
 
-### Remove Operation
+### Remove operation
 
 ```yaml
 overlays:
@@ -179,11 +179,11 @@ overlays:
         - "autofix"
 ```
 
-### Severity Values
+### Severity values
 
 `"off"`, `"info"`, `"warning"`, `"error"`
 
-### Application Order
+### Application order
 
 Overlays apply in definition order. Last matching overlay wins if multiple target same rule.
 
@@ -194,7 +194,7 @@ Overlays apply in definition order. Last matching overlay wins if multiple targe
 - Use forward slashes (POSIX-style)
 - Use `.` for workspace root
 
-## Scopes Include/Exclude
+## Scopes include/exclude
 
 - Standard glob syntax (micromatch)
 - Relative to scope path
@@ -244,7 +244,7 @@ When using multiple customization features together, they apply in this order:
 - Merge order is deterministic
 - Path validation prevents security issues
 
-## Validation Rules
+## Validation rules
 
 ### Plugs
 
@@ -271,9 +271,9 @@ When using multiple customization features together, they apply in this order:
 - No duplicate values in merge order
 - Rulesets must reference existing rule pack IDs
 
-## Best Practices
+## Best practices
 
-### For Plugs
+### For plugs
 
 1. Provide examples for required slots
 2. Use most restrictive format (command > file > text)
@@ -281,7 +281,7 @@ When using multiple customization features together, they apply in this order:
 4. Namespace keys with dots: `test.cmd`, `docs.url`
 5. Never put secrets in fills (use env vars at runtime)
 
-### For Overlays
+### For overlays
 
 1. Keep overlays minimal (fewer = easier updates)
 2. Document reasons with YAML comments
@@ -289,7 +289,7 @@ When using multiple customization features together, they apply in this order:
 4. Review regularly with `override status`
 5. Consolidate duplicate overlays
 
-### For Scopes
+### For scopes
 
 1. Start simple, add complexity only when needed
 2. Use shared base rules across all scopes
@@ -299,7 +299,7 @@ When using multiple customization features together, they apply in this order:
 
 ## CLI Workflows
 
-### Plugs Workflow
+### Plugs workflow
 
 ```bash
 # 1. Audit slots and fills
@@ -315,7 +315,7 @@ aligntrue plugs resolve
 aligntrue sync
 ```
 
-### Overlays Workflow
+### Overlays workflow
 
 ```bash
 # 1. Add overlay
@@ -333,7 +333,7 @@ aligntrue override diff
 aligntrue sync
 ```
 
-### Scopes Workflow
+### Scopes workflow
 
 ```bash
 # 1. Configure scopes in .aligntrue/config.yaml
@@ -346,7 +346,7 @@ aligntrue check
 aligntrue sync
 ```
 
-## Related Documentation
+## Related documentation
 
 - [Plugs Guide](/docs/02-customization/plugs)
 - [Overlays Guide](/docs/02-customization/overlays)
