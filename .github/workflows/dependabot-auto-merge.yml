@@ -30,15 +30,46 @@ jobs:
 
             console.log('PR Labels:', labels);
             console.log('PR Title:', pr.title);
+            console.log('PR Number:', pr.number);
+
+            // Check if this is a security update using GitHub's native field
+            let isSecurity = false;
+            try {
+              const { data: prData } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+              
+              // GitHub marks security updates in the PR metadata
+              // This is more reliable than title parsing
+              isSecurity = prData.labels?.some(l => l.name === 'security') || false;
+              
+              // Fallback: check Dependabot metadata for security advisory
+              if (prData.body && prData.body.includes('Dependabot security update')) {
+                isSecurity = true;
+              }
+              
+              console.log('Is Security Update:', isSecurity);
+            } catch (error) {
+              console.log('Could not check security status:', error.message);
+            }
 
             // Determine if auto-merge safe
             const isDevDep = labels.includes('devDependencies');
             const isPatch = pr.title.includes('patch') || pr.title.includes('from');
             const isMinor = pr.title.includes('minor');
-            const isSafe = isDevDep || (isPatch && !labels.includes('requires-review'));
+
+            // Security patches bypass requires-review check
+            const isSafe = isDevDep || isSecurity || (isPatch && !labels.includes('requires-review'));
 
             core.setOutput('is-safe', isSafe);
-            core.setOutput('reason', isDevDep ? 'devDependencies' : 'patch/minor update');
+            core.setOutput('is-security', isSecurity);
+            core.setOutput('reason', 
+              isSecurity ? '🔒 Security patch' : 
+              isDevDep ? 'devDependencies' : 
+              'patch/minor update'
+            );
 
       - name: Auto-approve safe PRs
         if: steps.pr-details.outputs.is-safe == 'true'
@@ -46,14 +77,21 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            console.log(`✅ Auto-approving safe Dependabot PR: #${pr.number}`);
+            const isSecurity = '${{ steps.pr-details.outputs.is-security }}' === 'true';
+            const reason = '${{ steps.pr-details.outputs.reason }}';
+
+            const approvalBody = isSecurity 
+              ? `🔒 **Auto-approved: Security patch**\n\nThis PR addresses a security vulnerability and will be automatically merged once CI passes.\n\n**Why auto-merge security patches?**\n- Reduces exposure window for known vulnerabilities\n- CI tests still validate no regressions\n- Security fixes are typically low-risk, high-value\n\nReason: ${reason}`
+              : `✅ **Auto-approved: Safe dependency update**\n\nReason: ${reason}\n\nWill merge once CI passes.`;
+
+            console.log(`✅ Auto-approving Dependabot PR #${pr.number}: ${reason}`);
 
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number,
               event: 'APPROVE',
-              body: 'Auto-approved: devDependencies or safe patch/minor update. Will merge once CI passes.',
+              body: approvalBody,
             });
 
       - name: Wait for CI to pass
