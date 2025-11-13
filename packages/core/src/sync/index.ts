@@ -24,6 +24,12 @@ export {
   loadSourceFiles,
 } from "./source-loader.js";
 export type { SourceFile } from "./source-loader.js";
+export {
+  getLastSyncTimestamp,
+  updateLastSyncTimestamp,
+  wasFileModifiedSince,
+  getFileModificationTime,
+} from "./last-sync-tracker.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();
