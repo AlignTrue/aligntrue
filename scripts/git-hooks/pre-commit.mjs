@@ -35,9 +35,16 @@ async function main() {
   // Check for protected files (auto-generated from docs)
   s.start("Checking for protected file edits...");
   try {
-    const protectedFiles = ["README.md", "CONTRIBUTING.md", "DEVELOPMENT.md", "SECURITY.md"];
-    const editedProtected = stagedFiles.filter((f) => protectedFiles.includes(f));
-    
+    const protectedFiles = [
+      "README.md",
+      "CONTRIBUTING.md",
+      "DEVELOPMENT.md",
+      "SECURITY.md",
+    ];
+    const editedProtected = stagedFiles.filter((f) =>
+      protectedFiles.includes(f),
+    );
+
     if (editedProtected.length > 0) {
       s.stop("❌ Protected files were directly edited.", 1);
       console.error("");
@@ -55,9 +62,15 @@ async function main() {
       console.error("");
       console.error("📚 Mappings:");
       console.error("   • README.md ← apps/docs/content/index.mdx");
-      console.error("   • CONTRIBUTING.md ← apps/docs/content/06-contributing/creating-packs.md");
-      console.error("   • DEVELOPMENT.md ← apps/docs/content/08-development/*.md");
-      console.error("   • SECURITY.md ← apps/docs/content/07-policies/security.md");
+      console.error(
+        "   • CONTRIBUTING.md ← apps/docs/content/06-contributing/creating-packs.md",
+      );
+      console.error(
+        "   • DEVELOPMENT.md ← apps/docs/content/08-development/*.md",
+      );
+      console.error(
+        "   • SECURITY.md ← apps/docs/content/07-policies/security.md",
+      );
       console.error("");
       clack.outro("Follow the workflow above and try again.");
       process.exit(1);
