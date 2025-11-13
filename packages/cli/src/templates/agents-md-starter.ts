@@ -3,17 +3,8 @@
  * Clean, user-friendly format without explicit rule structure
  */
 
-export function generateAgentsMdStarter(projectId?: string): string {
-  const id = projectId ? `${projectId}-rules` : "project-rules";
-
-  return `---
-id: "${id}"
-version: "1.0.0"
-summary: "Project rules and guidance for AI coding assistants"
-tags: ["quality", "style", "testing"]
----
-
-# Project Rules
+export function generateAgentsMdStarter(_projectId?: string): string {
+  return `# Project Rules
 
 This file contains guidance for AI coding assistants working on this project.
 
@@ -74,8 +65,6 @@ For debugging during development, use:
 - \`console.info()\` for informational messages
 - \`console.warn()\` for warnings
 - \`console.error()\` for errors
-
----
 
 **💡 Tip:** Edit these sections to match your project's needs, then run \`aligntrue sync\` to update other agents.
 `;

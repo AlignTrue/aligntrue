@@ -77,7 +77,7 @@ describe("AGENTS.md-based exporter variants", () => {
       expect(manifest.name).toBe(variant);
       expect(manifest.version).toBe("1.0.0");
       expect(manifest.outputs).toContain("AGENTS.md");
-      expect(manifest.handler).toBe("./index.ts");
+      expect(manifest.handler).toBe("./index.js");
     }
   });
 
