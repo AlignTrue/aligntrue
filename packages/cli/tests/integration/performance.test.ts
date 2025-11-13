@@ -48,7 +48,7 @@ sources:
   - type: local
     path: .aligntrue/.rules.yaml
 exporters:
-  - cursor
+  - agents-md
 git:
   mode: ignore
 `,
