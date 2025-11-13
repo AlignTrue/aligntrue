@@ -817,13 +817,44 @@ export async function sync(args: string[]): Promise<void> {
   // Step 6.5: Two-way sync - detect and merge agent file edits
   if (!acceptAgent && config.sync?.two_way !== false) {
     try {
+      // Get last sync timestamp for accurate change detection
+      const { getLastSyncTimestamp } = await import(
+        "@aligntrue/core/sync/last-sync-tracker.js"
+      );
+      const lastSyncTime = getLastSyncTimestamp(cwd);
+      const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
+
+      // Log detection attempt in verbose mode
+      if (verbose) {
+        clack.log.info(
+          `Checking for edits since: ${lastSyncDate?.toISOString() || "never"}`,
+        );
+      }
+
       // Dynamic import at runtime
       const multiFileParser = "@aligntrue/core/sync/multi-file-parser";
       // @ts-ignore - Dynamic import resolved at runtime
       const { detectEditedFiles } = await import(multiFileParser);
 
-      // Detect edited agent files
-      const editedFiles = await detectEditedFiles(cwd, config);
+      // Detect edited agent files with lastSyncDate
+      const detectionResult = await detectEditedFiles(
+        cwd,
+        config,
+        lastSyncDate,
+      );
+      const editedFiles = detectionResult.files || [];
+      const editSourceWarnings = detectionResult.warnings || [];
+
+      // Display edit_source warnings if any
+      if (editSourceWarnings.length > 0) {
+        for (const warning of editSourceWarnings) {
+          clack.log.warn(
+            `⚠ ${warning.filePath} was edited but is not in edit_source`,
+          );
+          clack.log.info(`  ${warning.reason}`);
+          clack.log.info(`  To enable editing: ${warning.suggestedFix}`);
+        }
+      }
 
       if (editedFiles.length > 0) {
         // Phase 1: Agent edits → IR
@@ -1229,6 +1260,21 @@ export async function sync(args: string[]): Promise<void> {
           "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
 
         clack.outro(message);
+
+        // Update last sync timestamp after successful sync
+        try {
+          const { updateLastSyncTimestamp } = await import(
+            "@aligntrue/core/sync/last-sync-tracker.js"
+          );
+          updateLastSyncTimestamp(cwd);
+        } catch (err) {
+          // Log warning but don't fail sync
+          if (verbose) {
+            clack.log.warn(
+              `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
+            );
+          }
+        }
       }
     } else {
       // Sync failed

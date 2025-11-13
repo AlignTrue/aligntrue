@@ -322,6 +322,76 @@ async function configGet(configPath: string, key: string): Promise<void> {
 }
 
 /**
+ * Valid config keys (dot notation)
+ * Keys starting with "vendor." are always allowed for custom vendor data
+ */
+const VALID_CONFIG_KEYS = [
+  "mode",
+  "version",
+  "profile",
+  "profile.id",
+  "profile.name",
+  "sources",
+  "exporters",
+  "sync",
+  "sync.edit_source",
+  "sync.two_way",
+  "sync.workflow_mode",
+  "sync.primary_agent",
+  "sync.on_conflict",
+  "sync.auto_pull",
+  "sync.source_files",
+  "modules",
+  "modules.lockfile",
+  "modules.bundle",
+  "modules.checks",
+  "lockfile",
+  "lockfile.mode",
+  "git",
+  "git.mode",
+  "scopes",
+  "managed",
+  "managed.sections",
+  "managed.source_url",
+  "backup",
+  "backup.auto_backup",
+  "backup.backup_on",
+  "backup.retention_days",
+  "approval",
+  "approval.internal",
+  "approval.external",
+  "resources",
+  "resources.rules",
+];
+
+/**
+ * Check if a config key is valid
+ */
+function isValidConfigKey(key: string): boolean {
+  // Allow vendor keys
+  if (key.startsWith("vendor.")) {
+    return true;
+  }
+
+  // Check exact match
+  if (VALID_CONFIG_KEYS.includes(key)) {
+    return true;
+  }
+
+  // Check if it's a nested key under a valid parent
+  // e.g., "sources.0.type" is valid if "sources" is valid
+  const parts = key.split(".");
+  for (let i = parts.length - 1; i > 0; i--) {
+    const parentKey = parts.slice(0, i).join(".");
+    if (VALID_CONFIG_KEYS.includes(parentKey)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Set a config value with validation
  */
 async function configSet(
@@ -330,6 +400,21 @@ async function configSet(
   value: string,
 ): Promise<void> {
   try {
+    // Validate key before setting
+    if (!isValidConfigKey(key)) {
+      clack.log.error(`Invalid config key: ${key}`);
+      clack.log.info("\nValid keys:");
+      VALID_CONFIG_KEYS.slice(0, 20).forEach((k) => clack.log.info(`  ${k}`));
+      if (VALID_CONFIG_KEYS.length > 20) {
+        clack.log.info(`  ... and ${VALID_CONFIG_KEYS.length - 20} more`);
+      }
+      clack.log.info("\nVendor keys (vendor.*) are also allowed");
+      clack.log.info(
+        "\nRun 'aligntrue config list' to see all current config keys",
+      );
+      process.exit(2);
+    }
+
     const content = readFileSync(configPath, "utf-8");
     const config = parseYaml(content) as Record<string, unknown>;
 
