@@ -1,3 +1,8 @@
+---
+title: "CLI reference"
+description: "Complete reference for AlignTrue CLI commands with usage, flags, and examples."
+---
+
 # CLI reference
 
 Complete reference for all AlignTrue CLI commands.

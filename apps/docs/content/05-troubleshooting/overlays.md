@@ -1,3 +1,8 @@
+---
+title: "Troubleshooting overlays"
+description: "Fix overlay issues: not applied, stale selectors, ambiguous matches, or size limits."
+---
+
 # Troubleshooting overlays
 
 Common issues when working with overlays and their solutions.
