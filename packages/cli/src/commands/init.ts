@@ -677,7 +677,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     sources: [
       {
         type: "local",
-        path: "AGENTS.md",
+        path: ".aligntrue/.rules.yaml",
       },
     ],
     exporters:

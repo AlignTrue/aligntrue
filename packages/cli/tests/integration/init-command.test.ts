@@ -49,7 +49,7 @@ describeSkipWindows("Init Command Integration", () => {
       expect(Array.isArray(config.exporters)).toBe(true);
       expect(config.exporters.length).toBeGreaterThan(0);
       expect(config.sync).toBeDefined();
-      expect(config.sync.workflow_mode).toBe("ir_source");
+      expect(config.sync.workflow_mode).toBeUndefined();
     });
 
     it("creates .aligntrue/.rules.yaml with starter template", async () => {
@@ -188,8 +188,8 @@ describeSkipWindows("Init Command Integration", () => {
       const configContent = readFileSync(configPath, "utf-8");
       const config = yaml.parse(configContent);
 
-      expect(config.sync.workflow_mode).toBe("ir_source");
-      expect(config.sync.auto_pull).toBe(false);
+      // sync settings are not set during init (handled by workflow detection later)
+      expect(config.sync).toBeDefined();
     });
   });
 });
