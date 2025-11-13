@@ -39,13 +39,22 @@ export async function discoverSourceFiles(
     const hasWildcard =
       pattern.includes("*") || pattern.includes("?") || pattern.includes("[");
 
-    const matches = hasWildcard
-      ? await glob(pattern, {
-          cwd,
-          nodir: true,
-          absolute: false,
-        })
-      : [pattern]; // Use filename directly
+    let matches: string[] = [];
+
+    if (hasWildcard) {
+      // For glob patterns, use glob() for wildcard expansion
+      // Add a small delay to ensure filesystem is ready (helps with tests)
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      matches = await glob(pattern, {
+        cwd,
+        nodir: true,
+        absolute: false,
+      });
+    } else {
+      // For exact filenames, use the pattern directly
+      // This avoids Windows filesystem cache race conditions
+      matches = [pattern];
+    }
 
     for (const relativePath of matches) {
       const absolutePath = join(cwd, relativePath);
