@@ -165,6 +165,3 @@ describe("backup command", () => {
     });
   });
 });
-
-// Add missing import
-import { readFileSync } from "fs";
