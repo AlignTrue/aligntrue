@@ -151,5 +151,5 @@ aligntrue revert --preview
 ## Related
 
 - [Team mode guide](/docs/01-guides/05-team-guide)
-- [Workflows and scenarios](/docs/01-guides/workflows)
+- [Workflows and scenarios](/docs/01-guides/01-workflows)
 - [Backup and restore](/docs/04-reference/cli-reference#backup)
