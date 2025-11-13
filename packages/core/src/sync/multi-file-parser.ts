@@ -124,6 +124,36 @@ export async function detectEditedFiles(
     return [];
   }
 
+  // NEW: Check source files if configured (multi-file support)
+  if (config.sync?.source_files) {
+    const { discoverSourceFiles } = await import("./source-loader.js");
+    const sourceFiles = await discoverSourceFiles(cwd, config);
+
+    for (const file of sourceFiles) {
+      // Only include if edited since last sync and matches edit_source
+      if (
+        (!lastSyncTime || file.mtime > lastSyncTime) &&
+        matchesEditSource(file.path, editSource, cwd)
+      ) {
+        editedFiles.push({
+          path: file.path,
+          absolutePath: file.absolutePath,
+          format: "generic",
+          sections: file.sections.map((s) => ({
+            heading: s.heading,
+            content: s.content,
+            level: s.level || 1,
+            hash: createHash("sha256")
+              .update(s.heading + s.content)
+              .digest("hex")
+              .slice(0, 8),
+          })),
+          mtime: file.mtime,
+        });
+      }
+    }
+  }
+
   // Check AGENTS.md if it matches edit_source
   const agentsMdPath = paths.agentsMd();
   if (
