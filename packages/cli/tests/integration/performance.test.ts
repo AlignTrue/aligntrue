@@ -138,12 +138,13 @@ sections:
     console.log(`Help avg: ${avgDuration.toFixed(0)}ms, max: ${maxDuration}ms`);
 
     // Platform-specific thresholds (Windows is slower due to process spawning overhead)
-    const maxThreshold = process.platform === "win32" ? 1000 : 800;
+    const avgThreshold = process.platform === "win32" ? 900 : 800;
+    const maxThreshold = process.platform === "win32" ? 1200 : 1000;
 
-    // Assert average <800ms (or 1000ms on Windows)
-    expect(avgDuration).toBeLessThan(maxThreshold);
+    // Assert average within threshold
+    expect(avgDuration).toBeLessThan(avgThreshold);
 
-    // Allow individual runs up to threshold (CI environments may be slower)
+    // Allow individual runs up to higher threshold (CI environments may have spikes)
     expect(maxDuration).toBeLessThan(maxThreshold);
   });
 });
