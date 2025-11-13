@@ -5,6 +5,7 @@ export type { ScopeConfig } from "./config/index.js";
 
 // Two-way sync engine
 export * from "./sync/index.js";
+export { GitIntegration } from "./sync/git-integration.js";
 
 // Scopes, bundle, and lockfile
 export * from "./scope.js";
@@ -24,7 +25,15 @@ export * from "./privacy/index.js";
 export * from "./paths.js";
 
 // Backup and restore
-export * from "./backup/index.js";
+export { BackupManager } from "./backup/index.js";
+export type {
+  BackupMetadata,
+  BackupManifest,
+  BackupInfo,
+  BackupOptions as BackupRestoreOptions,
+  RestoreOptions,
+  CleanupOptions,
+} from "./backup/index.js";
 
 // Team mode features
 export * from "./team/index.js";
@@ -46,3 +55,10 @@ export * from "./resources/index.js";
 
 // Validation
 export * from "./validation/team-mode.js";
+
+// Migration utilities
+export * from "./migration/ruler-parser.js";
+export * from "./migration/ruler-merger.js";
+
+// Scope discovery
+export * from "./scope-discovery.js";

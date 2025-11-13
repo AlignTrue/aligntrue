@@ -67,29 +67,51 @@ Config file: .aligntrue/config.yaml
 
 ## `aligntrue migrate`
 
-Schema migration tooling (pre-1.0 status).
+Migrate rules between scopes, storage types, and from other tools like Ruler.
 
 **Usage:**
 
 ```bash
-aligntrue migrate [--help]
+aligntrue migrate <subcommand> [options]
 ```
 
-**What it does:**
+**Subcommands:**
 
-Displays migration policy and status. Migration tooling is not yet available in pre-1.0 releases.
+| Subcommand | Description                               |
+| ---------- | ----------------------------------------- |
+| `personal` | Move all personal rules to remote storage |
+| `team`     | Move all team rules to remote storage     |
+| `ruler`    | Migrate from Ruler to AlignTrue           |
 
-**Migration framework will be added when:**
+**Flags:**
 
-- 50+ active repositories using AlignTrue, OR
-- 10+ organizations with multiple repos each, OR
-- A planned breaking change significantly impacts users
+| Flag          | Description                      | Default |
+| ------------- | -------------------------------- | ------- |
+| `--yes`, `-y` | Skip confirmation prompts        | `false` |
+| `--dry-run`   | Preview changes without applying | `false` |
 
-**Current approach (pre-1.0):**
+**Ruler migration:**
 
-1. Check `CHANGELOG.md` for breaking changes
-2. Follow migration guides in release notes
-3. Pin CLI version if stability is critical
+Automatically detects and converts Ruler configurations:
+
+1. Merges all `.ruler/*.md` files into `AGENTS.md`
+2. Converts `ruler.toml` to `.aligntrue/config.yaml`
+3. Optionally keeps `.ruler/` directory for reference
+
+**Examples:**
+
+```bash
+# Migrate from Ruler
+aligntrue migrate ruler
+
+# Migrate without prompts
+aligntrue migrate ruler --yes
+
+# Preview migration
+aligntrue migrate ruler --dry-run
+```
+
+**Note:** Ruler migration is also offered during `aligntrue init` if a `.ruler/` directory is detected.
 
 **Example output:**
 

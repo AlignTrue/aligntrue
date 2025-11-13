@@ -95,6 +95,7 @@ export interface AlignTrueConfig {
     branch_check_interval?: number;
     tag_check_interval?: number;
     offline_fallback?: boolean;
+    auto_gitignore?: "auto" | "always" | "never";
   };
   sync?: {
     auto_pull?: boolean;
@@ -105,6 +106,8 @@ export interface AlignTrueConfig {
     two_way?: boolean; // DEPRECATED: Use edit_source instead
     edit_source?: string | string[]; // Which files accept edits: ".rules.yaml", "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
     scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
+    backup_on_overwrite?: "auto" | "always" | "never"; // Create .bak files before overwriting
+    backup_extension?: string; // File extension for backup files (default: '.bak')
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
@@ -337,6 +340,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   result.git.branch_check_interval = result.git.branch_check_interval ?? 86400; // 24 hours
   result.git.tag_check_interval = result.git.tag_check_interval ?? 604800; // 7 days
   result.git.offline_fallback = result.git.offline_fallback ?? true;
+  result.git.auto_gitignore = result.git.auto_gitignore ?? "auto";
 
   // Apply sync defaults
   if (!result.sync) {
@@ -382,6 +386,19 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    */
   if (result.sync.scope_prefixing === undefined) {
     result.sync.scope_prefixing = "off";
+  }
+
+  /**
+   * Set backup defaults
+   *
+   * Solo mode: auto (enabled)
+   * Team/enterprise: auto (disabled, git history is backup)
+   */
+  if (result.sync.backup_on_overwrite === undefined) {
+    result.sync.backup_on_overwrite = "auto";
+  }
+  if (result.sync.backup_extension === undefined) {
+    result.sync.backup_extension = ".bak";
   }
 
   /**

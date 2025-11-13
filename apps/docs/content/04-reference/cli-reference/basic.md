@@ -1,8 +1,3 @@
----
-title: Basic commands
-description: Common AlignTrue CLI commands for init, sync, check, and backup with flags and examples.
----
-
 # Basic commands
 
 Commands you'll use most often for day-to-day development.

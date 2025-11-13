@@ -13,7 +13,9 @@ export {
   computeFileChecksum,
   computeContentChecksum,
   ensureDirectoryExists,
-} from "./file-operations.js";
+} from "@aligntrue/file-utils";
+export { writeFileWithBackup, getBackupOptions } from "./file-operations.js";
+export type { BackupOptions, BackupResult } from "./file-operations.js";
 export { loadIR } from "./ir-loader.js";
 
 // Global sync engine instance for convenience functions

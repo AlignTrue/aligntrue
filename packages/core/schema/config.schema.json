@@ -82,6 +82,11 @@
         "offline_fallback": {
           "type": "boolean",
           "description": "Use cache if network unavailable (default: true)"
+        },
+        "auto_gitignore": {
+          "type": "string",
+          "enum": ["auto", "always", "never"],
+          "description": "Automatically manage .gitignore: auto (based on git.mode), always, never (default: auto)"
         }
       }
     },
@@ -132,6 +137,15 @@
             }
           ],
           "description": "Which file(s) accept edits: '.rules.yaml' (IR only), 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (glob pattern), 'any_agent_file' (all agents), or array of patterns"
+        },
+        "backup_on_overwrite": {
+          "type": "string",
+          "enum": ["auto", "always", "never"],
+          "description": "Create .bak files before overwriting agent files: auto (solo: yes, team: no), always, never"
+        },
+        "backup_extension": {
+          "type": "string",
+          "description": "File extension for backup files (default: '.bak')"
         },
         "scope_prefixing": {
           "type": "string",

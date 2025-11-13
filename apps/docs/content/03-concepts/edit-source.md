@@ -11,7 +11,7 @@ The `sync.edit_source` configuration controls which files can be edited and will
 
 By default, AlignTrue exports rules to multiple agent formats (Cursor, AGENTS.md, etc.). The `edit_source` setting determines which of these files should accept your edits.
 
-## Configuration options
+## Configuration Options
 
 ### Single File (Recommended)
 
@@ -59,7 +59,7 @@ sync:
   edit_source: ".rules.yaml"
 ```
 
-## How it works
+## How It Works
 
 ### 1. Edit Detection
 
@@ -89,7 +89,7 @@ If the same section is edited in multiple files:
 - **Warning displayed**: Shows which files conflicted
 - **Backup created**: Original changes preserved in backups
 
-## Scope-aware multi-file editing
+## Scope-Aware Multi-File Editing
 
 When using Cursor with multiple scope files (e.g., `backend.mdc`, `frontend.mdc`), AlignTrue tracks which file each section originated from using metadata.
 
@@ -101,7 +101,7 @@ When using Cursor with multiple scope files (e.g., `backend.mdc`, `frontend.mdc`
 4. Both sections sync to AGENTS.md (optionally with scope prefixes)
 5. Next sync routes sections back to correct Cursor files
 
-## Choosing an edit source
+## Choosing an Edit Source
 
 ### Cursor Priority
 
@@ -151,14 +151,14 @@ The deprecated `sync.two_way` boolean automatically migrates:
 - `two_way: false` → `edit_source: ".rules.yaml"`
 - `two_way: true` → `edit_source: "any_agent_file"`
 
-## Best practices
+## Best Practices
 
 1. **Choose one primary source** for most projects
 2. **Use glob patterns** for multi-file agents like Cursor
 3. **Enable backups** to prevent data loss
 4. **Review conflicts** when they occur
 
-## Related configuration
+## Related Configuration
 
 ### Scope Prefixing
 

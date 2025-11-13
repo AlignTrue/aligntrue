@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Increased default backup retention from 5 to 20 backups
 - Removed redundant backup default fallback in sync command
 - Fixed inconsistent backup defaults across codebase
-- Consolidated natural markdown documentation: moved multi-section pack examples to `natural-markdown-sections.md` reference, removed redundant `natural-markdown-workflow.md` guide (sync procedures already covered in `how-sync-actually-works.md` and `edit-source.md`)
+- Consolidated natural markdown documentation: moved multi-section pack examples to `natural-markdown-sections.md` reference, removed redundant `natural-markdown-workflow.md` guide (sync procedures already covered in `how-sync-works.md` and `edit-source.md`)
 - **Improved sync messages** - Added phase indicators for two-way sync process
   - Phase 1: Agent edits → IR (when edits detected)
   - Phase 2: IR → all configured agents (always runs)

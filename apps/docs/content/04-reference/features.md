@@ -61,6 +61,11 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - TypeScript 5+ strict mode
 - 1800+ tests with determinism checks
 - Vitest + Playwright for CI
+- Automatic per-file backups (configurable, smart defaults)
+- Smart .gitignore management (tied to git.mode)
+- Enhanced agent detection with caching and validation
+- Scope auto-discovery for monorepos
+- Ruler migration support (auto-detect and convert)
 
 ### Documentation
 

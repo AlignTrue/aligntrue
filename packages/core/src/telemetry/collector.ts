@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { AtomicFileWriter } from "../sync/file-operations.js";
+import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 /**
  * Telemetry event structure

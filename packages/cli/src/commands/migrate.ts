@@ -3,7 +3,11 @@
  */
 
 import * as clack from "@clack/prompts";
-import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
+import {
+  BackupManager,
+  type AlignTrueConfig,
+  type RulerConfig,
+} from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
@@ -48,6 +52,7 @@ export async function migrate(args: string[]): Promise<void> {
         "Subcommands:",
         "  personal - Move all personal rules to remote storage",
         "  team - Move all team rules to remote storage",
+        "  ruler - Migrate from Ruler to AlignTrue",
         "",
         "Direct commands:",
         "  promote <section> - Promote personal rule to team",
@@ -67,6 +72,9 @@ export async function migrate(args: string[]): Promise<void> {
       break;
     case "team":
       await migrateTeam(cwd, parsed.flags);
+      break;
+    case "ruler":
+      await migrateRuler(cwd, parsed.flags);
       break;
     default:
       clack.log.error(`Unknown subcommand: ${subcommand}`);
@@ -860,4 +868,160 @@ async function makeLocal(sectionHeading: string, cwd: string): Promise<void> {
   writeFileSync(configPath, configContent, "utf-8");
 
   console.log(`✓ Made "${section.heading}" local-only`);
+}
+
+/**
+ * Migrate from Ruler to AlignTrue
+ */
+async function migrateRuler(
+  cwd: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  flags: Record<string, any>,
+): Promise<void> {
+  const { existsSync, writeFileSync, renameSync } = await import("fs");
+  const { join } = await import("path");
+  const { glob } = await import("glob");
+  const {
+    parseRulerToml,
+    convertRulerConfig,
+    mergeRulerMarkdownFiles,
+    loadConfig,
+    saveConfig,
+  } = await import("@aligntrue/core");
+
+  const dryRun = flags["dry-run"] || false;
+  const yes = flags["yes"] || false;
+  const interactive = !yes && isTTY();
+
+  const rulerDir = join(cwd, ".ruler");
+
+  if (!existsSync(rulerDir)) {
+    clack.log.error("No .ruler directory found. Is this a Ruler project?");
+    clack.log.info(
+      "The .ruler/ directory should contain your Ruler configuration.",
+    );
+    process.exit(1);
+  }
+
+  clack.intro("Migrating from Ruler to AlignTrue");
+
+  // 1. Parse ruler.toml
+  const rulerTomlPath = join(rulerDir, "ruler.toml");
+  let rulerConfig: RulerConfig | undefined;
+  if (existsSync(rulerTomlPath)) {
+    try {
+      rulerConfig = parseRulerToml(rulerTomlPath);
+      clack.log.success("Found ruler.toml");
+    } catch (error) {
+      clack.log.warn(
+        `Failed to parse ruler.toml: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  // 2. Find all markdown files
+  const mdFiles = glob.sync("**/*.md", {
+    cwd: rulerDir,
+    ignore: ["node_modules/**"],
+  });
+  clack.log.info(
+    `Found ${mdFiles.length} markdown file${mdFiles.length !== 1 ? "s" : ""} in .ruler/`,
+  );
+
+  // 3. Show preview
+  if (interactive) {
+    const preview = mdFiles
+      .slice(0, 5)
+      .map((f: string) => `  - ${f}`)
+      .join("\n");
+    clack.log.info(
+      `Files to merge:\n${preview}${mdFiles.length > 5 ? "\n  ..." : ""}`,
+    );
+
+    const confirm = await clack.confirm({
+      message: "Merge all .ruler/*.md files into AGENTS.md?",
+      initialValue: true,
+    });
+
+    if (clack.isCancel(confirm) || !confirm) {
+      clack.cancel("Migration cancelled");
+      process.exit(0);
+    }
+  }
+
+  if (dryRun) {
+    clack.log.info("Dry run - no changes made");
+    clack.outro("Migration preview complete");
+    return;
+  }
+
+  // 4. Merge markdown files
+  const merged = await mergeRulerMarkdownFiles(rulerDir);
+  const agentsMdPath = join(cwd, "AGENTS.md");
+
+  // Check if AGENTS.md already exists
+  if (existsSync(agentsMdPath)) {
+    if (interactive) {
+      const overwrite = await clack.confirm({
+        message: "AGENTS.md already exists. Overwrite?",
+        initialValue: false,
+      });
+
+      if (clack.isCancel(overwrite) || !overwrite) {
+        clack.cancel("Migration cancelled");
+        process.exit(0);
+      }
+    }
+  }
+
+  writeFileSync(agentsMdPath, merged, "utf-8");
+  clack.log.success("Created AGENTS.md from .ruler/*.md files");
+
+  // 5. Convert config
+  if (rulerConfig) {
+    const aligntrueConfig = convertRulerConfig(rulerConfig);
+    const configPath = join(cwd, ".aligntrue", "config.yaml");
+
+    // Merge with existing or create new
+    let finalConfig: AlignTrueConfig;
+    if (existsSync(configPath)) {
+      try {
+        const existingConfig = await loadConfig(configPath);
+        finalConfig = { ...existingConfig, ...aligntrueConfig };
+      } catch {
+        // Ignore errors, will create new config
+        finalConfig = aligntrueConfig as AlignTrueConfig;
+      }
+    } else {
+      finalConfig = aligntrueConfig as AlignTrueConfig;
+    }
+
+    await saveConfig(finalConfig, configPath);
+    clack.log.success("Converted ruler.toml → .aligntrue/config.yaml");
+  }
+
+  // 6. Prompt about .ruler directory
+  if (interactive) {
+    const keepRuler = await clack.confirm({
+      message: "Keep .ruler/ directory for reference?",
+      initialValue: true,
+    });
+
+    if (!clack.isCancel(keepRuler) && !keepRuler) {
+      // Move to .ruler.backup
+      const backupPath = join(cwd, ".ruler.backup");
+      renameSync(rulerDir, backupPath);
+      clack.log.info(`Moved .ruler/ → .ruler.backup/`);
+    }
+  }
+
+  // Record telemetry
+  recordEvent({
+    command_name: "migrate-ruler",
+    align_hashes_used: [],
+  });
+
+  clack.outro(
+    'Migration complete! Run "aligntrue sync" to generate agent files.',
+  );
 }

@@ -38,12 +38,22 @@ export interface ScopedExportRequest {
 }
 
 /**
+ * Backup configuration for export operations
+ */
+export interface BackupOptions {
+  enabled: boolean;
+  skipIfIdentical: boolean;
+  extension: string;
+}
+
+/**
  * Options for export operations
  */
 export interface ExportOptions {
   outputDir: string;
   dryRun?: boolean;
-  backup?: boolean;
+  backup?: boolean; // DEPRECATED: Use backupOptions instead
+  backupOptions?: BackupOptions; // Backup configuration
   config?: unknown; // Optional AlignTrue config for mode hints and caps
   unresolvedPlugsCount?: number; // Count of unresolved required plugs (Plugs system)
   managedSections?: string[]; // List of team-managed section headings
