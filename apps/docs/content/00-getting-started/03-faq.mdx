@@ -74,9 +74,11 @@ Just copy the content into AGENTS.md and run `aligntrue sync`.
 
 ### Where do I write rules?
 
-**Edit `AGENTS.md`** - This is your primary rules file in natural markdown format.
+**Edit your detected agent files** - AlignTrue auto-detects Cursor, GitHub Copilot, Claude Code, and 28+ agents during `init` and lets you edit in your native format (`.cursor/rules/*.mdc`, etc.).
 
-You can also edit agent-specific files (`.cursor/*.mdc`, etc.) and AlignTrue will sync changes back in solo mode.
+**AGENTS.md is the universal fallback** - If no agent is detected, or you prefer a single universal file that works across multiple agents, AlignTrue creates `AGENTS.md`.
+
+You can edit either your agent-specific files or AGENTS.md - AlignTrue syncs changes automatically in solo mode.
 
 **Don't edit `.aligntrue/.rules.yaml`** - This is auto-generated (like a build artifact). Think of it like `package-lock.json` - it exists for tooling, not for editing.
 

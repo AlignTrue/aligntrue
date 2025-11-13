@@ -11,7 +11,7 @@
 
 AlignTrue is designed with security and privacy as core principles: local-first by default, no required cloud, deterministic outputs, and minimal data retention.
 
-## Reporting Security Issues
+## Reporting security issues
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
@@ -33,7 +33,7 @@ We will respond within 48 hours and work with you to understand and address the 
 - Proof-of-concept or exploit code (if possible)
 - Impact of the issue, including how an attacker might exploit it
 
-### Supported Versions
+### Supported versions
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -42,7 +42,7 @@ We will respond within 48 hours and work with you to understand and address the 
 
 We release patches for security vulnerabilities as soon as possible. Only the latest minor version receives security updates.
 
-## Data Handling
+## Data handling
 
 - **Core operations work fully offline** - No network calls required for validate, bundle, export, or verify operations
 - **No PII logging** - CLI, MCP server, and exporters do not log raw personally identifiable information
@@ -59,14 +59,14 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Atomic writes** - All artifacts written to temp file in same directory, then renamed
 - **Path validation** - Paths normalized and validated to prevent directory traversal
 
-## Network Policy
+## Network policy
 
 - **Core path is offline** - Core commands (`validate`, `check`, `bundle`, `export`, `pack`, `verify-pack`) make no outbound requests
 - **Localhost-only MCP** - MCP server binds to `127.0.0.1` only
 - **Explicit remote fetches** - Remote git fetches require explicit config or flags and use local cache
 - **Fail-fast on network** - If a network call would occur in core mode, fail fast with clear error
 
-## Secrets Hygiene
+## Secrets hygiene
 
 - **Secret pattern masking** - Redaction helper masks values for keys including: `token`, `secret`, `password`, `key`, `auth`, `cookie`, and similar
 - **Path privacy** - Full home directory paths avoided in errors when possible
@@ -111,7 +111,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Signed artifacts** - Sign release artifacts and publish checksums
 - **Security changelog** - Record all security-related changes under **Security** section in `CHANGELOG.md`
 
-## Verification Checklist
+## Verification checklist
 
 - [ ] Core commands run with network disabled
 - [ ] Telemetry disabled by default, only enabled with `ALIGNTRUE_TELEMETRY=on` (or `1`)
@@ -121,7 +121,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - [ ] SBOM generated and attached for releases
 - [ ] Checksums published for release artifacts
 
-## Incident Response
+## Incident response
 
 Security issues are reported via GitHub's private vulnerability reporting feature (see above).
 
@@ -132,7 +132,7 @@ Security advisories must include:
 - Affected versions and fixed versions
 - Severity assessment
 
-## Related Documentation
+## Related documentation
 
 - [Development Setup](https://aligntrue.ai/docs/08-development/setup)
 - [Architecture](https://aligntrue.ai/docs/08-development/architecture)
