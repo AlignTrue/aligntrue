@@ -50,7 +50,7 @@ sync:
   auto_pull: true
 ```
 
-### Manual Review workflow
+### Manual review workflow
 
 **You review changes before syncing to all agents.**
 
@@ -111,7 +111,7 @@ graph TD
 
 ## Choosing your workflow
 
-### Choose Manual Review if you:
+### Choose manual review if you:
 
 - Work in a team that reviews rule changes
 - Want to preview changes before syncing
@@ -119,7 +119,7 @@ graph TD
 - Use PR-based workflows for approvals
 - Want full control over sync timing
 
-### Choose AGENTS.md (Primary) if you:
+### Choose AGENTS.md (primary) if you:
 
 - Work solo and want minimal friction
 - Prefer automatic syncing and less friction
@@ -206,7 +206,7 @@ aligntrue config set sync.auto_pull false
 
 ## Workflow tips
 
-### Manual Review workflow tips
+### Manual review workflow tips
 
 **1. Disable auto-pull explicitly:**
 
@@ -276,7 +276,7 @@ You can use both workflows in the same project:
 
 ## Conflict handling
 
-### In Manual Review mode
+### In manual review mode
 
 Conflicts are rare because auto-pull is disabled. If you manually sync:
 
@@ -293,7 +293,7 @@ You'll be prompted with options if changes were detected in multiple files:
     Abort and review manually
 ```
 
-### In AGENTS.md (Primary) mode
+### In AGENTS.md (primary) mode
 
 Conflicts happen when you edit different agent files between syncs:
 

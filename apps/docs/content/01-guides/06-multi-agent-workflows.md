@@ -196,7 +196,7 @@ git:
 
 ## Choosing your workflow
 
-### Manual Review workflow (recommended)
+### Manual review workflow (recommended)
 
 **Best for multi-agent setups.**
 
