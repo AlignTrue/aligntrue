@@ -81,10 +81,43 @@ export async function loadIR(
           `  Check for syntax errors (indentation, quotes, colons).`,
       );
     }
+  } else if (ext === ".md" || ext === ".markdown") {
+    // Parse markdown with optional YAML frontmatter
+    try {
+      const { parseNaturalMarkdown } = await import(
+        "../parsing/natural-markdown.js"
+      );
+      const parsed = parseNaturalMarkdown(content);
+
+      // Convert to AlignPack format
+      ir = {
+        id: parsed.metadata.id || "imported-pack",
+        version: parsed.metadata.version || "1.0.0",
+        spec_version: "1",
+        sections: parsed.sections,
+      };
+
+      // Add optional metadata if present (metadata may have additional properties)
+      const meta = parsed.metadata as Record<string, unknown>;
+      if (meta["description"]) {
+        (ir as Record<string, unknown>)["description"] = meta[
+          "description"
+        ] as string;
+      }
+      if (meta["tags"]) {
+        (ir as Record<string, unknown>)["tags"] = meta["tags"] as string[];
+      }
+    } catch (_err) {
+      throw new Error(
+        `Failed to parse markdown in ${sourcePath}\n` +
+          `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
+          `  Check for valid markdown format with optional YAML frontmatter.`,
+      );
+    }
   } else {
     throw new Error(
       `Unsupported file format: ${ext}\n` +
-        `  IR files must be in YAML format (.yaml or .yml)\n` +
+        `  Supported formats: .yaml, .yml, .md, .markdown\n` +
         `  Source: ${sourcePath}\n` +
         `  Note: Users should edit agent files (AGENTS.md, .cursor/*.mdc), not the IR file directly.`,
     );

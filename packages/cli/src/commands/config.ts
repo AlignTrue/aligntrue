@@ -451,6 +451,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 
 /**
  * Set nested value using dot notation
+ * Handles array indices (e.g., "sources.0.type")
  */
 function setNestedValue(
   obj: Record<string, unknown>,
@@ -458,18 +459,70 @@ function setNestedValue(
   value: unknown,
 ): void {
   const keys = path.split(".");
-  let current: Record<string, unknown> = obj;
+  let current: Record<string, unknown> | unknown[] = obj;
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]!;
+    const nextKey = keys[i + 1];
+
     // Prevent prototype pollution by checking for unsafe keys
     if (key === "__proto__" || key === "constructor" || key === "prototype") {
       throw new Error(`Invalid key: ${key}`);
     }
-    if (!(key in current) || typeof current[key] !== "object") {
-      current[key] = {};
+
+    // Check if next key is a numeric index
+    const isNextKeyArrayIndex = nextKey !== undefined && /^\d+$/.test(nextKey);
+
+    // If current key doesn't exist or is wrong type, create appropriate structure
+    const currentValue = Array.isArray(current)
+      ? current[parseInt(key, 10)]
+      : (current as Record<string, unknown>)[key];
+    if (!currentValue || typeof currentValue !== "object") {
+      if (isNextKeyArrayIndex) {
+        // Next key is array index, create array
+        if (Array.isArray(current)) {
+          const idx = parseInt(key, 10);
+          while (current.length <= idx) current.push(undefined);
+          current[idx] = [];
+        } else {
+          (current as Record<string, unknown>)[key] = [];
+        }
+      } else {
+        // Next key is object key, create object
+        if (Array.isArray(current)) {
+          const idx = parseInt(key, 10);
+          while (current.length <= idx) current.push(undefined);
+          current[idx] = {};
+        } else {
+          (current as Record<string, unknown>)[key] = {};
+        }
+      }
+    } else if (isNextKeyArrayIndex && !Array.isArray(currentValue)) {
+      // Current value exists but is not an array, convert it
+      if (Array.isArray(current)) {
+        const idx = parseInt(key, 10);
+        current[idx] = [];
+      } else {
+        (current as Record<string, unknown>)[key] = [];
+      }
     }
-    current = current[key] as Record<string, unknown>;
+
+    // If current key is numeric, we're indexing into an array
+    if (/^\d+$/.test(key)) {
+      const index = parseInt(key, 10);
+      const arr = current as unknown[];
+
+      // Expand array if needed
+      while (arr.length <= index) {
+        arr.push(isNextKeyArrayIndex ? [] : {});
+      }
+
+      current = arr[index] as Record<string, unknown> | unknown[];
+    } else {
+      current = (current as Record<string, unknown>)[key] as
+        | Record<string, unknown>
+        | unknown[];
+    }
   }
 
   const lastKey = keys[keys.length - 1]!;
@@ -481,7 +534,18 @@ function setNestedValue(
   ) {
     throw new Error(`Invalid key: ${lastKey}`);
   }
-  current[lastKey] = value;
+
+  // Set the final value
+  if (/^\d+$/.test(lastKey)) {
+    const index = parseInt(lastKey, 10);
+    const arr = current as unknown[];
+    while (arr.length <= index) {
+      arr.push(undefined);
+    }
+    arr[index] = value;
+  } else {
+    (current as Record<string, unknown>)[lastKey] = value;
+  }
 }
 
 /**

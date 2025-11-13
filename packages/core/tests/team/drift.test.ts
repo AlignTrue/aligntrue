@@ -423,16 +423,16 @@ describe("detectDrift", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("returns no drift when lockfile doesn't exist", () => {
+  it("returns no drift when lockfile doesn't exist", async () => {
     const lockfilePath = join(tempDir, ".aligntrue.lock.json");
     const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
-    const result = detectDrift(lockfilePath, allowListPath, tempDir);
+    const result = await detectDrift(lockfilePath, allowListPath, tempDir);
     expect(result.has_drift).toBe(false);
     expect(result.findings).toHaveLength(0);
   });
 
-  it("returns no drift when allow list doesn't exist", () => {
+  it("returns no drift when allow list doesn't exist", async () => {
     const lockfilePath = join(tempDir, ".aligntrue.lock.json");
     const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -447,12 +447,12 @@ describe("detectDrift", () => {
       }),
     );
 
-    const result = detectDrift(lockfilePath, allowListPath, tempDir);
+    const result = await detectDrift(lockfilePath, allowListPath, tempDir);
     expect(result.has_drift).toBe(false);
     expect(result.findings).toHaveLength(0);
   });
 
-  it("detects upstream and vendorized drift combined", () => {
+  it("detects upstream and vendorized drift combined", async () => {
     const lockfilePath = join(tempDir, ".aligntrue.lock.json");
     const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -491,7 +491,7 @@ sources:
 `,
     );
 
-    const result = detectDrift(lockfilePath, allowListPath, tempDir);
+    const result = await detectDrift(lockfilePath, allowListPath, tempDir);
     expect(result.has_drift).toBe(true);
     expect(result.findings).toHaveLength(2);
     expect(result.summary.total).toBe(2);
@@ -499,7 +499,7 @@ sources:
     expect(result.summary.by_category.vendorized).toBe(1);
   });
 
-  it("throws error for invalid lockfile", () => {
+  it("throws error for invalid lockfile", async () => {
     const lockfilePath = join(tempDir, ".aligntrue.lock.json");
     const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -507,12 +507,12 @@ sources:
     writeFileSync(lockfilePath, "invalid json");
     writeFileSync(allowListPath, "sources: []");
 
-    expect(() => detectDrift(lockfilePath, allowListPath, tempDir)).toThrow(
-      "Failed to parse lockfile",
-    );
+    await expect(
+      detectDrift(lockfilePath, allowListPath, tempDir),
+    ).rejects.toThrow("Failed to parse lockfile");
   });
 
-  it("throws error for invalid allow list", () => {
+  it("throws error for invalid allow list", async () => {
     const lockfilePath = join(tempDir, ".aligntrue.lock.json");
     const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -529,13 +529,13 @@ sources:
     );
     writeFileSync(allowListPath, "invalid: yaml: [[[");
 
-    expect(() => detectDrift(lockfilePath, allowListPath, tempDir)).toThrow(
-      "Failed to parse allow list",
-    );
+    await expect(
+      detectDrift(lockfilePath, allowListPath, tempDir),
+    ).rejects.toThrow("Failed to parse allow list");
   });
 
   describe("severity remap drift", () => {
-    it("detects no drift when team.yaml hash matches", () => {
+    it("detects no drift when team.yaml hash matches", async () => {
       const lockfilePath = join(tempDir, ".aligntrue.lock.json");
       const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
       const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
@@ -569,12 +569,12 @@ sources:
       );
       writeFileSync(allowListPath, "version: 1\nsources: []");
 
-      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      const result = await detectDrift(lockfilePath, allowListPath, tempDir);
       expect(result.has_drift).toBe(false);
       expect(result.summary.by_category.severity_remap).toBe(0);
     });
 
-    it("detects drift when team.yaml hash differs", () => {
+    it("detects drift when team.yaml hash differs", async () => {
       const lockfilePath = join(tempDir, ".aligntrue.lock.json");
       const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
       const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
@@ -605,14 +605,14 @@ sources:
       );
       writeFileSync(allowListPath, "version: 1\nsources: []");
 
-      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      const result = await detectDrift(lockfilePath, allowListPath, tempDir);
       expect(result.has_drift).toBe(true);
       expect(result.summary.by_category.severity_remap).toBe(1);
       expect(result.findings[0].category).toBe("severity_remap");
       expect(result.findings[0].message).toContain("policy has changed");
     });
 
-    it("detects drift when team.yaml is removed", () => {
+    it("detects drift when team.yaml is removed", async () => {
       const lockfilePath = join(tempDir, ".aligntrue.lock.json");
       const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -632,14 +632,14 @@ sources:
       );
       writeFileSync(allowListPath, "version: 1\nsources: []");
 
-      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      const result = await detectDrift(lockfilePath, allowListPath, tempDir);
       expect(result.has_drift).toBe(true);
       expect(result.summary.by_category.severity_remap).toBe(1);
       expect(result.findings[0].category).toBe("severity_remap");
       expect(result.findings[0].message).toContain("removed");
     });
 
-    it("detects no drift when team.yaml doesn't exist and lockfile has no hash", () => {
+    it("detects no drift when team.yaml doesn't exist and lockfile has no hash", async () => {
       const lockfilePath = join(tempDir, ".aligntrue.lock.json");
       const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -658,12 +658,12 @@ sources:
       );
       writeFileSync(allowListPath, "version: 1\nsources: []");
 
-      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      const result = await detectDrift(lockfilePath, allowListPath, tempDir);
       expect(result.has_drift).toBe(false);
       expect(result.summary.by_category.severity_remap).toBe(0);
     });
 
-    it("detects drift when team.yaml is added after lockfile generation", () => {
+    it("detects drift when team.yaml is added after lockfile generation", async () => {
       const lockfilePath = join(tempDir, ".aligntrue.lock.json");
       const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
       const teamYamlPath = join(tempDir, ".aligntrue.team.yaml");
@@ -693,7 +693,7 @@ sources:
       );
       writeFileSync(allowListPath, "version: 1\nsources: []");
 
-      const result = detectDrift(lockfilePath, allowListPath, tempDir);
+      const result = await detectDrift(lockfilePath, allowListPath, tempDir);
       // No drift - if lockfile was generated without team.yaml, adding it later doesn't constitute drift
       // until lockfile is regenerated
       expect(result.summary.by_category.severity_remap).toBe(0);
@@ -969,7 +969,7 @@ sources:
     });
 
     describe("integrated drift detection", () => {
-      it("categorizes drift into upstream/overlay/result", () => {
+      it("categorizes drift into upstream/overlay/result", async () => {
         const lockfilePath = join(tempDir, ".aligntrue.lock.json");
         const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -1006,12 +1006,12 @@ sources:
 `,
         );
 
-        const result = detectDrift(lockfilePath, allowListPath, tempDir);
+        const result = await detectDrift(lockfilePath, allowListPath, tempDir);
         expect(result.has_drift).toBe(true);
         expect(result.summary.by_category.upstream).toBe(1);
       });
 
-      it("reports correct summary counts for all categories", () => {
+      it("reports correct summary counts for all categories", async () => {
         const lockfilePath = join(tempDir, ".aligntrue.lock.json");
         const allowListPath = join(tempDir, ".aligntrue/allow.yaml");
 
@@ -1050,7 +1050,7 @@ sources:
 `,
         );
 
-        const result = detectDrift(lockfilePath, allowListPath, tempDir);
+        const result = await detectDrift(lockfilePath, allowListPath, tempDir);
         expect(result.summary.by_category.upstream).toBe(1);
         expect(result.summary.by_category.vendorized).toBe(1);
         expect(result.summary.total).toBe(2);
