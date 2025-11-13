@@ -770,12 +770,6 @@ pnpm typecheck
 4. **Use the right import paths** - Check source files for canonical exports
 5. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
 
-## Related documentation
-
-- [TypeScript guidelines](https://aligntrue.ai/docs/08-development/typescript-guide)
-- [Testing guidelines](https://aligntrue.ai/docs/08-development/testing-guide)
-- [Pull request standards](https://aligntrue.ai/docs/08-development/pr-standards)
-
 ---
 
 # Development commands
@@ -1789,7 +1783,6 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 ## Related documentation
 
-- [Testing guidelines](https://aligntrue.ai/docs/08-development/testing-guide)
 - [Development setup](https://aligntrue.ai/docs/08-development/setup)
 
 ---

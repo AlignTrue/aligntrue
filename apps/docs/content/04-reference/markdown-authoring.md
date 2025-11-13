@@ -145,7 +145,7 @@ rules:
 ### Testing requirements
 
 ````markdown
-# Testing Guide
+# Testing guide
 
 ```aligntrue
 id: testing-rules
