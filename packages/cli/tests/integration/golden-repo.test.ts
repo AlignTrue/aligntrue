@@ -57,10 +57,10 @@ describe("Golden Repository Workflows", () => {
     });
 
     // Verify outputs exist
-    // Note: Since no rules were added, Cursor exporter returns early
-    // The starter file created by init remains at aligntrue-starter.mdc
-    const starterCursorExists = await fs
-      .access(join(projectDir, ".cursor/rules/aligntrue-starter.mdc"))
+    // Init creates 5 starter rules, sync exports them
+    // After first sync, starter file is removed and replaced with synced output
+    const syncedCursorExists = await fs
+      .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
       .then(() => true)
       .catch(() => false);
     const agentsExists = await fs
@@ -72,7 +72,7 @@ describe("Golden Repository Workflows", () => {
       .then(() => true)
       .catch(() => false);
 
-    expect(starterCursorExists).toBe(true);
+    expect(syncedCursorExists).toBe(true); // Synced output created
     expect(agentsExists).toBe(true);
     expect(irExists).toBe(true);
 
