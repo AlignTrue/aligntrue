@@ -2,8 +2,9 @@
  * File operations for sync with backup support
  */
 
-import { readFile, writeFile, copyFile, existsSync } from "fs";
+import { readFile, writeFile, copyFile, existsSync, mkdirSync } from "fs";
 import { promisify } from "util";
+import { dirname } from "path";
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
@@ -29,6 +30,12 @@ export async function writeFileWithBackup(
   content: string,
   options: BackupOptions,
 ): Promise<BackupResult> {
+  // Ensure parent directory exists
+  const dir = dirname(filePath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
   if (!options.enabled) {
     await writeFileAsync(filePath, content, "utf-8");
     return { backed_up: false };
