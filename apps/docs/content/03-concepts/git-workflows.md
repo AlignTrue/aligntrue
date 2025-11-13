@@ -697,9 +697,9 @@ aligntrue sources pin https://github.com/company/rules abc1234
 
 Pins a git source to a specific commit SHA in config.
 
-## Team Mode Workflows
+## Team mode workflows
 
-### Solo Developer Tracking Latest
+### Solo developer tracking latest
 
 ```yaml
 mode: solo

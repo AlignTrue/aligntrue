@@ -148,12 +148,19 @@ export class SyncEngine {
       );
     }
 
-    this.ir = await loadIR(sourcePath, {
-      mode: this.config.mode,
-      maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
-      force: force || false,
-      config: this.config,
-    });
+    try {
+      this.ir = await loadIR(sourcePath, {
+        mode: this.config.mode,
+        maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
+        force: force || false,
+        config: this.config,
+      });
+    } catch (err) {
+      return {
+        success: false,
+        warnings: [err instanceof Error ? err.message : String(err)],
+      };
+    }
 
     if (!this.ir) {
       return { success: false, warnings: ["Failed to load IR"] };

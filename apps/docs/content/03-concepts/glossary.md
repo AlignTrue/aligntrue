@@ -34,7 +34,7 @@ Individual guidelines that specify how AI agents should behave in your project. 
 
 **Example:** "All TypeScript files must have strict mode enabled"
 
-**Related:** [Align Spec](/docs/04-reference/examples), [Markdown authoring](/docs/04-reference/markdown-authoring)
+**Related:** [Align Spec](/docs/04-reference/features), [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections)
 
 ### Packs
 
@@ -83,9 +83,9 @@ The primary user-editable file where you write and maintain rules in markdown fo
 
 `AGENTS.md` is where you write your rules. AlignTrue automatically converts them to other agent formats.
 
-**Related:** [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections), [Markdown authoring](/docs/04-reference/markdown-authoring)
+**Related:** [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections)
 
-### Intermediate Representation (IR)
+### Intermediate representation (IR)
 
 The internal YAML format that AlignTrue uses internally. Stored in `.aligntrue/.rules.yaml`.
 
@@ -104,7 +104,7 @@ AGENTS.md (you edit) → IR (.rules.yaml - auto-generated) → Agent exports (.m
 
 **Important:** Think of `.aligntrue/.rules.yaml` like a lock file or build artifact - it's generated automatically and shouldn't be manually edited.
 
-### Cursor Rules (.mdc)
+### Cursor rules (.mdc)
 
 Cursor's native rule format stored in `.cursor/rules/*.mdc`. Files use Markdown with fenced YAML blocks optimized for Cursor's inline rule engine.
 
@@ -191,7 +191,7 @@ Lockfiles are generated via `aligntrue sync` or `aligntrue lock` in team mode.
 
 **Related:** [Team mode](/docs/03-concepts/team-mode), [Drift detection](/docs/03-concepts/drift-detection)
 
-### Drift Detection
+### Drift detection
 
 Comparing your current rule state against a committed lockfile to detect when rules have changed (team mode only).
 
@@ -210,7 +210,7 @@ Comparing your current rule state against a committed lockfile to detect when ru
 
 ## Configuration & Modes
 
-### Solo Mode
+### Solo mode
 
 Default mode for individual developers. Optimized for fast iteration with minimal ceremony.
 
@@ -226,7 +226,7 @@ Default mode for individual developers. Optimized for fast iteration with minima
 
 **Related:** [Solo developer guide](/docs/01-guides/04-solo-developer-guide)
 
-### Team Mode
+### Team mode
 
 Collaborative mode with reproducibility guarantees and approval workflows.
 
@@ -242,7 +242,7 @@ Collaborative mode with reproducibility guarantees and approval workflows.
 
 **Related:** [Team mode](/docs/03-concepts/team-mode), [Team guide](/docs/01-guides/05-team-guide)
 
-### Allow List
+### Allow list
 
 In team mode, a list of approved sources (git repos, URLs) from which rules can be pulled. Prevents unauthorized rule additions and ensures security.
 
@@ -252,7 +252,7 @@ In team mode, a list of approved sources (git repos, URLs) from which rules can 
 
 **Related:** [Team mode](/docs/03-concepts/team-mode)
 
-### Configuration File
+### Configuration file
 
 Main AlignTrue configuration stored in `.aligntrue/config.yaml`. Defines:
 
@@ -268,7 +268,7 @@ Main AlignTrue configuration stored in `.aligntrue/config.yaml`. Defines:
 
 ## Advanced features
 
-### Vendor Bags
+### Vendor bags
 
 Optional agent-specific metadata stored under `vendor.<agent-name>` that preserves information during round-trip conversions.
 
