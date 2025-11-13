@@ -49,3 +49,12 @@ export {
   type PlugKeyValidation,
   type PlugValueValidation,
 } from "./plugs-types.js";
+
+// Section parser (shared markdown parsing)
+export {
+  parseAgentsMd,
+  parseCursorMdc,
+  parseGenericMarkdown,
+  type ParsedSection,
+  type ParsedFile,
+} from "./section-parser.js";
