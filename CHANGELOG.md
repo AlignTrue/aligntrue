@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Config show piping** - Added graceful EPIPE error handling to allow piping config show output to commands like grep and head
 - **Build and typecheck order** - Established explicit sequential stages with cross-platform compatible package name filters (no quotes for PowerShell compatibility) in both `build:packages` and `typecheck` to resolve dependency graph correctly: schema → {file-utils,markdown-parser,plugin-contracts} → {core,sources,testkit} → {exporters,cli,aligntrue}, fixing race condition and Windows CI failures
 - **Shell command injection** - Replaced template string shell commands with `execFileSync` array arguments in storage manager, fixing CodeQL alert #41 and #40
 - **Polynomial ReDoS vulnerabilities** - Fixed unsafe regex patterns in multi-file parser and natural markdown detection for better performance and security
