@@ -1,7 +1,9 @@
-title: "AlignTrue features and implementation status"
+---
+title: "Features"
 description: "Up-to-date feature list: two‑way sync, lockfile, deterministic exports, multi‑agent support, and more."
+---
 
-# AlignTrue features and implementation status
+# Features
 
 **Update criteria:** This page should be updated whenever features are implemented, removed, or significantly changed. It serves as the single source of truth for AlignTrue's current capabilities.
 
