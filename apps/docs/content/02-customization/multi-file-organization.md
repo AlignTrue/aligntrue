@@ -29,7 +29,7 @@ sync:
     - coding-standards.md
 ```
 
-### Source File Patterns
+### Source file patterns
 
 The `source_files` field accepts:
 
@@ -37,7 +37,7 @@ The `source_files` field accepts:
 - **Glob pattern**: `"rules/*.md"` (all `.md` files in `rules/` directory)
 - **Array of patterns**: `["arch.md", "security.md"]` (specific files)
 
-### Source Order
+### Source order
 
 By default, files are merged alphabetically by basename. Use `source_order` to specify a custom order:
 
@@ -51,7 +51,7 @@ sync:
 
 Files not listed in `source_order` are appended alphabetically at the end.
 
-## How It Works
+## How it works
 
 ### Discovery
 
@@ -90,7 +90,7 @@ This metadata helps with:
 
 ## CLI Commands
 
-### List Source Files
+### List source files
 
 View all configured source files and their section counts:
 
@@ -111,7 +111,7 @@ Found 3 source files:
   rules/coding-standards.md (6 sections)
 ```
 
-### Split Existing AGENTS.md
+### Split existing AGENTS.md
 
 Convert a single `AGENTS.md` file into multiple files:
 
@@ -130,7 +130,7 @@ This command:
 3. Updates config to use the new files
 4. Optionally backs up the original `AGENTS.md`
 
-## Example Project Structure
+## Example project structure
 
 ```
 project/
@@ -156,28 +156,28 @@ Multi-file sources work seamlessly with two-way sync:
 
 AlignTrue tracks which file each section came from, so edits to agent files can be merged back to the correct source file.
 
-## Best Practices
+## Best practices
 
-### File Organization
+### File organization
 
 - **Group related rules**: Put all security rules in `security.md`
 - **Use clear names**: `security.md` not `rules1.md`
 - **Keep files focused**: One concern per file
 - **Limit file count**: 3-10 files is ideal; too many becomes hard to navigate
 
-### Naming Conventions
+### Naming conventions
 
 - Use lowercase with hyphens: `coding-standards.md`
 - Be descriptive: `api-design-guidelines.md`
 - Avoid abbreviations unless well-known: `security.md` not `sec.md`
 
-### Team Collaboration
+### Team collaboration
 
 - **Assign ownership**: Use `CODEOWNERS` to assign file ownership
 - **Custom order**: Use `source_order` to prioritize important files
 - **Clear boundaries**: Make it obvious which rules belong in which file
 
-### Migration Strategy
+### Migration strategy
 
 When migrating from single-file to multi-file:
 
@@ -199,7 +199,7 @@ When migrating from single-file to multi-file:
 
 ## Troubleshooting
 
-### Files Not Found
+### Files not found
 
 If `aligntrue sources list` shows no files:
 
@@ -207,7 +207,7 @@ If `aligntrue sources list` shows no files:
 2. Verify files exist relative to workspace root
 3. Check file extensions match the pattern
 
-### Wrong Merge Order
+### Wrong merge order
 
 If sections appear in the wrong order:
 
@@ -215,7 +215,7 @@ If sections appear in the wrong order:
 2. List files in desired order
 3. Run `aligntrue sync` to regenerate
 
-### Section Conflicts
+### Section conflicts
 
 If you see "Section conflict" warnings:
 
@@ -227,7 +227,7 @@ If you see "Section conflict" warnings:
 
 - [Two-Way Sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
-- [Team Mode](/docs/01-guides/team-workflow) - Lockfile validation and drift detection
+- [Team Mode](/docs/01-guides/05-team-guide) - Lockfile validation and drift detection
 
 ## Example
 

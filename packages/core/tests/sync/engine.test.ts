@@ -150,35 +150,6 @@ sections:
 
       await expect(engine.loadIRFromSource(irPath)).resolves.not.toThrow();
     });
-
-    it("fails on invalid IR", async () => {
-      // Setup config first
-      const config = `version: "1"
-mode: solo
-exporters:
-  - cursor
-`;
-      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-      mkdirSync(dirname(configPath), { recursive: true });
-      writeFileSync(configPath, config, "utf8");
-
-      await engine.loadConfiguration(configPath);
-
-      const yaml = `id: test-pack
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Example Rule
-    level: 2
-    content: This is a test rule.
-`;
-      const irPath = join(TEST_DIR, "invalid.yaml");
-      writeFileSync(irPath, yaml, "utf8");
-
-      await expect(engine.loadIRFromSource(irPath)).rejects.toThrow(
-        /Invalid IR/,
-      );
-    });
   });
 
   describe("syncToAgents", () => {

@@ -92,7 +92,7 @@ Pack files (.md) → System parses → Internal IR (.rules.yaml) → Exporters �
 
 **Note:** `AGENTS.md` is an **export target**, not a primary authoring surface. Edit pack files or `.aligntrue/config.yaml` instead.
 
-## Plugs Resolution Algorithm
+## Plugs resolution algorithm
 
 1. Normalize CRLF/CR to LF in rule text
 2. Protect escapes: sentinel-replace `[[\plug:` temporarily
@@ -122,20 +122,20 @@ TODO(plug:<key>): Provide a value for this plug.
 
 Base < stack pack(s) < repo. Last writer wins.
 
-## Plugs Format Types
+## Plugs format types
 
 - `command` - Single-line command, no env vars except `CI=true`
 - `text` - Any single-line UTF-8 string
 - `file` - Repo-relative POSIX path, no `..` segments, no absolute paths
 - `url` - Must start with `http://` or `https://`
 
-## Plugs Key Naming Rules
+## Plugs key naming rules
 
 - Pattern: `^[a-z0-9._-]+$`
 - Cannot start with `stack.` or `sys.` (reserved)
 - Use dots for namespacing: `test.cmd`, `docs.url`, `author.name`
 
-## Overlays Selector Syntax
+## Overlays selector syntax
 
 - By rule ID: `rule[id=no-console-log]`
 - By property path: `profile.version`
@@ -187,7 +187,7 @@ overlays:
 
 Overlays apply in definition order. Last matching overlay wins if multiple target same rule.
 
-## Scopes Path Rules
+## Scopes path rules
 
 - Must be relative (no leading `/`)
 - No parent directory traversal (`..` not allowed)
@@ -201,7 +201,7 @@ Overlays apply in definition order. Last matching overlay wins if multiple targe
 - Multiple patterns allowed
 - Exclude applied after include
 
-## Scopes Merge Order (Default)
+## Scopes merge order (default)
 
 ```yaml
 merge:

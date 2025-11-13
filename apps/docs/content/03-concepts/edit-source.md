@@ -11,7 +11,7 @@ The `sync.edit_source` configuration controls which files can be edited and will
 
 By default, AlignTrue exports rules to multiple agent formats (Cursor, AGENTS.md, etc.). The `edit_source` setting determines which of these files should accept your edits.
 
-## Configuration Options
+## Configuration options
 
 ### Single File (Recommended)
 
@@ -59,7 +59,7 @@ sync:
   edit_source: ".rules.yaml"
 ```
 
-## How It Works
+## How it works
 
 ### 1. Edit Detection
 
