@@ -7,7 +7,10 @@
   Source: apps/docs/content/index.mdx
 -->
 
-# AlignTrue
+title: "AlignTrue overview: write AI rules once, sync across 28+ agents"
+description: "What AlignTrue is and how it syncs deterministic AI rules across agents like Cursor, Copilot, and Claude in under 60 seconds."
+
+# AlignTrue overview
 
 Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 
