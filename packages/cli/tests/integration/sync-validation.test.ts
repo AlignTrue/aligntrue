@@ -14,6 +14,17 @@ import { execSync } from "child_process";
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "sync-validation-test");
 const CLI_PATH = join(process.cwd(), "dist", "index.js");
 
+/**
+ * Helper to safely run CLI commands with proper path handling
+ */
+function runCli(args: string[], options: { encoding?: string } = {}): string {
+  const cmd = [process.execPath, CLI_PATH, ...args].join(" ");
+  return execSync(cmd, {
+    cwd: TEST_DIR,
+    encoding: options.encoding || "utf-8",
+  });
+}
+
 describe("Sync Validation", () => {
   beforeEach(() => {
     // Create test directory
@@ -32,13 +43,7 @@ describe("Sync Validation", () => {
 
   describe("--force-invalid-ir flag", () => {
     it("should be documented in help text", () => {
-      const result = execSync(
-        `cd ${TEST_DIR} && node ${CLI_PATH} sync --help`,
-        {
-          encoding: "utf-8",
-        },
-      );
-
+      const result = runCli(["sync", "--help"]);
       expect(result).toContain("--force-invalid-ir");
       expect(result).toContain("Allow sync even with IR validation errors");
     });

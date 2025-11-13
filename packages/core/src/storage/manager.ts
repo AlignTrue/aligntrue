@@ -110,10 +110,15 @@ export class StorageManager {
     error?: string;
   }> {
     try {
+      // Validate URL format to prevent injection
+      if (!this.isValidGitUrl(url)) {
+        return { accessible: false, error: "Invalid git URL format" };
+      }
+
       // Test SSH connectivity
       if (url.startsWith("git@")) {
         const host = url.split("@")[1]?.split(":")[0];
-        if (!host) {
+        if (!host || !this.isValidHostname(host)) {
           return { accessible: false, error: "Invalid SSH URL format" };
         }
 
@@ -163,5 +168,23 @@ export class StorageManager {
         error: err instanceof Error ? err.message : String(err),
       };
     }
+  }
+
+  /**
+   * Validate git URL format (SSH or HTTPS)
+   */
+  private isValidGitUrl(url: string): boolean {
+    // Allow git@host:path or https://host/path format
+    return /^(git@[a-zA-Z0-9.-]+:[a-zA-Z0-9/_.-]+|https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9/_.-]+)$/.test(
+      url,
+    );
+  }
+
+  /**
+   * Validate hostname to prevent shell injection
+   */
+  private isValidHostname(hostname: string): boolean {
+    // Only allow alphanumeric, dots, and hyphens
+    return /^[a-zA-Z0-9.-]+$/.test(hostname) && hostname.length <= 255;
   }
 }
