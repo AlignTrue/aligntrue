@@ -1,3 +1,8 @@
+---
+title: "Choose your AlignTrue workflow"
+description: "Pick the right editing workflow and map it to configuration, with quick guidance and links."
+---
+
 # Choosing your workflow
 
 AlignTrue supports two primary editing workflows. Understanding which one fits your style will help you avoid conflicts and work more efficiently.

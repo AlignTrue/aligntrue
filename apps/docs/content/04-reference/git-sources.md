@@ -1,3 +1,8 @@
+---
+title: "Git sources"
+description: "Pull AlignTrue rules from git repositories: configuration, workflows, and best practices."
+---
+
 # Git sources guide
 
 Pull AlignTrue rules from any git repository for sharing and collaboration.

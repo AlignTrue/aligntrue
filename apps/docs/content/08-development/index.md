@@ -1,3 +1,8 @@
+---
+title: "Development guide"
+description: "Develop AlignTrue locally: setup, workspace layout, commands, and architecture overview."
+---
+
 # Development guide
 
 Resources for contributing to AlignTrue and understanding the codebase.

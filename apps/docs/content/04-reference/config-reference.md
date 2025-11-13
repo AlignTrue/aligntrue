@@ -1,3 +1,8 @@
+---
+title: "Configuration reference (.aligntrue/config.yaml)"
+description: "Complete reference for all configuration options with examples, defaults, and tips."
+---
+
 # Configuration reference
 
 Complete reference for `.aligntrue/config.yaml` configuration options.
