@@ -1,9 +1,9 @@
 ---
-title: Technical Reference
+title: Technical reference
 description: Technical details for implementing and working with AlignTrue customization features
 ---
 
-# Customization Technical Reference
+# Customization technical reference
 
 This page provides technical implementation details for working with plugs, overlays, and scopes. For user-facing guides, see [Plugs](/docs/02-customization/plugs), [Overlays](/docs/02-customization/overlays), and [Scopes](/docs/02-customization/scopes).
 
