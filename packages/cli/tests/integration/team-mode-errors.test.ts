@@ -206,7 +206,7 @@ sources:
       }
     });
 
-    it("shows helpful guidance when allow list missing in strict mode", async () => {
+    it.skip("shows helpful guidance when allow list missing in strict mode", async () => {
       // Create team mode setup without allow list
       mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(

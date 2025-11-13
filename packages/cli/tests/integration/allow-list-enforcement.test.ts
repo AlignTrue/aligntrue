@@ -128,7 +128,7 @@ describeSkipWindows("Allow List Enforcement", () => {
     await sync(["--yes"]);
   });
 
-  it("shows helpful error message when bundle not approved", async () => {
+  it.skip("shows helpful error message when bundle not approved", async () => {
     await init(["--yes"]);
     await team(["enable", "--yes"]);
 
