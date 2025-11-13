@@ -50,6 +50,8 @@ export async function discoverSourceFiles(
         nodir: true,
         absolute: false,
       });
+      // Normalize to forward slashes for cross-platform consistency
+      matches = matches.map((p) => p.replace(/\\/g, "/"));
     } else {
       // For exact filenames, use the pattern directly
       // This avoids Windows filesystem cache race conditions

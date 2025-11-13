@@ -52,6 +52,8 @@ describe("source-loader", () => {
     });
 
     it("should discover multiple files with glob pattern", async () => {
+      // Note: glob output is normalized to forward slashes for cross-platform consistency
+      // (prevents Windows backslash issues)
       // Create test files
       mkdirSync(join(testDir, "rules"), { recursive: true });
       writeFileSync(
