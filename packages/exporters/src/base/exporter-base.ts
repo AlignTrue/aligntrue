@@ -328,6 +328,7 @@ export abstract class ExporterBase implements ExporterPlugin {
           updated: 0,
           added: irSections.length,
           userAdded: 0,
+          preservedEdits: 0,
         },
         warnings: [],
       };
@@ -360,6 +361,7 @@ export abstract class ExporterBase implements ExporterPlugin {
           updated: 0,
           added: irSections.length,
           userAdded: 0,
+          preservedEdits: 0,
         },
         warnings: [
           `Warning: Could not parse existing ${formatType} file at ${outputPath}: ${
@@ -381,7 +383,7 @@ export abstract class ExporterBase implements ExporterPlugin {
     const userSections: ParsedSection[] = [];
     const warnings: string[] = [];
 
-    // Add all IR sections (keep, update, or add)
+    // Add all IR sections (keep, update, preserve-edit, or add)
     for (const match of matches) {
       if (match.action !== "user-added" && match.irSection) {
         mergedSections.push(match.irSection);
@@ -401,6 +403,12 @@ export abstract class ExporterBase implements ExporterPlugin {
     if (stats.userAdded > 0) {
       warnings.push(
         `Preserved ${stats.userAdded} personal section${stats.userAdded !== 1 ? "s" : ""}`,
+      );
+    }
+
+    if (stats.preservedEdits > 0) {
+      warnings.push(
+        `Preserved ${stats.preservedEdits} edited section${stats.preservedEdits !== 1 ? "s" : ""}`,
       );
     }
 

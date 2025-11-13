@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CRITICAL: Sync destroys user edits** - Fixed exporters overwriting user modifications to existing sections
+  - Added `preserve-edit` action type to distinguish user edits from normal IR updates
+  - Exporters now check `vendor.aligntrue.last_modified` metadata to identify user-edited sections
+  - User edits to existing sections are now preserved during sync
+  - Added comprehensive test suite for edit preservation
+- **Double path bug in sync** - Fixed incorrect path resolution in `syncFromMultipleAgents`
+  - Changed from `resolvePath(configPath, "..")` to proper `dirname` usage
+  - Prevents `.aligntrue/.aligntrue/.rules.yaml` path construction errors
 - **Circular dependency between core and exporters** - Moved section parser to schema package
   - Core no longer imports from exporters, resolving build failure
   - Section parser available as shared utility in @aligntrue/schema
