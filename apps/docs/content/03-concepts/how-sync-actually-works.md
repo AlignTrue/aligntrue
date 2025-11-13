@@ -1,9 +1,7 @@
----
-title: "How sync actually works"
-description: "The complete technical truth about two-way sync, defaults, and what actually happens"
----
+title: "How AlignTrue sync works (two‑way, deterministic)"
+description: "Deep dive into AlignTrue’s two‑way sync: section matching by headings, last‑write‑wins, and deterministic exports."
 
-# How sync actually works
+# How AlignTrue sync works
 
 This document is the source of truth for what AlignTrue actually does. No marketing, no aspirations—just the real behavior.
 
