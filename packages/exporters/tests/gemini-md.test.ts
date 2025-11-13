@@ -49,7 +49,7 @@ describe("GeminiMdExporter", () => {
     expect(manifest.name).toBe("gemini-md");
     expect(manifest.version).toBe("1.0.0");
     expect(manifest.outputs).toContain("GEMINI.md");
-    expect(manifest.handler).toBe("./index.ts");
+    expect(manifest.handler).toBe("./index.js");
   });
 
   it("should register and export GEMINI.md", async () => {

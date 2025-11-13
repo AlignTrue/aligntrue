@@ -325,16 +325,36 @@ export abstract class ExporterBase implements ExporterPlugin {
     const content = readFileSync(outputPath, "utf-8");
     let parsed;
 
-    switch (formatType) {
-      case "agents-md":
-        parsed = parseAgentsMd(content);
-        break;
-      case "cursor-mdc":
-        parsed = parseCursorMdc(content);
-        break;
-      case "generic":
-        parsed = parseGenericMarkdown(content);
-        break;
+    try {
+      switch (formatType) {
+        case "agents-md":
+          parsed = parseAgentsMd(content);
+          break;
+        case "cursor-mdc":
+          parsed = parseCursorMdc(content);
+          break;
+        case "generic":
+          parsed = parseGenericMarkdown(content);
+          break;
+      }
+    } catch (parseErr) {
+      // If parsing fails, treat as empty file (no existing sections to merge)
+      // This can happen if the file is corrupted or in an unexpected format
+      return {
+        mergedSections: irSections,
+        userSections: [],
+        stats: {
+          kept: 0,
+          updated: 0,
+          added: irSections.length,
+          userAdded: 0,
+        },
+        warnings: [
+          `Warning: Could not parse existing ${formatType} file at ${outputPath}: ${
+            parseErr instanceof Error ? parseErr.message : String(parseErr)
+          }. File will be overwritten with new content.`,
+        ],
+      };
     }
 
     // Match IR sections with existing sections
