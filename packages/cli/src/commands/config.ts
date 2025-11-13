@@ -362,6 +362,8 @@ const VALID_CONFIG_KEYS = [
   "approval.external",
   "resources",
   "resources.rules",
+  "performance",
+  "performance.max_file_size_mb",
 ];
 
 /**
@@ -435,8 +437,10 @@ async function configSet(
     // Set the value
     setNestedValue(config, key, parsedValue);
 
-    // Validate the config
-    await validateConfig(config as unknown as AlignTrueConfig);
+    // Validate the config (skip for vendor keys which are always allowed)
+    if (!key.startsWith("vendor.")) {
+      await validateConfig(config as unknown as AlignTrueConfig);
+    }
 
     // Write back to file
     const yamlContent = stringifyYaml(config, {
