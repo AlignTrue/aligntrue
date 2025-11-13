@@ -140,9 +140,12 @@ describe("BackupManager", () => {
   });
 
   describe("restoreBackup", () => {
-    it("should restore most recent backup when no timestamp provided", () => {
+    it("should restore most recent backup when no timestamp provided", async () => {
       // Create initial backup
-      BackupManager.createBackup({ cwd: testDir });
+      const backup1 = BackupManager.createBackup({ cwd: testDir });
+
+      // Small delay to ensure different timestamps (backups use milliseconds)
+      await new Promise((resolve) => setTimeout(resolve, 2));
 
       // Modify files
       writeFileSync(
@@ -153,6 +156,9 @@ describe("BackupManager", () => {
 
       // Restore
       const restored = BackupManager.restoreBackup({ cwd: testDir });
+
+      // Should have restored from the first backup (not the temp backup created during restore)
+      expect(restored.timestamp).toBe(backup1.timestamp);
 
       // Check files are restored
       const content = readFileSync(join(aligntrueDir, "config.yaml"), "utf-8");
