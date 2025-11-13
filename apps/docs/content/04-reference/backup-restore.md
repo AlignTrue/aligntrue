@@ -230,19 +230,27 @@ aligntrue backup cleanup
 
 ## What gets backed up
 
-Backups include files from the `.aligntrue/` directory:
+**Internal state (always):**
 
 - `.aligntrue/config.yaml` - Configuration
 - `.aligntrue/.rules.yaml` - Internal IR
 - `.aligntrue/privacy-consent.json` - Privacy settings (if exists)
 - Any other files in `.aligntrue/` directory
 
+**Agent files (when enabled):**
+
+- Files matching your `edit_source` configuration (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`)
+- Only files you can actually edit are backed up
+- Stored in separate `agent-files/` subdirectory within backup
+- Ensures you can recover your edits if something goes wrong
+- Enabled by default for all sync operations
+
 **Not backed up:**
 
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/.backups/` - Backup directory itself
 - `.aligntrue/telemetry-events.json` - Telemetry data
-- Files outside `.aligntrue/` (e.g., `.cursor/`, `AGENTS.md`)
+- Generated files that can be recreated from IR
 
 ## Backup storage
 
