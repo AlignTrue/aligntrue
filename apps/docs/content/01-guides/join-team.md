@@ -102,9 +102,9 @@ cat AGENTS.md
 aligntrue config
 ```
 
-## Understanding Team Mode
+## Understanding team mode
 
-### Team Rules
+### Team rules
 
 Team rules are:
 
@@ -113,7 +113,7 @@ Team rules are:
 - Visible to all team members
 - Require approval to change (depending on mode)
 
-### Personal Rules
+### Personal rules
 
 Personal rules are:
 
@@ -122,7 +122,7 @@ Personal rules are:
 - Can be changed without approval
 - Merged with team rules during sync
 
-### Agent Files
+### Agent files
 
 Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`) are:
 
@@ -131,9 +131,9 @@ Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`) are:
 - Regenerated on each sync
 - Safe to edit locally (changes sync back to IR)
 
-## Making Changes
+## Making changes
 
-### Editing Team Rules
+### Editing team rules
 
 To propose changes to team rules:
 
@@ -144,7 +144,7 @@ To propose changes to team rules:
 5. Team lead reviews and approves
 6. After merge, everyone runs `aligntrue sync` to get updates
 
-### Editing Personal Rules
+### Editing personal rules
 
 To change your personal rules:
 
@@ -153,7 +153,7 @@ To change your personal rules:
 3. Changes stay local or sync to your personal remote
 4. No approval needed
 
-## Approval Modes
+## Approval modes
 
 Your team may use different approval modes:
 
@@ -177,9 +177,9 @@ Check your team's mode:
 aligntrue config get approval.internal
 ```
 
-## Common Workflows
+## Common workflows
 
-### Daily Sync
+### Daily sync
 
 Pull latest team rules:
 
@@ -188,7 +188,7 @@ git pull
 aligntrue sync
 ```
 
-### Propose Rule Change
+### Propose rule change
 
 1. Create a branch:
 
@@ -213,13 +213,13 @@ aligntrue sync
 
 4. Create PR and wait for approval
 
-### Update Personal Rules
+### Update personal rules
 
 1. Edit your personal sections in `AGENTS.md`
 2. Run `aligntrue sync`
 3. Changes stay local (no PR needed)
 
-### Resolve Drift
+### Resolve drift
 
 If CI reports drift:
 
@@ -237,7 +237,7 @@ aligntrue sync
 
 ## Troubleshooting
 
-### Sync Fails with "Lockfile Mismatch"
+### Sync fails with "Lockfile Mismatch"
 
 **Cause:** Your rules don't match the approved lockfile.
 
@@ -254,7 +254,7 @@ aligntrue sync
 git status
 ```
 
-### Personal Rules Not Showing
+### Personal rules Not Showing
 
 **Cause:** Personal rules might not be configured correctly.
 
@@ -268,7 +268,7 @@ aligntrue config get storage.personal
 aligntrue init --with-personal-local
 ```
 
-### Agent Files Not Generated
+### Agent files Not Generated
 
 **Cause:** Exporters might not be enabled.
 
@@ -286,7 +286,7 @@ aligntrue adapters enable agents-md
 aligntrue sync
 ```
 
-### Remote Personal Repo Fails
+### Remote personal repo fails
 
 **Cause:** SSH access or repository not configured.
 
@@ -294,7 +294,7 @@ aligntrue sync
 
 See [Personal Repository Setup](/reference/personal-repo-setup) for detailed troubleshooting.
 
-## Best Practices
+## Best practices
 
 ### DO
 
@@ -312,7 +312,7 @@ See [Personal Repository Setup](/reference/personal-repo-setup) for detailed tro
 - ❌ Skip sync after pulling changes
 - ❌ Force push lockfile changes
 
-## Getting Help
+## Getting help
 
 If you're stuck:
 
@@ -321,7 +321,7 @@ If you're stuck:
 3. Run `aligntrue check` to validate your setup
 4. Check logs: `aligntrue sync --verbose`
 
-## Next Steps
+## Next steps
 
 - [Understand Team Mode](/concepts/team-mode)
 - [Set Up Personal Repository](/reference/personal-repo-setup)

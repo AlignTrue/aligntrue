@@ -11,7 +11,7 @@ AlignTrue supports intelligent git source management with automatic update check
 - **Team mode** - Approval required for updates (controlled governance)
 - **Offline support** - Works without network, falls back to cache
 
-## Automatic Updates
+## Automatic updates
 
 Git sources automatically check for updates based on ref type:
 
