@@ -207,6 +207,9 @@ export async function sync(args: string[]): Promise<void> {
     (parsed.flags["skip-update-check"] as boolean | undefined) || false;
   const offline = (parsed.flags["offline"] as boolean | undefined) || false;
   const verbose = (parsed.flags["verbose"] as boolean | undefined) || false;
+  const yes = (parsed.flags["yes"] as boolean | undefined) || false;
+  const nonInteractive =
+    (parsed.flags["non-interactive"] as boolean | undefined) || false;
 
   // Step 3: Resolve sources (local, git, or bundle merge)
   spinner.start("Resolving sources");
@@ -583,6 +586,54 @@ export async function sync(args: string[]): Promise<void> {
     clack.log.info(`Manual import from: ${acceptAgent}`);
   }
 
+  // Step 3.5: Check for new agents (with caching)
+  if (!dryRun && !acceptAgent) {
+    const { loadDetectionCache, saveDetectionCache } = await import(
+      "@aligntrue/core"
+    );
+    const { detectAgentsWithValidation, shouldWarnAboutDetection } =
+      await import("../utils/detect-agents.js");
+
+    const detection = detectAgentsWithValidation(cwd, config.exporters || []);
+    const cache = loadDetectionCache(cwd);
+
+    if (shouldWarnAboutDetection(detection, cache)) {
+      if (detection.missing.length > 0) {
+        clack.log.warn(`New agents detected: ${detection.missing.join(", ")}`);
+
+        if (!yes && !nonInteractive) {
+          const shouldAdd = await clack.confirm({
+            message: "Add detected agents to exporters?",
+            initialValue: true,
+          });
+
+          if (!clack.isCancel(shouldAdd) && shouldAdd) {
+            config.exporters = [
+              ...(config.exporters || []),
+              ...detection.missing,
+            ];
+            await saveMinimalConfig(config, configPath, cwd);
+            clack.log.success("Updated exporters in config");
+          }
+        }
+      }
+
+      if (detection.notFound.length > 0) {
+        clack.log.info(
+          `Configured exporters not detected: ${detection.notFound.join(", ")}\n` +
+            "  (These agents may not be installed)",
+        );
+      }
+
+      // Update cache
+      saveDetectionCache(cwd, {
+        timestamp: new Date().toISOString(),
+        detected: detection.detected,
+        configured: config.exporters || [],
+      });
+    }
+  }
+
   // Step 4: Discover and load exporters
   spinner.start("Loading exporters");
 
@@ -844,10 +895,6 @@ export async function sync(args: string[]): Promise<void> {
 
   // Step 7: Execute sync (with auto-pull if enabled)
   try {
-    const yes = (parsed.flags["yes"] as boolean | undefined) || false;
-    const nonInteractive =
-      (parsed.flags["non-interactive"] as boolean | undefined) || false;
-
     const syncOptions: {
       configPath: string;
       dryRun: boolean;
@@ -925,6 +972,37 @@ export async function sync(args: string[]): Promise<void> {
         }
       } catch {
         // Silent failure on cleanup - not critical
+      }
+    }
+
+    // Step 9.5: Update .gitignore if configured
+    if (
+      !dryRun &&
+      result.success &&
+      result.written &&
+      result.written.length > 0
+    ) {
+      const gitMode = config.git?.mode || "ignore";
+      const autoGitignore = config.git?.auto_gitignore || "auto";
+
+      if (autoGitignore !== "never") {
+        try {
+          const { GitIntegration } = await import("@aligntrue/core");
+          const gitIntegration = new GitIntegration();
+          await gitIntegration.updateGitignore(
+            cwd,
+            result.written,
+            autoGitignore,
+            gitMode,
+          );
+        } catch (_error) {
+          // Silent failure on gitignore update - not critical
+          if (verbose) {
+            clack.log.warn(
+              `Failed to update .gitignore: ${_error instanceof Error ? _error.message : String(_error)}`,
+            );
+          }
+        }
       }
     }
 

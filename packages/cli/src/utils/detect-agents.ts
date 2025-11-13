@@ -112,9 +112,9 @@ const AGENT_DISPLAY_NAMES: Record<string, string> = {
 };
 
 /**
- * Result of agent detection
+ * Result of agent detection (basic detection without validation)
  */
-export interface DetectionResult {
+export interface BasicDetectionResult {
   /** List of detected agent names */
   detected: string[];
   /** Recommended agents to enable (same as detected) */
@@ -128,7 +128,9 @@ export interface DetectionResult {
  * @param cwd - Directory to check (defaults to process.cwd())
  * @returns Detection result with detected and recommended agents
  */
-export function detectAgents(cwd: string = process.cwd()): DetectionResult {
+export function detectAgents(
+  cwd: string = process.cwd(),
+): BasicDetectionResult {
   const detected: string[] = [];
   const displayNames = new Map<string, string>();
 
@@ -342,4 +344,58 @@ export function recommendEditSource(
       },
     ],
   };
+}
+
+/**
+ * Detection result with validation
+ */
+export interface DetectionResult {
+  detected: string[];
+  configured: string[];
+  missing: string[]; // Detected but not configured
+  notFound: string[]; // Configured but not detected
+}
+
+/**
+ * Detect agents with validation against configured exporters
+ *
+ * @param cwd - Current working directory
+ * @param configured - Configured exporters from config
+ * @returns Detection result with validation
+ */
+export function detectAgentsWithValidation(
+  cwd: string,
+  configured: string[],
+): DetectionResult {
+  const result = detectAgents(cwd);
+  const detected = result.detected;
+
+  const missing = detected.filter((d) => !configured.includes(d));
+  const notFound = configured.filter((c) => !detected.includes(c));
+
+  return { detected, configured, missing, notFound };
+}
+
+/**
+ * Check if detection results have changed since last cache
+ *
+ * @param current - Current detection result
+ * @param cached - Cached detection result
+ * @returns True if detection changed
+ */
+export function shouldWarnAboutDetection(
+  current: DetectionResult,
+  cached: { detected: string[]; configured: string[] } | null,
+): boolean {
+  if (!cached) return current.missing.length > 0 || current.notFound.length > 0;
+
+  // Only warn if detection changed
+  const detectedChanged =
+    JSON.stringify([...current.detected].sort()) !==
+    JSON.stringify([...cached.detected].sort());
+
+  return (
+    detectedChanged &&
+    (current.missing.length > 0 || current.notFound.length > 0)
+  );
 }

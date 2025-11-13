@@ -185,7 +185,7 @@ aligntrue drift --gates  # Fail CI if drift detected
 
 ## When to switch modes
 
-### Solo → Team: when you start collaborating
+### Solo → Team: When you start collaborating
 
 Switch to team mode when:
 
@@ -227,7 +227,7 @@ aligntrue team approve --current
 - Compliance: Audit trail of approved changes
 - Collaboration: Team lead approves, members sync
 
-### Team → Solo: when forking for personal use
+### Team → Solo: When forking for personal use
 
 Switch to solo mode when:
 

@@ -4,7 +4,7 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync, renameSync } from "fs";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
@@ -302,6 +302,29 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Step 3: Detect agents
   let spinner: ReturnType<typeof clack.spinner> | null = null;
+
+  // Step 3.5: Check for Ruler installation
+  const rulerDir = join(cwd, ".ruler");
+  if (existsSync(rulerDir)) {
+    if (nonInteractive) {
+      console.log("\nDetected Ruler configuration in .ruler/");
+      console.log('Run "aligntrue migrate ruler" to import Ruler settings.');
+    } else {
+      clack.log.warn("Detected Ruler configuration in .ruler/");
+
+      const shouldMigrate = await clack.confirm({
+        message: "Import Ruler settings into AlignTrue?",
+        initialValue: true,
+      });
+
+      if (!clack.isCancel(shouldMigrate) && shouldMigrate) {
+        // Run migration
+        const { migrate } = await import("./migrate.js");
+        await migrate(["ruler", "--yes"]);
+        return; // Migration handles full init
+      }
+    }
+  }
 
   if (!nonInteractive) {
     spinner = clack.spinner();

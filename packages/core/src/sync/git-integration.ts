@@ -210,6 +210,60 @@ export class GitIntegration {
   }
 
   /**
+   * Update .gitignore with managed section for AlignTrue files
+   *
+   * @param workspaceRoot - Workspace root directory
+   * @param files - Files to add to .gitignore
+   * @param autoMode - Auto-gitignore mode (auto, always, never)
+   * @param gitMode - Current git mode (ignore, commit, branch)
+   */
+  async updateGitignore(
+    workspaceRoot: string,
+    files: string[],
+    autoMode: "auto" | "always" | "never",
+    gitMode: GitMode,
+  ): Promise<void> {
+    // auto mode logic
+    if (autoMode === "auto") {
+      if (gitMode !== "ignore") return; // Only manage in ignore mode
+    } else if (autoMode === "never") {
+      return;
+    }
+
+    const gitignorePath = join(workspaceRoot, ".gitignore");
+    const marker = "# START AlignTrue Generated Files";
+    const endMarker = "# END AlignTrue Generated Files";
+
+    let content = existsSync(gitignorePath)
+      ? readFileSync(gitignorePath, "utf-8")
+      : "";
+
+    content = this.addManagedSection(content, marker, endMarker, files);
+    writeFileSync(gitignorePath, content, "utf-8");
+  }
+
+  /**
+   * Add or update managed section in .gitignore
+   */
+  private addManagedSection(
+    content: string,
+    marker: string,
+    endMarker: string,
+    files: string[],
+  ): string {
+    // Remove existing managed section if present
+    const regex = new RegExp(`${marker}[\\s\\S]*?${endMarker}\\n?`, "g");
+    content = content.replace(regex, "");
+
+    // Sort files and format
+    const sortedFiles = [...new Set(files)].sort();
+    const section = [marker, ...sortedFiles, endMarker, ""].join("\n");
+
+    // Append to end
+    return content.trimEnd() + "\n\n" + section;
+  }
+
+  /**
    * Ensure a pattern exists in .gitignore (idempotent)
    */
   private async ensureGitignoreEntry(

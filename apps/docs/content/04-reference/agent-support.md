@@ -1,7 +1,9 @@
-title: "Agent support: 28+ AI coding agents and 40+ exporters"
-description: "Compatibility matrix for AlignTrue exporters including Cursor, GitHub Copilot, Claude, MCP, and more."
+---
+title: Agent support
+description: Complete compatibility matrix for AlignTrue's 43 exporters supporting 28+ AI coding agents
+---
 
-# Agent support: agents and exporters
+# Agent support
 
 AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 
@@ -101,5 +103,3 @@ Built-in extensibility allows the community to [add support for new agents](/doc
 - [CLI Reference](/docs/04-reference/cli-reference) - Commands for working with exporters
 - [Adding Exporters](/docs/06-contributing/adding-exporters) - Guide for adding new agent support
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How AlignTrue syncs rules to agents
-- [Examples](/docs/04-reference/examples) - Curated packs demonstrating real outputs
-- [Features](/docs/04-reference/features) - Full feature list and status
