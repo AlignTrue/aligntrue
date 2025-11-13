@@ -6,7 +6,7 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, rmSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 const TEST_DIR = join(process.cwd(), "temp-sync-detection-test");
 const CLI_PATH = join(process.cwd(), "dist/index.js");
@@ -17,7 +17,7 @@ function runCLI(args: string[]): {
   exitCode: number;
 } {
   try {
-    const result = execSync(`node ${CLI_PATH} ${args.join(" ")}`, {
+    const result = execFileSync(process.execPath, [CLI_PATH, ...args], {
       cwd: TEST_DIR,
       encoding: "utf-8",
       env: { ...process.env, TZ: "UTC", NODE_ENV: "test" },
