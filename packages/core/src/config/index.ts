@@ -111,6 +111,8 @@ export interface AlignTrueConfig {
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
+    source_files?: string | string[]; // Source file patterns for rules (default: 'AGENTS.md')
+    source_order?: string[]; // Custom ordering of source files by basename
   };
   managed?: {
     files?: string[]; // Full file paths to protect
@@ -399,6 +401,13 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   }
   if (result.sync.backup_extension === undefined) {
     result.sync.backup_extension = ".bak";
+  }
+
+  /**
+   * Set source file defaults
+   */
+  if (result.sync.source_files === undefined) {
+    result.sync.source_files = "AGENTS.md";
   }
 
   /**

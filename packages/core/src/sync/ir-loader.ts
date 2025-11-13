@@ -7,16 +7,16 @@ import { extname, dirname } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
-import type { AlignTrueMode } from "../config/index.js";
+import type { AlignTrueMode, AlignTrueConfig } from "../config/index.js";
 
 /**
- * Load IR from a YAML file
+ * Load IR from a YAML file or multiple source files
  *
  * Note: The IR file (.aligntrue/.rules.yaml) is internal and auto-generated.
  * Users should edit agent files (AGENTS.md, .cursor/*.mdc) instead.
  *
- * @param sourcePath - Path to the source file
- * @param options - Loading options (mode, max size, force flag)
+ * @param sourcePath - Path to the source file or directory
+ * @param options - Loading options (mode, max size, force flag, config)
  */
 export async function loadIR(
   sourcePath: string,
@@ -24,11 +24,20 @@ export async function loadIR(
     mode?: AlignTrueMode;
     maxFileSizeMb?: number;
     force?: boolean;
+    config?: AlignTrueConfig;
   },
 ): Promise<AlignPack> {
   const mode = options?.mode || "solo";
   const maxFileSizeMb = options?.maxFileSizeMb || 10;
   const force = options?.force || false;
+  const config = options?.config;
+
+  // If config provided with source_files, use multi-file loading
+  if (config?.sync?.source_files) {
+    const cwd = dirname(sourcePath);
+    const { loadSourceFiles } = await import("./source-loader.js");
+    return loadSourceFiles(cwd, config);
+  }
 
   // Check file exists
   if (!existsSync(sourcePath)) {
