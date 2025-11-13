@@ -364,7 +364,7 @@ export function detectLockfileDrift(
 
 /**
  * Detect agent file drift
- * Checks if agent files (AGENTS.md, .cursor/rules/*.mdc) have been modified after IR
+ * Checks if agent files (AGENTS.md, .cursor/rules/*.mdc) have been modified after last sync
  * Only relevant when auto_pull is disabled (team mode default)
  */
 export function detectAgentFileDrift(
@@ -373,25 +373,19 @@ export function detectAgentFileDrift(
 ): DriftFinding[] {
   const findings: DriftFinding[] = [];
 
+  // If no last sync timestamp, this is first run - no drift to detect
+  if (lastSyncTimestamp === undefined || lastSyncTimestamp === null) {
+    return findings;
+  }
+
   // Agent files to check
   const agentFiles = [
     { path: "AGENTS.md", agent: "agents-md" },
     { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
   ];
 
-  // Get IR file timestamp
-  const irPath = join(basePath, ".aligntrue/.rules.yaml");
-  let irTimestamp: number;
-  try {
-    const irStats = statSync(irPath);
-    irTimestamp = irStats.mtimeMs;
-  } catch {
-    // IR file doesn't exist - no drift to detect
-    return findings;
-  }
-
-  // Use last sync timestamp if provided, otherwise use IR timestamp
-  const referenceTimestamp = lastSyncTimestamp || irTimestamp;
+  // Use last sync timestamp as reference
+  const referenceTimestamp = lastSyncTimestamp;
 
   // Check each agent file
   for (const { path, agent } of agentFiles) {
@@ -485,7 +479,7 @@ export async function detectDriftForConfig(config: unknown): Promise<{
       // currentBundleHash remains undefined
     }
 
-    const result = detectDrift(
+    const result = await detectDrift(
       lockfilePath,
       allowListPath,
       basePath,
@@ -534,12 +528,12 @@ export async function detectDriftForConfig(config: unknown): Promise<{
  * Main drift detection orchestrator
  * Combines all drift detection categories
  */
-export function detectDrift(
+export async function detectDrift(
   lockfilePath: string,
   allowListPath: string,
   basePath: string = ".",
   currentBundleHash?: string,
-): DriftResult {
+): Promise<DriftResult> {
   // Check if lockfile exists
   if (!existsSync(lockfilePath)) {
     return {
@@ -614,7 +608,11 @@ export function detectDrift(
   if (currentBundleHash) {
     findings.push(...detectLockfileDrift(lockfile, currentBundleHash));
   }
-  findings.push(...detectAgentFileDrift(basePath));
+
+  // Use .last-sync timestamp for accurate agent file drift detection
+  const { getLastSyncTimestamp } = await import("../sync/last-sync-tracker.js");
+  const lastSyncTime = getLastSyncTimestamp(basePath);
+  findings.push(...detectAgentFileDrift(basePath, lastSyncTime ?? undefined));
 
   // Calculate summary (Overlays system: includes new categories)
   const by_category = {

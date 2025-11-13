@@ -609,9 +609,10 @@ export class SyncEngine {
       // Update last sync timestamp on success
       if (!options.dryRun) {
         const cwd = resolvePath(irPath, "..", "..");
-        const { EditDetector } = await import("./edit-detector.js");
-        const detector = new EditDetector(cwd);
-        detector.updateLastSyncTimestamp();
+        const { updateLastSyncTimestamp } = await import(
+          "./last-sync-tracker.js"
+        );
+        updateLastSyncTimestamp(cwd);
       }
 
       const result: SyncResult = {
@@ -723,8 +724,14 @@ export class SyncEngine {
 
       // Write updated IR (if not dry-run)
       if (!options.dryRun) {
-        // In a real implementation, we'd use a proper IR writer
-        // For now, just track that we would write
+        // Update IR with agent sections
+        this.ir!.sections = agentRules;
+
+        // Write IR to file
+        const { stringify } = await import("yaml");
+        const { writeFileSync } = await import("fs");
+        const irContent = stringify(this.ir);
+        writeFileSync(irPath, irContent, "utf-8");
         written.push(irPath);
 
         auditTrail.push({
@@ -732,7 +739,7 @@ export class SyncEngine {
           target: irPath,
           source: agent,
           timestamp: new Date().toISOString(),
-          details: `Updated IR from agent (sections-only)`,
+          details: `Updated IR from agent with ${agentRules.length} sections`,
         });
       }
 
@@ -840,7 +847,16 @@ export class SyncEngine {
       );
 
       // 1. Detect edited agent files
-      const detectionResult = await detectEditedFiles(cwd, config);
+      // Get last sync timestamp for accurate change detection
+      const { getLastSyncTimestamp } = await import("./last-sync-tracker.js");
+      const lastSyncTime = getLastSyncTimestamp(cwd);
+      const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
+
+      const detectionResult = await detectEditedFiles(
+        cwd,
+        config,
+        lastSyncDate,
+      );
       const editedFiles = detectionResult.files;
       const editSourceWarnings = detectionResult.warnings;
 
@@ -937,9 +953,10 @@ export class SyncEngine {
 
       // 8. Update last sync timestamp on success
       if (syncResult.success && !options.dryRun) {
-        const { EditDetector } = await import("./edit-detector.js");
-        const detector = new EditDetector(cwd);
-        detector.updateLastSyncTimestamp();
+        const { updateLastSyncTimestamp } = await import(
+          "./last-sync-tracker.js"
+        );
+        updateLastSyncTimestamp(cwd);
       }
 
       const result: SyncResult = {
