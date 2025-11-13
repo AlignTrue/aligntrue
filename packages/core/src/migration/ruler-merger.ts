@@ -18,10 +18,13 @@ export async function mergeRulerMarkdownFiles(
   rulerDir: string,
 ): Promise<string> {
   // Find all .md files in .ruler/
-  const mdFiles = glob.sync("**/*.md", {
+  let mdFiles = glob.sync("**/*.md", {
     cwd: rulerDir,
     ignore: ["node_modules/**"],
   });
+
+  // Normalize to forward slashes for cross-platform consistency
+  mdFiles = mdFiles.map((p) => p.replace(/\\/g, "/"));
 
   // Sort alphabetically (Ruler's concatenation order)
   mdFiles.sort();
