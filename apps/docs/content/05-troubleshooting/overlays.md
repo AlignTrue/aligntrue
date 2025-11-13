@@ -23,7 +23,7 @@ aln override status
 aln override status --stale
 ```
 
-### Common Causes
+### Common causes
 
 #### 1. Typo in Rule ID
 
@@ -182,7 +182,7 @@ overlays:
         severity: "error"
 ```
 
-### Upstream Changed Same Field
+### Upstream changed same field
 
 **Problem:** Upstream changed severity from `warning` to `error`, your overlay also sets `error`.
 
@@ -281,7 +281,7 @@ aln override remove 'rule[id=max-complexity]'
 
 **Symptom:** Overlay matches multiple rules unintentionally.
 
-### Selector Matches Multiple Rules
+### Selector matches multiple rules
 
 **Problem:** Selector is ambiguous and matches more than one rule.
 
@@ -316,7 +316,7 @@ Make selector more specific or accept that it applies to all matches. Currently,
 
 **Symptom:** Overlay has passed expiration date but still applies.
 
-### How Expiration Works
+### How expiration works
 
 **Key point:** Expiration is **advisory only**. Overlays continue to apply after expiration but show warnings.
 
@@ -367,7 +367,7 @@ overlays:
         severity: "warning"
 ```
 
-### Automated Expiration Audits
+### Automated expiration audits
 
 Add to CI:
 
@@ -473,7 +473,7 @@ plugs:
 
 **Symptom:** Overlay passes locally but fails in CI.
 
-### Common Causes
+### Common causes
 
 #### 1. Lockfile Drift
 
@@ -561,7 +561,7 @@ aln link https://github.com/acme/standards --path vendor/acme-standards
 
 **Symptom:** You have many overlays or complex customizations.
 
-### Indicators You Should Fork
+### Indicators you should fork
 
 ❌ **Don't overlay if:**
 
@@ -611,7 +611,7 @@ overlays:
 
 ## Debug commands
 
-### Inspect Overlay Application
+### Inspect overlay application
 
 ```bash
 # Show all overlays
@@ -624,7 +624,7 @@ aln override diff 'rule[id=no-console-log]'
 aln override status --json | jq '.overlays[] | select(.healthy == false)'
 ```
 
-### Validate Overlays
+### Validate overlays
 
 ```bash
 # Validate overlay application

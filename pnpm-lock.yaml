@@ -137,9 +137,6 @@ importers:
       '@aligntrue/exporters':
         specifier: workspace:*
         version: link:../exporters
-      '@aligntrue/markdown-parser':
-        specifier: workspace:*
-        version: link:../markdown-parser
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
@@ -174,9 +171,6 @@ importers:
       '@aligntrue/file-utils':
         specifier: workspace:*
         version: link:../file-utils
-      '@aligntrue/markdown-parser':
-        specifier: workspace:*
-        version: link:../markdown-parser
       '@aligntrue/plugin-contracts':
         specifier: workspace:*
         version: link:../plugin-contracts
@@ -234,12 +228,6 @@ importers:
         version: 2.8.1
 
   packages/file-utils: {}
-
-  packages/markdown-parser:
-    dependencies:
-      '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
 
   packages/plugin-contracts:
     dependencies:

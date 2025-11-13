@@ -360,6 +360,5 @@ For complex rule definitions with machine-checkable conditions, use rule-based f
 
 ## Related Pages
 
-- [Markdown Authoring](/docs/04-reference/markdown-authoring) - Fenced code block format
 - [Getting Started](/docs/00-getting-started/00-quickstart) - Quick start guide
 - [Example Packs](/docs/04-reference/examples) - Curated example packs

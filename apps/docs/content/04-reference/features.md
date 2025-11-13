@@ -56,7 +56,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
-### Developer Experience
+### Developer experience
 
 - Fast `--help` (~95ms response time)
 - Consistent error messages (what/why/how format)
@@ -294,7 +294,7 @@ These features were designed for the legacy `rules` format and have been removed
 
 **Status:** Not planned, use git sources instead
 
-## Verifying Implementation Status
+## Verifying implementation status
 
 ```bash
 # Check if a feature is implemented
@@ -318,7 +318,7 @@ aligntrue plugs
 aligntrue scopes
 ```
 
-## Launch Readiness
+## Launch readiness
 
 **Ready to ship:**
 
