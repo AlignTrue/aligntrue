@@ -126,13 +126,33 @@ export async function detectEditedFiles(
   const paths = getAlignTruePaths(cwd);
   const editSource = config.sync?.edit_source;
 
+  // Debug logging
+  const { DEBUG_SYNC } = process.env;
+  if (DEBUG_SYNC) {
+    console.log(
+      `[detectEditedFiles] lastSyncTime: ${lastSyncTime?.toISOString() || "none"}`,
+    );
+    console.log(`[detectEditedFiles] edit_source:`, editSource);
+    console.log(`[detectEditedFiles] cwd:`, cwd);
+  }
+
   // Skip detection if edit_source is ".rules.yaml" (IR only mode)
   if (editSource === ".rules.yaml") {
+    if (DEBUG_SYNC) {
+      console.log(
+        `[detectEditedFiles] Skipping detection - IR only mode (.rules.yaml)`,
+      );
+    }
     return { files: [], warnings: [] };
   }
 
   // Backwards compatibility: check two_way if edit_source not set
   if (editSource === undefined && config.sync?.two_way === false) {
+    if (DEBUG_SYNC) {
+      console.log(
+        `[detectEditedFiles] Skipping detection - two_way sync disabled`,
+      );
+    }
     return { files: [], warnings: [] };
   }
 
@@ -172,6 +192,16 @@ export async function detectEditedFiles(
     const stats = statSync(agentsMdPath);
     const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
     const matchesEdit = matchesEditSource("AGENTS.md", editSource, cwd);
+
+    if (DEBUG_SYNC) {
+      console.log(`[detectEditedFiles] AGENTS.md check:`, {
+        path: agentsMdPath,
+        mtime: stats.mtime.toISOString(),
+        lastSyncTime: lastSyncTime?.toISOString() || "none",
+        wasEdited,
+        matchesEdit,
+      });
+    }
 
     if (wasEdited) {
       if (matchesEdit) {
@@ -229,6 +259,16 @@ export async function detectEditedFiles(
         const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
         const matchesEdit = matchesEditSource(relativePath, editSource, cwd);
 
+        if (DEBUG_SYNC) {
+          console.log(`[detectEditedFiles] Cursor file check:`, {
+            path: relativePath,
+            mtime: stats.mtime.toISOString(),
+            lastSyncTime: lastSyncTime?.toISOString() || "none",
+            wasEdited,
+            matchesEdit,
+          });
+        }
+
         if (wasEdited) {
           if (matchesEdit) {
             // File edited and is in edit_source - include it
@@ -272,6 +312,18 @@ export async function detectEditedFiles(
       }
     } catch {
       // Directory not readable, continue
+    }
+  }
+
+  if (DEBUG_SYNC) {
+    console.log(
+      `[detectEditedFiles] Detection complete: ${editedFiles.length} edited files, ${warnings.length} warnings`,
+    );
+    if (editedFiles.length > 0) {
+      console.log(
+        `[detectEditedFiles] Edited files:`,
+        editedFiles.map((f) => f.path),
+      );
     }
   }
 
