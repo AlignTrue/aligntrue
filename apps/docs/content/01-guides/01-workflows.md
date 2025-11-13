@@ -26,9 +26,10 @@ When you run `aligntrue init`, AlignTrue automatically configures these values b
 
 ### AGENTS.md (Primary) workflow
 
-**You edit AGENTS.md or agent files as your source of truth.**
+**You edit in your detected agent format (or AGENTS.md) as your source of truth.**
 
-- Rules are written in `AGENTS.md` (universal markdown format) or agent-specific files
+- Rules are written in your agent-native format (`.cursor/*.mdc`, etc.) or universal `AGENTS.md`
+- AlignTrue auto-detects your agents during init and configures editing automatically
 - Auto-pull is enabled by default (solo mode only) to sync from primary agent back to IR
 - IR automatically syncs to all configured agents
 - AlignTrue detects and helps resolve conflicts

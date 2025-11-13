@@ -14,7 +14,14 @@ Get AlignTrue running in under 60 seconds with three commands.
 
 ## Install AlignTrue
 
-<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
+```bash
+npx aligntrue init  # Run directly without installing
+```
+
+<details>
+<summary>Prefer a different package manager?</summary>
+
+<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
 
 <Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
 
@@ -24,11 +31,9 @@ Get AlignTrue running in under 60 seconds with three commands.
 
 <Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>
-  ```bash npx aligntrue init # Use directly without installing ```
-</Tabs.Tab>
-
 </Tabs>
+
+</details>
 
 ## Quick start (3 commands)
 
@@ -39,9 +44,9 @@ cd your-project
 aligntrue init
 ```
 
-This detects your agents and creates:
+This auto-detects your agents (Cursor, Copilot, Claude, etc.) and creates:
 
-- `AGENTS.md` - Your rules file (editable markdown)
+- Your agent files in native format (`.cursor/rules/*.mdc`, etc.) or `AGENTS.md` fallback
 - `.aligntrue/config.yaml` - Configuration
 - `.aligntrue/.rules.yaml` - Internal format (auto-generated, don't edit)
 
@@ -51,15 +56,15 @@ This detects your agents and creates:
 aligntrue sync
 ```
 
-This generates agent-specific files:
+This syncs to all your detected agents in their native formats:
 
-- `.cursor/rules/aligntrue.mdc` (for Cursor)
-- `AGENTS.md` (for Copilot, Claude, Aider, etc.)
-- `.vscode/mcp.json` (for VS Code MCP agents)
+- `.cursor/rules/aligntrue.mdc` (if Cursor detected)
+- `AGENTS.md` (universal format for Copilot, Claude, Aider, etc.)
+- `.vscode/mcp.json` (if VS Code MCP detected)
 
 ### 3. Customize your rules
 
-Open `AGENTS.md` and edit the starter rules for your project:
+Edit rules in your detected agent format. If using the universal format, open `AGENTS.md`:
 
 ```markdown
 ---
@@ -86,23 +91,23 @@ Set these in tsconfig.json:
 {/* prettier-ignore-start */}
 
 <Callout type="info">
-**Where to edit:** Primary: `AGENTS.md` (you edit directly as markdown)
+**Where to edit:** Your detected agent files (`.cursor/rules/*.mdc`, etc.) or universal `AGENTS.md`
 
-You can also edit agent files directly (`.cursor/rules/aligntrue.mdc`, etc.) and changes will automatically merge back on the next `aligntrue sync`.
+AlignTrue auto-detects your agents during init and lets you edit in your native format. Changes sync automatically to all other agents.
 
 Data flow:
 
 ```
-AGENTS.md (primary) or any agent file
+Edit any agent file (Cursor .mdc, AGENTS.md, etc.)
     ↓
 aligntrue sync (detects edits)
     ↓
 .aligntrue/.rules.yaml (internal IR, auto-generated)
     ↓
-All agent files (exported and synced)
+All agent files (synced in native formats)
 ```
 
-**Note:** The `.rules.yaml` file is internal and auto-generated—treat it like a build artifact. Always edit the markdown files.
+**Note:** The `.rules.yaml` file is internal and auto-generated—treat it like a build artifact. Always edit your agent files.
 
 </Callout>
 {/* prettier-ignore-end */}

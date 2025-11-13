@@ -7,9 +7,6 @@
   Source: apps/docs/content/index.mdx
 -->
 
-title: "AlignTrue overview: write AI rules once, sync across 28+ agents"
-description: "What AlignTrue is and how it syncs deterministic AI rules across agents like Cursor, Copilot, and Claude in under 60 seconds."
-
 # AlignTrue overview
 
 Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
@@ -21,13 +18,26 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 
 [![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Tests](https://img.shields.io/badge/tests-1842%20passing-brightgreen)](https://github.com/AlignTrue/aligntrue) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
 
+## Solo developer? Start here
+
+Get AlignTrue running in 60 seconds - it detects your agents and syncs automatically:
+
+```bash
+npx aligntrue init  # Auto-detects Cursor, Copilot, Claude, etc.
+aligntrue sync      # Syncs to all your agents
+```
+
+**Edit rules in your agent's native format.** AlignTrue works seamlessly with Cursor (`.mdc`), GitHub Copilot, Claude Code, and 28+ agents. No config changes needed.
+
+→ [Verify it works](https://aligntrue.ai/docs/00-getting-started/00-quickstart#verify-it-works) | [Solo guide](https://aligntrue.ai/docs/01-guides/04-solo-developer-guide)
+
 ## Why AlignTrue
 
-- **Write once, sync everywhere** - One markdown file generates agent-specific formats for 28+ AI coding tools
-- **60-second setup** - Auto-detects your agents and creates starter rules in under a minute
-- **Two-way sync** - In solo mode, auto-pull keeps IR and agent files in sync. Manually pull changes in team mode to keep collaborators aligned.
+- **Works with your existing setup** - Auto-detects your agents and lets you edit in native formats
+- **60-second setup** - No configuration required for common workflows
+- **Two-way sync** - Edit any agent file, changes sync everywhere automatically (solo mode)
 
-## Quickstart
+## Detailed setup
 
 <div style={{ maxWidth: '56rem', margin: '2rem 0' }}>
 
@@ -37,7 +47,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 npx aligntrue init
 ```
 
-→ Auto-detects agents, imports rules, or creates `AGENTS.md` starter template
+→ Auto-detects agents (Cursor, Copilot, Claude, etc.) and imports existing rules
 
 ### 2. Align
 
@@ -45,11 +55,11 @@ npx aligntrue init
 aligntrue sync
 ```
 
-→ Pushes rules to all configured agents (Cursor, AGENTS.md, VS Code, etc.)
+→ Syncs to all detected agents in their native formats
 
 </div>
 
-**Result:** `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`, and more - all from one source.
+**Result:** Edit in `.cursor/rules/*.mdc`, `AGENTS.md`, or whatever format you already use. AlignTrue keeps everything in sync.
 
 Read the [Quickstart Guide](https://aligntrue.ai/docs/00-getting-started/00-quickstart) for detailed instructions.
 
@@ -88,10 +98,10 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 
 ## How it works
 
-1. **Write rules** in `AGENTS.md` or any agent format (no YAML required)
-2. **Run sync** - AlignTrue updates internal IR and syncs to all configured agents
-3. **Agent-specific exports** - Each agent gets its native format (.mdc, .json, .yml, etc.)
-4. **Stay aligned** - Edit agent files; sync keeps everything consistent
+1. **AlignTrue detects your agents** - Finds Cursor, Copilot, Claude Code, and 28+ others automatically
+2. **Edit in your native format** - Use `.cursor/rules/*.mdc`, `AGENTS.md`, or whatever you already use
+3. **Run sync** - AlignTrue updates all agents with your changes
+4. **Stay aligned** - Two-way sync keeps everything consistent automatically
 
 ## Common workflows
 

@@ -79,10 +79,11 @@ cursor .
 
 **What happened:**
 
-- Created `.aligntrue/.rules.yaml` (internal) and `AGENTS.md` (user-editable)
+- Created `.aligntrue/.rules.yaml` (internal IR, auto-generated)
+- Created or detected your agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
 - Pulled example packs from local examples
-- Exported to `.cursor/rules/` and `AGENTS.md`
-- Auto-pull enabled (pulls updates on sync)
+- Exported to all detected agent formats
+- Auto-pull enabled (syncs your edits automatically)
 
 **Next steps:**
 
