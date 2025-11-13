@@ -573,22 +573,36 @@ export class SyncEngine {
             this.ir,
             this.config.mode as "team" | "enterprise",
           );
-          writeLockfile(lockfilePath, lockfile);
-          written.push(lockfilePath);
+
+          // Validate lockfile path is absolute
+          const absoluteLockfilePath = lockfilePath.startsWith("/")
+            ? lockfilePath
+            : resolvePath(process.cwd(), lockfilePath);
+
+          writeLockfile(absoluteLockfilePath, lockfile);
+          written.push(absoluteLockfilePath);
 
           // Audit trail: Lockfile generated
           auditTrail.push({
             action: "update",
-            target: lockfilePath,
+            target: absoluteLockfilePath,
             source: "lockfile",
             hash: lockfile.bundle_hash,
             timestamp: new Date().toISOString(),
             details: `Generated lockfile with ${lockfile.rules?.length || 0} entry hashes`,
           });
         } catch (_err) {
+          // Log detailed error information
+          const errorMsg = _err instanceof Error ? _err.message : String(_err);
           warnings.push(
-            `Failed to generate lockfile: ${_err instanceof Error ? _err.message : String(_err)}`,
+            `Failed to generate lockfile at ${lockfilePath}: ${errorMsg}`,
           );
+          // Also log to console for debugging
+          console.error(`Lockfile generation error:`, {
+            path: lockfilePath,
+            cwd: process.cwd(),
+            error: errorMsg,
+          });
         }
       }
 

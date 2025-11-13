@@ -47,8 +47,23 @@ export class EditDetector {
 
     try {
       const stats = statSync(filePath);
-      return stats.mtimeMs > timestamp;
-    } catch {
+      const modified = stats.mtimeMs > timestamp;
+
+      // Debug logging for change detection (can be removed after issue is resolved)
+      if (process.env.DEBUG_CHANGE_DETECTION) {
+        console.log(`Change detection for ${filePath}:`, {
+          fileModified: new Date(stats.mtimeMs).toISOString(),
+          lastSync: new Date(timestamp).toISOString(),
+          isModified: modified,
+          diffMs: stats.mtimeMs - timestamp,
+        });
+      }
+
+      return modified;
+    } catch (err) {
+      if (process.env.DEBUG_CHANGE_DETECTION) {
+        console.warn(`Failed to check modification time for ${filePath}:`, err);
+      }
       return false;
     }
   }
@@ -149,11 +164,27 @@ export class EditDetector {
   updateLastSyncTimestamp(): void {
     const timestamp = Date.now();
     try {
-      mkdirSync(dirname(this.lastSyncFile), { recursive: true });
+      const dir = dirname(this.lastSyncFile);
+      mkdirSync(dir, { recursive: true });
       writeFileSync(this.lastSyncFile, timestamp.toString(), "utf-8");
-    } catch {
-      // Silently fail if we can't write the timestamp
-      // This is non-critical functionality
+
+      // Verify the timestamp was written successfully
+      const written = this.getLastSyncTimestamp();
+      if (written === null || Math.abs(written - timestamp) > 1000) {
+        console.warn(
+          `Warning: Last sync timestamp may not have been written correctly.\n` +
+            `  Expected: ${timestamp}\n` +
+            `  Read back: ${written}\n` +
+            `  File: ${this.lastSyncFile}`,
+        );
+      }
+    } catch (err) {
+      // Log error for debugging but don't fail the sync
+      console.warn(
+        `Warning: Failed to update last sync timestamp at ${this.lastSyncFile}\n` +
+          `  ${err instanceof Error ? err.message : String(err)}\n` +
+          `  This may affect change detection on next sync.`,
+      );
     }
   }
 
