@@ -81,6 +81,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Bypass allow list validation in team mode (use with caution)",
   },
   {
+    flag: "--force-invalid-ir",
+    hasValue: false,
+    description: "Allow sync even with IR validation errors (not recommended)",
+  },
+  {
     flag: "--force-refresh",
     hasValue: false,
     description: "Force check all git sources for updates (bypass TTL)",
@@ -194,11 +199,14 @@ export async function sync(args: string[]): Promise<void> {
   // Step 2.5: Check allow list in team mode (DEFERRED until after source resolution)
   // We need to compute the NEW bundle hash from current rules before we can validate
   const force = (parsed.flags["force"] as boolean | undefined) || false;
+  const forceInvalidIR =
+    (parsed.flags["force-invalid-ir"] as boolean | undefined) || false;
   const forceRefresh =
     (parsed.flags["force-refresh"] as boolean | undefined) || false;
   const skipUpdateCheck =
     (parsed.flags["skip-update-check"] as boolean | undefined) || false;
   const offline = (parsed.flags["offline"] as boolean | undefined) || false;
+  const verbose = (parsed.flags["verbose"] as boolean | undefined) || false;
 
   // Step 3: Resolve sources (local, git, or bundle merge)
   spinner.start("Resolving sources");
@@ -767,6 +775,11 @@ export async function sync(args: string[]): Promise<void> {
       const editedFiles = await detectEditedFiles(cwd, config);
 
       if (editedFiles.length > 0) {
+        // Phase 1: Agent edits → IR
+        if (verbose) {
+          clack.log.info("Phase 1: Merging agent file edits into IR");
+        }
+
         spinner.start("Merging changes from edited files");
 
         clack.log.info(
@@ -791,11 +804,40 @@ export async function sync(args: string[]): Promise<void> {
         }
 
         clack.log.success("Merged changes from agent files to IR");
+      } else {
+        // No edits detected - this is normal when IR is the source of truth
+        if (verbose) {
+          clack.log.info(
+            "Phase 1: No agent file edits detected since last sync",
+          );
+          clack.log.info("  → IR is already up to date");
+        }
       }
     } catch (err) {
-      clack.log.warn(
-        `⚠ Two-way sync failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      const errorMessage = err instanceof Error ? err.message : String(err);
+
+      // Check if this is an IR validation error
+      const isValidationError = errorMessage.includes("Invalid IR");
+
+      if (isValidationError && !forceInvalidIR) {
+        // Validation errors should fail the sync unless --force-invalid-ir is used
+        clack.log.error(`✗ IR validation failed`);
+        clack.log.error(`\n${errorMessage}\n`);
+        clack.log.info(
+          "To bypass validation (not recommended), use: aligntrue sync --force-invalid-ir",
+        );
+        process.exit(1);
+      }
+
+      // For other errors or when forced, warn and continue
+      if (forceInvalidIR && isValidationError) {
+        clack.log.warn(
+          `⚠ IR validation failed but continuing due to --force-invalid-ir flag`,
+        );
+        clack.log.warn(`  ${errorMessage}`);
+      } else {
+        clack.log.warn(`⚠ Two-way sync failed: ${errorMessage}`);
+      }
       clack.log.info("Continuing with one-way sync...");
     }
   }
@@ -844,6 +886,11 @@ export async function sync(args: string[]): Promise<void> {
       );
     } else {
       // IR → agents sync (default)
+      // Phase 2: Export IR to all configured agents
+      if (verbose) {
+        clack.log.info("Phase 2: Exporting IR to all configured agents");
+      }
+
       spinner.start(dryRun ? "Previewing changes" : "Syncing to agents");
       result = await engine.syncToAgents(absoluteSourcePath, syncOptions);
     }
@@ -901,7 +948,6 @@ export async function sync(args: string[]): Promise<void> {
 
       // Show warnings
       if (result.warnings && result.warnings.length > 0) {
-        const verbose = parsed.flags["verbose"] as boolean | undefined;
         if (verbose) {
           // Show all warnings in verbose mode
           result.warnings.forEach((warning) => {
