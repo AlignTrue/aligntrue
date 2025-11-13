@@ -57,6 +57,11 @@ export function writeLockfile(
   lockfile: Lockfile,
   options?: { silent?: boolean },
 ): void {
+  // Validate path is provided
+  if (!path || typeof path !== "string") {
+    throw new Error(`Invalid lockfile path: ${path}`);
+  }
+
   // Check if this is a migration from old hash format
   // (Temporary migration code - remove after 1-2 releases)
   if (existsSync(path) && !options?.silent) {
@@ -85,7 +90,14 @@ export function writeLockfile(
   // Ensure parent directory exists
   const dir = dirname(path);
   if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+    try {
+      mkdirSync(dir, { recursive: true });
+    } catch (mkdirErr) {
+      throw new Error(
+        `Failed to create lockfile directory: ${dir}\n` +
+          `  ${mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)}`,
+      );
+    }
   }
 
   // Serialize with sorted keys and 2-space indent
@@ -97,6 +109,13 @@ export function writeLockfile(
   try {
     writeFileSync(tempPath, json, "utf8");
     renameSync(tempPath, path);
+
+    // Verify file was written successfully
+    if (!existsSync(path)) {
+      throw new Error(
+        `Lockfile was not created at ${path} after write operation`,
+      );
+    }
   } catch (_err) {
     // Clean up temp file on failure
     if (existsSync(tempPath)) {

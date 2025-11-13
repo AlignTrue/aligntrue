@@ -108,7 +108,7 @@ EXAMPLES
 
 EXIT CODES
   0  No drift detected or --gates not used
-  2  Drift detected (only with --gates flag)
+  1  Drift detected (only with --gates flag)
 `;
 
 /**
@@ -166,7 +166,7 @@ export async function drift(args: string[]): Promise<void> {
 
   // Exit with error code if --gates flag used and drift detected
   if (gatesEnabled && driftResults.driftDetected) {
-    process.exit(2);
+    process.exit(1);
   }
 }
 

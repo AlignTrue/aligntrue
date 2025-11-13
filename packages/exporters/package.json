@@ -20,6 +20,10 @@
     "./vscode-mcp": {
       "types": "./dist/vscode-mcp/index.d.ts",
       "default": "./dist/vscode-mcp/index.js"
+    },
+    "./utils/section-parser": {
+      "types": "./dist/utils/section-parser.d.ts",
+      "default": "./dist/utils/section-parser.js"
     }
   },
   "scripts": {
