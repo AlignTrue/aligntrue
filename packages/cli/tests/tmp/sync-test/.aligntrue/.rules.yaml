@@ -1,0 +1,8 @@
+id: test
+version: 1.0.0
+spec_version: "1"
+sections:
+  - heading: Test
+    content: Test
+    level: 1
+    fingerprint: test

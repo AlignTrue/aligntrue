@@ -20,6 +20,7 @@
     "test:comprehensive": "tsx tests/comprehensive/run-all-layers.ts",
     "test:layer": "tsx tests/comprehensive/run-single-layer.ts",
     "test:report": "tsx tests/comprehensive/generate-report.ts",
+    "test:local": "bash tests/scripts/test-local-build.sh",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
