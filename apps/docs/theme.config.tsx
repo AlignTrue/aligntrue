@@ -14,13 +14,6 @@ const config = {
     placeholder: "Search documentation...",
   },
 
-  // Sidebar configuration
-  sidebar: {
-    defaultMenuCollapseLevel: 1,
-    autoCollapse: true,
-    toggleButton: true,
-  },
-
   // Table of contents configuration
   toc: {
     backToTop: true,
