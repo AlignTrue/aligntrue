@@ -140,9 +140,12 @@ describe("BackupManager", () => {
   });
 
   describe("restoreBackup", () => {
-    it("should restore most recent backup when no timestamp provided", () => {
+    it("should restore most recent backup when no timestamp provided", async () => {
       // Create initial backup
       BackupManager.createBackup({ cwd: testDir });
+
+      // Small delay to ensure files are written
+      await new Promise((resolve) => setTimeout(resolve, 5));
 
       // Modify files
       writeFileSync(
