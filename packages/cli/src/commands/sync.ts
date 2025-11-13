@@ -819,7 +819,7 @@ export async function sync(args: string[]): Promise<void> {
     try {
       // Get last sync timestamp for accurate change detection
       const { getLastSyncTimestamp } = await import(
-        "@aligntrue/core/sync/last-sync-tracker.js"
+        "@aligntrue/core/sync/last-sync-tracker"
       );
       const lastSyncTime = getLastSyncTimestamp(cwd);
       const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
@@ -1264,7 +1264,7 @@ export async function sync(args: string[]): Promise<void> {
         // Update last sync timestamp after successful sync
         try {
           const { updateLastSyncTimestamp } = await import(
-            "@aligntrue/core/sync/last-sync-tracker.js"
+            "@aligntrue/core/sync/last-sync-tracker"
           );
           updateLastSyncTimestamp(cwd);
         } catch (err) {
