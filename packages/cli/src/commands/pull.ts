@@ -21,7 +21,8 @@
 import * as clack from "@clack/prompts";
 import { GitProvider, type GitSourceConfig } from "@aligntrue/sources";
 import { createConsentManager, loadConfig, saveConfig } from "@aligntrue/core";
-import { parseMarkdown, buildIR } from "@aligntrue/markdown-parser";
+import { parse as parseYaml } from "yaml";
+import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
@@ -330,13 +331,37 @@ async function executePull(
     // Fetch rules
     const content = await provider.fetch(ref);
 
-    // Parse and build IR to count rules
-    const parseResult = parseMarkdown(content);
-    const irResult = buildIR(parseResult.blocks);
-    const ruleCount = irResult.document?.rules?.length ?? 0;
-    const profileId = irResult.document?.id;
+    // Auto-detect format based on file path
+    const filePath = gitConfig.path || ".aligntrue.yaml";
+    const ext = filePath.split(".").pop()?.toLowerCase();
 
-    spinner.stop(`✓ Pulled ${ruleCount} rule${ruleCount === 1 ? "" : "s"}`);
+    let parsed: any;
+    let ruleCount = 0;
+
+    if (ext === "yaml" || ext === "yml") {
+      // Parse as YAML
+      parsed = parseYaml(content);
+      ruleCount = parsed?.sections?.length ?? 0;
+    } else if (ext === "md" || ext === "markdown") {
+      // Parse as natural markdown
+      const result = parseNaturalMarkdown(content);
+      ruleCount = result.sections.length;
+      parsed = { sections: result.sections, ...result.metadata };
+    } else {
+      // Unknown extension - try YAML first, fall back to markdown
+      try {
+        parsed = parseYaml(content);
+        ruleCount = parsed?.sections?.length ?? 0;
+      } catch {
+        const result = parseNaturalMarkdown(content);
+        ruleCount = result.sections.length;
+        parsed = { sections: result.sections, ...result.metadata };
+      }
+    }
+
+    const profileId = parsed?.id;
+
+    spinner.stop(`✓ Pulled ${ruleCount} section${ruleCount === 1 ? "" : "s"}`);
 
     return {
       url,

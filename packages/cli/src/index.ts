@@ -10,7 +10,6 @@ import { fileURLToPath } from "url";
 import {
   init,
   migrate,
-  md,
   sync,
   team,
   telemetry,
@@ -60,8 +59,7 @@ async function main() {
     console.log("  check          Validate rules and configuration\n");
 
     console.log("Development Commands:");
-    console.log("  adapters       Manage exporters (list, enable, disable)");
-    console.log("  md             Markdown validation and formatting\n");
+    console.log("  adapters       Manage exporters (list, enable, disable)\n");
 
     console.log("Team Commands:");
     console.log(
@@ -113,11 +111,6 @@ async function main() {
 
   if (command === "migrate") {
     await migrate(commandArgs);
-    return;
-  }
-
-  if (command === "md") {
-    await md(commandArgs);
     return;
   }
 

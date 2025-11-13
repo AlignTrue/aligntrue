@@ -50,6 +50,9 @@ export * from "./cache/index.js";
 // Storage system
 export * from "./storage/index.js";
 
+// Parsing utilities
+export type { Section } from "./parsing/section-extractor.js";
+
 // Resource management
 export * from "./resources/index.js";
 

@@ -1,52 +1,6 @@
 # Development commands
 
-Tools for working with markdown rules, managing adapters, and validating syntax.
-
-## Markdown commands overview
-
-**Important distinction:**
-
-- **For authoring:** Use fenced ```aligntrue blocks in your own markdown files
-- **For generated files:** AlignTrue automatically uses HTML comment markers for round-trip fidelity
-- **To edit generated files:** Use `aligntrue sync --accept-agent <agent>` to pull changes back to IR
-
-**Authoring workflow:**
-
-````markdown
-# My Rules
-
-```aligntrue
-id: my-rules
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: style.naming
-    severity: warn
-    applies_to: ["**/*.ts"]
-    guidance: Use camelCase for functions
-```
-````
-
-Then use `aligntrue md lint`, `aligntrue md compile`, and `aligntrue md format` to work with these authored files.
-
-**Generated workflow:**
-
-```markdown
-# AGENTS.md
-
-<!-- aligntrue:begin {"id":"style.naming"} -->
-
-## Rule: style.naming
-
-**ID:** style.naming
-...
-
-<!-- aligntrue:end -->
-```
-
-To edit these files, edit directly and run `aligntrue sync --accept-agent agents-md` to pull changes back to IR.
-
----
+Tools for managing adapters and validating syntax.
 
 ## `aligntrue adapters`
 

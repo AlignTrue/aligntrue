@@ -39,9 +39,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Windows CI performance thresholds** - Relaxed strict performance benchmarks for Windows runners to account for platform-specific overhead (avg: 900ms, max: 1200ms vs Unix avg: 800ms, max: 1000ms for help command)
-- **Build and typecheck order** - Established explicit sequential stages with cross-platform compatible package name filters (no quotes for PowerShell compatibility) in both `build:packages` and `typecheck` to resolve dependency graph correctly: schema → {file-utils,markdown-parser,plugin-contracts} → {core,sources,testkit} → {exporters,cli,aligntrue}, fixing race condition and Windows CI failures
+- **Build and typecheck order** - Established explicit sequential stages with cross-platform compatible package name filters (no quotes for PowerShell compatibility) in both `build:packages` and `typecheck` to resolve dependency graph correctly: schema → {file-utils,plugin-contracts} → {core,sources,testkit} → {exporters,cli,aligntrue}, fixing race condition and Windows CI failures
 - **Shell command injection** - Replaced template string shell commands with `execFileSync` array arguments in storage manager, fixing CodeQL alert #41 and #40
 - **Polynomial ReDoS vulnerabilities** - Fixed unsafe regex patterns in multi-file parser and natural markdown detection for better performance and security
+
+### Removed
+
+- **Legacy fenced-block markdown format** - Removed ` ```aligntrue` fenced-block authoring format and `@aligntrue/markdown-parser` package
+  - Use natural markdown sections format instead (YAML frontmatter + `##` headings)
+  - Removed `aligntrue md lint/format/compile/generate` commands
+  - Git sources now support both YAML (.yaml/.yml) and natural markdown (.md/.markdown) formats
+  - Migration: Convert any fenced-block files to natural markdown (see natural-markdown-sections.md)
 
 ### Added
 

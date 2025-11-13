@@ -154,32 +154,34 @@ export async function check(args: string[]): Promise<void> {
     let alignData: unknown;
 
     if (ext === ".md") {
-      // Parse markdown - supports both fenced blocks and natural markdown
-      const { buildIRAuto } = await import("@aligntrue/markdown-parser");
+      // Parse as natural markdown
+      const { parseNaturalMarkdown } = await import(
+        "@aligntrue/core/parsing/natural-markdown"
+      );
+      const parseResult = parseNaturalMarkdown(rulesContent);
 
-      // Auto-detect format (fenced blocks vs natural sections)
-      const buildResult = buildIRAuto(rulesContent);
-
-      if (buildResult.errors.length > 0) {
-        const errorList = buildResult.errors
+      if (parseResult.errors.length > 0) {
+        const errorList = parseResult.errors
           .map((err) => `  Line ${err.line}: ${err.message}`)
           .join("\n");
         console.error("✗ Markdown validation errors\n");
         console.error(errorList + "\n");
-        console.error(`  Check for syntax errors in ${rulesPath}\n`);
         process.exit(1);
       }
 
-      if (!buildResult.document) {
-        console.error("✗ Failed to build IR from markdown\n");
-        console.error(`  No valid content found in ${rulesPath}\n`);
-        console.error(
-          "  Ensure file has either fenced ```aligntrue blocks or natural markdown sections with frontmatter\n",
-        );
+      if (parseResult.sections.length === 0) {
+        console.error("✗ No sections found in markdown\n");
+        console.error(`  File: ${rulesPath}\n`);
         process.exit(1);
       }
 
-      alignData = buildResult.document;
+      alignData = {
+        id: parseResult.metadata.id || "unnamed",
+        version: parseResult.metadata.version || "1.0.0",
+        spec_version: "1",
+        sections: parseResult.sections,
+        ...parseResult.metadata,
+      };
     } else {
       // Parse as YAML
       try {

@@ -179,18 +179,3 @@ export function generateNaturalMarkdown(
 
   return parts.join("\n").trim() + "\n";
 }
-
-/**
- * Detect if markdown is in natural format (sections) vs legacy format (fenced blocks)
- */
-export function isNaturalMarkdown(markdown: string): boolean {
-  // Check for fenced aligntrue blocks (legacy format)
-  if (markdown.includes("```aligntrue")) {
-    return false;
-  }
-
-  // Check for ## headings (natural format)
-  // Use [^\n] instead of \s+ to avoid ReDoS with backtracking
-  const hasHeadings = /^#{2,6}\s+[^\n\s]/m.test(markdown);
-  return hasHeadings;
-}
