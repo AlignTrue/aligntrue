@@ -147,6 +147,9 @@ describe("BackupManager", () => {
       // Small delay to ensure different timestamps (backups use milliseconds)
       await new Promise((resolve) => setTimeout(resolve, 2));
 
+      // Small delay to ensure files are written
+      await new Promise((resolve) => setTimeout(resolve, 5));
+
       // Modify files
       writeFileSync(
         join(aligntrueDir, "config.yaml"),
