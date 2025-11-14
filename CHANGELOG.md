@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Automated project badges** - Comprehensive status badges on homepage and docs footer
+  - CI status (automated via GitHub Actions)
+  - npm version (automated from registry)
+  - Node.js version requirement (Node 22+)
+  - Bundle size (BundlePhobia integration)
+  - Code coverage (Codecov integration)
+  - Security scan status (CodeQL workflow)
+  - Last commit timestamp (GitHub commits)
+  - All badges are live and update automatically
+- **CodeQL security scanning** - Automated code security analysis
+  - Weekly scheduled scans + push/PR triggers
+  - TypeScript analysis via GitHub CodeQL
+  - Security findings visible in GitHub Security tab
+- **Code coverage reporting** - Automated test coverage tracking
+  - Codecov integration for test results
+  - Coverage reports uploaded on every test run
+  - `codecov.yml` configuration for coverage policies
 - **Dependabot security patch auto-merge** - Security patches (CVE fixes) now auto-merge after CI passes
   - Enables automatic merging of all security severity levels (low, medium, high, critical)
   - Reduces exposure window for known vulnerabilities

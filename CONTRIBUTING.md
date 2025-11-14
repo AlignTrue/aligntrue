@@ -53,7 +53,7 @@ Here's a minimal pack using natural markdown sections:
 ````markdown
 # TypeScript Configuration Pack
 
-## Ensure TypeScript Configuration
+## Ensure TypeScript configuration
 
 All TypeScript projects should have a properly configured `tsconfig.json` file.
 
@@ -61,7 +61,7 @@ All TypeScript projects should have a properly configured `tsconfig.json` file.
 
 Run `npx tsc --init` to create a tsconfig.json if missing.
 
-### Recommended Configuration
+### Recommended configuration
 
 ```json
 {
@@ -142,7 +142,7 @@ Write guidance that answers:
 **Good example:**
 
 ````markdown
-## Use TypeScript Strict Mode
+## Use TypeScript strict mode
 
 Enable strict mode in all TypeScript projects for better type safety.
 

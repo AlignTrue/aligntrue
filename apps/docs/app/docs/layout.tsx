@@ -46,22 +46,107 @@ function DocsFooter() {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "1rem",
+            gap: "0.75rem",
             marginTop: "1.5rem",
             flexWrap: "wrap",
             alignItems: "center",
           }}
         >
           <a
-            href="https://www.npmjs.com/package/aligntrue"
+            href="https://github.com/AlignTrue/aligntrue/actions"
             target="_blank"
             rel="noopener noreferrer"
+            title="CI Status"
             style={{ textDecoration: "none" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/npm/v/aligntrue?label=npm&color=CB3837&logo=npm"
+              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI"
+              alt="CI Status"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://www.npmjs.com/package/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="npm version"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/npm/v/aligntrue?color=CB3837&logo=npm"
               alt="npm version"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://nodejs.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Node.js 22+"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/badge/node-%3E%3D22-brightgreen?logo=node.js&logoColor=white"
+              alt="Node.js Version"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://bundlephobia.com/package/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Bundle Size"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/bundlephobia/minzip/aligntrue?label=bundle&color=4285f4"
+              alt="Bundle Size"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://app.codecov.io/github/AlignTrue/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Code Coverage"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/codecov/c/github/AlignTrue/aligntrue?token=CODECOV_TOKEN&color=f01f7f&logo=codecov"
+              alt="Code Coverage"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/security/code-scanning"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Security Scan"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/codeql.yml?label=security&logo=github"
+              alt="Security Scan Status"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://github.com/AlignTrue/aligntrue/commits/main"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Last commit"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/github/last-commit/AlignTrue/aligntrue?color=9ca3af&logo=github"
+              alt="Last commit"
               style={{ height: "20px", display: "block" }}
             />
           </a>
@@ -69,25 +154,13 @@ function DocsFooter() {
             href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
+            title="MIT License"
             style={{ textDecoration: "none" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://img.shields.io/badge/license-MIT-blue?logo=github"
               alt="MIT License"
-              style={{ height: "20px", display: "block" }}
-            />
-          </a>
-          <a
-            href="https://github.com/AlignTrue/aligntrue/actions"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=tests&logo=github"
-              alt="test status"
               style={{ height: "20px", display: "block" }}
             />
           </a>
