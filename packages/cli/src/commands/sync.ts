@@ -3,7 +3,7 @@
  * Orchestrates loading config, pulling sources, and syncing IR to/from agents
  */
 
-import { existsSync, writeFileSync, unlinkSync, readFileSync } from "fs";
+import { existsSync, writeFileSync, unlinkSync } from "fs";
 import { dirname, resolve, join } from "path";
 import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
@@ -423,19 +423,7 @@ export async function sync(args: string[]): Promise<void> {
       bundleResult.pack,
       config.mode as "team" | "enterprise",
     );
-    const newBundleHash = newLockfile.bundle_hash;
-    const newBundleHashWithPrefix = `sha256:${newBundleHash}`;
-
-    // Load OLD lockfile hash (if exists)
-    let oldBundleHash: string | undefined;
-    if (existsSync(lockfilePath)) {
-      try {
-        const oldLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-        oldBundleHash = oldLockfile.bundle_hash;
-      } catch {
-        // Corrupted lockfile - will be regenerated
-      }
-    }
+    // Regenerate lockfile (old hash no longer needed for drift detection)
 
     // Write new lockfile BEFORE validation so it always reflects current state
     // This ensures drift detection works correctly even if validation fails
