@@ -3,7 +3,7 @@
  * Detects edited agent files and merges them back to IR
  */
 
-import { existsSync, statSync, readFileSync, readdirSync } from "fs";
+import { statSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
 import micromatch from "micromatch";
@@ -193,7 +193,7 @@ export async function detectEditedFiles(
 
   // Check AGENTS.md
   const agentsMdPath = paths.agentsMd();
-  if (existsSync(agentsMdPath)) {
+  try {
     const stats = statSync(agentsMdPath);
     const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
     const matchesEdit = matchesEditSource("AGENTS.md", editSource, cwd);
@@ -243,23 +243,34 @@ export async function detectEditedFiles(
         warnings.push({
           filePath: "AGENTS.md",
           reason: "File was edited but is not in edit_source configuration",
-          suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(suggestedPatterns.length === 1 ? suggestedPatterns[0] : suggestedPatterns)}'`,
+          suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(
+            suggestedPatterns.length === 1
+              ? suggestedPatterns[0]
+              : suggestedPatterns,
+          )}'`,
         });
+      }
+    }
+  } catch (error: any) {
+    if (error.code !== "ENOENT") {
+      // re-throw if not a file-not-found error
+      if (DEBUG_SYNC) {
+        console.error(`[detectEditedFiles] Error processing AGENTS.md`, error);
       }
     }
   }
 
   // Check Cursor .mdc files with glob pattern support
   const cursorRulesDir = join(cwd, ".cursor", "rules");
-  if (existsSync(cursorRulesDir)) {
-    try {
-      const files = readdirSync(cursorRulesDir);
-      const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
+  try {
+    const files = readdirSync(cursorRulesDir);
+    const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
 
-      for (const mdcFile of mdcFiles) {
-        const relativePath = `.cursor/rules/${mdcFile}`;
-        const absolutePath = join(cursorRulesDir, mdcFile);
+    for (const mdcFile of mdcFiles) {
+      const relativePath = `.cursor/rules/${mdcFile}`;
+      const absolutePath = join(cursorRulesDir, mdcFile);
 
+      try {
         const stats = statSync(absolutePath);
         const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
         const matchesEdit = matchesEditSource(relativePath, editSource, cwd);
@@ -310,13 +321,33 @@ export async function detectEditedFiles(
             warnings.push({
               filePath: relativePath,
               reason: "File was edited but is not in edit_source configuration",
-              suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(suggestedPatterns.length === 1 ? suggestedPatterns[0] : suggestedPatterns)}'`,
+              suggestedFix: `aligntrue config set sync.edit_source '${JSON.stringify(
+                suggestedPatterns.length === 1
+                  ? suggestedPatterns[0]
+                  : suggestedPatterns,
+              )}'`,
             });
           }
         }
+      } catch (error: any) {
+        if (error.code !== "ENOENT") {
+          if (DEBUG_SYNC) {
+            console.error(
+              `[detectEditedFiles] Error processing ${relativePath}`,
+              error,
+            );
+          }
+        }
       }
-    } catch {
-      // Directory not readable, continue
+    }
+  } catch (error: any) {
+    if (error.code !== "ENOENT") {
+      if (DEBUG_SYNC) {
+        console.error(
+          `[detectEditedFiles] Error reading .cursor/rules directory`,
+          error,
+        );
+      }
     }
   }
 
@@ -360,37 +391,40 @@ export async function detectReadOnlyFileEdits(
 
   // Add Cursor files if they exist
   const cursorRulesDir = join(cwd, ".cursor", "rules");
-  if (existsSync(cursorRulesDir)) {
-    try {
-      const files = readdirSync(cursorRulesDir);
-      const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
-      for (const mdcFile of mdcFiles) {
-        candidateFiles.push({
-          path: `.cursor/rules/${mdcFile}`,
-          absolutePath: join(cursorRulesDir, mdcFile),
-        });
-      }
-    } catch {
-      // Directory not readable
+  try {
+    const files = readdirSync(cursorRulesDir);
+    const mdcFiles = files.filter((f) => f.endsWith(".mdc"));
+    for (const mdcFile of mdcFiles) {
+      candidateFiles.push({
+        path: `.cursor/rules/${mdcFile}`,
+        absolutePath: join(cursorRulesDir, mdcFile),
+      });
+    }
+  } catch (error: any) {
+    if (error.code !== "ENOENT") {
+      // Directory not readable or other error, ignore in this context
     }
   }
 
   // Check each candidate file
   for (const { path, absolutePath } of candidateFiles) {
-    // Skip if file doesn't exist
-    if (!existsSync(absolutePath)) {
-      continue;
-    }
+    try {
+      // Skip if file doesn't exist (handled by try/catch)
+      const stats = statSync(absolutePath);
 
-    // Skip if file matches edit_source (it's editable)
-    if (matchesEditSource(path, editSource, cwd)) {
-      continue;
-    }
+      // Skip if file matches edit_source (it's editable)
+      if (matchesEditSource(path, editSource, cwd)) {
+        continue;
+      }
 
-    // Check if file was modified
-    const stats = statSync(absolutePath);
-    if (lastSyncTime && stats.mtime > lastSyncTime) {
-      readOnlyEdited.push(path);
+      // Check if file was modified
+      if (lastSyncTime && stats.mtime > lastSyncTime) {
+        readOnlyEdited.push(path);
+      }
+    } catch (error: any) {
+      if (error.code !== "ENOENT") {
+        // Some other error, ignore in this context
+      }
     }
   }
 
