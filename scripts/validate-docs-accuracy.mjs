@@ -34,7 +34,6 @@ const colors = {
 };
 
 const errors = [];
-const warnings = [];
 
 /**
  * Log error with formatting

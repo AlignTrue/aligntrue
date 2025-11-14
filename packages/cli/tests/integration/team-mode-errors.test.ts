@@ -7,7 +7,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { sync } from "../../src/commands/sync/index.js";
-import { team } from "../../src/commands/team.js";
 import * as clack from "@clack/prompts";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
 
