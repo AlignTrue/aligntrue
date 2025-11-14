@@ -77,7 +77,7 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            const isSecurity = '${{ steps.pr-details.outputs.is-security }}' === 'true';
+            const isSecurity = '${{ steps.pr-details.outputs.is-security == 'true' }}' === 'true';
             const reason = '${{ steps.pr-details.outputs.reason }}';
 
             const approvalBody = isSecurity 

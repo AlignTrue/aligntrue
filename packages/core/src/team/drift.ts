@@ -66,17 +66,20 @@ export interface DriftResult {
 }
 
 /**
- * Detect upstream drift (DEPRECATED - removed allow list)
- * Now rely on git PR approval instead of explicit allow list
- * Compares base_hash (when available) with allowed source hashes
- * Falls back to content_hash for backward compatibility
+ * Detect upstream drift
+ * Compares content_hash with resolved_hash from allow list
  */
-/* DEPRECATED: Removed allow list mechanism
 export function detectUpstreamDrift(
   lockfile: Lockfile,
-  allowList: AllowList,
+  allowList: {
+    sources?: Array<{ value: string; resolved_hash?: string }>;
+  },
 ): DriftFinding[] {
   const findings: DriftFinding[] = [];
+
+  if (!allowList.sources) {
+    return findings;
+  }
 
   for (const entry of lockfile.rules) {
     // Skip entries without source (local rules)
@@ -86,20 +89,19 @@ export function detectUpstreamDrift(
 
     // Find matching allow list entry
     const allowedSource = allowList.sources.find(
-      (s: AllowListSource) =>
+      (s: { value: string; resolved_hash?: string }) =>
         s.value === entry.source ||
         s.value.includes(entry.source || "") ||
         (entry.source || "").includes(s.value),
     );
 
     if (!allowedSource) {
-      // Source not in allow list - this should be caught by validation
-      // but we'll report it as drift anyway
+      // Source not in allow list
       findings.push({
         category: "upstream",
         rule_id: entry.rule_id,
         message: `Source not in allow list: ${entry.source}`,
-        suggestion: `Run: aligntrue team approve ${entry.source}`,
+        suggestion: `Run: aligntrue team approve --current`,
         lockfile_hash: entry.content_hash,
         source: entry.source,
       });
@@ -107,33 +109,18 @@ export function detectUpstreamDrift(
     }
 
     // Check if resolved hash exists and differs
-    // Overlays system: Use base_hash if available (more precise for overlays)
-    const hashToCompare = entry.base_hash || entry.content_hash;
+    const hashToCompare = entry.content_hash;
     if (allowedSource.resolved_hash) {
       if (hashToCompare !== allowedSource.resolved_hash) {
         const finding: DriftFinding = {
           category: "upstream",
           rule_id: entry.rule_id,
-          message: entry.base_hash
-            ? "Upstream pack has been updated (base_hash differs)"
-            : "Lockfile hash differs from allowed version",
-          suggestion: `Run: aligntrue update apply\nOr:  aligntrue team approve ${entry.source} --force`,
+          message: "Upstream content hash differs from allowed version",
+          suggestion: `Run: aligntrue update apply\nOr:  aligntrue team approve --current`,
           lockfile_hash: hashToCompare,
           expected_hash: allowedSource.resolved_hash,
           source: entry.source,
         };
-
-        // Include triple-hash details when available
-        if (entry.base_hash) {
-          finding.base_hash = entry.base_hash;
-          finding.expected_base_hash = allowedSource.resolved_hash;
-        }
-        if (entry.overlay_hash) {
-          finding.overlay_hash = entry.overlay_hash;
-        }
-        if (entry.result_hash) {
-          finding.result_hash = entry.result_hash;
-        }
 
         findings.push(finding);
       }
@@ -142,7 +129,6 @@ export function detectUpstreamDrift(
 
   return findings;
 }
-*/
 
 /**
  * Detect vendorized drift
@@ -567,9 +553,34 @@ export async function detectDrift(
     );
   }
 
-  // Run drift detection checks (simplified - no allow list)
+  // Run drift detection checks
   const findings: DriftFinding[] = [];
-  // Note: detectUpstreamDrift removed - rely on git PR approval instead
+
+  // Load allow list if it exists
+  // Use provided allow list path if not relative, otherwise join with basePath
+  const computedAllowListPath = _allowListPath.startsWith("/")
+    ? _allowListPath
+    : join(basePath, _allowListPath);
+
+  if (existsSync(computedAllowListPath)) {
+    try {
+      const { parse } = await import("yaml");
+      const allowListContent = readFileSync(computedAllowListPath, "utf-8");
+      const allowList = parse(allowListContent) as {
+        sources?: Array<{
+          value: string;
+          resolved_hash?: string;
+          [key: string]: unknown;
+        }>;
+      };
+      if (allowList?.sources && Array.isArray(allowList.sources)) {
+        findings.push(...detectUpstreamDrift(lockfile, allowList));
+      }
+    } catch {
+      // Silently skip if allow list parsing fails
+    }
+  }
+
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));
