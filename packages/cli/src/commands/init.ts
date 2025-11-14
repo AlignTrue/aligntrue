@@ -3,7 +3,13 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import { existsSync, mkdirSync, writeFileSync, renameSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  renameSync,
+  readFileSync,
+} from "fs";
 import { dirname, join } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -193,7 +199,7 @@ export async function init(args: string[] = []): Promise<void> {
 
     if (existsSync(paths.config)) {
       try {
-        const configContent = require("fs").readFileSync(paths.config, "utf-8");
+        const configContent = readFileSync(paths.config, "utf-8");
         teamConfig = yaml.parse(configContent);
         isTeamMode =
           teamConfig?.mode === "team" || teamConfig?.mode === "enterprise";

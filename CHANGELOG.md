@@ -17,6 +17,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Consolidated validation logic into shared utilities** - Reduced code duplication across packages
+  - Created `ensureSectionsArray` utility in `packages/core/src/validation/sections.ts`
+  - Refactored 8+ instances of inline array validation to use shared utility
+  - Standardized sections validation across bundle, lockfile, sync, overlays, and CLI modules
+- **Standardized error handling for non-interactive mode** - Consistent confirmation errors across CLI
+  - Added `CommonErrors.nonInteractiveConfirmation` to centralized error factory
+  - Refactored 7 instances of inline error messages to use `exitWithError` pattern
+  - Improved testability and consistency in migrate, revert, and override commands
+- **Created test setup helper to reduce test boilerplate** - Simplified test file setup
+  - New `setupTestProject` helper in `packages/cli/tests/helpers/test-setup.ts`
+  - Standardized directory creation, file generation, and cleanup across test files
+  - Refactored multiple test files to use consistent setup pattern
+- **Replaced require() with static imports** - Improved type safety and ESM compliance
+  - Converted dynamic `require()` calls to static imports in CLI commands
+  - Better TypeScript checking and IDE support
+  - Consistent import patterns across codebase
 - **Refactored sync command** - Split monolithic 1,319-line sync.ts into focused modules
   - Created `packages/cli/src/commands/sync/` directory structure
   - Separated concerns: options, context-builder, workflow, result-handler

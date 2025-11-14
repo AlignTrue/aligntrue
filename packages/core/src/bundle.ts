@@ -9,6 +9,7 @@
  */
 
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import { ensureSectionsArray } from "./validation/sections.js";
 
 export interface BundleOptions {
   /**
@@ -69,9 +70,7 @@ export function mergePacks(
       throw new Error("First pack is undefined");
     }
     // Defensive: Initialize sections to empty array if missing
-    if (!pack.sections || !Array.isArray(pack.sections)) {
-      pack.sections = [];
-    }
+    ensureSectionsArray(pack);
     // Sort sections by fingerprint for determinism if pack has sections
     if (pack.sections.length > 1) {
       const sortedSections = [...pack.sections].sort((a, b) =>
@@ -118,9 +117,7 @@ export function mergePacks(
     if (!pack) continue;
 
     // Defensive: Initialize sections to empty array if missing
-    if (!pack.sections || !Array.isArray(pack.sections)) {
-      pack.sections = [];
-    }
+    ensureSectionsArray(pack);
 
     const sourceName = pack.id || `source-${i}`;
 

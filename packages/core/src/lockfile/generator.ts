@@ -9,6 +9,7 @@ import { computeContentHash, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
 import type { OverlayDefinition } from "../overlays/types.js";
+import { ensureSectionsArray } from "../validation/sections.js";
 
 /**
  * Generate lockfile from an AlignPack bundle
@@ -44,11 +45,7 @@ export function generateLockfile(
     overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
 
   // Defensive: ensure sections exists
-  if (!pack.sections || !Array.isArray(pack.sections)) {
-    throw new Error(
-      `Pack does not contain valid sections array. Got: ${typeof pack.sections}`,
-    );
-  }
+  ensureSectionsArray(pack, { throwOnInvalid: true });
 
   // Generate entries from sections using fingerprints
   for (const section of pack.sections) {

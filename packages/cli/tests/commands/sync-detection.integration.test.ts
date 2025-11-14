@@ -3,19 +3,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { sync } from "../../src/commands/sync/index.js";
+import { setupTestProject } from "../helpers/test-setup.js";
 
 describe("Sync detection integration", () => {
   let testDir: string;
   let originalCwd: string;
   let originalExit: typeof process.exit;
+  let cleanup: () => Promise<void>;
 
   beforeEach(() => {
     testDir = join(tmpdir(), `aligntrue-detection-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    const ctx = setupTestProject(testDir, {
+      customConfig: `exporters:
+  - cursor
+sources:
+  - path: .aligntrue/.rules.yaml
+`,
+      customRules: `id: test-project
+version: 1.0.0
+spec_version: '1'
+sections:
+  - heading: Test rule
+    content: Test rule guidance
+    fingerprint: test.example.rule
+`,
+    });
+    cleanup = ctx.cleanup;
     originalCwd = process.cwd();
     process.chdir(testDir);
 
@@ -24,34 +41,12 @@ describe("Sync detection integration", () => {
     process.exit = ((code?: number) => {
       throw new Error(`process.exit: ${code ?? 0}`);
     }) as never;
-
-    // Create minimal AlignTrue setup
-    mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
-    writeFileSync(
-      join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\n",
-    );
-    writeFileSync(
-      join(testDir, ".aligntrue/.rules.yaml"),
-      `id: test-project
-version: 1.0.0
-spec_version: '1'
-rules:
-  - id: test.example.rule
-    severity: info
-    applies_to:
-      - "**/*.ts"
-    guidance: Test rule
-`,
-    );
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     process.exit = originalExit;
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    await cleanup();
   });
 
   it("detects cursor files in workspace", async () => {

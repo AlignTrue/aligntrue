@@ -5,7 +5,11 @@
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
-import { mergePacks, type BundleResult } from "@aligntrue/core";
+import {
+  mergePacks,
+  type BundleResult,
+  ensureSectionsArray,
+} from "@aligntrue/core";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
@@ -217,9 +221,9 @@ export async function resolveAndMergeSources(
     }
     const pack = parseYamlToJson(firstSource.content) as AlignPack;
     // Defensive: Initialize sections to empty array ONLY if missing or invalid
-    if (pack.sections === undefined || pack.sections === null) {
-      pack.sections = [];
-    } else if (!Array.isArray(pack.sections)) {
+    try {
+      ensureSectionsArray(pack, { throwOnInvalid: true });
+    } catch {
       throw new Error(
         `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
           `  Source: ${firstSource.sourcePath}`,
@@ -239,9 +243,9 @@ export async function resolveAndMergeSources(
     try {
       const pack = parseYamlToJson(source.content) as AlignPack;
       // Defensive: Initialize sections to empty array ONLY if missing or invalid
-      if (pack.sections === undefined || pack.sections === null) {
-        pack.sections = [];
-      } else if (!Array.isArray(pack.sections)) {
+      try {
+        ensureSectionsArray(pack, { throwOnInvalid: true });
+      } catch {
         throw new Error(
           `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
             `  Source: ${source.sourcePath}`,
