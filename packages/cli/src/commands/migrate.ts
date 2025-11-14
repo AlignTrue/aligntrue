@@ -3,6 +3,7 @@
  */
 
 import * as clack from "@clack/prompts";
+import { join } from "path";
 import {
   BackupManager,
   type AlignTrueConfig,
@@ -15,6 +16,8 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { CommonErrors } from "../utils/common-errors.js";
+import { exitWithError } from "../utils/error-formatter.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -148,9 +151,7 @@ export async function promote(args: string[]): Promise<void> {
   // Confirm
   if (!yes && !dryRun) {
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --yes to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
     }
 
     const confirm = await clack.confirm({
@@ -265,9 +266,7 @@ export async function demote(args: string[]): Promise<void> {
   // Confirm
   if (!yes && !dryRun) {
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --yes to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
     }
 
     const confirm = await clack.confirm({
@@ -378,9 +377,7 @@ export async function local(args: string[]): Promise<void> {
   // Confirm
   if (!yes && !dryRun) {
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --yes to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
     }
 
     const confirm = await clack.confirm({
@@ -443,7 +440,7 @@ async function migratePersonal(
   }
 
   const { loadConfig } = await import("@aligntrue/core");
-  const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
   const config = await loadConfig(configPath);
 
   // Check if personal storage is already remote
@@ -470,9 +467,7 @@ async function migratePersonal(
 
   if (!yes && !dryRun) {
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --yes to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
     }
 
     const confirm = await clack.confirm({
@@ -534,7 +529,7 @@ async function migrateTeam(
   }
 
   const { loadConfig } = await import("@aligntrue/core");
-  const configPath = require("path").join(cwd, ".aligntrue", "config.yaml");
+  const configPath = join(cwd, ".aligntrue", "config.yaml");
   const config = await loadConfig(configPath);
 
   // Check if team storage is already remote
@@ -559,9 +554,7 @@ async function migrateTeam(
 
   if (!yes && !dryRun) {
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --yes to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
     }
 
     const confirm = await clack.confirm({

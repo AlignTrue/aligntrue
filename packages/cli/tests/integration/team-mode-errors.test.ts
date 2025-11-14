@@ -4,25 +4,28 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { sync } from "../../src/commands/sync/index.js";
 import { team } from "../../src/commands/team.js";
 import * as clack from "@clack/prompts";
+import { setupTestProject } from "../helpers/test-setup.js";
 
 vi.mock("@clack/prompts");
 
 describe("Team Mode Error Handling", () => {
   let testDir: string;
   let originalCwd: string;
+  let cleanup: () => Promise<void>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     originalCwd = process.cwd();
 
     testDir = join(tmpdir(), `team-errors-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    const ctx = setupTestProject(testDir, { skipFiles: true });
+    cleanup = ctx.cleanup;
     process.chdir(testDir);
 
     // Mock process.exit to throw for testing
@@ -43,9 +46,9 @@ describe("Team Mode Error Handling", () => {
     vi.mocked(clack.outro).mockImplementation(() => {});
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     process.chdir(originalCwd);
-    rmSync(testDir, { recursive: true, force: true });
+    await cleanup();
     vi.restoreAllMocks();
   });
 

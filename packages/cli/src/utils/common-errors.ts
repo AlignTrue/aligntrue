@@ -162,4 +162,17 @@ export const CommonErrors = {
     hint: "Run 'aligntrue sync' to regenerate lockfile",
     code: "ERR_LOCKFILE_VALIDATION_FAILED",
   }),
+
+  /**
+   * Non-interactive confirmation required error
+   *
+   * @param flag - Flag to use for skipping confirmation (default: "--yes")
+   * @returns Formatted error with flag hint
+   */
+  nonInteractiveConfirmation: (flag: string = "--yes"): CLIError => ({
+    title: "Confirmation required in non-interactive mode",
+    message: "Cannot prompt for confirmation without a TTY",
+    hint: `Use ${flag} to skip confirmation`,
+    code: "ERR_NON_INTERACTIVE_CONFIRMATION",
+  }),
 };

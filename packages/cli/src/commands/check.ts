@@ -5,7 +5,7 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { type AlignTrueConfig } from "@aligntrue/core";
+import { type AlignTrueConfig, ensureSectionsArray } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import { validateAlignSchema } from "@aligntrue/schema";
 import {
@@ -228,9 +228,7 @@ export async function check(args: string[]): Promise<void> {
     // Defensive: Ensure sections array exists (for backward compatibility)
     // This must be done BEFORE validation since schema requires sections
     const pack = alignData as AlignPack;
-    if (!pack.sections || !Array.isArray(pack.sections)) {
-      pack.sections = [];
-    }
+    ensureSectionsArray(pack);
 
     // Validate against schema
     const schemaResult = validateAlignSchema(pack);
