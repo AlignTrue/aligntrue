@@ -446,7 +446,7 @@ async function configSet(
     const yamlContent = stringifyYaml(config, {
       indent: 2,
       lineWidth: 0,
-      defaultStringType: "QUOTE_DOUBLE",
+      // Use YAML defaults for string types (no unnecessary quoting)
     });
     writeFileSync(configPath, yamlContent, "utf-8");
 

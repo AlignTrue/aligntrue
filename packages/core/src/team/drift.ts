@@ -4,8 +4,6 @@
  */
 
 import { existsSync, readFileSync, statSync } from "fs";
-import { parseAllowList } from "./allow.js";
-import type { AllowList, AllowListSource } from "./types.js";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
@@ -68,10 +66,12 @@ export interface DriftResult {
 }
 
 /**
- * Detect upstream drift (Overlays system enhanced)
+ * Detect upstream drift (DEPRECATED - removed allow list)
+ * Now rely on git PR approval instead of explicit allow list
  * Compares base_hash (when available) with allowed source hashes
  * Falls back to content_hash for backward compatibility
  */
+/* DEPRECATED: Removed allow list mechanism
 export function detectUpstreamDrift(
   lockfile: Lockfile,
   allowList: AllowList,
@@ -142,6 +142,7 @@ export function detectUpstreamDrift(
 
   return findings;
 }
+*/
 
 /**
  * Detect vendorized drift
@@ -530,33 +531,12 @@ export async function detectDriftForConfig(config: unknown): Promise<{
  */
 export async function detectDrift(
   lockfilePath: string,
-  allowListPath: string,
+  _allowListPath: string, // Deprecated: no longer used (approval via git PR)
   basePath: string = ".",
   currentBundleHash?: string,
 ): Promise<DriftResult> {
   // Check if lockfile exists
   if (!existsSync(lockfilePath)) {
-    return {
-      has_drift: false,
-      findings: [],
-      summary: {
-        total: 0,
-        by_category: {
-          upstream: 0,
-          overlay: 0,
-          result: 0,
-          severity_remap: 0,
-          vendorized: 0,
-          local_overlay: 0,
-          lockfile: 0,
-          agent_file: 0,
-        },
-      },
-    };
-  }
-
-  // Check if allow list exists
-  if (!existsSync(allowListPath)) {
     return {
       has_drift: false,
       findings: [],
@@ -587,19 +567,9 @@ export async function detectDrift(
     );
   }
 
-  // Parse allow list
-  let allowList: AllowList;
-  try {
-    allowList = parseAllowList(allowListPath);
-  } catch (_err) {
-    throw new Error(
-      `Failed to parse allow list: ${_err instanceof Error ? _err.message : String(_err)}`,
-    );
-  }
-
-  // Run all drift detection checks
+  // Run drift detection checks (simplified - no allow list)
   const findings: DriftFinding[] = [];
-  findings.push(...detectUpstreamDrift(lockfile, allowList));
+  // Note: detectUpstreamDrift removed - rely on git PR approval instead
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));

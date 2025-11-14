@@ -135,7 +135,8 @@ describe("AGENTS.md-based exporter variants", () => {
       // AGENTS.md format uses different headers
       expect(content.length).toBeGreaterThan(0);
       expect(content).toContain("Test rule for " + variant);
-      expect(content).toContain("Content Hash:"); // Note: no hyphen in "Content Hash"
+      // DEPRECATED: Footer check removed - footers no longer included
+      // expect(content).toContain("Content Hash:"); // Note: no hyphen in "Content Hash"
     }
   });
 

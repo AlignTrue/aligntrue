@@ -219,7 +219,7 @@ export async function init(args: string[] = []): Promise<void> {
 
       clack.log.info(`Team Configuration:
   Mode: ${teamConfig?.mode}
-  Approval: ${teamConfig?.approval?.internal || "pr_approval"} (${teamConfig?.lockfile?.mode === "strict" ? "strict" : "relaxed"})
+  Lockfile: ${teamConfig?.lockfile?.mode === "strict" ? "strict" : "relaxed"}
   Team sections: ${teamSectionsDisplay}
 `);
 

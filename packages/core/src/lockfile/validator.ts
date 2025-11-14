@@ -1,12 +1,10 @@
 /**
- * Lockfile validator with mismatch detection and allow list integration
+ * Lockfile validator with mismatch detection (simplified - no allow list)
  */
 
 import type { AlignPack } from "@aligntrue/schema";
 import type { Lockfile, ValidationResult, Mismatch } from "./types.js";
 import { hashSection } from "./generator.js";
-import { existsSync } from "fs";
-import { parseAllowList } from "../team/allow.js";
 
 /**
  * Validate lockfile against current bundle
@@ -163,12 +161,18 @@ export interface LockfileTeamValidationResult {
 }
 
 /**
- * Validate lockfile sources against allow list (team mode only)
- *
- * Checks that all sources in lockfile are approved in allow list.
- * Only runs in team mode when allow list exists.
+ * Validate lockfile sources (DEPRECATED - removed allow list)
+ * Approval now happens via git PR review
  */
 export function validateAgainstAllowList(
+  _lockfile: Lockfile,
+  _mode: "solo" | "team" | "enterprise",
+  _allowListPath: string = ".aligntrue/allow.yaml",
+): LockfileTeamValidationError[] {
+  // DEPRECATED: No longer validate against allow list
+  return [];
+
+  /* OLD IMPLEMENTATION
   lockfile: Lockfile,
   mode: "solo" | "team" | "enterprise",
   allowListPath: string = ".aligntrue/allow.yaml",
@@ -248,14 +252,24 @@ export function validateAgainstAllowList(
 
   return errors;
 }
+  */
+}
 
 /**
- * Check for drift from allowed hash versions
+ * Check for drift from allowed hash versions (DEPRECATED - removed allow list)
  *
  * Compares lockfile hashes with expected hashes from allow list.
  * This is a foundation for Session 6 drift detection.
  */
 export function checkDriftFromAllowedHashes(
+  _lockfile: Lockfile,
+  _mode: "solo" | "team" | "enterprise",
+  _allowListPath: string = ".aligntrue/allow.yaml",
+): LockfileTeamValidationError[] {
+  // DEPRECATED: No longer check drift against allow list
+  return [];
+
+  /* OLD IMPLEMENTATION
   lockfile: Lockfile,
   mode: "solo" | "team" | "enterprise",
   allowListPath: string = ".aligntrue/allow.yaml",
@@ -315,9 +329,11 @@ export function checkDriftFromAllowedHashes(
 
   return errors;
 }
+  */
+}
 
 /**
- * Validate lockfile for team mode
+ * Validate lockfile for team mode (simplified - no allow list)
  *
  * Combines allow list validation and drift detection.
  * Returns all validation errors.
