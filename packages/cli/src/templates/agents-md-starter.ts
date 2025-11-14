@@ -4,7 +4,7 @@
  */
 
 export function generateAgentsMdStarter(_projectId?: string): string {
-  return `# Project Rules
+  return `## Project Rules
 
 This file contains guidance for AI coding assistants working on this project.
 

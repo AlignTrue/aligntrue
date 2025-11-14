@@ -85,7 +85,7 @@ export async function discoverSourceFiles(
         }) => ({
           heading: s.heading,
           content: s.content,
-          level: s.level || 1,
+          level: s.level || 2,
           fingerprint: s.hash || "",
         }),
       );
