@@ -156,8 +156,13 @@ export async function detectEditedFiles(
     return { files: [], warnings: [] };
   }
 
-  // NEW: Check source files if configured (multi-file support)
-  if (config.sync?.source_files) {
+  // NEW: Check source files if explicitly configured (multi-file support)
+  // Note: We skip this if source_files is not configured to avoid duplicate AGENTS.md detection
+  if (
+    config.sync?.source_files &&
+    Array.isArray(config.sync.source_files) &&
+    config.sync.source_files.length > 0
+  ) {
     const { discoverSourceFiles } = await import("./source-loader.js");
     const sourceFiles = await discoverSourceFiles(cwd, config);
 
@@ -174,7 +179,7 @@ export async function detectEditedFiles(
           sections: file.sections.map((s) => ({
             heading: s.heading,
             content: s.content,
-            level: s.level || 1,
+            level: s.level || 2,
             hash: createHash("sha256")
               .update(s.heading + s.content)
               .digest("hex")
