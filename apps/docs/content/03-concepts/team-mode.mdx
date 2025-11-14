@@ -69,13 +69,14 @@ For rule-based packs, `rule_id` contains the explicit rule ID. For section-based
 
 Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
 
-### 3. Create allow list
+### 3. Commit lockfile
 
 ```bash
-aligntrue team approve --current
+git add .aligntrue.lock.json
+git commit -m "chore: Enable team mode"
 ```
 
-This creates `.aligntrue.allow` and approves your current bundle hash.
+Approval happens via standard git PR review workflow.
 
 ### 4. Sync with validation
 
@@ -157,17 +158,19 @@ Example: `sha256:abc123def456...`
 ### Quick approve current bundle
 
 ```bash
-# After sync, approve what you have
-aligntrue team approve --current
+# After sync, commit the lockfile
+git add .aligntrue.lock.json
+git commit -m "chore: Update lockfile"
 ```
 
-This reads the bundle hash from `.aligntrue.lock.json` and adds it to the allow list.
+Approval happens via git PR review workflow.
 
 ### Manual approve by hash
 
 ```bash
-# Approve specific bundle hash
-aligntrue team approve sha256:abc123...
+# Commit lockfile with specific hash
+git add .aligntrue.lock.json
+git commit -m "chore: Approve bundle sha256:abc123..."
 ```
 
 ### Enforcement
@@ -183,9 +186,8 @@ In team mode with an allow list:
 When you first enable team mode:
 
 1. Run `aligntrue sync` to generate lockfile
-2. Run `aligntrue team approve --current` to approve it
-3. Commit both files to git
-4. Team members clone and sync normally
+2. Commit lockfile to git (approval via PR)
+3. Team members clone and sync normally
 
 ## CLI commands
 
@@ -199,31 +201,23 @@ aligntrue team enable
 
 Interactive confirmation, then updates config.
 
-### `aligntrue team approve`
+### `aligntrue team disable`
 
-Add source(s) to allow list.
+Disable team mode and migrate back to solo mode.
 
 ```bash
-# Approve single source
-aligntrue team approve sha256:abc123...
-
-# Approve multiple sources
-aligntrue team approve \
-  git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml \
-  sha256:def456...
-
-# Approve with ID@version (resolves to hash)
-aligntrue team approve custom-pack@myorg/rules@v2.1.0
+aligntrue team disable
 ```
 
 **What it does:**
 
-1. Parses source format
-2. Resolves ID@version to concrete hash
-3. Adds to `.aligntrue.allow`
-4. Shows resolved hash
+1. Creates automatic backup before migration
+2. Updates config: removes team mode settings
+3. Deletes `.aligntrue.lock.json` (no purpose in solo mode)
+4. Preserves `.aligntrue/.rules.yaml` (team rules become solo public rules)
+5. Shows confirmation message with backup timestamp
 
-**Interactive mode:** If resolution fails, prompts to continue with remaining sources.
+**Note:** Team rules become regular solo rules. You can make them private by editing AGENTS.md.
 
 ### `aligntrue team list-allowed`
 
@@ -281,11 +275,12 @@ aligntrue sync --force
 # 1. Enable team mode
 aligntrue team enable
 
-# 2. Approve team sources
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-
-# 3. Sync to generate lockfile
+# 2. Sync to generate lockfile
 aligntrue sync
+
+# 3. Commit (approval via PR)
+git add .aligntrue.lock.json
+git commit -m "chore: Enable team mode"
 
 # 4. Commit team files
 git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
@@ -309,11 +304,13 @@ aligntrue sync
 When adding a new rule source:
 
 ```bash
-# 1. Approve source
-aligntrue team approve new-pack@vendor/rules@v1.0.0
-
-# 2. Update config to use new source
+# 1. Update config to use new source
 # Edit .aligntrue/config.yaml, add to sources array
+
+# 2. Sync and commit (approval via PR)
+aligntrue sync
+git add .aligntrue.lock.json
+git commit -m "chore: Add new pack"
 
 # 3. Sync
 aligntrue sync
@@ -361,7 +358,7 @@ git push
   - custom-pack@example/org@v1.0.0
 
 To approve sources:
-  aligntrue team approve <source>
+  Add to .aligntrue/config.yaml and commit via PR
 
 Or bypass this check (not recommended):
   aligntrue sync --force
@@ -369,10 +366,13 @@ Or bypass this check (not recommended):
 
 **Resolution:**
 
-1. **Intended source:** Approve it
+1. **Intended source:** Add to config and commit via PR
 
    ```bash
-   aligntrue team approve custom-pack@example/org@v1.0.0
+   # Edit .aligntrue/config.yaml to add source
+   aligntrue sync
+   git add .aligntrue.lock.json
+   git commit -m "chore: Add approved source"
    ```
 
 2. **Testing/emergency:** Use --force (logs warning)
@@ -393,10 +393,9 @@ Or bypass this check (not recommended):
 
 ```bash
 # List current sources
-aligntrue team list-allowed
+cat .aligntrue/config.yaml
 
-# Approve missing source
-aligntrue team approve <source>
+# Add missing source to config and commit via PR
 ```
 
 ### Network failures during resolution
@@ -405,10 +404,13 @@ aligntrue team approve <source>
 
 **Fix:**
 
-1. Use hash format instead:
+1. Add source to config with explicit hash:
 
-   ```bash
-   aligntrue team approve sha256:abc123...
+   ```yaml
+   sources:
+     - type: git
+       url: https://github.com/org/rules
+       hash: sha256:abc123...
    ```
 
 2. Or ensure git access:
@@ -465,8 +467,11 @@ aligntrue team approve <source>
 
 **Example:**
 
-```bash
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+```yaml
+sources:
+  - type: git
+    url: https://github.com/AlignTrue/aligntrue
+    path: examples/packs/global.yaml
 ```
 
 ### When to use hash
@@ -485,8 +490,11 @@ aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs
 
 **Example:**
 
-```bash
-aligntrue team approve sha256:abc123def456...
+```yaml
+sources:
+  - type: git
+    url: https://github.com/org/rules
+    hash: sha256:abc123def456...
 ```
 
 ## Managed sections
@@ -719,10 +727,9 @@ Git source resolution:
 aligntrue team status
 
 # Check allow list exists
-cat .aligntrue.allow
+cat .aligntrue/config.yaml
 
-# Re-approve sources if needed
-aligntrue team approve <source>
+# Update sources in config if needed
 ```
 
 ### Lockfile generation fails

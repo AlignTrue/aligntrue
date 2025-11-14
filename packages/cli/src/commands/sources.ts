@@ -35,16 +35,12 @@ export async function sources(args: string[]): Promise<void> {
       // Helpful error for users trying to add packs
       console.error(`Error: 'sources add' is not a valid command\n`);
       console.error(`To add external packs or rules:\n`);
-      console.error(`  1. Test rules temporarily:`);
-      console.error(`     aligntrue pull <git-url>\n`);
-      console.error(`  2. Add permanently to config:`);
-      console.error(`     aligntrue pull <git-url> --save\n`);
-      console.error(`  3. Or edit .aligntrue/config.yaml manually:`);
+      console.error(`  Edit .aligntrue/config.yaml and add to sources:`);
       console.error(`     sources:`);
       console.error(`       - type: git`);
       console.error(`         url: https://github.com/yourorg/rules`);
       console.error(`         path: rules.yaml\n`);
-      console.error(`For more help: aligntrue pull --help`);
+      console.error(`For more help: aligntrue sources --help`);
       process.exit(2);
     case undefined:
     case "--help":
@@ -287,10 +283,10 @@ NOTE
   The 'sources' command is for organizing your own rules into multiple files.
   
   To add external packs or rules from git repositories:
-    - Use: aligntrue pull <git-url>
-    - Or: aligntrue pull <git-url> --save
+    - Edit .aligntrue/config.yaml and add to sources array
+    - Use type: git with url and optional path fields
   
-  For more information: aligntrue pull --help
+  For more information: aligntrue sources --help
 `);
 }
 

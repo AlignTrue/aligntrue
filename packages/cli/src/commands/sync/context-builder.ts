@@ -131,7 +131,7 @@ export async function buildSyncContext(
         console.log("Team mode requires approval before updating git sources.");
         console.log("\nOptions:");
         console.log(
-          `  1. Approve updates:     aligntrue team approve ${updateErr.url}`,
+          `  1. Approve via git PR:  Review and merge changes to config`,
         );
         console.log(
           `  2. Skip update check:   aligntrue sync --skip-update-check`,

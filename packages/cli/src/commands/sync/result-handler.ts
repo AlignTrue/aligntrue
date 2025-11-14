@@ -327,8 +327,8 @@ export function handleSyncError(error: Error): void {
     if (error.message.includes("lockfile")) {
       clack.log.info("Lockfile drift detected. To approve these changes:");
       clack.log.info("  1. Review the changes above");
-      clack.log.info("  2. Run: aligntrue team approve --current");
-      clack.log.info("  3. Commit .aligntrue/allow.yaml to version control");
+      clack.log.info("  2. Approve via git PR review workflow");
+      clack.log.info("  3. Commit .aligntrue.lock.json to version control");
       clack.log.info("");
       clack.log.info("Or set lockfile.mode: soft in config for warnings only");
     } else if (error.message.includes("exporter")) {

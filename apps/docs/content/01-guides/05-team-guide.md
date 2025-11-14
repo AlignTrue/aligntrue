@@ -17,15 +17,13 @@ This guide shows how teams use AlignTrue to maintain consistent AI agent behavio
 # 1. Enable team mode
 aligntrue team enable
 
-# 2. Approve sources
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-
-# 3. Generate lockfile
+# 2. Generate lockfile
 aligntrue sync
 
-# 4. Commit to git
+# 3. Commit to git (approval via PR review)
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "chore: Enable AlignTrue team mode"
+git push origin main
 ```
 
 **Result:** Team gets reproducible builds with drift detection.
@@ -69,21 +67,21 @@ aligntrue team enable
 - `soft` - Warn on drift, don't block
 - `strict` - Block on drift, require exact match
 
-### Step 2: Create allow list
+### Step 2: Configure sources
 
-```bash
-# Approve sources
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-aligntrue team approve git:https://github.com/org/standards/typescript-standards.yaml
+Add sources to `.aligntrue/config.yaml`:
 
-# List approved
-aligntrue team list-allowed
-
-# Output:
-# Approved sources (2):
-#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-#   git:https://github.com/org/standards/typescript-standards.yaml
+```yaml
+sources:
+  - type: git
+    url: https://github.com/AlignTrue/aligntrue
+    path: examples/packs/global.yaml
+  - type: git
+    url: https://github.com/org/standards
+    path: typescript-standards.yaml
 ```
+
+**Note:** Source approval happens via git PR review workflow.
 
 **Allow list format:**
 
@@ -243,13 +241,11 @@ sources:
   - git: https://github.com/org/team-standards
     ref: v1.0.0
 
-# 5. Approve and sync
-aligntrue team approve team-standards@org/team-standards@v1.0.0
+# 5. Sync and commit (approval via PR)
 aligntrue sync
-
-# 6. Commit
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Add team standards"
+git push origin main
 ```
 
 **Result:** All team projects use shared standards.
@@ -377,20 +373,14 @@ overlays:
 # 1. Enable team mode
 aligntrue team enable
 
-# 2. Approve all sources
-aligntrue team approve base-standards@company/base-standards@v2.0.0
-aligntrue team approve frontend-standards@company/frontend-standards@v1.0.0
-aligntrue team approve backend-standards@company/backend-standards@v1.0.0
-
-# 3. Sync
+# 2. Sync and verify
 aligntrue sync
-
-# 4. Verify scopes
 aligntrue scopes
 
-# 5. Commit
+# 3. Commit (approval via PR)
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "chore: Configure team scopes and standards"
+git push origin main
 ```
 
 **Result:** Each team gets appropriate rules while sharing base standards.
@@ -483,12 +473,10 @@ aligntrue drift
 # Regenerate lockfile with new bundle hash
 aligntrue sync
 
-# Approve the new hash (if in strict mode)
-aligntrue team approve --current
-
-# Commit the updated lockfile
-git add .aligntrue.lock.json .aligntrue.allow
+# Commit the updated lockfile (approval via PR)
+git add .aligntrue.lock.json
 git commit -m "chore: Update lockfile after rule changes"
+git push origin main
 ```
 
 **Lockfile modes:**
@@ -601,8 +589,10 @@ aligntrue update check
 # Apply update
 aligntrue update apply
 
-# Approve new hash
-aligntrue team approve --current
+# Commit changes (approval via PR)
+git add .aligntrue.lock.json
+git commit -m "chore: Apply upstream updates"
+git push origin main
 ```
 
 ### Drift detection in CI
@@ -1015,8 +1005,10 @@ aligntrue sync --force
 # ... deploy ...
 
 # 3. Fix properly afterward
-aligntrue team approve <source>
 aligntrue sync
+git add .aligntrue.lock.json
+git commit -m "chore: Update lockfile"
+git push origin main
 
 # 4. Document in postmortem
 ```
@@ -1123,9 +1115,9 @@ Tested by: @dev1, @dev2, @dev3"
 **Team collaboration workflow:**
 
 1. **Enable team mode** - `aligntrue team enable`
-2. **Create allow list** - `aligntrue team approve <sources>`
+2. **Configure sources** - Add to `.aligntrue/config.yaml`
 3. **Generate lockfile** - `aligntrue sync`
-4. **Commit to git** - Share with team
+4. **Commit to git** - Share with team (approval via PR)
 5. **Onboard members** - `git clone && aligntrue sync`
 6. **Update safely** - `aligntrue drift && aligntrue update`
 
