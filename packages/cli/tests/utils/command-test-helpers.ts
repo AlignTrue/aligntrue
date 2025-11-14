@@ -5,8 +5,6 @@
  * help text in command tests. Optional adoption for existing tests.
  */
 
-import { expect } from "vitest";
-
 /**
  * Generate mock command arguments for testing
  *

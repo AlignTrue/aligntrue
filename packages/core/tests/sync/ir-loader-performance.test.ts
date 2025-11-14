@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, writeFileSync, rmSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { loadIR } from "../../src/sync/ir-loader.js";
@@ -8,8 +8,7 @@ describe("IR Loader - Performance Guardrails", () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `aligntrue-ir-loader-perf-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-ir-loader-perf-"));
   });
 
   afterEach(() => {

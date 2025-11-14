@@ -5,8 +5,9 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { globSync } from "glob";
 
 const layer = process.argv[2];
 
@@ -79,9 +80,7 @@ const layerScript = join(
   repoDir,
   `packages/cli/tests/comprehensive/layers/layer-${layer}-*.ts`,
 );
-const layerFiles = execSync(`ls ${layerScript}`, { encoding: "utf-8" })
-  .trim()
-  .split("\n");
+const layerFiles = globSync(layerScript);
 
 if (layerFiles.length === 0) {
   console.error(`Layer ${layer} script not found`);
@@ -114,13 +113,13 @@ try {
     `test-layer-${layer}-${timestamp}.log`,
   );
   if (existsSync(logFile)) {
-    execSync(`cp ${logFile} ${reportPath}`);
+    copyFileSync(logFile, reportPath);
     console.log(`Report saved: ${reportPath}`);
   }
 
   // Cleanup
   console.log("\nCleaning up...");
-  execSync(`rm -rf ${testDir}`);
+  rmSync(testDir, { recursive: true, force: true });
 
   process.exit(0);
 } catch (err) {
@@ -131,7 +130,7 @@ try {
 
   // Cleanup
   console.log("\nCleaning up...");
-  execSync(`rm -rf ${testDir}`);
+  rmSync(testDir, { recursive: true, force: true });
 
   process.exit(1);
 }

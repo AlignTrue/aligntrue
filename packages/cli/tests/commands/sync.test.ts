@@ -3,11 +3,10 @@
  * Real integration tests are in tests/integration/sync-command.test.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { sync } from "../../src/commands/sync/index.js";
-import { writeFileSync, existsSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
 import { setupTestProject } from "../helpers/test-setup.js";
 
 describe("sync command - smoke tests", () => {
@@ -72,11 +71,11 @@ describe("sync command - detection scenarios", () => {
   let cleanup: () => Promise<void>;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `aligntrue-test-sync-${Date.now()}`);
-    const ctx = setupTestProject(testDir, {
+    const ctx = setupTestProject({
       customConfig: "exporters:\n  - cursor\n",
       customRules: "rules: []\nspec_version: '1'\n",
     });
+    testDir = ctx.projectDir;
     cleanup = ctx.cleanup;
     originalCwd = process.cwd();
     process.chdir(testDir);

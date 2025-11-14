@@ -3,9 +3,10 @@
  * Provides standardized test project initialization and cleanup
  */
 
-import { mkdirSync, writeFileSync } from "fs";
+import { mkdirSync, writeFileSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { cleanupDir } from "./fs-cleanup.js";
+import { tmpdir } from "os";
 
 /**
  * Test project context with cleanup
@@ -81,14 +82,14 @@ sections: []
  * ```
  */
 export function setupTestProject(
-  baseDir: string,
   options: SetupOptions = {},
 ): TestProjectContext {
   const { skipFiles = false, customConfig, customRules } = options;
 
   // Create directory structure
-  mkdirSync(baseDir, { recursive: true });
-  const aligntrueDir = join(baseDir, ".aligntrue");
+  const projectDir = mkdtempSync(join(tmpdir(), "aligntrue-test-project-"));
+  // mkdirSync(projectDir, { recursive: true }); // mkdtempSync already creates it
+  const aligntrueDir = join(projectDir, ".aligntrue");
   mkdirSync(aligntrueDir, { recursive: true });
 
   // Create standard files unless skipped
@@ -101,8 +102,8 @@ export function setupTestProject(
   }
 
   return {
-    projectDir: baseDir,
+    projectDir,
     aligntrueDir,
-    cleanup: () => cleanupDir(baseDir),
+    cleanup: () => cleanupDir(projectDir),
   };
 }

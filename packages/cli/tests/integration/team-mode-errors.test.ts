@@ -4,16 +4,16 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
 import { sync } from "../../src/commands/sync/index.js";
 import { team } from "../../src/commands/team.js";
 import * as clack from "@clack/prompts";
-import { setupTestProject } from "../helpers/test-setup.js";
+import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
 
 vi.mock("@clack/prompts");
 
+let testProjectContext: TestProjectContext; // Added this line
 describe("Team Mode Error Handling", () => {
   let testDir: string;
   let originalCwd: string;
@@ -23,9 +23,9 @@ describe("Team Mode Error Handling", () => {
     vi.clearAllMocks();
     originalCwd = process.cwd();
 
-    testDir = join(tmpdir(), `team-errors-${Date.now()}`);
-    const ctx = setupTestProject(testDir, { skipFiles: true });
-    cleanup = ctx.cleanup;
+    testProjectContext = setupTestProject({ skipFiles: true }); // Modified this line
+    testDir = testProjectContext.projectDir;
+    cleanup = testProjectContext.cleanup; // Modified this line
     process.chdir(testDir);
 
     // Mock process.exit to throw for testing
@@ -48,16 +48,15 @@ describe("Team Mode Error Handling", () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await cleanup();
+    await testProjectContext.cleanup(); // Modified this line
     vi.restoreAllMocks();
   });
 
   describe("--accept-agent flag validation", () => {
     it("throws clear error when --accept-agent is missing value", async () => {
       // Create minimal AlignTrue setup
-      mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(
-        ".aligntrue/config.yaml",
+        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
         `
 exporters:
   - cursor
@@ -66,7 +65,7 @@ version: "1"
 `,
       );
       writeFileSync(
-        ".aligntrue/.rules.yaml",
+        join(testProjectContext.aligntrueDir, ".rules.yaml"), // Modified this line
         `
 id: test-rules
 version: 1.0.0
@@ -83,9 +82,8 @@ sections: []
 
     it("shows helpful error for invalid agent name", async () => {
       // Create minimal AlignTrue setup
-      mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(
-        ".aligntrue/config.yaml",
+        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
         `
 exporters:
   - cursor
@@ -94,7 +92,7 @@ version: "1"
 `,
       );
       writeFileSync(
-        ".aligntrue/.rules.yaml",
+        join(testProjectContext.aligntrueDir, ".rules.yaml"), // Modified this line
         `
 id: test-rules
 version: 1.0.0
@@ -115,9 +113,8 @@ sections: []
     // 3. Whether we should split "parsing errors" from "validation errors"
     it.skip("shows correct commands when lockfile validation fails", async () => {
       // Create team mode setup
-      mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(
-        ".aligntrue/config.yaml",
+        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
         `
 exporters:
   - cursor
@@ -131,7 +128,7 @@ lockfile:
 `,
       );
       writeFileSync(
-        ".aligntrue/.rules.yaml",
+        join(testProjectContext.aligntrueDir, ".rules.yaml"), // Modified this line
         `
 id: test-rules
 version: 1.0.0
@@ -146,7 +143,7 @@ sections:
 
       // Create lockfile with different hash
       writeFileSync(
-        ".aligntrue.lock.json",
+        join(testProjectContext.projectDir, ".aligntrue.lock.json"), // Modified this line
         JSON.stringify({
           bundle_hash: "old-hash-value",
           version: "1",
@@ -158,7 +155,7 @@ sections:
 
       // Create allow list with old hash
       writeFileSync(
-        ".aligntrue/allow.yaml",
+        join(testProjectContext.aligntrueDir, "allow.yaml"), // Modified this line
         `
 version: 1
 sources:
@@ -210,9 +207,8 @@ sources:
 
   describe("Team command validation", () => {
     it("team approve requires source argument", async () => {
-      mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(
-        ".aligntrue/config.yaml",
+        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
         `
 mode: team
 version: "1"
@@ -231,9 +227,8 @@ version: "1"
     });
 
     it("team approve --current requires lockfile", async () => {
-      mkdirSync(".aligntrue", { recursive: true });
       writeFileSync(
-        ".aligntrue/config.yaml",
+        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
         `
 mode: team
 version: "1"

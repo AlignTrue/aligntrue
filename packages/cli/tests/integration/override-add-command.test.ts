@@ -7,22 +7,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { overrideAdd } from "../../src/commands/override-add.js";
 import * as yaml from "yaml";
 import { cleanupDir } from "../helpers/fs-cleanup.js";
 
-const TEST_DIR = join(tmpdir(), "aligntrue-test-override-add");
+let TEST_DIR: string;
 
 // Skip on Windows due to unreliable file cleanup in CI
 const describeSkipWindows =
   process.platform === "win32" ? describe.skip : describe;
 
 beforeEach(async () => {
-  await cleanupDir(TEST_DIR);
-  mkdirSync(TEST_DIR, { recursive: true });
+  TEST_DIR = mkdtempSync(join(tmpdir(), "aligntrue-test-override-add-"));
   process.chdir(TEST_DIR);
 });
 

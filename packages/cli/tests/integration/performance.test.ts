@@ -23,8 +23,7 @@ const CLI_PATH = join(__dirname, "../../../..", "packages/cli/dist/index.js");
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = join(tmpdir(), `aligntrue-perf-${Date.now()}`);
-  await fs.mkdir(testDir, { recursive: true });
+  testDir = await fs.mkdtemp(join(tmpdir(), "aligntrue-perf-"));
 });
 
 afterEach(async () => {

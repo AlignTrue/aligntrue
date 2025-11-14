@@ -7,24 +7,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
 import { check } from "../../src/commands/check.js";
 import { mockProcessExit } from "../helpers/exit-mock.js";
 import * as yaml from "yaml";
 import { cleanupDir } from "../helpers/fs-cleanup.js";
+import { mkdtempSync } from "fs";
+import { tmpdir } from "os";
+import { mkdirSync } from "fs";
 
-const TEST_DIR = join(tmpdir(), "aligntrue-test-check");
+let TEST_DIR: string;
 
 // Skip on Windows due to unreliable file cleanup in CI
 const describeSkipWindows =
   process.platform === "win32" ? describe.skip : describe;
 
 beforeEach(async () => {
-  await cleanupDir(TEST_DIR);
-  mkdirSync(TEST_DIR, { recursive: true });
+  TEST_DIR = mkdtempSync(join(tmpdir(), "aligntrue-test-check-"));
   process.chdir(TEST_DIR);
+  mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 });
 
 afterEach(async () => {
@@ -34,7 +36,6 @@ afterEach(async () => {
 describeSkipWindows("Check Command Integration", () => {
   describe("Valid IR", () => {
     it("validates correct IR schema and exits with 0", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       const config = { exporters: ["cursor"] };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
@@ -67,7 +68,6 @@ sections:
 
   describe("Invalid IR", () => {
     it("reports errors for missing required fields", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       const config = { exporters: ["cursor"] };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
@@ -117,7 +117,6 @@ sections:
     });
 
     it("requires --ci flag", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       const config = { exporters: ["cursor"] };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),

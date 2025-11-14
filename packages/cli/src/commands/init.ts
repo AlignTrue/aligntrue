@@ -4,11 +4,11 @@
  */
 
 import {
-  existsSync,
   mkdirSync,
   writeFileSync,
   renameSync,
   readFileSync,
+  statSync,
 } from "fs";
 import { dirname, join } from "path";
 import * as clack from "@clack/prompts";
@@ -197,15 +197,13 @@ export async function init(args: string[] = []): Promise<void> {
     let isTeamMode = false;
     let teamConfig: Partial<AlignTrueConfig> | null = null;
 
-    if (existsSync(paths.config)) {
-      try {
-        const configContent = readFileSync(paths.config, "utf-8");
-        teamConfig = yaml.parse(configContent);
-        isTeamMode =
-          teamConfig?.mode === "team" || teamConfig?.mode === "enterprise";
-      } catch {
-        // Ignore parse errors
-      }
+    try {
+      const configContent = readFileSync(paths.config, "utf-8");
+      teamConfig = yaml.parse(configContent);
+      isTeamMode =
+        teamConfig?.mode === "team" || teamConfig?.mode === "enterprise";
+    } catch {
+      // Ignore errors (file not found, parse errors, etc.)
     }
 
     if (isTeamMode && !nonInteractive) {
@@ -320,7 +318,19 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Step 3.5: Check for Ruler installation
   const rulerDir = join(cwd, ".ruler");
-  if (existsSync(rulerDir)) {
+  let rulerDirExists = false;
+  try {
+    rulerDirExists = statSync(rulerDir).isDirectory();
+  } catch (error) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code === "ENOENT") {
+      rulerDirExists = false;
+    } else {
+      // re-throw other errors
+      throw error;
+    }
+  }
+  if (rulerDirExists) {
     if (nonInteractive) {
       console.log("\nDetected Ruler configuration in .ruler/");
       console.log('Run "aligntrue migrate ruler" to import Ruler settings.');
@@ -706,9 +716,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Create .aligntrue/ directory
-  if (!existsSync(aligntrueDir)) {
-    mkdirSync(aligntrueDir, { recursive: true });
-  }
+  mkdirSync(aligntrueDir, { recursive: true });
 
   // Generate config with workflow mode based on init choice
   const config: Partial<AlignTrueConfig> = {
@@ -750,23 +758,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Configure sync settings based on whether we imported
+  const editSource =
+    editSourcePatterns.length > 1 ? editSourcePatterns : editSourcePatterns[0];
+
   if (importedRules && importedFromAgent) {
     // Imported: set primary agent for reference
     // Let config defaults handle workflow_mode and auto_pull
     config.sync = {
       primary_agent: importedFromAgent,
-      edit_source:
-        editSourcePatterns.length > 1
-          ? editSourcePatterns
-          : editSourcePatterns[0] || "AGENTS.md",
+      ...(editSource && { edit_source: editSource }),
     };
   } else {
     // Fresh start: set inclusive edit_source based on enabled exporters
     config.sync = {
-      edit_source:
-        editSourcePatterns.length > 1
-          ? editSourcePatterns
-          : editSourcePatterns[0] || "AGENTS.md",
+      ...(editSource && { edit_source: editSource }),
     };
   }
 
@@ -850,9 +855,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     const nativeFullPath = `${cwd}/${nativeTemplatePath}`;
     const nativeDir = dirname(nativeFullPath);
 
-    if (!existsSync(nativeDir)) {
-      mkdirSync(nativeDir, { recursive: true });
-    }
+    mkdirSync(nativeDir, { recursive: true });
 
     // Write native template atomically (temp + rename)
     const nativeTempPath = `${nativeFullPath}.tmp`;
@@ -889,7 +892,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   // Show editable files based on edit_source
   const editSourceDisplay = Array.isArray(config.sync?.edit_source)
     ? config.sync.edit_source.join(", ")
-    : config.sync?.edit_source || "AGENTS.md";
+    : config.sync?.edit_source;
   console.log(`  You can edit: ${editSourceDisplay}`);
 
   if (config.managed?.sections && config.managed.sections.length > 0) {
