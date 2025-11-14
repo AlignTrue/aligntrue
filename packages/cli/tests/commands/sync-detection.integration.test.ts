@@ -3,9 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "fs";
+import { writeFileSync, existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
 import { sync } from "../../src/commands/sync/index.js";
 import { setupTestProject } from "../helpers/test-setup.js";
 
@@ -16,8 +15,7 @@ describe("Sync detection integration", () => {
   let cleanup: () => Promise<void>;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `aligntrue-detection-test-${Date.now()}`);
-    const ctx = setupTestProject(testDir, {
+    const ctx = setupTestProject({
       customConfig: `exporters:
   - cursor
 sources:
@@ -34,6 +32,7 @@ sections:
     fingerprint: test-example-rule
 `,
     });
+    testDir = ctx.projectDir;
     cleanup = ctx.cleanup;
     originalCwd = process.cwd();
     process.chdir(testDir);
@@ -54,6 +53,7 @@ sections:
   it("detects cursor files in workspace", async () => {
     // Create cursor directory (detectable agent)
     mkdirSync(join(testDir, ".cursor"), { recursive: true });
+    writeFileSync(join(testDir, ".cursor/foo"), "test");
 
     // Run with --no-detect to skip prompts
     try {
@@ -124,6 +124,7 @@ sections:
     // Create detectable agents
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
+    writeFileSync(join(testDir, ".vscode/foo"), "test");
 
     const configBefore = readFileSync(
       join(testDir, ".aligntrue/config.yaml"),
@@ -169,7 +170,7 @@ sections:
     // Create multiple detectable agents
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
-    writeFileSync(join(testDir, ".vscode", "mcp.json"), "{}");
+    writeFileSync(join(testDir, ".vscode/mcp.json"), "{}");
     writeFileSync(join(testDir, "CLAUDE.md"), "# Test");
 
     try {

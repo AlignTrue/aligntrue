@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { promises as fs } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
-import { tmpdir } from "os";
+
+import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
+
+const REPO_ROOT = join(__dirname, "../../../../");
 
 /**
  * Integration Tests: Golden Repository Workflows
@@ -16,20 +19,28 @@ const GOLDEN_REPO_SOURCE = join(
   "../../../..",
   "examples/golden-repo",
 );
-const CLI_PATH = join(__dirname, "../../../..", "packages/cli/dist/index.js");
 
+let testProjectContext: TestProjectContext;
 let testDir: string;
 
 beforeEach(async () => {
+  testProjectContext = setupTestProject();
+
   // Create fresh test directory
-  testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
-  await fs.mkdir(testDir, { recursive: true });
+  testDir = testProjectContext.projectDir;
+
+  // Ensure CLI is built within the test project
+  // The comprehensive test runner builds the CLI once, so this is redundant.
+  // execSync("pnpm --filter @aligntrue/cli build", {
+  //   cwd: testProjectContext.projectDir,
+  //   stdio: "pipe",
+  // });
 });
 
 afterEach(async () => {
   // Cleanup
-  if (testDir) {
-    await fs.rm(testDir, { recursive: true, force: true });
+  if (testProjectContext) {
+    await testProjectContext.cleanup();
   }
 });
 
@@ -38,12 +49,12 @@ describe("Golden Repository Workflows", () => {
     const startTime = Date.now();
 
     // Start with empty directory
-    const projectDir = join(testDir, "fresh-project");
+    const projectDir = join(testProjectContext.projectDir, "fresh-project");
     await fs.mkdir(projectDir, { recursive: true });
 
     // Initialize fresh AlignTrue project
     execSync(
-      `node ${CLI_PATH} init --exporters cursor,agents-md --project-id test-project --yes`,
+      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents-md --project-id test-project --yes`,
       {
         cwd: projectDir,
         stdio: "pipe",
@@ -51,7 +62,7 @@ describe("Golden Repository Workflows", () => {
     );
 
     // Run sync
-    execSync(`node ${CLI_PATH} sync`, {
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
       cwd: projectDir,
       stdio: "pipe",
     });
@@ -82,7 +93,7 @@ describe("Golden Repository Workflows", () => {
 
   it.skip("Edit → sync workflow updates outputs and content hash", async () => {
     // Setup: Copy golden repo
-    const projectDir = join(testDir, "edit-project");
+    const projectDir = join(testProjectContext.projectDir, "edit-project");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Also copy hidden directories that fs.cp might miss
@@ -98,7 +109,10 @@ describe("Golden Repository Workflows", () => {
     }
 
     // Initial sync
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
 
     // Read initial hash
     const initialCursor = await fs.readFile(
@@ -130,7 +144,10 @@ Content Hash:`,
     await fs.writeFile(cursorPath, updatedCursor);
 
     // Sync again - auto-pull will pull from Cursor, then sync to other agents
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
 
     // Verify hash changed
     const finalCursor = await fs.readFile(cursorPath, "utf8");
@@ -148,7 +165,7 @@ Content Hash:`,
 
   it.skip("Multi-exporter validation generates all 3 outputs with correct format", async () => {
     // Setup
-    const projectDir = join(testDir, "multi-exporter");
+    const projectDir = join(testProjectContext.projectDir, "multi-exporter");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Also copy hidden directories that fs.cp might miss
@@ -164,7 +181,10 @@ Content Hash:`,
     }
 
     // Sync
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
 
     // Verify Cursor format
     const cursorContent = await fs.readFile(
@@ -199,7 +219,7 @@ Content Hash:`,
 
   it.skip("Auto-pull pulls manual Cursor edits into IR and syncs to other agents", async () => {
     // Setup
-    const projectDir = join(testDir, "auto-pull-project");
+    const projectDir = join(testProjectContext.projectDir, "auto-pull-project");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Also copy hidden directories that fs.cp might miss
@@ -215,7 +235,10 @@ Content Hash:`,
     }
 
     // Initial sync
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
 
     // Manually edit Cursor output (simulating native-format editing)
     // Change guidance text rather than rule ID (to avoid schema validation issues)
@@ -228,10 +251,13 @@ Content Hash:`,
     await fs.writeFile(cursorPath, modifiedCursor);
 
     // Sync with --force (non-interactive) - auto-pull will pull the edit from Cursor
-    execSync(`node ${CLI_PATH} sync --force`, {
-      cwd: projectDir,
-      stdio: "pipe",
-    });
+    execSync(
+      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync --force`,
+      {
+        cwd: projectDir,
+        stdio: "pipe",
+      },
+    );
 
     // Verify edit was preserved in Cursor (auto-pull accepted it)
     const finalCursor = await fs.readFile(cursorPath, "utf8");
@@ -251,7 +277,7 @@ Content Hash:`,
 
   it.skip("Dry-run mode shows audit trail without writing files", async () => {
     // Setup
-    const projectDir = join(testDir, "dry-run-project");
+    const projectDir = join(testProjectContext.projectDir, "dry-run-project");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Also copy hidden directories that fs.cp might miss
@@ -272,10 +298,13 @@ Content Hash:`,
     await fs.rm(join(projectDir, "AGENTS.md"), { force: true });
 
     // Dry-run sync
-    const output = execSync(`node ${CLI_PATH} sync --dry-run`, {
-      cwd: projectDir,
-      stdio: "pipe",
-    }).toString();
+    const output = execSync(
+      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync --dry-run`,
+      {
+        cwd: projectDir,
+        stdio: "pipe",
+      },
+    ).toString();
 
     // Verify dry-run mode message
     expect(output).toContain("Preview complete");
@@ -293,7 +322,7 @@ Content Hash:`,
 
   it.skip("Edit AGENTS.md → sync workflow updates IR and other agents", async () => {
     // Setup
-    const projectDir = join(testDir, "agents-md-edit");
+    const projectDir = join(testProjectContext.projectDir, "agents-md-edit");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Copy hidden directories
@@ -318,7 +347,10 @@ Content Hash:`,
     await fs.writeFile(configPath, updatedConfig);
 
     // Initial sync
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
 
     // Edit AGENTS.md (primary user-editable file)
     const agentsMdPath = join(projectDir, "AGENTS.md");
@@ -330,10 +362,13 @@ Content Hash:`,
     await fs.writeFile(agentsMdPath, modifiedAgentsMd);
 
     // Sync - should pull from AGENTS.md and update IR + other agents
-    execSync(`node ${CLI_PATH} sync --force`, {
-      cwd: projectDir,
-      stdio: "pipe",
-    });
+    execSync(
+      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync --force`,
+      {
+        cwd: projectDir,
+        stdio: "pipe",
+      },
+    );
 
     // Verify edit was preserved in AGENTS.md
     const finalAgentsMd = await fs.readFile(agentsMdPath, "utf8");

@@ -248,13 +248,10 @@ export async function check(args: string[]): Promise<void> {
 
     // Step 2.5: Validate section IDs (rules field no longer used - sections only)
     // Section validation happens at parse time in markdown parser
-    const _alignPack = alignData as AlignPack;
-
     // In sections-only format, validation happens at parse time
     // No additional ID validation needed here
 
     // Step 3: Validate lockfile if team mode + lockfile enabled
-    let _lockfileValid = true;
     const shouldCheckLockfile =
       config.mode === "team" && config.modules?.lockfile === true;
 
@@ -281,7 +278,6 @@ export async function check(args: string[]): Promise<void> {
         const validation = validateLockfile(lockfile, alignData as AlignPack);
 
         if (!validation.valid) {
-          _lockfileValid = false;
           console.error("✗ Lockfile drift detected\n");
 
           // Show mismatches
@@ -321,7 +317,6 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Step 4: Validate overlays if present
-    let _overlayValid = true;
     let overlayWarnings: string[] = [];
 
     if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
@@ -347,8 +342,6 @@ export async function check(args: string[]): Promise<void> {
       );
 
       if (!overlayResult.valid) {
-        _overlayValid = false;
-
         if (jsonOutput) {
           // JSON output mode
           console.log(

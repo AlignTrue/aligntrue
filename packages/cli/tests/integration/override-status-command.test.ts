@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, writeFileSync } from "fs";
+import { mkdirSync, writeFileSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { overrideStatus } from "../../src/commands/override-status.js";
@@ -16,7 +16,7 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 vi.mock("@clack/prompts");
 
-const TEST_DIR = join(tmpdir(), "aligntrue-test-override-status");
+let TEST_DIR: string;
 
 // Skip on Windows due to unreliable file cleanup in CI
 const describeSkipWindows =
@@ -25,8 +25,7 @@ const describeSkipWindows =
 beforeEach(async () => {
   vi.clearAllMocks();
 
-  await cleanupDir(TEST_DIR);
-  mkdirSync(TEST_DIR, { recursive: true });
+  TEST_DIR = mkdtempSync(join(tmpdir(), "aligntrue-test-override-status-"));
   process.chdir(TEST_DIR);
 
   // Mock process.exit to throw for integration tests

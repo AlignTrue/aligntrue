@@ -13,8 +13,10 @@ import {
   readdirSync,
   statSync,
   rmSync,
+  mkdtempSync,
 } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 /**
  * Clean up old test directories
@@ -22,10 +24,12 @@ import { join } from "node:path";
  */
 function cleanupOldTestDirs(): void {
   try {
-    const tmpDir = "/tmp";
+    const tmpDir = tmpdir();
     const entries = readdirSync(tmpDir);
     const testDirs = entries
-      .filter((name) => name.startsWith("aligntrue-test-"))
+      .filter(
+        (name) => name.startsWith("aligntrue-test-") && name.endsWith("-"),
+      )
       .map((name) => {
         const path = join(tmpDir, name);
         try {
@@ -71,8 +75,7 @@ function cleanupOldTestDirs(): void {
   }
 }
 
-const timestamp = Date.now();
-const testDir = `/tmp/aligntrue-test-${timestamp}`;
+const testDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
 
 console.log(`\n=== AlignTrue Comprehensive Testing ===`);
 console.log(`Running all 8 layers`);
@@ -82,7 +85,7 @@ console.log(`Test directory: ${testDir}\n`);
 cleanupOldTestDirs();
 
 // Create test directory
-mkdirSync(testDir, { recursive: true });
+// mkdirSync(testDir, { recursive: true }); // mkdtempSync already creates the directory
 
 // Set environment
 process.env.TZ = "UTC";
@@ -145,129 +148,137 @@ const layerNames = [
 const results: LayerResult[] = [];
 const startTime = Date.now();
 
-for (let layer = 1; layer <= 8; layer++) {
-  const layerStart = Date.now();
-  const workspace = join(testDir, `workspace-layer-${layer}`);
-  const logFile = join(testDir, `layer-${layer}-output.log`);
+try {
+  for (let layer = 1; layer <= 8; layer++) {
+    const layerStart = Date.now();
+    const workspace = join(testDir, `workspace-layer-${layer}`);
+    const logFile = join(testDir, `layer-${layer}-output.log`);
 
-  mkdirSync(workspace, { recursive: true });
+    mkdirSync(workspace, { recursive: true });
 
+    console.log(`\n${"=".repeat(60)}`);
+    console.log(`Layer ${layer}: ${layerNames[layer - 1]}`);
+    console.log("=".repeat(60));
+
+    process.env.TEST_WORKSPACE = workspace;
+    process.env.LOG_FILE = logFile;
+
+    const layerScript = join(
+      repoDir,
+      `packages/cli/tests/comprehensive/layers/layer-${layer}-*.ts`,
+    );
+
+    let layerFile: string;
+    try {
+      const layerFiles = execSync(`ls ${layerScript}`, { encoding: "utf-8" })
+        .trim()
+        .split("\n");
+      layerFile = layerFiles[0];
+    } catch {
+      console.error(`Layer ${layer} script not found`);
+      results.push({
+        layer,
+        name: layerNames[layer - 1],
+        passed: false,
+        duration: Date.now() - layerStart,
+        error: "Script not found",
+      });
+      continue;
+    }
+
+    try {
+      execSync(`node --loader tsx ${layerFile}`, {
+        cwd: workspace,
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          ALIGNTRUE_CLI: cliPath,
+        },
+      });
+
+      results.push({
+        layer,
+        name: layerNames[layer - 1],
+        passed: true,
+        duration: Date.now() - layerStart,
+      });
+
+      console.log(`\n✓ Layer ${layer} completed`);
+    } catch (err) {
+      const execErr = err as ExecException;
+      results.push({
+        layer,
+        name: layerNames[layer - 1],
+        passed: false,
+        duration: Date.now() - layerStart,
+        error: `Exit code: ${execErr.status || 1}`,
+      });
+
+      console.error(`\n✗ Layer ${layer} failed`);
+    }
+  }
+
+  const totalDuration = Date.now() - startTime;
+
+  // Generate summary
   console.log(`\n${"=".repeat(60)}`);
-  console.log(`Layer ${layer}: ${layerNames[layer - 1]}`);
+  console.log("COMPREHENSIVE TEST SUMMARY");
   console.log("=".repeat(60));
 
-  process.env.TEST_WORKSPACE = workspace;
-  process.env.LOG_FILE = logFile;
+  const passed = results.filter((r) => r.passed).length;
+  const failed = results.length - passed;
 
-  const layerScript = join(
-    repoDir,
-    `packages/cli/tests/comprehensive/layers/layer-${layer}-*.ts`,
-  );
+  console.log(`\nCommit: ${commitHash}`);
+  console.log(`Duration: ${Math.round(totalDuration / 1000)}s`);
+  console.log(`Total layers: ${results.length}`);
+  console.log(`Passed: ${passed}`);
+  console.log(`Failed: ${failed}`);
 
-  let layerFile: string;
-  try {
-    const layerFiles = execSync(`ls ${layerScript}`, { encoding: "utf-8" })
-      .trim()
-      .split("\n");
-    layerFile = layerFiles[0];
-  } catch {
-    console.error(`Layer ${layer} script not found`);
-    results.push({
-      layer,
-      name: layerNames[layer - 1],
-      passed: false,
-      duration: Date.now() - layerStart,
-      error: "Script not found",
-    });
-    continue;
+  console.log("\nLayer Results:");
+  for (const result of results) {
+    const status = result.passed ? "✓ PASS" : "✗ FAIL";
+    const duration = Math.round(result.duration / 1000);
+    console.log(
+      `  ${status} Layer ${result.layer}: ${result.name} (${duration}s)`,
+    );
+    if (result.error) {
+      console.log(`       ${result.error}`);
+    }
   }
 
-  try {
-    execSync(`node --loader tsx ${layerFile}`, {
-      cwd: workspace,
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        ALIGNTRUE_CLI: cliPath,
-      },
-    });
+  // Generate markdown report
+  const reportMd = generateMarkdownReport(commitHash, results, totalDuration);
 
-    results.push({
-      layer,
-      name: layerNames[layer - 1],
-      passed: true,
-      duration: Date.now() - layerStart,
-    });
-
-    console.log(`\n✓ Layer ${layer} completed`);
-  } catch (err) {
-    const execErr = err as ExecException;
-    results.push({
-      layer,
-      name: layerNames[layer - 1],
-      passed: false,
-      duration: Date.now() - layerStart,
-      error: `Exit code: ${execErr.status || 1}`,
-    });
-
-    console.error(`\n✗ Layer ${layer} failed`);
-  }
-}
-
-const totalDuration = Date.now() - startTime;
-
-// Generate summary
-console.log(`\n${"=".repeat(60)}`);
-console.log("COMPREHENSIVE TEST SUMMARY");
-console.log("=".repeat(60));
-
-const passed = results.filter((r) => r.passed).length;
-const failed = results.length - passed;
-
-console.log(`\nCommit: ${commitHash}`);
-console.log(`Duration: ${Math.round(totalDuration / 1000)}s`);
-console.log(`Total layers: ${results.length}`);
-console.log(`Passed: ${passed}`);
-console.log(`Failed: ${failed}`);
-
-console.log("\nLayer Results:");
-for (const result of results) {
-  const status = result.passed ? "✓ PASS" : "✗ FAIL";
-  const duration = Math.round(result.duration / 1000);
-  console.log(
-    `  ${status} Layer ${result.layer}: ${result.name} (${duration}s)`,
-  );
-  if (result.error) {
-    console.log(`       ${result.error}`);
-  }
-}
-
-// Generate markdown report
-const reportMd = generateMarkdownReport(commitHash, results, totalDuration);
-
-const internalDocsDir = join(repoDir, ".internal_docs");
-if (!existsSync(internalDocsDir)) {
+  const internalDocsDir = join(repoDir, ".internal_docs");
   mkdirSync(internalDocsDir, { recursive: true });
+
+  const reportPath = join(internalDocsDir, "TEST_LOG.md");
+  let existingContent = "";
+  try {
+    existingContent = readFileSync(reportPath, "utf-8");
+  } catch (error) {
+    const isError = error instanceof Error;
+    if (!(isError && "code" in error && error.code === "ENOENT")) {
+      // re-throw errors other than file not found
+      throw error;
+    }
+  }
+
+  writeFileSync(reportPath, reportMd + "\n\n" + existingContent);
+
+  console.log(`\nReport saved: ${reportPath}`);
+
+  // Cleanup current test directory
+  console.log("\nCleaning up...");
+  // execSync(`rm -rf ${testDir}`); // This will be handled by finally block
+
+  // Clean up old test directories again after test run
+  cleanupOldTestDirs();
+
+  process.exit(failed > 0 ? 1 : 0);
+} finally {
+  rmSync(testDir, { recursive: true, force: true });
 }
-
-const reportPath = join(internalDocsDir, "TEST_LOG.md");
-let existingContent = "";
-if (existsSync(reportPath)) {
-  existingContent = readFileSync(reportPath, "utf-8");
-}
-
-writeFileSync(reportPath, reportMd + "\n\n" + existingContent);
-
-console.log(`\nReport saved: ${reportPath}`);
-
-// Cleanup current test directory
-console.log("\nCleaning up...");
-execSync(`rm -rf ${testDir}`);
-
-// Clean up old test directories again after test run
-cleanupOldTestDirs();
-
-process.exit(failed > 0 ? 1 : 0);
 
 function generateMarkdownReport(
   commit: string,

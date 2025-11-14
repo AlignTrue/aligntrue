@@ -4,7 +4,9 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 interface ExploratoryTest {
   name: string;
@@ -158,51 +160,56 @@ function main() {
   console.log("=== Layer 8: Exploratory ===\n");
   console.log("Note: Exploratory tests probe for unexpected behavior\n");
 
-  const workspace = process.env.TEST_WORKSPACE || process.cwd();
-  const results = tests.map((test) => {
-    console.log(`Test: ${test.name}`);
-    const result = runTest(test, workspace);
-    console.log(`  ${result.passed ? "✓ No issues" : "✗ Issue found"}\n`);
-    return { test, result };
-  });
+  const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-8-log-"));
+  try {
+    const workspace = process.env.TEST_WORKSPACE || process.cwd();
+    const results = tests.map((test) => {
+      console.log(`Test: ${test.name}`);
+      const result = runTest(test, workspace);
+      console.log(`  ${result.passed ? "✓ No issues" : "✗ Issue found"}\n`);
+      return { test, result };
+    });
 
-  const issuesFound = results.filter((r) => !r.result.passed);
+    const issuesFound = results.filter((r) => !r.result.passed);
 
-  console.log("\n=== Summary ===");
-  console.log(`Total probes: ${results.length}`);
-  console.log(`Issues found: ${issuesFound.length}`);
+    console.log("\n=== Summary ===");
+    console.log(`Total probes: ${results.length}`);
+    console.log(`Issues found: ${issuesFound.length}`);
 
-  if (issuesFound.length > 0) {
-    console.log("\nIssues discovered:");
-    for (const { test, result } of issuesFound) {
-      console.log(
-        `  - ${test.name} (${test.severity}): ${result.unexpectedIssue}`,
-      );
+    if (issuesFound.length > 0) {
+      console.log("\nIssues discovered:");
+      for (const { test, result } of issuesFound) {
+        console.log(
+          `  - ${test.name} (${test.severity}): ${result.unexpectedIssue}`,
+        );
+      }
     }
+
+    const logPath = join(tempLogDir, "layer-8-results.json");
+    writeFileSync(
+      logPath,
+      JSON.stringify(
+        {
+          layer: 8,
+          timestamp: new Date().toISOString(),
+          results: results.map((r) => ({
+            name: r.test.name,
+            probe: r.test.probe,
+            severity: r.test.severity,
+            passed: r.result.passed,
+            unexpectedIssue: r.result.unexpectedIssue,
+            actualBehavior: r.result.actualBehavior.substring(0, 500),
+          })),
+        },
+        null,
+        2,
+      ),
+    );
+
+    process.exit(issuesFound.length > 0 ? 1 : 0);
+  } finally {
+    rmSync(tempLogDir, { recursive: true, force: true });
   }
-
-  const logPath = process.env.LOG_FILE || "/tmp/layer-8-results.json";
-  writeFileSync(
-    logPath,
-    JSON.stringify(
-      {
-        layer: 8,
-        timestamp: new Date().toISOString(),
-        results: results.map((r) => ({
-          name: r.test.name,
-          probe: r.test.probe,
-          severity: r.test.severity,
-          passed: r.result.passed,
-          unexpectedIssue: r.result.unexpectedIssue,
-          actualBehavior: r.result.actualBehavior.substring(0, 500),
-        })),
-      },
-      null,
-      2,
-    ),
-  );
-
-  process.exit(issuesFound.length > 0 ? 1 : 0);
 }
 
 if (require.main === module) {

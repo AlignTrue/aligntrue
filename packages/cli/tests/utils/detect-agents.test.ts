@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import {
@@ -18,8 +18,7 @@ describe("detectAgents", () => {
 
   beforeEach(() => {
     // Create unique temp directory for each test
-    testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
   });
 
   afterEach(() => {
@@ -81,8 +80,7 @@ describe("detectNewAgents", () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
   });
 
   afterEach(() => {

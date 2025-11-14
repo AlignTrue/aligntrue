@@ -101,7 +101,7 @@ async function main() {
 
     // Try to capture and parse lint-staged output for specific errors
     try {
-      const result = execSync("pnpm lint-staged", {
+      execSync("pnpm lint-staged", {
         encoding: "utf8",
         stdio: "pipe",
       });

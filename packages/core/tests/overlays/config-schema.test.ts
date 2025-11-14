@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { loadConfig } from "../../src/config/index.js";
-import { mkdirSync, writeFileSync, rmSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -12,8 +12,7 @@ describe("overlay config schema validation", () => {
   let testDir: string;
 
   function setupTestConfig(config: unknown): string {
-    testDir = join(tmpdir(), `aligntrue-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
     const configPath = join(testDir, ".aligntrue.yaml");
     const yaml = require("js-yaml");
     writeFileSync(configPath, yaml.dump(config));

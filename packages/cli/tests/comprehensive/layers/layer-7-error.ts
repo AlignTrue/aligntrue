@@ -4,7 +4,9 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 interface ErrorTest {
   name: string;
@@ -130,42 +132,47 @@ function runTest(
 function main() {
   console.log("=== Layer 7: Error & UX ===\n");
 
-  const workspace = process.env.TEST_WORKSPACE || process.cwd();
-  const results = tests.map((test) => {
-    console.log(`Test: ${test.name}`);
-    const result = runTest(test, workspace);
-    console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
-    return { test, result };
-  });
+  const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-7-log-"));
+  try {
+    const workspace = process.env.TEST_WORKSPACE || process.cwd();
+    const results = tests.map((test) => {
+      console.log(`Test: ${test.name}`);
+      const result = runTest(test, workspace);
+      console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+      return { test, result };
+    });
 
-  const passed = results.filter((r) => r.result.passed).length;
-  const failed = results.length - passed;
+    const passed = results.filter((r) => r.result.passed).length;
+    const failed = results.length - passed;
 
-  console.log("\n=== Summary ===");
-  console.log(`Total: ${results.length}`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
+    console.log("\n=== Summary ===");
+    console.log(`Total: ${results.length}`);
+    console.log(`Passed: ${passed}`);
+    console.log(`Failed: ${failed}`);
 
-  const logPath = process.env.LOG_FILE || "/tmp/layer-7-results.json";
-  writeFileSync(
-    logPath,
-    JSON.stringify(
-      {
-        layer: 7,
-        timestamp: new Date().toISOString(),
-        results: results.map((r) => ({
-          name: r.test.name,
-          passed: r.result.passed,
-          error: r.result.error,
-          exitCode: r.result.exitCode,
-        })),
-      },
-      null,
-      2,
-    ),
-  );
+    const logPath = join(tempLogDir, "layer-7-results.json");
+    writeFileSync(
+      logPath,
+      JSON.stringify(
+        {
+          layer: 7,
+          timestamp: new Date().toISOString(),
+          results: results.map((r) => ({
+            name: r.test.name,
+            passed: r.result.passed,
+            error: r.result.error,
+            exitCode: r.result.exitCode,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
 
-  process.exit(failed > 0 ? 1 : 0);
+    process.exit(failed > 0 ? 1 : 0);
+  } finally {
+    rmSync(tempLogDir, { recursive: true, force: true });
+  }
 }
 
 if (require.main === module) {

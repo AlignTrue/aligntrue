@@ -7,9 +7,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 **Update criteria:** This page should be updated whenever features are implemented, removed, or significantly changed. It serves as the single source of truth for AlignTrue's current capabilities.
 
-## Production ready
-
-### Core platform
+## Core platform
 
 - Natural markdown authoring in your detected agent format or universal `AGENTS.md`
 - Two-way sync engine with section-based merging (IR ↔ agents)
@@ -19,7 +17,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 
-### CLI (20 commands)
+## CLI (20 commands)
 
 **Basic:**
 
@@ -55,7 +53,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
-### Developer experience
+## Developer experience
 
 - Fast `--help` (measured performance: ~1200ms on Ubuntu, ~2000ms on Windows)
 - Consistent error messages (what/why/how format)
@@ -68,7 +66,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - Scope auto-discovery for monorepos
 - Ruler migration support (auto-detect and convert)
 
-### Documentation
+## Documentation
 
 - Nextra docs site with quickstart, concepts, and reference
 - 11 curated example packs

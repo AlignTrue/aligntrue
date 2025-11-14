@@ -11,9 +11,11 @@ import {
   existsSync,
   mkdirSync,
   statSync,
+  mkdtempSync,
 } from "fs";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import { createHash } from "crypto";
+import { tmpdir } from "os";
 
 /**
  * Compute SHA-256 checksum of a file
@@ -181,7 +183,8 @@ export class AtomicFileWriter {
     }
 
     // Write to temp file
-    const tempPath = `${filePath}.tmp`;
+    const tempDir = mkdtempSync(join(tmpdir(), "aligntrue-"));
+    const tempPath = join(tempDir, "tempfile.tmp");
     try {
       writeFileSync(tempPath, content, "utf8");
     } catch (_err) {

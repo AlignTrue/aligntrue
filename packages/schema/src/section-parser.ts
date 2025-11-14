@@ -210,8 +210,8 @@ function parseMarkdownSections(
       }
 
       // Start new section
-      const level = headingMatch[1]?.length || 1;
-      const heading = headingMatch[2]?.trim() || "";
+      const level = headingMatch[1]!.length;
+      const heading = headingMatch[2]!.trim();
 
       currentSection = {
         id: heading.toLowerCase().replace(/\s+/g, "-"),

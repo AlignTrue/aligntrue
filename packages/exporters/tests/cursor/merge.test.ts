@@ -3,7 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { CursorExporter } from "../../src/cursor/index.js";
@@ -15,11 +22,7 @@ describe("CursorExporter - Section Merging", () => {
 
   beforeEach(() => {
     // Create temp directory for test with unique suffix to avoid collisions
-    testDir = join(
-      tmpdir(),
-      `aligntrue-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    );
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
     mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
 
     exporter = new CursorExporter();

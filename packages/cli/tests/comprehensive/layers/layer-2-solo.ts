@@ -4,8 +4,15 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import {
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdtempSync,
+  rmSync,
+} from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 interface Workflow {
   name: string;
@@ -203,51 +210,56 @@ function runWorkflow(
 function main() {
   console.log("=== Layer 2: Solo Golden Paths ===\n");
 
-  const workspace = process.env.TEST_WORKSPACE || process.cwd();
-  const results = workflows.map((workflow) => {
-    console.log(`Workflow: ${workflow.name}`);
+  const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-2-log-"));
+  try {
+    const workspace = process.env.TEST_WORKSPACE || process.cwd();
+    const results = workflows.map((workflow) => {
+      console.log(`Workflow: ${workflow.name}`);
 
-    const result = runWorkflow(workflow, workspace);
+      const result = runWorkflow(workflow, workspace);
 
-    if (result.passed) {
-      console.log("✓ WORKFLOW PASS\n");
-    } else {
-      console.log(`✗ WORKFLOW FAIL: ${result.error}\n`);
-    }
+      if (result.passed) {
+        console.log("✓ WORKFLOW PASS\n");
+      } else {
+        console.log(`✗ WORKFLOW FAIL: ${result.error}\n`);
+      }
 
-    return { workflow, result };
-  });
+      return { workflow, result };
+    });
 
-  // Summary
-  const passed = results.filter((r) => r.result.passed).length;
-  const failed = results.length - passed;
+    // Summary
+    const passed = results.filter((r) => r.result.passed).length;
+    const failed = results.length - passed;
 
-  console.log("\n=== Summary ===");
-  console.log(`Total workflows: ${results.length}`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
+    console.log("\n=== Summary ===");
+    console.log(`Total workflows: ${results.length}`);
+    console.log(`Passed: ${passed}`);
+    console.log(`Failed: ${failed}`);
 
-  // Write results to log
-  const logPath = process.env.LOG_FILE || "/tmp/layer-2-results.json";
-  writeFileSync(
-    logPath,
-    JSON.stringify(
-      {
-        layer: 2,
-        timestamp: new Date().toISOString(),
-        results: results.map((r) => ({
-          name: r.workflow.name,
-          passed: r.result.passed,
-          error: r.result.error,
-          steps: r.result.stepResults.length,
-        })),
-      },
-      null,
-      2,
-    ),
-  );
+    // Write results to log
+    const logPath = join(tempLogDir, "layer-2-results.json");
+    writeFileSync(
+      logPath,
+      JSON.stringify(
+        {
+          layer: 2,
+          timestamp: new Date().toISOString(),
+          results: results.map((r) => ({
+            name: r.workflow.name,
+            passed: r.result.passed,
+            error: r.result.error,
+            steps: r.result.stepResults.length,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
 
-  process.exit(failed > 0 ? 1 : 0);
+    process.exit(failed > 0 ? 1 : 0);
+  } finally {
+    rmSync(tempLogDir, { recursive: true, force: true });
+  }
 }
 
 if (require.main === module) {
