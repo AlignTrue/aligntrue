@@ -157,19 +157,19 @@ AlignTrue includes 43 exporters supporting 28+ agents:
 
 Each exporter documents what information may be lost when converting from IR:
 
-- Stored in exporter metadata
-- Written to export file footers
+- Computed by exporter
+- Returned in `ExportResult.fidelityNotes`
+- Displayed in CLI output during sync
 - Help users understand limitations
 - Guide decisions about which exporters to use
 
-### Footer format
+### Content hash
 
-All exports include:
-
-- Lock hash (if available)
-- Exporter version
-- Capabilities version
-- Loss count (fidelity notes)
+- Computed deterministically from IR sections
+- Returned in `ExportResult.contentHash`
+- Useful for drift detection and integrity verification
+- Not written to exported files (files kept clean)
+- For MCP config exporters, hash is included in JSON as `content_hash` field
 
 ## AI-maintainable code principles
 
