@@ -547,6 +547,22 @@ export async function detectDrift(
   // Run drift detection checks
   const findings: DriftFinding[] = [];
 
+  // Load allow list for upstream drift detection
+  const allowListPath = join(basePath, ".aligntrue/allow.yaml");
+  if (existsSync(allowListPath)) {
+    try {
+      const { readFileSync } = await import("fs");
+      const { parse } = await import("yaml");
+      const allowListContent = readFileSync(allowListPath, "utf-8");
+      const allowList = parse(allowListContent) as {
+        sources?: Array<{ value: string; resolved_hash?: string }>;
+      };
+      findings.push(...detectUpstreamDrift(lockfile, allowList));
+    } catch {
+      // Silently skip upstream drift if allow list can't be parsed
+    }
+  }
+
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));

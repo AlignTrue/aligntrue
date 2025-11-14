@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { sync } from "../../src/commands/sync.js";
+import { sync } from "../../src/commands/sync/index.js";
 import { team } from "../../src/commands/team.js";
 import * as clack from "@clack/prompts";
 
