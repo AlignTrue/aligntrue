@@ -8,7 +8,7 @@
  * - Node.js version requirements consistency
  * - CLI command count accuracy
  * - Exporter count accuracy
- * - Performance threshold claims
+ * - Absence of specific performance marketing claims (we use catastrophic regression detection)
  *
  * Exit codes:
  * - 0: All validations passed
@@ -261,72 +261,43 @@ function validateExporterCount() {
 }
 
 /**
- * Validate performance threshold claims
+ * Validate that no performance marketing claims exist
+ * 
+ * We use catastrophic regression detection (5x thresholds) for CI reliability,
+ * not tight marketing claims. This check ensures we haven't re-added specific
+ * performance numbers as marketing material.
  */
-function validatePerformanceThresholds() {
-  logSection("Validating performance threshold claims");
+function validateNoPerformanceMarketingClaims() {
+  logSection("Validating no performance marketing claims");
 
-  // Read thresholds from test file
-  const testPath = join(
-    rootDir,
-    "packages/cli/tests/integration/performance.test.ts",
-  );
-  const testContent = readFileSync(testPath, "utf8");
-
-  // Extract thresholds
-  const avgThresholdMatch = testContent.match(
-    /avgThreshold\s*=\s*process\.platform\s*===\s*["']win32["']\s*\?\s*(\d+)\s*:\s*(\d+)/,
-  );
-
-  if (!avgThresholdMatch) {
-    logError("Could not parse performance thresholds from test file", {
-      files: ["packages/cli/tests/integration/performance.test.ts"],
-    });
-    return;
-  }
-
-  const windowsThreshold = avgThresholdMatch[1];
-  const ubuntuThreshold = avgThresholdMatch[2];
-
-  console.log(
-    `Source of truth: packages/cli/tests/integration/performance.test.ts\n`,
-  );
-  console.log(
-    `Thresholds: ~${ubuntuThreshold}ms Ubuntu, ~${windowsThreshold}ms Windows\n`,
-  );
-
-  // Check features.md
+  // Check features.md doesn't have specific performance claims
   const featuresPath = join(
     rootDir,
     "apps/docs/content/04-reference/features.md",
   );
   const featuresContent = readFileSync(featuresPath, "utf8");
 
-  // Look for performance claim
-  const performanceMatch = featuresContent.match(
-    /Fast `--help`[^)]*\(measured performance:[^)]*~(\d+)ms[^)]*Ubuntu[^)]*~(\d+)ms[^)]*Windows/i,
-  );
+  // Look for any detailed performance claims (specific ms timings)
+  const performanceClaimPatterns = [
+    /Fast `--help`[^)]*\(measured performance:/i,
+    /completes? in (?:<|under|within)\s*\d+\s*(?:ms|milliseconds)/i,
+    /~\d+ms/i,
+  ];
 
-  if (!performanceMatch) {
-    logError("Could not find performance claim in features.md", {
-      expected: `~${ubuntuThreshold}ms Ubuntu, ~${windowsThreshold}ms Windows`,
+  const foundClaims = [];
+  for (const pattern of performanceClaimPatterns) {
+    if (pattern.test(featuresContent)) {
+      foundClaims.push(pattern.toString());
+    }
+  }
+
+  if (foundClaims.length > 0) {
+    logError("Found specific performance marketing claims in features.md", {
+      actual: "Performance tests use catastrophic regression detection, not marketing claims",
       files: ["apps/docs/content/04-reference/features.md"],
     });
   } else {
-    const docUbuntu = performanceMatch[1];
-    const docWindows = performanceMatch[2];
-
-    if (docUbuntu !== ubuntuThreshold || docWindows !== windowsThreshold) {
-      logError("Performance threshold mismatch", {
-        expected: `~${ubuntuThreshold}ms Ubuntu, ~${windowsThreshold}ms Windows (from tests)`,
-        actual: `~${docUbuntu}ms Ubuntu, ~${docWindows}ms Windows (documented)`,
-        files: ["apps/docs/content/04-reference/features.md"],
-      });
-    } else {
-      logSuccess(
-        `Performance thresholds are accurate: ~${ubuntuThreshold}ms Ubuntu, ~${windowsThreshold}ms Windows`,
-      );
-    }
+    logSuccess("No performance marketing claims found (catastrophic regression detection only)");
   }
 }
 
@@ -342,7 +313,7 @@ function main() {
   validateNodeVersion();
   validateCommandCount();
   validateExporterCount();
-  validatePerformanceThresholds();
+  validateNoPerformanceMarketingClaims();
 
   // Summary
   console.log(`\n${colors.bold}Summary${colors.reset}`);
