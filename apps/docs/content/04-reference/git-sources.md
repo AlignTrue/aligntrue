@@ -352,18 +352,6 @@ AlignTrue uses shallow clones (depth 1) for speed and space efficiency. This mea
 
 For full history, manually clone to a local directory and use `type: local` source instead.
 
-## Coming soon: `aligntrue pull` CLI command
-
-Interactive command for browsing and pulling rules from repositories:
-
-```bash
-aligntrue pull <repository-url>
-```
-
-This will enable one-command setup: browse available rule files, select which to import, automatically configure sources. Useful for discovering shared rules without manually editing config.
-
-Until then, use the config-based approach documented above.
-
 ## See also
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
