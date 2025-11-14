@@ -340,5 +340,5 @@ export function handleSyncError(
   }
 
   clack.outro("✗ Sync failed");
-  process.exit(1);
+  process.exit(2);
 }

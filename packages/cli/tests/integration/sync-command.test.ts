@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { sync } from "../../src/commands/sync.js";
+import { sync } from "../../src/commands/sync/index.js";
 import { mockProcessExit } from "../helpers/exit-mock.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -40,6 +40,13 @@ beforeEach(async () => {
   });
 
   // Mock clack prompts to avoid terminal interaction
+  const mockSpinner = {
+    start: vi.fn(),
+    stop: vi.fn(),
+  };
+  vi.mocked(clack.spinner).mockReturnValue(mockSpinner as never);
+  vi.mocked(clack.intro).mockImplementation(() => {});
+  vi.mocked(clack.outro).mockImplementation(() => {});
   vi.mocked(clack.confirm).mockResolvedValue(true);
   vi.mocked(clack.cancel).mockImplementation(() => {});
   vi.mocked(clack.isCancel).mockReturnValue(false);
