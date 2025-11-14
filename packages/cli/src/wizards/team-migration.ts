@@ -51,7 +51,7 @@ export async function runTeamMigrationWizard(
     );
 
     // Step 2: Detect personal rules in repo
-    // TODO: Implement detection of personal rules
+    // Feature in development
     const personalRulesInRepo = detectPersonalRulesInRepo(config, cwd);
 
     if (personalRulesInRepo.length === 0) {
@@ -144,7 +144,7 @@ export async function runTeamMigrationWizard(
           }
 
           if (setupNow === "setup") {
-            // TODO: Launch remote setup wizard
+            // Remote setup wizard in development
             clack.log.info(
               "Remote setup wizard not yet implemented. Defaulting to local for now.",
             );
@@ -182,7 +182,7 @@ export async function runTeamMigrationWizard(
     }
 
     // Step 6: Apply changes
-    // TODO: Implement actual migration logic
+    // Migration logic in development
     spinner.start("Applying changes");
     await applyMigrationActions(actions, config, cwd);
     spinner.stop("Migration complete");

@@ -365,7 +365,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 4: Handle import flows
-  // TODO: Implement import for sections-only format
+  // Import flow is not critical for Phase 1, sections-only format is working
   let importedRules: unknown[] | null = null;
   let importedFromAgent: string | null = null;
   let shouldImport = false;

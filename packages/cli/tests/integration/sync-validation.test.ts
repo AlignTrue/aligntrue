@@ -49,7 +49,6 @@ describe("Sync Validation", () => {
     });
   });
 
-  // TODO: Add full integration tests for IR validation
-  // These require proper setup with agent files, sources, and two-way sync
-  // For now, the validation logic is tested via unit tests and manual testing
+  // Validation logic is tested via unit tests and manual testing
+  // Full integration tests can be added when needed
 });

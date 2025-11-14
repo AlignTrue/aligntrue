@@ -89,7 +89,7 @@ export async function watch(args: string[]): Promise<void> {
 
     try {
       // Import sync command
-      const { sync } = await import("./sync.js");
+      const { sync } = await import("./sync/index.js");
 
       // Run sync (handles all the complexity internally)
       await sync([]);

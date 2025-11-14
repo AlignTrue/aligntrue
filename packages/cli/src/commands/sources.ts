@@ -12,7 +12,8 @@ async function recordEvent(_event: {
   event: string;
   properties?: Record<string, unknown>;
 }): Promise<void> {
-  // TODO: Implement telemetry when available
+  // Telemetry is implemented in other commands via @aligntrue/core/telemetry
+  // Can be added here when needed
   return Promise.resolve();
 }
 

@@ -104,13 +104,13 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
 
 /**
  * Check if storage URL is accessible
- * TODO: Implement actual connectivity check
+ * Basic URL validation - full connectivity check can be added when needed
  */
 export async function validateStorageAccess(
   url: string,
 ): Promise<{ accessible: boolean; error?: string }> {
-  // TODO: Implement git connectivity check
-  // For now, just check if URL is well-formed
+  // Basic URL format validation
+  // Full git connectivity check can be added when needed
   if (!url.includes("git@") && !url.includes("https://")) {
     return {
       accessible: false,

@@ -30,6 +30,7 @@ import {
   override,
   sources,
 } from "./commands/index.js";
+import { AlignTrueError } from "./utils/error-types.js";
 
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -216,6 +217,22 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Fatal error:", err.message);
+  // Handle AlignTrue errors with proper formatting
+  if (err instanceof AlignTrueError) {
+    console.error(`\n✗ ${err.message}`);
+    if (err.hint) {
+      console.error(`\n💡 Hint: ${err.hint}`);
+    }
+    console.error("");
+    process.exit(err.exitCode);
+  }
+
+  // Handle unknown errors
+  console.error("\n✗ Fatal error:", err.message);
+  if (err.stack) {
+    console.error("\nStack trace:");
+    console.error(err.stack);
+  }
+  console.error("");
   process.exit(1);
 });
