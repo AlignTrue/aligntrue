@@ -225,27 +225,6 @@ describe("validateTeamSources", () => {
     expect(errors).toEqual([]);
   });
 
-  // DEPRECATED: Allow list tests removed - approval now via git PR review
-  it.skip("warns when sources configured but no allow list", () => {
-    // This test is skipped because allow list functionality has been removed
-  });
-
-  it.skip("warns when allow list exists but is empty", async () => {
-    // This test is skipped because allow list functionality has been removed
-  });
-
-  it.skip("warns when git source not in allow list", async () => {
-    // This test is skipped because allow list functionality has been removed
-  });
-
-  it.skip("passes when git source in allow list", async () => {
-    // This test is skipped because allow list functionality has been removed
-  });
-
-  it.skip("returns error when allow list parse fails", async () => {
-    // This test is skipped because allow list functionality has been removed
-  });
-
   it("validates git source has url field", () => {
     const config: AlignTrueConfig = {
       version: "1",
@@ -312,11 +291,6 @@ describe("getTeamValidationErrors", () => {
     expect(
       result.warnings.some((w) => w.message.includes("without lockfile")),
     ).toBe(true);
-  });
-
-  // DEPRECATED: Allow list test removed - approval now via git PR review
-  it.skip("separates errors and warnings correctly", async () => {
-    // This test is skipped because allow list functionality has been removed
   });
 });
 
