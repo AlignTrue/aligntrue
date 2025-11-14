@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Github } from "lucide-react";
+import { X } from "lucide-react";
 
 /**
  * AlphaBanner Component
@@ -82,8 +82,7 @@ export function AlphaBanner() {
           }}
           aria-label="Follow updates on GitHub"
         >
-          Follow on GitHub
-          <Github size={16} style={{ display: "inline" }} />
+          Follow on GitHub →
         </a>
       </div>
       <button

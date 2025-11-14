@@ -140,6 +140,10 @@ export default [
       "**/*.test.tsx",
       "**/tests/**/*.ts",
       "archive/**",
+      "**/vitest.config.ts",
+      "**/vitest-setup.ts",
+      "**/scripts/**/*.ts",
+      "examples/**",
     ],
     languageOptions: {
       parser: typescriptParser,
