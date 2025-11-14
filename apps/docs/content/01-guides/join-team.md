@@ -166,9 +166,9 @@ Your team may use different approval modes:
 
 ### Strict (allowlist)
 
-- Changes must be explicitly approved
+- Changes must be explicitly approved via git PR
 - `aligntrue drift --gates` fails in CI if unapproved
-- Team lead runs `aligntrue team approve --current`
+- Team lead reviews and merges PR with lockfile changes
 - More common for external dependencies
 
 Check your team's mode:
@@ -227,8 +227,10 @@ If CI reports drift:
 # Check what changed
 aligntrue drift
 
-# If you made the change, ask team lead to approve:
-# (Team lead runs) aligntrue team approve --current
+# If you made the change, create PR for team lead to review:
+git add .aligntrue.lock.json
+git commit -m "chore: Update lockfile"
+git push origin feature-branch
 
 # Or revert your changes:
 git checkout .aligntrue/.rules.yaml
