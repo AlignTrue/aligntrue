@@ -1,0 +1,29 @@
+codecov:
+  require_ci_to_pass: false
+  precision: 2
+  round: down
+  layout: reach,diff,flags,tree
+  show_critical_paths: yes
+
+coverage:
+  precision: 2
+  round: down
+  range:
+    - 70
+    - 100
+
+comment:
+  layout: reach,diff,flags,tree,reach
+  behavior: default
+  require_changes: no
+  require_base: no
+  require_head: yes
+
+ignore:
+  - "node_modules"
+  - "dist"
+  - "coverage"
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/vitest.config.ts"
+  - "**/vitest-setup.ts"

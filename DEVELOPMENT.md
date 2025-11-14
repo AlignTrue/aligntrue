@@ -18,7 +18,7 @@
 - [Preventing CI failures](#preventing-ci-failures)
 - [Development commands](#development-commands)
 - [Dependabot auto-merge strategy](#dependabot-auto-merge-strategy)
-- [Package Exports](#package-exports)
+- [Package exports](#package-exports)
 - [Release process](#release-process)
 - [Development setup](#development-setup)
 - [Test maintenance: Core format and path changes](#test-maintenance-core-format-and-path-changes)
@@ -1186,12 +1186,13 @@ GitHub Actions workflow that:
 - All devDependencies (test frameworks, linters, build tools)
 - Patch updates to production packages (bug fixes)
 - Minor updates to production packages (new backward-compatible features)
+- **Security patches** (CVE fixes, even if major version) — _high urgency, low risk_
 
 ❌ **Requires manual review:**
 
-- Major version bumps (Next.js 15→16, etc.)
+- Major version bumps (Next.js 15→16, etc.) — unless they're security patches
 - Production dependencies not explicitly allowed
-- Any PR labeled "requires-review"
+- Any PR labeled "requires-review" — except security patches
 
 ## What to watch for
 
@@ -1199,7 +1200,10 @@ GitHub Actions workflow that:
    - Is it a real incompatibility? → Manual fix or manual rejection
    - Is it a flaky test? → Re-run CI or merge manually
 
-2. **Security patches:** Auto-merged if they're patch-level updates. Validate the patch notes if unsure.
+2. **Security patches:** Now auto-merged at all severity levels (low, medium, high, critical). The approval comment will clearly identify them:
+   - Look for `🔒 Auto-approved: Security patch` in the PR comment
+   - Verify CI tests pass (they're gated behind full CI run)
+   - Merged via squash merge for clean history
 
 3. **Monorepo issues:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
 
@@ -1219,14 +1223,28 @@ To temporarily disable auto-merge or change the strategy:
 
 ## Testing the setup
 
-After pushing these files:
+### Automatic testing
+
+After pushing these files, the workflow starts on next pull request:
 
 1. Wait for a new Dependabot PR to arrive (weekly on Mondays)
 2. Check the PR for:
-   - Expected labels (e.g., "devDependencies", "cli", "requires-review")
-   - Auto-approval comment from the workflow
+   - Expected labels (e.g., "devDependencies", "cli", "requires-review", "security")
+   - Auto-approval comment from the workflow with reasoning
    - Auto-merge badge once CI passes
 3. Monitor GitHub Actions to see the workflow logs
+
+### Testing security patch behavior
+
+To verify security patch auto-merge works:
+
+1. **Check a recent security alert:** Visit https://github.com/AlignTrue/aligntrue/security/dependabot
+2. **Wait for next Dependabot run** (Mondays, or trigger manually with `gh workflow run`)
+3. **Look for security-specific comment:** If Dependabot creates a PR with "security" label or "Dependabot security update" in body, the workflow will:
+   - Show `🔒 Auto-approved: Security patch` comment
+   - Run full CI (Linux + Windows)
+   - Auto-merge once CI passes
+4. **Validate in GitHub Actions:** Check `.github/workflows/dependabot-auto-merge.yml` logs to see security detection logic
 
 ## Related documentation
 
@@ -1236,7 +1254,7 @@ After pushing these files:
 
 ---
 
-# Package Exports
+# Package exports
 
 This document lists all public exports from AlignTrue packages. All exports must be documented here before being added to `package.json`.
 
@@ -1310,7 +1328,7 @@ This document lists all public exports from AlignTrue packages. All exports must
 | ----------- | --------------------------- | ----------------------------------------------- |
 | `.`         | UI components for docs site | `import { AlignTrueLogo } from '@aligntrue/ui'` |
 
-## Adding New Exports
+## Adding new exports
 
 When adding a new export:
 
@@ -1319,7 +1337,7 @@ When adding a new export:
 3. **Build and test** - Verify the export works: `pnpm build && pnpm test`
 4. **Update CHANGELOG** - Add entry describing the new export
 
-### Export Format
+### Export format
 
 ```json
 {
