@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Golden repository test validation now matches current exporter behavior (content hash computed and returned, not written as footer)
 - UI package test timeouts on Windows by increasing Vitest timeout thresholds to 30s for test and hook execution
+- Documentation discrepancy: Clarified that exported files (`.mdc`, `AGENTS.md`, etc.) contain clean rule content without footers; content hash and fidelity notes are returned in `ExportResult` and displayed in CLI output instead
 - CI test failures due to performance test thresholds and timeouts being too strict. Increased:
   - `--help` performance test thresholds: 800ms → 1200ms avg (Ubuntu), 1000ms → 1500ms max (Ubuntu); 1200ms → 2000ms avg, 1500ms → 2500ms max (Windows)
   - IR loader large file test timeouts: 30s → 120s for 11MB files, 30s → 60s for 2MB files
