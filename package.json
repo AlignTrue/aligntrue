@@ -80,7 +80,8 @@
   "pnpm": {
     "overrides": {
       "esbuild": ">=0.25.0",
-      "prismjs": ">=1.30.0"
+      "prismjs": ">=1.30.0",
+      "js-yaml": ">=4.1.1"
     }
   }
 }
