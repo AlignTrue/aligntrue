@@ -234,9 +234,15 @@ export class GitIntegration {
     const marker = "# START AlignTrue Generated Files";
     const endMarker = "# END AlignTrue Generated Files";
 
-    let content = existsSync(gitignorePath)
-      ? readFileSync(gitignorePath, "utf-8")
-      : "";
+    let content = "";
+    try {
+      content = readFileSync(gitignorePath, "utf-8");
+    } catch (error: any) {
+      if (error.code !== "ENOENT") {
+        throw error; // re-throw other errors
+      }
+      // File doesn't exist, content remains ""
+    }
 
     content = this.addManagedSection(content, marker, endMarker, files);
     writeFileSync(gitignorePath, content, "utf-8");
@@ -273,14 +279,19 @@ export class GitIntegration {
     // Normalize pattern (remove leading ./)
     const normalizedPattern = pattern.replace(/^\.\//, "");
 
-    if (!existsSync(gitignorePath)) {
-      // Create new .gitignore
+    try {
+      // Attempt to create the file atomically with the first entry
       writeFileSync(
         gitignorePath,
         `# AlignTrue generated files\n${normalizedPattern}\n`,
-        "utf-8",
+        { encoding: "utf-8", flag: "wx" },
       );
-      return;
+      return; // Success, file created.
+    } catch (error: any) {
+      if (error.code !== "EEXIST") {
+        throw error; // Rethrow unexpected errors
+      }
+      // File already exists, proceed to read and append logic
     }
 
     // Check if pattern already exists
