@@ -757,23 +757,14 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  // Configure sync settings based on whether we imported
+  // Configure sync settings
   const editSource =
     editSourcePatterns.length > 1 ? editSourcePatterns : editSourcePatterns[0];
 
-  if (importedRules && importedFromAgent) {
-    // Imported: set primary agent for reference
-    // Let config defaults handle workflow_mode and auto_pull
-    config.sync = {
-      primary_agent: importedFromAgent,
-      ...(editSource && { edit_source: editSource }),
-    };
-  } else {
-    // Fresh start: set inclusive edit_source based on enabled exporters
-    config.sync = {
-      ...(editSource && { edit_source: editSource }),
-    };
-  }
+  // Set inclusive edit_source based on enabled exporters
+  config.sync = {
+    ...(editSource && { edit_source: editSource }),
+  };
 
   // Write config atomically (temp + rename)
   const configTempPath = `${configPath}.tmp`;
@@ -783,45 +774,30 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   // Create native format template or IR fallback
   const createdFiles: string[] = [".aligntrue/config.yaml"];
 
-  // Will hold AGENTS.md content if we create it
-  let agentsMdContent: string | null = null;
+  // Create AGENTS.md as primary user-editable file
+  const agentsMdContent = generateAgentsMdStarter(projectIdValue);
+  const agentsMdPath = `${cwd}/AGENTS.md`;
+  const agentsMdTempPath = `${agentsMdPath}.tmp`;
+  writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
+  renameSync(agentsMdTempPath, agentsMdPath);
+  createdFiles.push("AGENTS.md");
 
-  // Create AGENTS.md as primary user-editable file (if not imported)
-  if (!importedRules) {
-    agentsMdContent = generateAgentsMdStarter(projectIdValue);
-    const agentsMdPath = `${cwd}/AGENTS.md`;
-    const agentsMdTempPath = `${agentsMdPath}.tmp`;
-    writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
-    renameSync(agentsMdTempPath, agentsMdPath);
-    createdFiles.push("AGENTS.md");
-  }
+  // Parse AGENTS.md to create IR with sections
+  const parseResult = parseNaturalMarkdown(
+    agentsMdContent,
+    `${projectIdValue}-rules`,
+  );
 
-  // Parse AGENTS.md to create IR with sections (if we created it)
   let pack: IRDocument;
-  if (agentsMdContent) {
-    const parseResult = parseNaturalMarkdown(
-      agentsMdContent,
-      `${projectIdValue}-rules`,
-    );
-
-    if (parseResult.sections.length > 0) {
-      pack = {
-        id: parseResult.metadata.id || `${projectIdValue}-rules`,
-        version: parseResult.metadata.version || "1.0.0",
-        spec_version: "1",
-        sections: parseResult.sections,
-      };
-    } else {
-      // Fallback to empty pack if parsing failed
-      pack = {
-        id: `${projectIdValue}-rules`,
-        version: "1.0.0",
-        spec_version: "1",
-        sections: [],
-      };
-    }
+  if (parseResult.sections.length > 0) {
+    pack = {
+      id: parseResult.metadata.id || `${projectIdValue}-rules`,
+      version: parseResult.metadata.version || "1.0.0",
+      spec_version: "1",
+      sections: parseResult.sections,
+    };
   } else {
-    // Fallback: should not reach here (import disabled), but ensure sections
+    // Fallback to empty pack if parsing failed
     pack = {
       id: `${projectIdValue}-rules`,
       version: "1.0.0",
