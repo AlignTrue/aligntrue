@@ -1,1 +1,16 @@
-{}
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@aligntrue/cli": "0.1.1-alpha.4",
+    "@aligntrue/core": "0.1.1-alpha.4",
+    "@aligntrue/exporters": "0.1.1-alpha.4",
+    "@aligntrue/schema": "0.1.1-alpha.4",
+    "@aligntrue/sources": "0.1.1-alpha.4",
+    "@aligntrue/file-utils": "0.1.1-alpha.4",
+    "@aligntrue/plugin-contracts": "0.1.1-alpha.4",
+    "@aligntrue/testkit": "0.1.1-alpha.4",
+    "aligntrue": "0.1.0-alpha.5"
+  },
+  "changesets": []
+}
