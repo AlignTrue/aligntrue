@@ -268,12 +268,6 @@ describe("lockfile validator", () => {
     });
   });
 
-  // DEPRECATED: Allow list validation tests removed
-  // Approval now via git PR review instead of explicit allow lists
-
-  // DEPRECATED: Drift and team mode tests removed
-  // These functions now return empty results (drift validation simplified)
-
   describe("formatLockfileTeamErrors", () => {
     it("formats errors and warnings separately", () => {
       const result = {
