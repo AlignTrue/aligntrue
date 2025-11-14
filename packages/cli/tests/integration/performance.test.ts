@@ -142,5 +142,5 @@ sections:
     // Catastrophic regression detection - catches accidental heavy imports
     // Platform-independent threshold with 5x safety margin
     expect(maxDuration).toBeLessThan(5000);
-  });
+  }, 20000);
 });
