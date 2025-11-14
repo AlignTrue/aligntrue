@@ -262,7 +262,7 @@ function validateExporterCount() {
 
 /**
  * Validate that no performance marketing claims exist
- * 
+ *
  * We use catastrophic regression detection (5x thresholds) for CI reliability,
  * not tight marketing claims. This check ensures we haven't re-added specific
  * performance numbers as marketing material.
@@ -293,11 +293,14 @@ function validateNoPerformanceMarketingClaims() {
 
   if (foundClaims.length > 0) {
     logError("Found specific performance marketing claims in features.md", {
-      actual: "Performance tests use catastrophic regression detection, not marketing claims",
+      actual:
+        "Performance tests use catastrophic regression detection, not marketing claims",
       files: ["apps/docs/content/04-reference/features.md"],
     });
   } else {
-    logSuccess("No performance marketing claims found (catastrophic regression detection only)");
+    logSuccess(
+      "No performance marketing claims found (catastrophic regression detection only)",
+    );
   }
 }
 
