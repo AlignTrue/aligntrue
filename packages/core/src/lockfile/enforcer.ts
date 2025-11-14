@@ -52,8 +52,8 @@ export function enforceLockfile(
     console.warn(
       "\nSync will continue. To approve these changes:\n" +
         "  1. Review the changes above\n" +
-        "  2. Run: aligntrue team approve --current\n" +
-        "  3. Commit .aligntrue/allow.yaml to version control\n",
+        "  2. Commit changes to git\n" +
+        "  3. Create PR for team review and approval\n",
     );
 
     return {
@@ -70,8 +70,8 @@ export function enforceLockfile(
     console.error(
       "\nSync aborted. To approve these changes:\n" +
         "  1. Review the changes above\n" +
-        "  2. Run: aligntrue team approve --current\n" +
-        "  3. Commit .aligntrue/allow.yaml to version control\n",
+        "  2. Commit changes to git\n" +
+        "  3. Create PR for team review and approval\n",
     );
 
     return {

@@ -3,13 +3,14 @@
  */
 
 import { existsSync } from "fs";
-import { resolve } from "path";
+import { resolve, extname } from "path";
 import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
 import {
   mergePacks,
   type BundleResult,
   ensureSectionsArray,
 } from "@aligntrue/core";
+import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
@@ -18,6 +19,30 @@ export interface ResolvedSource {
   sourcePath: string;
   sourceType: "local" | "git" | "url";
   commitSha?: string; // For git sources
+}
+
+/**
+ * Parse source content into AlignPack based on file extension
+ * Handles both YAML and markdown with frontmatter
+ */
+function parseSourceContent(content: string, sourcePath: string): AlignPack {
+  const ext = extname(sourcePath).toLowerCase();
+
+  if (ext === ".md" || ext === ".markdown") {
+    // Parse markdown with optional YAML frontmatter
+    const parsed = parseNaturalMarkdown(content);
+
+    // Convert to AlignPack format
+    return {
+      id: parsed.metadata.id || "imported-pack",
+      version: parsed.metadata.version || "1.0.0",
+      spec_version: "1",
+      sections: parsed.sections,
+    };
+  } else {
+    // Parse as YAML
+    return parseYamlToJson(content) as AlignPack;
+  }
 }
 
 /**
@@ -219,7 +244,10 @@ export async function resolveAndMergeSources(
     if (!firstSource) {
       throw new Error("First resolved source is undefined");
     }
-    const pack = parseYamlToJson(firstSource.content) as AlignPack;
+    const pack = parseSourceContent(
+      firstSource.content,
+      firstSource.sourcePath,
+    );
     // Defensive: Initialize sections to empty array ONLY if missing or invalid
     try {
       ensureSectionsArray(pack, { throwOnInvalid: true });
@@ -241,7 +269,7 @@ export async function resolveAndMergeSources(
   const packs: AlignPack[] = [];
   for (const source of resolved) {
     try {
-      const pack = parseYamlToJson(source.content) as AlignPack;
+      const pack = parseSourceContent(source.content, source.sourcePath);
       // Defensive: Initialize sections to empty array ONLY if missing or invalid
       try {
         ensureSectionsArray(pack, { throwOnInvalid: true });
