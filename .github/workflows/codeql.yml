@@ -2,27 +2,25 @@ name: CodeQL
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   schedule:
-    - cron: "0 0 * * 0" # Weekly on Sunday
-
-permissions:
-  contents: read
+    - cron: "0 3 * * 1" # Weekly Monday 3 AM UTC
 
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-
     permissions:
+      actions: read
+      contents: read
       security-events: write
 
     strategy:
       fail-fast: false
       matrix:
-        language: ["typescript"]
+        language: ["javascript-typescript"]
 
     steps:
       - name: Checkout repository
@@ -32,28 +30,12 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
+          queries: security-and-quality
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build:packages
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+        with:
+          category: /language:${{ matrix.language }}
