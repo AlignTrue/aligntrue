@@ -6,7 +6,10 @@
 
 import * as clack from "@clack/prompts";
 import { BackupManager, type BackupInfo } from "@aligntrue/core";
-import { parseCommonArgs } from "../utils/command-utilities.js";
+import {
+  parseCommonArgs,
+  type ArgDefinition,
+} from "../utils/command-utilities.js";
 
 interface BackupArgs {
   // Common
@@ -22,6 +25,29 @@ interface BackupArgs {
   // Cleanup subcommand
   keep?: string;
 }
+
+const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--notes",
+    hasValue: true,
+    description: "Add notes to backup (create subcommand)",
+  },
+  {
+    flag: "--to",
+    hasValue: true,
+    description: "Restore specific backup by timestamp (restore subcommand)",
+  },
+  {
+    flag: "--keep",
+    hasValue: true,
+    description: "Number of backups to keep (cleanup subcommand)",
+  },
+  {
+    flag: "--config",
+    hasValue: true,
+    description: "Path to config file",
+  },
+];
 
 const HELP_TEXT = `
 Usage: aligntrue backup <subcommand> [options]
@@ -59,7 +85,7 @@ Examples:
 `;
 
 export async function backupCommand(argv: string[]): Promise<void> {
-  const args = parseCommonArgs(argv);
+  const args = parseCommonArgs(argv, ARG_DEFINITIONS);
 
   if (args.help) {
     console.log(HELP_TEXT);

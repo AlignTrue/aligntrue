@@ -97,7 +97,7 @@ export interface LifecycleOptions {
 export function parseCommonArgs(
   args: string[],
   definitions: ArgDefinition[] = [],
-  options?: { strict?: boolean },
+  options: { strict?: boolean } = { strict: true },
 ): ParsedArgs {
   const flags: Record<string, boolean | string | undefined> = {};
   const positional: string[] = [];
@@ -155,7 +155,7 @@ export function parseCommonArgs(
       }
     } else if (arg.startsWith("-")) {
       // Unknown flag
-      if (options?.strict) {
+      if (options?.strict !== false) {
         // In strict mode, reject unknown flags
         const validFlags = definitions
           .map((d) => (d.alias ? `${d.flag}, ${d.alias}` : d.flag))
