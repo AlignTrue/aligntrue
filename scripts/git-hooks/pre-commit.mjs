@@ -7,14 +7,21 @@ async function main() {
   clack.intro("🔍 Running pre-commit checks...");
   const s = clack.spinner();
 
-  // Check for large batch of staged files
+  // Get staged files early so we can reuse it in all checks
+  let stagedFiles = [];
   try {
-    const stagedFiles = execSync("git diff --cached --name-only", {
+    stagedFiles = execSync("git diff --cached --name-only", {
       encoding: "utf8",
     })
       .trim()
       .split("\n")
       .filter((f) => f.length > 0);
+  } catch {
+    // If git command fails, continue with empty list
+  }
+
+  // Check for large batch of staged files
+  try {
 
     if (stagedFiles.length > 50) {
       clack.log.warn(
@@ -150,6 +157,46 @@ async function main() {
     console.error("   • Formatting → run pnpm format");
     console.error("");
     clack.outro("Fix the issues above and try committing again.");
+    process.exit(1);
+  }
+
+  // Build TypeScript packages to catch module resolution and type errors
+  s.start("Building affected packages...");
+  try {
+    // Check if any TypeScript files are staged
+    const stagedTsFiles = stagedFiles.filter((f) =>
+      /\.(ts|tsx)$/.test(f)
+    );
+
+    if (stagedTsFiles.length > 0) {
+      // Extract package directories and build all affected packages
+      // This catches missing imports, type errors, and module resolution issues
+      // that ESLint cannot detect
+      execSync("pnpm build:packages", {
+        stdio: "inherit",
+      });
+    }
+
+    s.stop("✅ Packages built successfully.");
+  } catch (error) {
+    s.stop("❌ Build failed.", 1);
+    console.error("");
+    clack.log.error("TypeScript build failed.");
+    console.error("");
+    console.error("❌ Build errors indicate:");
+    console.error("   • Missing imports or exports");
+    console.error("   • Type errors that ESLint cannot catch");
+    console.error("   • Module resolution failures");
+    console.error("");
+    console.error("🔧 Quick fix:");
+    console.error("   pnpm build:packages");
+    console.error("");
+    console.error("📚 Common causes:");
+    console.error("   • Importing from removed/renamed module");
+    console.error("   • Missing dependency between packages");
+    console.error("   • Incomplete deprecation (core removed export, CLI still uses it)");
+    console.error("");
+    clack.outro("Fix the build errors above and try committing again.");
     process.exit(1);
   }
 
