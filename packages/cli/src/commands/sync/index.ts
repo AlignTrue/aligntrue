@@ -32,8 +32,6 @@ export async function sync(args: string[]): Promise<void> {
     // Phase 3: Handle and display results
     await handleSyncResult(result, context, options);
   } catch (error) {
-    // Create a minimal spinner for error handling
-    const spinner = clack.spinner();
-    handleSyncError(error as Error, spinner);
+    handleSyncError(error as Error);
   }
 }

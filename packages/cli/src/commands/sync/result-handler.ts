@@ -316,11 +316,8 @@ async function displayConflictDetails(
 /**
  * Handle sync error
  */
-export function handleSyncError(
-  error: Error,
-  spinner: ReturnType<typeof clack.spinner>,
-): void {
-  spinner.stop("Sync failed");
+export function handleSyncError(error: Error): void {
+  clack.log.error("Sync failed");
   clack.log.error(
     `Sync error: ${error instanceof Error ? error.message : String(error)}`,
   );

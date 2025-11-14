@@ -21,7 +21,6 @@ import {
   backup,
   revert,
   watch,
-  pull,
   link,
   drift,
   update,
@@ -72,7 +71,6 @@ async function main() {
     console.log(
       "  team           Team mode management (enable, status, approve, list-allowed, remove)",
     );
-    console.log("  pull           Pull rules from git repository");
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
     console.log("  update         Check and apply updates (check, apply)");
@@ -174,11 +172,6 @@ async function main() {
 
   if (command === "plugs") {
     await plugs(commandArgs);
-    return;
-  }
-
-  if (command === "pull") {
-    await pull(commandArgs);
     return;
   }
 
