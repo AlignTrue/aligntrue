@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Windows CI test failures due to performance test thresholds being too strict. Increased timeouts for `--help` command from 1200ms to 2000ms average and 1500ms to 2500ms max to account for higher process spawning overhead in Windows CI environments.
+
 ### Added
 
 - **Turborepo build optimization** - Replaced complex pnpm scripts with Turborepo for faster, cached builds
