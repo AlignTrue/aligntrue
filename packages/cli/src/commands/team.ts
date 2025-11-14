@@ -212,6 +212,8 @@ async function teamEnable(
     (flags["yes"] as boolean | undefined) ||
     (flags["non-interactive"] as boolean | undefined) ||
     process.env["CI"] === "true" ||
+    !process.stdin.isTTY ||
+    !process.stdout.isTTY ||
     false;
 
   // Check if config exists
@@ -413,6 +415,8 @@ async function teamDisable(
     (flags["yes"] as boolean | undefined) ||
     (flags["non-interactive"] as boolean | undefined) ||
     process.env["CI"] === "true" ||
+    !process.stdin.isTTY ||
+    !process.stdout.isTTY ||
     false;
 
   // Check if config exists

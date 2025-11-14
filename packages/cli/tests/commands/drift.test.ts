@@ -117,7 +117,7 @@ sources:
       expect(output).toContain("base-global");
       expect(output).toContain("abc123".slice(0, 12));
       expect(output).toContain("different456".slice(0, 12));
-      expect(output).toContain("aligntrue team approve");
+      expect(output).toContain("PR for team");
       expect(exitSpy).not.toHaveBeenCalled();
     });
 

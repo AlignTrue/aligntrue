@@ -191,9 +191,9 @@ sources:
           expect(err.message).toContain("process.exit");
         }
 
-        // Check error message mentions correct command
+        // Check error message mentions correct workflow
         const errorCalls = consoleErrorSpy.mock.calls.flat().join(" ");
-        expect(errorCalls).toContain("aligntrue team approve");
+        expect(errorCalls).toContain("PR for team");
         expect(errorCalls).not.toContain("aligntrue lock");
       } finally {
         // Restore mocks

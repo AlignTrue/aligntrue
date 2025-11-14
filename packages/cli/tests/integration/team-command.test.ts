@@ -117,28 +117,6 @@ rules:
     });
   });
 
-  describe("Team Approve", () => {
-    it.skip("adds source to allow list", async () => {
-      // TODO: Fix - test expectations don't match current team approve behavior
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { mode: "team", exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
-
-      try {
-        await team(["approve", "github.com/org/repo"]);
-      } catch {
-        // May throw from process.exit if command fails
-      }
-
-      const allowListPath = join(TEST_DIR, ".aligntrue", "allow.yaml");
-      expect(existsSync(allowListPath)).toBe(true);
-
-      const allowList = yaml.parse(readFileSync(allowListPath, "utf-8"));
-      expect(allowList.approved_sources).toContain("github.com/org/repo");
-    });
-  });
+  // Team approve command removed - approval now happens via git PR workflow
+  // No test needed as command no longer exists
 });
