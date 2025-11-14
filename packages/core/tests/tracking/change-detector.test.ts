@@ -40,7 +40,7 @@ describe("ChangeDetector", () => {
 
       const strategyName = await detector.getStrategyName();
       expect(strategyName).toBe("git");
-    });
+    }, 15000); // 15s timeout for git init on Windows
 
     it("uses content-hash strategy when git is not available", async () => {
       // Non-git directory
