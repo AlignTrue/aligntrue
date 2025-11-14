@@ -14,11 +14,6 @@ import {
   type AlignTrueConfig,
   saveMinimalConfig,
 } from "@aligntrue/core";
-import {
-  parseAllowList,
-  addSourceToAllowList,
-  writeAllowList,
-} from "@aligntrue/core/team/allow.js";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
@@ -418,12 +413,7 @@ export async function sync(args: string[]): Promise<void> {
    * - Soft mode: Warn and continue
    */
   if (config.mode === "team" && config.modules?.lockfile) {
-    const allowListPath = resolve(cwd, ".aligntrue/allow.yaml");
     const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
-    const teamOnboardingMarker = join(
-      paths.aligntrueDir,
-      ".team-onboarding-complete",
-    );
 
     // Compute NEW bundle hash from current rules
     const { generateLockfile, writeLockfile } = await import(
@@ -457,127 +447,7 @@ export async function sync(args: string[]): Promise<void> {
       );
     }
 
-    // Check if allow list exists
-    if (!existsSync(allowListPath)) {
-      // Only show full warning if marker doesn't exist (first time)
-      if (!existsSync(teamOnboardingMarker)) {
-        clack.log.warn("⚠ No allow list found (team mode)");
-        clack.log.info("  Allow list will be required for future syncs");
-        clack.log.info("  Run: aligntrue team approve --current");
-        clack.log.info("  Or: aligntrue team approve <source>");
-
-        // Create marker file to suppress future warnings
-        try {
-          writeFileSync(teamOnboardingMarker, new Date().toISOString());
-        } catch {
-          // Silently fail if we can't write marker
-        }
-      } else {
-        // Condensed tip for subsequent syncs
-        clack.log.info(
-          "💡 Tip: Run 'aligntrue team approve --current' to create allow list",
-        );
-      }
-    } else {
-      // Allow list exists - enforce it
-      try {
-        const allowList = parseAllowList(allowListPath);
-
-        // Check if new bundle hash is approved
-        const isApproved = allowList.sources.some(
-          (s) =>
-            s.value === newBundleHashWithPrefix || s.value === newBundleHash,
-        );
-
-        // Detect drift: old hash exists and differs from new hash
-        const hasDrift = oldBundleHash && oldBundleHash !== newBundleHash;
-
-        if (hasDrift && oldBundleHash) {
-          clack.log.info(
-            `ℹ Lockfile drift detected (rules changed since last lock)`,
-          );
-          clack.log.info(
-            `  Old bundle: sha256:${oldBundleHash.slice(0, 16)}...`,
-          );
-          clack.log.info(
-            `  New bundle: sha256:${newBundleHash.slice(0, 16)}...`,
-          );
-        }
-
-        if (!isApproved && !force) {
-          const lockfileMode = config.lockfile?.mode || "soft";
-
-          if (lockfileMode === "soft") {
-            // Soft mode: warn but allow to proceed
-            clack.log.warn("⚠ Bundle hash not in allow list (soft mode)");
-            clack.log.warn(
-              `  Current bundle: ${newBundleHashWithPrefix.slice(0, 19)}...`,
-            );
-            clack.log.info("  Sync will continue. To approve:");
-            clack.log.info("    aligntrue team approve --current");
-          } else if (lockfileMode === "strict") {
-            // Strict mode: check if interactive
-            const isTTY = Boolean(process.stdin.isTTY && process.stdout.isTTY);
-
-            if (isTTY) {
-              // Interactive strict mode: prompt to approve
-              clack.log.warn("⚠ Bundle hash not in allow list (strict mode)");
-              clack.log.info(
-                `  Current bundle: ${newBundleHashWithPrefix.slice(0, 19)}...`,
-              );
-
-              const shouldApprove = await clack.confirm({
-                message: "Approve this bundle and continue sync?",
-                initialValue: false,
-              });
-
-              if (clack.isCancel(shouldApprove) || !shouldApprove) {
-                console.error("\nSync cancelled. To approve later:");
-                console.error("  aligntrue team approve --current");
-                process.exit(1);
-              }
-
-              // User approved - add to allow list
-              try {
-                const updatedAllowList = await addSourceToAllowList(
-                  newBundleHashWithPrefix,
-                  allowList,
-                );
-                writeAllowList(allowListPath, updatedAllowList);
-                clack.log.success("✓ Bundle approved and added to allow list");
-                clack.log.info("  Remember to commit .aligntrue/allow.yaml");
-              } catch (err) {
-                console.error("✗ Failed to update allow list");
-                console.error(
-                  `  ${err instanceof Error ? err.message : String(err)}`,
-                );
-                process.exit(1);
-              }
-            } else {
-              // Non-interactive strict mode: show error and exit
-              console.error("✗ Bundle hash not in allow list (strict mode)");
-              console.error(
-                `  Current bundle: ${newBundleHashWithPrefix.slice(0, 19)}...`,
-              );
-              console.error("\nTo approve this bundle:");
-              console.error("  aligntrue team approve --current");
-              console.error("\nOr bypass this check (not recommended):");
-              console.error("  aligntrue sync --force");
-              process.exit(1);
-            }
-          }
-        }
-
-        if (!isApproved && force) {
-          clack.log.warn("⚠ Bypassing allow list validation (--force)");
-          clack.log.warn("  Bundle hash not approved");
-        }
-      } catch (err) {
-        clack.log.warn(
-          `⚠ Failed to validate allow list: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    }
+    // Allow list support removed - team mode now uses git PR review
   }
 
   // Check for --accept-agent flag
