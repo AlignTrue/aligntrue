@@ -24,6 +24,9 @@ import {
 import { getAlignTruePaths } from "../paths.js";
 import type { OverlayConfig } from "../overlays/types.js";
 
+// Track shown warnings to prevent duplication
+const shownWarnings = new Set<string>();
+
 export type AlignTrueMode = "solo" | "team" | "enterprise";
 export type ModeHints = "off" | "metadata_only" | "hints" | "native";
 export type ResourceType = "rules" | "mcps" | "skills";
@@ -736,19 +739,27 @@ export async function validateConfig(
     }
   }
 
-  // Cross-field validation: warn about mode/module inconsistencies
+  // Cross-field validation: warn about mode/module inconsistencies (once per process)
   if (config.mode === "solo" && config.modules?.lockfile === true) {
-    console.warn(
-      `Warning: Solo mode with lockfile enabled is unusual.\n` +
-        `  Consider using 'mode: team' if you need lockfile features.`,
-    );
+    const warningKey = "solo-lockfile-mismatch";
+    if (!shownWarnings.has(warningKey)) {
+      shownWarnings.add(warningKey);
+      console.warn(
+        `Warning: Solo mode with lockfile enabled is unusual.\n` +
+          `  Consider using 'mode: team' if you need lockfile features.`,
+      );
+    }
   }
 
   if (config.mode === "solo" && config.modules?.bundle === true) {
-    console.warn(
-      `Warning: Solo mode with bundle enabled is unusual.\n` +
-        `  Consider using 'mode: team' if you need bundle features.`,
-    );
+    const warningKey = "solo-bundle-mismatch";
+    if (!shownWarnings.has(warningKey)) {
+      shownWarnings.add(warningKey);
+      console.warn(
+        `Warning: Solo mode with bundle enabled is unusual.\n` +
+          `  Consider using 'mode: team' if you need bundle features.`,
+      );
+    }
   }
 }
 
@@ -1043,4 +1054,12 @@ export function getModeHints(
 
   // Use global default or fall back to metadata_only
   return config.export?.mode_hints?.default ?? "metadata_only";
+}
+
+/**
+ * Reset shown warnings (for testing)
+ * @internal
+ */
+export function resetShownWarnings(): void {
+  shownWarnings.clear();
 }
