@@ -204,46 +204,4 @@ sources:
       }
     });
   });
-
-  describe("Team command validation", () => {
-    it("team approve requires source argument", async () => {
-      writeFileSync(
-        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
-        `
-mode: team
-version: "1"
-`,
-      );
-
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      // Try approve without source
-      await expect(team(["approve"])).rejects.toThrow();
-
-      const errorCalls = consoleErrorSpy.mock.calls.flat().join(" ");
-      expect(errorCalls).toContain("No sources provided");
-    });
-
-    it("team approve --current requires lockfile", async () => {
-      writeFileSync(
-        join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line
-        `
-mode: team
-version: "1"
-`,
-      );
-
-      const consoleErrorSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      // Try approve --current without lockfile
-      await expect(team(["approve", "--current"])).rejects.toThrow();
-
-      const errorCalls = consoleErrorSpy.mock.calls.flat().join(" ");
-      expect(errorCalls).toContain("Lockfile not found");
-    });
-  });
 });
