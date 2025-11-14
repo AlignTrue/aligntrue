@@ -2,10 +2,21 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
-  "linked": [["@aligntrue/*", "aligntrue"]],
+  "fixed": [
+    [
+      "@aligntrue/cli",
+      "@aligntrue/core",
+      "@aligntrue/exporters",
+      "@aligntrue/schema",
+      "@aligntrue/sources",
+      "@aligntrue/file-utils",
+      "@aligntrue/plugin-contracts",
+      "@aligntrue/testkit"
+    ]
+  ],
+  "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": ["@aligntrue/docs", "@aligntrue/ui"]
 }
