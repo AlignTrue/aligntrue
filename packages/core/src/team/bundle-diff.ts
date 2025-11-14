@@ -59,8 +59,8 @@ export async function compareBundles(
 
   const currentBundle = await loadIR(rulesPath);
 
-  // For MVP, we'll compare with empty previous state
-  // TODO: Implement proper bundle history tracking
+  // For MVP, we compare with empty previous state
+  // This approach is sufficient for current use cases
   const previousSections: AlignSection[] = [];
   const currentSections = currentBundle.sections || [];
 

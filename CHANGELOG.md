@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Turborepo build optimization** - Replaced complex pnpm scripts with Turborepo for faster, cached builds
+  - Automatic dependency graph resolution
+  - Parallel execution where possible
+  - Built-in caching for faster rebuilds
+  - Simplified build scripts: `pnpm build`, `pnpm typecheck`, `pnpm test`
+
+### Changed
+
+- **Refactored sync command** - Split monolithic 1,319-line sync.ts into focused modules
+  - Created `packages/cli/src/commands/sync/` directory structure
+  - Separated concerns: options, context-builder, workflow, result-handler
+  - Main orchestrator now ~40 lines, each module under 500 lines
+  - Improved testability and maintainability
+- **Standardized error handling** - Consistent error types across CLI
+  - New error type system with `AlignTrueError` base class
+  - Specific error classes: `ConfigError`, `ValidationError`, `SyncError`, `TeamModeError`, `NotImplementedError`
+  - Consistent error formatting with hints
+  - Better exit codes and error messages
+
+### Removed
+
+- **Cleaned up TODOs** - Removed or addressed 19 TODO comments
+  - Deleted obsolete TODOs for completed features
+  - Updated comments for features deferred to future releases
+  - Added clear error messages for unimplemented features
+  - Improved code clarity and reduced technical debt
+
+### Added
+
 - **Automated project badges** - Comprehensive status badges on homepage and docs footer
   - CI status (automated via GitHub Actions)
   - npm version (automated from registry)

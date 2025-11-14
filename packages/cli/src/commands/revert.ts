@@ -138,7 +138,7 @@ export async function revert(args: string[]): Promise<void> {
         clack.cancel("Revert cancelled");
         process.exit(0);
       }
-      // TODO: Apply mode change if needed
+      // Mode changes are not supported in revert
     }
 
     // Show diff preview

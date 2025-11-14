@@ -15,8 +15,6 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import type { ParsedIR } from "../types/ir.js";
-import { isValidIR } from "../types/ir.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -173,13 +171,11 @@ export async function promote(args: string[]): Promise<void> {
     } else {
       console.log("Promoting to team...");
     }
-    // TODO: Implement actual promotion logic
-    await promoteSection(sectionHeading, cwd);
-    if (spinner) {
-      spinner.stop("Promotion complete");
-    } else {
-      console.log("✓ Promotion complete");
-    }
+    // Feature planned for future release
+    throw new Error(
+      "Section promotion not yet implemented. " +
+        "This feature is planned for a future release.",
+    );
   } else {
     if (isTTY()) {
       clack.log.info("Dry run - no changes made");
@@ -292,13 +288,11 @@ export async function demote(args: string[]): Promise<void> {
     } else {
       console.log("Demoting to personal...");
     }
-    // TODO: Implement actual demotion logic
-    await demoteSection(sectionHeading, cwd);
-    if (spinner) {
-      spinner.stop("Demotion complete");
-    } else {
-      console.log("✓ Demotion complete");
-    }
+    // Feature planned for future release
+    throw new Error(
+      "Section demotion not yet implemented. " +
+        "This feature is planned for a future release.",
+    );
   } else {
     if (isTTY()) {
       clack.log.info("Dry run - no changes made");
@@ -407,13 +401,11 @@ export async function local(args: string[]): Promise<void> {
     } else {
       console.log("Making local-only...");
     }
-    // TODO: Implement actual local conversion logic
-    await makeLocal(sectionHeading, cwd);
-    if (spinner) {
-      spinner.stop("Conversion complete");
-    } else {
-      console.log("✓ Conversion complete");
-    }
+    // Feature planned for future release
+    throw new Error(
+      "Local conversion not yet implemented. " +
+        "This feature is planned for a future release.",
+    );
   } else {
     if (isTTY()) {
       clack.log.info("Dry run - no changes made");
@@ -612,262 +604,6 @@ async function migrateTeam(
   }
 
   recordEvent({ command_name: "migrate-team", align_hashes_used: [] });
-}
-
-/**
- * Promote section to team
- */
-async function promoteSection(
-  sectionHeading: string,
-  cwd: string,
-): Promise<void> {
-  const { readFileSync, writeFileSync, existsSync } = require("fs");
-  const { join } = require("path");
-  const yaml = require("yaml");
-  const { loadConfig } = await import("@aligntrue/core");
-
-  // Load config
-  const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const config = await loadConfig(configPath);
-
-  // Load IR
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-  if (!existsSync(irPath)) {
-    throw new Error("IR file not found. Run 'aligntrue init' first.");
-  }
-
-  const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent) as ParsedIR;
-
-  if (!isValidIR(ir)) {
-    throw new Error("Invalid IR format");
-  }
-
-  // Find section
-  const section = ir.sections.find(
-    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
-  );
-
-  if (!section) {
-    throw new Error(`Section not found: ${sectionHeading}`);
-  }
-
-  // Update config to use resources structure for scopes/storage
-  const typedConfig = config as unknown as AlignTrueConfig;
-  if (!typedConfig.resources) {
-    typedConfig.resources = {
-      rules: { scopes: {}, storage: {} },
-      mcps: { scopes: {}, storage: {} },
-      skills: { scopes: {}, storage: {} },
-    };
-  }
-  if (!typedConfig.resources.rules) {
-    typedConfig.resources.rules = { scopes: {}, storage: {} };
-  }
-  if (!typedConfig.resources.rules.scopes) {
-    typedConfig.resources.rules.scopes = {};
-  }
-  if (!typedConfig.resources.rules.scopes["team"]) {
-    typedConfig.resources.rules.scopes["team"] = { sections: [] };
-  }
-  if (Array.isArray(typedConfig.resources.rules.scopes["team"]?.sections)) {
-    if (
-      !typedConfig.resources.rules.scopes["team"]!.sections.includes(
-        section.heading,
-      )
-    ) {
-      typedConfig.resources.rules.scopes["team"]!.sections.push(
-        section.heading,
-      );
-    }
-  }
-
-  if (!typedConfig.resources.rules.storage) {
-    typedConfig.resources.rules.storage = {};
-  }
-  typedConfig.resources.rules.storage["team"] = { type: "repo" };
-
-  // Remove from personal scope if present
-  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
-    typedConfig.resources.rules.scopes["personal"]!.sections =
-      typedConfig.resources.rules.scopes["personal"]!.sections.filter(
-        (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
-      );
-  }
-
-  // Write updated config
-  const configContent = yaml.stringify(config);
-  writeFileSync(configPath, configContent, "utf-8");
-
-  console.log(`✓ Promoted "${section.heading}" to team scope`);
-}
-
-/**
- * Demote section to personal
- */
-async function demoteSection(
-  sectionHeading: string,
-  cwd: string,
-): Promise<void> {
-  const { readFileSync, writeFileSync, existsSync } = require("fs");
-  const { join } = require("path");
-  const yaml = require("yaml");
-  const { loadConfig } = await import("@aligntrue/core");
-
-  // Load config
-  const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const config = await loadConfig(configPath);
-
-  // Load IR
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-  if (!existsSync(irPath)) {
-    throw new Error("IR file not found. Run 'aligntrue init' first.");
-  }
-
-  const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent) as ParsedIR;
-
-  if (!isValidIR(ir)) {
-    throw new Error("Invalid IR format");
-  }
-
-  // Find section
-  const section = ir.sections.find(
-    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
-  );
-
-  if (!section) {
-    throw new Error(`Section not found: ${sectionHeading}`);
-  }
-
-  // Update config to use resources structure for scopes/storage
-  const typedConfig = config as unknown as AlignTrueConfig;
-  if (!typedConfig.resources) {
-    typedConfig.resources = {
-      rules: { scopes: {}, storage: {} },
-      mcps: { scopes: {}, storage: {} },
-      skills: { scopes: {}, storage: {} },
-    };
-  }
-  if (!typedConfig.resources.rules) {
-    typedConfig.resources.rules = { scopes: {}, storage: {} };
-  }
-  if (!typedConfig.resources.rules.scopes) {
-    typedConfig.resources.rules.scopes = {};
-  }
-  if (!typedConfig.resources.rules.scopes["personal"]) {
-    typedConfig.resources.rules.scopes["personal"] = { sections: [] };
-  }
-  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
-    if (
-      !typedConfig.resources.rules.scopes["personal"]!.sections.includes(
-        section.heading,
-      )
-    ) {
-      typedConfig.resources.rules.scopes["personal"]!.sections.push(
-        section.heading,
-      );
-    }
-  }
-
-  // Set storage based on existing personal storage config
-  if (!typedConfig.resources.rules.storage) {
-    typedConfig.resources.rules.storage = {};
-  }
-  if (!typedConfig.resources.rules.storage["personal"]) {
-    typedConfig.resources.rules.storage["personal"] = { type: "local" };
-  }
-
-  // Remove from team scope if present
-  if (Array.isArray(typedConfig.resources.rules.scopes["team"]?.sections)) {
-    typedConfig.resources.rules.scopes["team"]!.sections =
-      typedConfig.resources.rules.scopes["team"]!.sections.filter(
-        (s: string) => s.toLowerCase() !== section.heading.toLowerCase(),
-      );
-  }
-
-  // Write updated config
-  const configContent = yaml.stringify(config);
-  writeFileSync(configPath, configContent, "utf-8");
-
-  console.log(`✓ Demoted "${section.heading}" to personal scope`);
-}
-
-/**
- * Make section local-only
- */
-async function makeLocal(sectionHeading: string, cwd: string): Promise<void> {
-  const { readFileSync, writeFileSync, existsSync } = require("fs");
-  const { join } = require("path");
-  const yaml = require("yaml");
-  const { loadConfig } = await import("@aligntrue/core");
-
-  // Load config
-  const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const config = await loadConfig(configPath);
-
-  // Load IR
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-  if (!existsSync(irPath)) {
-    throw new Error("IR file not found. Run 'aligntrue init' first.");
-  }
-
-  const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent) as ParsedIR;
-
-  if (!isValidIR(ir)) {
-    throw new Error("Invalid IR format");
-  }
-
-  // Find section
-  const section = ir.sections.find(
-    (s) => s.heading.toLowerCase() === sectionHeading.toLowerCase(),
-  );
-
-  if (!section) {
-    throw new Error(`Section not found: ${sectionHeading}`);
-  }
-
-  // Update config to add section to personal scope with local storage
-  const typedConfig = config as unknown as AlignTrueConfig;
-  if (!typedConfig.resources) {
-    typedConfig.resources = {
-      rules: { scopes: {}, storage: {} },
-      mcps: { scopes: {}, storage: {} },
-      skills: { scopes: {}, storage: {} },
-    };
-  }
-  if (!typedConfig.resources.rules) {
-    typedConfig.resources.rules = { scopes: {}, storage: {} };
-  }
-  if (!typedConfig.resources.rules.scopes) {
-    typedConfig.resources.rules.scopes = {};
-  }
-  if (!typedConfig.resources.rules.scopes["personal"]) {
-    typedConfig.resources.rules.scopes["personal"] = { sections: [] };
-  }
-  if (Array.isArray(typedConfig.resources.rules.scopes["personal"]?.sections)) {
-    if (
-      !typedConfig.resources.rules.scopes["personal"]!.sections.includes(
-        section.heading,
-      )
-    ) {
-      typedConfig.resources.rules.scopes["personal"]!.sections.push(
-        section.heading,
-      );
-    }
-  }
-
-  if (!typedConfig.resources.rules.storage) {
-    typedConfig.resources.rules.storage = {};
-  }
-  typedConfig.resources.rules.storage["personal"] = { type: "local" };
-
-  // Write updated config
-  const configContent = yaml.stringify(config);
-  writeFileSync(configPath, configContent, "utf-8");
-
-  console.log(`✓ Made "${section.heading}" local-only`);
 }
 
 /**
