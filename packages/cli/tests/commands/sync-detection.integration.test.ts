@@ -21,15 +21,17 @@ describe("Sync detection integration", () => {
       customConfig: `exporters:
   - cursor
 sources:
-  - path: .aligntrue/.rules.yaml
+  - type: local
+    path: .aligntrue/.rules.yaml
 `,
       customRules: `id: test-project
 version: 1.0.0
 spec_version: '1'
 sections:
   - heading: Test rule
+    level: 2
     content: Test rule guidance
-    fingerprint: test.example.rule
+    fingerprint: test-example-rule
 `,
     });
     cleanup = ctx.cleanup;
