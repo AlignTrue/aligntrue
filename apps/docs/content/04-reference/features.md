@@ -53,13 +53,24 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
-## Developer experience
+## Developer experience & reliability
 
-- Consistent error messages (what/why/how format)
-- TypeScript 5+ strict mode
-- 1800+ tests with determinism checks
-- Vitest + Playwright for CI
+**Code quality:**
+
+- TypeScript 5+ strict mode with comprehensive type coverage
+- Consistent error messages (what/why/how format with actionable fixes)
 - Automatic per-file backups (configurable, smart defaults)
+- Atomic operations prevent file corruption during syncs
+
+**Testing & validation:**
+
+- 1800+ deterministic tests with fixed seeds and reproducible execution
+- Vitest + Playwright for CI/CD
+- JSON Schema 2020-12 validation with Ajv strict mode (all IR and config)
+- Canonical JSON (JCS) hashing for byte-identical reproducibility
+
+**Developer experience:**
+
 - Smart .gitignore management (tied to git.mode)
 - Enhanced agent detection with caching and validation
 - Scope auto-discovery for monorepos

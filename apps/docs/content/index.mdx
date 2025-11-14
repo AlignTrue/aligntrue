@@ -33,6 +33,18 @@ aligntrue sync      # Syncs to all your agents
 - **60-second setup** - No configuration required for common workflows
 - **Two-way sync** - Edit any agent file, changes sync everywhere automatically (solo mode)
 
+## Built for reliability
+
+**Enterprise-grade validation and determinism:**
+
+- **TypeScript 5+ strict mode** - Comprehensive type coverage across the entire codebase
+- **JSON Schema 2020-12 validation** - All IR and config validated with Ajv strict mode
+- **1800+ deterministic tests** - Vitest + Playwright with reproducible, seed-controlled execution
+- **Canonical JSON hashing** - JCS-based reproducible hashing for lockfiles and integrity verification
+- **Atomic operations** - Safe file writes prevent corruption across sync operations
+
+Why this matters: AlignTrue validates every operation against schemas and ensures byte-identical outputs for identical inputs. Your AI agent configurations are never corrupted, even during concurrent syncs or network failures.
+
 ## Detailed setup
 
 <div style={{ maxWidth: '56rem', margin: '2rem 0' }}>
