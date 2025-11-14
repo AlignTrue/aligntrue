@@ -9,6 +9,8 @@ import { readFileSync, existsSync } from "fs";
 import { resolve, join } from "path";
 import { diffLines } from "diff";
 import { isTTY } from "../utils/tty-helper.js";
+import { CommonErrors } from "../utils/common-errors.js";
+import { exitWithError } from "../utils/error-formatter.js";
 
 /**
  * Execute revert command
@@ -210,9 +212,7 @@ export async function revert(args: string[]): Promise<void> {
     // Confirm restore
     if (!yes) {
       if (!isTTY()) {
-        console.error("\nError: Confirmation required in non-interactive mode");
-        console.error("Use --yes to skip confirmation");
-        process.exit(1);
+        exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
       }
 
       const confirm = await clack.confirm({

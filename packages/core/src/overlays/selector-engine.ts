@@ -6,6 +6,7 @@
 import type { AlignPack } from "@aligntrue/schema";
 import { parseSelector } from "./selector-parser.js";
 import { SelectorMatch } from "./types.js";
+import { ensureSectionsArray } from "../validation/sections.js";
 
 /**
  * Evaluate a selector against an AlignPack IR
@@ -54,7 +55,9 @@ export function evaluateSelector(
  */
 function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
   // Defensive: ensure sections array exists
-  if (!ir.sections || !Array.isArray(ir.sections)) {
+  try {
+    ensureSectionsArray(ir, { throwOnInvalid: true });
+  } catch {
     return {
       success: false,
       error: `IR does not contain sections array (got ${typeof ir.sections})`,

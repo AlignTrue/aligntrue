@@ -5,9 +5,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { sync } from "../../src/commands/sync/index.js";
-import { mkdirSync, writeFileSync, rmSync, existsSync, mkdtempSync } from "fs";
+import { writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { setupTestProject } from "../helpers/test-setup.js";
 
 describe("sync command - smoke tests", () => {
   it("shows help with --help flag", async () => {
@@ -68,32 +69,22 @@ describe("sync command - smoke tests", () => {
 describe("sync command - detection scenarios", () => {
   let testDir: string;
   let originalCwd: string;
+  let cleanup: () => Promise<void>;
 
   beforeEach(() => {
     testDir = join(tmpdir(), `aligntrue-test-sync-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    const ctx = setupTestProject(testDir, {
+      customConfig: "exporters:\n  - cursor\n",
+      customRules: "rules: []\nspec_version: '1'\n",
+    });
+    cleanup = ctx.cleanup;
     originalCwd = process.cwd();
     process.chdir(testDir);
-
-    // Create minimal config
-    mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
-    writeFileSync(
-      join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\n",
-    );
-
-    // Create rules file
-    writeFileSync(
-      join(testDir, ".aligntrue/.rules.yaml"),
-      "rules: []\nspec_version: '1'\n",
-    );
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     process.chdir(originalCwd);
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    await cleanup();
   });
 
   it("skips detection with --no-detect flag", async () => {

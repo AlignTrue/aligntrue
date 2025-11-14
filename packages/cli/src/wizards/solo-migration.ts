@@ -4,6 +4,9 @@
  */
 
 import * as clack from "@clack/prompts";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { join } from "path";
+import * as yaml from "yaml";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
 import { isValidIR } from "../types/ir.js";
@@ -173,10 +176,6 @@ async function applySoloMigration(
   config: AlignTrueConfig,
   cwd: string,
 ): Promise<void> {
-  const { readFileSync, writeFileSync, existsSync } = require("fs");
-  const { join } = require("path");
-  const yaml = require("yaml");
-
   // Load IR
   const irPath = join(cwd, ".aligntrue", ".rules.yaml");
   if (!existsSync(irPath)) {

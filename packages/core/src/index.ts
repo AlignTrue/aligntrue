@@ -57,7 +57,7 @@ export type { Section } from "./parsing/section-extractor.js";
 export * from "./resources/index.js";
 
 // Validation
-export * from "./validation/team-mode.js";
+export * from "./validation/index.js";
 
 // Migration utilities
 export * from "./migration/ruler-parser.js";

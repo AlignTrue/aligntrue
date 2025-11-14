@@ -12,6 +12,8 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { CommonErrors } from "../utils/common-errors.js";
+import { exitWithError } from "../utils/error-formatter.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -173,9 +175,7 @@ async function runOverrideRemove(
     }
 
     if (!isTTY()) {
-      console.error("\nError: Confirmation required in non-interactive mode");
-      console.error("Use --force to skip confirmation");
-      process.exit(1);
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--force"), 1);
     }
 
     const confirmed = await clack.confirm({
