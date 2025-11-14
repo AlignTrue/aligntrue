@@ -55,7 +55,6 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 ## Developer experience
 
-- Fast `--help` (measured performance: ~1200ms on Ubuntu, ~2000ms on Windows)
 - Consistent error messages (what/why/how format)
 - TypeScript 5+ strict mode
 - 1800+ tests with determinism checks
