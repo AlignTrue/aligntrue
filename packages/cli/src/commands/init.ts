@@ -850,8 +850,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   renameSync(rulesTempPath, rulesPath);
   createdFiles.push(".aligntrue/.rules.yaml (internal)");
 
-  // Create native format template if applicable (and not imported)
-  if (nativeTemplatePath && nativeTemplate && !importedRules) {
+  // Create native format template if applicable
+  if (nativeTemplatePath && nativeTemplate) {
     const nativeFullPath = `${cwd}/${nativeTemplatePath}`;
     const nativeDir = dirname(nativeFullPath);
 
@@ -918,24 +918,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else {
     let message = "\nNext steps:\n";
 
-    if (importedRules && importedFromAgent) {
-      // Imported workflow message
-      message += `  1. Run: aligntrue sync\n`;
-      message += `     → Syncs rules to all agents (AGENTS.md, Cursor, etc.)\n`;
-      message += `  2. Edit rules in any agent file - they stay synced\n`;
-      message += `     → Edit AGENTS.md, .cursor/*.mdc, or other agent files\n\n`;
-      message += `💡 Your imported rules are ready!\n`;
-      message += `   AlignTrue keeps all agent files in sync automatically`;
-    } else {
-      // Fresh start workflow message
-      message += `  1. Edit rules: AGENTS.md\n`;
-      message += `  2. Sync to agents: aligntrue sync\n`;
-      if (config.mode === "solo") {
-        message += `  3. Enable team mode: aligntrue team enable\n`;
-      }
-      message += `\n💡 Edit rules in any agent file\n`;
-      message += `   AGENTS.md, .cursor/*.mdc, etc. - AlignTrue keeps them synced`;
+    // Fresh start workflow message
+    message += `  1. Edit rules: AGENTS.md\n`;
+    message += `  2. Sync to agents: aligntrue sync\n`;
+    if (config.mode === "solo") {
+      message += `  3. Enable team mode: aligntrue team enable\n`;
     }
+
+    message += `\n💡 Edit rules in any agent file\n`;
+    message += `   AGENTS.md, .cursor/*.mdc, etc. - AlignTrue keeps them synced`;
 
     message += `\n\nLearn more: ${DOCS_QUICKSTART}`;
 

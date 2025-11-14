@@ -6,7 +6,6 @@
 
 import { execSync, type ExecException } from "node:child_process";
 import {
-  existsSync,
   mkdirSync,
   writeFileSync,
   readFileSync,

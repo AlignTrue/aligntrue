@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { loadConfig } from "../../src/config/index.js";
-import { mkdirSync, writeFileSync, rmSync, mkdtempSync } from "fs";
+import { writeFileSync, rmSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 

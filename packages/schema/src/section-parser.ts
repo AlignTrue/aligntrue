@@ -225,8 +225,9 @@ function parseMarkdownSections(
       currentContent = [];
     } else if (currentSection) {
       currentContent.push(line);
-    } else if (!header && sections.length === 0) {
-      // Lines before first section are part of header
+    } else if (sections.length === 0) {
+      // Accumulate lines before first section as header
+      // Note: header is only empty when hasYamlFrontmatter=false
       header += (header ? "\n" : "") + line;
     }
   }
