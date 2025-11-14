@@ -15,7 +15,7 @@ Most users only need these commands:
 - `aligntrue sync` - Sync rules to agents
 - `aligntrue check` - Validate rules
 
-**Advanced users** may use markdown commands (`md lint`, `md compile`) or team commands (`team enable`, `drift`).
+**Advanced users** may use team commands (`team enable`, `drift`) or overlays/plugs for customization.
 
 ---
 
@@ -57,7 +57,6 @@ Quick lookup table for all CLI commands:
 | `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                                            |
 | `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                                        |
 | `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                                             |
-| `aligntrue pull`            | Pull from git                           | [Team](./team#aligntrue-pull)                                               |
 | `aligntrue link`            | Vendor packs                            | [Team](./team#aligntrue-link)                                               |
 | `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)                            |
 | `aligntrue migrate`         | Schema migration (pre-1.0)              | [Settings](./settings#aligntrue-migrate)                                    |

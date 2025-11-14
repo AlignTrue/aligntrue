@@ -9,13 +9,13 @@ Common commands and workflows for AlignTrue development.
 
 ## Core commands
 
-### Run the web app locally
+### Run docs locally
 
 ```bash
 pnpm dev
 ```
 
-Opens the Next.js app at `http://localhost:3000` (from `apps/web`)
+Starts the documentation site at `http://localhost:3000` (from `apps/docs`)
 
 ### Build all packages
 
