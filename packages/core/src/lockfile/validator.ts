@@ -170,89 +170,8 @@ export function validateAgainstAllowList(
   _allowListPath: string = ".aligntrue/allow.yaml",
 ): LockfileTeamValidationError[] {
   // DEPRECATED: No longer validate against allow list
+  // Approval now happens via git PR review
   return [];
-
-  /* OLD IMPLEMENTATION
-  lockfile: Lockfile,
-  mode: "solo" | "team" | "enterprise",
-  allowListPath: string = ".aligntrue/allow.yaml",
-): LockfileTeamValidationError[] {
-  const errors: LockfileTeamValidationError[] = [];
-
-  // Only validate in team mode
-  if (mode !== "team") {
-    return [];
-  }
-
-  // Check if allow list exists
-  if (!existsSync(allowListPath)) {
-    // If no allow list, give a warning but don't block
-    return [
-      {
-        type: "warning",
-        message: "No allow list configured",
-        suggestion: `Run: aligntrue team approve <source>
-  → Creates allow list for approved sources`,
-      },
-    ];
-  }
-
-  // Parse allow list
-  let allowList;
-  try {
-    allowList = parseAllowList(allowListPath);
-  } catch (_err) {
-    return [
-      {
-        type: "error",
-        message: "Failed to parse allow list",
-        suggestion: `Check ${allowListPath} for syntax errors
-  Error: ${_err instanceof Error ? _err.message : String(_err)}`,
-      },
-    ];
-  }
-
-  // If allow list is empty, warn
-  if (allowList.sources.length === 0) {
-    return [
-      {
-        type: "warning",
-        message: "Allow list is empty",
-        suggestion: `Run: aligntrue team approve <source>
-  → Add approved sources to allow list`,
-      },
-    ];
-  }
-
-  // Check each lockfile entry has a source in allow list
-  for (const entry of lockfile.rules) {
-    // Skip entries without source (local rules)
-    if (!entry.source) {
-      continue;
-    }
-
-    // Check if source is in allow list
-    const sourceInList = allowList.sources.some(
-      (s) =>
-        s.value === entry.source ||
-        s.value.includes(entry.source || "") ||
-        (entry.source || "").includes(s.value),
-    );
-
-    if (!sourceInList) {
-      errors.push({
-        type: "error",
-        source: entry.source,
-        message: `Lockfile source not in allow list: ${entry.source}`,
-        suggestion: `Run: aligntrue team approve ${entry.source}
-  → Or ask team lead to approve this source`,
-      });
-    }
-  }
-
-  return errors;
-}
-  */
 }
 
 /**
@@ -267,69 +186,8 @@ export function checkDriftFromAllowedHashes(
   _allowListPath: string = ".aligntrue/allow.yaml",
 ): LockfileTeamValidationError[] {
   // DEPRECATED: No longer check drift against allow list
+  // Drift detection now happens via git diff and PR review
   return [];
-
-  /* OLD IMPLEMENTATION
-  lockfile: Lockfile,
-  mode: "solo" | "team" | "enterprise",
-  allowListPath: string = ".aligntrue/allow.yaml",
-): LockfileTeamValidationError[] {
-  const errors: LockfileTeamValidationError[] = [];
-
-  // Only validate in team mode
-  if (mode !== "team") {
-    return [];
-  }
-
-  // Check if allow list exists
-  if (!existsSync(allowListPath)) {
-    return [];
-  }
-
-  // Parse allow list
-  let allowList;
-  try {
-    allowList = parseAllowList(allowListPath);
-  } catch {
-    // Already handled by validateAgainstAllowList
-    return [];
-  }
-
-  // Check for drift (simplified for now - Session 6 will have full drift detection)
-  // For now, just check if resolved_hash exists and matches
-  for (const entry of lockfile.rules) {
-    if (!entry.source) {
-      continue;
-    }
-
-    // Find matching allow list entry
-    const allowedSource = allowList.sources.find(
-      (s) =>
-        s.value === entry.source ||
-        s.value.includes(entry.source || "") ||
-        (entry.source || "").includes(s.value),
-    );
-
-    if (allowedSource && allowedSource.resolved_hash) {
-      // Check if lockfile hash matches resolved hash
-      if (entry.content_hash !== allowedSource.resolved_hash) {
-        errors.push({
-          type: "warning",
-          source: entry.source,
-          message: `Lockfile hash differs from allowed version`,
-          suggestion: `Rule: ${entry.rule_id}
-  Expected: ${allowedSource.resolved_hash.slice(0, 12)}...
-  Actual:   ${entry.content_hash.slice(0, 12)}...
-  → Run 'aligntrue drift' to see all drift (Session 6)
-  → Run 'aligntrue sync --force' to accept changes`,
-        });
-      }
-    }
-  }
-
-  return errors;
-}
-  */
 }
 
 /**
