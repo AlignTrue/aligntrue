@@ -101,7 +101,7 @@ export function detectUpstreamDrift(
         category: "upstream",
         rule_id: entry.rule_id,
         message: `Source not in allow list: ${entry.source}`,
-        suggestion: `Run: aligntrue team approve --current`,
+        suggestion: `Review changes, commit to git, and create PR for team approval`,
         lockfile_hash: entry.content_hash,
         source: entry.source,
       });
@@ -116,7 +116,7 @@ export function detectUpstreamDrift(
           category: "upstream",
           rule_id: entry.rule_id,
           message: "Upstream content hash differs from allowed version",
-          suggestion: `Run: aligntrue update apply\nOr:  aligntrue team approve --current`,
+          suggestion: `Run: aligntrue update apply\nOr review changes, commit to git, and create PR for team approval`,
           lockfile_hash: hashToCompare,
           expected_hash: allowedSource.resolved_hash,
           source: entry.source,
@@ -240,7 +240,7 @@ export function detectSeverityRemapDrift(
       rule_id: "_team_policy",
       message: "Team severity remapping policy has changed",
       suggestion:
-        "Review changes and approve if correct: aligntrue team approve --current",
+        "Review changes, commit to git, and create PR for team approval",
     });
   }
 
@@ -270,7 +270,7 @@ export function detectOverlayDrift(
         rule_id: entry.rule_id,
         message: "Overlay configuration has changed since lockfile generation",
         suggestion:
-          "Review changes and approve if correct: aligntrue team approve --current",
+          "Review changes, commit to git, and create PR for team approval",
         overlay_hash: entry.overlay_hash,
         expected_overlay_hash: currentOverlayHash,
       });
