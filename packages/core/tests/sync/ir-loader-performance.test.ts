@@ -53,7 +53,7 @@ sections:
     );
 
     warnSpy.mockRestore();
-  }, 30000); // 30s timeout for large file parsing in CI
+  }, 120000); // 120s timeout for large file parsing in Windows CI (slower I/O)
 
   it("throws error in team mode when file exceeds limit", async () => {
     const filePath = join(testDir, "large.yaml");
@@ -82,7 +82,7 @@ sections:
       force: true,
     });
     expect(ir.id).toBe("test-pack");
-  }, 30000); // 30s timeout for large file parsing in CI
+  }, 120000); // 120s timeout for large file parsing in Windows CI (slower I/O)
 
   it("uses default values when options not provided", async () => {
     const filePath = join(testDir, "rules.yaml");
@@ -107,7 +107,7 @@ sections:
     // Should pass with 5MB limit (well above the 3MB actual size)
     const ir = await loadIR(filePath, { mode: "team", maxFileSizeMb: 5 });
     expect(ir.id).toBe("test-pack");
-  });
+  }, 60000); // 60s timeout for 2MB file parsing in Windows CI
 
   it("checks YAML files for size", async () => {
     const filePath = join(testDir, "rules.yaml");
