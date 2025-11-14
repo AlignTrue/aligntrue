@@ -381,9 +381,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 4: Handle import flows
-  // Import flow is not critical for Phase 1, sections-only format is working
-  let importedRules: unknown[] | null = null;
-  let importedFromAgent: string | null = null;
+  // Import feature not implemented - using sections-only format
   let shouldImport = false;
   let shouldMergeMultiple = false;
 
@@ -391,7 +389,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   if (importAgent) {
     // Explicit --import flag
     shouldImport = true;
-    importedFromAgent = importAgent;
   } else if (contextResult.allDetectedAgents.length > 1) {
     // Multiple agents detected - offer merge
     if (nonInteractive) {
@@ -456,7 +453,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         }
 
         shouldImport = true;
-        importedFromAgent = agentChoice as string;
       }
       // choice === "fresh": do nothing
     }
@@ -519,7 +515,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         clack.log.info("Continuing with fresh start template");
       } else if (choice === "import") {
         shouldImport = true;
-        importedFromAgent = detectedAgent;
       }
       // choice === "fresh": do nothing, continue with template
     }
@@ -538,8 +533,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       );
       console.log("Continuing with fresh start template");
     }
-    importedRules = null;
-  } else if (shouldImport && importedFromAgent) {
+  } else if (shouldImport) {
     // Import disabled - not implemented for sections-only format
     if (!nonInteractive) {
       clack.log.error(
@@ -552,8 +546,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       );
       console.log("Continuing with fresh start template");
     }
-    importedRules = null;
-    importedFromAgent = null;
   }
 
   // Step 5: Select agents to enable
