@@ -100,7 +100,6 @@ export function validateTeamLockfile(
  */
 export function validateTeamSources(
   config: AlignTrueConfig,
-  _allowListPath: string = ".aligntrue/allow.yaml", // Deprecated parameter
 ): TeamValidationError[] {
   const errors: TeamValidationError[] = [];
 
@@ -136,7 +135,6 @@ export function validateTeamSources(
 export function getTeamValidationErrors(
   config: AlignTrueConfig,
   lockfilePath: string = ".aligntrue.lock.json",
-  allowListPath: string = ".aligntrue/allow.yaml",
 ): TeamValidationResult {
   // Only validate in team mode
   if (config.mode !== "team") {
@@ -152,7 +150,7 @@ export function getTeamValidationErrors(
   // Run all validation checks
   allErrors.push(...validateTeamConfig(config));
   allErrors.push(...validateTeamLockfile(config, lockfilePath));
-  allErrors.push(...validateTeamSources(config, allowListPath));
+  allErrors.push(...validateTeamSources(config));
 
   // Separate errors and warnings
   const errors = allErrors.filter((e) => e.type === "error");

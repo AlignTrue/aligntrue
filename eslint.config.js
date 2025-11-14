@@ -135,11 +135,18 @@ export default [
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
+    ignores: [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/tests/**/*.ts",
+      "archive/**",
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
+        project: true,
       },
     },
     plugins: {
@@ -170,6 +177,7 @@ export default [
       // TypeScript rules
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "off", // Handled by unused-imports
+      "@typescript-eslint/no-deprecated": "error", // Block usage of deprecated APIs
       // Next.js rules (configured for app router)
       "@next/next/no-html-link-for-pages": [
         "warn",
@@ -185,9 +193,18 @@ export default [
     },
   },
   {
-    files: ["**/*.test.ts", "**/*.test.tsx", "archive/**"],
+    files: ["**/*.test.ts", "**/*.test.tsx", "archive/**", "**/tests/**/*.ts"],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        // Don't use project for test files (they're excluded from tsconfig)
+      },
+    },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-deprecated": "off", // Allow deprecated APIs in tests
     },
   },
 ];
