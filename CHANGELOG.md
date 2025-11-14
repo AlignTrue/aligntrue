@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Windows CI test failures due to performance test thresholds being too strict. Increased timeouts for `--help` command from 1200ms to 2000ms average and 1500ms to 2500ms max to account for higher process spawning overhead in Windows CI environments.
+- Windows CI test failures due to performance test thresholds and timeouts being too strict. Increased:
+  - `--help` performance test thresholds: 1200ms → 2000ms avg, 1500ms → 2500ms max
+  - IR loader large file test timeouts: 30s → 120s for 11MB files, 30s → 60s for 2MB files
+  - Git strategy detection test timeout: 5s → 15s for git initialization operations
 
 ### Added
 
