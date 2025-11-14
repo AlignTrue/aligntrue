@@ -7,42 +7,9 @@ description: Monorepo structure and packages overview for AlignTrue.
 
 AlignTrue is a pnpm monorepo with apps and packages organized for clarity and maintainability.
 
-## Overview
-
-```
-aligntrue/
-├── apps/
-│   ├── web/          # Next.js catalog site
-│   └── docs/         # Nextra documentation
-├── packages/
-│   ├── schema/       # JSON Schema, canonicalization, hashing
-│   ├── core/         # Config, sync engine, bundle/lockfile
-│   ├── cli/          # aligntrue/aln CLI
-│   ├── exporters/    # Agent-specific exports (Cursor, AGENTS.md, etc.)
-│   └── ...           # Other packages
-└── catalog/          # Local catalog with curated packs
-```
+**See [Architecture](/docs/08-development/architecture#workspace-organization) for the full workspace tree and design principles.**
 
 ## Apps
-
-### apps/web
-
-The Next.js catalog site providing discovery and sharing for rule packs.
-
-**Key features:**
-
-- Search and browse 11 curated packs
-- Pack detail pages with exporter previews
-- Install commands and documentation
-
-**Development:**
-
-```bash
-cd apps/web
-pnpm dev           # Start dev server at http://localhost:3000
-pnpm build         # Production build
-pnpm test          # Run tests
-```
 
 ### apps/docs
 

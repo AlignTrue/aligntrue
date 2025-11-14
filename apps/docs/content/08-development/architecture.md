@@ -32,7 +32,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 ### IR-first design
 
-- `aligntrue.yaml` (IR) is the canonical source, not bundles
+- `.aligntrue/.rules.yaml` (IR) is the canonical source, not bundles
 - Literate markdown with fenced ```aligntrue blocks compiles to IR
 - All operations work on IR directly
 - Canonicalization only at lock/publish boundaries
@@ -219,6 +219,37 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - No real time, network, or randomness in tests
 - Match CI environment exactly (TZ=UTC)
 
+## Workspace organization
+
+This architecture translates to a clean pnpm monorepo:
+
+```
+aligntrue/
+├── packages/
+│   ├── schema/           # IR validation, canonicalization, hashing
+│   ├── plugin-contracts/ # Plugin interfaces
+│   ├── file-utils/       # Shared utilities
+│   ├── core/             # Config, sync engine, bundle/lockfile
+│   ├── markdown-parser/  # Markdown to IR conversion
+│   ├── sources/          # Multi-source pulling (local, git)
+│   ├── exporters/        # Agent-specific exports (43 adapters)
+│   ├── cli/              # aligntrue/aln CLI
+│   ├── testkit/          # Conformance vectors and golden tests
+│   └── ui/               # Design system components
+├── apps/
+│   └── docs/             # Nextra documentation site
+├── examples/             # Example configurations
+├── catalog/              # Curated rule packs
+└── scripts/              # Build and setup scripts
+```
+
+**Design principles applied to structure:**
+
+- Max depth 3: packages at `packages/*/src/` with minimal nesting
+- Stable deterministic logic consolidated in `schema/` and `core/`
+- Agent adapters thin and isolated in `exporters/`
+- CLI is the top-level surface in Phase 1
+
 ## Security considerations
 
 - No outbound network calls in core path
@@ -227,6 +258,84 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - Never commit real tokens
 - Atomic file writes prevent corruption
 - Sandbox execution for command runners
+
+## Published packages
+
+All packages are published under the `@aligntrue` scope:
+
+- `@aligntrue/schema` - IR validation and types
+- `@aligntrue/plugin-contracts` - Plugin interfaces
+- `@aligntrue/file-utils` - Shared utilities
+- `@aligntrue/core` - Config and sync engine
+- `@aligntrue/markdown-parser` - Markdown parsing
+- `@aligntrue/sources` - Multi-source pulling
+- `@aligntrue/exporters` - Agent adapters
+- `@aligntrue/cli` - Command-line tool
+- `@aligntrue/testkit` - Test utilities
+
+**Shim package:**
+
+- `aligntrue` - Depends on `@aligntrue/cli` for easy installation
+
+**Install:**
+
+```bash
+npm i -g @aligntrue/cli@next   # Alpha
+npm i -g aligntrue             # Stable
+```
+
+## Developer workflow
+
+### Schema or sections format changes
+
+Update schema + CLI + exporters in the same PR:
+
+1. Extend shared package types (e.g., `packages/schema/src/types.ts`)
+2. Update CLI command handlers
+3. Update exporter adapters
+4. Add contract tests in `schema/tests/`
+5. Add integration tests in `cli/tests/`
+6. Update docs and CHANGELOG
+
+### Adding new exporters
+
+Create a new exporter in `packages/exporters`:
+
+1. Add exporter implementation with manifest
+2. Add contract tests
+3. Update `packages/exporters/src/index.ts` to export it
+4. Update CLI to include new exporter
+5. Add docs explaining the exporter
+6. Update CHANGELOG
+
+### Avoiding cloud features
+
+Cloud features stay in the cloud repo, never imported here. Keep this repo focused on:
+
+- Local-first workflows
+- Deterministic bundling
+- CI validation
+- Open-source tooling
+
+## CI gates and quality checks
+
+- **Bundle size:** CLI tarball must stay under 600 KB
+- **Pack vendoring:** Pack files must not be vendored in CLI
+- **Schema changes:** IR format changes require version bump + changelog
+- **Determinism:** Tests run with `TZ=UTC` to match CI environment
+- **Type checking:** Full typecheck across all packages on pre-push
+- **Tests:** All tests must pass on all packages
+- **Build:** Full production build must succeed
+
+**Testing environment:**
+
+Run tests locally with CI environment variables:
+
+```bash
+TZ=UTC pnpm test
+```
+
+This ensures determinism matches CI exactly.
 
 ## Next steps
 

@@ -19,7 +19,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 
-### CLI (27 commands)
+### CLI (20 commands)
 
 **Basic:**
 
@@ -32,33 +32,32 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 **Development:**
 
 - `adapters` — Manage exporters (list, enable, disable)
-- `md` — Markdown validation and formatting
-- `plugs` — List and validate plugs in sections
+- `plugs` — Manage plugs (audit, resolve, set)
 - `scopes` — List configured scopes
+- `sources` — Manage multi-file rule organization (list, split)
 
 **Team:**
 
 - `team` — Team mode management (enable, status, approve, list-allowed, remove)
-- `pull` — Pull rules from git repository
 - `drift` — Detect drift between lockfile and allowed sources
 - `link` — Vendor rule packs from git repositories
+- `update` — Check for CLI updates
+- `onboard` — Interactive onboarding wizard
 
 **Utilities:**
 
 - `backup` — Manage backups (create, list, restore, cleanup)
 - `revert` — Restore files from backup with preview
+- `override` — Manage overlays (add, remove, diff, status)
 - `privacy` — Privacy settings and consent management
 - `telemetry` — Telemetry opt-in/opt-out
-- `update` — Check for CLI updates
-- `onboard` — Interactive onboarding wizard
-- `override` — Manage overrides (add, remove, diff, status)
 - `migrate` — Schema migration (preview mode)
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
 ### Developer experience
 
-- Fast `--help` (~95ms response time)
+- Fast `--help` (measured performance: ~1200ms on Ubuntu, ~2000ms on Windows)
 - Consistent error messages (what/why/how format)
 - TypeScript 5+ strict mode
 - 1800+ tests with determinism checks
@@ -176,9 +175,9 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 
 ## Platform support
 
-- **Required:** Node 20+ (LTS)
+- **Required:** Node 22+ (LTS)
 - **Supported OSes:** macOS, Linux, Windows (first-class support, cross-platform determinism)
-- **CI:** Tested on linux:node20, macos:node20, windows:node20
+- **CI:** Tested on linux:node22, macos:node22, windows:node22
 - **Distribution:** npm, pnpm, yarn, bun, npx
 
 ## Related documentation
