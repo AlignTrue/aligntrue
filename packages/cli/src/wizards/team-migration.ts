@@ -3,7 +3,7 @@
  * Guides users through solo → team mode conversion
  */
 
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
@@ -217,14 +217,10 @@ function detectPersonalRulesInRepo(
 ): Array<{ heading: string; scope: string; storage: string }> {
   const results: Array<{ heading: string; scope: string; storage: string }> =
     [];
+  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
 
   try {
     // Check IR file
-    const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-    if (!existsSync(irPath)) {
-      return results;
-    }
-
     const irContent = readFileSync(irPath, "utf-8");
     const ir = parseYaml(irContent);
 
@@ -268,8 +264,10 @@ function detectPersonalRulesInRepo(
     }
 
     return results;
-  } catch (err) {
-    console.warn("Failed to detect personal rules:", err);
+  } catch (err: unknown) {
+    if (err instanceof Error && "code" in err && err.code !== "ENOENT") {
+      console.warn("Failed to detect personal rules:", err);
+    }
     return results;
   }
 }
@@ -284,12 +282,19 @@ async function applyMigrationActions(
 ): Promise<void> {
   // Load IR
   const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-  if (!existsSync(irPath)) {
-    throw new Error("IR file not found");
-  }
+  let ir: ParsedIR;
 
-  const irContent = readFileSync(irPath, "utf-8");
-  const ir = parseYaml(irContent) as ParsedIR;
+  try {
+    const irContent = readFileSync(irPath, "utf-8");
+    ir = parseYaml(irContent) as ParsedIR;
+  } catch (error: unknown) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      throw new Error(
+        "IR file (.aligntrue/.rules.yaml) not found. Please run 'aligntrue init' first.",
+      );
+    }
+    throw error;
+  }
 
   if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
