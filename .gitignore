@@ -71,6 +71,10 @@ packages/**/.test-output*/
 **/.team-onboarding-complete
 *.lock.json.test
 
+# Turborepo cache (generated during build)
+.turbo/
+**/.turbo/
+
 # Pagefind search index (generated during build)
 
 apps/docs/public/_pagefind

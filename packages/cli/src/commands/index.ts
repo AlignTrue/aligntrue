@@ -3,7 +3,7 @@
  */
 export { init } from "./init.js";
 export { migrate } from "./migrate.js";
-export { sync } from "./sync.js";
+export { sync } from "./sync/index.js";
 export { team } from "./team.js";
 export { telemetry } from "./telemetry.js";
 export { scopes } from "./scopes.js";

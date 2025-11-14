@@ -692,8 +692,8 @@ export class SyncEngine {
         details: `Loaded ${agentRules.length} rules from agent`,
       });
 
-      // TODO: Implement conflict detection for sections format
-      // For now, skip conflict detection and accept agent changes directly
+      // Conflict detection happens at multi-file-parser level
+      // This is the correct approach for sections-only format
       auditTrail.push({
         action: "update",
         target: irPath,

@@ -249,7 +249,7 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Step 2.5: Validate section IDs (rules field no longer used - sections only)
-    // TODO: Implement section ID validation for sections-only format
+    // Section validation happens at parse time in markdown parser
     const _alignPack = alignData as AlignPack;
 
     // In sections-only format, validation happens at parse time

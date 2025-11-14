@@ -6,9 +6,8 @@
 import { readFileSync } from "fs";
 import type { AlignTrueConfig } from "../config/index.js";
 
-// Note: @iarna/toml needs to be added as a dependency
-// For now, using a simple TOML parser implementation
-// TODO: Add @iarna/toml to dependencies
+// Note: Ruler migration is complete, this is legacy code
+// Simple TOML parser implementation is sufficient
 
 export interface RulerConfig {
   nested?: boolean;

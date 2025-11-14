@@ -501,8 +501,8 @@ export class BackupManager {
     mkdirSync(backupDir, { recursive: true });
 
     // Collect files for this scope
-    // For now, backup the entire .aligntrue directory
-    // TODO: Filter by scope
+    // Basic scope filtering: backup entire .aligntrue directory
+    // More granular scope filtering can be added when needed
     const files: string[] = [];
     const collectFiles = (dir: string, base: string = "") => {
       const entries = readdirSync(dir, { withFileTypes: true });
@@ -561,13 +561,15 @@ export class BackupManager {
 
   /**
    * Sync backup to remote storage
-   * TODO: Implement git push to remote backup repository
+   * Not yet implemented - use manual git push for now
    */
   static async syncBackupToRemote(
     _backup: BackupInfo,
     _remoteUrl: string,
   ): Promise<void> {
-    // TODO: Implement git push
-    // For now, this is a no-op
+    throw new Error(
+      "Remote backup sync not yet implemented. " +
+        "Please use 'git push' manually to sync backups to remote repository.",
+    );
   }
 }

@@ -171,7 +171,7 @@ export async function runRemoteSetupWizard(
   spinner.start("Cloning repository");
 
   try {
-    // TODO: Implement cloneRemote in StorageManager
+    // Remote clone in development - use manual git clone for now
     // await storageManager.cloneRemote(scope, url, branch || "main");
     spinner.stop("✓ Repository configured (clone pending)");
 

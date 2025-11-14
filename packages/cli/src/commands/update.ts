@@ -28,7 +28,7 @@ import {
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { writePatchFile, type OverlayDefinition } from "@aligntrue/core";
-import { sync } from "./sync.js";
+import { sync } from "./sync/index.js";
 
 /**
  * Argument definitions for update command
