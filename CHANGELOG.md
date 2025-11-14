@@ -20,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Documentation accuracy validation** - Automated validation prevents documentation drift
+  - Validates Node.js version requirements match package.json
+  - Validates CLI command count matches actual implementation
+  - Validates exporter count matches directory count
+  - Validates performance threshold claims match test constants
+  - Runs in CI and pre-commit hooks
+  - Available via `pnpm validate:docs`
 - **Turborepo build optimization** - Replaced complex pnpm scripts with Turborepo for faster, cached builds
   - Automatic dependency graph resolution
   - Parallel execution where possible

@@ -224,6 +224,43 @@ async function main() {
     process.exit(1);
   }
 
+  // Validate documentation accuracy if docs files changed
+  const docsChanged = stagedFiles.some(
+    (f) =>
+      f.startsWith("apps/docs/content/") ||
+      f === "package.json" ||
+      f.startsWith("packages/cli/src/index.ts") ||
+      f.startsWith("packages/exporters/src/") ||
+      f.startsWith("packages/cli/tests/integration/performance.test.ts"),
+  );
+
+  if (docsChanged) {
+    s.start("Validating documentation accuracy...");
+    try {
+      execSync("node scripts/validate-docs-accuracy.mjs", { stdio: "pipe" });
+      s.stop("✅ Documentation accuracy validated.");
+    } catch (error) {
+      s.stop("❌ Documentation validation failed.", 1);
+      console.error("");
+      clack.log.error("Documentation accuracy validation failed.");
+      console.error("");
+      console.error(
+        "📚 Documentation must match implementation (code is source of truth):",
+      );
+      console.error("   • Node.js version requirements");
+      console.error("   • CLI command counts");
+      console.error("   • Exporter counts");
+      console.error("   • Performance threshold claims");
+      console.error("");
+      console.error(
+        "🔍 Re-run validation: node scripts/validate-docs-accuracy.mjs",
+      );
+      console.error("");
+      clack.outro("💡 Update docs to match code and re-stage the files.");
+      process.exit(1);
+    }
+  }
+
   clack.outro("✅ Pre-commit checks passed");
   process.exit(0);
 }
