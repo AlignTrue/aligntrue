@@ -5,7 +5,6 @@
 
 import { type AlignTrueConfig } from "../config/index.js";
 import { existsSync } from "fs";
-import { parseAllowList } from "./allow.js";
 
 export interface TeamValidationError {
   type: "error" | "warning";
@@ -96,11 +95,12 @@ export function validateTeamLockfile(
 }
 
 /**
- * Validate team sources are in allow list
+ * Validate team sources (simplified - no allow list)
+ * Approval now happens via git PR review
  */
 export function validateTeamSources(
   config: AlignTrueConfig,
-  allowListPath: string = ".aligntrue/allow.yaml",
+  _allowListPath: string = ".aligntrue/allow.yaml", // Deprecated parameter
 ): TeamValidationError[] {
   const errors: TeamValidationError[] = [];
 
@@ -114,63 +114,16 @@ export function validateTeamSources(
     return [];
   }
 
-  // Check if allow list exists
-  if (!existsSync(allowListPath)) {
-    errors.push({
-      type: "warning",
-      message: "Sources configured but no allow list",
-      suggestion: `Run: aligntrue team approve <source>
-  → Creates allow list for approved sources`,
-      field: "sources",
-    });
-    return errors;
-  }
-
-  // Parse allow list
-  try {
-    const allowList = parseAllowList(allowListPath);
-
-    // If allow list is empty, warn
-    if (allowList.sources.length === 0) {
+  // Basic validation: ensure sources have required fields
+  for (const source of config.sources) {
+    if (source.type === "git" && !source.url) {
       errors.push({
-        type: "warning",
-        message: "Allow list exists but is empty",
-        suggestion: `Run: aligntrue team approve <source>
-  → Add approved sources to allow list`,
+        type: "error",
+        message: "Git source missing required 'url' field",
+        suggestion: "Add url field to git source in config",
         field: "sources",
       });
-      return errors;
     }
-
-    // Check each source against allow list
-    for (const source of config.sources) {
-      // For git sources, check URL
-      if (source.type === "git" && source.url) {
-        const sourceUrl = source.url; // Extract to help TypeScript narrowing
-        const urlInList = allowList.sources.some(
-          (s) =>
-            s.value === sourceUrl ||
-            s.value.includes(sourceUrl) ||
-            sourceUrl.includes(s.value),
-        );
-        if (!urlInList) {
-          errors.push({
-            type: "warning",
-            message: `Source not in allow list: git:${sourceUrl}`,
-            suggestion: `Run: aligntrue team approve git:${sourceUrl}`,
-            field: "sources",
-          });
-        }
-      }
-    }
-  } catch (_err) {
-    errors.push({
-      type: "error",
-      message: "Failed to parse allow list",
-      suggestion: `Check .aligntrue/allow.yaml for syntax errors
-  Error: ${_err instanceof Error ? _err.message : String(_err)}`,
-      field: "sources",
-    });
   }
 
   return errors;

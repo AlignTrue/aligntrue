@@ -1,12 +1,7 @@
 /**
- * Update detection for team mode
- * Detects available updates from allowed sources
+ * Update detection for team mode (DEPRECATED - removed allow list)
+ * Updates now detected via git diff and PR review
  */
-
-import { existsSync, readFileSync } from "fs";
-import { parseAllowList } from "./allow.js";
-import type { AllowList, AllowListSource } from "./types.js";
-import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 
 /**
  * Individual update finding
@@ -34,9 +29,10 @@ export interface UpdateResult {
 }
 
 /**
- * Detect upstream updates by comparing lockfile to allowed sources
+ * Detect upstream updates (DEPRECATED - removed allow list)
  * Uses base_hash when available for overlay-aware detection
  */
+/* DEPRECATED: Removed allow list mechanism
 export function detectUpstreamUpdates(
   lockfile: Lockfile,
   allowList: AllowList,
@@ -88,6 +84,7 @@ export function detectUpstreamUpdates(
 
   return updates;
 }
+*/
 
 /**
  * Generate human-readable summary of updates
@@ -113,10 +110,27 @@ export function generateUpdateSummary(updates: UpdateFinding[]): string {
 }
 
 /**
- * Detect updates for a given config
+ * Detect updates for a given config (DEPRECATED - removed allow list)
+ * Updates now detected via git diff and PR review
  * High-level API for CLI usage
  */
-export function detectUpdatesForConfig(config: unknown): Promise<UpdateResult> {
+export function detectUpdatesForConfig(
+  _config: unknown,
+): Promise<UpdateResult> {
+  // DEPRECATED: Update detection now happens via git diff
+  // Return empty result
+  return Promise.resolve({
+    has_updates: false,
+    updates: [],
+    summary: {
+      total: 0,
+      sources_updated: 0,
+      rules_affected: 0,
+      breaking_changes: 0,
+    },
+  });
+
+  /* OLD IMPLEMENTATION - removed allow list
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const configAsAny = config as any;
   const lockfilePath = configAsAny.lockfilePath || ".aligntrue.lock.json";
@@ -177,4 +191,5 @@ export function detectUpdatesForConfig(config: unknown): Promise<UpdateResult> {
       },
     });
   }
+  */
 }
