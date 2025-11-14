@@ -15,13 +15,14 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "Testing requirements"
     "content":
       "Every new feature must include unit tests. Test files should be co-located with source files using the .test.ts or .spec.ts naming convention.
 
 
       Examples:
+
 
       - src/utils/parser.ts → src/utils/parser.test.ts
 
@@ -32,7 +33,7 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "Code review standards"
     "content":
       "TODO comments should be converted to GitHub issues before merging. They often get forgotten in the codebase.
@@ -47,7 +48,7 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "Public API documentation"
     "content": "Public API exports should include JSDoc comments explaining their purpose and usage. This helps with IDE intellisense and documentation generation."
     "level": 2
@@ -56,26 +57,27 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "Security practices"
     "content":
-      'Never commit API keys, passwords, or tokens to version control. Use environment variables or secure secret management instead.
+      "Never commit API keys, passwords, or tokens to version control. Use environment variables or secure secret management instead.
 
 
       Common patterns to avoid:
 
-      - API_KEY = "sk_live_..."
 
-      - password: "mypassword123"
+      - API*KEY = \"sk_live*...\"
 
-      - token: "ghp_..."'
+      - password: \"mypassword123\"
+
+      - token: \"ghp\\_...\""
     "level": 2
     "fingerprint": "c0e33a5e39248504"
     "vendor":
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "TypeScript type safety"
     "content": "Avoid using 'any' type as it defeats TypeScript's type safety. Use 'unknown' for truly unknown types, or define proper interfaces."
     "level": 2
@@ -84,7 +86,7 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
   - "heading": "AlignTrue Rules"
     "content": "This file contains rules and guidance for AI coding agents."
     "level": 2
@@ -93,4 +95,4 @@
       "aligntrue":
         "source_scope": "default"
         "source_file": "AGENTS.md"
-        "last_modified": "2025-11-14T04:18:28.862Z"
+        "last_modified": "2025-11-14T04:23:31.437Z"
