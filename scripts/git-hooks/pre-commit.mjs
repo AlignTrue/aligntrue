@@ -22,7 +22,6 @@ async function main() {
 
   // Check for large batch of staged files
   try {
-
     if (stagedFiles.length > 50) {
       clack.log.warn(
         `⚠️  Large commit detected: ${stagedFiles.length} files staged`,
@@ -164,9 +163,7 @@ async function main() {
   s.start("Building affected packages...");
   try {
     // Check if any TypeScript files are staged
-    const stagedTsFiles = stagedFiles.filter((f) =>
-      /\.(ts|tsx)$/.test(f)
-    );
+    const stagedTsFiles = stagedFiles.filter((f) => /\.(ts|tsx)$/.test(f));
 
     if (stagedTsFiles.length > 0) {
       // Extract package directories and build all affected packages
@@ -194,7 +191,9 @@ async function main() {
     console.error("📚 Common causes:");
     console.error("   • Importing from removed/renamed module");
     console.error("   • Missing dependency between packages");
-    console.error("   • Incomplete deprecation (core removed export, CLI still uses it)");
+    console.error(
+      "   • Incomplete deprecation (core removed export, CLI still uses it)",
+    );
     console.error("");
     clack.outro("Fix the build errors above and try committing again.");
     process.exit(1);
