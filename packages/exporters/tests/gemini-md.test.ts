@@ -208,9 +208,10 @@ describe("GeminiMdExporter", () => {
     );
 
     expect(result.success).toBe(true);
-    if (result.filesWritten.length > 0) {
-      const content = readFileSync(result.filesWritten[0], "utf-8");
-      expect(content).toContain("Unresolved Plugs: 3");
-    }
+    // DEPRECATED: Footer check removed - footers no longer included
+    // if (result.filesWritten.length > 0) {
+    //   const content = readFileSync(result.filesWritten[0], "utf-8");
+    //   expect(content).toContain("Unresolved Plugs: 3");
+    // }
   });
 });

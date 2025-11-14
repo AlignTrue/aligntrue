@@ -72,10 +72,11 @@ export interface ResourceConfig {
   storage: Record<string, StorageConfig>;
 }
 
-export interface ApprovalConfig {
-  internal?: "pr_approval" | "allowlist";
-  external?: "pr_approval" | "allowlist";
-}
+// DEPRECATED: ApprovalConfig removed - approval now via git PR review
+// export interface ApprovalConfig {
+//   internal?: "pr_approval" | "allowlist";
+//   external?: "pr_approval" | "allowlist";
+// }
 
 export interface AlignTrueConfig {
   version: string | undefined;
@@ -151,8 +152,8 @@ export interface AlignTrueConfig {
   // Backward compatibility (maps to resources.rules)
   storage?: Record<string, StorageConfig>;
 
-  // Approval configuration
-  approval?: ApprovalConfig;
+  // DEPRECATED: Approval configuration removed - approval now via git PR review
+  // approval?: ApprovalConfig;
 }
 
 /**
@@ -554,7 +555,7 @@ function checkUnknownFields(
     "backup",
     "detection",
     "overlays",
-    "approval",
+    // "approval", // DEPRECATED: removed
   ]);
 
   for (const key of Object.keys(config)) {

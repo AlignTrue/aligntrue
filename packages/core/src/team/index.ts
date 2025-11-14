@@ -1,11 +1,11 @@
 /**
- * Team mode module
+ * Team mode module (simplified - removed allow list)
  *
- * Provides allow list management and validation for team-approved rule sources
+ * Provides validation for team-approved rule sources via git PR review
  */
 
 export * from "./types.js";
-export * from "./allow.js";
+// export * from "./allow.js"; // DEPRECATED: removed
 export * from "./validation.js";
 export { detectDrift, detectDriftForConfig } from "./drift.js";
 export {
@@ -15,7 +15,7 @@ export {
   applySeverityRemap,
 } from "./remap.js";
 export {
-  detectUpstreamUpdates,
+  // detectUpstreamUpdates, // DEPRECATED: removed
   generateUpdateSummary,
   detectUpdatesForConfig,
   type UpdateFinding,

@@ -11,7 +11,6 @@
  * - Git-only support (no local directory paths)
  * - Detect existing submodule/subtree (inform only, no conversion)
  * - Validate pack integrity (.aligntrue.yaml required)
- * - Warn if not in allow list (team mode, non-blocking)
  * - Error on duplicate vendoring at same path
  * - User-specified location (default: vendor/<repo-name>)
  *
@@ -251,17 +250,7 @@ export async function link(args: string[]): Promise<void> {
       console.log("✓ Pack validated");
     }
 
-    // Check allow list in team mode (non-blocking warning)
-    if (config.mode === "team") {
-      const allowListWarning = await checkAllowList(gitUrl, config);
-      if (allowListWarning) {
-        if (isTTY()) {
-          clack.log.warn(allowListWarning);
-        } else {
-          console.warn(`Warning: ${allowListWarning}`);
-        }
-      }
-    }
+    // Note: Allow list check removed - approval now via git PR review
 
     // Update config with vendored source
     const vendorType: "submodule" | "subtree" =
@@ -474,57 +463,8 @@ async function validateVendoredPack(
   }
 }
 
-/**
- * Check if source is in allow list (team mode)
- */
-async function checkAllowList(
-  gitUrl: string,
-  _config: AlignTrueConfig,
-): Promise<string | null> {
-  // Check if allow list exists
-  const allowListPath = ".aligntrue/allow.yaml";
-  if (!existsSync(allowListPath)) {
-    return (
-      `⚠️  Not in allow list\n\n` +
-      `This source is not in your team's allow list.\n` +
-      `To approve this source:\n` +
-      `  aligntrue team approve "${gitUrl}"\n\n` +
-      `This is non-blocking but recommended for team workflows.`
-    );
-  }
-
-  // Try to parse allow list
-  try {
-    const { parseAllowList } = await import("@aligntrue/core/team/allow.js");
-    const allowList = parseAllowList(allowListPath);
-
-    // Check if URL is in allow list
-    const isAllowed = allowList.sources.some(
-      (source) =>
-        source.type === "id" &&
-        (source.value === gitUrl || gitUrl.includes(source.value)),
-    );
-
-    if (!isAllowed) {
-      return (
-        `⚠️  Not in allow list\n\n` +
-        `This source is not in your team's allow list.\n` +
-        `To approve this source:\n` +
-        `  aligntrue team approve "${gitUrl}"\n\n` +
-        `This is non-blocking but recommended for team workflows.`
-      );
-    }
-
-    return null;
-  } catch {
-    // Allow list parse failed, treat as not in list
-    return (
-      `⚠️  Could not check allow list\n\n` +
-      `To approve this source:\n` +
-      `  aligntrue team approve "${gitUrl}"`
-    );
-  }
-}
+// DEPRECATED: checkAllowList function removed
+// Approval now happens via git PR review
 
 /**
  * Update config with vendored source
