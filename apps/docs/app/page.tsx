@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 import { AlphaBanner } from "./components/AlphaBanner";
+import { GitHubIcon } from "./components/GitHubIcon";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -163,13 +164,14 @@ function SiteHeader() {
                 rel="noreferrer"
                 style={{
                   cursor: "pointer",
-                  fontSize: "0.875rem",
-                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   color: "var(--fg-default)",
                 }}
                 aria-label="AlignTrue GitHub repository"
               >
-                GitHub
+                <GitHubIcon size={24} />
               </a>
               <ThemeToggle />
             </nav>
@@ -294,6 +296,9 @@ function SiteHeader() {
               color: "var(--fg-default)",
               borderRadius: "0.375rem",
               transition: "background-color 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = "var(--bg-muted)";
@@ -302,7 +307,7 @@ function SiteHeader() {
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            GitHub
+            <GitHubIcon size={24} />
           </a>
         </nav>
       )}
