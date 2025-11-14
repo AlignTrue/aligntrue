@@ -37,6 +37,7 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
+    "release:add": "node scripts/create-changeset.mjs",
     "setup-release": "node scripts/setup-release.mjs"
   },
   "lint-staged": {
