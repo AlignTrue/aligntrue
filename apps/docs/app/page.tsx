@@ -16,7 +16,6 @@ import {
   X,
   Sun,
   Moon,
-  Github,
 } from "lucide-react";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 import { AlphaBanner } from "./components/AlphaBanner";
@@ -164,14 +163,13 @@ function SiteHeader() {
                 rel="noreferrer"
                 style={{
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  fontSize: "0.875rem",
+                  textDecoration: "none",
                   color: "var(--fg-default)",
                 }}
                 aria-label="AlignTrue GitHub repository"
               >
-                <Github size={20} />
+                GitHub
               </a>
               <ThemeToggle />
             </nav>

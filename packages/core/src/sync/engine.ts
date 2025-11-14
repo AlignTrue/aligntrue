@@ -670,6 +670,7 @@ export class SyncEngine {
 
       // Load agent rules (mock implementation for Step 14)
       // In Step 17, this will use real parsers for .cursor/*.mdc, AGENTS.md, etc.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const agentRules = await this.loadAgentRules(agent, options);
 
       if (!agentRules || agentRules.length === 0) {
