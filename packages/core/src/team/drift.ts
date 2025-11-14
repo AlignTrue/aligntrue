@@ -441,7 +441,6 @@ export async function detectDriftForConfig(config: unknown): Promise<{
   const configAsAny = config as any;
   const basePath = configAsAny.rootDir || ".";
   const lockfilePath = configAsAny.lockfilePath || ".aligntrue.lock.json";
-  const allowListPath = configAsAny.allowListPath || ".aligntrue/allow.yaml";
 
   try {
     // Compute current bundle hash for lockfile drift detection
@@ -466,12 +465,7 @@ export async function detectDriftForConfig(config: unknown): Promise<{
       // currentBundleHash remains undefined
     }
 
-    const result = await detectDrift(
-      lockfilePath,
-      allowListPath,
-      basePath,
-      currentBundleHash,
-    );
+    const result = await detectDrift(lockfilePath, basePath, currentBundleHash);
 
     return Promise.resolve({
       driftDetected: result.has_drift,
@@ -517,7 +511,6 @@ export async function detectDriftForConfig(config: unknown): Promise<{
  */
 export async function detectDrift(
   lockfilePath: string,
-  _allowListPath: string, // Deprecated: no longer used (approval via git PR)
   basePath: string = ".",
   currentBundleHash?: string,
 ): Promise<DriftResult> {
@@ -555,31 +548,6 @@ export async function detectDrift(
 
   // Run drift detection checks
   const findings: DriftFinding[] = [];
-
-  // Load allow list if it exists
-  // Use provided allow list path if not relative, otherwise join with basePath
-  const computedAllowListPath = _allowListPath.startsWith("/")
-    ? _allowListPath
-    : join(basePath, _allowListPath);
-
-  if (existsSync(computedAllowListPath)) {
-    try {
-      const { parse } = await import("yaml");
-      const allowListContent = readFileSync(computedAllowListPath, "utf-8");
-      const allowList = parse(allowListContent) as {
-        sources?: Array<{
-          value: string;
-          resolved_hash?: string;
-          [key: string]: unknown;
-        }>;
-      };
-      if (allowList?.sources && Array.isArray(allowList.sources)) {
-        findings.push(...detectUpstreamDrift(lockfile, allowList));
-      }
-    } catch {
-      // Silently skip if allow list parsing fails
-    }
-  }
 
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
