@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Improved CLI user experience** - Enhanced help text and error messages for better discoverability
+  - Suppressed confusing "Invalid IR pack" warnings during normal sync operations (validation still occurs at parse time and before export)
+  - Enhanced `override add` command help with clear examples showing section-based selectors
+  - Improved error messages for invalid selectors with concrete examples
+  - Added helpful error for `sources add` command directing users to `pull` command
+  - Updated `sources` help text to clarify purpose (multi-file organization vs pack addition)
+
 - **Consolidated validation logic into shared utilities** - Reduced code duplication across packages
   - Created `ensureSectionsArray` utility in `packages/core/src/validation/sections.ts`
   - Refactored 8+ instances of inline array validation to use shared utility

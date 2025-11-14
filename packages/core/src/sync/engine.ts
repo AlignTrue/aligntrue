@@ -937,7 +937,9 @@ export class SyncEngine {
         // 6. Write merged IR
         if (!options.dryRun) {
           const { saveIR } = await import("./ir-loader.js");
-          await saveIR(paths.rules, mergeResult.mergedPack);
+          // Use silent mode to suppress validation warnings during merge
+          // Validation happens at parse time and before export
+          await saveIR(paths.rules, mergeResult.mergedPack, { silent: true });
           written.push(paths.rules);
 
           auditTrail.push({

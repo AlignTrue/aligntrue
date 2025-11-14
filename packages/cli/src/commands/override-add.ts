@@ -47,19 +47,34 @@ export async function overrideAdd(args: string[]): Promise<void> {
   if (parsed.help) {
     showStandardHelp({
       name: "override add",
-      description: "Add an overlay to customize rules",
+      description: "Add an overlay to customize rules without forking",
       usage: "aligntrue override add --selector <string> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue override add --selector 'rule[id=test]' --set severity=error",
+        "# Override severity for a specific section",
+        "aligntrue override add --selector 'sections[heading=Security]' --set severity=error",
+        "",
+        "# Change a property value",
         "aligntrue override add --selector 'profile.version' --set value=2.0.0",
-        "aligntrue override add --selector 'rules[0]' --remove autofix",
+        "",
+        "# Remove a property from a section",
+        "aligntrue override add --selector 'sections[0]' --remove autofix",
+        "",
+        "# Multiple operations at once",
+        "aligntrue override add --selector 'sections[heading=Testing]' --set severity=warn --remove applies_to",
       ],
       notes: [
-        "Valid selector formats:",
-        "  - rule[id=value]",
-        "  - property.path",
-        "  - array[0]",
+        "Selector Syntax:",
+        "  - sections[heading=Name]  Target section by heading (most common)",
+        "  - sections[0]             Target section by index",
+        "  - property.path           Target a top-level property",
+        "",
+        "Common Use Cases:",
+        "  - Override severity levels for specific sections",
+        "  - Customize section properties without modifying source",
+        "  - Remove unwanted properties from inherited rules",
+        "",
+        "Changes are saved to .aligntrue/config.yaml and applied during sync.",
       ],
     });
     return;
@@ -120,10 +135,18 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   const validation = validateSelector(options.selector);
   if (!validation.valid) {
     clack.log.error(`Invalid selector: ${validation.error}`);
-    console.log("\nValid formats:");
-    console.log("  - rule[id=value]");
-    console.log("  - property.path");
-    console.log("  - array[0]");
+    console.log("\nValid selector formats:");
+    console.log("  - sections[heading=Name]  (target section by heading)");
+    console.log("  - sections[0]             (target section by index)");
+    console.log("  - property.path           (target top-level property)");
+    console.log("\nExamples:");
+    console.log(
+      "  aligntrue override add --selector 'sections[heading=Security]' --set severity=error",
+    );
+    console.log(
+      "  aligntrue override add --selector 'profile.version' --set value=2.0.0",
+    );
+    console.log("\nFor more help: aligntrue override add --help");
     process.exit(1);
   }
 

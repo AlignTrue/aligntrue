@@ -31,6 +31,21 @@ export async function sources(args: string[]): Promise<void> {
     case "split":
       await splitSources(flags);
       break;
+    case "add":
+      // Helpful error for users trying to add packs
+      console.error(`Error: 'sources add' is not a valid command\n`);
+      console.error(`To add external packs or rules:\n`);
+      console.error(`  1. Test rules temporarily:`);
+      console.error(`     aligntrue pull <git-url>\n`);
+      console.error(`  2. Add permanently to config:`);
+      console.error(`     aligntrue pull <git-url> --save\n`);
+      console.error(`  3. Or edit .aligntrue/config.yaml manually:`);
+      console.error(`     sources:`);
+      console.error(`       - type: git`);
+      console.error(`         url: https://github.com/yourorg/rules`);
+      console.error(`         path: rules.yaml\n`);
+      console.error(`For more help: aligntrue pull --help`);
+      process.exit(2);
     case undefined:
     case "--help":
     case "-h":
@@ -267,6 +282,15 @@ EXAMPLES
 
   # Split without prompts
   aligntrue sources split --yes
+
+NOTE
+  The 'sources' command is for organizing your own rules into multiple files.
+  
+  To add external packs or rules from git repositories:
+    - Use: aligntrue pull <git-url>
+    - Or: aligntrue pull <git-url> --save
+  
+  For more information: aligntrue pull --help
 `);
 }
 
