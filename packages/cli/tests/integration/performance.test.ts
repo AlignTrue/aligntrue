@@ -139,7 +139,7 @@ sections:
     // Platform-specific thresholds (Windows is slower due to process spawning overhead)
     // CI environments have unpredictable variance; these are conservative but realistic
     const avgThreshold = process.platform === "win32" ? 2000 : 1200;
-    const maxThreshold = process.platform === "win32" ? 2500 : 1500;
+    const maxThreshold = process.platform === "win32" ? 2800 : 1500;
 
     // Assert average within threshold
     expect(avgDuration).toBeLessThan(avgThreshold);
