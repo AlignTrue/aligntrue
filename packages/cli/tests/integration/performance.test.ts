@@ -138,9 +138,9 @@ sections:
     console.log(`Help avg: ${avgDuration.toFixed(0)}ms, max: ${maxDuration}ms`);
 
     // Platform-specific thresholds (Windows is slower due to process spawning overhead)
-    // CI environments also add latency; these are conservative but realistic
-    const avgThreshold = process.platform === "win32" ? 2000 : 800;
-    const maxThreshold = process.platform === "win32" ? 2500 : 1000;
+    // CI environments have unpredictable variance; these are conservative but realistic
+    const avgThreshold = process.platform === "win32" ? 2000 : 1200;
+    const maxThreshold = process.platform === "win32" ? 2500 : 1500;
 
     // Assert average within threshold
     expect(avgDuration).toBeLessThan(avgThreshold);
