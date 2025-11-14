@@ -225,73 +225,43 @@ describe("validateTeamSources", () => {
     expect(errors).toEqual([]);
   });
 
-  it("warns when sources configured but no allow list", () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
+  // DEPRECATED: Allow list tests removed - approval now via git PR review
+  it.skip("warns when sources configured but no allow list", () => {
+    // This test is skipped because allow list functionality has been removed
+  });
 
+  it.skip("warns when allow list exists but is empty", async () => {
+    // This test is skipped because allow list functionality has been removed
+  });
+
+  it.skip("warns when git source not in allow list", async () => {
+    // This test is skipped because allow list functionality has been removed
+  });
+
+  it.skip("passes when git source in allow list", async () => {
+    // This test is skipped because allow list functionality has been removed
+  });
+
+  it.skip("returns error when allow list parse fails", async () => {
+    // This test is skipped because allow list functionality has been removed
+  });
+
+  it("validates git source has url field", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "team",
       modules: { lockfile: true },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "git" } as any], // Missing url
     };
 
     const errors = validateTeamSources(config);
     expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("warning");
-    expect(errors[0]?.message).toContain("no allow list");
-    expect(errors[0]?.suggestion).toContain("aligntrue team approve");
+    expect(errors[0]?.type).toBe("error");
+    expect(errors[0]?.message).toContain("missing required 'url' field");
   });
 
-  it("warns when allow list exists but is empty", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockReturnValue({ sources: [] });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
-    };
-
-    const errors = validateTeamSources(config);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("warning");
-    expect(errors[0]?.message).toContain("empty");
-  });
-
-  it("warns when git source not in allow list", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockReturnValue({
-      sources: [{ type: "hash", value: "sha256:abc123..." }],
-    });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      exporters: ["cursor"],
-      sources: [{ type: "git", url: "https://github.com/example/rules.git" }],
-    };
-
-    const errors = validateTeamSources(config);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("warning");
-    expect(errors[0]?.message).toContain("not in allow list");
-    expect(errors[0]?.message).toContain("git:");
-    expect(errors[0]?.suggestion).toContain("aligntrue team approve");
-  });
-
-  it("passes when git source in allow list", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockReturnValue({
-      sources: [{ type: "id", value: "https://github.com/example/rules.git" }],
-    });
-
+  it("passes validation when git source has url field", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "team",
@@ -302,28 +272,6 @@ describe("validateTeamSources", () => {
 
     const errors = validateTeamSources(config);
     expect(errors).toEqual([]);
-  });
-
-  it("returns error when allow list parse fails", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockImplementation(() => {
-      throw new Error("Invalid YAML");
-    });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
-    };
-
-    const errors = validateTeamSources(config);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("error");
-    expect(errors[0]?.message).toContain("Failed to parse");
-    expect(errors[0]?.suggestion).toContain("Invalid YAML");
   });
 });
 
@@ -366,25 +314,9 @@ describe("getTeamValidationErrors", () => {
     ).toBe(true);
   });
 
-  it("separates errors and warnings correctly", async () => {
-    const { parseAllowList } = await import("../../src/team/allow.js");
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(parseAllowList).mockImplementation(() => {
-      throw new Error("Parse error");
-    });
-
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: false },
-      exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
-    };
-
-    const result = getTeamValidationErrors(config);
-    expect(result.valid).toBe(false); // has errors
-    expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.warnings.length).toBeGreaterThan(0);
+  // DEPRECATED: Allow list test removed - approval now via git PR review
+  it.skip("separates errors and warnings correctly", async () => {
+    // This test is skipped because allow list functionality has been removed
   });
 });
 
