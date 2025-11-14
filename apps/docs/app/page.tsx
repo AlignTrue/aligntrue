@@ -432,6 +432,19 @@ function SiteFooter() {
           }}
         >
           <a
+            href="https://github.com/AlignTrue/aligntrue/actions"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI&logo=github"
+              alt="CI status"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
             href="https://www.npmjs.com/package/aligntrue"
             target="_blank"
             rel="noopener noreferrer"
@@ -439,8 +452,34 @@ function SiteFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/npm/v/aligntrue?label=npm&color=CB3837&logo=npm"
+              src="https://img.shields.io/npm/v/aligntrue.svg"
               alt="npm version"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://nodejs.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/badge/node-%3E%3D22-brightgreen"
+              alt="Node 22+"
+              style={{ height: "20px", display: "block" }}
+            />
+          </a>
+          <a
+            href="https://bundlephobia.com/package/@aligntrue/cli"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle"
+              alt="Bundle size"
               style={{ height: "20px", display: "block" }}
             />
           </a>
@@ -452,21 +491,8 @@ function SiteFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/badge/license-MIT-blue?logo=github"
+              src="https://img.shields.io/badge/license-MIT-blue"
               alt="MIT License"
-              style={{ height: "20px", display: "block" }}
-            />
-          </a>
-          <a
-            href="https://github.com/AlignTrue/aligntrue/actions"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=tests&logo=github"
-              alt="test status"
               style={{ height: "20px", display: "block" }}
             />
           </a>
