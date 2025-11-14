@@ -211,16 +211,17 @@ export function lockfileValidationFailed(
     ],
     [
       {
-        command: "aligntrue team approve --current",
-        description: "Approve current bundle (team lead only)",
+        command:
+          "git add .aligntrue.lock.json && git commit -m 'chore: Update lockfile'",
+        description: "Approve via git PR workflow",
         impact:
-          "• Add current hash to allow list\n   • Update lockfile\n   • Allow sync to proceed",
+          "• Commit lockfile changes\n   • Create PR for team review\n   • Standard git approval process",
       },
       {
         command: "aligntrue sync --force",
         description: "Bypass validation (not recommended)",
         impact:
-          "• Skip allow list check\n   • Sync anyway\n   • May violate team policy",
+          "• Skip lockfile check\n   • Sync anyway\n   • May violate team policy",
       },
       {
         command: "git revert HEAD",

@@ -69,7 +69,7 @@ async function main() {
 
     console.log("Team Commands:");
     console.log(
-      "  team           Team mode management (enable, status, approve, list-allowed, remove)",
+      "  team           Team mode management (enable, disable, status)",
     );
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");

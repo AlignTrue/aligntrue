@@ -2,13 +2,7 @@
  * Team mode management commands
  */
 
-import {
-  existsSync,
-  writeFileSync,
-  mkdirSync,
-  renameSync,
-  readFileSync,
-} from "fs";
+import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
 import { dirname } from "path";
 import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
@@ -48,6 +42,7 @@ export async function team(args: string[]): Promise<void> {
       examples: [
         "aligntrue team enable",
         "aligntrue team enable --yes",
+        "aligntrue team disable",
         "aligntrue team status",
       ],
       notes: [
@@ -67,11 +62,11 @@ export async function team(args: string[]): Promise<void> {
     case "enable":
       await teamEnable(parsed.flags);
       break;
+    case "disable":
+      await teamDisable(parsed.flags);
+      break;
     case "status":
       await teamStatus();
-      break;
-    case "approve":
-      await teamApprove(parsed.positional.slice(1), parsed.flags);
       break;
     default:
       showStandardHelp({
@@ -82,8 +77,8 @@ export async function team(args: string[]): Promise<void> {
         examples: [
           "aligntrue team enable",
           "aligntrue team enable --yes",
+          "aligntrue team disable",
           "aligntrue team status",
-          "aligntrue team approve --current",
         ],
         notes: [
           "Team mode features:",
@@ -405,116 +400,168 @@ async function teamEnable(
 }
 
 /**
- * Approve drift changes or accept current lockfile version
+ * Disable team mode and migrate back to solo mode
  */
-async function teamApprove(
-  args: string[],
+async function teamDisable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
+  const configPath = ".aligntrue/config.yaml";
+  const lockfilePath = ".aligntrue.lock.json";
+
+  // Check for non-interactive mode
+  const nonInteractive =
+    (flags["yes"] as boolean | undefined) ||
+    (flags["non-interactive"] as boolean | undefined) ||
+    process.env["CI"] === "true" ||
+    false;
+
+  // Check if config exists
+  if (!existsSync(configPath)) {
+    console.error("✗ Config file not found: .aligntrue/config.yaml");
+    console.error("  Run: aligntrue init");
+    process.exit(1);
+  }
+
   try {
-    // Parse flags
-    const isCurrent = Boolean(flags["current"]);
-    const force = Boolean(flags["force"]);
+    // Load current config
+    const config = await tryLoadConfig(configPath);
 
-    // Check for sources first (if not --current)
-    if (!isCurrent && args.length === 0 && !force) {
-      console.error("No sources provided or --current flag missing");
-      console.error("\nUsage:");
-      console.error(
-        "  aligntrue team approve --current          # Accept lockfile",
-      );
-      console.error(
-        "  aligntrue team approve <source> [--force] # Approve specific source",
-      );
-      process.exit(2);
+    // Check if already in solo mode
+    if (config.mode !== "team") {
+      console.log("✓ Already in solo mode");
+      return;
     }
 
-    // Check for required config
-    if (!existsSync(".aligntrue/config.yaml")) {
-      console.error("Config file not found: .aligntrue/config.yaml");
-      console.error("Run 'aligntrue init' to create one.");
-      process.exit(2);
+    // Show what will change
+    if (!nonInteractive) {
+      clack.intro("Team Mode Disable");
     }
 
-    // Check for lockfile if using --current
-    if (isCurrent && !existsSync(".aligntrue.lock.json")) {
-      console.error("Lockfile not found: .aligntrue.lock.json");
-      console.error("Run 'aligntrue sync' to generate one.");
-      process.exit(2);
-    }
+    const changes = [
+      "mode: team → solo",
+      "modules.lockfile: true → false",
+      "modules.bundle: true → false",
+      "Delete .aligntrue.lock.json (no purpose in solo mode)",
+      "Preserve .aligntrue/.rules.yaml (team rules become solo public rules)",
+    ];
 
-    if (isCurrent) {
-      // Accept current lockfile version
-      const lockfileContent = readFileSync(".aligntrue.lock.json", "utf-8");
-      const lockfile = JSON.parse(lockfileContent) as {
-        rules?: Array<{
-          rule_id: string;
-          source?: string;
-          content_hash?: string;
-        }>;
-      };
+    if (nonInteractive) {
+      console.log("Team Mode Disable (non-interactive mode)");
+      console.log("\nChanges:");
+      changes.forEach((c) => console.log(`  - ${c}`));
+      console.log("\nProceeding automatically...\n");
+    } else {
+      clack.log.info(`Changes:\n${changes.map((c) => `  - ${c}`).join("\n")}`);
 
-      // Build allow list from current lockfile
-      const sources = new Set<string>();
-      if (lockfile.rules) {
-        for (const rule of lockfile.rules) {
-          if (rule.source) {
-            sources.add(rule.source);
-          }
-        }
-      }
+      const shouldProceed = await clack.confirm({
+        message: "Disable team mode and migrate to solo?",
+        initialValue: false,
+      });
 
-      if (sources.size === 0) {
-        console.log("✓ No upstream sources to approve");
+      if (clack.isCancel(shouldProceed) || !shouldProceed) {
+        clack.cancel("Team mode disable cancelled");
         return;
       }
-
-      // Create or update allow list
-      const allowList = {
-        version: 1,
-        sources: Array.from(sources).map((source) => {
-          const rule = lockfile.rules?.find((r) => r.source === source);
-          return {
-            value: source,
-            resolved_hash: rule?.content_hash,
-          };
-        }),
-      };
-
-      // Write allow list
-      mkdirSync(".aligntrue", { recursive: true });
-      const yamlContent = stringifyYaml(allowList);
-      writeFileSync(".aligntrue/allow.yaml", yamlContent, "utf-8");
-
-      console.log(
-        "✓ Lockfile version approved and stored in .aligntrue/allow.yaml",
-      );
-      console.log("  Commit this file to version control:");
-      console.log("  git add .aligntrue/allow.yaml");
-      console.log("  git commit -m 'chore: Approve current lockfile'");
-    } else {
-      // Approve specific source(s)
-      const source = args[0];
-      if (!source) {
-        console.error("Source required");
-        process.exit(2);
-      }
-
-      console.log(`✓ Approved source: ${source}`);
-      console.log("  Run 'aligntrue drift' to verify no drift");
     }
 
-    // Record telemetry
-    await recordEvent({
-      command_name: "team-approve",
-      align_hashes_used: [],
+    // Create backup before making changes
+    const { BackupManager } = await import("@aligntrue/core");
+    const backup = BackupManager.createBackup({
+      cwd: process.cwd(),
+      created_by: "team-disable",
+      notes: "Before disabling team mode",
+      action: "team-disable",
+      mode: "team",
     });
-  } catch (err) {
-    console.error(
-      `✗ Failed to approve changes: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+
+    if (!nonInteractive) {
+      clack.log.success(`Backup created: ${backup.timestamp}`);
+      clack.log.info(
+        `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      );
+    } else {
+      console.log(`Backup created: ${backup.timestamp}`);
+    }
+
+    // Update config
+    config.mode = "solo";
+    config.modules = {
+      ...config.modules,
+      lockfile: false,
+      bundle: false,
+    };
+
+    // Remove lockfile config
+    if (config.lockfile) {
+      delete config.lockfile;
+    }
+
+    // Apply defaults to fill in other missing fields
+    const configWithDefaults = applyDefaults(config);
+
+    // Write config back atomically
+    const yamlContent = stringifyYaml(configWithDefaults);
+    const tempPath = `${configPath}.tmp`;
+
+    // Ensure directory exists
+    mkdirSync(dirname(configPath), { recursive: true });
+
+    // Write to temp file first
+    writeFileSync(tempPath, yamlContent, "utf-8");
+
+    // Atomic rename (OS-level guarantee)
+    renameSync(tempPath, configPath);
+
+    // Delete lockfile if it exists
+    if (existsSync(lockfilePath)) {
+      const { unlinkSync } = await import("fs");
+      unlinkSync(lockfilePath);
+      if (!nonInteractive) {
+        clack.log.info("Deleted .aligntrue.lock.json");
+      } else {
+        console.log("Deleted .aligntrue.lock.json");
+      }
+    }
+
+    // Record telemetry event
+    recordEvent({ command_name: "team-disable", align_hashes_used: [] });
+
+    // Show configuration summary
+    console.log("\n✓ Team mode disabled\n");
+    console.log("Current configuration:");
+    console.log(`  Mode: solo`);
+    console.log(`  Two-way sync: enabled`);
+    console.log(
+      `  You can edit: ${Array.isArray(config.sync?.edit_source) ? config.sync.edit_source.join(", ") : config.sync?.edit_source || "AGENTS.md"}`,
     );
+
+    console.log("\nWhat happened:");
+    console.log("  ✓ Team rules are now solo public rules");
+    console.log("  ✓ You can make them private by editing AGENTS.md");
+    console.log(
+      "  ✓ Lockfile deleted (regenerated if you re-enable team mode)",
+    );
+    console.log(
+      `  ✓ Backup available: aligntrue backup restore --to ${backup.timestamp}`,
+    );
+
+    console.log("\nNext steps:");
+    console.log("  1. Run sync: aligntrue sync");
+    console.log("  2. Review your rules in AGENTS.md");
+    console.log("  3. Commit changes:");
+    console.log("     git add .aligntrue/");
+    console.log("     git commit -m 'chore: Disable AlignTrue team mode'");
+
+    if (!nonInteractive) {
+      clack.outro("Solo mode enabled! Run 'aligntrue sync' to continue.");
+    }
+  } catch (err) {
+    // Re-throw process.exit errors (for testing)
+    if (err instanceof Error && err.message.startsWith("process.exit")) {
+      throw err;
+    }
+    console.error("✗ Failed to disable team mode");
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }
