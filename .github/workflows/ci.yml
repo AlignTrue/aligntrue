@@ -65,6 +65,9 @@ jobs:
       - name: Validate no duplicate docs
         run: node scripts/validate-no-duplicate-docs.mjs
 
+      - name: Validate documentation accuracy
+        run: node scripts/validate-docs-accuracy.mjs
+
       - name: Check code formatting
         run: pnpm format:check
 
