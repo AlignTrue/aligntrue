@@ -251,8 +251,9 @@ export async function detectEditedFiles(
         });
       }
     }
-  } catch (error: any) {
-    if (error.code !== "ENOENT") {
+  } catch (error: unknown) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code !== "ENOENT") {
       // re-throw if not a file-not-found error
       if (DEBUG_SYNC) {
         console.error(`[detectEditedFiles] Error processing AGENTS.md`, error);
@@ -329,8 +330,9 @@ export async function detectEditedFiles(
             });
           }
         }
-      } catch (error: any) {
-        if (error.code !== "ENOENT") {
+      } catch (error: unknown) {
+        const isError = error instanceof Error;
+        if (isError && "code" in error && error.code !== "ENOENT") {
           if (DEBUG_SYNC) {
             console.error(
               `[detectEditedFiles] Error processing ${relativePath}`,
@@ -340,8 +342,9 @@ export async function detectEditedFiles(
         }
       }
     }
-  } catch (error: any) {
-    if (error.code !== "ENOENT") {
+  } catch (error: unknown) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code !== "ENOENT") {
       if (DEBUG_SYNC) {
         console.error(
           `[detectEditedFiles] Error reading .cursor/rules directory`,
@@ -400,8 +403,9 @@ export async function detectReadOnlyFileEdits(
         absolutePath: join(cursorRulesDir, mdcFile),
       });
     }
-  } catch (error: any) {
-    if (error.code !== "ENOENT") {
+  } catch (error: unknown) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code !== "ENOENT") {
       // Directory not readable or other error, ignore in this context
     }
   }
@@ -421,8 +425,9 @@ export async function detectReadOnlyFileEdits(
       if (lastSyncTime && stats.mtime > lastSyncTime) {
         readOnlyEdited.push(path);
       }
-    } catch (error: any) {
-      if (error.code !== "ENOENT") {
+    } catch (error: unknown) {
+      const isError = error instanceof Error;
+      if (isError && "code" in error && error.code !== "ENOENT") {
         // Some other error, ignore in this context
       }
     }

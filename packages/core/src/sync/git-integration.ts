@@ -237,8 +237,12 @@ export class GitIntegration {
     let content = "";
     try {
       content = readFileSync(gitignorePath, "utf-8");
-    } catch (error: any) {
-      if (error.code !== "ENOENT") {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code !== "ENOENT"
+      ) {
         throw error; // re-throw other errors
       }
       // File doesn't exist, content remains ""
@@ -287,8 +291,12 @@ export class GitIntegration {
         { encoding: "utf-8", flag: "wx" },
       );
       return; // Success, file created.
-    } catch (error: any) {
-      if (error.code !== "EEXIST") {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code !== "EEXIST"
+      ) {
         throw error; // Rethrow unexpected errors
       }
       // File already exists, proceed to read and append logic

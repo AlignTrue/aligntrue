@@ -4,7 +4,7 @@
  */
 
 import * as clack from "@clack/prompts";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import * as yaml from "yaml";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
@@ -178,12 +178,20 @@ async function applySoloMigration(
 ): Promise<void> {
   // Load IR
   const irPath = join(cwd, ".aligntrue", ".rules.yaml");
-  if (!existsSync(irPath)) {
-    throw new Error("IR file not found");
+  let ir: ParsedIR;
+  try {
+    const irContent = readFileSync(irPath, "utf-8");
+    ir = yaml.parse(irContent) as ParsedIR;
+  } catch (error: unknown) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code === "ENOENT") {
+      // If IR doesn't exist, we can still proceed with config changes
+      // but we should initialize an empty IR structure.
+      ir = { version: "1", sections: [] };
+    } else {
+      throw error;
+    }
   }
-
-  const irContent = readFileSync(irPath, "utf-8");
-  const ir = yaml.parse(irContent) as ParsedIR;
 
   if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
