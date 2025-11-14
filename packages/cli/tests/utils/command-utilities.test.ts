@@ -62,8 +62,16 @@ describe("parseCommonArgs", () => {
   });
 
   it("should handle unknown flags", () => {
-    const result = parseCommonArgs(["--unknown", "value"], testDefinitions);
-    expect(result.flags["unknown"]).toBe(true); // Unknown flags parsed as boolean
+    // In strict mode (default), unknown flags should throw an error
+    expect(() => {
+      parseCommonArgs(["--unknown", "value"], testDefinitions);
+    }).toThrow("Unknown flag: --unknown");
+
+    // Can opt out of strict mode if needed
+    const result = parseCommonArgs(["--unknown", "value"], testDefinitions, {
+      strict: false,
+    });
+    expect(result.flags["unknown"]).toBe(true); // Unknown flags parsed as boolean in non-strict mode
   });
 
   it("should apply default values", () => {
