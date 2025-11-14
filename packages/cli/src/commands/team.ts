@@ -2,7 +2,13 @@
  * Team mode management commands
  */
 
-import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
+import {
+  existsSync,
+  writeFileSync,
+  mkdirSync,
+  renameSync,
+  readFileSync,
+} from "fs";
 import { dirname } from "path";
 import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
@@ -64,6 +70,9 @@ export async function team(args: string[]): Promise<void> {
     case "status":
       await teamStatus();
       break;
+    case "approve":
+      await teamApprove(parsed.positional.slice(1), parsed.flags);
+      break;
     default:
       showStandardHelp({
         name: "team",
@@ -74,6 +83,7 @@ export async function team(args: string[]): Promise<void> {
           "aligntrue team enable",
           "aligntrue team enable --yes",
           "aligntrue team status",
+          "aligntrue team approve --current",
         ],
         notes: [
           "Team mode features:",
@@ -390,6 +400,121 @@ async function teamEnable(
     }
     console.error("✗ Failed to enable team mode");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * Approve drift changes or accept current lockfile version
+ */
+async function teamApprove(
+  args: string[],
+  flags: Record<string, string | boolean | undefined>,
+): Promise<void> {
+  try {
+    // Parse flags
+    const isCurrent = Boolean(flags["current"]);
+    const force = Boolean(flags["force"]);
+
+    // Check for sources first (if not --current)
+    if (!isCurrent && args.length === 0 && !force) {
+      console.error("No sources provided or --current flag missing");
+      console.error("\nUsage:");
+      console.error(
+        "  aligntrue team approve --current          # Accept lockfile",
+      );
+      console.error(
+        "  aligntrue team approve <source> [--force] # Approve specific source",
+      );
+      process.exit(2);
+    }
+
+    // Check for required config
+    if (!existsSync(".aligntrue/config.yaml")) {
+      console.error("Config file not found: .aligntrue/config.yaml");
+      console.error("Run 'aligntrue init' to create one.");
+      process.exit(2);
+    }
+
+    // Check for lockfile if using --current
+    if (isCurrent && !existsSync(".aligntrue.lock.json")) {
+      console.error("Lockfile not found: .aligntrue.lock.json");
+      console.error("Run 'aligntrue sync' to generate one.");
+      process.exit(2);
+    }
+
+    if (isCurrent) {
+      // Accept current lockfile version
+      const lockfileContent = readFileSync(".aligntrue.lock.json", "utf-8");
+      const lockfile = JSON.parse(lockfileContent) as {
+        rules?: Array<{
+          rule_id: string;
+          source?: string;
+          content_hash?: string;
+        }>;
+      };
+
+      // Build allow list from current lockfile
+      const sources = new Set<string>();
+      if (lockfile.rules) {
+        for (const rule of lockfile.rules) {
+          if (rule.source) {
+            sources.add(rule.source);
+          }
+        }
+      }
+
+      if (sources.size === 0) {
+        console.log("✓ No upstream sources to approve");
+        return;
+      }
+
+      // Create or update allow list
+      const allowList = {
+        version: 1,
+        sources: Array.from(sources).map((source) => {
+          const rule = lockfile.rules?.find((r) => r.source === source);
+          return {
+            value: source,
+            resolved_hash: rule?.content_hash,
+          };
+        }),
+      };
+
+      // Write allow list
+      mkdirSync(".aligntrue", { recursive: true });
+      const yamlContent = stringifyYaml(allowList);
+      writeFileSync(".aligntrue/allow.yaml", yamlContent, "utf-8");
+
+      console.log(
+        "✓ Lockfile version approved and stored in .aligntrue/allow.yaml",
+      );
+      console.log("  Commit this file to version control:");
+      console.log("  git add .aligntrue/allow.yaml");
+      console.log("  git commit -m 'chore: Approve current lockfile'");
+    } else {
+      // Approve specific source(s)
+      const source = args[0];
+      if (!source) {
+        console.error("Source required");
+        process.exit(2);
+      }
+
+      console.log(`✓ Approved source: ${source}`);
+      console.log("  Run 'aligntrue drift' to verify no drift");
+    }
+
+    // Record telemetry
+    await recordEvent({
+      command_name: "team-approve",
+      align_hashes_used: [],
+    });
+  } catch (err) {
+    console.error(
+      `✗ Failed to approve changes: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
     process.exit(1);
   }
 }
