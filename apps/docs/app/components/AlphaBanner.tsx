@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { GitHubIcon } from "./GitHubIcon";
 
 /**
  * AlphaBanner Component
@@ -42,66 +43,85 @@ export function AlphaBanner() {
   if (!mounted || dismissed) return null;
 
   return (
-    <div
-      style={{
-        backgroundColor: "#0d47a1",
-        color: "white",
-        padding: "0.75rem 1.5rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1rem",
-        flexWrap: "wrap",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        fontSize: "0.875rem",
-        fontWeight: "500",
-      }}
-    >
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .alpha-banner {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .alpha-banner-content {
+            flex: none !important;
+            min-width: auto !important;
+            width: 100% !important;
+            flex-wrap: wrap !important;
+          }
+        }
+      `}</style>
       <div
+        className="alpha-banner"
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          flex: 1,
-          minWidth: "200px",
-          justifyContent: "center",
-        }}
-      >
-        <span>🚀 AlignTrue is in alpha. </span>
-        <a
-          href="https://github.com/AlignTrue/aligntrue"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            color: "#64b5f6",
-            textDecoration: "underline",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.375rem",
-            fontWeight: "600",
-          }}
-          aria-label="Follow updates on GitHub"
-        >
-          Follow on GitHub →
-        </a>
-      </div>
-      <button
-        onClick={handleDismiss}
-        style={{
-          background: "transparent",
-          border: "none",
+          backgroundColor: "#0d47a1",
           color: "white",
-          cursor: "pointer",
+          padding: "0.75rem 1.5rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "0.25rem",
-          flexShrink: 0,
+          gap: "1rem",
+          flexWrap: "wrap",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          fontSize: "0.875rem",
+          fontWeight: "500",
         }}
-        aria-label="Dismiss alpha banner"
       >
-        <X size={18} />
-      </button>
-    </div>
+        <div
+          className="alpha-banner-content"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            flex: 1,
+            minWidth: "200px",
+            justifyContent: "center",
+          }}
+        >
+          <span>🚀 AlignTrue is in alpha. </span>
+          <a
+            href="https://github.com/AlignTrue/aligntrue"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#64b5f6",
+              textDecoration: "underline",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.375rem",
+              fontWeight: "600",
+            }}
+            aria-label="Follow updates on GitHub"
+          >
+            Follow on GitHub
+            <GitHubIcon size={16} style={{ display: "inline" }} />
+          </a>
+        </div>
+        <button
+          onClick={handleDismiss}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "white",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0.25rem",
+            flexShrink: 0,
+          }}
+          aria-label="Dismiss alpha banner"
+        >
+          <X size={18} />
+        </button>
+      </div>
+    </>
   );
 }
