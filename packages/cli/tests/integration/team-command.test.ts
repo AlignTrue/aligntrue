@@ -4,7 +4,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import {
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { team } from "../../src/commands/team.js";
@@ -13,14 +20,12 @@ import * as yaml from "yaml";
 
 vi.mock("@clack/prompts");
 
-const TEST_DIR = join(tmpdir(), "aligntrue-test-team");
+let TEST_DIR: string;
 
 beforeEach(() => {
   vi.clearAllMocks();
 
-  if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+  TEST_DIR = mkdtempSync(join(tmpdir(), "aligntrue-test-team-"));
   mkdirSync(TEST_DIR, { recursive: true });
   process.chdir(TEST_DIR);
 

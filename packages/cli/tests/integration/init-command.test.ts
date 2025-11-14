@@ -7,30 +7,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from "fs";
+import {
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { init } from "../../src/commands/init.js";
 import * as yaml from "yaml";
 import { cleanupDir } from "../helpers/fs-cleanup.js";
 
-const TEST_DIR = join(tmpdir(), "aligntrue-test-init");
+let TEST_DIR: string;
 
 // Skip on Windows due to unreliable file cleanup in CI
 const describeSkipWindows =
   process.platform === "win32" ? describe.skip : describe;
 
 beforeEach(async () => {
-  // Create fresh test directory
-  await cleanupDir(TEST_DIR);
-  mkdirSync(TEST_DIR, { recursive: true });
-
-  // Change to test directory
+  TEST_DIR = mkdtempSync(join(tmpdir(), "aligntrue-test-init-"));
   process.chdir(TEST_DIR);
 });
 
 afterEach(async () => {
-  // Cleanup
   await cleanupDir(TEST_DIR);
 });
 
@@ -126,9 +127,10 @@ describeSkipWindows("Init Command Integration", () => {
   describe("Already Initialized", () => {
     it("detects existing .aligntrue directory and exits", async () => {
       // Create existing .aligntrue directory
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
       writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        join(aligntrueDir, "config.yaml"),
         "exporters:\n  - cursor\n",
         "utf-8",
       );

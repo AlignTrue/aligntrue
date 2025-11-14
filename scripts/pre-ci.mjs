@@ -6,8 +6,6 @@
  */
 
 import { execSync } from "child_process";
-import { rmSync, readdirSync, statSync, existsSync } from "fs";
-import { join } from "path";
 
 const steps = [
   {

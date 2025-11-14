@@ -10,7 +10,6 @@
  * - Docs CSS: ≤ 50 KB gzipped
  */
 
-import { execSync } from "child_process";
 import { statSync, existsSync, readdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";

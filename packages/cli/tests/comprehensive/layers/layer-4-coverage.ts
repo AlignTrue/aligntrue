@@ -4,7 +4,9 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 interface CommandTest {
   command: string;
@@ -162,49 +164,54 @@ function testCommand(
 function main() {
   console.log("=== Layer 4: Command Coverage ===\n");
 
-  const workspace = process.env.TEST_WORKSPACE || process.cwd();
-  const results = commands.map((test) => {
-    console.log(`Testing: ${test.description}`);
-    console.log(`Executing: ${test.command}`);
+  const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-4-log-"));
+  try {
+    const workspace = process.env.TEST_WORKSPACE || process.cwd();
+    const results = commands.map((test) => {
+      console.log(`Testing: ${test.description}`);
+      console.log(`Executing: ${test.command}`);
 
-    const result = testCommand(test, workspace);
+      const result = testCommand(test, workspace);
 
-    console.log(`Exit code: ${result.exitCode}`);
-    console.log(`${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+      console.log(`Exit code: ${result.exitCode}`);
+      console.log(`${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
 
-    return { test, result };
-  });
+      return { test, result };
+    });
 
-  const passed = results.filter((r) => r.result.passed).length;
-  const failed = results.length - passed;
+    const passed = results.filter((r) => r.result.passed).length;
+    const failed = results.length - passed;
 
-  console.log("\n=== Summary ===");
-  console.log(`Total commands: ${results.length}`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
-  console.log(`Coverage: ${Math.round((passed / results.length) * 100)}%`);
+    console.log("\n=== Summary ===");
+    console.log(`Total commands: ${results.length}`);
+    console.log(`Passed: ${passed}`);
+    console.log(`Failed: ${failed}`);
+    console.log(`Coverage: ${Math.round((passed / results.length) * 100)}%`);
 
-  const logPath = process.env.LOG_FILE || "/tmp/layer-4-results.json";
-  writeFileSync(
-    logPath,
-    JSON.stringify(
-      {
-        layer: 4,
-        timestamp: new Date().toISOString(),
-        coverage: (passed / results.length) * 100,
-        results: results.map((r) => ({
-          command: r.test.command,
-          description: r.test.description,
-          passed: r.result.passed,
-          exitCode: r.result.exitCode,
-        })),
-      },
-      null,
-      2,
-    ),
-  );
+    const logPath = join(tempLogDir, "layer-4-results.json");
+    writeFileSync(
+      logPath,
+      JSON.stringify(
+        {
+          layer: 4,
+          timestamp: new Date().toISOString(),
+          coverage: (passed / results.length) * 100,
+          results: results.map((r) => ({
+            command: r.test.command,
+            description: r.test.description,
+            passed: r.result.passed,
+            exitCode: r.result.exitCode,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
 
-  process.exit(failed > 0 ? 1 : 0);
+    process.exit(failed > 0 ? 1 : 0);
+  } finally {
+    rmSync(tempLogDir, { recursive: true, force: true });
+  }
 }
 
 if (require.main === module) {

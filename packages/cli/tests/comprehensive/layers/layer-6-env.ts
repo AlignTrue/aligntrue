@@ -4,8 +4,10 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { platform } from "node:os";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 interface EnvTest {
   name: string;
@@ -30,7 +32,8 @@ const tests: EnvTest[] = [
   },
   {
     name: "Commands are scriptable",
-    command: "aligntrue --version > /tmp/version.txt && cat /tmp/version.txt",
+    command:
+      "aligntrue init --mode solo && aligntrue --version > version.txt && cat version.txt",
     validation: (output) => ({
       passed: /\d+\.\d+\.\d+/.test(output),
     }),
@@ -82,43 +85,48 @@ function main() {
   console.log(`Node: ${process.version}`);
   console.log(`Shell: ${process.env.SHELL || "unknown"}\n`);
 
-  const workspace = process.env.TEST_WORKSPACE || process.cwd();
-  const results = tests.map((test) => {
-    console.log(`Test: ${test.name}`);
-    const result = runTest(test, workspace);
-    console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
-    return { test, result };
-  });
+  const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-6-log-"));
+  try {
+    const workspace = process.env.TEST_WORKSPACE || process.cwd();
+    const results = tests.map((test) => {
+      console.log(`Test: ${test.name}`);
+      const result = runTest(test, workspace);
+      console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+      return { test, result };
+    });
 
-  const passed = results.filter((r) => r.result.passed).length;
-  const failed = results.length - passed;
+    const passed = results.filter((r) => r.result.passed).length;
+    const failed = results.length - passed;
 
-  console.log("\n=== Summary ===");
-  console.log(`Total: ${results.length}`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
+    console.log("\n=== Summary ===");
+    console.log(`Total: ${results.length}`);
+    console.log(`Passed: ${passed}`);
+    console.log(`Failed: ${failed}`);
 
-  const logPath = process.env.LOG_FILE || "/tmp/layer-6-results.json";
-  writeFileSync(
-    logPath,
-    JSON.stringify(
-      {
-        layer: 6,
-        timestamp: new Date().toISOString(),
-        platform: platform(),
-        node: process.version,
-        results: results.map((r) => ({
-          name: r.test.name,
-          passed: r.result.passed,
-          error: r.result.error,
-        })),
-      },
-      null,
-      2,
-    ),
-  );
+    const logPath = join(tempLogDir, "layer-6-results.json");
+    writeFileSync(
+      logPath,
+      JSON.stringify(
+        {
+          layer: 6,
+          timestamp: new Date().toISOString(),
+          platform: platform(),
+          node: process.version,
+          results: results.map((r) => ({
+            name: r.test.name,
+            passed: r.result.passed,
+            error: r.result.error,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
 
-  process.exit(failed > 0 ? 1 : 0);
+    process.exit(failed > 0 ? 1 : 0);
+  } finally {
+    rmSync(tempLogDir, { recursive: true, force: true });
+  }
 }
 
 if (require.main === module) {

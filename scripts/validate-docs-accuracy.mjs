@@ -176,9 +176,9 @@ function validateCommandCount() {
   );
   const featuresContent = readFileSync(featuresPath, "utf8");
 
-  // Look for "### CLI (XX commands)"
+  // Look for "## CLI (XX commands)"
   const commandCountMatch = featuresContent.match(
-    /### CLI \((\d+) commands?\)/,
+    /## CLI \((\d+) commands?\)/,
   );
   const documentedCount = commandCountMatch
     ? parseInt(commandCountMatch[1], 10)

@@ -3,7 +3,7 @@
  * Detects edited agent files and merges them back to IR
  */
 
-import { statSync, readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, openSync, fstatSync, closeSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
 import micromatch from "micromatch";
@@ -193,8 +193,10 @@ export async function detectEditedFiles(
 
   // Check AGENTS.md
   const agentsMdPath = paths.agentsMd();
+  let agentsMdFd: number | undefined;
   try {
-    const stats = statSync(agentsMdPath);
+    agentsMdFd = openSync(agentsMdPath, "r");
+    const stats = fstatSync(agentsMdFd);
     const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
     const matchesEdit = matchesEditSource("AGENTS.md", editSource, cwd);
 
@@ -215,7 +217,7 @@ export async function detectEditedFiles(
         const parseModule = "@aligntrue/exporters/utils/section-parser";
         // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
         const { parseAgentsMd } = await import(parseModule);
-        const content = readFileSync(agentsMdPath, "utf-8");
+        const content = readFileSync(agentsMdFd, "utf-8");
         const parsed = parseAgentsMd(content);
 
         if (parsed.sections.length > 0) {
@@ -259,6 +261,10 @@ export async function detectEditedFiles(
         console.error(`[detectEditedFiles] Error processing AGENTS.md`, error);
       }
     }
+  } finally {
+    if (agentsMdFd !== undefined) {
+      closeSync(agentsMdFd);
+    }
   }
 
   // Check Cursor .mdc files with glob pattern support
@@ -270,9 +276,11 @@ export async function detectEditedFiles(
     for (const mdcFile of mdcFiles) {
       const relativePath = `.cursor/rules/${mdcFile}`;
       const absolutePath = join(cursorRulesDir, mdcFile);
+      let mdcFd: number | undefined;
 
       try {
-        const stats = statSync(absolutePath);
+        mdcFd = openSync(absolutePath, "r");
+        const stats = fstatSync(mdcFd);
         const wasEdited = !lastSyncTime || stats.mtime > lastSyncTime;
         const matchesEdit = matchesEditSource(relativePath, editSource, cwd);
 
@@ -293,7 +301,7 @@ export async function detectEditedFiles(
             const parseModule = "@aligntrue/exporters/utils/section-parser";
             // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
             const { parseCursorMdc } = await import(parseModule);
-            const content = readFileSync(absolutePath, "utf-8");
+            const content = readFileSync(mdcFd, "utf-8");
             const parsed = parseCursorMdc(content);
 
             if (parsed.sections.length > 0) {
@@ -339,6 +347,10 @@ export async function detectEditedFiles(
               error,
             );
           }
+        }
+      } finally {
+        if (mdcFd !== undefined) {
+          closeSync(mdcFd);
         }
       }
     }
@@ -412,9 +424,11 @@ export async function detectReadOnlyFileEdits(
 
   // Check each candidate file
   for (const { path, absolutePath } of candidateFiles) {
+    let fd: number | undefined;
     try {
+      fd = openSync(absolutePath, "r");
       // Skip if file doesn't exist (handled by try/catch)
-      const stats = statSync(absolutePath);
+      const stats = fstatSync(fd);
 
       // Skip if file matches edit_source (it's editable)
       if (matchesEditSource(path, editSource, cwd)) {
@@ -429,6 +443,10 @@ export async function detectReadOnlyFileEdits(
       const isError = error instanceof Error;
       if (isError && "code" in error && error.code !== "ENOENT") {
         // Some other error, ignore in this context
+      }
+    } finally {
+      if (fd !== undefined) {
+        closeSync(fd);
       }
     }
   }

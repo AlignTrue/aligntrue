@@ -607,7 +607,7 @@ async function migrateRuler(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   flags: Record<string, any>,
 ): Promise<void> {
-  const { existsSync, writeFileSync, renameSync } = await import("fs");
+  const { writeFileSync, renameSync } = await import("fs");
   const { join } = await import("path");
   const { glob } = await import("glob");
   const {
@@ -624,7 +624,12 @@ async function migrateRuler(
 
   const rulerDir = join(cwd, ".ruler");
 
-  if (!existsSync(rulerDir)) {
+  try {
+    const { statSync } = await import("fs");
+    if (!statSync(rulerDir).isDirectory()) {
+      throw new Error(".ruler is not a directory");
+    }
+  } catch {
     clack.log.error("No .ruler directory found. Is this a Ruler project?");
     clack.log.info(
       "The .ruler/ directory should contain your Ruler configuration.",
@@ -637,13 +642,15 @@ async function migrateRuler(
   // 1. Parse ruler.toml
   const rulerTomlPath = join(rulerDir, "ruler.toml");
   let rulerConfig: RulerConfig | undefined;
-  if (existsSync(rulerTomlPath)) {
-    try {
-      rulerConfig = parseRulerToml(rulerTomlPath);
-      clack.log.success("Found ruler.toml");
-    } catch (error) {
+  try {
+    rulerConfig = parseRulerToml(rulerTomlPath);
+    clack.log.success("Found ruler.toml");
+  } catch (error) {
+    const isError = error instanceof Error;
+    // Only warn if it's not a file-not-found error
+    if (!(isError && "code" in error && error.code === "ENOENT")) {
       clack.log.warn(
-        `Failed to parse ruler.toml: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to parse ruler.toml: ${isError ? error.message : String(error)}`,
       );
     }
   }
@@ -688,23 +695,29 @@ async function migrateRuler(
   const merged = await mergeRulerMarkdownFiles(rulerDir);
   const agentsMdPath = join(cwd, "AGENTS.md");
 
-  // Check if AGENTS.md already exists
-  if (existsSync(agentsMdPath)) {
-    if (interactive) {
-      const overwrite = await clack.confirm({
-        message: "AGENTS.md already exists. Overwrite?",
-        initialValue: false,
-      });
+  try {
+    writeFileSync(agentsMdPath, merged, { encoding: "utf-8", flag: "wx" });
+    clack.log.success("Created AGENTS.md from .ruler/*.md files");
+  } catch (error) {
+    const isError = error instanceof Error;
+    if (isError && "code" in error && error.code === "EEXIST") {
+      if (interactive) {
+        const overwrite = await clack.confirm({
+          message: "AGENTS.md already exists. Overwrite?",
+          initialValue: false,
+        });
 
-      if (clack.isCancel(overwrite) || !overwrite) {
-        clack.cancel("Migration cancelled");
-        process.exit(0);
+        if (clack.isCancel(overwrite) || !overwrite) {
+          clack.cancel("Migration cancelled");
+          process.exit(0);
+        }
       }
+      writeFileSync(agentsMdPath, merged, "utf-8");
+      clack.log.success("Overwrote AGENTS.md with merged content");
+    } else {
+      throw error;
     }
   }
-
-  writeFileSync(agentsMdPath, merged, "utf-8");
-  clack.log.success("Created AGENTS.md from .ruler/*.md files");
 
   // 5. Convert config
   if (rulerConfig) {
@@ -713,15 +726,11 @@ async function migrateRuler(
 
     // Merge with existing or create new
     let finalConfig: AlignTrueConfig;
-    if (existsSync(configPath)) {
-      try {
-        const existingConfig = await loadConfig(configPath);
-        finalConfig = { ...existingConfig, ...aligntrueConfig };
-      } catch {
-        // Ignore errors, will create new config
-        finalConfig = aligntrueConfig as AlignTrueConfig;
-      }
-    } else {
+    try {
+      const existingConfig = await loadConfig(configPath);
+      finalConfig = { ...existingConfig, ...aligntrueConfig };
+    } catch {
+      // Ignore errors (including not found), will create new config
       finalConfig = aligntrueConfig as AlignTrueConfig;
     }
 
