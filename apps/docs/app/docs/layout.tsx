@@ -95,7 +95,7 @@ function DocsFooter() {
             />
           </a>
           <a
-            href="https://bundlephobia.com/package/aligntrue"
+            href="https://bundlephobia.com/package/@aligntrue/cli"
             target="_blank"
             rel="noopener noreferrer"
             title="Bundle Size"
@@ -103,7 +103,7 @@ function DocsFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/bundlephobia/minzip/aligntrue?label=bundle&color=4285f4"
+              src="https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle&color=4285f4"
               alt="Bundle Size"
               style={{ height: "20px", display: "block" }}
             />

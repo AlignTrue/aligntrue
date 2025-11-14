@@ -179,41 +179,46 @@ export async function loadIR(
  *
  * @param targetPath - Path to save the IR file
  * @param pack - AlignPack to save
+ * @param options - Save options
+ * @param options.silent - Skip validation errors (for intermediate merge states)
  */
 export async function saveIR(
   targetPath: string,
   pack: AlignPack,
+  options?: { silent?: boolean },
 ): Promise<void> {
-  // Validate pack before saving
-  const validation = validateAlignSchema(pack);
-  if (!validation.valid) {
-    const errorList =
-      validation.errors
-        ?.map((err) => {
-          // Make error messages more helpful
-          if (
-            err.path === "(root)" &&
-            err.message.includes("required property")
-          ) {
-            const match = err.message.match(/required property '(\w+)'/);
-            if (match && match[1]) {
-              const field = match[1];
-              const hints: Record<string, string> = {
-                id: 'Pack identifier (e.g., "my-project")',
-                version: 'Semantic version (e.g., "1.0.0")',
-                spec_version: 'Must be "1"',
-              };
-              return `  - Missing required field: ${field}\n    ${hints[field] || ""}`;
+  // Validate pack before saving (unless silent mode)
+  if (!options?.silent) {
+    const validation = validateAlignSchema(pack);
+    if (!validation.valid) {
+      const errorList =
+        validation.errors
+          ?.map((err) => {
+            // Make error messages more helpful
+            if (
+              err.path === "(root)" &&
+              err.message.includes("required property")
+            ) {
+              const match = err.message.match(/required property '(\w+)'/);
+              if (match && match[1]) {
+                const field = match[1];
+                const hints: Record<string, string> = {
+                  id: 'Pack identifier (e.g., "my-project")',
+                  version: 'Semantic version (e.g., "1.0.0")',
+                  spec_version: 'Must be "1"',
+                };
+                return `  - Missing required field: ${field}\n    ${hints[field] || ""}`;
+              }
             }
-          }
-          return `  - ${err.path}: ${err.message}`;
-        })
-        .join("\n") || "  Unknown validation error";
+            return `  - ${err.path}: ${err.message}`;
+          })
+          .join("\n") || "  Unknown validation error";
 
-    throw new Error(
-      `✗ Invalid IR pack:\n\n${errorList}\n\n` +
-        `Fix: Add missing fields before saving.`,
-    );
+      throw new Error(
+        `✗ Invalid IR pack:\n\n${errorList}\n\n` +
+          `Fix: Add missing fields before saving.`,
+      );
+    }
   }
 
   // Ensure directory exists
