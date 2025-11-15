@@ -117,7 +117,7 @@
         },
         "header_prefix": {
           "type": "string",
-          "description": "Header text before fenced block (e.g., '# AlignTrue Rules')"
+          "description": "Header text before natural markdown sections (e.g., '# AlignTrue Rules')"
         },
         "guidance_position": {
           "type": "string",

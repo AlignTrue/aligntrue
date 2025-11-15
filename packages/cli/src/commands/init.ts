@@ -197,6 +197,16 @@ export async function init(args: string[] = []): Promise<void> {
     let isTeamMode = false;
     let teamConfig: Partial<AlignTrueConfig> | null = null;
 
+    // Check for lockfile presence (indicates team mode)
+    const lockfilePath = join(cwd, ".aligntrue.lock.json");
+    let lockfileExists = false;
+    try {
+      statSync(lockfilePath);
+      lockfileExists = true;
+    } catch {
+      // Lockfile doesn't exist
+    }
+
     try {
       const configContent = readFileSync(paths.config, "utf-8");
       teamConfig = yaml.parse(configContent);
@@ -204,6 +214,16 @@ export async function init(args: string[] = []): Promise<void> {
         teamConfig?.mode === "team" || teamConfig?.mode === "enterprise";
     } catch {
       // Ignore errors (file not found, parse errors, etc.)
+    }
+
+    // If lockfile exists but config doesn't indicate team mode, assume team mode
+    // This handles the case where someone runs init in an existing team repo
+    if (lockfileExists && !isTeamMode) {
+      isTeamMode = true;
+      // If config was parsed but mode wasn't team, update it
+      if (teamConfig && !teamConfig.mode) {
+        teamConfig.mode = "team";
+      }
     }
 
     if (isTeamMode && !nonInteractive) {

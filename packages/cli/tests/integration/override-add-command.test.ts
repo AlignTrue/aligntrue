@@ -200,4 +200,98 @@ describeSkipWindows("Override Add Command Integration", () => {
       expect(exitCode).toBe(1);
     });
   });
+
+  describe("Selector Syntax", () => {
+    it("supports sections[0] index-based selector syntax", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+      const config = { exporters: ["cursor"] };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      await overrideAdd([
+        "--selector",
+        "sections[0]",
+        "--set",
+        "severity=warn",
+      ]);
+
+      const updatedConfig = yaml.parse(
+        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
+      );
+
+      expect(updatedConfig.overlays).toBeDefined();
+      expect(updatedConfig.overlays.overrides).toHaveLength(1);
+      expect(updatedConfig.overlays.overrides[0].selector).toBe("sections[0]");
+      expect(updatedConfig.overlays.overrides[0].set).toEqual({
+        severity: "warn",
+      });
+    });
+
+    it("supports property path selector syntax", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+      const config = { exporters: ["cursor"], profile: { version: "1.0.0" } };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      await overrideAdd([
+        "--selector",
+        "profile.version",
+        "--set",
+        "value=2.0.0",
+      ]);
+
+      const updatedConfig = yaml.parse(
+        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
+      );
+
+      expect(updatedConfig.overlays).toBeDefined();
+      expect(updatedConfig.overlays.overrides).toHaveLength(1);
+      expect(updatedConfig.overlays.overrides[0].selector).toBe(
+        "profile.version",
+      );
+      expect(updatedConfig.overlays.overrides[0].set).toEqual({
+        value: "2.0.0",
+      });
+    });
+
+    it("supports multiple section index selectors", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+      const config = { exporters: ["cursor"] };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      // Add first override
+      await overrideAdd([
+        "--selector",
+        "sections[0]",
+        "--set",
+        "severity=error",
+      ]);
+
+      // Add second override
+      await overrideAdd([
+        "--selector",
+        "sections[1]",
+        "--set",
+        "severity=warn",
+      ]);
+
+      const updatedConfig = yaml.parse(
+        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
+      );
+
+      expect(updatedConfig.overlays.overrides).toHaveLength(2);
+      expect(updatedConfig.overlays.overrides[0].selector).toBe("sections[0]");
+      expect(updatedConfig.overlays.overrides[1].selector).toBe("sections[1]");
+    });
+  });
 });
