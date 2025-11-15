@@ -1,6 +1,6 @@
 {
   "name": "aligntrue",
-  "version": "0.1.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "AlignTrue CLI shim - AI alignment rules for developers",
   "type": "module",
   "main": "./dist/index.js",
