@@ -1,95 +1,178 @@
-# Quick release guide
+# Release Guide
+
+AlignTrue uses a simple manual release process. No bots, no automation, full control.
+
+---
 
 ## Setup (one time only)
 
-1. **Add NPM_TOKEN to GitHub Secrets:**
-   - Go to: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Create new token: **Automation** type with **Read and write** scope
-   - Add to GitHub: Settings → Secrets → Actions → New repository secret
-     - Name: `NPM_TOKEN`
-     - Value: your token
+### 1. Login to npm
 
-2. **Enter alpha pre-release mode** (since we're at 0.1.0-alpha.X):
-   ```bash
-   pnpm changeset pre enter alpha
-   git add .changeset/pre.json
-   git commit -m "chore: enter alpha pre-release mode"
-   git push
-   ```
+```bash
+npm login
+```
+
+Enter your npm credentials. This creates a token in `~/.npmrc`.
+
+### 2. Verify access
+
+```bash
+npm whoami
+# Should show your npm username
+
+npm org ls aligntrue
+# Should show you have publish access
+```
 
 ---
 
-## Daily workflow
-
-### When you make changes:
-
-```bash
-# 1. Make your changes and commit normally
-git add .
-git commit -m "feat: add cool feature"
-git push
-
-# 2. When ready to release, create a smart changeset
-pnpm release:add
-# Smart detection:
-#   - Auto-detects all changed packages since last release
-#   - Analyzes commits and recommends bump type
-#   - Shows commit summary grouped by type
-#   - Auto-generates changelog from commits
-# You only need to:
-#   - Confirm the bump type (patch/minor/major)
-#   - Review the generated changelog
-
-# 3. Commit and push the changeset
-git add .changeset/
-git commit -m "chore: Add changeset for release"
-git push
-```
+## Release Process
 
 ### When ready to release:
 
-1. **Changesets bot automatically creates "Version Packages" PR**
-2. **Review the PR** (check versions and CHANGELOG)
-3. **Merge it** → packages publish to npm automatically ✨
+```bash
+# Interactive mode (recommended)
+pnpm release
+
+# Non-interactive mode
+pnpm release --type=alpha    # For alpha releases
+pnpm release --type=patch    # For bug fixes (0.x.y -> 0.x.y+1)
+pnpm release --type=minor    # For features (0.x.y -> 0.x+1.0)
+pnpm release --type=major    # For breaking changes (0.x.y -> x+1.0.0)
+```
+
+### What the script does:
+
+1. **Detects all workspace packages** - Finds all publishable packages
+2. **Prompts for version type** - Interactive selection with version preview
+3. **Bumps versions** - Updates all package.json files
+4. **Builds packages** - Runs `pnpm build:packages`
+5. **Publishes to npm** - Publishes with correct tag (`alpha` or `latest`)
+6. **Creates git commit and tag** - Commits version changes and tags release
+7. **Pushes to GitHub** - Pushes commit and tags
 
 ---
 
-## Commands
+## Version Scheme
 
-| Command                          | What it does                                                                            |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm release:add`               | 🎯 **Smart changeset creator** (recommended) - Auto-detects changes and recommends bump |
-| `pnpm changeset`                 | Manual changeset creation (old way)                                                     |
-| `pnpm changeset status`          | See pending changesets                                                                  |
-| `pnpm changeset pre enter alpha` | Enter alpha pre-release mode                                                            |
-| `pnpm changeset pre exit`        | Exit pre-release mode (for stable 1.0)                                                  |
+AlignTrue uses semantic versioning with alpha pre-releases:
 
-### What makes `pnpm release:add` smart?
+| Type  | Example Bump           | Use For                            |
+| ----- | ---------------------- | ---------------------------------- |
+| alpha | `1.0.0-alpha.5` → `.6` | Pre-release testing                |
+| patch | `1.0.0` → `1.0.1`      | Bug fixes, no new features         |
+| minor | `1.0.0` → `1.1.0`      | New features, backwards compatible |
+| major | `1.0.0` → `2.0.0`      | Breaking changes                   |
 
-- **Auto-detects changed packages** - Compares git history since last release
-- **Analyzes your commits** - Counts features, fixes, and breaking changes
-- **Recommends bump type** - Based on conventional commit analysis
-- **Auto-generates changelog** - Groups commits by type (features, fixes, etc.)
-- **Interactive guidance** - Shows version preview for each bump type
-- **One command** - Replaces the multi-step manual process
+### Current status:
+
+- **Now:** `1.0.0-alpha.x` (pre-release testing)
+- **Soon:** `1.0.0` (stable release)
+
+After exiting alpha, use `patch`, `minor`, or `major` for all releases.
+
+---
+
+## Updating CHANGELOG.md
+
+After a release, update `CHANGELOG.md`:
+
+1. Add a new `## [X.Y.Z] - YYYY-MM-DD` section at the top
+2. Group changes under:
+   - **Added** - New features
+   - **Changed** - Changes to existing functionality
+   - **Deprecated** - Soon-to-be removed features
+   - **Removed** - Removed features
+   - **Fixed** - Bug fixes
+   - **Security** - Security fixes
+
+AI typically updates the CHANGELOG when adding features, but you can ask it to add release notes after running `pnpm release`.
+
+---
+
+## Dry Run (Test Before Release)
+
+```bash
+pnpm release --dry-run
+```
+
+This shows what would happen without actually:
+
+- Modifying files
+- Publishing to npm
+- Creating git commits/tags
+
+Use this to verify version bumps look correct.
 
 ---
 
 ## Troubleshooting
 
-**"Version Packages" PR not appearing?**
-
-- Check you've created at least one changeset
-- Check GitHub Actions tab for errors
-- Verify NPM_TOKEN secret is set
-
-**Need to release NOW?**
+### "EAUTH" or "403 Forbidden"
 
 ```bash
-pnpm changeset version  # Bump versions
-pnpm release            # Build and publish
+npm logout
+npm login
+```
+
+Re-authenticate with npm.
+
+### "Working directory not clean"
+
+Commit or stash changes before releasing:
+
+```bash
+git status
+git stash  # or git commit
+```
+
+### Need to unpublish a broken release?
+
+```bash
+npm unpublish aligntrue@1.0.0-alpha.X
+npm unpublish @aligntrue/cli@1.0.0-alpha.X
+# ... repeat for all packages
+```
+
+⚠️ **Warning:** You cannot republish the same version after unpublishing. Bump to the next version instead.
+
+---
+
+## Manual Emergency Release
+
+If the script fails partway through:
+
+```bash
+# 1. Manually bump versions in package.json files
+# 2. Build
+pnpm build:packages
+
+# 3. Publish each package
+cd packages/schema && npm publish --tag alpha
+cd packages/core && npm publish --tag alpha
+cd packages/exporters && npm publish --tag alpha
+cd packages/sources && npm publish --tag alpha
+cd packages/file-utils && npm publish --tag alpha
+cd packages/plugin-contracts && npm publish --tag alpha
+cd packages/testkit && npm publish --tag alpha
+cd packages/cli && npm publish --tag alpha
+cd packages/aligntrue && npm publish --tag alpha
+
+# 4. Commit and tag
+git add .
+git commit -m "chore: Release X.Y.Z (manual)"
+git tag vX.Y.Z
+git push && git push --tags
 ```
 
 ---
 
-See [docs/development/release-process.md](docs/development/release-process.md) for full details.
+## Post-Release Checklist
+
+After a successful release:
+
+1. ✅ Verify on npm: https://www.npmjs.com/package/aligntrue
+2. ✅ Test installation: `npx aligntrue@alpha --version`
+3. ✅ Update CHANGELOG.md
+4. ✅ Announce in Discord/Twitter (if significant)
+5. ✅ Update docs site if behavior changed
