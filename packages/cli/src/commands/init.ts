@@ -752,7 +752,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     };
   }
 
-  // Build inclusive edit_source based on selected exporters
+  // Build inclusive edit_source based on selected exporters AND created files
   const exporterToPattern: Record<string, string> = {
     cursor: ".cursor/rules/*.mdc",
     "agents-md": "AGENTS.md",
@@ -762,6 +762,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   };
 
   const editSourcePatterns: string[] = [];
+
+  // Add patterns for enabled exporters
   for (const exporter of selectedAgents) {
     const pattern = exporterToPattern[exporter];
     if (pattern) {
@@ -769,11 +771,16 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  // Configure sync settings
+  // Always include AGENTS.md since it's always created
+  if (!editSourcePatterns.includes("AGENTS.md")) {
+    editSourcePatterns.push("AGENTS.md");
+  }
+
+  // Configure sync settings with all created file patterns
   const editSource =
     editSourcePatterns.length > 1 ? editSourcePatterns : editSourcePatterns[0];
 
-  // Set inclusive edit_source based on enabled exporters
+  // Set inclusive edit_source based on enabled exporters and created files
   config.sync = {
     ...(editSource && { edit_source: editSource }),
   };
