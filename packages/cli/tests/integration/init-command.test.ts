@@ -194,4 +194,153 @@ describeSkipWindows("Init Command Integration", () => {
       expect(config.sync).toBeDefined();
     });
   });
+
+  describe("Team Mode Detection", () => {
+    it("detects team mode from existing lockfile", async () => {
+      // Setup: Create a team configuration with lockfile
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+
+      // Create a team mode config
+      const teamConfig = {
+        mode: "team",
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+        exporters: ["cursor", "agents-md"],
+        modules: { lockfile: true, bundle: true },
+      };
+      writeFileSync(
+        join(aligntrueDir, "config.yaml"),
+        yaml.stringify(teamConfig),
+        "utf-8",
+      );
+
+      // Create a lockfile (indicates team mode)
+      const lockfile = {
+        bundle_hash: "test-hash",
+        generated_at: new Date().toISOString(),
+        mode: "team",
+        rules: [],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue.lock.json"),
+        JSON.stringify(lockfile, null, 2),
+        "utf-8",
+      );
+
+      // Create minimal IR
+      const ir = {
+        id: "test-project",
+        version: "1.0.0",
+        spec_version: "1",
+        sections: [],
+      };
+      writeFileSync(
+        join(aligntrueDir, ".rules.yaml"),
+        yaml.stringify(ir),
+        "utf-8",
+      );
+
+      // Mock process.exit to capture exit code and stop execution
+      const originalExit = process.exit;
+      let exitCode: number | undefined;
+      process.exit = ((code?: number) => {
+        exitCode = code;
+        throw new Error(`EXIT_${code}`);
+      }) as never;
+
+      // Run init - should detect team mode and exit
+      try {
+        await init(["--yes"]);
+      } catch (err) {
+        // Expected - process.exit throws to stop execution
+        if (!(err instanceof Error) || !err.message.startsWith("EXIT_")) {
+          throw err;
+        }
+      }
+
+      // Restore process.exit
+      process.exit = originalExit;
+
+      // Verify exit code is 0 (success, already initialized)
+      expect(exitCode).toBe(0);
+
+      // Verify team mode is preserved
+      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+      const configContent = readFileSync(configPath, "utf-8");
+      const config = yaml.parse(configContent);
+
+      expect(config.mode).toBe("team");
+      expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+    });
+
+    it("detects team mode from lockfile even if config is missing mode field", async () => {
+      // Setup: Create config without mode field but with lockfile present
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+
+      // Create a config without explicit mode
+      const config = {
+        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+        exporters: ["cursor"],
+      };
+      writeFileSync(
+        join(aligntrueDir, "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      // Create a lockfile (indicates team mode)
+      const lockfile = {
+        bundle_hash: "test-hash",
+        generated_at: new Date().toISOString(),
+        mode: "team",
+        rules: [],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue.lock.json"),
+        JSON.stringify(lockfile, null, 2),
+        "utf-8",
+      );
+
+      // Create minimal IR
+      const ir = {
+        id: "test-project",
+        version: "1.0.0",
+        spec_version: "1",
+        sections: [],
+      };
+      writeFileSync(
+        join(aligntrueDir, ".rules.yaml"),
+        yaml.stringify(ir),
+        "utf-8",
+      );
+
+      // Mock process.exit to capture exit code and stop execution
+      const originalExit = process.exit;
+      let exitCode: number | undefined;
+      process.exit = ((code?: number) => {
+        exitCode = code;
+        throw new Error(`EXIT_${code}`);
+      }) as never;
+
+      // Run init - should detect team mode from lockfile and exit
+      try {
+        await init(["--yes"]);
+      } catch (err) {
+        // Expected - process.exit throws to stop execution
+        if (!(err instanceof Error) || !err.message.startsWith("EXIT_")) {
+          throw err;
+        }
+      }
+
+      // Restore process.exit
+      process.exit = originalExit;
+
+      // Verify exit code is 0 (success, already initialized)
+      expect(exitCode).toBe(0);
+
+      // Verify lockfile still exists (not deleted)
+      expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+    });
+  });
 });

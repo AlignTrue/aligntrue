@@ -238,7 +238,7 @@ describe("Validation safeguards", () => {
     }
   });
 
-  it.skip("import generates single-block markdown format", () => {
+  it.skip("import generates IR with sections from agent files", () => {
     // Create a cursor file
     const cursorDir = join(testDir, ".cursor/rules");
     execSync(`mkdir -p "${cursorDir}"`);
@@ -246,14 +246,14 @@ describe("Validation safeguards", () => {
     const cursorContent = `---
 description: Test
 ---
-## Rule: quality.test.valid
+## Quality standards
 
 **Severity:** error
 
 **Applies to:**
 - \`**/*.ts\`
 
-Valid rule.
+Write comprehensive tests.
 `;
 
     require("fs").writeFileSync(join(cursorDir, "test.mdc"), cursorContent);
@@ -278,18 +278,21 @@ Valid rule.
     const irPath = join(testDir, ".aligntrue/.rules.yaml");
     const irContent = readFileSync(irPath, "utf-8");
 
-    // Should have exactly one fenced block
-    const blockMatches = irContent.match(/```aligntrue/g);
-    expect(blockMatches).toBeTruthy();
-    expect(blockMatches!.length).toBe(1);
+    // IR should be pure YAML (not fenced blocks)
+    expect(irContent).not.toContain("```aligntrue");
 
-    // Should be valid markdown structure
-    const yamlMatch = irContent.match(/```aligntrue\n([\s\S]+?)\n```/);
-    expect(yamlMatch).toBeTruthy();
-
-    const ir = parseYamlToJson(yamlMatch![1]);
+    // Should be valid YAML with sections array
+    const ir = parseYamlToJson(irContent);
     expect(ir).toBeTruthy();
-    expect((ir as any).rules).toBeTruthy();
+    expect((ir as any).sections).toBeTruthy();
+    expect(Array.isArray((ir as any).sections)).toBe(true);
+    expect((ir as any).sections.length).toBeGreaterThan(0);
+
+    // Verify section structure
+    const firstSection = (ir as any).sections[0];
+    expect(firstSection.heading).toBeTruthy();
+    expect(firstSection.content).toBeTruthy();
+    expect(firstSection.fingerprint).toBeTruthy();
   });
 
   it.skip("templates use same sections after generation", () => {
