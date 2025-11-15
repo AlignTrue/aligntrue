@@ -33,7 +33,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 ### IR-first design
 
 - `.aligntrue/.rules.yaml` (IR) is the canonical source, not bundles
-- Literate markdown with fenced ```aligntrue blocks compiles to IR
+- Natural markdown sections compile to IR
 - All operations work on IR directly
 - Canonicalization only at lock/publish boundaries
 

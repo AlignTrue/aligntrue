@@ -361,7 +361,7 @@ Natural markdown sections:
 - Are simpler than rule-based format
 - Work best for guidance-focused packs
 
-For complex rule definitions with machine-checkable conditions, use rule-based format with fenced blocks.
+For complex rule definitions with machine-checkable conditions, use rule-based YAML format.
 
 ## Related pages
 

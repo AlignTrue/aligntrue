@@ -18,8 +18,8 @@ This page provides technical implementation details for working with plugs, over
 
 **Plugs slots:**
 
-- Declared in pack files (markdown with fenced blocks or `.aligntrue/.rules.yaml` IR)
-- Example: `examples/packs/testing.md` with fenced block
+- Declared in pack files (natural markdown sections or `.aligntrue/.rules.yaml` IR)
+- Example: `examples/packs/testing.md` with natural markdown sections
 
 **Plugs fills:**
 
@@ -40,7 +40,7 @@ This page provides technical implementation details for working with plugs, over
 
 AlignTrue supports two authoring formats:
 
-### Markdown with Fenced Blocks (Recommended for Packs)
+### Natural Markdown Sections (Recommended for Packs)
 
 ````markdown
 # Testing pack
