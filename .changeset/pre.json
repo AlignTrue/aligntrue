@@ -14,7 +14,5 @@
     "@aligntrue/docs": "0.1.1-alpha.4",
     "@aligntrue/ui": "0.1.1-alpha.4"
   },
-  "changesets": [
-    "142b532d"
-  ]
+  "changesets": ["142b532d"]
 }

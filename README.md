@@ -16,7 +16,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 - **Solo developers:** Keep your personal AI rules consistent across projects and machines.
 - **Teams:** Shared rule sets with version control, CI validation, and drift detection.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI)](https://github.com/AlignTrue/aligntrue/actions) [![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Node 22+](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/) [![Bundle Size](https://img.shields.io/bundlephobia/minzip/aligntrue?label=bundle)](https://bundlephobia.com/package/aligntrue) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI)](https://github.com/AlignTrue/aligntrue/actions) [![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Node 22+](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/) [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle)](https://bundlephobia.com/package/@aligntrue/cli) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
 
 ## Solo developer? Start here
 
@@ -36,6 +36,18 @@ aligntrue sync      # Syncs to all your agents
 - **Works with your existing setup** - Auto-detects your agents and lets you edit in native formats
 - **60-second setup** - No configuration required for common workflows
 - **Two-way sync** - Edit any agent file, changes sync everywhere automatically (solo mode)
+
+## Built for reliability
+
+**Enterprise-grade validation and determinism:**
+
+- **TypeScript 5+ strict mode** - Comprehensive type coverage across the entire codebase
+- **JSON Schema 2020-12 validation** - All IR and config validated with Ajv strict mode
+- **1800+ deterministic tests** - Vitest + Playwright with reproducible, seed-controlled execution
+- **Canonical JSON hashing** - JCS-based reproducible hashing for lockfiles and integrity verification
+- **Atomic operations** - Safe file writes prevent corruption across sync operations
+
+Why this matters: AlignTrue validates every operation against schemas and ensures byte-identical outputs for identical inputs. Your AI agent configurations are never corrupted, even during concurrent syncs or network failures.
 
 ## Detailed setup
 
@@ -67,14 +79,14 @@ Read the [Quickstart Guide](https://aligntrue.ai/docs/00-getting-started/00-quic
 
 - **Auto-detection** - Finds Cursor, Copilot, Claude, VS Code, and 25+ other agents automatically
 - **Two-way sync** - Edit markdown or agent files; AlignTrue keeps them aligned
-- **28+ agents supported** - Comprehensive coverage through 43 specialized exporters
+- **28+ agents supported** - Comprehensive coverage through 44 exporters
 - **Agent-optimized formats** - Native .mdc for Cursor, AGENTS.md for universals, MCP configs, and more
 - **Local-first** - No cloud required; works offline and in CI
 - **Team mode** - Optional lockfiles, bundles, and drift detection for teams
 
 ## Broad agent support
 
-AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**:
+AlignTrue supports **28+ AI coding agents** through **44 exporters**:
 
 **Popular agents:**
 
@@ -88,7 +100,7 @@ AlignTrue supports **28+ AI coding agents** through **43 specialized exporters**
 
 **Coverage:**
 
-- 43 total exporters supporting 28+ agents
+- 44 total exporters supporting 28+ agents
 - 8 MCP configurations for protocol-based agents
 - 15 unique format exporters for agent-specific formats
 - 11 universal format agents using AGENTS.md

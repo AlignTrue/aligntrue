@@ -22,7 +22,7 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 - `packages/cli/tests/integration/init-command.test.ts` (2 tests)
 - `packages/cli/tests/integration/performance.test.ts`
 
-**Root cause:** Tests expected `rules.md` (legacy fenced blocks format) but code now creates `.rules.yaml` (natural markdown sections format).
+**Root cause:** Tests expected outdated file paths or formats that have been replaced in the current implementation.
 
 **Time to fix:** ~10 minutes with systematic search and replace.
 
@@ -30,41 +30,37 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 
 ### Step 1: Identify affected tests
 
-````bash
+```bash
 # Find all references to old format/path
 grep -r "old-file-name\|old-extension" packages/*/tests/
 
-# Example: searching for markdown file references
-grep -r "rules\.md" packages/*/tests/
-
-# Or look for content expectations that don't match new format
-grep -r "```aligntrue" packages/*/tests/
-````
+# Example: searching for specific file references
+grep -r "\.rules\.yaml" packages/*/tests/
+```
 
 ### Step 2: Update each test file
 
 For each file found, make these changes:
 
-1. **Update file paths**: `rules.md` → `.rules.yaml`
-2. **Update expectations**: Markdown fences → YAML keys
+1. **Update file paths**: Use current expected paths
+2. **Update expectations**: Match current format/schema
 3. **Update config sources**: If config points to old path, update it
-4. **Update content checks**: Markdown syntax → YAML syntax
+4. **Update content checks**: Match current output format
 
-### Pattern example: Markdown to YAML migration
+### Pattern example: File format migration
 
-````typescript
+```typescript
 // Before
-const rulesPath = join(testDir, ".aligntrue", "rules.md");
+const rulesPath = join(testDir, ".aligntrue", "old-format.md");
 const content = readFileSync(rulesPath, "utf-8");
-expect(content).toContain("```aligntrue");
-expect(content).toContain("id: test-rule");
+expect(content).toContain("legacy-marker");
 
 // After
 const rulesPath = join(testDir, ".aligntrue", ".rules.yaml");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("spec_version:");
 expect(content).toContain("id: test-rule");
-````
+```
 
 ### Step 3: Run tests to verify
 

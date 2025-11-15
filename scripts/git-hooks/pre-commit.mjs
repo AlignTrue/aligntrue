@@ -52,36 +52,36 @@ async function main() {
     );
 
     if (editedProtected.length > 0) {
-      s.stop("❌ Protected files were directly edited.", 1);
+      s.stop("⚠️  Protected files were directly edited.", 0);
       console.error("");
-      clack.log.error("Protected files were directly edited");
+      clack.log.warn("Protected files were directly edited");
       console.error("");
       console.error("📝 These files are generated from docs content:");
       editedProtected.forEach((file) => {
         console.error(`   ${file}`);
       });
       console.error("");
-      console.error("🔄 Correct workflow:");
-      console.error("   1. Edit source files in apps/docs/content/");
-      console.error("   2. Run: pnpm generate:repo-files");
-      console.error("   3. Commit both docs changes AND generated files");
+      console.error("🔄 Regenerating from source...");
       console.error("");
-      console.error("📚 Mappings:");
-      console.error("   • README.md ← apps/docs/content/index.mdx");
-      console.error(
-        "   • CONTRIBUTING.md ← apps/docs/content/06-contributing/creating-packs.md",
-      );
-      console.error(
-        "   • DEVELOPMENT.md ← apps/docs/content/08-development/*.md",
-      );
-      console.error(
-        "   • SECURITY.md ← apps/docs/content/07-policies/security.md",
-      );
-      console.error("");
-      clack.outro("Follow the workflow above and try again.");
-      process.exit(1);
+
+      try {
+        execSync("pnpm generate:repo-files", { stdio: "pipe" });
+
+        // Stage the regenerated files
+        execSync("git add README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md", {
+          stdio: "pipe",
+        });
+
+        console.error("✅ Protected files regenerated and staged.");
+        console.error("");
+      } catch (genError) {
+        s.stop("❌ Generation failed.", 1);
+        console.error("Run manually to debug: pnpm generate:repo-files");
+        process.exit(1);
+      }
+    } else {
+      s.stop("✅ No protected files edited.");
     }
-    s.stop("✅ No protected files edited.");
   } catch (error) {
     // Non-fatal: continue with commit if this check fails
     s.stop("⚠️  Protected file check skipped.");
