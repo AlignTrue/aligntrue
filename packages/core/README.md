@@ -392,10 +392,10 @@ export type {
 
 ## Integration Points
 
-### With markdown-parser
+### With natural markdown sections
 
-- Uses `parseMarkdown` and `buildIR` to convert markdown to IR
-- Handles fenced ```aligntrue blocks
+- Uses natural markdown parsing to convert sections to IR
+- Handles YAML frontmatter and `##` headings
 
 ### With schema
 

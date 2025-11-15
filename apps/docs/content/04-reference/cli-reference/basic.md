@@ -260,7 +260,7 @@ aligntrue check --ci [options]
 
 Check automatically detects file format:
 
-- `.md` files → Natural markdown or fenced blocks (auto-detected)
+- `.md` files → Natural markdown sections
 - `.yaml`/`.yml` files → Pure YAML IR format
 
 **Example:**

@@ -77,7 +77,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 ### Markdown authoring examples
 
-**Literate markdown** examples showing fenced code block syntax.
+**Natural markdown** examples showing natural sections with YAML frontmatter.
 
 - Simple rules with inline documentation
 - Multi-block validation examples
