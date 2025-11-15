@@ -111,7 +111,7 @@ cursor .
 aligntrue sync
 
 # 3. Audit plugs (see what needs customization)
-aligntrue plugs audit
+aligntrue plugs list
 
 # Output:
 # Slots declared:
@@ -414,7 +414,7 @@ sync:
 **Benefits:**
 
 - Always get latest git-sourced packs
-- No manual `aligntrue pull` needed
+- Automatic updates on sync
 - Fast iteration
 
 **Disable if:**
@@ -495,7 +495,7 @@ git commit -m "chore: Add AlignTrue rules"
 
 ```bash
 # 1. Audit plugs
-aligntrue plugs audit
+aligntrue plugs list
 
 # 2. Set missing plugs
 aligntrue plugs set test.cmd "pnpm test"

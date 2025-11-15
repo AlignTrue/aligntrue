@@ -45,7 +45,7 @@ Quick lookup table for all CLI commands:
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
 | `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
 | `aligntrue adapters`        | Manage exporters                        | [Development](./development#aligntrue-adapters)                             |
-| `aligntrue plugs audit`     | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-audit)                                      |
+| `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                                       |
 | `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)                                    |
 | `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                                        |
 | `aligntrue override add`    | Create overlay                          | [Overlays](./overlays#aligntrue-override-add)                               |

@@ -2,14 +2,14 @@
 
 Manage dynamic configuration slots and fills in rule packs. Plugs allow template-based customization for stack-specific values.
 
-## `aligntrue plugs audit`
+## `aligntrue plugs list`
 
 List all declared slots, current fills, and resolution status.
 
 **Usage:**
 
 ```bash
-aligntrue plugs audit [--config <path>]
+aligntrue plugs list [--config <path>]
 ```
 
 **Options:**
@@ -201,7 +201,7 @@ Next step:
 
 ```
 ✗ Slot not declared: unknown.key
-  Hint: Run 'aligntrue plugs audit' to see declared slots
+  Hint: Run 'aligntrue plugs list' to see declared slots
 
 ✗ Format validation failed: file
   Value contains '..' segments (not allowed)

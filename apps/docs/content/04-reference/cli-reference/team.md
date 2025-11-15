@@ -302,138 +302,6 @@ Configured scopes (2):
 
 ---
 
-## `aligntrue pull`
-
-Pull rules from any git repository ad-hoc (try before commit workflow).
-
-**Usage:**
-
-```bash
-aligntrue pull <git-url> [options]
-```
-
-**What it does:**
-
-1. Pulls rules from specified git repository
-2. Caches repository in `.aligntrue/.cache/git/`
-3. Displays results (rule count, profile info)
-4. **Does NOT modify config** by default (use `--save` to persist)
-
-**Key concept:** Pull lets you test rules from any repository without committing to them. This enables:
-
-- **Try before commit** - Test rules before adding to config
-- **Team sharing** - Share git URLs for quick rule discovery
-- **Exploration** - Discover community and organization rules
-
-**Options:**
-
-- `--save` - Add git source to config permanently
-- `--ref <branch|tag|commit>` - Specify git ref (default: `main`)
-- `--sync` - Run sync immediately after pull (requires `--save`)
-- `--dry-run` - Preview what would be pulled without pulling
-- `--offline` - Use cache only, no network operations
-- `--config, -c <path>` - Custom config file path
-
-**Examples:**
-
-```bash
-# Pull and inspect rules
-aligntrue pull https://github.com/yourorg/rules
-
-# Pull specific version
-aligntrue pull https://github.com/yourorg/rules --ref v1.2.0
-
-# Pull and add to config
-aligntrue pull https://github.com/yourorg/rules --save
-
-# Pull, save, and sync in one step
-aligntrue pull https://github.com/yourorg/rules --save --sync
-
-# Preview without pulling
-aligntrue pull https://github.com/yourorg/rules --dry-run
-
-# Use cache only (no network)
-aligntrue pull https://github.com/yourorg/rules --offline
-```
-
-**Output example:**
-
-```
-📦 Pull results:
-
-  Repository: https://github.com/yourorg/rules
-  Ref: main
-  Rules: 12
-  Profile: yourorg-typescript
-  Location: .aligntrue/.cache/git (cached)
-
-✓ Rules pulled (temporary - not saved to config)
-```
-
-**Privacy:**
-
-First git pull triggers consent prompt:
-
-```
-Git clone requires network access. Grant consent? (y/n)
-```
-
-Consent is persistent (stored in `.aligntrue/privacy-consent.json`). Manage with:
-
-```bash
-aligntrue privacy audit          # View consents
-aligntrue privacy revoke git     # Revoke git consent
-```
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Validation error (invalid URL, consent denied, etc.)
-- `2` - System error (network failure, cache error, etc.)
-
-**Common workflows:**
-
-**Solo developer - Try before commit:**
-
-```bash
-# Step 1: Pull and inspect
-aligntrue pull https://github.com/community/typescript-rules
-
-# Step 2: Review rules
-cat .aligntrue/.cache/git/<hash>/.aligntrue.yaml
-
-# Step 3: If satisfied, pull with --save
-aligntrue pull https://github.com/community/typescript-rules --save
-
-# Step 4: Sync to agents
-aligntrue sync
-```
-
-**Team - Quick onboarding:**
-
-```bash
-# Pull, save, and sync in one command
-aligntrue pull https://github.com/yourorg/team-rules --save --sync
-```
-
-**CI/CD - Pre-warm cache:**
-
-```bash
-# Setup step (with network)
-aligntrue pull https://github.com/yourorg/rules
-
-# Build step (offline)
-aligntrue pull https://github.com/yourorg/rules --offline
-aligntrue sync --dry-run
-```
-
-**See also:**
-
-- [Git Workflows Guide](/docs/03-concepts/git-workflows) - Complete pull command workflows
-- [Git Sources Guide](/docs/04-reference/git-sources) - Config-based permanent git sources
-
----
-
 ## `aligntrue link`
 
 Vendor rule packs from git repositories using git submodules or subtrees.
@@ -539,19 +407,21 @@ git subtree pull --prefix vendor/org-rules https://github.com/org/rules main --s
 
 **Common use cases:**
 
-**When to vendor vs pull:**
+**When to vendor vs config:**
 
 Use `aligntrue link` (vendoring) for:
 
 - Production dependencies (offline access required)
 - Security-critical rules (audit before use)
 - Stable versions (infrequent updates)
+- Team review of rule changes in PRs
 
-Use `aligntrue pull` (ad-hoc) for:
+Use config-based git sources for:
 
-- Testing rules before committing
-- Exploring community rules
-- Rapid iteration
+- Quick setup and adoption
+- Automatic updates on sync
+- Simpler workflow without git submodules/subtrees
+- Most common use cases
 
 **Submodule vs Subtree:**
 

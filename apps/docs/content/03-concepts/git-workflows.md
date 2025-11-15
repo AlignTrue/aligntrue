@@ -83,101 +83,9 @@ aligntrue sync --skip-update-check
 aligntrue sync --offline
 ```
 
-## Pull command
+## Using git sources
 
-The `aligntrue pull` command enables flexible git-based workflows:
-
-- **Try before commit** - Test rules from any repository without modifying your config
-- **Quick discovery** - Explore community and team rules with a single command
-- **Share by URL** - Team members share git URLs for instant rule access
-- **No config changes** - Pull to temp by default, save only when ready
-
-This complements [config-based git sources](/docs/04-reference/git-sources) for permanent rule subscriptions.
-
-## When to use pull vs config
-
-**Use `aligntrue pull`** for:
-
-- Testing rules before committing to them
-- Exploring unfamiliar rule sets
-- Sharing rules via URL (Slack, docs, PRs)
-- One-time rule imports
-
-**Use [config-based git sources](/docs/04-reference/git-sources)** for:
-
-- Permanent rule subscriptions
-- Team-wide rule enforcement
-- Automatic updates on sync
-- Reproducible builds
-
-## Basic usage
-
-Pull rules from any git repository:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules
-```
-
-**What happens:**
-
-1. Privacy consent prompt (first time only)
-2. Repository cloned to `.aligntrue/.cache/git/`
-3. Rules extracted from `.aligntrue.yaml` (default path)
-4. Results displayed with rule count and profile info
-5. **Config not modified** - rules in cache only
-
-**Output example:**
-
-```
-📦 Pull results:
-
-  Repository: https://github.com/yourorg/rules
-  Ref: main
-  Rules: 12
-  Profile: yourorg-typescript
-  Location: .aligntrue/.cache/git (cached)
-
-✓ Rules pulled (temporary - not saved to config)
-```
-
-## Flags
-
-### `--ref <branch|tag|commit>`
-
-Pull from specific branch, tag, or commit:
-
-```bash
-# Pull from branch
-aligntrue pull https://github.com/yourorg/rules --ref develop
-
-# Pull tagged release
-aligntrue pull https://github.com/yourorg/rules --ref v1.2.0
-
-# Pin to specific commit
-aligntrue pull https://github.com/yourorg/rules --ref abc1234
-```
-
-**When to use:**
-
-- **Branches** - Test latest changes before they hit main
-- **Tags** - Lock to stable releases for team consistency
-- **Commits** - Debug specific rule versions
-
-### `--save`
-
-Add git source to config permanently:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --save
-```
-
-**What happens:**
-
-1. Rules pulled and cached
-2. Source added to `.aligntrue/config.yaml`
-3. Future `aligntrue sync` commands include this source
-
-**Config result:**
+To use rules from git repositories, add them to your config file:
 
 ```yaml
 sources:
@@ -186,187 +94,24 @@ sources:
     ref: main
 ```
 
-**When to use:**
-
-- After testing rules and deciding to keep them
-- When setting up new projects with team rules
-- Converting ad-hoc pulls to permanent sources
-
-### `--sync`
-
-Pull, save, and sync in one step:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --save --sync
-```
-
 **What happens:**
 
-1. Rules pulled and cached
-2. Source added to config
-3. `aligntrue sync` runs immediately
-4. Agent files updated with new rules
+1. Repository cloned to `.aligntrue/.cache/git/` on first sync
+2. Rules extracted from `.aligntrue.yaml` (default path)
+3. Rules merged with your local rules
+4. Future syncs automatically check for updates based on ref type
 
-**Requires:** Must use with `--save` (cannot sync temporary pulls)
+**Ref types:**
 
-**When to use:**
+- **Branches** (`ref: main`) - Auto-updates daily
+- **Tags** (`ref: v1.2.0`) - Stable, checks weekly
+- **Commits** (`ref: abc1234`) - Pinned, never updates
 
-- Fast setup for new projects
-- Quick adoption of team rules
-- Onboarding workflows
-
-### `--dry-run`
-
-Preview what would be pulled without network operations:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --dry-run
-```
-
-**Output:**
-
-```
-🔍 Dry run preview:
-
-  Repository: https://github.com/yourorg/rules
-  Ref: main
-  Action: Would pull rules from repository
-  Location: Would cache in .aligntrue/.cache/git
-  Config: Would NOT modify (use --save to persist)
-
-✓ Dry run complete (no changes made)
-```
-
-**When to use:**
-
-- Validate URLs before pulling
-- Check command behavior
-- Documentation and testing
-
-**Note:** Excludes `--save` and `--sync` (incompatible with dry run)
-
-### `--offline`
-
-Use cached repository only, no network operations:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --offline
-```
-
-**When to use:**
-
-- Working offline (airplane, poor connection)
-- CI/CD with pre-warmed cache
-- Avoiding network consent prompts
-
-**Requires:** Repository must already be cached from previous pull
-
-**Error if cache missing:**
-
-```
-Offline mode: no cache available for repository
-  Repository: https://github.com/yourorg/rules
-  Run without --offline to fetch from network
-```
-
-### `--config <path>`
-
-Use custom config file:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --config .aligntrue/team.yaml
-```
-
-**When to use:**
-
-- Multiple config files per project
-- Testing config changes
-- Team-specific configurations
-
-## Common workflows
-
-### Solo developer: Try before commit
-
-Test rules before adding to config:
-
-```bash
-# Step 1: Pull and inspect
-aligntrue pull https://github.com/community/typescript-rules
-
-# Step 2: Review rules in cache
-cat .aligntrue/.cache/git/<hash>/.aligntrue.yaml
-
-# Step 3: If satisfied, pull with --save
-aligntrue pull https://github.com/community/typescript-rules --save
-
-# Step 4: Sync to agents
-aligntrue sync
-```
-
-### Team: Quick onboarding
-
-New team member setup:
-
-```bash
-# Pull, save, and sync in one command
-aligntrue pull https://github.com/yourorg/team-rules --save --sync
-
-# Result: All team rules applied to local agents
-```
-
-### Team: Share experimental rules
-
-Share rules via Slack or PR comments:
-
-```markdown
-Try these new TypeScript rules:
-aligntrue pull https://github.com/yourorg/rules --ref experiment/strict-types
-```
-
-Team members test without committing. If approved, update team config:
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/yourorg/rules
-    ref: experiment/strict-types # Or merge to main and use 'main'
-```
-
-### CI/CD: Pre-warm cache
-
-Cache rules in CI for offline builds:
-
-```bash
-# Setup step (with network)
-aligntrue pull https://github.com/yourorg/rules
-
-# Build step (offline)
-aligntrue pull https://github.com/yourorg/rules --offline
-aligntrue sync --dry-run  # Validate without writing
-```
-
-### Version pinning
-
-Lock to specific rule version:
-
-```bash
-# Development: Use latest
-aligntrue pull https://github.com/yourorg/rules
-
-# Production: Pin to tag
-aligntrue pull https://github.com/yourorg/rules --ref v1.2.0 --save
-```
-
-Update pinned version when ready:
-
-```bash
-aligntrue pull https://github.com/yourorg/rules --ref v1.3.0 --save
-aligntrue sync
-```
+See [Git Sources Reference](/docs/04-reference/git-sources) for complete documentation.
 
 ## Privacy and consent
 
-First git pull triggers consent prompt:
+First git operation triggers consent prompt:
 
 ```
 Git clone requires network access. Grant consent? (y/n)
@@ -390,15 +135,6 @@ aligntrue privacy revoke git
 # Grant consent non-interactively
 aligntrue privacy grant git
 ```
-
-**Offline mode skips consent:**
-
-```bash
-# No consent prompt (uses cache only)
-aligntrue pull https://github.com/yourorg/rules --offline
-```
-
-Run `aligntrue privacy grant git` to enable network access for git sources.
 
 ## Vendoring workflows
 
@@ -479,7 +215,7 @@ git subtree pull --prefix vendor/aligntrue-rules https://github.com/org/rules ma
 
 **Recommendation:** Subtrees for simplicity, submodules for space efficiency.
 
-### When to vendor vs pull
+### When to vendor vs config
 
 **Use vendoring (`aligntrue link`)** for:
 
@@ -488,12 +224,12 @@ git subtree pull --prefix vendor/aligntrue-rules https://github.com/org/rules ma
 - Team review of rule changes in PRs
 - Security-sensitive environments needing code audits
 
-**Use pull (`aligntrue pull`)** for:
+**Use config-based git sources** for:
 
-- Quick exploration and experimentation
-- Testing rules before vendoring
-- Sharing rules via URL (temporary)
-- CI/CD with network access
+- Quick setup and adoption
+- Automatic updates on sync
+- Simpler workflow without git submodules/subtrees
+- Most common use cases
 
 ### Team vendoring workflow
 
@@ -585,10 +321,8 @@ aligntrue team approve https://github.com/org/rules
 curl -I https://github.com/yourorg/rules
 
 # Use SSH for private repos
-aligntrue pull git@github.com:yourorg/private-rules.git
-
-# Work offline with cache
-aligntrue pull https://github.com/yourorg/rules --offline
+git clone git@github.com:yourorg/private-rules.git vendor/rules
+aligntrue link git@github.com:yourorg/private-rules.git --path vendor/rules
 ```
 
 ### Authentication failures
@@ -600,11 +334,10 @@ aligntrue pull https://github.com/yourorg/rules --offline
 ```bash
 # HTTPS with token
 git config --global credential.helper store
-# Then pull once with token to cache
+# Then clone once with token to cache
 
 # SSH keys (recommended)
 ssh-add ~/.ssh/id_rsa
-aligntrue pull git@github.com:yourorg/private-rules.git
 ```
 
 ### Missing rules file
@@ -622,20 +355,18 @@ sources:
     path: rules/typescript.yaml # Custom path
 ```
 
-**Note:** Pull command uses `.aligntrue.yaml` by default. For custom paths, add source to config manually and run `aligntrue sync`.
-
 ### Cache corruption
 
 **Symptom:** Cached repository exists but rules can't be read
 
-**Solution:** Clear cache and re-pull:
+**Solution:** Clear cache and re-sync:
 
 ```bash
 # Remove corrupted cache
 rm -rf .aligntrue/.cache/git
 
-# Pull fresh copy
-aligntrue pull https://github.com/yourorg/rules
+# Re-sync to fetch fresh copy
+aligntrue sync
 ```
 
 ### Consent denied
@@ -648,8 +379,8 @@ aligntrue pull https://github.com/yourorg/rules
 # Interactive grant
 aligntrue privacy grant git
 
-# Or pull will prompt automatically
-aligntrue pull https://github.com/yourorg/rules
+# Or sync will prompt automatically
+aligntrue sync
 ```
 
 ## Sources command

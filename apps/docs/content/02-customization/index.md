@@ -307,7 +307,7 @@ You don't need to understand vendor bags to use AlignTrue effectively - they're 
 
 ## CLI commands
 
-- `aligntrue plugs audit` - List slots and fills
+- `aligntrue plugs list` - List slots and fills
 - `aligntrue plugs set <key> <value>` - Set fill value
 - `aligntrue override add` - Create overlay
 - `aligntrue override status` - View overlays
