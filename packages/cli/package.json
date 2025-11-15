@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/cli",
-  "version": "0.1.1-alpha.4",
+  "version": "1.0.0-alpha.5",
   "type": "module",
   "bin": {
     "aligntrue": "./dist/index.js",
