@@ -74,7 +74,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 
 ## Artifacts and Logs
 
-- **Content hashes** - Stamped in lockfiles and exporter footers where specified
+- **Content hashes** - Stamped in lockfiles and returned by exporters for verification
 - **Concise, non-sensitive logs** - Logs are concise and non-sensitive by default
 - **Structured logging** - `--json` flag available for structured logs
 - **Deterministic artifacts** - No timestamps or UUIDs in deterministic artifacts

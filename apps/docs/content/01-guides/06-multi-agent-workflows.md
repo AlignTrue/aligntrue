@@ -53,23 +53,19 @@ sync:
 
 1. **Edit rules** in `AGENTS.md` or agent files:
 
-````markdown
-# My project rules
-
-```aligntrue
+```markdown
+---
 id: my-project.standards
 version: "1.0.0"
 spec_version: "1"
-rules:
-  - id: use-typescript-strict
-    summary: Use TypeScript strict mode
-    severity: error
-    applies_to:
-      patterns: ["**/*.ts", "**/*.tsx"]
-    guidance: |
-      Enable strict mode in tsconfig.json for better type safety.
+---
+
+# My project rules
+
+## Code standards
+
+Enable strict mode in tsconfig.json for better type safety.
 ```
-````
 
 2. **Sync to all agents**:
 
@@ -326,32 +322,32 @@ If you find yourself using vendor bags extensively, consider whether you actuall
 
 Full example with three agents:
 
-````markdown
-```aligntrue
+```markdown
+---
 id: my-project.code-review
 version: "1.0.0"
 spec_version: "1"
-rules:
-  - id: require-tests
-    summary: All features must have tests
-    severity: error
-    applies_to:
-      patterns: ["src/**/*.ts"]
-    guidance: |
-      Write unit tests for all new features.
-      Test files should be co-located: src/foo.ts → src/foo.test.ts
-    vendor:
-      cursor:
-        ai_hint: "Suggest test file path and basic test structure"
-        quick_fix: true
-      claude:
-        mode: "reviewer"
-        context: "Emphasize test coverage and edge cases"
-      copilot:
-        suggestions: "detailed"
-        examples: true
+---
+
+# Code review rules
+
+## Testing requirements
+
+Write unit tests for all new features.
+Test files should be co-located: src/foo.ts → src/foo.test.ts
+
+### For Cursor
+
+Suggest test file path and basic test structure (with quick fix enabled)
+
+### For Claude
+
+Emphasize test coverage and edge cases in reviewer mode
+
+### For Copilot
+
+Provide detailed suggestions with examples
 ```
-````
 
 ## Migration from existing setup
 

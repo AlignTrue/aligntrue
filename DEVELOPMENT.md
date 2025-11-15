@@ -55,8 +55,8 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 ### IR-first design
 
-- `aligntrue.yaml` (IR) is the canonical source, not bundles
-- Literate markdown with fenced ```aligntrue blocks compiles to IR
+- `.aligntrue/.rules.yaml` (IR) is the canonical source, not bundles
+- Natural markdown sections compile to IR
 - All operations work on IR directly
 - Canonicalization only at lock/publish boundaries
 
@@ -112,7 +112,6 @@ These adapt core logic to specific surfaces:
 
 - `packages/cli/src/commands/*` – CLI command implementations
 - `packages/exporters/src/*/exporter.ts` – Agent-specific exports
-- `packages/markdown-parser/src/parser.ts` – Markdown parsing
 
 ## Vendor bags
 
@@ -180,19 +179,19 @@ AlignTrue includes 43 exporters supporting 28+ agents:
 
 Each exporter documents what information may be lost when converting from IR:
 
-- Stored in exporter metadata
-- Written to export file footers
+- Computed by exporter
+- Returned in `ExportResult.fidelityNotes`
+- Displayed in CLI output during sync
 - Help users understand limitations
 - Guide decisions about which exporters to use
 
-### Footer format
+### Content hash
 
-All exports include:
-
-- Lock hash (if available)
-- Exporter version
-- Capabilities version
-- Loss count (fidelity notes)
+- Computed deterministically from IR sections
+- Returned in `ExportResult.contentHash`
+- Useful for drift detection and integrity verification
+- Not written to exported files (files kept clean)
+- For MCP config exporters, hash is included in JSON as `content_hash` field
 
 ## AI-maintainable code principles
 
@@ -242,6 +241,36 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - No real time, network, or randomness in tests
 - Match CI environment exactly (TZ=UTC)
 
+## Workspace organization
+
+This architecture translates to a clean pnpm monorepo:
+
+```
+aligntrue/
+├── packages/
+│   ├── schema/           # IR validation, canonicalization, hashing
+│   ├── plugin-contracts/ # Plugin interfaces
+│   ├── file-utils/       # Shared utilities
+│   ├── core/             # Config, sync engine, bundle/lockfile
+│   ├── sources/          # Multi-source pulling (local, git)
+│   ├── exporters/        # Agent-specific exports (43 adapters)
+│   ├── cli/              # aligntrue/aln CLI
+│   ├── testkit/          # Conformance vectors and golden tests
+│   └── ui/               # Design system components
+├── apps/
+│   └── docs/             # Nextra documentation site
+├── examples/             # Example configurations
+├── catalog/              # Curated rule packs
+└── scripts/              # Build and setup scripts
+```
+
+**Design principles applied to structure:**
+
+- Max depth 3: packages at `packages/*/src/` with minimal nesting
+- Stable deterministic logic consolidated in `schema/` and `core/`
+- Agent adapters thin and isolated in `exporters/`
+- CLI is the top-level surface in Phase 1
+
 ## Security considerations
 
 - No outbound network calls in core path
@@ -250,6 +279,83 @@ If you start moving logic, finish in the same PR or leave a `_legacy.ts` file wi
 - Never commit real tokens
 - Atomic file writes prevent corruption
 - Sandbox execution for command runners
+
+## Published packages
+
+All packages are published under the `@aligntrue` scope:
+
+- `@aligntrue/schema` - IR validation and types
+- `@aligntrue/plugin-contracts` - Plugin interfaces
+- `@aligntrue/file-utils` - Shared utilities
+- `@aligntrue/core` - Config and sync engine
+- `@aligntrue/sources` - Multi-source pulling
+- `@aligntrue/exporters` - Agent adapters
+- `@aligntrue/cli` - Command-line tool
+- `@aligntrue/testkit` - Test utilities
+
+**Shim package:**
+
+- `aligntrue` - Depends on `@aligntrue/cli` for easy installation
+
+**Install:**
+
+```bash
+npm i -g @aligntrue/cli@next   # Alpha
+npm i -g aligntrue             # Stable
+```
+
+## Developer workflow
+
+### Schema or sections format changes
+
+Update schema + CLI + exporters in the same PR:
+
+1. Extend shared package types (e.g., `packages/schema/src/types.ts`)
+2. Update CLI command handlers
+3. Update exporter adapters
+4. Add contract tests in `schema/tests/`
+5. Add integration tests in `cli/tests/`
+6. Update docs and CHANGELOG
+
+### Adding new exporters
+
+Create a new exporter in `packages/exporters`:
+
+1. Add exporter implementation with manifest
+2. Add contract tests
+3. Update `packages/exporters/src/index.ts` to export it
+4. Update CLI to include new exporter
+5. Add docs explaining the exporter
+6. Update CHANGELOG
+
+### Avoiding cloud features
+
+Cloud features stay in the cloud repo, never imported here. Keep this repo focused on:
+
+- Local-first workflows
+- Deterministic bundling
+- CI validation
+- Open-source tooling
+
+## CI gates and quality checks
+
+- **Bundle size:** CLI tarball must stay under 600 KB
+- **Pack vendoring:** Pack files must not be vendored in CLI
+- **Schema changes:** IR format changes require version bump + changelog
+- **Determinism:** Tests run with `TZ=UTC` to match CI environment
+- **Type checking:** Full typecheck across all packages on pre-push
+- **Tests:** All tests must pass on all packages
+- **Build:** Full production build must succeed
+
+**Testing environment:**
+
+Run tests locally with CI environment variables:
+
+```bash
+TZ=UTC pnpm test
+```
+
+This ensures determinism matches CI exactly.
 
 ## Next steps
 
@@ -779,13 +885,13 @@ Common commands and workflows for AlignTrue development.
 
 ## Core commands
 
-### Run the web app locally
+### Run docs locally
 
 ```bash
 pnpm dev
 ```
 
-Opens the Next.js app at `http://localhost:3000` (from `apps/web`)
+Starts the documentation site at `http://localhost:3000` (from `apps/docs`)
 
 ### Build all packages
 
@@ -1846,7 +1952,7 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 - `packages/cli/tests/integration/init-command.test.ts` (2 tests)
 - `packages/cli/tests/integration/performance.test.ts`
 
-**Root cause:** Tests expected `rules.md` (markdown with fenced blocks) but code now creates `.rules.yaml` (YAML).
+**Root cause:** Tests expected outdated file paths or formats that have been replaced in the current implementation.
 
 **Time to fix:** ~10 minutes with systematic search and replace.
 
@@ -1854,41 +1960,37 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 
 ### Step 1: Identify affected tests
 
-````bash
+```bash
 # Find all references to old format/path
 grep -r "old-file-name\|old-extension" packages/*/tests/
 
-# Example: searching for markdown file references
-grep -r "rules\.md" packages/*/tests/
-
-# Or look for content expectations that don't match new format
-grep -r "```aligntrue" packages/*/tests/
-````
+# Example: searching for specific file references
+grep -r "\.rules\.yaml" packages/*/tests/
+```
 
 ### Step 2: Update each test file
 
 For each file found, make these changes:
 
-1. **Update file paths**: `rules.md` → `.rules.yaml`
-2. **Update expectations**: Markdown fences → YAML keys
+1. **Update file paths**: Use current expected paths
+2. **Update expectations**: Match current format/schema
 3. **Update config sources**: If config points to old path, update it
-4. **Update content checks**: Markdown syntax → YAML syntax
+4. **Update content checks**: Match current output format
 
-### Pattern example: Markdown to YAML migration
+### Pattern example: File format migration
 
-````typescript
+```typescript
 // Before
-const rulesPath = join(testDir, ".aligntrue", "rules.md");
+const rulesPath = join(testDir, ".aligntrue", "old-format.md");
 const content = readFileSync(rulesPath, "utf-8");
-expect(content).toContain("```aligntrue");
-expect(content).toContain("id: test-rule");
+expect(content).toContain("legacy-marker");
 
 // After
 const rulesPath = join(testDir, ".aligntrue", ".rules.yaml");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("spec_version:");
 expect(content).toContain("id: test-rule");
-````
+```
 
 ### Step 3: Run tests to verify
 
@@ -1937,42 +2039,9 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 AlignTrue is a pnpm monorepo with apps and packages organized for clarity and maintainability.
 
-## Overview
-
-```
-aligntrue/
-├── apps/
-│   ├── web/          # Next.js catalog site
-│   └── docs/         # Nextra documentation
-├── packages/
-│   ├── schema/       # JSON Schema, canonicalization, hashing
-│   ├── core/         # Config, sync engine, bundle/lockfile
-│   ├── cli/          # aligntrue/aln CLI
-│   ├── exporters/    # Agent-specific exports (Cursor, AGENTS.md, etc.)
-│   └── ...           # Other packages
-└── catalog/          # Local catalog with curated packs
-```
+**See [Architecture](https://aligntrue.ai/docs/08-development/architecture#workspace-organization) for the full workspace tree and design principles.**
 
 ## Apps
-
-### apps/web
-
-The Next.js catalog site providing discovery and sharing for rule packs.
-
-**Key features:**
-
-- Search and browse 11 curated packs
-- Pack detail pages with exporter previews
-- Install commands and documentation
-
-**Development:**
-
-```bash
-cd apps/web
-pnpm dev           # Start dev server at http://localhost:3000
-pnpm build         # Production build
-pnpm test          # Run tests
-```
 
 ### apps/docs
 
@@ -2068,15 +2137,15 @@ pnpm build         # Build to dist/
 
 ## Supporting packages
 
-### packages/markdown-parser
+### Natural markdown parsing
 
-Literate markdown → IR conversion.
+Natural markdown sections → IR conversion (integrated into core).
 
 **Responsibilities:**
 
-- Parse fenced ```aligntrue blocks
-- Convert markdown to IR
-- Validate extracted YAML
+- Parse natural markdown with YAML frontmatter
+- Convert `##` sections to IR rules
+- Validate extracted content
 
 ### packages/sources
 
@@ -2161,7 +2230,7 @@ Packages are organized in layers:
 ```
 schema (base layer)
   ↓
-core, markdown-parser, file-utils
+core, file-utils
   ↓
 sources, exporters
   ↓

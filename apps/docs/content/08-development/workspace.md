@@ -198,7 +198,7 @@ Packages are organized in layers:
 ```
 schema (base layer)
   ↓
-core, markdown-parser, file-utils
+core, file-utils
   ↓
 sources, exporters
   ↓
