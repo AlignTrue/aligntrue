@@ -10,7 +10,11 @@
     "@aligntrue/file-utils": "0.1.1-alpha.4",
     "@aligntrue/plugin-contracts": "0.1.1-alpha.4",
     "@aligntrue/testkit": "0.1.1-alpha.4",
-    "aligntrue": "0.1.0-alpha.5"
+    "aligntrue": "0.1.0-alpha.5",
+    "@aligntrue/docs": "0.1.1-alpha.4",
+    "@aligntrue/ui": "0.1.1-alpha.4"
   },
-  "changesets": []
+  "changesets": [
+    "142b532d"
+  ]
 }
