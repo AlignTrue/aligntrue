@@ -68,9 +68,12 @@ async function main() {
         execSync("pnpm generate:repo-files", { stdio: "pipe" });
 
         // Stage the regenerated files
-        execSync("git add README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md", {
-          stdio: "pipe",
-        });
+        execSync(
+          "git add README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md",
+          {
+            stdio: "pipe",
+          },
+        );
 
         console.error("✅ Protected files regenerated and staged.");
         console.error("");
