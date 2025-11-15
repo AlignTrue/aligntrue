@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed unused v2 error handling system (common-errors-v2.ts, error-formatter-v2.ts)
+
 ### Fixed
 
 - Invalid flags are now rejected with clear error messages instead of being silently accepted
