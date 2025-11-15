@@ -89,7 +89,6 @@ These adapt core logic to specific surfaces:
 
 - `packages/cli/src/commands/*` – CLI command implementations
 - `packages/exporters/src/*/exporter.ts` – Agent-specific exports
-- `packages/markdown-parser/src/parser.ts` – Markdown parsing
 
 ## Vendor bags
 
@@ -230,7 +229,6 @@ aligntrue/
 │   ├── plugin-contracts/ # Plugin interfaces
 │   ├── file-utils/       # Shared utilities
 │   ├── core/             # Config, sync engine, bundle/lockfile
-│   ├── markdown-parser/  # Markdown to IR conversion
 │   ├── sources/          # Multi-source pulling (local, git)
 │   ├── exporters/        # Agent-specific exports (43 adapters)
 │   ├── cli/              # aligntrue/aln CLI
@@ -267,7 +265,6 @@ All packages are published under the `@aligntrue` scope:
 - `@aligntrue/plugin-contracts` - Plugin interfaces
 - `@aligntrue/file-utils` - Shared utilities
 - `@aligntrue/core` - Config and sync engine
-- `@aligntrue/markdown-parser` - Markdown parsing
 - `@aligntrue/sources` - Multi-source pulling
 - `@aligntrue/exporters` - Agent adapters
 - `@aligntrue/cli` - Command-line tool

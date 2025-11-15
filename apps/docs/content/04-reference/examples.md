@@ -87,7 +87,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 **When to use:** Prefer markdown over YAML, documentation-heavy rules
 
-**Files:** Markdown format (`.md` with ` ```aligntrue` blocks)
+**Files:** Markdown format (`.md` with YAML frontmatter)
 
 ### Team repository example
 

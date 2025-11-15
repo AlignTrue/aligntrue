@@ -6,7 +6,7 @@
 import { readFileSync } from "fs";
 import type { AlignTrueConfig } from "../config/index.js";
 
-// Note: Ruler migration is complete, this is legacy code
+// Supports migration from Ruler tool to AlignTrue
 // Simple TOML parser implementation is sufficient
 
 export interface RulerConfig {

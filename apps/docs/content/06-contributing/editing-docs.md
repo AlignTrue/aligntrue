@@ -51,38 +51,30 @@ apps/docs/content/08-development/architecture.md
 apps/docs/content/07-policies/security.md
 ```
 
-### 2. Generate repo files
+### 2. Stage your changes
 
-After editing, regenerate the repo root files:
-
-```bash
-pnpm generate:repo-files
-```
-
-This script:
-
-- Reads docs content files
-- Strips MDX frontmatter
-- Transforms relative links to absolute URLs
-- Adds auto-generation header and footer
-- Writes to repo root
-
-### 3. Verify changes
-
-Check that generated files look correct:
+Stage the docs source files:
 
 ```bash
-git diff README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md
+git add apps/docs/content/
 ```
 
-### 4. Commit both
+You can also stage any other files that are part of your change.
 
-Commit both the docs source and generated files:
+### 3. Commit
 
-````bash
-git add apps/docs/content/ README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md
+When you commit, the pre-commit hook will automatically:
+
+- Detect that docs source changed
+- Run `pnpm generate:repo-files`
+- Stage the regenerated protected files
+- Allow the commit to proceed
+
+```bash
 git commit -m "docs: Update documentation"
-```</xai:function_call">---
+```
+
+The generated files are included automatically.</xai:function_call">---
 
 <xai:function_call name="read_file">
 <parameter name="target_file">apps/docs/content/06-contributing/editing-docs.md
@@ -104,7 +96,7 @@ git commit -m "docs: Update documentation"
 
 [Team Mode](./team-mode)
 [Team Mode](../concepts/team-mode)
-````
+```
 
 **Why absolute paths?**
 
@@ -272,48 +264,41 @@ pnpm docs:build
 
 This runs generation then builds the docs site.
 
-## CI validation
+## What if you manually edit protected files?
 
-CI enforces the docs-first workflow by validating that repo files match their generated versions.
+If you try to commit changes to `README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, or `SECURITY.md` directly:
 
-### Validation script
+1. The pre-commit hook detects the edit
+2. It regenerates the file from source
+3. It stages the regenerated version
+4. Your commit proceeds normally
 
-The validation script (`scripts/validate-repo-files.ts`) will be added in team mode development to:
-
-- Run generation in dry-run mode
-- Compare generated output with committed files
-- Fail if differences detected (manual edits found)
-
-### What happens if you edit repo files directly
-
-If you manually edit `README.md`, `CONTRIBUTING.md`, or `DEVELOPMENT.md`:
-
-1. Local workflow works fine
-2. CI fails with validation error
-3. Error message points to this docs editing guide
-4. You need to:
-   - Revert the manual edits
-   - Make changes in `apps/docs/content/` instead
-   - Run `pnpm generate:repo-files`
-   - Commit both docs source and generated files
+The hook ensures protected files always match their source. You never need to manually edit them.
 
 ## Auto-generation headers
 
-Generated files include a header warning against manual edits:
+Generated files include a header indicating they are auto-generated:
 
 ```markdown
-<!-- AUTO-GENERATED from apps/docs/content - DO NOT EDIT DIRECTLY -->
-<!-- Edit the source files in apps/docs/content and run 'pnpm generate:repo-files' -->
+<!--
+  ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
+
+  This file is generated from documentation source.
+  To make changes, edit the source file and run: pnpm generate:repo-files
+
+  Source: apps/docs/content/...
+-->
 ```
 
-And a footer linking back to the docs site:
+And a footer:
 
 ```markdown
 ---
 
-**This file is auto-generated from the AlignTrue documentation site.**
-**To propose changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.**
+_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._
 ```
+
+If you accidentally edit these files, the pre-commit hook will regenerate them from source.
 
 ## Benefits of docs-first
 

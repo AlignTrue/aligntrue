@@ -42,15 +42,10 @@ AlignTrue supports two authoring formats:
 
 ### Natural Markdown Sections (Recommended for Packs)
 
-````markdown
-# Testing pack
-
-Use consistent test commands across your project.
-
-```aligntrue
+```markdown
+---
 id: testing-pack
 version: 1.0.0
-
 plugs:
   slots:
     test.cmd:
@@ -58,14 +53,16 @@ plugs:
       format: command
       required: true
       example: "pytest -q"
+---
 
-rules:
-  - id: testing.run-tests
-    severity: error
-    guidance: |
-      Run tests before committing: [[plug:test.cmd]]
+# Testing pack
+
+Use consistent test commands across your project.
+
+## Testing guidelines
+
+Run tests before committing: [[plug:test.cmd]]
 ```
-````
 
 ### Direct YAML (internal IR format)
 
