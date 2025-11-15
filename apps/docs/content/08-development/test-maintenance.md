@@ -22,7 +22,7 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 - `packages/cli/tests/integration/init-command.test.ts` (2 tests)
 - `packages/cli/tests/integration/performance.test.ts`
 
-**Root cause:** Tests expected `rules.md` (markdown with fenced blocks) but code now creates `.rules.yaml` (YAML).
+**Root cause:** Tests expected `rules.md` (legacy fenced blocks format) but code now creates `.rules.yaml` (natural markdown sections format).
 
 **Time to fix:** ~10 minutes with systematic search and replace.
 

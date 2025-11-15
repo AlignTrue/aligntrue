@@ -78,7 +78,6 @@ The primary user-editable file where you write and maintain rules in markdown fo
 
 - Human-readable rule descriptions
 - Natural markdown sections with YAML frontmatter
-- Optional fenced ```aligntrue code blocks with YAML (legacy format)
 - Optional narrative sections explaining your project's standards
 
 `AGENTS.md` is where you write your rules. AlignTrue automatically converts them to other agent formats.
@@ -106,7 +105,7 @@ AGENTS.md (you edit) → IR (.rules.yaml - auto-generated) → Agent exports (.m
 
 ### Cursor rules (.mdc)
 
-Cursor's native rule format stored in `.cursor/rules/*.mdc`. Files use Markdown with fenced YAML blocks optimized for Cursor's inline rule engine.
+Cursor's native rule format stored in `.cursor/rules/*.mdc`. Files use YAML frontmatter with markdown content optimized for Cursor's inline rule engine.
 
 AlignTrue automatically exports your rules to `.mdc` format when you run `aligntrue sync`.
 

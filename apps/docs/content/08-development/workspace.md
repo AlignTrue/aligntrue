@@ -105,15 +105,15 @@ pnpm build         # Build to dist/
 
 ## Supporting packages
 
-### packages/markdown-parser
+### Natural markdown parsing
 
-Literate markdown → IR conversion.
+Natural markdown sections → IR conversion (integrated into core).
 
 **Responsibilities:**
 
-- Parse fenced ```aligntrue blocks
-- Convert markdown to IR
-- Validate extracted YAML
+- Parse natural markdown with YAML frontmatter
+- Convert `##` sections to IR rules
+- Validate extracted content
 
 ### packages/sources
 
