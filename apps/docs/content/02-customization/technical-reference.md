@@ -300,7 +300,7 @@ When using multiple customization features together, they apply in this order:
 
 ```bash
 # 1. Audit slots and fills
-aligntrue plugs audit
+aligntrue plugs list
 
 # 2. Set required fills
 aligntrue plugs set test.cmd "pnpm test"

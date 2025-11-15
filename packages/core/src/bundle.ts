@@ -64,45 +64,103 @@ export function mergePacks(
     throw new Error("Cannot merge empty pack array");
   }
 
-  if (packs.length === 1) {
-    const pack = packs[0];
-    if (!pack) {
-      throw new Error("First pack is undefined");
-    }
-    // Defensive: Initialize sections to empty array if missing
-    ensureSectionsArray(pack);
-    // Sort sections by fingerprint for determinism if pack has sections
-    if (pack.sections.length > 1) {
-      const sortedSections = [...pack.sections].sort((a, b) =>
-        a.fingerprint.localeCompare(b.fingerprint),
-      );
-      return {
-        pack: { ...pack, sections: sortedSections },
-        conflicts: [],
-        warnings: [],
-      };
-    }
+  // Handle single pack case
+  const singlePackResult = handleSinglePack(packs);
+  if (singlePackResult) {
+    return singlePackResult;
+  }
+
+  // Extract options
+  const warnConflicts = options?.warnConflicts ?? true;
+  const bundleId = options?.bundleId ?? "merged-bundle";
+  const bundleVersion = options?.bundleVersion ?? "1.0.0";
+
+  // Initialize merge state
+  const conflicts: BundleResult["conflicts"] = [];
+  const warnings: string[] = [];
+
+  // Merge sections with conflict detection
+  const mergedSections = mergeSections(
+    packs,
+    conflicts,
+    warnings,
+    warnConflicts,
+  );
+
+  // Merge other pack components
+  const mergedPlugs = mergePlugs(packs, warnings);
+  const mergedScope = mergeScopes(packs);
+  const mergedTags = mergeTags(packs);
+  const mergedDeps = mergeDeps(packs);
+
+  // Assemble final pack
+  const lastPack = packs[packs.length - 1];
+  if (!lastPack) {
+    throw new Error("Last pack is undefined");
+  }
+
+  const mergedPack = assembleMergedPack(
+    bundleId,
+    bundleVersion,
+    mergedSections,
+    lastPack,
+    mergedPlugs,
+    mergedScope,
+    mergedTags,
+    mergedDeps,
+  );
+
+  return {
+    pack: mergedPack,
+    conflicts,
+    warnings,
+  };
+}
+
+/**
+ * Handle single pack case with deterministic sorting
+ */
+function handleSinglePack(packs: AlignPack[]): BundleResult | null {
+  if (packs.length !== 1) {
+    return null;
+  }
+
+  const pack = packs[0];
+  if (!pack) {
+    throw new Error("First pack is undefined");
+  }
+
+  // Defensive: Initialize sections to empty array if missing
+  ensureSectionsArray(pack);
+
+  // Sort sections by fingerprint for determinism if pack has sections
+  if (pack.sections.length > 1) {
+    const sortedSections = [...pack.sections].sort((a, b) =>
+      a.fingerprint.localeCompare(b.fingerprint),
+    );
     return {
-      pack,
+      pack: { ...pack, sections: sortedSections },
       conflicts: [],
       warnings: [],
     };
   }
 
-  const warnConflicts = options?.warnConflicts ?? true;
-  const bundleId = options?.bundleId ?? "merged-bundle";
-  const bundleVersion = options?.bundleVersion ?? "1.0.0";
+  return {
+    pack,
+    conflicts: [],
+    warnings: [],
+  };
+}
 
-  const conflicts: BundleResult["conflicts"] = [];
-  const warnings: string[] = [];
-
-  // Determine if we're merging section-based or rule-based packs
-  const firstPack = packs[0];
-  if (!firstPack) {
-    throw new Error("First pack is undefined");
-  }
-
-  // Merge section-based packs using fingerprints
+/**
+ * Merge sections from multiple packs with conflict detection
+ */
+function mergeSections(
+  packs: AlignPack[],
+  conflicts: BundleResult["conflicts"],
+  warnings: string[],
+  warnConflicts: boolean,
+): AlignSection[] {
   const sectionMap = new Map<
     string,
     {
@@ -149,29 +207,25 @@ export function mergePacks(
   }
 
   // Extract merged sections (sorted by fingerprint for determinism)
-  const mergedSections = Array.from(sectionMap.values())
+  return Array.from(sectionMap.values())
     .sort((a, b) => a.section.fingerprint.localeCompare(b.section.fingerprint))
     .map((entry) => entry.section);
+}
 
-  // Merge metadata (last source wins)
-  const lastPack = packs[packs.length - 1];
-  if (!lastPack) {
-    throw new Error("Last pack is undefined");
-  }
-
-  // Merge plugs (combine fills, detect slot conflicts)
-  const mergedPlugs = mergePlugs(packs, warnings);
-
-  // Merge scopes (union of all scopes)
-  const mergedScope = mergeScopes(packs);
-
-  // Merge tags (union, deduplicated)
-  const mergedTags = mergeTags(packs);
-
-  // Merge deps (union, deduplicated, preserve order)
-  const mergedDeps = mergeDeps(packs);
-
-  // Build merged pack
+/**
+ * Assemble final merged pack from components
+ */
+function assembleMergedPack(
+  bundleId: string,
+  bundleVersion: string,
+  mergedSections: AlignSection[],
+  lastPack: AlignPack,
+  mergedPlugs: AlignPack["plugs"] | undefined,
+  mergedScope: AlignPack["scope"] | undefined,
+  mergedTags: string[],
+  mergedDeps: string[],
+): AlignPack {
+  // Build base pack
   const mergedPack: AlignPack = {
     id: bundleId,
     version: bundleVersion,
@@ -207,11 +261,7 @@ export function mergePacks(
     mergedPack.deps = mergedDeps;
   }
 
-  return {
-    pack: mergedPack,
-    conflicts,
-    warnings,
-  };
+  return mergedPack;
 }
 
 /**
