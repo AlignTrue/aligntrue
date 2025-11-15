@@ -4,7 +4,7 @@
  * Replaces Changesets with a simple, reliable release process
  */
 
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { globSync } from "glob";
@@ -123,7 +123,6 @@ function updatePackageVersion(pkg, newVersion) {
 
 function publishPackage(pkg, tag) {
   const dir = pkg.path.replace("/package.json", "");
-  const tagFlag = tag ? `--tag ${tag}` : "";
 
   if (isDryRun) {
     console.log(
@@ -132,10 +131,19 @@ function publishPackage(pkg, tag) {
     return;
   }
 
-  run(`npm publish ${tagFlag}`, {
-    cwd: dir,
-    stdio: "inherit",
-  });
+  try {
+    const args = ["publish"];
+    if (tag) {
+      args.push("--tag", tag);
+    }
+    execFileSync("npm", args, {
+      cwd: dir,
+      stdio: "inherit",
+      encoding: "utf8",
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 function gitCommitAndTag(version, bumpType) {
