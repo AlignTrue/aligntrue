@@ -258,7 +258,7 @@ Output: Use [[plug:key]] syntax for plugs
 ### audit - List slots and fills
 
 ```bash
-aligntrue plugs audit
+aligntrue plugs list
 ```
 
 Shows:
@@ -532,7 +532,7 @@ aligntrue plugs set docs.url "https://docs.projecta.com"
 
 ```bash
 # 1. Audit to see which plugs need fills
-aligntrue plugs audit
+aligntrue plugs list
 
 # 2. Set missing fills
 aligntrue plugs set <key> <value>
@@ -668,7 +668,7 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 
 ### For solo developers
 
-1. **Set fills early** - Run `aligntrue plugs audit` after init
+1. **Set fills early** - Run `aligntrue plugs list` after init
 2. **Use stack packs** - Let stack packs provide sensible defaults
 3. **Override selectively** - Only set fills when defaults don't work
 4. **Document decisions** - Add comments in .aligntrue/.rules.yaml explaining custom fills
@@ -677,7 +677,7 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 
 1. **Share stack packs** - Create org-specific stack packs with common fills
 2. **Document required plugs** - List required plugs in team onboarding docs
-3. **Validate in CI** - Run `aligntrue plugs audit` in CI to catch missing fills
+3. **Validate in CI** - Run `aligntrue plugs list` in CI to catch missing fills
 4. **Review fill changes** - Treat fill changes like code changes (PR review)
 5. **Avoid secrets** - Never put secrets in fills (use env vars at runtime)
 

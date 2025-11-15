@@ -161,8 +161,8 @@ function validateCommandCount() {
   const cliIndexPath = join(rootDir, "packages/cli/src/index.ts");
   const cliContent = readFileSync(cliIndexPath, "utf8");
 
-  // Count command dispatch statements (if (command === "..."))
-  const commandMatches = cliContent.match(/if \(command === ["'](\w+)["']\)/g);
+  // Count commands in COMMANDS Map (e.g., ["init", init],)
+  const commandMatches = cliContent.match(/\["(\w+)",\s*\w+\]/g);
   const actualCommandCount = commandMatches ? commandMatches.length : 0;
 
   console.log(`Source of truth: packages/cli/src/index.ts\n`);

@@ -81,7 +81,7 @@ async function main() {
 
     console.log("Plugs Management:");
     console.log(
-      "  plugs          Manage plug slots and fills (audit, resolve, set)\n",
+      "  plugs          Manage plug slots and fills (list, resolve, validate)\n",
     );
 
     console.log("Settings:");
@@ -104,108 +104,39 @@ async function main() {
   const command = args[0];
   const commandArgs = args.slice(1);
 
-  // Handle implemented commands
-  if (command === "init") {
-    await init(commandArgs);
-    return;
+  // Command registry for clean dispatch
+  const COMMANDS = new Map<string, (args: string[]) => Promise<void>>([
+    ["init", init],
+    ["migrate", migrate],
+    ["sync", sync],
+    ["watch", watch],
+    ["team", team],
+    ["telemetry", telemetry],
+    ["scopes", scopes],
+    ["check", check],
+    ["config", config],
+    ["adapters", adapters],
+    ["privacy", privacy],
+    ["backup", backup],
+    ["revert", revert],
+    ["plugs", plugs],
+    ["link", link],
+    ["drift", drift],
+    ["update", update],
+    ["onboard", onboard],
+    ["override", override],
+    ["sources", sources],
+  ]);
+
+  if (command) {
+    const handler = COMMANDS.get(command);
+    if (handler) {
+      await handler(commandArgs);
+      return;
+    }
   }
 
-  if (command === "migrate") {
-    await migrate(commandArgs);
-    return;
-  }
-
-  if (command === "sync") {
-    await sync(commandArgs);
-    return;
-  }
-
-  if (command === "watch") {
-    await watch(commandArgs);
-    return;
-  }
-
-  if (command === "team") {
-    await team(commandArgs);
-    return;
-  }
-
-  if (command === "telemetry") {
-    await telemetry(commandArgs);
-    return;
-  }
-
-  if (command === "scopes") {
-    await scopes(commandArgs);
-    return;
-  }
-
-  if (command === "check") {
-    await check(commandArgs);
-    return;
-  }
-
-  if (command === "config") {
-    await config(commandArgs);
-    return;
-  }
-
-  if (command === "adapters") {
-    await adapters(commandArgs);
-    return;
-  }
-
-  if (command === "privacy") {
-    await privacy(commandArgs);
-    return;
-  }
-
-  if (command === "backup") {
-    await backup(commandArgs);
-    return;
-  }
-
-  if (command === "revert") {
-    await revert(commandArgs);
-    return;
-  }
-
-  if (command === "plugs") {
-    await plugs(commandArgs);
-    return;
-  }
-
-  if (command === "link") {
-    await link(commandArgs);
-    return;
-  }
-
-  if (command === "drift") {
-    await drift(commandArgs);
-    return;
-  }
-
-  if (command === "update") {
-    await update(commandArgs);
-    return;
-  }
-
-  if (command === "onboard") {
-    await onboard(commandArgs);
-    return;
-  }
-
-  if (command === "override") {
-    await override(commandArgs);
-    return;
-  }
-
-  if (command === "sources") {
-    await sources(commandArgs);
-    return;
-  }
-
-  console.error(`Command not implemented: ${command}`);
+  console.error(`Command not implemented: ${command || "(none)"}`);
   process.exit(1);
 }
 

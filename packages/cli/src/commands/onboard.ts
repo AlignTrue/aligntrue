@@ -500,7 +500,7 @@ export async function onboard(args: string[]): Promise<void> {
         details: plugsInfo.unresolvedKeys
           .slice(0, 5)
           .map((key) => `  - ${key}: Run 'aligntrue plugs set ${key} <value>'`),
-        command: "aligntrue plugs audit",
+        command: "aligntrue plugs list",
       });
     }
 

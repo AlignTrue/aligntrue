@@ -269,11 +269,11 @@ Run "aligntrue privacy audit" after granting consent to see details.
 
 **Offline mode:**
 
-The `pull` command supports `--offline` flag to use cache only without network operations. See the [pull command](/docs/04-reference/cli-reference/team#aligntrue-pull) documentation for details.
+Git sources support offline mode via `aligntrue sync --offline` to use cached repositories without network operations. See the [git workflows guide](/docs/03-concepts/git-workflows) for details.
 
 **See also:**
 
-- [Pull command](/docs/04-reference/cli-reference/team#aligntrue-pull) - Offline mode documentation
+- [Git workflows](/docs/03-concepts/git-workflows) - Git sources and offline mode
 
 ---
 
