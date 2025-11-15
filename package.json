@@ -83,6 +83,7 @@
     "overrides": {
       "esbuild": ">=0.25.0",
       "prismjs": ">=1.30.0",
+      "@changesets/parse>js-yaml": "^3.14.1",
       "js-yaml": ">=4.1.1",
       "read-yaml-file": ">=2.0.0"
     }

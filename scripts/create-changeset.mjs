@@ -212,15 +212,8 @@ function createChangesetFile(packages, bumpType, summary) {
   const id = randomBytes(4).toString("hex");
   const changesetPath = join(process.cwd(), ".changeset", `${id}.md`);
 
-  // Only quote scoped packages (@aligntrue/*)
-  const frontmatter = packages
-    .map((pkg) => {
-      if (pkg.startsWith("@")) {
-        return `"${pkg}": ${bumpType}`;
-      }
-      return `${pkg}: ${bumpType}`;
-    })
-    .join("\n");
+  // Quote ALL package names for YAML compatibility
+  const frontmatter = packages.map((pkg) => `"${pkg}": ${bumpType}`).join("\n");
 
   const content = `---
 ${frontmatter}
