@@ -44,11 +44,13 @@ cd your-project
 aligntrue init
 ```
 
-This auto-detects your agents (Cursor, Copilot, Claude, etc.) and creates:
+This auto-detects any existing agent files (Cursor `.mdc`, `CLAUDE.md`, etc.), imports them into AlignTrue, and only creates a fresh `AGENTS.md` starter when no agent files exist. After the import it writes:
 
-- Your agent files in native format (`.cursor/rules/*.mdc`, etc.) or `AGENTS.md` fallback
-- `.aligntrue/config.yaml` - Configuration
+- `.aligntrue/config.yaml` - Configuration with detected exporters
 - `.aligntrue/.rules.yaml` - Internal format (auto-generated, don't edit)
+- `AGENTS.md` - **Only** when you explicitly create a starter file during init
+
+> **Tip:** At the end of `aligntrue init`, you'll be prompted to run `aligntrue sync`. Confirm to export immediately or decline and run it later when you're ready.
 
 ### 2. Sync to your agents
 
