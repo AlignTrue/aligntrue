@@ -307,6 +307,25 @@ ls -la .aligntrue/.rules.yaml
 
 ---
 
+### Pack sections missing after sync
+
+**Symptoms:**
+
+- Added pack appears in `aligntrue sync` output, but `AGENTS.md` and `.cursor/rules/aligntrue.mdc` never show the new sections.
+- Running `aligntrue sync` repeatedly keeps overwriting the pack content with the local `AGENTS.md`.
+
+**Cause:** On first sync, AlignTrue imports edits from `AGENTS.md` (or agent exports) before writing to the internal IR. Without replaying configured `sources`, that import could overwrite pack overlays.
+
+**Fix:**
+
+1. Ensure the pack file is listed under `sources` in `.aligntrue/config.yaml`.
+2. Re-run `aligntrue sync`. AlignTrue now re-merges all configured sources after agent edits so pack sections persist.
+3. Verify the pack headings start at `##` or deeper; level-1 (`#`) headings are treated as document titles and fail IR validation.
+
+Still not seeing the sections? Run `aligntrue sync --verbose` to confirm the pack was merged and check the file listed under "Sources merged".
+
+---
+
 ### Lockfile drift (team mode)
 
 **Error (soft mode):**
