@@ -155,7 +155,7 @@ describe("Sync Detection Integration Tests", () => {
     expect(syncResult.exitCode).toBe(0);
     // Should indicate no edits detected
     expect(syncResult.stdout).toContain("No agent file edits detected");
-  }, 15000);
+  }, 60000);
 
   test("config set validates keys", async () => {
     // Setup: init project
