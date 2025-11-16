@@ -4,6 +4,8 @@
  *
  * Uses AlignTrue/examples repo for deterministic remote testing.
  * Fixtures are in examples/remote-test/ directory.
+ * Requires network access and runs in CI only.
+ * Skip locally in pre-CI (use CI=1 to run locally).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -19,7 +21,12 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 const EXAMPLES_REPO = "https://github.com/AlignTrue/examples";
 const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb";
 
-describe.skip("Git Operations Tests", () => {
+// Skip tests in local pre-CI (network not available)
+// Tests run in CI where network/git is available
+const isCI = !!process.env.CI;
+const describeNetwork = isCI ? describe : describe.skip;
+
+describeNetwork("Git Operations Tests", () => {
   beforeEach(() => {
     // Clean and create test directory
     if (existsSync(TEST_DIR)) {

@@ -32,11 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tests remote git source configuration and synchronization
   - Tests merging team and personal rules from remote sources
   - Tests error handling for network failures and missing files
+  - Runs in CI only; skip locally in pre-CI for fast feedback loop
+  - Tests enabled when `CI` environment variable is set
 - **Large rule set performance tests** - Test CLI with realistic large rule sets
   - Tests with 100-150 sections across 10-15 files
   - Monitors memory usage and sync time
   - Validates performance thresholds (<60s sync, <500MB memory)
   - Tests multi-file source performance
+  - Runs in CI only; skip locally in pre-CI for fast feedback loop
 - **Test fixtures for remote workflow** - Reusable fixtures in examples/remote-test/
   - personal-rules.md: Personal coding preferences (10 sections)
   - large-rules/: Large rule set (10 files, 112 sections total)
