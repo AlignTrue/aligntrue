@@ -327,10 +327,13 @@ export class GitProvider implements SourceProvider {
       // Update existing repository
       const git = simpleGit(this.repoDir);
       try {
-        // Fetch latest
+        const refType = detectRefType(ref);
         await git.fetch(["origin", ref, "--depth", "1"]);
-        // Hard reset to remote ref
-        await git.reset(["--hard", `origin/${ref}`]);
+        if (refType === "commit") {
+          await git.checkout(ref);
+        } else {
+          await git.reset(["--hard", `origin/${ref}`]);
+        }
       } catch (error) {
         // Fetch/reset failed, try re-cloning
         console.warn(
@@ -375,18 +378,22 @@ export class GitProvider implements SourceProvider {
 
     if (!existsSync(this.repoDir)) {
       // Clone repository (shallow)
+      const refType = detectRefType(ref);
       try {
         await git.clone(this.url, this.repoDir, [
           "--depth",
           "1",
-          "--branch",
-          ref,
           "--single-branch",
+          ...(refType === "commit" ? [] : ["--branch", ref]),
         ]);
 
-        // Initialize metadata
+        if (refType === "commit") {
+          const repoGit = simpleGit(this.repoDir);
+          await repoGit.fetch(["origin", ref, "--depth", "1"]);
+          await repoGit.checkout(ref);
+        }
+
         const sha = await this.getCommitSha();
-        const refType = detectRefType(ref);
         const now = new Date().toISOString();
 
         saveCacheMeta(this.repoDir, {
@@ -419,13 +426,21 @@ export class GitProvider implements SourceProvider {
     } else {
       // Repository exists, checkout ref (in case it changed)
       const repoGit = simpleGit(this.repoDir);
+      const refType = detectRefType(ref);
 
       try {
-        // Fetch latest (shallow) if we need a different ref
-        const currentBranch = await repoGit.revparse(["--abbrev-ref", "HEAD"]);
-        if (currentBranch.trim() !== ref) {
+        if (refType === "commit") {
           await repoGit.fetch(["origin", ref, "--depth", "1"]);
           await repoGit.checkout(ref);
+        } else {
+          const currentBranch = await repoGit.revparse([
+            "--abbrev-ref",
+            "HEAD",
+          ]);
+          if (currentBranch.trim() !== ref) {
+            await repoGit.fetch(["origin", ref, "--depth", "1"]);
+            await repoGit.checkout(ref);
+          }
         }
       } catch (error) {
         // Checkout failed, might be corrupted cache - remove and retry
