@@ -146,5 +146,36 @@ rules:
       expect(exitMock.exitCode).toBe(2);
       exitMock.restore();
     });
+
+    it("fails when config references unknown exporter", async () => {
+      const config = { exporters: ["cursor", "not-a-real-exporter"] };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      const ir = `id: test-project
+version: 1.0.0
+spec_version: "1"
+sections:
+  - heading: Test rule example
+    level: 2
+    content: Test guidance
+    fingerprint: test-rule-example
+`;
+      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+
+      const exitMock = mockProcessExit();
+
+      try {
+        await check(["--ci"]);
+      } catch {
+        // Expected exit
+      }
+
+      expect(exitMock.exitCode).toBe(1);
+      exitMock.restore();
+    });
   });
 });

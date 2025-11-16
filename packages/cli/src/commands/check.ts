@@ -25,6 +25,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { resolveSource } from "../utils/source-resolver.js";
+import { getInvalidExporters } from "../utils/exporter-validation.js";
 
 /**
  * Argument definitions for check command
@@ -120,6 +121,59 @@ export async function check(args: string[]): Promise<void> {
   try {
     // Step 1: Load config (with standardized error handling)
     const config: AlignTrueConfig = await tryLoadConfig(configPath);
+
+    let invalidExporters;
+    try {
+      invalidExporters = await getInvalidExporters(config.exporters);
+    } catch (_error) {
+      const message = _error instanceof Error ? _error.message : String(_error);
+      if (jsonOutput) {
+        console.log(
+          JSON.stringify(
+            {
+              valid: false,
+              error: `Failed to validate exporters: ${message}`,
+            },
+            null,
+            2,
+          ),
+        );
+        process.exit(2);
+      }
+
+      exitWithError(
+        Errors.validationFailed([
+          `Failed to validate exporters: ${message}`,
+          "Reinstall AlignTrue or run 'pnpm build' to regenerate exporters.",
+        ]),
+        2,
+      );
+    }
+
+    if (invalidExporters && invalidExporters.length > 0) {
+      const details = invalidExporters.map((issue) =>
+        issue.suggestion
+          ? `Unknown exporter "${issue.name}" (did you mean "${issue.suggestion}"?)`
+          : `Unknown exporter "${issue.name}"`,
+      );
+
+      if (jsonOutput) {
+        console.log(
+          JSON.stringify(
+            {
+              valid: false,
+              errors: details,
+              code: "ERR_CONFIG_VALIDATION_FAILED",
+            },
+            null,
+            2,
+          ),
+        );
+        process.exit(1);
+      }
+
+      exitWithError(Errors.configValidationFailed(configPath, details), 1);
+    }
 
     // Step 2: Resolve source (local or git)
     const source = config.sources?.[0] || {
@@ -429,6 +483,9 @@ export async function check(args: string[]): Promise<void> {
       console.log("");
     }
   } catch (err) {
+    if (err instanceof Error && err.name === "ProcessExitError") {
+      throw err;
+    }
     // Unexpected system error
     if (jsonOutput) {
       console.log(

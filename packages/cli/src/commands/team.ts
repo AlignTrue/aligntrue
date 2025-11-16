@@ -131,8 +131,11 @@ async function teamStatus(): Promise<void> {
     const lockfileEnabled = config.modules?.lockfile ?? false;
     const lockfileMode = config.lockfile?.mode ?? "off";
     if (lockfileEnabled) {
+      const lockfileFriendly = formatLockfileMode(lockfileMode);
       console.log(
-        `Lockfile validation: ${lockfileMode} (file generation: enabled)`,
+        `Lockfile validation: ${lockfileFriendly}${
+          lockfileMode !== "off" ? ` (${lockfileMode})` : ""
+        }`,
       );
       const lockfilePath = ".aligntrue.lock.json";
       const lockfileExists = existsSync(lockfilePath);
@@ -143,9 +146,11 @@ async function teamStatus(): Promise<void> {
         console.log("  💡 Run 'aligntrue sync' to generate");
       }
       console.log("  ℹ️  Lockfile Modes:");
-      console.log("    off    - Generate lockfile but skip validation");
-      console.log("    soft   - Warn about drift, but allow sync");
-      console.log("    strict - Block sync if lockfile validation fails");
+      console.log(
+        "    off              - Generate lockfile but skip validation",
+      );
+      console.log("    warn on drift    - Warn about drift, but allow sync");
+      console.log("    block on drift   - Block sync until lockfile approved");
     } else {
       console.log("Lockfile: disabled");
       console.log("  💡 Enable in config: modules.lockfile: true");
@@ -567,5 +572,16 @@ async function teamDisable(
     console.error("✗ Failed to disable team mode");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
+  }
+}
+
+function formatLockfileMode(mode: string): string {
+  switch (mode) {
+    case "soft":
+      return "warn on drift";
+    case "strict":
+      return "block on drift";
+    default:
+      return "off";
   }
 }

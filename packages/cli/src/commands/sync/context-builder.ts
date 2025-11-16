@@ -14,11 +14,12 @@ import {
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
-import { ErrorFactory } from "../../utils/error-types.js";
+import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { SyncOptions } from "./options.js";
+import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +61,30 @@ export async function buildSyncContext(
 
   const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
   spinner.stop("Configuration loaded");
+
+  try {
+    const invalidExporters = await getInvalidExporters(config.exporters);
+    if (invalidExporters.length > 0) {
+      const message = invalidExporters
+        .map((issue) =>
+          issue.suggestion
+            ? `Unknown exporter "${issue.name}" (did you mean "${issue.suggestion}"?)`
+            : `Unknown exporter "${issue.name}"`,
+        )
+        .join("; ");
+      throw ErrorFactory.invalidConfig(
+        `${message}. Run 'aligntrue adapters list' to see available adapters.`,
+      );
+    }
+  } catch (error) {
+    if (error instanceof AlignTrueError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    throw ErrorFactory.invalidConfig(
+      `Failed to validate exporters: ${message}`,
+    );
+  }
 
   // Step 3: Resolve sources (local, git, or bundle merge)
   spinner.start("Resolving sources");

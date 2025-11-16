@@ -8,6 +8,7 @@ import { overrideAdd } from "./override-add.js";
 import { overrideStatus } from "./override-status.js";
 import { overrideDiff } from "./override-diff.js";
 import { overrideRemove } from "./override-remove.js";
+import { overrideSelectors } from "./override-selectors.js";
 
 /**
  * Main override command with subcommands
@@ -25,6 +26,7 @@ export async function overrideCommand(args: string[]): Promise<void> {
         "aligntrue override status",
         "aligntrue override diff",
         "aligntrue override remove",
+        "aligntrue override selectors",
       ],
       notes: [
         "Overlays allow customizing rules without forking:",
@@ -52,6 +54,9 @@ export async function overrideCommand(args: string[]): Promise<void> {
       break;
     case "remove":
       await overrideRemove(subArgs);
+      break;
+    case "selectors":
+      await overrideSelectors(subArgs);
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
