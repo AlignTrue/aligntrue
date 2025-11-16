@@ -211,6 +211,8 @@ async function teamEnable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
+  let spinner: ReturnType<typeof clack.spinner> | null = null;
+  let spinnerActive = false;
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -342,6 +344,10 @@ async function teamEnable(
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
 
+    spinner = clack.spinner();
+    spinner.start("Writing team configuration");
+    spinnerActive = true;
+
     // Write config back atomically
     const yamlContent = stringifyYaml(configWithDefaults);
     const tempPath = `${configPath}.tmp`;
@@ -364,6 +370,11 @@ async function teamEnable(
         "../wizards/team-migration.js"
       );
       await runTeamMigrationWizard(config, process.cwd());
+    }
+
+    if (spinnerActive && spinner) {
+      spinner.stop("Team configuration updated");
+      spinnerActive = false;
     }
 
     // Show configuration summary
@@ -396,6 +407,10 @@ async function teamEnable(
       clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
     }
   } catch (err) {
+    if (spinnerActive && spinner) {
+      spinner.stop("Team mode enable failed");
+      spinnerActive = false;
+    }
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;

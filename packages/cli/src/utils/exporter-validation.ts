@@ -1,6 +1,7 @@
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { ExporterRegistry } from "@aligntrue/exporters";
+import type { AdapterManifest } from "@aligntrue/plugin-contracts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,7 +29,8 @@ export async function getInvalidExporters(
     return [];
   }
 
-  const available = await loadAvailableExporterNames();
+  const manifests = await loadExporterManifests();
+  const available = new Set(manifests.keys());
   const availableList = Array.from(available).sort();
   const invalid: ExporterValidationIssue[] = [];
 
@@ -46,16 +48,21 @@ export async function getInvalidExporters(
   return invalid;
 }
 
-async function loadAvailableExporterNames(): Promise<Set<string>> {
+/**
+ * Load manifests for all available exporters
+ */
+export async function loadExporterManifests(): Promise<
+  Map<string, AdapterManifest>
+> {
   const registry = new ExporterRegistry();
   const manifestPaths = await discoverExporterManifests(registry);
-  const available = new Set<string>();
+  const manifests = new Map<string, AdapterManifest>();
 
   for (const manifestPath of manifestPaths) {
     try {
       const manifest = registry.loadManifest(manifestPath);
       if (manifest?.name) {
-        available.add(manifest.name);
+        manifests.set(manifest.name, manifest);
       }
     } catch {
       // Ignore invalid manifests
@@ -63,13 +70,13 @@ async function loadAvailableExporterNames(): Promise<Set<string>> {
     }
   }
 
-  if (available.size === 0) {
+  if (manifests.size === 0) {
     throw new Error(
       "No exporters available. Reinstall AlignTrue or run 'pnpm build' to regenerate exporters.",
     );
   }
 
-  return available;
+  return manifests;
 }
 
 async function discoverExporterManifests(
