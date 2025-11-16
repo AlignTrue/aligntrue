@@ -213,6 +213,13 @@ async function teamEnable(
   const configPath = ".aligntrue/config.yaml";
   let spinner: ReturnType<typeof clack.spinner> | null = null;
   let spinnerActive = false;
+  const stopSpinner = (text: string): void => {
+    if (!spinnerActive || !spinner) {
+      return;
+    }
+    spinner.stop(text);
+    spinnerActive = false;
+  };
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -372,10 +379,7 @@ async function teamEnable(
       await runTeamMigrationWizard(config, process.cwd());
     }
 
-    if (spinnerActive && spinner) {
-      spinner.stop("Team configuration updated");
-      spinnerActive = false;
-    }
+    stopSpinner("Team configuration updated");
 
     // Show configuration summary
     console.log("\n✓ Team mode enabled\n");
@@ -407,10 +411,7 @@ async function teamEnable(
       clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
     }
   } catch (err) {
-    if (spinnerActive && spinner) {
-      spinner.stop("Team mode enable failed");
-      spinnerActive = false;
-    }
+    stopSpinner("Team mode enable failed");
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
