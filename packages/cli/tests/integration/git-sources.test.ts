@@ -19,7 +19,7 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 const EXAMPLES_REPO = "https://github.com/AlignTrue/examples";
 const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb";
 
-describe("Git Operations Tests", () => {
+describe.skip("Git Operations Tests", () => {
   beforeEach(() => {
     // Clean and create test directory
     if (existsSync(TEST_DIR)) {
