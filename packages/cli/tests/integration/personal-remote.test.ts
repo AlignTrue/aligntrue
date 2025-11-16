@@ -20,10 +20,9 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 const EXAMPLES_REPO = "https://github.com/AlignTrue/examples";
 const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb"; // Pin after fixtures are committed
 
-// Skip tests in local pre-CI (network not available)
-// Tests run in CI where network/git is available
-const isCI = !!process.env.CI;
-const describeNetwork = isCI ? describe : describe.skip;
+// Skip tests unless explicitly enabled via RUN_REMOTE_TESTS=1
+const runRemoteTests = process.env.RUN_REMOTE_TESTS === "1";
+const describeNetwork = runRemoteTests ? describe : describe.skip;
 
 describeNetwork("Personal Remote Workflow", () => {
   beforeEach(() => {

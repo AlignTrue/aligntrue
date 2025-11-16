@@ -22,6 +22,8 @@ const GOLDEN_REPO_SOURCE = join(
   "examples/golden-repo",
 );
 const CLI_PATH = join(__dirname, "../../../..", "packages/cli/dist/index.js");
+const runRemoteTests = process.env.RUN_REMOTE_TESTS === "1";
+const describePerformanceBenchmarks = runRemoteTests ? describe : describe.skip;
 
 let testDir: string;
 
@@ -35,7 +37,7 @@ afterEach(async () => {
   }
 });
 
-describe("Performance Benchmarks", () => {
+describePerformanceBenchmarks("Performance Benchmarks", () => {
   it("Init speed: completes in <10 seconds", async () => {
     const projectDir = join(testDir, "init-speed");
     await fs.mkdir(projectDir, { recursive: true });
