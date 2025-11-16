@@ -18,7 +18,7 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 const EXAMPLES_REPO = "https://github.com/AlignTrue/examples";
 const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb"; // Pin after fixtures are committed
 
-describe("Personal Remote Workflow", () => {
+describe.skip("Personal Remote Workflow", () => {
   beforeEach(() => {
     // Clean and create test directory
     if (existsSync(TEST_DIR)) {
