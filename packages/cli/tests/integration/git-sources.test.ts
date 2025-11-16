@@ -329,9 +329,11 @@ sections:
       } catch (error: any) {
         // Expected error
         const stderr = error.stderr?.toString() || "";
-        expect(stderr).toContain("Invalid") ||
-          expect(stderr).toContain("required") ||
-          expect(stderr).toContain("Missing");
+        expect(
+          stderr.includes("Invalid") ||
+            stderr.includes("required") ||
+            stderr.includes("Missing"),
+        ).toBe(true);
       }
     });
   });
