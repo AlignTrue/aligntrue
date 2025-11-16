@@ -227,7 +227,7 @@ describe("GitProvider - Clone Operations", () => {
     expect(git.clone).toHaveBeenCalledWith(
       TEST_REPO_URL,
       expect.stringContaining(TEST_CACHE_DIR),
-      ["--depth", "1", "--branch", "main", "--single-branch"],
+      ["--depth", "1", "--single-branch", "--branch", "main"],
     );
   });
 

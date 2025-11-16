@@ -91,7 +91,7 @@ git:
           join(testProjectPath, "AGENTS.md"),
           "utf-8",
         );
-        expect(agentsMd).toContain("Personal Coding Preferences");
+        expect(agentsMd).toContain("Code Style Preferences");
         expect(agentsMd).toContain("Editor Configuration");
       } catch (error: any) {
         // If sync fails, check if it's a network/git issue
