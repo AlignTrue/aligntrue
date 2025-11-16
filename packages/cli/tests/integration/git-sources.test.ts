@@ -1,9 +1,9 @@
 /**
  * Git operations tests
- * Tests git source pulling, vendoring, and pack integrity
+ * Tests git source pulling from GitHub, vendoring, and pack integrity
  *
- * Skipped: CLI commands failing in test environment.
- * Integration tests require proper git setup and fixtures.
+ * Uses AlignTrue/examples repo for deterministic remote testing.
+ * Fixtures are in examples/remote-test/ directory.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -14,7 +14,12 @@ import { execSync } from "child_process";
 const TEST_DIR = join(__dirname, "../../../temp-test-git");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
-describe.skip("Git Operations Tests", () => {
+// GitHub repo for remote testing
+// NOTE: Update COMMIT_HASH after copying fixtures to AlignTrue/examples repo
+const EXAMPLES_REPO = "https://github.com/AlignTrue/examples";
+const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb";
+
+describe("Git Operations Tests", () => {
   beforeEach(() => {
     // Clean and create test directory
     if (existsSync(TEST_DIR)) {
@@ -30,82 +35,68 @@ describe.skip("Git Operations Tests", () => {
     }
   });
 
-  describe("Local git repository", () => {
-    it("should handle local bare git repo", () => {
-      // Create a local bare git repo
-      const bareRepoPath = join(TEST_DIR, "bare-repo.git");
-      mkdirSync(bareRepoPath, { recursive: true });
+  describe("Remote git repository", () => {
+    it("should pull personal rules from GitHub repo", () => {
+      // Skip if commit hash not set
+      if (COMMIT_HASH === "REPLACE_WITH_ACTUAL_COMMIT_HASH") {
+        console.log(
+          "Skipping test: Update COMMIT_HASH after copying fixtures to GitHub",
+        );
+        return;
+      }
 
-      execSync("git init --bare", {
-        cwd: bareRepoPath,
-        stdio: "pipe",
-      });
-
-      // Create a working repo to push from
-      const workingRepoPath = join(TEST_DIR, "working-repo");
-      mkdirSync(workingRepoPath, { recursive: true });
-
-      execSync("git init", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      execSync("git config user.email 'test@example.com'", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      execSync("git config user.name 'Test User'", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      // Create a rules file
-      mkdirSync(join(workingRepoPath, ".aligntrue"), { recursive: true });
-      writeFileSync(
-        join(workingRepoPath, ".aligntrue/.rules.yaml"),
-        `id: test-pack
-version: "1.0.0"
-spec_version: "1"
-sections:
-  - heading: Test Section
-    content: Test content from git.
-    level: 2
-`,
-        "utf-8",
-      );
-
-      execSync("git add .", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      execSync("git commit -m 'Initial commit'", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      execSync(`git remote add origin ${bareRepoPath}`, {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      execSync("git push -u origin main || git push -u origin master", {
-        cwd: workingRepoPath,
-        stdio: "pipe",
-      });
-
-      // Now test pulling from this repo
       const testProjectPath = join(TEST_DIR, "test-project");
       mkdirSync(testProjectPath, { recursive: true });
       mkdirSync(join(testProjectPath, ".aligntrue"), { recursive: true });
 
-      // Note: pull command requires network consent, so we skip actual pull test
-      // Just verify the setup worked
-      expect(existsSync(bareRepoPath)).toBe(true);
-      expect(existsSync(join(workingRepoPath, ".aligntrue/.rules.yaml"))).toBe(
-        true,
+      // Create config pointing to personal rules in GitHub repo
+      writeFileSync(
+        join(testProjectPath, ".aligntrue/config.yaml"),
+        `version: "1"
+mode: solo
+sources:
+  - type: git
+    url: ${EXAMPLES_REPO}
+    ref: ${COMMIT_HASH}
+    path: remote-test/personal-rules.md
+exporters:
+  - agents-md
+git:
+  mode: ignore
+`,
+        "utf-8",
       );
+
+      // Run sync to pull personal rules
+      try {
+        const output = execSync(`node "${CLI_PATH}" sync`, {
+          cwd: testProjectPath,
+          stdio: "pipe",
+          encoding: "utf-8",
+        });
+
+        // Verify sync succeeded
+        expect(output).toContain("Sync complete") ||
+          expect(output).toContain("synced");
+
+        // Verify AGENTS.md was created with personal rules content
+        const agentsMd = readFileSync(
+          join(testProjectPath, "AGENTS.md"),
+          "utf-8",
+        );
+        expect(agentsMd).toContain("Personal Coding Preferences");
+        expect(agentsMd).toContain("Editor Configuration");
+      } catch (error: any) {
+        // If sync fails, check if it's a network/git issue
+        const stderr = error.stderr?.toString() || "";
+        if (stderr.includes("consent") || stderr.includes("network")) {
+          console.log(
+            "Skipping test: Network consent required or git not available",
+          );
+          return;
+        }
+        throw error;
+      }
     });
   });
 

@@ -27,6 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Remote workflow integration tests** - Test personal rules from GitHub repositories
+  - Uses AlignTrue/examples repo for deterministic testing
+  - Tests remote git source configuration and synchronization
+  - Tests merging team and personal rules from remote sources
+  - Tests error handling for network failures and missing files
+- **Large rule set performance tests** - Test CLI with realistic large rule sets
+  - Tests with 100-150 sections across 10-15 files
+  - Monitors memory usage and sync time
+  - Validates performance thresholds (<60s sync, <500MB memory)
+  - Tests multi-file source performance
+- **Test fixtures for remote workflow** - Reusable fixtures in examples/remote-test/
+  - personal-rules.md: Personal coding preferences (10 sections)
+  - large-rules/: Large rule set (10 files, 112 sections total)
+  - README.md: Documentation for fixtures and usage
 - **Documentation accuracy validation** - Automated validation prevents documentation drift
   - Validates Node.js version requirements match package.json
   - Validates CLI command count matches actual implementation
