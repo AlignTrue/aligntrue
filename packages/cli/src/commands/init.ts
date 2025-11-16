@@ -10,20 +10,13 @@ import {
   readFileSync,
   statSync,
 } from "fs";
-import { dirname, join } from "path";
+import { join, resolve, basename, relative } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
-import { detectAgents } from "../utils/detect-agents.js";
-import {
-  generateCursorStarter,
-  getCursorStarterPath,
-} from "../templates/cursor-starter.js";
-import {
-  generateAgentsMdStarter,
-  getAgentsMdStarterPath,
-} from "../templates/agents-md-starter.js";
+import { getAgentDisplayName } from "../utils/detect-agents.js";
+import { generateAgentsMdStarter } from "../templates/agents-md-starter.js";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
@@ -33,9 +26,24 @@ import {
 } from "../utils/command-utilities.js";
 import { execSync } from "child_process";
 import { DOCS_QUICKSTART } from "../constants.js";
-import { basename } from "path";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import type { Section } from "@aligntrue/core";
+import {
+  detectAgentFiles,
+  isFormatImportable,
+  type AgentFileCandidate,
+  type AgentFileFormat,
+} from "../utils/agent-file-discovery.js";
+import {
+  parseAgentsMd,
+  parseCursorMdc,
+  parseGenericMarkdown,
+  type AlignPack,
+} from "@aligntrue/schema";
+import type {
+  EditedFile,
+  SectionConflict,
+} from "@aligntrue/core/sync/multi-file-parser";
 
 // IRDocument type for internal use
 interface IRDocument {
@@ -87,6 +95,25 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   },
 ];
 
+type ImportParser = "cursor" | "agents" | "generic";
+
+const EDIT_SOURCE_PATTERNS: Record<string, string> = {
+  cursor: ".cursor/rules/*.mdc",
+  "agents-md": "AGENTS.md",
+  copilot: ".github/copilot-instructions.md",
+  aider: ".aider.conf.yml",
+  "claude-code": "CLAUDE.md",
+  "claude-md": "CLAUDE.md",
+  "crush-md": "CRUSH.md",
+  "warp-md": "WARP.md",
+  "gemini-md": "GEMINI.md",
+  "windsurf-md": "Windsurf.md",
+  "aider-md": "AIDER.md",
+  "opencode-md": "OPENCODE.md",
+  "roocode-md": "ROOCODE.md",
+  "zed-md": "ZED.md",
+};
+
 /**
  * Detect project ID intelligently from git repo or directory name
  *
@@ -121,6 +148,29 @@ function detectProjectId(): string {
   }
 
   return "my-project";
+}
+
+function parserForFormat(format: AgentFileFormat): ImportParser | null {
+  switch (format) {
+    case "cursor-mdc":
+      return "cursor";
+    case "agents-md":
+      return "agents";
+    case "generic-markdown":
+      return "generic";
+    default:
+      return null;
+  }
+}
+
+function getEditSourcePatternForAgent(
+  candidate: AgentFileCandidate,
+): string | null {
+  const pattern = EDIT_SOURCE_PATTERNS[candidate.agent];
+  if (pattern) {
+    return pattern;
+  }
+  return candidate.relativePath || candidate.absolutePath;
 }
 
 /**
@@ -333,10 +383,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     process.exit(0);
   }
 
-  // Step 3: Detect agents
-  let spinner: ReturnType<typeof clack.spinner> | null = null;
-
-  // Step 3.5: Check for Ruler installation
+  // Step 3: Check for legacy Ruler installs
   const rulerDir = join(cwd, ".ruler");
   let rulerDirExists = false;
   try {
@@ -371,152 +418,126 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  if (!nonInteractive) {
-    spinner = clack.spinner();
-    spinner.start("Detecting AI coding agents");
-  }
+  // Step 4: Detect existing agent files and plan imports
+  const detectedAgentFiles = detectAgentFiles(cwd);
+  const importFilter = importAgent
+    ? importAgent
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : null;
 
-  const agentResult = detectAgents(cwd);
-
-  if (!nonInteractive && spinner) {
-    spinner.stop("Agent detection complete");
-  }
-
-  if (agentResult.detected.length > 0) {
-    const displayNames = agentResult.detected
-      .map((name) => agentResult.displayNames.get(name) || name)
-      .join(", ");
-
-    if (nonInteractive) {
-      console.log(`Detected agents: ${displayNames}`);
-    } else {
-      clack.log.success(`Detected: ${displayNames}`);
+  const importableCandidates = detectedAgentFiles.filter((candidate) => {
+    if (!candidate.importable) {
+      return false;
     }
-  } else {
+    if (!importFilter) return true;
+    return importFilter.includes(candidate.agent);
+  });
+
+  if (importFilter && importableCandidates.length === 0) {
+    const message = `No agent files found for --import ${importAgent}.`;
     if (nonInteractive) {
-      console.log("No agents detected, using defaults: cursor, agents-md");
+      console.error(message);
     } else {
-      clack.log.info("No agents detected (you can still initialize)");
+      clack.log.warn(message);
     }
   }
 
-  // Step 4: Handle import flows
-  // Import feature not implemented - using sections-only format
-  let shouldImport = false;
-  let shouldMergeMultiple = false;
+  const unsupportedCandidates = detectedAgentFiles.filter(
+    (candidate) => !candidate.importable,
+  );
 
-  // Determine if we should import
-  if (importAgent) {
-    // Explicit --import flag
-    shouldImport = true;
-  } else if (contextResult.allDetectedAgents.length > 1) {
-    // Multiple agents detected - offer merge
-    if (nonInteractive) {
-      console.log(
-        `\nDetected rules in ${contextResult.allDetectedAgents.length} agents:`,
+  if (unsupportedCandidates.length > 0) {
+    const logFn = nonInteractive ? console.warn : clack.log.warn;
+    logFn(
+      "\nDetected agent files we cannot import yet (they will remain untouched):",
+    );
+    unsupportedCandidates.forEach((candidate) => {
+      logFn(
+        `  • ${candidate.displayName}: ${candidate.relativePath} (manual migration required)`,
       );
-      for (const { agent, files } of contextResult.allDetectedAgents) {
-        console.log(`  • ${agent}: ${files.join(", ")}`);
-      }
-      console.log("Non-interactive mode: continuing with fresh start template");
-      console.log("Tip: Use --import <agent> to import from a specific agent");
-    } else {
-      console.log("");
-      clack.log.info("Found rules in multiple agents:");
-      for (const { agent, files } of contextResult.allDetectedAgents) {
-        console.log(`  • ${agent}: ${files.join(", ")}`);
-      }
-      console.log("");
+    });
+  }
 
-      const choice = await clack.select({
-        message: "What would you like to do?",
-        options: [
-          {
-            value: "merge",
-            label: "Import and merge all (recommended)",
-            hint: "Keeps all rules, renames duplicates",
-          },
-          {
-            value: "choose",
-            label: "Choose one agent as source",
-            hint: "Others will be overwritten",
-          },
-          {
-            value: "fresh",
-            label: "Start fresh (ignore existing rules)",
-            hint: "Create new template",
-          },
-        ],
+  let selectedImportCandidates: AgentFileCandidate[] = [];
+  let manualCandidate: AgentFileCandidate | null = null;
+  let createAgentsTemplate = false;
+
+  if (importableCandidates.length > 0) {
+    if (nonInteractive) {
+      selectedImportCandidates = importableCandidates;
+      console.log(
+        `Importing ${selectedImportCandidates.length} existing agent file${selectedImportCandidates.length === 1 ? "" : "s"}`,
+      );
+    } else {
+      const options = importableCandidates.map((candidate) => ({
+        value: candidate.absolutePath,
+        label: candidate.displayName,
+        hint: candidate.relativePath,
+      }));
+
+      const selection = await clack.multiselect({
+        message: "Select agent files to import (all selected by default):",
+        options,
+        initialValues: options.map((option) => option.value),
+        required: false,
       });
 
-      if (clack.isCancel(choice)) {
+      if (clack.isCancel(selection)) {
         clack.cancel("Init cancelled");
         process.exit(0);
       }
 
-      if (choice === "merge") {
-        shouldMergeMultiple = true;
-      } else if (choice === "choose") {
-        // Let user pick one agent
-        const agentChoice = await clack.select({
-          message: "Which agent should be the source?",
-          options: contextResult.allDetectedAgents.map(({ agent, files }) => ({
-            value: agent,
-            label: agent,
-            hint: files.join(", "),
-          })),
+      const selectedValues = new Set(selection as string[]);
+      selectedImportCandidates = importableCandidates.filter((candidate) =>
+        selectedValues.has(candidate.absolutePath),
+      );
+
+      if (selectedImportCandidates.length === 0) {
+        const confirmFreshStart = await clack.confirm({
+          message:
+            "No agent files selected. Start with a fresh template instead?",
+          initialValue: false,
         });
 
-        if (clack.isCancel(agentChoice)) {
+        if (clack.isCancel(confirmFreshStart)) {
           clack.cancel("Init cancelled");
           process.exit(0);
         }
 
-        shouldImport = true;
+        if (confirmFreshStart) {
+          createAgentsTemplate = true;
+        } else {
+          clack.cancel("Init cancelled");
+          process.exit(0);
+        }
       }
-      // choice === "fresh": do nothing
     }
-  } else if (
-    contextResult.allDetectedAgents.length === 1 &&
-    contextResult.allDetectedAgents[0]
-  ) {
-    // Single agent detected
-    const detectedAgent = contextResult.allDetectedAgents[0].agent;
-
+  } else {
     if (nonInteractive) {
-      // Non-interactive without --import flag: skip import (safe default)
+      createAgentsTemplate = true;
       console.log(
-        `\nDetected: ${contextResult.existingFiles.join(", ")} (${contextResult.context})`,
-      );
-      console.log("Non-interactive mode: continuing with fresh start template");
-      console.log(
-        `Tip: Use --import ${detectedAgent} to import existing rules`,
+        "No agent files detected. Creating AGENTS.md starter so you have an editable file.",
       );
     } else {
-      // Interactive: offer import as primary option
-      console.log("");
-      clack.log.info(
-        `Found existing rules: ${contextResult.existingFiles.join(", ")}`,
-      );
-      console.log("");
-
       const choice = await clack.select({
-        message: "What would you like to do?",
+        message: "No agent files detected. How would you like to proceed?",
         options: [
           {
-            value: "import",
-            label: "Import these rules (recommended)",
-            hint: "Convert to AlignTrue format",
+            value: "create-agents",
+            label: "Create AGENTS.md starter (recommended)",
+            hint: "Adds a starter markdown file for editing",
           },
           {
-            value: "preview",
-            label: "Preview import coverage first",
-            hint: "See what will be imported",
+            value: "import-path",
+            label: "Import from an existing file path",
+            hint: "Provide a path to a markdown or Cursor file",
           },
           {
-            value: "fresh",
-            label: "Start fresh (ignore existing rules)",
-            hint: "Create new template",
+            value: "skip",
+            label: "Skip for now",
+            hint: "I'll add files later (not recommended)",
           },
         ],
       });
@@ -526,53 +547,43 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         process.exit(0);
       }
 
-      if (choice === "preview") {
-        // Show coverage report, then ask again
-        // Import disabled - not implemented for sections-only format
-        clack.log.error(
-          "Import not implemented. Author rules in AGENTS.md directly.",
+      if (choice === "create-agents") {
+        createAgentsTemplate = true;
+      } else if (choice === "import-path") {
+        manualCandidate = await promptForManualImport(cwd);
+        if (manualCandidate) {
+          selectedImportCandidates = [manualCandidate];
+        } else {
+          createAgentsTemplate = true;
+        }
+      } else {
+        const confirmSkip = await clack.confirm({
+          message:
+            "Without an agent file, AlignTrue cannot sync anything. Continue anyway?",
+          initialValue: false,
+        });
+        if (clack.isCancel(confirmSkip) || !confirmSkip) {
+          clack.cancel("Init cancelled");
+          process.exit(0);
+        }
+        clack.log.warn(
+          "Continuing without an editable agent file. Add one before running sync.",
         );
-        clack.log.info("Continuing with fresh start template");
-      } else if (choice === "import") {
-        shouldImport = true;
       }
-      // choice === "fresh": do nothing, continue with template
     }
   }
 
-  // Multi-agent merge disabled - not implemented for sections-only format
-  if (shouldMergeMultiple) {
-    if (!nonInteractive) {
-      clack.log.error(
-        "Merge not implemented. Author rules in AGENTS.md directly.",
-      );
-      clack.log.info("Continuing with fresh start template");
-    } else {
-      console.error(
-        "Merge not implemented. Author rules in AGENTS.md directly.",
-      );
-      console.log("Continuing with fresh start template");
-    }
-  } else if (shouldImport) {
-    // Import disabled - not implemented for sections-only format
-    if (!nonInteractive) {
-      clack.log.error(
-        "Import not implemented. Author rules in AGENTS.md directly.",
-      );
-      clack.log.info("Continuing with fresh start template");
-    } else {
-      console.error(
-        "Import not implemented. Author rules in AGENTS.md directly.",
-      );
-      console.log("Continuing with fresh start template");
-    }
+  const selectedAgentsSet = new Set<string>();
+  selectedImportCandidates.forEach((candidate) =>
+    selectedAgentsSet.add(candidate.agent),
+  );
+
+  if (manualCandidate) {
+    selectedAgentsSet.add(manualCandidate.agent);
   }
 
-  // Step 5: Select agents to enable
   let selectedAgents: string[];
-
   if (exporters) {
-    // CLI args override detection
     selectedAgents = exporters;
     const msg = `Using exporters from CLI: ${selectedAgents.join(", ")}`;
     if (nonInteractive) {
@@ -580,46 +591,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     } else {
       clack.log.info(msg);
     }
-  } else if (nonInteractive) {
-    // Non-interactive: use detected or defaults
-    if (agentResult.detected.length > 0) {
-      selectedAgents = agentResult.detected;
-      console.log(`Will enable: ${agentResult.detected.join(", ")}`);
-    } else {
-      selectedAgents = ["cursor", "agents-md"];
-      console.log("Will enable: cursor, agents-md (defaults)");
-    }
-  } else if (agentResult.detected.length === 0) {
-    // No agents detected - use defaults
-    clack.log.info("\nUsing default exporters: cursor, agents-md");
-    selectedAgents = ["cursor", "agents-md"];
-  } else if (agentResult.detected.length <= 3) {
-    // ≤3 detected: enable all automatically
-    selectedAgents = agentResult.detected;
-    const displayNames = selectedAgents
-      .map((name) => agentResult.displayNames.get(name) || name)
-      .join(", ");
-    clack.log.success(`Will enable: ${displayNames}`);
+  } else if (selectedAgentsSet.size > 0) {
+    selectedAgents = Array.from(selectedAgentsSet);
   } else {
-    // >3 detected: prompt to select
-    const options = agentResult.detected.map((name) => ({
-      value: name,
-      label: agentResult.displayNames.get(name) || name,
-    }));
-
-    const selected = await clack.multiselect({
-      message: "Select agents to enable:",
-      options,
-      initialValues: agentResult.detected,
-      required: false,
-    });
-
-    if (clack.isCancel(selected)) {
-      clack.cancel("Init cancelled");
-      process.exit(0);
-    }
-
-    selectedAgents = selected as string[];
+    selectedAgents = ["cursor", "agents-md"];
   }
 
   // Step 6: Get project ID for template
@@ -660,30 +635,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     projectIdValue = projectIdResponse as string;
   }
 
-  // Step 7: Determine primary agent and template format
-  const primaryAgent = selectedAgents[0] || "cursor";
-  const useNativeFormat = [
-    "cursor",
-    "copilot",
-    "claude-code",
-    "aider",
-    "agents-md",
-  ].includes(primaryAgent);
-
-  let nativeTemplatePath: string | null = null;
-  let nativeTemplate: string | null = null;
-
-  if (useNativeFormat) {
-    if (primaryAgent === "cursor") {
-      nativeTemplatePath = getCursorStarterPath();
-      nativeTemplate = generateCursorStarter();
-    } else {
-      // For all other agents, use AGENTS.md format
-      nativeTemplatePath = getAgentsMdStarterPath();
-      nativeTemplate = generateAgentsMdStarter();
-    }
-  }
-
   // Step 8: Confirm file creation
   const paths = getAlignTruePaths(cwd);
   const aligntrueDir = paths.aligntrueDir;
@@ -693,22 +644,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     console.log("\nCreating files:");
     console.log("  - .aligntrue/config.yaml (minimal solo config)");
     console.log("  - .aligntrue/.rules.yaml (internal IR, auto-generated)");
-    console.log("  - AGENTS.md (primary editing file)");
-    if (nativeTemplatePath && nativeTemplate) {
-      console.log(
-        `  - ${nativeTemplatePath} (5 starter rules in native format)`,
-      );
+    if (createAgentsTemplate) {
+      console.log("  - AGENTS.md (starter template)");
     }
   } else {
     clack.log.info("\nWill create:");
     clack.log.info(`  - .aligntrue/config.yaml (minimal solo config)`);
     clack.log.info(`  - .aligntrue/.rules.yaml (internal IR, auto-generated)`);
-    clack.log.info(`  - AGENTS.md (primary editing file)`);
-
-    if (nativeTemplatePath && nativeTemplate) {
-      clack.log.info(
-        `  - ${nativeTemplatePath} (5 starter rules in native format)`,
-      );
+    if (createAgentsTemplate) {
+      clack.log.info(`  - AGENTS.md (starter template)`);
     }
 
     const confirmCreate = await clack.confirm({
@@ -723,10 +667,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 9: Create files
-  if (!nonInteractive && spinner) {
-    spinner.start("Creating files");
-  }
-
   // Create .aligntrue/ directory
   mkdirSync(aligntrueDir, { recursive: true });
 
@@ -752,35 +692,31 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     };
   }
 
-  // Build inclusive edit_source based on selected exporters AND created files
-  const exporterToPattern: Record<string, string> = {
-    cursor: ".cursor/rules/*.mdc",
-    "agents-md": "AGENTS.md",
-    copilot: ".github/copilot-instructions.md",
-    "claude-code": "CLAUDE.md",
-    aider: ".aider.conf.yml",
-  };
-
-  const editSourcePatterns: string[] = [];
-
-  // Add patterns for enabled exporters
-  for (const exporter of selectedAgents) {
-    const pattern = exporterToPattern[exporter];
+  const editSourceSet = new Set<string>();
+  selectedAgents.forEach((agent) => {
+    const pattern = EDIT_SOURCE_PATTERNS[agent];
     if (pattern) {
-      editSourcePatterns.push(pattern);
+      editSourceSet.add(pattern);
+    }
+  });
+  for (const candidate of selectedImportCandidates) {
+    const pattern = getEditSourcePatternForAgent(candidate);
+    if (pattern) {
+      editSourceSet.add(pattern);
     }
   }
-
-  // Always include AGENTS.md since it's always created
-  if (!editSourcePatterns.includes("AGENTS.md")) {
-    editSourcePatterns.push("AGENTS.md");
+  if (createAgentsTemplate) {
+    editSourceSet.add("AGENTS.md");
   }
 
-  // Configure sync settings with all created file patterns
+  const editSourceValues = Array.from(editSourceSet);
   const editSource =
-    editSourcePatterns.length > 1 ? editSourcePatterns : editSourcePatterns[0];
+    editSourceValues.length === 0
+      ? undefined
+      : editSourceValues.length === 1
+        ? editSourceValues[0]
+        : editSourceValues;
 
-  // Set inclusive edit_source based on enabled exporters and created files
   config.sync = {
     ...(editSource && { edit_source: editSource }),
   };
@@ -793,37 +729,69 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   // Create native format template or IR fallback
   const createdFiles: string[] = [".aligntrue/config.yaml"];
 
-  // Create AGENTS.md as primary user-editable file
-  const agentsMdContent = generateAgentsMdStarter(projectIdValue);
-  const agentsMdPath = `${cwd}/AGENTS.md`;
-  const agentsMdTempPath = `${agentsMdPath}.tmp`;
-  writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
-  renameSync(agentsMdTempPath, agentsMdPath);
-  createdFiles.push("AGENTS.md");
+  let agentsMdContent: string | null = null;
 
-  // Parse AGENTS.md to create IR with sections
-  const parseResult = parseNaturalMarkdown(
-    agentsMdContent,
-    `${projectIdValue}-rules`,
-  );
-
-  let pack: IRDocument;
-  if (parseResult.sections.length > 0) {
-    pack = {
-      id: parseResult.metadata.id || `${projectIdValue}-rules`,
-      version: parseResult.metadata.version || "1.0.0",
-      spec_version: "1",
-      sections: parseResult.sections,
-    };
-  } else {
-    // Fallback to empty pack if parsing failed
-    pack = {
-      id: `${projectIdValue}-rules`,
-      version: "1.0.0",
-      spec_version: "1",
-      sections: [],
-    };
+  if (createAgentsTemplate) {
+    agentsMdContent = generateAgentsMdStarter(projectIdValue);
+    const agentsMdPath = `${cwd}/AGENTS.md`;
+    const agentsMdTempPath = `${agentsMdPath}.tmp`;
+    writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
+    renameSync(agentsMdTempPath, agentsMdPath);
+    createdFiles.push("AGENTS.md");
   }
+
+  let packSections: Section[] = [];
+
+  if (selectedImportCandidates.length > 0) {
+    const mergeOutcome = await mergeAgentFileSections(
+      selectedImportCandidates,
+      `${projectIdValue}-rules`,
+      nonInteractive,
+    );
+    packSections = mergeOutcome.sections;
+    if (mergeOutcome.stats.length > 0) {
+      const totalSections = mergeOutcome.stats.reduce(
+        (sum, entry) => sum + entry.count,
+        0,
+      );
+      const info = nonInteractive ? console.log : clack.log.success;
+      info(
+        `Imported ${totalSections} section${totalSections === 1 ? "" : "s"} from ${mergeOutcome.stats.length} file${mergeOutcome.stats.length === 1 ? "" : "s"}.`,
+      );
+    }
+
+    if (mergeOutcome.conflicts.length > 0) {
+      const warn = nonInteractive ? console.warn : clack.log.warn;
+      warn(
+        `Detected ${mergeOutcome.conflicts.length} conflicting section${mergeOutcome.conflicts.length === 1 ? "" : "s"} (newest edit wins).`,
+      );
+      mergeOutcome.conflicts.slice(0, 5).forEach((conflict) => {
+        warn(
+          `  • ${conflict.heading}: ${conflict.files
+            .map((file) => file.path)
+            .join(", ")}`,
+        );
+      });
+      if (mergeOutcome.conflicts.length > 5) {
+        warn("  … additional conflicts truncated for brevity");
+      }
+    }
+  }
+
+  if (packSections.length === 0 && agentsMdContent) {
+    const parseResult = parseNaturalMarkdown(
+      agentsMdContent,
+      `${projectIdValue}-rules`,
+    );
+    packSections = parseResult.sections;
+  }
+
+  const pack: IRDocument = {
+    id: `${projectIdValue}-rules`,
+    version: "1.0.0",
+    spec_version: "1",
+    sections: packSections,
+  };
 
   // Write pure YAML to .aligntrue/.rules.yaml (internal)
   const warningComment = `# WARNING: This file is auto-generated by AlignTrue
@@ -844,24 +812,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   writeFileSync(rulesTempPath, yamlContent, "utf-8");
   renameSync(rulesTempPath, rulesPath);
   createdFiles.push(".aligntrue/.rules.yaml (internal)");
-
-  // Create native format template if applicable
-  if (nativeTemplatePath && nativeTemplate) {
-    const nativeFullPath = `${cwd}/${nativeTemplatePath}`;
-    const nativeDir = dirname(nativeFullPath);
-
-    mkdirSync(nativeDir, { recursive: true });
-
-    // Write native template atomically (temp + rename)
-    const nativeTempPath = `${nativeFullPath}.tmp`;
-    writeFileSync(nativeTempPath, nativeTemplate, "utf-8");
-    renameSync(nativeTempPath, nativeFullPath);
-    createdFiles.push(nativeTemplatePath);
-  }
-
-  if (!nonInteractive && spinner) {
-    spinner.stop("Files created");
-  }
 
   if (nonInteractive) {
     console.log("\nCreated files:");
@@ -897,37 +847,237 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   console.log("  Edit: .aligntrue/config.yaml");
   console.log("  Or run: aligntrue config set <key> <value>");
 
-  // Step 11: Show success message and next steps (workflow-specific)
+  // Step 11: Offer first sync
   if (noSync) {
-    // User explicitly skipped sync
     if (nonInteractive) {
       console.log(
-        "\nSkipped sync (--no-sync). Run 'aligntrue sync' when ready.",
+        "\nSkipped sync (--no-sync). Run 'aligntrue sync' when you are ready.",
       );
     } else {
-      const message = `\n✓ Initialization complete\n\nNext: Run 'aligntrue sync' to sync rules to agents\n\nLearn more: ${DOCS_QUICKSTART}`;
-      clack.outro(message);
+      clack.log.info(
+        "Skipped sync (--no-sync). Run 'aligntrue sync' when you are ready.",
+      );
     }
   } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
   } else {
-    let message = "\nNext steps:\n";
+    const shouldSyncNow = await clack.confirm({
+      message: "Run 'aligntrue sync' now?",
+      initialValue: true,
+    });
 
-    // Fresh start workflow message
-    message += `  1. Edit rules: AGENTS.md\n`;
-    message += `  2. Sync to agents: aligntrue sync\n`;
-    if (config.mode === "solo") {
-      message += `  3. Enable team mode: aligntrue team enable\n`;
+    if (clack.isCancel(shouldSyncNow)) {
+      clack.cancel("Init cancelled");
+      process.exit(0);
     }
 
-    message += `\n💡 Edit rules in any agent file\n`;
-    message += `   AGENTS.md, .cursor/*.mdc, etc. - AlignTrue keeps them synced`;
+    if (shouldSyncNow) {
+      try {
+        const { sync } = await import("./sync/index.js");
+        await sync([]);
+      } catch (error) {
+        clack.log.error(
+          `Sync failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        clack.log.info(
+          "Resolve the issue, then run 'aligntrue sync' manually.",
+        );
+      }
+    } else {
+      clack.log.info("Run 'aligntrue sync' when you're ready.");
+    }
+  }
 
-    message += `\n\nLearn more: ${DOCS_QUICKSTART}`;
-
-    clack.outro(message);
+  if (nonInteractive) {
+    console.log(`Learn more: ${DOCS_QUICKSTART}`);
+  } else {
+    clack.log.info(`Learn more: ${DOCS_QUICKSTART}`);
   }
 
   // Record telemetry event
   recordEvent({ command_name: "init", align_hashes_used: [] });
+}
+
+async function mergeAgentFileSections(
+  candidates: AgentFileCandidate[],
+  packId: string,
+  nonInteractive: boolean,
+): Promise<{
+  sections: Section[];
+  conflicts: SectionConflict[];
+  stats: Array<{ path: string; count: number }>;
+}> {
+  if (candidates.length === 0) {
+    return { sections: [], conflicts: [], stats: [] };
+  }
+
+  const editedFiles: EditedFile[] = [];
+  for (const candidate of candidates) {
+    const edited = convertCandidateToEditedFile(candidate, nonInteractive);
+    if (edited) {
+      editedFiles.push(edited);
+    }
+  }
+
+  if (editedFiles.length === 0) {
+    return { sections: [], conflicts: [], stats: [] };
+  }
+
+  const { mergeFromMultipleFiles } = await import(
+    "@aligntrue/core/sync/multi-file-parser"
+  );
+
+  const basePack: AlignPack = {
+    id: packId,
+    version: "1.0.0",
+    spec_version: "1",
+    sections: [],
+  };
+
+  const mergeResult = mergeFromMultipleFiles(editedFiles, basePack);
+  const stats = editedFiles.map((file) => ({
+    path: file.path,
+    count: file.sections.length,
+  }));
+
+  return {
+    sections: (mergeResult.mergedPack.sections || []) as Section[],
+    conflicts: mergeResult.conflicts || [],
+    stats,
+  };
+}
+
+function convertCandidateToEditedFile(
+  candidate: AgentFileCandidate,
+  nonInteractive: boolean,
+): EditedFile | null {
+  const parser = parserForFormat(candidate.format);
+  if (!parser) {
+    return null;
+  }
+
+  try {
+    const fileContent = readFileSync(candidate.absolutePath, "utf-8");
+    let parsed: ReturnType<typeof parseAgentsMd>;
+
+    if (parser === "cursor") {
+      parsed = parseCursorMdc(fileContent);
+    } else if (parser === "agents") {
+      parsed = parseAgentsMd(fileContent);
+    } else {
+      parsed = parseGenericMarkdown(fileContent);
+    }
+
+    const stats = statSync(candidate.absolutePath);
+
+    return {
+      path: candidate.relativePath,
+      absolutePath: candidate.absolutePath,
+      format:
+        parser === "cursor"
+          ? "cursor-mdc"
+          : parser === "agents"
+            ? "agents-md"
+            : "generic",
+      sections: parsed.sections.map((section) => ({
+        heading: section.heading,
+        content: section.content,
+        level: section.level,
+        hash: section.hash,
+      })),
+      mtime: stats.mtime,
+    };
+  } catch (error) {
+    const warn = nonInteractive ? console.warn : clack.log.warn;
+    warn(
+      `Failed to parse ${candidate.relativePath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return null;
+  }
+}
+
+async function promptForManualImport(
+  cwd: string,
+): Promise<AgentFileCandidate | null> {
+  const response = await clack.text({
+    message: "Path to existing agent file:",
+    placeholder: "docs/CLAUDE.md",
+    validate: (value) => {
+      if (!value || value.trim().length === 0) {
+        return "Path is required";
+      }
+    },
+  });
+
+  if (clack.isCancel(response)) {
+    return null;
+  }
+
+  const requestedPath = response as string;
+  const absolutePath = resolve(cwd, requestedPath);
+
+  try {
+    const stats = statSync(absolutePath);
+    if (!stats.isFile()) {
+      clack.log.warn(`Path is not a file: ${requestedPath}`);
+      return null;
+    }
+  } catch {
+    clack.log.warn(`File not found: ${requestedPath}`);
+    return null;
+  }
+
+  const { agent, format } = inferAgentFromFilename(absolutePath);
+  if (!isFormatImportable(format)) {
+    clack.log.warn(
+      `Cannot import ${requestedPath} automatically yet (unsupported format)`,
+    );
+    return null;
+  }
+
+  return {
+    agent,
+    displayName: getAgentDisplayName(agent),
+    absolutePath,
+    relativePath: relativePathSafe(cwd, absolutePath),
+    format,
+    importable: true,
+    pathType: "file",
+  };
+}
+
+function inferAgentFromFilename(filePath: string): {
+  agent: string;
+  format: AgentFileFormat;
+} {
+  const fileName = basename(filePath).toLowerCase();
+  const mapping: Record<string, string> = {
+    "agents.md": "agents-md",
+    "claude.md": "claude-md",
+    "crush.md": "crush-md",
+    "warp.md": "warp-md",
+    "gemini.md": "gemini-md",
+    "windsurf.md": "windsurf-md",
+    "aider.md": "aider-md",
+    "opencode.md": "opencode-md",
+    "roocode.md": "roocode-md",
+    "zed.md": "zed-md",
+  };
+
+  if (fileName.endsWith(".mdc")) {
+    return { agent: "cursor", format: "cursor-mdc" };
+  }
+
+  if (mapping[fileName]) {
+    return { agent: mapping[fileName]!, format: "generic-markdown" };
+  }
+
+  return { agent: "agents-md", format: "generic-markdown" };
+}
+
+function relativePathSafe(root: string, fullPath: string): string {
+  const rel = relative(root, fullPath);
+  return rel === "" || rel.startsWith("..") ? fullPath : rel;
 }

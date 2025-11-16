@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Init no longer overwrites existing agent files**
+  - Detects all existing supported agent formats and merges them into `.aligntrue/.rules.yaml` during `aligntrue init`
+  - Only creates a new `AGENTS.md` starter when no agent files are found (or when the user explicitly asks for one)
+  - Prompts for manual import paths when detection misses a markdown or Cursor file, with clear errors if parsing fails
+  - Asks the user whether to run `aligntrue sync` immediately after initialization instead of auto-syncing silently
+
 - **Improved CLI user experience** - Enhanced help text and error messages for better discoverability
   - Suppressed confusing "Invalid IR pack" warnings during normal sync operations (validation still occurs at parse time and before export)
   - Enhanced `override add` command help with clear examples showing section-based selectors
