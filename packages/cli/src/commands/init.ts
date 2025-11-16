@@ -324,7 +324,9 @@ export async function init(args: string[] = []): Promise<void> {
       });
 
       if (clack.isCancel(choice) || choice === "exit") {
-        clack.outro("No changes made. Run 'aligntrue sync' to get started.");
+        clack.outro(
+          "No changes made. Edit AGENTS.md or your agent files and run 'aligntrue sync' to merge them.",
+        );
         process.exit(0);
       }
 
