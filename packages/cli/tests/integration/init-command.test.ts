@@ -64,7 +64,7 @@ describeSkipWindows("Init Command Integration", () => {
       expect(rulesContent).toContain("sections:");
     });
 
-    it("creates .cursor/rules/aligntrue-starter.mdc when cursor is primary exporter", async () => {
+    it("does not create cursor starter files automatically", async () => {
       await init([
         "--yes",
         "--project-id",
@@ -79,12 +79,7 @@ describeSkipWindows("Init Command Integration", () => {
         "rules",
         "aligntrue-starter.mdc",
       );
-      expect(existsSync(cursorPath)).toBe(true);
-
-      const cursorContent = readFileSync(cursorPath, "utf-8");
-      expect(cursorContent).toContain("---");
-      expect(cursorContent).toContain("description:");
-      expect(cursorContent).toContain("alwaysApply:");
+      expect(existsSync(cursorPath)).toBe(false);
     });
 
     it("uses default exporters when none specified", async () => {
@@ -177,8 +172,6 @@ describeSkipWindows("Init Command Integration", () => {
       ]);
 
       expect(existsSync(join(TEST_DIR, ".aligntrue"))).toBe(true);
-      expect(existsSync(join(TEST_DIR, ".cursor"))).toBe(true);
-      expect(existsSync(join(TEST_DIR, ".cursor", "rules"))).toBe(true);
     });
   });
 
@@ -341,6 +334,59 @@ describeSkipWindows("Init Command Integration", () => {
 
       // Verify lockfile still exists (not deleted)
       expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+    });
+  });
+
+  describe("Importing existing agent files", () => {
+    it("imports AGENTS.md without overwriting content", async () => {
+      const agentsPath = join(TEST_DIR, "AGENTS.md");
+      writeFileSync(
+        agentsPath,
+        "## Existing Rules\n\nAlways run tests before commit.\n",
+        "utf-8",
+      );
+
+      await init(["--yes", "--project-id", "test-project"]);
+
+      const finalAgentsContent = readFileSync(agentsPath, "utf-8");
+      expect(finalAgentsContent).toContain("Existing Rules");
+
+      const rulesContent = readFileSync(
+        join(TEST_DIR, ".aligntrue", ".rules.yaml"),
+        "utf-8",
+      );
+      expect(rulesContent).toContain("Existing Rules");
+    });
+
+    it("imports cursor .mdc files when present", async () => {
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      const cursorFile = join(cursorDir, "custom.mdc");
+      writeFileSync(
+        cursorFile,
+        `---
+title: Custom
+alwaysApply: true
+---
+
+## Cursor Rule
+
+Be nice to cursors.
+`,
+        "utf-8",
+      );
+
+      await init(["--yes", "--project-id", "test-project"]);
+
+      const rulesContent = readFileSync(
+        join(TEST_DIR, ".aligntrue", ".rules.yaml"),
+        "utf-8",
+      );
+      expect(rulesContent).toContain("Cursor Rule");
+
+      // Ensure original file left untouched
+      const cursorContent = readFileSync(cursorFile, "utf-8");
+      expect(cursorContent).toContain("Cursor Rule");
     });
   });
 });

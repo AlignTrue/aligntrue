@@ -1,8 +1,3 @@
-/**
- * Test edit_source logic in init command
- * Verifies that AGENTS.md is always included since it's always created
- */
-
 import { describe, it, expect } from "vitest";
 
 describe("init command edit_source logic", () => {
@@ -14,69 +9,58 @@ describe("init command edit_source logic", () => {
     aider: ".aider.conf.yml",
   };
 
-  function calculateEditSource(selectedAgents: string[]): string | string[] {
-    const editSourcePatterns: string[] = [];
+  function calculateEditSource(
+    selectedAgents: string[],
+    options: { createAgentsTemplate?: boolean; importedAgents?: string[] } = {},
+  ): string | string[] | undefined {
+    const patterns = new Set<string>();
 
-    // Add patterns for enabled exporters
-    for (const exporter of selectedAgents) {
-      const pattern = exporterToPattern[exporter];
+    selectedAgents.forEach((agent) => {
+      const pattern = exporterToPattern[agent];
       if (pattern) {
-        editSourcePatterns.push(pattern);
+        patterns.add(pattern);
       }
+    });
+
+    options.importedAgents?.forEach((agent) => {
+      const pattern = exporterToPattern[agent];
+      if (pattern) {
+        patterns.add(pattern);
+      }
+    });
+
+    if (options.createAgentsTemplate) {
+      patterns.add("AGENTS.md");
     }
 
-    // Always include AGENTS.md since it's always created
-    if (!editSourcePatterns.includes("AGENTS.md")) {
-      editSourcePatterns.push("AGENTS.md");
+    const values = Array.from(patterns);
+    if (values.length === 0) {
+      return undefined;
     }
-
-    // Configure sync settings with all created file patterns
-    const editSource =
-      editSourcePatterns.length > 1
-        ? editSourcePatterns
-        : editSourcePatterns[0];
-
-    return editSource;
+    return values.length === 1 ? values[0] : values;
   }
 
-  it("should include both Cursor and AGENTS.md for cursor exporter only", () => {
+  it("includes cursor pattern when cursor exporter enabled", () => {
     const result = calculateEditSource(["cursor"]);
+    expect(result).toBe(".cursor/rules/*.mdc");
+  });
+
+  it("adds AGENTS.md when starter template is created", () => {
+    const result = calculateEditSource(["cursor"], {
+      createAgentsTemplate: true,
+    }) as string[];
     expect(result).toEqual([".cursor/rules/*.mdc", "AGENTS.md"]);
   });
 
-  it("should include only AGENTS.md for agents-md exporter", () => {
-    const result = calculateEditSource(["agents-md"]);
-    expect(result).toBe("AGENTS.md");
+  it("adds AGENTS.md when agents-md file is imported", () => {
+    const result = calculateEditSource(["cursor"], {
+      importedAgents: ["agents-md"],
+    }) as string[];
+    expect(result).toContain("AGENTS.md");
   });
 
-  it("should include both patterns when both exporters enabled", () => {
-    const result = calculateEditSource(["cursor", "agents-md"]);
-    expect(result).toEqual([".cursor/rules/*.mdc", "AGENTS.md"]);
-  });
-
-  it("should include AGENTS.md even when no exporters specified", () => {
-    const result = calculateEditSource([]);
-    expect(result).toBe("AGENTS.md");
-  });
-
-  it("should include multiple patterns for multiple exporters", () => {
-    const result = calculateEditSource(["cursor", "copilot"]);
-    expect(result).toEqual([
-      ".cursor/rules/*.mdc",
-      ".github/copilot-instructions.md",
-      "AGENTS.md",
-    ]);
-  });
-
-  it("should not duplicate AGENTS.md if agents-md exporter is in the list", () => {
-    const result = calculateEditSource(["agents-md"]) as string | string[];
-    const patterns = Array.isArray(result) ? result : [result];
-    const agentsMdCount = patterns.filter((p) => p === "AGENTS.md").length;
-    expect(agentsMdCount).toBe(1);
-  });
-
-  it("should handle unknown exporters gracefully", () => {
-    const result = calculateEditSource(["unknown-exporter"]);
-    expect(result).toBe("AGENTS.md");
+  it("returns undefined when no editable sources exist", () => {
+    const result = calculateEditSource(["unknown"]);
+    expect(result).toBeUndefined();
   });
 });
