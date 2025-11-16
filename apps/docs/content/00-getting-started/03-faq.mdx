@@ -36,15 +36,16 @@ Yes! AlignTrue is MIT-licensed open source. The CLI and all core features are fr
 Under 60 seconds:
 
 ```bash
-npx aligntrue init  # Auto-detects agents, creates config
-aligntrue sync      # Generates agent files
+npm install -g aligntrue  # Install CLI globally
+aligntrue init            # Auto-detects agents, creates config
+aligntrue sync            # Generates agent files
 ```
 
 ### Do I need to install anything?
 
 Just Node.js 22+ and the AlignTrue CLI:
 
-<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (one-off commands)"]}>
 
 <Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
 
@@ -54,7 +55,7 @@ Just Node.js 22+ and the AlignTrue CLI:
 
 <Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash npx aligntrue init # Try without installing ```</Tabs.Tab>
+<Tabs.Tab>```bash npx aligntrue init # For one-off commands ```</Tabs.Tab>
 
 </Tabs>
 
@@ -68,7 +69,7 @@ AlignTrue can import existing configs:
 aligntrue init  # Detects existing configs, offers import
 ```
 
-Just copy the content into AGENTS.md and run `aligntrue sync`.
+Accept the import prompts to pull existing agent files into AlignTrue, then run `aligntrue sync` to push the merged rules everywhere.
 
 ## Usage
 
@@ -250,7 +251,7 @@ These fields are excluded from hashing but preserved on round-trips.
 
 Install globally:
 
-<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (one-off commands)"]}>
 
 <Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
 
@@ -260,7 +261,7 @@ Install globally:
 
 <Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
 
-<Tabs.Tab>```bash npx aligntrue --help # Try without installing ```</Tabs.Tab>
+<Tabs.Tab>```bash npx aligntrue --help # For one-off commands ```</Tabs.Tab>
 
 </Tabs>
 

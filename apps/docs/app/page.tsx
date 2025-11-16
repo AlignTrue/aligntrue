@@ -723,16 +723,16 @@ export default function HomePage() {
                   textWrap: "pretty",
                 }}
               >
-                Write once, sync everywhere. 28+ agents supported. Extensible.{" "}
+                Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
                 <strong>Start in 60 seconds.</strong>
               </p>
               <div
                 className="quickstart-steps"
                 style={{
-                  maxWidth: "56rem",
+                  maxWidth: "60rem",
                   margin: "0 auto 2rem",
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
                   gap: "2rem",
                 }}
               >
@@ -779,7 +779,7 @@ export default function HomePage() {
                         margin: 0,
                       }}
                     >
-                      Initialize
+                      Install
                     </h3>
                   </div>
                   <div
@@ -804,9 +804,9 @@ export default function HomePage() {
                         fontWeight: "500",
                       }}
                     >
-                      npx aligntrue init
+                      npm install -g aligntrue
                     </code>
-                    <CopyButton text="npx aligntrue init" />
+                    <CopyButton text="npm install -g aligntrue" />
                   </div>
                   <p
                     style={{
@@ -821,8 +821,8 @@ export default function HomePage() {
                       marginRight: "auto",
                     }}
                   >
-                    Auto-detects agents, imports existing rules, or creates{" "}
-                    <code>AGENTS.md</code>.
+                    Install to manage agent rules (Cursor <code>.mdc</code>,{" "}
+                    <code>AGENTS.md</code>, <code>CLAUDE.md</code>, etc.).
                   </p>
                 </div>
 
@@ -869,7 +869,7 @@ export default function HomePage() {
                         margin: 0,
                       }}
                     >
-                      Sync
+                      Initialize
                     </h3>
                   </div>
                   <div
@@ -894,9 +894,9 @@ export default function HomePage() {
                         fontWeight: "500",
                       }}
                     >
-                      aligntrue sync
+                      aligntrue init
                     </code>
-                    <CopyButton text="aligntrue sync" />
+                    <CopyButton text="aligntrue init" />
                   </div>
                   <p
                     style={{
@@ -911,8 +911,9 @@ export default function HomePage() {
                       marginRight: "auto",
                     }}
                   >
-                    Generates & updates each agent's native files (Cursor,
-                    AGENTS.md, VS Code, etc.).
+                    <strong>Auto-detects</strong>, <strong>imports</strong> &{" "}
+                    <strong>syncs</strong> existing rules, or creates smart
+                    defaults if desired.
                   </p>
                 </div>
               </div>
