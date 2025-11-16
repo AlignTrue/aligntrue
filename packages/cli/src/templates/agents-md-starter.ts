@@ -4,11 +4,11 @@
  */
 
 export function generateAgentsMdStarter(_projectId?: string): string {
-  return `# AGENTS
+  return `## AGENTS
 
 <!-- Default rules to get you started. Update, remove, or replace them as needed. -->
 
-## Global principles
+### Global principles
 
 1. Keep the codebase stable, safe, and maintainable.
 
@@ -24,7 +24,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Project awareness
+### Project awareness
 
 - Before changing anything, scan the repo structure:
 
@@ -42,7 +42,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Coding guidelines
+### Coding guidelines
 
 - Match the existing formatting and lint rules.
 
@@ -70,7 +70,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## AI maintainable code
+### AI maintainable code
 
 - Make structure obvious, keep directories organized, and use descriptive naming.
 
@@ -92,7 +92,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Tests
+### Tests
 
 - For any nontrivial change:
 
@@ -110,7 +110,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Dependencies
+### Dependencies
 
 - Minimize new dependencies.
 
@@ -126,7 +126,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Performance and reliability
+### Performance and reliability
 
 - Avoid wasteful patterns such as unnecessary nested loops or repeated heavy computations.
 
@@ -138,7 +138,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Security and privacy
+### Security and privacy
 
 - Never log secrets, tokens, passwords, or personal data.
 
@@ -152,7 +152,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Documentation
+### Documentation
 
 - Update docs when behavior, APIs, or flows change.
 
@@ -164,7 +164,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Git and change hygiene
+### Git and change hygiene
 
 - Prefer small, coherent changes.
 
@@ -176,7 +176,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## Interaction style
+### Interaction style
 
 - Be concise but precise.
 
@@ -192,7 +192,7 @@ export function generateAgentsMdStarter(_projectId?: string): string {
 
 ---
 
-## When to stop and ask
+### When to stop and ask
 
 - Stop and ask when requirements are ambiguous or conflict.
 
