@@ -144,47 +144,49 @@ sections:
     expect(maxDuration).toBeLessThan(5000);
   }, 20000);
 
-  it("Large rule set: handles 100+ rules in <60 seconds", async () => {
-    const LARGE_RULES_SOURCE = join(
-      __dirname,
-      "../../../..",
-      "examples/remote-test/large-rules",
-    );
-
-    // Skip if fixtures don't exist yet
-    try {
-      await fs.access(LARGE_RULES_SOURCE);
-    } catch {
-      console.log(
-        "Skipping test: Large rule fixtures not found in examples/remote-test/large-rules",
+  it.skipIf(!process.env.CI)(
+    "Large rule set: handles 100+ rules in <60 seconds",
+    async () => {
+      const LARGE_RULES_SOURCE = join(
+        __dirname,
+        "../../../..",
+        "examples/remote-test/large-rules",
       );
-      return;
-    }
 
-    const projectDir = join(testDir, "large-rules");
-    await fs.mkdir(projectDir, { recursive: true });
-    await fs.mkdir(join(projectDir, ".aligntrue"), { recursive: true });
+      // Skip if fixtures don't exist yet
+      try {
+        await fs.access(LARGE_RULES_SOURCE);
+      } catch {
+        console.log(
+          "Skipping test: Large rule fixtures not found in examples/remote-test/large-rules",
+        );
+        return;
+      }
 
-    // Copy large rule fixtures
-    await fs.cp(LARGE_RULES_SOURCE, join(projectDir, "rules"), {
-      recursive: true,
-    });
+      const projectDir = join(testDir, "large-rules");
+      await fs.mkdir(projectDir, { recursive: true });
+      await fs.mkdir(join(projectDir, ".aligntrue"), { recursive: true });
 
-    // Get list of rule files
-    const ruleFiles = await fs.readdir(join(projectDir, "rules"));
-    const mdFiles = ruleFiles.filter((f) => f.endsWith(".md"));
+      // Copy large rule fixtures
+      await fs.cp(LARGE_RULES_SOURCE, join(projectDir, "rules"), {
+        recursive: true,
+      });
 
-    console.log(`Testing with ${mdFiles.length} rule files`);
+      // Get list of rule files
+      const ruleFiles = await fs.readdir(join(projectDir, "rules"));
+      const mdFiles = ruleFiles.filter((f) => f.endsWith(".md"));
 
-    // Create config with all rule files as sources
-    const sources = mdFiles.map((file) => ({
-      type: "local",
-      path: `rules/${file}`,
-    }));
+      console.log(`Testing with ${mdFiles.length} rule files`);
 
-    await fs.writeFile(
-      join(projectDir, ".aligntrue/config.yaml"),
-      `version: "1"
+      // Create config with all rule files as sources
+      const sources = mdFiles.map((file) => ({
+        type: "local",
+        path: `rules/${file}`,
+      }));
+
+      await fs.writeFile(
+        join(projectDir, ".aligntrue/config.yaml"),
+        `version: "1"
 mode: solo
 sources:
 ${sources.map((s) => `  - type: ${s.type}\n    path: ${s.path}`).join("\n")}
@@ -193,75 +195,82 @@ exporters:
 git:
   mode: ignore
 `,
-    );
-
-    // Measure memory before
-    const memBefore = process.memoryUsage();
-
-    // Measure sync time
-    const startTime = Date.now();
-
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
-
-    const duration = Date.now() - startTime;
-
-    // Measure memory after
-    const memAfter = process.memoryUsage();
-    const heapUsedMB = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
-
-    console.log(`Large rule set sync completed in ${duration}ms`);
-    console.log(`Memory used: ${heapUsedMB.toFixed(2)}MB`);
-
-    // Assert performance thresholds
-    expect(duration).toBeLessThan(60000); // <60 seconds
-    expect(heapUsedMB).toBeLessThan(500); // <500MB
-
-    // Verify AGENTS.md was created and contains content from multiple files
-    const agentsMd = await fs.readFile(join(projectDir, "AGENTS.md"), "utf-8");
-    expect(agentsMd).toContain("Backend API");
-    expect(agentsMd).toContain("Frontend React");
-    expect(agentsMd).toContain("Database");
-  }, 90000); // 90 second timeout
-
-  it("Multi-file sources: no catastrophic slowdown", async () => {
-    const LARGE_RULES_SOURCE = join(
-      __dirname,
-      "../../../..",
-      "examples/remote-test/large-rules",
-    );
-
-    // Skip if fixtures don't exist yet
-    try {
-      await fs.access(LARGE_RULES_SOURCE);
-    } catch {
-      console.log(
-        "Skipping test: Large rule fixtures not found in examples/remote-test/large-rules",
       );
-      return;
-    }
 
-    const projectDir = join(testDir, "multi-file");
-    await fs.mkdir(projectDir, { recursive: true });
-    await fs.mkdir(join(projectDir, ".aligntrue"), { recursive: true });
+      // Measure memory before
+      const memBefore = process.memoryUsage();
 
-    // Copy large rule fixtures
-    await fs.cp(LARGE_RULES_SOURCE, join(projectDir, "rules"), {
-      recursive: true,
-    });
+      // Measure sync time
+      const startTime = Date.now();
 
-    // Get list of rule files
-    const ruleFiles = await fs.readdir(join(projectDir, "rules"));
-    const mdFiles = ruleFiles.filter((f) => f.endsWith(".md"));
+      execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
 
-    // Create config with all files
-    const sources = mdFiles.map((file) => ({
-      type: "local",
-      path: `rules/${file}`,
-    }));
+      const duration = Date.now() - startTime;
 
-    await fs.writeFile(
-      join(projectDir, ".aligntrue/config.yaml"),
-      `version: "1"
+      // Measure memory after
+      const memAfter = process.memoryUsage();
+      const heapUsedMB = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+
+      console.log(`Large rule set sync completed in ${duration}ms`);
+      console.log(`Memory used: ${heapUsedMB.toFixed(2)}MB`);
+
+      // Assert performance thresholds
+      expect(duration).toBeLessThan(60000); // <60 seconds
+      expect(heapUsedMB).toBeLessThan(500); // <500MB
+
+      // Verify AGENTS.md was created and contains content from multiple files
+      const agentsMd = await fs.readFile(
+        join(projectDir, "AGENTS.md"),
+        "utf-8",
+      );
+      expect(agentsMd).toContain("Backend API");
+      expect(agentsMd).toContain("Frontend React");
+      expect(agentsMd).toContain("Database");
+    },
+    90000,
+  ); // 90 second timeout
+
+  it.skipIf(!process.env.CI)(
+    "Multi-file sources: no catastrophic slowdown",
+    async () => {
+      const LARGE_RULES_SOURCE = join(
+        __dirname,
+        "../../../..",
+        "examples/remote-test/large-rules",
+      );
+
+      // Skip if fixtures don't exist yet
+      try {
+        await fs.access(LARGE_RULES_SOURCE);
+      } catch {
+        console.log(
+          "Skipping test: Large rule fixtures not found in examples/remote-test/large-rules",
+        );
+        return;
+      }
+
+      const projectDir = join(testDir, "multi-file");
+      await fs.mkdir(projectDir, { recursive: true });
+      await fs.mkdir(join(projectDir, ".aligntrue"), { recursive: true });
+
+      // Copy large rule fixtures
+      await fs.cp(LARGE_RULES_SOURCE, join(projectDir, "rules"), {
+        recursive: true,
+      });
+
+      // Get list of rule files
+      const ruleFiles = await fs.readdir(join(projectDir, "rules"));
+      const mdFiles = ruleFiles.filter((f) => f.endsWith(".md"));
+
+      // Create config with all files
+      const sources = mdFiles.map((file) => ({
+        type: "local",
+        path: `rules/${file}`,
+      }));
+
+      await fs.writeFile(
+        join(projectDir, ".aligntrue/config.yaml"),
+        `version: "1"
 mode: solo
 sources:
 ${sources.map((s) => `  - type: ${s.type}\n    path: ${s.path}`).join("\n")}
@@ -270,27 +279,32 @@ exporters:
 git:
   mode: ignore
 `,
-    );
+      );
 
-    // Warm up
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+      // Warm up
+      execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
 
-    // Measure second sync (should be faster due to caching)
-    const startTime = Date.now();
-    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
-    const duration = Date.now() - startTime;
+      // Measure second sync (should be faster due to caching)
+      const startTime = Date.now();
+      execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+      const duration = Date.now() - startTime;
 
-    console.log(
-      `Multi-file sync (${mdFiles.length} files) completed in ${duration}ms`,
-    );
+      console.log(
+        `Multi-file sync (${mdFiles.length} files) completed in ${duration}ms`,
+      );
 
-    // Should complete reasonably fast even with multiple files
-    expect(duration).toBeLessThan(30000); // <30 seconds for second run
+      // Should complete reasonably fast even with multiple files
+      expect(duration).toBeLessThan(30000); // <30 seconds for second run
 
-    // Verify all files were processed
-    const agentsMd = await fs.readFile(join(projectDir, "AGENTS.md"), "utf-8");
+      // Verify all files were processed
+      const agentsMd = await fs.readFile(
+        join(projectDir, "AGENTS.md"),
+        "utf-8",
+      );
 
-    // Check for content from various files
-    expect(agentsMd.length).toBeGreaterThan(10000); // Should have substantial content
-  }, 60000); // 60 second timeout
+      // Check for content from various files
+      expect(agentsMd.length).toBeGreaterThan(10000); // Should have substantial content
+    },
+    60000,
+  ); // 60 second timeout
 });
