@@ -35,7 +35,7 @@ afterEach(async () => {
   }
 });
 
-describe.skip("Performance Benchmarks", () => {
+describe("Performance Benchmarks", () => {
   it("Init speed: completes in <10 seconds", async () => {
     const projectDir = join(testDir, "init-speed");
     await fs.mkdir(projectDir, { recursive: true });
