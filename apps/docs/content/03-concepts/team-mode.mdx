@@ -28,6 +28,13 @@ Team mode enables collaborative rule management with:
 | Drift detection       | ❌        | ✅        |
 | Auto-pull             | ✅        | ❌        |
 
+<Callout type="warning" title=".aligntrue.bundle.yaml status">
+  `modules.bundle` enables multi-source merging in memory, but the CLI does
+  **not** write `.aligntrue.bundle.yaml` yet. Keep the flag enabled for forward
+  compatibility; expect to continue committing `.aligntrue/.rules.yaml` and
+  `.aligntrue.lock.json` until the bundle writer ships.
+</Callout>
+
 ## Quick start
 
 ### 1. Enable team mode
@@ -68,6 +75,15 @@ Lockfiles track section fingerprints for natural markdown packs:
 For rule-based packs, `rule_id` contains the explicit rule ID. For section-based packs, it contains the section fingerprint (prefixed with `fp:`).
 
 Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
+
+### Lockfile hashing expectations
+
+Lockfile entries intentionally capture vendor metadata so they describe the exact IR state that produced your exports. Two important consequences:
+
+- Non-volatile vendor fields such as `vendor.aligntrue.last_modified` are hashed. Accepting agent edits updates these timestamps, so a new sync normally produces a new lockfile hash even if the prose looks identical.
+- Fields under `vendor.*.volatile` are ignored during hashing. You can stash diagnostics (e.g., last detection run) there without tripping lockfile drift.
+
+If you need to preview the impact of a change, run `aligntrue sync --dry-run` first. Otherwise commit the regenerated lockfile whenever hashes change—this is the expected signal that your IR evolved.
 
 ### 3. Commit lockfile
 
