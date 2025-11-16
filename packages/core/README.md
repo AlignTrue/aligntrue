@@ -196,6 +196,14 @@ lockfile:
 - Atomic writes (temp+rename) prevent partial state
 - Sorted JSON keys for deterministic output
 
+### Bundle file generation
+
+`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `AlignPack`. The merge happens in memory today—the CLI does **not** persist `.aligntrue.bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
+
+- Continue committing `.aligntrue/.rules.yaml` (IR) and `.aligntrue.lock.json`.
+- Leave `modules.bundle: true` enabled so your repo stays compatible when disk bundles arrive.
+- If you need a bundle artifact today, call the merge helpers directly from `@aligntrue/core/src/bundle.ts` in your own tooling.
+
 ### Conflict Detection
 
 ```typescript
