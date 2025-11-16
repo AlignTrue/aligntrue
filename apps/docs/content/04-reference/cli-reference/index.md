@@ -42,6 +42,8 @@ Quick lookup table for all CLI commands:
 | `aligntrue sync`            | Sync rules to agents                    | [Basic](./basic#aligntrue-sync)                                             |
 | `aligntrue watch`           | Watch files and auto-sync on changes    | [Basic](./basic#aligntrue-watch)                                            |
 | `aligntrue check`           | Validate rules                          | [Basic](./basic#aligntrue-check)                                            |
+| `aligntrue status`          | Show current status and exporters       | [Basic](./basic#aligntrue-status)                                           |
+| `aligntrue doctor`          | Run health checks and verification      | [Basic](./basic#aligntrue-doctor)                                           |
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
 | `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
 | `aligntrue adapters`        | Manage exporters                        | [Development](./development#aligntrue-adapters)                             |

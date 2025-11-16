@@ -26,6 +26,7 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/exporters": "workspace:*",
+    "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",
     "@aligntrue/sources": "workspace:*",
     "@clack/prompts": "^0.11.0",

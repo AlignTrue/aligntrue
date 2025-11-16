@@ -148,6 +148,9 @@ importers:
       '@aligntrue/exporters':
         specifier: workspace:*
         version: link:../exporters
+      '@aligntrue/plugin-contracts':
+        specifier: workspace:*
+        version: link:../plugin-contracts
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
