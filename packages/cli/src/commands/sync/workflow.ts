@@ -2,12 +2,13 @@
  * Sync workflow execution - handles backup, two-way sync, and sync execution
  */
 
-import { existsSync, unlinkSync } from "fs";
-import { join } from "path";
+import { existsSync, unlinkSync, writeFileSync } from "fs";
+import { join, resolve as resolvePath } from "path";
 import * as clack from "@clack/prompts";
-import { BackupManager } from "@aligntrue/core";
+import { BackupManager, getAlignTruePaths } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
+import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 
 /**
  * Sync result from engine
@@ -41,8 +42,11 @@ export async function executeSyncWorkflow(
   context: SyncContext,
   options: SyncOptions,
 ): Promise<SyncResult> {
-  const { cwd, config, configPath, absoluteSourcePath, engine, spinner } =
-    context;
+  const { cwd, config, configPath, engine, spinner } = context;
+
+  if (options.verbose) {
+    clack.log.info("Verbose mode enabled");
+  }
 
   // Step 1: Auto-backup (if configured and not dry-run)
   if (!options.dryRun && config.backup?.auto_backup) {
@@ -71,7 +75,13 @@ export async function executeSyncWorkflow(
 
   // Step 2: Two-way sync - detect and merge agent file edits
   if (!options.acceptAgent && config.sync?.two_way !== false) {
+    if (options.verbose) {
+      clack.log.info(
+        `Two-way sync enabled (two_way=${String(config.sync?.two_way)})`,
+      );
+    }
     await handleTwoWaySync(context, options);
+    await reapplyPackSources(context, options);
   }
 
   // Step 3: Execute sync operation
@@ -110,7 +120,7 @@ export async function executeSyncWorkflow(
     );
     result = await engine.syncFromAgent(
       options.acceptAgent,
-      absoluteSourcePath,
+      context.absoluteSourcePath,
       syncOptions,
     );
   } else {
@@ -120,7 +130,7 @@ export async function executeSyncWorkflow(
     }
 
     spinner.start(options.dryRun ? "Previewing changes" : "Syncing to agents");
-    result = await engine.syncToAgents(absoluteSourcePath, syncOptions);
+    result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
   }
 
   spinner.stop(options.dryRun ? "Preview complete" : "Sync complete");
@@ -186,6 +196,52 @@ export async function executeSyncWorkflow(
   }
 
   return result;
+}
+
+/**
+ * Reapply pack sources after two-way sync to ensure overlays remain.
+ */
+async function reapplyPackSources(
+  context: SyncContext,
+  options: SyncOptions,
+): Promise<void> {
+  const sourceCount = context.config.sources?.length ?? 0;
+  const mergedSourceCount = context.bundleResult.sources.length;
+
+  if (options.verbose) {
+    clack.log.info(
+      `Pack source summary: config=${sourceCount}, merged=${mergedSourceCount}`,
+    );
+  }
+
+  if (sourceCount <= 1 && mergedSourceCount <= 1) {
+    return;
+  }
+
+  if (options.verbose) {
+    clack.log.info("Reapplying pack sources after agent edits");
+  }
+
+  const merged = await resolveAndMergeSources(context.config, {
+    cwd: context.cwd,
+    offlineMode: options.offline || options.skipUpdateCheck,
+    forceRefresh: options.forceRefresh,
+    warnConflicts: true,
+  });
+
+  const yaml = await import("yaml");
+  const bundleYaml = yaml.stringify(merged.pack);
+  const paths = getAlignTruePaths(context.cwd);
+
+  const targetPath =
+    context.config.sources?.[0]?.type === "local"
+      ? resolvePath(context.cwd, context.config.sources[0].path || paths.rules)
+      : resolvePath(context.cwd, paths.rules);
+
+  writeFileSync(targetPath, bundleYaml, "utf-8");
+
+  context.bundleResult = merged;
+  context.absoluteSourcePath = targetPath;
 }
 
 /**
