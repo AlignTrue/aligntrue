@@ -1,5 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
+export const dynamic = "force-static";
+
 export async function GET() {
   const body = [
     "User-agent: *",

@@ -34,6 +34,8 @@ function toXml(entries: Entry[]): string {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`;
 }
 
+export const dynamic = "force-static";
+
 export async function GET() {
   const now = new Date().toISOString();
 

@@ -1,5 +1,12 @@
 # @aligntrue/docs
 
+## Unreleased
+
+### Fixed
+
+- Switch to static export mode to fix Pagefind indexing and CI failures
+- Add force-static export to robots.txt and sitemap.xml routes
+
 ## 0.1.1-alpha.4
 
 ### Patch Changes
