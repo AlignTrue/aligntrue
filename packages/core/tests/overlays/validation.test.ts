@@ -57,7 +57,9 @@ describe("validateOverlays", () => {
         type: "stale",
         message: expect.stringContaining("does not match any target"),
       });
-      expect(result.errors?.[0]?.suggestion).toContain("renamed or removed");
+      expect(result.errors?.[0]?.suggestion).toContain(
+        "Update or remove this overlay",
+      );
     });
 
     it("detects stale property selector (no match)", () => {
