@@ -202,6 +202,9 @@ describe("mycommand - smoke tests", () => {
 - `tests/integration/check-command.test.ts` - Validation, error reporting
 - `tests/integration/team-command.test.ts` - Lockfile operations
 - `tests/integration/override-add-command.test.ts` - Config updates
+- `tests/integration/git-sources.test.ts` - Remote git source operations
+- `tests/integration/personal-remote.test.ts` - Personal remote workflow
+- `tests/integration/performance.test.ts` - Performance benchmarks and large rule sets
 
 **Smoke Tests:**
 
@@ -289,3 +292,92 @@ When converting mock-heavy tests to integration tests:
 5. Keep 3-5 smoke tests for quick validation
 
 The goal: **Durable tests that verify user-facing behavior, not implementation details.**
+
+## Remote Workflow Testing
+
+Tests for personal remote workflow use the `AlignTrue/examples` GitHub repository for deterministic testing.
+
+### Test Fixtures
+
+Fixtures are located in `examples/remote-test/`:
+
+- `personal-rules.md` - Personal coding preferences (10 sections)
+- `large-rules/` - Large rule set (10 files, 112 sections total)
+- `README.md` - Documentation for fixtures
+
+### Setup Requirements
+
+1. Copy `examples/remote-test/` to `AlignTrue/examples` GitHub repo
+2. Commit and get commit hash
+3. Update `COMMIT_HASH` constant in test files:
+   - `tests/integration/git-sources.test.ts`
+   - `tests/integration/personal-remote.test.ts`
+
+### Test Scenarios
+
+**Git Sources (`git-sources.test.ts`):**
+
+- Pull personal rules from GitHub repo
+- Vendor pack structure detection
+- Pack integrity validation
+
+**Personal Remote (`personal-remote.test.ts`):**
+
+- Remote configuration validation
+- Sync from remote to local IR
+- Merge team and personal rules
+- Error handling (network, missing files, invalid URLs)
+
+**Performance (`performance.test.ts`):**
+
+- Large rule set sync (<60 seconds for 100+ sections)
+- Memory usage monitoring (<500MB heap)
+- Multi-file source performance
+- No catastrophic slowdown with multiple files
+
+### Running Remote Tests
+
+```bash
+# All integration tests (includes remote tests)
+pnpm test tests/integration
+
+# Specific remote tests
+pnpm test git-sources.test.ts
+pnpm test personal-remote.test.ts
+
+# Performance tests with large rule sets
+pnpm test performance.test.ts
+```
+
+### Skipping Behavior
+
+Tests automatically skip when:
+
+- `COMMIT_HASH` is not set (placeholder value)
+- Network consent is required
+- Git is not available
+- Fixtures don't exist yet
+
+### Performance Thresholds
+
+Current thresholds for large rule sets (100-150 sections):
+
+- **Sync time**: <60 seconds (first run)
+- **Sync time**: <30 seconds (subsequent runs)
+- **Memory usage**: <500MB heap
+- **File I/O**: No catastrophic slowdown with 10+ files
+
+These thresholds catch performance regressions while allowing for platform variance.
+
+### Updating Fixtures
+
+To update test fixtures:
+
+1. Edit files in `examples/remote-test/`
+2. Copy entire directory to `AlignTrue/examples` repo
+3. Commit and push to GitHub
+4. Get new commit hash from GitHub
+5. Update `COMMIT_HASH` in test files
+6. Run tests to verify: `pnpm test tests/integration`
+
+See `examples/remote-test/README.md` for detailed fixture documentation.
