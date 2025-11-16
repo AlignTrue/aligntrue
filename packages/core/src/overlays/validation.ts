@@ -106,7 +106,7 @@ function checkStaleSelector(
       type: "stale",
       message: `Selector does not match any target in current IR: ${result.error || "no matches found"}`,
       suggestion:
-        "Update or remove this overlay. The upstream rule may have been renamed or removed.",
+        "Update or remove this overlay. Run 'aligntrue override selectors' to list current rule IDs and indexes.",
     };
   }
 

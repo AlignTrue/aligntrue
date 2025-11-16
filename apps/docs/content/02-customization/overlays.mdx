@@ -117,6 +117,38 @@ overlays:
 
 ## Selector strategies
 
+### Discover selectors quickly
+
+Run the CLI helper to list rule IDs and section indexes from your current IR:
+
+```bash
+aligntrue override selectors
+```
+
+Sample output:
+
+```
+Selector inventory (.aligntrue/.rules.yaml)
+Found 3 sections. Use these selectors in overlays:
+
+  1. TypeScript strict mode
+     • sections[0]
+     • rule[id=typescript-strict-mode]
+       Treat all TypeScript files as strict mode
+
+  2. Testing coverage baseline
+     • sections[1]
+     • rule[id=testing-coverage-baseline]
+
+Top-level property selectors:
+
+  • profile.id
+  • profile.version
+```
+
+Use `sections[index]` when a section does not have a `fingerprint` field.  
+Use `rule[id=...]` when fingerprints exist (they map to the `fingerprint` in `.aligntrue/.rules.yaml`).
+
 ### By rule ID
 
 Applies to one specific rule by its unique ID:

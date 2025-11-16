@@ -77,6 +77,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
         "  - Use array index selectors (sections[0], sections[1], etc.) to target specific sections",
         "  - To find the index, check .aligntrue/.rules.yaml and count sections from 0",
         "  - Property paths use dot notation (e.g., profile.version, sync.workflow_mode)",
+        "  - Run 'aligntrue override selectors' to list available selectors based on the current IR",
         "",
         "Common Use Cases:",
         "  - Override severity levels for specific sections by index",
@@ -154,6 +155,9 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     );
     console.log(
       "  aligntrue override add --selector 'profile.version' --set value=2.0.0",
+    );
+    console.log(
+      "\nTip: Run 'aligntrue override selectors' to list available selectors from your rules file.",
     );
     console.log("\nFor more help: aligntrue override add --help");
     process.exit(1);
