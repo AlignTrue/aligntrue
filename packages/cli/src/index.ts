@@ -28,6 +28,8 @@ import {
   onboard,
   override,
   sources,
+  status,
+  doctor,
 } from "./commands/index.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
@@ -57,6 +59,11 @@ async function main() {
     console.log("  sync           Sync rules to agents");
     console.log("  watch          Watch files and auto-sync on changes");
     console.log("  check          Validate rules and configuration\n");
+    console.log("Diagnostics:");
+    console.log(
+      "  status         Show current status, exporters, and sync health",
+    );
+    console.log("  doctor         Run health checks and verification tests\n");
 
     console.log("Development Commands:");
     console.log("  adapters       Manage exporters (list, enable, disable)\n");
@@ -126,6 +133,8 @@ async function main() {
     ["onboard", onboard],
     ["override", override],
     ["sources", sources],
+    ["status", status],
+    ["doctor", doctor],
   ]);
 
   if (command) {
@@ -146,6 +155,10 @@ main().catch((err) => {
     console.error(`\n✗ ${err.message}`);
     if (err.hint) {
       console.error(`\n💡 Hint: ${err.hint}`);
+    }
+    if (err.nextSteps && err.nextSteps.length > 0) {
+      console.error("\nNext steps:");
+      err.nextSteps.forEach((step) => console.error(`  - ${step}`));
     }
     console.error("");
     process.exit(err.exitCode);

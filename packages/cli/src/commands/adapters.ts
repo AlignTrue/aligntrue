@@ -359,6 +359,7 @@ async function enableAdapters(
           `✓ All adapters already enabled: ${alreadyEnabled.join(", ")}`,
         );
       }
+      console.log("  View current exporters: aligntrue status");
       return;
     }
 
@@ -378,6 +379,7 @@ async function enableAdapters(
 
   if (addedCount === 0) {
     console.log("✓ No changes needed (all selected adapters already enabled)");
+    console.log("  View current exporters: aligntrue status");
     return;
   }
 

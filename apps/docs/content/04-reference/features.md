@@ -17,7 +17,12 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 
-## CLI (20 commands)
+## CLI (22 commands)
+
+**Diagnostics:**
+
+- `status` — Show current status, exporters, and sync health
+- `doctor` — Run health checks and verification tests
 
 **Basic:**
 

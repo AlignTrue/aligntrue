@@ -11,10 +11,16 @@ export class AlignTrueError extends Error {
     public code: string,
     public exitCode: number = 1,
     public hint?: string,
+    public nextSteps?: string[],
   ) {
     super(message);
     this.name = "AlignTrueError";
     Error.captureStackTrace(this, this.constructor);
+  }
+
+  withNextSteps(steps: string[]): this {
+    this.nextSteps = steps;
+    return this;
   }
 }
 
@@ -106,16 +112,25 @@ export const ErrorFactory = {
     new ConfigError(
       `Configuration file not found: ${path}`,
       "Run 'aligntrue init' to create a configuration file",
-    ),
+    ).withNextSteps([
+      "Run: aligntrue init",
+      `Or specify the config path explicitly: aligntrue sync --config ${path}`,
+    ]),
 
   invalidConfig: (reason: string): ConfigError =>
-    new ConfigError(`Invalid configuration: ${reason}`),
+    new ConfigError(`Invalid configuration: ${reason}`).withNextSteps([
+      "Run: aligntrue config show",
+      "Edit: aligntrue config edit",
+    ]),
 
   syncFailed: (reason: string): SyncError =>
     new SyncError(`Sync operation failed: ${reason}`),
 
   validationFailed: (reason: string): ValidationError =>
-    new ValidationError(`Validation failed: ${reason}`),
+    new ValidationError(`Validation failed: ${reason}`).withNextSteps([
+      "Run: aligntrue check --ci",
+      "Fix the reported errors and re-run the command",
+    ]),
 
   teamModeRequired: (feature: string): TeamModeError =>
     new TeamModeError(
@@ -127,7 +142,10 @@ export const ErrorFactory = {
     new FileSystemError("read file", path, "file not found"),
 
   fileWriteFailed: (path: string, cause?: string): FileSystemError =>
-    new FileSystemError("write file", path, cause),
+    new FileSystemError("write file", path, cause).withNextSteps([
+      "Check file permissions or remove read-only flags",
+      `Verify the path exists: ${path}`,
+    ]),
 
   notImplemented: (feature: string, hint?: string): NotImplementedError =>
     new NotImplementedError(feature, hint),

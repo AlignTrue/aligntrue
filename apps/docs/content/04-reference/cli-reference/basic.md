@@ -565,3 +565,90 @@ $ aligntrue sync
 ```
 
 **See also:** [Backup and Restore Guide](/docs/04-reference/backup-restore) for detailed usage and troubleshooting.
+
+---
+
+## `aligntrue status`
+
+Show the current AlignTrue configuration, detected exporters, last sync time, and lockfile/bundle state.
+
+**Usage:**
+
+```bash
+aligntrue status [--config path] [--json]
+```
+
+**Flags:**
+
+| Flag           | Description                                        | Default                  |
+| -------------- | -------------------------------------------------- | ------------------------ |
+| `--config, -c` | Custom config file path                            | `.aligntrue/config.yaml` |
+| `--json`       | Output machine-readable JSON instead of text table | `false`                  |
+| `--help, -h`   | Show help                                          | -                        |
+
+**What it shows:**
+
+1. Mode, profile ID, and config path.
+2. Exporters and whether their files were detected.
+3. Edit sources, auto-pull status, and primary agent.
+4. Lockfile/bundle enablement and whether the files exist.
+5. Last sync timestamp (with relative age).
+
+**Examples:**
+
+```bash
+# Human-readable summary
+aligntrue status
+
+# JSON for scripting
+aligntrue status --json > status.json
+```
+
+---
+
+## `aligntrue doctor`
+
+Run health checks to confirm configuration, rules, exporter outputs, and team safeguards are healthy.
+
+**Usage:**
+
+```bash
+aligntrue doctor [--config path] [--json]
+```
+
+**Flags:**
+
+| Flag           | Description                         | Default                  |
+| -------------- | ----------------------------------- | ------------------------ |
+| `--config, -c` | Custom config file path             | `.aligntrue/config.yaml` |
+| `--json`       | Output machine-readable JSON report | `false`                  |
+| `--help, -h`   | Show help                           | -                        |
+
+**What it checks:**
+
+1. Config file exists and loads without validation errors.
+2. `.aligntrue/.rules.yaml` exists and is non-empty.
+3. Each exporter’s output files exist (Cursor `.mdc`, `AGENTS.md`, MCP configs, etc.).
+4. Lockfile/bundle files exist when modules are enabled.
+5. Agent detection vs configured exporters (warns if agents are detected but not configured, or vice versa).
+
+**Output:**
+
+- Uses ✓ / ⚠ / ✗ for each check with detailed hints.
+- JSON mode includes counts of ok/warn/error and absolute file paths for scripts.
+
+**Examples:**
+
+```bash
+# Human-readable doctor report
+aligntrue doctor
+
+# Generate JSON report for CI artifacts
+aligntrue doctor --json > doctor-report.json
+```
+
+**Exit codes:**
+
+- `0` – All checks passed (warnings allowed).
+- `1` – At least one check failed.
+- `2` – System error (missing files that prevented doctor from running).

@@ -28,6 +28,7 @@ Jump directly to your issue:
 - [Source file not found](#source-file-not-found)
 - [Lockfile drift](#lockfile-drift-team-mode)
 - [Exporter failures](#exporter-failures)
+- [Agents not reading rules](#agents-not-reading-rules)
 
 **CI/CD:**
 
@@ -381,6 +382,21 @@ lockfile:
 ---
 
 ### Exporter failures
+
+### Agents not reading rules
+
+**Symptoms:** Cursor ignores `.mdc` updates, Copilot/Claude responses look generic, or MCP actions cannot find AlignTrue rules.
+
+**Fix:**
+
+1. `aligntrue status` — confirm the exporter shows `✓ detected`, the edit sources match the file you are editing, and the config path is correct.
+2. `aligntrue doctor` — verify it reports the expected files (e.g., `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`) as present.
+3. Open the file the exporter wrote and confirm your latest rules are there. If not, re-run `aligntrue sync`.
+4. Restart the agent or IDE so it reloads the file. Most IDE agents cache `AGENTS.md` or MCP configs until restart.
+
+See the [agent verification guide](/docs/04-reference/agent-verification) for agent-specific screenshots and command references.
+
+---
 
 **Error:**
 
