@@ -4,7 +4,7 @@
  * Replaces Changesets with a simple, reliable release process
  */
 
-import { execSync, execFileSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { globSync } from "glob";
@@ -17,19 +17,33 @@ const typeFlag = args.find((arg) => arg.startsWith("--type="));
 const nonInteractive = typeFlag !== undefined;
 const requestedType = typeFlag?.split("=")[1];
 
-function run(cmd, options = {}) {
+function run(command, args = [], options = {}) {
   try {
-    if (isDryRun && !options.alwaysRun) {
-      console.log(`[DRY-RUN] ${cmd}`);
+    const {
+      silent = false,
+      alwaysRun = false,
+      ignoreError = false,
+      ...execOptions
+    } = options;
+    const cmdDescription = [command, ...args].join(" ");
+
+    if (isDryRun && !alwaysRun) {
+      console.log(`[DRY-RUN] ${cmdDescription}`);
       return "";
     }
-    return execSync(cmd, {
+    const result = execFileSync(command, args, {
       encoding: "utf8",
-      stdio: options.silent ? "pipe" : "inherit",
-      ...options,
-    }).trim();
+      stdio: silent ? "pipe" : "inherit",
+      ...execOptions,
+    });
+
+    if (typeof result === "string") {
+      return result.trim();
+    }
+
+    return "";
   } catch (error) {
-    if (options.ignoreError) return "";
+    if (ignoreError) return "";
     throw error;
   }
 }
@@ -157,10 +171,11 @@ function gitCommitAndTag(version, bumpType) {
     return;
   }
 
-  run("git add .", { silent: false });
-  run(`git commit -m "${message}"`, { silent: false });
-  run(`git tag ${tag}`, { silent: false });
-  run("git push && git push --tags", { silent: false });
+  run("git", ["add", "."], { silent: false });
+  run("git", ["commit", "-m", message], { silent: false });
+  run("git", ["tag", tag], { silent: false });
+  run("git", ["push"], { silent: false });
+  run("git", ["push", "--tags"], { silent: false });
 }
 
 async function main() {
@@ -266,7 +281,7 @@ async function main() {
     if (isDryRun) {
       console.log("[DRY-RUN] Would run: pnpm build:packages");
     } else {
-      run("pnpm build:packages");
+      run("pnpm", ["build:packages"]);
     }
     s.stop("Build complete");
   } catch (error) {
