@@ -358,6 +358,11 @@ Tests automatically skip when:
 - Git is not available
 - Fixtures don't exist yet
 
+### Enabling Remote and Performance Suites
+
+Set `RUN_REMOTE_TESTS=1` before invoking `pnpm test` if you want the remote git and performance suites to run.
+This keeps CI / default pre-commit runs fast and leaves the “run in playbook only” suites to explicit test sessions.
+
 ### Performance Thresholds
 
 Current thresholds for large rule sets (100-150 sections):
