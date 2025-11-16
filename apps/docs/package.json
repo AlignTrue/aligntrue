@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "postbuild": "pagefind --site .next --output-path public/_pagefind",
+    "postbuild": "pagefind --site out --output-path out/_pagefind",
     "start": "next start -p 3000",
     "test": "vitest run",
     "test:watch": "vitest"
