@@ -592,17 +592,10 @@ export class SyncEngine {
             details: `Generated lockfile with ${lockfile.rules?.length || 0} entry hashes`,
           });
         } catch (_err) {
-          // Log detailed error information
           const errorMsg = _err instanceof Error ? _err.message : String(_err);
           warnings.push(
             `Failed to generate lockfile at ${lockfilePath}: ${errorMsg}`,
           );
-          // Also log to console for debugging
-          console.error(`Lockfile generation error:`, {
-            path: lockfilePath,
-            cwd: process.cwd(),
-            error: errorMsg,
-          });
         }
       }
 
