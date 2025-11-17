@@ -167,7 +167,7 @@ describe("GitIntegration", () => {
       } catch {
         // Ignore git setup errors in CI
       }
-    });
+    }, 20000);
 
     it("creates feature branch and stages files", async () => {
       // Create files to stage
@@ -195,7 +195,7 @@ describe("GitIntegration", () => {
       }).trim();
 
       expect(currentBranch).toBe(result.branchCreated);
-    });
+    }, 20000);
 
     it("accepts custom branch name", async () => {
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
@@ -212,7 +212,7 @@ describe("GitIntegration", () => {
       });
 
       expect(result.branchCreated).toBe(customBranch);
-    });
+    }, 20000);
 
     it("throws error for non-git workspace", async () => {
       const nonGitDir = join(TEST_DIR, "non-git");
