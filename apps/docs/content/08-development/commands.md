@@ -212,21 +212,25 @@ Test both light and dark modes during development:
 
 ### Nextra documentation sites
 
-For Nextra-based docs, import Nextra's base styles and use the theme config factory:
+For Nextra-based docs, import Nextra's base styles and configure your `apps/docs/theme.config.tsx` directly:
 
 ```tsx
 import "nextra-theme-docs/style.css";
-import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import type { DocsThemeConfig } from "nextra-theme-docs";
+import { AlignTrueLogo } from "@aligntrue/ui";
 
-const themeConfig = createAlignTrueNextraTheme({
+const themeConfig: DocsThemeConfig = {
+  logo: <AlignTrueLogo size="md" />,
   docsRepositoryBase: "https://github.com/org/repo/tree/main/apps/docs",
-  logoSize: "md",
-});
+  navigation: true,
+};
+
+export default themeConfig;
 ```
 
 This provides:
 
-- Branded logo in navbar
+- Branded logo via the shared `AlignTrueLogo` component
 - Consistent sidebar and TOC configuration
 - Nextra's built-in theme system for colors
 
