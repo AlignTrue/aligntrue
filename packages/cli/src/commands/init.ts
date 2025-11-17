@@ -126,7 +126,16 @@ const EDIT_SOURCE_PATTERNS: Record<string, string> = {
  * 2. Current directory name
  * 3. Fallback to "my-project"
  *
- * @returns Sanitized project ID
+ * Sanitization rules:
+ * - Lowercase everything
+ * - Replace spaces, underscores, emoji, and other non-alphanumerics with hyphens
+ * - Result contains only `[a-z0-9-]`
+ *
+ * Examples:
+ * - "My Project 🚀" -> "my-project"
+ * - "awesome_app" -> "awesome-app"
+ *
+ * @returns Sanitized project ID safe for config usage
  */
 function detectProjectId(): string {
   try {
