@@ -72,6 +72,8 @@ export async function overrideAdd(args: string[]): Promise<void> {
         "aligntrue override add --selector 'sections[1]' --set severity=warn --remove applies_to",
       ],
       notes: [
+        "Quick start: Run 'aligntrue override selectors' first to copy a valid selector for your current rules.",
+        "",
         "Selector Syntax:",
         "  - rule[id=value]          Target rule by ID (if rule has id field)",
         "  - sections[0]             Target section by array index",

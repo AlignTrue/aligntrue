@@ -29,11 +29,21 @@ export async function overrideCommand(args: string[]): Promise<void> {
         "aligntrue override selectors",
       ],
       notes: [
+        "Getting started:",
+        "  1. Run 'aligntrue override selectors' to list available selectors for your rules",
+        "  2. Copy a selector from the output (e.g., rule[id=...], sections[0])",
+        "  3. Use it with 'aligntrue override add --selector <value>'",
+        "",
         "Overlays allow customizing rules without forking:",
         "  - Selector targets specific rules or properties",
         "  - Set operations modify values",
         "  - Remove operations delete properties",
         "  - Changes are tracked in .aligntrue/config.yaml",
+        "",
+        "Selector examples:",
+        "  rule[id=8c70b25cbbbe8e79]  Target rule by ID",
+        "  sections[0]                Target a section by index",
+        "  profile.version            Target a top-level property",
       ],
     });
     return;
