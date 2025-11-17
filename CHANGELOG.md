@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed unused v2 error handling system (common-errors-v2.ts, error-formatter-v2.ts)
+- Deleted the deprecated `@aligntrue/ui/nextra` theme factory and CLI multi-agent import stub; docs now reference the standard `apps/docs/theme.config.tsx` flow.
 
 ### Fixed
 
@@ -67,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Spinners now respect terminal capabilities via a shared helper: TTY environments keep the animated output, while non-TTY (CI/log capture) falls back to plain text without ANSI sequences.
+- CLI TTY detection now lives in `tty-helper.ts`, removing duplicate helpers from `command-utilities.ts`; `team`/`init` commands and `syncFromAgent` have clearer logging and no longer rely on deprecated annotations.
 - `aligntrue check --ci` and `aligntrue drift --gates` help text now cross-reference one another, matching the new command comparison guide.
 - Documentation and testing resources referencing `AlignTrue/examples` now use `packs/<name>.md` paths, matching the reorganized public repository structure.
 - **Init no longer overwrites existing agent files**

@@ -661,9 +661,7 @@ export class SyncEngine {
         details: `Starting agent→IR sync from ${agent}`,
       });
 
-      // Load agent rules (mock implementation for Step 14)
-      // In Step 17, this will use real parsers for .cursor/*.mdc, AGENTS.md, etc.
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      // Load agent rules for explicit --accept-agent pullback
       const agentRules = await this.loadAgentRules(agent, options);
 
       if (!agentRules || agentRules.length === 0) {
@@ -754,8 +752,8 @@ export class SyncEngine {
   }
 
   /**
-   * Load agent sections
-   * @deprecated Import removed - not needed for sections-only format
+   * Load agent sections from an on-disk agent file (cursor, AGENTS.md, etc.)
+   * Used by syncFromAgent when --accept-agent is passed.
    */
   private async loadAgentRules(
     agent: string,

@@ -8,7 +8,6 @@
     "./tokens/colors.css": "./src/tokens/colors.css",
     "./tokens/themes.css": "./src/tokens/themes.css",
     "./tailwind-preset": "./src/tailwind-preset.ts",
-    "./nextra": "./src/nextra/theme-config.tsx",
     "./nextra/nextra.css": "./src/nextra/nextra.css",
     ".": "./src/index.ts"
   },
