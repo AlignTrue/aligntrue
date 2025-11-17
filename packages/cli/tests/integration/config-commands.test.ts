@@ -101,21 +101,17 @@ sync:
   });
 
   describe("config set", () => {
-    it("should set a top-level string value", { timeout: 15000 }, () => {
+    it("should set a top-level string value", () => {
       runCli(["config", "set", "mode", "team"]);
       const result = runCli(["config", "get", "mode"]);
       expect(result.trim()).toBe("team");
     });
 
-    it(
-      "should set a nested value using dot notation",
-      { timeout: 15000 },
-      () => {
-        runCli(["config", "set", "sync.auto_pull", "true"]);
-        const result = runCli(["config", "get", "sync.auto_pull"]);
-        expect(result.trim()).toBe("true");
-      },
-    );
+    it("should set a nested value using dot notation", () => {
+      runCli(["config", "set", "sync.auto_pull", "true"]);
+      const result = runCli(["config", "get", "sync.auto_pull"]);
+      expect(result.trim()).toBe("true");
+    });
 
     it("should set a boolean value", () => {
       runCli(["config", "set", "sync.auto_pull", "true"]);
