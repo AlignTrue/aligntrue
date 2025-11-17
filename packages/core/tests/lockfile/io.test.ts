@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readLockfile, writeLockfile } from "../../src/lockfile/io.js";
 import { generateLockfile } from "../../src/lockfile/generator.js";
 import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
@@ -117,11 +117,68 @@ describe("lockfile I/O", () => {
         "team",
       );
 
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
       writeLockfile(lockfilePath, lockfile1);
       writeLockfile(lockfilePath, lockfile2);
 
+      warnSpy.mockRestore();
+
       const read = readLockfile(lockfilePath);
       expect(read?.bundle_hash).toBe(lockfile2.bundle_hash);
+    });
+
+    it("only shows migration warning once and writes marker", () => {
+      const lockfile1 = generateLockfile(mockPack, "team");
+      const lockfile2 = generateLockfile(
+        {
+          ...mockPack,
+          sections: [
+            {
+              ...mockPack.sections[0],
+              fingerprint: "second-rule",
+              heading: "Second Rule",
+            },
+          ],
+        },
+        "team",
+      );
+
+      // Seed lockfile with first version
+      writeLockfile(lockfilePath, lockfile1);
+
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      // First migration should warn and create marker
+      writeLockfile(lockfilePath, lockfile2);
+      expect(
+        warnSpy.mock.calls.some((call) =>
+          call[0]?.includes(
+            "Lockfile regenerated with corrected hash computation",
+          ),
+        ),
+      ).toBe(true);
+      const markerPath = join(
+        testDir,
+        ".aligntrue",
+        ".cache",
+        "lockfile-hash-migration.json",
+      );
+      expect(existsSync(markerPath)).toBe(true);
+
+      warnSpy.mockClear();
+
+      // Subsequent differences should not warn again
+      writeLockfile(lockfilePath, lockfile1);
+      expect(
+        warnSpy.mock.calls.some((call) =>
+          call[0]?.includes(
+            "Lockfile regenerated with corrected hash computation",
+          ),
+        ),
+      ).toBe(false);
+
+      warnSpy.mockRestore();
     });
 
     it("uses atomic write (temp+rename)", () => {

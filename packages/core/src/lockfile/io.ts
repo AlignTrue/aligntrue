@@ -10,8 +10,10 @@ import {
   renameSync,
   unlinkSync,
 } from "fs";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import type { Lockfile } from "./types.js";
+
+const HASH_MIGRATION_MARKER_FILE = "lockfile-hash-migration.json";
 
 /**
  * Read lockfile from disk
@@ -69,7 +71,8 @@ export function writeLockfile(
       const oldLockfile = JSON.parse(readFileSync(path, "utf-8"));
       if (
         oldLockfile.bundle_hash &&
-        oldLockfile.bundle_hash !== lockfile.bundle_hash
+        oldLockfile.bundle_hash !== lockfile.bundle_hash &&
+        !hasHashMigrationMarker(path)
       ) {
         console.warn("ℹ Lockfile regenerated with corrected hash computation");
         console.warn(
@@ -81,6 +84,7 @@ export function writeLockfile(
         console.warn(
           "  This is a one-time migration for determinism improvements",
         );
+        writeHashMigrationMarker(path);
       }
     } catch {
       // Ignore errors reading old lockfile
@@ -150,4 +154,41 @@ function sortKeys(key: string, value: unknown): unknown {
       );
   }
   return value;
+}
+
+function getMigrationMarkerPath(lockfilePath: string): string {
+  const workspaceDir = dirname(lockfilePath);
+  return join(workspaceDir, ".aligntrue", ".cache", HASH_MIGRATION_MARKER_FILE);
+}
+
+function hasHashMigrationMarker(lockfilePath: string): boolean {
+  const markerPath = getMigrationMarkerPath(lockfilePath);
+  if (!existsSync(markerPath)) {
+    return false;
+  }
+  try {
+    const data = JSON.parse(readFileSync(markerPath, "utf-8")) as {
+      hash_migration_completed?: boolean;
+    };
+    return Boolean(data?.hash_migration_completed);
+  } catch {
+    return false;
+  }
+}
+
+function writeHashMigrationMarker(lockfilePath: string): void {
+  try {
+    const markerPath = getMigrationMarkerPath(lockfilePath);
+    const markerDir = dirname(markerPath);
+    if (!existsSync(markerDir)) {
+      mkdirSync(markerDir, { recursive: true });
+    }
+    writeFileSync(
+      markerPath,
+      JSON.stringify({ hash_migration_completed: true }, null, 2),
+      "utf-8",
+    );
+  } catch {
+    // Ignore marker write failures (non-critical)
+  }
 }
