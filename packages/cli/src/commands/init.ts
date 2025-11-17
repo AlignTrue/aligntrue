@@ -44,6 +44,10 @@ import type {
   EditedFile,
   SectionConflict,
 } from "@aligntrue/core/sync/multi-file-parser";
+import {
+  buildNextStepsMessage,
+  type NextStepsSyncGuidance,
+} from "../utils/next-steps.js";
 
 // IRDocument type for internal use
 interface IRDocument {
@@ -171,6 +175,15 @@ function getEditSourcePatternForAgent(
     return pattern;
   }
   return candidate.relativePath || candidate.absolutePath;
+}
+
+function shouldOfferSync(options: {
+  createdAgentsTemplate: boolean;
+  importedAgentFileCount: number;
+}): boolean {
+  const totalEditableSources =
+    options.importedAgentFileCount + (options.createdAgentsTemplate ? 1 : 0);
+  return totalEditableSources > 1;
 }
 
 /**
@@ -847,7 +860,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   console.log("  Edit: .aligntrue/config.yaml");
   console.log("  Or run: aligntrue config set <key> <value>");
 
-  // Step 11: Offer first sync
+  // Step 11: Offer first sync when it would be useful
+  const syncWouldBeUseful = shouldOfferSync({
+    createdAgentsTemplate: createAgentsTemplate,
+    importedAgentFileCount: selectedImportCandidates.length,
+  });
+  let syncGuidance: NextStepsSyncGuidance = syncWouldBeUseful
+    ? "standard"
+    : "deferred";
+
   if (noSync) {
     if (nonInteractive) {
       console.log(
@@ -858,6 +879,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         "Skipped sync (--no-sync). Run 'aligntrue sync' when you are ready.",
       );
     }
+  } else if (!syncWouldBeUseful) {
+    const info = nonInteractive ? console.log : clack.log.info;
+    info(
+      "No sync needed yet. Edit your agent file, then run 'aligntrue sync' once you add another agent file or exporter.",
+    );
   } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
   } else {
@@ -888,10 +914,17 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
+  const nextStepsMessage = buildNextStepsMessage({
+    mode: config.mode,
+    syncGuidance,
+  });
+
   if (nonInteractive) {
-    console.log(`Learn more: ${DOCS_QUICKSTART}`);
+    console.log(`\n${nextStepsMessage}`);
+    console.log(`\nLearn more: ${DOCS_QUICKSTART}`);
   } else {
-    clack.log.info(`Learn more: ${DOCS_QUICKSTART}`);
+    clack.log.info(`\n${nextStepsMessage}`);
+    clack.log.info(`\nLearn more: ${DOCS_QUICKSTART}`);
   }
 
   // Record telemetry event
