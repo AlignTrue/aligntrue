@@ -55,7 +55,7 @@ sections:
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
       try {
-        await check(["--ci"]);
+        await check([]);
       } catch {
         // Expected exit if called
       }
@@ -116,7 +116,7 @@ sections:
       exitMock.restore();
     });
 
-    it("requires --ci flag", async () => {
+    it("runs without --ci flag by default", async () => {
       const config = { exporters: ["cursor"] };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
@@ -137,13 +137,9 @@ rules:
 
       const exitMock = mockProcessExit();
 
-      try {
-        await check([]);
-      } catch {
-        // Expected exit
-      }
+      await check([]);
 
-      expect(exitMock.exitCode).toBe(2);
+      expect(exitMock.exitCode).toBeUndefined();
       exitMock.restore();
     });
 

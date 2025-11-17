@@ -7,6 +7,8 @@ description: Integrate AlignTrue into your continuous integration pipeline
 
 Validate rules, detect drift, and enforce team standards in your CI pipeline.
 
+> **Tip:** Locally you can run `aligntrue check` without flags for an interactive spinner. The workflows below keep `--ci` so output stays deterministic inside CI, hooks, or other scripts.
+
 ## Quick setup
 
 <Tabs items={["GitHub Actions", "GitLab CI", "CircleCI"]}>
@@ -98,6 +100,10 @@ workflows:
 Validate that rules conform to AlignTrue schema:
 
 ```bash
+# Local
+aligntrue check
+
+# CI or scripts
 aligntrue check --ci
 ```
 
@@ -127,6 +133,10 @@ aligntrue check --ci
 Validate lockfile matches current rules:
 
 ```bash
+# Local
+aligntrue check
+
+# CI or scripts
 aligntrue check --ci
 ```
 

@@ -92,6 +92,89 @@ describeSkipWindows("Override Remove Command Integration", () => {
         "rule[id=test-2]",
       );
     });
+
+    it("supports --selector flag in non-interactive mode", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+      const config = {
+        exporters: ["cursor"],
+        overlays: {
+          overrides: [
+            {
+              selector: "rule[id=test-1]",
+              set: { severity: "warn" },
+            },
+            {
+              selector: "rule[id=test-2]",
+              set: { severity: "error" },
+            },
+          ],
+        },
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      (process.stdin as any).isTTY = false;
+      (process.stdout as any).isTTY = false;
+
+      try {
+        await overrideRemove(["--selector", "rule[id=test-2]", "--force"]);
+      } catch {
+        // process.exit mocked to throw on failure
+      } finally {
+        (process.stdin as any).isTTY = true;
+        (process.stdout as any).isTTY = true;
+      }
+
+      const updatedConfig = yaml.parse(
+        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
+      );
+
+      expect(updatedConfig.overlays.overrides).toHaveLength(1);
+      expect(updatedConfig.overlays.overrides[0].selector).toBe(
+        "rule[id=test-1]",
+      );
+    });
+
+    it("removes all overlays with --all --force", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+      const config = {
+        exporters: ["cursor"],
+        overlays: {
+          overrides: [
+            {
+              selector: "rule[id=test-1]",
+              set: { severity: "warn" },
+            },
+            {
+              selector: "rule[id=test-2]",
+              set: { severity: "error" },
+            },
+          ],
+        },
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      try {
+        await overrideRemove(["--all", "--force"]);
+      } catch {
+        // process.exit mocked to throw on failure
+      }
+
+      const updatedConfig = yaml.parse(
+        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
+      );
+
+      expect(updatedConfig.overlays.overrides).toHaveLength(0);
+    });
   });
 
   describe("Error Handling", () => {
@@ -116,6 +199,46 @@ describeSkipWindows("Override Remove Command Integration", () => {
 
       // Verify command handles no overrides gracefully
       expect(consoleLogSpy).toHaveBeenCalledWith("No overlays configured");
+    });
+
+    it("shows helpful error when selector missing in non-interactive mode", async () => {
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+      const config = {
+        exporters: ["cursor"],
+        overlays: {
+          overrides: [
+            {
+              selector: "rule[id=test-1]",
+              set: { severity: "warn" },
+            },
+          ],
+        },
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      (process.stdin as any).isTTY = false;
+      (process.stdout as any).isTTY = false;
+
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await expect(overrideRemove([])).rejects.toThrow(/process\.exit\(1\)/);
+
+      expect(
+        errorSpy.mock.calls.some((call) =>
+          String(call[0]).includes("Selector argument required"),
+        ),
+      ).toBe(true);
+      expect(
+        errorSpy.mock.calls.some((call) =>
+          String(call[0]).includes("aligntrue override remove 'sections[0]'"),
+        ),
+      ).toBe(true);
+
+      errorSpy.mockRestore();
     });
   });
 });

@@ -10,13 +10,13 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 ## Quick decision tree
 
 1. Are you operating in **team mode**?
-   - No → Use `aligntrue check --ci`
+   - No → Use `aligntrue check`
    - Yes → Continue
 2. What do you need to validate?
-   - **Lockfile matches IR?** → `aligntrue check --ci`
+   - **Lockfile matches IR?** → `aligntrue check`
    - **Agent files or sources changed?** → `aligntrue drift --gates`
 
-## `aligntrue check --ci`
+## `aligntrue check`
 
 **Purpose:** Validate internal consistency before commits or CI merges.
 
@@ -30,7 +30,7 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 
 **Notes:**
 
-- Requires `--ci` flag (non-interactive mode)
+- Defaults to interactive spinner + logs; pass `--ci` (or set `CI=true`) for deterministic CI/script output
 - Does **not** inspect agent files or upstream sources
 - Exit codes: `0` success, `1` validation failed, `2` system/config error
 
@@ -55,7 +55,7 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 
 ## Side-by-side comparison
 
-| Capability                   | `check --ci`        | `drift --gates`       |
+| Capability                   | `check`             | `drift --gates`       |
 | ---------------------------- | ------------------- | --------------------- |
 | Works in solo mode           | ✅                  | ❌                    |
 | Validates schema + lockfile  | ✅                  | ❌                    |
@@ -65,4 +65,4 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 | Provides JSON/SARIF output   | ✅ (`--json`)       | ✅ (`--json/--sarif`) |
 | Typical CI stage             | Pre-sync validation | Post-sync drift gate  |
 
-Use both commands in team repositories: run `check --ci` before committing changes, and `drift --gates` in CI to ensure agent files and upstream sources stay aligned.
+Use both commands in team repositories: run `check` (with `--ci` in automation) before committing changes, and `drift --gates` in CI to ensure agent files and upstream sources stay aligned.

@@ -22,6 +22,17 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Skip confirmation",
   },
   {
+    flag: "--selector",
+    hasValue: true,
+    description: "Selector to remove (non-interactive mode)",
+  },
+  {
+    flag: "--all",
+    hasValue: false,
+    description:
+      "Remove all overlays (use with --force in non-interactive mode)",
+  },
+  {
     flag: "--config",
     hasValue: true,
     description: "Custom config file path",
@@ -39,22 +50,32 @@ export async function overrideRemove(args: string[]): Promise<void> {
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue override remove",
-        "aligntrue override remove 'rule[id=test]'",
+        "aligntrue override remove --selector 'rule[id=test]'",
+        "aligntrue override remove --all --force",
         "aligntrue override remove --force",
       ],
       notes: [
         "If no selector provided, interactive mode will prompt for selection",
+        "Use --selector in scripts or --all --force to remove every overlay",
       ],
     });
     return;
   }
 
-  const selectorArg = parsed.positional[0];
+  const selectorFlag = parsed.flags["selector"] as string | undefined;
+  const selectorArg = selectorFlag ?? parsed.positional[0];
   const force = (parsed.flags["force"] as boolean | undefined) || false;
+  const removeAll = (parsed.flags["all"] as boolean | undefined) || false;
   const config = parsed.flags["config"] as string | undefined;
 
+  if (removeAll && selectorArg) {
+    console.error("Error: --all cannot be combined with a specific selector.");
+    process.exit(1);
+    return;
+  }
+
   try {
-    const options: OverrideRemoveOptions = { force };
+    const options: OverrideRemoveOptions = { force, removeAll };
     if (config) options.config = config;
 
     await runOverrideRemove(selectorArg, options);
@@ -75,6 +96,7 @@ export async function overrideRemove(args: string[]): Promise<void> {
 interface OverrideRemoveOptions {
   force?: boolean;
   config?: string;
+  removeAll?: boolean;
 }
 
 async function runOverrideRemove(
@@ -92,16 +114,24 @@ async function runOverrideRemove(
     return;
   }
 
+  if (options.removeAll) {
+    await removeAllOverlays(config, overlays.length, options);
+    return;
+  }
+
   // Interactive mode if no selector provided
   let selectorToRemove: string;
 
   if (!selectorArg) {
     if (!isTTY()) {
       console.error(
-        "Error: Selector argument required in non-interactive mode",
+        "Error: Selector argument required in non-interactive mode.",
       );
-      console.error("Usage: aligntrue override remove <selector>");
+      console.error(
+        "Provide a selector (aligntrue override remove 'sections[0]') or use --all --force to remove every overlay.",
+      );
       process.exit(1);
+      return;
     }
 
     // Show interactive list
@@ -196,6 +226,40 @@ async function runOverrideRemove(
 
   // Success output
   clack.log.success("Overlay removed");
+  console.log("");
+  console.log("Next step:");
+  console.log("  Run: aligntrue sync");
+}
+
+async function removeAllOverlays(
+  config: Awaited<ReturnType<typeof loadConfig>>,
+  count: number,
+  options: OverrideRemoveOptions,
+): Promise<void> {
+  if (!options.force) {
+    if (!isTTY()) {
+      exitWithError(CommonErrors.nonInteractiveConfirmation("--force"), 1);
+      return;
+    }
+
+    const confirmed = await clack.confirm({
+      message: `Remove all overlays (${count})?`,
+    });
+
+    if (clack.isCancel(confirmed) || !confirmed) {
+      clack.cancel("Operation cancelled");
+      return;
+    }
+  }
+
+  if (config.overlays?.overrides) {
+    config.overlays.overrides = [];
+  }
+
+  await saveConfig(config, options.config);
+  clack.log.success(
+    `Removed all overlays${count > 0 ? ` (${count} removed)` : ""}`,
+  );
   console.log("");
   console.log("Next step:");
   console.log("  Run: aligntrue sync");
