@@ -59,23 +59,26 @@ describeNetwork("Git Operations Tests", () => {
   });
 
   describe("Remote git repository", () => {
-    it("should pull personal rules from GitHub repo", () => {
-      // Skip if commit hash not set
-      if (COMMIT_HASH === "REPLACE_WITH_ACTUAL_COMMIT_HASH") {
-        console.log(
-          "Skipping test: Update COMMIT_HASH after copying fixtures to GitHub",
-        );
-        return;
-      }
+    it(
+      "should pull personal rules from GitHub repo",
+      { timeout: 120000 },
+      () => {
+        // Skip if commit hash not set
+        if (COMMIT_HASH === "REPLACE_WITH_ACTUAL_COMMIT_HASH") {
+          console.log(
+            "Skipping test: Update COMMIT_HASH after copying fixtures to GitHub",
+          );
+          return;
+        }
 
-      const testProjectPath = join(TEST_DIR, "test-project");
-      mkdirSync(testProjectPath, { recursive: true });
-      mkdirSync(join(testProjectPath, ".aligntrue"), { recursive: true });
+        const testProjectPath = join(TEST_DIR, "test-project");
+        mkdirSync(testProjectPath, { recursive: true });
+        mkdirSync(join(testProjectPath, ".aligntrue"), { recursive: true });
 
-      // Create config pointing to personal rules in GitHub repo
-      writeFileSync(
-        join(testProjectPath, ".aligntrue/config.yaml"),
-        `version: "1"
+        // Create config pointing to personal rules in GitHub repo
+        writeFileSync(
+          join(testProjectPath, ".aligntrue/config.yaml"),
+          `version: "1"
 mode: solo
 sources:
   - type: git
@@ -87,43 +90,44 @@ exporters:
 git:
   mode: ignore
 `,
-        "utf-8",
-      );
-
-      // Run sync to pull personal rules
-      try {
-        const output = execSync(`node "${CLI_PATH}" sync`, {
-          cwd: testProjectPath,
-          stdio: "pipe",
-          encoding: "utf-8",
-        });
-
-        // Verify sync succeeded
-        expect(output).toContain("Sync complete") ||
-          expect(output).toContain("synced");
-
-        // Verify AGENTS.md was created with personal rules content
-        const agentsMd = readFileSync(
-          join(testProjectPath, "AGENTS.md"),
           "utf-8",
         );
-        expect(agentsMd).toContain("Code Style Preferences");
-        expect(agentsMd).toContain("Editor Configuration");
-      } catch (error: any) {
-        // If sync fails, check if it's a network/git issue
-        const errorOutput = captureErrorOutput(error);
-        if (
-          errorOutput.includes("consent") ||
-          errorOutput.includes("network")
-        ) {
-          console.log(
-            "Skipping test: Network consent required or git not available",
+
+        // Run sync to pull personal rules
+        try {
+          const output = execSync(`node "${CLI_PATH}" sync`, {
+            cwd: testProjectPath,
+            stdio: "pipe",
+            encoding: "utf-8",
+          });
+
+          // Verify sync succeeded
+          expect(output).toContain("Sync complete") ||
+            expect(output).toContain("synced");
+
+          // Verify AGENTS.md was created with personal rules content
+          const agentsMd = readFileSync(
+            join(testProjectPath, "AGENTS.md"),
+            "utf-8",
           );
-          return;
+          expect(agentsMd).toContain("Code Style Preferences");
+          expect(agentsMd).toContain("Editor Configuration");
+        } catch (error: any) {
+          // If sync fails, check if it's a network/git issue
+          const errorOutput = captureErrorOutput(error);
+          if (
+            errorOutput.includes("consent") ||
+            errorOutput.includes("network")
+          ) {
+            console.log(
+              "Skipping test: Network consent required or git not available",
+            );
+            return;
+          }
+          throw error;
         }
-        throw error;
-      }
-    });
+      },
+    );
   });
 
   describe.skipIf(isCI)("Vendored packs", () => {
