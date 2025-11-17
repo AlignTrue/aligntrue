@@ -31,7 +31,8 @@
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
     "bootstrap": "pnpm install && pnpm build",
     "prepare": "husky",
-    "release": "node scripts/manual-release.mjs"
+    "release": "node scripts/manual-release.mjs",
+    "release:helper": "bash scripts/release-helper.sh"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
