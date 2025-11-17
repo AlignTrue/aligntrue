@@ -26,6 +26,22 @@ const COMMIT_HASH = "edcc07907b5fc726c836437091548085f5a04cdb";
 const isCI = !!process.env.CI;
 const describeNetwork = isCI ? describe : describe.skip;
 
+const captureErrorOutput = (error: {
+  stdout?: Buffer | string | null;
+  stderr?: Buffer | string | null;
+}) => {
+  const toString = (chunk?: Buffer | string | null) => {
+    if (!chunk) {
+      return "";
+    }
+    return typeof chunk === "string" ? chunk : chunk.toString("utf-8");
+  };
+
+  return [toString(error.stdout), toString(error.stderr)]
+    .filter(Boolean)
+    .join("\n");
+};
+
 describeNetwork("Git Operations Tests", () => {
   beforeEach(() => {
     // Clean and create test directory
@@ -95,8 +111,11 @@ git:
         expect(agentsMd).toContain("Editor Configuration");
       } catch (error: any) {
         // If sync fails, check if it's a network/git issue
-        const stderr = error.stderr?.toString() || "";
-        if (stderr.includes("consent") || stderr.includes("network")) {
+        const errorOutput = captureErrorOutput(error);
+        if (
+          errorOutput.includes("consent") ||
+          errorOutput.includes("network")
+        ) {
           console.log(
             "Skipping test: Network consent required or git not available",
           );
@@ -330,11 +349,11 @@ sections:
         expect(true).toBe(false);
       } catch (error: any) {
         // Expected error
-        const stderr = error.stderr?.toString() || "";
+        const errorOutput = captureErrorOutput(error);
         expect(
-          stderr.includes("Invalid") ||
-            stderr.includes("required") ||
-            stderr.includes("Missing"),
+          errorOutput.includes("Invalid") ||
+            errorOutput.includes("required") ||
+            errorOutput.includes("Missing"),
         ).toBe(true);
       }
     });
