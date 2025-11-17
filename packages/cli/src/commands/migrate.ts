@@ -18,6 +18,7 @@ import {
 } from "../utils/command-utilities.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
+import { createSpinner } from "../utils/spinner.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -123,7 +124,7 @@ export async function promote(args: string[]): Promise<void> {
   }
 
   // Create backup
-  const spinner = isTTY() ? clack.spinner() : null;
+  const spinner = isTTY() ? createSpinner() : null;
   if (spinner) {
     spinner.start("Creating backup");
   } else {
@@ -238,7 +239,7 @@ export async function demote(args: string[]): Promise<void> {
   }
 
   // Create backup
-  const spinner = isTTY() ? clack.spinner() : null;
+  const spinner = isTTY() ? createSpinner() : null;
   if (spinner) {
     spinner.start("Creating backup");
   } else {
@@ -349,7 +350,7 @@ export async function local(args: string[]): Promise<void> {
   }
 
   // Create backup
-  const spinner = isTTY() ? clack.spinner() : null;
+  const spinner = isTTY() ? createSpinner() : null;
   if (spinner) {
     spinner.start("Creating backup");
   } else {

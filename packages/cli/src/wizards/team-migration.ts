@@ -10,6 +10,7 @@ import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
 import { isValidIR } from "../types/ir.js";
+import { createSpinner } from "../utils/spinner.js";
 
 export interface MigrationResult {
   success: boolean;
@@ -34,7 +35,7 @@ export async function runTeamMigrationWizard(
   clack.intro("Converting to Team Mode");
 
   // Step 1: Create backup
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Creating backup");
 
   try {

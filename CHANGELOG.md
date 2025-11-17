@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Git source configuration now matches the reorganized `AlignTrue/examples` repository (`packs/` subdirectory). Added playbook troubleshooting guidance, updated docs, and verified end-to-end via manual sync to prevent "Rules file not found" errors.
+- Drift command human-readable output no longer truncates details; summaries now include lockfile path, total findings, and tips for `--json` / `--gates`.
+- `aligntrue plugs --help` now shows the subcommand list instead of failing with a circular error, and subcommands respect the standard `--help` flag.
 - Invalid flags are now rejected with clear error messages instead of being silently accepted
 - Fixed duplicate warning messages when solo mode has team features enabled
 - Security: Use secure temp directory for backup files to prevent information disclosure and symlink attacks (CodeQL alert `js/insecure-temporary-file`)
@@ -57,8 +60,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Built-in caching for faster rebuilds
   - Simplified build scripts: `pnpm build`, `pnpm typecheck`, `pnpm test`
 
+- **Git provider integration tests** - Real network tests (gated by `INTEGRATION=1`) that fetch packs from `https://github.com/AlignTrue/examples` to ensure regression coverage for remote sources and caching.
+- **Command comparison guide** - New docs reference (`apps/docs/content/04-reference/command-comparison.md`) and testing playbook updates explaining when to run `check --ci` vs `drift --gates`.
+
 ### Changed
 
+- Spinners now respect terminal capabilities via a shared helper: TTY environments keep the animated output, while non-TTY (CI/log capture) falls back to plain text without ANSI sequences.
+- `aligntrue check --ci` and `aligntrue drift --gates` help text now cross-reference one another, matching the new command comparison guide.
+- Documentation and testing resources referencing `AlignTrue/examples` now use `packs/<name>.md` paths, matching the reorganized public repository structure.
 - **Init no longer overwrites existing agent files**
   - Detects all existing supported agent formats and merges them into `.aligntrue/.rules.yaml` during `aligntrue init`
   - Only creates a new `AGENTS.md` starter when no agent files are found (or when the user explicitly asks for one)
@@ -375,7 +384,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     sources:
       - type: git
         url: https://github.com/AlignTrue/examples
-        path: examples/packs/global.md
+        path: packs/global.md
     ```
 
 - **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes

@@ -13,7 +13,6 @@
  * - Overlays are automatically re-applied to new upstream versions
  */
 
-import * as clack from "@clack/prompts";
 import { writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
@@ -29,6 +28,7 @@ import {
 } from "@aligntrue/core";
 import { writePatchFile, type OverlayDefinition } from "@aligntrue/core";
 import { sync } from "./sync/index.js";
+import { createSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for update command
@@ -186,7 +186,7 @@ export async function update(args: string[]): Promise<void> {
  * Check for available updates
  */
 async function checkUpdates(config: AlignTrueConfig): Promise<void> {
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Checking for updates...");
 
   const result = await detectUpdatesForConfig(config);
@@ -232,7 +232,7 @@ async function applyUpdates(
   safeMode: boolean = false,
   autoResolve?: "ours" | "theirs",
 ): Promise<void> {
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Detecting updates...");
 
   const result = await detectUpdatesForConfig(config);
@@ -320,7 +320,7 @@ async function checkOverlayConflicts(
     return false;
   }
 
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Checking overlay conflicts...");
 
   try {

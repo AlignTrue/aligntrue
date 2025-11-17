@@ -60,9 +60,10 @@ function showHelp() {
  * Plugs command handler
  */
 export async function plugsCommand(args: string[]): Promise<void> {
-  const { flags, positional } = parseCommonArgs(args, ARG_DEFINITIONS);
+  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+  const { flags, positional, help } = parsed;
 
-  if (flags["--help"]) {
+  if (help) {
     showHelp();
     process.exit(0);
   }
@@ -70,8 +71,7 @@ export async function plugsCommand(args: string[]): Promise<void> {
   const subcommand = positional[0];
   if (!subcommand) {
     console.error("Error: Subcommand required\n");
-    console.error("Usage: aligntrue plugs <list|resolve|validate>\n");
-    console.error("Run 'aligntrue plugs --help' for more information\n");
+    showHelp();
     process.exit(2);
   }
 

@@ -5,6 +5,7 @@
 
 import * as clack from "@clack/prompts";
 import { StorageManager } from "@aligntrue/core";
+import { createSpinner } from "../utils/spinner.js";
 
 export interface RemoteSetupResult {
   success: boolean;
@@ -128,7 +129,7 @@ export async function runRemoteSetupWizard(
   }
 
   // Step 3: Test connection
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Testing connection");
 
   const storageManager = new StorageManager(cwd, {});

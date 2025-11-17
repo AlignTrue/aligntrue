@@ -38,7 +38,7 @@ describe("Git source with YAML frontmatter", () => {
         {
           type: "git",
           url: "https://github.com/AlignTrue/examples",
-          path: "testing.md",
+          path: "packs/testing.md",
         },
       ],
       exporters: ["agents-md"],
