@@ -13,6 +13,7 @@ import {
   existsSync,
   mkdtempSync,
   mkdirSync,
+  rmSync,
 } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -334,6 +335,45 @@ describeSkipWindows("Init Command Integration", () => {
 
       // Verify lockfile still exists (not deleted)
       expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+    });
+
+    it("treats standalone lockfile as already initialized", async () => {
+      // Remove .aligntrue directory to simulate clone missing config files
+      rmSync(join(TEST_DIR, ".aligntrue"), { recursive: true, force: true });
+
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue.lock.json"),
+        JSON.stringify(
+          {
+            bundle_hash: "standalone-hash",
+            generated_at: new Date().toISOString(),
+            mode: "team",
+            rules: [],
+          },
+          null,
+          2,
+        ),
+        "utf-8",
+      );
+
+      const originalExit = process.exit;
+      let exitCode: number | undefined;
+      process.exit = ((code?: number) => {
+        exitCode = code;
+        throw new Error(`EXIT_${code}`);
+      }) as never;
+
+      try {
+        await init(["--yes"]);
+      } catch (err) {
+        if (!(err instanceof Error) || !err.message.startsWith("EXIT_")) {
+          throw err;
+        }
+      } finally {
+        process.exit = originalExit;
+      }
+
+      expect(exitCode).toBe(0);
     });
   });
 

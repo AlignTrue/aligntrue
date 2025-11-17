@@ -63,6 +63,27 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
     };
   }
 
+  // Fallback: treat standalone lockfile or bundle as initialized
+  const standaloneArtifacts = [
+    {
+      path: join(cwd, ".aligntrue.lock.json"),
+      label: ".aligntrue.lock.json",
+    },
+    {
+      path: join(cwd, ".aligntrue.bundle.yaml"),
+      label: ".aligntrue.bundle.yaml",
+    },
+  ].filter(({ path }) => existsSync(path));
+
+  if (standaloneArtifacts.length > 0) {
+    existingFiles.push(...standaloneArtifacts.map((a) => a.label));
+    return {
+      context: "already-initialized",
+      existingFiles,
+      allDetectedAgents: [],
+    };
+  }
+
   // Check for .cursor/rules/ directory
   const cursorRulesPath = join(cwd, ".cursor", "rules");
   if (existsSync(cursorRulesPath) && statSync(cursorRulesPath).isDirectory()) {
