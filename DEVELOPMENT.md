@@ -1693,6 +1693,22 @@ This installs dependencies and builds all packages. You're ready to develop!
 
 **Note:** First-time setup takes ~2-3 minutes depending on your machine.
 
+## Install CLI from GitHub
+
+Need to test the latest CLI changes straight from `main`? Because `@aligntrue/cli` imports other workspace packages, build the entire repo before running the binary:
+
+```bash
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue
+pnpm install          # install all workspace dependencies
+pnpm build            # compile every package (core/schema/exporters/cli)
+cd packages/cli
+pnpm link --global    # exposes the aligntrue/aln commands locally
+aligntrue --version
+```
+
+Re-run `pnpm build` after dependency changes, or `pnpm --filter @aligntrue/cli build` after CLI-only edits to refresh `dist/`.
+
 ## Getting started
 
 ### 1. Install dependencies

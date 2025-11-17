@@ -7,7 +7,7 @@
   Source: apps/docs/content/index.mdx
 -->
 
-# AlignTrue overview
+# Intro
 
 Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 
@@ -16,7 +16,7 @@ Write rules once in markdown. Sync everywhere. Stay aligned.
 - **Solo developers:** Keep your personal AI rules consistent across projects and machines.
 - **Teams:** Shared rule sets with version control, CI validation, and drift detection.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI)](https://github.com/AlignTrue/aligntrue/actions) [![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Node 22+](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/) [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle)](https://bundlephobia.com/package/@aligntrue/cli) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI)](https://github.com/AlignTrue/aligntrue/actions) [![npm version](https://img.shields.io/npm/v/aligntrue.svg)](https://www.npmjs.com/package/aligntrue) [![Node 22+](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE)
 
 ## Solo developer? Start here
 
