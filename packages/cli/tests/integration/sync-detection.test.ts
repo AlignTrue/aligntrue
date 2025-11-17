@@ -80,7 +80,7 @@ describe("Sync Detection Integration Tests", () => {
     expect(syncResult.stdout).toContain("Checking for edits since:");
     // The detection should find the edited file
     // Note: In the fixed version, this should work. If it fails, it means the fix didn't work.
-  }, 15000);
+  });
 
   test("sync detects Cursor .mdc file edits by mtime", async () => {
     // Setup: init project
@@ -115,7 +115,7 @@ describe("Sync Detection Integration Tests", () => {
       expect(syncResult.exitCode).toBe(0);
       expect(syncResult.stdout).toContain("Checking for edits since:");
     }
-  }, 15000);
+  });
 
   test("sync updates last-sync timestamp after successful sync", async () => {
     // Setup: init project
@@ -134,7 +134,7 @@ describe("Sync Detection Integration Tests", () => {
     const timestamp = require("fs").readFileSync(lastSyncPath, "utf-8");
     expect(timestamp).toMatch(/^\d+$/);
     expect(parseInt(timestamp, 10)).toBeGreaterThan(0);
-  }, 15000);
+  });
 
   test("sync with no edits shows appropriate message", async () => {
     // Setup: init project
