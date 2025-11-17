@@ -15,6 +15,7 @@ import {
 } from "../utils/command-utilities.js";
 import { applyDefaults } from "@aligntrue/core";
 import { createSpinner, SpinnerLike } from "../utils/spinner.js";
+import { buildNextStepsMessage } from "../utils/next-steps.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -417,6 +418,12 @@ async function teamEnable(
     console.log(
       "  4. Team members run: aligntrue init (will detect team mode)",
     );
+
+    const teamNextSteps = buildNextStepsMessage({
+      mode: "team",
+      syncGuidance: "standard",
+    });
+    console.log(`\n${teamNextSteps}`);
 
     if (!nonInteractive) {
       clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
