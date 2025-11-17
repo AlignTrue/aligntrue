@@ -46,6 +46,22 @@ export interface GitSourceConfig {
 /**
  * Git provider options
  */
+export type GitProgressPhase =
+  | "metadata"
+  | "clone"
+  | "fetch"
+  | "checkout"
+  | "cleanup";
+
+export interface GitProgressUpdate {
+  phase: GitProgressPhase;
+  message: string;
+  repo: string;
+  ref?: string;
+  stage?: string;
+  percent?: number;
+}
+
 export interface GitProviderOptions {
   cacheDir: string;
   url: string;
@@ -55,6 +71,7 @@ export interface GitProviderOptions {
   checkInterval: number;
   offlineMode?: boolean;
   consentManager?: ConsentManager;
+  onProgress?: (update: GitProgressUpdate) => void;
 }
 
 /**
@@ -75,6 +92,8 @@ export class GitProvider implements SourceProvider {
   private mode: "solo" | "team" | "enterprise";
   private maxFileSizeMb: number;
   private force: boolean;
+  private progressCallback: ((update: GitProgressUpdate) => void) | undefined;
+  private repoLabel: string;
 
   constructor(
     config: GitSourceConfig,
@@ -86,6 +105,7 @@ export class GitProvider implements SourceProvider {
       maxFileSizeMb?: number;
       force?: boolean;
       checkInterval?: number;
+      onProgress?: (update: GitProgressUpdate) => void;
     },
   ) {
     this.url = config.url;
@@ -98,6 +118,7 @@ export class GitProvider implements SourceProvider {
     this.mode = options?.mode ?? "solo";
     this.maxFileSizeMb = options?.maxFileSizeMb ?? 10;
     this.force = options?.force ?? false;
+    this.progressCallback = options?.onProgress;
     if (options?.consentManager !== undefined) {
       this.consentManager = options.consentManager;
     }
@@ -111,6 +132,7 @@ export class GitProvider implements SourceProvider {
     // Cache directory: .aligntrue/.cache/git/<repo-hash>/
     this.cacheDir = baseCacheDir;
     this.repoDir = join(this.cacheDir, this.repoHash);
+    this.repoLabel = this.getRepoLabel(this.url);
 
     // Validate cache directory path (security check)
     this.validateCachePath(this.cacheDir);
@@ -268,6 +290,10 @@ export class GitProvider implements SourceProvider {
     latestSha: string;
     commitsBehind: number;
   }> {
+    this.emitProgress("metadata", {
+      message: `Checking remote updates for ${ref}`,
+      ref,
+    });
     // If no cache exists, we need to clone
     if (!existsSync(this.repoDir)) {
       await this.ensureRepository(ref);
@@ -284,7 +310,7 @@ export class GitProvider implements SourceProvider {
     const currentSha = await this.getCommitSha();
 
     // Get remote SHA using git ls-remote (lightweight, no fetch)
-    const git = simpleGit();
+    const git = this.createGitInstance();
     try {
       const result = await git.listRemote([this.url, ref]);
       const lines = result.trim().split("\n");
@@ -325,13 +351,25 @@ export class GitProvider implements SourceProvider {
       await this.ensureRepository(ref);
     } else {
       // Update existing repository
-      const git = simpleGit(this.repoDir);
+      const git = this.createGitInstance(this.repoDir);
       try {
         const refType = detectRefType(ref);
+        this.emitProgress("fetch", {
+          message: `Fetching updates for ${ref}`,
+          ref,
+        });
         await git.fetch(["origin", ref, "--depth", "1"]);
         if (refType === "commit") {
+          this.emitProgress("checkout", {
+            message: `Checking out commit ${ref}`,
+            ref,
+          });
           await git.checkout(ref);
         } else {
+          this.emitProgress("checkout", {
+            message: `Resetting to origin/${ref}`,
+            ref,
+          });
           await git.reset(["--hard", `origin/${ref}`]);
         }
       } catch (error) {
@@ -339,6 +377,10 @@ export class GitProvider implements SourceProvider {
         console.warn(
           `Failed to update repository, re-cloning: ${error instanceof Error ? error.message : String(error)}`,
         );
+        this.emitProgress("cleanup", {
+          message: "Re-cloning repository after failed update",
+          ref,
+        });
         rmSync(this.repoDir, { recursive: true, force: true });
         await this.ensureRepository(ref);
       }
@@ -374,22 +416,35 @@ export class GitProvider implements SourceProvider {
    * Ensure repository is cloned and checked out to correct ref
    */
   private async ensureRepository(ref: string): Promise<void> {
-    const git: SimpleGit = simpleGit();
+    const git = this.createGitInstance();
 
     if (!existsSync(this.repoDir)) {
       // Clone repository (shallow)
       const refType = detectRefType(ref);
       try {
+        this.emitProgress("clone", {
+          message: `Starting clone for ${ref}`,
+          ref,
+        });
         await git.clone(this.url, this.repoDir, [
           "--depth",
           "1",
           "--single-branch",
           ...(refType === "commit" ? [] : ["--branch", ref]),
         ]);
+        this.emitProgress("clone", {
+          message: `Clone complete for ${ref}`,
+          percent: 100,
+          ref,
+        });
 
         if (refType === "commit") {
-          const repoGit = simpleGit(this.repoDir);
+          const repoGit = this.createGitInstance(this.repoDir);
           await repoGit.fetch(["origin", ref, "--depth", "1"]);
+          this.emitProgress("checkout", {
+            message: `Checking out commit ${ref}`,
+            ref,
+          });
           await repoGit.checkout(ref);
         }
 
@@ -408,6 +463,10 @@ export class GitProvider implements SourceProvider {
       } catch (error) {
         // Clean up partial clone on error
         if (existsSync(this.repoDir)) {
+          this.emitProgress("cleanup", {
+            message: "Removing incomplete clone",
+            ref,
+          });
           rmSync(this.repoDir, { recursive: true, force: true });
         }
 
@@ -425,12 +484,16 @@ export class GitProvider implements SourceProvider {
       }
     } else {
       // Repository exists, checkout ref (in case it changed)
-      const repoGit = simpleGit(this.repoDir);
+      const repoGit = this.createGitInstance(this.repoDir);
       const refType = detectRefType(ref);
 
       try {
         if (refType === "commit") {
           await repoGit.fetch(["origin", ref, "--depth", "1"]);
+          this.emitProgress("checkout", {
+            message: `Checking out commit ${ref}`,
+            ref,
+          });
           await repoGit.checkout(ref);
         } else {
           const currentBranch = await repoGit.revparse([
@@ -439,6 +502,10 @@ export class GitProvider implements SourceProvider {
           ]);
           if (currentBranch.trim() !== ref) {
             await repoGit.fetch(["origin", ref, "--depth", "1"]);
+            this.emitProgress("checkout", {
+              message: `Switching to branch ${ref}`,
+              ref,
+            });
             await repoGit.checkout(ref);
           }
         }
@@ -448,6 +515,10 @@ export class GitProvider implements SourceProvider {
           console.warn(
             `Git checkout failed, removing cache and retrying: ${error.message}`,
           );
+          this.emitProgress("cleanup", {
+            message: "Removing corrupted cache",
+            ref,
+          });
           rmSync(this.repoDir, { recursive: true, force: true });
 
           // Retry clone
@@ -471,7 +542,7 @@ export class GitProvider implements SourceProvider {
       );
     }
 
-    const git = simpleGit(this.repoDir);
+    const git = this.createGitInstance(this.repoDir);
     try {
       const sha = await git.revparse(["HEAD"]);
       return sha.trim();
@@ -561,6 +632,80 @@ export class GitProvider implements SourceProvider {
           `  Path: ${this.path}\n` +
           `  ${error instanceof Error ? error.message : String(error)}`,
       );
+    }
+  }
+
+  private getRepoLabel(url: string): string {
+    if (url.startsWith("git@")) {
+      const sanitized = url.replace(/^git@/, "").replace(/\.git$/, "");
+      return sanitized.replace(":", "/");
+    }
+
+    try {
+      const parsed = new URL(url);
+      return `${parsed.hostname}${parsed.pathname.replace(/\.git$/, "")}`;
+    } catch {
+      return url;
+    }
+  }
+
+  private createGitInstance(cwd?: string): SimpleGit {
+    return simpleGit(cwd);
+  }
+
+  private emitProgress(
+    phase: GitProgressPhase,
+    details?: {
+      stage?: string;
+      percent?: number;
+      ref?: string;
+      message?: string;
+    },
+  ): void {
+    if (!this.progressCallback) {
+      return;
+    }
+
+    const ref = details?.ref ?? this.ref;
+    const percent =
+      typeof details?.percent === "number" ? details.percent : undefined;
+    const base = this.describePhase(phase, ref);
+    const stage = details?.message ?? details?.stage;
+    const formatted = `${base}${stage ? ` - ${stage}` : ""}${
+      percent !== undefined ? ` ${percent}%` : ""
+    }`.trim();
+
+    const update: GitProgressUpdate = {
+      phase,
+      message: formatted,
+      repo: this.url,
+      ref,
+    };
+
+    if (stage) {
+      update.stage = stage;
+    }
+
+    if (percent !== undefined) {
+      update.percent = percent;
+    }
+
+    this.progressCallback(update);
+  }
+
+  private describePhase(phase: GitProgressPhase, ref?: string): string {
+    const refSuffix = ref ? ` (${ref})` : "";
+    switch (phase) {
+      case "clone":
+        return `Cloning ${this.repoLabel}${refSuffix}`;
+      case "fetch":
+        return `Fetching ${this.repoLabel}${refSuffix}`;
+      case "checkout":
+        return `Checking out ${this.repoLabel}${refSuffix}`;
+      case "cleanup":
+        return `Cleaning cache for ${this.repoLabel}${refSuffix}`;
+      default:
+        return `Resolving ${this.repoLabel}${refSuffix}`;
     }
   }
 

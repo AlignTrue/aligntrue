@@ -12,7 +12,8 @@ import {
 } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
-import type { AlignTrueConfig } from "@aligntrue/core";
+import type { AlignTrueConfig, ConsentManager } from "@aligntrue/core";
+import type { GitProgressUpdate } from "./git-progress.js";
 
 export interface ResolvedSource {
   content: string;
@@ -20,6 +21,16 @@ export interface ResolvedSource {
   sourceType: "local" | "git" | "url";
   commitSha?: string; // For git sources
 }
+
+type GitProviderCtorOptions = {
+  offlineMode?: boolean;
+  consentManager?: ConsentManager;
+  mode?: "solo" | "team" | "enterprise";
+  maxFileSizeMb?: number;
+  force?: boolean;
+  checkInterval?: number;
+  onProgress?: (update: GitProgressUpdate) => void;
+};
 
 /**
  * Parse source content into AlignPack based on file extension
@@ -56,6 +67,7 @@ export async function resolveSource(
     offlineMode?: boolean;
     forceRefresh?: boolean;
     config?: AlignTrueConfig;
+    onGitProgress?: (update: GitProgressUpdate) => void;
   },
 ): Promise<ResolvedSource> {
   const cwd = options?.cwd || process.cwd();
@@ -154,10 +166,16 @@ export async function resolveSource(
       gitConfig.path = source.path;
     }
 
-    const provider = new GitProvider(gitConfig, cacheDir, {
+    const providerOptions: GitProviderCtorOptions = {
       offlineMode,
       mode: config?.mode ?? "solo",
-    });
+    };
+
+    if (options?.onGitProgress) {
+      providerOptions.onProgress = options.onGitProgress;
+    }
+
+    const provider = new GitProvider(gitConfig, cacheDir, providerOptions);
 
     const content = await provider.fetch();
     const commitSha = await provider.getCommitSha();
@@ -192,6 +210,7 @@ export async function resolveSources(
     cwd?: string;
     offlineMode?: boolean;
     forceRefresh?: boolean;
+    onGitProgress?: (update: GitProgressUpdate) => void;
   },
 ): Promise<ResolvedSource[]> {
   const sources = config.sources || [
@@ -233,6 +252,7 @@ export async function resolveAndMergeSources(
     offlineMode?: boolean;
     forceRefresh?: boolean;
     warnConflicts?: boolean;
+    onGitProgress?: (update: GitProgressUpdate) => void;
   },
 ): Promise<BundleResult & { sources: ResolvedSource[] }> {
   // Resolve all sources

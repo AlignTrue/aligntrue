@@ -18,6 +18,7 @@ import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
+import type { GitProgressUpdate } from "../../utils/git-progress.js";
 import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
@@ -65,6 +66,40 @@ export async function buildSyncContext(
   const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
   spinner.stop("Configuration loaded");
 
+  const spinnerWithMessage = spinner as SpinnerLike & {
+    message?: (text: string) => void;
+  };
+  const gitProgressState = {
+    lastMessage: "",
+    lastUpdate: 0,
+  };
+  const updateSpinnerMessage = (message: string) => {
+    if (!message) {
+      return;
+    }
+    if (spinnerWithMessage.message) {
+      spinnerWithMessage.message(message);
+    } else {
+      clack.log.info(message);
+    }
+  };
+  const handleGitProgress = (update: GitProgressUpdate) => {
+    const message = update.message?.trim();
+    if (!message) {
+      return;
+    }
+    const now = Date.now();
+    if (
+      message === gitProgressState.lastMessage &&
+      now - gitProgressState.lastUpdate < 500
+    ) {
+      return;
+    }
+    updateSpinnerMessage(message);
+    gitProgressState.lastMessage = message;
+    gitProgressState.lastUpdate = now;
+  };
+
   try {
     const invalidExporters = await getInvalidExporters(config.exporters);
     if (invalidExporters.length > 0) {
@@ -102,6 +137,7 @@ export async function buildSyncContext(
       offlineMode: options.offline || options.skipUpdateCheck,
       forceRefresh: options.forceRefresh,
       warnConflicts: true,
+      onGitProgress: handleGitProgress,
     });
 
     // Use first source path for conflict detection and display
