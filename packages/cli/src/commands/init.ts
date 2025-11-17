@@ -395,7 +395,6 @@ Next steps:
   1. Review rules: AGENTS.md or .aligntrue/.rules.yaml
   2. Run sync: aligntrue sync
 
-Already have local rules to merge? Run: aligntrue import
 Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
     if (nonInteractive) {
