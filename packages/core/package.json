@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,9 +31,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/file-utils": "workspace:*",
-    "@aligntrue/plugin-contracts": "workspace:*",
-    "@aligntrue/schema": "workspace:*",
+    "@aligntrue/file-utils": "^0.1.0",
+    "@aligntrue/plugin-contracts": "^0.1.0",
+    "@aligntrue/schema": "^0.1.0",
     "@clack/prompts": "^0.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
@@ -43,7 +43,7 @@
     "yaml": "^2.6.1"
   },
   "peerDependencies": {
-    "@aligntrue/exporters": "workspace:*"
+    "@aligntrue/exporters": "^0.1.0"
   },
   "peerDependenciesMeta": {
     "@aligntrue/exporters": {

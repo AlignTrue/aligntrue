@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "bin": {
     "aligntrue": "./dist/index.js",
@@ -24,11 +24,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
-    "@aligntrue/exporters": "workspace:*",
-    "@aligntrue/plugin-contracts": "workspace:*",
-    "@aligntrue/schema": "workspace:*",
-    "@aligntrue/sources": "workspace:*",
+    "@aligntrue/core": "^0.1.0",
+    "@aligntrue/exporters": "^0.1.0",
+    "@aligntrue/plugin-contracts": "^0.1.0",
+    "@aligntrue/schema": "^0.1.0",
+    "@aligntrue/sources": "^0.1.0",
     "@clack/prompts": "^0.11.0",
     "chokidar": "^4.0.3",
     "diff": "^8.0.2",
