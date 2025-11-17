@@ -21,7 +21,7 @@
     "validate:docs-links": "node scripts/check-docs-links.js",
     "validate:docs": "node scripts/validate-docs-accuracy.mjs",
     "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
+    "lint:fix": "eslint . --max-warnings 0 --fix && pnpm lint",
     "lint:strict": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
