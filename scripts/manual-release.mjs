@@ -97,15 +97,6 @@ function parseVersion(version) {
 function bumpVersion(currentVersion, bumpType) {
   const v = parseVersion(currentVersion);
 
-  if (bumpType === "alpha") {
-    // Increment alpha version
-    if (v.preTag === "alpha" && v.preNum !== null) {
-      return `${v.major}.${v.minor}.${v.patch}-alpha.${v.preNum + 1}`;
-    }
-    // Start new alpha from current version
-    return `${v.major}.${v.minor}.${v.patch}-alpha.0`;
-  }
-
   if (bumpType === "patch") {
     return `${v.major}.${v.minor}.${v.patch + 1}`;
   }
@@ -200,9 +191,9 @@ async function main() {
   // 2. Determine bump type
   let bumpType;
   if (nonInteractive) {
-    if (!["alpha", "patch", "minor", "major"].includes(requestedType)) {
+    if (!["patch", "minor", "major"].includes(requestedType)) {
       clack.log.error(
-        `Invalid bump type: ${requestedType}. Use: alpha, patch, minor, major`,
+        `Invalid bump type: ${requestedType}. Use: patch, minor, major`,
       );
       process.exit(1);
     }
@@ -213,11 +204,6 @@ async function main() {
     bumpType = await clack.select({
       message: "What type of release?",
       options: [
-        {
-          value: "alpha",
-          label: "alpha",
-          hint: `Next alpha (${currentVersion} → ${bumpVersion(currentVersion, "alpha")})`,
-        },
         {
           value: "patch",
           label: "patch",
@@ -234,7 +220,7 @@ async function main() {
           hint: `Breaking changes (${currentVersion} → ${bumpVersion(currentVersion, "major")})`,
         },
       ],
-      initialValue: "alpha",
+      initialValue: "patch",
     });
 
     if (clack.isCancel(bumpType)) {
@@ -291,7 +277,7 @@ async function main() {
   }
 
   // 7. Publish to npm
-  const npmTag = bumpType === "alpha" ? "alpha" : "latest";
+  const npmTag = "latest";
   s.start(`Publishing to npm with tag: ${npmTag}...`);
 
   for (const { pkg, newVersion } of updates) {
@@ -329,7 +315,7 @@ async function main() {
       "Next steps:\n" +
         "1. Update CHANGELOG.md with release notes\n" +
         "2. Verify packages on npm: https://www.npmjs.com/package/aligntrue\n" +
-        "3. Test the published CLI: npx aligntrue@alpha --version",
+        "3. Test the published CLI: npx aligntrue --version",
       "Post-release checklist",
     );
   }
