@@ -12,9 +12,19 @@ description: About AlignTrue.
 - **Solo devs:** One source of truth for Cursor `.mdc`, `AGENTS.md`, `CLAUDE.md`, and whatever else you use.
 - **Teams:** Shared rules that actually stay aligned across IDEs, agents, and repos, so best practices are practiced and not just vibes.
 
-AlignTrue is [MIT licensed](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE) and mostly self-documenting. If something is broken, outdated, or missing, open a PR.
+AlignTrue is [MIT licensed](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE), open to contributions and mostly self-documenting. If something is broken, outdated, or missing, open a PR.
 
 ## Why
+
+### TL;DR
+
+- **No more ICs:** Most "ICs" will spend more time managing agents than writing raw code. _Everyone is a manager now._
+- **Unlock GDP:** Future GDP is constrained more by _bad AI usage_ than by bad models. _Make 'doing it right' easy._
+- **Level up humanity:** Clear rules for agents also make human collaboration saner & faster. _Aligned goals & priorities_
+
+AlignTrue is my attempt to fix that binding constraint so we can actually scale with AI instead of fighting it.
+
+### Details
 
 I went deep with AI agents (especially when Sonnet 4.5 landed) and burned an irresponsible number of tokens fast. The power is obvious. So is the failure mode.
 
