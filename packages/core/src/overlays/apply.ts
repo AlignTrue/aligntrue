@@ -7,9 +7,10 @@ import type { AlignPack } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import { compareSelectors } from "./selector-parser.js";
 import {
-  applySetOperations,
   applyRemoveOperations,
+  applySetOperations,
   deepClone,
+  isPlainObject,
 } from "./operations.js";
 import type { OverlayDefinition, OverlayApplicationResult } from "./types.js";
 
@@ -171,13 +172,12 @@ function sortOverlays(overlays: OverlayDefinition[]): OverlayDefinition[] {
  * @returns Target object or undefined
  */
 function getTargetFromPath(ir: unknown, path: string[]): unknown {
-  let current = ir;
+  let current: unknown = ir;
   for (const segment of path) {
     if (current === null || current === undefined) {
       return undefined;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    current = (current as any)[segment];
+    current = resolveProperty(current, segment);
   }
   return current;
 }
@@ -243,7 +243,7 @@ export function normalizeLineEndings(ir: AlignPack): AlignPack {
   // Recursively normalize string properties
   function normalize(obj: unknown): void {
     if (typeof obj === "string") {
-      return; // Can't mutate strings, caller must handle
+      return;
     }
 
     if (Array.isArray(obj)) {
@@ -251,18 +251,15 @@ export function normalizeLineEndings(ir: AlignPack): AlignPack {
       return;
     }
 
-    if (typeof obj === "object" && obj !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const objAsAny = obj as any;
-      for (const key of Object.keys(objAsAny)) {
-        if (typeof objAsAny[key] === "string") {
-          // Normalize line endings: CRLF -> LF, ensure single trailing LF
-          let str = objAsAny[key].replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-          // Trim trailing newlines then add exactly one
+    if (isPlainObject(obj)) {
+      for (const key of Object.keys(obj)) {
+        const value = obj[key];
+        if (typeof value === "string") {
+          let str = value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
           str = str.replace(/\n+$/, "") + "\n";
-          objAsAny[key] = str;
+          obj[key] = str;
         } else {
-          normalize(objAsAny[key]);
+          normalize(value);
         }
       }
     }
@@ -270,6 +267,22 @@ export function normalizeLineEndings(ir: AlignPack): AlignPack {
 
   normalize(normalized);
   return normalized;
+}
+
+function resolveProperty(target: unknown, segment: string): unknown {
+  if (Array.isArray(target)) {
+    const index = Number(segment);
+    if (!Number.isNaN(index)) {
+      return target[index];
+    }
+    return undefined;
+  }
+
+  if (isPlainObject(target)) {
+    return target[segment];
+  }
+
+  return undefined;
 }
 
 /**

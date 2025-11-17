@@ -7,6 +7,7 @@ import { existsSync, readFileSync, statSync } from "fs";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
+import { isPlainObject } from "../overlays/operations.js";
 
 /**
  * Drift categories (Overlays system enhanced)
@@ -435,10 +436,13 @@ export async function detectDriftForConfig(config: unknown): Promise<{
     vendor_type?: string;
   }>;
 }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configAsAny = config as any;
-  const basePath = configAsAny.rootDir || ".";
-  const lockfilePath = configAsAny.lockfilePath || ".aligntrue.lock.json";
+  const configRecord = isPlainObject(config) ? config : {};
+  const basePath =
+    typeof configRecord["rootDir"] === "string" ? configRecord["rootDir"] : ".";
+  const lockfilePath =
+    typeof configRecord["lockfilePath"] === "string"
+      ? configRecord["lockfilePath"]
+      : ".aligntrue.lock.json";
 
   try {
     // Compute current bundle hash for lockfile drift detection
@@ -467,18 +471,27 @@ export async function detectDriftForConfig(config: unknown): Promise<{
         ? `${result.summary.total} drift findings across ${Object.values(result.summary.by_category).filter((n) => (n as number) > 0).length} categories`
         : "",
       drift: result.findings.map((f: DriftFinding) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const item: any = {
+        const entry: {
+          category: DriftCategory;
+          ruleId: string;
+          description: string;
+          suggestion?: string;
+          lockfile_hash?: string;
+          expected_hash?: string;
+          vendor_path?: string;
+          vendor_type?: string;
+        } = {
           category: f.category,
           ruleId: f.rule_id,
           description: f.message,
-          suggestion: f.suggestion,
         };
-        if (f.lockfile_hash) item.lockfile_hash = f.lockfile_hash;
-        if (f.expected_hash) item.expected_hash = f.expected_hash;
-        if (f.vendor_path) item.vendor_path = f.vendor_path;
-        if (f.vendor_type) item.vendor_type = f.vendor_type;
-        return item;
+
+        if (f.suggestion) entry.suggestion = f.suggestion;
+        if (f.lockfile_hash) entry.lockfile_hash = f.lockfile_hash;
+        if (f.expected_hash) entry.expected_hash = f.expected_hash;
+        if (f.vendor_path) entry.vendor_path = f.vendor_path;
+        if (f.vendor_type) entry.vendor_type = f.vendor_type;
+        return entry;
       }),
     });
   } catch {

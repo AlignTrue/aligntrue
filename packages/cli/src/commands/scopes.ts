@@ -145,8 +145,7 @@ async function listScopes(): Promise<void> {
  */
 async function discoverSubcommand(
   cwd: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  flags: Record<string, any>,
+  flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   const yes = flags["yes"] || false;
 

@@ -34,6 +34,8 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   },
 ];
 
+type MigrationFlags = Record<string, string | boolean | undefined>;
+
 export async function migrate(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
@@ -429,7 +431,7 @@ export async function local(args: string[]): Promise<void> {
  */
 async function migratePersonal(
   cwd: string,
-  flags: Record<string, string | boolean | undefined>,
+  flags: MigrationFlags,
 ): Promise<void> {
   const dryRun = flags["dry-run"] as boolean;
   const yes = flags["yes"] as boolean;
@@ -516,10 +518,7 @@ async function migratePersonal(
 /**
  * Migrate team rules to remote storage
  */
-async function migrateTeam(
-  cwd: string,
-  flags: Record<string, string | boolean | undefined>,
-): Promise<void> {
+async function migrateTeam(cwd: string, flags: MigrationFlags): Promise<void> {
   const dryRun = flags["dry-run"] as boolean;
   const yes = flags["yes"] as boolean;
 
@@ -603,11 +602,7 @@ async function migrateTeam(
 /**
  * Migrate from Ruler to AlignTrue
  */
-async function migrateRuler(
-  cwd: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  flags: Record<string, any>,
-): Promise<void> {
+async function migrateRuler(cwd: string, flags: MigrationFlags): Promise<void> {
   const { writeFileSync, renameSync } = await import("fs");
   const { join } = await import("path");
   const { glob } = await import("glob");

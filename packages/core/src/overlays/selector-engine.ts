@@ -7,6 +7,7 @@ import type { AlignPack } from "@aligntrue/schema";
 import { parseSelector } from "./selector-parser.js";
 import { SelectorMatch } from "./types.js";
 import { ensureSectionsArray } from "../validation/sections.js";
+import { isPlainObject } from "./operations.js";
 
 /**
  * Evaluate a selector against an AlignPack IR
@@ -121,8 +122,7 @@ function evaluatePropertySelector(
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let current: any = ir;
+  let current: unknown = ir;
   const traversedPath: string[] = [];
 
   for (const segment of propertyPath) {
@@ -136,7 +136,29 @@ function evaluatePropertySelector(
       };
     }
 
-    if (typeof current !== "object") {
+    if (Array.isArray(current)) {
+      const index = Number(segment);
+      if (Number.isNaN(index)) {
+        return {
+          success: false,
+          error: `Property path "${propertyPath.join(".")}" does not exist: "${segment}" is not a numeric index`,
+          matchCount: 0,
+        };
+      }
+
+      if (index < 0 || index >= current.length) {
+        return {
+          success: false,
+          error: `Property path "${propertyPath.join(".")}" does not exist: index ${index} out of bounds`,
+          matchCount: 0,
+        };
+      }
+
+      current = current[index];
+      continue;
+    }
+
+    if (!isPlainObject(current)) {
       return {
         success: false,
         error: `Property path "${propertyPath.join(".")}" does not exist: "${traversedPath.slice(0, -1).join(".")}" is not an object`,
@@ -144,7 +166,7 @@ function evaluatePropertySelector(
       };
     }
 
-    if (!(segment in current)) {
+    if (!Object.prototype.hasOwnProperty.call(current, segment)) {
       return {
         success: false,
         error: `Property path "${propertyPath.join(".")}" does not exist: property "${segment}" not found`,

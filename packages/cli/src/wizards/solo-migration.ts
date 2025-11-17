@@ -89,6 +89,10 @@ export async function runSoloMigrationWizard(
       return { success: false, teamSectionsAction: "keep" };
     }
 
+    if (!isSoloMigrationAction(teamAction)) {
+      throw new Error("Unexpected solo migration action");
+    }
+
     // Step 4: Confirm
     const confirm = await clack.confirm({
       message: "Apply changes and disable team mode?",
@@ -102,8 +106,7 @@ export async function runSoloMigrationWizard(
 
     // Step 5: Apply changes
     spinner.start("Applying changes");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await applySoloMigration(teamAction as any, config, cwd);
+    await applySoloMigration(teamAction, config, cwd);
     spinner.stop("Migration complete");
 
     // Step 6: Show summary
@@ -119,8 +122,7 @@ export async function runSoloMigrationWizard(
         timestamp: backup.timestamp,
         path: backup.path,
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      teamSectionsAction: teamAction as any,
+      teamSectionsAction: teamAction,
     };
   } catch (error) {
     spinner.stop("Migration failed");
@@ -193,7 +195,6 @@ async function applySoloMigration(
       throw error;
     }
   }
-
   if (!isValidIR(ir)) {
     throw new Error("Invalid IR format");
   }
@@ -256,4 +257,10 @@ async function applySoloMigration(
   const configPath = join(cwd, ".aligntrue", "config.yaml");
   const configContent = yaml.stringify(config);
   writeFileSync(configPath, configContent, "utf-8");
+}
+
+function isSoloMigrationAction(
+  value: unknown,
+): value is "keep" | "delete" | "separate" {
+  return value === "keep" || value === "delete" || value === "separate";
 }

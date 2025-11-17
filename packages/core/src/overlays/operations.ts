@@ -22,9 +22,11 @@ export function setProperty(
     throw new Error(`Cannot set property on non-object: ${typeof target}`);
   }
 
+  let current: Record<string, unknown> = ensurePlainObject(
+    target,
+    "target object",
+  );
   const path = key.split(".");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let current = target as any;
 
   // Navigate to parent of target property
   for (let i = 0; i < path.length - 1; i++) {
@@ -46,14 +48,14 @@ export function setProperty(
       current[segment] = {};
     }
 
-    // Ensure intermediate value is an object
-    if (typeof current[segment] !== "object" || current[segment] === null) {
+    const next = current[segment];
+    if (!isPlainObject(next)) {
       throw new Error(
         `Cannot set property "${key}": "${path.slice(0, i + 1).join(".")}" is not an object`,
       );
     }
 
-    current = current[segment];
+    current = next;
   }
 
   // Set the final property
@@ -83,9 +85,13 @@ export function removeProperty(target: unknown, key: string): boolean {
     return false;
   }
 
+  let current: Record<string, unknown>;
+  try {
+    current = ensurePlainObject(target, "target object");
+  } catch {
+    return false;
+  }
   const path = key.split(".");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let current = target as any;
 
   // Navigate to parent of target property
   for (let i = 0; i < path.length - 1; i++) {
@@ -100,12 +106,15 @@ export function removeProperty(target: unknown, key: string): boolean {
     }
 
     if (!(segment in current)) {
-      return false; // Path doesn't exist
+      return false;
     }
-    if (typeof current[segment] !== "object" || current[segment] === null) {
-      return false; // Intermediate value is not an object
+
+    const next = current[segment];
+    if (!isPlainObject(next)) {
+      return false;
     }
-    current = current[segment];
+
+    current = next;
   }
 
   // Remove the final property
@@ -191,6 +200,16 @@ export function mergeArraysAsSet<T>(baseArray: T[], overlayArray: T[]): T[] {
  */
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
+}
+
+function ensurePlainObject(
+  value: unknown,
+  name: string,
+): Record<string, unknown> {
+  if (!isPlainObject(value)) {
+    throw new Error(`Expected ${name} to be a plain object`);
+  }
+  return value;
 }
 
 /**
