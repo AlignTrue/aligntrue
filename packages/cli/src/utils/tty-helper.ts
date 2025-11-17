@@ -29,6 +29,22 @@ export function shouldUseNonInteractive(): boolean {
 }
 
 /**
+ * Determine if interactive mode should be used
+ *
+ * Checks explicit non-interactive flags and TTY availability.
+ */
+export function shouldUseInteractive(forceNonInteractive: boolean): boolean {
+  if (forceNonInteractive) return false;
+
+  if (!isTTY()) {
+    console.log("Non-TTY environment detected, using non-interactive mode");
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Exit with error if TTY is required but not available
  */
 export function requireTTY(commandName: string): void {

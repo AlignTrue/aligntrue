@@ -21,9 +21,9 @@ import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
-  shouldUseInteractive,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { shouldUseInteractive } from "../utils/tty-helper.js";
 import { execSync } from "child_process";
 import { DOCS_QUICKSTART } from "../constants.js";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
