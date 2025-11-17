@@ -210,7 +210,8 @@ function parseMarkdownSections(
       }
 
       // Start new section
-      const level = headingMatch[1]!.length;
+      const rawLevel = headingMatch[1]!.length;
+      const level = Math.min(Math.max(rawLevel, 2), 6);
       const heading = headingMatch[2]!.trim();
 
       currentSection = {

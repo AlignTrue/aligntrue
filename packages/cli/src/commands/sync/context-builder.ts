@@ -39,6 +39,8 @@ export interface SyncContext {
   engine: SyncEngine;
   registry: ExporterRegistry;
   spinner: SpinnerLike;
+  lockfilePath?: string;
+  lockfileWritten?: boolean;
 }
 
 /**
@@ -188,9 +190,12 @@ export async function buildSyncContext(
     await detectAndEnableAgents(config, configPath, options);
   }
 
+  let lockfilePath: string | undefined;
+  let lockfileWritten = false;
+
   // Step 5: Write lockfile in team mode
   if (config.mode === "team" && config.modules?.lockfile) {
-    const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
+    lockfilePath = resolve(cwd, ".aligntrue.lock.json");
 
     const { generateLockfile, writeLockfile } = await import(
       "@aligntrue/core/lockfile"
@@ -201,10 +206,19 @@ export async function buildSyncContext(
     );
 
     try {
-      writeLockfile(lockfilePath, newLockfile, { silent: true });
+      writeLockfile(lockfilePath, newLockfile);
+      lockfileWritten = true;
     } catch (err) {
-      clack.log.warn(
-        `Failed to write lockfile: ${err instanceof Error ? err.message : String(err)}`,
+      throw ErrorFactory.fileWriteFailed(
+        ".aligntrue.lock.json",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+
+    if (!existsSync(lockfilePath)) {
+      throw ErrorFactory.fileWriteFailed(
+        ".aligntrue.lock.json",
+        "Lockfile missing after write attempt",
       );
     }
   }
@@ -310,7 +324,7 @@ export async function buildSyncContext(
     }
   }
 
-  return {
+  const context: SyncContext = {
     cwd,
     config,
     configPath,
@@ -321,6 +335,13 @@ export async function buildSyncContext(
     registry,
     spinner,
   };
+
+  if (lockfilePath) {
+    context.lockfilePath = lockfilePath;
+    context.lockfileWritten = lockfileWritten;
+  }
+
+  return context;
 }
 
 /**
