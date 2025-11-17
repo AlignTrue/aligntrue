@@ -122,8 +122,15 @@ export async function check(args: string[]): Promise<void> {
         "  2  System error (missing files, invalid config)",
       ],
     });
-    console.error("Error: --ci flag is required\n");
-    console.error("Run: aligntrue check --ci\n");
+    console.error(
+      [
+        "Error: aligntrue check currently runs in CI mode only.",
+        "Add the --ci flag to enable strict validation and non-zero exit codes:",
+        "  aligntrue check --ci [--config path] [--json]",
+        "Need drift detection instead? Run: aligntrue drift --gates",
+        "",
+      ].join("\n"),
+    );
     process.exit(2);
   }
 
