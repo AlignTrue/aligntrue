@@ -35,8 +35,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--ci",
     hasValue: false,
-    description:
-      "CI mode (REQUIRED - strict validation, non-zero exit on errors)",
+    description: "CI mode (disables interactive spinner/output)",
   },
   {
     flag: "--config",
@@ -68,18 +67,18 @@ export async function check(args: string[]): Promise<void> {
     showStandardHelp({
       name: "check",
       description: "Validate rules and configuration (non-interactive)",
-      usage: "aligntrue check --ci [options]",
+      usage: "aligntrue check [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue check --ci",
-        "aligntrue check --ci --config .aligntrue/config.yaml",
+        "aligntrue check",
+        "aligntrue check --config .aligntrue/config.yaml",
         "aligntrue check --ci --json",
       ],
       notes: [
-        "Note: The --ci flag is REQUIRED for all check operations.",
+        "--ci disables interactive spinner/output for CI pipelines.",
         "",
         "Difference from 'drift':",
-        "  check --ci     Validates schema + lockfile (internal consistency)",
+        "  check          Validates schema + lockfile (internal consistency)",
         "  drift --gates  Detects source or agent file drift (team mode)",
         "",
         "Exit Codes:",
@@ -92,49 +91,19 @@ export async function check(args: string[]): Promise<void> {
   }
 
   // Extract flags
-  const ci = (parsed.flags["ci"] as boolean | undefined) || false;
+  const ciFlag = Boolean(parsed.flags["ci"]);
   const jsonOutput = (parsed.flags["json"] as boolean | undefined) || false;
   const configPath =
     (parsed.flags["config"] as string | undefined) || ".aligntrue/config.yaml";
+  const envCiValue = process.env["CI"];
+  const envCi =
+    typeof envCiValue === "string" &&
+    envCiValue.length > 0 &&
+    envCiValue.toLowerCase() !== "false" &&
+    envCiValue !== "0";
+  const ciMode = ciFlag || envCi;
 
-  // CI mode is required for now (other modes deferred)
-  if (!ci) {
-    showStandardHelp({
-      name: "check",
-      description: "Validate rules and configuration (non-interactive)",
-      usage: "aligntrue check --ci [options]",
-      args: ARG_DEFINITIONS,
-      examples: [
-        "aligntrue check --ci",
-        "aligntrue check --ci --config .aligntrue/config.yaml",
-        "aligntrue check --ci --json",
-      ],
-      notes: [
-        "Note: The --ci flag is REQUIRED for all check operations.",
-        "",
-        "Difference from 'drift':",
-        "  check --ci     Validates schema + lockfile (internal consistency)",
-        "  drift --gates  Detects source or agent file drift (team mode)",
-        "",
-        "Exit Codes:",
-        "  0  All validations passed",
-        "  1  Validation failed (schema, lockfile, or overlay errors)",
-        "  2  System error (missing files, invalid config)",
-      ],
-    });
-    console.error(
-      [
-        "Error: aligntrue check currently runs in CI mode only.",
-        "Add the --ci flag to enable strict validation and non-zero exit codes:",
-        "  aligntrue check --ci [--config path] [--json]",
-        "Need drift detection instead? Run: aligntrue drift --gates",
-        "",
-      ].join("\n"),
-    );
-    process.exit(2);
-  }
-
-  const spinner = createSpinner();
+  const spinner = createSpinner({ disabled: ciMode || jsonOutput });
   spinner.start("Validating AlignTrue rules");
   let spinnerActive = true;
   const stopSpinner = (text: string): void => {
@@ -337,7 +306,7 @@ export async function check(args: string[]): Promise<void> {
         {
           ...Errors.validationFailed(details),
           message: `Errors in ${rulesPath}`,
-          hint: "Open the file above, fix the invalid sections, then run 'aligntrue sync' followed by 'aligntrue check --ci'",
+          hint: "Open the file above, fix the invalid sections, then run 'aligntrue sync' followed by 'aligntrue check'",
         },
         1,
       );

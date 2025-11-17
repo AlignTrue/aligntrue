@@ -15,6 +15,7 @@ import * as yaml from "yaml";
 import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 let TEST_DIR: string;
+const DEFAULT_CONFIG = { exporters: ["cursor"] };
 
 // Skip on Windows due to unreliable file cleanup in CI
 const describeSkipWindows =
@@ -30,15 +31,65 @@ afterEach(async () => {
 });
 
 describeSkipWindows("Override Add Command Integration", () => {
+  function configPath(): string {
+    return join(TEST_DIR, ".aligntrue", "config.yaml");
+  }
+
+  function rulesPath(): string {
+    return join(TEST_DIR, ".aligntrue", ".rules.yaml");
+  }
+
+  function createBaseIr(): Record<string, unknown> {
+    return {
+      id: "test-pack",
+      version: "1.0.0",
+      spec_version: "1",
+      profile: { version: "1.0.0" },
+      sections: [
+        createSection("test-rule", "Test Rule 1"),
+        createSection("existing", "Existing Rule"),
+        createSection("new-rule", "New Rule"),
+        createSection("test", "Test Rule"),
+      ],
+    };
+  }
+
+  function createSection(
+    fingerprint: string,
+    heading: string,
+  ): Record<string, unknown> {
+    return {
+      heading,
+      level: 2,
+      content: `${heading}\n`,
+      fingerprint,
+    };
+  }
+
+  function writeConfig(config: Record<string, unknown> = DEFAULT_CONFIG): void {
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+    writeFileSync(configPath(), yaml.stringify(config), "utf-8");
+  }
+
+  function writeIr(customize?: (ir: Record<string, unknown>) => void): void {
+    const ir = createBaseIr();
+    if (customize) {
+      customize(ir);
+    }
+    writeFileSync(rulesPath(), yaml.stringify(ir), "utf-8");
+  }
+
+  function setupWorkspace(
+    config: Record<string, unknown> = DEFAULT_CONFIG,
+    customizeIr?: (ir: Record<string, unknown>) => void,
+  ): void {
+    writeConfig(config);
+    writeIr(customizeIr);
+  }
+
   describe("Basic Override", () => {
     it("adds override to config with --set operation", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       await overrideAdd([
         "--selector",
@@ -47,9 +98,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "severity=warn",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays).toBeDefined();
       expect(updatedConfig.overlays.overrides).toHaveLength(1);
@@ -62,13 +111,7 @@ describeSkipWindows("Override Add Command Integration", () => {
     });
 
     it("adds override with multiple --set operations", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       await overrideAdd([
         "--selector",
@@ -79,9 +122,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "enabled=false",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays.overrides[0].set).toEqual({
         severity: "critical",
@@ -90,13 +131,7 @@ describeSkipWindows("Override Add Command Integration", () => {
     });
 
     it("parses boolean values", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       await overrideAdd([
         "--selector",
@@ -105,21 +140,13 @@ describeSkipWindows("Override Add Command Integration", () => {
         "enabled=false",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays.overrides[0].set.enabled).toBe(false);
     });
 
     it("parses number values", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       await overrideAdd([
         "--selector",
@@ -128,9 +155,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "priority=10",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays.overrides[0].set.priority).toBe(10);
     });
@@ -138,8 +163,6 @@ describeSkipWindows("Override Add Command Integration", () => {
 
   describe("Multiple Overrides", () => {
     it("appends to existing overrides array", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-
       const config = {
         exporters: ["cursor"],
         overlays: {
@@ -151,11 +174,7 @@ describeSkipWindows("Override Add Command Integration", () => {
           ],
         },
       };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace(config);
 
       await overrideAdd([
         "--selector",
@@ -164,9 +183,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "enabled=false",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays.overrides).toHaveLength(2);
       expect(updatedConfig.overlays.overrides[0].selector).toBe(
@@ -180,13 +197,7 @@ describeSkipWindows("Override Add Command Integration", () => {
 
   describe("Error Handling", () => {
     it("exits with error if no operations provided", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       const originalExit = process.exit;
       let exitCode: number | undefined;
@@ -199,17 +210,31 @@ describeSkipWindows("Override Add Command Integration", () => {
       process.exit = originalExit;
       expect(exitCode).toBe(1);
     });
+
+    it("fails when selector does not match IR", async () => {
+      setupWorkspace();
+
+      const originalExit = process.exit;
+      let exitCode: number | undefined;
+      process.exit = ((code?: number) => {
+        exitCode = code;
+      }) as never;
+
+      await overrideAdd([
+        "--selector",
+        "rule[id=missing-rule]",
+        "--set",
+        "severity=error",
+      ]);
+
+      process.exit = originalExit;
+      expect(exitCode).toBe(1);
+    });
   });
 
   describe("Selector Syntax", () => {
     it("supports sections[0] index-based selector syntax", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       await overrideAdd([
         "--selector",
@@ -218,9 +243,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "severity=warn",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays).toBeDefined();
       expect(updatedConfig.overlays.overrides).toHaveLength(1);
@@ -231,13 +254,8 @@ describeSkipWindows("Override Add Command Integration", () => {
     });
 
     it("supports property path selector syntax", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       const config = { exporters: ["cursor"], profile: { version: "1.0.0" } };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace(config);
 
       await overrideAdd([
         "--selector",
@@ -246,9 +264,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "value=2.0.0",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays).toBeDefined();
       expect(updatedConfig.overlays.overrides).toHaveLength(1);
@@ -261,13 +277,7 @@ describeSkipWindows("Override Add Command Integration", () => {
     });
 
     it("supports multiple section index selectors", async () => {
-      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      const config = { exporters: ["cursor"] };
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", "config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
+      setupWorkspace();
 
       // Add first override
       await overrideAdd([
@@ -285,9 +295,7 @@ describeSkipWindows("Override Add Command Integration", () => {
         "severity=warn",
       ]);
 
-      const updatedConfig = yaml.parse(
-        readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
-      );
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays.overrides).toHaveLength(2);
       expect(updatedConfig.overlays.overrides[0].selector).toBe("sections[0]");

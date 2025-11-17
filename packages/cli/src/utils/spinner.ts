@@ -20,8 +20,8 @@ class NoopSpinner {
 
 export type SpinnerLike = ClackSpinner | NoopSpinner;
 
-export function createSpinner(): SpinnerLike {
-  if (!isInteractive) {
+export function createSpinner(options?: { disabled?: boolean }): SpinnerLike {
+  if (options?.disabled || !isInteractive) {
     return new NoopSpinner();
   }
   return clack.spinner();

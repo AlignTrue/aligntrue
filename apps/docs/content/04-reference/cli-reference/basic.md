@@ -239,22 +239,22 @@ Validate rules and lockfile without syncing. Great for CI/CD pipelines.
 **Usage:**
 
 ```bash
-aligntrue check --ci [options]
+aligntrue check [options]
 ```
 
 **Flags:**
 
-| Flag              | Description                                  | Default                  |
-| ----------------- | -------------------------------------------- | ------------------------ |
-| `--ci`            | CI mode (non-interactive, strict exit codes) | `false`                  |
-| `--config <path>` | Custom config file path                      | `.aligntrue/config.yaml` |
+| Flag              | Description                             | Default                  |
+| ----------------- | --------------------------------------- | ------------------------ |
+| `--ci`            | Disable spinner/output for CI & scripts | `false`                  |
+| `--config <path>` | Custom config file path                 | `.aligntrue/config.yaml` |
 
 **What it validates:**
 
 1. **Schema validation** - `.aligntrue/.rules.yaml` matches JSON Schema
 2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
 
-**Important:** The `--ci` flag is required for all check operations. It ensures non-interactive validation with explicit intent, making it safe for CI/CD pipelines and automation.
+**Interactive vs CI modes:** By default `aligntrue check` shows spinner updates and friendly logs. Use `--ci` (or set `CI=true`) to run non-interactively—ideal for CI pipelines, git hooks, or any scripted invocation.
 
 ### Format detection
 
@@ -266,17 +266,17 @@ Check automatically detects file format:
 **Example:**
 
 ```bash
-aligntrue check --ci AGENTS.md     # Validates natural markdown
-aligntrue check --ci rules.yaml    # Validates YAML IR
+aligntrue check AGENTS.md          # Validates natural markdown
+aligntrue check rules.yaml         # Validates YAML IR
 ```
 
 **Examples:**
 
 ```bash
-# Validate configuration
-aligntrue check --ci
+# Validate configuration (interactive)
+aligntrue check
 
-# Validate with custom config
+# Validate with custom config in CI
 aligntrue check --ci --config .aligntrue/config.yaml
 
 # Output JSON for parsing results
