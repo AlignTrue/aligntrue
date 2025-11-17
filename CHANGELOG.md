@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Invalid flags are now rejected with clear error messages instead of being silently accepted
 - Fixed duplicate warning messages when solo mode has team features enabled
 - Security: Use secure temp directory for backup files to prevent information disclosure and symlink attacks (CodeQL alert `js/insecure-temporary-file`)
+- Security: Bump `apps/docs` `mermaid` dependency to `11.12.1` so DOMPurify is 3.3.0+, avoiding the SAFE_FOR_TEMPLATES mXSS vulnerability that affected versions before 3.2.4
 - Documentation accuracy: Corrected Node.js requirement from 20+ to 22+, removed references to unimplemented commands (pull, md lint/compile), updated CLI command count from 27 to 20, fixed IR file path in architecture docs, and aligned performance benchmark documentation with actual measurements
 - Golden repository test validation now matches current exporter behavior (content hash computed and returned, not written as footer)
 - UI package test timeouts on Windows by increasing Vitest timeout thresholds to 30s for test and hook execution
