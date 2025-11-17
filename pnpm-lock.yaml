@@ -137,26 +137,26 @@ importers:
   packages/aligntrue:
     dependencies:
       '@aligntrue/cli':
-        specifier: workspace:*
-        version: link:../cli
+        specifier: ^0.1.0
+        version: 0.1.1
 
   packages/cli:
     dependencies:
       '@aligntrue/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.1(@aligntrue/exporters@0.1.1)
       '@aligntrue/exporters':
-        specifier: workspace:*
-        version: link:../exporters
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/plugin-contracts':
-        specifier: workspace:*
-        version: link:../plugin-contracts
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/sources':
-        specifier: workspace:*
-        version: link:../sources
+        specifier: ^0.1.0
+        version: 0.1.1(@aligntrue/exporters@0.1.1)
       '@clack/prompts':
         specifier: ^0.11.0
         version: 0.11.0
@@ -180,17 +180,17 @@ importers:
   packages/core:
     dependencies:
       '@aligntrue/exporters':
-        specifier: workspace:*
-        version: link:../exporters
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/file-utils':
-        specifier: workspace:*
-        version: link:../file-utils
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/plugin-contracts':
-        specifier: workspace:*
-        version: link:../plugin-contracts
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
       '@clack/prompts':
         specifier: ^0.11.0
         version: 0.11.0
@@ -220,17 +220,17 @@ importers:
   packages/exporters:
     dependencies:
       '@aligntrue/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.1(@aligntrue/exporters@0.1.1)
       '@aligntrue/file-utils':
-        specifier: workspace:*
-        version: link:../file-utils
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/plugin-contracts':
-        specifier: workspace:*
-        version: link:../plugin-contracts
+        specifier: ^0.1.0
+        version: 0.1.1
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -246,8 +246,8 @@ importers:
   packages/plugin-contracts:
     dependencies:
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
 
   packages/schema:
     dependencies:
@@ -271,11 +271,11 @@ importers:
   packages/sources:
     dependencies:
       '@aligntrue/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.1(@aligntrue/exporters@0.1.1)
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
       simple-git:
         specifier: ^3.30.0
         version: 3.30.0
@@ -283,8 +283,8 @@ importers:
   packages/testkit:
     dependencies:
       '@aligntrue/schema':
-        specifier: workspace:*
-        version: link:../schema
+        specifier: ^0.1.0
+        version: 0.1.1
     devDependencies:
       tsx:
         specifier: ^4.20.6
@@ -340,6 +340,40 @@ packages:
 
   '@acemir/cssom@0.9.23':
     resolution: {integrity: sha512-2kJ1HxBKzPLbmhZpxBiTZggjtgCwKg1ma5RHShxvd6zgqhDEdEkzpiwe7jLkI2p2BrZvFCXIihdoMkl1H39VnA==}
+
+  '@aligntrue/cli@0.1.1':
+    resolution: {integrity: sha512-FoP+UZWb7GGlCCaEjrxA1NPozxX8HNE+KhLS0PkMmm3xuETQBSvzYZczkHOtr9rKRrChqJeEQeVk0N1IRNHQBw==}
+    engines: {node: '>=22'}
+    hasBin: true
+
+  '@aligntrue/core@0.1.1':
+    resolution: {integrity: sha512-yzisGSYH+hHlQqh9lq8HAoXwC/SR1vFZh7WlmrT6bnqf55ymjeSICsf8pZsOLfYEfdIy7B3g88t2wzqdJ7IpCw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@aligntrue/exporters': ^0.1.0
+    peerDependenciesMeta:
+      '@aligntrue/exporters':
+        optional: true
+
+  '@aligntrue/exporters@0.1.1':
+    resolution: {integrity: sha512-rcWLN+S+aWYhvDo60KYkt0mR+LBwFzsHo0WADhh7fAkGOI/Ee3skZa3U+TPGnQqz8yX0gmKdNisvA5ipy4jbmQ==}
+    engines: {node: '>=22'}
+
+  '@aligntrue/file-utils@0.1.1':
+    resolution: {integrity: sha512-c6wePjv88Udd6agysHEj3lZ81qfiUK6WBF4NI7oLzeq52J3cEiUoLmSt61z4o7lRXNmFQTa7ZwlskxNlnxwzyA==}
+    engines: {node: '>=22'}
+
+  '@aligntrue/plugin-contracts@0.1.1':
+    resolution: {integrity: sha512-XooxCAopY/nB9sOQo6II+kRmprLLcRWB2TDcBg5jFmukXBaXfQ9I0xMvNc8mmob114etCdpXz0ndh4iP0Qh7GQ==}
+    engines: {node: '>=22'}
+
+  '@aligntrue/schema@0.1.1':
+    resolution: {integrity: sha512-0b3MAG0XXwEFU8aasJczFKfLkFtLMk0Riy9kvF+i+t1LOBAOmRbSi5q7A6drazuoCn7N6kyG/erR7VqASr403Q==}
+    engines: {node: '>=22'}
+
+  '@aligntrue/sources@0.1.1':
+    resolution: {integrity: sha512-NSoVQhltwUzP8u2JPSLz98Q+VuFVjbnluOZO82jaa0WsI6SJX1OjKA/apFIQHRCrb1sJ2vtuTGSMBw+9fR2y9A==}
+    engines: {node: '>=22'}
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
@@ -4278,6 +4312,68 @@ packages:
 snapshots:
 
   '@acemir/cssom@0.9.23': {}
+
+  '@aligntrue/cli@0.1.1':
+    dependencies:
+      '@aligntrue/core': 0.1.1(@aligntrue/exporters@0.1.1)
+      '@aligntrue/exporters': 0.1.1
+      '@aligntrue/plugin-contracts': 0.1.1
+      '@aligntrue/schema': 0.1.1
+      '@aligntrue/sources': 0.1.1(@aligntrue/exporters@0.1.1)
+      '@clack/prompts': 0.11.0
+      chokidar: 4.0.3
+      diff: 8.0.2
+      glob: 11.0.3
+      yaml: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@aligntrue/core@0.1.1(@aligntrue/exporters@0.1.1)':
+    dependencies:
+      '@aligntrue/file-utils': 0.1.1
+      '@aligntrue/plugin-contracts': 0.1.1
+      '@aligntrue/schema': 0.1.1
+      '@clack/prompts': 0.11.0
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      glob: 11.0.3
+      ignore: 7.0.5
+      micromatch: 4.0.8
+      yaml: 2.8.1
+    optionalDependencies:
+      '@aligntrue/exporters': 0.1.1
+
+  '@aligntrue/exporters@0.1.1':
+    dependencies:
+      '@aligntrue/core': 0.1.1(@aligntrue/exporters@0.1.1)
+      '@aligntrue/file-utils': 0.1.1
+      '@aligntrue/plugin-contracts': 0.1.1
+      '@aligntrue/schema': 0.1.1
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      yaml: 2.8.1
+
+  '@aligntrue/file-utils@0.1.1': {}
+
+  '@aligntrue/plugin-contracts@0.1.1':
+    dependencies:
+      '@aligntrue/schema': 0.1.1
+
+  '@aligntrue/schema@0.1.1':
+    dependencies:
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      canonicalize: 2.1.0
+      yaml: 2.8.1
+
+  '@aligntrue/sources@0.1.1(@aligntrue/exporters@0.1.1)':
+    dependencies:
+      '@aligntrue/core': 0.1.1(@aligntrue/exporters@0.1.1)
+      '@aligntrue/schema': 0.1.1
+      simple-git: 3.30.0
+    transitivePeerDependencies:
+      - '@aligntrue/exporters'
+      - supports-color
 
   '@antfu/install-pkg@1.1.0':
     dependencies:
