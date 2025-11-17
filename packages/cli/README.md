@@ -10,6 +10,27 @@ Command-line interface for AlignTrue - the AI-native rules and alignment platfor
 pnpm install -g @aligntrue/cli
 ```
 
+### Install from GitHub (latest changes)
+
+Use this path when you want to test unreleased commits from `main`. The CLI relies on other AlignTrue workspace packages, so a workspace-wide build is required before running the binary.
+
+```bash
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue
+pnpm install          # installs all workspace deps
+pnpm build            # builds every package the CLI imports
+cd packages/cli
+pnpm link --global    # exposes the aligntrue/aln binaries locally
+```
+
+You can now run:
+
+```bash
+aligntrue --version
+```
+
+For iterative development, rerun `pnpm build` after dependency changes or `pnpm --filter @aligntrue/cli build` after CLI-only edits.
+
 ## Quick reference
 
 ```
