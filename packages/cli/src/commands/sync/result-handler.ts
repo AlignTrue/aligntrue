@@ -2,7 +2,8 @@
  * Sync result handler - displays results, conflicts, telemetry
  */
 
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
+import { relative } from "path";
 import * as clack from "@clack/prompts";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import type { SyncContext } from "./context-builder.js";
@@ -127,6 +128,21 @@ export async function handleSyncResult(
       if (options.verbose) {
         clack.log.warn(
           `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+
+    // Verify lockfile status when enabled
+    const lockfileExpected =
+      context.config.mode === "team" && context.config.modules?.lockfile;
+    if (!options.dryRun && lockfileExpected && context.lockfilePath) {
+      if (existsSync(context.lockfilePath)) {
+        clack.log.success(
+          `Lockfile updated: ${relative(cwd, context.lockfilePath)}`,
+        );
+      } else {
+        clack.log.warn(
+          `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
         );
       }
     }

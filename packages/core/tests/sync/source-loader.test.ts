@@ -50,6 +50,21 @@ describe("source-loader", () => {
       expect(files[0].sections).toHaveLength(1);
     });
 
+    it("normalizes heading levels to at least 2", async () => {
+      writeFileSync(join(testDir, "AGENTS.md"), "# Title\n\nDetails");
+
+      const config: AlignTrueConfig = {
+        exporters: ["cursor"],
+        mode: "solo",
+        sync: {
+          source_files: "AGENTS.md",
+        },
+      };
+
+      const files = await discoverSourceFiles(testDir, config);
+      expect(files[0]?.sections[0]?.level).toBe(2);
+    });
+
     it("should discover multiple files with glob pattern", async () => {
       // Note: glob output is normalized to forward slashes for cross-platform consistency
       // (prevents Windows backslash issues)

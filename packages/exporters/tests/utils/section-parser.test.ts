@@ -78,9 +78,21 @@ More content.
     const result = parseAgentsMd(content);
 
     expect(result.sections).toHaveLength(3);
-    expect(result.sections[0]?.level).toBe(1);
+    expect(result.sections[0]?.level).toBe(2);
     expect(result.sections[1]?.level).toBe(2);
     expect(result.sections[2]?.level).toBe(3);
+  });
+
+  it("normalizes single-# headings to level 2", () => {
+    const content = `# Overview
+
+Stay aligned.`;
+
+    const result = parseAgentsMd(content);
+
+    expect(result.sections).toHaveLength(1);
+    expect(result.sections[0]?.level).toBe(2);
+    expect(result.sections[0]?.heading).toBe("Overview");
   });
 
   it("should compute section hashes", () => {
