@@ -15,7 +15,7 @@
  */
 
 import type { AlignPack } from "@aligntrue/schema";
-import { deepClone } from "./operations.js";
+import { deepClone, isPlainObject } from "./operations.js";
 import type { OverlayDefinition } from "./types.js";
 
 /**
@@ -240,20 +240,16 @@ function compareObjects(
   path: string[],
 ): PropertyChange[] {
   const changes: PropertyChange[] = [];
-
-  // Get all keys from both objects
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oldObjAsAny = oldObj as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const newObjAsAny = newObj as any;
-  const allKeys = new Set([
-    ...Object.keys(oldObjAsAny || {}),
-    ...Object.keys(newObjAsAny || {}),
+  const oldRecord = toRecord(oldObj);
+  const newRecord = toRecord(newObj);
+  const allKeys = new Set<string>([
+    ...Object.keys(oldRecord ?? {}),
+    ...Object.keys(newRecord ?? {}),
   ]);
 
   for (const key of allKeys) {
-    const oldValue = oldObjAsAny?.[key];
-    const newValue = newObjAsAny?.[key];
+    const oldValue = oldRecord?.[key];
+    const newValue = newRecord?.[key];
     const currentPath = [...path, key];
 
     if (oldValue === undefined && newValue !== undefined) {
@@ -296,6 +292,13 @@ function compareObjects(
   }
 
   return changes;
+}
+
+function toRecord(value: unknown): Record<string, unknown> | undefined {
+  if (isPlainObject(value)) {
+    return value;
+  }
+  return undefined;
 }
 
 /**

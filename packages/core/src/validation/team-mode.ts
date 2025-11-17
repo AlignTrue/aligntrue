@@ -4,6 +4,7 @@
  */
 
 import type { AlignTrueConfig } from "../config/index.js";
+import { isPlainObject } from "../overlays/operations.js";
 
 export interface ValidationError {
   field: string;
@@ -130,11 +131,10 @@ export function validateScopeConfig(
   const errors: ValidationError[] = [];
 
   for (const [scope, config] of Object.entries(scopes)) {
-    if (!config || typeof config !== "object") {
+    if (!isPlainObject(config)) {
       continue;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(config as any).sections) {
+    if (!config["sections"]) {
       errors.push({
         field: `scopes.${scope}.sections`,
         message: `Scope "${scope}" must have sections defined`,

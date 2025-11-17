@@ -160,17 +160,13 @@ export function runGoldenPacks(
       }
 
       // Verify hash matches what's in the file
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parsed = parseYamlToJson(content) as any;
-      if (
-        parsed.integrity?.value &&
-        result.hash &&
-        parsed.integrity.value !== result.hash
-      ) {
+      const parsed = parseYamlToJson(content);
+      const integrityValue = getIntegrityValue(parsed);
+      if (integrityValue && result.hash && integrityValue !== result.hash) {
         failures.push({
           vector_name: filename,
           reason: "Hash mismatch",
-          expected: parsed.integrity.value,
+          expected: integrityValue,
           actual: result.hash,
         });
       }
@@ -188,6 +184,20 @@ export function runGoldenPacks(
     failed: failures.length,
     failures,
   };
+}
+
+function getIntegrityValue(obj: unknown): string | undefined {
+  if (!obj || typeof obj !== "object") {
+    return undefined;
+  }
+  const record = obj as Record<string, unknown>;
+  const integrity = record["integrity"];
+  if (!integrity || typeof integrity !== "object") {
+    return undefined;
+  }
+  const integrityRecord = integrity as Record<string, unknown>;
+  const value = integrityRecord["value"];
+  return typeof value === "string" ? value : undefined;
 }
 
 /**

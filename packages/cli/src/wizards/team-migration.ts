@@ -103,6 +103,10 @@ export async function runTeamMigrationWizard(
         return { success: false, actions: [] };
       }
 
+      if (!isMigrationAction(action)) {
+        throw new Error("Unsupported migration action selected");
+      }
+
       let destination: string | undefined;
 
       if (action === "move") {
@@ -166,8 +170,7 @@ export async function runTeamMigrationWizard(
           });
         }
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        actions.push({ section: section.heading, action: action as any });
+        actions.push({ section: section.heading, action });
       }
     }
 
@@ -271,6 +274,12 @@ function detectPersonalRulesInRepo(
     }
     return results;
   }
+}
+
+function isMigrationAction(
+  value: unknown,
+): value is "promote" | "move" | "local" {
+  return value === "promote" || value === "move" || value === "local";
 }
 
 /**

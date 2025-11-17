@@ -6,7 +6,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, resolve, sep } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
-import Ajv from "ajv";
+import Ajv, { type ErrorObject } from "ajv";
 import type { AnySchemaObject } from "ajv";
 import addFormats from "ajv-formats";
 import type {
@@ -29,14 +29,11 @@ const schemaPath = join(__dirname, "../schema/manifest.schema.json");
 export class ExporterRegistry {
   private exporters = new Map<string, ExporterPlugin>();
   private manifests = new Map<string, AdapterManifest>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private ajv: any;
+  private ajv: Ajv;
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.ajv = new (Ajv as any)({ strict: true, allErrors: true });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (addFormats as any)(this.ajv);
+    this.ajv = new Ajv({ strict: true, allErrors: true });
+    addFormats(this.ajv);
 
     // Load and add manifest schema
     const manifestSchema = JSON.parse(
@@ -71,15 +68,16 @@ export class ExporterRegistry {
 
       if (!validate(manifest)) {
         const errors = validate.errors
-          ?.map((err: unknown) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
+          ?.map((err: ErrorObject) => {
+            const params = err.params;
             const missingProp =
-              error.params && "missingProperty" in error.params
-                ? error.params["missingProperty"]
+              params &&
+              typeof params === "object" &&
+              "missingProperty" in params
+                ? (params as Record<string, unknown>)["missingProperty"]
                 : undefined;
-            const field = error.instancePath || missingProp || "unknown";
-            return `${field}: ${error.message}`;
+            const field = err.instancePath || missingProp || "unknown";
+            return `${field}: ${err.message ?? "invalid value"}`;
           })
           .join(", ");
         throw new Error(`Invalid manifest: ${errors}`);

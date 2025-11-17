@@ -300,8 +300,7 @@ export interface AlignSection {
   explicitId?: string; // User-specified ID via HTML comment
 
   // Agent-specific metadata (for round-trip preservation)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vendor?: Record<string, any> & {
+  vendor?: Record<string, unknown> & {
     aligntrue?: AlignTrueVendorMetadata;
   };
 }

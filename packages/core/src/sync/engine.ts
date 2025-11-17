@@ -3,7 +3,7 @@
  * Coordinates IR loading, scope resolution, exporter execution, and conflict detection
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { ResolvedScope, Scope, MergeOrder } from "../scope.js";
 import type { SectionConflict } from "./multi-file-parser.js";
@@ -125,6 +125,14 @@ export class SyncEngine {
    */
   registerExporter(exporter: ExporterPlugin): void {
     this.exporters.set(exporter.name, exporter);
+  }
+
+  private static hasResetState(
+    exporter: ExporterPlugin,
+  ): exporter is ExporterPlugin & { resetState: () => void } {
+    return (
+      typeof (exporter as { resetState?: unknown }).resetState === "function"
+    );
   }
 
   /**
@@ -425,10 +433,8 @@ export class SyncEngine {
       // Reset state on all exporters before starting new sync cycle
       // This prevents accumulation of rules across multiple syncs
       for (const exporter of activeExporters) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (typeof (exporter as any).resetState === "function") {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (exporter as any).resetState();
+        if (SyncEngine.hasResetState(exporter)) {
+          exporter.resetState();
         }
       }
 
@@ -1021,8 +1027,7 @@ export class SyncEngine {
       const allRules = await storageManager.readAll();
 
       // Merge all sections
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allSections: any[] = [];
+      const allSections: AlignSection[] = [];
       for (const rules of Object.values(allRules)) {
         allSections.push(...rules);
       }
