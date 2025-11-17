@@ -9,7 +9,6 @@ import {
   renameSync,
   readFileSync,
   statSync,
-  existsSync,
 } from "fs";
 import { join, resolve, basename, relative } from "path";
 import * as clack from "@clack/prompts";
@@ -241,15 +240,6 @@ export async function init(args: string[] = []): Promise<void> {
   // Step 1: Detect project context
   const paths = getAlignTruePaths(cwd);
   let contextResult = detectContext(cwd);
-  const configExists = existsSync(paths.config);
-
-  if (configExists && contextResult.context !== "already-initialized") {
-    contextResult = {
-      ...contextResult,
-      context: "already-initialized",
-    };
-  }
-
   // Step 2: Handle already-initialized case
   if (contextResult.context === "already-initialized") {
     // Detect if this is a team setup
