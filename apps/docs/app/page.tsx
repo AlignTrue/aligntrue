@@ -476,19 +476,6 @@ function SiteFooter() {
             />
           </a>
           <a
-            href="https://bundlephobia.com/package/@aligntrue/cli"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle"
-              alt="Bundle size"
-              style={{ height: "20px", display: "block" }}
-            />
-          </a>
-          <a
             href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
