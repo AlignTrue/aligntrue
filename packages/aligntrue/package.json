@@ -1,9 +1,13 @@
 {
   "name": "aligntrue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AlignTrue CLI shim - AI alignment rules for developers",
   "type": "module",
   "main": "./dist/index.js",
+  "bin": {
+    "aligntrue": "./dist/index.js",
+    "aln": "./dist/index.js"
+  },
   "files": [
     "dist",
     "README.md",
