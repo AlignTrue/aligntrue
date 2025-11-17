@@ -10,6 +10,7 @@ import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { createSpinner } from "../utils/spinner.js";
 
 interface BackupArgs {
   // Common
@@ -135,7 +136,7 @@ async function handleCreate(
   args: BackupArgs,
   argv: string[],
 ): Promise<void> {
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Creating backup...");
 
   // Parse notes from argv manually if needed
@@ -244,7 +245,7 @@ async function handleRestore(
     return;
   }
 
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Restoring backup...");
 
   try {
@@ -306,7 +307,7 @@ async function handleCleanup(
     return;
   }
 
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Cleaning up old backups...");
 
   try {

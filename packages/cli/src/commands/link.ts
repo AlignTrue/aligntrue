@@ -38,6 +38,7 @@ import {
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
+import { createSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for link command
@@ -146,7 +147,7 @@ export async function link(args: string[]): Promise<void> {
   }
 
   // Show spinner
-  const spinner = isTTY() ? clack.spinner() : null;
+  const spinner = isTTY() ? createSpinner() : null;
   if (spinner) {
     spinner.start("Checking git repository...");
   } else {

@@ -18,6 +18,7 @@ import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
+import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
@@ -37,7 +38,7 @@ export interface SyncContext {
   bundleResult: Awaited<ReturnType<typeof resolveAndMergeSources>>;
   engine: SyncEngine;
   registry: ExporterRegistry;
-  spinner: ReturnType<typeof clack.spinner>;
+  spinner: SpinnerLike;
 }
 
 /**
@@ -56,7 +57,7 @@ export async function buildSyncContext(
   }
 
   // Step 2: Load config
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Loading configuration");
 
   const config: AlignTrueConfig = await loadConfigWithValidation(configPath);

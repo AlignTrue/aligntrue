@@ -11,6 +11,7 @@ import { diffLines } from "diff";
 import { isTTY } from "../utils/tty-helper.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
+import { createSpinner } from "../utils/spinner.js";
 
 /**
  * Execute revert command
@@ -228,7 +229,7 @@ export async function revert(args: string[]): Promise<void> {
     }
 
     // Restore backup
-    const spinner = isTTY() ? clack.spinner() : null;
+    const spinner = isTTY() ? createSpinner() : null;
     if (spinner) {
       spinner.start("Restoring backup");
     } else {
