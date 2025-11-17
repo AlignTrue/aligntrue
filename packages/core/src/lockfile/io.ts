@@ -142,16 +142,13 @@ export function writeLockfile(
  */
 function sortKeys(key: string, value: unknown): unknown {
   if (value && typeof value === "object" && !Array.isArray(value)) {
-    return Object.keys(value)
+    const asRecord = value as Record<string, unknown>;
+    return Object.keys(asRecord)
       .sort()
-      .reduce(
-        (sorted, k) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (sorted as any)[k] = (value as any)[k];
-          return sorted;
-        },
-        {} as Record<string, unknown>,
-      );
+      .reduce<Record<string, unknown>>((sorted, property) => {
+        sorted[property] = asRecord[property];
+        return sorted;
+      }, {});
   }
   return value;
 }

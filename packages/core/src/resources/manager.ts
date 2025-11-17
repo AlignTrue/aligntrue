@@ -6,11 +6,9 @@ import type { ResourceType, ResourceConfig } from "../config/index.js";
 import { StorageManager } from "../storage/manager.js";
 import type { IStorageBackend } from "../storage/backend.js";
 
-export interface ResourceItem {
+export interface ResourceItem extends Record<string, unknown> {
   id: string;
   scope: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
 }
 
 export abstract class ResourceManager<T extends ResourceItem> {

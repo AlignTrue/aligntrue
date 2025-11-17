@@ -316,10 +316,12 @@ export function estimateSize(value: unknown): number {
 
   if (type === "object") {
     let size = 24; // Object overhead
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj = value as Record<string, any>;
+    const obj = value as Record<string, unknown>;
     for (const key in obj) {
-      size += key.length * 2; // Key string
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+        continue;
+      }
+      size += key.length * 2;
       size += estimateSize(obj[key]);
     }
     return size;

@@ -5,6 +5,7 @@
 
 import { readFileSync } from "fs";
 import type { AlignTrueConfig } from "../config/index.js";
+import { isPlainObject } from "../overlays/operations.js";
 
 // Supports migration from Ruler tool to AlignTrue
 // Simple TOML parser implementation is sufficient
@@ -34,7 +35,8 @@ export function parseRulerToml(path: string): RulerConfig {
 
   // Simple TOML parsing for Ruler's structure
   // This handles the basic cases we need for migration
-  const config: RulerConfig = {};
+  type MutableRulerConfig = RulerConfig & Record<string, unknown>;
+  const config: MutableRulerConfig = {};
 
   let currentSection: string | null = null;
   let currentSubsection: string | null = null;
@@ -86,34 +88,32 @@ export function parseRulerToml(path: string): RulerConfig {
 
       // Store in config
       if (!currentSection) {
-        // Top-level key
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (config as any)[key!] = value;
+        config[key!] = value;
       } else if (currentSubsection) {
-        // Nested key like agents.cursor.enabled
-        if (!config[currentSection as keyof RulerConfig]) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (config as any)[currentSection] = {};
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const section = (config as any)[currentSection];
-        if (!section[currentSubsection]) {
-          section[currentSubsection] = {};
-        }
-        section[currentSubsection][key!] = value;
+        const section = ensureSection(config, currentSection);
+        const subsection = ensureSection(section, currentSubsection);
+        subsection[key!] = value;
       } else {
-        // Section-level key like gitignore.enabled
-        if (!config[currentSection as keyof RulerConfig]) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (config as any)[currentSection] = {};
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (config as any)[currentSection][key!] = value;
+        const section = ensureSection(config, currentSection);
+        section[key!] = value;
       }
     }
   }
 
   return config;
+}
+
+function ensureSection(
+  container: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const existing = container[key];
+  if (isPlainObject(existing)) {
+    return existing;
+  }
+  const next: Record<string, unknown> = {};
+  container[key] = next;
+  return next;
 }
 
 /**
