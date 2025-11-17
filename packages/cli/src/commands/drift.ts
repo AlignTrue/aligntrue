@@ -96,6 +96,10 @@ DRIFT TYPES
   severity_remap  Severity remapping policy violations
   vendorized      Vendored pack integrity issues
 
+COMPARISON
+  Use 'aligntrue check --ci' to validate schema/lockfile consistency.
+  Use 'aligntrue drift --gates' to detect source or agent file drift (team mode).
+
 EXAMPLES
   # Check for drift (human readable)
   aligntrue drift
@@ -235,6 +239,12 @@ function outputHuman(results: DriftDetectionResult): void {
       }
     });
   });
+
+  console.log("");
+  console.log(`Lockfile: ${results.lockfilePath}`);
+  console.log(`Findings: ${results.drift.length}`);
+  console.log("Tip: Use '--json' or '--sarif' for machine-readable output.");
+  console.log("Tip: Add '--gates' to fail CI when drift is detected.");
 }
 
 /**

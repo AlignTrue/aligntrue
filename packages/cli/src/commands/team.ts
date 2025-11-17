@@ -14,6 +14,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { applyDefaults } from "@aligntrue/core";
+import { createSpinner, SpinnerLike } from "../utils/spinner.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -211,7 +212,7 @@ async function teamEnable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
-  let spinner: ReturnType<typeof clack.spinner> | null = null;
+  let spinner: SpinnerLike | null = null;
   let spinnerActive = false;
   const stopSpinner = (text: string): void => {
     if (!spinnerActive || !spinner) {
@@ -351,7 +352,7 @@ async function teamEnable(
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
 
-    spinner = clack.spinner();
+    spinner = createSpinner();
     spinner.start("Writing team configuration");
     spinnerActive = true;
 

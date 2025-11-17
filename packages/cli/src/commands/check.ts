@@ -5,7 +5,6 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import * as clack from "@clack/prompts";
 import { type AlignTrueConfig, ensureSectionsArray } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import { validateAlignSchema } from "@aligntrue/schema";
@@ -27,6 +26,7 @@ import {
 } from "../utils/command-utilities.js";
 import { resolveSource } from "../utils/source-resolver.js";
 import { getInvalidExporters } from "../utils/exporter-validation.js";
+import { createSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for check command
@@ -78,6 +78,10 @@ export async function check(args: string[]): Promise<void> {
       notes: [
         "Note: The --ci flag is REQUIRED for all check operations.",
         "",
+        "Difference from 'drift':",
+        "  check --ci     Validates schema + lockfile (internal consistency)",
+        "  drift --gates  Detects source or agent file drift (team mode)",
+        "",
         "Exit Codes:",
         "  0  All validations passed",
         "  1  Validation failed (schema, lockfile, or overlay errors)",
@@ -108,6 +112,10 @@ export async function check(args: string[]): Promise<void> {
       notes: [
         "Note: The --ci flag is REQUIRED for all check operations.",
         "",
+        "Difference from 'drift':",
+        "  check --ci     Validates schema + lockfile (internal consistency)",
+        "  drift --gates  Detects source or agent file drift (team mode)",
+        "",
         "Exit Codes:",
         "  0  All validations passed",
         "  1  Validation failed (schema, lockfile, or overlay errors)",
@@ -119,7 +127,7 @@ export async function check(args: string[]): Promise<void> {
     process.exit(2);
   }
 
-  const spinner = clack.spinner();
+  const spinner = createSpinner();
   spinner.start("Validating AlignTrue rules");
   let spinnerActive = true;
   const stopSpinner = (text: string): void => {

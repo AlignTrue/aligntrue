@@ -1,0 +1,32 @@
+import * as clack from "@clack/prompts";
+
+const isInteractive = Boolean(process.stdout.isTTY && process.stderr.isTTY);
+
+type ClackSpinner = ReturnType<typeof clack.spinner>;
+
+class NoopSpinner {
+  start(message?: string): void {
+    if (message) {
+      console.log(message);
+    }
+  }
+
+  stop(message?: string): void {
+    if (message) {
+      console.log(message);
+    }
+  }
+}
+
+export type SpinnerLike = ClackSpinner | NoopSpinner;
+
+export function createSpinner(): SpinnerLike {
+  if (!isInteractive) {
+    return new NoopSpinner();
+  }
+  return clack.spinner();
+}
+
+export function isInteractiveTerminal(): boolean {
+  return isInteractive;
+}
