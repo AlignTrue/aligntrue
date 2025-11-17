@@ -301,6 +301,17 @@ async function configGet(configPath: string, key: string): Promise<void> {
     const value = getNestedValue(config, key);
 
     if (value === undefined) {
+      if (key === "mode") {
+        clack.log.error(`Key not found: ${key}`);
+        clack.log.info(
+          "\nNote: 'mode' is a runtime setting derived from your config and defaults.",
+        );
+        clack.log.info("Use 'aligntrue config show' to see the active mode.");
+        clack.log.info("\nAvailable stored config keys:");
+        listAllKeys(config).forEach((k) => clack.log.info(`  ${k}`));
+        process.exit(1);
+      }
+
       clack.log.error(`Key not found: ${key}`);
       clack.log.info("\nAvailable keys:");
       listAllKeys(config).forEach((k) => clack.log.info(`  ${k}`));
