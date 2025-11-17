@@ -349,8 +349,18 @@ async function teamEnable(
       mode: lockfileMode,
     };
 
+    // Preserve user-defined sources before defaults reapply
+    const existingSources =
+      config.sources && config.sources.length > 0
+        ? config.sources.map((source) => ({ ...source }))
+        : undefined;
+
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
+
+    if (existingSources) {
+      configWithDefaults.sources = existingSources;
+    }
 
     spinner = createSpinner();
     spinner.start("Writing team configuration");

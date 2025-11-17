@@ -563,6 +563,11 @@ function checkUnknownFields(
 
   for (const key of Object.keys(config)) {
     if (!knownFields.has(key)) {
+      const warningKey = `unknown-field:${configPath}:${key}`;
+      if (shownWarnings.has(warningKey)) {
+        continue;
+      }
+      shownWarnings.add(warningKey);
       console.warn(
         `Warning: Unknown config field "${key}" in ${configPath}\n` +
           `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(", ")}`,
