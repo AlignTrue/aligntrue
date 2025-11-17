@@ -95,20 +95,6 @@ function DocsFooter() {
             />
           </a>
           <a
-            href="https://bundlephobia.com/package/@aligntrue/cli"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Bundle Size"
-            style={{ textDecoration: "none" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://img.shields.io/bundlephobia/minzip/@aligntrue/cli?label=bundle&color=4285f4"
-              alt="Bundle Size"
-              style={{ height: "20px", display: "block" }}
-            />
-          </a>
-          <a
             href="https://app.codecov.io/github/AlignTrue/aligntrue"
             target="_blank"
             rel="noopener noreferrer"
