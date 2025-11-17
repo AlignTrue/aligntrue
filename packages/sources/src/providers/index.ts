@@ -28,7 +28,11 @@ export interface SourceConfig {
 
 // Re-export provider implementations for direct use
 export { GitProvider } from "./git.js";
-export type { GitProviderOptions } from "./git.js";
+export type {
+  GitProviderOptions,
+  GitProgressUpdate,
+  GitProgressPhase,
+} from "./git.js";
 export { LocalProvider } from "./local.js";
 
 // Re-export error types
