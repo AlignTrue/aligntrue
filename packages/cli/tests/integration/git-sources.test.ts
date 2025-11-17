@@ -123,7 +123,7 @@ git:
         }
         throw error;
       }
-    });
+    }, 120_000);
   });
 
   describe.skipIf(isCI)("Vendored packs", () => {
