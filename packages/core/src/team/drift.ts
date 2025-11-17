@@ -453,14 +453,8 @@ export async function detectDriftForConfig(config: unknown): Promise<{
         const tempLockfile = generateLockfile(ir, "team");
         currentBundleHash = tempLockfile.bundle_hash;
       }
-    } catch (err) {
-      // Log error for debugging but continue - lockfile drift detection will be skipped
-      console.error(
-        `Warning: Failed to compute current bundle hash for drift detection: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-      );
-      // currentBundleHash remains undefined
+    } catch {
+      // Unable to compute bundle hash; currentBundleHash remains undefined.
     }
 
     const result = await detectDrift(lockfilePath, basePath, currentBundleHash);
@@ -487,13 +481,8 @@ export async function detectDriftForConfig(config: unknown): Promise<{
         return item;
       }),
     });
-  } catch (err) {
+  } catch {
     // If files don't exist, no drift
-    console.error(
-      `Warning: Drift detection failed: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
     return Promise.resolve({
       driftDetected: false,
       mode: "team",
