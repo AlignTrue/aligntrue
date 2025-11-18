@@ -64,13 +64,18 @@ export class AgentsExporter extends ExporterBase {
 
     this.state.seenScopes.add(scopePath);
 
-    // For AGENTS.md, we generate the file only on the first export call
-    // In real usage, sync engine would need to signal "last scope" or we'd need
-    // a different pattern. For now, we generate immediately for each call.
-    // This matches the test expectations where each test case is independent.
-
+    // Determine output path based on scope
+    // For non-default scopes, write to nested directory structure
     const paths = getAlignTruePaths(outputDir);
-    const outputPath = paths.agentsMd();
+    let outputPath: string;
+    if (scope.isDefault) {
+      // Default scope: write to root AGENTS.md
+      outputPath = paths.agentsMd();
+    } else {
+      // Named scope: write to scope-specific nested directory
+      // e.g., apps/web/AGENTS.md
+      outputPath = paths.agentsMdScoped(scope.path);
+    }
 
     // Get managed sections from options
     const managedSections =

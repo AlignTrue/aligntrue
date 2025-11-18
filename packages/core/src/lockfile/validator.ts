@@ -31,13 +31,16 @@ export function validateLockfile(
     lockfile.rules.map((entry) => [entry.rule_id, entry]),
   );
 
-  // Validate section-based pack using fingerprints
-  const currentSectionIds = new Set(
-    currentPack.sections.map((s) => s.fingerprint),
+  // Filter to only team-scoped sections (skip personal sections in validation)
+  const teamSections = currentPack.sections.filter(
+    (section) => section.scope !== "personal",
   );
 
-  // Check for mismatches and new sections
-  for (const section of currentPack.sections) {
+  // Validate section-based pack using fingerprints
+  const currentSectionIds = new Set(teamSections.map((s) => s.fingerprint));
+
+  // Check for mismatches and new sections (only for team sections)
+  for (const section of teamSections) {
     const lockfileEntry = lockfileMap.get(section.fingerprint);
 
     if (!lockfileEntry) {

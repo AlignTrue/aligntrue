@@ -425,6 +425,7 @@ export async function detectDriftForConfig(config: unknown): Promise<{
   mode: string;
   lockfilePath: string;
   summary?: string | undefined;
+  personalRulesCount?: number | undefined;
   drift: Array<{
     category: DriftCategory;
     ruleId: string;
@@ -445,6 +446,16 @@ export async function detectDriftForConfig(config: unknown): Promise<{
       : ".aligntrue.lock.json";
 
   try {
+    // Load lockfile to get personal rules count
+    let personalRulesCount: number | undefined;
+    try {
+      const lockfileContent = readFileSync(lockfilePath, "utf-8");
+      const lockfile = JSON.parse(lockfileContent);
+      personalRulesCount = lockfile.personal_rules_count;
+    } catch {
+      // Unable to read lockfile; personalRulesCount remains undefined
+    }
+
     // Compute current bundle hash for lockfile drift detection
     let currentBundleHash: string | undefined;
     try {
@@ -470,6 +481,7 @@ export async function detectDriftForConfig(config: unknown): Promise<{
       summary: result.has_drift
         ? `${result.summary.total} drift findings across ${Object.values(result.summary.by_category).filter((n) => (n as number) > 0).length} categories`
         : "",
+      personalRulesCount,
       drift: result.findings.map((f: DriftFinding) => {
         const entry: {
           category: DriftCategory;

@@ -42,8 +42,25 @@ export function getAlignTruePaths(cwd: string = process.cwd()) {
       return join(cwd, ".cursor", "rules", `${filename}.mdc`);
     },
 
+    /**
+     * Path to scope-specific Cursor rule file (nested in scope directory)
+     * @param scopePath - Scope path (e.g., "apps/web")
+     * @param scopeName - Scope name for filename (e.g., "web")
+     */
+    cursorRulesScoped: (scopePath: string, scopeName: string): string => {
+      return join(cwd, scopePath, ".cursor", "rules", `${scopeName}.mdc`);
+    },
+
     /** Path to AGENTS.md universal format file */
     agentsMd: (): string => join(cwd, "AGENTS.md"),
+
+    /**
+     * Path to scope-specific AGENTS.md file (nested in scope directory)
+     * @param scopePath - Scope path (e.g., "apps/web")
+     */
+    agentsMdScoped: (scopePath: string): string => {
+      return join(cwd, scopePath, "AGENTS.md");
+    },
 
     /** Path to VS Code MCP config file */
     vscodeMcp: (): string => join(cwd, ".vscode", "mcp.json"),

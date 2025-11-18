@@ -413,3 +413,41 @@ function mergeDeps(packs: AlignPack[]): string[] {
 
   return depOrder;
 }
+
+/**
+ * Filter pack sections by scope configuration
+ * Used to create scope-specific exports
+ *
+ * @param pack - Full AlignPack to filter
+ * @param scope - Scope configuration with optional rulesets filter
+ * @returns Filtered pack with only sections matching the scope
+ */
+export function filterPackByScope(
+  pack: AlignPack,
+  scope: { path: string; rulesets?: string[] },
+): AlignPack {
+  // If no rulesets specified, include all sections
+  if (!scope.rulesets || scope.rulesets.length === 0) {
+    return pack;
+  }
+
+  // Filter sections that match scope rulesets
+  // A section matches if:
+  // 1. It has no ruleset (applies to all scopes), OR
+  // 2. Its ruleset is in the scope's rulesets array
+  const filteredSections = pack.sections.filter((section) => {
+    // Sections without ruleset apply to all scopes
+    if (!section.vendor?.aligntrue?.ruleset) {
+      return true;
+    }
+
+    const sectionRuleset = section.vendor.aligntrue.ruleset;
+    return scope.rulesets!.includes(sectionRuleset);
+  });
+
+  // Return pack with filtered sections
+  return {
+    ...pack,
+    sections: filteredSections,
+  };
+}
