@@ -141,11 +141,13 @@
         "backup_on_overwrite": {
           "type": "string",
           "enum": ["auto", "always", "never"],
-          "description": "Create .bak files before overwriting agent files: auto (solo: yes, team: no), always, never"
+          "description": "DEPRECATED: Inline .bak files are no longer supported",
+          "deprecated": true
         },
         "backup_extension": {
           "type": "string",
-          "description": "File extension for backup files (default: '.bak')"
+          "description": "DEPRECATED: Inline .bak files are no longer supported",
+          "deprecated": true
         },
         "scope_prefixing": {
           "type": "string",
@@ -391,26 +393,14 @@
     },
     "backup": {
       "type": "object",
-      "description": "Backup and restore configuration",
+      "description": "Backup and restore configuration. Backups are mandatory before destructive operations.",
       "additionalProperties": false,
       "properties": {
-        "auto_backup": {
-          "type": "boolean",
-          "description": "Automatically create backup before destructive operations (default: true)"
-        },
         "keep_count": {
           "type": "number",
           "description": "Number of backups to keep (older backups auto-deleted, default: 20)",
-          "minimum": 1,
+          "minimum": 10,
           "maximum": 100
-        },
-        "backup_on": {
-          "type": "array",
-          "description": "Commands that trigger auto-backup (default: ['sync'])",
-          "items": {
-            "type": "string",
-            "enum": ["sync", "restore", "import"]
-          }
         }
       }
     },

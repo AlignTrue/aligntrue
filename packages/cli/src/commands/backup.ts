@@ -25,6 +25,7 @@ interface BackupArgs {
 
   // Cleanup subcommand
   keep?: string;
+  legacy?: boolean;
 }
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -42,6 +43,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--keep",
     hasValue: true,
     description: "Number of backups to keep (cleanup subcommand)",
+  },
+  {
+    flag: "--legacy",
+    hasValue: false,
+    description: "Cleanup orphaned .bak files (cleanup subcommand)",
   },
   {
     flag: "--config",
@@ -64,7 +70,8 @@ Subcommands:
 Options:
   --notes <text>      Add notes to backup (create subcommand)
   --to <timestamp>    Restore specific backup by timestamp (restore subcommand)
-  --keep <count>      Number of backups to keep (cleanup subcommand)
+  --keep <count>      Number of backups to keep (cleanup subcommand, min 10)
+  --legacy            Cleanup orphaned .bak files (cleanup subcommand)
   --config <path>     Path to config file
   --help              Show this help message
 
@@ -75,14 +82,17 @@ Examples:
   # List all backups
   aligntrue backup list
 
-  # Restore most recent backup
+  # Restore most recent backup (restores .aligntrue/ and agent files)
   aligntrue backup restore
 
   # Restore specific backup
   aligntrue backup restore --to 2025-10-29T12-34-56-789
 
-  # Clean up old backups, keep only 5
-  aligntrue backup cleanup --keep 5
+  # Clean up old backups, keep only 15
+  aligntrue backup cleanup --keep 15
+
+  # Clean up legacy .bak files
+  aligntrue backup cleanup --legacy
 `;
 
 export async function backupCommand(argv: string[]): Promise<void> {
@@ -270,15 +280,19 @@ async function handleCleanup(
   args: BackupArgs,
   argv: string[],
 ): Promise<void> {
+  // Handle legacy cleanup
+  if (args.legacy || argv.includes("--legacy")) {
+    await handleLegacyCleanup(cwd);
+    return;
+  }
+
   const keepIndex = argv.indexOf("--keep");
   const keepValue =
     keepIndex >= 0 && argv[keepIndex + 1] ? argv[keepIndex + 1] : args.keep;
   const keepCount = keepValue ? parseInt(keepValue, 10) : 20;
 
-  if (isNaN(keepCount) || keepCount < 1) {
-    throw new Error(
-      `Invalid --keep value: ${args.keep}. Must be a positive number.`,
-    );
+  if (isNaN(keepCount) || keepCount < 10) {
+    throw new Error(`Invalid --keep value: ${keepValue}. Must be at least 10.`);
   }
 
   const backups = BackupManager.listBackups(cwd);
@@ -321,4 +335,53 @@ async function handleCleanup(
     spinner.stop("Cleanup failed");
     throw error;
   }
+}
+
+async function handleLegacyCleanup(cwd: string): Promise<void> {
+  const { globSync } = await import("glob");
+  const { unlinkSync } = await import("fs");
+  const { join } = await import("path");
+
+  const spinner = createSpinner();
+  spinner.start("Scanning for legacy .bak files...");
+
+  const bakFiles = globSync(["**/*.bak", ".bak"], {
+    cwd,
+    ignore: ["node_modules/**", ".git/**", ".aligntrue/**"],
+  });
+
+  spinner.stop(`Found ${bakFiles.length} legacy file(s)`);
+
+  if (bakFiles.length === 0) {
+    clack.log.success("No legacy .bak files found");
+    return;
+  }
+
+  clack.log.warn(`Found ${bakFiles.length} legacy .bak files:`);
+  bakFiles.slice(0, 10).forEach((f: string) => console.log(`  - ${f}`));
+  if (bakFiles.length > 10) {
+    console.log(`  ...and ${bakFiles.length - 10} more`);
+  }
+
+  const confirmed = await clack.confirm({
+    message: "Delete these files?",
+    initialValue: false,
+  });
+
+  if (clack.isCancel(confirmed) || !confirmed) {
+    clack.log.step("Cleanup cancelled");
+    return;
+  }
+
+  let deleted = 0;
+  for (const file of bakFiles) {
+    try {
+      unlinkSync(join(cwd, file));
+      deleted++;
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  clack.log.success(`Deleted ${deleted} legacy file(s)`);
 }

@@ -177,24 +177,13 @@ export abstract class ExporterBase implements ExporterPlugin {
     path: string,
     content: string,
     dryRun: boolean,
-    backupOptions?: {
-      enabled: boolean;
-      skipIfIdentical: boolean;
-      extension: string;
-    },
   ): Promise<string[]> {
     if (dryRun) {
       return [];
     }
 
-    // Use backup-aware write if backup options provided
-    if (backupOptions?.enabled) {
-      const { writeFileWithBackup } = await import("@aligntrue/core");
-      await writeFileWithBackup(path, content, backupOptions);
-    } else {
-      const writer = new AtomicFileWriter();
-      await writer.write(path, content);
-    }
+    const writer = new AtomicFileWriter();
+    await writer.write(path, content);
 
     return [path];
   }

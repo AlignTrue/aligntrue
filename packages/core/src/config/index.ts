@@ -49,9 +49,7 @@ export interface ExportConfig {
 }
 
 export interface BackupConfig {
-  auto_backup?: boolean;
   keep_count?: number;
-  backup_on?: Array<"sync" | "restore" | "import">;
 }
 
 export interface DetectionConfig {
@@ -110,8 +108,6 @@ export interface AlignTrueConfig {
     two_way?: boolean; // DEPRECATED: Use edit_source instead
     edit_source?: string | string[]; // Which files accept edits: ".rules.yaml", "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
     scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
-    backup_on_overwrite?: "auto" | "always" | "never"; // Create .bak files before overwriting
-    backup_extension?: string; // File extension for backup files (default: '.bak')
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
@@ -422,13 +418,6 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * Solo mode: auto (enabled)
    * Team/enterprise: auto (disabled, git history is backup)
    */
-  if (result.sync.backup_on_overwrite === undefined) {
-    result.sync.backup_on_overwrite = "auto";
-  }
-  if (result.sync.backup_extension === undefined) {
-    result.sync.backup_extension = ".bak";
-  }
-
   /**
    * Set source file defaults
    */
@@ -520,9 +509,10 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (!result.backup) {
     result.backup = {};
   }
-  result.backup.auto_backup = result.backup.auto_backup ?? true;
   result.backup.keep_count = result.backup.keep_count ?? 20;
-  result.backup.backup_on = result.backup.backup_on ?? ["sync", "import"];
+  // Enforce keep_count bounds (min 10, max 100)
+  if (result.backup.keep_count < 10) result.backup.keep_count = 10;
+  if (result.backup.keep_count > 100) result.backup.keep_count = 100;
 
   // Apply detection defaults
   if (!result.detection) {

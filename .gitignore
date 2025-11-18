@@ -57,7 +57,10 @@ CLAUDE.md
 temp-*
 logs/
 
-# Work-in-progress files
+# Legacy backup files (should not exist in new system)
+*.bak
+.bak
+
 packages/cli/src/commands/*-wip.ts
 packages/cli/tests/commands/*-wip.test.ts
 
