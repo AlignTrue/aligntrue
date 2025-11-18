@@ -2,6 +2,8 @@
 
 exports[`CursorExporter > Basic Export > exports single rule to .mdc file 1`] = `
 "---
+globs:
+  - "**/*"
 alwaysApply: true
 ---
 ## testing.require-tests
