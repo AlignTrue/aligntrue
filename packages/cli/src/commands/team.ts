@@ -419,6 +419,17 @@ async function teamEnable(
       "  4. Team members run: aligntrue init (will detect team mode)",
     );
 
+    console.log("\n💡 First Sync Note:");
+    console.log(
+      "  When you run your first sync, you'll see lockfile drift warnings.",
+    );
+    console.log(
+      "  This is expected - AlignTrue is creating your team's baseline lockfile.",
+    );
+    console.log(
+      "  Future syncs will only show actual changes from this baseline.\n",
+    );
+
     const teamNextSteps = buildNextStepsMessage({
       mode: "team",
       syncGuidance: "standard",
