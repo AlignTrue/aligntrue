@@ -23,13 +23,19 @@ export async function revert(args: string[]): Promise<void> {
     console.log("Usage: aligntrue revert [file] [options]\n");
     console.log("Options:");
     console.log("  -t, --timestamp <id>  Backup timestamp to restore from");
-    console.log("  -y, --yes             Skip confirmation prompts");
+    console.log(
+      "  -y, --yes             Skip confirmation prompts (restore immediately)",
+    );
     console.log("  -h, --help            Show this help\n");
     console.log("Examples:");
+    console.log("  # Interactive restore (preview changes before applying)");
     console.log("  aligntrue revert");
+    console.log("");
+    console.log("  # Restore specific file with preview");
     console.log("  aligntrue revert AGENTS.md");
+    console.log("");
+    console.log("  # Restore from specific backup");
     console.log("  aligntrue revert --timestamp 2024-01-15T10-30-00-000Z");
-    console.log("  aligntrue revert .cursor/rules/aligntrue.mdc -y");
     return;
   }
 

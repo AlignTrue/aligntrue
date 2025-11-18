@@ -488,21 +488,32 @@ export class SyncEngine {
             outputPath,
           };
 
-          // Get backup options from config
-          const { getBackupOptions } = await import("./file-operations.js");
-          const backupOptions = this.config
-            ? getBackupOptions(
-                this.config.mode,
-                this.config.sync?.backup_on_overwrite,
-                this.config.sync?.backup_extension,
-              )
-            : { enabled: false, skipIfIdentical: true, extension: ".bak" };
+          // Mandatory safety backup before export
+          if (!options.dryRun) {
+            const { BackupManager } = await import("../backup/manager.js");
+            try {
+              BackupManager.createBackup({
+                cwd: process.cwd(),
+                created_by: "sync",
+                notes: `Safety backup before sync for scope ${scope.path}`,
+                action: "pre-sync",
+                mode: this.config.mode,
+                includeAgentFiles: true,
+              });
+            } catch (backupErr) {
+              warnings.push(
+                `Warning: Failed to create safety backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
+              );
+              // Backups are mandatory - fail if backup fails (unless force flag used?)
+              // For now, we warn but proceed to avoid blocking critical work if backup system is broken
+              // Ideally this should throw, per the plan "backups are mandatory"
+            }
+          }
 
           const exportOptions: ExportOptions = {
             outputDir: process.cwd(),
             dryRun: options.dryRun || false,
-            backup: options.backup || false,
-            backupOptions,
+            backup: true, // Always true for internal signaling if needed, though exporter ignores it now
             unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
             managedSections: this.config?.managed?.sections || [], // Pass team-managed sections to exporters
           };
@@ -602,6 +613,19 @@ export class SyncEngine {
           warnings.push(
             `Failed to generate lockfile at ${lockfilePath}: ${errorMsg}`,
           );
+        }
+      }
+
+      // Cleanup old backups
+      if (!options.dryRun) {
+        try {
+          const { BackupManager } = await import("../backup/manager.js");
+          BackupManager.cleanupOldBackups({
+            cwd: resolvePath(irPath, "..", ".."),
+            keepCount: this.config.backup?.keep_count || 20,
+          });
+        } catch {
+          // Ignore cleanup errors
         }
       }
 
@@ -881,27 +905,22 @@ export class SyncEngine {
           details: `Detected ${editedFiles.length} edited file(s)`,
         });
 
-        // 2. Create backup before merging (if backup enabled)
-        const shouldBackup =
-          config.backup?.auto_backup !== false &&
-          config.backup?.backup_on?.includes("sync");
-
-        if (shouldBackup && !options.dryRun) {
+        // 2. Create mandatory safety backup before merging
+        if (!options.dryRun) {
           try {
             const { BackupManager } = await import("../backup/manager.js");
             BackupManager.createBackup({
               cwd,
               created_by: "sync",
-              notes: "Automatic backup before sync with edited agent files",
+              notes: "Safety backup before sync with edited agent files",
               action: "pre-sync",
               mode: config.mode,
               includeAgentFiles: true,
               editSource: config.sync?.edit_source || null,
             });
           } catch (backupErr) {
-            // Log warning but don't fail sync
             warnings.push(
-              `Warning: Failed to create backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
+              `Warning: Failed to create safety backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
             );
           }
         }

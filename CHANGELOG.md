@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: Backups are now mandatory and cannot be disabled
+- **BREAKING**: Removed `backup.auto_backup` config option (backups always enabled)
+- **BREAKING**: Removed `backup.backup_on` config option (all destructive operations backed up)
+- **BREAKING**: Removed `sync.backup_on_overwrite` and `sync.backup_extension` (no more inline .bak files)
+- Simplified backup config to single `backup.keep_count` setting (min: 10, default: 20, max: 100)
+- All backups now consolidated in `.aligntrue/.backups/` with timestamp organization
+- Enhanced CLI messaging to emphasize safety best practices (dry-run, revert, restore)
+
+### Added
+
+- `aligntrue backup cleanup --legacy` command to remove orphaned .bak files from older versions
+- Comprehensive safety best practices documentation in guides
+- Clear backup creation and restore messages in CLI output
+- Validation for keep_count range with actionable error messages
+
+### Removed
+
+- Inline .bak file creation (replaced by BackupManager snapshots)
+- Ability to disable backups (unsafe, confusing to users)
+
 ## [0.2.0] - 2025-11-18
 
 ### Added

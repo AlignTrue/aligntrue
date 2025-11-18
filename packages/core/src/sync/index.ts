@@ -14,8 +14,6 @@ export {
   computeContentChecksum,
   ensureDirectoryExists,
 } from "@aligntrue/file-utils";
-export { writeFileWithBackup, getBackupOptions } from "./file-operations.js";
-export type { BackupOptions, BackupResult } from "./file-operations.js";
 export { loadIR } from "./ir-loader.js";
 export {
   discoverSourceFiles,

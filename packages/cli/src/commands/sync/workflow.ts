@@ -48,28 +48,30 @@ export async function executeSyncWorkflow(
     clack.log.info("Verbose mode enabled");
   }
 
-  // Step 1: Auto-backup (if configured and not dry-run)
-  if (!options.dryRun && config.backup?.auto_backup) {
-    const backupOn = config.backup.backup_on || ["sync"];
-    if (backupOn.includes("sync")) {
-      spinner.start("Creating backup");
-      try {
-        const backup = BackupManager.createBackup({
-          cwd,
-          created_by: "sync",
-          notes: "Auto-backup before sync",
-        });
-        spinner.stop(`Backup created: ${backup.timestamp}`);
+  // Step 1: Mandatory Safety Backup (if not dry-run)
+  if (!options.dryRun) {
+    spinner.start("Creating safety backup");
+    try {
+      const backup = BackupManager.createBackup({
+        cwd,
+        created_by: "sync",
+        notes: "Safety backup before sync",
+        action: "pre-sync",
+        mode: config.mode,
+        includeAgentFiles: true,
+      });
+      spinner.stop(`Safety backup created: ${backup.timestamp}`);
+      if (options.verbose) {
         clack.log.info(
           `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
         );
-      } catch (_error) {
-        spinner.stop("Backup failed");
-        clack.log.warn(
-          `Failed to create backup: ${_error instanceof Error ? _error.message : String(_error)}`,
-        );
-        clack.log.warn("Continuing with sync...");
       }
+    } catch (_error) {
+      spinner.stop("Backup failed");
+      clack.log.warn(
+        `Failed to create safety backup: ${_error instanceof Error ? _error.message : String(_error)}`,
+      );
+      clack.log.warn("Continuing with sync (unsafe)...");
     }
   }
 
@@ -150,11 +152,11 @@ export async function executeSyncWorkflow(
   }
 
   // Step 5: Auto-cleanup old backups
-  if (!options.dryRun && config.backup?.auto_backup) {
-    const keepCount = config.backup.keep_count!;
+  if (!options.dryRun) {
+    const keepCount = config.backup?.keep_count || 20;
     try {
       const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
-      if (removed > 0) {
+      if (removed > 0 && options.verbose) {
         clack.log.info(
           `Cleaned up ${removed} old backup${removed !== 1 ? "s" : ""}`,
         );

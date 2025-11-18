@@ -142,8 +142,8 @@ async function runOverrideStatus(
   for (const overlay of overlays) {
     let health: "healthy" | "stale" = "stale";
 
-    // TypeScript strict mode: type guard for IR
-    if (ir && typeof ir === "object" && "rules" in ir) {
+    // TypeScript strict mode: type guard for IR (check for sections array)
+    if (ir && typeof ir === "object" && "sections" in ir) {
       try {
         const match = evaluateSelector(
           overlay.selector,
@@ -158,6 +158,9 @@ async function runOverrideStatus(
       } catch {
         staleCount++;
       }
+    } else if (ir) {
+      // IR loaded but doesn't have sections - count as stale
+      staleCount++;
     }
 
     // TypeScript strict mode: explicitly handle optional properties

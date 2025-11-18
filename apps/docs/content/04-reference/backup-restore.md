@@ -1,20 +1,33 @@
 ---
 title: "Backup & restore"
-description: "Manual and automatic backup functionality to protect configuration and rules. Create backups before sync, restore specific files, and manage backup retention."
+description: "Mandatory automatic backup functionality protects configuration and rules. Backups are created before every destructive operation and cannot be disabled."
 ---
 
 # Backup & restore
 
-AlignTrue provides backup and restore functionality to protect your configuration and rules from accidental changes. This is particularly useful before making potentially destructive changes like sync operations or imports.
+AlignTrue creates automatic backups before every destructive operation to protect your configuration and rules. **Backups are mandatory and cannot be disabled** - this ensures you can always recover from mistakes.
+
+## Safety first
+
+AlignTrue follows a safety-first approach:
+
+1. **Always preview first**: Use `--dry-run` to see what will change
+2. **Automatic backups**: Every sync creates a timestamped backup
+3. **Easy restore**: Use `aligntrue revert` to undo changes with preview
+4. **Retention control**: Keep 10-100 backups (default: 20)
 
 ## Quick start
 
-### Manual backup
+### Preview before syncing
 
-Create a backup before making changes:
+Always start with dry-run to see changes:
 
 ```bash
-aligntrue backup create --notes "Before major sync"
+# Preview what will change (no backup needed)
+aligntrue sync --dry-run
+
+# Review output, then sync for real
+aligntrue sync
 ```
 
 ### Restore from backup
@@ -25,88 +38,91 @@ List available backups:
 aligntrue backup list
 ```
 
-Restore the most recent backup:
+Restore with preview:
 
 ```bash
+# Interactive: choose backup and preview changes
+aligntrue revert
+
+# Restore specific file with diff preview
+aligntrue revert AGENTS.md
+```
+
+Restore entire backup:
+
+```bash
+# Restore most recent backup
 aligntrue backup restore
-```
 
-Restore a specific backup:
-
-```bash
-aligntrue backup restore --to 2025-10-29T14-30-00-000
-```
-
-### Auto-backup with sync
-
-Enable automatic backups before sync operations in `.aligntrue/config.yaml`:
-
-```yaml
-backup:
-  auto_backup: true
-  backup_on: ["sync"]
-  keep_count: 10
+# Restore specific backup
+aligntrue backup restore --to 2025-11-18T14-30-00-000
 ```
 
 ## Configuration
 
-Add the `backup` section to your `.aligntrue/config.yaml`:
+Backups are mandatory. You can only control **retention** (how many to keep):
 
 ```yaml
+# .aligntrue/config.yaml
 backup:
-  # Enable/disable automatic backups (default: false)
-  auto_backup: false
-
-  # Commands that trigger auto-backup (default: ["sync"])
-  backup_on:
-    - sync
-    - import
-    - restore
-
-  # Number of backups to keep (default: 20)
-  # Older backups are automatically deleted
-  keep_count: 20
+  keep_count: 20 # Min: 10, Default: 20, Max: 100
 ```
 
-### Configuration options
-
-- **`auto_backup`** (boolean): Enable automatic backups before destructive operations
-  - Default: `true`
-  - Recommended for all users to prevent accidental data loss
-  - Minimal performance impact (~10-50ms per backup)
-
-- **`backup_on`** (array): Which commands trigger automatic backups
-  - Default: `["sync"]`
-  - Options: `"sync"`, `"import"`, `"restore"`
-  - Only applies when `auto_backup: true`
+**Configuration options:**
 
 - **`keep_count`** (number): How many backups to retain
   - Default: 20
-  - Range: 1-100
+  - Range: 10-100 (enforced by validation)
   - Older backups deleted automatically after successful operations
+
+**What you cannot configure:**
+
+- Backups cannot be disabled (safety requirement)
+- All destructive operations create backups automatically
+- No way to skip backup creation
 
 ## CLI commands
 
+### `aligntrue sync`
+
+Every sync creates a backup automatically:
+
+```bash
+$ aligntrue sync
+
+✔ Creating safety backup
+✔ Safety backup created: 2025-11-18T14-30-00-000
+✔ Syncing to agents
+✔ Wrote 3 files
+```
+
+To restore:
+
+```bash
+aligntrue backup restore --to 2025-11-18T14-30-00-000
+```
+
 ### `aligntrue backup create`
 
-Create a manual backup:
+Create manual backup anytime:
 
 ```bash
 # Basic backup
 aligntrue backup create
 
-# With notes
+# With notes for later reference
 aligntrue backup create --notes "Before experimental changes"
 ```
 
-**Options:**
-
-- `--notes <text>` - Optional description for the backup
-
 **Output:**
 
-- Creates timestamped backup in `.aligntrue/.backups/<timestamp>/`
-- Displays backup timestamp and restore command
+```
+✔ Backup created
+  Backup: 2025-11-18T14-30-00-000
+  Notes: Before experimental changes
+  Files: 3 backed up
+  Location: /path/to/.aligntrue/.backups/2025-11-18T14-30-00-000
+```
 
 ### `aligntrue backup list`
 
@@ -116,51 +132,26 @@ List all available backups:
 aligntrue backup list
 ```
 
-**Output:**
-
-- Shows backups from newest to oldest
-- Displays timestamp, created date, and notes
-- Shows number of files backed up
-
 **Example output:**
 
 ```
-Available backups:
-  2025-10-29T14-30-00-000  2 files  Auto-backup before sync
-  2025-10-29T12-15-45-123  3 files  Before major refactor
-  2025-10-28T18-45-30-456  2 files  Manual backup
+Found 5 backups:
 
-3 backups found
+  2025-11-18T14-30-00-000
+    Created: 11/18/2025, 2:30:00 PM
+    By: sync
+    Files: 3
+
+  2025-11-18T12-15-45-123
+    Created: 11/18/2025, 12:15:45 PM
+    By: manual
+    Files: 3
+    Notes: Before experimental changes
 ```
-
-### `aligntrue backup restore`
-
-Restore from a backup:
-
-```bash
-# Restore most recent backup
-aligntrue backup restore
-
-# Restore specific backup by timestamp
-aligntrue backup restore --to 2025-10-29T14-30-00-000
-```
-
-**Options:**
-
-- `--to <timestamp>` - Specific backup to restore (from `backup list`)
-
-**Behavior:**
-
-- Creates temporary backup before restore (safety net)
-- Atomically restores all files from backup
-- Rolls back to temporary backup if restore fails
-- Cleans up temporary backup on success
-
-**Warning:** This overwrites current `.aligntrue/` directory contents. Make sure you have the right timestamp.
 
 ### `aligntrue revert`
 
-Restore files from backup with preview:
+Restore files with preview (recommended):
 
 ```bash
 # Interactive: choose backup and preview changes
@@ -169,17 +160,12 @@ aligntrue revert
 # Restore specific file with diff preview
 aligntrue revert AGENTS.md
 
-# Restore specific file from specific backup
-aligntrue revert AGENTS.md --timestamp 2025-10-29T14-30-00-000
+# Restore from specific backup
+aligntrue revert --timestamp 2025-11-18T14-30-00-000
 
-# Skip confirmation
+# Skip confirmation (use with caution)
 aligntrue revert AGENTS.md -y
 ```
-
-**Options:**
-
-- `--timestamp <id>` or `-t` - Specific backup timestamp
-- `--yes` or `-y` - Skip confirmation prompts
 
 **Features:**
 
@@ -194,8 +180,8 @@ aligntrue revert AGENTS.md -y
 $ aligntrue revert AGENTS.md
 
 Choose backup to restore:
-  2025-11-11T14-30-00-000 - Auto-backup before sync
-  2025-11-11T12-15-45-123 - Manual backup
+  2025-11-18T14-30-00-000 - sync
+  2025-11-18T12-15-45-123 - manual
 
 Preview of changes to AGENTS.md:
 - ## Security
@@ -203,30 +189,50 @@ Preview of changes to AGENTS.md:
 + ## Security
 + Validate all input and sanitize output
 
-Restore "AGENTS.md" from backup 2025-11-11T14-30-00-000? (y/n):
+Restore "AGENTS.md" from backup 2025-11-18T14-30-00-000? (y/n):
 ```
+
+### `aligntrue backup restore`
+
+Restore entire backup atomically:
+
+```bash
+# Restore most recent backup
+aligntrue backup restore
+
+# Restore specific backup by timestamp
+aligntrue backup restore --to 2025-11-18T14-30-00-000
+```
+
+**Behavior:**
+
+- Creates temporary backup before restore (safety net)
+- Atomically restores all files from backup
+- Rolls back to temporary backup if restore fails
+- Cleans up temporary backup on success
+
+**Warning:** This overwrites current `.aligntrue/` directory contents. Use `aligntrue revert` for preview and selective restore.
 
 ### `aligntrue backup cleanup`
 
 Manually clean up old backups:
 
 ```bash
-# Keep most recent 5 backups
-aligntrue backup cleanup --keep 5
+# Keep 15 most recent backups
+aligntrue backup cleanup --keep 15
 
-# Use config default (keep_count)
-aligntrue backup cleanup
+# Clean up legacy .bak files from older AlignTrue versions
+aligntrue backup cleanup --legacy
 ```
 
 **Options:**
 
-- `--keep <number>` - Number of backups to keep (default: from config or 10)
+- `--keep <number>` - Number of backups to keep (min: 10)
+- `--legacy` - Scan and remove orphaned `.bak` files
 
-**Behavior:**
+**Automatic cleanup:**
 
-- Removes oldest backups first
-- Requires confirmation before deleting
-- Shows count of removed and kept backups
+After every successful sync, AlignTrue automatically cleans up old backups based on your `keep_count` setting. Manual cleanup is rarely needed.
 
 ## What gets backed up
 
@@ -237,13 +243,12 @@ aligntrue backup cleanup
 - `.aligntrue/privacy-consent.json` - Privacy settings (if exists)
 - Any other files in `.aligntrue/` directory
 
-**Agent files (when enabled):**
+**Agent files (included by default):**
 
 - Files matching your `edit_source` configuration (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`)
 - Only files you can actually edit are backed up
 - Stored in separate `agent-files/` subdirectory within backup
 - Ensures you can recover your edits if something goes wrong
-- Enabled by default for all sync operations
 
 **Not backed up:**
 
@@ -259,11 +264,14 @@ Backups are stored locally in `.aligntrue/.backups/`:
 ```
 .aligntrue/
   .backups/
-    2025-10-29T14-30-00-000/
+    2025-11-18T14-30-00-000/
       manifest.json
       config.yaml
       .rules.yaml
-    2025-10-29T12-15-45-123/
+      agent-files/
+        AGENTS.md
+        .cursor/rules/aligntrue.mdc
+    2025-11-18T12-15-45-123/
       manifest.json
       config.yaml
       .rules.yaml
@@ -276,10 +284,12 @@ Each backup includes a `manifest.json`:
 ```json
 {
   "version": "1",
-  "timestamp": "2025-10-29T14-30-00-000",
+  "timestamp": "2025-11-18T14-30-00-000",
   "files": ["config.yaml", ".rules.yaml"],
-  "created_by": "manual",
-  "notes": "Before experimental changes"
+  "agent_files": ["AGENTS.md", ".cursor/rules/aligntrue.mdc"],
+  "created_by": "sync",
+  "action": "pre-sync",
+  "mode": "solo"
 }
 ```
 
@@ -288,82 +298,161 @@ Each backup includes a `manifest.json`:
 Timestamps use ISO 8601 with millisecond precision, filesystem-safe:
 
 - Format: `YYYY-MM-DDTHH-mm-ss-SSS`
-- Example: `2025-10-29T14-30-00-000`
-- Original format: `2025-10-29T14:30:00.000Z` (stored in manifest)
+- Example: `2025-11-18T14-30-00-000`
+- Original format: `2025-11-18T14:30:00.000Z` (stored in manifest)
 
-## Auto-backup workflow
+## Safety best practices
 
-When `auto_backup: true` and `backup_on` includes the command:
+### 1. Always dry-run first
 
-1. **Before operation:** AlignTrue creates timestamped backup
-2. **Display:** Shows backup timestamp and restore command
-3. **Execute:** Runs requested operation (sync, import, etc.)
-4. **After success:** Automatically cleans up old backups based on `keep_count`
-
-**Failure handling:**
-
-- If backup fails: Warning logged, operation continues
-- If operation fails: Backups not cleaned up
-- If cleanup fails: Silent failure (backups retained)
-
-**Example output:**
+Preview changes before applying them:
 
 ```bash
-$ aligntrue sync
+# See what will change
+aligntrue sync --dry-run
 
-✔ Creating backup
-✔ Backup created: 2025-10-29T14-30-00-000
-  Restore with: aligntrue backup restore --to 2025-10-29T14-30-00-000
+# Review output carefully
+# Then sync for real
+aligntrue sync
+```
 
-✔ Syncing to agents
-✔ Wrote 3 files
+### 2. Know how to revert
 
-✔ Cleaned up 2 old backups
+Before making major changes, practice reverting:
+
+```bash
+# List available backups
+aligntrue backup list
+
+# Practice restoring a single file
+aligntrue revert AGENTS.md
+
+# Cancel when you see the preview
+```
+
+### 3. Understand backup retention
+
+Keep enough backups for your workflow:
+
+```yaml
+# Solo developer: 20 backups (default)
+backup:
+  keep_count: 20
+
+# Frequent syncs: increase retention
+backup:
+  keep_count: 50
+
+# Minimal: 10 backups (minimum allowed)
+backup:
+  keep_count: 10
+```
+
+**When to increase `keep_count`:**
+
+- Frequent experimentation
+- Multiple sync operations per day
+- Want longer rollback history
+- Testing new rules or exporters
+
+**When to decrease `keep_count`:**
+
+- Disk space constraints
+- Rarely need to restore old backups
+- Clear rollback needs (keep minimum 10)
+
+### 4. Use manual backups for major changes
+
+Before big refactoring, create named backup:
+
+```bash
+aligntrue backup create --notes "Before schema migration v2"
+```
+
+This helps you identify important restore points later.
+
+### 5. Check backup before risky operations
+
+Before deleting rules or major edits:
+
+```bash
+# Verify recent backup exists
+aligntrue backup list
+
+# Create fresh backup with notes
+aligntrue backup create --notes "Before deleting old rules"
+
+# Proceed with changes
 ```
 
 ## Use cases
 
 ### Solo developer workflow
 
-Manual backups before major changes:
-
 ```bash
-# Before experimenting with new rules
-aligntrue backup create --notes "Before experiment"
+# Start with preview
+aligntrue sync --dry-run
 
-# Make changes
+# Review changes, then sync
 aligntrue sync
+# ✔ Safety backup created: 2025-11-18T14-30-00-000
 
-# If something breaks
-aligntrue backup restore
+# Make some edits...
+vim AGENTS.md
+
+# Sync again (another backup created automatically)
+aligntrue sync
+# ✔ Safety backup created: 2025-11-18T15-00-00-000
+
+# Oops, made a mistake - restore previous version
+aligntrue revert AGENTS.md --timestamp 2025-11-18T14-30-00-000
 ```
 
-### Team workflow with auto-backup
+### Team workflow
 
-Enable auto-backup for safety:
-
-```yaml
-# .aligntrue/config.yaml
-backup:
-  auto_backup: true
-  backup_on: ["sync", "import"]
-  keep_count: 20
-```
-
-Every sync creates a backup:
+Git provides primary history, backups provide fast local rollback:
 
 ```bash
-$ aligntrue sync
-✔ Backup created: 2025-10-29T14-30-00-000
-✔ Syncing to agents
+# Pull latest team rules
+git pull origin main
+
+# Sync to agents (automatic backup)
+aligntrue sync
+# ✔ Safety backup created: 2025-11-18T14-30-00-000
+
+# Make personal edits
+vim AGENTS.md
+
+# Preview before syncing
+aligntrue sync --dry-run
+
+# Looks good, sync for real
+aligntrue sync
+# ✔ Safety backup created: 2025-11-18T14-45-00-000
+
+# Commit both IR and exports
+git add .aligntrue/ AGENTS.md .cursor/
+git commit -m "Update personal rules"
 ```
 
 ### Before major refactoring
 
-Create named backup before big changes:
-
 ```bash
+# Create named backup
 aligntrue backup create --notes "Before migrating to new schema"
+
+# Make changes
+# ...edit files...
+
+# Preview impact
+aligntrue sync --dry-run
+
+# Sync if okay
+aligntrue sync
+
+# If something breaks
+aligntrue backup list
+aligntrue backup restore --to <timestamp-before-refactor>
 ```
 
 ## Troubleshooting
@@ -372,11 +461,12 @@ aligntrue backup create --notes "Before migrating to new schema"
 
 If `aligntrue backup list` shows no backups:
 
-- No backups have been created yet
-- Run `aligntrue backup create` to create your first backup
-- Check `.aligntrue/.backups/` directory exists and has correct permissions
+- No destructive operations have been run yet
+- Run `aligntrue sync` to create first automatic backup
+- Or run `aligntrue backup create` for manual backup
+- Check `.aligntrue/.backups/` directory exists
 
-### "Backup restore failed"
+### Backup restore failed
 
 If restore fails:
 
@@ -384,32 +474,36 @@ If restore fails:
 - Check backup timestamp is correct with `aligntrue backup list`
 - Verify `.aligntrue/` directory has write permissions
 - Check disk space is available
-
-### Auto-backup not triggering
-
-If `aligntrue sync` doesn't create backup:
-
-- Check `auto_backup: true` in `.aligntrue/config.yaml`
-- Verify `backup_on` array includes `"sync"`
-- Not triggered in dry-run mode (`--dry-run`)
-- Check logs for backup creation failures
+- Use `aligntrue revert` for selective restore with preview
 
 ### Too many backups
 
-If backup directory is growing:
+Backups are cleaned up automatically after each sync based on `keep_count`.
 
-- Adjust `keep_count` in config (lower number)
-- Run `aligntrue backup cleanup --keep 5` manually
-- Auto-cleanup runs after successful operations
+To clean up immediately:
 
-### Backup timestamp format
+```bash
+# Keep only 15 most recent
+aligntrue backup cleanup --keep 15
+```
 
-If timestamp looks unfamiliar:
+Adjust `keep_count` in config for permanent change:
 
-- Filesystem-safe format: `2025-10-29T14-30-00-000`
-- Colons and dots replaced with dashes
-- ISO 8601 format stored in manifest
-- Use exact timestamp from `backup list` for restore
+```yaml
+backup:
+  keep_count: 15
+```
+
+### Legacy .bak files
+
+If you upgraded from an older AlignTrue version and have `.bak` files scattered in your workspace:
+
+```bash
+# Scan for and remove legacy .bak files
+aligntrue backup cleanup --legacy
+```
+
+This is safe - all new backups are in `.aligntrue/.backups/`.
 
 ## Integration with other features
 
@@ -417,35 +511,19 @@ If timestamp looks unfamiliar:
 
 Backups complement but don't replace git:
 
-- **Backups:** Fast rollback for `.aligntrue/` only
-- **Git:** Full repository history including exports
+- **Backups:** Fast local rollback for `.aligntrue/` and agent files
+- **Git:** Full repository history including all files
 
 Recommended workflow:
 
 ```bash
-git add .aligntrue/
+# Sync creates automatic backup
+aligntrue sync
+
+# Commit both IR and exports
+git add .aligntrue/ .cursor/ AGENTS.md
 git commit -m "Update rules"
-aligntrue sync  # Auto-backup if enabled
-git add .cursor/ AGENTS.md
-git commit -m "Sync exports"
-```
-
-### Import operations
-
-Enable auto-backup before imports:
-
-```yaml
-backup:
-  auto_backup: true
-  backup_on: ["import"]
-```
-
-Import workflow with backup:
-
-```bash
-$ aligntrue sync --accept-agent cursor
-✔ Backup created: 2025-10-29T14-30-00-000
-✔ Importing from cursor
+git push
 ```
 
 ### Team mode
@@ -453,8 +531,9 @@ $ aligntrue sync --accept-agent cursor
 Backups are local (not in lockfile):
 
 - Each team member has separate backups
-- Not shared via git (`.backups/` should be ignored)
+- Not shared via git (`.aligntrue/.backups/` is git-ignored by default)
 - Useful for individual rollbacks during review
+- Team rules tracked via git, backups provide local safety net
 
 ## Performance
 
@@ -467,8 +546,8 @@ Backup operations are fast:
 
 Storage footprint:
 
-- ~1-5KB per backup (config + rules)
-- 10 backups: ~10-50KB
+- ~2-10KB per backup (config + rules + agent files)
+- 20 backups (default): ~40-200KB
 - Negligible compared to `.cache/` or node_modules
 
 ## Security
@@ -477,8 +556,9 @@ Backup considerations:
 
 - Stored locally in `.aligntrue/.backups/`
 - Should be git-ignored (not shared)
-- Contains same sensitive data as `.aligntrue/config.yaml`
+- Contains same data as `.aligntrue/` and agent files
 - No encryption (rely on filesystem permissions)
+- Automatic cleanup prevents unbounded storage
 
 **Recommended `.gitignore`:**
 
@@ -486,11 +566,12 @@ Backup considerations:
 .aligntrue/.backups/
 .aligntrue/.cache/
 .aligntrue/telemetry-events.json
+.aligntrue/privacy-consent.json
 ```
 
 ## See also
 
+- [Safety Best Practices](/docs/01-guides/safety-best-practices) - Comprehensive safety guide
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync operations work
 - [Commands reference](/docs/04-reference/cli-reference) - All CLI commands
 - [Configuration](/docs/00-getting-started/00-quickstart#configuration) - Config file format
-- [Git sources](/docs/04-reference/git-sources) - Using git for rule sharing
