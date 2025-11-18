@@ -297,8 +297,17 @@ storage:
 
 ### How to bring private rules back into the repo
 
-1. Remove, comment out, or change `storage.personal` in `.aligntrue/config.yaml` so it no longer points to remote storage (`type: local` keeps them on that machine, while removing the block moves them back into `.rules.yaml`).
-2. Copy any sections you still need from `.aligntrue/.remotes/personal/rules.md` (or your private repo) back into `.aligntrue/.rules.yaml`.
+1. Modify `storage.personal` in `.aligntrue/config.yaml`:
+   - Set `type: local` to keep sections machine-local (`.aligntrue/.local/personal/rules.md`)
+   - Remove the entire `storage.personal` block to move sections back into the main repo (`.aligntrue/.rules.yaml`)
+
+2. Copy any sections you still need from:
+   - `.aligntrue/.remotes/personal/rules.md` (if remote storage)
+   - `.aligntrue/.local/personal/rules.md` (if local storage)
+   - Or your private repo directly
+
+   Back into `.aligntrue/.rules.yaml`.
+
 3. Run `aligntrue sync` and commit `.aligntrue/.rules.yaml` to publish the now-public sections with the rest of your repo.
 
 You can repeat these steps anytime: flip storage between repo/local/remote or rerun `aligntrue migrate personal` when you want to reclassify sections without touching the rest of your config.
