@@ -14,6 +14,13 @@ Overlays let you customize third-party packs without forking. Change severity, a
 
 > **See it in action:** Check out the [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for a working demonstration.
 
+<Callout type="tip">
+  **Real-world scenarios:** Browse [5 complete overlay
+  scenarios](../../examples/SCENARIOS.md#overlays-scenarios) including severity
+  upgrades, temporary migrations, threshold adjustments, autofix removal, and
+  gradual rollouts.
+</Callout>
+
 ## Quick start (60 seconds)
 
 **Scenario:** You use `@acme/standards` but want to treat one check as an error.
@@ -894,12 +901,35 @@ aligntrue override diff
 
 See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehensive troubleshooting.
 
+## Performance characteristics
+
+**Overlay application:**
+
+- O(n × m) where n = number of overlays, m = number of rules (typically < 100)
+- Applied once during bundle merge, before export
+- Selector matching uses fast string/regex operations
+- No runtime overhead after application
+
+**Memory usage:**
+
+- Minimal overhead: ~200 bytes per overlay
+- Applied overlays cached in memory during sync
+- Tracked in lockfile for team mode drift detection
+
+**Best practices:**
+
+- Keep overlay count under 30 for optimal performance
+- Use specific selectors over broad patterns
+- Document temporary overlays with removal dates
+- Run `aligntrue override status` to check health
+
 ## Related documentation
 
 - [Customization Overview](/docs/02-customization) - When to use overlays vs plugs vs scopes
 - [Plugs Guide](/docs/02-customization/plugs) - Stack-specific customization
 - [Scopes Guide](/docs/02-customization/scopes) - Path-based rule application
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Overlay policies and approval workflows
+- [Complete Scenario Index](../../examples/SCENARIOS.md) - 13+ real-world examples
 - [Drift Detection](/docs/03-concepts/drift-detection) - Detect overlay staleness
 - [CLI Reference](/docs/04-reference/cli-reference/overlays) - Complete CLI reference
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with overlays

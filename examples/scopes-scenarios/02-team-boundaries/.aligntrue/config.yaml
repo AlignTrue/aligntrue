@@ -1,0 +1,27 @@
+version: "1"
+mode: team
+
+scopes:
+  - path: "apps/web"
+    include: ["**/*.ts", "**/*.tsx"]
+    rulesets: ["base-standards", "frontend-standards"]
+
+  - path: "apps/mobile"
+    include: ["**/*.ts", "**/*.tsx"]
+    rulesets: ["base-standards", "frontend-standards"]
+
+  - path: "packages/api"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards", "backend-standards"]
+
+  - path: "services"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards", "backend-standards"]
+
+  - path: "packages/shared"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards"]
+
+exporters:
+  - agents-md
+  - cursor

@@ -194,6 +194,49 @@ overlays:
         severity: "error"
 ```
 
+## Find your scenario
+
+Looking for a specific use case? Browse our comprehensive scenario examples organized by feature:
+
+### By problem type
+
+**Monorepo & Organization:**
+
+- [Progressive adoption](../../examples/scopes-scenarios/01-progressive-adoption/README.md) - Different rules for new vs legacy code
+- [Team boundaries](../../examples/scopes-scenarios/02-team-boundaries/README.md) - Different teams own different directories
+- [Multi-stack monorepo](../../examples/scopes-scenarios/03-multi-stack-monorepo/README.md) - Multiple languages/tech stacks
+- [Frontend-backend split](../../examples/scopes-scenarios/04-frontend-backend-split/README.md) - Separate concerns
+- [Microservices](../../examples/scopes-scenarios/05-microservices/README.md) - Service-specific rules
+
+**Customization:**
+
+- [Test command](../../examples/plugs-scenarios/01-test-command-customization/README.md) - Different test runners per project
+- [Organization metadata](../../examples/plugs-scenarios/02-organization-metadata/README.md) - Company-specific values
+- [Stack-specific paths](../../examples/plugs-scenarios/03-stack-specific-paths/README.md) - Config file locations per stack
+
+**Rule Modification:**
+
+- [Severity upgrade](../../examples/overlays-scenarios/01-severity-upgrade/README.md) - Make warnings errors
+- [Temporary migration](../../examples/overlays-scenarios/02-temporary-migration/README.md) - Disable strict rules during refactor
+- [Threshold adjustment](../../examples/overlays-scenarios/03-threshold-adjustment/README.md) - Project-specific complexity limits
+- [Autofix removal](../../examples/overlays-scenarios/04-autofix-removal/README.md) - Keep check but disable risky autofix
+- [Gradual rollout](../../examples/overlays-scenarios/05-gradual-rollout/README.md) - Progressive rule adoption
+
+### By keyword
+
+Search the [complete scenario index](../../examples/SCENARIOS.md) for keywords like:
+
+- "monorepo", "team boundaries", "progressive adoption"
+- "test command", "organization metadata", "stack-specific"
+- "severity", "migration", "threshold", "autofix", "rollout"
+
+Each scenario includes:
+
+- Problem description
+- Complete configuration
+- Expected outcomes
+- Test validation script
+
 ## Common scenarios
 
 ### Scenario 1: Solo dev with Next.js + Node.js monorepo

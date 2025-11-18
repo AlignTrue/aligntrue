@@ -9,6 +9,8 @@ Scopes enable path-based rule application for monorepos. Apply different rules t
 
 > **See it in action:** Check out the [monorepo scopes example](https://github.com/AlignTrue/aligntrue/tree/main/examples/monorepo-scopes) for a working demonstration.
 
+> **Real-world scenarios:** Browse [5 complete scope scenarios](../../examples/SCENARIOS.md#scopes-scenarios) including progressive adoption, team boundaries, multi-stack monorepos, frontend-backend splits, and microservices architectures.
+
 ## Quick example
 
 **Monorepo structure:**
@@ -780,6 +782,27 @@ scopes:
     rulesets: ["base-rules"]
 ```
 
+## Performance characteristics
+
+**Scope resolution:**
+
+- O(n) where n = number of scopes (typically < 10)
+- Path matching uses fast glob patterns
+- Resolved once at config load, cached for sync operations
+- No performance impact on large monorepos (1000+ files)
+
+**Memory usage:**
+
+- Minimal overhead: ~1KB per scope configuration
+- Scope-specific exports cached in memory during sync
+- No impact on bundle or lockfile size
+
+**Best practices:**
+
+- Keep scope count under 20 for optimal performance
+- Use specific paths over broad patterns when possible
+- Prefer `include`/`exclude` over complex glob patterns
+
 ## Related documentation
 
 - [Customization Overview](/docs/02-customization) - When to use scopes vs plugs vs overlays
@@ -789,6 +812,7 @@ scopes:
 - [CLI Reference](/docs/04-reference/cli-reference/team#aligntrue-scopes) - Complete command docs
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with scopes
 - [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with scopes
+- [Complete Scenario Index](../../examples/SCENARIOS.md) - 13+ real-world examples
 
 ## Summary
 

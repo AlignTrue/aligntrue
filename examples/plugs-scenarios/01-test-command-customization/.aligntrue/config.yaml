@@ -1,0 +1,16 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "shared-pack.yaml"
+
+plugs:
+  fills:
+    test.cmd: "pnpm test"
+    build.cmd: "pnpm build"
+    lint.cmd: "pnpm lint"
+
+exporters:
+  - agents-md
+  - cursor
