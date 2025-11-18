@@ -180,7 +180,7 @@ describe("CursorExporter", () => {
       expect(result.filesWritten[0]).toContain("aligntrue.mdc");
     });
 
-    it("maps named scope to scoped filename", async () => {
+    it("maps named scope to nested directory structure", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const scope: ResolvedScope = {
         path: "apps/web",
@@ -196,10 +196,12 @@ describe("CursorExporter", () => {
 
       const result = await exporter.export(request, options);
 
-      expect(result.filesWritten[0]).toContain("apps-web.mdc");
+      expect(result.filesWritten[0].replace(/\\/g, "/")).toContain(
+        "apps/web/.cursor/rules/web.mdc",
+      );
     });
 
-    it("normalizes paths with slashes to hyphens", async () => {
+    it("creates nested directory structure for deep paths", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const scope: ResolvedScope = {
         path: "packages/core/src",
@@ -214,7 +216,9 @@ describe("CursorExporter", () => {
 
       const result = await exporter.export(request, options);
 
-      expect(result.filesWritten[0]).toContain("packages-core-src.mdc");
+      expect(result.filesWritten[0].replace(/\\/g, "/")).toContain(
+        "packages/core/src/.cursor/rules/src.mdc",
+      );
     });
   });
 

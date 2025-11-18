@@ -1,0 +1,7 @@
+mode: solo
+exporters:
+  - cursor
+  - agents
+sync:
+  edit_source: "AGENTS.md"
+  auto_pull: false
