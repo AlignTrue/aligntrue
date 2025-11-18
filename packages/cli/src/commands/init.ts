@@ -889,7 +889,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else if (!syncWouldBeUseful) {
     const info = nonInteractive ? console.log : clack.log.info;
     info(
-      "No sync needed yet. Edit your agent file, then run 'aligntrue sync' once you add another agent file or exporter.",
+      "Ready to sync. Run 'aligntrue sync' to generate agent files, or edit your rules first.",
     );
   } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
