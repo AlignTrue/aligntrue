@@ -12,10 +12,18 @@ description: Dynamic configuration slots for stack-specific and project-specific
 
 Plugs provide template-based customization for rules that need different values across projects, stacks, or teams. Instead of forking rules to change test commands or file paths, you declare slots and fill them with project-specific values.
 
+**You need plugs when:**
+
+- You use packs that contain `[[plug:...]]` template slots
+- You want to customize test commands or file paths across projects
+- You need organization-wide metadata (company name, URLs) in rules
+
 <Callout type="tip">
   **Real-world scenarios:** See [3 complete examples](#scenarios) below for test
   command customization, organization metadata, and stack-specific paths.
 </Callout>
+
+**On this page:** [Quick Example](#quick-example) · [Declaring Slots](#declaring-slots) · [Providing Fills](#providing-fills) · [Scenarios](#scenarios) · [Performance](#performance-characteristics)
 
 ## Quick example
 
@@ -106,6 +114,8 @@ plugs:
 
 - Must start with `http://` or `https://`
 - Examples: `https://docs.example.com`, `https://github.com/org/repo`
+
+For concrete examples of these formats in action, see [Scenarios](#scenarios).
 
 ### Key naming rules
 
@@ -690,11 +700,11 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 
 Real-world examples showing how to use plugs for project-specific customization:
 
-- [Test Command Customization](#test-command-customization) - Different test runners per project
-- [Organization Metadata](#organization-metadata) - Company-specific values
+- [Test command customization](#test-command-customization) - Different test runners per project
+- [Organization metadata](#organization-metadata) - Company-specific values
 - [Stack-Specific Paths](#stack-specific-paths) - Config file locations per stack
 
-### Test Command Customization
+### Test command customization
 
 **Problem:** You're using a shared rule pack that references `[[plug:test.cmd]]` but your project uses a specific test runner. Some projects use `pytest -q`, others use `pnpm test`, and some use `cargo test`. You need to customize the test command without forking the pack.
 
@@ -725,7 +735,7 @@ exporters:
 
 **Keywords:** test command, different test runners, pytest vs jest, custom test command, project-specific testing, test automation
 
-### Organization Metadata
+### Organization metadata
 
 **Problem:** Your team uses shared rule packs that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
 
