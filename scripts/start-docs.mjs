@@ -126,13 +126,16 @@ async function killProcessesOnPort(port) {
   return { killed, failed };
 }
 
-async function cleanNextCache() {
+async function cleanCache() {
   const nextDir = join(DOCS_DIR, ".next");
+
+  info("Cleaning stale cache...");
+
   if (existsSync(nextDir)) {
-    info("Cleaning stale .next cache...");
     await rm(nextDir, { recursive: true, force: true });
-    success("Cache cleaned");
   }
+
+  success("Cache cleaned");
 }
 
 function installDependencies() {
@@ -217,7 +220,7 @@ async function main() {
   installDependencies();
 
   // Step 4: Clean cache
-  await cleanNextCache();
+  await cleanCache();
 
   // Step 5: Start dev server
   try {
