@@ -47,8 +47,16 @@ export function generateLockfile(
   // Defensive: ensure sections exists
   ensureSectionsArray(pack, { throwOnInvalid: true });
 
-  // Generate entries from sections using fingerprints
-  for (const section of pack.sections) {
+  // Filter to only team-scoped sections (exclude personal sections from lockfile)
+  const teamSections = pack.sections.filter(
+    (section) => section.scope !== "personal",
+  );
+
+  // Track personal sections count for metadata
+  const personalSectionsCount = pack.sections.length - teamSections.length;
+
+  // Generate entries from team sections using fingerprints
+  for (const section of teamSections) {
     const resultHash = hashSection(section);
 
     // Compute base hash if base pack provided (Overlays system)
@@ -117,6 +125,11 @@ export function generateLockfile(
   // Plugs system: Add total unresolved plugs count
   if (dualHashResult && dualHashResult.unresolvedRequired.length > 0) {
     lockfile.total_unresolved_plugs = dualHashResult.unresolvedRequired.length;
+  }
+
+  // Add personal sections count if any exist
+  if (personalSectionsCount > 0) {
+    lockfile.personal_rules_count = personalSectionsCount;
   }
 
   return lockfile;

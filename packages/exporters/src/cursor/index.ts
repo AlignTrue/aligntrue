@@ -58,9 +58,17 @@ export class CursorExporter extends ExporterBase {
 
     for (const [targetScope, scopeSections] of sectionsByScope.entries()) {
       // Determine output path for this scope
-      const outputPath = paths.cursorRules(
-        targetScope === "default" ? "default" : targetScope,
-      );
+      // For non-default scopes, write to nested directory structure
+      let outputPath: string;
+      if (targetScope === "default" || scope.isDefault) {
+        // Default scope: write to root .cursor/rules/aligntrue.mdc
+        outputPath = paths.cursorRules("default");
+      } else {
+        // Named scope: write to scope-specific nested directory
+        // e.g., apps/web/.cursor/rules/web.mdc
+        const scopeName = targetScope.split("/").pop() || targetScope;
+        outputPath = paths.cursorRulesScoped(targetScope, scopeName);
+      }
 
       // Merge with existing file to preserve user-added sections
       const mergeResult = await this.readAndMerge(
@@ -171,6 +179,7 @@ export class CursorExporter extends ExporterBase {
   /**
    * Generate Cursor frontmatter from sections
    * Extracts vendor.cursor metadata or applies smart defaults
+   * Includes scope globs if scope has include patterns
    */
   private generateFrontmatterFromSections(
     scope: ResolvedScope,
@@ -196,7 +205,7 @@ export class CursorExporter extends ExporterBase {
         }
       }
 
-      // Globs
+      // Globs from vendor metadata
       const globs = cursorVendor["globs"];
       if (globs && Array.isArray(globs) && globs.length > 0) {
         const hasSpecificGlobs = !(globs.length === 1 && globs[0] === "**/*");
@@ -226,6 +235,15 @@ export class CursorExporter extends ExporterBase {
       // Apply smart defaults for generic markdown
       // Default to "always" mode for natural markdown (most user-friendly)
       lines.push("alwaysApply: true");
+    }
+
+    // Add scope globs if scope has include patterns
+    // Only add if not already present from vendor metadata
+    if (scope.include && scope.include.length > 0 && !cursorVendor?.["globs"]) {
+      lines.splice(lines.length - 1, 0, "globs:");
+      scope.include.forEach((glob: string) => {
+        lines.splice(lines.length - 1, 0, `  - "${glob}"`);
+      });
     }
 
     lines.push("---");

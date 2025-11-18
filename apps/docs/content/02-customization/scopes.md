@@ -202,6 +202,82 @@ rulesets: ["python-rules"]
 rulesets: []
 ```
 
+## Nested agent files
+
+When scopes are configured, AlignTrue creates scope-specific agent files in nested directories, matching industry patterns like AGENTS.md's "nearest file wins" behavior.
+
+### Export structure
+
+For each scope, agent files are written to the scope's directory:
+
+```
+# Config with 3 scopes
+scopes:
+  - path: "apps/web"
+    include: ["**/*.ts", "**/*.tsx"]
+    rulesets: ["base", "nextjs"]
+  - path: "packages/api"
+    include: ["**/*.ts"]
+    rulesets: ["base", "node"]
+  - path: "services/worker"
+    include: ["**/*.py"]
+    rulesets: ["base", "python"]
+
+# Produces nested agent files:
+apps/web/.cursor/rules/web.mdc              # Cursor export for web scope
+apps/web/AGENTS.md                          # AGENTS export for web scope
+packages/api/.cursor/rules/api.mdc          # Cursor export for api scope
+packages/api/AGENTS.md                      # AGENTS export for api scope
+services/worker/.cursor/rules/worker.mdc    # Cursor export for worker scope
+services/worker/AGENTS.md                   # AGENTS export for worker scope
+.cursor/rules/aligntrue.mdc                 # Root rules (no scope)
+AGENTS.md                                   # Root rules (no scope)
+```
+
+### How agents discover files
+
+**Cursor:**
+
+- Supports multiple `.cursor/rules/` directories in subprojects
+- Each scope gets its own `.cursor/rules/{scope-name}.mdc` file
+- Globs in frontmatter match scope include patterns
+
+**AGENTS.md:**
+
+- "Nearest file wins" - agents walk up the directory tree
+- Working on `apps/web/src/index.ts` → reads `apps/web/AGENTS.md`
+- Working on `packages/api/src/server.ts` → reads `packages/api/AGENTS.md`
+- OpenAI repo has 88 nested AGENTS.md files for subproject-specific instructions
+
+### Glob patterns in exports
+
+Scope include patterns are automatically added to exported files:
+
+**Cursor `.mdc` frontmatter:**
+
+```yaml
+---
+alwaysApply: true
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+```
+
+**Benefits:**
+
+- Agents only load rules relevant to current file
+- Reduces token usage and context pollution
+- Enables fine-grained rule targeting
+
+### Backward compatibility
+
+If no scopes are configured, behavior is unchanged:
+
+- Single root `.cursor/rules/aligntrue.mdc`
+- Single root `AGENTS.md`
+- Legacy single-file exports continue to work
+
 ## Merge order and precedence
 
 Scopes support hierarchical rule merging with configurable order.

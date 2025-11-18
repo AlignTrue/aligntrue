@@ -285,6 +285,7 @@ export interface AlignTrueVendorMetadata {
   source_scope?: string; // Scope this section originated from (e.g., "backend", "frontend", "default")
   source_file?: string; // Original file path (e.g., ".cursor/rules/backend.mdc")
   last_modified?: string; // ISO 8601 timestamp of last modification
+  ruleset?: string; // Ruleset ID this section belongs to
 }
 
 /**
@@ -298,6 +299,11 @@ export interface AlignSection {
 
   // Optional explicit metadata
   explicitId?: string; // User-specified ID via HTML comment
+
+  // Section scope for team vs personal rules
+  // "team" (default): tracked in lockfile, requires team approval
+  // "personal": excluded from lockfile, can change freely
+  scope?: "team" | "personal";
 
   // Agent-specific metadata (for round-trip preservation)
   vendor?: Record<string, unknown> & {
