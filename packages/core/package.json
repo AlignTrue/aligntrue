@@ -37,7 +37,7 @@
     "@clack/prompts": "^0.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "glob": "^11.0.3",
+    "glob": "^11.1.0",
     "ignore": "^7.0.5",
     "micromatch": "^4.0.8",
     "yaml": "^2.6.1"
