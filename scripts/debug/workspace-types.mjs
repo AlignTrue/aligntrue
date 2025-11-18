@@ -37,8 +37,7 @@ function resolveModule(label, specifier) {
 
 console.log("🩺 Workspace type diagnostics");
 
-const editedFileRegex =
-  /interface EditedFile[\s\S]+?format:[^\n]+/;
+const editedFileRegex = /interface EditedFile[\s\S]+?format:[^\n]+/;
 const formatTypeRegex = /formatType:[^\n]+/;
 
 readSnippet(
@@ -70,8 +69,13 @@ if (resolvedCore) {
 }
 
 console.log("\nNext steps:");
-console.log("1. Run `pnpm validate:workspace` to ensure package.json versions use workspace:*.");
-console.log("2. Run `pnpm verify:workspace-links` to confirm node_modules links point at /packages.");
-console.log("3. Run `pnpm build:packages` to refresh dist files for all packages.");
+console.log(
+  "1. Run `pnpm validate:workspace` to ensure package.json versions use workspace:*.",
+);
+console.log(
+  "2. Run `pnpm verify:workspace-links` to confirm node_modules links point at /packages.",
+);
+console.log(
+  "3. Run `pnpm build:packages` to refresh dist files for all packages.",
+);
 console.log("\nDone.");
-

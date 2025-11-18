@@ -60,13 +60,17 @@ function ensureMatchingVersions() {
 
 function ensureCleanGitTree() {
   console.log("\n▶ Checking git status");
-  const result = spawnSync("git", ["status", "--porcelain"], { encoding: "utf8" });
+  const result = spawnSync("git", ["status", "--porcelain"], {
+    encoding: "utf8",
+  });
   if (result.status !== 0) {
     fail("Unable to read git status");
   }
   if (result.stdout.trim().length > 0) {
     console.error(result.stdout.trim());
-    fail("Working tree is not clean. Commit or stash changes before releasing.");
+    fail(
+      "Working tree is not clean. Commit or stash changes before releasing.",
+    );
   }
   console.log("✓ Working tree is clean");
 }
@@ -81,4 +85,3 @@ run("pnpm", ["typecheck"], "Type check");
 run("pnpm", ["test"], "Run test suite");
 
 console.log("\n✅ Pre-publish checks passed");
-
