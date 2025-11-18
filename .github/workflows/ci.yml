@@ -44,49 +44,37 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Validate lockfile sync
-        shell: bash
-        run: |
-          pnpm install --frozen-lockfile || {
-            echo "❌ pnpm-lock.yaml is out of sync with package.json"
-            echo "Run 'pnpm install' locally and commit pnpm-lock.yaml"
-            exit 1
-          }
+      - name: 📦 Install dependencies
+        run: pnpm install
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 🧩 Validate workspace protocol
+        run: pnpm validate:workspace
 
-      - name: Validate UI tsconfig
-        run: node scripts/validate-ui-tsconfig.mjs
+      - name: 🔗 Verify workspace links
+        run: pnpm verify:workspace-links
 
-      - name: Validate transpilePackages config
-        run: node scripts/validate-transpile-packages.mjs
-
-      - name: Validate no duplicate docs
-        run: node scripts/validate-no-duplicate-docs.mjs
-
-      - name: Validate documentation accuracy
-        run: node scripts/validate-docs-accuracy.mjs
-
-      - name: Check code formatting
-        run: pnpm format:check
-
-      - name: Lint code
-        run: pnpm lint --max-warnings 460
-
-      - name: Build all packages
+      - name: 🏗️ Build workspace packages
         run: pnpm build:packages
 
-      - name: Build docs app
+      - name: ✅ Run all validations
+        run: pnpm validate:all
+
+      - name: ✏️ Check code formatting
+        run: pnpm format:check
+
+      - name: 🔍 Lint code
+        run: pnpm lint --max-warnings 460
+
+      - name: 📚 Build docs app
         run: pnpm --filter @aligntrue/docs build
 
-      - name: Type check all packages
+      - name: 🔡 Type check all packages
         run: pnpm typecheck
 
-      - name: Run all tests
+      - name: 🧪 Run all tests
         run: pnpm test -- --coverage
 
-      - name: Upload coverage reports to Codecov
+      - name: 📈 Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage/coverage-final.json
@@ -94,13 +82,13 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-      - name: Run conformance testkit
+      - name: 🔁 Run conformance testkit
         run: pnpm verify
 
-      - name: Run integration tests
+      - name: 🔌 Run integration tests
         run: pnpm -C packages/cli test tests/integration
 
-      - name: Validate golden repository
+      - name: 🪙 Validate golden repository
         shell: bash
         run: |
           cd examples/golden-repo

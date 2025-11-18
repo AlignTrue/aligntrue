@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/exporters",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,10 +33,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/core": "^0.1.0",
-    "@aligntrue/file-utils": "^0.1.0",
-    "@aligntrue/plugin-contracts": "^0.1.0",
-    "@aligntrue/schema": "^0.1.0",
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/file-utils": "workspace:*",
+    "@aligntrue/plugin-contracts": "workspace:*",
+    "@aligntrue/schema": "workspace:*",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "yaml": "^2.6.1"

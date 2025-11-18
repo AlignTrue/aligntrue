@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-11-18
+
+### Added
+
+- Workspace protocol validation (`pnpm validate:workspace`) to ensure all internal packages depend on each other via `workspace:*`
+- Pre-publish validation script (`pnpm prepublish:check`) that enforces clean git state, matching versions, workspace compliance, and runs build/typecheck/tests before publishing
+
+### Changed
+
+- Renamed the `agents-md` format to `agents` across schema, core, exporters, and CLI
+- All `@aligntrue/*` packages now reference each other via `workspace:*` so local development always prefers live workspace builds
+
+### Fixed
+
+- Type resolution in CI now uses local workspace packages instead of stale npm cache artifacts, preventing `TS2322` regressions when format names change
+
 ### Removed
 
 - Removed unused v2 error handling system (common-errors-v2.ts, error-formatter-v2.ts)

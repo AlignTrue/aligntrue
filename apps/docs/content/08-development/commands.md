@@ -95,6 +95,22 @@ Packages import from `dist/` directories of their dependencies (e.g., CLI import
 
 **The pre-commit hook automatically rebuilds packages when source files change**, so you won't commit stale builds. But during development, use watch mode for instant feedback.
 
+### Working with type changes
+
+When you change exported types in core packages (schema, core, exporters, plugin-contracts):
+
+1. Build the package: `pnpm --filter @aligntrue/schema build`
+2. Turbo automatically rebuilds dependent packages
+
+Or just run `pnpm build:packages` to rebuild everything. Turbo's dependency graph ensures packages build in the correct order.
+
+### Workspace protocol and release checks
+
+- All `@aligntrue/*` dependencies must use `workspace:*` so local builds always take priority. Run `pnpm validate:workspace` if you edit `package.json`.
+- After `pnpm install`, run `pnpm verify:workspace-links` when diagnosing type mismatches. It ensures node_modules links resolve to local workspace packages.
+- Before publishing, run `pnpm prepublish:check`. It verifies versions match across packages, the git tree is clean, and build/typecheck/test succeed.
+- CI runs the same checks in `.github/workflows/ci.yml`, so keeping them green locally prevents “works on my machine” releases.
+
 ## Running tests locally
 
 ### All tests
