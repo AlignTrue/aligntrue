@@ -90,6 +90,30 @@ async function main() {
     s.stop("⚠️  Protected file check skipped.");
   }
 
+  const packageJsonChanged = stagedFiles.some((file) =>
+    file.endsWith("package.json"),
+  );
+
+  if (packageJsonChanged) {
+    s.start("Validating workspace protocol in staged package.json files...");
+    try {
+      execSync("pnpm validate:workspace", { stdio: "pipe" });
+      s.stop("✅ Workspace protocol validated.");
+    } catch (error) {
+      s.stop("❌ Workspace validation failed.", 1);
+      console.error("");
+      clack.log.error(
+        "Some package.json files reference @aligntrue/* with non-workspace versions.",
+      );
+      console.error("");
+      console.error(
+        "Fix: set each @aligntrue/* dependency to \"workspace:*\" and re-stage the files.",
+      );
+      console.error("");
+      process.exit(1);
+    }
+  }
+
   s.start("Formatting and linting staged files...");
   try {
     execSync("pnpm lint-staged", { stdio: "inherit" });

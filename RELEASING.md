@@ -51,6 +51,16 @@ pnpm release --type=major    # For breaking changes (0.x.y -> x+1.0.0)
 6. **Creates git commit and tag** - Commits version changes and tags release
 7. **Pushes to GitHub** - Pushes commit and tags
 
+### Required validation before releasing
+
+Run these commands locally before invoking the release script:
+
+```bash
+pnpm validate:workspace        # ensures @aligntrue/* deps use workspace:*
+pnpm verify:workspace-links    # ensures node_modules links point to /packages
+pnpm prepublish:check          # validates git status, versions, build, typecheck, tests
+```
+
 ---
 
 ## Version Scheme

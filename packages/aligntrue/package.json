@@ -1,6 +1,6 @@
 {
   "name": "aligntrue",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "AlignTrue CLI shim - AI alignment rules for developers",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/cli": "^0.1.0"
+    "@aligntrue/cli": "workspace:*"
   },
   "publishConfig": {
     "access": "public"
