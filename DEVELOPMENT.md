@@ -879,6 +879,65 @@ pnpm typecheck
 
 ---
 
+CI now runs a series of fail-fast checks. When one of them fails, look for the matching error message below.
+
+## Workspace protocol validation failed
+
+**Symptom**
+
+```
+Workspace protocol validation failed: @aligntrue/core version is "^0.2.0".
+```
+
+**Fix**
+
+1. Run `pnpm validate:workspace` locally.
+2. Update the dependency to `workspace:*` in the referenced `package.json`.
+3. Re-run `pnpm install && pnpm build:packages`.
+
+## Workspace link verification failed
+
+**Symptom**
+
+```
+Workspace link verification failed: @aligntrue/cli → /node_modules/.pnpm/...
+```
+
+**Fix**
+
+1. Ensure you ran `pnpm install` after switching branches.
+2. If links still resolve to `.pnpm`, run `pnpm clean && pnpm install`.
+3. Re-run `pnpm verify:workspace-links`.
+
+## Version mismatch during prepublish
+
+**Symptom**
+
+```
+Versions must match across all workspace packages.
+```
+
+**Fix**
+
+1. Run `pnpm prepublish:check` locally; it prints every mismatched package.
+2. Bump all packages to the same version (for example, 0.2.0) before releasing.
+
+## Type mismatch after renaming formats
+
+**Symptom**
+
+```
+TS2322: Type '"agents"' is not assignable to type '"agents-md"'.
+```
+
+**Fix**
+
+1. Ensure packages were rebuilt: `pnpm build:packages`.
+2. Run `pnpm validate:workspace` and `pnpm verify:workspace-links`.
+3. If CI still fails, run `pnpm clean && pnpm install` to refresh workspace links.
+
+---
+
 # Development commands
 
 Common commands and workflows for AlignTrue development.
@@ -970,6 +1029,22 @@ pnpm --filter @aligntrue/core build
 Packages import from `dist/` directories of their dependencies (e.g., CLI imports from `packages/core/dist/`). If you edit source in `packages/core/src/` but don't rebuild, other packages will see stale types and code.
 
 **The pre-commit hook automatically rebuilds packages when source files change**, so you won't commit stale builds. But during development, use watch mode for instant feedback.
+
+### Working with type changes
+
+When you change exported types in core packages (schema, core, exporters, plugin-contracts):
+
+1. Build the package: `pnpm --filter @aligntrue/schema build`
+2. Turbo automatically rebuilds dependent packages
+
+Or just run `pnpm build:packages` to rebuild everything. Turbo's dependency graph ensures packages build in the correct order.
+
+### Workspace protocol and release checks
+
+- All `@aligntrue/*` dependencies must use `workspace:*` so local builds always take priority. Run `pnpm validate:workspace` if you edit `package.json`.
+- After `pnpm install`, run `pnpm verify:workspace-links` when diagnosing type mismatches. It ensures node_modules links resolve to local workspace packages.
+- Before publishing, run `pnpm prepublish:check`. It verifies versions match across packages, the git tree is clean, and build/typecheck/test succeed.
+- CI runs the same checks in `.github/workflows/ci.yml`, so keeping them green locally prevents “works on my machine” releases.
 
 ## Running tests locally
 
@@ -1088,21 +1163,25 @@ Test both light and dark modes during development:
 
 ### Nextra documentation sites
 
-For Nextra-based docs, import Nextra's base styles and use the theme config factory:
+For Nextra-based docs, import Nextra's base styles and configure your `apps/docs/theme.config.tsx` directly:
 
 ```tsx
 import "nextra-theme-docs/style.css";
-import { createAlignTrueNextraTheme } from "@aligntrue/ui/nextra";
+import type { DocsThemeConfig } from "nextra-theme-docs";
+import { AlignTrueLogo } from "@aligntrue/ui";
 
-const themeConfig = createAlignTrueNextraTheme({
+const themeConfig: DocsThemeConfig = {
+  logo: <AlignTrueLogo size="md" />,
   docsRepositoryBase: "https://github.com/org/repo/tree/main/apps/docs",
-  logoSize: "md",
-});
+  navigation: true,
+};
+
+export default themeConfig;
 ```
 
 This provides:
 
-- Branded logo in navbar
+- Branded logo via the shared `AlignTrueLogo` component
 - Consistent sidebar and TOC configuration
 - Nextra's built-in theme system for colors
 
@@ -1377,7 +1456,7 @@ This document lists all public exports from AlignTrue packages. All exports must
 | ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `.`                      | Main entry point with exporter registry   | `import { ExporterRegistry } from '@aligntrue/exporters'`                                   |
 | `./cursor`               | Cursor exporter plugin                    | `import { CursorExporter } from '@aligntrue/exporters/cursor'`                              |
-| `./agents-md`            | AGENTS.md exporter plugin                 | `import { AgentsMdExporter } from '@aligntrue/exporters/agents-md'`                         |
+| `./agents`               | AGENTS.md exporter plugin                 | `import { AgentsMdExporter } from '@aligntrue/exporters/agents'`                            |
 | `./vscode-mcp`           | VS Code MCP exporter plugin               | `import { VsCodeMcpExporter } from '@aligntrue/exporters/vscode-mcp'`                       |
 | `./utils/section-parser` | Section parsing utilities for agent files | `import { parseAgentsMd, parseCursorMdc } from '@aligntrue/exporters/utils/section-parser'` |
 

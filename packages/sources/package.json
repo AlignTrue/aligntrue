@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/sources",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/core": "^0.1.0",
-    "@aligntrue/schema": "^0.1.0",
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/schema": "workspace:*",
     "simple-git": "^3.30.0"
   },
   "devDependencies": {},

@@ -95,6 +95,10 @@ function parseVersion(version) {
 }
 
 function bumpVersion(currentVersion, bumpType) {
+  if (bumpType === "current") {
+    return currentVersion;
+  }
+
   const v = parseVersion(currentVersion);
 
   if (bumpType === "patch") {
@@ -191,9 +195,9 @@ async function main() {
   // 2. Determine bump type
   let bumpType;
   if (nonInteractive) {
-    if (!["patch", "minor", "major"].includes(requestedType)) {
+    if (!["patch", "minor", "major", "current"].includes(requestedType)) {
       clack.log.error(
-        `Invalid bump type: ${requestedType}. Use: patch, minor, major`,
+        `Invalid bump type: ${requestedType}. Use: patch, minor, major, current`,
       );
       process.exit(1);
     }
@@ -218,6 +222,11 @@ async function main() {
           value: "major",
           label: "major",
           hint: `Breaking changes (${currentVersion} → ${bumpVersion(currentVersion, "major")})`,
+        },
+        {
+          value: "current",
+          label: "current",
+          hint: `Publish without bump (${currentVersion})`,
         },
       ],
       initialValue: "patch",

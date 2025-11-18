@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/testkit",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Conformance testkit for Align Spec v1 implementations",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,7 +26,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/schema": "^0.1.0"
+    "@aligntrue/schema": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.20.6",
