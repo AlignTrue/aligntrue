@@ -128,7 +128,7 @@ function SiteHeader() {
           <>
             {/* Desktop Navigation */}
             <nav className="desktop-nav" aria-label="Main navigation">
-              <a
+              <Link
                 href="/docs"
                 style={{
                   fontSize: "0.875rem",
@@ -137,8 +137,8 @@ function SiteHeader() {
                 }}
               >
                 Docs
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/docs/04-reference/features"
                 style={{
                   fontSize: "0.875rem",
@@ -147,8 +147,8 @@ function SiteHeader() {
                 }}
               >
                 Features
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/docs/about"
                 style={{
                   fontSize: "0.875rem",
@@ -157,7 +157,7 @@ function SiteHeader() {
                 }}
               >
                 About
-              </a>
+              </Link>
               <a
                 href="https://github.com/AlignTrue/aligntrue"
                 target="_blank"
@@ -224,7 +224,7 @@ function SiteHeader() {
           }}
           aria-label="Mobile navigation"
         >
-          <a
+          <Link
             href="/docs"
             onClick={() => setMobileMenuOpen(false)}
             style={{
@@ -243,8 +243,8 @@ function SiteHeader() {
             }}
           >
             Docs
-          </a>
-          <a
+          </Link>
+          <Link
             href="/docs/04-reference/features"
             onClick={() => setMobileMenuOpen(false)}
             style={{
@@ -263,8 +263,8 @@ function SiteHeader() {
             }}
           >
             Features
-          </a>
-          <a
+          </Link>
+          <Link
             href="/docs/about"
             onClick={() => setMobileMenuOpen(false)}
             style={{
@@ -283,7 +283,7 @@ function SiteHeader() {
             }}
           >
             About
-          </a>
+          </Link>
           <a
             href="https://github.com/AlignTrue/aligntrue"
             target="_blank"
