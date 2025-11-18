@@ -14,12 +14,7 @@ Overlays let you customize third-party packs without forking. Change severity, a
 
 > **See it in action:** Check out the [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for a working demonstration.
 
-<Callout type="tip">
-  **Real-world scenarios:** Browse [5 complete overlay
-  scenarios](../../examples/SCENARIOS.md#overlays-scenarios) including severity
-  upgrades, temporary migrations, threshold adjustments, autofix removal, and
-  gradual rollouts.
-</Callout>
+> **Real-world scenarios:** See [5 complete examples](#scenarios) below for severity upgrades, temporary migrations, threshold adjustments, autofix removal, and gradual rollouts.
 
 ## Quick start (60 seconds)
 
@@ -900,6 +895,233 @@ aligntrue override diff
 **Fix:** Update selectors to match new upstream rule IDs. Run `aligntrue override remove` for stale overlays and re-add with correct selectors.
 
 See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehensive troubleshooting.
+
+## Scenarios
+
+Real-world examples showing how to use overlays for fork-safe customization:
+
+- [Severity Upgrade](#severity-upgrade) - Make warnings errors
+- [Temporary Migration](#temporary-migration) - Disable strict rules during refactor
+- [Threshold Adjustment](#threshold-adjustment) - Project-specific complexity limits
+- [Autofix Removal](#autofix-removal) - Keep check but disable risky autofix
+- [Gradual Rollout](#gradual-rollout) - Progressive rule adoption
+
+### Severity Upgrade
+
+**Problem:** An upstream pack has a rule with `severity: warning` but your team wants to enforce it as an error. For example, upstream has `no-console-log` as a warning, but your team requires it to be an error in production code. You don't want to fork the pack just to change severity.
+
+**Solution:** Use overlays to upgrade severity without forking the upstream pack.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "upstream-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+
+    - selector: "rule[id=no-any]"
+      set:
+        severity: "error"
+
+    - selector: "rule[id=prefer-const]"
+      set:
+        severity: "error"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Upstream pack unchanged, your exports show `severity: error`, no pack forking required, and easy to revert if needed.
+
+**Keywords:** make warnings errors, upgrade severity, stricter rules, team standards, enforce warnings, error enforcement
+
+### Temporary Migration
+
+**Problem:** You're doing a major refactoring and need to temporarily disable strict rules. Normally `strict-null-checks` is an error, but during migration you need to downgrade it to a warning. After migration completes, you'll restore it to error. You want to track this as a temporary override.
+
+**Solution:** Use overlays to temporarily relax rules with documented removal dates.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "strict-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=strict-null-checks]"
+      set:
+        severity: "warn"
+      # TODO: Remove after null safety migration complete (2024-Q2)
+
+    - selector: "rule[id=no-explicit-any]"
+      set:
+        severity: "warn"
+      # TODO: Remove after type migration complete (2024-Q2)
+
+    - selector: "rule[id=no-unsafe-assignment]"
+      set:
+        severity: "warn"
+      # TODO: Remove after safety migration complete (2024-Q2)
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Strict rules temporarily relaxed, migration can proceed without breaking CI, overrides documented with removal date, and easy to restore strict rules later.
+
+**Keywords:** disable strict rules, temporary relaxation, during refactor, migration period, gradual adoption, technical debt
+
+### Threshold Adjustment
+
+**Problem:** An upstream pack has complexity thresholds that don't fit your project. Upstream has `max-complexity` threshold at 10, but your legacy code needs a threshold of 20 while new code keeps 10. You need different thresholds without forking.
+
+**Solution:** Use overlays to adjust thresholds for your project's needs.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "quality-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=max-complexity]"
+      set:
+        check.inputs.threshold: 20
+
+    - selector: "rule[id=max-lines]"
+      set:
+        check.inputs.max: 500
+
+    - selector: "rule[id=max-params]"
+      set:
+        check.inputs.max: 6
+
+    - selector: "rule[id=max-depth]"
+      set:
+        check.inputs.max: 4
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Complexity threshold adjusted for your project, line length limits customized, other rule parameters tuned, and no pack forking required.
+
+**Keywords:** complexity threshold, adjust limits, project-specific thresholds, tune parameters, code quality metrics
+
+### Autofix Removal
+
+**Problem:** An upstream rule has an autofix that's too aggressive for your codebase. The `prefer-const` rule with autofix sometimes breaks code in complex scenarios. You want the warning but not the automatic changes.
+
+**Solution:** Use overlays to remove autofix while keeping the check.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "autofix-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=prefer-const]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=no-var]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=arrow-body-style]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=prefer-template]"
+      remove: ["autofix"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Rule still checks for issues, autofix removed from exports, manual fixes only, and safer for complex codebases.
+
+**Keywords:** disable autofix, keep check but remove autofix, risky autofix, manual fix only, safe refactoring
+
+### Gradual Rollout
+
+**Problem:** You're rolling out new strict rules gradually over three weeks. Week 1: new rules as info, Week 2: upgrade to warnings, Week 3: upgrade to errors. You need to track rollout progress and control the phase.
+
+**Solution:** Use overlays to control rollout phase with documented progression.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: team
+
+sources:
+  - type: local
+    path: "new-standards-pack.yaml"
+
+overlays:
+  overrides:
+    # Phase 1: Info level (Week 1 - current)
+    - selector: "rule[id=strict-type-checking]"
+      set:
+        severity: "info"
+
+    - selector: "rule[id=no-implicit-any]"
+      set:
+        severity: "info"
+
+    # Phase 2: Warning level (Week 2 - uncomment when ready)
+    # - selector: "rule[id=strict-type-checking]"
+    #   set:
+    #     severity: "warn"
+    #
+    # - selector: "rule[id=no-implicit-any]"
+    #   set:
+    #     severity: "warn"
+
+    # Phase 3: Error level (Week 3 - uncomment when ready)
+    # - selector: "rule[id=strict-type-checking]"
+    #   set:
+    #     severity: "error"
+    #
+    # - selector: "rule[id=no-implicit-any]"
+    #   set:
+    #     severity: "error"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Rules rolled out gradually, team has time to adapt, clear progression path, and easy to track phases.
+
+**Keywords:** progressive rule adoption, phased rollout, gradual enforcement, staged deployment, incremental adoption
 
 ## Performance characteristics
 
