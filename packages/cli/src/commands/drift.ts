@@ -31,6 +31,7 @@ type DriftDetectionResult = {
   mode: string;
   lockfilePath: string;
   summary?: string | undefined;
+  personalRulesCount?: number | undefined;
   drift: Array<{
     category: DriftCategory;
     ruleId: string;
@@ -243,6 +244,19 @@ function outputHuman(results: DriftDetectionResult): void {
   console.log("");
   console.log(`Lockfile: ${results.lockfilePath}`);
   console.log(`Findings: ${results.drift.length}`);
+
+  // Show personal rules info if present
+  if (
+    results.personalRulesCount !== undefined &&
+    results.personalRulesCount > 0
+  ) {
+    console.log("");
+    console.log("PERSONAL RULES (not validated):");
+    console.log(`  ${results.personalRulesCount} personal sections`);
+    console.log("  Personal rules do not require team approval");
+  }
+
+  console.log("");
   console.log("Tip: Use '--json' or '--sarif' for machine-readable output.");
   console.log("Tip: Add '--gates' to fail CI when drift is detected.");
 }

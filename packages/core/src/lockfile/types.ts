@@ -40,6 +40,11 @@ export interface Lockfile {
    * Total count of unresolved required plugs across all packs (Plugs system)
    */
   total_unresolved_plugs?: number;
+  /**
+   * Count of personal-scoped sections excluded from lockfile validation
+   * Personal sections can change freely without triggering drift detection
+   */
+  personal_rules_count?: number;
 }
 
 export type LockfileMode = "off" | "soft" | "strict";
