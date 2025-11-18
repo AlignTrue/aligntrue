@@ -107,7 +107,7 @@ async function main() {
       );
       console.error("");
       console.error(
-        "Fix: set each @aligntrue/* dependency to \"workspace:*\" and re-stage the files.",
+        'Fix: set each @aligntrue/* dependency to "workspace:*" and re-stage the files.',
       );
       console.error("");
       process.exit(1);

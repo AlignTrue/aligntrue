@@ -73,10 +73,9 @@ if (violations.length > 0) {
   }
 
   console.error(
-    "\nFix: set the dependency value to \"workspace:*\" in the listed package.json files.",
+    '\nFix: set the dependency value to "workspace:*" in the listed package.json files.',
   );
   process.exit(1);
 }
 
 console.log("✅ Workspace protocol validation passed.");
-
