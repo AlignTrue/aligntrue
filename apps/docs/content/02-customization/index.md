@@ -202,29 +202,29 @@ Looking for a specific use case? Browse our comprehensive scenario examples orga
 
 **Monorepo & Organization:**
 
-- [Progressive adoption](../../examples/scopes-scenarios/01-progressive-adoption/README.md) - Different rules for new vs legacy code
-- [Team boundaries](../../examples/scopes-scenarios/02-team-boundaries/README.md) - Different teams own different directories
-- [Multi-stack monorepo](../../examples/scopes-scenarios/03-multi-stack-monorepo/README.md) - Multiple languages/tech stacks
-- [Frontend-backend split](../../examples/scopes-scenarios/04-frontend-backend-split/README.md) - Separate concerns
-- [Microservices](../../examples/scopes-scenarios/05-microservices/README.md) - Service-specific rules
+- [Progressive adoption](/docs/02-customization/scopes#progressive-adoption) - Different rules for new vs legacy code
+- [Team boundaries](/docs/02-customization/scopes#team-boundaries) - Different teams own different directories
+- [Multi-stack monorepo](/docs/02-customization/scopes#multi-stack-monorepo) - Multiple languages/tech stacks
+- [Frontend-backend split](/docs/02-customization/scopes#frontend-backend-split) - Separate concerns
+- [Microservices](/docs/02-customization/scopes#microservices-architecture) - Service-specific rules
 
 **Customization:**
 
-- [Test command](../../examples/plugs-scenarios/01-test-command-customization/README.md) - Different test runners per project
-- [Organization metadata](../../examples/plugs-scenarios/02-organization-metadata/README.md) - Company-specific values
-- [Stack-specific paths](../../examples/plugs-scenarios/03-stack-specific-paths/README.md) - Config file locations per stack
+- [Test command](/docs/02-customization/plugs#test-command-customization) - Different test runners per project
+- [Organization metadata](/docs/02-customization/plugs#organization-metadata) - Company-specific values
+- [Stack-specific paths](/docs/02-customization/plugs#stack-specific-paths) - Config file locations per stack
 
 **Rule Modification:**
 
-- [Severity upgrade](../../examples/overlays-scenarios/01-severity-upgrade/README.md) - Make warnings errors
-- [Temporary migration](../../examples/overlays-scenarios/02-temporary-migration/README.md) - Disable strict rules during refactor
-- [Threshold adjustment](../../examples/overlays-scenarios/03-threshold-adjustment/README.md) - Project-specific complexity limits
-- [Autofix removal](../../examples/overlays-scenarios/04-autofix-removal/README.md) - Keep check but disable risky autofix
-- [Gradual rollout](../../examples/overlays-scenarios/05-gradual-rollout/README.md) - Progressive rule adoption
+- [Severity upgrade](/docs/02-customization/overlays#severity-upgrade) - Make warnings errors
+- [Temporary migration](/docs/02-customization/overlays#temporary-migration) - Disable strict rules during refactor
+- [Threshold adjustment](/docs/02-customization/overlays#threshold-adjustment) - Project-specific complexity limits
+- [Autofix removal](/docs/02-customization/overlays#autofix-removal) - Keep check but disable risky autofix
+- [Gradual rollout](/docs/02-customization/overlays#gradual-rollout) - Progressive rule adoption
 
 ### By keyword
 
-Search the [complete scenario index](../../examples/SCENARIOS.md) for keywords like:
+Search the docs for keywords like:
 
 - "monorepo", "team boundaries", "progressive adoption"
 - "test command", "organization metadata", "stack-specific"
@@ -235,7 +235,7 @@ Each scenario includes:
 - Problem description
 - Complete configuration
 - Expected outcomes
-- Test validation script
+- Keywords for search
 
 ## Common scenarios
 

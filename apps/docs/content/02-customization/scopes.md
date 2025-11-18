@@ -9,7 +9,7 @@ Scopes enable path-based rule application for monorepos. Apply different rules t
 
 > **See it in action:** Check out the [monorepo scopes example](https://github.com/AlignTrue/aligntrue/tree/main/examples/monorepo-scopes) for a working demonstration.
 
-> **Real-world scenarios:** Browse [5 complete scope scenarios](../../examples/SCENARIOS.md#scopes-scenarios) including progressive adoption, team boundaries, multi-stack monorepos, frontend-backend splits, and microservices architectures.
+> **Real-world scenarios:** See [5 complete examples](#scenarios) below for progressive adoption, team boundaries, multi-stack monorepos, frontend-backend splits, and microservices.
 
 ## Quick example
 
@@ -781,6 +781,223 @@ scopes:
   - path: "apps"
     rulesets: ["base-rules"]
 ```
+
+## Scenarios
+
+Real-world examples showing how to use scopes for common monorepo challenges:
+
+- [Progressive Adoption](#progressive-adoption) - Different rules for new vs legacy code
+- [Team Boundaries](#team-boundaries) - Different teams own different directories
+- [Multi-Stack Monorepo](#multi-stack-monorepo) - Multiple languages/tech stacks
+- [Frontend-Backend Split](#frontend-backend-split) - Separate concerns
+- [Microservices Architecture](#microservices-architecture) - Service-specific rules
+
+### Progressive Adoption
+
+**Problem:** You're migrating a large codebase to stricter standards but can't fix everything at once. You need strict rules enforced in new code while keeping lenient rules in legacy code during the migration period.
+
+**Solution:** Use scopes to apply different rulesets based on directory, allowing gradual migration without breaking CI.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+scopes:
+  - path: "src/new"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["typescript-strict"]
+
+  - path: "src/legacy"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["typescript-lenient"]
+
+merge:
+  strategy: "deep"
+  order: ["root", "path", "local"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** New code in `src/new/` enforces strict TypeScript rules (no `any`, strict null checks, etc.) while legacy code in `src/legacy/` uses lenient rules (warnings instead of errors). New code can't regress to legacy standards, and legacy code can be gradually migrated.
+
+**Keywords:** progressive adoption, gradual migration, strict rules, legacy code, refactoring, incremental improvement
+
+### Team Boundaries
+
+**Problem:** Multiple teams work in the same monorepo with different standards. Frontend team owns `apps/web` and `apps/mobile`, backend team owns `packages/api` and `services/*`, and platform team owns `packages/shared`. Each team needs their own rules while sharing base standards.
+
+**Solution:** Use scopes to apply team-specific rulesets while maintaining shared base standards across all teams.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: team
+
+scopes:
+  - path: "apps/web"
+    include: ["**/*.ts", "**/*.tsx"]
+    rulesets: ["base-standards", "frontend-standards"]
+
+  - path: "apps/mobile"
+    include: ["**/*.ts", "**/*.tsx"]
+    rulesets: ["base-standards", "frontend-standards"]
+
+  - path: "packages/api"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards", "backend-standards"]
+
+  - path: "services"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards", "backend-standards"]
+
+  - path: "packages/shared"
+    include: ["**/*.ts"]
+    rulesets: ["base-standards"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Frontend team gets React/Next.js specific rules, backend team gets Node.js/API specific rules, shared packages follow base standards only. Teams maintain autonomy while sharing core values.
+
+**Keywords:** team ownership, different teams, team-specific rules, organizational boundaries, ownership, monorepo teams
+
+### Multi-Stack Monorepo
+
+**Problem:** Your monorepo uses multiple tech stacks: `apps/web` uses Next.js (TypeScript + React), `packages/api` uses Node.js (TypeScript), `services/worker` uses Python, and `services/ml` uses Python + Jupyter. Each stack needs language-specific rules.
+
+**Solution:** Use scopes with stack-specific rulesets for each language and framework.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+scopes:
+  - path: "apps/web"
+    include: ["**/*.ts", "**/*.tsx"]
+    exclude: ["**/*.test.ts", "**/*.test.tsx"]
+    rulesets: ["base-rules", "nextjs-rules"]
+
+  - path: "packages/api"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["base-rules", "node-rules"]
+
+  - path: "services/worker"
+    include: ["**/*.py"]
+    exclude: ["**/*_test.py"]
+    rulesets: ["base-rules", "python-rules"]
+
+  - path: "services/ml"
+    include: ["**/*.py", "**/*.ipynb"]
+    exclude: ["**/*_test.py"]
+    rulesets: ["base-rules", "python-rules", "jupyter-rules"]
+
+merge:
+  strategy: "deep"
+  order: ["root", "path", "local"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Next.js app gets React component rules, Node.js API gets server-side rules, Python services get PEP 8 rules, ML service gets Jupyter notebook rules. Each stack maintains best practices for its language and framework.
+
+**Keywords:** multiple languages, polyglot, Next.js and Node.js and Python, different tech stacks, mixed languages, multi-language monorepo
+
+### Frontend-Backend Split
+
+**Problem:** Your repository has clear frontend/backend separation with `frontend/` containing a React web application and `backend/` containing a REST API server. Each side needs different rules and tooling.
+
+**Solution:** Use scopes to separate concerns with appropriate rules for each side.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+scopes:
+  - path: "frontend"
+    include: ["**/*.ts", "**/*.tsx", "**/*.jsx"]
+    exclude: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
+    rulesets: ["base-rules", "react-rules", "ui-rules"]
+
+  - path: "backend"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts", "**/__tests__/**"]
+    rulesets: ["base-rules", "api-rules", "security-rules"]
+
+merge:
+  strategy: "deep"
+  order: ["root", "path", "local"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Frontend gets React, accessibility, and UI rules. Backend gets API design, security, and database rules. No cross-contamination of concerns, clear separation of responsibilities.
+
+**Keywords:** frontend and backend, web app and API, client and server, separate concerns, full-stack monorepo
+
+### Microservices Architecture
+
+**Problem:** Your monorepo contains multiple microservices: `services/auth` (authentication), `services/payments` (payment processing), `services/notifications` (email/SMS), and `services/analytics` (data analytics). Each service needs service-specific rules while sharing base standards.
+
+**Solution:** Use scopes for each service with shared base rules and service-specific additions.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: team
+
+scopes:
+  - path: "services/auth"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["base-standards", "auth-rules", "security-rules"]
+
+  - path: "services/payments"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets:
+      ["base-standards", "payment-rules", "security-rules", "pci-compliance"]
+
+  - path: "services/notifications"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["base-standards", "notification-rules"]
+
+  - path: "services/analytics"
+    include: ["**/*.ts"]
+    exclude: ["**/*.test.ts"]
+    rulesets: ["base-standards", "analytics-rules", "data-privacy"]
+
+merge:
+  strategy: "deep"
+  order: ["root", "path", "local"]
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Each service gets appropriate domain-specific rules. Security-critical services (auth, payments) get extra scrutiny. Compliance rules applied where needed (PCI, data privacy). All services share base standards.
+
+**Keywords:** microservices, multiple services, service-specific rules, shared base rules, service boundaries, domain-driven design
 
 ## Performance characteristics
 

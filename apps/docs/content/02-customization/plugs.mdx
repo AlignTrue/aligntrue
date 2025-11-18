@@ -13,9 +13,8 @@ description: Dynamic configuration slots for stack-specific and project-specific
 Plugs provide template-based customization for rules that need different values across projects, stacks, or teams. Instead of forking rules to change test commands or file paths, you declare slots and fill them with project-specific values.
 
 <Callout type="tip">
-  **Real-world scenarios:** Browse [3 complete plugs
-  scenarios](../../examples/SCENARIOS.md#plugs-scenarios) including test command
-  customization, organization metadata, and stack-specific paths.
+  **Real-world scenarios:** See [3 complete examples](#scenarios) below for test
+  command customization, organization metadata, and stack-specific paths.
 </Callout>
 
 ## Quick example
@@ -686,6 +685,113 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 3. **Validate in CI** - Run `aligntrue plugs list` in CI to catch missing fills
 4. **Review fill changes** - Treat fill changes like code changes (PR review)
 5. **Avoid secrets** - Never put secrets in fills (use env vars at runtime)
+
+## Scenarios
+
+Real-world examples showing how to use plugs for project-specific customization:
+
+- [Test Command Customization](#test-command-customization) - Different test runners per project
+- [Organization Metadata](#organization-metadata) - Company-specific values
+- [Stack-Specific Paths](#stack-specific-paths) - Config file locations per stack
+
+### Test Command Customization
+
+**Problem:** You're using a shared rule pack that references `[[plug:test.cmd]]` but your project uses a specific test runner. Some projects use `pytest -q`, others use `pnpm test`, and some use `cargo test`. You need to customize the test command without forking the pack.
+
+**Solution:** Use plugs to fill the test command slot with your project-specific value.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "shared-pack.yaml"
+
+plugs:
+  fills:
+    test.cmd: "pnpm test"
+    build.cmd: "pnpm build"
+    lint.cmd: "pnpm lint"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** The pack references `[[plug:test.cmd]]` in rules, your project fills it with `pnpm test`, and exported rules contain the resolved command. No pack forking required.
+
+**Keywords:** test command, different test runners, pytest vs jest, custom test command, project-specific testing, test automation
+
+### Organization Metadata
+
+**Problem:** Your team uses shared rule packs that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
+
+**Solution:** Use plugs to provide organization metadata that gets resolved across all rules.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: team
+
+sources:
+  - type: local
+    path: "team-pack.yaml"
+
+plugs:
+  fills:
+    org.name: "Acme Corp"
+    docs.url: "https://docs.acme.com"
+    support.email: "support@acme.com"
+    author.name: "Acme Engineering Team"
+    repo.url: "https://github.com/acme/project"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Rules reference organization metadata via plugs, all projects use consistent values, easy to update across all projects, and no hardcoded company-specific values in packs.
+
+**Keywords:** company name, organization URLs, author names, team metadata, company-specific values, organization branding
+
+### Stack-Specific Paths
+
+**Problem:** Your shared rule pack references configuration file paths like config file (`[[plug:config.file]]`), environment file (`[[plug:env.file]]`), and build output (`[[plug:build.output]]`). Different stacks use different locations: Next.js uses `next.config.js`, `.env.local`, `.next/`; Node.js uses `config/default.json`, `.env`, `dist/`; Python uses `config.yaml`, `.env`, `build/`.
+
+**Solution:** Use plugs to specify stack-specific paths that match your project structure.
+
+**Configuration:**
+
+```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "base-pack.yaml"
+  - type: local
+    path: "nextjs-pack.yaml"
+
+plugs:
+  fills:
+    config.file: "next.config.js"
+    env.file: ".env.local"
+    build.output: ".next"
+    tsconfig.file: "tsconfig.json"
+    package.manager: "pnpm"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Expected outcome:** Rules reference file paths via plugs, each stack uses appropriate locations, no path assumptions in shared packs, and easy to adapt to different project structures.
+
+**Keywords:** config file paths, stack-specific locations, different file locations, path customization, project structure, framework conventions
 
 ## Performance characteristics
 
