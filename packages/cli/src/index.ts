@@ -54,6 +54,13 @@ async function main() {
     console.log("AlignTrue CLI - AI-native rules and alignment platform\n");
     console.log("Usage: aligntrue <command> [options]\n");
 
+    console.log("Getting Started:");
+    console.log("  init           Initialize AlignTrue (start here)");
+    console.log("  sync           Sync rules to agents");
+    console.log("  status         Check current setup");
+    console.log("  doctor         Run health checks");
+    console.log("  onboard        Get personalized onboarding checklist\n");
+
     console.log("Basic Commands:");
     console.log("  init           Initialize AlignTrue in current directory");
     console.log("  sync           Sync rules to agents");
