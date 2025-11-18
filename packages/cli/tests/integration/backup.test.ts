@@ -36,7 +36,7 @@ describe.skip("Backup/Restore Workflow Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -67,7 +67,7 @@ describe.skip("Backup/Restore Workflow Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -100,7 +100,7 @@ describe.skip("Backup/Restore Workflow Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -146,7 +146,7 @@ describe.skip("Backup/Restore Workflow Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -187,7 +187,7 @@ describe.skip("Backup/Restore Workflow Tests", () => {
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
       `exporters:
-  - agents-md
+  - agents
 backup:
   auto_backup: true
   backup_on:
@@ -231,7 +231,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 

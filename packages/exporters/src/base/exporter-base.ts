@@ -303,7 +303,7 @@ export abstract class ExporterBase implements ExporterPlugin {
   protected async readAndMerge(
     outputPath: string,
     irSections: AlignSection[],
-    formatType: "agents-md" | "cursor-mdc" | "generic",
+    formatType: "agents" | "cursor-mdc" | "generic",
     managedSections: string[] = [],
   ): Promise<{
     mergedSections: AlignSection[];
@@ -340,7 +340,7 @@ export abstract class ExporterBase implements ExporterPlugin {
 
     try {
       switch (formatType) {
-        case "agents-md":
+        case "agents":
           parsed = parseAgentsMd(content);
           break;
         case "cursor-mdc":

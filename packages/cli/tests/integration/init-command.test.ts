@@ -91,7 +91,7 @@ describeSkipWindows("Init Command Integration", () => {
       const config = yaml.parse(configContent);
 
       expect(config.exporters).toContain("cursor");
-      expect(config.exporters).toContain("agents-md");
+      expect(config.exporters).toContain("agents");
     });
 
     it("respects --exporters flag", async () => {
@@ -100,14 +100,14 @@ describeSkipWindows("Init Command Integration", () => {
         "--project-id",
         "test-project",
         "--exporters",
-        "cursor,agents-md",
+        "cursor,agents",
       ]);
 
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
       const configContent = readFileSync(configPath, "utf-8");
       const config = yaml.parse(configContent);
 
-      expect(config.exporters).toEqual(["cursor", "agents-md"]);
+      expect(config.exporters).toEqual(["cursor", "agents"]);
     });
 
     it("uses provided project-id in rules", async () => {
@@ -199,7 +199,7 @@ describeSkipWindows("Init Command Integration", () => {
       const teamConfig = {
         mode: "team",
         sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
-        exporters: ["cursor", "agents-md"],
+        exporters: ["cursor", "agents"],
         modules: { lockfile: true, bundle: true },
       };
       writeFileSync(

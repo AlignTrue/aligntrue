@@ -285,7 +285,7 @@ export async function buildSyncContext(
     const manifestPaths = registry.discoverAdapters(exportersDistPath);
 
     // Load manifests and handlers for configured exporters
-    const exporterNames = config.exporters || ["cursor", "agents-md"];
+    const exporterNames = config.exporters || ["cursor", "agents"];
     let loadedCount = 0;
 
     for (const exporterName of exporterNames) {

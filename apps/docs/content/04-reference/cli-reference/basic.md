@@ -46,7 +46,7 @@ aligntrue init --yes
 aligntrue init --project-id my-project
 
 # Specify exporters
-aligntrue init --exporters cursor,agents-md,windsurf
+aligntrue init --exporters cursor,agents,windsurf
 ```
 
 **Exit codes:**
@@ -135,7 +135,7 @@ detection:
   auto_enable: false # Auto-enable without prompting
   ignored_agents: # Agents to never prompt about
     - windsurf
-    - aider-md
+    - aider
 ```
 
 **Conflict detection:**

@@ -37,7 +37,7 @@ mode: solo # or team, enterprise
 
 **Type:** `array of strings`
 
-**Default:** `["cursor", "agents-md"]`
+**Default:** `["cursor", "agents"]`
 
 **Required:** Yes (at least one)
 
@@ -46,7 +46,7 @@ List of exporter adapters to generate. Determines which agent files are created 
 ```yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
   - vscode-mcp
 ```
 
@@ -137,7 +137,7 @@ Automatically import changes from primary agent before syncing.
 
 **Default:** Auto-detected from first importable exporter
 
-Which agent to auto-pull from (cursor, copilot, claude-code, aider, agents-md).
+Which agent to auto-pull from (cursor, copilot, claude, aider, agents).
 
 #### sync.on_conflict
 
@@ -186,7 +186,7 @@ detection:
   auto_enable: false # Auto-enable detected agents without prompting
   ignored_agents: # Agents to never prompt about
     - windsurf
-    - aider-md
+    - aider
 ```
 
 #### detection.auto_enable
@@ -213,7 +213,7 @@ Agents to never prompt about during detection. Useful for agents you don't use e
 detection:
   ignored_agents:
     - windsurf # Never prompt about Windsurf
-    - aider-md # Never prompt about Aider
+    - aider # Never prompt about Aider
 ```
 
 **Managing ignored agents:**
@@ -376,7 +376,7 @@ git:
   mode: ignore # ignore | commit | branch
   per_adapter:
     cursor: commit
-    agents-md: ignore
+    agents: ignore
 ```
 
 ## Example configurations
@@ -386,7 +386,7 @@ git:
 ```yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
 ```
 
 ### Solo with auto-pull
@@ -394,7 +394,7 @@ exporters:
 ```yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
 sync:
   auto_pull: true
   primary_agent: cursor
@@ -407,7 +407,7 @@ sync:
 mode: team
 exporters:
   - cursor
-  - agents-md
+  - agents
 modules:
   lockfile: true
   bundle: true
@@ -423,12 +423,12 @@ sync:
 ```yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
 detection:
   auto_enable: false
   ignored_agents:
     - windsurf
-    - aider-md
+    - aider
 sync:
   auto_pull: true
   primary_agent: cursor

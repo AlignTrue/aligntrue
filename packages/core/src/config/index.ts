@@ -385,9 +385,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (result.sync.edit_source === undefined) {
     const exporterToPattern: Record<string, string> = {
       cursor: ".cursor/rules/*.mdc",
-      "agents-md": "AGENTS.md",
+      agents: "AGENTS.md",
       copilot: ".github/copilot-instructions.md",
-      "claude-code": "CLAUDE.md",
+      claude: "CLAUDE.md",
       aider: ".aider.conf.yml",
     };
 
@@ -465,9 +465,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
       const importableAgents = [
         "cursor",
         "copilot",
-        "claude-code",
+        "claude",
         "aider",
-        "agents-md",
+        "agents",
       ];
       const detected = result.exporters.find((e) =>
         importableAgents.includes(e.toLowerCase()),
@@ -498,7 +498,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
 
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
-    result.exporters = ["cursor", "agents-md"];
+    result.exporters = ["cursor", "agents"];
   }
 
   // Apply source defaults

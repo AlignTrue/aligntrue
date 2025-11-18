@@ -76,7 +76,7 @@ describe("Manifest Schema Validation", () => {
     it("accepts valid adapter names (lowercase alphanumeric with hyphens)", () => {
       const validNames = [
         "cursor",
-        "agents-md",
+        "agents",
         "vscode-mcp",
         "test123",
         "my-adapter-v2",

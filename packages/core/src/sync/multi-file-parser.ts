@@ -21,7 +21,7 @@ interface ParsedSectionResult {
 export interface EditedFile {
   path: string;
   absolutePath: string;
-  format: "agents-md" | "cursor-mdc" | "generic";
+  format: "agents" | "cursor-mdc" | "generic";
   sections: ParsedSection[];
   mtime: Date;
 }
@@ -224,7 +224,7 @@ export async function detectEditedFiles(
           editedFiles.push({
             path: "AGENTS.md",
             absolutePath: agentsMdPath,
-            format: "agents-md",
+            format: "agents",
             sections: parsed.sections.map((s: ParsedSectionResult) => ({
               heading: s.heading,
               content: s.content,

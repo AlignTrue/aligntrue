@@ -86,7 +86,7 @@ sources:
     ref: ${COMMIT_HASH}
     path: remote-test/personal-rules.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -140,7 +140,7 @@ git:
       writeFileSync(
         join(TEST_DIR, ".aligntrue/config.yaml"),
         `exporters:
-  - agents-md
+  - agents
 sources:
   - type: local
     path: vendor/test-pack/.aligntrue/.rules.yaml
@@ -201,7 +201,7 @@ sections:
       writeFileSync(
         join(TEST_DIR, ".aligntrue/config.yaml"),
         `exporters:
-  - agents-md
+  - agents
 sources:
   - type: local
     path: vendor/pack-a/.aligntrue/.rules.yaml
@@ -293,7 +293,7 @@ sections:
 
       writeFileSync(
         join(TEST_DIR, ".aligntrue/config.yaml"),
-        `exporters:\n  - agents-md\n`,
+        `exporters:\n  - agents\n`,
         "utf-8",
       );
 
@@ -327,7 +327,7 @@ sections:
 
       writeFileSync(
         join(TEST_DIR, ".aligntrue/config.yaml"),
-        `exporters:\n  - agents-md\n`,
+        `exporters:\n  - agents\n`,
         "utf-8",
       );
 

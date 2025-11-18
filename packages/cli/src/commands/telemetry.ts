@@ -46,7 +46,7 @@ export async function telemetry(args: string[]): Promise<void> {
       notes: [
         "What we collect (when enabled):",
         "  - Command name (init, sync, etc.)",
-        "  - Export targets used (cursor, agents-md, etc.)",
+        "  - Export targets used (cursor, agents, etc.)",
         "  - Align content hashes (no code, no paths, no PII)",
         "",
         "What we never collect:",

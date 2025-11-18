@@ -241,7 +241,7 @@ describe("GitIntegration", () => {
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
         perAdapterOverrides: {
-          "agents-md": "commit", // AGENTS.md should be committed
+          agents: "commit", // AGENTS.md should be committed
         },
       });
 

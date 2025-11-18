@@ -52,7 +52,7 @@ sources:
   - type: local
     path: .aligntrue/.rules.yaml
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -193,7 +193,7 @@ mode: solo
 sources:
 ${sources.map((s) => `  - type: ${s.type}\n    path: ${s.path}`).join("\n")}
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -277,7 +277,7 @@ mode: solo
 sources:
 ${sources.map((s) => `  - type: ${s.type}\n    path: ${s.path}`).join("\n")}
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,

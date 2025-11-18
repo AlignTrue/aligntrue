@@ -52,7 +52,7 @@ describe("status command", () => {
         "mode: solo",
         "exporters:",
         "  - cursor",
-        "  - agents-md",
+        "  - agents",
         "sync:",
         "  edit_source:",
         "    - AGENTS.md",

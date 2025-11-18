@@ -15,12 +15,12 @@ test -f COMPARISON.md || { echo "✗ COMPARISON.md missing"; exit 1; }
 # Check multiple exporters in config
 echo "✓ Checking exporters..."
 grep -q "cursor" .aligntrue/config.yaml || { echo "✗ cursor exporter missing"; exit 1; }
-grep -q "agents-md" .aligntrue/config.yaml || { echo "✗ agents-md exporter missing"; exit 1; }
+grep -q "agents" .aligntrue/config.yaml || { echo "✗ agents exporter missing"; exit 1; }
 grep -q "github-copilot" .aligntrue/config.yaml || { echo "✗ github-copilot exporter missing"; exit 1; }
 grep -q "vscode-mcp" .aligntrue/config.yaml || { echo "✗ vscode-mcp exporter missing"; exit 1; }
 
 # Count exporters (should be 4)
-EXPORTER_COUNT=$(grep -c "- cursor\|- agents-md\|- github-copilot\|- vscode-mcp" .aligntrue/config.yaml || true)
+EXPORTER_COUNT=$(grep -c "- cursor\|- agents\|- github-copilot\|- vscode-mcp" .aligntrue/config.yaml || true)
 if [ "$EXPORTER_COUNT" -ne 4 ]; then
     echo "✗ Expected 4 exporters, found $EXPORTER_COUNT"
     exit 1

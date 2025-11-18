@@ -2,6 +2,6 @@ version: "1"
 mode: solo
 exporters:
   - cursor
-  - agents-md
+  - agents
 git:
   mode: ignore

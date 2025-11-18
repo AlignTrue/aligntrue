@@ -88,7 +88,7 @@ export const CommonErrors = {
   adapterNotFound: (adapterName: string): CLIError => ({
     title: "Adapter not found",
     message: `Adapter '${adapterName}' is not available`,
-    hint: "Run 'aligntrue adapters list' to see available adapters",
+    hint: "Run 'aligntrue adapters list' to see available adapters, or visit https://aligntrue.ai/docs/06-contributing/adding-exporters to add support",
     code: "ERR_ADAPTER_NOT_FOUND",
   }),
 

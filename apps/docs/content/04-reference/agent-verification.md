@@ -25,14 +25,14 @@ Use this guide whenever an AI agent is not referencing your rules. It covers the
 
 ## GitHub Copilot, Claude Code, Aider, Windsurf (AGENTS.md)
 
-1. Run `aligntrue status` and confirm `agents-md` (and any variants such as `claude-md`, `windsurf-md`) show `✓ detected`.
+1. Run `aligntrue status` and confirm `agents` (and any variants such as `claude`, `windsurf`) show `✓ detected`.
 2. Inspect `AGENTS.md` at the repo root. The file should include your latest sections and a content hash footer from the last sync.
 3. For Claude Code or other IDE-integrated agents, close and reopen the workspace after syncing.
 4. In chat, ask “Summarize the rules from AGENTS.md” to verify the agent read the file.
 
 ## Claude desktop and CLAUDE.md
 
-1. Run `aligntrue status` and ensure `claude-md` is enabled.
+1. Run `aligntrue status` and ensure `claude` is enabled.
 2. Run `aligntrue sync` so `CLAUDE.md` is regenerated.
 3. Claude desktop reads `CLAUDE.md` from the workspace root. Reopen the folder if Claude was already running.
 

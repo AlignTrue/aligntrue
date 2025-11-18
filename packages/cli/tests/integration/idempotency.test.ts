@@ -37,7 +37,7 @@ describe.skip("Idempotency Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - cursor\n  - agents-md\n`,
+      `exporters:\n  - cursor\n  - agents\n`,
       "utf-8",
     );
 
@@ -95,7 +95,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 

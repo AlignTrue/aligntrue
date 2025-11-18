@@ -54,7 +54,7 @@ describe("doctor command", () => {
         "  lockfile: false",
         "exporters:",
         "  - cursor",
-        "  - agents-md",
+        "  - agents",
         "sync:",
         "  edit_source:",
         "    - AGENTS.md",

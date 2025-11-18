@@ -131,7 +131,7 @@ sources:
 
 exporters:
   - cursor
-  - agents-md
+  - agents
   - vscode-mcp
 
 sync:

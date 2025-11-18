@@ -71,7 +71,7 @@ export async function discoverSourceFiles(
       const stats = statSync(absolutePath);
 
       // Parse sections from markdown
-      // Use the same parser as agents-md exporter
+      // Use the same parser as agents exporter
       const { parseAgentsMd } = await import("@aligntrue/schema");
       const parsed = parseAgentsMd(content);
 

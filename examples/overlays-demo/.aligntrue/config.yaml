@@ -7,7 +7,7 @@ sources:
 
 adapters:
   - type: cursor
-  - type: agents-md
+  - type: agents
   - type: vscode-mcp
 
 overlays:

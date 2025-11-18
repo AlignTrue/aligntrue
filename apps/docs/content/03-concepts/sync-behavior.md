@@ -474,7 +474,7 @@ aligntrue sync
 # .aligntrue/config.yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 sync:
   edit_source: "AGENTS.md"  # Single file
@@ -849,7 +849,7 @@ Audit trail:
   [2025-10-27T12:00:01Z] Parsed 3 rules from .aligntrue/.rules.yaml
   [2025-10-27T12:00:02Z] Resolved 2 scopes
   [2025-10-27T12:00:03Z] Exported to cursor (1 file)
-  [2025-10-27T12:00:04Z] Exported to agents-md (1 file)
+  [2025-10-27T12:00:04Z] Exported to agents (1 file)
 
 Files to write:
   • .cursor/rules/aligntrue.mdc (2.4 KB, hash: a3b2c1d4...)
@@ -954,7 +954,7 @@ exporters:
   - name: cursor
     git_override: commit # Commit Cursor files
 
-  - name: agents-md
+  - name: agents
     # Uses default (ignore)
 ```
 

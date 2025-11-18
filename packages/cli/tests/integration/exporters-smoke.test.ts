@@ -16,7 +16,7 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 // All 43 exporters from the codebase
 const ALL_EXPORTERS = [
   "cursor",
-  "agents-md",
+  "agents",
   "vscode-mcp",
   "windsurf-mcp",
   "zed-config",
@@ -27,7 +27,7 @@ const ALL_EXPORTERS = [
   "opencode-config",
   "root-mcp",
   "aider",
-  "claude-code",
+  "claude",
   "codex",
   "cody",
   "continue",
@@ -139,7 +139,7 @@ sections:
   });
 
   describe("Core exporters (must work)", () => {
-    const CORE_EXPORTERS = ["cursor", "agents-md", "vscode-mcp"];
+    const CORE_EXPORTERS = ["cursor", "agents", "vscode-mcp"];
 
     CORE_EXPORTERS.forEach((exporter) => {
       it(`should successfully export to ${exporter}`, () => {
@@ -179,7 +179,7 @@ sections:
           case "cursor":
             outputPath = join(TEST_DIR, ".cursor/rules/aligntrue.mdc");
             break;
-          case "agents-md":
+          case "agents":
             outputPath = join(TEST_DIR, "AGENTS.md");
             break;
           case "vscode-mcp":

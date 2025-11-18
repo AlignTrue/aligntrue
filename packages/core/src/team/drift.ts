@@ -366,7 +366,7 @@ export function detectAgentFileDrift(
 
   // Agent files to check
   const agentFiles = [
-    { path: "AGENTS.md", agent: "agents-md" },
+    { path: "AGENTS.md", agent: "agents" },
     { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
   ];
 

@@ -2,7 +2,7 @@
  * OpenAI Codex exporter (uses AGENTS.md format)
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
+import { AgentsExporter } from "../agents/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
@@ -11,13 +11,13 @@ import type {
 } from "@aligntrue/plugin-contracts";
 
 /**
- * OpenAI Codex exporter - wraps AgentsMdExporter with openai-codex-specific metadata
+ * OpenAI Codex exporter - wraps AgentsExporter with openai-codex-specific metadata
  */
 export class OpenaiCodexExporter implements ExporterPlugin {
   name = "openai-codex";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new AgentsExporter();
 
   async export(
     request: ScopedExportRequest,

@@ -280,7 +280,7 @@ For teams with specific conflict policies:
 
 ```bash
 #!/bin/bash
-# always-prefer-agents-md.sh
+# always-prefer-agents.sh
 
 # Always keep AGENTS.md changes, never auto-pull
 aligntrue sync --no-auto-pull

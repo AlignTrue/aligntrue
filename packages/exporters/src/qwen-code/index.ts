@@ -2,7 +2,7 @@
  * Qwen Code exporter (uses AGENTS.md format)
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
+import { AgentsExporter } from "../agents/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
@@ -11,13 +11,13 @@ import type {
 } from "@aligntrue/plugin-contracts";
 
 /**
- * Qwen Code exporter - wraps AgentsMdExporter with qwen-code-specific metadata
+ * Qwen Code exporter - wraps AgentsExporter with qwen-code-specific metadata
  */
 export class QwenCodeExporter implements ExporterPlugin {
   name = "qwen-code";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new AgentsExporter();
 
   async export(
     request: ScopedExportRequest,

@@ -126,7 +126,7 @@ Team mode configuration with:
 - `mode: team` - Enables team features
 - `lockfile.mode: soft` - Lockfile enforcement level (off/soft/strict)
 - `sources` - Rule sources (local, git, catalog)
-- `exporters` - Output formats (cursor, agents-md, etc.)
+- `exporters` - Output formats (cursor, agents, etc.)
 - `scopes` - Hierarchical scopes for monorepo
 
 ### `.aligntrue/allow.yaml`

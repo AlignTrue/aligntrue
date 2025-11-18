@@ -12,7 +12,7 @@ import { AGENT_PATTERNS, getAgentDisplayName } from "./detect-agents.js";
  */
 export type AgentFileFormat =
   | "cursor-mdc"
-  | "agents-md"
+  | "agents"
   | "generic-markdown"
   | "unknown";
 
@@ -27,16 +27,16 @@ export interface AgentFileCandidate {
 }
 
 const GENERIC_MARKDOWN_AGENTS = new Set([
-  "agents-md",
-  "claude-md",
-  "crush-md",
-  "warp-md",
-  "gemini-md",
-  "windsurf-md",
-  "aider-md",
-  "opencode-md",
-  "roocode-md",
-  "zed-md",
+  "agents",
+  "claude",
+  "crush",
+  "warp",
+  "gemini",
+  "windsurf",
+  "aider",
+  "opencode",
+  "roocode",
+  "zed",
   "kilocode",
   "junie",
   "trae-ai",
@@ -102,7 +102,7 @@ export function detectAgentFiles(
         const format = classifyFormat(agent, absolutePatternPath);
         const importable =
           isFormatImportable(format) &&
-          (format !== "agents-md" || absolutePatternPath.endsWith(".md"));
+          (format !== "agents" || absolutePatternPath.endsWith(".md"));
 
         pushCandidate(
           candidates,
@@ -154,8 +154,8 @@ function classifyFormat(agent: string, filePath?: string): AgentFileFormat {
   if (CURSOR_AGENT_NAMES.has(agent)) {
     return "cursor-mdc";
   }
-  if (agent === "agents-md") {
-    return "agents-md";
+  if (agent === "agents") {
+    return "agents";
   }
   if (GENERIC_MARKDOWN_AGENTS.has(agent) || agent.endsWith("-md")) {
     return "generic-markdown";
@@ -169,7 +169,7 @@ function classifyFormat(agent: string, filePath?: string): AgentFileFormat {
 export function isFormatImportable(format: AgentFileFormat): boolean {
   return (
     format === "cursor-mdc" ||
-    format === "agents-md" ||
+    format === "agents" ||
     format === "generic-markdown"
   );
 }

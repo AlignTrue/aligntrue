@@ -107,7 +107,7 @@ export class GitIntegration {
    */
   private inferAdapterFromPath(filePath: string): string | null {
     if (filePath.includes(".cursor/")) return "cursor";
-    if (filePath === "AGENTS.md") return "agents-md";
+    if (filePath === "AGENTS.md") return "agents";
     if (filePath.includes(".vscode/mcp.json")) return "vscode-mcp";
     if (filePath.includes(".amazonq/")) return "amazonq";
     if (filePath.includes(".windsurf/")) return "windsurf";

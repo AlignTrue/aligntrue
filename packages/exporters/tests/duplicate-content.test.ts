@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createHash } from "crypto";
-import { AgentsMdExporter } from "../src/agents-md/index.js";
+import { AgentsExporter } from "../src/agents/index.js";
 import type {
   ScopedExportRequest,
   ExportOptions,
@@ -25,7 +25,7 @@ function generateFingerprint(heading: string, content: string): string {
 
 describe("Duplicate content bug fix", () => {
   let tempDir: string;
-  let exporter: AgentsMdExporter;
+  let exporter: AgentsExporter;
 
   const testSection: AlignSection = {
     heading: "test.rule.one",
@@ -48,7 +48,7 @@ describe("Duplicate content bug fix", () => {
     tempDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
 
     // Create fresh exporter instance
-    exporter = new AgentsMdExporter();
+    exporter = new AgentsExporter();
   });
 
   afterEach(() => {

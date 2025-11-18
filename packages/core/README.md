@@ -67,7 +67,7 @@ version: "1"
 mode: solo # solo | team | enterprise
 exporters:
   - cursor
-  - agents-md
+  - agents
 sources:
   - type: local
     path: .aligntrue/.rules.yaml
