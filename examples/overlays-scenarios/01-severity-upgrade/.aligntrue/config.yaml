@@ -1,0 +1,24 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "upstream-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+
+    - selector: "rule[id=no-any]"
+      set:
+        severity: "error"
+
+    - selector: "rule[id=prefer-const]"
+      set:
+        severity: "error"
+
+exporters:
+  - agents-md
+  - cursor
