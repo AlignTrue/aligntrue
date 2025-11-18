@@ -5,7 +5,7 @@ const validators = [
   {
     name: "Workspace protocol",
     script: "validate-workspace-protocol.mjs",
-    hint: "Ensure @aligntrue/* dependencies use \"workspace:*\" in package.json.",
+    hint: 'Ensure @aligntrue/* dependencies use "workspace:*" in package.json.',
   },
   {
     name: "UI tsconfig",
