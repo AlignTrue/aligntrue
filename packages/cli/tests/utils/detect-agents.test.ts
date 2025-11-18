@@ -37,12 +37,12 @@ describe("detectAgents", () => {
     expect(result.displayNames.get("cursor")).toBe("Cursor");
   });
 
-  it("detects agents-md when AGENTS.md exists", () => {
+  it("detects agents when AGENTS.md exists", () => {
     writeFileSync(join(testDir, "AGENTS.md"), "# Test rules");
 
     const result = detectAgents(testDir);
 
-    expect(result.detected).toContain("agents-md");
+    expect(result.detected).toContain("agents");
   });
 
   it("detects multiple agents simultaneously", () => {
@@ -54,7 +54,7 @@ describe("detectAgents", () => {
     const result = detectAgents(testDir);
 
     expect(result.detected).toContain("cursor");
-    expect(result.detected).toContain("agents-md");
+    expect(result.detected).toContain("agents");
     expect(result.detected).toContain("vscode-mcp");
   });
 
@@ -96,7 +96,7 @@ describe("detectNewAgents", () => {
     const newAgents = detectNewAgents(testDir, ["cursor"], []);
 
     expect(newAgents).toHaveLength(1);
-    expect(newAgents[0].name).toBe("agents-md");
+    expect(newAgents[0].name).toBe("agents");
     expect(newAgents[0].displayName).toBe("Universal AGENTS.md");
   });
 
@@ -107,14 +107,14 @@ describe("detectNewAgents", () => {
     const newAgents = detectNewAgents(testDir, [], ["cursor"]);
 
     expect(newAgents).toHaveLength(1);
-    expect(newAgents[0].name).toBe("agents-md");
+    expect(newAgents[0].name).toBe("agents");
   });
 
   it("returns empty array when all detected agents are enabled", () => {
     mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
-    const newAgents = detectNewAgents(testDir, ["cursor", "agents-md"], []);
+    const newAgents = detectNewAgents(testDir, ["cursor", "agents"], []);
 
     expect(newAgents).toEqual([]);
   });
@@ -123,7 +123,7 @@ describe("detectNewAgents", () => {
     mkdirSync(join(testDir, ".cursor", "rules"), { recursive: true });
     writeFileSync(join(testDir, "AGENTS.md"), "# Test");
 
-    const newAgents = detectNewAgents(testDir, [], ["cursor", "agents-md"]);
+    const newAgents = detectNewAgents(testDir, [], ["cursor", "agents"]);
 
     expect(newAgents).toEqual([]);
   });
@@ -144,7 +144,7 @@ describe("detectNewAgents", () => {
     mkdirSync(join(testDir, ".vscode"), { recursive: true });
     writeFileSync(join(testDir, ".vscode", "mcp.json"), "{}");
 
-    const newAgents = detectNewAgents(testDir, ["cursor"], ["agents-md"]);
+    const newAgents = detectNewAgents(testDir, ["cursor"], ["agents"]);
 
     expect(newAgents).toHaveLength(1);
     expect(newAgents[0].name).toBe("vscode-mcp");
@@ -171,7 +171,7 @@ describe("detectNewAgents", () => {
 describe("getAgentDisplayName", () => {
   it("returns display name for known agent", () => {
     expect(getAgentDisplayName("cursor")).toBe("Cursor");
-    expect(getAgentDisplayName("agents-md")).toBe("Universal AGENTS.md");
+    expect(getAgentDisplayName("agents")).toBe("Universal AGENTS.md");
     expect(getAgentDisplayName("windsurf-mcp")).toBe("Windsurf MCP");
   });
 
@@ -187,7 +187,7 @@ describe("getAllAgents", () => {
     expect(agents).toBeInstanceOf(Array);
     expect(agents.length).toBeGreaterThan(0);
     expect(agents).toContain("cursor");
-    expect(agents).toContain("agents-md");
+    expect(agents).toContain("agents");
     expect(agents).toContain("vscode-mcp");
   });
 

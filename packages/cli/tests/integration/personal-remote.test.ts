@@ -65,7 +65,7 @@ sources:
     ref: ${COMMIT_HASH}
     path: remote-test/personal-rules.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -104,7 +104,7 @@ sources:
     url: file:///tmp/repo
     path: rules.md
 exporters:
-  - agents-md
+  - agents
 `,
         "utf-8",
       );
@@ -151,7 +151,7 @@ sources:
     ref: ${COMMIT_HASH}
     path: remote-test/personal-rules.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -219,7 +219,7 @@ sources:
     ref: ${COMMIT_HASH}
     path: remote-test/nonexistent.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -285,7 +285,7 @@ sources:
     ref: ${COMMIT_HASH}
     path: remote-test/personal-rules.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,
@@ -340,7 +340,7 @@ sources:
     url: https://github.com/nonexistent/repo
     path: rules.md
 exporters:
-  - agents-md
+  - agents
 git:
   mode: ignore
 `,

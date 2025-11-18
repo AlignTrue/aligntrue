@@ -162,7 +162,7 @@ aligntrue import <agent> [options]
 
 **Arguments:**
 
-- `agent` - Agent format to analyze (cursor, agents-md, copilot, claude-code, aider)
+- `agent` - Agent format to analyze (cursor, agents, copilot, claude, aider)
 
 **Options:**
 
@@ -183,7 +183,7 @@ aligntrue import cursor
 Import from AGENTS.md:
 
 ```bash
-aligntrue import agents-md
+aligntrue import agents
 ```
 
 Import and write to IR file:
@@ -226,9 +226,9 @@ Confidence: Medium (70-89% coverage)
 **Supported Agents:**
 
 - **cursor** - `.cursor/rules/*.mdc` files with YAML frontmatter
-- **agents-md** - `AGENTS.md` universal markdown format
+- **agents** - `AGENTS.md` universal markdown format
 - **copilot** - AGENTS.md format (alias)
-- **claude-code** - AGENTS.md format (alias)
+- **claude** - AGENTS.md format (alias)
 - **aider** - AGENTS.md format (alias)
 
 **Coverage Calculation:**
@@ -250,7 +250,7 @@ Expected: .cursor/rules/ directory with .mdc files
 
 ```
 ✗ Import not supported for agent: xyz
-Supported agents: cursor, agents-md, copilot, claude-code, aider
+Supported agents: cursor, agents, copilot, claude, aider
 ```
 
 **No rules found:**
@@ -364,7 +364,7 @@ aligntrue sync --accept-agent cursor
 
 **Primary Agent**
 
-Auto-detected from your first importable exporter (cursor, agents-md, etc.). To set manually:
+Auto-detected from your first importable exporter (cursor, agents, etc.). To set manually:
 
 ```yaml
 # .aligntrue/config.yaml
@@ -380,7 +380,7 @@ sync:
 ◇  Configuration loaded
 │
 ◇  Loaded 2 exporters
-│  ✓ Active: cursor, agents-md
+│  ✓ Active: cursor, agents
 │
 ◇  Sync complete
 │  ✓ Wrote 2 files
@@ -528,7 +528,7 @@ aligntrue telemetry off
 **What we collect (when enabled):**
 
 - Command name (init, sync, etc.)
-- Export targets used (cursor, agents-md, etc.)
+- Export targets used (cursor, agents, etc.)
 - Align content hashes (no code, no paths, no PII)
 
 **What we never collect:**
@@ -616,10 +616,10 @@ Available Adapters (44 total):
 ✓ cursor                  Export AlignTrue rules to Cursor .mdc format
                           Outputs: .cursor/rules/*.mdc
 
-✓ agents-md               Export AlignTrue rules to universal AGENTS.md format
+✓ agents               Export AlignTrue rules to universal AGENTS.md format
                           Outputs: AGENTS.md
 
-- claude-md               Export AlignTrue rules to Claude CLAUDE.md format
+- claude               Export AlignTrue rules to Claude CLAUDE.md format
                           Outputs: CLAUDE.md
 
 - vscode-mcp              Export AlignTrue rules to VS Code MCP configuration
@@ -644,13 +644,13 @@ Summary:
 Enable an adapter by adding it to your config:
 
 ```bash
-aligntrue adapters enable claude-md
+aligntrue adapters enable claude
 ```
 
 **Example output:**
 
 ```
-✓ Enabled adapter: claude-md
+✓ Enabled adapter: claude
 
 Next step:
   Run: aligntrue sync
@@ -673,7 +673,7 @@ The interactive prompt pre-selects currently enabled adapters and lets you toggl
 Disable an adapter by removing it from your config:
 
 ```bash
-aligntrue adapters disable claude-md
+aligntrue adapters disable claude
 ```
 
 **Safety:**
@@ -684,7 +684,7 @@ aligntrue adapters disable claude-md
 **Example output:**
 
 ```
-✓ Disabled adapter: claude-md
+✓ Disabled adapter: claude
 ```
 
 ### Telemetry commands
@@ -702,7 +702,7 @@ aligntrue telemetry on
 **What we collect:**
 
 - Command names (init, sync, etc.)
-- Export targets used (cursor, agents-md, etc.)
+- Export targets used (cursor, agents, etc.)
 - Rule content hashes (SHA-256, no actual content)
 
 **What we never collect:**

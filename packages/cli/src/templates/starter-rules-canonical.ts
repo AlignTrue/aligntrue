@@ -14,7 +14,7 @@
  * Template generation:
  * - IR format: packages/cli/src/templates/starter-rules.ts (markdown)
  * - Cursor format: packages/cli/src/templates/cursor-starter.ts (.mdc)
- * - AGENTS.md format: packages/cli/src/templates/agents-md-starter.ts
+ * - AGENTS.md format: packages/cli/src/templates/agents-starter.ts
  *
  * Validation:
  * - Build-time: packages/cli/tests/templates/validation.test.ts

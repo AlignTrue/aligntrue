@@ -268,7 +268,7 @@ Enable strict mode in tsconfig.json.
 - Reset state between exports (provide `resetState()` method)
 - Include version marker in header
 
-**See:** `packages/exporters/src/agents-md/index.ts`
+**See:** `packages/exporters/src/agents/index.ts`
 
 ---
 
@@ -482,7 +482,7 @@ export const singleRule: AlignRule = {
 
 Before creating a new exporter, check if your agent can use:
 
-- `agents-md` - Universal AGENTS.md format (11+ agents)
+- `agents` - Universal AGENTS.md format (11+ agents)
 - `root-mcp` - MCP config at root (Claude Code, Aider)
 
 ### 2. Follow technical guide
@@ -519,7 +519,7 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 
 **Simple (good starting points):**
 
-- `packages/exporters/src/agents-md/` - Single file, universal format
+- `packages/exporters/src/agents/` - Single file, universal format
 - `packages/exporters/src/cline/` - Plain text, no metadata
 
 **Medium complexity:**

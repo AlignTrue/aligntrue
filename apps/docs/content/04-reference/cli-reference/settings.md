@@ -45,7 +45,7 @@ Modules:
 
 Exporters:
   - cursor
-  - agents-md
+  - agents
 
 Sync:
   auto_pull: true
@@ -157,7 +157,7 @@ aligntrue telemetry <command>
 **What we collect (when enabled):**
 
 - Command names (`init`, `sync`, `check`, etc.)
-- Export targets (`cursor`, `agents-md`, etc.)
+- Export targets (`cursor`, `agents`, etc.)
 - Rule hashes used (SHA-256, no content)
 - Anonymous UUID (generated once)
 

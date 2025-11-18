@@ -33,7 +33,7 @@ describe("Config Commands", () => {
     mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
     const _config = {
       mode: "solo",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       sync: {
         edit_source: "AGENTS.md",
         auto_pull: false,
@@ -44,7 +44,7 @@ describe("Config Commands", () => {
       `mode: solo
 exporters:
   - cursor
-  - agents-md
+  - agents
 sync:
   edit_source: "AGENTS.md"
   auto_pull: false
@@ -74,7 +74,7 @@ sync:
     it("should get an array value", () => {
       const result = runCli(["config", "get", "exporters"]);
       const parsed = JSON.parse(result.trim());
-      expect(parsed).toEqual(["cursor", "agents-md"]);
+      expect(parsed).toEqual(["cursor", "agents"]);
     });
 
     it("should fail with exit code 1 for non-existent key", () => {

@@ -115,7 +115,7 @@ Configure primary agent to avoid prompts:
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  primary_agent: "agents-md" # Use AGENTS.md as source
+  primary_agent: "agents" # Use AGENTS.md as source
   # or "cursor"  # Use Cursor files as source
   auto_pull: true # Pull from primary before syncing
 ```
@@ -165,8 +165,8 @@ Yes! AlignTrue is designed for multi-agent workflows. Configure multiple exporte
 ```yaml
 exporters:
   - cursor
-  - agents-md
-  - claude-md
+  - agents
+  - claude
   - copilot
   - windsurf
 ```
@@ -307,7 +307,7 @@ aligntrue telemetry on      # Enable (optional)
 ### What data is collected (if enabled)?
 
 - Command names (init, sync, check)
-- Export targets (cursor, agents-md)
+- Export targets (cursor, agents)
 - Rule hashes (SHA-256, no content)
 - Anonymous UUID
 

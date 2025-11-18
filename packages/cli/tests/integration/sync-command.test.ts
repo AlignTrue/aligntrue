@@ -63,7 +63,7 @@ describeSkipWindows("Sync Command Integration", () => {
       // TODO: Fix - hitting validation errors with test IR data
       // Setup: Create config and IR
       const config = {
-        exporters: ["cursor", "agents-md"],
+        exporters: ["cursor", "agents"],
       };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),

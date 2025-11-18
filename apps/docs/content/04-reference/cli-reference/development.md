@@ -47,10 +47,10 @@ Available Adapters (44 total):
 ✓ cursor                  Export AlignTrue rules to Cursor .mdc format
                           Outputs: .cursor/rules/*.mdc
 
-✓ agents-md               Export AlignTrue rules to universal AGENTS.md format
+✓ agents               Export AlignTrue rules to universal AGENTS.md format
                           Outputs: AGENTS.md
 
-- claude-md               Export AlignTrue rules to Claude CLAUDE.md format
+- claude               Export AlignTrue rules to Claude CLAUDE.md format
                           Outputs: CLAUDE.md
 
 - vscode-mcp              Export AlignTrue rules to VS Code MCP configuration
@@ -112,7 +112,7 @@ aligntrue adapters enable -i
 
 ```bash
 # Enable a single adapter
-aligntrue adapters enable claude-md
+aligntrue adapters enable claude
 
 # Enable multiple adapters interactively
 aligntrue adapters enable --interactive
@@ -125,7 +125,7 @@ aligntrue adapters enable cursor
 **Example output:**
 
 ```
-✓ Enabled adapter: claude-md
+✓ Enabled adapter: claude
 
 Next step:
   Run: aligntrue sync
@@ -158,7 +158,7 @@ aligntrue adapters disable <adapter>
 
 ```bash
 # Disable an adapter
-aligntrue adapters disable claude-md
+aligntrue adapters disable claude
 
 # Cannot disable last adapter
 aligntrue adapters disable cursor
@@ -175,7 +175,7 @@ aligntrue adapters disable nonexistent
 **Example output:**
 
 ```
-✓ Disabled adapter: claude-md
+✓ Disabled adapter: claude
 ```
 
 **Exit codes:**

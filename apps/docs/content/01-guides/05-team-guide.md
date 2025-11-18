@@ -183,7 +183,7 @@ aligntrue sync
 # ✓ Validated lockfile (strict mode)
 # ✓ Pulled 3 sources
 # ✓ Applied 2 overlays
-# ✓ Exported to cursor, agents-md
+# ✓ Exported to cursor, agents
 ```
 
 **Result:** New developer has identical rules as team (byte-identical exports).
@@ -516,9 +516,9 @@ aligntrue drift
 
 # Output:
 # AGENT FILE DRIFT:
-#   _agent_agents-md
+#   _agent_agents
 #     AGENTS.md modified after last sync
-#     Suggestion: Run: aligntrue sync --accept-agent agents-md
+#     Suggestion: Run: aligntrue sync --accept-agent agents
 ```
 
 **How to resolve:**
@@ -527,7 +527,7 @@ Option 1: Accept agent changes (pull into IR):
 
 ```bash
 # Import changes from agent file into IR
-aligntrue sync --accept-agent agents-md
+aligntrue sync --accept-agent agents
 
 # This will:
 # 1. Parse AGENTS.md
@@ -553,7 +553,7 @@ aligntrue sync
 # Output:
 # ⚠ AGENTS.md modified after IR
 #   In team mode, edit .aligntrue/.rules.yaml instead
-#   Or run: aligntrue sync --accept-agent agents-md
+#   Or run: aligntrue sync --accept-agent agents
 ```
 
 ### 3. Upstream drift

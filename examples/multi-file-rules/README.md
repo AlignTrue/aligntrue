@@ -24,7 +24,7 @@ The `.aligntrue/config.yaml` file specifies the source files:
 ```yaml
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 sync:
   source_files: "rules/*.md"

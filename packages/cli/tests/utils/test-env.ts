@@ -88,7 +88,7 @@ export class TestEnv {
   /**
    * Create a minimal valid config
    */
-  createConfig(exporters: string[] = ["agents-md"]): string {
+  createConfig(exporters: string[] = ["agents"]): string {
     this.mkdir(".aligntrue");
     return this.writeFile(
       ".aligntrue/config.yaml",

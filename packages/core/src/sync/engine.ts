@@ -410,7 +410,7 @@ export class SyncEngine {
             ];
 
       // Get exporters to run
-      const exporterNames = this.config.exporters || ["cursor", "agents-md"];
+      const exporterNames = this.config.exporters || ["cursor", "agents"];
       const activeExporters: ExporterPlugin[] = [];
 
       for (const name of exporterNames) {
@@ -772,7 +772,7 @@ export class SyncEngine {
 
     // Map agent name to file path
     const agentFilePaths: Record<string, string> = {
-      "agents-md": paths.agentsMd(),
+      agents: paths.agentsMd(),
       cursor: join(cwd, ".cursor/rules/aligntrue.mdc"),
     };
 
@@ -798,7 +798,7 @@ export class SyncEngine {
         hash: string;
       }>;
     };
-    if (agent === "agents-md") {
+    if (agent === "agents") {
       parsed = parsers.parseAgentsMd(content);
     } else if (agent === "cursor") {
       parsed = parsers.parseCursorMdc(content);

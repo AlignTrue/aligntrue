@@ -1,6 +1,6 @@
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 sync:
   auto_pull: true

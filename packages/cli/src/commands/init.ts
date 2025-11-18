@@ -16,7 +16,7 @@ import * as yaml from "yaml";
 import { getAlignTruePaths, type AlignTrueConfig } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import { getAgentDisplayName } from "../utils/detect-agents.js";
-import { generateAgentsMdStarter } from "../templates/agents-md-starter.js";
+import { generateAgentsMdStarter } from "../templates/agents-starter.js";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
@@ -95,7 +95,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--import",
     hasValue: true,
-    description: "Import from agent format (cursor, agents-md)",
+    description: "Import from agent format (cursor, agents)",
   },
 ];
 
@@ -103,19 +103,17 @@ type ImportParser = "cursor" | "agents" | "generic";
 
 const EDIT_SOURCE_PATTERNS: Record<string, string> = {
   cursor: ".cursor/rules/*.mdc",
-  "agents-md": "AGENTS.md",
+  agents: "AGENTS.md",
   copilot: ".github/copilot-instructions.md",
+  claude: "CLAUDE.md",
+  crush: "CRUSH.md",
+  warp: "WARP.md",
+  gemini: "GEMINI.md",
+  windsurf: "WINDSURF.md",
   aider: ".aider.conf.yml",
-  "claude-code": "CLAUDE.md",
-  "claude-md": "CLAUDE.md",
-  "crush-md": "CRUSH.md",
-  "warp-md": "WARP.md",
-  "gemini-md": "GEMINI.md",
-  "windsurf-md": "Windsurf.md",
-  "aider-md": "AIDER.md",
-  "opencode-md": "OPENCODE.md",
-  "roocode-md": "ROOCODE.md",
-  "zed-md": "ZED.md",
+  opencode: "OPENCODE.md",
+  roocode: "ROOCODE.md",
+  zed: "ZED.md",
 };
 
 /**
@@ -167,7 +165,7 @@ function parserForFormat(format: AgentFileFormat): ImportParser | null {
   switch (format) {
     case "cursor-mdc":
       return "cursor";
-    case "agents-md":
+    case "agents":
       return "agents";
     case "generic-markdown":
       return "generic";
@@ -212,15 +210,15 @@ export async function init(args: string[] = []): Promise<void> {
         "aligntrue init --yes",
         "aligntrue init --no-sync",
         "aligntrue init --import cursor",
-        "aligntrue init --yes --import agents-md",
-        "aligntrue init --non-interactive --project-id my-app --exporters cursor,agents-md",
+        "aligntrue init --yes --import agents",
+        "aligntrue init --non-interactive --project-id my-app --exporters cursor,agents",
       ],
       notes: [
         "- Creates AGENTS.md (primary editing file) and .aligntrue/.rules.yaml (internal)",
         "- Detects existing agent files and offers import",
         "- Use --import <agent> to import from specific format",
         "- In non-interactive mode, detected agents are auto-enabled",
-        "- If no agents detected, defaults to: cursor, agents-md",
+        "- If no agents detected, defaults to: cursor, agents",
         "- Workflow mode auto-configured based on init choice",
       ],
     });
@@ -616,7 +614,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else if (selectedAgentsSet.size > 0) {
     selectedAgents = Array.from(selectedAgentsSet);
   } else {
-    selectedAgents = ["cursor", "agents-md"];
+    selectedAgents = ["cursor", "agents"];
   }
 
   // Step 6: Get project ID for template
@@ -700,7 +698,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       },
     ],
     exporters:
-      selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents-md"],
+      selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents"],
   };
 
   // Set mode if provided
@@ -753,10 +751,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   let agentsMdContent: string | null = null;
 
   if (createAgentsTemplate) {
-    agentsMdContent = generateAgentsMdStarter(projectIdValue);
+    const templateContent = generateAgentsMdStarter(projectIdValue);
+    agentsMdContent = templateContent;
     const agentsMdPath = `${cwd}/AGENTS.md`;
     const agentsMdTempPath = `${agentsMdPath}.tmp`;
-    writeFileSync(agentsMdTempPath, agentsMdContent, "utf-8");
+    writeFileSync(agentsMdTempPath, templateContent, "utf-8");
     renameSync(agentsMdTempPath, agentsMdPath);
     createdFiles.push("AGENTS.md");
   }
@@ -1018,7 +1017,7 @@ function convertCandidateToEditedFile(
         parser === "cursor"
           ? "cursor-mdc"
           : parser === "agents"
-            ? "agents-md"
+            ? "agents"
             : "generic",
       sections: parsed.sections.map((section) => ({
         heading: section.heading,
@@ -1095,16 +1094,16 @@ function inferAgentFromFilename(filePath: string): {
 } {
   const fileName = basename(filePath).toLowerCase();
   const mapping: Record<string, string> = {
-    "agents.md": "agents-md",
-    "claude.md": "claude-md",
-    "crush.md": "crush-md",
-    "warp.md": "warp-md",
-    "gemini.md": "gemini-md",
-    "windsurf.md": "windsurf-md",
-    "aider.md": "aider-md",
-    "opencode.md": "opencode-md",
-    "roocode.md": "roocode-md",
-    "zed.md": "zed-md",
+    "agents.md": "agents",
+    "claude.md": "claude",
+    "crush.md": "crush",
+    "warp.md": "warp",
+    "gemini.md": "gemini",
+    "windsurf.md": "windsurf",
+    "aider.md": "aider",
+    "opencode.md": "opencode",
+    "roocode.md": "roocode",
+    "zed.md": "zed",
   };
 
   if (fileName.endsWith(".mdc")) {
@@ -1115,7 +1114,7 @@ function inferAgentFromFilename(filePath: string): {
     return { agent: mapping[fileName]!, format: "generic-markdown" };
   }
 
-  return { agent: "agents-md", format: "generic-markdown" };
+  return { agent: "agents", format: "generic-markdown" };
 }
 
 function relativePathSafe(root: string, fullPath: string): string {

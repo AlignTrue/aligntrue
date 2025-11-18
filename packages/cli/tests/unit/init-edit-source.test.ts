@@ -3,9 +3,9 @@ import { describe, it, expect } from "vitest";
 describe("init command edit_source logic", () => {
   const exporterToPattern: Record<string, string> = {
     cursor: ".cursor/rules/*.mdc",
-    "agents-md": "AGENTS.md",
+    agents: "AGENTS.md",
     copilot: ".github/copilot-instructions.md",
-    "claude-code": "CLAUDE.md",
+    claude: "CLAUDE.md",
     aider: ".aider.conf.yml",
   };
 
@@ -52,9 +52,9 @@ describe("init command edit_source logic", () => {
     expect(result).toEqual([".cursor/rules/*.mdc", "AGENTS.md"]);
   });
 
-  it("adds AGENTS.md when agents-md file is imported", () => {
+  it("adds AGENTS.md when agents file is imported", () => {
     const result = calculateEditSource(["cursor"], {
-      importedAgents: ["agents-md"],
+      importedAgents: ["agents"],
     }) as string[];
     expect(result).toContain("AGENTS.md");
   });

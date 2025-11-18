@@ -2,7 +2,7 @@
  * Gemini CLI exporter (uses AGENTS.md format)
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
+import { AgentsExporter } from "../agents/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
@@ -11,13 +11,13 @@ import type {
 } from "@aligntrue/plugin-contracts";
 
 /**
- * Gemini CLI exporter - wraps AgentsMdExporter with gemini-cli-specific metadata
+ * Gemini CLI exporter - wraps AgentsExporter with gemini-cli-specific metadata
  */
 export class GeminiCliExporter implements ExporterPlugin {
   name = "gemini-cli";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new AgentsExporter();
 
   async export(
     request: ScopedExportRequest,

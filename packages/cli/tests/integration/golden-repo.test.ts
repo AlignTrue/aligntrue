@@ -54,7 +54,7 @@ describe("Golden Repository Workflows", () => {
 
     // Initialize fresh AlignTrue project
     execSync(
-      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents-md --project-id test-project --yes`,
+      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents --project-id test-project --yes`,
       {
         cwd: projectDir,
         stdio: "pipe",
@@ -322,7 +322,7 @@ Content Hash:`,
 
   it.skip("Edit AGENTS.md → sync workflow updates IR and other agents", async () => {
     // Setup
-    const projectDir = join(testProjectContext.projectDir, "agents-md-edit");
+    const projectDir = join(testProjectContext.projectDir, "agents-edit");
     await fs.cp(GOLDEN_REPO_SOURCE, projectDir, { recursive: true });
 
     // Copy hidden directories
@@ -337,12 +337,12 @@ Content Hash:`,
       }
     }
 
-    // Update config to use agents-md as primary agent
+    // Update config to use agents as primary agent
     const configPath = join(projectDir, ".aligntrue/config.yaml");
     const configContent = await fs.readFile(configPath, "utf8");
     const updatedConfig = configContent.replace(
       "primary_agent: cursor",
-      "primary_agent: agents-md",
+      "primary_agent: agents",
     );
     await fs.writeFile(configPath, updatedConfig);
 

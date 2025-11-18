@@ -147,7 +147,7 @@ export class ExporterRegistry {
       const ExporterClass =
         module.default ||
         module.CursorExporter ||
-        module.AgentsMdExporter ||
+        module.AgentsExporter ||
         module.VsCodeMcpExporter;
 
       if (!ExporterClass) {

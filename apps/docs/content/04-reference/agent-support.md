@@ -49,13 +49,13 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 | Agent Name          | Exporter Name    | Category         | Output Files                     | Description                                          | Fidelity Notes                              |
 | ------------------- | ---------------- | ---------------- | -------------------------------- | ---------------------------------------------------- | ------------------------------------------- |
 | **Cursor**          | cursor           | Agent-Specific   | `.cursor/rules/*.mdc`            | Scope-based .mdc files with YAML frontmatter         | Session metadata in vendor.cursor namespace |
-| **AGENTS.md**       | agents-md        | Universal        | `AGENTS.md`                      | Single universal markdown format for multiple agents | Versioned format (v1), severity as emphasis |
+| **AGENTS.md**       | agents           | Universal        | `AGENTS.md`                      | Single universal markdown format for multiple agents | Versioned format (v1), severity as emphasis |
 | **VS Code MCP**     | vscode-mcp       | MCP Config       | `.vscode/mcp.json`               | MCP configuration for VS Code agents                 | MCP protocol limitations                    |
-| **Claude**          | claude-md        | Agent-Specific   | `CLAUDE.md`                      | Claude-specific markdown format                      | Machine-checkable rules not represented     |
+| **Claude**          | claude           | Agent-Specific   | `CLAUDE.md`                      | Claude-specific markdown format                      | Machine-checkable rules not represented     |
 | **GitHub Copilot**  | copilot          | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
-| **Aider**           | aider-md         | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements aider-config                    |
+| **Aider**           | aider            | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements aider-config                    |
 | **Aider**           | aider-config     | Agent-Specific   | `.aider.conf.yml`                | Aider YAML configuration                             | Complements AGENTS.md                       |
-| **Windsurf**        | windsurf-md      | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements windsurf-mcp                    |
+| **Windsurf**        | windsurf         | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements windsurf-mcp                    |
 | **Windsurf**        | windsurf-mcp     | MCP Config       | `.windsurf/mcp_config.json`      | Windsurf MCP configuration                           | Extracts vendor.windsurf fields             |
 | **Amazon Q**        | amazonq          | Agent-Specific   | `.amazonq/rules/*.md`            | Directory-based markdown files                       | Directory structure preserved               |
 | **Amazon Q**        | amazonq-mcp      | MCP Config       | `.amazonq/mcp.json`              | Amazon Q MCP configuration                           | MCP protocol features                       |
@@ -65,23 +65,23 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 | **KiloCode**        | kilocode-mcp     | MCP Config       | `.kilocode/mcp.json`             | KiloCode MCP configuration                           | MCP protocol features                       |
 | **OpenHands**       | openhands        | Agent-Specific   | `.openhands/microagents/repo.md` | OpenHands microagents format                         | Microagents structure                       |
 | **OpenHands**       | openhands-config | Agent-Specific   | `config.toml`                    | OpenHands TOML configuration                         | TOML format limitations                     |
-| **Roo Code**        | roocode-md       | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
+| **Roo Code**        | roocode          | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
 | **Roo Code**        | roocode-mcp      | MCP Config       | `.roo/mcp.json`                  | Roo Code MCP configuration                           | MCP protocol features                       |
 | **Cursor MCP**      | cursor-mcp       | MCP Config       | `.cursor/mcp.json`               | Cursor MCP configuration                             | Cursor-specific MCP setup                   |
 | **Root MCP**        | root-mcp         | MCP Config       | `.mcp.json`                      | Generic MCP config (Claude Code, Aider)              | Root-level MCP config                       |
-| **Zed**             | zed-md           | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements zed-config                      |
+| **Zed**             | zed              | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements zed-config                      |
 | **Zed**             | zed-config       | Agent-Specific   | `.zed/settings.json`             | Zed JSON configuration                               | JSON format limitations                     |
 | **Gemini CLI**      | gemini-cli       | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
-| **Gemini**          | gemini-md        | Agent-Specific   | `GEMINI.md`                      | Gemini-specific markdown format                      | Machine-checkable rules not represented     |
+| **Gemini**          | gemini           | Agent-Specific   | `GEMINI.md`                      | Gemini-specific markdown format                      | Machine-checkable rules not represented     |
 | **Gemini**          | gemini-config    | Agent-Specific   | `.gemini/settings.json`          | Gemini JSON configuration                            | JSON format limitations                     |
 | **Qwen Code**       | qwen-code        | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
 | **Qwen**            | qwen-config      | Agent-Specific   | `.qwen/settings.json`            | Qwen JSON configuration                              | JSON format limitations                     |
 | **OpenAI Codex**    | openai-codex     | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
-| **Open Code**       | opencode-md      | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
+| **Open Code**       | opencode         | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
 | **Open Code**       | opencode-config  | Agent-Specific   | `opencode.json`                  | Open Code JSON configuration                         | JSON format limitations                     |
-| **CrushChat**       | crush-md         | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements crush-config                    |
+| **CrushChat**       | crush            | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Complements crush-config                    |
 | **CrushChat**       | crush-config     | Agent-Specific   | `.crush.json`                    | CrushChat JSON configuration                         | JSON format limitations                     |
-| **Warp**            | warp-md          | Agent-Specific   | `WARP.md`                        | Warp-specific markdown format                        | Warp format limitations                     |
+| **Warp**            | warp             | Agent-Specific   | `WARP.md`                        | Warp-specific markdown format                        | Warp format limitations                     |
 | **Cline**           | cline            | Agent-Specific   | `.clinerules`                    | Cline plain text format                              | Plain text limitations                      |
 | **Goose**           | goose            | Agent-Specific   | `.goosehints`                    | Goose plain text format                              | Plain text limitations                      |
 | **Firebender**      | firebender       | Agent-Specific   | `firebender.json`                | Firebender JSON configuration                        | JSON format limitations                     |

@@ -23,7 +23,7 @@ export type ProjectContext =
  * Detected agent information
  */
 export interface DetectedAgent {
-  /** Agent name (cursor, agents-md, claude, etc.) */
+  /** Agent name (cursor, agents, claude, etc.) */
   agent: string;
   /** Files found for this agent */
   files: string[];
@@ -116,7 +116,7 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
   const markdownFormats = [
     {
       baseNames: ["AGENTS", "agents", "Agents"],
-      agent: "agents-md",
+      agent: "agents",
     },
     {
       baseNames: ["CLAUDE", "claude", "Claude"],
@@ -158,7 +158,7 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
       case "cursorrules":
         context = "import-cursorrules";
         break;
-      case "agents-md":
+      case "agents":
         context = "import-agents";
         break;
       case "claude":

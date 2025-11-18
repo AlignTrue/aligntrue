@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Simplified exporter names by removing the `-md` suffix: `claude-md`, `agents-md`, `aider-md`, `crush-md`, `gemini-md`, `opencode-md`, `roocode-md`, `warp-md`, `windsurf-md`, and `zed-md` are now `claude`, `agents`, `aider`, `crush`, `gemini`, `opencode`, `roocode`, `warp`, `windsurf`, and `zed`. Update `.aligntrue/config.yaml` exporter lists accordingly.
+- Adapter UX improvements: `aligntrue adapters` and `aligntrue status` now link to the full supported agent list and the adapter extension guide whenever they suggest enabling new adapters.
 - Spinners now respect terminal capabilities via a shared helper: TTY environments keep the animated output, while non-TTY (CI/log capture) falls back to plain text without ANSI sequences.
 - CLI TTY detection now lives in `tty-helper.ts`, removing duplicate helpers from `command-utilities.ts`; `team`/`init` commands and `syncFromAgent` have clearer logging and no longer rely on deprecated annotations.
 - `aligntrue check --ci` and `aligntrue drift --gates` help text now cross-reference one another, matching the new command comparison guide.
@@ -433,7 +435,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Gemini MD exporter** (`gemini-md`) for Gemini-specific GEMINI.md format (complements gemini-cli AGENTS.md and gemini-config JSON)
+- **Gemini MD exporter** (`gemini`) for Gemini-specific GEMINI.md format (complements gemini-cli AGENTS.md and gemini-config JSON)
 - **Hybrid agent detection** during sync with interactive prompts for newly discovered agents
 - `aligntrue adapters detect` command to manually check for new agents
 - `aligntrue adapters ignore <agent>` command to suppress detection prompts for specific agents
