@@ -12,6 +12,16 @@ description: Fork-safe customization of upstream rules - change severity, adjust
 
 Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
 
+**Common use cases:**
+
+- Severity upgrade - Make warnings errors
+- Temporary migration - Relax rules during refactoring
+- Threshold adjustment - Project-specific complexity limits
+- Autofix removal - Keep check but disable risky fixes
+- Gradual rollout - Progressive rule adoption
+
+Each is covered in [Scenarios](#scenarios) with full configurations.
+
 > **See it in action:** Check out the [overlays example](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) for a working demonstration.
 
 > **Real-world scenarios:** See [5 complete examples](#scenarios) below for severity upgrades, temporary migrations, threshold adjustments, autofix removal, and gradual rollouts.
@@ -43,6 +53,8 @@ aligntrue sync
 ```
 
 **Result:** `no-console-log` now fails CI instead of warning, and you still get upstream updates with `aligntrue update`.
+
+**On this page:** [When to Use](#when-to-use-overlays-vs-plugs-vs-forks) · [Overlay Anatomy](#overlay-anatomy) · [Selectors](#selector-strategies) · [Scenarios](#scenarios) · [Performance](#performance-characteristics)
 
 ## When to use overlays vs plugs vs forks
 
@@ -900,13 +912,13 @@ See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehens
 
 Real-world examples showing how to use overlays for fork-safe customization:
 
-- [Severity Upgrade](#severity-upgrade) - Make warnings errors
-- [Temporary Migration](#temporary-migration) - Disable strict rules during refactor
-- [Threshold Adjustment](#threshold-adjustment) - Project-specific complexity limits
-- [Autofix Removal](#autofix-removal) - Keep check but disable risky autofix
-- [Gradual Rollout](#gradual-rollout) - Progressive rule adoption
+- [Severity upgrade](#severity-upgrade) - Make warnings errors
+- [Temporary migration](#temporary-migration) - Disable strict rules during refactor
+- [Threshold adjustment](#threshold-adjustment) - Project-specific complexity limits
+- [Autofix removal](#autofix-removal) - Keep check but disable risky autofix
+- [Gradual rollout](#gradual-rollout) - Progressive rule adoption
 
-### Severity Upgrade
+### Severity upgrade
 
 **Problem:** An upstream pack has a rule with `severity: warning` but your team wants to enforce it as an error. For example, upstream has `no-console-log` as a warning, but your team requires it to be an error in production code. You don't want to fork the pack just to change severity.
 
@@ -945,7 +957,7 @@ exporters:
 
 **Keywords:** make warnings errors, upgrade severity, stricter rules, team standards, enforce warnings, error enforcement
 
-### Temporary Migration
+### Temporary migration
 
 **Problem:** You're doing a major refactoring and need to temporarily disable strict rules. Normally `strict-null-checks` is an error, but during migration you need to downgrade it to a warning. After migration completes, you'll restore it to error. You want to track this as a temporary override.
 
@@ -987,7 +999,7 @@ exporters:
 
 **Keywords:** disable strict rules, temporary relaxation, during refactor, migration period, gradual adoption, technical debt
 
-### Threshold Adjustment
+### Threshold adjustment
 
 **Problem:** An upstream pack has complexity thresholds that don't fit your project. Upstream has `max-complexity` threshold at 10, but your legacy code needs a threshold of 20 while new code keeps 10. You need different thresholds without forking.
 
@@ -1030,7 +1042,7 @@ exporters:
 
 **Keywords:** complexity threshold, adjust limits, project-specific thresholds, tune parameters, code quality metrics
 
-### Autofix Removal
+### Autofix removal
 
 **Problem:** An upstream rule has an autofix that's too aggressive for your codebase. The `prefer-const` rule with autofix sometimes breaks code in complex scenarios. You want the warning but not the automatic changes.
 
@@ -1069,7 +1081,7 @@ exporters:
 
 **Keywords:** disable autofix, keep check but remove autofix, risky autofix, manual fix only, safe refactoring
 
-### Gradual Rollout
+### Gradual rollout
 
 **Problem:** You're rolling out new strict rules gradually over three weeks. Week 1: new rules as info, Week 2: upgrade to warnings, Week 3: upgrade to errors. You need to track rollout progress and control the phase.
 
@@ -1148,12 +1160,11 @@ exporters:
 ## Related documentation
 
 - [Customization Overview](/docs/02-customization) - When to use overlays vs plugs vs scopes
+- [CLI Reference](/docs/04-reference/cli-reference/overlays) - Complete CLI reference
 - [Plugs Guide](/docs/02-customization/plugs) - Stack-specific customization
 - [Scopes Guide](/docs/02-customization/scopes) - Path-based rule application
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Overlay policies and approval workflows
-- [Complete Scenario Index](../../examples/SCENARIOS.md) - 13+ real-world examples
 - [Drift Detection](/docs/03-concepts/drift-detection) - Detect overlay staleness
-- [CLI Reference](/docs/04-reference/cli-reference/overlays) - Complete CLI reference
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with overlays
 - [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with overlays
 

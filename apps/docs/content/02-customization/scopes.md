@@ -11,6 +11,8 @@ Scopes enable path-based rule application for monorepos. Apply different rules t
 
 > **Real-world scenarios:** See [5 complete examples](#scenarios) below for progressive adoption, team boundaries, multi-stack monorepos, frontend-backend splits, and microservices.
 
+**On this page:** [Concepts](#quick-example) · [Configuration](#scope-properties) · [Scenarios](#scenarios) · [Performance](#performance-characteristics)
+
 ## Quick example
 
 **Monorepo structure:**
@@ -53,6 +55,8 @@ scopes:
 - **Team boundaries** - Team A owns `apps/web`, Team B owns `packages/api`
 - **Progressive adoption** - Strict rules in new code, lenient in legacy
 - **Multi-stack projects** - Frontend + backend + services with different requirements
+
+See [real-world scenarios](#scenarios) for complete configurations of these patterns.
 
 ### Not suitable for
 
@@ -787,12 +791,12 @@ scopes:
 Real-world examples showing how to use scopes for common monorepo challenges:
 
 - [Progressive Adoption](#progressive-adoption) - Different rules for new vs legacy code
-- [Team Boundaries](#team-boundaries) - Different teams own different directories
+- [Team boundaries](#team-boundaries) - Different teams own different directories
 - [Multi-Stack Monorepo](#multi-stack-monorepo) - Multiple languages/tech stacks
 - [Frontend-Backend Split](#frontend-backend-split) - Separate concerns
-- [Microservices Architecture](#microservices-architecture) - Service-specific rules
+- [Microservices architecture](#microservices-architecture) - Service-specific rules
 
-### Progressive Adoption
+### Progressive adoption
 
 **Problem:** You're migrating a large codebase to stricter standards but can't fix everything at once. You need strict rules enforced in new code while keeping lenient rules in legacy code during the migration period.
 
@@ -828,7 +832,7 @@ exporters:
 
 **Keywords:** progressive adoption, gradual migration, strict rules, legacy code, refactoring, incremental improvement
 
-### Team Boundaries
+### Team boundaries
 
 **Problem:** Multiple teams work in the same monorepo with different standards. Frontend team owns `apps/web` and `apps/mobile`, backend team owns `packages/api` and `services/*`, and platform team owns `packages/shared`. Each team needs their own rules while sharing base standards.
 
@@ -952,7 +956,7 @@ exporters:
 
 **Keywords:** frontend and backend, web app and API, client and server, separate concerns, full-stack monorepo
 
-### Microservices Architecture
+### Microservices architecture
 
 **Problem:** Your monorepo contains multiple microservices: `services/auth` (authentication), `services/payments` (payment processing), `services/notifications` (email/SMS), and `services/analytics` (data analytics). Each service needs service-specific rules while sharing base standards.
 
