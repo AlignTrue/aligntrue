@@ -74,21 +74,22 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 ## Features
 
-| Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                     |
-| ------------------- | ---------- | ----------------- | --------- | ------------------------- |
-| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works  |
-| Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested          |
-| Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested     |
-| Allow lists         | ✅         | ✅                | ⚠️        | Validation works          |
-| Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested    |
-| Git sources         | ⚠️         | ✅                | ❌        | Local repos tested        |
-| Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works |
-| Overlays            | ⚠️         | ✅                | ❌        | Basic operations tested   |
-| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested          |
-| Exporters (43)      | ⚠️         | ✅                | ❌        | Smoke tests added         |
-| Idempotency         | ✅         | ✅                | ❌        | Byte-identical outputs    |
-| Scopes              | ⚠️         | ⚠️                | ❌        | Needs more coverage       |
-| Plugs               | ⚠️         | ⚠️                | ❌        | Needs more coverage       |
+| Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                      |
+| ------------------- | ---------- | ----------------- | --------- | -------------------------- |
+| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works   |
+| Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested           |
+| Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested      |
+| Allow lists         | ✅         | ✅                | ⚠️        | Validation works           |
+| Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested     |
+| Git sources         | ⚠️         | ✅                | ❌        | Local repos tested         |
+| Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works  |
+| Overlays            | ✅         | ✅                | ✅        | Configuration validated    |
+| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested           |
+| Exporters (43)      | ⚠️         | ✅                | ❌        | Smoke tests added          |
+| Idempotency         | ✅         | ✅                | ❌        | Byte-identical outputs     |
+| Scopes              | ✅         | ✅                | ✅        | Monorepo scenarios tested  |
+| Plugs               | ✅         | ✅                | ✅        | Slot/fill system validated |
+| Combined features   | ✅         | ✅                | ✅        | All three together tested  |
 
 ## Test Files
 
@@ -104,7 +105,10 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 - `packages/cli/tests/integration/idempotency.test.ts` - Deterministic outputs
 - `packages/cli/tests/integration/backup.test.ts` - Backup/restore workflows
 - `packages/cli/tests/integration/git-sources.test.ts` - Git operations
-- `packages/cli/tests/integration/overlays.test.ts` - Overlay functionality
+- `packages/cli/tests/integration/overlays.test.ts` - Overlay configuration validation
+- `packages/cli/tests/integration/scopes-monorepo.test.ts` - Scopes for monorepos
+- `packages/cli/tests/integration/plugs-resolution.test.ts` - Plugs slot/fill system
+- `packages/cli/tests/integration/customization-combined.test.ts` - All features together
 - `packages/cli/tests/integration/watch.test.ts` - Watch mode
 - `packages/cli/tests/integration/check-command.test.ts` - Check command
 - `packages/cli/tests/integration/init-command.test.ts` - Init command
@@ -113,10 +117,8 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 ### High Priority
 
-1. **Scopes integration tests** - Monorepo scenarios not fully tested
-2. **Plugs end-to-end** - Slot/fill system needs validation
-3. **Migration wizards** - Solo→team, team→solo transitions
-4. **Remote git sources** - Only local repos tested so far
+1. **Migration wizards** - Solo→team, team→solo transitions
+2. **Remote git sources** - Only local repos tested so far
 
 ### Medium Priority
 

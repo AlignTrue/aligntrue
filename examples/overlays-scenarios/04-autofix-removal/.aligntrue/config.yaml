@@ -1,0 +1,24 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: "autofix-pack.yaml"
+
+overlays:
+  overrides:
+    - selector: "rule[id=prefer-const]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=no-var]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=arrow-body-style]"
+      remove: ["autofix"]
+
+    - selector: "rule[id=prefer-template]"
+      remove: ["autofix"]
+
+exporters:
+  - agents-md
+  - cursor
