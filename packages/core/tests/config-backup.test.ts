@@ -27,40 +27,78 @@ describe("Config - Backup Configuration", () => {
     const config = await loadConfig(configPath);
 
     expect(config.backup).toBeDefined();
-    expect(config.backup?.auto_backup).toBe(true);
     expect(config.backup?.keep_count).toBe(20);
-    expect(config.backup?.backup_on).toEqual(["sync", "import"]);
   });
 
-  it("should accept custom backup configuration", async () => {
+  it("should accept custom keep_count", async () => {
     const yaml = `
 mode: solo
 exporters: [cursor]
 backup:
-  auto_backup: true
-  keep_count: 20
-  backup_on: [sync, restore]
+  keep_count: 30
 `;
     writeFileSync(configPath, yaml, "utf-8");
 
     const config = await loadConfig(configPath);
 
-    expect(config.backup?.auto_backup).toBe(true);
-    expect(config.backup?.keep_count).toBe(20);
-    expect(config.backup?.backup_on).toEqual(["sync", "restore"]);
+    expect(config.backup?.keep_count).toBe(30);
   });
 
-  it("should validate backup_on enum values", async () => {
+  it("should reject keep_count below minimum of 10", async () => {
     const yaml = `
 mode: solo
 exporters: [cursor]
 backup:
-  backup_on: [sync, restore, import]
+  keep_count: 5
+`;
+    writeFileSync(configPath, yaml, "utf-8");
+
+    // Schema validation should reject invalid keep_count
+    await expect(loadConfig(configPath)).rejects.toThrow(
+      /backup\.keep_count: must be >= 10/,
+    );
+  });
+
+  it("should reject keep_count above maximum of 100", async () => {
+    const yaml = `
+mode: solo
+exporters: [cursor]
+backup:
+  keep_count: 150
+`;
+    writeFileSync(configPath, yaml, "utf-8");
+
+    // Schema validation should reject invalid keep_count
+    await expect(loadConfig(configPath)).rejects.toThrow(
+      /backup\.keep_count: must be <= 100/,
+    );
+  });
+
+  it("should accept keep_count at minimum boundary (10)", async () => {
+    const yaml = `
+mode: solo
+exporters: [cursor]
+backup:
+  keep_count: 10
 `;
     writeFileSync(configPath, yaml, "utf-8");
 
     const config = await loadConfig(configPath);
 
-    expect(config.backup?.backup_on).toEqual(["sync", "restore", "import"]);
+    expect(config.backup?.keep_count).toBe(10);
+  });
+
+  it("should accept keep_count at maximum boundary (100)", async () => {
+    const yaml = `
+mode: solo
+exporters: [cursor]
+backup:
+  keep_count: 100
+`;
+    writeFileSync(configPath, yaml, "utf-8");
+
+    const config = await loadConfig(configPath);
+
+    expect(config.backup?.keep_count).toBe(100);
   });
 });

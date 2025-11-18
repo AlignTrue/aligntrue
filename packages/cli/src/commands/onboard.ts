@@ -500,7 +500,10 @@ export async function onboard(args: string[]): Promise<void> {
         message: `Resolve ${plugsInfo.unresolvedCount} unresolved plug${plugsInfo.unresolvedCount > 1 ? "s" : ""}`,
         details: plugsInfo.unresolvedKeys
           .slice(0, 5)
-          .map((key) => `  - ${key}: Run 'aligntrue plugs set ${key} <value>'`),
+          .map(
+            (key) =>
+              `  - ${key}: Add fill in .aligntrue/.rules.yaml or pack YAML`,
+          ),
         command: "aligntrue plugs list",
       });
     }

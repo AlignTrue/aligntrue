@@ -109,12 +109,7 @@ export class AgentsExporter extends ExporterBase {
     );
 
     // Write file atomically if not dry-run
-    const filesWritten = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options.backupOptions,
-    );
+    const filesWritten = await this.writeFile(outputPath, content, dryRun);
 
     const exportResult = this.buildResult(filesWritten, contentHash, [
       ...warnings,

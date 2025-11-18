@@ -63,7 +63,9 @@ async function main() {
 
     console.log("Basic Commands:");
     console.log("  init           Initialize AlignTrue in current directory");
-    console.log("  sync           Sync rules to agents");
+    console.log(
+      "  sync           Sync rules to agents (always backs up first)",
+    );
     console.log("  watch          Watch files and auto-sync on changes");
     console.log("  check          Validate rules and configuration\n");
     console.log("Diagnostics:");
@@ -98,7 +100,7 @@ async function main() {
       "  plugs          Manage plug slots and fills (list, resolve, validate)\n",
     );
 
-    console.log("Settings:");
+    console.log("Safety & Settings:");
     console.log("  config         View or edit configuration (show, edit)");
     console.log(
       "  backup         Manage backups (create, list, restore, cleanup)",
@@ -171,11 +173,19 @@ main().catch((err) => {
     process.exit(err.exitCode);
   }
 
-  // Handle unknown errors
+  // Handle unknown errors - only show stack trace in debug mode
   console.error("\n✗ Fatal error:", err.message);
-  if (err.stack) {
+
+  // Show stack trace only if DEBUG or VERBOSE env var is set
+  const showStackTrace =
+    process.env["DEBUG"] === "1" ||
+    process.env["VERBOSE"] === "1" ||
+    process.env["ALIGNTRUE_DEBUG"] === "1";
+  if (showStackTrace && err.stack) {
     console.error("\nStack trace:");
     console.error(err.stack);
+  } else if (err.stack) {
+    console.error("\nRun with DEBUG=1 for full stack trace");
   }
   console.error("");
   process.exit(1);

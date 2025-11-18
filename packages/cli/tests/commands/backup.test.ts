@@ -115,16 +115,16 @@ describe("backup command", () => {
 
   describe("cleanup subcommand", () => {
     it("should cleanup old backups", async () => {
-      // Create 5 backups
-      for (let i = 0; i < 5; i++) {
+      // Create 15 backups
+      for (let i = 0; i < 15; i++) {
         BackupManager.createBackup({ cwd: testDir });
-        if (i < 4) await new Promise((resolve) => setTimeout(resolve, 5));
+        if (i < 14) await new Promise((resolve) => setTimeout(resolve, 5));
       }
 
-      await backupCommand(["cleanup", "--keep", "3"]);
+      await backupCommand(["cleanup", "--keep", "10"]);
 
       const backups = BackupManager.listBackups(testDir);
-      expect(backups).toHaveLength(3);
+      expect(backups).toHaveLength(10);
     });
 
     it("should use default keep count", async () => {
