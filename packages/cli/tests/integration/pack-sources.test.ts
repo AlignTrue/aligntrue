@@ -36,7 +36,7 @@ sources:
     path: debugging.md
 exporters:
   - cursor
-  - agents-md
+  - agents
 sync:
   edit_source:
     - AGENTS.md

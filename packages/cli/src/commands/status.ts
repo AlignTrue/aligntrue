@@ -16,6 +16,10 @@ import {
   getAgentDisplayName,
 } from "../utils/detect-agents.js";
 import {
+  normalizeEditSources,
+  type EditSourceSummary,
+} from "../utils/edit-source.js";
+import {
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
@@ -45,11 +49,6 @@ interface ExporterStatus {
   name: string;
   displayName: string;
   detected: boolean;
-}
-
-interface EditSourceSummary {
-  raw: string;
-  label: string;
 }
 
 interface StatusSummary {
@@ -274,7 +273,7 @@ function renderStatus(summary: StatusSummary): void {
       .map((e) => e.displayName)
       .join(", ");
     clack.log.info(
-      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue adapters enable <name>'`,
+      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue adapters enable <name>'\n  → View all adapters: aligntrue adapters list\n  → Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters`,
     );
   }
 
@@ -375,37 +374,4 @@ function formatRelativeTimestamp(timestamp: number): string {
   }
 
   return "some time ago";
-}
-
-/**
- * Normalize edit_source to an array with friendly labels
- */
-function normalizeEditSources(
-  editSource: string | string[] | undefined,
-): EditSourceSummary[] {
-  if (!editSource || (Array.isArray(editSource) && editSource.length === 0)) {
-    return [{ raw: "AGENTS.md", label: "AGENTS.md" }];
-  }
-
-  const sources = Array.isArray(editSource) ? editSource : [editSource];
-  return sources.map((raw) => ({
-    raw,
-    label: formatEditSourceLabel(raw),
-  }));
-}
-
-/**
- * Human-friendly label for edit sources
- */
-function formatEditSourceLabel(raw: string): string {
-  if (raw === "any_agent_file") {
-    return "Any agent file (two-way sync)";
-  }
-  if (raw === ".rules.yaml" || raw === ".aligntrue/.rules.yaml") {
-    return ".aligntrue/.rules.yaml (internal IR)";
-  }
-  if (raw === ".cursor/rules/*.mdc") {
-    return "Cursor .mdc files (.cursor/rules/*.mdc)";
-  }
-  return raw;
 }

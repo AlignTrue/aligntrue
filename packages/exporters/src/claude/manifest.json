@@ -1,0 +1,13 @@
+{
+  "name": "claude",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Claude-specific CLAUDE.md format",
+  "outputs": ["CLAUDE.md"],
+  "handler": "./index.js",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Machine-checkable rules (check) not represented in CLAUDE.md format",
+    "Autofix hints not represented in CLAUDE.md format",
+    "Vendor metadata preserved but not extracted to Claude format"
+  ]
+}

@@ -282,7 +282,7 @@ aligntrue adapters list
 
 # Enable missing exporters
 aligntrue adapters enable cursor
-aligntrue adapters enable agents-md
+aligntrue adapters enable agents
 
 # Sync again
 aligntrue sync

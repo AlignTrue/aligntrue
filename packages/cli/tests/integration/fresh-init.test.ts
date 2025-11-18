@@ -159,7 +159,7 @@ Example test rule with valid 3-segment ID.
     execSync(`mkdir -p "${join(testDir, ".aligntrue")}"`);
     require("fs").writeFileSync(
       join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\n  - agents-md\n",
+      "exporters:\n  - cursor\n  - agents\n",
     );
 
     // Run import with --write

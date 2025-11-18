@@ -114,7 +114,7 @@ describe("sync command - detection scenarios", () => {
     // Update config with ignored agents
     writeFileSync(
       join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - agents-md\n",
+      "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - agents\n",
     );
 
     // Create AGENTS.md (should be ignored)

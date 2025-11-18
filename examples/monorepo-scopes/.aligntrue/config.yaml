@@ -7,7 +7,7 @@ sources:
 
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 sync:
   workflow_mode: "ir_source"

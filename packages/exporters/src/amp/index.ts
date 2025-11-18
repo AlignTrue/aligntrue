@@ -2,7 +2,7 @@
  * Amp exporter (uses AGENTS.md format)
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
+import { AgentsExporter } from "../agents/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
@@ -11,13 +11,13 @@ import type {
 } from "@aligntrue/plugin-contracts";
 
 /**
- * Amp exporter - wraps AgentsMdExporter with amp-specific metadata
+ * Amp exporter - wraps AgentsExporter with amp-specific metadata
  */
 export class AmpExporter implements ExporterPlugin {
   name = "amp";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new AgentsExporter();
 
   async export(
     request: ScopedExportRequest,

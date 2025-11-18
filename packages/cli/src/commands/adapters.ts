@@ -20,6 +20,9 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
+import { normalizeEditSources } from "../utils/edit-source.js";
+
+const CONFIG_PATH = ".aligntrue/config.yaml";
 
 // Import AdapterManifest type from exporters package
 type AdapterManifest = {
@@ -74,7 +77,7 @@ export async function adapters(args: string[]): Promise<void> {
         "aligntrue adapters list",
         "aligntrue adapters enable --interactive  # Recommended for new users",
         "aligntrue adapters enable cursor",
-        "aligntrue adapters enable cursor claude-md vscode-mcp",
+        "aligntrue adapters enable cursor claude vscode-mcp",
         "aligntrue adapters disable cursor",
         "aligntrue adapters detect",
         "aligntrue adapters ignore windsurf",
@@ -134,17 +137,15 @@ async function discoverAndCategorize(): Promise<{
   adapters: AdapterInfo[];
   config: AlignTrueConfig;
 }> {
-  const configPath = ".aligntrue/config.yaml";
-
   // Check if config exists
-  if (!existsSync(configPath)) {
+  if (!existsSync(CONFIG_PATH)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
     process.exit(1);
   }
 
   // Load config (using utility for consistent error handling)
-  const config = await tryLoadConfig(configPath);
+  const config = await tryLoadConfig(CONFIG_PATH);
 
   // Discover adapters
   const registry = new ExporterRegistry();
@@ -256,6 +257,14 @@ async function listAdapters(): Promise<void> {
   if (invalidCount > 0) {
     console.log(`  ❌ Invalid: ${invalidCount}`);
   }
+
+  console.log("\nNeed another agent?");
+  console.log(
+    "  View all supported adapters: https://aligntrue.ai/docs/04-reference/agent-support",
+  );
+  console.log(
+    "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
+  );
 }
 
 /**
@@ -339,6 +348,9 @@ async function enableAdapters(
     if (notFound.length > 0) {
       console.error(`✗ Adapter(s) not found: ${notFound.join(", ")}`);
       console.error("  Run: aligntrue adapters list");
+      console.error(
+        "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
+      );
       process.exit(1);
     }
 
@@ -414,6 +426,22 @@ async function enableAdapters(
   } else {
     console.log(
       `✓ Enabled ${addedCount} adapter(s): ${adaptersToEnable.join(", ")}`,
+    );
+  }
+
+  try {
+    const refreshedConfig = await tryLoadConfig(CONFIG_PATH);
+    const editSources = normalizeEditSources(refreshedConfig.sync?.edit_source);
+    const editSourceLabels = editSources.map((src) => src.label).join(", ");
+
+    console.log(`\nEdit sources: ${editSourceLabels} (auto-configured)`);
+    console.log("\nTo view all settings:  aligntrue status");
+    console.log(
+      "To customize sources:  aligntrue config set sync.edit_source <pattern>",
+    );
+  } catch {
+    console.log(
+      "\nTip: Run 'aligntrue status' to view and manage edit sources.",
     );
   }
 

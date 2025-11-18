@@ -23,7 +23,7 @@ cat .aligntrue/config.yaml
 You'll see multiple exporters:
 
 - `cursor` - Cursor IDE
-- `agents-md` - Universal format (Copilot, Claude Code, Aider)
+- `agents` - Universal format (Copilot, Claude Code, Aider)
 - `github-copilot` - GitHub Copilot specific
 - `vscode-mcp` - VS Code MCP config
 
@@ -209,7 +209,7 @@ aligntrue config get exporters
 ### Add new exporter
 
 ```bash
-aligntrue config set exporters.4 windsurf-md
+aligntrue config set exporters.4 windsurf
 ```
 
 ## Workflow

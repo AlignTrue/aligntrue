@@ -2,7 +2,7 @@
  * Jules exporter (uses AGENTS.md format)
  */
 
-import { AgentsMdExporter } from "../agents-md/index.js";
+import { AgentsExporter } from "../agents/index.js";
 import type {
   ExporterPlugin,
   ScopedExportRequest,
@@ -11,13 +11,13 @@ import type {
 } from "@aligntrue/plugin-contracts";
 
 /**
- * Jules exporter - wraps AgentsMdExporter with jules-specific metadata
+ * Jules exporter - wraps AgentsExporter with jules-specific metadata
  */
 export class JulesExporter implements ExporterPlugin {
   name = "jules";
   version = "1.0.0";
 
-  private delegate = new AgentsMdExporter();
+  private delegate = new AgentsExporter();
 
   async export(
     request: ScopedExportRequest,

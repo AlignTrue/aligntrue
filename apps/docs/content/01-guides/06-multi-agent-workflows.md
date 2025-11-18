@@ -39,13 +39,13 @@ sources:
 
 exporters:
   - cursor # Cursor IDE
-  - agents-md # GitHub Copilot, Claude Code, Aider
+  - agents # GitHub Copilot, Claude Code, Aider
   - copilot # GitHub Copilot specific format
-  - claude-md # Claude Code specific format
-  - windsurf-md # Windsurf
+  - claude # Claude Code specific format
+  - windsurf # Windsurf
 
 sync:
-  primary_agent: "agents-md" # Use AGENTS.md as source
+  primary_agent: "agents" # Use AGENTS.md as source
   auto_pull: false # Disable for multi-agent
 ```
 
@@ -113,8 +113,8 @@ sources:
 exporters:
   - cursor # Primary editor
   - copilot # Code suggestions
-  - claude-md # Code review
-  - agents-md # Universal fallback
+  - claude # Code review
+  - agents # Universal fallback
 
 sync:
   primary_agent: "cursor"
@@ -140,12 +140,12 @@ sources:
 
 exporters:
   - vscode-mcp # VS Code MCP config
-  - agents-md # Universal format
+  - agents # Universal format
   - copilot # GitHub Copilot
   - cline # Cline extension
 
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: false
 
 git:
@@ -167,7 +167,7 @@ sources:
     path: .aligntrue/.rules.yaml
 
 exporters:
-  - agents-md # Universal format only
+  - agents # Universal format only
 
 sync:
   workflow_mode: "native_format"
@@ -202,7 +202,7 @@ Edit `AGENTS.md` or any agent file as your source. Review changes before syncing
 
 ```yaml
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: false # Important: disable for multi-agent
 ```
 

@@ -47,7 +47,7 @@ git:
   mode: ignore
 exporters:
   - cursor
-  - agents-md
+  - agents
 sources:
   - type: local
     path: .aligntrue/.rules.yaml
@@ -58,7 +58,7 @@ sources:
     expect(config.mode).toBe("solo");
     expect(config.version).toBe("1");
     expect(config.modules?.lockfile).toBe(false);
-    expect(config.exporters).toEqual(["cursor", "agents-md"]);
+    expect(config.exporters).toEqual(["cursor", "agents"]);
   });
 
   it("loads valid team config", async () => {
@@ -88,7 +88,7 @@ mode: solo
     const config = await loadConfig(configPath);
     expect(config.version).toBe("1");
     expect(config.mode).toBe("solo");
-    expect(config.exporters).toEqual(["cursor", "agents-md"]); // default
+    expect(config.exporters).toEqual(["cursor", "agents"]); // default
   });
 
   it("applies solo defaults correctly", async () => {
@@ -106,7 +106,7 @@ mode: solo
     expect(config.modules?.checks).toBe(true);
     expect(config.modules?.mcp).toBe(false);
     expect(config.git?.mode).toBe("ignore");
-    expect(config.exporters).toEqual(["cursor", "agents-md"]);
+    expect(config.exporters).toEqual(["cursor", "agents"]);
     expect(config.sources).toHaveLength(1);
     expect(config.sources![0].type).toBe("local");
   });
@@ -261,7 +261,7 @@ git:
     cursor: ignore
 exporters:
   - cursor
-  - agents-md
+  - agents
 sources:
   - type: local
     path: .aligntrue/.rules.yaml
@@ -358,7 +358,7 @@ describe("Default Application", () => {
     expect(withDefaults.modules?.bundle).toBe(false);
     expect(withDefaults.modules?.checks).toBe(true);
     expect(withDefaults.git?.mode).toBe("ignore");
-    expect(withDefaults.exporters).toEqual(["cursor", "agents-md"]);
+    expect(withDefaults.exporters).toEqual(["cursor", "agents"]);
   });
 
   it("team mode overrides lockfile/bundle", () => {
@@ -387,7 +387,7 @@ describe("Default Application", () => {
     expect(withDefaults.exporters).toEqual(["cursor"]); // user value preserved
   });
 
-  it("empty exporters gets default [cursor, agents-md]", () => {
+  it("empty exporters gets default [cursor, agents]", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "solo",
@@ -395,7 +395,7 @@ describe("Default Application", () => {
     };
 
     const withDefaults = applyDefaults(config);
-    expect(withDefaults.exporters).toEqual(["cursor", "agents-md"]);
+    expect(withDefaults.exporters).toEqual(["cursor", "agents"]);
   });
 
   it("empty sources gets default local source", () => {
@@ -608,7 +608,7 @@ mode: solo
     );
 
     const config = await loadConfig(configPath);
-    expect(config.exporters).toEqual(["cursor", "agents-md"]);
+    expect(config.exporters).toEqual(["cursor", "agents"]);
   });
 
   it("config with explicit null fields", async () => {
@@ -858,7 +858,7 @@ describe("Config Saving", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "solo",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
     };
 
     await saveConfig(config, configPath);
@@ -867,7 +867,7 @@ describe("Config Saving", () => {
     const content = readFileSync(configPath, "utf-8");
     expect(content).toContain("version");
     expect(content).toContain("cursor");
-    expect(content).toContain("agents-md");
+    expect(content).toContain("agents");
   });
 
   it("creates directory if not exists", async () => {
@@ -898,13 +898,13 @@ describe("Config Saving", () => {
     const config2: AlignTrueConfig = {
       version: "1",
       mode: "team",
-      exporters: ["agents-md"],
+      exporters: ["agents"],
     };
     await saveConfig(config2, configPath);
 
     const content = readFileSync(configPath, "utf-8");
     expect(content).toContain("team");
-    expect(content).toContain("agents-md");
+    expect(content).toContain("agents");
     expect(content).not.toContain("cursor");
   });
 
@@ -918,7 +918,7 @@ describe("Config Saving", () => {
         bundle: false,
         checks: true,
       },
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
     };
 
@@ -928,7 +928,7 @@ describe("Config Saving", () => {
     const loaded = await loadConfig(configPath);
     expect(loaded.mode).toBe("solo");
     expect(loaded.exporters).toContain("cursor");
-    expect(loaded.exporters).toContain("agents-md");
+    expect(loaded.exporters).toContain("agents");
   });
 
   it("uses default path if not specified", async () => {
@@ -975,7 +975,7 @@ version: "1"
 mode: solo
 exporters:
   - cursor
-  - agents-md
+  - agents
 export:
   mode_hints:
     default: metadata_only
@@ -1009,8 +1009,8 @@ export:
       },
     };
 
-    expect(getModeHints("agents-md", config)).toBe("hints");
-    expect(getModeHints("claude-md", config)).toBe("hints");
+    expect(getModeHints("agents", config)).toBe("hints");
+    expect(getModeHints("claude", config)).toBe("hints");
   });
 
   it("getModeHints applies per-exporter overrides", () => {
@@ -1021,16 +1021,16 @@ export:
         mode_hints: {
           default: "metadata_only",
           overrides: {
-            "agents-md": "hints",
-            "claude-md": "off",
+            agents: "hints",
+            claude: "off",
           },
         },
       },
     };
 
-    expect(getModeHints("agents-md", config)).toBe("hints");
-    expect(getModeHints("claude-md", config)).toBe("off");
-    expect(getModeHints("warp-md", config)).toBe("metadata_only");
+    expect(getModeHints("agents", config)).toBe("hints");
+    expect(getModeHints("claude", config)).toBe("off");
+    expect(getModeHints("warp", config)).toBe("metadata_only");
   });
 
   it("getModeHints forces native for cursor exporter", () => {
@@ -1073,8 +1073,8 @@ export:
       mode: "solo",
     };
 
-    expect(getModeHints("agents-md", config)).toBe("metadata_only");
-    expect(getModeHints("claude-md", config)).toBe("metadata_only");
+    expect(getModeHints("agents", config)).toBe("metadata_only");
+    expect(getModeHints("claude", config)).toBe("metadata_only");
   });
 
   it("config preserves unknown fields in export section (pre-1.0)", async () => {

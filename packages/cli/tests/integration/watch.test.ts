@@ -47,7 +47,7 @@ describe.skip("Watch Mode Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -101,7 +101,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 
@@ -169,7 +169,7 @@ sections:
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
       `exporters:
-  - agents-md
+  - agents
 sync:
   watch_debounce: 1000
 `,
@@ -234,7 +234,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
-      `exporters:\n  - agents-md\n`,
+      `exporters:\n  - agents\n`,
       "utf-8",
     );
 

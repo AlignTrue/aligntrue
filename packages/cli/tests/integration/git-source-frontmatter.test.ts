@@ -41,7 +41,7 @@ describe("Git source with YAML frontmatter", () => {
           path: "packs/testing.md",
         },
       ],
-      exporters: ["agents-md"],
+      exporters: ["agents"],
     };
 
     writeFileSync(".aligntrue/config.yaml", stringifyYaml(config), "utf-8");
@@ -95,7 +95,7 @@ Content here.
           path: "test-pack.md",
         },
       ],
-      exporters: ["agents-md"],
+      exporters: ["agents"],
     };
 
     writeFileSync(".aligntrue/config.yaml", stringifyYaml(config), "utf-8");

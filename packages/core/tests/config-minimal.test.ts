@@ -40,7 +40,7 @@ describe("saveMinimalConfig", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "solo",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       modules: {
         lockfile: false,
         bundle: false,
@@ -75,7 +75,7 @@ describe("saveMinimalConfig", () => {
     const parsed = yaml.parse(written);
 
     expect(parsed).toEqual({
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
     });
 
     // Verify no other fields present
@@ -97,7 +97,7 @@ describe("saveMinimalConfig", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "team",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       modules: {
         lockfile: true,
         bundle: true,
@@ -132,7 +132,7 @@ describe("saveMinimalConfig", () => {
 
     // Team mode should be preserved (not default)
     expect(parsed.mode).toBe("team");
-    expect(parsed.exporters).toEqual(["cursor", "agents-md"]);
+    expect(parsed.exporters).toEqual(["cursor", "agents"]);
   });
 
   it("preserves non-default module values", async () => {
@@ -261,7 +261,7 @@ describe("saveMinimalConfig", () => {
     const originalConfig: AlignTrueConfig = {
       version: "1",
       mode: "solo",
-      exporters: ["cursor", "agents-md", "claude-md"],
+      exporters: ["cursor", "agents", "claude"],
       modules: {
         lockfile: false,
         bundle: false,
@@ -312,7 +312,7 @@ describe("saveMinimalConfig", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "team",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       modules: {
         lockfile: true,
         bundle: true,
@@ -348,7 +348,7 @@ describe("saveMinimalConfig", () => {
     // All fields should be present in full save
     expect(parsed.version).toBe("1");
     expect(parsed.mode).toBe("team");
-    expect(parsed.exporters).toEqual(["cursor", "agents-md"]);
+    expect(parsed.exporters).toEqual(["cursor", "agents"]);
     expect(parsed.modules).toEqual({
       lockfile: true,
       bundle: true,

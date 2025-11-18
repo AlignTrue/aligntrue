@@ -1,0 +1,12 @@
+{
+  "name": "windsurf",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to AGENTS.md format (Windsurf compatible)",
+  "outputs": ["AGENTS.md"],
+  "handler": "./index.js",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Uses universal AGENTS.md format",
+    "Windsurf also uses .windsurf/mcp_config.json (separate exporter)"
+  ]
+}

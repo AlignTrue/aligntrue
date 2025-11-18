@@ -1,6 +1,6 @@
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 sync:
   source_files: "rules/*.md"

@@ -7,7 +7,7 @@ sources:
 
 exporters:
   - cursor
-  - agents-md
+  - agents
   - github-copilot
   - vscode-mcp
 

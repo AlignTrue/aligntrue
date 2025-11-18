@@ -46,7 +46,7 @@ When you run `aligntrue init`, AlignTrue automatically configures these values b
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: true
 ```
 
@@ -71,7 +71,7 @@ sync:
 ```yaml
 # .aligntrue/config.yaml
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: false
 backup:
   auto_backup: true
@@ -149,7 +149,7 @@ aligntrue init
 aligntrue init
 # No existing rules detected
 # Creates AGENTS.md starter template
-# Sets primary_agent: agents-md
+# Sets primary_agent: agents
 # Enables auto_pull
 ```
 
@@ -183,7 +183,7 @@ Edit `.aligntrue/config.yaml`:
 ```yaml
 sync:
   # Primary agent to pull from during auto-pull
-  primary_agent: "agents-md" # Use AGENTS.md as source
+  primary_agent: "agents" # Use AGENTS.md as source
   # or "cursor"               # Use Cursor files as source
   auto_pull: true # Enable automatic syncing
   # Set auto_pull: false for Manual Review workflow
@@ -195,7 +195,7 @@ You can change at any time:
 
 ```bash
 # Switch primary agent
-aligntrue config set sync.primary_agent agents-md
+aligntrue config set sync.primary_agent agents
 
 # Enable auto-pull (AGENTS.md Primary)
 aligntrue config set sync.auto_pull true
@@ -212,7 +212,7 @@ aligntrue config set sync.auto_pull false
 
 ```yaml
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: false # Manual control
 ```
 
@@ -243,7 +243,7 @@ backup:
 
 ```yaml
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: true # Automatic sync
 ```
 
@@ -299,7 +299,7 @@ Conflicts happen when you edit different agent files between syncs:
 
 ```
 ⚠ Sync complete with auto-pull
-  - Updated from primary agent (agents-md)
+  - Updated from primary agent (agents)
   - Synced to all other agents
 ```
 
@@ -341,7 +341,7 @@ Configuration for teams:
 ```yaml
 mode: team
 sync:
-  primary_agent: "agents-md"
+  primary_agent: "agents"
   auto_pull: false
   backup:
     auto_backup: true
@@ -442,7 +442,7 @@ detection:
   auto_enable: false # Auto-enable detected agents without prompting
   ignored_agents: # Agents to never prompt about
     - windsurf
-    - aider-md
+    - aider
 ```
 
 ### Use cases
@@ -497,12 +497,12 @@ $ aligntrue sync
 ? Would you like to enable Aider?
   > Never ask about this agent
 
-✓ Ignoring 1 agent(s): aider-md
+✓ Ignoring 1 agent(s): aider
 
 # Config updated:
 # detection:
 #   ignored_agents:
-#     - aider-md
+#     - aider
 ```
 
 **Manual detection:**

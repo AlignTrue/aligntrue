@@ -13,7 +13,7 @@ import { join } from "path";
 export const AGENT_PATTERNS: Record<string, string[]> = {
   // Core exporters
   cursor: [".cursor/rules/"], // Only detect if rules subdirectory exists
-  "agents-md": ["AGENTS.md"],
+  agents: ["AGENTS.md"],
   "vscode-mcp": [".vscode/mcp.json"], // Only detect if MCP config exists
 
   // MCP config exporters
@@ -26,10 +26,10 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   "roocode-mcp": [".roo/mcp.json"], // Only detect if MCP config exists
 
   // Markdown format exporters
-  "claude-md": ["CLAUDE.md"],
-  "crush-md": ["CRUSH.md"],
-  "warp-md": ["WARP.md"],
-  "gemini-md": ["GEMINI.md"],
+  claude: ["CLAUDE.md"],
+  crush: ["CRUSH.md"],
+  warp: ["WARP.md"],
+  gemini: ["GEMINI.md"],
   // Note: agents that share AGENTS.md are intentionally not auto-detected
   // Users must explicitly enable them if needed
 
@@ -66,7 +66,7 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
  */
 const AGENT_DISPLAY_NAMES: Record<string, string> = {
   cursor: "Cursor",
-  "agents-md": "Universal AGENTS.md",
+  agents: "Universal AGENTS.md",
   "vscode-mcp": "VS Code MCP",
   "cursor-mcp": "Cursor MCP",
   "root-mcp": "Root MCP (Claude Code, Aider)",
@@ -75,21 +75,21 @@ const AGENT_DISPLAY_NAMES: Record<string, string> = {
   "firebase-mcp": "Firebase Studio MCP",
   "kilocode-mcp": "Kilocode MCP",
   "roocode-mcp": "Roo Code MCP",
-  "claude-md": "Claude (CLAUDE.md)",
-  "crush-md": "Crush (CRUSH.md)",
-  "warp-md": "Warp (WARP.md)",
-  "gemini-md": "Gemini (GEMINI.md)",
+  claude: "Claude (CLAUDE.md)",
+  crush: "Crush (CRUSH.md)",
+  warp: "Warp (WARP.md)",
+  gemini: "Gemini (GEMINI.md)",
   copilot: "GitHub Copilot",
   jules: "Jules",
   amp: "Amp",
   "openai-codex": "OpenAI Codex",
-  "windsurf-md": "Windsurf",
-  "aider-md": "Aider",
+  windsurf: "Windsurf",
+  aider: "Aider",
   "gemini-cli": "Gemini CLI",
   "qwen-code": "Qwen Code",
-  "roocode-md": "Roo Code",
-  "zed-md": "Zed",
-  "opencode-md": "Open Code",
+  roocode: "Roo Code",
+  zed: "Zed",
+  opencode: "Open Code",
   cline: "Cline",
   goose: "Goose",
   firebender: "Firebender",
@@ -268,7 +268,7 @@ export function recommendEditSource(
   }
 
   // Priority 2: AGENTS.md (universal standard)
-  if (detectedAgents.includes("agents-md")) {
+  if (detectedAgents.includes("agents")) {
     return {
       default: "AGENTS.md",
       alternatives: [
@@ -293,7 +293,7 @@ export function recommendEditSource(
 
   // Priority 3: Other single-file agents
   const singleFileAgents = detectedAgents.filter((a) =>
-    ["claude-md", "crush-md", "warp-md", "gemini-md"].includes(a),
+    ["claude", "crush", "warp", "gemini"].includes(a),
   );
   if (singleFileAgents.length > 0) {
     const firstAgent = singleFileAgents[0]!;

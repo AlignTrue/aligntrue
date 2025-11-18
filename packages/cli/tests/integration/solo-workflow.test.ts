@@ -44,7 +44,7 @@ describe("Solo Workflow Integration", () => {
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       writeFileSync(
         configPath,
-        "exporters:\n  - cursor\n  - agents-md\n",
+        "exporters:\n  - cursor\n  - agents\n",
         "utf-8",
       );
 
@@ -165,7 +165,7 @@ Rule guidance here
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
       writeFileSync(
         configPath,
-        "exporters:\n  - cursor\n  - agents-md\n",
+        "exporters:\n  - cursor\n  - agents\n",
         "utf-8",
       );
 

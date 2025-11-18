@@ -213,7 +213,7 @@ sources:
     // Verify agent file drift was detected
     expect(output).toContain("AGENT FILE DRIFT");
     expect(output).toContain("AGENTS.md modified after last sync");
-    expect(output).toContain("aligntrue sync --accept-agent agents-md");
+    expect(output).toContain("aligntrue sync --accept-agent agents");
   });
 
   it("exits with code 2 when --gates flag used and drift detected", async () => {

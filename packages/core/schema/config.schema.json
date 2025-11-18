@@ -263,7 +263,7 @@
     },
     "exporters": {
       "type": "array",
-      "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents-md')",
+      "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents')",
       "items": {
         "type": "string",
         "minLength": 1

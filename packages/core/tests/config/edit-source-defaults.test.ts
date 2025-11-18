@@ -30,10 +30,10 @@ describe("edit_source defaults", () => {
     expect(result.sync?.edit_source).toBe(".cursor/rules/*.mdc");
   });
 
-  it("should set single pattern for single exporter (agents-md)", () => {
+  it("should set single pattern for single exporter (agents)", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
-      exporters: ["agents-md"],
+      exporters: ["agents"],
     };
 
     const result = applyDefaults(config as AlignTrueConfig);
@@ -44,7 +44,7 @@ describe("edit_source defaults", () => {
   it("should set array of patterns for multiple exporters", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
     };
 
     const result = applyDefaults(config as AlignTrueConfig);
@@ -59,7 +59,7 @@ describe("edit_source defaults", () => {
   it("should include all patterns for three exporters", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
-      exporters: ["cursor", "agents-md", "copilot"],
+      exporters: ["cursor", "agents", "copilot"],
     };
 
     const result = applyDefaults(config as AlignTrueConfig);
@@ -75,7 +75,7 @@ describe("edit_source defaults", () => {
   it("should deduplicate patterns if multiple exporters use same pattern", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
-      exporters: ["agents-md", "agents-md"], // duplicate
+      exporters: ["agents", "agents"], // duplicate
     };
 
     const result = applyDefaults(config as AlignTrueConfig);
@@ -86,7 +86,7 @@ describe("edit_source defaults", () => {
   it("should not override explicitly set edit_source", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
-      exporters: ["cursor", "agents-md"],
+      exporters: ["cursor", "agents"],
       sync: {
         edit_source: "any_agent_file",
       },

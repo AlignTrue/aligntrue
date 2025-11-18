@@ -69,7 +69,7 @@ describe("adapters command", () => {
     vi.clearAllMocks();
   });
 
-  const createConfig = (exporters: string[] = ["cursor", "agents-md"]) => {
+  const createConfig = (exporters: string[] = ["cursor", "agents"]) => {
     mkdirSync(".aligntrue", { recursive: true });
     const _config = {
       version: "1",
@@ -107,7 +107,7 @@ describe("adapters command", () => {
 
   describe("list subcommand", () => {
     it("lists adapters with status", async () => {
-      createConfig(["cursor", "agents-md", "invalid-adapter"]);
+      createConfig(["cursor", "agents", "invalid-adapter"]);
 
       try {
         await adapters(["list"]);
@@ -152,11 +152,11 @@ describe("adapters command", () => {
     it("enables a single adapter", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "agents-md"]);
+      await adapters(["enable", "agents"]);
 
       // Verify config updated
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
-      expect(config).toContain("agents-md");
+      expect(config).toContain("agents");
     });
 
     it("shows friendly message if already enabled", async () => {
@@ -189,31 +189,31 @@ describe("adapters command", () => {
     it("enables multiple adapters with multiple arguments", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "agents-md", "claude-md", "vscode-mcp"]);
+      await adapters(["enable", "agents", "claude", "vscode-mcp"]);
 
       // Verify all three adapters were added to config
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
-      expect(config).toContain("agents-md");
-      expect(config).toContain("claude-md");
+      expect(config).toContain("agents");
+      expect(config).toContain("claude");
       expect(config).toContain("vscode-mcp");
       expect(config).toContain("cursor"); // original should still be there
     });
 
     it("handles mix of enabled and new adapters in multiple args", async () => {
-      createConfig(["cursor", "agents-md"]);
+      createConfig(["cursor", "agents"]);
 
-      await adapters(["enable", "agents-md", "claude-md"]);
+      await adapters(["enable", "agents", "claude"]);
 
       // Verify new adapter added, existing preserved
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
-      expect(config).toContain("agents-md");
-      expect(config).toContain("claude-md");
+      expect(config).toContain("agents");
+      expect(config).toContain("claude");
     });
 
     it("shows all already enabled message for multiple args", async () => {
-      createConfig(["cursor", "agents-md", "claude-md"]);
+      createConfig(["cursor", "agents", "claude"]);
 
-      await adapters(["enable", "cursor", "agents-md"]);
+      await adapters(["enable", "cursor", "agents"]);
 
       // Should show message about all being enabled
       expect(console.log).toHaveBeenCalledWith(
@@ -225,7 +225,7 @@ describe("adapters command", () => {
       createConfig(["cursor"]);
 
       await expect(
-        adapters(["enable", "agents-md", "nonexistent", "claude-md"]),
+        adapters(["enable", "agents", "nonexistent", "claude"]),
       ).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
 
@@ -244,16 +244,16 @@ describe("adapters command", () => {
       // Mock multiselect to return multiple selections
       vi.mocked(clack.multiselect).mockResolvedValue([
         "cursor",
-        "agents-md",
-        "claude-md",
+        "agents",
+        "claude",
       ]);
 
       await adapters(["enable", "--interactive"]);
 
       // Verify config updated
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
-      expect(config).toContain("agents-md");
-      expect(config).toContain("claude-md");
+      expect(config).toContain("agents");
+      expect(config).toContain("claude");
     });
 
     it("handles cancelled interactive selection", async () => {
@@ -270,10 +270,10 @@ describe("adapters command", () => {
     });
 
     it("shows no changes message if selections unchanged", async () => {
-      createConfig(["cursor", "agents-md"]);
+      createConfig(["cursor", "agents"]);
 
       // Mock multiselect to return same selections
-      vi.mocked(clack.multiselect).mockResolvedValue(["cursor", "agents-md"]);
+      vi.mocked(clack.multiselect).mockResolvedValue(["cursor", "agents"]);
 
       await adapters(["enable", "--interactive"]);
 
@@ -287,7 +287,7 @@ describe("adapters command", () => {
       createConfig(["cursor"]);
 
       await adapters(["enable", "zed-config"]);
-      await adapters(["enable", "agents-md"]);
+      await adapters(["enable", "agents"]);
 
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
       const lines = config.split("\n");
@@ -296,21 +296,21 @@ describe("adapters command", () => {
         .slice(exportersIndex + 1)
         .filter((l) => l.trim().startsWith("- "));
 
-      // Should be sorted: agents-md, cursor, zed-config
-      expect(exportersList[0]).toContain("agents-md");
+      // Should be sorted: agents, cursor, zed-config
+      expect(exportersList[0]).toContain("agents");
       expect(exportersList[1]).toContain("cursor");
     });
   });
 
   describe("disable subcommand", () => {
     it("disables an adapter", async () => {
-      createConfig(["cursor", "agents-md"]);
+      createConfig(["cursor", "agents"]);
 
       await adapters(["disable", "cursor"]);
 
       // Verify config updated - check exporters list specifically
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
-      expect(config).toContain("agents-md");
+      expect(config).toContain("agents");
       // Verify cursor is not in the exporters list (may appear in primary_agent)
       const exportersSection = config.split("exporters:")[1]?.split("\n")[1];
       expect(exportersSection).not.toContain("cursor");
@@ -319,7 +319,7 @@ describe("adapters command", () => {
     it("shows error if adapter not enabled", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["disable", "agents-md"])).rejects.toThrow(
+      await expect(adapters(["disable", "agents"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
@@ -368,7 +368,7 @@ describe("adapters command", () => {
     });
 
     it("shows message when no new agents", async () => {
-      createConfig(["cursor", "agents-md"]);
+      createConfig(["cursor", "agents"]);
 
       // Create agent files that are already enabled
       mkdirSync(join(tempDir, ".cursor"), { recursive: true });

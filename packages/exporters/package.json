@@ -13,9 +13,9 @@
       "types": "./dist/cursor/index.d.ts",
       "default": "./dist/cursor/index.js"
     },
-    "./agents-md": {
-      "types": "./dist/agents-md/index.d.ts",
-      "default": "./dist/agents-md/index.js"
+    "./agents": {
+      "types": "./dist/agents/index.d.ts",
+      "default": "./dist/agents/index.js"
     },
     "./vscode-mcp": {
       "types": "./dist/vscode-mcp/index.d.ts",

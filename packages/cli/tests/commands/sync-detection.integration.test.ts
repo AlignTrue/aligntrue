@@ -76,19 +76,19 @@ sections:
       // Expected to exit
     }
 
-    // Config should be updated with agents-md
+    // Config should be updated with agents
     const config = readFileSync(
       join(testDir, ".aligntrue/config.yaml"),
       "utf-8",
     );
-    expect(config).toContain("agents-md");
+    expect(config).toContain("agents");
   });
 
   it("persists ignored agents across syncs", async () => {
     // Add ignored agent to config
     writeFileSync(
       join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - agents-md\n",
+      "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - agents\n",
     );
 
     // Create AGENTS.md (should be ignored)
@@ -106,9 +106,9 @@ sections:
       "utf-8",
     );
     expect(config).toContain("ignored_agents:");
-    expect(config).toContain("- agents-md");
+    expect(config).toContain("- agents");
 
-    // Should not have added agents-md to exporters
+    // Should not have added agents to exporters
     const lines = config.split("\n");
     const exportersIndex = lines.findIndex((l) => l.includes("exporters:"));
     const nextSectionIndex = lines.findIndex(
@@ -117,7 +117,7 @@ sections:
     const exportersSection = lines
       .slice(exportersIndex, nextSectionIndex)
       .join("\n");
-    expect(exportersSection).not.toContain("agents-md");
+    expect(exportersSection).not.toContain("agents");
   });
 
   it("skips detection in dry-run mode", async () => {
@@ -161,7 +161,7 @@ sections:
       // Expected to exit
     }
 
-    // With auto_enable, agents-md should be added even in dry-run false scenario
+    // With auto_enable, agents should be added even in dry-run false scenario
     // (but dry-run prevents writes, so this tests the logic path)
     expect(true).toBe(true);
   });
@@ -184,8 +184,8 @@ sections:
       join(testDir, ".aligntrue/config.yaml"),
       "utf-8",
     );
-    expect(config).toContain("agents-md");
+    expect(config).toContain("agents");
     expect(config).toContain("vscode-mcp");
-    expect(config).toContain("claude-md");
+    expect(config).toContain("claude");
   });
 });

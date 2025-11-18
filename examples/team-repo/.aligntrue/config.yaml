@@ -19,7 +19,7 @@ sources:
 # Export to Cursor and AGENTS.md
 exporters:
   - cursor
-  - agents-md
+  - agents
 
 # Hierarchical scopes for monorepo
 scopes:

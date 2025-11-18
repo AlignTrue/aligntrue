@@ -299,7 +299,7 @@ describe("Telemetry Collector", () => {
       recordEvent(
         {
           command_name: "sync",
-          export_target: "cursor,agents-md",
+          export_target: "cursor,agents",
           align_hashes_used: [],
         },
         TEST_STATE_FILE,
@@ -308,7 +308,7 @@ describe("Telemetry Collector", () => {
 
       const content = readFileSync(TEST_EVENTS_FILE, "utf-8");
       const events = JSON.parse(content);
-      expect(events[0].export_target).toBe("cursor,agents-md");
+      expect(events[0].export_target).toBe("cursor,agents");
     });
 
     it("includes align_hashes_used array", () => {
@@ -546,7 +546,7 @@ describe("Telemetry Collector", () => {
         recordEvent(
           {
             command_name: "sync",
-            export_target: "cursor,agents-md,vscode-mcp",
+            export_target: "cursor,agents,vscode-mcp",
             align_hashes_used: [],
           },
           TEST_STATE_FILE,
