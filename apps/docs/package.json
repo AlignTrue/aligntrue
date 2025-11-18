@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
-    "postbuild": "pagefind --site out --output-path out/_pagefind || true",
+    "clean": "rm -rf .next out",
+    "build": "pnpm clean && next build",
+    "postbuild": "pagefind --site out --output-path out/_pagefind && cp -r out/_pagefind public/ || true",
     "start": "next start -p 3000",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -9,11 +9,6 @@ const config = {
   docsRepositoryBase:
     "https://github.com/AlignTrue/aligntrue/tree/main/apps/docs",
 
-  // Search configuration
-  search: {
-    placeholder: "Search documentation...",
-  },
-
   // Table of contents configuration
   toc: {
     backToTop: true,
