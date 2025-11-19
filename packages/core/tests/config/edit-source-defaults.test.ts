@@ -8,7 +8,7 @@ import { applyDefaults } from "../../src/config/index.js";
 import type { AlignTrueConfig } from "../../src/config/index.js";
 
 describe("edit_source defaults", () => {
-  it("should default to AGENTS.md when no exporters configured", () => {
+  it("should leave edit_source undefined when no exporters configured", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
       exporters: [],
@@ -16,7 +16,8 @@ describe("edit_source defaults", () => {
 
     const result = applyDefaults(config as AlignTrueConfig);
 
-    expect(result.sync?.edit_source).toBe("AGENTS.md");
+    // No special fallback - all exporters are equal (see bd83ece)
+    expect(result.sync?.edit_source).toBeUndefined();
   });
 
   it("should set single pattern for single exporter (cursor)", () => {

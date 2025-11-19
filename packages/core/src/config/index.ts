@@ -431,14 +431,15 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * Team/enterprise: auto (disabled, git history is backup)
    */
   /**
-   * Set source file defaults
+   * source_files intentionally has NO default
    *
-   * Derive from edit_source if available, otherwise leave undefined.
-   * No special fallback - all exporters are equal.
+   * edit_source and source_files are separate concepts:
+   * - edit_source: which files accept edits (for two-way sync detection)
+   * - source_files: where to load rules FROM (multi-file source organization)
+   *
+   * When source_files is undefined, loadIR reads .rules.yaml directly, preserving its ID.
+   * Only set source_files explicitly when using multi-file source organization.
    */
-  if (result.sync.source_files === undefined && result.sync.edit_source) {
-    result.sync.source_files = result.sync.edit_source;
-  }
 
   /**
    * Solo mode: Auto-pull ENABLED by default
