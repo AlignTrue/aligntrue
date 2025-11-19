@@ -90,8 +90,7 @@ describeSkipWindows("Init Command Integration", () => {
       const configContent = readFileSync(configPath, "utf-8");
       const config = yaml.parse(configContent);
 
-      expect(config.exporters).toContain("cursor");
-      expect(config.exporters).toContain("agents");
+      expect(config.exporters).toEqual(["agents"]);
     });
 
     it("respects --exporters flag", async () => {
