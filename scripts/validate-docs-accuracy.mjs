@@ -305,6 +305,96 @@ function validateNoPerformanceMarketingClaims() {
 }
 
 /**
+ * Validate platform coverage documentation matches CI configuration
+ */
+function validatePlatformCoverage() {
+  logSection("Validating platform coverage documentation");
+
+  // Read CI workflow to extract actual platform matrix
+  const ciWorkflowPath = join(rootDir, ".github/workflows/ci.yml");
+  const ciContent = readFileSync(ciWorkflowPath, "utf8");
+
+  console.log(`Source of truth: .github/workflows/ci.yml\n`);
+
+  // Extract platforms from matrix.include
+  const platformMatches = ciContent.match(/- os: ([\w-]+)/g);
+  const platforms = platformMatches
+    ? [...new Set(platformMatches.map((m) => m.replace("- os: ", "")))]
+    : [];
+
+  // Extract Node versions from matrix.include
+  const nodeMatches = ciContent.match(/node: ["'](\d+)["']/g);
+  const nodeVersions = nodeMatches
+    ? [...new Set(nodeMatches.map((m) => m.match(/\d+/)[0]))]
+    : [];
+
+  console.log(`Platforms found: ${platforms.join(", ")}`);
+  console.log(`Node versions found: ${nodeVersions.join(", ")}\n`);
+
+  // Check ci-failures.md documents all platforms
+  const ciFailuresPath = join(
+    rootDir,
+    "apps/docs/content/08-development/ci-failures.md",
+  );
+  const ciFailuresContent = readFileSync(ciFailuresPath, "utf8");
+
+  const wrongFiles = [];
+
+  // Check for platform mentions
+  const expectedPlatforms = {
+    "ubuntu-latest": ["Ubuntu", "Linux"],
+    "macos-latest": ["macOS", "Mac"],
+    "windows-latest": ["Windows"],
+  };
+
+  for (const platform of platforms) {
+    const aliases = expectedPlatforms[platform] || [platform];
+    const hasMention = aliases.some((alias) =>
+      ciFailuresContent.includes(alias),
+    );
+
+    if (!hasMention) {
+      wrongFiles.push({
+        file: "apps/docs/content/08-development/ci-failures.md",
+        issue: `Missing documentation for platform: ${platform}`,
+      });
+    }
+  }
+
+  // Check for Node version mentions in platform coverage section
+  for (const version of nodeVersions) {
+    const hasNodeMention = ciFailuresContent.includes(`Node ${version}`);
+    if (!hasNodeMention) {
+      wrongFiles.push({
+        file: "apps/docs/content/08-development/ci-failures.md",
+        issue: `Missing documentation for Node version: ${version}`,
+      });
+    }
+  }
+
+  // Check that platform coverage section exists
+  if (!ciFailuresContent.includes("### Platform coverage")) {
+    wrongFiles.push({
+      file: "apps/docs/content/08-development/ci-failures.md",
+      issue: "Missing '### Platform coverage' section",
+    });
+  }
+
+  if (wrongFiles.length > 0) {
+    const issues = wrongFiles.map((f) => f.issue).join(", ");
+    logError("Platform coverage documentation incomplete", {
+      expected: `All platforms (${platforms.join(", ")}) and Node versions (${nodeVersions.join(", ")}) documented`,
+      actual: issues,
+      files: [...new Set(wrongFiles.map((f) => f.file))],
+    });
+  } else {
+    logSuccess(
+      `Platform coverage documentation is accurate: ${platforms.length} platforms, ${nodeVersions.length} Node versions`,
+    );
+  }
+}
+
+/**
  * Main validation runner
  */
 function main() {
@@ -317,6 +407,7 @@ function main() {
   validateCommandCount();
   validateExporterCount();
   validateNoPerformanceMarketingClaims();
+  validatePlatformCoverage();
 
   // Summary
   console.log(`\n${colors.bold}Summary${colors.reset}`);
