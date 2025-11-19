@@ -113,6 +113,7 @@ export interface AlignTrueConfig {
     watch_files?: string[]; // Files/patterns to watch
     source_files?: string | string[]; // Source file patterns for rules (default: 'AGENTS.md')
     source_order?: string[]; // Custom ordering of source files by basename
+    source_markers?: "auto" | "always" | "never"; // Control source file markers in concatenated outputs (default: "auto")
   };
   managed?: {
     files?: string[]; // Full file paths to protect

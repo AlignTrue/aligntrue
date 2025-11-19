@@ -92,6 +92,7 @@ export class CursorExporter extends ExporterBase {
         mergeResult.mergedSections,
         options.unresolvedPlugsCount,
         managedSections,
+        options.config, // Pass config for source markers
       );
       const contentHash = computeContentHash({
         scope,
@@ -167,21 +168,32 @@ export class CursorExporter extends ExporterBase {
     sections: AlignSection[],
     unresolvedPlugs?: number,
     managedSections: string[] = [],
+    config?: unknown,
   ): string {
     // Extract Cursor-specific metadata from first section's vendor bag
     const frontmatter = this.generateFrontmatterFromSections(scope, sections);
 
-    // Render sections with team-managed markers
-    const sectionsMarkdown = this.renderSectionsWithManaged(
-      sections,
-      false,
-      managedSections,
-    );
+    // Generate sections with source markers
+    let sectionsContent = "";
+    for (const section of sections) {
+      // Add source marker before section
+      const marker = this.generateSourceMarker(section, config);
+      if (marker) {
+        sectionsContent += `${marker}\n`;
+      }
+
+      // Render the section with team-managed markers
+      sectionsContent += this.renderSectionsWithManaged(
+        [section],
+        false,
+        managedSections,
+      );
+    }
 
     // No footer - keep files clean
     // Fidelity notes will be shown in CLI output instead
 
-    return `${frontmatter}\n${sectionsMarkdown}`;
+    return `${frontmatter}\n${sectionsContent}`;
   }
 
   /**
