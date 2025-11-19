@@ -242,7 +242,7 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     const config = await loadConfig(undefined, cwd);
     const detectedAgents = detectAgents(cwd);
 
-    let recommendedDir = ".aligntrue/rules";
+    let recommendedDir: string;
     let recommendation = "";
 
     // Context-aware recommendation
