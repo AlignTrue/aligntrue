@@ -64,9 +64,9 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 ### Implementation
 
 - `packages/schema/src/canonicalize.ts` contains JCS canonicalization logic
-- `packages/core/src/lockfile.ts` calls canonicalize when generating locks
+- `packages/core/src/lockfile/index.ts` (and its helpers) call canonicalize when generating locks
 - Exporters do NOT canonicalize; they work with IR directly
-- All hashing uses `packages/schema/src/hashing.ts`
+- Canonical hashing is exposed via `computeHash` in `packages/schema/src/canonicalize.ts`, and plug-specific workflows live in `packages/core/src/plugs/hashing.ts`
 
 ## Package architecture
 
@@ -75,12 +75,12 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 Keep these modules consolidated and deterministic:
 
 - `packages/schema/src/canonicalize.ts` – YAML → canonical JSON (JCS)
-- `packages/schema/src/hashing.ts` – SHA-256 integrity hashing
+- `packages/core/src/plugs/hashing.ts` – SHA-256 integrity hashing built on `computeHash` from schema
 - `packages/schema/src/validator.ts` – IR validation with Ajv strict mode
-- `packages/core/src/config.ts` – Config parsing and validation
-- `packages/core/src/sync.ts` – Two-way sync engine (IR ↔ agents)
+- `packages/core/src/config/` – Config parsing and validation
+- `packages/core/src/sync/` – Two-way sync engine (IR ↔ agents)
 - `packages/core/src/bundle.ts` – Dependency merge + precedence (team mode)
-- `packages/core/src/lockfile.ts` – Lockfile generation with canonical hashing
+- `packages/core/src/lockfile/` – Lockfile generation with canonical hashing
 - `packages/core/src/scope.ts` – Hierarchical scope resolution
 
 ### Adaptation layers (agent-specific)
@@ -143,7 +143,7 @@ Rules merge with precedence from most specific to least specific.
 
 ## Exporters
 
-AlignTrue includes 43 exporters supporting 28+ agents:
+AlignTrue includes 44 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks this against `packages/exporters/src`.
 
 ### Categories
 
