@@ -12,7 +12,6 @@ import {
   formatFileSizeWarning,
   formatFileSizeWarnings,
   countLines,
-  DEFAULT_THRESHOLDS,
   type FileSizeThresholds,
 } from "../../src/utils/file-size-detector.js";
 

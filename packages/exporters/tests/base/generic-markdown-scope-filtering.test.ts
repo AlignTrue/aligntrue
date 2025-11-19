@@ -79,12 +79,6 @@ describe("GenericMarkdownExporter Scope Filtering", () => {
       isDefault: true,
     };
 
-    const request: ScopedExportRequest = {
-      scope,
-      pack,
-      outputPath: TEST_OUTPUT_DIR,
-    };
-
     const options: ExportOptions = {
       outputDir: TEST_OUTPUT_DIR,
       dryRun: false,
