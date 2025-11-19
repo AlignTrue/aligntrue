@@ -1,136 +1,240 @@
 ---
 title: Multi-file rule organization
-description: Organize rules across multiple markdown files for better maintainability
+description: Organize rules across multiple files for better maintainability in large projects and teams
 ---
 
 # Multi-file rule organization
 
-Instead of maintaining all rules in a single `AGENTS.md` file, AlignTrue supports organizing rules across multiple markdown files. This is especially useful for large projects with many rules or teams where different people own different rule categories.
+As your rule set grows, organizing rules across multiple files makes them easier to manage, navigate, and collaborate on. This guide explains when and how to use multi-file organization.
 
-## Where do source files live?
+## Why use multiple files?
 
-**Important:** AlignTrue does NOT create a default directory for multi-file sources. You choose where to organize your files.
+**Multi-file organization is a user organizational feature.** It helps you manage large or complex rule sets by splitting them into logical categories.
 
-Common patterns:
+**Benefits:**
 
-- `rules/*.md` - Dedicated rules directory (most common)
-- `docs/rules/*.md` - Rules within documentation
-- `team-rules/*.md` - Team-specific naming
-- `.aligntrue/rules/*.md` - Keep rules with configuration
+- **Better organization**: Group related rules together (security, architecture, testing)
+- **Easier navigation**: Jump directly to the file you need instead of scrolling through one large file
+- **Reduced merge conflicts**: Multiple people can edit different files simultaneously
+- **Clear ownership**: Assign different files to different team members via CODEOWNERS
+- **Logical separation**: Keep concerns separate and focused
 
-**Example:** If you configure `source_files: "rules/*.md"`, you must create the `rules/` directory yourself:
+## When to use multiple files
 
-```bash
-mkdir rules
-echo "# Security Guidelines" > rules/security.md
-echo "# Coding Standards" > rules/coding-standards.md
+Consider multi-file organization when:
+
+1. **Your rule file exceeds 1000 lines** - Navigation becomes difficult
+2. **Multiple people edit rules** - Reduces merge conflicts and enables clear ownership
+3. **You have distinct rule categories** - Security, architecture, testing, etc. deserve separate files
+4. **You're using team mode** - Makes PR reviews easier with smaller, focused diffs
+5. **You have a monorepo** - Different scopes can have different rule files
+
+**For small projects (< 1000 lines, solo developer):** A single `AGENTS.md` file is simpler and perfectly fine.
+
+## Where to organize your files
+
+The location depends on your agent setup:
+
+### Single agent (Cursor only)
+
+If you only use Cursor, you can organize files in Cursor's native format:
+
+```
+project/
+├── .cursor/
+│   └── rules/
+│       ├── architecture.mdc
+│       ├── security.mdc
+│       └── testing.mdc
 ```
 
-AlignTrue will then discover and merge these files during sync.
-
-## Overview
-
-Multi-file organization allows you to:
-
-- Split rules into logical categories (e.g., `architecture.md`, `security.md`, `coding-standards.md`)
-- Reduce merge conflicts when multiple people edit rules
-- Make it easier to find and update specific rule types
-- Maintain clear ownership of different rule categories
-
-## Configuration
-
-Configure multi-file sources in `.aligntrue/config.yaml`:
+**Configuration:**
 
 ```yaml
 sync:
-  source_files: "rules/*.md" # Glob pattern for source files
-  source_order: # Optional: custom merge order
+  edit_source: ".cursor/rules/*.mdc"
+```
+
+**Why:** Uses Cursor's native multi-file format with full feature support.
+
+### Multiple agents
+
+If you use multiple agents (Cursor + Copilot + Claude), use a neutral location:
+
+```
+project/
+├── .aligntrue/
+│   ├── config.yaml
+│   └── rules/
+│       ├── architecture.md
+│       ├── security.md
+│       └── testing.md
+```
+
+**Configuration:**
+
+```yaml
+sync:
+  source_files: ".aligntrue/rules/*.md"
+```
+
+**Why:** AlignTrue exports to each agent's format (merged for single-file agents, split for multi-file agents).
+
+### Team mode
+
+For teams, use `.aligntrue/rules/` as the canonical source that goes through PR review:
+
+```
+project/
+├── .aligntrue/
+│   ├── config.yaml
+│   └── rules/
+│       ├── architecture.md
+│       ├── security.md
+│       └── testing.md
+├── AGENTS.md  (generated, read-only)
+└── .cursor/
+    └── rules/  (generated, read-only)
+```
+
+**Configuration:**
+
+```yaml
+mode: team
+sync:
+  source_files: ".aligntrue/rules/*.md"
+```
+
+**Why:** Single source of truth that goes through team review process.
+
+## Which agents support multi-file natively?
+
+AlignTrue adapts exports based on each agent's capabilities:
+
+### Native multi-file support
+
+These agents support multiple rule files in their native format:
+
+- **Cursor** - `.cursor/rules/*.mdc` (scope-based files)
+- **Amazon Q** - `.amazonq/rules/*.md`
+- **KiloCode** - `.kilocode/rules/*.md`
+- **Augment Code** - `.augment/rules/*.md`
+- **Kiro** - `.kiro/steering/*.md`
+- **Trae AI** - `.trae/rules/*.md`
+
+### Single-file only
+
+These agents use a single file format:
+
+- **AGENTS.md** - Universal format for multiple agents
+- **Claude** - `CLAUDE.md`
+- **Warp** - `WARP.md`
+- **Cline** - `.clinerules`
+- **Goose** - `.goosehints`
+- And most others
+
+### How AlignTrue handles the difference
+
+**You organize rules however you want.** AlignTrue automatically:
+
+- **For multi-file agents**: Exports separate files (e.g., `.cursor/rules/security.mdc`)
+- **For single-file agents**: Merges all your source files into one output (e.g., `AGENTS.md`)
+- **Preserves provenance**: Tracks which source file each section came from
+- **Adds source markers**: HTML comments show file boundaries in merged outputs
+
+## Setting up multi-file organization
+
+### Option 1: Split existing AGENTS.md
+
+If you already have a large `AGENTS.md` file:
+
+```bash
+# Interactive split (asks for confirmation and target directory)
+aligntrue sources split
+
+# Non-interactive (uses .aligntrue/rules/ by default)
+aligntrue sources split --yes
+```
+
+This command:
+
+1. Parses sections from `AGENTS.md`
+2. Creates a separate file for each section
+3. Updates config to use the new files
+4. Optionally backs up the original `AGENTS.md`
+
+### Option 2: Create files manually
+
+Create your directory structure:
+
+```bash
+# Create directory
+mkdir -p .aligntrue/rules
+
+# Create rule files
+echo "# Architecture Guidelines" > .aligntrue/rules/architecture.md
+echo "# Security Best Practices" > .aligntrue/rules/security.md
+echo "# Testing Standards" > .aligntrue/rules/testing.md
+```
+
+Update `.aligntrue/config.yaml`:
+
+```yaml
+sync:
+  source_files: ".aligntrue/rules/*.md"
+  source_order: # Optional: control merge order
     - architecture.md
     - security.md
-    - coding-standards.md
+    - testing.md
 ```
+
+Run sync:
+
+```bash
+aligntrue sync
+```
+
+## Configuration options
 
 ### Source file patterns
 
 The `source_files` field accepts various patterns:
 
-**Single file** (default):
+**All files in directory:**
 
 ```yaml
-sync:
-  source_files: "AGENTS.md"
-```
-
-**Glob pattern** (all `.md` files in directory):
-
-```yaml
-sync:
-  source_files: "rules/*.md"
-```
-
-**Recursive discovery** (includes subdirectories):
-
-```yaml
-sync:
-  source_files: "rules/**/*.md"
-```
-
-**Array of specific files**:
-
-```yaml
-sync:
-  source_files:
-    - "architecture.md"
-    - "security.md"
-    - "coding-standards.md"
-```
-
-**Multiple directories**:
-
-```yaml
-sync:
-  source_files:
-    - "rules/*.md"
-    - "docs/guidelines/*.md"
-```
-
-**Custom directory examples:**
-
-You're not limited to `rules/`—use any structure:
-
-```yaml
-# Within documentation
-sync:
-  source_files: "docs/rules/*.md"
-
-# Team-specific naming
-sync:
-  source_files: "team-rules/*.md"
-
-# With configuration
 sync:
   source_files: ".aligntrue/rules/*.md"
+```
 
-# Nested by category
+**Recursive (includes subdirectories):**
+
+```yaml
 sync:
-  source_files: "rules/**/*.md"
+  source_files: ".aligntrue/rules/**/*.md"
 ```
 
-Example nested structure:
+**Specific files:**
 
+```yaml
+sync:
+  source_files:
+    - ".aligntrue/rules/architecture.md"
+    - ".aligntrue/rules/security.md"
 ```
-rules/
-├── backend/
-│   ├── api-design.md
-│   └── database.md
-└── frontend/
-    ├── react.md
-    └── styling.md
+
+**Multiple directories:**
+
+```yaml
+sync:
+  source_files:
+    - ".aligntrue/rules/*.md"
+    - "docs/guidelines/*.md"
 ```
 
 ### Source order
 
-By default, files are merged alphabetically by basename. Use `source_order` to specify a custom order:
+By default, files merge alphabetically. Use `source_order` to control priority:
 
 ```yaml
 sync:
@@ -140,21 +244,20 @@ sync:
     - finally-this.md
 ```
 
-Files not listed in `source_order` are appended alphabetically at the end.
+Files not listed are appended alphabetically at the end.
 
 ### Source markers
 
-When using multiple source files, AlignTrue can add HTML comment markers to show which file each section came from:
+AlignTrue can add HTML comment markers showing which file each section came from:
 
 ```yaml
 sync:
-  source_files: "rules/*.md"
   source_markers: "auto" # auto (default), always, or never
 ```
 
 **Modes:**
 
-- `auto` (default): Show markers only when multiple source files are configured
+- `auto` (default): Show markers only when multiple source files configured
 - `always`: Always show markers, even for single-file sources
 - `never`: Never show markers
 
@@ -167,24 +270,49 @@ sync:
 
 ...
 
-<!-- aligntrue:source coding-standards.md -->
+<!-- aligntrue:source testing.md -->
 
-## Coding Standards
+## Testing Standards
 
 ...
 ```
 
-Markers are HTML comments, so they're invisible when rendered but visible in source. This helps with:
+## CLI commands
 
-- Tracing which file a section came from
-- Debugging multi-file setups
-- Understanding rule organization at a glance
+### List source files
+
+View all source files with section counts and sizes:
+
+```bash
+aligntrue sources list
+```
+
+Output:
+
+```
+Source patterns: .aligntrue/rules/*.md
+Custom order: architecture.md, security.md, testing.md
+
+Found 3 source files:
+
+  .aligntrue/rules/architecture.md (5 sections, 234 lines)
+  .aligntrue/rules/security.md (8 sections, 456 lines)
+  .aligntrue/rules/testing.md (6 sections, 189 lines)
+```
+
+### Split existing file
+
+Convert a single file into multiple files:
+
+```bash
+aligntrue sources split
+```
 
 ## How it works
 
 ### Discovery
 
-AlignTrue discovers source files using the configured patterns:
+AlignTrue discovers source files using configured patterns:
 
 1. Resolves glob patterns relative to workspace root
 2. Reads all matching markdown files
@@ -192,13 +320,28 @@ AlignTrue discovers source files using the configured patterns:
 
 ### Merging
 
-Source files are merged into a single internal representation:
+Source files merge into a single internal representation:
 
 1. Files are ordered (alphabetically or by `source_order`)
 2. Sections from each file are concatenated in order
 3. Each section tracks its source file for provenance
 
-### Provenance
+### Export adaptation
+
+AlignTrue exports differently based on agent capabilities:
+
+**For multi-file agents (Cursor, Amazon Q, etc.):**
+
+- Exports separate files preserving your organization
+- Each file becomes a separate agent file
+
+**For single-file agents (AGENTS.md, Claude, etc.):**
+
+- Merges all source files into one output
+- Adds source markers (HTML comments) to show boundaries
+- Includes fidelity note listing source files
+
+### Provenance tracking
 
 Every section includes metadata about its source file:
 
@@ -208,78 +351,20 @@ sections:
     content: "..."
     vendor:
       aligntrue:
-        source_file: "architecture.md" # Tracks origin
+        source_file: "architecture.md"
 ```
 
-This metadata helps with:
+This enables:
 
-- Debugging which file a section came from
 - Two-way sync (editing the right source file)
+- Debugging which file a section came from
 - Conflict resolution
 
-## CLI Commands
-
-### List source files
-
-View all configured source files and their section counts:
-
-```bash
-aligntrue sources list
-```
-
-Output:
-
-```
-Source patterns: rules/*.md
-Custom order: architecture.md, security.md, coding-standards.md
-
-Found 3 source files:
-
-  rules/architecture.md (5 sections)
-  rules/security.md (8 sections)
-  rules/coding-standards.md (6 sections)
-```
-
-### Split existing AGENTS.md
-
-Convert a single `AGENTS.md` file into multiple files:
-
-```bash
-# Interactive (prompts for confirmation and target directory)
-aligntrue sources split
-
-# Non-interactive
-aligntrue sources split --yes
-```
-
-This command:
-
-1. Parses sections from `AGENTS.md`
-2. Creates a separate file for each section
-3. Updates config to use the new files
-4. Optionally backs up the original `AGENTS.md`
-
-## Example project structure
-
-```
-project/
-├── .aligntrue/
-│   └── config.yaml
-├── rules/
-│   ├── architecture.md
-│   ├── security.md
-│   └── coding-standards.md
-├── .cursor/
-│   └── rules/
-│       └── combined.mdc  (generated)
-└── AGENTS.md  (generated)
-```
-
-## Two-Way Sync
+## Two-way sync
 
 Multi-file sources work seamlessly with two-way sync:
 
-1. **Edit any source file**: Make changes to `rules/security.md`
+1. **Edit any source file**: Make changes to `.aligntrue/rules/security.md`
 2. **Run sync**: `aligntrue sync`
 3. **Changes propagate**: Updates sync to all agent files
 
@@ -300,6 +385,37 @@ AlignTrue tracks which file each section came from, so edits to agent files can 
 - Be descriptive: `api-design-guidelines.md`
 - Avoid abbreviations unless well-known: `security.md` not `sec.md`
 
+### Organization strategies
+
+**By concern** (recommended):
+
+```
+.aligntrue/rules/
+├── architecture.md
+├── security.md
+├── testing.md
+└── documentation.md
+```
+
+**By technology:**
+
+```
+.aligntrue/rules/
+├── typescript.md
+├── react.md
+├── nodejs.md
+└── postgres.md
+```
+
+**By team:**
+
+```
+.aligntrue/rules/
+├── frontend-team.md
+├── backend-team.md
+└── devops-team.md
+```
+
 ### Team collaboration
 
 - **Assign ownership**: Use `CODEOWNERS` to assign file ownership
@@ -313,9 +429,9 @@ When migrating from single-file to multi-file:
 1. **Start small**: Split into 3-5 logical categories
 2. **Test thoroughly**: Run `aligntrue sync` and verify outputs
 3. **Update team docs**: Document the new structure
-4. **Keep backup**: Don't delete `AGENTS.md` immediately
+4. **Keep backup**: Don't delete original file immediately
 
-## Comparison with Single-File
+## Comparison with single-file
 
 | Aspect              | Single File (AGENTS.md)     | Multi-File                 |
 | ------------------- | --------------------------- | -------------------------- |
@@ -352,16 +468,26 @@ If you see "Section conflict" warnings:
 2. Rename one of the headings to make them unique
 3. Or merge the duplicate sections into one file
 
-## Related features
+### File too large warning
+
+If you see "Your file is large (>1000 lines)" during sync:
+
+```bash
+# Split the file into multiple files
+aligntrue sources split
+```
+
+## Related documentation
 
 - [Choosing your organization structure](/docs/01-guides/07-organization-structure) - Decision guide for simple, organized, or complex structures
-- [Two-Way Sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
+- [Agent support](/docs/04-reference/agent-support) - Which agents support multi-file natively
+- [Two-way sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
-- [Team Mode](/docs/01-guides/05-team-guide) - Lockfile validation and drift detection
+- [Team mode](/docs/01-guides/05-team-guide) - Lockfile validation and drift detection
 
 ## Example
 
-See the [multi-file-rules example](/examples/multi-file-rules) for a complete working example with:
+See the [multi-file-rules example](https://github.com/AlignTrue/aligntrue/tree/main/examples/multi-file-rules) for a complete working example with:
 
 - Multiple source files organized by concern
 - Custom merge order

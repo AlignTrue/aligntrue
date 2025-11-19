@@ -12,5 +12,6 @@ export type {
   ExportOptions,
   ExportResult,
   ExporterPlugin,
+  ExporterCapabilities,
   AdapterManifest,
 } from "@aligntrue/plugin-contracts";

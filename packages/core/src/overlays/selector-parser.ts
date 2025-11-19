@@ -10,6 +10,7 @@ import { ParsedSelector, SelectorType } from "./types.js";
  * Parse a selector string into structured components
  * Supported formats:
  * - rule[id=value] - Select rule by ID
+ * - sections[heading=value] - Select section by heading
  * - path.to.property - Select property by path
  * - array[0] - Select array element by index
  *
@@ -48,6 +49,31 @@ export function parseSelector(selector: string): ParsedSelector | null {
     return {
       type: "rule",
       ruleId,
+    };
+  }
+
+  // Try parsing as section heading selector: sections[heading=value] or sections[heading="value"]
+  const headingMatch = trimmed.match(/^sections\[heading=([^\]]+)\]$/);
+  if (headingMatch) {
+    let heading = headingMatch[1];
+    if (!heading) {
+      return null;
+    }
+
+    // Strip optional surrounding quotes (single or double)
+    if (
+      (heading.startsWith('"') && heading.endsWith('"')) ||
+      (heading.startsWith("'") && heading.endsWith("'"))
+    ) {
+      heading = heading.slice(1, -1);
+    }
+
+    if (heading.includes("*") || heading.includes("?")) {
+      return null; // No wildcards allowed
+    }
+    return {
+      type: "section_heading",
+      heading,
     };
   }
 
@@ -140,7 +166,7 @@ export function validateSelector(selector: string): {
     return {
       valid: false,
       error:
-        "Invalid selector syntax. Supported formats: rule[id=value], path.to.property, array[0]",
+        "Invalid selector syntax. Supported formats: rule[id=value], sections[heading=value], path.to.property, array[0]",
     };
   }
 
@@ -151,6 +177,19 @@ export function validateSelector(selector: string): {
     }
     if (parsed.ruleId.length > 200) {
       return { valid: false, error: "Rule ID exceeds maximum length of 200" };
+    }
+  }
+
+  // Additional validation for section heading selectors
+  if (parsed.type === "section_heading") {
+    if (!parsed.heading) {
+      return { valid: false, error: "Section heading cannot be empty" };
+    }
+    if (parsed.heading.length > 200) {
+      return {
+        valid: false,
+        error: "Section heading exceeds maximum length of 200",
+      };
     }
   }
 
@@ -208,6 +247,8 @@ export function normalizeSelector(selector: string): string {
   switch (parsed.type) {
     case "rule":
       return `rule[id=${parsed.ruleId}]`;
+    case "section_heading":
+      return `sections[heading=${parsed.heading}]`;
     case "array_index":
       return `${parsed.propertyPath!.join(".")}[${parsed.arrayIndex}]`;
     case "property":
@@ -220,7 +261,7 @@ export function normalizeSelector(selector: string): string {
 /**
  * Compare selectors for stable sorting
  * Sort order:
- * 1. By selector type (rule < property < array_index)
+ * 1. By selector type (rule < section_heading < property < array_index)
  * 2. By normalized selector string (lexicographic)
  *
  * @param a - First selector
@@ -236,11 +277,12 @@ export function compareSelectors(a: string, b: string): number {
     return a.localeCompare(b);
   }
 
-  // Define type order
+  // Define type order for stable sorting
   const typeOrder: Record<SelectorType, number> = {
     rule: 0,
-    property: 1,
-    array_index: 2,
+    section_heading: 1,
+    property: 2,
+    array_index: 3,
   };
 
   const typeA = typeOrder[parsedA.type];

@@ -91,15 +91,60 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
       return;
     }
 
-    // Display files with section counts
+    // Analyze file sizes
+    const { analyzeFiles, getLargeFiles } = await import(
+      "../utils/file-size-detector.js"
+    );
+
+    const filesToAnalyze = ordered.map((file) => ({
+      path: join(cwd, file.path),
+      relativePath: file.path,
+    }));
+
+    const analyses = analyzeFiles(filesToAnalyze);
+    const largeFiles = getLargeFiles(analyses);
+
+    // Display files with section counts and sizes
     clack.log.success(
       `Found ${ordered.length} source file${ordered.length !== 1 ? "s" : ""}:\n`,
     );
-    for (const file of ordered) {
+
+    for (let i = 0; i < ordered.length; i++) {
+      const file = ordered[i]!;
+      const analysis = analyses[i]!;
       const sectionCount = file.sections.length;
+
+      let icon = "  ";
+      if (analysis.severity === "urgent") {
+        icon = "⚠️ ";
+      } else if (analysis.severity === "warning") {
+        icon = "💡";
+      }
+
       console.log(
-        `  ${file.path} (${sectionCount} section${sectionCount !== 1 ? "s" : ""})`,
+        `  ${icon} ${file.path} (${sectionCount} section${sectionCount !== 1 ? "s" : ""}, ${analysis.lineCount} lines)`,
       );
+    }
+
+    // Show recommendations if there are large files
+    if (largeFiles.length > 0) {
+      console.log("");
+      clack.log.info("💡 Recommendations:");
+
+      for (const large of largeFiles) {
+        if (large.severity === "urgent") {
+          console.log(
+            `   ${large.relativePath}: File is very large (${large.lineCount} lines)`,
+          );
+        } else {
+          console.log(
+            `   ${large.relativePath}: File is getting large (${large.lineCount} lines)`,
+          );
+        }
+      }
+
+      console.log("\n   Consider splitting large files:");
+      console.log("   aligntrue sources split");
     }
 
     // Record telemetry
@@ -107,6 +152,7 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
       event: "sources_list",
       properties: {
         file_count: ordered.length,
+        large_file_count: largeFiles.length,
       },
     });
 
@@ -147,11 +193,35 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       return;
     }
 
-    // Show sections
-    clack.log.info(`Found ${parsed.sections.length} sections in AGENTS.md:\n`);
-    for (const section of parsed.sections) {
-      console.log(`  - ${section.heading}`);
+    // Analyze file size
+    const { analyzeFileSize } = await import("../utils/file-size-detector.js");
+    const analysis = analyzeFileSize(agentsMdPath, "AGENTS.md");
+
+    // Show file size info
+    clack.log.info(
+      `AGENTS.md: ${analysis.lineCount} lines, ${parsed.sections.length} sections\n`,
+    );
+
+    if (analysis.severity === "urgent") {
+      clack.log.warn(
+        `⚠️  File is very large (${analysis.lineCount} lines). Splitting is strongly recommended.`,
+      );
+    } else if (analysis.severity === "warning") {
+      clack.log.info(
+        `💡 File is getting large (${analysis.lineCount} lines). Splitting will help with maintainability.`,
+      );
     }
+
+    // Show sections preview
+    clack.log.info("Sections to split:\n");
+    const maxPreview = 10;
+    for (let i = 0; i < Math.min(parsed.sections.length, maxPreview); i++) {
+      console.log(`  - ${parsed.sections[i]!.heading}`);
+    }
+    if (parsed.sections.length > maxPreview) {
+      console.log(`  ... and ${parsed.sections.length - maxPreview} more`);
+    }
+    console.log("");
 
     // Ask for confirmation
     if (!yes) {
@@ -166,13 +236,45 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       }
     }
 
+    // Detect current agent setup and recommend directory
+    const { detectAgents } = await import("../utils/detect-agents.js");
+    const { loadConfig } = await import("@aligntrue/core");
+    const config = await loadConfig(undefined, cwd);
+    const detectedAgents = detectAgents(cwd);
+
+    let recommendedDir = ".aligntrue/rules";
+    let recommendation = "";
+
+    // Context-aware recommendation
+    if (config.mode === "team") {
+      recommendedDir = ".aligntrue/rules";
+      recommendation =
+        "Team mode: using .aligntrue/rules for PR review workflow";
+    } else if (
+      detectedAgents.detected.length === 1 &&
+      detectedAgents.detected.includes("cursor")
+    ) {
+      recommendedDir = ".aligntrue/rules";
+      recommendation =
+        "Single agent (Cursor): using .aligntrue/rules (you can also use .cursor/rules/*.mdc)";
+    } else if (detectedAgents.detected.length > 1) {
+      recommendedDir = ".aligntrue/rules";
+      recommendation =
+        "Multiple agents: using .aligntrue/rules as neutral source";
+    } else {
+      recommendedDir = ".aligntrue/rules";
+      recommendation = "Default: using .aligntrue/rules for organization";
+    }
+
     // Ask for target directory
-    let targetDir = "rules";
+    let targetDir = recommendedDir;
     if (!yes) {
+      clack.log.info(`💡 ${recommendation}\n`);
+
       const dirInput = await clack.text({
         message: "Target directory for split files?",
-        initialValue: "rules",
-        placeholder: "rules",
+        initialValue: recommendedDir,
+        placeholder: recommendedDir,
       });
 
       if (clack.isCancel(dirInput)) {
@@ -181,11 +283,52 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       }
 
       targetDir = dirInput as string;
+    } else {
+      clack.log.info(`Using recommended directory: ${recommendedDir}`);
     }
 
-    // Create target directory
+    // Generate file names preview
+    const filePreview: Array<{ filename: string; heading: string }> = [];
+    for (const section of parsed.sections) {
+      const filename = section.heading
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      filePreview.push({
+        filename: `${filename}.md`,
+        heading: section.heading,
+      });
+    }
+
+    // Show preview of files to be created
+    if (!yes) {
+      clack.log.info("\nFiles to be created:\n");
+      const maxFilePreview = 10;
+      for (let i = 0; i < Math.min(filePreview.length, maxFilePreview); i++) {
+        console.log(
+          `  ${targetDir}/${filePreview[i]!.filename} ← "${filePreview[i]!.heading}"`,
+        );
+      }
+      if (filePreview.length > maxFilePreview) {
+        console.log(`  ... and ${filePreview.length - maxFilePreview} more`);
+      }
+      console.log("");
+
+      const proceedConfirm = await clack.confirm({
+        message: "Proceed with file creation?",
+        initialValue: true,
+      });
+
+      if (clack.isCancel(proceedConfirm) || !proceedConfirm) {
+        clack.cancel("Split cancelled");
+        process.exit(0);
+      }
+    }
+
+    // Create target directory (auto-create, no manual step needed)
     const targetPath = join(cwd, targetDir);
     mkdirSync(targetPath, { recursive: true });
+    clack.log.success(`Created directory: ${targetDir}`);
 
     // Split sections into files
     const createdFiles: string[] = [];
@@ -202,14 +345,22 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       writeFileSync(filePath, fileContent, "utf-8");
       createdFiles.push(`${targetDir}/${basename(filePath)}`);
 
-      clack.log.success(`Created ${targetDir}/${basename(filePath)}`);
+      if (!yes) {
+        clack.log.success(`Created ${targetDir}/${basename(filePath)}`);
+      }
+    }
+
+    if (yes) {
+      clack.log.success(
+        `Created ${createdFiles.length} files in ${targetDir}/`,
+      );
     }
 
     // Update config
-    const config = await loadConfig(undefined, cwd);
-    config.sync = config.sync || {};
-    config.sync.source_files = `${targetDir}/*.md`;
-    await saveConfig(config, undefined, cwd);
+    const configToUpdate = await loadConfig(undefined, cwd);
+    configToUpdate.sync = configToUpdate.sync || {};
+    configToUpdate.sync.source_files = `${targetDir}/*.md`;
+    await saveConfig(configToUpdate, undefined, cwd);
 
     clack.log.success(
       `\nUpdated config: sync.source_files = "${targetDir}/*.md"`,

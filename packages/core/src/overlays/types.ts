@@ -7,7 +7,11 @@
  * Selector types for targeting rules in IR
  * Deterministic subset: no wildcards, no computed functions, no regex
  */
-export type SelectorType = "rule" | "property" | "array_index";
+export type SelectorType =
+  | "rule"
+  | "property"
+  | "array_index"
+  | "section_heading";
 
 /**
  * Parsed selector components
@@ -16,6 +20,8 @@ export interface ParsedSelector {
   type: SelectorType;
   /** For rule selectors: rule[id=value] */
   ruleId?: string;
+  /** For section heading selectors: sections[heading=value] */
+  heading?: string;
   /** For property selectors: path.to.property */
   propertyPath?: string[];
   /** For array selectors: array[0] */
