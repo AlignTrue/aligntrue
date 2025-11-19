@@ -180,7 +180,7 @@ sections:
         // Verify AGENTS.md was created with vendored content
         const agentsMd = readFileSync(join(TEST_DIR, "AGENTS.md"), "utf-8");
         expect(agentsMd).toContain("Vendored Section");
-      } catch (error: any) {
+      } catch {
         // If sync fails, it's likely due to missing config or other setup issue
         // This test is mainly checking vendored pack structure detection
         // which happens before sync, so we allow sync failures
@@ -274,7 +274,7 @@ sections:
         expect(
           agentsMd.includes("Pack B") || agentsMd.includes("Content B"),
         ).toBe(true);
-      } catch (error: any) {
+      } catch {
         // If sync fails, verify test setup was correct
         expect(
           existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/.rules.yaml")),

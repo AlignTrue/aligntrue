@@ -21,13 +21,9 @@ const GOLDEN_REPO_SOURCE = join(
 );
 
 let testProjectContext: TestProjectContext;
-let testDir: string;
 
 beforeEach(async () => {
   testProjectContext = setupTestProject();
-
-  // Create fresh test directory
-  testDir = testProjectContext.projectDir;
 
   // Ensure CLI is built within the test project
   // The comprehensive test runner builds the CLI once, so this is redundant.
