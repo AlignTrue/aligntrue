@@ -206,7 +206,20 @@ export default [
         // Don't use project for test files (they're excluded from tsconfig)
       },
     },
+    plugins: {
+      "unused-imports": unusedImports,
+    },
     rules: {
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "off", // Allow deprecated APIs in tests
     },
