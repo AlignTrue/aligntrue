@@ -310,9 +310,11 @@ export async function resolveAndMergeSources(
   }
 
   // Merge packs
+  // Always preserve IDs from existing packs, never use generic "merged-bundle"
+  // This ensures project IDs from init are preserved across sync operations
   const bundleResult = mergePacks(packs, {
     warnConflicts: options?.warnConflicts ?? true,
-    bundleId: "merged-bundle",
+    bundleId: packs[0]?.id || "bundle",
     bundleVersion: "1.0.0",
   });
 

@@ -243,10 +243,31 @@ describe("CursorExporter", () => {
       expect(result1.contentHash).toMatch(/^[a-f0-9]{64}$/);
     });
 
-    // DEPRECATED: Content hash footer test removed
-    // Footers have been removed from exported files
-    it.skip("includes content hash in footer", async () => {
-      // This test is skipped because footers have been removed
+    it("does not include content hash in exported files", async () => {
+      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
+      const request = createRequest(fixture.sections, createDefaultScope());
+      const options: ExportOptions = {
+        outputDir: TEST_OUTPUT_DIR,
+        dryRun: false,
+      };
+
+      const result = await exporter.export(request, options);
+
+      expect(result.success).toBe(true);
+      expect(result.contentHash).toBeTruthy();
+
+      // Verify content hash is NOT in the file
+      const outputPath = join(
+        TEST_OUTPUT_DIR,
+        ".cursor",
+        "rules",
+        "aligntrue.mdc",
+      );
+      const content = await import("fs").then((fs) =>
+        fs.promises.readFile(outputPath, "utf-8"),
+      );
+      expect(content).not.toContain("Content Hash");
+      expect(content).not.toContain(result.contentHash);
     });
   });
 
