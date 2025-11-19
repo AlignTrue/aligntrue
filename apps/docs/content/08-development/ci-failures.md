@@ -113,7 +113,60 @@ Runs on every push to `main` or `develop`. Comprehensive validation of entire wo
 5. Conformance testkit
 6. Golden repository validation
 
-**Time:** 3-5 minutes
+**Time:** 3-5 minutes per platform
+
+### Platform coverage
+
+CI runs on multiple platforms to catch platform-specific issues:
+
+- **Ubuntu (Linux)** - Primary platform, full test suite
+- **macOS** - Development platform, full test suite
+- **Windows** - Limited test coverage (see below)
+
+Additionally, CI tests multiple Node.js versions:
+
+- **Node 22** - Current LTS (all platforms)
+- **Node 20** - Previous LTS (Ubuntu only)
+
+### Windows test limitations
+
+**Current status:** 13 integration test suites skip on Windows due to persistent EBUSY file locking issues.
+
+**Affected tests:**
+
+- `init-command.test.ts`
+- `sync-command.test.ts`
+- `check-command.test.ts`
+- `overlays.test.ts`
+- `scopes-monorepo.test.ts`
+- `plugs-resolution.test.ts`
+- `customization-combined.test.ts`
+- `pack-sources.test.ts`
+- `override-add-command.test.ts`
+- `override-remove-command.test.ts`
+- `override-status-command.test.ts`
+- Plus 1 unit test in `core/tests/overlays/patch-writer.test.ts`
+
+**Root cause:** Windows file system locks files more aggressively than Unix-like systems, causing EBUSY errors when tests try to clean up temporary directories. The cleanup helper in `packages/cli/tests/helpers/fs-cleanup.ts` includes retry logic (6 retries on Windows vs 1 on Unix), but CI environment still experiences intermittent failures.
+
+**Impact:**
+
+- Core CLI commands (init, sync, check) are not integration tested on Windows in CI
+- Unit tests and smoke tests still run on Windows
+- Path normalization and cross-platform compatibility are validated via unit tests
+- Windows support is "best effort" - basic functionality works but edge cases may slip through
+
+**Workaround for local Windows testing:**
+
+- Run tests locally with longer timeouts
+- Use WSL2 for full test suite coverage
+- Report Windows-specific issues as bugs with reproduction steps
+
+**Future work:**
+
+- Investigate more robust cleanup strategies (rimraf, graceful-fs)
+- Add Windows-specific smoke tests that DO run in CI
+- Consider marking Windows as "community supported" if issues persist
 
 ## Common type error patterns
 

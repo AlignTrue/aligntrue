@@ -495,13 +495,14 @@ Volatile fields excluded from conflict detection and hashing.
 
 ## Cross-Platform Support
 
-AlignTrue is tested on both Linux and Windows via GitHub Actions CI matrix:
+AlignTrue is tested on Linux, macOS, and Windows via GitHub Actions CI matrix:
 
 - **Path normalization:** All paths normalized to forward slashes internally via `normalizePath()` helper
-- **Windows CI validation:** 165+ tests pass on both ubuntu-latest and windows-latest runners
+- **Multi-platform CI:** Full test suite runs on Ubuntu and macOS; Windows runs with limited integration test coverage due to file locking issues
 - **Deterministic behavior:** Same inputs produce same outputs on all platforms (canonical hashing, sorted keys)
 - **Atomic writes:** Temp+rename pattern works reliably on Windows NTFS and Unix filesystems
-- **CI workflow:** `.github/workflows/ci.yml` runs full test suite on both platforms
+- **CI workflow:** `.github/workflows/ci.yml` runs tests on ubuntu-latest, macos-latest, and windows-latest
+- **Node versions:** Tests run on Node 20 and 22 (Ubuntu), Node 22 only (macOS and Windows)
 
 Path normalization automatically handles:
 
