@@ -4,7 +4,13 @@
  */
 
 import * as clack from "@clack/prompts";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+} from "fs";
 import { join, basename } from "path";
 import { loadConfig, saveConfig } from "@aligntrue/core";
 // Telemetry placeholder - not implemented yet
@@ -287,6 +293,31 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       clack.log.info(`Using recommended directory: ${recommendedDir}`);
     }
 
+    // Check if target directory already has split files
+    const targetPath = join(cwd, targetDir);
+    if (existsSync(targetPath)) {
+      const existingFiles = readdirSync(targetPath).filter((f) =>
+        f.endsWith(".md"),
+      );
+      if (existingFiles.length > 0) {
+        clack.log.warn(
+          `Target directory already contains ${existingFiles.length} markdown file(s)`,
+        );
+        if (!yes) {
+          const overwrite = await clack.confirm({
+            message: "Overwrite existing files?",
+            initialValue: false,
+          });
+          if (clack.isCancel(overwrite) || !overwrite) {
+            clack.cancel("Split cancelled");
+            process.exit(0);
+          }
+        } else {
+          clack.log.info("Overwriting existing files (--yes mode)");
+        }
+      }
+    }
+
     // Generate file names preview
     const filePreview: Array<{ filename: string; heading: string }> = [];
     for (const section of parsed.sections) {
@@ -326,7 +357,6 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     }
 
     // Create target directory (auto-create, no manual step needed)
-    const targetPath = join(cwd, targetDir);
     mkdirSync(targetPath, { recursive: true });
     clack.log.success(`Created directory: ${targetDir}`);
 

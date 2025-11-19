@@ -146,6 +146,15 @@ async function main() {
     ["doctor", doctor],
   ]);
 
+  // Check if user provided a flag-like argument as command
+  if (command && (command.startsWith("--") || command.startsWith("-"))) {
+    console.error(`Unknown flag: ${command}`);
+    console.error(
+      `\nRun 'aligntrue --help' to see available commands and options`,
+    );
+    process.exit(1);
+  }
+
   if (command) {
     const handler = COMMANDS.get(command);
     if (handler) {
