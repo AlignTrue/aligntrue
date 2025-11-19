@@ -123,7 +123,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 ### Medium Priority
 
 5. **All command error paths** - Many commands only have happy path tests
-6. **Cross-platform** - Most tests run on macOS only
+6. **Cross-platform** - Full test suite runs on Ubuntu and macOS; Windows has limited coverage (13 integration tests skip)
 7. **Performance** - No benchmarks or stress tests
 8. **Concurrent operations** - Race conditions not tested
 
