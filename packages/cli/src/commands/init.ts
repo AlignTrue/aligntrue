@@ -218,7 +218,7 @@ export async function init(args: string[] = []): Promise<void> {
         "- Detects existing agent files and offers import",
         "- Use --import <agent> to import from specific format",
         "- In non-interactive mode, detected agents are auto-enabled",
-        "- If no agents detected, defaults to: cursor, agents",
+        "- If no agents detected, defaults to: agents",
         "- Workflow mode auto-configured based on init choice",
       ],
     });
@@ -614,7 +614,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else if (selectedAgentsSet.size > 0) {
     selectedAgents = Array.from(selectedAgentsSet);
   } else {
-    selectedAgents = ["cursor", "agents"];
+    selectedAgents = ["agents"];
   }
 
   // Step 6: Get project ID for template
@@ -697,8 +697,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         path: ".aligntrue/.rules.yaml",
       },
     ],
-    exporters:
-      selectedAgents.length > 0 ? selectedAgents : ["cursor", "agents"],
+    exporters: selectedAgents.length > 0 ? selectedAgents : ["agents"],
   };
 
   // Set mode if provided
