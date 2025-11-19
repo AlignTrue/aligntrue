@@ -449,7 +449,7 @@ export class SyncEngine {
         ];
 
         // Build scoped pack (sections-only)
-        const scopedPack: AlignPack = {
+        let scopedPack: AlignPack = {
           id: this.ir.id,
           version: this.ir.version,
           spec_version: this.ir.spec_version,
@@ -469,6 +469,32 @@ export class SyncEngine {
             _markdown_meta: this.ir._markdown_meta,
           }),
         };
+
+        // Resolve plugs if config fills are provided
+        if (
+          this.config?.plugs?.fills &&
+          Object.keys(this.config.plugs.fills).length > 0
+        ) {
+          const { resolvePlugsForPack } = await import("../plugs/index.js");
+          const resolved = resolvePlugsForPack(
+            scopedPack,
+            this.config.plugs.fills,
+          );
+
+          if (resolved.success && resolved.rules.length > 0) {
+            // Update sections with resolved content
+            scopedPack.sections = scopedPack.sections.map((section, idx) => {
+              const resolvedRule = resolved.rules[idx];
+              if (resolvedRule?.guidance) {
+                return {
+                  ...section,
+                  content: resolvedRule.guidance,
+                };
+              }
+              return section;
+            });
+          }
+        }
 
         // Call each exporter with scoped pack
         for (const exporter of activeExporters) {
@@ -516,6 +542,9 @@ export class SyncEngine {
             backup: true, // Always true for internal signaling if needed, though exporter ignores it now
             unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
             managedSections: this.config?.managed?.sections || [], // Pass team-managed sections to exporters
+            ...(this.config?.plugs?.fills && {
+              plugFills: this.config.plugs.fills,
+            }), // Pass config fills to exporters (Plugs system)
           };
 
           try {
