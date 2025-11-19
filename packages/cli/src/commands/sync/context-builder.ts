@@ -397,7 +397,11 @@ async function detectAndEnableAgents(
 
   if (newAgents.length === 0) return;
 
-  const shouldAutoEnable = options.autoEnable || config.detection?.auto_enable;
+  const shouldAutoEnable =
+    options.autoEnable ||
+    options.yes ||
+    options.nonInteractive ||
+    config.detection?.auto_enable;
 
   if (shouldAutoEnable) {
     // Auto-enable without prompting

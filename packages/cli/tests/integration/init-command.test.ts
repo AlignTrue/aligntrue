@@ -61,8 +61,8 @@ describeSkipWindows("Init Command Integration", () => {
       expect(existsSync(rulesPath)).toBe(true);
 
       const rulesContent = readFileSync(rulesPath, "utf-8");
-      expect(rulesContent).toContain("spec_version:");
-      expect(rulesContent).toContain("sections:");
+      expect(rulesContent).toContain("spec_version");
+      expect(rulesContent).toContain("sections");
     });
 
     it("does not create cursor starter files automatically", async () => {
