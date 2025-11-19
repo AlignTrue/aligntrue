@@ -295,11 +295,31 @@ Each backup includes a `manifest.json`:
 
 ### Timestamp format
 
-Timestamps use ISO 8601 with millisecond precision, filesystem-safe:
+Timestamps use ISO 8601 with millisecond precision, plus uniqueness guarantees:
 
-- Format: `YYYY-MM-DDTHH-mm-ss-SSS`
-- Example: `2025-11-18T14-30-00-000`
-- Original format: `2025-11-18T14:30:00.000Z` (stored in manifest)
+- Format: `YYYY-MM-DDTHH-mm-ss-SSS-PID-SEQ`
+- Example: `2025-11-18T14-30-00-000-1a2b-1`
+- Components:
+  - Date and time with milliseconds (filesystem-safe)
+  - Process ID in base36 (4-6 characters)
+  - Sequence number in base36 (increments per backup)
+- Original ISO format: `2025-11-18T14:30:00.000Z` (stored in manifest)
+
+### Concurrent operation safety
+
+Backups are guaranteed unique even during concurrent operations:
+
+- **Process ID suffix**: Ensures uniqueness across parallel processes
+- **Sequence counter**: Prevents collisions within same process
+- **No locking overhead**: Lock-free design for performance
+- **Timestamp sortability**: Maintains chronological order
+
+This design handles:
+
+- Multiple concurrent `aligntrue sync` operations
+- Rapid successive backup creation
+- Clock drift and virtualization edge cases
+- High-frequency automation workflows
 
 ## Safety best practices
 

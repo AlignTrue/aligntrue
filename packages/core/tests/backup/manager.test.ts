@@ -46,8 +46,9 @@ describe("BackupManager", () => {
       const backup = BackupManager.createBackup({ cwd: testDir });
 
       expect(backup).toBeDefined();
+      // Timestamp format: YYYY-MM-DDTHH-mm-ss-SSS-PID-SEQ
       expect(backup.timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}$/,
+        /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}-[a-z0-9]+-[a-z0-9]+$/,
       );
       expect(backup.manifest.version).toBe("1");
       expect(backup.manifest.files).toContain("config.yaml");

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified backup config to single `backup.keep_count` setting (min: 10, default: 20, max: 100)
 - All backups now consolidated in `.aligntrue/.backups/` with timestamp organization
 - Enhanced CLI messaging to emphasize safety best practices (dry-run, revert, restore)
+- Backup timestamps now include process ID and sequence number for guaranteed uniqueness during concurrent operations
 
 ### Added
 
@@ -23,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive safety best practices documentation in guides
 - Clear backup creation and restore messages in CLI output
 - Validation for keep_count range with actionable error messages
+
+### Fixed
+
+- Mode switching (solo↔team) now preserves sync workflow settings (auto_pull, workflow_mode, primary_agent, on_conflict)
+- Concurrent backup operations now guaranteed unique via process ID and sequence suffix, preventing rare collision scenarios
 
 ### Removed
 

@@ -301,6 +301,14 @@ async function teamEnable(
       clack.log.success(`Backup created: ${backup.timestamp}`);
     }
 
+    // Preserve user-configured sync settings before mode change
+    const preservedSync = {
+      auto_pull: config.sync?.auto_pull,
+      workflow_mode: config.sync?.workflow_mode,
+      primary_agent: config.sync?.primary_agent,
+      on_conflict: config.sync?.on_conflict,
+    };
+
     // Update config
     config.mode = "team";
     config.modules = {
@@ -361,6 +369,24 @@ async function teamEnable(
 
     if (existingSources) {
       configWithDefaults.sources = existingSources;
+    }
+
+    // Restore preserved sync settings (only if explicitly set)
+    if (preservedSync.auto_pull !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.auto_pull = preservedSync.auto_pull;
+    }
+    if (preservedSync.workflow_mode !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.workflow_mode = preservedSync.workflow_mode;
+    }
+    if (preservedSync.primary_agent !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.primary_agent = preservedSync.primary_agent;
+    }
+    if (preservedSync.on_conflict !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.on_conflict = preservedSync.on_conflict;
     }
 
     spinner = createSpinner();
@@ -536,6 +562,14 @@ async function teamDisable(
       console.log(`Backup created: ${backup.timestamp}`);
     }
 
+    // Preserve user-configured sync settings before mode change
+    const preservedSync = {
+      auto_pull: config.sync?.auto_pull,
+      workflow_mode: config.sync?.workflow_mode,
+      primary_agent: config.sync?.primary_agent,
+      on_conflict: config.sync?.on_conflict,
+    };
+
     // Update config
     config.mode = "solo";
     config.modules = {
@@ -551,6 +585,24 @@ async function teamDisable(
 
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
+
+    // Restore preserved sync settings (only if explicitly set)
+    if (preservedSync.auto_pull !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.auto_pull = preservedSync.auto_pull;
+    }
+    if (preservedSync.workflow_mode !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.workflow_mode = preservedSync.workflow_mode;
+    }
+    if (preservedSync.primary_agent !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.primary_agent = preservedSync.primary_agent;
+    }
+    if (preservedSync.on_conflict !== undefined) {
+      configWithDefaults.sync = configWithDefaults.sync || {};
+      configWithDefaults.sync.on_conflict = preservedSync.on_conflict;
+    }
 
     // Write config back atomically
     const yamlContent = stringifyYaml(configWithDefaults);
