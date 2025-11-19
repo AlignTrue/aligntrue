@@ -9,6 +9,7 @@ import type {
   ExportOptions,
   ExportResult,
   ResolvedScope,
+  ExporterCapabilities,
 } from "../types.js";
 import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
@@ -17,6 +18,13 @@ import { ExporterBase } from "../base/index.js";
 export class KiloCodeExporter extends ExporterBase {
   name = "kilocode";
   version = "1.0.0";
+  capabilities: ExporterCapabilities = {
+    multiFile: true, // Multi-file format (.kilocode/rules/*.md)
+    twoWaySync: false, // Read-only exports
+    scopeAware: true, // Can filter by scope
+    preserveStructure: true, // Maintains file organization
+    nestedDirectories: true, // Supports nested scope directories
+  };
 
   async export(
     request: ScopedExportRequest,

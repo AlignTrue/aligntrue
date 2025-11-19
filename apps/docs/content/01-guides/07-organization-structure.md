@@ -81,19 +81,39 @@ aligntrue sync
 
 ### Structure
 
+The structure depends on your agent setup:
+
+**For multiple agents (recommended):**
+
+```
+project/
+├── .aligntrue/
+│   ├── config.yaml
+│   └── rules/  ← Neutral source location
+│       ├── architecture.md
+│       ├── security.md
+│       └── testing.md
+├── AGENTS.md  ← Generated (merged from sources)
+└── .cursor/
+    └── rules/  ← Generated (merged or split based on config)
+```
+
+**For single agent (Cursor only):**
+
 ```
 project/
 ├── .aligntrue/
 │   └── config.yaml
-├── rules/  ← User-created directory
-│   ├── architecture.md
-│   ├── security.md
-│   ├── coding-standards.md
-│   └── testing.md
-└── AGENTS.md  ← Generated output (not source)
+└── .cursor/
+    └── rules/  ← Native multi-file format
+        ├── architecture.mdc
+        ├── security.mdc
+        └── testing.mdc
 ```
 
 ### Configuration
+
+**Multiple agents (neutral source):**
 
 ```yaml
 exporters:
@@ -101,58 +121,91 @@ exporters:
   - agents
 
 sync:
-  source_files: "rules/*.md" # Glob pattern for source files
-  source_order: # Optional: custom merge order
+  source_files: ".aligntrue/rules/*.md"
+  source_order:
     - architecture.md
     - security.md
-    - coding-standards.md
     - testing.md
+```
+
+**Single agent (Cursor native):**
+
+```yaml
+exporters:
+  - cursor
+
+sync:
+  edit_source: ".cursor/rules/*.mdc"
 ```
 
 ### Creating the structure
 
-```bash
-# Create rules directory
-mkdir rules
+**Option 1: Split existing AGENTS.md**
 
-# Split existing AGENTS.md into multiple files
+```bash
+# Interactive split (asks for target directory)
 aligntrue sources split
 
-# Or create files manually
-echo "# Architecture Guidelines" > rules/architecture.md
-echo "# Security Best Practices" > rules/security.md
-echo "# Coding Standards" > rules/coding-standards.md
+# Non-interactive (uses .aligntrue/rules/ by default)
+aligntrue sources split --yes
+```
+
+**Option 2: Create files manually**
+
+```bash
+# Create directory
+mkdir -p .aligntrue/rules
+
+# Create rule files
+echo "# Architecture Guidelines" > .aligntrue/rules/architecture.md
+echo "# Security Best Practices" > .aligntrue/rules/security.md
+echo "# Testing Standards" > .aligntrue/rules/testing.md
 ```
 
 ### When to use
 
-- Your project has 20-100 rules
+- Your rule file exceeds 1000 lines
 - Multiple team members edit rules
 - You want clear ownership (via CODEOWNERS)
-- You experience frequent merge conflicts in AGENTS.md
+- You experience frequent merge conflicts
 - You want logical grouping of rules
+
+### Where to organize files
+
+**Choose based on your setup:**
+
+- **Single agent (Cursor only)**: Use `.cursor/rules/*.mdc` (native format)
+- **Multiple agents**: Use `.aligntrue/rules/*.md` (neutral source)
+- **Team mode**: Use `.aligntrue/rules/*.md` (goes through PR review)
+
+AlignTrue automatically adapts exports:
+
+- **Multi-file agents** (Cursor, Amazon Q, etc.): Preserves your file organization
+- **Single-file agents** (AGENTS.md, Claude, etc.): Merges files automatically
+
+See [Multi-file organization](/docs/02-customization/multi-file-organization) for details.
 
 ### Source file patterns
 
 The `source_files` field accepts various patterns:
 
 ```yaml
-# All .md files in rules/ directory
-source_files: "rules/*.md"
+# All .md files in directory
+source_files: ".aligntrue/rules/*.md"
 
-# Recursive: all .md files in rules/ and subdirectories
-source_files: "rules/**/*.md"
+# Recursive (includes subdirectories)
+source_files: ".aligntrue/rules/**/*.md"
 
 # Specific files
 source_files:
-  - "rules/architecture.md"
-  - "rules/security.md"
+  - ".aligntrue/rules/architecture.md"
+  - ".aligntrue/rules/security.md"
 
 # Multiple directories
-source_files: "docs/rules/*.md"
+source_files:
+  - ".aligntrue/rules/*.md"
+  - "docs/guidelines/*.md"
 ```
-
-**Note:** `rules/` is just an example—you can use any directory name you prefer (e.g., `docs/rules/`, `team-rules/`, `.aligntrue/rules/`).
 
 ### Example workflow
 

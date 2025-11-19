@@ -101,6 +101,10 @@ export async function overrideSelectors(args: string[]): Promise<void> {
         : "(no fingerprint)";
 
     const selectorIndex = `sections[${index}]`;
+    const headingSelector =
+      section?.heading && section.heading.length > 0
+        ? `sections[heading=${section.heading}]`
+        : undefined;
     const ruleSelector =
       fingerprint !== "(no fingerprint)"
         ? `rule[id=${fingerprint}]`
@@ -108,6 +112,9 @@ export async function overrideSelectors(args: string[]): Promise<void> {
 
     console.log(`${String(index + 1).padStart(3)}. ${heading}`);
     console.log(`     • ${selectorIndex}`);
+    if (headingSelector) {
+      console.log(`     • ${headingSelector}`);
+    }
     if (ruleSelector) {
       console.log(`     • ${ruleSelector}`);
     } else {

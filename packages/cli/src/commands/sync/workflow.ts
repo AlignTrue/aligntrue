@@ -197,6 +197,60 @@ export async function executeSyncWorkflow(
     }
   }
 
+  // Step 7: Check edit source file sizes and provide hints
+  if (result.success && !options.dryRun) {
+    try {
+      const { analyzeFiles, formatFileSizeWarnings } = await import(
+        "../../utils/file-size-detector.js"
+      );
+
+      // Get edit source files to analyze
+      const editSource = config.sync?.edit_source;
+      const filesToAnalyze: Array<{ path: string; relativePath: string }> = [];
+
+      if (editSource) {
+        const patterns = Array.isArray(editSource) ? editSource : [editSource];
+
+        for (const pattern of patterns) {
+          // Skip special patterns
+          if (
+            pattern === ".rules.yaml" ||
+            pattern === "any_agent_file" ||
+            pattern.includes("*")
+          ) {
+            continue;
+          }
+
+          // Check if file exists and add to analysis
+          const fullPath = resolvePath(cwd, pattern);
+          if (existsSync(fullPath)) {
+            filesToAnalyze.push({
+              path: fullPath,
+              relativePath: pattern,
+            });
+          }
+        }
+      }
+
+      // Analyze files if we have any
+      if (filesToAnalyze.length > 0) {
+        const analyses = analyzeFiles(filesToAnalyze);
+        const warnings = formatFileSizeWarnings(analyses);
+
+        if (warnings) {
+          console.log(warnings);
+        }
+      }
+    } catch (_error) {
+      // Silent failure on file size analysis - not critical
+      if (options.verbose) {
+        clack.log.warn(
+          `Failed to analyze file sizes: ${_error instanceof Error ? _error.message : String(_error)}`,
+        );
+      }
+    }
+  }
+
   return result;
 }
 

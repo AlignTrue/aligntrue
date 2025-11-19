@@ -41,6 +41,31 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 - **Vendor Metadata**: Agent-specific extensions are preserved in `vendor.*` namespaces
 - **Version Control**: All exporters are versioned and follow semantic versioning
 - **Comprehensive Coverage**: Supports 28+ agents including Cursor, Claude, GitHub Copilot, Aider, and many others
+- **Multi-File Adaptation**: AlignTrue automatically adapts exports based on each agent's capabilities—merging for single-file agents, preserving structure for multi-file agents
+
+## Multi-file organization support
+
+When you organize your rules across multiple files, AlignTrue adapts exports based on each agent's native capabilities:
+
+**Native multi-file support** (preserves your file organization):
+
+- Cursor (`.cursor/rules/*.mdc`)
+- Amazon Q (`.amazonq/rules/*.md`)
+- KiloCode (`.kilocode/rules/*.md`)
+- Augment Code (`.augment/rules/*.md`)
+- Kiro (`.kiro/steering/*.md`)
+- Trae AI (`.trae/rules/*.md`)
+
+**Single-file format** (AlignTrue merges your files automatically):
+
+- AGENTS.md and all agents using it
+- Claude, Warp, Gemini (single markdown files)
+- Cline, Goose (plain text files)
+- All JSON/config format agents
+
+**You organize rules however you want.** AlignTrue handles the export complexity.
+
+See [Multi-file organization](/docs/02-customization/multi-file-organization) for details.
 
 ## Full compatibility matrix
 
