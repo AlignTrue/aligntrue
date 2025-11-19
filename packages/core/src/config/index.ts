@@ -131,6 +131,7 @@ export interface AlignTrueConfig {
   exporters?: string[];
   scopes?: Array<{
     path: string;
+    inherit?: boolean; // Default: true
     include?: string[];
     exclude?: string[];
     rulesets?: string[];

@@ -8,6 +8,7 @@ import type {
   ExportOptions,
   ExportResult,
   ResolvedScope,
+  ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
 import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
@@ -17,6 +18,13 @@ import { ExporterBase } from "../base/index.js";
 export class CursorExporter extends ExporterBase {
   name = "cursor";
   version = "1.0.0";
+  capabilities: ExporterCapabilities = {
+    multiFile: true, // Multi-file format (.mdc files)
+    twoWaySync: true, // Supports editing and pullback
+    scopeAware: true, // Can filter by scope
+    preserveStructure: true, // Maintains file organization
+    nestedDirectories: true, // Supports nested scope directories
+  };
 
   // NOTE: Cursor always uses native frontmatter format (modeHints='native')
   // This ensures round-trip fidelity for vendor.cursor fields

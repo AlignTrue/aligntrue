@@ -18,6 +18,7 @@ export interface ResolvedScope {
   exclude?: string[]; // Glob patterns to exclude
   rulesets?: string[]; // Rule IDs to apply (optional)
   isDefault: boolean; // True if this is a default scope (path: ".")
+  inherit?: boolean; // Whether to inherit parent scope rules (default: true)
 }
 
 /**
@@ -73,6 +74,18 @@ export interface ExportResult {
 }
 
 /**
+ * Exporter capabilities metadata
+ * Describes what an exporter can do for better UX and validation
+ */
+export interface ExporterCapabilities {
+  multiFile: boolean; // Can handle multiple source files
+  twoWaySync: boolean; // Supports editing and pullback
+  scopeAware: boolean; // Can filter by scope
+  preserveStructure: boolean; // Maintains file organization
+  nestedDirectories: boolean; // Supports writing to nested scope directories
+}
+
+/**
  * Exporter plugin interface
  *
  * Exporters implement this interface to convert AlignTrue IR to agent-specific formats.
@@ -81,6 +94,7 @@ export interface ExportResult {
 export interface ExporterPlugin {
   name: string;
   version: string;
+  capabilities?: ExporterCapabilities; // Optional: exporter capabilities
   export(
     request: ScopedExportRequest,
     options: ExportOptions,
