@@ -27,6 +27,9 @@ import type {
 
 const BACKUP_VERSION = "1";
 
+// Sequence counter for ensuring uniqueness within the same millisecond
+let backupSequence = 0;
+
 export class BackupManager {
   /**
    * Create a backup of the .aligntrue/ directory and optionally agent files
@@ -45,12 +48,16 @@ export class BackupManager {
       mkdirSync(backupsDir, { recursive: true });
     }
 
-    // Generate timestamp for this backup (with milliseconds for uniqueness)
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/:/g, "-")
-      .replace(/\./g, "-")
-      .replace(/Z$/, "");
+    // Generate timestamp for this backup (with process ID and sequence for uniqueness)
+    // Format: 2025-11-18T23-54-39-705-1a2b-0 (timestamp + PID in base36 + sequence)
+    backupSequence++;
+    const timestamp =
+      new Date()
+        .toISOString()
+        .replace(/:/g, "-")
+        .replace(/\./g, "-")
+        .replace(/Z$/, "") +
+      `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
     const backupDir = join(backupsDir, timestamp);
 
     // Create backup directory
@@ -490,12 +497,15 @@ export class BackupManager {
       mkdirSync(backupsDir, { recursive: true });
     }
 
-    // Generate timestamp
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/:/g, "-")
-      .replace(/\./g, "-")
-      .replace(/Z$/, "");
+    // Generate timestamp (with process ID and sequence for uniqueness)
+    backupSequence++;
+    const timestamp =
+      new Date()
+        .toISOString()
+        .replace(/:/g, "-")
+        .replace(/\./g, "-")
+        .replace(/Z$/, "") +
+      `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
     const backupDir = join(backupsDir, timestamp);
 
     mkdirSync(backupDir, { recursive: true });

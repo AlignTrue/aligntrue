@@ -235,6 +235,26 @@ aligntrue team disable
 
 **Note:** Team rules become regular solo rules. You can make them private by editing AGENTS.md.
 
+### Mode switching preserves workflow settings
+
+When switching between solo and team modes, AlignTrue preserves your sync workflow preferences:
+
+**Settings preserved during mode transitions:**
+
+- `sync.auto_pull` - Whether to automatically pull agent changes
+- `sync.workflow_mode` - Workflow mode (ir_first or native_format)
+- `sync.primary_agent` - Primary agent for sync operations
+- `sync.on_conflict` - Conflict resolution strategy
+
+**What changes:**
+
+- `mode` - solo ↔ team
+- `modules.lockfile` - enabled/disabled
+- `modules.bundle` - enabled/disabled
+- `lockfile.mode` - added/removed (team only)
+
+This ensures your personal workflow preferences survive round-trip transitions (solo→team→solo).
+
 ### `aligntrue team list-allowed`
 
 Show approved sources.
