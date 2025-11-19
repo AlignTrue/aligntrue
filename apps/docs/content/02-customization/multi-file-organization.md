@@ -142,6 +142,44 @@ sync:
 
 Files not listed in `source_order` are appended alphabetically at the end.
 
+### Source markers
+
+When using multiple source files, AlignTrue can add HTML comment markers to show which file each section came from:
+
+```yaml
+sync:
+  source_files: "rules/*.md"
+  source_markers: "auto" # auto (default), always, or never
+```
+
+**Modes:**
+
+- `auto` (default): Show markers only when multiple source files are configured
+- `always`: Always show markers, even for single-file sources
+- `never`: Never show markers
+
+**Example output:**
+
+```markdown
+<!-- aligntrue:source security.md -->
+
+## Security Guidelines
+
+...
+
+<!-- aligntrue:source coding-standards.md -->
+
+## Coding Standards
+
+...
+```
+
+Markers are HTML comments, so they're invisible when rendered but visible in source. This helps with:
+
+- Tracing which file a section came from
+- Debugging multi-file setups
+- Understanding rule organization at a glance
+
 ## How it works
 
 ### Discovery

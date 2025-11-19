@@ -35,12 +35,17 @@ export class AgentsExporter extends ExporterBase {
     seenScopes: new Set(),
   };
 
+  private currentConfig?: unknown; // Store config for use in helper methods
+
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
     const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
+
+    // Store config for use in helper methods
+    this.currentConfig = options.config;
 
     const sections = pack.sections;
 
@@ -191,6 +196,13 @@ export class AgentsExporter extends ExporterBase {
 
     const rendered = sections.map((section) => {
       const lines: string[] = [];
+
+      // Add source marker before section
+      const marker = this.generateSourceMarker(section, this.currentConfig);
+      if (marker) {
+        lines.push(marker.trim()); // Remove trailing newline, we'll add it later
+        lines.push("");
+      }
 
       // Check if team-managed
       const isManaged = managedSections.some(
