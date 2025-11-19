@@ -82,6 +82,7 @@ export abstract class ExporterBase implements ExporterPlugin {
   protected computeSectionFidelityNotes(sections: AlignSection[]): string[] {
     const notes: string[] = [];
     const crossAgentVendors = new Set<string>();
+    const sourceFiles = new Set<string>();
 
     sections.forEach((section) => {
       // Check for cross-agent vendor fields
@@ -91,8 +92,23 @@ export abstract class ExporterBase implements ExporterPlugin {
             crossAgentVendors.add(agent);
           }
         });
+
+        // Track source files for multi-file detection
+        const sourceFile = section.vendor.aligntrue?.source_file;
+        if (sourceFile) {
+          sourceFiles.add(sourceFile);
+        }
       }
     });
+
+    // Generate note for multi-file merging (for single-file exporters)
+    if (
+      sourceFiles.size > 1 &&
+      !(this as unknown as ExporterPlugin).capabilities?.multiFile
+    ) {
+      const fileList = Array.from(sourceFiles).sort().join(", ");
+      notes.push(`Merged from ${sourceFiles.size} source files: ${fileList}`);
+    }
 
     // Generate notes for cross-agent vendor fields
     if (crossAgentVendors.size > 0) {

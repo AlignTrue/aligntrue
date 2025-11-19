@@ -33,6 +33,8 @@ export function evaluateSelector(
   switch (parsed.type) {
     case "rule":
       return evaluateRuleSelector(parsed.ruleId!, ir);
+    case "section_heading":
+      return evaluateSectionHeadingSelector(parsed.heading!, ir);
     case "property":
       return evaluatePropertySelector(parsed.propertyPath!, ir);
     case "array_index":
@@ -86,6 +88,65 @@ function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
     return {
       success: false,
       error: `Selector matched ${matches.length} rules with id="${ruleId}" (expected exactly 1)`,
+      matchCount: matches.length,
+    };
+  }
+
+  const match = matches[0];
+  if (!match) {
+    return {
+      success: false,
+      error: "Unexpected error: match is undefined",
+      matchCount: 0,
+    };
+  }
+  return {
+    success: true,
+    targetPath: ["sections", String(match.index)],
+    targetValue: ir.sections[match.index],
+    matchCount: 1,
+  };
+}
+
+/**
+ * Evaluate sections[heading=...] selector
+ * Searches for section with matching heading in pack.sections array
+ */
+function evaluateSectionHeadingSelector(
+  heading: string,
+  ir: AlignPack,
+): SelectorMatch {
+  // Defensive: ensure sections array exists
+  try {
+    ensureSectionsArray(ir, { throwOnInvalid: true });
+  } catch {
+    return {
+      success: false,
+      error: `IR does not contain sections array (got ${typeof ir.sections})`,
+      matchCount: 0,
+    };
+  }
+
+  const matches: Array<{ index: number; heading: string }> = [];
+  for (let i = 0; i < ir.sections.length; i++) {
+    const section = ir.sections[i];
+    if (section && section.heading === heading) {
+      matches.push({ index: i, heading: section.heading });
+    }
+  }
+
+  if (matches.length === 0) {
+    return {
+      success: false,
+      error: `No section found with heading="${heading}"`,
+      matchCount: 0,
+    };
+  }
+
+  if (matches.length > 1) {
+    return {
+      success: false,
+      error: `Selector matched ${matches.length} sections with heading="${heading}" (expected exactly 1)`,
       matchCount: matches.length,
     };
   }
