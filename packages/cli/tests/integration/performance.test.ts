@@ -232,6 +232,79 @@ git:
     90000,
   ); // 90 second timeout
 
+  it("Sync performance with 1000+ sections", async () => {
+    const projectDir = join(testDir, "large-sections");
+    await fs.mkdir(projectDir, { recursive: true });
+    await fs.mkdir(join(projectDir, ".aligntrue"), { recursive: true });
+
+    // Generate IR with 1000 sections
+    const largeSections = Array.from({ length: 1000 }, (_, i) => ({
+      heading: `Rule ${i}`,
+      content: `This is rule number ${i} with some content to make it realistic.`,
+      level: 2,
+      fingerprint: `rule-${i}`,
+    }));
+
+    // Write IR with large section count
+    const irContent = `id: perf-test-large
+version: 1.0.0
+spec_version: "1"
+sections:
+${largeSections
+  .map(
+    (s) => `  - heading: "${s.heading}"
+    content: |
+      ${s.content}
+    level: ${s.level}
+    fingerprint: "${s.fingerprint}"`,
+  )
+  .join("\n")}
+`;
+
+    await fs.writeFile(join(projectDir, ".aligntrue/.rules.yaml"), irContent);
+
+    // Create config
+    await fs.writeFile(
+      join(projectDir, ".aligntrue/config.yaml"),
+      `version: "1"
+mode: solo
+sources:
+  - type: local
+    path: .aligntrue/.rules.yaml
+exporters:
+  - agents
+git:
+  mode: ignore
+`,
+    );
+
+    // Measure memory before
+    const memBefore = process.memoryUsage();
+
+    // Measure sync time
+    const startTime = Date.now();
+
+    execSync(`node ${CLI_PATH} sync`, { cwd: projectDir, stdio: "pipe" });
+
+    const duration = Date.now() - startTime;
+
+    // Measure memory after
+    const memAfter = process.memoryUsage();
+    const heapUsedMB = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+
+    console.log(`1000+ sections sync completed in ${duration}ms`);
+    console.log(`Memory used: ${heapUsedMB.toFixed(2)}MB`);
+
+    // Assert performance thresholds
+    expect(duration).toBeLessThan(60000); // <60 seconds
+    expect(heapUsedMB).toBeLessThan(500); // <500MB
+
+    // Verify AGENTS.md was created and contains all sections
+    const agentsMd = await fs.readFile(join(projectDir, "AGENTS.md"), "utf-8");
+    expect(agentsMd).toContain("Rule 0");
+    expect(agentsMd).toContain("Rule 999");
+  }, 90000); // 90 second timeout
+
   it.skipIf(!process.env.CI)(
     "Multi-file sources: no catastrophic slowdown",
     async () => {
