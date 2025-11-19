@@ -193,6 +193,11 @@
             "type": "string"
           },
           "description": "Custom ordering of source files by basename (default: alphabetical). Example: ['architecture.md', 'security.md', 'coding.md']"
+        },
+        "source_markers": {
+          "type": "string",
+          "enum": ["auto", "always", "never"],
+          "description": "Control source file markers in concatenated outputs. auto: show only with multiple sources (default), always: always show, never: never show"
         }
       }
     },

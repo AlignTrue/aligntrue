@@ -36,6 +36,7 @@ export class GenericMarkdownExporter extends ExporterBase {
   private filename: string; // e.g., "CLAUDE.md", "WARP.md"
   private title: string; // e.g., "CLAUDE.md", "WARP.md"
   private description: string; // e.g., "for Claude Code", "for Warp"
+  private currentConfig?: unknown; // Store config for use in helper methods
 
   constructor(
     name: string,
@@ -56,6 +57,9 @@ export class GenericMarkdownExporter extends ExporterBase {
   ): Promise<ExportResult> {
     const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
+
+    // Store config for use in helper methods
+    this.currentConfig = options.config;
 
     const sections = pack.sections;
 
@@ -164,16 +168,34 @@ export class GenericMarkdownExporter extends ExporterBase {
     // Generate header
     const header = this.generateHeader();
 
-    // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(sections, false);
+    // Generate sections with source markers
+    let sectionsContent = "";
+    for (const section of sections) {
+      // Add source marker before section
+      const marker = this.generateSourceMarker(section, this.currentConfig);
+      if (marker) {
+        sectionsContent += `\n${marker}`;
+      }
+
+      // Render the section
+      sectionsContent += this.formatSection(section);
+    }
 
     // No footer - keep files clean
     // Fidelity notes will be shown in CLI output instead
 
     return {
-      content: `${header}\n\n${sectionsMarkdown}`,
+      content: `${header}\n${sectionsContent}`,
       warnings: [],
     };
+  }
+
+  /**
+   * Format a single section as markdown
+   */
+  private formatSection(section: AlignSection): string {
+    // Use the base class renderSections method for a single section
+    return this.renderSections([section], false);
   }
 
   /**

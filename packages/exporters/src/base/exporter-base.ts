@@ -106,6 +106,48 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
+   * Generate source marker comment for a section
+   *
+   * Creates an HTML comment marker showing which source file a section came from.
+   * Respects the sync.source_markers config setting.
+   *
+   * @param section - Section to generate marker for
+   * @param config - AlignTrue config (from options.config)
+   * @returns HTML comment marker or empty string
+   *
+   * @example
+   * ```typescript
+   * const marker = this.generateSourceMarker(section, options.config);
+   * // "<!-- aligntrue:source security.md -->\n"
+   * ```
+   */
+  protected generateSourceMarker(
+    section: AlignSection,
+    config?: unknown,
+  ): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const alignConfig = config as any; // Type assertion for config
+    const mode = alignConfig?.sync?.source_markers || "auto";
+
+    if (mode === "never") return "";
+
+    const sourceFile = section.vendor?.aligntrue?.source_file;
+    if (!sourceFile) return "";
+
+    // For "auto" mode, only show if multiple source files configured
+    if (mode === "auto") {
+      const sourceFiles = alignConfig?.sync?.source_files;
+      const hasMultipleSources = Array.isArray(sourceFiles)
+        ? sourceFiles.length > 1
+        : typeof sourceFiles === "string" && sourceFiles.includes("*");
+
+      if (!hasMultipleSources) return "";
+    }
+
+    return `<!-- aligntrue:source ${sourceFile} -->\n`;
+  }
+
+  /**
    * Render sections as natural markdown
    *
    * Converts AlignSection[] to clean markdown format with proper heading levels.
