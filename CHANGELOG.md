@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-11-19
+
+### Fixed
+
+- Published packages no longer contain workspace protocol in dependencies
+- Added ui package to release script to prevent version drift
+- Implemented two-layer validation to catch workspace protocol leaks
+
+### Changed
+
+- Release script now uses pnpm publish instead of npm publish for automatic workspace protocol rewriting
+
 ## [0.2.1] - 2025-11-19
 
 ### Changed
