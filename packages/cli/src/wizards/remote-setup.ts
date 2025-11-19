@@ -5,6 +5,7 @@
 
 import * as clack from "@clack/prompts";
 import { StorageManager } from "@aligntrue/core";
+import { DOCS_REMOTE_SETUP } from "../constants.js";
 import { createSpinner } from "../utils/spinner.js";
 
 export interface RemoteSetupResult {
@@ -87,7 +88,9 @@ export async function runRemoteSetupWizard(
     console.log("│                                                         │");
     console.log("│ 5. Return here and enter URL                            │");
     console.log("│                                                         │");
-    console.log("│ Learn more: docs.aligntrue.ai/personal-repo-setup       │");
+    console.log(
+      `│ Learn more: ${DOCS_REMOTE_SETUP.replace("https://", "").padEnd(50)}│`,
+    );
     console.log(
       "└─────────────────────────────────────────────────────────┘\n",
     );

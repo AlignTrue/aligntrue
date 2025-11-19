@@ -15,6 +15,7 @@ export function buildNextStepsMessage(options: NextStepsOptions): string {
       : "Sync rules to every agent whenever you make changes";
 
   lines.push(`  aligntrue sync        ${syncDescription}`);
+  lines.push("  aligntrue adapters    Manage AI agent integrations");
   lines.push("  aligntrue status      Check exporters and sync health");
   lines.push("  aligntrue config      View or edit configuration");
   lines.push(

@@ -98,22 +98,24 @@ export async function handleSyncResult(
     const exporterNames = loadedAdapters.map((a) => a.name);
     const writtenFiles = result.written || [];
     const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
+    const hasChanges = uniqueWrittenFiles.length > 0;
 
     let message = "✓ Sync complete\n\n";
 
-    if (uniqueWrittenFiles.length > 0) {
+    if (hasChanges) {
       message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
       uniqueWrittenFiles.forEach((file) => {
         message += `  - ${file}\n`;
       });
       message += "\n";
+      message += "Your AI assistants are now aligned with these rules.\n\n";
+      message +=
+        "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+      message +=
+        "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+    } else {
+      message = "✓ Everything up to date - no changes needed";
     }
-
-    message += "Your AI assistants are now aligned with these rules.\n\n";
-    message +=
-      "Next: Start coding! Your agents will follow the rules automatically.\n\n";
-    message +=
-      "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
 
     clack.outro(message);
 
