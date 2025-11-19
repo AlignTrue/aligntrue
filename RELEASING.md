@@ -1,188 +1,71 @@
-# Release Guide
+# Releasing AlignTrue
 
-AlignTrue uses a simple manual release process. No bots, no automation, full control.
+## Prerequisites
 
----
-
-## Setup (one time only)
-
-### 1. Login to npm
-
-```bash
-npm login
-```
-
-Enter your npm credentials. This creates a token in `~/.npmrc`.
-
-### 2. Verify access
-
-```bash
-npm whoami
-# Should show your npm username
-
-npm org ls aligntrue
-# Should show you have publish access
-```
-
----
+- Clean git status
+- Logged in to npm (`npm login`)
+- Logged in to git (`git login` or SSH keys configured)
 
 ## Release Process
 
-### When ready to release:
+We use a helper script to automate version bumping, building, publishing, and git tagging.
+
+### 1. Run Release Helper
 
 ```bash
-# Interactive mode (recommended)
-pnpm release
+# For patch release (0.1.0 -> 0.1.1)
+pnpm release:helper patch
 
-# Non-interactive mode
-pnpm release --type=alpha    # For alpha releases
-pnpm release --type=patch    # For bug fixes (0.x.y -> 0.x.y+1)
-pnpm release --type=minor    # For features (0.x.y -> 0.x+1.0)
-pnpm release --type=major    # For breaking changes (0.x.y -> x+1.0.0)
+# For minor release (0.1.0 -> 0.2.0)
+pnpm release:helper minor
+
+# For major release (0.1.0 -> 1.0.0)
+pnpm release:helper major
 ```
 
-### What the script does:
+The script will:
 
-1. **Detects all workspace packages** - Finds all publishable packages
-2. **Prompts for version type** - Interactive selection with version preview
-3. **Bumps versions** - Updates all package.json files
-4. **Builds packages** - Runs `pnpm build:packages`
-5. **Publishes to npm** - Publishes with correct tag (`alpha` or `latest`)
-6. **Creates git commit and tag** - Commits version changes and tags release
-7. **Pushes to GitHub** - Pushes commit and tags
+1. Bump versions in all packages
+2. Build all packages
+3. **Pre-validate:** Check package.json for workspace leaks
+4. **Publish:** Use `pnpm publish` to automatically rewrite `workspace:*` to concrete versions
+5. **Post-validate:** Verify npm registry has correct versions
 
-### Required validation before releasing
+### 2. Commit and Tag
 
-Run these commands locally before invoking the release script:
+After successful publish, the script prints the next steps:
 
 ```bash
-pnpm validate:workspace        # ensures @aligntrue/* deps use workspace:*
-pnpm verify:workspace-links    # ensures node_modules links point to /packages
-pnpm prepublish:check          # validates git status, versions, build, typecheck, tests
-```
-
----
-
-## Version Scheme
-
-AlignTrue uses semantic versioning with alpha pre-releases:
-
-| Type  | Example Bump           | Use For                            |
-| ----- | ---------------------- | ---------------------------------- |
-| alpha | `1.0.0-alpha.5` → `.6` | Pre-release testing                |
-| patch | `1.0.0` → `1.0.1`      | Bug fixes, no new features         |
-| minor | `1.0.0` → `1.1.0`      | New features, backwards compatible |
-| major | `1.0.0` → `2.0.0`      | Breaking changes                   |
-
-### Current status:
-
-- **Now:** `1.0.0-alpha.x` (pre-release testing)
-- **Soon:** `1.0.0` (stable release)
-
-After exiting alpha, use `patch`, `minor`, or `major` for all releases.
-
----
-
-## Updating CHANGELOG.md
-
-After a release, update `CHANGELOG.md`:
-
-1. Add a new `## [X.Y.Z] - YYYY-MM-DD` section at the top
-2. Group changes under:
-   - **Added** - New features
-   - **Changed** - Changes to existing functionality
-   - **Deprecated** - Soon-to-be removed features
-   - **Removed** - Removed features
-   - **Fixed** - Bug fixes
-   - **Security** - Security fixes
-
-AI typically updates the CHANGELOG when adding features, but you can ask it to add release notes after running `pnpm release`.
-
----
-
-## Dry Run (Test Before Release)
-
-```bash
-pnpm release --dry-run
-```
-
-This shows what would happen without actually:
-
-- Modifying files
-- Publishing to npm
-- Creating git commits/tags
-
-Use this to verify version bumps look correct.
-
----
-
-## Troubleshooting
-
-### "EAUTH" or "403 Forbidden"
-
-```bash
-npm logout
-npm login
-```
-
-Re-authenticate with npm.
-
-### "Working directory not clean"
-
-Commit or stash changes before releasing:
-
-```bash
-git status
-git stash  # or git commit
-```
-
-### Need to unpublish a broken release?
-
-```bash
-npm unpublish aligntrue@1.0.0-alpha.X
-npm unpublish @aligntrue/cli@1.0.0-alpha.X
-# ... repeat for all packages
-```
-
-⚠️ **Warning:** You cannot republish the same version after unpublishing. Bump to the next version instead.
-
----
-
-## Manual Emergency Release
-
-If the script fails partway through:
-
-```bash
-# 1. Manually bump versions in package.json files
-# 2. Build
-pnpm build:packages
-
-# 3. Publish each package
-cd packages/schema && npm publish --tag alpha
-cd packages/core && npm publish --tag alpha
-cd packages/exporters && npm publish --tag alpha
-cd packages/sources && npm publish --tag alpha
-cd packages/file-utils && npm publish --tag alpha
-cd packages/plugin-contracts && npm publish --tag alpha
-cd packages/testkit && npm publish --tag alpha
-cd packages/cli && npm publish --tag alpha
-cd packages/aligntrue && npm publish --tag alpha
-
-# 4. Commit and tag
-git add .
-git commit -m "chore: Release X.Y.Z (manual)"
+pnpm install
+git add -A
+git commit -m "chore: Release vX.Y.Z"
 git tag vX.Y.Z
-git push && git push --tags
+git push origin main --tags
 ```
 
----
+### 3. Update CHANGELOG
 
-## Post-Release Checklist
+Ensure `CHANGELOG.md` is updated with the new version and date.
 
-After a successful release:
+## Workspace Protocol Safety
 
-1. ✅ Verify on npm: https://www.npmjs.com/package/aligntrue
-2. ✅ Test installation: `npx aligntrue@alpha --version`
-3. ✅ Update CHANGELOG.md
-4. ✅ Announce in Discord/Twitter (if significant)
-5. ✅ Update docs site if behavior changed
+We use `workspace:*` protocol in `package.json` for internal dependencies. This ensures local development always uses the live code in the monorepo.
+
+**Crucial:** We must NEVER publish packages with `workspace:*` dependencies to npm. Users cannot install them.
+
+### Prevention Strategy
+
+We use a two-layer defense:
+
+1. **pnpm Publish**: We strictly use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to the concrete version from `package.json` during the pack process.
+2. **Post-publish Validation**: `scripts/validate-published-deps.mjs` queries the npm registry immediately after publishing. If it detects `workspace:*` leaks, it alerts you to unpublish.
+
+### Manual Verification
+
+To manually check a published package:
+
+```bash
+npm view aligntrue@latest dependencies
+```
+
+You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
