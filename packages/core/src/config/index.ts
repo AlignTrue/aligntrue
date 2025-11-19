@@ -551,6 +551,7 @@ function checkUnknownFields(
     "backup",
     "detection",
     "overlays",
+    "plugs",
     // "approval", // DEPRECATED: removed
   ]);
 

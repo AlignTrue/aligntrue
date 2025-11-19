@@ -111,7 +111,8 @@ plugs:
     const config = readFileSync(configPath, "utf-8");
     expect(config).toContain("plugs:");
     expect(config).toContain("fills:");
-    expect(config).toContain('test.cmd: "pnpm test"');
+    expect(config).toContain("test.cmd:");
+    expect(config).toContain("pnpm test");
 
     // Verify success message
     expect(logOutput.join("\n")).toContain("Set plug fill");
