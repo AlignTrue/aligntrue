@@ -478,6 +478,20 @@
         }
       }
     },
+    "plugs": {
+      "type": "object",
+      "description": "Plug fills for template slots in rules",
+      "additionalProperties": false,
+      "properties": {
+        "fills": {
+          "type": "object",
+          "description": "Slot fills (key: slot name, value: fill value)",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "approval": {
       "type": "object",
       "description": "Approval workflow configuration for team mode",

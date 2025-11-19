@@ -170,7 +170,9 @@ Fills merge in this order (last writer wins):
 
 ### Setting fills
 
-**CLI command:**
+There are two ways to provide fills: via CLI commands or via configuration file.
+
+#### Via CLI (recommended)
 
 ```bash
 aligntrue plugs set <key> <value>
@@ -192,15 +194,37 @@ aligntrue plugs set docs.url "https://docs.example.com"
 aligntrue plugs set config.file "config/production.json"
 ```
 
-**Direct YAML editing:**
+The CLI command validates the fill format and updates your `.aligntrue/config.yaml` file.
+
+#### Via config file
+
+You can also set fills directly in `.aligntrue/config.yaml`:
 
 ```yaml
+version: "1"
+mode: solo
+
 plugs:
   fills:
     test.cmd: "pnpm test"
     author.name: "Jane Smith"
     docs.url: "https://docs.example.com"
     config.file: "config/production.json"
+
+exporters:
+  - agents-md
+  - cursor
+```
+
+**Config fills take precedence over IR fills**, allowing you to override pack defaults without modifying the pack itself.
+
+#### Removing fills
+
+```bash
+# Remove a fill
+aligntrue plugs unset test.cmd
+
+# Or edit config.yaml and remove the fill entry
 ```
 
 ### Fill validation
@@ -345,7 +369,7 @@ Unresolved required plugs: 0
 aligntrue plugs set <key> <value>
 ```
 
-Sets a repo-local fill with format validation.
+Sets a config-based fill with format validation.
 
 **Example:**
 
@@ -358,10 +382,31 @@ aligntrue plugs set test.cmd "pnpm test"
 ```
 ✓ Set plug fill: test.cmd = "pnpm test"
 
-Updated: .aligntrue/.rules.yaml
+  Run 'aligntrue sync' to apply the fill
+```
 
-Next step:
-  Run: aligntrue sync
+The command validates the fill against the slot's format (command, file, url, text) and updates `.aligntrue/config.yaml`.
+
+### unset - Remove fill value
+
+```bash
+aligntrue plugs unset <key>
+```
+
+Removes a config-based fill.
+
+**Example:**
+
+```bash
+aligntrue plugs unset test.cmd
+```
+
+**Output:**
+
+```
+✓ Removed plug fill: test.cmd
+
+  Run 'aligntrue sync' to apply changes
 ```
 
 See [CLI Reference](/docs/04-reference/cli-reference/plugs) for complete command documentation.

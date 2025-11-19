@@ -144,6 +144,9 @@ export interface AlignTrueConfig {
   backup?: BackupConfig;
   detection?: DetectionConfig;
   overlays?: OverlayConfig;
+  plugs?: {
+    fills?: Record<string, string>;
+  };
 
   // New: Resource-based configuration
   resources?: Record<ResourceType, ResourceConfig>;
