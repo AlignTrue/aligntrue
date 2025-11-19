@@ -6,6 +6,7 @@
 import { existsSync, readFileSync, statSync } from "fs";
 import { basename, join } from "path";
 import { glob } from "glob";
+import { parse as parseYaml } from "yaml";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 
@@ -28,8 +29,11 @@ export async function discoverSourceFiles(
   cwd: string,
   config: AlignTrueConfig,
 ): Promise<SourceFile[]> {
-  // Get source patterns from config (default: AGENTS.md)
-  const patterns = config.sync?.source_files || "AGENTS.md";
+  // Get source patterns from config (no default fallback - all exporters are equal)
+  const patterns = config.sync?.source_files;
+  if (!patterns) {
+    return [];
+  }
   const patternArray = Array.isArray(patterns) ? patterns : [patterns];
 
   const allFiles: SourceFile[] = [];
@@ -144,9 +148,13 @@ export function orderSourceFiles(
  * Adds source file metadata to each section for provenance
  *
  * @param files - Ordered list of source files
+ * @param preservedId - Optional ID to preserve from existing IR (instead of using "multi-file-source")
  * @returns Merged AlignPack with all sections
  */
-export function mergeSourceFiles(files: SourceFile[]): AlignPack {
+export function mergeSourceFiles(
+  files: SourceFile[],
+  preservedId?: string,
+): AlignPack {
   const allSections: AlignSection[] = [];
 
   for (const file of files) {
@@ -170,7 +178,7 @@ export function mergeSourceFiles(files: SourceFile[]): AlignPack {
   }
 
   return {
-    id: "multi-file-source",
+    id: preservedId || "multi-file-source",
     version: "1.0.0",
     spec_version: "1",
     sections: allSections,
@@ -181,6 +189,8 @@ export function mergeSourceFiles(files: SourceFile[]): AlignPack {
  * Load and merge source files into a single AlignPack
  * Main entry point for multi-file source loading
  *
+ * Preserves existing IR's ID if .rules.yaml exists, only uses "multi-file-source" as fallback.
+ *
  * @param cwd - Current working directory
  * @param config - AlignTrue configuration
  * @returns Merged AlignPack from all source files
@@ -189,13 +199,32 @@ export async function loadSourceFiles(
   cwd: string,
   config: AlignTrueConfig,
 ): Promise<AlignPack> {
+  // Try to read existing IR's ID to preserve it
+  let existingId: string | undefined;
+  const rulesPath = join(cwd, ".aligntrue", ".rules.yaml");
+  if (existsSync(rulesPath)) {
+    try {
+      const rulesContent = readFileSync(rulesPath, "utf-8");
+      // Parse YAML properly to extract id field
+      const parsed = parseYaml(rulesContent);
+      if (typeof parsed === "object" && parsed !== null && "id" in parsed) {
+        const id = (parsed as Record<string, unknown>)["id"];
+        if (typeof id === "string") {
+          existingId = id;
+        }
+      }
+    } catch {
+      // Silently ignore if can't read/parse existing IR
+    }
+  }
+
   // Discover all source files
   const files = await discoverSourceFiles(cwd, config);
 
   // If no files found, return empty pack
   if (files.length === 0) {
     return {
-      id: "multi-file-source",
+      id: existingId || "multi-file-source",
       version: "1.0.0",
       spec_version: "1",
       sections: [],
@@ -205,6 +234,6 @@ export async function loadSourceFiles(
   // Order files
   const ordered = orderSourceFiles(files, config.sync?.source_order);
 
-  // Merge into single pack
-  return mergeSourceFiles(ordered);
+  // Merge into single pack, preserving existing IR's ID
+  return mergeSourceFiles(ordered, existingId);
 }

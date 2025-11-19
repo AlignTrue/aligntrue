@@ -106,12 +106,15 @@ export interface AlignTrueConfig {
     workflow_mode?: "auto" | "ir_source" | "native_format";
     show_diff_on_pull?: boolean;
     two_way?: boolean; // DEPRECATED: Use edit_source instead
-    edit_source?: string | string[]; // Which files accept edits: ".rules.yaml", "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
+    // Which files accept edits and sync TO canonical IR (.aligntrue/.rules.yaml)
+    // Options: ".rules.yaml" (IR-only), "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
+    // Note: IR is always canonical; this controls input gates only
+    edit_source?: string | string[];
     scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
-    source_files?: string | string[]; // Source file patterns for rules (default: 'AGENTS.md')
+    source_files?: string | string[]; // Source file patterns for rules (derived from edit_source by default)
     source_order?: string[]; // Custom ordering of source files by basename
     source_markers?: "auto" | "always" | "never"; // Control source file markers in concatenated outputs (default: "auto")
   };
@@ -379,7 +382,11 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * - Build array of patterns from all enabled exporters
    * - If multiple exporters → array of patterns
    * - If single exporter → single pattern
-   * - Fallback → "AGENTS.md"
+   * - No fallback - if no exporters configured, edit_source remains undefined
+   *
+   * Note: edit_source controls which files accept edits and sync TO canonical IR.
+   * IR (.aligntrue/.rules.yaml) is always the canonical source of truth.
+   * This setting just controls the input gates to IR.
    *
    * This prevents accidental read-only files when users enable multiple exporters.
    */
@@ -401,13 +408,13 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     }
 
     // Set edit_source based on number of patterns
-    if (patterns.length === 0) {
-      result.sync.edit_source = "AGENTS.md" as string | string[];
-    } else if (patterns.length === 1) {
+    // No special fallback - all exporters are equal
+    if (patterns.length === 1) {
       result.sync.edit_source = patterns[0] as string | string[];
-    } else {
+    } else if (patterns.length > 1) {
       result.sync.edit_source = patterns;
     }
+    // If patterns.length === 0, leave edit_source undefined
   }
 
   /**
@@ -425,9 +432,12 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    */
   /**
    * Set source file defaults
+   *
+   * Derive from edit_source if available, otherwise leave undefined.
+   * No special fallback - all exporters are equal.
    */
-  if (result.sync.source_files === undefined) {
-    result.sync.source_files = "AGENTS.md";
+  if (result.sync.source_files === undefined && result.sync.edit_source) {
+    result.sync.source_files = result.sync.edit_source;
   }
 
   /**

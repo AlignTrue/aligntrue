@@ -925,7 +925,9 @@ export class SyncEngine {
 
       if (editedFiles.length === 0) {
         // No edits detected - proceed with normal IR-to-agents sync
-        // This is the expected path when IR is the source of truth
+        // Note: IR (.aligntrue/.rules.yaml) is ALWAYS the canonical source.
+        // edit_source controls which files can write TO IR (input gates).
+        // This is the expected path when no agent files have been edited.
       } else {
         auditTrail.push({
           action: "update",
