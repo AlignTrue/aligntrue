@@ -18,5 +18,6 @@ export type {
   ExportOptions,
   ExportResult,
   ExporterPlugin,
+  ExporterCapabilities,
   AdapterManifest,
 } from "./exporter.js";

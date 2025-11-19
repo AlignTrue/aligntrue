@@ -19,6 +19,7 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 
 | Feature                  | Solo mode             | Team mode                               |
 | ------------------------ | --------------------- | --------------------------------------- |
+| **Organization**         | Simple or organized   | Organized or complex                    |
 | **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default) |
 | **Auto-pull**            | ✅ Enabled (default)  | ❌ Disabled (explicit updates)          |
 | **Allow lists**          | ❌ Not required       | ✅ Required (approved sources)          |
@@ -30,6 +31,8 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | **Setup complexity**     | Low (60 seconds)      | Medium (5 minutes)                      |
 | **Maintenance overhead** | Minimal               | Low to medium                           |
 | **Best for**             | Individual developers | Teams and organizations                 |
+
+**Note:** For guidance on choosing between simple, organized, or complex rule organization, see [Choosing your organization structure](/docs/01-guides/07-organization-structure).
 
 ### Architecture comparison
 
@@ -349,6 +352,7 @@ Start with solo mode. It's simpler and you can always upgrade later. The switch 
 ## Related documentation
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
+- [Choosing your organization structure](/docs/01-guides/07-organization-structure) - Select the right rule organization for your project
 - [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Complete solo mode workflows
 - [Team Guide](/docs/01-guides/05-team-guide) - Complete team mode workflows
 - [Team Mode Concepts](/docs/03-concepts/team-mode) - Technical details of team mode

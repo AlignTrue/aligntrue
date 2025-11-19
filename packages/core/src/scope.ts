@@ -7,11 +7,14 @@ import micromatch from "micromatch";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { ResolvedScope } from "@aligntrue/plugin-contracts";
 
+import type { AlignTrueConfig } from "./config/index.js";
+
 /**
  * Scope definition with path-based includes/excludes
  */
 export interface Scope {
   path: string; // Relative path from workspace root
+  inherit?: boolean; // Default: true
   include?: string[]; // Glob patterns to include
   exclude?: string[]; // Glob patterns to exclude
   rulesets?: string[]; // Rule IDs to apply (optional, for filtering)
@@ -162,6 +165,83 @@ export function resolveScopes(
   }
 
   return resolved;
+}
+
+/**
+ * Resolve hierarchical scope chain for a given scope path
+ * Returns array of scope paths from root to target scope
+ * e.g. "apps/web" -> [".", "apps", "apps/web"]
+ *
+ * Respects inherit: false setting in config to break the chain
+ */
+export function resolveHierarchicalScopes(
+  scopePath: string,
+  config: AlignTrueConfig,
+): string[] {
+  const normalizedTarget = normalizePath(scopePath);
+  const isDefault = normalizedTarget === "." || normalizedTarget === "";
+
+  // If root scope, just return root
+  if (isDefault) {
+    return ["."];
+  }
+
+  // Find all defined scopes in config
+  const definedScopes = resolveScopes(process.cwd(), {
+    scopes: config.scopes || [],
+  });
+
+  // Build potential chain by path segments
+  const parts = normalizedTarget.split("/");
+  const chain: string[] = ["."]; // Always start with root
+  let currentPath = "";
+
+  for (const part of parts) {
+    currentPath = currentPath ? `${currentPath}/${part}` : part;
+    chain.push(currentPath);
+  }
+
+  // Filter chain to only include scopes that are defined in config OR are the target
+  // (Implicit intermediate scopes are allowed if they match a defined scope)
+  // Actually, we only care about scopes that have rules associated with them.
+  // But for inheritance, we need to check the 'inherit' flag of the *child* scope.
+
+  // We walk the chain from leaf (target) up to root.
+  // If we encounter a scope with inherit: false, we stop.
+
+  const resultChain: string[] = [];
+  let currentScopePath = normalizedTarget;
+
+  // Walk up from target
+  while (true) {
+    resultChain.unshift(currentScopePath); // Add to front
+
+    // Find config for current scope
+    const scopeConfig = definedScopes.find(
+      (s) => s.normalizedPath === currentScopePath,
+    );
+
+    // Check inheritance (default true)
+    // If inherit is explicitly false, stop walking up
+    if (scopeConfig && scopeConfig.inherit === false) {
+      break;
+    }
+
+    // Move to parent
+    if (currentScopePath === "." || currentScopePath === "") {
+      break; // Reached root
+    }
+
+    const lastSlash = currentScopePath.lastIndexOf("/");
+    if (lastSlash === -1) {
+      currentScopePath = "."; // Parent of top-level dir is root
+    } else {
+      currentScopePath = currentScopePath.substring(0, lastSlash);
+    }
+  }
+
+  // Ensure root is "." not ""
+  return resultChain.map((p) => (p === "" ? "." : p));
 }
 
 /**
