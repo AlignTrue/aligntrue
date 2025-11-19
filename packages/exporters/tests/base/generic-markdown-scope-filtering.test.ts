@@ -73,12 +73,6 @@ describe("GenericMarkdownExporter Scope Filtering", () => {
       sections: [rootSection, webSection, apiSection],
     };
 
-    const scope: ResolvedScope = {
-      path: ".",
-      normalizedPath: ".",
-      isDefault: true,
-    };
-
     const options: ExportOptions = {
       outputDir: TEST_OUTPUT_DIR,
       dryRun: false,
