@@ -29,6 +29,7 @@ PACKAGES=(
   exporters
   cli
   aligntrue
+  ui
 )
 
 echo "==> Bumping package versions (${BUMP_TYPE})"
@@ -61,12 +62,22 @@ for pkg in "${PACKAGES[@]}"; do
     continue
   fi
 
+  # Skip private packages
+  if grep -q '"private"[[:space:]]*:[[:space:]]*true' "${pkg_dir}/package.json"; then
+    echo "  Skipping ${pkg_dir} (private)"
+    continue
+  fi
+
   echo "  Publishing ${pkg_dir}"
   (
     cd "${pkg_dir}"
-    npm publish --tag latest
+    pnpm publish --tag latest --no-git-checks
   )
 done
+
+echo ""
+echo "==> Post-publish validation"
+node scripts/validate-published-deps.mjs
 
 cat <<'EOF'
 
