@@ -910,7 +910,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // Auto-sync: simple first-time setup with no imports
     try {
       const { sync } = await import("./sync/index.js");
-      await sync([]);
+      // Pass --yes flag through to sync when init is non-interactive
+      await sync(nonInteractive ? ["--yes"] : []);
       autoSyncPerformed = true;
     } catch (error) {
       clack.log.error(
@@ -945,7 +946,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     if (shouldSyncNow) {
       try {
         const { sync } = await import("./sync/index.js");
-        await sync([]);
+        // Pass --yes flag through to sync when init is non-interactive
+        await sync(nonInteractive ? ["--yes"] : []);
         autoSyncPerformed = true;
       } catch (error) {
         clack.log.error(
