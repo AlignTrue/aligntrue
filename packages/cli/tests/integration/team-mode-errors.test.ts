@@ -14,9 +14,8 @@ vi.mock("@clack/prompts");
 
 let testProjectContext: TestProjectContext; // Added this line
 describe("Team Mode Error Handling", () => {
-  let testDir: string;
   let originalCwd: string;
-  let cleanup: () => Promise<void>;
+  let testDir: string;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -24,7 +23,6 @@ describe("Team Mode Error Handling", () => {
 
     testProjectContext = setupTestProject({ skipFiles: true }); // Modified this line
     testDir = testProjectContext.projectDir;
-    cleanup = testProjectContext.cleanup; // Modified this line
     process.chdir(testDir);
 
     // Mock process.exit to throw for testing
