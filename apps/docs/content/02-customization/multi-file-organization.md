@@ -7,6 +7,27 @@ description: Organize rules across multiple markdown files for better maintainab
 
 Instead of maintaining all rules in a single `AGENTS.md` file, AlignTrue supports organizing rules across multiple markdown files. This is especially useful for large projects with many rules or teams where different people own different rule categories.
 
+## Where do source files live?
+
+**Important:** AlignTrue does NOT create a default directory for multi-file sources. You choose where to organize your files.
+
+Common patterns:
+
+- `rules/*.md` - Dedicated rules directory (most common)
+- `docs/rules/*.md` - Rules within documentation
+- `team-rules/*.md` - Team-specific naming
+- `.aligntrue/rules/*.md` - Keep rules with configuration
+
+**Example:** If you configure `source_files: "rules/*.md"`, you must create the `rules/` directory yourself:
+
+```bash
+mkdir rules
+echo "# Security Guidelines" > rules/security.md
+echo "# Coding Standards" > rules/coding-standards.md
+```
+
+AlignTrue will then discover and merge these files during sync.
+
 ## Overview
 
 Multi-file organization allows you to:
@@ -31,11 +52,81 @@ sync:
 
 ### Source file patterns
 
-The `source_files` field accepts:
+The `source_files` field accepts various patterns:
 
-- **Single file**: `"AGENTS.md"` (default)
-- **Glob pattern**: `"rules/*.md"` (all `.md` files in `rules/` directory)
-- **Array of patterns**: `["arch.md", "security.md"]` (specific files)
+**Single file** (default):
+
+```yaml
+sync:
+  source_files: "AGENTS.md"
+```
+
+**Glob pattern** (all `.md` files in directory):
+
+```yaml
+sync:
+  source_files: "rules/*.md"
+```
+
+**Recursive discovery** (includes subdirectories):
+
+```yaml
+sync:
+  source_files: "rules/**/*.md"
+```
+
+**Array of specific files**:
+
+```yaml
+sync:
+  source_files:
+    - "architecture.md"
+    - "security.md"
+    - "coding-standards.md"
+```
+
+**Multiple directories**:
+
+```yaml
+sync:
+  source_files:
+    - "rules/*.md"
+    - "docs/guidelines/*.md"
+```
+
+**Custom directory examples:**
+
+You're not limited to `rules/`—use any structure:
+
+```yaml
+# Within documentation
+sync:
+  source_files: "docs/rules/*.md"
+
+# Team-specific naming
+sync:
+  source_files: "team-rules/*.md"
+
+# With configuration
+sync:
+  source_files: ".aligntrue/rules/*.md"
+
+# Nested by category
+sync:
+  source_files: "rules/**/*.md"
+```
+
+Example nested structure:
+
+```
+rules/
+├── backend/
+│   ├── api-design.md
+│   └── database.md
+└── frontend/
+    ├── react.md
+    └── styling.md
+```
 
 ### Source order
 
@@ -225,6 +316,7 @@ If you see "Section conflict" warnings:
 
 ## Related features
 
+- [Choosing your organization structure](/docs/01-guides/07-organization-structure) - Decision guide for simple, organized, or complex structures
 - [Two-Way Sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
 - [Team Mode](/docs/01-guides/05-team-guide) - Lockfile validation and drift detection

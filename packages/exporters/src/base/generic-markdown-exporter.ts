@@ -11,19 +11,12 @@ import type {
   ExportOptions,
   ExportResult,
   ResolvedScope,
+  ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
 import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { join } from "path";
 import { ExporterBase } from "./index.js";
-
-/**
- * State for collecting all scopes before generating single merged file
- */
-interface ExporterState {
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  seenScopes: Set<string>;
-}
 
 /**
  * Generic configurable markdown exporter
@@ -32,16 +25,17 @@ interface ExporterState {
 export class GenericMarkdownExporter extends ExporterBase {
   name: string;
   version = "1.0.0";
+  capabilities: ExporterCapabilities = {
+    multiFile: false, // Single-file format
+    twoWaySync: true, // Supports editing and pullback
+    scopeAware: true, // Can filter by scope
+    preserveStructure: false, // Concatenates everything
+    nestedDirectories: true, // Supports nested scope directories
+  };
 
   private filename: string; // e.g., "CLAUDE.md", "WARP.md"
   private title: string; // e.g., "CLAUDE.md", "WARP.md"
   private description: string; // e.g., "for Claude Code", "for Warp"
-
-  // State for accumulating rules/sections across multiple scope calls
-  private state: ExporterState = {
-    allSections: [],
-    seenScopes: new Set(),
-  };
 
   constructor(
     name: string,
@@ -74,45 +68,83 @@ export class GenericMarkdownExporter extends ExporterBase {
       };
     }
 
-    // Accumulate content with scope information
-    const scopePath = this.formatScopePath(scope);
+    // Group sections by target scope (vendor.aligntrue.source_scope)
+    const sectionsByScope = this.groupSectionsByScope(sections, scope);
 
-    sections.forEach((section) => {
-      this.state.allSections.push({ section, scopePath });
-    });
+    // Only process sections for the current scope
+    const currentTargetScope = scope.isDefault
+      ? "default"
+      : scope.normalizedPath;
+    const scopeSections = sectionsByScope.get(currentTargetScope) || [];
 
-    this.state.seenScopes.add(scopePath);
+    if (scopeSections.length === 0) {
+      return {
+        success: true,
+        filesWritten: [],
+        contentHash: "",
+      };
+    }
 
-    const outputPath = join(outputDir, this.filename);
+    // Determine output path for this scope
+    let outputPath: string;
+    if (scope.isDefault) {
+      // Default scope: write to root file (e.g. AGENTS.md)
+      outputPath = join(outputDir, this.filename);
+    } else {
+      // Named scope: write to scope-specific nested directory
+      // e.g., apps/web/AGENTS.md
+      const scopePath = scope.normalizedPath || scope.path || ".";
+      outputPath = join(outputDir, scopePath, this.filename);
+    }
 
     // Generate content - natural markdown mode
-    const result = this.generateSectionsContent(options.unresolvedPlugsCount);
+    const result = this.generateSectionsContent(
+      scopeSections,
+      options.unresolvedPlugsCount,
+    );
     const content = result.content;
     const warnings = result.warnings;
 
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    const contentHash = computeContentHash({ sections: scopeSections });
+    const fidelityNotes = this.computeSectionFidelityNotes(scopeSections);
 
+    // Write file atomically if not dry-run
     const filesWritten = await this.writeFile(outputPath, content, dryRun);
-    const exportResult = this.buildResult(
-      filesWritten,
-      contentHash,
-      fidelityNotes,
-    );
 
-    if (warnings.length > 0) {
-      exportResult.warnings = warnings;
-    }
-
-    return exportResult;
+    return this.buildResult(filesWritten, contentHash, [
+      ...warnings,
+      ...fidelityNotes,
+    ]);
   }
 
   resetState(): void {
-    this.state = {
-      allSections: [],
-      seenScopes: new Set(),
-    };
+    // No state to reset
+  }
+
+  /**
+   * Group sections by their target scope
+   * Uses vendor.aligntrue.source_scope if present, otherwise uses provided scope
+   */
+  private groupSectionsByScope(
+    sections: AlignSection[],
+    fallbackScope: ResolvedScope,
+  ): Map<string, AlignSection[]> {
+    const sectionsByScope = new Map<string, AlignSection[]>();
+
+    for (const section of sections) {
+      // Check for source_scope in vendor metadata
+      const sourceScope = section.vendor?.aligntrue?.source_scope;
+      const targetScope =
+        sourceScope ||
+        (fallbackScope.isDefault ? "default" : fallbackScope.normalizedPath);
+
+      if (!sectionsByScope.has(targetScope)) {
+        sectionsByScope.set(targetScope, []);
+      }
+      sectionsByScope.get(targetScope)!.push(section);
+    }
+
+    return sectionsByScope;
   }
 
   private formatScopePath(scope: ResolvedScope): string {
@@ -122,20 +154,18 @@ export class GenericMarkdownExporter extends ExporterBase {
     return scope.path;
   }
 
-  private generateSectionsContent(_unresolvedPlugs?: number): {
+  private generateSectionsContent(
+    sections: AlignSection[],
+    _unresolvedPlugs?: number,
+  ): {
     content: string;
     warnings: string[];
   } {
-    const allSections = this.state.allSections.map(({ section }) => section);
-    // Note: contentHash and fidelityNotes removed with footer generation
-    // const _contentHash = computeContentHash({ sections: allSections });
-    // const _fidelityNotes = this.computeSectionFidelityNotes(allSections);
-
     // Generate header
     const header = this.generateHeader();
 
     // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(allSections, false);
+    const sectionsMarkdown = this.renderSections(sections, false);
 
     // No footer - keep files clean
     // Fidelity notes will be shown in CLI output instead
