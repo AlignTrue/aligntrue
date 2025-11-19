@@ -558,6 +558,11 @@ function checkUnknownFields(
   ]);
 
   for (const key of Object.keys(config)) {
+    // Allow vendor.* fields explicitly
+    if (key.startsWith("vendor.")) {
+      continue;
+    }
+
     if (!knownFields.has(key)) {
       const warningKey = `unknown-field:${configPath}:${key}`;
       if (shownWarnings.has(warningKey)) {
@@ -566,7 +571,8 @@ function checkUnknownFields(
       shownWarnings.add(warningKey);
       console.warn(
         `Warning: Unknown config field "${key}" in ${configPath}\n` +
-          `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(", ")}`,
+          `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(", ")}\n` +
+          `  Tip: Use "vendor.${key}" for custom fields that should be preserved`,
       );
     }
   }
