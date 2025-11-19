@@ -6,6 +6,28 @@
   "framework": "nextjs",
   "public": false,
   "regions": ["iad1"],
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/docs/00-getting-started/00-quickstart",
+      "permanent": true
+    },
+    {
+      "source": "/scopes",
+      "destination": "/docs/02-customization/scopes",
+      "permanent": true
+    },
+    {
+      "source": "/adapters",
+      "destination": "/docs/04-reference/agent-support",
+      "permanent": true
+    },
+    {
+      "source": "/remote-setup",
+      "destination": "/docs/01-guides/team-workflows",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

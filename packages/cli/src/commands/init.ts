@@ -193,6 +193,19 @@ function shouldOfferSync(options: {
   return totalEditableSources > 1;
 }
 
+function shouldAutoSync(options: {
+  createdAgentsTemplate: boolean;
+  importedAgentFileCount: number;
+  hasExporters: boolean;
+}): boolean {
+  // Auto-sync only in simple case: created AGENTS.md + has exporters + no imports
+  return (
+    options.createdAgentsTemplate &&
+    options.importedAgentFileCount === 0 &&
+    options.hasExporters
+  );
+}
+
 /**
  * Init command implementation
  */
@@ -866,14 +879,22 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   console.log("  Edit: .aligntrue/config.yaml");
   console.log("  Or run: aligntrue config set <key> <value>");
 
-  // Step 11: Offer first sync when it would be useful
+  // Step 11: Determine sync strategy
+  const hasExporters = config.exporters && config.exporters.length > 0;
+  const shouldAuto = shouldAutoSync({
+    createdAgentsTemplate: createAgentsTemplate,
+    importedAgentFileCount: selectedImportCandidates.length,
+    hasExporters: hasExporters || false,
+  });
   const syncWouldBeUseful = shouldOfferSync({
     createdAgentsTemplate: createAgentsTemplate,
     importedAgentFileCount: selectedImportCandidates.length,
   });
+
   let syncGuidance: NextStepsSyncGuidance = syncWouldBeUseful
     ? "standard"
     : "deferred";
+  let autoSyncPerformed = false;
 
   if (noSync) {
     if (nonInteractive) {
@@ -885,14 +906,34 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         "Skipped sync (--no-sync). Run 'aligntrue sync' when you are ready.",
       );
     }
+  } else if (shouldAuto) {
+    // Auto-sync: simple first-time setup with no imports
+    try {
+      const { sync } = await import("./sync/index.js");
+      await sync([]);
+      autoSyncPerformed = true;
+    } catch (error) {
+      clack.log.error(
+        `Sync failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      clack.log.info("Resolve the issue, then run 'aligntrue sync' manually.");
+    }
   } else if (!syncWouldBeUseful) {
+    // Deferred: no exporters or no edit sources
     const info = nonInteractive ? console.log : clack.log.info;
-    info(
-      "Ready to sync. Run 'aligntrue sync' to generate agent files, or edit your rules first.",
-    );
+    if (!hasExporters) {
+      info(
+        "Setup complete! Enable agents with 'aligntrue adapters enable', then run 'aligntrue sync'.",
+      );
+    } else {
+      info(
+        "Setup complete! Edit AGENTS.md or add other agents, then run 'aligntrue sync'.",
+      );
+    }
   } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
   } else {
+    // Ask to sync now (multiple edit sources)
     const shouldSyncNow = await clack.confirm({
       message: "Run 'aligntrue sync' now?",
       initialValue: true,
@@ -907,6 +948,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       try {
         const { sync } = await import("./sync/index.js");
         await sync([]);
+        autoSyncPerformed = true;
       } catch (error) {
         clack.log.error(
           `Sync failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -920,17 +962,32 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
   }
 
-  const nextStepsMessage = buildNextStepsMessage({
-    mode: config.mode,
-    syncGuidance,
-  });
-
-  if (nonInteractive) {
-    console.log(`\n${nextStepsMessage}`);
-    console.log(`\nLearn more: ${DOCS_QUICKSTART}`);
+  // Show appropriate completion message
+  if (autoSyncPerformed) {
+    const info = nonInteractive ? console.log : clack.log.success;
+    info("\n✓ Setup complete! Your agents are now aligned.");
+    info(
+      "\nNext: Start coding! Edit AGENTS.md anytime and run 'aligntrue sync' to update.",
+    );
   } else {
-    clack.log.info(`\n${nextStepsMessage}`);
-    clack.log.info(`\nLearn more: ${DOCS_QUICKSTART}`);
+    const nextStepsMessage = buildNextStepsMessage({
+      mode: config.mode,
+      syncGuidance,
+    });
+
+    if (nonInteractive) {
+      console.log(`\n${nextStepsMessage}`);
+    } else {
+      clack.log.info(`\n${nextStepsMessage}`);
+    }
+  }
+
+  if (!autoSyncPerformed) {
+    if (nonInteractive) {
+      console.log(`\nLearn more: ${DOCS_QUICKSTART}`);
+    } else {
+      clack.log.info(`\nLearn more: ${DOCS_QUICKSTART}`);
+    }
   }
 
   // Record telemetry event
