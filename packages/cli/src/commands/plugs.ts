@@ -5,7 +5,14 @@
  * This command helps users understand and test plug resolution.
  */
 
-import { resolvePlugsForPack } from "@aligntrue/core";
+import {
+  resolvePlugsForPack,
+  validateFill,
+  type PlugFormat,
+  loadConfig,
+  saveConfig,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
@@ -40,18 +47,22 @@ function showHelp() {
   showStandardHelp({
     name: "plugs",
     description: "List, resolve, and validate plugs in rules",
-    usage: "aligntrue plugs <list|resolve|validate> [options]",
+    usage: "aligntrue plugs <list|resolve|validate|set|unset> [options]",
     args: ARG_DEFINITIONS,
     examples: [
-      "aligntrue plugs list                # List all slots and fills",
-      "aligntrue plugs resolve             # Resolve plugs and show output",
-      "aligntrue plugs validate            # Validate plugs",
+      "aligntrue plugs list                      # List all slots and fills",
+      "aligntrue plugs resolve                   # Resolve plugs and show output",
+      "aligntrue plugs validate                  # Validate plugs",
+      'aligntrue plugs set test.cmd "pnpm test" # Set a fill value',
+      "aligntrue plugs unset test.cmd           # Remove a fill value",
     ],
     notes: [
       "Subcommands:",
       "  list      - List declared slots and fills",
       "  resolve   - Resolve plugs in rules and show output",
       "  validate  - Check for undeclared or unresolved plugs",
+      "  set       - Set a fill value for a slot",
+      "  unset     - Remove a fill value for a slot",
     ],
   });
 }
@@ -75,10 +86,10 @@ export async function plugsCommand(args: string[]): Promise<void> {
     process.exit(2);
   }
 
-  const validSubcommands = ["list", "resolve", "validate"];
+  const validSubcommands = ["list", "resolve", "validate", "set", "unset"];
   if (!validSubcommands.includes(subcommand)) {
     console.error(`Error: Unknown subcommand "${subcommand}"\n`);
-    console.error("Valid subcommands: list, resolve, validate\n");
+    console.error("Valid subcommands: list, resolve, validate, set, unset\n");
     console.error("Run 'aligntrue plugs --help' for more information\n");
     process.exit(2);
   }
@@ -86,6 +97,16 @@ export async function plugsCommand(args: string[]): Promise<void> {
   const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
 
   try {
+    // Handle set/unset commands separately (don't need pack)
+    if (subcommand === "set") {
+      await setPlugFill(positional.slice(1), configPath);
+      return;
+    }
+    if (subcommand === "unset") {
+      await unsetPlugFill(positional.slice(1), configPath);
+      return;
+    }
+
     // Load config
     const config = await tryLoadConfig(configPath);
 
@@ -114,10 +135,10 @@ export async function plugsCommand(args: string[]): Promise<void> {
     // Execute subcommand
     switch (subcommand) {
       case "list":
-        await listPlugs(pack);
+        await listPlugs(pack, config);
         break;
       case "resolve":
-        await resolvePlugs(pack);
+        await resolvePlugs(pack, config);
         break;
       case "validate":
         await validatePlugs(pack);
@@ -137,7 +158,10 @@ export async function plugsCommand(args: string[]): Promise<void> {
 /**
  * List all slots and fills in the pack
  */
-async function listPlugs(pack: AlignPack): Promise<void> {
+async function listPlugs(
+  pack: AlignPack,
+  config: AlignTrueConfig | null | undefined,
+): Promise<void> {
   console.log("┌  Plugs in Pack\n│");
 
   if (!pack.plugs) {
@@ -146,13 +170,29 @@ async function listPlugs(pack: AlignPack): Promise<void> {
     return;
   }
 
+  const configFills = config?.plugs?.fills || {};
+
   // List slots
   if (pack.plugs.slots && Object.keys(pack.plugs.slots).length > 0) {
     console.log("◆  Slots\n│");
     for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
       const required = slotDef.required ? "required" : "optional";
+      const configFill = configFills[slotName];
+      const irFill = pack.plugs.fills?.[slotName];
+      const fill = configFill || irFill;
+      const fillSource = configFill
+        ? "(from config)"
+        : irFill
+          ? "(from IR)"
+          : "(unresolved)";
+
       console.log(`●    ${slotName} (${slotDef.format}, ${required})`);
       console.log(`│      ${slotDef.description}`);
+      if (fill) {
+        console.log(`│      Fill: "${fill}" ${fillSource}`);
+      } else if (required) {
+        console.log(`│      ⚠ No fill provided (required)`);
+      }
       if (slotDef.example) {
         console.log(`│      Example: ${slotDef.example}`);
       }
@@ -162,15 +202,32 @@ async function listPlugs(pack: AlignPack): Promise<void> {
     console.log("◆  No slots declared\n│");
   }
 
-  // List fills
-  if (pack.plugs.fills && Object.keys(pack.plugs.fills).length > 0) {
-    console.log("◆  Fills\n│");
-    for (const [slotName, fillValue] of Object.entries(pack.plugs.fills)) {
+  // List fills from IR (not shown above)
+  const irOnlyFills = pack.plugs.fills
+    ? Object.keys(pack.plugs.fills).filter((key) => !pack.plugs?.slots?.[key])
+    : [];
+
+  if (irOnlyFills.length > 0) {
+    console.log("◆  Additional IR Fills (no declared slot)\n│");
+    for (const slotName of irOnlyFills) {
+      const fillValue = pack.plugs.fills![slotName];
       console.log(`●    ${slotName} = "${fillValue}"`);
     }
     console.log("│");
-  } else {
-    console.log("◆  No fills provided\n│");
+  }
+
+  // List config-only fills (not in IR)
+  const configOnlyFills = Object.keys(configFills).filter(
+    (key) => !pack.plugs?.fills?.[key],
+  );
+
+  if (configOnlyFills.length > 0) {
+    console.log("◆  Config Fills (override IR)\n│");
+    for (const slotName of configOnlyFills) {
+      const fillValue = configFills[slotName];
+      console.log(`●    ${slotName} = "${fillValue}"`);
+    }
+    console.log("│");
   }
 
   console.log("└  ✓ Complete\n");
@@ -179,7 +236,10 @@ async function listPlugs(pack: AlignPack): Promise<void> {
 /**
  * Resolve plugs and show the output
  */
-async function resolvePlugs(pack: AlignPack): Promise<void> {
+async function resolvePlugs(
+  pack: AlignPack,
+  config: AlignTrueConfig | null | undefined,
+): Promise<void> {
   console.log("┌  Resolving Plugs\n│");
 
   if (!pack.plugs) {
@@ -189,7 +249,8 @@ async function resolvePlugs(pack: AlignPack): Promise<void> {
   }
 
   try {
-    const resolved = resolvePlugsForPack(pack);
+    const configFills = config?.plugs?.fills || {};
+    const resolved = resolvePlugsForPack(pack, configFills);
 
     if (!resolved.success) {
       console.log("✗  Resolution failed\n│");
@@ -340,6 +401,144 @@ async function validatePlugs(pack: AlignPack): Promise<void> {
   console.log("└  ✓ Validation complete\n");
 
   if (errors.length > 0) {
+    process.exit(1);
+  }
+}
+
+/**
+ * Set a plug fill in config
+ */
+async function setPlugFill(args: string[], configPath: string): Promise<void> {
+  if (args.length < 2) {
+    console.error("Error: 'plugs set' requires <slot> and <value> arguments\n");
+    console.error("Usage: aligntrue plugs set <slot> <value>\n");
+    console.error('Example: aligntrue plugs set test.cmd "pnpm test"\n');
+    process.exit(2);
+  }
+
+  const [slotName, fillValue] = args;
+  if (!slotName || !fillValue) {
+    console.error("Error: Both slot name and fill value are required\n");
+    process.exit(2);
+  }
+
+  try {
+    // Load config
+    const config = await loadConfig(configPath);
+
+    // Load IR to get slot format
+    const source = config.sources?.[0] || {
+      type: "local" as const,
+      path: ".aligntrue/.rules.yaml",
+    };
+
+    let pack: AlignPack;
+    try {
+      const resolved = await resolveSource(source);
+      pack = parseYamlToJson(resolved.content) as AlignPack;
+    } catch {
+      console.error("Warning: Could not load IR to validate slot format");
+      console.error("  Proceeding without format validation\n");
+      pack = {
+        id: "empty",
+        version: "1.0.0",
+        spec_version: "1",
+        sections: [],
+      };
+    }
+
+    // Validate slot format if slot is declared
+    if (pack.plugs?.slots?.[slotName]) {
+      const slotDef = pack.plugs.slots[slotName];
+      const format = (slotDef.format || "text") as PlugFormat;
+
+      const validation = validateFill(fillValue, format);
+      if (!validation.valid) {
+        console.error(`✗ Validation failed for slot "${slotName}"\n`);
+        console.error(`  ${validation.error}\n`);
+        console.error(`  Expected format: ${format}\n`);
+        if (slotDef.example) {
+          console.error(`  Example: ${slotDef.example}\n`);
+        }
+        process.exit(1);
+      }
+    }
+
+    // Update config
+    if (!config.plugs) {
+      config.plugs = {};
+    }
+    if (!config.plugs.fills) {
+      config.plugs.fills = {};
+    }
+    config.plugs.fills[slotName] = fillValue;
+
+    // Save config
+    await saveConfig(config, configPath);
+
+    console.log(`✓ Set plug fill: ${slotName} = "${fillValue}"\n`);
+    console.log("  Run 'aligntrue sync' to apply the fill\n");
+  } catch (error) {
+    console.error("✗ Failed to set plug fill\n");
+    console.error(
+      `  ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Unset a plug fill in config
+ */
+async function unsetPlugFill(
+  args: string[],
+  configPath: string,
+): Promise<void> {
+  if (args.length < 1) {
+    console.error("Error: 'plugs unset' requires <slot> argument\n");
+    console.error("Usage: aligntrue plugs unset <slot>\n");
+    console.error("Example: aligntrue plugs unset test.cmd\n");
+    process.exit(2);
+  }
+
+  const [slotName] = args;
+  if (!slotName) {
+    console.error("Error: Slot name is required\n");
+    process.exit(2);
+  }
+
+  try {
+    // Load config
+    const config = await loadConfig(configPath);
+
+    // Check if fill exists
+    if (!config.plugs?.fills?.[slotName]) {
+      console.error(`✗ No fill found for slot "${slotName}"\n`);
+      console.error("  Run 'aligntrue plugs list' to see configured fills\n");
+      process.exit(1);
+    }
+
+    // Remove fill
+    delete config.plugs.fills[slotName];
+
+    // Clean up empty objects
+    if (Object.keys(config.plugs.fills).length === 0) {
+      delete config.plugs.fills;
+    }
+    if (config.plugs && Object.keys(config.plugs).length === 0) {
+      delete config.plugs;
+    }
+
+    // Save config
+    await saveConfig(config, configPath);
+
+    console.log(`✓ Removed plug fill: ${slotName}\n`);
+    console.log("  Run 'aligntrue sync' to apply changes\n");
+  } catch (error) {
+    console.error("✗ Failed to unset plug fill\n");
+    console.error(
+      `  ${error instanceof Error ? error.message : String(error)}\n`,
+    );
     process.exit(1);
   }
 }

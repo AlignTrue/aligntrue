@@ -135,3 +135,12 @@ export type {
 } from "./types.js";
 export { PlugResolutionError } from "./types.js";
 export { mergePlugs, resolveText, findUndeclaredPlugs } from "./resolver.js";
+export {
+  validateFill,
+  validateCommand,
+  validateFile,
+  validateUrl,
+  validateText,
+  type PlugFormat,
+  type ValidationResult,
+} from "./validator.js";

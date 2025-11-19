@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive safety best practices documentation in guides
 - Clear backup creation and restore messages in CLI output
 - Validation for keep_count range with actionable error messages
+- Plugs: Config-based fills support via `plugs.fills` in config.yaml
+- Plugs: `plugs set <slot> <value>` command to configure fills with format validation
+- Plugs: `plugs unset <slot>` command to remove fills
+- Plugs: Format validation (command, file, url, text) for fill values
+- Plugs: Config fills take precedence over IR fills during sync
+- Plugs: Enhanced `plugs list` command to show fills from both config and IR with source indication
 
 ### Fixed
 
