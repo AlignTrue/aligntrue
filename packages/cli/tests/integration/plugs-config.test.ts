@@ -3,7 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  rmSync,
+  readFileSync,
+  existsSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { plugsCommand } from "../../src/commands/plugs.js";
@@ -20,11 +27,7 @@ describe("plugs config integration", () => {
 
   beforeEach(() => {
     // Create temp directory
-    testDir = join(
-      tmpdir(),
-      `plugs-config-test-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    );
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "plugs-config-test-"));
     mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
 
     // Save original state
