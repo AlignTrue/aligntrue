@@ -4,9 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
-import { parse as parseYaml } from "yaml";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
 const TEST_DIR = join(
