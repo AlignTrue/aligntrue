@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Published packages no longer contain workspace protocol in dependencies
 - Added ui package to release script to prevent version drift
 - Implemented two-layer validation to catch workspace protocol leaks
+- Fixed unresolved plugs warning when fills are properly configured in config.yaml
 
 ### Changed
 
