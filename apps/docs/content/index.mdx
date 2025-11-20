@@ -3,7 +3,7 @@ title: "Introduction"
 description: "What AlignTrue is and how it syncs deterministic AI rules across agents like Cursor, Copilot, and Claude in under 60 seconds."
 ---
 
-# Intro
+# Introduction
 
 Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.
 
@@ -35,6 +35,8 @@ Auto-detects agents, imports existing rules, or creates AGENTS.md. Generates and
 - **Works with your existing setup** - Auto-detects your agents and lets you edit in native formats
 - **60-second setup** - No configuration required for common workflows
 - **Two-way sync** - Edit any agent file, changes sync everywhere automatically (solo mode)
+- **Preview before applying** - `--dry-run` mode shows exactly what will change
+- **Safe by default** - Automatic backups before every sync operation
 
 ## Built for reliability
 
@@ -50,12 +52,78 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 
 ## Features
 
-- **Auto-detection** - Finds Cursor, Copilot, Claude, VS Code, and 25+ other agents automatically
-- **Two-way sync** - Edit markdown or agent files; AlignTrue keeps them aligned
-- **28+ agents supported** - Comprehensive coverage through 44 exporters
-- **Agent-optimized formats** - Native .mdc for Cursor, AGENTS.md for universals, MCP configs, and more
-- **Local-first** - No cloud required; works offline and in CI
-- **Team mode** - Optional lockfiles, bundles, and drift detection for teams
+### Complete feature matrix
+
+| Feature                  | Description                                                                        | Learn more                                                |
+| ------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| **Core Sync**            |                                                                                    |                                                           |
+| Two-way sync             | Edit IR, markdown, or agent files; AlignTrue keeps them aligned                    | [Sync Behavior](/docs/03-concepts/sync-behavior)          |
+| Dry-run mode             | Preview changes before applying with `--dry-run`                                   | [Basic Commands](/docs/04-reference/cli-reference/basic)  |
+| Watch mode               | Continuous file watching with auto-sync on changes                                 | [Basic Commands](/docs/04-reference/cli-reference/basic)  |
+| Auto-backup              | Safety backups before every sync (configurable)                                    | [Backup & Restore](/docs/04-reference/backup-restore)     |
+| Atomic operations        | Safe file writes prevent corruption during syncs                                   | [Features](/docs/04-reference/features)                   |
+| **Agent Support**        |                                                                                    |                                                           |
+| Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically               | [How it works](#how-it-works)                             |
+| 28+ agents               | Comprehensive coverage through 44 exporters                                        | [Agent Support](/docs/04-reference/agent-support)         |
+| Native format editing    | Edit in `.cursor/rules/*.mdc`, `AGENTS.md`, or your agent's native format          | [Getting Started](/docs/00-getting-started/00-quickstart) |
+| Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                   | [Agent Support](/docs/04-reference/agent-support)         |
+| **Team Collaboration**   |                                                                                    |                                                           |
+| Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds              | [Team Mode](/docs/03-concepts/team-mode)                  |
+| Drift detection          | Compare lockfile vs allowed sources with multiple output formats                   | [Drift Detection](/docs/03-concepts/drift-detection)      |
+| Allow lists              | Approve sources for team workflows with `.aligntrue/allow.yaml`                    | [Team Mode](/docs/03-concepts/team-mode)                  |
+| CI validation            | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift` | [CI/CD Integration](#integration-examples)                |
+| **Customization**        |                                                                                    |                                                           |
+| Plugs                    | Dynamic value slots with validation for flexible rules                             | [Customization](/docs/02-customization)                   |
+| Overlays                 | Surgical modifications to packs for safe fork-resistant customization              | [Customization](/docs/02-customization)                   |
+| Scopes                   | Hierarchical rules for monorepos and complex projects                              | [Scopes](/docs/02-customization/scopes)                   |
+| **Developer Experience** |                                                                                    |                                                           |
+| .gitignore automation    | Smart management of generated files                                                | [Git Workflows](/docs/03-concepts/git-workflows)          |
+| Verbose output           | Detailed execution logs with `--verbose` flag                                      | [CLI Reference](/docs/04-reference/cli-reference)         |
+| Ruler migration          | Auto-detect and convert from Ruler                                                 | [Features](/docs/04-reference/features)                   |
+| Backup & restore         | Selective file restoration with diff preview via `aligntrue revert`                | [Backup & Restore](/docs/04-reference/backup-restore)     |
+| **Reliability**          |                                                                                    |                                                           |
+| 1800+ tests              | Vitest + Playwright with reproducible, seed-controlled execution                   | [Architecture](/docs/08-development/architecture)         |
+| JSON Schema validation   | All IR and config validated with Ajv strict mode                                   | [Features](/docs/04-reference/features)                   |
+| Deterministic hashing    | JCS-based reproducible hashing for lockfiles and integrity                         | [Features](/docs/04-reference/features)                   |
+| TypeScript strict mode   | Comprehensive type coverage across the entire codebase                             | [Features](/docs/04-reference/features)                   |
+
+## Integration examples
+
+Use AlignTrue in your CI/CD pipelines and development workflows.
+
+**NPM scripts:**
+
+```json
+{
+  "scripts": {
+    "aligntrue:check": "aligntrue check --ci",
+    "aligntrue:drift": "aligntrue drift --gates",
+    "aligntrue:sync": "aligntrue sync",
+    "precommit": "aligntrue check --ci"
+  }
+}
+```
+
+**GitHub Actions:**
+
+```yaml
+# .github/workflows/aligntrue-check.yml
+name: AlignTrue Validation
+on: [pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g aligntrue
+      - run: aligntrue check --ci
+      - run: aligntrue drift --gates
+```
+
+[View full integration guide →](/docs/01-guides/01-workflows)
 
 ## Broad agent support
 

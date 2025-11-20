@@ -146,7 +146,10 @@ export async function handleSyncResult(
           // Handle conflicts that can be resolved with ignore files
           for (const conflict of detection.conflicts) {
             const shouldPrompt =
-              autoManage === "prompt" || autoManage === undefined;
+              (autoManage === "prompt" || autoManage === undefined) &&
+              !options.yes &&
+              !options.nonInteractive &&
+              !options.autoEnable;
 
             if (shouldPrompt) {
               const message = formatConflictMessage(conflict);

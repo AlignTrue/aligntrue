@@ -85,6 +85,12 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Accept all prompts (use with --accept-agent for conflicts)",
   },
   {
+    flag: "--non-interactive",
+    alias: "-n",
+    hasValue: false,
+    description: "Run without prompts (uses defaults)",
+  },
+  {
     flag: "--show-conflicts",
     hasValue: false,
     description: "Show detailed conflict information with section content",
