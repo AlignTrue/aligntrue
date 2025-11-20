@@ -150,6 +150,52 @@ sections:
 
       await expect(engine.loadIRFromSource(irPath)).resolves.not.toThrow();
     });
+
+    it("does not warn about plugs filled in config", async () => {
+      // Setup config with plug fills
+      const config = `version: "1"
+mode: solo
+exporters:
+  - test-exporter
+plugs:
+  fills:
+    test.cmd: npm test
+`;
+      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+      mkdirSync(dirname(configPath), { recursive: true });
+      writeFileSync(configPath, config, "utf8");
+
+      await engine.loadConfiguration(configPath);
+
+      // Setup IR with plug slots
+      const yaml = `id: test-pack
+version: 1.0.0
+spec_version: "1"
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pytest -q"
+sections:
+  - heading: Testing Guidelines
+    level: 2
+    content: "Run tests with: [[plug:test.cmd]]"
+    fingerprint: testing-guidelines
+`;
+      const irPath = join(TEST_DIR, "rules.yaml");
+      writeFileSync(irPath, yaml, "utf8");
+
+      // Pass config fills when loading IR
+      const result = await engine.loadIRFromSource(irPath, false, false, {
+        "test.cmd": "npm test",
+      });
+
+      expect(result.success).toBe(true);
+      // Should not warn about unresolved plugs since they're filled
+      expect(result.warnings).toEqual(undefined);
+    });
   });
 
   describe("syncToAgents", () => {

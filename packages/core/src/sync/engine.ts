@@ -149,6 +149,7 @@ export class SyncEngine {
     sourcePath: string,
     force?: boolean,
     strict?: boolean,
+    configFills?: Record<string, string>,
   ): Promise<{ success: boolean; warnings?: string[] }> {
     if (!this.config) {
       throw new Error(
@@ -188,7 +189,7 @@ export class SyncEngine {
     if (this.ir.plugs) {
       const plugsResult = resolvePlugsForPack(
         this.ir,
-        undefined, // No additional fills in basic sync (can be extended later)
+        configFills, // Pass config fills so they're available during resolution
         strict ? { failOnUnresolved: true } : {},
       );
 
@@ -251,6 +252,7 @@ export class SyncEngine {
         irPath,
         options.force,
         options.strict,
+        this.config?.plugs?.fills,
       );
 
       if (!loadResult.success || !this.config || !this.ir) {
@@ -705,7 +707,12 @@ export class SyncEngine {
     try {
       // Load config and IR
       await this.loadConfiguration(options.configPath);
-      await this.loadIRFromSource(irPath, options.force);
+      await this.loadIRFromSource(
+        irPath,
+        options.force,
+        false,
+        this.config?.plugs?.fills,
+      );
 
       if (!this.config || !this.ir) {
         throw new Error("Configuration or IR not loaded");
