@@ -25,3 +25,6 @@ tsconfig.tsbuildinfo
 temp-*
 *_test_output/
 
+# Other AI agents
+AGENTS.md
+CLAUDE.md
