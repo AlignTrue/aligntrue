@@ -984,8 +984,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // Auto-sync: simple first-time setup with no imports
     try {
       const { sync } = await import("./sync/index.js");
-      // Pass --yes flag through to sync when init is non-interactive
-      await sync(nonInteractive ? ["--yes"] : []);
+      // Pass --yes and --no-detect flags to sync when init is non-interactive
+      // (prevents prompting for agents and avoids TTY issues in test environments)
+      await sync(nonInteractive ? ["--yes", "--no-detect"] : []);
       autoSyncPerformed = true;
     } catch (error) {
       clack.log.error(
@@ -1020,8 +1021,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     if (shouldSyncNow) {
       try {
         const { sync } = await import("./sync/index.js");
-        // Pass --yes flag through to sync when init is non-interactive
-        await sync(nonInteractive ? ["--yes"] : []);
+        // Pass --yes and --no-detect flags to sync when init is non-interactive
+        // (prevents prompting for agents and avoids TTY issues in test environments)
+        await sync(nonInteractive ? ["--yes", "--no-detect"] : []);
         autoSyncPerformed = true;
       } catch (error) {
         clack.log.error(
