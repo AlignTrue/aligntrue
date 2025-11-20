@@ -6,9 +6,11 @@ import { existsSync, unlinkSync, writeFileSync } from "fs";
 import { join, resolve as resolvePath } from "path";
 import * as clack from "@clack/prompts";
 import { BackupManager, getAlignTruePaths } from "@aligntrue/core";
+import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
+import { initializePrompts } from "../../utils/prompts.js";
 
 /**
  * Sync result from engine
@@ -43,6 +45,11 @@ export async function executeSyncWorkflow(
   options: SyncOptions,
 ): Promise<SyncResult> {
   const { cwd, config, configPath, engine, spinner } = context;
+
+  // Initialize interactive prompts for conflict resolution if needed
+  if (options.verbose || !options.nonInteractive) {
+    initializePrompts();
+  }
 
   if (options.verbose) {
     clack.log.info("Verbose mode enabled");
@@ -250,6 +257,9 @@ export async function executeSyncWorkflow(
       }
     }
   }
+
+  // Cleanup: Clear prompt handler after sync completes
+  clearPromptHandler();
 
   return result;
 }

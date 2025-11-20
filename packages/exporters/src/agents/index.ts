@@ -35,9 +35,7 @@ export class AgentsExporter extends ExporterBase {
     seenScopes: new Set(),
   };
 
-  private currentConfig?: unknown; // Store config for use in helper methods
-
-  async export(
+  override async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
@@ -119,7 +117,12 @@ export class AgentsExporter extends ExporterBase {
     );
 
     // Write file atomically if not dry-run
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     const exportResult = this.buildResult(filesWritten, contentHash, [
       ...warnings,

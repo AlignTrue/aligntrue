@@ -57,7 +57,12 @@ export class JunieExporter extends ExporterBase {
     const fidelityNotes = this.computeSectionFidelityNotes(sections);
 
     const content = lines.join("\n");
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }

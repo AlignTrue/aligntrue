@@ -55,13 +55,23 @@ export class AugmentCodeExporter extends ExporterBase {
     const filesWritten: string[] = [];
 
     // Write primary file
-    const primaryFiles = await this.writeFile(outputPath, content, dryRun);
+    const primaryFiles = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
     filesWritten.push(...primaryFiles);
 
     // Write legacy .augment-guidelines file for default scope only
     if (scope.isDefault || scope.path === "." || scope.path === "") {
       const legacyPath = join(outputDir, ".augment-guidelines");
-      const legacyFiles = await this.writeFile(legacyPath, content, dryRun);
+      const legacyFiles = await this.writeFile(
+        legacyPath,
+        content,
+        dryRun,
+        options,
+      );
       filesWritten.push(...legacyFiles);
     }
 

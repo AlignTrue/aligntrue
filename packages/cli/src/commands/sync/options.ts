@@ -41,7 +41,8 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--force",
     hasValue: false,
-    description: "Bypass allow list validation in team mode (use with caution)",
+    description:
+      "Bypass allow list validation and overwrite manually edited files (use with caution)",
   },
   {
     flag: "--force-invalid-ir",
@@ -82,7 +83,8 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--yes",
     alias: "-y",
     hasValue: false,
-    description: "Accept all prompts (use with --accept-agent for conflicts)",
+    description:
+      "Accept all prompts including file overwrite conflicts (use with --accept-agent for conflicts)",
   },
   {
     flag: "--non-interactive",

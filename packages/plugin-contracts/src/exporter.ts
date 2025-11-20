@@ -59,6 +59,8 @@ export interface ExportOptions {
   unresolvedPlugsCount?: number; // Count of unresolved required plugs (Plugs system)
   managedSections?: string[]; // List of team-managed section headings
   plugFills?: Record<string, string> | undefined; // Plug fills from config (override IR fills)
+  interactive?: boolean; // Enable interactive prompts for conflict resolution (default: false)
+  force?: boolean; // Force overwrite without prompts (default: false)
 }
 
 /**

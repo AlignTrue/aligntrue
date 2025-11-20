@@ -44,6 +44,76 @@ const noAssetImportsInUI = {
   },
 };
 
+// Custom rule to catch file-system check-then-operate patterns (TOCTOU)
+// Detects existsSync() followed by mkdirSync(), writeFileSync(), unlinkSync()
+const noCheckThenOperate = {
+  meta: {
+    type: "problem",
+    fixable: false,
+    messages: {
+      mkdirAfterExists:
+        "Potential TOCTOU race condition: Use ensureDirectoryExists() instead of checking existsSync() then calling mkdirSync(). See file-utils package.",
+      writeAfterExists:
+        "Potential TOCTOU race condition: Use AtomicFileWriter instead of checking existsSync() then calling writeFileSync().",
+      unlinkAfterExists:
+        "Potential TOCTOU race condition: Use try/catch with error handling instead of checking existsSync() then calling unlinkSync().",
+    },
+  },
+  create(context) {
+    const sourceCode = context.sourceCode || context.getSourceCode();
+    let lastExistsSyncNode = null;
+    let lastExistsSyncLine = -1;
+
+    return {
+      CallExpression(node) {
+        // Track existsSync calls
+        if (
+          node.callee &&
+          ((node.callee.name && node.callee.name === "existsSync") ||
+            (node.callee.property &&
+              node.callee.property.name === "existsSync"))
+        ) {
+          lastExistsSyncNode = node;
+          lastExistsSyncLine = node.loc.start.line;
+          return;
+        }
+
+        // Check if this is a file operation on the same or next line
+        const currentLine = node.loc.start.line;
+        const isNearbyOperation =
+          currentLine - lastExistsSyncLine >= 0 &&
+          currentLine - lastExistsSyncLine <= 3;
+
+        if (!isNearbyOperation || !lastExistsSyncNode) return;
+
+        const callName =
+          node.callee.name ||
+          (node.callee.property && node.callee.property.name);
+
+        if (callName === "mkdirSync") {
+          context.report({
+            node,
+            messageId: "mkdirAfterExists",
+          });
+          lastExistsSyncNode = null;
+        } else if (callName === "writeFileSync") {
+          context.report({
+            node,
+            messageId: "writeAfterExists",
+          });
+          lastExistsSyncNode = null;
+        } else if (callName === "unlinkSync") {
+          context.report({
+            node,
+            messageId: "unlinkAfterExists",
+          });
+          lastExistsSyncNode = null;
+        }
+      },
+    };
+  },
+};
+
 // Custom rule to catch underscore-prefixed variable declaration/usage mismatches
 // Only checks within the same function/block scope to avoid false positives
 const noUnderscoreMismatch = {
@@ -159,6 +229,7 @@ export default [
       "@next/next": nextPlugin,
       "custom-rules": {
         rules: {
+          "no-check-then-operate": noCheckThenOperate,
           "no-underscore-mismatch": noUnderscoreMismatch,
           "no-asset-imports-in-ui": noAssetImportsInUI,
         },
@@ -177,6 +248,7 @@ export default [
         },
       ],
       // Custom rules
+      "custom-rules/no-check-then-operate": "warn",
       "custom-rules/no-underscore-mismatch": "error",
       // TypeScript rules
       "@typescript-eslint/no-explicit-any": "warn",

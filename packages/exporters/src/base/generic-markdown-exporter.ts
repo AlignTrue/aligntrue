@@ -36,7 +36,6 @@ export class GenericMarkdownExporter extends ExporterBase {
   private filename: string; // e.g., "CLAUDE.md", "WARP.md"
   private title: string; // e.g., "CLAUDE.md", "WARP.md"
   private description: string; // e.g., "for Claude Code", "for Warp"
-  private currentConfig?: unknown; // Store config for use in helper methods
 
   constructor(
     name: string,
@@ -51,7 +50,7 @@ export class GenericMarkdownExporter extends ExporterBase {
     this.description = description;
   }
 
-  async export(
+  override async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {

@@ -53,7 +53,12 @@ export class CrushConfigExporter extends ExporterBase {
     };
 
     const content = JSON.stringify(config, null, 2) + "\n";
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }

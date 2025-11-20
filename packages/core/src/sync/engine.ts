@@ -525,6 +525,8 @@ export class SyncEngine {
             ...(this.config?.plugs?.fills && {
               plugFills: this.config.plugs.fills,
             }), // Pass config fills to exporters (Plugs system)
+            interactive: options.interactive || false, // Enable interactive conflict resolution
+            force: options.force || false, // Force overwrite without prompts
           };
 
           try {
