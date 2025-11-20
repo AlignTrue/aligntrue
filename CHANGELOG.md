@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Agent ignore file management to prevent duplicate context when multiple exporters target formats consumable by same agent
+- Automatic detection of format conflicts during init and sync
+- Support for 12 agent-specific ignore files (Cursor, Aider, Gemini, Crush, Warp, Cline, Goose, Junie, Augment Code, Kiro, KiloCode, Firebase Studio)
+- Nested ignore file support for scoped exports in monorepos
+- Config options: `sync.auto_manage_ignore_files`, `sync.ignore_file_priority`, `sync.custom_format_priority`
+- Documentation: Preventing duplicate rules guide
+
 ## [0.2.2] - 2025-11-19
 
 ### Fixed

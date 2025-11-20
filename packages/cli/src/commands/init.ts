@@ -757,6 +757,80 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
   renameSync(configTempPath, configPath);
 
+  // Check for agent format conflicts and offer to manage ignore files
+  if (config.exporters && config.exporters.length > 1 && !nonInteractive) {
+    const {
+      detectConflicts,
+      applyConflictResolution,
+      formatConflictMessage,
+      formatWarningMessage,
+    } = await import("@aligntrue/core/agent-ignore");
+
+    const detection = detectConflicts(config.exporters);
+
+    if (detection.hasIssues) {
+      // Handle conflicts that can be resolved with ignore files
+      for (const conflict of detection.conflicts) {
+        const message = formatConflictMessage(conflict);
+        const shouldManage = await clack.confirm({
+          message,
+          initialValue: true,
+        });
+
+        if (clack.isCancel(shouldManage)) {
+          // User cancelled, skip ignore management
+          break;
+        }
+
+        if (shouldManage) {
+          try {
+            const updates = applyConflictResolution(conflict, cwd, false);
+            updates.forEach((update) => {
+              if (update.created) {
+                clack.log.success(`Created ${update.filePath}`);
+              } else if (update.modified) {
+                clack.log.success(`Updated ${update.filePath}`);
+              }
+            });
+
+            // Update config to remember user's choice
+            if (!config.sync) {
+              config.sync = {};
+            }
+            config.sync.auto_manage_ignore_files = true;
+
+            // Re-write config with updated setting
+            writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
+            renameSync(configTempPath, configPath);
+          } catch (error) {
+            clack.log.warn(
+              `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }
+        } else {
+          // User declined, remember their choice
+          if (!config.sync) {
+            config.sync = {};
+          }
+          config.sync.auto_manage_ignore_files = false;
+
+          // Re-write config with updated setting
+          writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
+          renameSync(configTempPath, configPath);
+        }
+      }
+
+      // Show warnings for agents without ignore support
+      for (const warning of detection.warnings) {
+        const message = formatWarningMessage(warning);
+        clack.log.warn(message);
+        clack.log.info(
+          `Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules`,
+        );
+      }
+    }
+  }
+
   // Create native format template or IR fallback
   const createdFiles: string[] = [".aligntrue/config.yaml"];
 

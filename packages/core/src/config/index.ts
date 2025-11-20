@@ -117,6 +117,10 @@ export interface AlignTrueConfig {
     source_files?: string | string[]; // Source file patterns for rules (derived from edit_source by default)
     source_order?: string[]; // Custom ordering of source files by basename
     source_markers?: "auto" | "always" | "never"; // Control source file markers in concatenated outputs (default: "auto")
+    // Agent ignore file management
+    auto_manage_ignore_files?: boolean | "prompt"; // Auto-manage agent ignore files (default: "prompt")
+    ignore_file_priority?: "native" | "custom"; // Priority for format selection (default: "native")
+    custom_format_priority?: Record<string, string>; // Override native format priority per agent
   };
   managed?: {
     files?: string[]; // Full file paths to protect
