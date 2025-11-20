@@ -59,19 +59,26 @@
 ### P2: Polish issues
 
 #### Interactive Prompts Block Automation
-**Issue:** Several commands require --yes flag or show interactive prompts even when running automated tests.
+**Issue:** Documentation gap - users don't discover `--yes` and `--non-interactive` flags for CI workflows.
 
 **Evidence:**
-- `sync` command asks about Cursor agent detection
-- `sync` asks about .cursorignore setup
-- Breaks CI/scripted workflows
+- `sync` command shows prompts by default (agent detection, ignore files)
+- Flags exist but aren't well documented
+- Users may assume CI is unsupported
 
-**Impact:** Breaks scripted/automated workflows.
+**Root Cause:** Documentation oversight - flags work correctly but aren't prominently documented.
 
-**Recommendation:** Add more comprehensive --non-interactive flag support or better auto-detection logic.
+**Resolution:** FIXED - Added comprehensive CI/automation documentation:
+- New section in troubleshooting guide with CI examples
+- Enhanced CLI reference with flag descriptions  
+- Examples for GitHub Actions, GitLab CI, Jenkins
+
+**Behavior:** Already correct - use `--yes` for full automation or `--non-interactive` to skip prompts.
 
 #### Lockfile Regeneration Messages
 **Issue:** "Lockfile regenerated with corrected hash computation" appears on every sync.
+
+**Investigation Result:** RESOLVED - Working as intended
 
 **Evidence:**
 ```
@@ -80,11 +87,15 @@ Old hash: d78bc453194d...
 New hash: 1f64b25d6051...
 ```
 
-**Root Cause:** Hash computation improvements causing regeneration on each sync.
+**Root Cause (Analysis):** Hash computation improvements trigger one-time migration. Marker file `.aligntrue/.cache/lockfile-hash-migration.json` tracks completion.
 
-**Impact:** Noisy output, may confuse users about data integrity.
+**Testing (Verification):**
+1. Initial sync in fresh team mode project: Message appears ✓
+2. Second sync: Message does NOT appear ✓
+3. Marker file verified: `.aligntrue/.cache/lockfile-hash-migration.json` persists ✓
+4. Behavior is correct: One-time message only
 
-**Recommendation:** Only show regeneration message once per project or make it less prominent.
+**Resolution:** No code changes needed - marker system prevents duplicate messages.
 
 ### P3: Nice-to-have improvements
 

@@ -85,10 +85,19 @@ aligntrue sync [options]
 | `--auto-enable`         | Auto-enable detected agents without prompting | `false`                  |
 | `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
 
+**Non-interactive modes:**
+
+- `--yes` / `-y`: Auto-enables detected agents and auto-manages ignore files without prompting
+- `--non-interactive` / `-n`: Skips all prompts but doesn't auto-enable agents
+
+Use `--yes` in CI/automation workflows where you want full automation. Use `--non-interactive` if you only want to skip prompts without auto-enabling new agents.
+
+See [Running sync in CI/automation](/docs/05-troubleshooting#running-sync-in-ciautomation) for CI examples.
+
 **What it does:**
 
 1. Loads configuration from `.aligntrue/config.yaml`
-2. Detects new agents in workspace and prompts to enable them (unless `--no-detect`)
+2. Detects new agents in workspace and prompts to enable them (unless `--no-detect` or `--yes`/`--non-interactive`)
 3. Auto-pulls changes from primary agent (if enabled and no conflicts)
 4. Shows diff summary of what changed during auto-pull
 5. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
@@ -185,17 +194,17 @@ aligntrue sync --no-detect
 # Auto-enable detected agents without prompting
 aligntrue sync --auto-enable
 
+# CI/automation: auto-enable agents and manage ignore files
+aligntrue sync --yes
+
+# CI/automation: skip prompts (doesn't auto-enable)
+aligntrue sync --non-interactive
+
 # Pull changes from agent to IR (manual)
 aligntrue sync --accept-agent cursor
 
-# Standard sync
-aligntrue sync
-
 # Preview without writing
 aligntrue sync --dry-run
-
-# Non-interactive (for CI)
-aligntrue sync --force
 
 # Pull changes from Cursor back to AGENTS.md
 aligntrue sync --accept-agent cursor
