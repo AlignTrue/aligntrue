@@ -20,7 +20,9 @@ export async function sync(args: string[]): Promise<void> {
     return;
   }
 
-  clack.intro("AlignTrue Sync");
+  if (!options.quiet) {
+    clack.intro("AlignTrue Sync");
+  }
 
   try {
     // Phase 1: Build sync context (load config, sources, exporters)
