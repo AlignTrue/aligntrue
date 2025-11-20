@@ -107,9 +107,14 @@ export interface AlignTrueConfig {
     show_diff_on_pull?: boolean;
     two_way?: boolean; // DEPRECATED: Use edit_source instead
     // Which files accept edits and sync TO canonical IR (.aligntrue/.rules.yaml)
-    // Options: ".rules.yaml" (IR-only), "AGENTS.md", ".cursor/rules/*.mdc", "any_agent_file", or array
+    // Default: single source string (recommended)
+    // Array: requires experimental_two_way_sync: true
+    // Options: "AGENTS.md", ".cursor/rules/*.mdc", ".aligntrue/rules/*.md", or array
     // Note: IR is always canonical; this controls input gates only
     edit_source?: string | string[];
+    // EXPERIMENTAL: Enable two-way sync with multiple edit sources
+    // Not recommended. Use at own risk. Requires edit_source to be array.
+    experimental_two_way_sync?: boolean;
     scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
@@ -382,17 +387,17 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   /**
    * Set edit_source default if not specified
    *
-   * Default logic (inclusive):
-   * - Build array of patterns from all enabled exporters
-   * - If multiple exporters → array of patterns
-   * - If single exporter → single pattern
+   * Default logic (single source only):
+   * - Prefer Cursor (multi-file) if enabled
+   * - Fallback to AGENTS.md if agents exporter enabled
+   * - Otherwise first enabled exporter
    * - No fallback - if no exporters configured, edit_source remains undefined
    *
    * Note: edit_source controls which files accept edits and sync TO canonical IR.
    * IR (.aligntrue/.rules.yaml) is always the canonical source of truth.
-   * This setting just controls the input gates to IR.
+   * This setting just controls the input gate to IR.
    *
-   * This prevents accidental read-only files when users enable multiple exporters.
+   * Multi-source editing requires experimental_two_way_sync: true (not set here).
    */
   if (result.sync.edit_source === undefined) {
     const exporterToPattern: Record<string, string> = {
@@ -403,22 +408,28 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
       aider: ".aider.conf.yml",
     };
 
-    const patterns: string[] = [];
-    for (const exporter of result.exporters || []) {
-      const pattern = exporterToPattern[exporter];
-      if (pattern && !patterns.includes(pattern)) {
-        patterns.push(pattern);
+    // Priority order: cursor (multi-file) > agents (universal) > others
+    const priorityOrder = ["cursor", "agents", "copilot", "claude", "aider"];
+
+    for (const exporter of priorityOrder) {
+      if ((result.exporters || []).includes(exporter)) {
+        const pattern = exporterToPattern[exporter];
+        if (pattern) {
+          result.sync.edit_source = pattern;
+          break;
+        }
       }
     }
-
-    // Set edit_source based on number of patterns
-    // No special fallback - all exporters are equal
-    if (patterns.length === 1) {
-      result.sync.edit_source = patterns[0] as string | string[];
-    } else if (patterns.length > 1) {
-      result.sync.edit_source = patterns;
+    // If no priority exporters, use first enabled
+    if (!result.sync.edit_source && (result.exporters || []).length > 0) {
+      const firstExporter = (result.exporters || [])[0];
+      if (firstExporter) {
+        const pattern = exporterToPattern[firstExporter];
+        if (pattern) {
+          result.sync.edit_source = pattern;
+        }
+      }
     }
-    // If patterns.length === 0, leave edit_source undefined
   }
 
   /**
@@ -659,6 +670,20 @@ export async function validateConfig(
           );
         }
       }
+    }
+  }
+
+  // Validate experimental_two_way_sync and edit_source
+  if (config.sync) {
+    const editSource = config.sync.edit_source;
+    const experimentalTwoWay = config.sync.experimental_two_way_sync;
+
+    if (Array.isArray(editSource) && !experimentalTwoWay) {
+      throw new Error(
+        `Multiple edit sources require experimental_two_way_sync: true\n` +
+          `  Current edit_source: ${JSON.stringify(editSource)}\n` +
+          `  Add "experimental_two_way_sync: true" to sync config or use single edit source.`,
+      );
     }
   }
 
