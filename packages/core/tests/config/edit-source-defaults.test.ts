@@ -42,7 +42,7 @@ describe("edit_source defaults", () => {
     expect(result.sync?.edit_source).toBe("AGENTS.md");
   });
 
-  it("should set array of patterns for multiple exporters", () => {
+  it("should set single pattern for multiple exporters (priority: cursor first)", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
       exporters: ["cursor", "agents"],
@@ -50,14 +50,11 @@ describe("edit_source defaults", () => {
 
     const result = applyDefaults(config as AlignTrueConfig);
 
-    expect(Array.isArray(result.sync?.edit_source)).toBe(true);
-    expect(result.sync?.edit_source).toEqual([
-      ".cursor/rules/*.mdc",
-      "AGENTS.md",
-    ]);
+    // New behavior: single source based on priority (cursor > agents)
+    expect(result.sync?.edit_source).toBe(".cursor/rules/*.mdc");
   });
 
-  it("should include all patterns for three exporters", () => {
+  it("should use priority order for three exporters (cursor > agents > copilot)", () => {
     const config: Partial<AlignTrueConfig> = {
       mode: "solo",
       exporters: ["cursor", "agents", "copilot"],
@@ -65,12 +62,8 @@ describe("edit_source defaults", () => {
 
     const result = applyDefaults(config as AlignTrueConfig);
 
-    expect(Array.isArray(result.sync?.edit_source)).toBe(true);
-    expect(result.sync?.edit_source).toEqual([
-      ".cursor/rules/*.mdc",
-      "AGENTS.md",
-      ".github/copilot-instructions.md",
-    ]);
+    // New behavior: single source based on priority (cursor first)
+    expect(result.sync?.edit_source).toBe(".cursor/rules/*.mdc");
   });
 
   it("should deduplicate patterns if multiple exporters use same pattern", () => {
