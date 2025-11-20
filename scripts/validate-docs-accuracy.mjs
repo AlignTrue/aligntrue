@@ -118,14 +118,14 @@ function validateNodeVersion() {
     try {
       const content = readFileSync(filePath, "utf8");
 
-      // Look for Node version mentions
-      // Patterns: "Node.js 20+", "Node 20+", "node20", ">=20", etc.
+      // Look for Node version mentions lower than required
+      // Patterns: "Node.js 19-", "Node 19-", "node19", ">=19", etc.
       const wrongPatterns = [
-        /Node\.js\s+20\+/gi,
-        /Node\s+20\+/gi,
-        /node20/gi,
-        />=\s*20(?!\d)/g, // >=20 but not >=200
-        /node:\s*["']20/gi,
+        /Node\.js\s+(1[0-9])\+/gi, // Node.js 10+ through 19+
+        /Node\s+(1[0-9])\+/gi, // Node 10+ through 19+
+        /node(1[0-9])(?![0-9])/gi, // node10 through node19
+        />=\s*(1[0-9])(?!\d)/g, // >=10 through >=19
+        /node:\s*["'](1[0-9])/gi, // node: "10" through node: "19"
       ];
 
       for (const pattern of wrongPatterns) {
@@ -143,7 +143,7 @@ function validateNodeVersion() {
   if (wrongVersionFiles.length > 0) {
     logError("Node.js version mismatch in documentation", {
       expected: `Node ${majorVersion}+ (from package.json)`,
-      actual: "Node 20+ found in some files",
+      actual: `Node version lower than ${majorVersion} found in some files`,
       files: wrongVersionFiles,
     });
   } else {

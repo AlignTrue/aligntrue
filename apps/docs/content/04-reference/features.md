@@ -188,7 +188,7 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 
 ## Platform support
 
-- **Required:** Node 22+ (LTS)
+- **Required:** Node 20+ (LTS)
 - **Supported OSes:** macOS, Linux, Windows (first-class support, cross-platform determinism)
 - **CI:** Tested on linux:node22, macos:node22, windows:node22
 - **Distribution:** npm, pnpm, yarn, bun, npx

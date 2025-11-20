@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Node.js requirement:** Reduced from Node 22 to Node 20 for broader adoption
+  - Node 20 LTS supported until April 2026
+  - All packages now require Node >=20
+  - CI validates both Node 20 and Node 22 compatibility
+  - Updated `.node-version` to 20.18.1
+
 ### Added
 
 - Agent ignore file management to prevent duplicate context when multiple exporters target formats consumable by same agent
