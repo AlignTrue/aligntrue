@@ -57,7 +57,9 @@ export async function executeSyncWorkflow(
 
   // Step 1: Mandatory Safety Backup (if not dry-run)
   if (!options.dryRun) {
-    spinner.start("Creating safety backup");
+    if (!options.quiet) {
+      spinner.start("Creating safety backup");
+    }
     try {
       const backup = BackupManager.createBackup({
         cwd,
@@ -67,24 +69,32 @@ export async function executeSyncWorkflow(
         mode: config.mode,
         includeAgentFiles: true,
       });
-      spinner.stop(`Safety backup created: ${backup.timestamp}`);
-      if (options.verbose) {
-        clack.log.info(
-          `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-        );
+      if (!options.quiet) {
+        spinner.stop(`Safety backup created: ${backup.timestamp}`);
+        if (options.verbose) {
+          clack.log.info(
+            `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+          );
+        }
       }
     } catch (_error) {
-      spinner.stop("Backup failed");
-      clack.log.warn(
-        `Failed to create safety backup: ${_error instanceof Error ? _error.message : String(_error)}`,
-      );
-      clack.log.warn("Continuing with sync (unsafe)...");
+      if (!options.quiet) {
+        spinner.stop("Backup failed");
+        clack.log.warn(
+          `Failed to create safety backup: ${_error instanceof Error ? _error.message : String(_error)}`,
+        );
+        clack.log.warn("Continuing with sync (unsafe)...");
+      }
     }
   }
 
   // Step 2: Two-way sync - detect and merge agent file edits
-  if (!options.acceptAgent && config.sync?.two_way !== false) {
-    if (options.verbose) {
+  if (
+    !options.acceptAgent &&
+    !options.skipTwoWayDetection &&
+    config.sync?.two_way !== false
+  ) {
+    if (!options.quiet && options.verbose) {
       clack.log.info(
         `Two-way sync enabled (two_way=${String(config.sync?.two_way)})`,
       );
@@ -327,8 +337,8 @@ async function handleTwoWaySync(
     const lastSyncTime = getLastSyncTimestamp(cwd);
     const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
 
-    // Log detection attempt in verbose mode
-    if (options.verbose) {
+    // Log detection attempt in verbose mode (if not quiet)
+    if (!options.quiet && options.verbose) {
       clack.log.info(
         `Checking for edits since: ${lastSyncDate?.toISOString() || "never"}`,
       );
@@ -357,18 +367,22 @@ async function handleTwoWaySync(
 
     if (editedFiles.length > 0) {
       // Phase 1: Agent edits → IR
-      if (options.verbose) {
+      if (!options.quiet && options.verbose) {
         clack.log.info("Phase 1: Merging agent file edits into IR");
       }
 
-      spinner.start("Merging changes from edited files");
+      if (!options.quiet) {
+        spinner.start("Merging changes from edited files");
+      }
 
-      clack.log.info(
-        `Detected ${editedFiles.length} edited file${editedFiles.length !== 1 ? "s" : ""}:`,
-      );
-      editedFiles.forEach((f: { path: string; sections: unknown[] }) => {
-        clack.log.info(`  - ${f.path}: ${f.sections.length} section(s)`);
-      });
+      if (!options.quiet) {
+        clack.log.info(
+          `Detected ${editedFiles.length} edited file${editedFiles.length !== 1 ? "s" : ""}:`,
+        );
+        editedFiles.forEach((f: { path: string; sections: unknown[] }) => {
+          clack.log.info(`  - ${f.path}: ${f.sections.length} section(s)`);
+        });
+      }
 
       // Run two-way sync via engine
       const twoWayResult = await engine.syncFromMultipleAgents(configPath, {
@@ -376,18 +390,20 @@ async function handleTwoWaySync(
         force: options.force,
       });
 
-      spinner.stop("Changes merged");
+      if (!options.quiet) {
+        spinner.stop("Changes merged");
 
-      if (twoWayResult.warnings && twoWayResult.warnings.length > 0) {
-        twoWayResult.warnings.forEach((warning) => {
-          clack.log.warn(`⚠ ${warning}`);
-        });
+        if (twoWayResult.warnings && twoWayResult.warnings.length > 0) {
+          twoWayResult.warnings.forEach((warning) => {
+            clack.log.warn(`⚠ ${warning}`);
+          });
+        }
+
+        clack.log.success("Merged changes from agent files to IR");
       }
-
-      clack.log.success("Merged changes from agent files to IR");
     } else {
       // No edits detected - this is normal when IR is the source of truth
-      if (options.verbose) {
+      if (!options.quiet && options.verbose) {
         clack.log.info("Phase 1: No agent file edits detected since last sync");
         clack.log.info("  → IR is already up to date");
       }

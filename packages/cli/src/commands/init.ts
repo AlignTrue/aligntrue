@@ -567,11 +567,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
             label: "Import from an existing file path",
             hint: "Provide a path to a markdown or Cursor file",
           },
-          {
-            value: "skip",
-            label: "Skip for now",
-            hint: "I'll add files later (not recommended)",
-          },
         ],
       });
 
@@ -589,19 +584,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         } else {
           createAgentsTemplate = true;
         }
-      } else {
-        const confirmSkip = await clack.confirm({
-          message:
-            "Without an agent file, AlignTrue cannot sync anything. Continue anyway?",
-          initialValue: false,
-        });
-        if (clack.isCancel(confirmSkip) || !confirmSkip) {
-          clack.cancel("Init cancelled");
-          process.exit(0);
-        }
-        clack.log.warn(
-          "Continuing without an editable agent file. Add one before running sync.",
-        );
       }
     }
   }
@@ -867,19 +849,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     }
 
     if (mergeOutcome.conflicts.length > 0) {
-      const warn = nonInteractive ? console.warn : clack.log.warn;
-      warn(
-        `Detected ${mergeOutcome.conflicts.length} conflicting section${mergeOutcome.conflicts.length === 1 ? "" : "s"} (newest edit wins).`,
+      const info = nonInteractive ? console.log : clack.log.info;
+      info(
+        `Note: ${mergeOutcome.conflicts.length} section${mergeOutcome.conflicts.length === 1 ? "" : "s"} appeared in multiple files - kept most recent version:`,
       );
       mergeOutcome.conflicts.slice(0, 5).forEach((conflict) => {
-        warn(
-          `  • ${conflict.heading}: ${conflict.files
-            .map((file) => file.path)
-            .join(", ")}`,
-        );
+        info(`  • ${conflict.heading} (from ${conflict.winner})`);
       });
       if (mergeOutcome.conflicts.length > 5) {
-        warn("  … additional conflicts truncated for brevity");
+        info("  … additional duplicates not shown");
       }
     }
   }
@@ -918,6 +896,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   writeFileSync(rulesTempPath, yamlContent, "utf-8");
   renameSync(rulesTempPath, rulesPath);
   createdFiles.push(".aligntrue/.rules.yaml (internal)");
+
+  // Set timestamp baseline after creating IR
+  const { updateLastSyncTimestamp } = await import(
+    "@aligntrue/core/sync/last-sync-tracker"
+  );
+  updateLastSyncTimestamp(cwd);
 
   if (nonInteractive) {
     console.log("\nCreated files:");
@@ -984,9 +968,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // Auto-sync: simple first-time setup with no imports
     try {
       const { sync } = await import("./sync/index.js");
-      // Pass --yes and --no-detect flags to sync when init is non-interactive
-      // (prevents prompting for agents and avoids TTY issues in test environments)
-      await sync(nonInteractive ? ["--yes", "--no-detect"] : []);
+      // Pass --yes, --no-detect, --skip-two-way-detection, and --quiet flags to sync
+      // (prevents prompting, avoids edit detection, and suppresses internal details)
+      const syncFlags = [
+        "--yes",
+        "--no-detect",
+        "--skip-two-way-detection",
+        "--quiet",
+      ];
+      await sync(syncFlags);
       autoSyncPerformed = true;
     } catch (error) {
       clack.log.error(
@@ -1021,9 +1011,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     if (shouldSyncNow) {
       try {
         const { sync } = await import("./sync/index.js");
-        // Pass --yes and --no-detect flags to sync when init is non-interactive
-        // (prevents prompting for agents and avoids TTY issues in test environments)
-        await sync(nonInteractive ? ["--yes", "--no-detect"] : []);
+        // Pass --skip-two-way-detection and --quiet flags to sync
+        // (prevents edit detection, suppresses internal details)
+        const syncFlags = ["--skip-two-way-detection", "--quiet"];
+        await sync(syncFlags);
         autoSyncPerformed = true;
       } catch (error) {
         clack.log.error(
