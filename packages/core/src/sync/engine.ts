@@ -516,28 +516,6 @@ export class SyncEngine {
             outputPath,
           };
 
-          // Mandatory safety backup before export
-          if (!options.dryRun) {
-            const { BackupManager } = await import("../backup/manager.js");
-            try {
-              BackupManager.createBackup({
-                cwd: process.cwd(),
-                created_by: "sync",
-                notes: `Safety backup before sync for scope ${scope.path}`,
-                action: "pre-sync",
-                mode: this.config.mode,
-                includeAgentFiles: true,
-              });
-            } catch (backupErr) {
-              warnings.push(
-                `Warning: Failed to create safety backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
-              );
-              // Backups are mandatory - fail if backup fails (unless force flag used?)
-              // For now, we warn but proceed to avoid blocking critical work if backup system is broken
-              // Ideally this should throw, per the plan "backups are mandatory"
-            }
-          }
-
           const exportOptions: ExportOptions = {
             outputDir: process.cwd(),
             dryRun: options.dryRun || false,
