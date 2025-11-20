@@ -125,7 +125,7 @@ export async function handleSyncResult(
       context.config.exporters &&
       context.config.exporters.length > 1
     ) {
-      const autoManage = context.config.sync?.auto_manage_ignore_files;
+      const autoManage = context.config.sync?.auto_manage_ignore_files ?? true;
 
       // Only check if not explicitly disabled
       if (autoManage !== false) {
