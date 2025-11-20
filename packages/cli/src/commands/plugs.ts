@@ -164,16 +164,17 @@ async function listPlugs(
 ): Promise<void> {
   console.log("┌  Plugs in Pack\n│");
 
-  if (!pack.plugs) {
+  const configFills = config?.plugs?.fills || {};
+
+  // Show message if no plugs defined AND no config fills
+  if (!pack.plugs && Object.keys(configFills).length === 0) {
     console.log("│  No plugs defined\n│");
     console.log("└  ✓ Complete\n");
     return;
   }
 
-  const configFills = config?.plugs?.fills || {};
-
   // List slots
-  if (pack.plugs.slots && Object.keys(pack.plugs.slots).length > 0) {
+  if (pack.plugs?.slots && Object.keys(pack.plugs.slots).length > 0) {
     console.log("◆  Slots\n│");
     for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
       const required = slotDef.required ? "required" : "optional";
@@ -203,14 +204,14 @@ async function listPlugs(
   }
 
   // List fills from IR (not shown above)
-  const irOnlyFills = pack.plugs.fills
+  const irOnlyFills = pack.plugs?.fills
     ? Object.keys(pack.plugs.fills).filter((key) => !pack.plugs?.slots?.[key])
     : [];
 
   if (irOnlyFills.length > 0) {
     console.log("◆  Additional IR Fills (no declared slot)\n│");
     for (const slotName of irOnlyFills) {
-      const fillValue = pack.plugs.fills![slotName];
+      const fillValue = pack.plugs?.fills?.[slotName];
       console.log(`●    ${slotName} = "${fillValue}"`);
     }
     console.log("│");
