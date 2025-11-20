@@ -126,17 +126,22 @@
           "oneOf": [
             {
               "type": "string",
-              "description": "Single file pattern or mode for accepting edits"
+              "description": "Single file pattern for accepting edits (recommended)"
             },
             {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "Multiple file patterns for accepting edits"
+              "description": "Multiple file patterns for accepting edits (requires experimental_two_way_sync: true)"
             }
           ],
-          "description": "Which file(s) accept edits: '.rules.yaml' (IR only), 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (glob pattern), 'any_agent_file' (all agents), or array of patterns"
+          "description": "Which file(s) accept edits: 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (multi-file glob), '.aligntrue/rules/*.md' (AlignTrue-managed multi-file). Default is single source. Array requires experimental_two_way_sync."
+        },
+        "experimental_two_way_sync": {
+          "type": "boolean",
+          "description": "EXPERIMENTAL: Enable two-way sync with multiple edit sources. Not recommended. Use at own risk. Requires edit_source to be an array.",
+          "default": false
         },
         "backup_on_overwrite": {
           "type": "string",

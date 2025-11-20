@@ -115,6 +115,8 @@ function isAgentFile(filePath: string): boolean {
 /**
  * Detect edited agent files based on mtime
  * Returns files that were modified after last sync, plus warnings for files edited outside edit_source
+ *
+ * EXPERIMENTAL: Multi-file detection only enabled when config.sync.experimental_two_way_sync is true
  */
 export async function detectEditedFiles(
   cwd: string,
@@ -134,6 +136,16 @@ export async function detectEditedFiles(
     );
     console.log(`[detectEditedFiles] edit_source:`, editSource);
     console.log(`[detectEditedFiles] cwd:`, cwd);
+  }
+
+  // Guard: Only detect multiple sources in experimental mode
+  if (Array.isArray(editSource) && !config.sync?.experimental_two_way_sync) {
+    if (DEBUG_SYNC) {
+      console.log(
+        `[detectEditedFiles] Skipping multi-source detection - experimental_two_way_sync not enabled`,
+      );
+    }
+    return { files: [], warnings: [] };
   }
 
   // Skip detection if edit_source is ".rules.yaml" (IR only mode)

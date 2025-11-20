@@ -705,30 +705,98 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     };
   }
 
-  const editSourceSet = new Set<string>();
-  selectedAgents.forEach((agent) => {
-    const pattern = EDIT_SOURCE_PATTERNS[agent];
-    if (pattern) {
-      editSourceSet.add(pattern);
+  // Determine single edit source using smart defaults
+  // Priority: Cursor (multi-file) > imported files > AGENTS.md
+  let editSource: string | undefined;
+
+  // Check for Cursor (multi-file agent)
+  const hasCursor = selectedAgents.includes("cursor");
+  const hasCursorImport = selectedImportCandidates.some(
+    (c) => c.agent === "cursor",
+  );
+
+  if ((hasCursor || hasCursorImport) && !nonInteractive) {
+    // Scenario 1: Cursor detected - prompt to use it as edit source
+    const cursorFileCount = hasCursorImport
+      ? selectedImportCandidates.filter((c) => c.agent === "cursor").length
+      : 0;
+
+    const useCursor = await clack.confirm({
+      message: `Detected: .cursor/rules/ ${cursorFileCount > 0 ? `(${cursorFileCount} files)` : ""}\n\nUse Cursor files as edit source?\n• Keep existing file organization\n• Automatically exports to AGENTS.md, CLAUDE.md`,
+      initialValue: true,
+    });
+
+    if (clack.isCancel(useCursor)) {
+      clack.cancel("Init cancelled");
+      process.exit(0);
     }
-  });
-  for (const candidate of selectedImportCandidates) {
-    const pattern = getEditSourcePatternForAgent(candidate);
-    if (pattern) {
-      editSourceSet.add(pattern);
+
+    if (useCursor) {
+      editSource = ".cursor/rules/*.mdc";
+    } else {
+      // User declined Cursor, ask for alternative
+      const altChoice = await clack.select({
+        message: "Choose edit source:",
+        options: [
+          { value: "AGENTS.md", label: "AGENTS.md (single-file)" },
+          {
+            value: ".aligntrue/rules/*.md",
+            label: ".aligntrue/rules/ (multi-file)",
+          },
+        ],
+      });
+
+      if (clack.isCancel(altChoice)) {
+        clack.cancel("Init cancelled");
+        process.exit(0);
+      }
+
+      editSource = altChoice as string;
     }
-  }
-  if (createAgentsTemplate) {
-    editSourceSet.add("AGENTS.md");
+  } else if (hasCursor || hasCursorImport) {
+    // Non-interactive: auto-select Cursor
+    editSource = ".cursor/rules/*.mdc";
+  } else if (selectedImportCandidates.length > 0) {
+    // Scenario: Importing from other agent - use that agent's pattern
+    const firstImport = selectedImportCandidates[0];
+    if (firstImport) {
+      const pattern = getEditSourcePatternForAgent(firstImport);
+      editSource = pattern || undefined;
+    }
+  } else if (createAgentsTemplate && !nonInteractive) {
+    // Scenario 2: New project, no imports - offer choice
+    const choice = await clack.select({
+      message: "Edit source configuration:",
+      options: [
+        {
+          value: "AGENTS.md",
+          label: "AGENTS.md (recommended - universal format)",
+        },
+        {
+          value: ".aligntrue/rules/*.md",
+          label: ".aligntrue/rules/ (multi-file organization)",
+        },
+      ],
+      initialValue: "AGENTS.md",
+    });
+
+    if (clack.isCancel(choice)) {
+      clack.cancel("Init cancelled");
+      process.exit(0);
+    }
+
+    editSource = choice as string;
+  } else if (createAgentsTemplate) {
+    // Non-interactive: use AGENTS.md
+    editSource = "AGENTS.md";
+  } else {
+    // Fallback: use first selected agent's pattern
+    const firstAgent = selectedAgents[0];
+    editSource = firstAgent ? EDIT_SOURCE_PATTERNS[firstAgent] : "AGENTS.md";
   }
 
-  const editSourceValues = Array.from(editSourceSet);
-  const editSource =
-    editSourceValues.length === 0
-      ? undefined
-      : editSourceValues.length === 1
-        ? editSourceValues[0]
-        : editSourceValues;
+  // Track if user selected .aligntrue/rules/
+  const useAlignTrueRules = editSource === ".aligntrue/rules/*.md";
 
   config.sync = {
     ...(editSource && { edit_source: editSource }),
@@ -738,6 +806,34 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   const configTempPath = `${configPath}.tmp`;
   writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
   renameSync(configTempPath, configPath);
+
+  // Create .aligntrue/rules/ structure if selected
+  if (useAlignTrueRules) {
+    const rulesDir = join(aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
+
+    // Create README.md
+    const readmeContent = `# .aligntrue/rules/
+
+This directory contains your rule files. 
+Edit these files and run \`aligntrue sync\` to update all agents.
+
+File organization:
+- global.md: Universal rules for all agents
+- [topic].md: Add topic-specific files (e.g., testing.md, security.md)
+
+These files export to:
+- AGENTS.md (combined single file, read-only)
+- CLAUDE.md (combined single file, read-only)
+- .cursor/rules/aligntrue.mdc (combined for Cursor, read-only)
+
+To add new rule files, create .md files here and run \`aligntrue sync\`.
+`;
+    writeFileSync(join(rulesDir, "README.md"), readmeContent, "utf-8");
+
+    // Create global.md with starter content or mark for import
+    // We'll create the starter content after imports are processed
+  }
 
   // Check for agent format conflicts and offer to manage ignore files
   if (config.exporters && config.exporters.length > 1 && !nonInteractive) {
@@ -818,7 +914,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   let agentsMdContent: string | null = null;
 
-  if (createAgentsTemplate) {
+  if (createAgentsTemplate && !useAlignTrueRules) {
+    // Create AGENTS.md only if not using .aligntrue/rules/
     const templateContent = generateAgentsMdStarter(projectIdValue);
     agentsMdContent = templateContent;
     const agentsMdPath = `${cwd}/AGENTS.md`;
@@ -826,6 +923,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     writeFileSync(agentsMdTempPath, templateContent, "utf-8");
     renameSync(agentsMdTempPath, agentsMdPath);
     createdFiles.push("AGENTS.md");
+  } else if (createAgentsTemplate && useAlignTrueRules) {
+    // Create .aligntrue/rules/global.md instead
+    const templateContent = generateAgentsMdStarter(projectIdValue);
+    agentsMdContent = templateContent;
+    const globalMdPath = join(aligntrueDir, "rules", "global.md");
+    const globalMdTempPath = `${globalMdPath}.tmp`;
+    writeFileSync(globalMdTempPath, templateContent, "utf-8");
+    renameSync(globalMdTempPath, globalMdPath);
+    createdFiles.push(".aligntrue/rules/global.md");
   }
 
   let packSections: Section[] = [];

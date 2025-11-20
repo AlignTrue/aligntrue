@@ -19,7 +19,6 @@ import {
   detectNewAgents,
   detectUntrackedFiles,
 } from "../../utils/detect-agents.js";
-import { promptNewFileHandling, promptMergeStrategy } from "./prompts.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -30,6 +29,23 @@ import { getInvalidExporters } from "../../utils/exporter-validation.js";
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+/**
+ * Get human-readable time ago string
+ */
+function getTimeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days !== 1 ? "s" : ""} ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
+}
 
 /**
  * Sync context containing all loaded resources
@@ -492,7 +508,7 @@ async function detectAndEnableAgents(
 
 /**
  * Detect and handle untracked files with content
- * Prompts user to import files not currently in edit_source
+ * Prompts user to set edit source (single source model)
  */
 async function detectAndHandleUntrackedFiles(
   cwd: string,
@@ -514,97 +530,119 @@ async function detectAndHandleUntrackedFiles(
     return;
   }
 
-  // Determine action based on flags
-  let action: "import_and_merge" | "import_readonly" | "ignore";
-  let updateEditSource: boolean;
+  // Group files by agent/format
+  const cursorFiles = filesWithContent.filter((f) => f.format === "cursor-mdc");
+  const agentsMdFiles = filesWithContent.filter(
+    (f) => f.format === "agents" && f.relativePath === "AGENTS.md",
+  );
+  const claudeMdFiles = filesWithContent.filter(
+    (f) => f.format === "generic-markdown" && f.relativePath === "CLAUDE.md",
+  );
 
-  // In non-interactive mode or with --yes/--auto-enable, auto-import with merge
-  if (options.yes || options.nonInteractive || options.autoEnable) {
-    action = "import_and_merge";
-    updateEditSource = true;
-    if (!options.quiet) {
-      clack.log.info(
-        `Auto-importing ${filesWithContent.length} new file(s) with content...`,
+  let newEditSource: string | undefined;
+
+  // Scenario 1: Multi-file agent detected (Cursor)
+  if (cursorFiles.length > 0) {
+    const totalSections = cursorFiles.reduce(
+      (sum, f) => sum + f.sectionCount,
+      0,
+    );
+
+    clack.log.warn("⚠ Detected new content outside tracked files");
+    clack.log.info(
+      `  cursor: ${cursorFiles.length} file(s), ${totalSections} section(s)`,
+    );
+
+    for (const file of cursorFiles.slice(0, 15)) {
+      const timeAgo = getTimeAgo(file.lastModified);
+      clack.log.step(
+        `• ${file.relativePath} - ${file.sectionCount} sections, modified ${timeAgo}`,
       );
     }
-  } else {
-    // Interactive mode: prompt user
-    const result = await promptNewFileHandling(filesWithContent);
-    action = result.action;
-    updateEditSource = result.updateEditSource;
 
-    if (action === "ignore") {
-      clack.log.info("Files will be ignored. Run sync again to review.");
-      return;
+    if (cursorFiles.length > 15) {
+      clack.log.info(`  ... and ${cursorFiles.length - 15} more files`);
+    }
+
+    const response = await clack.confirm({
+      message: `Set as edit source?\n• Keep existing file organization\n• Exports automatically to AGENTS.md, CLAUDE.md`,
+      initialValue: true,
+    });
+
+    if (clack.isCancel(response)) {
+      clack.cancel("Sync cancelled");
+      process.exit(0);
+    }
+
+    if (response) {
+      newEditSource = ".cursor/rules/*.mdc";
+    } else {
+      // User declined, ask for alternative
+      const altChoice = await clack.select({
+        message: "Choose edit source instead:",
+        options: [
+          { value: "AGENTS.md", label: "AGENTS.md (recommended)" },
+          { value: "CLAUDE.md", label: "CLAUDE.md" },
+        ],
+      });
+
+      if (clack.isCancel(altChoice)) {
+        clack.cancel("Sync cancelled");
+        process.exit(0);
+      }
+
+      newEditSource = altChoice as string;
+    }
+  } else if (agentsMdFiles.length > 0 || claudeMdFiles.length > 0) {
+    // Scenario 2: Single-file formats detected
+    clack.log.warn("⚠ Detected new content in agent files");
+
+    if (agentsMdFiles.length > 0) {
+      clack.log.info(
+        `  AGENTS.md - ${agentsMdFiles[0]?.sectionCount || 0} sections`,
+      );
+    }
+    if (claudeMdFiles.length > 0) {
+      clack.log.info(
+        `  CLAUDE.md - ${claudeMdFiles[0]?.sectionCount || 0} sections`,
+      );
+    }
+
+    const options: Array<{ value: string; label: string }> = [];
+    if (agentsMdFiles.length > 0) {
+      options.push({ value: "AGENTS.md", label: "AGENTS.md (recommended)" });
+    }
+    if (claudeMdFiles.length > 0) {
+      options.push({ value: "CLAUDE.md", label: "CLAUDE.md" });
+    }
+
+    if (options.length === 1) {
+      newEditSource = options[0]!.value;
+      clack.log.info(`Using ${newEditSource} as edit source`);
+    } else {
+      const choice = await clack.select({
+        message: "Choose edit source:",
+        options,
+      });
+
+      if (clack.isCancel(choice)) {
+        clack.cancel("Sync cancelled");
+        process.exit(0);
+      }
+
+      newEditSource = choice as string;
     }
   }
 
-  // Update edit_source if user chose to track these files
-  if (updateEditSource && action === "import_and_merge") {
-    // Build list of patterns to add
-    const newPatterns = new Set<string>();
-
-    for (const file of filesWithContent) {
-      if (file.relativePath.includes("/")) {
-        const dir = file.relativePath.substring(
-          0,
-          file.relativePath.lastIndexOf("/"),
-        );
-        if (file.format === "cursor-mdc") {
-          newPatterns.add(`${dir}/*.mdc`);
-        } else if (file.relativePath.endsWith(".md")) {
-          newPatterns.add(`${dir}/*.md`);
-        } else {
-          newPatterns.add(file.relativePath);
-        }
-      } else {
-        newPatterns.add(file.relativePath);
-      }
-    }
-
-    // Update config
-    const currentEditSource = editSource
-      ? Array.isArray(editSource)
-        ? editSource
-        : [editSource]
-      : [];
-
-    const updatedEditSource = [
-      ...currentEditSource,
-      ...Array.from(newPatterns),
-    ].filter((v, i, arr) => arr.indexOf(v) === i); // Dedupe
-
+  // Update config with new edit source
+  if (newEditSource) {
     if (!config.sync) config.sync = {};
-    config.sync.edit_source =
-      updatedEditSource.length === 1
-        ? updatedEditSource[0]!
-        : updatedEditSource;
-
-    // Prompt for merge strategy (only in interactive mode)
-    if (!options.yes && !options.nonInteractive && !options.autoEnable) {
-      const sourceFiles = filesWithContent.map((f) => f.relativePath);
-      const shouldMerge = await promptMergeStrategy(sourceFiles);
-
-      if (shouldMerge) {
-        clack.log.info(
-          "Files added to edit_source. Content will be merged on sync.",
-        );
-      }
-    } else {
-      if (!options.quiet) {
-        clack.log.info(
-          "Files added to edit_source. Content will be merged on sync.",
-        );
-      }
-    }
+    config.sync.edit_source = newEditSource;
 
     await saveMinimalConfig(config, configPath);
-    clack.log.success(
-      `Updated edit_source: ${JSON.stringify(config.sync.edit_source)}`,
-    );
-  } else if (action === "import_readonly") {
+    clack.log.success(`Edit source set to: ${newEditSource}`);
     clack.log.info(
-      "Imported files once (read-only); keep them out of edit_source and ignore future edits.",
+      "Content will be read from edit source and exported to all agents on next sync.",
     );
   }
 }

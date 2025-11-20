@@ -322,12 +322,20 @@ async function reapplyPackSources(
 
 /**
  * Handle two-way sync logic
+ *
+ * EXPERIMENTAL: Only enabled when config.sync.experimental_two_way_sync is true
  */
 async function handleTwoWaySync(
   context: SyncContext,
   options: SyncOptions,
 ): Promise<void> {
   const { cwd, config, configPath, engine, spinner } = context;
+
+  // Guard: Only proceed if experimental_two_way_sync is enabled
+  if (!config.sync?.experimental_two_way_sync) {
+    // Not experimental mode - skip two-way sync
+    return;
+  }
 
   try {
     // Get last sync timestamp for accurate change detection

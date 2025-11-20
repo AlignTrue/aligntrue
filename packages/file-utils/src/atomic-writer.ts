@@ -9,6 +9,7 @@ import {
   renameSync,
   unlinkSync,
   existsSync,
+  statSync,
   mkdirSync,
   mkdtempSync,
   copyFileSync,
@@ -42,11 +43,32 @@ export function computeContentChecksum(content: string): string {
 export function ensureDirectoryExists(dirPath: string): void {
   try {
     mkdirSync(dirPath, { recursive: true });
+    // mkdir succeeded - we're done
+    return;
   } catch (_err) {
-    throw new Error(
-      `Failed to create directory: ${dirPath}\n` +
-        `  ${_err instanceof Error ? _err.message : String(_err)}`,
-    );
+    // mkdir failed - check if path exists
+    let stats;
+    try {
+      stats = statSync(dirPath);
+    } catch {
+      // statSync failed - path doesn't exist or is inaccessible
+      // Re-throw original mkdir error
+      throw new Error(
+        `Failed to create directory: ${dirPath}\n` +
+          `  ${_err instanceof Error ? _err.message : String(_err)}`,
+      );
+    }
+
+    // Path exists - check if it's a directory
+    if (!stats.isDirectory()) {
+      throw new Error(
+        `Path exists but is not a directory: ${dirPath}\n` +
+          `  Remove the file or choose a different path.`,
+      );
+    }
+
+    // Path exists and is a directory - this is OK (race condition handled)
+    return;
   }
 }
 
