@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CI validates both Node 20 and Node 22 compatibility
   - Updated `.node-version` to 20.18.1
 
+### Fixed
+
+- File-system race conditions in agent ignore manager using atomic directory creation
+
 ### Added
 
 - Agent ignore file management to prevent duplicate context when multiple exporters target formats consumable by same agent
