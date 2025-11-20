@@ -69,8 +69,8 @@ export async function promptNewFileHandling(
       },
       {
         value: "import_readonly",
-        label: "Import but keep read-only",
-        hint: "Merge content once, don't track for future edits",
+        label: "Import once (read-only)",
+        hint: "Merge content now but do not track these files for future edits",
       },
       {
         value: "ignore",
