@@ -393,6 +393,9 @@ async function handleTwoWaySync(
       clack.log.error(`✗ IR validation failed`);
       clack.log.error(`\n${errorMessage}\n`);
       clack.log.info(
+        "Note: .aligntrue/.rules.yaml is auto-generated. Edit AGENTS.md or agent files instead.",
+      );
+      clack.log.info(
         "To bypass validation (not recommended), use: aligntrue sync --force-invalid-ir",
       );
       process.exit(1);
