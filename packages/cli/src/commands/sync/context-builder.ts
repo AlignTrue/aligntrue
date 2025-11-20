@@ -604,7 +604,7 @@ async function detectAndHandleUntrackedFiles(
     );
   } else if (action === "import_readonly") {
     clack.log.info(
-      "Files will be imported once (read-only). Not added to edit_source.",
+      "Imported files once (read-only); keep them out of edit_source and ignore future edits.",
     );
   }
 }

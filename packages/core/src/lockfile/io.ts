@@ -173,11 +173,7 @@ function writeHashMigrationMarker(lockfilePath: string): void {
   try {
     const markerPath = getMigrationMarkerPath(lockfilePath);
     const markerDir = dirname(markerPath);
-    try {
-      mkdirSync(markerDir, { recursive: true });
-    } catch {
-      // Directory may already exist
-    }
+    ensureDirectoryExists(markerDir);
     writeFileSync(
       markerPath,
       JSON.stringify({ hash_migration_completed: true }, null, 2),
