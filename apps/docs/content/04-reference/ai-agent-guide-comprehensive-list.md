@@ -46,26 +46,35 @@ If you see anything missing or out of date, submit an update.
 
 ## Agent ignore file support
 
-| Agent                                | Ignore format                               | Notes                                                                                              |
-| ------------------------------------ | ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Claude Code                          | No dedicated file (custom solution pending) | Claude relies on `.gitignore`; a `.claudeignore` feature request is open.                          |
-| Aider                                | `.aiderignore`                              | Follows Git-style syntax and can sit anywhere inside the repo; `--aiderignore` overrides location. |
-| Amazon Q                             | Uses `.gitignore`                           | No project-specific ignore file yet; a `.q-ignore` proposal exists.                                |
-| Firebase Studio (Gemini Code Assist) | `.aiexclude`                                | `.gitignore` syntax minus negation; files listed there stay hidden from Gemini indexing.           |
-| Kilo Code                            | `.kilocodeignore`                           | Lives in `.kilocode` and mirrors Git ignore behavior.                                              |
-| OpenHands                            | None (planned)                              | OpenHands has no ignore file yet; a `.openhandsignore` is discussed.                               |
-| OpenHands Config                     | None                                        | Config.toml does not expose ignore patterns.                                                       |
-| Zed (Zed Editor AI)                  | Uses `.gitignore`                           | Zed hides gitignored files unless `include_ignored` is enabled; no `.zedignore`.                   |
-| Gemini CLI                           | `.geminiignore`                             | Works like a gitignore; Gemini CLI reloads after changes.                                          |
-| Gemini Config                        | `.geminiignore` / `.aiexclude`              | Config respects the CLI ignore file and Firebase’s `.aiexclude`.                                   |
-| Qwen Code                            | Uses `.gitignore`                           | Settings toggle whether gitignored files are considered.                                           |
-| OpenCode                             | Uses `.gitignore`                           | OpenCode relies on `.gitignore` and offers an `.ignore` override to re-include files.              |
-| Crush                                | `.crushignore`                              | Default honors `.gitignore`; `.crushignore` adds extra exclusions per project/subdir.              |
-| Warp                                 | `.warpindexingignore`                       | Files matching the list are dropped from Warp’s indexing along with gitignored paths.              |
-| Cline                                | `.clineignore`                              | Git-like syntax instructs Cline which files to skip.                                               |
-| Goose                                | `.gooseignore`                              | Ensures Goose does not read or edit sensitive files.                                               |
-| Firebender                           | Ignore list inside `firebender.json`        | The `ignore` array joins global and project configs to keep files private.                         |
-| Trae AI                              | None documented                             | No dedicated ignore file has been published.                                                       |
-| Junie (JetBrains)                    | `.aiignore`                                 | Files listed here require explicit approval before the AI reads or edits them.                     |
-| Augment Code                         | `.augmentignore`                            | Git-style patterns; supports negation to include previously ignored files.                         |
-| Kiro                                 | `.kiroignore`                               | Functions like a gitignore to stop Kiro from touching listed files.                                |
+AlignTrue automatically manages ignore files for agents that support them to prevent duplicate context. See [Preventing duplicate rules](/docs/03-concepts/preventing-duplicate-rules) for details.
+
+| Agent                                | Ignore format                        | AlignTrue managed | Nested support | Notes                                                                                              |
+| ------------------------------------ | ------------------------------------ | ----------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| Cursor                               | `.cursorignore`                      | ✓                 | ✓              | Also supports `.cursorindexingignore` for indexing-only exclusions.                                |
+| Aider                                | `.aiderignore`                       | ✓                 | ✓              | Follows Git-style syntax and can sit anywhere inside the repo; `--aiderignore` overrides location. |
+| Firebase Studio (Gemini Code Assist) | `.aiexclude`                         | ✓                 | ✗              | `.gitignore` syntax minus negation; files listed there stay hidden from Gemini indexing.           |
+| KiloCode                             | `.kilocodeignore`                    | ✓                 | ✗              | Lives in `.kilocode` and mirrors Git ignore behavior.                                              |
+| Gemini CLI                           | `.geminiignore`                      | ✓                 | ✗              | Works like a gitignore; Gemini CLI reloads after changes.                                          |
+| Crush                                | `.crushignore`                       | ✓                 | ✓              | Default honors `.gitignore`; `.crushignore` adds extra exclusions per project/subdir.              |
+| Warp                                 | `.warpindexingignore`                | ✓                 | ✗              | Files matching the list are dropped from Warp's indexing along with gitignored paths.              |
+| Cline                                | `.clineignore`                       | ✓                 | ✗              | Git-like syntax instructs Cline which files to skip.                                               |
+| Goose                                | `.gooseignore`                       | ✓                 | ✗              | Ensures Goose does not read or edit sensitive files.                                               |
+| Junie (JetBrains)                    | `.aiignore`                          | ✓                 | ✗              | Files listed here require explicit approval before the AI reads or edits them.                     |
+| Augment Code                         | `.augmentignore`                     | ✓                 | ✗              | Git-style patterns; supports negation to include previously ignored files.                         |
+| Kiro                                 | `.kiroignore`                        | ✓                 | ✗              | Functions like a gitignore to stop Kiro from touching listed files.                                |
+| Firebender                           | Ignore list inside `firebender.json` | ✗                 | ✗              | The `ignore` array joins global and project configs to keep files private.                         |
+| Claude Code                          | Uses `.gitignore`                    | ✗                 | ✗              | Claude relies on `.gitignore`; a `.claudeignore` feature request is open.                          |
+| Amazon Q                             | Uses `.gitignore`                    | ✗                 | ✗              | No project-specific ignore file yet; a `.q-ignore` proposal exists.                                |
+| Zed (Zed Editor AI)                  | Uses `.gitignore`                    | ✗                 | ✗              | Zed hides gitignored files unless `include_ignored` is enabled; no `.zedignore`.                   |
+| Qwen Code                            | Uses `.gitignore`                    | ✗                 | ✗              | Settings toggle whether gitignored files are considered.                                           |
+| OpenCode                             | Uses `.gitignore`                    | ✗                 | ✗              | OpenCode relies on `.gitignore` and offers an `.ignore` override to re-include files.              |
+| OpenHands                            | None (planned)                       | ✗                 | ✗              | OpenHands has no ignore file yet; a `.openhandsignore` is discussed.                               |
+| OpenHands Config                     | None                                 | ✗                 | ✗              | Config.toml does not expose ignore patterns.                                                       |
+| Trae AI                              | None documented                      | ✗                 | ✗              | No dedicated ignore file has been published.                                                       |
+| Windsurf                             | None documented                      | ✗                 | ✗              | No documented ignore mechanism.                                                                    |
+| GitHub Copilot                       | None documented                      | ✗                 | ✗              | No documented ignore mechanism.                                                                    |
+
+**Legend:**
+
+- **AlignTrue managed**: AlignTrue can automatically manage this ignore file
+- **Nested support**: Agent respects ignore files in subdirectories (for scoped exports)
