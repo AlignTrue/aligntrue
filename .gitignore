@@ -35,6 +35,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+.npmrc
+.yarnrc.yml
+*.key
+.ssh/
+
 # vercel
 .vercel
 
