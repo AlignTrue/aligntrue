@@ -191,8 +191,10 @@ export class ContentHashStrategy {
     const trackingPath = this.getTrackingPath(filePath);
     const dir = dirname(trackingPath);
 
-    if (!existsSync(dir)) {
+    try {
       mkdirSync(dir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     writeFileSync(trackingPath, JSON.stringify(tracking, null, 2), "utf-8");

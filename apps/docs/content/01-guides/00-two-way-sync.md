@@ -251,6 +251,111 @@ managed:
 
 These sections remain protected regardless of edit_source.
 
+## Discovering new rules
+
+When you copy/paste rules from online or add new agent files, AlignTrue automatically detects and helps you import them.
+
+### The workflow
+
+1. **Copy rules** into your workspace
+
+   ```bash
+   # Copy a Claude-specific rules file
+   curl https://example.com/claude-rules.md > CLAUDE.md
+
+   # Or manually create/edit
+   nano CLAUDE.md
+   ```
+
+2. **Run sync**
+
+   ```bash
+   aligntrue sync
+   ```
+
+3. **AlignTrue detects new content**
+
+   ```
+   ⚠ Detected new content outside tracked files
+
+   claude: 1 file(s), 5 section(s)
+     • CLAUDE.md - 5 sections, modified just now
+
+   How should we handle these files?
+   ○ Import all and merge (recommended)
+   ○ Import but keep read-only
+   ○ Ignore for now
+   ```
+
+4. **Choose import strategy**
+   - **Import all and merge:** Recommended. Merges content, adds to `edit_source`
+   - **Import read-only:** One-time import, won't track future edits
+   - **Ignore:** Ask again next sync
+
+5. **If you merge**, AlignTrue confirms:
+
+   ```
+   Merging 2 sources: AGENTS.md, CLAUDE.md
+
+   Merge all rules into one shared set?
+   ○ Yes (recommended) - All agents stay in sync
+   ○ No - Advanced config (see docs)
+   ```
+
+6. **Review the output**
+
+   ```bash
+   # Check what got merged
+   cat AGENTS.md
+   cat .cursor/rules/aligntrue.mdc
+   ```
+
+7. **Clean up duplicates** (if any)
+
+   ```bash
+   # Edit to remove duplicate sections
+   nano AGENTS.md
+
+   # Sync again
+   aligntrue sync
+   ```
+
+### Why merge first?
+
+**Better to merge first, clean up later** than lose content:
+
+- You can see all rules in one place
+- Easy to spot and remove duplicates
+- Nothing gets lost
+- Changes are backed up automatically
+
+### Example: Adding rules from online
+
+```bash
+# Found helpful rules online
+curl https://rules.example.com/typescript.md > typescript-rules.md
+
+# Sync to import
+aligntrue sync
+
+# Prompt appears:
+⚠ Detected new content outside tracked files
+typescript-rules: 1 file(s), 12 section(s)
+
+# Choose: Import all and merge
+# Choose: Yes, merge all
+
+# Result: Rules now in AGENTS.md and .cursor/rules/aligntrue.mdc
+
+# Clean up duplicates
+nano AGENTS.md  # Remove sections you don't want
+
+# Sync again
+aligntrue sync
+```
+
+**Tip:** Better to merge everything first, then edit down, than try to selectively import.
+
 ## Choosing an edit source
 
 ### Recommended defaults (auto-detected)

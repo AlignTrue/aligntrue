@@ -223,8 +223,10 @@ export async function saveIR(
 
   // Ensure directory exists
   const dir = dirname(targetPath);
-  if (!existsSync(dir)) {
+  try {
     mkdirSync(dir, { recursive: true });
+  } catch {
+    // Directory may already exist
   }
 
   // Convert to YAML

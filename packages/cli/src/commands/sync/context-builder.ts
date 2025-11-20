@@ -15,7 +15,11 @@ import {
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
-import { detectNewAgents } from "../../utils/detect-agents.js";
+import {
+  detectNewAgents,
+  detectUntrackedFiles,
+} from "../../utils/detect-agents.js";
+import { promptNewFileHandling, promptMergeStrategy } from "./prompts.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -224,6 +228,11 @@ export async function buildSyncContext(
   // Step 4: Detect new agents (unless --no-detect or --dry-run)
   if (!options.noDetect && !options.dryRun) {
     await detectAndEnableAgents(config, configPath, options);
+  }
+
+  // Step 4.5: Detect untracked files with content (unless --no-detect or --dry-run)
+  if (!options.noDetect && !options.dryRun) {
+    await detectAndHandleUntrackedFiles(cwd, config, configPath, options);
   }
 
   let lockfilePath: string | undefined;
@@ -478,6 +487,125 @@ async function detectAndEnableAgents(
 
       await saveMinimalConfig(config, configPath);
     }
+  }
+}
+
+/**
+ * Detect and handle untracked files with content
+ * Prompts user to import files not currently in edit_source
+ */
+async function detectAndHandleUntrackedFiles(
+  cwd: string,
+  config: AlignTrueConfig,
+  configPath: string,
+  options: SyncOptions,
+): Promise<void> {
+  // Skip if non-interactive
+  if (options.yes || options.nonInteractive) {
+    return;
+  }
+
+  const editSource = config.sync?.edit_source;
+  const untrackedFiles = detectUntrackedFiles(cwd, editSource);
+
+  // Only proceed if there are untracked files with content
+  const filesWithContent = untrackedFiles.filter((f) => f.hasContent);
+  if (filesWithContent.length === 0) {
+    return;
+  }
+
+  // Determine action based on flags
+  let action: "import_and_merge" | "import_readonly" | "ignore";
+  let updateEditSource: boolean;
+
+  // In non-interactive mode or with --yes/--auto-enable, auto-import with merge
+  if (options.yes || options.nonInteractive || options.autoEnable) {
+    action = "import_and_merge";
+    updateEditSource = true;
+    if (!options.quiet) {
+      clack.log.info(
+        `Auto-importing ${filesWithContent.length} new file(s) with content...`,
+      );
+    }
+  } else {
+    // Interactive mode: prompt user
+    const result = await promptNewFileHandling(filesWithContent);
+    action = result.action;
+    updateEditSource = result.updateEditSource;
+
+    if (action === "ignore") {
+      clack.log.info("Files will be ignored. Run sync again to review.");
+      return;
+    }
+  }
+
+  // Update edit_source if user chose to track these files
+  if (updateEditSource && action === "import_and_merge") {
+    // Build list of patterns to add
+    const newPatterns = new Set<string>();
+
+    for (const file of filesWithContent) {
+      if (file.relativePath.includes("/")) {
+        const dir = file.relativePath.substring(
+          0,
+          file.relativePath.lastIndexOf("/"),
+        );
+        if (file.format === "cursor-mdc") {
+          newPatterns.add(`${dir}/*.mdc`);
+        } else if (file.relativePath.endsWith(".md")) {
+          newPatterns.add(`${dir}/*.md`);
+        } else {
+          newPatterns.add(file.relativePath);
+        }
+      } else {
+        newPatterns.add(file.relativePath);
+      }
+    }
+
+    // Update config
+    const currentEditSource = editSource
+      ? Array.isArray(editSource)
+        ? editSource
+        : [editSource]
+      : [];
+
+    const updatedEditSource = [
+      ...currentEditSource,
+      ...Array.from(newPatterns),
+    ].filter((v, i, arr) => arr.indexOf(v) === i); // Dedupe
+
+    if (!config.sync) config.sync = {};
+    config.sync.edit_source =
+      updatedEditSource.length === 1
+        ? updatedEditSource[0]!
+        : updatedEditSource;
+
+    // Prompt for merge strategy (only in interactive mode)
+    if (!options.yes && !options.nonInteractive && !options.autoEnable) {
+      const sourceFiles = filesWithContent.map((f) => f.relativePath);
+      const shouldMerge = await promptMergeStrategy(sourceFiles);
+
+      if (shouldMerge) {
+        clack.log.info(
+          "Files added to edit_source. Content will be merged on sync.",
+        );
+      }
+    } else {
+      if (!options.quiet) {
+        clack.log.info(
+          "Files added to edit_source. Content will be merged on sync.",
+        );
+      }
+    }
+
+    await saveMinimalConfig(config, configPath);
+    clack.log.success(
+      `Updated edit_source: ${JSON.stringify(config.sync.edit_source)}`,
+    );
+  } else if (action === "import_readonly") {
+    clack.log.info(
+      "Files will be imported once (read-only). Not added to edit_source.",
+    );
   }
 }
 

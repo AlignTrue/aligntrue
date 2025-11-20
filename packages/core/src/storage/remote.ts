@@ -57,8 +57,10 @@ export class RemoteStorageBackend implements IStorageBackend {
 
     // Ensure subdirectory exists
     const dir = join(this.remotePath, this.subPath);
-    if (!existsSync(dir)) {
+    try {
       mkdirSync(dir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     // Convert sections to markdown
@@ -110,8 +112,10 @@ export class RemoteStorageBackend implements IStorageBackend {
 
     // Clone the repository
     const remoteDir = join(this.cwd, ".aligntrue", ".remotes");
-    if (!existsSync(remoteDir)) {
+    try {
       mkdirSync(remoteDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     try {

@@ -113,8 +113,10 @@ export function writeTelemetryState(
   stateFilePath: string = DEFAULT_STATE_FILE,
 ): void {
   const dir = dirname(stateFilePath);
-  if (!existsSync(dir)) {
+  try {
     mkdirSync(dir, { recursive: true });
+  } catch {
+    // Directory may already exist
   }
 
   const writer = new AtomicFileWriter();
@@ -169,8 +171,10 @@ function writeEvents(
   eventsFilePath: string = DEFAULT_EVENTS_FILE,
 ): void {
   const dir = dirname(eventsFilePath);
-  if (!existsSync(dir)) {
+  try {
     mkdirSync(dir, { recursive: true });
+  } catch {
+    // Directory may already exist
   }
 
   const writer = new AtomicFileWriter();

@@ -223,8 +223,11 @@ export abstract class ExporterBase implements ExporterPlugin {
         lines.push("");
       }
 
-      // Content
-      lines.push(section.content.trim());
+      // Content - normalize formatting to fix common issues
+      const normalizedContent = this.normalizeMarkdownFormatting(
+        section.content.trim(),
+      );
+      lines.push(normalizedContent);
 
       return lines.join("\n");
     });
@@ -611,13 +614,75 @@ export abstract class ExporterBase implements ExporterPlugin {
         lines.push("");
       }
 
-      // Content
-      lines.push(section.content.trim());
+      // Content - normalize formatting to fix common issues
+      const normalizedContent = this.normalizeMarkdownFormatting(
+        section.content.trim(),
+      );
+      lines.push(normalizedContent);
 
       return lines.join("\n");
     });
 
     return rendered.join("\n\n");
+  }
+
+  /**
+   * Generate source attribution comment
+   * Shows which files contributed sections to this export
+   *
+   * @param sections - Sections with vendor.aligntrue.source_file metadata
+   * @returns HTML comment with source attribution
+   *
+   * @example
+   * ```typescript
+   * const comment = this.generateSourceAttribution(sections);
+   * // Returns: <!-- Synced from: AGENTS.md, CLAUDE.md | Last sync: 2025-11-20T... -->
+   * ```
+   */
+  protected generateSourceAttribution(sections: AlignSection[]): string {
+    const sourceFiles = new Set<string>();
+
+    for (const section of sections) {
+      const sourceFile = section.vendor?.aligntrue?.source_file;
+      if (sourceFile && typeof sourceFile === "string") {
+        sourceFiles.add(sourceFile);
+      }
+    }
+
+    if (sourceFiles.size === 0) {
+      return "";
+    }
+
+    const sourceList = Array.from(sourceFiles).sort().join(", ");
+    const timestamp = new Date().toISOString();
+
+    return `<!-- Synced from: ${sourceList} | Last sync: ${timestamp} -->\n\n`;
+  }
+
+  /**
+   * Normalize markdown content to fix common formatting issues
+   * - Ensures proper spacing after horizontal rules
+   * - Fixes concatenated headings
+   *
+   * @param content - Raw markdown content
+   * @returns Normalized content with proper spacing
+   */
+  protected normalizeMarkdownFormatting(content: string): string {
+    let normalized = content;
+
+    // Fix horizontal rules followed directly by headings
+    // Match: ---### or ---## (no newline between)
+    // Replace with: ---\n\n###
+    normalized = normalized.replace(/^(---+)([#]+\s)/gm, "$1\n\n$2");
+
+    // Ensure horizontal rules have blank lines around them
+    // But avoid adding extra lines if they already exist
+    normalized = normalized.replace(
+      /([^\n])\n(---+)\n([^\n])/g,
+      "$1\n\n$2\n\n$3",
+    );
+
+    return normalized;
   }
 
   /**

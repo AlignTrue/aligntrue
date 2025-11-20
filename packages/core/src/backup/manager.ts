@@ -44,8 +44,10 @@ export class BackupManager {
 
     // Create backups directory if it doesn't exist
     const backupsDir = join(aligntrueDir, ".backups");
-    if (!existsSync(backupsDir)) {
+    try {
       mkdirSync(backupsDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     // Generate timestamp for this backup (with process ID and sequence for uniqueness)
@@ -90,8 +92,10 @@ export class BackupManager {
       const destPath = join(backupDir, file);
       const destDir = dirname(destPath);
 
-      if (!existsSync(destDir)) {
+      try {
         mkdirSync(destDir, { recursive: true });
+      } catch {
+        // Directory may already exist
       }
 
       cpSync(srcPath, destPath);
@@ -164,8 +168,10 @@ export class BackupManager {
         const destPath = join(agentFilesDir, agentFile);
         const destDir = dirname(destPath);
 
-        if (!existsSync(destDir)) {
+        try {
           mkdirSync(destDir, { recursive: true });
+        } catch {
+          // Directory may already exist
         }
 
         try {
@@ -361,8 +367,10 @@ export class BackupManager {
         const destPath = join(aligntrueDir, file);
         const destDir = dirname(destPath);
 
-        if (!existsSync(destDir)) {
+        try {
           mkdirSync(destDir, { recursive: true });
+        } catch {
+          // Directory may already exist
         }
 
         cpSync(srcPath, destPath);
@@ -386,8 +394,10 @@ export class BackupManager {
             }
 
             const destDir = dirname(destPath);
-            if (!existsSync(destDir)) {
+            try {
               mkdirSync(destDir, { recursive: true });
+            } catch {
+              // Directory may already exist
             }
 
             try {
@@ -493,8 +503,10 @@ export class BackupManager {
 
     // Create scope-specific backups directory
     const backupsDir = join(aligntrueDir, ".backups", scope);
-    if (!existsSync(backupsDir)) {
+    try {
       mkdirSync(backupsDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     // Generate timestamp (with process ID and sequence for uniqueness)
@@ -537,8 +549,10 @@ export class BackupManager {
       const destPath = join(backupDir, file);
       const destDir = dirname(destPath);
 
-      if (!existsSync(destDir)) {
+      try {
         mkdirSync(destDir, { recursive: true });
+      } catch {
+        // Directory may already exist
       }
 
       cpSync(srcPath, destPath);

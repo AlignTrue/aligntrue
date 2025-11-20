@@ -10,7 +10,6 @@ import {
   unlinkSync,
   existsSync,
   mkdirSync,
-  statSync,
   mkdtempSync,
   copyFileSync,
 } from "fs";
@@ -41,33 +40,13 @@ export function computeContentChecksum(content: string): string {
  * Ensure directory exists, creating it if necessary
  */
 export function ensureDirectoryExists(dirPath: string): void {
-  if (!existsSync(dirPath)) {
-    try {
-      mkdirSync(dirPath, { recursive: true });
-    } catch (_err) {
-      throw new Error(
-        `Failed to create directory: ${dirPath}\n` +
-          `  ${_err instanceof Error ? _err.message : String(_err)}`,
-      );
-    }
-  } else {
-    // Verify it's actually a directory
-    try {
-      const stats = statSync(dirPath);
-      if (!stats.isDirectory()) {
-        throw new Error(
-          `Path exists but is not a directory: ${dirPath}\n` +
-            `  Remove the file or choose a different path.`,
-        );
-      }
-    } catch (_err) {
-      if ((_err as NodeJS.ErrnoException).code !== "ENOENT") {
-        throw new Error(
-          `Failed to check directory: ${dirPath}\n` +
-            `  ${_err instanceof Error ? _err.message : String(_err)}`,
-        );
-      }
-    }
+  try {
+    mkdirSync(dirPath, { recursive: true });
+  } catch (_err) {
+    throw new Error(
+      `Failed to create directory: ${dirPath}\n` +
+        `  ${_err instanceof Error ? _err.message : String(_err)}`,
+    );
   }
 }
 
@@ -215,9 +194,7 @@ export class AtomicFileWriter {
       } else {
         // Clean up temp file on failure
         try {
-          if (existsSync(tempPath)) {
-            unlinkSync(tempPath);
-          }
+          unlinkSync(tempPath);
         } catch {
           // Ignore cleanup errors
         }
@@ -239,7 +216,7 @@ export class AtomicFileWriter {
 
     // Clean up backup on success
     const backup = this.backups.get(filePath);
-    if (backup && existsSync(backup)) {
+    if (backup) {
       try {
         unlinkSync(backup);
       } catch {
@@ -257,11 +234,9 @@ export class AtomicFileWriter {
 
     for (const [filePath, backupPath] of this.backups) {
       try {
-        if (existsSync(backupPath)) {
-          const backupContent = readFileSync(backupPath, "utf8");
-          writeFileSync(filePath, backupContent, "utf8");
-          unlinkSync(backupPath);
-        }
+        const backupContent = readFileSync(backupPath, "utf8");
+        writeFileSync(filePath, backupContent, "utf8");
+        unlinkSync(backupPath);
       } catch (_err) {
         errors.push(
           `  - ${filePath}: ${_err instanceof Error ? _err.message : String(_err)}`,
