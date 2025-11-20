@@ -43,7 +43,12 @@ export class OpenHandsExporter extends ExporterBase {
     const contentHash = computeContentHash({ scope, sections });
     const fidelityNotes = this.computeSectionFidelityNotes(sections);
 
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
 

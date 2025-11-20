@@ -106,7 +106,12 @@ export class CursorExporter extends ExporterBase {
       allWarnings.push(...mergeResult.warnings, ...fidelityNotes);
 
       // Write file atomically if not dry-run
-      const filesWritten = await this.writeFile(outputPath, content, dryRun);
+      const filesWritten = await this.writeFile(
+        outputPath,
+        content,
+        dryRun,
+        options,
+      );
       allFilesWritten.push(...filesWritten);
 
       // Use first scope's hash as combined hash

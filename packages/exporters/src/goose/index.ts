@@ -74,7 +74,12 @@ export class GooseExporter extends ExporterBase {
     }
 
     const content = lines.join("\n");
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
