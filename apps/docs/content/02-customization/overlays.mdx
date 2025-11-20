@@ -908,6 +908,80 @@ aligntrue override diff
 
 See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehensive troubleshooting.
 
+## Verifying overlay application
+
+### Understanding what overlays affect
+
+Overlays modify the canonical IR (`.aligntrue/.rules.yaml`) and affect **behavior** of checks and linting, even if the changes aren't visible in markdown exports.
+
+**Example:**
+
+- Overlay changes `severity: "warning"` → `severity: "error"`
+- IR file `.aligntrue/.rules.yaml` now has `severity: error`
+- Check behavior changes (errors fail CI instead of warnings)
+- Exported AGENTS.md still shows `## Rule Name` (no severity indicator)
+
+**This is correct behavior.** Severity affects behavior. Markdown format doesn't include machine metadata by design.
+
+### Verifying overlays are applied
+
+Use these commands to confirm overlays are working:
+
+```bash
+# 1. Check that overlay is active and healthy
+aligntrue override status
+# Shows: ✓ rule[id=your-rule-id]
+#        Set: severity="error"
+#        Healthy: yes
+
+# 2. View the effect of the overlay
+aligntrue override diff
+# Shows: Original → Modified with overlay applied
+
+# 3. Inspect the canonical IR directly
+cat .aligntrue/.rules.yaml | grep -A 5 "your-rule-id"
+# Shows: severity: "error" (modified by overlay)
+
+# 4. Check CLI output during sync
+aligntrue sync
+# Output shows: ✓ Applied 1 overlay to rules
+```
+
+### Overlay effects not visible in exports
+
+If you don't see severity changes in AGENTS.md or other exports, this is **expected**. Here's why:
+
+- **IR is canonical:** `.aligntrue/.rules.yaml` contains overlay-modified content
+- **Exports are simplified:** Markdown formats prioritize readability
+- **Behavior is affected:** Checks use the modified IR behavior
+- **Verification:** Use `aligntrue override diff` and `aligntrue override status` to confirm
+
+**To verify overlays are affecting checks:**
+
+```bash
+# 1. Add overlay to make rule an error
+aligntrue override add --selector 'rule[id=my-rule]' --set severity=error
+
+# 2. Sync
+aligntrue sync
+
+# 3. Check IR (should now have severity=error)
+aligntrue override diff 'rule[id=my-rule]'
+
+# 4. Run checks (check behavior will change)
+aligntrue check
+
+# 5. Confirm via CLI output
+# (checks will now use error severity from IR, affecting results)
+```
+
+Overlays are working correctly if:
+
+- ✅ `aligntrue override status` shows "Healthy: yes"
+- ✅ `aligntrue override diff` shows the change applied
+- ✅ `.aligntrue/.rules.yaml` contains the modified value
+- ✅ Check behavior changes as expected
+
 ## Scenarios
 
 Real-world examples showing how to use overlays for fork-safe customization:
