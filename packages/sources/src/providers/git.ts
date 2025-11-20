@@ -138,8 +138,10 @@ export class GitProvider implements SourceProvider {
     this.validateCachePath(this.cacheDir);
 
     // Ensure cache directory exists
-    if (!existsSync(this.cacheDir)) {
+    try {
       mkdirSync(this.cacheDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
   }
 

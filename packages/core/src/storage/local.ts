@@ -43,8 +43,10 @@ export class LocalStorageBackend implements IStorageBackend {
 
   async write(rules: Rules): Promise<void> {
     // Ensure directory exists
-    if (!existsSync(this.storagePath)) {
+    try {
       mkdirSync(this.storagePath, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     const rulesFile = join(this.storagePath, "rules.md");

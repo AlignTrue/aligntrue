@@ -618,7 +618,7 @@ async function teamDisable(
     renameSync(tempPath, configPath);
 
     // Delete lockfile if it exists
-    if (existsSync(lockfilePath)) {
+    try {
       const { unlinkSync } = await import("fs");
       unlinkSync(lockfilePath);
       if (!nonInteractive) {
@@ -626,6 +626,8 @@ async function teamDisable(
       } else {
         console.log("Deleted .aligntrue.lock.json");
       }
+    } catch {
+      // File may not exist, that's fine
     }
 
     // Record telemetry event

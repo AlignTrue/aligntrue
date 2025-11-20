@@ -295,8 +295,10 @@ export class GitDiffStrategy {
    */
   private saveManifest(manifest: SyncManifest): void {
     const dir = dirname(this.manifestPath);
-    if (!existsSync(dir)) {
+    try {
       mkdirSync(dir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
     writeFileSync(
       this.manifestPath,

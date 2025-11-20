@@ -114,8 +114,10 @@ export class ConsentManager {
    */
   private saveStorage(storage: ConsentStorage): void {
     const dir = dirname(this.consentFilePath);
-    if (!existsSync(dir)) {
+    try {
       mkdirSync(dir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     const content = JSON.stringify(storage, null, 2) + "\n";

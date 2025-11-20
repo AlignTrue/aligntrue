@@ -59,8 +59,10 @@ export function writePatchFile(
     const artifactsDir = options?.artifactsDir ?? ".aligntrue/artifacts";
 
     // Ensure directory exists
-    if (!existsSync(artifactsDir)) {
+    try {
       mkdirSync(artifactsDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
 
     // Generate filename
@@ -133,11 +135,8 @@ export function listPatchFiles(artifactsDir?: string): string[] {
  */
 export function deletePatchFile(path: string): boolean {
   try {
-    if (existsSync(path)) {
-      unlinkSync(path);
-      return true;
-    }
-    return false;
+    unlinkSync(path);
+    return true;
   } catch {
     return false;
   }
