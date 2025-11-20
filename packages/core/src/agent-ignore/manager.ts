@@ -3,8 +3,9 @@
  * Handles reading, updating, and creating agent ignore files
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import type { AgentConflict } from "./detector.js";
 import { getIgnorePatterns, getNestedIgnorePatterns } from "./detector.js";
 
@@ -220,9 +221,7 @@ export function updateIgnoreFile(
   // Write file if not dry run
   if (!dryRun) {
     const dir = dirname(filePath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
+    ensureDirectoryExists(dir);
     writeFileSync(filePath, newContent, "utf-8");
   }
 
