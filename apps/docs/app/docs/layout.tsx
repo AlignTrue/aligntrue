@@ -90,7 +90,7 @@ function DocsFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/badge/node-%3E%3D22-brightgreen?logo=node.js&logoColor=white"
+              src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?logo=node.js&logoColor=white"
               alt="Node.js Version"
               style={{ height: "20px", display: "block" }}
             />
