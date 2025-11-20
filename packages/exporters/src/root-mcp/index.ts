@@ -76,7 +76,12 @@ export class RootMcpExporter extends ExporterBase {
     const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
 
     const content = JSON.stringify(mcpConfig, null, 2) + "\n";
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
     return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }

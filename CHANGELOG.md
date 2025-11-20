@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- ESLint rule `no-check-then-operate` to prevent TOCTOU race conditions at development time
+- Checksum-based overwrite protection for exported files using `AtomicFileWriter`
+- Interactive conflict resolution prompts during sync when files have been manually edited
+- `--force` flag now also bypasses file overwrite protection for non-interactive syncs
+
+### Added
+
 - Agent ignore file management to prevent duplicate context when multiple exporters target formats consumable by same agent
 - Automatic detection of format conflicts during init and sync
 - Support for 12 agent-specific ignore files (Cursor, Aider, Gemini, Crush, Warp, Cline, Goose, Junie, Augment Code, Kiro, KiloCode, Firebase Studio)

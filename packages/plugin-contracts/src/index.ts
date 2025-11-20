@@ -21,3 +21,12 @@ export type {
   ExporterCapabilities,
   AdapterManifest,
 } from "./exporter.js";
+
+// Prompt utilities for interactive conflict resolution
+export type { ConflictResolution, PromptFunction } from "./prompts.js";
+
+export {
+  setPromptHandler,
+  getPromptHandler,
+  clearPromptHandler,
+} from "./prompts.js";

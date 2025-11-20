@@ -17,6 +17,7 @@ import type {
   ExportResult,
   AdapterManifest,
 } from "@aligntrue/plugin-contracts";
+import { getPromptHandler } from "@aligntrue/plugin-contracts";
 import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
@@ -33,6 +34,17 @@ import { fileURLToPath } from "url";
 export abstract class ExporterBase implements ExporterPlugin {
   abstract name: string;
   abstract version: string;
+
+  /**
+   * Persistent atomic file writer with checksum tracking across all exports in a sync
+   * Initialized with checksum conflict handler that respects CLI flags
+   */
+  protected writer: AtomicFileWriter = new AtomicFileWriter();
+
+  /**
+   * Store config for use in helper methods (subclasses may override with public property)
+   */
+  protected currentConfig?: unknown;
 
   /**
    * Subclasses must implement the export method
@@ -217,17 +229,19 @@ export abstract class ExporterBase implements ExporterPlugin {
   /**
    * Write file atomically with dry-run support
    *
-   * Uses AtomicFileWriter for safe file operations.
+   * Uses persistent AtomicFileWriter for safe file operations with checksum tracking
+   * and conflict resolution based on interactive/force flags.
    * Returns empty array if dry-run is enabled.
    *
    * @param path - File path to write
    * @param content - File content (string)
    * @param dryRun - If true, skip actual write
+   * @param options - Export options (interactive, force flags)
    * @returns Array with single path if written, empty if dry-run
    *
    * @example
    * ```typescript
-   * const written = await this.writeFile(outputPath, content, dryRun);
+   * const written = await this.writeFile(outputPath, content, dryRun, options);
    * // Returns: [outputPath] or []
    * ```
    */
@@ -235,15 +249,78 @@ export abstract class ExporterBase implements ExporterPlugin {
     path: string,
     content: string,
     dryRun: boolean,
+    options?: ExportOptions,
   ): Promise<string[]> {
     if (dryRun) {
       return [];
     }
 
-    const writer = new AtomicFileWriter();
-    await writer.write(path, content);
+    const interactive = options?.interactive ?? false;
+    const force = options?.force ?? false;
+
+    // Set checksum handler on first write to enable conflict resolution
+    if (!this.writer.getChecksum(path)) {
+      this.writer.setChecksumHandler(this.handleChecksumConflict.bind(this));
+    }
+
+    await this.writer.write(path, content, { interactive, force });
 
     return [path];
+  }
+
+  /**
+   * Handle checksum conflicts when files have been manually edited
+   *
+   * Called by AtomicFileWriter when a file's checksum doesn't match the last known value.
+   * Respects CLI flags: force always overwrites, interactive prompts user.
+   *
+   * @param filePath - Path to conflicted file
+   * @param lastChecksum - Checksum from previous write
+   * @param currentChecksum - Checksum of current file content
+   * @param interactive - Whether user interaction is allowed
+   * @param force - Whether to bypass all checks
+   * @returns Decision: overwrite, keep (skip), or abort
+   */
+  protected async handleChecksumConflict(
+    filePath: string,
+    _lastChecksum: string,
+    _currentChecksum: string,
+    interactive: boolean,
+    force: boolean,
+  ): Promise<"overwrite" | "keep" | "abort"> {
+    // Force flag always overwrites
+    if (force) {
+      return "overwrite";
+    }
+
+    // Interactive mode prompts user via global handler set by CLI
+    if (interactive) {
+      const promptHandler = getPromptHandler();
+      if (promptHandler) {
+        return await promptHandler(filePath);
+      }
+      // If no handler available, throw error
+      throw new Error(
+        `File has been manually edited: ${filePath}\n` +
+          `  Use --force to overwrite without prompting\n` +
+          `  Interactive mode requires CLI to be initialized`,
+      );
+    }
+
+    // Non-interactive without force: abort with helpful error
+    throw new Error(
+      `File has been manually edited: ${filePath}\n` +
+        `  Use --force to overwrite or --yes to accept (requires --accept-agent for conflicts)\n` +
+        `  Or run sync interactively without --non-interactive or --yes flags`,
+    );
+  }
+
+  /**
+   * Clear writer state between syncs
+   * Call after completing all exports for a sync operation
+   */
+  protected clearWriterState(): void {
+    this.writer.clear();
   }
 
   /**
