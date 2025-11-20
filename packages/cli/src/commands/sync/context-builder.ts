@@ -416,6 +416,10 @@ async function detectAndEnableAgents(
     const toEnable: string[] = [];
     const toIgnore: string[] = [];
 
+    clack.log.info(
+      `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected, let's review each one:`,
+    );
+
     for (const agent of newAgents) {
       clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
       clack.log.info(`  Found: ${agent.filePath}`);
