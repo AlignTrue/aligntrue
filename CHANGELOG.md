@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nested ignore file support for scoped exports in monorepos
 - Config options: `sync.auto_manage_ignore_files`, `sync.ignore_file_priority`, `sync.custom_format_priority`
 - Documentation: Preventing duplicate rules guide
+- Documentation: Comprehensive CI/automation guide with `--yes` and `--non-interactive` flags
+- Documentation: Enhanced CLI reference with non-interactive mode examples for GitHub Actions, GitLab CI, Jenkins
 
 ## [0.2.2] - 2025-11-19
 
