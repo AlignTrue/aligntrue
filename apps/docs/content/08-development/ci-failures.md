@@ -125,8 +125,8 @@ CI runs on multiple platforms to catch platform-specific issues:
 
 Additionally, CI tests multiple Node.js versions:
 
+- **Node 20** - LTS (all platforms)
 - **Node 22** - Current LTS (all platforms)
-- **Node 20** - Previous LTS (Ubuntu only)
 
 ### Windows test limitations
 

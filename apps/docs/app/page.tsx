@@ -470,8 +470,8 @@ function SiteFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/badge/node-%3E%3D22-brightgreen"
-              alt="Node 22+"
+              src="https://img.shields.io/badge/node-%3E%3D20-brightgreen"
+              alt="Node 20+"
               style={{ height: "20px", display: "block" }}
             />
           </a>

@@ -96,7 +96,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
 
       - name: Install AlignTrue CLI
         run: npm install -g @aligntrue/cli
@@ -132,7 +132,7 @@ Add to `.gitlab-ci.yml`:
 
 ```yaml
 check-aligntrue-updates:
-  image: node:22
+  image: node:20
   script:
     - npm install -g @aligntrue/cli
     - aligntrue update check
