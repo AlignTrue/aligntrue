@@ -70,9 +70,20 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Show detailed fidelity notes and warnings",
   },
   {
+    flag: "--quiet",
+    alias: "-q",
+    hasValue: false,
+    description: "Minimal output (errors and final result only)",
+  },
+  {
     flag: "--no-detect",
     hasValue: false,
     description: "Skip agent detection",
+  },
+  {
+    flag: "--skip-two-way-detection",
+    hasValue: false,
+    description: "Skip two-way sync detection (internal use)",
   },
   {
     flag: "--auto-enable",
@@ -119,9 +130,11 @@ export interface SyncOptions {
   skipUpdateCheck: boolean;
   offline: boolean;
   verbose: boolean;
+  quiet: boolean;
   yes: boolean;
   nonInteractive: boolean;
   noDetect: boolean;
+  skipTwoWayDetection: boolean;
   autoEnable: boolean;
   showConflicts: boolean;
 }
@@ -146,10 +159,13 @@ export function parseSyncOptions(args: string[]): SyncOptions {
       (parsed.flags["skip-update-check"] as boolean | undefined) || false,
     offline: (parsed.flags["offline"] as boolean | undefined) || false,
     verbose: (parsed.flags["verbose"] as boolean | undefined) || false,
+    quiet: (parsed.flags["quiet"] as boolean | undefined) || false,
     yes: (parsed.flags["yes"] as boolean | undefined) || false,
     nonInteractive:
       (parsed.flags["non-interactive"] as boolean | undefined) || false,
     noDetect: (parsed.flags["no-detect"] as boolean | undefined) || false,
+    skipTwoWayDetection:
+      (parsed.flags["skip-two-way-detection"] as boolean | undefined) || false,
     autoEnable: (parsed.flags["auto-enable"] as boolean | undefined) || false,
     showConflicts:
       (parsed.flags["show-conflicts"] as boolean | undefined) || false,

@@ -52,7 +52,7 @@ export async function handleSyncResult(
 
   // Show warnings
   if (result.warnings && result.warnings.length > 0) {
-    displayWarnings(result.warnings, options.verbose);
+    displayWarnings(result.warnings, options.verbose, options.quiet);
   }
 
   // Show audit trail in dry-run
@@ -88,161 +88,170 @@ export async function handleSyncResult(
   }
 
   // Show success message with next steps
-  if (options.dryRun) {
-    clack.outro("✓ Preview complete");
-  } else {
-    const loadedAdapters = registry
-      .list()
-      .map((name) => registry.get(name)!)
-      .filter(Boolean);
-    const exporterNames = loadedAdapters.map((a) => a.name);
-    const writtenFiles = result.written || [];
-    const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
-    const hasChanges = uniqueWrittenFiles.length > 0;
-
-    let message = "✓ Sync complete\n\n";
-
-    if (hasChanges) {
-      message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-      uniqueWrittenFiles.forEach((file) => {
-        message += `  - ${file}\n`;
-      });
-      message += "\n";
-      message += "Your AI assistants are now aligned with these rules.\n\n";
-      message +=
-        "Next: Start coding! Your agents will follow the rules automatically.\n\n";
-      message +=
-        "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+  if (!options.quiet) {
+    if (options.dryRun) {
+      clack.outro("✓ Preview complete");
     } else {
-      message = "✓ Everything up to date - no changes needed";
+      const loadedAdapters = registry
+        .list()
+        .map((name) => registry.get(name)!)
+        .filter(Boolean);
+      const exporterNames = loadedAdapters.map((a) => a.name);
+      const writtenFiles = result.written || [];
+      const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
+      const hasChanges = uniqueWrittenFiles.length > 0;
+
+      let message = "✓ Sync complete\n\n";
+
+      if (hasChanges) {
+        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
+        uniqueWrittenFiles.forEach((file) => {
+          message += `  - ${file}\n`;
+        });
+        message += "\n";
+        message += "Your AI assistants are now aligned with these rules.\n\n";
+        message +=
+          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+        message +=
+          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+      } else {
+        message = "✓ Everything up to date - no changes needed";
+      }
+
+      clack.outro(message);
     }
+  }
 
-    clack.outro(message);
+  // Check for agent format conflicts and offer to manage ignore files
+  if (
+    !options.dryRun &&
+    context.config.exporters &&
+    context.config.exporters.length > 1
+  ) {
+    const autoManage = context.config.sync?.auto_manage_ignore_files ?? true;
 
-    // Check for agent format conflicts and offer to manage ignore files
-    if (
-      !options.dryRun &&
-      context.config.exporters &&
-      context.config.exporters.length > 1
-    ) {
-      const autoManage = context.config.sync?.auto_manage_ignore_files ?? true;
+    // Only check if not explicitly disabled
+    if (autoManage !== false) {
+      const {
+        detectConflicts,
+        applyConflictResolution,
+        applyNestedConflictResolution,
+        formatConflictMessage,
+        formatWarningMessage,
+      } = await import("@aligntrue/core/agent-ignore");
 
-      // Only check if not explicitly disabled
-      if (autoManage !== false) {
-        const {
-          detectConflicts,
-          applyConflictResolution,
-          applyNestedConflictResolution,
-          formatConflictMessage,
-          formatWarningMessage,
-        } = await import("@aligntrue/core/agent-ignore");
+      const detection = detectConflicts(
+        context.config.exporters,
+        context.config.sync?.custom_format_priority,
+      );
 
-        const detection = detectConflicts(
-          context.config.exporters,
-          context.config.sync?.custom_format_priority,
-        );
+      if (detection.hasIssues) {
+        // Handle conflicts that can be resolved with ignore files
+        for (const conflict of detection.conflicts) {
+          const shouldPrompt =
+            (autoManage === "prompt" || autoManage === undefined) &&
+            !options.yes &&
+            !options.nonInteractive &&
+            !options.autoEnable;
 
-        if (detection.hasIssues) {
-          // Handle conflicts that can be resolved with ignore files
-          for (const conflict of detection.conflicts) {
-            const shouldPrompt =
-              (autoManage === "prompt" || autoManage === undefined) &&
-              !options.yes &&
-              !options.nonInteractive &&
-              !options.autoEnable;
+          if (shouldPrompt) {
+            const message = formatConflictMessage(conflict);
+            const shouldManage = await clack.confirm({
+              message,
+              initialValue: true,
+            });
 
-            if (shouldPrompt) {
-              const message = formatConflictMessage(conflict);
-              const shouldManage = await clack.confirm({
-                message,
-                initialValue: true,
-              });
-
-              if (clack.isCancel(shouldManage) || !shouldManage) {
-                continue;
-              }
-            } else if (autoManage !== true) {
+            if (clack.isCancel(shouldManage) || !shouldManage) {
               continue;
             }
-
-            try {
-              // Apply root ignore file updates
-              const updates = applyConflictResolution(conflict, cwd, false);
-
-              // Apply nested scope ignore files if scopes are configured
-              const scopePaths =
-                context.config.scopes?.map((s) => s.path) || [];
-              const nestedUpdates = applyNestedConflictResolution(
-                conflict,
-                cwd,
-                scopePaths,
-                false,
-              );
-
-              const allUpdates = [...updates, ...nestedUpdates];
-
-              allUpdates.forEach((update) => {
-                if (update.created) {
-                  clack.log.success(`Created ${update.filePath}`);
-                } else if (update.modified) {
-                  clack.log.success(`Updated ${update.filePath}`);
-                }
-              });
-            } catch (error) {
-              clack.log.warn(
-                `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
-              );
-            }
+          } else if (autoManage !== true) {
+            continue;
           }
 
-          // Show warnings for agents without ignore support
-          for (const warning of detection.warnings) {
-            const message = formatWarningMessage(warning);
-            clack.log.warn(message);
-            clack.log.info(
-              `Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules`,
+          try {
+            // Apply root ignore file updates
+            const updates = applyConflictResolution(conflict, cwd, false);
+
+            // Apply nested scope ignore files if scopes are configured
+            const scopePaths = context.config.scopes?.map((s) => s.path) || [];
+            const nestedUpdates = applyNestedConflictResolution(
+              conflict,
+              cwd,
+              scopePaths,
+              false,
+            );
+
+            const allUpdates = [...updates, ...nestedUpdates];
+
+            allUpdates.forEach((update) => {
+              if (update.created) {
+                clack.log.success(`Created ${update.filePath}`);
+              } else if (update.modified) {
+                clack.log.success(`Updated ${update.filePath}`);
+              }
+            });
+          } catch (error) {
+            clack.log.warn(
+              `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
             );
           }
         }
+
+        // Show warnings for agents without ignore support
+        for (const warning of detection.warnings) {
+          const message = formatWarningMessage(warning);
+          clack.log.warn(message);
+          clack.log.info(
+            `Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules`,
+          );
+        }
       }
     }
+  }
 
-    // Update last sync timestamp after successful sync
-    try {
-      const { updateLastSyncTimestamp } = await import(
-        "@aligntrue/core/sync/last-sync-tracker"
+  // Update last sync timestamp after successful sync
+  try {
+    const { updateLastSyncTimestamp } = await import(
+      "@aligntrue/core/sync/last-sync-tracker"
+    );
+    updateLastSyncTimestamp(cwd);
+  } catch (err) {
+    // Log warning but don't fail sync
+    if (options.verbose) {
+      clack.log.warn(
+        `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
       );
-      updateLastSyncTimestamp(cwd);
-    } catch (err) {
-      // Log warning but don't fail sync
-      if (options.verbose) {
-        clack.log.warn(
-          `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
     }
+  }
 
-    // Verify lockfile status when enabled
-    const lockfileExpected =
-      context.config.mode === "team" && context.config.modules?.lockfile;
-    if (!options.dryRun && lockfileExpected && context.lockfilePath) {
-      if (existsSync(context.lockfilePath)) {
-        clack.log.success(
-          `Lockfile updated: ${relative(cwd, context.lockfilePath)}`,
-        );
-      } else {
-        clack.log.warn(
-          `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
-        );
-      }
+  // Verify lockfile status when enabled
+  const lockfileExpected =
+    context.config.mode === "team" && context.config.modules?.lockfile;
+  if (!options.dryRun && lockfileExpected && context.lockfilePath) {
+    if (existsSync(context.lockfilePath)) {
+      clack.log.success(
+        `Lockfile updated: ${relative(cwd, context.lockfilePath)}`,
+      );
+    } else {
+      clack.log.warn(
+        `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
+      );
     }
   }
 }
 
 /**
- * Display warnings with optional verbose mode
+ * Display warnings with optional verbose mode and quiet mode
  */
-function displayWarnings(warnings: string[], verbose: boolean): void {
+function displayWarnings(
+  warnings: string[],
+  verbose: boolean,
+  quiet: boolean,
+): void {
+  if (quiet) {
+    return; // Skip all warnings in quiet mode
+  }
+
   if (verbose) {
     // Show all warnings in verbose mode
     warnings.forEach((warning) => {

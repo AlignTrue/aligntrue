@@ -122,12 +122,18 @@ export abstract class ExporterBase implements ExporterPlugin {
       notes.push(`Merged from ${sourceFiles.size} source files: ${fileList}`);
     }
 
-    // Generate notes for cross-agent vendor fields
+    // Generate notes for cross-agent vendor fields (exclude own vendor fields)
     if (crossAgentVendors.size > 0) {
-      const agents = Array.from(crossAgentVendors).join(", ");
-      notes.push(
-        `Vendor-specific fields for other agents preserved: ${agents}`,
+      // Don't warn about vendor fields for the current exporter only
+      const otherAgents = Array.from(crossAgentVendors).filter(
+        (agent) => agent !== this.name,
       );
+      if (otherAgents.length > 0) {
+        const agents = otherAgents.join(", ");
+        notes.push(
+          `Vendor-specific fields for other agents preserved: ${agents}`,
+        );
+      }
     }
 
     return notes;
