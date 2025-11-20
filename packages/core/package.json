@@ -22,7 +22,8 @@
     "./team/drift.js": "./dist/team/drift.js",
     "./team/updates.js": "./dist/team/updates.js",
     "./team/bundle-diff.js": "./dist/team/bundle-diff.js",
-    "./plugs": "./dist/plugs/index.js"
+    "./plugs": "./dist/plugs/index.js",
+    "./agent-ignore": "./dist/agent-ignore/index.js"
   },
   "scripts": {
     "build": "tsc && node ../../scripts/copy-core-schema.js",

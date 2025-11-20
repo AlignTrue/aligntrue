@@ -198,6 +198,30 @@
           "type": "string",
           "enum": ["auto", "always", "never"],
           "description": "Control source file markers in concatenated outputs. auto: show only with multiple sources (default), always: always show, never: never show"
+        },
+        "auto_manage_ignore_files": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": ["prompt"]
+            }
+          ],
+          "description": "Automatically manage agent ignore files to prevent duplicate context. true: always manage, false: never manage, prompt: ask user (default: prompt)"
+        },
+        "ignore_file_priority": {
+          "type": "string",
+          "enum": ["native", "custom"],
+          "description": "Priority for format selection when multiple formats are available. native: use agent's native format (default), custom: use custom_format_priority"
+        },
+        "custom_format_priority": {
+          "type": "object",
+          "description": "Override native format priority per agent (e.g., {cursor: 'agents'} to prefer AGENTS.md over .mdc)",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },

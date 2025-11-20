@@ -119,6 +119,91 @@ export async function handleSyncResult(
 
     clack.outro(message);
 
+    // Check for agent format conflicts and offer to manage ignore files
+    if (
+      !options.dryRun &&
+      context.config.exporters &&
+      context.config.exporters.length > 1
+    ) {
+      const autoManage = context.config.sync?.auto_manage_ignore_files;
+
+      // Only check if not explicitly disabled
+      if (autoManage !== false) {
+        const {
+          detectConflicts,
+          applyConflictResolution,
+          applyNestedConflictResolution,
+          formatConflictMessage,
+          formatWarningMessage,
+        } = await import("@aligntrue/core/agent-ignore");
+
+        const detection = detectConflicts(
+          context.config.exporters,
+          context.config.sync?.custom_format_priority,
+        );
+
+        if (detection.hasIssues) {
+          // Handle conflicts that can be resolved with ignore files
+          for (const conflict of detection.conflicts) {
+            const shouldPrompt =
+              autoManage === "prompt" || autoManage === undefined;
+
+            if (shouldPrompt) {
+              const message = formatConflictMessage(conflict);
+              const shouldManage = await clack.confirm({
+                message,
+                initialValue: true,
+              });
+
+              if (clack.isCancel(shouldManage) || !shouldManage) {
+                continue;
+              }
+            } else if (autoManage !== true) {
+              continue;
+            }
+
+            try {
+              // Apply root ignore file updates
+              const updates = applyConflictResolution(conflict, cwd, false);
+
+              // Apply nested scope ignore files if scopes are configured
+              const scopePaths =
+                context.config.scopes?.map((s) => s.path) || [];
+              const nestedUpdates = applyNestedConflictResolution(
+                conflict,
+                cwd,
+                scopePaths,
+                false,
+              );
+
+              const allUpdates = [...updates, ...nestedUpdates];
+
+              allUpdates.forEach((update) => {
+                if (update.created) {
+                  clack.log.success(`Created ${update.filePath}`);
+                } else if (update.modified) {
+                  clack.log.success(`Updated ${update.filePath}`);
+                }
+              });
+            } catch (error) {
+              clack.log.warn(
+                `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            }
+          }
+
+          // Show warnings for agents without ignore support
+          for (const warning of detection.warnings) {
+            const message = formatWarningMessage(warning);
+            clack.log.warn(message);
+            clack.log.info(
+              `Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules`,
+            );
+          }
+        }
+      }
+    }
+
     // Update last sync timestamp after successful sync
     try {
       const { updateLastSyncTimestamp } = await import(
