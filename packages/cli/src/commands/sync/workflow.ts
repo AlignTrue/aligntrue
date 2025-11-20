@@ -158,13 +158,13 @@ export async function executeSyncWorkflow(
   if (!options.dryRun && result.success && !options.acceptAgent) {
     const starterPath = join(cwd, ".cursor/rules/aligntrue-starter.mdc");
     const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
-    if (existsSync(starterPath) && existsSync(syncedPath)) {
-      try {
-        unlinkSync(starterPath);
+    try {
+      unlinkSync(starterPath);
+      if (existsSync(syncedPath)) {
         clack.log.info("Removed starter file (replaced by synced rules)");
-      } catch {
-        // Silent failure - not critical
       }
+    } catch {
+      // File may not exist or delete failed - not critical
     }
   }
 

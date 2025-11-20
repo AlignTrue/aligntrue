@@ -28,6 +28,18 @@ export {
   wasFileModifiedSince,
   getFileModificationTime,
 } from "./last-sync-tracker.js";
+export {
+  loadDriftLog,
+  saveDriftLog,
+  addDriftDetection,
+  updateDriftStatus,
+  getPendingDetections,
+  clearDetectionsByStatus,
+  clearAllDetections,
+  type DriftLog,
+  type DriftDetection,
+  type DriftStatus,
+} from "./drift-log.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();

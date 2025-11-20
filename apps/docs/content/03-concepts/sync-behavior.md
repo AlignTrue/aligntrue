@@ -16,12 +16,13 @@ Complete technical reference for AlignTrue's two-way sync system, conflict resol
 
 1. **Load config** from `.aligntrue/config.yaml`
 2. **Check for team mode** - if enabled, validate lockfile
-3. **Detect edited agent files** by checking modification times (mtime)
-4. **Check edit_source** - warn if edited files aren't in `edit_source` configuration
-5. **Create backup** (if enabled) - backs up both internal state and agent files
-6. **Merge edited files** using last-write-wins strategy (no conflicts, no prompts)
-7. **Export** merged rules to all configured agent files
-8. **Done** - no interaction required
+3. **Detect new agent files with content** - prompts to import untracked files
+4. **Detect edited agent files** by checking modification times (mtime)
+5. **Check edit_source** - warn if edited files aren't in `edit_source` configuration
+6. **Create backup** (if enabled) - backs up both internal state and agent files
+7. **Merge edited files** using last-write-wins strategy (no conflicts, no prompts)
+8. **Export** merged rules to all configured agent files
+9. **Done** - no interaction required
 
 **Key facts:**
 
@@ -716,6 +717,163 @@ Choice:
 - Compares before overwriting
 
 **Best practice:** Edit `AGENTS.md` or agent files, not generated exports.
+
+---
+
+## New File Detection
+
+AlignTrue automatically detects agent files with content that aren't tracked in your `edit_source` configuration.
+
+### How it works
+
+When you run `aligntrue sync`, after detecting configured agents:
+
+1. **Scans workspace** for all agent files (`.mdc`, `.md`, etc.)
+2. **Parses content** to count sections in each file
+3. **Compares against edit_source** to find untracked files
+4. **Prompts for action** if untracked files with content are found
+
+### The prompt
+
+```
+⚠ Detected new content outside tracked files
+
+cursor: 3 file(s), 25 section(s)
+  • .cursor/rules/backend.mdc - 10 sections, modified 2 days ago
+  • .cursor/rules/frontend.mdc - 8 sections, modified 2 days ago
+  • .cursor/rules/testing.mdc - 7 sections, modified 1 week ago
+
+claude: 1 file(s), 5 section(s)
+  • CLAUDE.md - 5 sections, modified 3 weeks ago
+
+How should we handle these files?
+○ Import all and merge (recommended)
+  → All sections sync to all agents, add to edit_source, clean up duplicates after
+○ Import but keep read-only
+  → Merge content once, don't track for future edits
+○ Ignore for now
+  → Don't import content, ask again next sync
+```
+
+### Actions explained
+
+**Import all and merge (recommended):**
+
+- Reads all sections from new files
+- Merges with existing rules using last-write-wins
+- Adds file patterns to `edit_source` in config
+- Future edits to these files will be tracked
+- **Best for:** Integrating rules you copied from online or other sources
+
+**Import but keep read-only:**
+
+- Imports content once
+- Does NOT add to `edit_source`
+- Future edits to these files will be ignored
+- **Best for:** One-time import of rules you'll manage elsewhere
+
+**Ignore for now:**
+
+- No action taken
+- Files logged to `.aligntrue/.drift-log.json`
+- Next sync will prompt again
+- **Best for:** When you need time to review before deciding
+
+### After importing
+
+If you choose "Import all and merge":
+
+```
+Merging 4 sources: .cursor/rules/backend.mdc, .cursor/rules/frontend.mdc, ...
+
+Merge all rules into one shared set?
+○ Yes (default) - All agents stay in sync
+○ No - Advanced config (see docs)
+```
+
+**Yes (default):** All rules from all sources merge into one shared rule set. All agents get the same rules. You can clean up duplicates after sync.
+
+**No:** For advanced use cases where you want separate rule sets per agent. Requires manual config editing.
+
+### Duplicate handling
+
+When merging multiple files, duplicate sections are detected:
+
+```
+⚠ Found potential duplicate sections:
+  • "Security principles" in: AGENTS.md, CLAUDE.md
+  • "Testing guidelines" in: .cursor/rules/backend.mdc, AGENTS.md
+
+Using last-write-wins strategy (newest version kept)
+```
+
+AlignTrue keeps the version from the most recently modified file. You can manually merge or remove duplicates after sync.
+
+### Watch mode behavior
+
+In watch mode (`aligntrue watch`), new file detection works differently:
+
+**Default behavior (conservative):**
+
+- Detects new files
+- Logs to `.aligntrue/.drift-log.json`
+- Shows message: `Run 'aligntrue sync' to review and import`
+- Does NOT auto-import
+
+**Example:**
+
+```
+[Watch] New file detected: CLAUDE.md (5 sections)
+  ℹ Run 'aligntrue sync' to review and import
+```
+
+Next time you run `aligntrue sync` interactively, you'll be prompted to import.
+
+**Auto-import mode (opt-in):**
+
+```yaml
+# .aligntrue/config.yaml
+watch:
+  on_new_files: "auto_import" # Default: "log"
+```
+
+With auto-import enabled, new files are automatically imported and added to `edit_source` without prompting.
+
+### Drift log
+
+New file detections are tracked in `.aligntrue/.drift-log.json`:
+
+```json
+{
+  "detections": [
+    {
+      "timestamp": "2025-11-20T17:45:12Z",
+      "file": "CLAUDE.md",
+      "sections": 5,
+      "status": "pending_review"
+    }
+  ]
+}
+```
+
+Statuses:
+
+- `pending_review` - Waiting for user decision
+- `imported` - File has been imported
+- `ignored` - User chose to ignore
+
+### Best practices
+
+**For copy-pasted rules:**
+
+1. Copy rules into workspace (e.g., `CLAUDE.md`, `.cursor/rules/new.mdc`)
+2. Run `aligntrue sync`
+3. Choose "Import all and merge"
+4. Review output files for duplicates
+5. Edit source files to remove duplicates
+6. Run `aligntrue sync` again
+
+**Better to merge first, clean up later** than lose content.
 
 ---
 

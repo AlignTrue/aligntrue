@@ -5,9 +5,10 @@
 import { watch as chokidarWatch } from "chokidar";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
-import { existsSync } from "fs";
-import { loadConfig } from "@aligntrue/core";
+import { existsSync, readFileSync } from "fs";
+import { loadConfig, addDriftDetection } from "@aligntrue/core";
 import { requireTTY, isTTY } from "../utils/tty-helper.js";
+import { detectUntrackedFiles } from "../utils/detect-agents.js";
 
 /**
  * Execute watch command
@@ -127,6 +128,37 @@ export async function watch(args: string[]): Promise<void> {
     syncTimer = setTimeout(() => {
       triggerSync();
     }, debounce);
+  });
+
+  // Detect new files added
+  watcher.on("add", (path: string) => {
+    const relativePath = path.replace(cwd + "/", "");
+
+    // Check if file is tracked in edit_source
+    const untrackedFiles = detectUntrackedFiles(cwd, config.sync?.edit_source);
+    const isUntracked = untrackedFiles.some(
+      (f) => f.relativePath === relativePath,
+    );
+
+    if (isUntracked) {
+      // Count sections in new file
+      try {
+        const content = readFileSync(path, "utf-8");
+        const sectionCount = (content.match(/^#{1,6}\s+.+$/gm) || []).length;
+
+        if (sectionCount > 0) {
+          // Log to drift log
+          addDriftDetection(cwd, relativePath, sectionCount, "pending_review");
+
+          clack.log.warn(
+            `[Watch] New file detected: ${relativePath} (${sectionCount} sections)`,
+          );
+          clack.log.info(`  ℹ Run 'aligntrue sync' to review and import`);
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
   });
 
   watcher.on("error", (err: unknown) => {

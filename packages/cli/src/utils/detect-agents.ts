@@ -3,7 +3,7 @@
  * Detects installed AI coding agents by checking for their output files/directories
  */
 
-import { existsSync } from "fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 
 /**
@@ -347,6 +347,37 @@ export function recommendEditSource(
 }
 
 /**
+ * File format types
+ */
+export type FileFormat =
+  | "agents"
+  | "cursor-mdc"
+  | "generic-markdown"
+  | "unknown";
+
+/**
+ * Detected file with content information
+ */
+export interface DetectedFileWithContent {
+  /** Absolute path to file */
+  path: string;
+  /** Relative path from cwd */
+  relativePath: string;
+  /** Agent/exporter name */
+  agent: string;
+  /** File format */
+  format: FileFormat;
+  /** Number of sections detected */
+  sectionCount: number;
+  /** Last modified time */
+  lastModified: Date;
+  /** File size in bytes */
+  size: number;
+  /** Whether file has any content */
+  hasContent: boolean;
+}
+
+/**
  * Detection result with validation
  */
 export interface DetectionResult {
@@ -398,4 +429,201 @@ export function shouldWarnAboutDetection(
     detectedChanged &&
     (current.missing.length > 0 || current.notFound.length > 0)
   );
+}
+
+/**
+ * Determine file format from path and content
+ */
+function detectFileFormat(filePath: string, content: string): FileFormat {
+  if (filePath.endsWith(".mdc")) {
+    return "cursor-mdc";
+  }
+  if (filePath.includes("AGENTS.md")) {
+    return "agents";
+  }
+  // Check for YAML frontmatter
+  if (content.trimStart().startsWith("---")) {
+    return "cursor-mdc";
+  }
+  // Generic markdown
+  if (filePath.endsWith(".md")) {
+    return "generic-markdown";
+  }
+  return "unknown";
+}
+
+/**
+ * Count markdown sections (headings) in content
+ */
+function countSections(content: string): number {
+  // Match markdown headings (## or ###)
+  const headingRegex = /^#{1,6}\s+.+$/gm;
+  const matches = content.match(headingRegex);
+  return matches ? matches.length : 0;
+}
+
+/**
+ * Detect files with content for a given agent
+ * Scans directories and reads files to count sections
+ */
+export function detectFilesWithContent(
+  cwd: string,
+  agentName: string,
+): DetectedFileWithContent[] {
+  const patterns = AGENT_PATTERNS[agentName];
+  if (!patterns) return [];
+
+  const files: DetectedFileWithContent[] = [];
+
+  for (const pattern of patterns) {
+    const fullPath = join(cwd, pattern);
+
+    if (!existsSync(fullPath)) continue;
+
+    const stats = statSync(fullPath);
+
+    // Handle directories (e.g., .cursor/rules/)
+    if (stats.isDirectory()) {
+      try {
+        const dirFiles = readdirSync(fullPath);
+        for (const file of dirFiles) {
+          // Skip non-markdown files
+          if (!file.endsWith(".md") && !file.endsWith(".mdc")) continue;
+
+          const filePath = join(fullPath, file);
+          const fileStats = statSync(filePath);
+
+          if (!fileStats.isFile()) continue;
+
+          try {
+            const content = readFileSync(filePath, "utf-8");
+            const sectionCount = countSections(content);
+            const hasContent = content.trim().length > 0 && sectionCount > 0;
+
+            files.push({
+              path: filePath,
+              relativePath: join(pattern, file),
+              agent: agentName,
+              format: detectFileFormat(filePath, content),
+              sectionCount,
+              lastModified: fileStats.mtime,
+              size: fileStats.size,
+              hasContent,
+            });
+          } catch {
+            // Skip files we can't read
+            continue;
+          }
+        }
+      } catch {
+        // Skip directories we can't read
+        continue;
+      }
+    }
+    // Handle single files (e.g., AGENTS.md, CLAUDE.md)
+    else if (stats.isFile()) {
+      try {
+        const content = readFileSync(fullPath, "utf-8");
+        const sectionCount = countSections(content);
+        const hasContent = content.trim().length > 0 && sectionCount > 0;
+
+        files.push({
+          path: fullPath,
+          relativePath: pattern,
+          agent: agentName,
+          format: detectFileFormat(fullPath, content),
+          sectionCount,
+          lastModified: stats.mtime,
+          size: stats.size,
+          hasContent,
+        });
+      } catch {
+        // Skip files we can't read
+        continue;
+      }
+    }
+  }
+
+  return files;
+}
+
+/**
+ * Detect all agent files with content in workspace
+ * Returns map of agent name to files with content
+ */
+export function detectAllFilesWithContent(
+  cwd: string = process.cwd(),
+): Map<string, DetectedFileWithContent[]> {
+  const result = new Map<string, DetectedFileWithContent[]>();
+
+  for (const agentName of Object.keys(AGENT_PATTERNS)) {
+    const files = detectFilesWithContent(cwd, agentName);
+    if (files.length > 0) {
+      // Only include files that have actual content
+      const filesWithContent = files.filter((f) => f.hasContent);
+      if (filesWithContent.length > 0) {
+        result.set(agentName, filesWithContent);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Detect untracked files (files with content not in edit_source)
+ * @param cwd - Current working directory
+ * @param editSource - Current edit_source configuration
+ * @returns Array of untracked files with content
+ */
+export function detectUntrackedFiles(
+  cwd: string,
+  editSource: EditSourceConfig | undefined,
+): DetectedFileWithContent[] {
+  const allFiles = detectAllFilesWithContent(cwd);
+  const untrackedFiles: DetectedFileWithContent[] = [];
+
+  // Normalize edit_source to array
+  const editSourcePatterns = editSource
+    ? Array.isArray(editSource)
+      ? editSource
+      : [editSource]
+    : [];
+
+  // Helper to check if a file path matches edit_source patterns
+  const isTracked = (relativePath: string): boolean => {
+    for (const pattern of editSourcePatterns) {
+      // Handle glob patterns
+      if (pattern.includes("*")) {
+        const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
+        const regex = new RegExp(`^${regexPattern}$`);
+        if (regex.test(relativePath)) {
+          return true;
+        }
+      }
+      // Handle exact matches
+      else if (relativePath === pattern) {
+        return true;
+      }
+      // Handle directory patterns (e.g., ".cursor/rules/*.mdc")
+      else if (pattern.endsWith("/*") || pattern.endsWith("/**")) {
+        const dir = pattern.replace(/\/\*+$/, "");
+        if (relativePath.startsWith(dir + "/")) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Find untracked files
+  for (const [, files] of allFiles) {
+    for (const file of files) {
+      if (!isTracked(file.relativePath)) {
+        untrackedFiles.push(file);
+      }
+    }
+  }
+
+  return untrackedFiles;
 }

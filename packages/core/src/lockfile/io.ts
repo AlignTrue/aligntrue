@@ -6,11 +6,11 @@ import {
   readFileSync,
   writeFileSync,
   existsSync,
-  mkdirSync,
   renameSync,
   unlinkSync,
 } from "fs";
 import { dirname, join } from "path";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import type { Lockfile } from "./types.js";
 
 const HASH_MIGRATION_MARKER_FILE = "lockfile-hash-migration.json";
@@ -93,15 +93,13 @@ export function writeLockfile(
 
   // Ensure parent directory exists
   const dir = dirname(path);
-  if (!existsSync(dir)) {
-    try {
-      mkdirSync(dir, { recursive: true });
-    } catch (mkdirErr) {
-      throw new Error(
-        `Failed to create lockfile directory: ${dir}\n` +
-          `  ${mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)}`,
-      );
-    }
+  try {
+    ensureDirectoryExists(dir);
+  } catch (mkdirErr) {
+    throw new Error(
+      `Failed to create lockfile directory: ${dir}\n` +
+        `  ${mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)}`,
+    );
   }
 
   // Serialize with sorted keys and 2-space indent
@@ -122,12 +120,10 @@ export function writeLockfile(
     }
   } catch (_err) {
     // Clean up temp file on failure
-    if (existsSync(tempPath)) {
-      try {
-        unlinkSync(tempPath);
-      } catch {
-        // Ignore cleanup errors
-      }
+    try {
+      unlinkSync(tempPath);
+    } catch {
+      // File may not exist or cleanup errors
     }
 
     throw new Error(
@@ -177,8 +173,10 @@ function writeHashMigrationMarker(lockfilePath: string): void {
   try {
     const markerPath = getMigrationMarkerPath(lockfilePath);
     const markerDir = dirname(markerPath);
-    if (!existsSync(markerDir)) {
+    try {
       mkdirSync(markerDir, { recursive: true });
+    } catch {
+      // Directory may already exist
     }
     writeFileSync(
       markerPath,
