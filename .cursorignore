@@ -12,6 +12,9 @@ coverage/
 **/*credentials*
 **/*private*key*
 .aligntrue.secret
+**/*.key
+**/*.pem  
+**/*auth*
 
 # Large/generated artifacts
 pnpm-lock.yaml
