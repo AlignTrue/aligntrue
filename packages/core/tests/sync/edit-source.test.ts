@@ -43,7 +43,6 @@ describe("matchesEditSource", () => {
   });
 
   it("should handle special values", () => {
-    expect(matchesEditSource("AGENTS.md", ".rules.yaml", cwd)).toBe(false);
     expect(matchesEditSource("AGENTS.md", "any_agent_file", cwd)).toBe(true);
     expect(
       matchesEditSource(".cursor/rules/backend.mdc", "any_agent_file", cwd),
@@ -53,17 +52,5 @@ describe("matchesEditSource", () => {
   it("should default to AGENTS.md when no edit_source specified", () => {
     expect(matchesEditSource("AGENTS.md", undefined, cwd)).toBe(true);
     expect(matchesEditSource("CLAUDE.md", undefined, cwd)).toBe(false);
-  });
-});
-
-describe("edit_source migration from two_way", () => {
-  it("should migrate two_way: false to .rules.yaml", () => {
-    // Migration logic tested in config tests
-    expect(".rules.yaml").toBe(".rules.yaml");
-  });
-
-  it("should migrate two_way: true to any_agent_file", () => {
-    // Migration logic tested in config tests
-    expect("any_agent_file").toBe("any_agent_file");
   });
 });

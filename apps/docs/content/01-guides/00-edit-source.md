@@ -67,6 +67,23 @@ nano .cursor/rules/frontend.mdc   # Edit frontend-specific rules
 aligntrue sync                     # Changes export to all agents with scope routing
 ```
 
+### Multi-file markdown
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  edit_source: ".aligntrue/rules/*.md"
+```
+
+**Best for:** Teams, users migrating from Ruler. Human-friendly multi-file organization.
+
+```bash
+mkdir -p .aligntrue/rules
+nano .aligntrue/rules/architecture.md  # Edit architecture rules
+nano .aligntrue/rules/testing.md       # Edit testing rules
+aligntrue sync                          # Changes export to all agents
+```
+
 ## Read-only exports
 
 Files NOT matching your `edit_source` are **read-only** with warning comments:

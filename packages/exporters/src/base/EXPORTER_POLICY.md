@@ -162,9 +162,9 @@ Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← ALL EQUAL OUTPUTS
 **edit_source:**
 
 - Controls which files accept edits and sync TO canonical IR
-- Options: `".rules.yaml"` (IR-only), `"AGENTS.md"`, `".cursor/rules/*.mdc"`, `"any_agent_file"`, or array
+- Options: `"AGENTS.md"`, `".cursor/rules/*.mdc"`, `".aligntrue/rules/*.md"`, `"any_agent_file"` (experimental), or custom patterns
 - This is about INPUT GATES to IR, not about what's canonical
-- Multiple edit sources = multiple input gates to the same canonical IR
+- Multiple edit sources = multiple input gates to the same canonical IR (experimental, requires `centralized: false`)
 
 **Exporters:**
 

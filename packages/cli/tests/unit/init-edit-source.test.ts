@@ -1,14 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "@aligntrue/core/config/edit-source-patterns";
 
 describe("init command edit_source logic", () => {
-  const exporterToPattern: Record<string, string> = {
-    cursor: ".cursor/rules/*.mdc",
-    agents: "AGENTS.md",
-    copilot: ".github/copilot-instructions.md",
-    claude: "CLAUDE.md",
-    aider: ".aider.conf.yml",
-  };
-
   function calculateEditSource(
     selectedAgents: string[],
     options: { createAgentsTemplate?: boolean; importedAgents?: string[] } = {},
@@ -16,14 +9,20 @@ describe("init command edit_source logic", () => {
     const patterns = new Set<string>();
 
     selectedAgents.forEach((agent) => {
-      const pattern = exporterToPattern[agent];
+      const pattern =
+        EXPORTER_TO_EDIT_SOURCE_PATTERN[
+          agent as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+        ];
       if (pattern) {
         patterns.add(pattern);
       }
     });
 
     options.importedAgents?.forEach((agent) => {
-      const pattern = exporterToPattern[agent];
+      const pattern =
+        EXPORTER_TO_EDIT_SOURCE_PATTERN[
+          agent as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+        ];
       if (pattern) {
         patterns.add(pattern);
       }

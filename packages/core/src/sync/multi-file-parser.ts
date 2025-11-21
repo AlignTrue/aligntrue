@@ -64,13 +64,8 @@ export function matchesEditSource(
     return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");
   }
 
-  if (editSource === ".rules.yaml") {
-    // IR only mode - no agent files accept edits
-    return false;
-  }
-
   if (editSource === "any_agent_file") {
-    // All agent files accept edits
+    // All agent files accept edits (experimental decentralized mode)
     return isAgentFile(filePath);
   }
 
@@ -143,26 +138,6 @@ export async function detectEditedFiles(
     if (DEBUG_SYNC) {
       console.log(
         `[detectEditedFiles] Skipping multi-source detection - centralized mode enabled (default)`,
-      );
-    }
-    return { files: [], warnings: [] };
-  }
-
-  // Skip detection if edit_source is ".rules.yaml" (IR only mode)
-  if (editSource === ".rules.yaml") {
-    if (DEBUG_SYNC) {
-      console.log(
-        `[detectEditedFiles] Skipping detection - IR only mode (.rules.yaml)`,
-      );
-    }
-    return { files: [], warnings: [] };
-  }
-
-  // Backwards compatibility: check two_way if edit_source not set
-  if (editSource === undefined && config.sync?.two_way === false) {
-    if (DEBUG_SYNC) {
-      console.log(
-        `[detectEditedFiles] Skipping detection - two_way sync disabled`,
       );
     }
     return { files: [], warnings: [] };
