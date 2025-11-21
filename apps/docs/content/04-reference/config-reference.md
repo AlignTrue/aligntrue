@@ -93,11 +93,11 @@ sync:
 
 **Default:** Auto-detected during init. Falls back to `"AGENTS.md"` if no agents detected.
 
-**Centralized (Recommended):**
+**Centralized (Recommended - Default):**
 
-- `".rules.yaml"` - IR only (no agent edits detected)
-- `"AGENTS.md"` - Single file editing (most common)
+- `"AGENTS.md"` - Single file editing (most common, universal format)
 - `".cursor/rules/*.mdc"` - Glob pattern for Cursor scope files (recommended for Cursor)
+- `".aligntrue/rules/*.md"` - Human-friendly multi-file organization (recommended for teams)
 
 One file/pattern is editable; all others become read-only exports. One-way sync: edit_source → IR → all configured agents.
 
@@ -105,18 +105,18 @@ One file/pattern is editable; all others become read-only exports. One-way sync:
 
 ```yaml
 sync:
-  edit_source: "AGENTS.md" # or ".cursor/rules/*.mdc"
+  edit_source: "AGENTS.md" # or ".cursor/rules/*.mdc" or ".aligntrue/rules/*.md"
 ```
 
 **Experimental (Decentralized):**
 
 - `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `centralized: false`)
 
-Multiple files can be edited; changes merge automatically. Unsupported, use with caution.
+Multiple files can be edited; changes merge automatically. Experimental, unsupported - use with caution.
 
 See [Experimental Features](/docs/04-reference/experimental) for details.
 
-**Deprecated:** `sync.two_way` (auto-migrates: `false` → `".rules.yaml"`, `true` → `"any_agent_file"`)
+**Deprecated:** `sync.two_way` (no longer supported)
 
 #### sync.scope_prefixing
 

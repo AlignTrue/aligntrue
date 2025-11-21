@@ -763,11 +763,6 @@ export abstract class ExporterBase implements ExporterPlugin {
       return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");
     }
 
-    if (editSource === ".rules.yaml") {
-      // IR only mode - no agent files are editable
-      return false;
-    }
-
     if (editSource === "any_agent_file") {
       // All agent files are editable
       return true;

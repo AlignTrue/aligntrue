@@ -23,6 +23,7 @@ import {
 } from "../scope.js";
 import { getAlignTruePaths } from "../paths.js";
 import type { OverlayConfig } from "../overlays/types.js";
+import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "./edit-source-patterns.js";
 
 // Track shown warnings to prevent duplication
 const shownWarnings = new Set<string>();
@@ -368,22 +369,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   }
 
   /**
-   * Migrate two_way to edit_source
-   *
-   * Migration rules:
-   * - two_way: false → edit_source: ".rules.yaml" (IR only)
-   * - two_way: true → edit_source: "any_agent_file" (all agent files)
-   * - two_way: undefined → set default based on detection
+   * two_way is deprecated - no migration needed (no backward compatibility required)
+   * Users on old config will need to manually update
    */
-  if (
-    result.sync.two_way !== undefined &&
-    result.sync.edit_source === undefined
-  ) {
-    result.sync.edit_source = result.sync.two_way
-      ? "any_agent_file"
-      : ".rules.yaml";
-    // Keep two_way for backwards compatibility, but it's deprecated
-  }
 
   /**
    * Set edit_source default if not specified
@@ -401,20 +389,15 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * Multi-source editing requires centralized: false (not set here).
    */
   if (result.sync.edit_source === undefined) {
-    const exporterToPattern: Record<string, string> = {
-      cursor: ".cursor/rules/*.mdc",
-      agents: "AGENTS.md",
-      copilot: ".github/copilot-instructions.md",
-      claude: "CLAUDE.md",
-      aider: ".aider.conf.yml",
-    };
-
     // Priority order: cursor (multi-file) > agents (universal) > others
     const priorityOrder = ["cursor", "agents", "copilot", "claude", "aider"];
 
     for (const exporter of priorityOrder) {
       if ((result.exporters || []).includes(exporter)) {
-        const pattern = exporterToPattern[exporter];
+        const pattern =
+          EXPORTER_TO_EDIT_SOURCE_PATTERN[
+            exporter as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+          ];
         if (pattern) {
           result.sync.edit_source = pattern;
           break;
@@ -425,7 +408,10 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     if (!result.sync.edit_source && (result.exporters || []).length > 0) {
       const firstExporter = (result.exporters || [])[0];
       if (firstExporter) {
-        const pattern = exporterToPattern[firstExporter];
+        const pattern =
+          EXPORTER_TO_EDIT_SOURCE_PATTERN[
+            firstExporter as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+          ];
         if (pattern) {
           result.sync.edit_source = pattern;
         }

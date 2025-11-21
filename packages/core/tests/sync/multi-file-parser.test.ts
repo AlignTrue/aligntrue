@@ -14,11 +14,6 @@ describe("detectEditedFiles", () => {
     // Placeholder: Requires section parser integration
     expect(true).toBe(true);
   });
-
-  it("should skip detection when two_way is false", () => {
-    // Placeholder: Requires config integration
-    expect(true).toBe(true);
-  });
 });
 
 describe("mergeFromMultipleFiles", () => {
