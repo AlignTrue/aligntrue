@@ -301,6 +301,14 @@ export class BackupManager {
 
   /**
    * Restore a backup
+   *
+   * This method restores all backed-up files including:
+   * - Configuration files (.aligntrue/config.yaml, .aligntrue/.rules.yaml)
+   * - Cache and tracking files
+   * - Agent files (AGENTS.md, .cursor/rules/*.mdc, etc.) from agent-files/ directory
+   *
+   * Agent files are included by default and automatically restored when present in backup.
+   * This is critical for full project state restoration.
    */
   static restoreBackup(options: RestoreOptions = {}): BackupInfo {
     const cwd = options.cwd || process.cwd();

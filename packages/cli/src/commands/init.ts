@@ -707,6 +707,10 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Determine single edit source using smart defaults
   // Priority: Cursor (multi-file) > imported files > AGENTS.md
+  //
+  // Important: Interactive mode (no flags) prompts user to confirm choice.
+  // Non-interactive mode (--yes) skips prompts and auto-selects based on priorities.
+  // This is intentional - CI/automation needs deterministic behavior.
   let editSource: string | undefined;
 
   // Check for Cursor (multi-file agent)
@@ -715,8 +719,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     (c) => c.agent === "cursor",
   );
 
+  // Scenario 1: Cursor detected - interactive prompt if available
+  // Non-interactive mode will auto-select Cursor without prompting (see line 760)
   if ((hasCursor || hasCursorImport) && !nonInteractive) {
-    // Scenario 1: Cursor detected - prompt to use it as edit source
     const cursorFileCount = hasCursorImport
       ? selectedImportCandidates.filter((c) => c.agent === "cursor").length
       : 0;
@@ -754,7 +759,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       editSource = altChoice as string;
     }
   } else if (hasCursor || hasCursorImport) {
-    // Non-interactive: auto-select Cursor
+    // Non-interactive mode: auto-select Cursor without prompting
+    // This ensures deterministic behavior in CI/automation while interactive mode gets user choice
     editSource = ".cursor/rules/*.mdc";
   } else if (selectedImportCandidates.length > 0) {
     // Scenario: Importing from other agent - use that agent's pattern
