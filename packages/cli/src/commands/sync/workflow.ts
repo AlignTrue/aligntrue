@@ -68,6 +68,7 @@ export async function executeSyncWorkflow(
         action: "pre-sync",
         mode: config.mode,
         includeAgentFiles: true,
+        editSource: config.sync?.edit_source || null,
       });
       if (!options.quiet) {
         spinner.stop(`Safety backup created: ${backup.timestamp}`);
