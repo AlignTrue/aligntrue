@@ -13,6 +13,7 @@ import {
   saveMinimalConfig,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
+import { getEditSourcePattern } from "@aligntrue/core/config/edit-source-patterns";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 import {
@@ -25,6 +26,7 @@ import type { GitProgressUpdate } from "../../utils/git-progress.js";
 import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
+import { formatEditSourceLabel } from "../../utils/edit-source.js";
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
@@ -463,12 +465,12 @@ async function detectAndEnableAgents(
       clack.log.info(`  Found: ${agent.filePath}`);
 
       const response = await clack.select({
-        message: `Would you like to enable ${agent.displayName}?`,
+        message: `Enable ${agent.displayName} and sync rules to it?`,
         options: [
           {
             value: "yes",
             label: "Yes, enable and export",
-            hint: "Add to config and sync rules",
+            hint: "Add to exporters list and sync rules to this agent",
           },
           {
             value: "no",
@@ -517,6 +519,59 @@ async function detectAndEnableAgents(
       await saveMinimalConfig(config, configPath);
     }
   }
+}
+
+/**
+ * Build edit source options from enabled exporters
+ * Returns options sorted by priority (cursor > agents > others)
+ */
+function buildEditSourceOptions(
+  enabledExporters: string[],
+  excludePattern?: string,
+): Array<{ value: string; label: string; hint: string }> {
+  const options: Array<{ value: string; label: string; hint: string }> = [];
+  const seenPatterns = new Set<string>();
+
+  // Priority order: cursor > agents > others
+  const priorityOrder = ["cursor", "agents"];
+  const otherExporters = enabledExporters.filter(
+    (e) => !priorityOrder.includes(e),
+  );
+
+  // Add priority exporters first
+  for (const exporter of priorityOrder) {
+    if (enabledExporters.includes(exporter)) {
+      const pattern = getEditSourcePattern(exporter);
+      if (pattern && pattern !== excludePattern && !seenPatterns.has(pattern)) {
+        seenPatterns.add(pattern);
+        options.push({
+          value: pattern,
+          label: formatEditSourceLabel(pattern),
+          hint:
+            exporter === "agents"
+              ? "Universal format, syncs to all agents"
+              : exporter === "cursor"
+                ? "Multi-file format with scopes"
+                : "",
+        });
+      }
+    }
+  }
+
+  // Add other exporters
+  for (const exporter of otherExporters) {
+    const pattern = getEditSourcePattern(exporter);
+    if (pattern && pattern !== excludePattern && !seenPatterns.has(pattern)) {
+      seenPatterns.add(pattern);
+      options.push({
+        value: pattern,
+        label: formatEditSourceLabel(pattern),
+        hint: "",
+      });
+    }
+  }
+
+  return options;
 }
 
 /**
@@ -570,6 +625,25 @@ async function detectAndHandleUntrackedFiles(
       0,
     );
 
+    // Derive edit source pattern from detected agent
+    const detectedAgent = cursorFiles[0]?.agent || "cursor";
+    let editSourcePattern = getEditSourcePattern(detectedAgent);
+
+    // Fallback: derive pattern from file paths if agent not in mapping
+    if (!editSourcePattern && cursorFiles.length > 0) {
+      const firstFile = cursorFiles[0];
+      if (firstFile) {
+        // Extract directory pattern from first file (e.g., .cursor/rules/file.mdc -> .cursor/rules/*.mdc)
+        const dirMatch = firstFile.relativePath.match(/^(.+\/)[^\/]+\.mdc$/);
+        if (dirMatch) {
+          editSourcePattern = `${dirMatch[1]}*.mdc`;
+        } else {
+          // Ultimate fallback
+          editSourcePattern = ".cursor/rules/*.mdc";
+        }
+      }
+    }
+
     clack.log.warn("⚠ Detected new content outside tracked files");
     clack.log.info(
       `  cursor: ${cursorFiles.length} file(s), ${totalSections} section(s)`,
@@ -587,7 +661,7 @@ async function detectAndHandleUntrackedFiles(
     }
 
     const response = await clack.confirm({
-      message: `Set as edit source?\n• Keep existing file organization\n• Exports automatically to AGENTS.md, CLAUDE.md`,
+      message: `Set ${editSourcePattern} as your edit source?\n\nThis means:\n• You'll edit rules in ${editSourcePattern}\n• Rules will automatically sync to all enabled agents\n• This keeps your file organization as-is`,
       initialValue: true,
     });
 
@@ -597,15 +671,36 @@ async function detectAndHandleUntrackedFiles(
     }
 
     if (response) {
-      newEditSource = ".cursor/rules/*.mdc";
+      newEditSource = editSourcePattern;
     } else {
       // User declined, ask for alternative
+      // Build options from enabled exporters, excluding the detected pattern
+      const enabledExporters = config.exporters || [];
+      const alternativeOptions = buildEditSourceOptions(
+        enabledExporters,
+        editSourcePattern,
+      );
+
+      // If no alternatives from enabled exporters, fallback to common options
+      if (alternativeOptions.length === 0) {
+        const agentsPattern = getEditSourcePattern("agents");
+        if (agentsPattern && agentsPattern !== editSourcePattern) {
+          alternativeOptions.push({
+            value: agentsPattern,
+            label: formatEditSourceLabel(agentsPattern),
+            hint: "Universal format, syncs to all agents",
+          });
+        }
+      }
+
+      if (alternativeOptions.length === 0) {
+        clack.log.warn("No alternative edit sources available");
+        return;
+      }
+
       const altChoice = await clack.select({
-        message: "Choose edit source instead:",
-        options: [
-          { value: "AGENTS.md", label: "AGENTS.md (recommended)" },
-          { value: "CLAUDE.md", label: "CLAUDE.md" },
-        ],
+        message: "Choose edit source (where you'll edit rules going forward):",
+        options: alternativeOptions,
       });
 
       if (clack.isCancel(altChoice)) {
@@ -619,31 +714,55 @@ async function detectAndHandleUntrackedFiles(
     // Scenario 2: Single-file formats detected
     clack.log.warn("⚠ Detected new content in agent files");
 
+    // Build options from detected files
+    const options: Array<{ value: string; label: string; hint: string }> = [];
+
+    // Process agents.md files
     if (agentsMdFiles.length > 0) {
-      clack.log.info(
-        `  AGENTS.md - ${agentsMdFiles[0]?.sectionCount || 0} sections`,
-      );
-    }
-    if (claudeMdFiles.length > 0) {
-      clack.log.info(
-        `  CLAUDE.md - ${claudeMdFiles[0]?.sectionCount || 0} sections`,
-      );
+      const firstFile = agentsMdFiles[0];
+      if (firstFile) {
+        const agentName = firstFile.agent || "agents";
+        const pattern =
+          getEditSourcePattern(agentName) || firstFile.relativePath;
+        const label = formatEditSourceLabel(pattern);
+        clack.log.info(
+          `  ${pattern} - ${firstFile.sectionCount || 0} sections`,
+        );
+        options.push({
+          value: pattern,
+          label: label.includes("(recommended)")
+            ? label
+            : `${label} (recommended)`,
+          hint: "Universal format, syncs to all agents",
+        });
+      }
     }
 
-    const options: Array<{ value: string; label: string }> = [];
-    if (agentsMdFiles.length > 0) {
-      options.push({ value: "AGENTS.md", label: "AGENTS.md (recommended)" });
-    }
+    // Process claude.md files
     if (claudeMdFiles.length > 0) {
-      options.push({ value: "CLAUDE.md", label: "CLAUDE.md" });
+      const firstFile = claudeMdFiles[0];
+      if (firstFile) {
+        const agentName = firstFile.agent || "claude";
+        const pattern =
+          getEditSourcePattern(agentName) || firstFile.relativePath;
+        const label = formatEditSourceLabel(pattern);
+        clack.log.info(
+          `  ${pattern} - ${firstFile.sectionCount || 0} sections`,
+        );
+        options.push({
+          value: pattern,
+          label,
+          hint: "Claude-specific format",
+        });
+      }
     }
 
     if (options.length === 1) {
       newEditSource = options[0]!.value;
       clack.log.info(`Using ${newEditSource} as edit source`);
-    } else {
+    } else if (options.length > 1) {
       const choice = await clack.select({
-        message: "Choose edit source:",
+        message: "Choose edit source (where you'll edit rules going forward):",
         options,
       });
 
