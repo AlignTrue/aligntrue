@@ -7,10 +7,9 @@ const checks = [
     name: "SECURITY ISSUES",
     command: "pnpm lint --max-warnings 0 2>&1",
     parseOutput: (output) => {
-      // Security issues will be reported by eslint with security plugin
-      // Extract lines containing security issues with file paths
+      // Group security issues by rule type for better readability
       const lines = output.split("\n");
-      const securityIssues = [];
+      const issuesByType = new Map();
       let currentFile = null;
 
       for (let i = 0; i < lines.length; i++) {
@@ -33,16 +32,113 @@ const checks = [
           line.includes("environment variable leak") ||
           line.includes("TOCTOU race condition")
         ) {
-          // Include file path if available
+          // Extract rule type (e.g., "security/detect-non-literal-fs-filename")
+          const match = line.match(/security\/([^\s]+)/);
+          const issueType = match ? match[1] : "other";
+
+          if (!issuesByType.has(issueType)) {
+            issuesByType.set(issueType, {
+              count: 0,
+              examples: [],
+              files: new Set(),
+            });
+          }
+
+          const issueData = issuesByType.get(issueType);
+          issueData.count++;
+
           if (currentFile) {
-            securityIssues.push(`${currentFile}\n${line.trim()}`);
-          } else {
-            securityIssues.push(line.trim());
+            issueData.files.add(currentFile);
+            // Keep first 5 examples per type
+            if (issueData.examples.length < 5) {
+              // Extract location and message from the line
+              // Format: "  16:22  warning  Unsafe Regular Expression  security/detect-unsafe-regex"
+              const lineMatch = line.match(
+                /(\d+:\d+)\s+warning\s+(.+?)\s+security/,
+              );
+              if (lineMatch) {
+                issueData.examples.push({
+                  file: currentFile,
+                  location: lineMatch[1],
+                  message: lineMatch[2].trim(),
+                });
+              } else {
+                // Fallback: use the whole line as message
+                issueData.examples.push({
+                  file: currentFile,
+                  location: line.match(/(\d+:\d+)/)?.[1] || "",
+                  message: line.trim(),
+                });
+              }
+            }
           }
         }
       }
 
-      return securityIssues.length > 0 ? securityIssues.join("\n") : null;
+      if (issuesByType.size === 0) return null;
+
+      // Sort by count (descending) and take top 12
+      const sortedTypes = Array.from(issuesByType.entries())
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 12);
+
+      // Format grouped output
+      const sections = [];
+      let totalIssuesShown = 0;
+      let totalIssuesHidden = 0;
+      let hiddenTypes = 0;
+
+      for (let i = 0; i < sortedTypes.length; i++) {
+        const [issueType, data] = sortedTypes[i];
+        totalIssuesShown += data.count;
+
+        const fileList = Array.from(data.files).slice(0, 10);
+        sections.push(
+          `${issueType}: ${data.count} occurrence${data.count > 1 ? "s" : ""} in ${data.files.size} file${data.files.size > 1 ? "s" : ""}`,
+        );
+
+        // Show examples
+        if (data.examples.length > 0) {
+          sections.push("  Examples:");
+          data.examples.forEach((ex) => {
+            sections.push(`    ${ex.file}:${ex.location} - ${ex.message}`);
+          });
+        }
+
+        // Show affected files (limited)
+        if (fileList.length > 0) {
+          sections.push(`  Affected files (${data.files.size} total):`);
+          fileList.forEach((file) => {
+            sections.push(`    - ${file}`);
+          });
+          if (data.files.size > 10) {
+            sections.push(`    ... and ${data.files.size - 10} more files`);
+          }
+        }
+        sections.push("");
+      }
+
+      // Calculate hidden issues if there are more types
+      if (issuesByType.size > 12) {
+        const allSorted = Array.from(issuesByType.entries()).sort(
+          (a, b) => b[1].count - a[1].count,
+        );
+        for (let i = 12; i < allSorted.length; i++) {
+          const [, data] = allSorted[i];
+          totalIssuesHidden += data.count;
+          hiddenTypes++;
+        }
+        sections.push(
+          `... and ${hiddenTypes} more rule type${hiddenTypes > 1 ? "s" : ""} with ${totalIssuesHidden} total issue${totalIssuesHidden > 1 ? "s" : ""}`,
+        );
+      }
+
+      // Store total count in the result object for counting
+      const totalCount = totalIssuesShown + totalIssuesHidden;
+      const formattedOutput = sections.join("\n");
+
+      // Attach count to the string (we'll extract it later)
+      return { output: formattedOutput, count: totalCount };
     },
   },
   {
@@ -120,18 +216,48 @@ for (const check of checks) {
 
     const parsed = check.parseOutput(output_text);
     if (parsed) {
+      // Handle both string and object return types
+      let parsedOutput;
+      let issueCount = 0;
+
+      if (typeof parsed === "object" && parsed.output) {
+        // Security issues return { output, count }
+        parsedOutput = parsed.output;
+        issueCount = parsed.count;
+      } else {
+        // Other checks return string
+        parsedOutput = parsed;
+        issueCount = (parsed.match(/\n/g) || []).length + 1;
+      }
+
       output.push(`=== ${check.name} ===`);
-      output.push(parsed);
+      output.push(parsedOutput);
       output.push("");
       hasErrors = true;
 
       // Count issues
-      if (check.name.includes("SECURITY"))
-        results.security += (parsed.match(/\n/g) || []).length + 1;
-      else if (check.name.includes("TYPE"))
-        results.type += (parsed.match(/\n/g) || []).length + 1;
-      else if (check.name.includes("LINT"))
-        results.lint += (parsed.match(/\n/g) || []).length + 1;
+      if (check.name.includes("SECURITY")) {
+        results.security = issueCount;
+      } else if (check.name.includes("TYPE")) {
+        // Count actual error lines (filter out empty lines)
+        const errorLines = parsedOutput
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim() && /[a-zA-Z0-9/.]+\.(ts|tsx):\d+:\d+/.test(line),
+          );
+        results.type = errorLines.length;
+      } else if (check.name.includes("LINT")) {
+        // Count actual error lines
+        const errorLines = parsedOutput
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim() &&
+              /[a-zA-Z0-9/.]+\.(ts|tsx|js|jsx):\d+:\d+/.test(line),
+          );
+        results.lint = errorLines.length;
+      }
     }
   } catch (error) {
     // Command execution errors are already captured

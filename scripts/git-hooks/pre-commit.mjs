@@ -123,7 +123,9 @@ async function main() {
     console.error("");
     clack.log.error("Pre-commit checks failed.");
     console.error("");
-    console.error("⚠️  Linting threshold lowered to 400 warnings (was 460)");
+    console.error(
+      "⚠️  Pre-commit enforces zero warnings. All security warnings must be addressed or exempted.",
+    );
     console.error("");
 
     // Try to capture and parse lint-staged output for specific errors
@@ -167,7 +169,7 @@ async function main() {
     console.error("   • Check specific file: pnpm eslint <file-path>");
     console.error("");
     console.error(
-      "⚠️  Note: Pre-commit enforces same limits as CI (400 warnings)",
+      "⚠️  Note: Pre-commit enforces zero warnings. Add exemptions in eslint.config.js for legitimate security protections.",
     );
     console.error("");
     console.error("💡 Common issues:");
