@@ -1,10 +1,12 @@
 /**
- * Extract and save rules from agent files to .aligntrue/extracted-rules.md
- * Used when enabling new agent files as export targets in centralized mode
+ * Extract and save rules from agent files
+ * Supports two modes:
+ * 1. Extract to overwritten-rules.md for section conflicts (safety feature)
+ * 2. Backup entire file to overwritten-rules/ when replacing (migration)
  */
 
 import { readFileSync, appendFileSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 import { computeHash } from "@aligntrue/schema";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import type { AlignPack } from "@aligntrue/schema";
@@ -14,12 +16,19 @@ import {
   parseCursorMdc,
   parseGenericMarkdown,
 } from "@aligntrue/exporters/utils/section-parser";
+import { backupOverwrittenFile } from "./overwritten-rules-manager.js";
 
 export interface ExtractRulesResult {
   extracted: boolean;
   sectionCount: number;
   skippedDuplicates: number;
   extractedRulesPath: string;
+}
+
+export interface BackupFileResult {
+  backed_up: boolean;
+  backup_path?: string;
+  error?: string;
 }
 
 /**
@@ -193,4 +202,36 @@ Reason: File enabled as export target in centralized mode
     skippedDuplicates,
     extractedRulesPath,
   };
+}
+
+/**
+ * Backup an entire file being replaced (e.g., when switching edit_source)
+ * Preserves original file structure with timestamp in overwritten-rules/ folder
+ *
+ * @param filePath - Absolute or relative path to file being backed up
+ * @param cwd - Current working directory
+ * @returns Backup result with path or error
+ */
+export function backupFileToOverwrittenRules(
+  filePath: string,
+  cwd: string,
+): BackupFileResult {
+  try {
+    // Resolve to absolute path
+    const absolutePath = filePath.startsWith(cwd)
+      ? filePath
+      : resolve(cwd, filePath);
+
+    const backupPath = backupOverwrittenFile(absolutePath, cwd);
+
+    return {
+      backed_up: true,
+      backup_path: backupPath,
+    };
+  } catch (error) {
+    return {
+      backed_up: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
