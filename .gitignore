@@ -79,6 +79,11 @@ packages/**/.test-output*/
 **/.team-onboarding-complete
 *.lock.json.test
 packages/cli/*.tgz
+packages/**/.aligntrue-test-*/
+packages/**/.test-output*/
+packages/**/.test-*/
+packages/**/test-*/
+**/tests/tmp/
 
 # Turborepo cache (generated during build)
 .turbo/
