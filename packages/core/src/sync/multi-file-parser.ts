@@ -116,7 +116,7 @@ function isAgentFile(filePath: string): boolean {
  * Detect edited agent files based on mtime
  * Returns files that were modified after last sync, plus warnings for files edited outside edit_source
  *
- * EXPERIMENTAL: Multi-file detection only enabled when config.sync.experimental_two_way_sync is true
+ * EXPERIMENTAL: Multi-file detection only enabled when config.sync.centralized is false
  */
 export async function detectEditedFiles(
   cwd: string,
@@ -138,11 +138,11 @@ export async function detectEditedFiles(
     console.log(`[detectEditedFiles] cwd:`, cwd);
   }
 
-  // Guard: Only detect multiple sources in experimental mode
-  if (Array.isArray(editSource) && !config.sync?.experimental_two_way_sync) {
+  // Guard: Only detect multiple sources in decentralized mode (centralized: false)
+  if (Array.isArray(editSource) && config.sync?.centralized !== false) {
     if (DEBUG_SYNC) {
       console.log(
-        `[detectEditedFiles] Skipping multi-source detection - experimental_two_way_sync not enabled`,
+        `[detectEditedFiles] Skipping multi-source detection - centralized mode enabled (default)`,
       );
     }
     return { files: [], warnings: [] };

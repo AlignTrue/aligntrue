@@ -29,13 +29,13 @@ In `.aligntrue/config.yaml`:
 ```yaml
 sync:
   edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]
-  experimental_two_way_sync: true
+  centralized: false
 ```
 
 **Requirements:**
 
 - `edit_source` must be an array (multiple patterns)
-- `experimental_two_way_sync` must be explicitly set to `true`
+- `centralized` must be explicitly set to `false`
 - Without both, the system falls back to centralized (single-source) mode
 
 ### Configuration examples
@@ -48,7 +48,7 @@ sync:
     - "AGENTS.md"
     - ".cursor/rules/*.mdc"
     - "CLAUDE.md"
-  experimental_two_way_sync: true
+  centralized: false
 ```
 
 **Multiple Cursor scope files:**
@@ -56,7 +56,7 @@ sync:
 ```yaml
 sync:
   edit_source: [".cursor/rules/*.mdc"]
-  experimental_two_way_sync: true
+  centralized: false
 ```
 
 ### When to use
