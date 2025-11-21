@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - ESLint rule `no-check-then-operate` to prevent TOCTOU race conditions at development time
+- Three new security-focused ESLint rules to catch issues before CodeQL:
+  - `no-math-random`: Flags Math.random() in production code (use crypto instead)
+  - `no-env-var-in-output`: Flags process.env in console output (prevent leaks)
+  - `no-hardcoded-secrets`: Flags suspected API keys, passwords, tokens in strings
 - Checksum-based overwrite protection for exported files using `AtomicFileWriter`
 - Interactive conflict resolution prompts during sync when files have been manually edited
 - `--force` flag now also bypasses file overwrite protection for non-interactive syncs
