@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Edit source patterns now centralized** - Single source of truth for exporter-to-pattern mappings in `@aligntrue/core/config/edit-source-patterns`
+- **Removed IR-only edit source option** - `edit_source: ".rules.yaml"` is no longer supported (use human-friendly `.aligntrue/rules/*.md` instead)
+- **Added support for multi-file markdown organization** - New recommended option `edit_source: ".aligntrue/rules/*.md"` for teams
+- **Deprecated `sync.two_way` config option** - Use `edit_source` and `centralized` settings instead
+- **Updated messaging** - Clarified distinction between IR file (`.aligntrue/.rules.yaml`, canonical) and edit source options
 - **Node.js requirement:** Reduced from Node 22 to Node 20 for broader adoption
   - Node 20 LTS supported until April 2026
   - All packages now require Node >=20

@@ -101,20 +101,9 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 
 type ImportParser = "cursor" | "agents" | "generic";
 
-const EDIT_SOURCE_PATTERNS: Record<string, string> = {
-  cursor: ".cursor/rules/*.mdc",
-  agents: "AGENTS.md",
-  copilot: ".github/copilot-instructions.md",
-  claude: "CLAUDE.md",
-  crush: "CRUSH.md",
-  warp: "WARP.md",
-  gemini: "GEMINI.md",
-  windsurf: "WINDSURF.md",
-  aider: ".aider.conf.yml",
-  opencode: "OPENCODE.md",
-  roocode: "ROOCODE.md",
-  zed: "ZED.md",
-};
+// Import centralized patterns - this is the single source of truth
+// for exporter-to-edit-source mappings
+import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "@aligntrue/core/config/edit-source-patterns";
 
 /**
  * Detect project ID intelligently from git repo or directory name
@@ -177,7 +166,10 @@ function parserForFormat(format: AgentFileFormat): ImportParser | null {
 function getEditSourcePatternForAgent(
   candidate: AgentFileCandidate,
 ): string | null {
-  const pattern = EDIT_SOURCE_PATTERNS[candidate.agent];
+  const pattern =
+    EXPORTER_TO_EDIT_SOURCE_PATTERN[
+      candidate.agent as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+    ];
   if (pattern) {
     return pattern;
   }
@@ -798,7 +790,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else {
     // Fallback: use first selected agent's pattern
     const firstAgent = selectedAgents[0];
-    editSource = firstAgent ? EDIT_SOURCE_PATTERNS[firstAgent] : "AGENTS.md";
+    editSource = firstAgent
+      ? EXPORTER_TO_EDIT_SOURCE_PATTERN[
+          firstAgent as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
+        ]
+      : "AGENTS.md";
   }
 
   // Track if user selected .aligntrue/rules/

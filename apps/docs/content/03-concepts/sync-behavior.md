@@ -547,16 +547,6 @@ managed:
 
 Managed sections are marked with 🔒 icon and HTML comments warning against direct edits.
 
-**IR-Only Mode:**
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  edit_source: ".rules.yaml" # Only IR accepts edits
-```
-
-With IR-only mode, agent → IR sync is disabled, and only IR → agent sync occurs.
-
 **Example:**
 
 ```bash
