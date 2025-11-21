@@ -69,3 +69,39 @@ npm view aligntrue@latest dependencies
 ```
 
 You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
+
+## Testing Package Installation Locally
+
+**IMPORTANT:** `pnpm pack` creates tarballs with `workspace:*` dependencies intact, which npm cannot resolve during global installation.
+
+### For local testing
+
+Use `pnpm link` as documented in `packages/cli/README.md`:
+
+```bash
+cd packages/cli
+pnpm link --global
+```
+
+You can now test with:
+
+```bash
+aligntrue --version
+```
+
+After making changes, rebuild and re-link:
+
+```bash
+pnpm build
+pnpm link --global
+```
+
+### For npm distribution
+
+Always use `pnpm publish` which automatically rewrites `workspace:*` to concrete versions.
+
+### Never use
+
+`pnpm pack && npm install -g <tarball>` for testing—this will fail with workspace protocol errors. The tarball contains `workspace:*` references that npm cannot resolve.
+
+Use this approach only for testing tarball creation (not installation); for actual testing use `pnpm link --global`.

@@ -10,8 +10,9 @@ import {
   validateFill,
   type PlugFormat,
   loadConfig,
-  saveConfig,
+  saveConfig, // saveConfig is exported from @aligntrue/core/config and re-exported via core/index
   type AlignTrueConfig,
+  // This enables plugs.fills persistence to .aligntrue/config.yaml
 } from "@aligntrue/core";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
