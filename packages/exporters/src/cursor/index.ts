@@ -39,6 +39,13 @@ export class CursorExporter extends ExporterBase {
 
     const sections = pack.sections;
 
+    // NOTE: ALL sections from the pack are exported to .cursor/rules/*.mdc files
+    // Line count differences between AGENTS.md and .mdc files are due to:
+    // 1. Fidelity notes footer in .mdc (explains format limitations)
+    // 2. Content hash footer for drift detection
+    // 3. Different whitespace/formatting conventions
+    // Testing gotcha: Compare section headings, not line counts, to verify completeness
+
     // Handle empty sections gracefully (valid in early setup)
     if (sections.length === 0) {
       return {
