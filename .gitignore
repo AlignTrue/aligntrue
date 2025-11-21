@@ -69,7 +69,7 @@ logs/
 packages/cli/src/commands/*-wip.ts
 packages/cli/tests/commands/*-wip.test.ts
 
-# internal docs (moved temporary documentation)
+# internal docs
 .internal_docs/
 
 # Test artifacts (should not be committed)
@@ -78,11 +78,11 @@ packages/**/.test-output*/
 **/.last-sync
 **/.team-onboarding-complete
 *.lock.json.test
+packages/cli/*.tgz
 
 # Turborepo cache (generated during build)
 .turbo/
 **/.turbo/
 
 # Pagefind search index (generated during build)
-
 apps/docs/public/_pagefind
