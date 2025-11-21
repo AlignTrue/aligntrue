@@ -207,7 +207,7 @@ Comparing your current rule state against a committed lockfile to detect when ru
 
 ---
 
-## Configuration & Modes
+## Configuration & modes
 
 ### Solo mode
 

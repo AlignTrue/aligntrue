@@ -272,7 +272,7 @@ sync:
 
 <!-- aligntrue:source testing.md -->
 
-## Testing Standards
+## Testing standards
 
 ...
 ```

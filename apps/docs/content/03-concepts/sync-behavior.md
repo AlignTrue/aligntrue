@@ -10,7 +10,7 @@ Complete technical reference for AlignTrue's sync system. This document is the s
 > **For practical setup and workflow examples,** see [Choosing Your Edit Source](/docs/01-guides/00-edit-source).  
 > **Experimental features:** See [Experimental Features](/docs/04-reference/experimental) for decentralized rule management.
 
-## Default: Centralized Rule Management
+## Default: Centralized rule management
 
 AlignTrue uses **centralized rule management** by default: you designate ONE edit source, edit that file, and changes flow one-way to all other read-only exports.
 
@@ -716,7 +716,7 @@ Choice:
 
 ---
 
-## New File Detection
+## New file detection
 
 AlignTrue automatically detects agent files with content that aren't tracked in your `edit_source` configuration.
 
@@ -1446,7 +1446,7 @@ A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for schedule
 
 ---
 
-## Advanced: Experimental Decentralized Mode
+## Advanced: Experimental decentralized mode
 
 For experimental multi-source editing with two-way sync between multiple edit sources, see [Experimental Features](/docs/04-reference/experimental). This is an unsupported feature for advanced users only.
 

@@ -7,7 +7,7 @@ description: Technical details for implementing and working with AlignTrue custo
 
 This page provides technical implementation details for working with plugs, overlays, and scopes. For user-facing guides, see [Plugs](/docs/02-customization/plugs), [Overlays](/docs/02-customization/overlays), and [Scopes](/docs/02-customization/scopes).
 
-## Where to Declare Features
+## Where to declare features
 
 | Feature     | Pack Files   | Config File | Primary Use               |
 | ----------- | ------------ | ----------- | ------------------------- |

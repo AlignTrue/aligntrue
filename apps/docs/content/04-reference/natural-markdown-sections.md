@@ -31,7 +31,7 @@ summary: "Example rules using natural markdown sections"
 tags: ["example", "sections"]
 ---
 
-# My Project Rules
+# My project rules
 
 This pack establishes our project standards.
 
@@ -257,7 +257,7 @@ summary: "Comprehensive coding standards"
 tags: ["standards", "comprehensive"]
 ---
 
-# Comprehensive Standards
+# Comprehensive standards
 
 ## Code style
 
@@ -332,7 +332,7 @@ rules:
 **Section-based pack (natural markdown):**
 
 ```markdown
-# My Rules
+# My rules
 
 ## Rule One
 

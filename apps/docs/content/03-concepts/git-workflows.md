@@ -60,7 +60,7 @@ git:
   offline_fallback: true # Use cache if network fails
 ```
 
-### Per-Source Override
+### Per-source override
 
 ```yaml
 sources:
@@ -460,7 +460,7 @@ sources:
 4. Updates pulled and approved
 5. Team syncs with new version
 
-### Team with Version Pinning
+### Team with version pinning
 
 ```yaml
 mode: team

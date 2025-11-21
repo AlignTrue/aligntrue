@@ -19,7 +19,7 @@ This comprehensive coverage ensures AlignTrue rules work across the entire AI co
 
 ## Exporter categories
 
-### 1. MCP (Model Context Protocol) Config Exporters
+### 1. MCP (Model Context Protocol) config exporters
 
 These generate JSON configuration files for agents that support the MCP protocol. MCP allows agents to connect to external tools and data sources. AlignTrue creates `.mcp.json` or equivalent files with rule-based guidance.
 
