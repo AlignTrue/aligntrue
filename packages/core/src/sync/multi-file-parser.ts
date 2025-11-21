@@ -5,8 +5,8 @@
 
 import { readFileSync, readdirSync, openSync, fstatSync, closeSync } from "fs";
 import { join } from "path";
-import { createHash } from "crypto";
 import micromatch from "micromatch";
+import { computeHash } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import { getAlignTruePaths } from "../paths.js";
@@ -192,10 +192,7 @@ export async function detectEditedFiles(
             heading: s.heading,
             content: s.content,
             level: s.level || 2,
-            hash: createHash("sha256")
-              .update(s.heading + s.content)
-              .digest("hex")
-              .slice(0, 8),
+            hash: computeHash(s.heading + s.content).slice(0, 8),
           })),
           mtime: file.mtime,
         });
@@ -583,10 +580,7 @@ export function mergeFromMultipleFiles(
  * Generate fingerprint for section (matching schema behavior)
  */
 export function generateFingerprint(heading: string): string {
-  return createHash("sha256")
-    .update(heading.toLowerCase().trim(), "utf-8")
-    .digest("hex")
-    .slice(0, 16);
+  return computeHash(heading.toLowerCase().trim()).slice(0, 16);
 }
 
 /**

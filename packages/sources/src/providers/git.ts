@@ -16,11 +16,11 @@
 
 import { readFileSync, existsSync, mkdirSync, rmSync } from "fs";
 import { join } from "path";
-import { createHash } from "crypto";
 import simpleGit, { SimpleGit, GitError } from "simple-git";
 import type { SourceProvider } from "./index.js";
 import type { ConsentManager } from "@aligntrue/core";
 import { checkFileSize, createIgnoreFilter } from "@aligntrue/core/performance";
+import { computeHash } from "@aligntrue/schema";
 import {
   detectRefType,
   loadCacheMeta,
@@ -777,7 +777,7 @@ export class GitProvider implements SourceProvider {
    * Compute SHA-256 hash of URL for cache directory naming
    */
   private computeRepoHash(url: string): string {
-    return createHash("sha256").update(url).digest("hex").substring(0, 16); // First 16 chars for shorter directory names
+    return computeHash(url).substring(0, 16); // First 16 chars for shorter directory names
   }
 
   /**

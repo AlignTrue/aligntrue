@@ -137,8 +137,11 @@ export function computeAlignHash(alignInput: string | unknown): string {
       ? (parseYamlToJson(alignInput) as Record<string, unknown>)
       : (alignInput as Record<string, unknown>);
 
-  // Clone to avoid mutating input
-  const cloned = JSON.parse(JSON.stringify(obj));
+  // Clone to avoid mutating input using structuredClone
+  const cloned =
+    typeof structuredClone !== "undefined"
+      ? structuredClone(obj)
+      : JSON.parse(JSON.stringify(obj));
 
   // Set integrity.value to pending if integrity field exists
   if (cloned["integrity"] && typeof cloned["integrity"] === "object") {

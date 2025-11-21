@@ -3,6 +3,8 @@
  * Implements deterministic modifications to IR structures
  */
 
+import { cloneDeep as cloneDeepUtil } from "@aligntrue/schema";
+
 /**
  * Apply set operation to target object
  * Sets nested properties using dot notation
@@ -193,13 +195,13 @@ export function mergeArraysAsSet<T>(baseArray: T[], overlayArray: T[]): T[] {
 
 /**
  * Deep clone an object for safe modification
- * Uses JSON serialization (fast, works for IR structures)
+ * Uses structuredClone for performance and compatibility
  *
  * @param obj - Object to clone
  * @returns Cloned object
  */
 export function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+  return cloneDeepUtil(obj);
 }
 
 function ensurePlainObject(

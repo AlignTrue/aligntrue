@@ -79,7 +79,7 @@ import {
   ExportResult,
 } from "@aligntrue/plugin-contracts";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { createHash } from "crypto";
+import { computeHash } from "@aligntrue/schema";
 
 export class MyAgentExporter implements ExporterPlugin {
   name = "my-agent";
@@ -92,7 +92,7 @@ export class MyAgentExporter implements ExporterPlugin {
     const content = this.formatRules(rules);
 
     // Compute content hash
-    const hash = createHash("sha256").update(content).digest("hex");
+    const hash = computeHash(content);
 
     // Write file (if not dry-run)
     const outputPath = ".myagent/rules.md";
