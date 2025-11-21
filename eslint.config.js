@@ -1,6 +1,7 @@
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import unusedImports from "eslint-plugin-unused-imports";
+// eslint-disable-next-line unused-imports/no-unused-imports
 import nextPlugin from "@next/eslint-plugin-next";
 
 // Custom rule to prevent asset imports in @aligntrue/ui (zero-build package)
@@ -201,6 +202,7 @@ export default [
       "**/coverage/**",
       "archive/**",
       ".archive/**",
+      "eslint.config.js", // Config file doesn't use rules it defines
     ],
   },
   {
