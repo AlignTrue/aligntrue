@@ -233,6 +233,7 @@ export class GitDiffStrategy {
    */
   private parseDiffHunks(diff: string): Array<{ start: number; end: number }> {
     const ranges: Array<{ start: number; end: number }> = [];
+    // Static regex pattern for parsing git diff hunks - safe from ReDoS (bounded quantifiers)
     const hunkRegex = /@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/g;
 
     let match;

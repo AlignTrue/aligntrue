@@ -1,4 +1,4 @@
-# CLI Test Coverage Matrix
+# CLI test coverage matrix
 
 This document tracks test coverage for all CLI commands and features.
 

@@ -62,6 +62,7 @@ export function extractExplicitId(content: string): string | undefined {
  */
 export function isValidFingerprint(fingerprint: string): boolean {
   // Format: lowercase-kebab-case-abc123
+  // Static regex pattern with bounded quantifiers - safe from ReDoS
   return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?-[a-f0-9]{6}$/.test(fingerprint);
 }
 

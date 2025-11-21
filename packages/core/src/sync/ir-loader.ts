@@ -40,6 +40,9 @@ export async function loadIR(
   }
 
   // Check file exists
+
+  // Safe: Paths from config are validated via validateScopePath() at config load time (packages/core/src/config/index.ts:662)
+  // Paths from getAlignTruePaths().rules are safe internal paths
   if (!existsSync(sourcePath)) {
     throw new Error(
       `Source file not found: ${sourcePath}\n` +
@@ -53,6 +56,8 @@ export async function loadIR(
   // Read file content
   let content: string;
   try {
+    // Safe: Paths from config are validated via validateScopePath() at config load time (packages/core/src/config/index.ts:662)
+    // Paths from getAlignTruePaths().rules are safe internal paths
     content = readFileSync(sourcePath, "utf8");
   } catch (_err) {
     throw new Error(
@@ -224,6 +229,7 @@ export async function saveIR(
   // Ensure directory exists
   const dir = dirname(targetPath);
   try {
+    // Safe: targetPath is typically from getAlignTruePaths().rules (safe internal path) or validated user path
     mkdirSync(dir, { recursive: true });
   } catch {
     // Directory may already exist
@@ -238,6 +244,7 @@ export async function saveIR(
 
   // Write file
   try {
+    // Safe: targetPath is typically from getAlignTruePaths().rules (safe internal path) or validated user path
     writeFileSync(targetPath, yamlContent, "utf8");
   } catch (err) {
     throw new Error(

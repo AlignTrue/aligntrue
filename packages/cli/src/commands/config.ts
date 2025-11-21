@@ -576,7 +576,8 @@ function setNestedValue(
     // If current key doesn't exist or is wrong type, create appropriate structure
     const currentValue = Array.isArray(current)
       ? current[parseInt(key, 10)]
-      : (current as Record<string, unknown>)[key];
+      : // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 569-571)
+        (current as Record<string, unknown>)[key];
     if (!currentValue || typeof currentValue !== "object") {
       if (isNextKeyArrayIndex) {
         // Next key is array index, create array
@@ -585,6 +586,7 @@ function setNestedValue(
           while (current.length <= idx) current.push(undefined);
           current[idx] = [];
         } else {
+          // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 569-571)
           (current as Record<string, unknown>)[key] = [];
         }
       } else {
@@ -594,6 +596,7 @@ function setNestedValue(
           while (current.length <= idx) current.push(undefined);
           current[idx] = {};
         } else {
+          // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 569-571)
           (current as Record<string, unknown>)[key] = {};
         }
       }
@@ -603,6 +606,7 @@ function setNestedValue(
         const idx = parseInt(key, 10);
         current[idx] = [];
       } else {
+        // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 569-571)
         (current as Record<string, unknown>)[key] = [];
       }
     }
