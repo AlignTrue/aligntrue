@@ -68,7 +68,7 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | Atomic operations        | Safe file writes prevent corruption during syncs                                   | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
 | **Agent Support**        |                                                                                    |                                                                               |
 | Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically               | [How it works](#how-it-works)                                                 |
-| 28+ agents               | Comprehensive coverage through 44 exporters                                        | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
+| 28+ agents               | Comprehensive coverage through 51 exporters                                        | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
 | Native format editing    | Edit in `.cursor/rules/*.mdc`, `AGENTS.md`, or your agent's native format          | [Getting Started](https://aligntrue.ai/docs/00-getting-started/00-quickstart) |
 | Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                   | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
 | **Team Collaboration**   |                                                                                    |                                                                               |
@@ -131,7 +131,7 @@ jobs:
 
 ## Broad agent support
 
-AlignTrue supports **28+ AI coding agents** through **44 exporters**:
+AlignTrue supports **28+ AI coding agents** through **51 exporters**:
 
 **Popular agents:**
 

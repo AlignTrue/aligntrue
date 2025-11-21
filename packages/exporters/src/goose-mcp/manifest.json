@@ -1,0 +1,14 @@
+{
+  "name": "goose-mcp",
+  "version": "1.0.0",
+  "description": "Export AlignTrue rules to Goose .goose/config.yaml MCP configuration format",
+  "author": "AlignTrue",
+  "outputs": [".goose/config.yaml"],
+  "handler": "./index.js",
+  "license": "MIT",
+  "fidelityNotes": [
+    "Project-level configuration in .goose/config.yaml",
+    "Global ~/.config/goose/config.yaml not written by AlignTrue",
+    "YAML format may need manual integration with existing MCP servers"
+  ]
+}

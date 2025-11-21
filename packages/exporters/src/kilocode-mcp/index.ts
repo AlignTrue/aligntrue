@@ -1,56 +1,32 @@
 /**
- * Kilocode MCP exporter
+ * KiloCode MCP exporter
  * Exports AlignTrue rules to .kilocode/mcp.json MCP configuration format
+ *
+ * Uses centralized MCP generator with KiloCode-specific transformer
  */
 
-import { join } from "path";
+import { dirname } from "path";
+import { mkdirSync } from "fs";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
-} from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+} from "@aligntrue/plugin-contracts";
+import { generateCanonicalMcpConfig } from "@aligntrue/core";
+import { KilocodeMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
 
-interface ExporterState {
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  seenScopes: Set<string>;
-}
-
-interface McpConfig {
-  version: string;
-  generated_by: string;
-  content_hash: string;
-  unresolved_plugs?: number;
-  sections: McpSection[];
-  fidelity_notes?: string[];
-}
-
-interface McpSection {
-  heading: string;
-  level: number;
-  content: string;
-  fingerprint: string;
-  scope?: string;
-  [key: string]: unknown;
-}
-
-export class KilcodeMcpExporter extends ExporterBase {
+export class KilocodeMcpExporter extends ExporterBase {
   name = "kilocode-mcp";
   version = "1.0.0";
 
-  private state: ExporterState = {
-    allSections: [],
-    seenScopes: new Set(),
-  };
+  private transformer = new KilocodeMcpTransformer();
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
+    const { pack } = request;
     const { outputDir, dryRun = false } = options;
 
     const sections = pack.sections;
@@ -63,19 +39,25 @@ export class KilcodeMcpExporter extends ExporterBase {
       };
     }
 
-    const scopePath = this.formatScopePath(scope);
-    sections.forEach((section) => {
-      this.state.allSections.push({ section, scopePath });
-    });
-    this.state.seenScopes.add(scopePath);
+    // Generate canonical MCP config
+    const canonicalConfig = generateCanonicalMcpConfig(
+      sections,
+      options.unresolvedPlugsCount,
+    );
 
-    const outputPath = join(outputDir, ".kilocode", "mcp.json");
-    const mcpConfig = this.generateMcpConfig(options.unresolvedPlugsCount);
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
+    // Transform to KiloCode-specific format
+    const content = this.transformer.transform(canonicalConfig);
 
-    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
+    // Get output path
+    const outputPath = this.transformer.getOutputPath(outputDir);
+
+    // Create directory if needed
+    if (!dryRun) {
+      const outputDirPath = dirname(outputPath);
+      mkdirSync(outputDirPath, { recursive: true });
+    }
+
+    // Write file atomically
     const filesWritten = await this.writeFile(
       outputPath,
       content,
@@ -83,67 +65,19 @@ export class KilcodeMcpExporter extends ExporterBase {
       options,
     );
 
-    return this.buildResult(filesWritten, contentHash, fidelityNotes);
-  }
+    // Use content hash from canonical config
+    const fidelityNotes = canonicalConfig.fidelity_notes || [];
 
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
-  }
-
-  private generateMcpConfig(unresolvedPlugs?: number): McpConfig {
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
-
-    const mcpSections = this.state.allSections.map(({ section, scopePath }) =>
-      this.mapSectionToMcpFormat(section, scopePath),
+    return this.buildResult(
+      filesWritten,
+      canonicalConfig.content_hash,
+      fidelityNotes,
     );
-
-    const config: McpConfig = {
-      version: "v1",
-      generated_by: "AlignTrue",
-      content_hash: contentHash,
-      sections: mcpSections,
-    };
-
-    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config["unresolved_plugs"] = unresolvedPlugs;
-    }
-
-    if (fidelityNotes.length > 0) {
-      config.fidelity_notes = fidelityNotes;
-    }
-
-    return config;
-  }
-
-  private mapSectionToMcpFormat(
-    section: AlignSection,
-    scopePath: string,
-  ): McpSection {
-    const mcpSection: McpSection = {
-      heading: section.heading,
-      level: section.level,
-      content: section.content,
-      fingerprint: section.fingerprint,
-    };
-
-    if (scopePath !== "all files") {
-      mcpSection.scope = scopePath;
-    }
-
-    return mcpSection;
   }
 
   resetState(): void {
-    this.state = {
-      allSections: [],
-      seenScopes: new Set(),
-    };
+    // Stateless with shared generator
   }
 }
 
-export default KilcodeMcpExporter;
+export default KilocodeMcpExporter;

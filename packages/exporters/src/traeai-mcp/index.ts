@@ -1,26 +1,41 @@
 /**
- * Roo Code MCP exporter
- * Exports AlignTrue rules to .roo/mcp.json MCP configuration format
+ * Trae AI MCP exporter
+ * Exports AlignTrue rules to trae_config.yaml MCP configuration format
  *
- * Uses centralized MCP generator with Roo Code-specific transformer
+ * Uses centralized MCP generator with Trae-specific transformer
  */
 
-import { dirname } from "path";
+import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
-import { generateCanonicalMcpConfig } from "@aligntrue/core";
-import { RoocodeMcpTransformer } from "../mcp-transformers/index.js";
+import {
+  generateCanonicalMcpConfig,
+  type CanonicalMcpConfig,
+} from "@aligntrue/core";
+import { BaseMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
 
-export class RoocodeMcpExporter extends ExporterBase {
-  name = "roocode-mcp";
+class TraeaiMcpTransformer extends BaseMcpTransformer {
+  transform(config: CanonicalMcpConfig): string {
+    // Convert JSON MCP config to YAML format for Trae
+    const yaml = require("yaml");
+    return yaml.stringify(config) + "\n";
+  }
+
+  getOutputPath(baseDir: string): string {
+    return join(baseDir, "trae_config.yaml");
+  }
+}
+
+export class TraeaiMcpExporter extends ExporterBase {
+  name = "traeai-mcp";
   version = "1.0.0";
 
-  private transformer = new RoocodeMcpTransformer();
+  private transformer = new TraeaiMcpTransformer();
 
   async export(
     request: ScopedExportRequest,
@@ -45,7 +60,7 @@ export class RoocodeMcpExporter extends ExporterBase {
       options.unresolvedPlugsCount,
     );
 
-    // Transform to Roo Code-specific format
+    // Transform to Trae-specific YAML format
     const content = this.transformer.transform(canonicalConfig);
 
     // Get output path
@@ -80,4 +95,4 @@ export class RoocodeMcpExporter extends ExporterBase {
   }
 }
 
-export default RoocodeMcpExporter;
+export default TraeaiMcpExporter;
