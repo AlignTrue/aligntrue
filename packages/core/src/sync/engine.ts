@@ -856,10 +856,10 @@ export class SyncEngine {
   }
 
   /**
-   * Sync from multiple edited agent files (two-way sync)
+   * Sync from multiple edited agent files (decentralized mode)
    * Detects edited agent files, merges to IR, then syncs back to all agents
    *
-   * EXPERIMENTAL: Only enabled when config.sync.experimental_two_way_sync is true
+   * EXPERIMENTAL: Only enabled when config.sync.centralized is false
    */
   async syncFromMultipleAgents(
     configPath: string,
@@ -875,9 +875,9 @@ export class SyncEngine {
       const config = await loadConfig(configPath);
       this.config = config;
 
-      // Guard: Only proceed if experimental_two_way_sync is enabled
-      if (!config.sync?.experimental_two_way_sync) {
-        // Not experimental mode - use simple single-source flow instead
+      // Guard: Only proceed if centralized is false (decentralized mode enabled)
+      if (config.sync?.centralized !== false) {
+        // Centralized mode (default) - use simple single-source flow instead
         return await this.syncToAgents(configPath, options);
       }
       // Get the project root (parent of .aligntrue directory)

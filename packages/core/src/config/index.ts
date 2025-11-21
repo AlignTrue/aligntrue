@@ -108,13 +108,14 @@ export interface AlignTrueConfig {
     two_way?: boolean; // DEPRECATED: Use edit_source instead
     // Which files accept edits and sync TO canonical IR (.aligntrue/.rules.yaml)
     // Default: single source string (recommended)
-    // Array: requires experimental_two_way_sync: true
+    // Array: requires centralized: false
     // Options: "AGENTS.md", ".cursor/rules/*.mdc", ".aligntrue/rules/*.md", or array
     // Note: IR is always canonical; this controls input gates only
     edit_source?: string | string[];
-    // EXPERIMENTAL: Enable two-way sync with multiple edit sources
-    // Not recommended. Use at own risk. Requires edit_source to be array.
-    experimental_two_way_sync?: boolean;
+    // Centralized rule management (default: true)
+    // Set to false for experimental decentralized multi-source editing with automatic merging
+    // Not recommended. Use at own risk. Requires edit_source to be array when false.
+    centralized?: boolean;
     scope_prefixing?: "off" | "auto" | "always"; // Add scope prefixes to headings in single-file exports
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
@@ -397,7 +398,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * IR (.aligntrue/.rules.yaml) is always the canonical source of truth.
    * This setting just controls the input gate to IR.
    *
-   * Multi-source editing requires experimental_two_way_sync: true (not set here).
+   * Multi-source editing requires centralized: false (not set here).
    */
   if (result.sync.edit_source === undefined) {
     const exporterToPattern: Record<string, string> = {
@@ -673,16 +674,16 @@ export async function validateConfig(
     }
   }
 
-  // Validate experimental_two_way_sync and edit_source
+  // Validate centralized and edit_source
   if (config.sync) {
     const editSource = config.sync.edit_source;
-    const experimentalTwoWay = config.sync.experimental_two_way_sync;
+    const centralized = config.sync.centralized;
 
-    if (Array.isArray(editSource) && !experimentalTwoWay) {
+    if (Array.isArray(editSource) && centralized !== false) {
       throw new Error(
-        `Multiple edit sources require experimental_two_way_sync: true\n` +
+        `Multiple edit sources require centralized: false\n` +
           `  Current edit_source: ${JSON.stringify(editSource)}\n` +
-          `  Add "experimental_two_way_sync: true" to sync config or use single edit source.`,
+          `  Add "centralized: false" to sync config or use single edit source.`,
       );
     }
   }

@@ -133,15 +133,15 @@
               "items": {
                 "type": "string"
               },
-              "description": "Multiple file patterns for accepting edits (requires experimental_two_way_sync: true)"
+              "description": "Multiple file patterns for accepting edits (requires centralized: false)"
             }
           ],
-          "description": "Which file(s) accept edits: 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (multi-file glob), '.aligntrue/rules/*.md' (AlignTrue-managed multi-file). Default is single source. Array requires experimental_two_way_sync."
+          "description": "Which file(s) accept edits: 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (multi-file glob), '.aligntrue/rules/*.md' (AlignTrue-managed multi-file). Default is single source. Array requires centralized: false."
         },
-        "experimental_two_way_sync": {
+        "centralized": {
           "type": "boolean",
-          "description": "EXPERIMENTAL: Enable two-way sync with multiple edit sources. Not recommended. Use at own risk. Requires edit_source to be an array.",
-          "default": false
+          "description": "Centralized rule management (default: true). Set to false for experimental decentralized multi-source editing. Requires edit_source to be an array when false.",
+          "default": true
         },
         "backup_on_overwrite": {
           "type": "string",

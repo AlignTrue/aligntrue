@@ -73,8 +73,8 @@ describe("Sync Detection Integration Tests", () => {
     );
 
     // Run sync with verbose to see detection
-    // Note: In single-source model with experimental_two_way_sync disabled,
-    // detection is skipped. This test verifies sync completes without error.
+    // Note: In centralized mode (default), detection is skipped for multiple sources.
+    // This test verifies sync completes without error.
     const syncResult = runCLI(["sync", "--verbose"]);
 
     // Verify sync completes successfully
