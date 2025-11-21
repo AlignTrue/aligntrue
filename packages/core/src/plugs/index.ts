@@ -28,6 +28,16 @@ export function resolvePlugsForPack(
   additionalFills?: Record<string, string>,
   options: ResolveOptions = {},
 ): ResolvePackResult {
+  /**
+   * NOTE: Config fills are loaded from .aligntrue/config.yaml via sync engine
+   * The fills are passed as additionalFills parameter to this function
+   *
+   * Testing gotcha: If using CLI commands like 'plugs set', the config is immediately
+   * persisted to disk via saveConfig(). Subsequent commands should load and use these fills.
+   * If fills appear missing, check:
+   * 1. Config file has plugs.fills section with correct YAML structure
+   * 2. Sync engine is passing config.plugs.fills to resolvePlugsForPack()
+   */
   try {
     // Merge plugs from pack + additional fills
     const plugsSources: Array<{ plugs?: Plugs | undefined; source: string }> =
