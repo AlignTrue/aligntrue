@@ -1031,7 +1031,7 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   console.log("Current configuration:");
   console.log(`  Mode: ${config.mode || "solo"}`);
   console.log(
-    `  Two-way sync: ${config.sync?.two_way !== false ? "enabled" : "disabled"}`,
+    `  Centralized rule management: ${config.sync?.centralized !== false ? "enabled" : "disabled"}`,
   );
   console.log(`  Merge strategy: last-write-wins (automatic)`);
   console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
