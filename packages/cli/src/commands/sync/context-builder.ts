@@ -510,13 +510,22 @@ async function detectAndEnableAgents(
  * Detect and handle untracked files with content
  * Prompts user to set edit source (single source model)
  */
+/**
+ * Detect untracked files with content and prompt user for import strategy
+ *
+ * Note: This function only runs in interactive mode. When --yes or --non-interactive
+ * flags are used, this is skipped to avoid blocking automated workflows.
+ *
+ * In non-interactive mode, new agent files are auto-detected in separate workflow
+ * but not interactively merged. This is intentional to maintain CI/automation reliability.
+ */
 async function detectAndHandleUntrackedFiles(
   cwd: string,
   config: AlignTrueConfig,
   configPath: string,
   options: SyncOptions,
 ): Promise<void> {
-  // Skip if non-interactive
+  // Skip if non-interactive - this preserves deterministic behavior in CI/automation
   if (options.yes || options.nonInteractive) {
     return;
   }
