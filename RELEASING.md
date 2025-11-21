@@ -76,25 +76,37 @@ You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
 
 ### For local testing
 
-Use `pnpm link` as documented in `packages/cli/README.md`:
+**Method 1: Use absolute path to CLI binary (RECOMMENDED)**
+
+```bash
+cd /path/to/workspace
+pnpm build  # Build all packages first
+
+# Use absolute path
+/path/to/workspace/packages/cli/dist/index.js --version
+```
+
+This is the most reliable method and always works.
+
+**Method 2: Use distribution simulation script**
 
 ```bash
 cd packages/cli
-pnpm link --global
+bash tests/scripts/test-distribution.sh
 ```
 
-You can now test with:
+This script simulates the real npm distribution experience by rewriting `workspace:*` to concrete versions.
 
-```bash
-aligntrue --version
-```
+### Why pnpm link --global doesn't work
 
-After making changes, rebuild and re-link:
+`pnpm link --global` creates a symlink, but Node.js ESM loader cannot resolve `workspace:*` protocol through symlinks, even after building. This is a fundamental limitation:
 
-```bash
-pnpm build
-pnpm link --global
-```
+1. The CLI `package.json` has `workspace:*` dependencies
+2. Node.js follows the symlink to the workspace
+3. When resolving subpath exports like `@aligntrue/core/config/edit-source-patterns`, Node.js looks at the `package.json` which has `workspace:*`
+4. The ESM loader can't resolve `workspace:*` protocol references
+
+**Result:** `ERR_PACKAGE_PATH_NOT_EXPORTED` errors for all subpath imports.
 
 ### For npm distribution
 
@@ -102,6 +114,7 @@ Always use `pnpm publish` which automatically rewrites `workspace:*` to concrete
 
 ### Never use
 
-`pnpm pack && npm install -g <tarball>` for testing—this will fail with workspace protocol errors. The tarball contains `workspace:*` references that npm cannot resolve.
+- `pnpm link --global` for testing (will fail with ERR_PACKAGE_PATH_NOT_EXPORTED)
+- `npm install -g <tarball>` from `pnpm pack` (will fail with workspace protocol errors)
 
-Use this approach only for testing tarball creation (not installation); for actual testing use `pnpm link --global`.
+Use absolute paths or the distribution simulation script instead.
