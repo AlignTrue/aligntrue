@@ -191,9 +191,6 @@ importers:
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
-      '@clack/prompts':
-        specifier: ^0.11.0
-        version: 0.11.0
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -241,7 +238,11 @@ importers:
         specifier: ^2.6.1
         version: 2.8.1
 
-  packages/file-utils: {}
+  packages/file-utils:
+    dependencies:
+      '@aligntrue/schema':
+        specifier: workspace:*
+        version: link:../schema
 
   packages/plugin-contracts:
     dependencies:

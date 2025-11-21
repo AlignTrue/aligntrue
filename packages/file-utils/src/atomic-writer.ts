@@ -15,8 +15,8 @@ import {
   copyFileSync,
 } from "fs";
 import { dirname, join } from "path";
-import { createHash } from "crypto";
 import { tmpdir } from "os";
+import { computeHash } from "@aligntrue/schema";
 
 /**
  * Compute SHA-256 checksum of a file
@@ -27,14 +27,14 @@ export function computeFileChecksum(filePath: string): string {
   }
 
   const content = readFileSync(filePath, "utf8");
-  return createHash("sha256").update(content, "utf8").digest("hex");
+  return computeHash(content);
 }
 
 /**
  * Compute SHA-256 checksum of a string
  */
 export function computeContentChecksum(content: string): string {
-  return createHash("sha256").update(content, "utf8").digest("hex");
+  return computeHash(content);
 }
 
 /**

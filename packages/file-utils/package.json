@@ -19,6 +19,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@aligntrue/schema": "workspace:*"
+  },
   "devDependencies": {},
   "license": "MIT",
   "engines": {

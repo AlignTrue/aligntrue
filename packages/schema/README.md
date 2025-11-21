@@ -227,6 +227,83 @@ node --import tsx --no-warnings scripts/compute-basealign-hashes.ts
 
 This script processes all `.yaml` files in the `basealigns/` directory and updates their integrity hashes.
 
+### JSON Utilities
+
+#### `cloneDeep<T>(obj: T): T`
+
+Deep clone an object using native `structuredClone()`. Preferred over `JSON.parse(JSON.stringify())`.
+
+```typescript
+import { cloneDeep } from "@aligntrue/schema";
+
+const original = { nested: { value: 1 }, arr: [1, 2] };
+const cloned = cloneDeep(original);
+cloned.nested.value = 2; // original.nested.value still 1
+```
+
+**Benefits:**
+
+- Uses native `structuredClone()` for better performance
+- Handles more types (Date, Map, Set, etc.)
+- Explicit intent in code
+
+#### `parseJsonSafe(str: string): Result<unknown, Error>`
+
+Parse JSON string with type-safe error handling. Returns Result type instead of throwing.
+
+```typescript
+import { parseJsonSafe } from "@aligntrue/schema";
+
+const result = parseJsonSafe('{"valid": "json"}');
+if (result.ok) {
+  console.log(result.value);
+} else {
+  console.error(result.error.message);
+}
+```
+
+#### `stringifyCanonical(obj: unknown): string`
+
+Stringify object using canonical JSON (JCS/RFC 8785).
+
+```typescript
+import { stringifyCanonical } from "@aligntrue/schema";
+
+const canonical = stringifyCanonical({ b: 2, a: 1 });
+// Result: '{"a":1,"b":2}'
+```
+
+#### `computeContentHash(obj: unknown): string`
+
+Convenience wrapper combining canonicalization and hashing for objects.
+
+```typescript
+import { computeContentHash } from "@aligntrue/schema";
+
+const hash = computeContentHash({ rules: [...] });
+// Returns: hex-encoded SHA-256 hash
+```
+
+#### `compareCanonical(a: unknown, b: unknown): boolean`
+
+Compare two objects using canonical JSON. More reliable than deep equality.
+
+```typescript
+import { compareCanonical } from "@aligntrue/schema";
+
+compareCanonical({ b: 2, a: 1 }, { a: 1, b: 2 }); // true
+```
+
+#### `type Result<T, E>`
+
+Result type for operations that may fail.
+
+```typescript
+import type { Result } from "@aligntrue/schema";
+
+type ParseResult = Result<unknown, Error>;
+```
+
 ## Development
 
 ### Run tests

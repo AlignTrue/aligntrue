@@ -6,7 +6,7 @@
  */
 
 import type { AlignPack } from "@aligntrue/schema";
-import { computeHash } from "@aligntrue/schema";
+import { computeHash, cloneDeep } from "@aligntrue/schema";
 import { resolvePlugsForPack } from "./index.js";
 
 /**
@@ -20,7 +20,7 @@ import { resolvePlugsForPack } from "./index.js";
  */
 export function computePreResolutionHash(pack: AlignPack): string {
   // Create a copy to avoid modifying original
-  const packCopy = JSON.parse(JSON.stringify(pack));
+  const packCopy = cloneDeep(pack);
 
   // For pre-resolution hash, we want to hash the template with [[plug:key]] placeholders intact
   // This makes the hash deterministic regardless of fill values
@@ -59,21 +59,20 @@ export function computePostResolutionHash(pack: AlignPack): string | undefined {
   }
 
   // Create a copy with resolved guidance
-  const packCopy = JSON.parse(JSON.stringify(pack));
+  const packCopy = cloneDeep(pack) as unknown as Record<string, unknown>;
 
   // Update sections with resolved guidance
   for (const resolvedRule of resolveResult.rules) {
-    const rule = packCopy.sections.find(
-      (r: { id: string }) => r.id === resolvedRule.ruleId,
-    );
+    const sections = packCopy["sections"] as Array<Record<string, unknown>>;
+    const rule = sections?.find?.((r) => r["id"] === resolvedRule.ruleId);
     if (rule && resolvedRule.guidance) {
-      rule.guidance = resolvedRule.guidance;
+      rule["guidance"] = resolvedRule.guidance;
     }
   }
 
   // Remove volatile fields
-  if (packCopy._markdown_meta) {
-    delete packCopy._markdown_meta;
+  if (packCopy["_markdown_meta"]) {
+    delete packCopy["_markdown_meta"];
   }
 
   // Use stringify without key sorting (the content itself should be deterministic)

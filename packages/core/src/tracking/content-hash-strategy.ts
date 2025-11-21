@@ -3,9 +3,9 @@
  * Fallback for non-git environments - tracks changes by comparing content hashes
  */
 
-import { createHash } from "crypto";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
+import { computeHash } from "@aligntrue/schema";
 import type { Section } from "../parsing/section-extractor.js";
 import { extractSections } from "../parsing/section-extractor.js";
 
@@ -154,7 +154,7 @@ export class ContentHashStrategy {
   private hashSection(section: Section): string {
     // Include heading and content in hash to detect any changes
     const content = `${section.heading}\n${section.content}`;
-    return createHash("sha256").update(content).digest("hex");
+    return computeHash(content);
   }
 
   /**
