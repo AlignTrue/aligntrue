@@ -3,7 +3,15 @@
  * Detects installed AI coding agents by checking for their output files/directories
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "fs";
+import {
+  closeSync,
+  existsSync,
+  fstatSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from "fs";
 import { join } from "path";
 
 /**
@@ -498,47 +506,38 @@ export function detectFilesWithContent(
             const filePath = join(fullPath, file);
 
             try {
-              // Read file content directly - handle errors if file doesn't exist or changed
-              const content = readFileSync(filePath, "utf-8");
-
-              // Get file stats after reading to avoid race condition
-              // If file changed during read, we still use the content we successfully read
-              const now = new Date();
-              let fileStats: ReturnType<typeof statSync> = {
-                mtime: now,
-                size: content.length,
-                isFile: () => true,
-              } as ReturnType<typeof statSync>;
-              let shouldSkip = false;
+              // Use file descriptor to avoid race condition between read and stat
+              let fd: number | null = null;
               try {
-                const stats = statSync(filePath);
-                if (!stats.isFile()) {
-                  // File changed to non-file after read, skip it
-                  shouldSkip = true;
-                } else {
-                  fileStats = stats;
+                fd = openSync(filePath, "r");
+                const content = readFileSync(fd, "utf-8");
+
+                // Get file stats using the same file descriptor
+                const fileStats = fstatSync(fd);
+                if (!fileStats.isFile()) {
+                  // File changed to non-file, skip it
+                  continue;
                 }
-              } catch {
-                // Stat failed after read, but content was valid at read time
-                // Use the default stats object we initialized above
-              }
-              if (shouldSkip) {
-                continue;
-              }
 
-              const sectionCount = countSections(content);
-              const hasContent = content.trim().length > 0 && sectionCount > 0;
+                const sectionCount = countSections(content);
+                const hasContent =
+                  content.trim().length > 0 && sectionCount > 0;
 
-              files.push({
-                path: filePath,
-                relativePath: join(pattern, file),
-                agent: agentName,
-                format: detectFileFormat(filePath, content),
-                sectionCount,
-                lastModified: fileStats!.mtime,
-                size: Number(fileStats!.size),
-                hasContent,
-              });
+                files.push({
+                  path: filePath,
+                  relativePath: join(pattern, file),
+                  agent: agentName,
+                  format: detectFileFormat(filePath, content),
+                  sectionCount,
+                  lastModified: fileStats.mtime,
+                  size: Number(fileStats.size),
+                  hasContent,
+                });
+              } finally {
+                if (fd !== null) {
+                  closeSync(fd);
+                }
+              }
             } catch {
               // Skip files we can't read or that disappear
               continue;
@@ -552,47 +551,37 @@ export function detectFilesWithContent(
       // Handle single files (e.g., AGENTS.md, CLAUDE.md)
       else {
         try {
-          // Read file content directly - handle errors if file doesn't exist or changed
-          const content = readFileSync(fullPath, "utf-8");
-
-          // Get file stats after reading to avoid race condition
-          // If file changed during read, we still use the content we successfully read
-          const now = new Date();
-          let fileStats: ReturnType<typeof statSync> = {
-            mtime: now,
-            size: content.length,
-            isFile: () => true,
-          } as ReturnType<typeof statSync>;
-          let shouldSkip = false;
+          // Use file descriptor to avoid race condition between read and stat
+          let fd: number | null = null;
           try {
-            const stats = statSync(fullPath);
-            if (!stats.isFile()) {
-              // File changed to non-file after read, skip it
-              shouldSkip = true;
-            } else {
-              fileStats = stats;
+            fd = openSync(fullPath, "r");
+            const content = readFileSync(fd, "utf-8");
+
+            // Get file stats using the same file descriptor
+            const fileStats = fstatSync(fd);
+            if (!fileStats.isFile()) {
+              // File changed to non-file, skip it
+              continue;
             }
-          } catch {
-            // Stat failed after read, but content was valid at read time
-            // Use the default stats object we initialized above
-          }
-          if (shouldSkip) {
-            continue;
-          }
 
-          const sectionCount = countSections(content);
-          const hasContent = content.trim().length > 0 && sectionCount > 0;
+            const sectionCount = countSections(content);
+            const hasContent = content.trim().length > 0 && sectionCount > 0;
 
-          files.push({
-            path: fullPath,
-            relativePath: pattern,
-            agent: agentName,
-            format: detectFileFormat(fullPath, content),
-            sectionCount,
-            lastModified: fileStats!.mtime,
-            size: Number(fileStats!.size),
-            hasContent,
-          });
+            files.push({
+              path: fullPath,
+              relativePath: pattern,
+              agent: agentName,
+              format: detectFileFormat(fullPath, content),
+              sectionCount,
+              lastModified: fileStats.mtime,
+              size: Number(fileStats.size),
+              hasContent,
+            });
+          } finally {
+            if (fd !== null) {
+              closeSync(fd);
+            }
+          }
         } catch {
           // Skip files we can't read or that disappear
           continue;
