@@ -1,154 +1,150 @@
 ---
 title: "Sync behavior"
-description: "Technical reference for two-way sync, edit detection, merging, conflict resolution, and precedence rules. Source of truth for how AlignTrue actually works."
+description: "Technical reference for centralized rule management, editing, exporting, and optional experimental decentralized mode. Source of truth for how AlignTrue actually works."
 ---
 
 # Sync behavior
 
-Complete technical reference for AlignTrue's two-way sync system, conflict resolution, and precedence rules. This document is the source of truth for what AlignTrue actually does—no marketing, no aspirations, just the real behavior.
+Complete technical reference for AlignTrue's sync system. This document is the source of truth for what AlignTrue actually does—no marketing, no aspirations, just the real behavior.
 
-> **For practical setup and workflow examples,** see [Two-way sync guide](/docs/01-guides/00-two-way-sync).  
-> **Comprehensive reference** for sync internals. For practical workflow selection, see [Choosing Your Workflow](/docs/01-guides/01-workflows).
+> **For practical setup and workflow examples,** see [Choosing Your Edit Source](/docs/01-guides/00-edit-source).  
+> **Experimental features:** See [Experimental Features](/docs/04-reference/experimental) for decentralized rule management.
 
-## Default behavior (the important part)
+## Default: Centralized Rule Management
+
+AlignTrue uses **centralized rule management** by default: you designate ONE edit source, edit that file, and changes flow one-way to all other read-only exports.
 
 **When you run `aligntrue sync`:**
 
 1. **Load config** from `.aligntrue/config.yaml`
 2. **Check for team mode** - if enabled, validate lockfile
 3. **Detect new agent files with content** - prompts to import untracked files
-4. **Detect edited agent files** by checking modification times (mtime)
-5. **Check edit_source** - warn if edited files aren't in `edit_source` configuration
+4. **Load your edit source** - the file pattern you configured to edit
+5. **Detect edits to your edit source** by checking modification times (mtime)
 6. **Create backup** (if enabled) - backs up both internal state and agent files
-7. **Merge edited files** using last-write-wins strategy (no conflicts, no prompts)
-8. **Export** merged rules to all configured agent files
+7. **Merge edits to IR** - your edit source sections update `.aligntrue/.rules.yaml`
+8. **Export IR** to all configured agent files (read-only exports)
 9. **Done** - no interaction required
 
 **Key facts:**
 
-- ✅ Two-way sync is **on by default** (`sync.two_way: true`)
-- ✅ Merging is **automatic** (no prompts)
-- ✅ Uses **last-write-wins** (most recently modified file's version is used)
+- ✅ Single source of truth (your `edit_source`)
+- ✅ One-way sync (edit_source → IR → exports)
+- ✅ Other formats are **read-only** with warning comments
 - ✅ Works in **both solo and team mode**
-- ❌ No conflict detection between agent files
-- ❌ No prompts for user decisions
+- ✅ Clear ownership, no conflicts
+- ❌ Editing read-only exports does not sync back (correct behavior)
 
-## What "two-way sync" actually means
+## How centralized rule management works
 
-**Not:** "Automatic background sync that watches for changes"
+**Your workflow:**
 
-**Actually:** "When you run `aligntrue sync`, it detects and merges agent file edits"
+1. You choose ONE edit source: `"AGENTS.md"` or `".cursor/rules/*.mdc"` etc.
+2. Edit that file as your primary source of truth
+3. Run `aligntrue sync` - changes flow from your edit source → internal rules → all exports
+4. All other formats are read-only (have warning comments)
 
-The system is **explicit, not automatic:**
+**One-way flow:**
 
-- Edits are only merged when you run `aligntrue sync`
-- All changes happen in one command
-- Deterministic behavior (same input = same output every time)
-
-## Configuration scenarios
-
-### Solo mode (default)
-
-```yaml
-# .aligntrue/config.yaml (created by aligntrue init)
-mode: solo # No team features
-
-sync:
-  two_way: true # Default - enable edit detection
+```
+edit_source → IR (.aligntrue/.rules.yaml) → all configured agents (read-only)
 ```
 
-**Behavior:**
+**Why centralized?**
 
-- Edit any agent file → run `aligntrue sync` → changes merge everywhere
-- No lockfile validation
-- No approval workflow
-- Fastest feedback loop
+- Single source of truth prevents conflicts
+- Clear ownership - you know who edited what
+- Predictable behavior - same edits produce same results every time
+- Perfect for teams - pairs with team mode for approval workflows
 
-### Team mode (opt-in)
+## Configuration examples
+
+### Single file edit source
 
 ```yaml
-mode: team # Enable team features
-modules:
-  lockfile: true # Validate bundle hashes
-
+# .aligntrue/config.yaml
+mode: solo
 sync:
-  two_way: true # Still works
+  edit_source: "AGENTS.md"
+```
+
+Edit AGENTS.md, run `aligntrue sync`, changes export to all agents.
+
+### Glob pattern edit source (still single source)
+
+```yaml
+# .aligntrue/config.yaml
+mode: solo
+sync:
+  edit_source: ".cursor/rules/*.mdc"
+  scope_prefixing: "auto"
+```
+
+Edit any `.cursor/rules/*.mdc` file, run `aligntrue sync`, changes export to all agents.
+
+### Team mode with centralized management
+
+```yaml
+mode: team
+sync:
+  edit_source: "AGENTS.md"
 
 lockfile:
-  mode: soft # Warn on drift (default)
-  # or: strict                # Block on drift
+  mode: soft # Warn on unapproved changes (default)
 ```
 
-**Behavior:**
+Edit AGENTS.md → changes validated against lockfile → team approves if needed.
 
-- Edit files → changes merge → validated against lockfile
-- If hash not approved: warn (soft) or block (strict)
-- Team lead approves via `aligntrue team approve`
+## Common sync scenarios
 
-## The three sync scenarios
-
-### 1. Solo developer, default config
+### 1. Solo developer with AGENTS.md
 
 ```bash
-# Default: sync.two_way: true
+# Config: edit_source: "AGENTS.md"
+nano AGENTS.md         # Edit your rules
+aligntrue sync         # Changes flow: AGENTS.md → IR → all agents
+```
+
+**Result:** Changes synced to all configured agents (Cursor, VS Code, etc.) within seconds.
+
+### 2. Developer using Cursor native format
+
+```bash
+# Config: edit_source: ".cursor/rules/*.mdc"
+nano .cursor/rules/backend.mdc    # Edit Cursor files
+aligntrue sync                     # Changes flow: Cursor files → IR → all agents
+```
+
+**Result:** Changes synced to IR and exported to all other agents (AGENTS.md, etc.).
+
+### 3. Team mode with soft lockfile
+
+```bash
+# Config: mode: team, edit_source: "AGENTS.md", lockfile.mode: soft
+nano AGENTS.md         # Edit rules
+aligntrue sync         # Changes validated against lockfile
+```
+
+**Flow:**
+
+- Changes merge to IR
+- Bundle hash computed and checked
+- If hash not approved: warning shown, sync continues (soft mode)
+- Team lead approves later via `aligntrue team approve --current`
+
+### 4. Team mode with strict lockfile
+
+```bash
+# Config: mode: team, lockfile.mode: strict
 aligntrue sync
 ```
 
 **Flow:**
 
-```
-Step 1: Detect edited agent files by mtime
-  ✓ AGENTS.md - mtime: 11:30 AM
-  ✓ .cursor/rules/aligntrue.mdc - mtime: 11:45 AM (newest)
-
-Step 2: Merge to IR (last-write-wins)
-  • .cursor/rules/aligntrue.mdc sections take precedence
-  • Both files' sections merged into .aligntrue/.rules.yaml
-
-Step 3: Export to all agents
-  ✓ .cursor/rules/aligntrue.mdc
-  ✓ AGENTS.md
-  ✓ .vscode/mcp.json
-  ✓ etc.
-
-Done! No prompts. Automatic.
-```
-
-### 2. Team member with soft lockfile mode
-
-```bash
-# Config: lockfile.mode: soft
-aligntrue sync
-```
-
-**Flow:**
-
-```
-Step 1-2: Same as solo (detect and merge)
-
-Step 3: Compute bundle hash from IR
-  sha256:abc123...
-
-Step 4: Check allow list
-  ❌ Not found (warning)
-  ⚠ Sync continues anyway (soft mode)
-
-Step 5: Export to all agents
-  ✓ Files written despite hash not approved
-
-Step 6: Team lead reviews later
-  aligntrue team approve --current
-  # Adds hash to allow list, commits
-```
-
-**Result:** Changes go out immediately, team lead approves after the fact.
-
-### 3. Team member with strict lockfile mode
-
-```bash
-# Config: lockfile.mode: strict
-aligntrue sync
-```
+- Changes merge to IR
+- Bundle hash computed and checked
+- If hash not approved: ❌ Sync blocked, changes not exported
+- Team lead must approve before sync can complete
 
 **Flow:**
 
@@ -1450,12 +1446,17 @@ A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for schedule
 
 ---
 
+## Advanced: Experimental Decentralized Mode
+
+For experimental multi-source editing with two-way sync between multiple edit sources, see [Experimental Features](/docs/04-reference/experimental). This is an unsupported feature for advanced users only.
+
 ## See also
 
-- [Two-way sync guide](/docs/01-guides/00-two-way-sync) - For practical setup and workflow examples
+- [Choosing Your Edit Source](/docs/01-guides/00-edit-source) - For practical setup and workflow examples
 - [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Authoring rules with sections and fingerprints
 - [Command Reference](/docs/04-reference/cli-reference) - Detailed flag documentation
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Git Sources Guide](/docs/04-reference/git-sources) - Pull rules from repositories
 - [Troubleshooting](/docs/05-troubleshooting) - Common sync issues
 - [Extending AlignTrue](/docs/06-contributing/adding-exporters) - Create custom exporters
+- [Experimental Features](/docs/04-reference/experimental) - Advanced experimental features
