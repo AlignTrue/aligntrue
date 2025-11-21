@@ -1,7 +1,7 @@
 /**
  * Base class for exporters (Code consolidation)
  *
- * Consolidates common patterns across all 43 exporters:
+ * Consolidates common patterns across all exporters:
  * - Content hash computation from canonical IR
  * - Fidelity notes generation
  * - Atomic file writing with dry-run support
