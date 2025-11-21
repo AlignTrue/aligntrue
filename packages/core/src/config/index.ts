@@ -163,6 +163,15 @@ export interface AlignTrueConfig {
   plugs?: {
     fills?: Record<string, string>;
   };
+  mcp?: {
+    servers?: Array<{
+      name: string;
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      disabled?: boolean;
+    }>;
+  };
 
   // New: Resource-based configuration
   resources?: Record<ResourceType, ResourceConfig>;

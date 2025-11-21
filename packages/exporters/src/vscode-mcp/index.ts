@@ -2,8 +2,7 @@
  * VS Code MCP config exporter
  * Exports AlignTrue rules to .vscode/mcp.json format
  *
- * Format: Single root-level .vscode/mcp.json file with v1 JSON structure
- * Target: VS Code with Model Context Protocol (MCP) support
+ * Uses centralized MCP generator with VS Code-specific transformer
  */
 
 import { dirname } from "path";
@@ -12,69 +11,27 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
-import { getAlignTruePaths } from "@aligntrue/core";
+import { generateCanonicalMcpConfig } from "@aligntrue/core";
+import { VscodeMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
-
-/**
- * State for collecting all scopes before generating single merged file
- */
-interface ExporterState {
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  seenScopes: Set<string>;
-  // Deprecated: allRules was for rule-based format
-  allRules?: Array<{ rule: unknown; scopePath: string }>;
-}
-
-/**
- * MCP configuration JSON structure
- */
-interface McpConfig {
-  version: string;
-  generated_by: string;
-  content_hash: string;
-  unresolved_plugs?: number;
-  sections: McpSection[]; // Natural markdown format
-  fidelity_notes?: string[];
-}
-
-/**
- * MCP section for natural markdown format
- */
-interface McpSection {
-  heading: string;
-  level: number;
-  content: string;
-  fingerprint: string;
-  scope?: string;
-  [key: string]: unknown; // Additional vendor.vscode fields
-}
 
 export class VsCodeMcpExporter extends ExporterBase {
   name = "vscode-mcp";
   version = "1.0.0";
 
-  // State for accumulating rules/sections across multiple scope calls
-  private state: ExporterState = {
-    allSections: [],
-    seenScopes: new Set(),
-  };
+  private transformer = new VscodeMcpTransformer();
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
+    const { pack } = request;
     const { outputDir, dryRun = false } = options;
 
     const sections = pack.sections;
 
-    // Validate inputs
     if (sections.length === 0) {
-      // Empty scope is allowed, just skip accumulation
       return {
         success: true,
         filesWritten: [],
@@ -82,37 +39,25 @@ export class VsCodeMcpExporter extends ExporterBase {
       };
     }
 
-    // Accumulate content with scope information
-    const scopePath = this.formatScopePath(scope);
-
-    // Natural markdown sections
-    sections.forEach((section) => {
-      this.state.allSections.push({ section, scopePath });
-    });
-
-    this.state.seenScopes.add(scopePath);
-
-    // Generate .vscode/mcp.json with all accumulated content
-    const paths = getAlignTruePaths(outputDir);
-    const outputPath = paths.vscodeMcp();
-
-    // Generate MCP config JSON - natural markdown mode
-    const mcpConfig = this.generateMcpConfigFromSections(
+    // Generate canonical MCP config
+    const canonicalConfig = generateCanonicalMcpConfig(
+      sections,
       options.unresolvedPlugsCount,
     );
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
 
-    const content = JSON.stringify(mcpConfig, null, 2) + "\n";
+    // Transform to VS Code-specific format
+    const content = this.transformer.transform(canonicalConfig);
 
-    // Write file atomically if not dry-run
+    // Get output path
+    const outputPath = this.transformer.getOutputPath(outputDir);
+
+    // Create directory if needed
     if (!dryRun) {
-      // Ensure .vscode directory exists
-      const vscodeDirPath = dirname(outputPath);
-      mkdirSync(vscodeDirPath, { recursive: true });
+      const outputDirPath = dirname(outputPath);
+      mkdirSync(outputDirPath, { recursive: true });
     }
 
+    // Write file atomically
     const filesWritten = await this.writeFile(
       outputPath,
       content,
@@ -120,107 +65,17 @@ export class VsCodeMcpExporter extends ExporterBase {
       options,
     );
 
-    return this.buildResult(filesWritten, contentHash, fidelityNotes);
-  }
+    // Use content hash from canonical config
+    const fidelityNotes = canonicalConfig.fidelity_notes || [];
 
-  /**
-   * Format scope path for display in MCP config
-   * Default scope (path: ".") → "all files"
-   * Named scope → actual path
-   */
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
-  }
-
-  /**
-   * Generate MCP configuration from natural markdown sections
-   */
-  private generateMcpConfigFromSections(unresolvedPlugs?: number): McpConfig {
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const contentHash = computeContentHash({ sections: allSectionsIR });
-    const fidelityNotes = this.computeSectionFidelityNotes(allSectionsIR);
-
-    const mcpSections = this.state.allSections.map(({ section, scopePath }) =>
-      this.mapSectionToMcpFormat(section, scopePath),
+    return this.buildResult(
+      filesWritten,
+      canonicalConfig.content_hash,
+      fidelityNotes,
     );
-
-    const config: McpConfig = {
-      version: "v1",
-      generated_by: "AlignTrue",
-      content_hash: contentHash,
-      sections: mcpSections,
-    };
-
-    if (unresolvedPlugs !== undefined && unresolvedPlugs > 0) {
-      config["unresolved_plugs"] = unresolvedPlugs;
-    }
-
-    if (fidelityNotes.length > 0) {
-      config.fidelity_notes = fidelityNotes;
-    }
-
-    return config;
   }
 
-  /**
-   * Map AlignSection to MCP format with vendor.vscode extraction
-   */
-  private mapSectionToMcpFormat(
-    section: AlignSection,
-    scopePath: string,
-  ): McpSection {
-    const mcpSection: McpSection = {
-      heading: section.heading,
-      level: section.level,
-      content: section.content,
-      fingerprint: section.fingerprint,
-    };
-
-    // Add scope if not default
-    if (scopePath !== "all files") {
-      mcpSection.scope = scopePath;
-    }
-
-    // Extract vendor.vscode fields to top level
-    const vscodeFields = this.extractVendorVscodeFromSection(section);
-    Object.assign(mcpSection, vscodeFields);
-
-    return mcpSection;
-  }
-
-  /**
-   * Extract and flatten vendor.vscode fields from section
-   * Returns object with vendor.vscode fields at top level
-   */
-
-  private extractVendorVscodeFromSection(
-    section: AlignSection,
-  ): Record<string, unknown> {
-    if (!section.vendor || !section.vendor["vscode"]) {
-      return {};
-    }
-
-    const vscodeFields: Record<string, unknown> = {};
-    const vscodeVendor = section.vendor["vscode"];
-
-    // Flatten all vendor.vscode fields to top level
-    for (const [key, value] of Object.entries(vscodeVendor)) {
-      vscodeFields[key] = value;
-    }
-
-    return vscodeFields;
-  }
-
-  /**
-   * Reset internal state (useful for testing)
-   */
   resetState(): void {
-    this.state = {
-      allSections: [],
-      seenScopes: new Set(),
-    };
+    // Stateless with shared generator
   }
 }

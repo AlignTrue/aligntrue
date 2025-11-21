@@ -1,11 +1,11 @@
 /**
- * Roo Code MCP exporter
- * Exports AlignTrue rules to .roo/mcp.json MCP configuration format
+ * Kiro MCP exporter
+ * Exports AlignTrue rules to .kiro/settings/mcp.json MCP configuration format
  *
- * Uses centralized MCP generator with Roo Code-specific transformer
+ * Uses centralized MCP generator with Kiro-specific transformer
  */
 
-import { dirname } from "path";
+import { join, dirname } from "path";
 import { mkdirSync } from "fs";
 import type {
   ScopedExportRequest,
@@ -13,14 +13,24 @@ import type {
   ExportResult,
 } from "@aligntrue/plugin-contracts";
 import { generateCanonicalMcpConfig } from "@aligntrue/core";
-import { RoocodeMcpTransformer } from "../mcp-transformers/index.js";
+import { BaseMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
 
-export class RoocodeMcpExporter extends ExporterBase {
-  name = "roocode-mcp";
+class KiroMcpTransformer extends BaseMcpTransformer {
+  transform(config: unknown): string {
+    return this.formatJson(config as Record<string, unknown>);
+  }
+
+  getOutputPath(baseDir: string): string {
+    return join(baseDir, ".kiro", "settings", "mcp.json");
+  }
+}
+
+export class KiroMcpExporter extends ExporterBase {
+  name = "kiro-mcp";
   version = "1.0.0";
 
-  private transformer = new RoocodeMcpTransformer();
+  private transformer = new KiroMcpTransformer();
 
   async export(
     request: ScopedExportRequest,
@@ -45,7 +55,7 @@ export class RoocodeMcpExporter extends ExporterBase {
       options.unresolvedPlugsCount,
     );
 
-    // Transform to Roo Code-specific format
+    // Transform to Kiro-specific format
     const content = this.transformer.transform(canonicalConfig);
 
     // Get output path
@@ -80,4 +90,4 @@ export class RoocodeMcpExporter extends ExporterBase {
   }
 }
 
-export default RoocodeMcpExporter;
+export default KiroMcpExporter;

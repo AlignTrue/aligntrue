@@ -560,6 +560,52 @@
           "description": "Optional URL to the source repository for team-managed sections"
         }
       }
+    },
+    "mcp": {
+      "type": "object",
+      "description": "Model Context Protocol (MCP) server configuration",
+      "additionalProperties": false,
+      "properties": {
+        "servers": {
+          "type": "array",
+          "description": "Array of MCP server configurations for AI agents",
+          "items": {
+            "type": "object",
+            "required": ["name", "command"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Unique identifier for the MCP server (e.g., 'aligntrue')",
+                "minLength": 1
+              },
+              "command": {
+                "type": "string",
+                "description": "Command to execute the MCP server (e.g., 'npx', 'python', 'node')",
+                "minLength": 1
+              },
+              "args": {
+                "type": "array",
+                "description": "Arguments to pass to the command",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "env": {
+                "type": "object",
+                "description": "Environment variables for the server",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "disabled": {
+                "type": "boolean",
+                "description": "Disable this server without removing configuration (default: false)"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
