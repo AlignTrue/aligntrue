@@ -3,6 +3,7 @@ import typescriptParser from "@typescript-eslint/parser";
 import unusedImports from "eslint-plugin-unused-imports";
 // eslint-disable-next-line unused-imports/no-unused-imports
 import nextPlugin from "@next/eslint-plugin-next";
+import security from "eslint-plugin-security";
 
 // Custom rule to prevent asset imports in @aligntrue/ui (zero-build package)
 const noAssetImportsInUI = {
@@ -373,6 +374,7 @@ export default [
       "@typescript-eslint": typescriptEslint,
       "unused-imports": unusedImports,
       "@next/next": nextPlugin,
+      security,
       "custom-rules": {
         rules: {
           "no-check-then-operate": noCheckThenOperate,
@@ -396,6 +398,18 @@ export default [
           argsIgnorePattern: "^_",
         },
       ],
+      // Security rules
+      "security/detect-object-injection": "warn",
+      "security/detect-non-literal-regexp": "warn",
+      "security/detect-unsafe-regex": "warn",
+      "security/detect-buffer-noassert": "error",
+      "security/detect-child-process": "warn",
+      "security/detect-disable-mustache-escape": "error",
+      "security/detect-no-csrf-before-method-override": "warn",
+      "security/detect-non-literal-fs-filename": "warn",
+      "security/detect-non-literal-require": "warn",
+      "security/detect-possible-timing-attacks": "warn",
+      "security/detect-pseudoRandomBytes": "warn",
       // Custom rules
       "custom-rules/no-check-then-operate": "warn",
       "custom-rules/no-underscore-mismatch": "error",
