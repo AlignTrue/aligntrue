@@ -491,12 +491,14 @@ export function detectFilesWithContent(
           if (!file.endsWith(".md") && !file.endsWith(".mdc")) continue;
 
           const filePath = join(fullPath, file);
-          const fileStats = statSync(filePath);
-
-          if (!fileStats.isFile()) continue;
 
           try {
+            // Read file and get stats without pre-check (avoids TOCTOU race)
             const content = readFileSync(filePath, "utf-8");
+            const fileStats = statSync(filePath);
+
+            if (!fileStats.isFile()) continue;
+
             const sectionCount = countSections(content);
             const hasContent = content.trim().length > 0 && sectionCount > 0;
 
@@ -511,7 +513,7 @@ export function detectFilesWithContent(
               hasContent,
             });
           } catch {
-            // Skip files we can't read
+            // Skip files we can't read or that disappear
             continue;
           }
         }
@@ -523,7 +525,12 @@ export function detectFilesWithContent(
     // Handle single files (e.g., AGENTS.md, CLAUDE.md)
     else if (stats.isFile()) {
       try {
+        // Read file without pre-check on stats (avoids TOCTOU race)
         const content = readFileSync(fullPath, "utf-8");
+        const newStats = statSync(fullPath);
+
+        if (!newStats.isFile()) continue;
+
         const sectionCount = countSections(content);
         const hasContent = content.trim().length > 0 && sectionCount > 0;
 
@@ -533,12 +540,12 @@ export function detectFilesWithContent(
           agent: agentName,
           format: detectFileFormat(fullPath, content),
           sectionCount,
-          lastModified: stats.mtime,
-          size: stats.size,
+          lastModified: newStats.mtime,
+          size: newStats.size,
           hasContent,
         });
       } catch {
-        // Skip files we can't read
+        // Skip files we can't read or that disappear
         continue;
       }
     }
@@ -590,12 +597,19 @@ export function detectUntrackedFiles(
       : [editSource]
     : [];
 
+  // Helper to escape regex special characters
+  const escapeRegex = (str: string): string => {
+    return str.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  };
+
   // Helper to check if a file path matches edit_source patterns
   const isTracked = (relativePath: string): boolean => {
     for (const pattern of editSourcePatterns) {
       // Handle glob patterns
       if (pattern.includes("*")) {
-        const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
+        // Escape everything first, then replace \* with .*
+        const escaped = escapeRegex(pattern);
+        const regexPattern = escaped.replace(/\\\*/g, ".*");
         const regex = new RegExp(`^${regexPattern}$`);
         if (regex.test(relativePath)) {
           return true;
