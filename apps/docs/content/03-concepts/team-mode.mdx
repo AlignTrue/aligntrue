@@ -749,9 +749,9 @@ Personal testing preferences - not managed.
 
 ### Two-way sync behavior
 
-With two-way sync enabled (`sync.two_way: true`):
+With centralized rule management enabled (default):
 
-- Personal sections sync bidirectionally
+- Personal sections sync from your edit_source
 - Managed sections always overwrite with team version
 - Warnings shown if managed sections edited locally
 
@@ -766,12 +766,12 @@ $ aligntrue sync
 
 ### Personal vs team sections
 
-| Aspect              | Team-managed sections | Personal sections  |
-| ------------------- | --------------------- | ------------------ |
-| Marked with 🔒      | Yes                   | No                 |
-| Local edits allowed | No (overwritten)      | Yes                |
-| Syncs from agent    | No                    | Yes (two-way sync) |
-| Change process      | PR to team repo       | Edit locally       |
+| Aspect              | Team-managed sections | Personal sections    |
+| ------------------- | --------------------- | -------------------- |
+| Marked with 🔒      | Yes                   | No                   |
+| Local edits allowed | No (overwritten)      | Yes                  |
+| Syncs from agent    | No                    | Yes (if edit_source) |
+| Change process      | PR to team repo       | Edit locally         |
 
 ### Example team setup
 
