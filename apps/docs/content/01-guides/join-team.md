@@ -1,5 +1,5 @@
 ---
-title: Joining an team
+title: Joining a team
 description: Guide for team members joining a project with AlignTrue team mode
 ---
 

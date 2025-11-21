@@ -129,7 +129,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 - **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/rule-authoring.md)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Natural markdown format.
 
-### Framework & Stack Packs
+### Framework & stack packs
 
 - **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.md)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Natural markdown format.
 

@@ -45,7 +45,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Redaction utility** - Mask common secret patterns and environment keys in logs and exports
 - **Telemetry opt-in** - Telemetry is off by default and requires explicit opt-in
 
-## File and Environment Security
+## File and environment security
 
 - **No secret printing** - Secrets and access tokens are never printed to console or logs
 - **Sensitive key redaction** - Known sensitive keys are redacted if environment details are logged
@@ -81,7 +81,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Offline workflows** - All documented workflows function without internet access
 - **Local pack mirroring** - Documented way to mirror or vendor rule packs locally
 
-## Dependency and Supply Chain
+## Dependency and supply chain
 
 - **Pinned dependencies** - Dependencies pinned via lockfile in releases, no floating ranges
 - **Audit in CI** - `pnpm audit` runs in CI, fails on high severity unless explicitly documented exception
@@ -101,7 +101,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Reject unsafe values** - Reject `NaN` and `Infinity` in canonicalization and hash-relevant paths
 - **Size limits** - Enforce size limits on inputs to avoid memory pressure and abuse
 
-## Build and Release Hardening
+## Build and release hardening
 
 - **Reproducible builds** - Aim for reproducible CLI builds
 - **Signed artifacts** - Sign release artifacts and publish checksums

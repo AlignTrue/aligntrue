@@ -1,10 +1,13 @@
 {
+  "index": "Development guide",
   "setup": "Setup",
   "workspace": "Workspace",
   "commands": "Commands",
   "architecture": "Architecture",
+  "package-exports": "Package exports",
   "release-process": "Release process",
   "ci-failures": "Preventing CI failures",
+  "ci-troubleshooting": "CI troubleshooting",
   "test-maintenance": "Test maintenance",
   "archiving-components": "Archiving components",
   "dependabot": "Dependabot auto-merge"

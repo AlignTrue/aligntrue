@@ -1,5 +1,5 @@
 ---
-title: AI Agent Guide - A comprehensive list
+title: AI Agent Guide
 description: A comprehensive list of AI agents, their supported rule formats and MCP support.
 sidebar: false
 ---
