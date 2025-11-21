@@ -27,7 +27,7 @@ describe("plugs config integration", () => {
 
   beforeEach(() => {
     // Create temp directory
-    testDir = mkdtempSync(join(tmpdir(), "plugs-config-test-"));
+    testDir = mkdtempSync(join(tmpdir(), "plugs-config-test-XXXXXX"));
     mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
 
     // Save original state
