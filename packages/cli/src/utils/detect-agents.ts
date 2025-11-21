@@ -498,11 +498,26 @@ export function detectFilesWithContent(
             const filePath = join(fullPath, file);
 
             try {
-              // Read file and get stats without pre-check (avoids TOCTOU race)
-              const content = readFileSync(filePath, "utf-8");
-              const fileStats = statSync(filePath);
+              // Check file type before reading to minimize race condition window
+              const initialStats = statSync(filePath);
+              if (!initialStats.isFile()) continue;
 
-              if (!fileStats.isFile()) continue;
+              // Read file content
+              const content = readFileSync(filePath, "utf-8");
+
+              // Re-verify file type after read (defensive check)
+              // If file changed, we still use the content we successfully read
+              let fileStats = initialStats;
+              try {
+                const postReadStats = statSync(filePath);
+                if (postReadStats.isFile()) {
+                  fileStats = postReadStats;
+                }
+                // If file changed to non-file, use initial stats (content was valid at read time)
+              } catch {
+                // Stat failed after read, but content was valid at read time
+                // Use initial stats we captured before reading
+              }
 
               const sectionCount = countSections(content);
               const hasContent = content.trim().length > 0 && sectionCount > 0;
@@ -530,13 +545,26 @@ export function detectFilesWithContent(
       // Handle single files (e.g., AGENTS.md, CLAUDE.md)
       else {
         try {
-          // Read file without pre-check on stats (avoids TOCTOU race)
-          const content = readFileSync(fullPath, "utf-8");
-          // Get fresh stats after successful read to avoid TOCTOU race
-          const fileStats = statSync(fullPath);
+          // Check file type before reading to minimize race condition window
+          const initialStats = statSync(fullPath);
+          if (!initialStats.isFile()) continue;
 
-          // Skip if it's not actually a file (could have changed)
-          if (!fileStats.isFile()) continue;
+          // Read file content
+          const content = readFileSync(fullPath, "utf-8");
+
+          // Re-verify file type after read (defensive check)
+          // If file changed, we still use the content we successfully read
+          let fileStats = initialStats;
+          try {
+            const postReadStats = statSync(fullPath);
+            if (postReadStats.isFile()) {
+              fileStats = postReadStats;
+            }
+            // If file changed to non-file, use initial stats (content was valid at read time)
+          } catch {
+            // Stat failed after read, but content was valid at read time
+            // Use initial stats we captured before reading
+          }
 
           const sectionCount = countSections(content);
           const hasContent = content.trim().length > 0 && sectionCount > 0;

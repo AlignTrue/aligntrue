@@ -70,37 +70,61 @@ export async function discoverSourceFiles(
         continue;
       }
 
-      // Read file content and stats
-      const content = readFileSync(absolutePath, "utf-8");
-      const stats = statSync(absolutePath);
+      try {
+        // Check file type before reading to minimize race condition window
+        const initialStats = statSync(absolutePath);
+        if (!initialStats.isFile()) {
+          continue;
+        }
 
-      // Parse sections from markdown
-      // Use the same parser as agents exporter
-      const { parseAgentsMd } = await import("@aligntrue/schema");
-      const parsed = parseAgentsMd(content);
+        // Read file content
+        const content = readFileSync(absolutePath, "utf-8");
 
-      // Convert parsed sections to AlignSection format
-      const alignSections: AlignSection[] = parsed.sections.map(
-        (s: {
-          heading: string;
-          content: string;
-          level?: number;
-          hash?: string;
-        }) => ({
-          heading: s.heading,
-          content: s.content,
-          level: s.level || 2,
-          fingerprint: s.hash || "",
-        }),
-      );
+        // Re-verify file type after read (defensive check)
+        // If file changed, we still use the content we successfully read
+        let stats = initialStats;
+        try {
+          const postReadStats = statSync(absolutePath);
+          if (postReadStats.isFile()) {
+            stats = postReadStats;
+          }
+          // If file changed to non-file, use initial stats (content was valid at read time)
+        } catch {
+          // Stat failed after read, but content was valid at read time
+          // Use initial stats we captured before reading
+        }
 
-      allFiles.push({
-        path: relativePath,
-        absolutePath,
-        content,
-        mtime: stats.mtime,
-        sections: alignSections,
-      });
+        // Parse sections from markdown
+        // Use the same parser as agents exporter
+        const { parseAgentsMd } = await import("@aligntrue/schema");
+        const parsed = parseAgentsMd(content);
+
+        // Convert parsed sections to AlignSection format
+        const alignSections: AlignSection[] = parsed.sections.map(
+          (s: {
+            heading: string;
+            content: string;
+            level?: number;
+            hash?: string;
+          }) => ({
+            heading: s.heading,
+            content: s.content,
+            level: s.level || 2,
+            fingerprint: s.hash || "",
+          }),
+        );
+
+        allFiles.push({
+          path: relativePath,
+          absolutePath,
+          content,
+          mtime: stats.mtime,
+          sections: alignSections,
+        });
+      } catch {
+        // Skip files we can't read or that disappear
+        continue;
+      }
     }
   }
 

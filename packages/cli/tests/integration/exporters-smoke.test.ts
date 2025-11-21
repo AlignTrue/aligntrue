@@ -20,7 +20,7 @@ import { execSync } from "child_process";
 const TEST_DIR = join(__dirname, "../../../temp-test-exporters");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
-const EXPORTERS_DIR = join(__dirname, "../../..", "packages/exporters/src");
+const EXPORTERS_DIR = join(__dirname, "../../../..", "packages/exporters/src");
 const EXCLUDED_EXPORTERS = new Set(["base", "utils", "mcp-transformers"]);
 
 /** All current exporter directories (excluding helpers). */
