@@ -708,156 +708,116 @@ Choice:
 
 ## New file detection
 
-AlignTrue automatically detects agent files with content that aren't tracked in your `edit_source` configuration.
+In centralized mode (default), AlignTrue automatically detects agent files with content that aren't tracked in your `edit_source` configuration.
 
 ### How it works
 
-When you run `aligntrue sync`, after detecting configured agents:
+When you run `aligntrue sync`:
 
 1. **Scans workspace** for all agent files (`.mdc`, `.md`, etc.)
-2. **Parses content** to count sections in each file
-3. **Compares against edit_source** to find untracked files
+2. **Parses content** to find files with sections
+3. **Compares against edit_source** to identify untracked files
 4. **Prompts for action** if untracked files with content are found
 
 ### The prompt
 
 ```
-⚠ Detected new content outside tracked files
+⚠ Detected files with content outside your edit source
+
+In centralized mode, these files will become export targets.
+Any existing content will be extracted for your review.
 
 cursor: 3 file(s), 25 section(s)
   • .cursor/rules/backend.mdc - 10 sections, modified 2 days ago
   • .cursor/rules/frontend.mdc - 8 sections, modified 2 days ago
   • .cursor/rules/testing.mdc - 7 sections, modified 1 week ago
 
-claude: 1 file(s), 5 section(s)
-  • CLAUDE.md - 5 sections, modified 3 weeks ago
+Enable these files as export targets?
 
-How should we handle these files?
-○ Import all and merge (recommended)
-  → All sections sync to all agents, add to edit_source, clean up duplicates after
-○ Import but keep read-only
-  → Merge content once, don't track for future edits
-○ Ignore for now
-  → Don't import content, ask again next sync
+What happens:
+• Existing content will be extracted to .aligntrue/extracted-rules.md
+• A safety backup will be created
+• Files will be synced with your current rules from: AGENTS.md
+
+You can always change your edit source later.
 ```
 
-### Actions explained
+### What happens when you confirm
 
-**Import all and merge (recommended):**
+**Files enabled as export targets:**
 
-- Reads all sections from new files
-- Merges with existing rules using last-write-wins
-- Adds file patterns to `edit_source` in config
-- Future edits to these files will be tracked
-- **Best for:** Integrating rules you copied from online or other sources
+- AlignTrue extracts existing content from the files to `.aligntrue/extracted-rules.md` for your review
+- Only content NOT already in your current rules is extracted (deduplication by content hash)
+- A safety backup is created
+- On the next sync, these files receive your current rules from `edit_source`
 
-**Import but keep read-only:**
-
-- Imports content once
-- Does NOT add to `edit_source`
-- Future edits to these files will be ignored
-- **Best for:** One-time import of rules you'll manage elsewhere
-
-**Ignore for now:**
-
-- No action taken
-- Files logged to `.aligntrue/.drift-log.json`
-- Next sync will prompt again
-- **Best for:** When you need time to review before deciding
-
-### After importing
-
-If you choose "Import all and merge":
+**Extract message:**
 
 ```
-Merging 4 sources: .cursor/rules/backend.mdc, .cursor/rules/frontend.mdc, ...
+Files enabled as export targets
+Extracted 3 new section(s) to .aligntrue/extracted-rules.md
+(5 section(s) already in your current rules were skipped)
 
-Merge all rules into one shared set?
-○ Yes (default) - All agents stay in sync
-○ No - Advanced config (see docs)
+Review extracted content in .aligntrue/extracted-rules.md and copy/move what you need.
+
+Current edit source: AGENTS.md
+These files will be synced on your next sync.
+
+To change your edit source, run: aligntrue config set sync.edit_source
 ```
 
-**Yes (default):** All rules from all sources merge into one shared rule set. All agents get the same rules. You can clean up duplicates after sync.
+### Old rules preservation
 
-**No:** For advanced use cases where you want separate rule sets per agent. Requires manual config editing.
+When files are detected and enabled, their existing content is extracted to `.aligntrue/extracted-rules.md`:
 
-### Duplicate handling
+**Format:**
 
-When merging multiple files, duplicate sections are detected:
+```markdown
+---
+Extracted from: .cursor/rules/backend.mdc
+Date: 2025-01-15 10:30:45
+Total sections: 15
+Extracted: 3 (new/different from current rules)
+Skipped: 12 (already in current rules)
+Reason: File enabled as export target in centralized mode
+---
 
-```
-⚠ Found potential duplicate sections:
-  • "Security principles" in: AGENTS.md, CLAUDE.md
-  • "Testing guidelines" in: .cursor/rules/backend.mdc, AGENTS.md
+## Unique section heading
 
-Using last-write-wins strategy (newest version kept)
-```
+Content here...
 
-AlignTrue keeps the version from the most recently modified file. You can manually merge or remove duplicates after sync.
-
-### Watch mode behavior
-
-In watch mode (`aligntrue watch`), new file detection works differently:
-
-**Default behavior (conservative):**
-
-- Detects new files
-- Logs to `.aligntrue/.drift-log.json`
-- Shows message: `Run 'aligntrue sync' to review and import`
-- Does NOT auto-import
-
-**Example:**
-
-```
-[Watch] New file detected: CLAUDE.md (5 sections)
-  ℹ Run 'aligntrue sync' to review and import
+---
 ```
 
-Next time you run `aligntrue sync` interactively, you'll be prompted to import.
+**File management:**
 
-**Auto-import mode (opt-in):**
-
-```yaml
-# .aligntrue/config.yaml
-watch:
-  on_new_files: "auto_import" # Default: "log"
-```
-
-With auto-import enabled, new files are automatically imported and added to `edit_source` without prompting.
-
-### Drift log
-
-New file detections are tracked in `.aligntrue/.drift-log.json`:
-
-```json
-{
-  "detections": [
-    {
-      "timestamp": "2025-11-20T17:45:12Z",
-      "file": "CLAUDE.md",
-      "sections": 5,
-      "status": "pending_review"
-    }
-  ]
-}
-```
-
-Statuses:
-
-- `pending_review` - Waiting for user decision
-- `imported` - File has been imported
-- `ignored` - User chose to ignore
+- `.aligntrue/extracted-rules.md` is append-only (never deleted by AlignTrue)
+- New extractions are appended to the end of the file
+- You manually manage cleanup (copy/paste/delete what you need)
+- Deduplication by content hash helps avoid most duplicates automatically
 
 ### Best practices
 
-**For copy-pasted rules:**
+**When you discover untracked agent files:**
 
-1. Copy rules into workspace (e.g., `CLAUDE.md`, `.cursor/rules/new.mdc`)
+1. Run `aligntrue sync`
+2. Review the detected files
+3. Confirm to enable them as export targets
+4. AlignTrue extracts old content to `.aligntrue/extracted-rules.md`
+5. Review the extracted content for anything you want to keep
+6. Copy/paste important sections into your `edit_source` file (e.g., `AGENTS.md`)
+7. On next sync, files are automatically synced with your current rules
+
+**For rules from other sources:**
+
+1. Copy rules into a temporary agent file (e.g., `CLAUDE.md`, `.cursor/rules/temp.mdc`)
 2. Run `aligntrue sync`
-3. Choose "Import all and merge"
-4. Review output files for duplicates
-5. Edit source files to remove duplicates
-6. Run `aligntrue sync` again
+3. Confirm to enable the file
+4. Review extracted content in `.aligntrue/extracted-rules.md`
+5. Copy/paste the rules you want into your edit source
+6. Delete the temporary file (or leave it - it will continue receiving your synced rules)
+7. Edit source files to remove duplicates
+8. Run `aligntrue sync` again
 
 **Better to merge first, clean up later** than lose content.
 
