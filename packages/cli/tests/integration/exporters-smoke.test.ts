@@ -6,59 +6,30 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, existsSync, readFileSync, rmSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  readdirSync,
+} from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 
 const TEST_DIR = join(__dirname, "../../../temp-test-exporters");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
-// All 43 exporters from the codebase
-const ALL_EXPORTERS = [
-  "cursor",
-  "agents",
-  "vscode-mcp",
-  "windsurf-mcp",
-  "zed-config",
-  "junie",
-  "trae-ai",
-  "amazon-q",
-  "kilocode-mcp",
-  "opencode-config",
-  "root-mcp",
-  "aider",
-  "claude",
-  "codex",
-  "cody",
-  "continue",
-  "copilot",
-  "cursor-composer",
-  "devin",
-  "github-copilot",
-  "jetbrains-ai",
-  "kodu",
-  "mcp-server",
-  "mentat",
-  "phind",
-  "pieces",
-  "plandex",
-  "qodo",
-  "replit-ai",
-  "roo-cline",
-  "sourcegraph",
-  "supermaven",
-  "sweep",
-  "tabnine",
-  "void",
-  "warp-ai",
-  "windsurf",
-  "zed",
-  "codium",
-  "cursor-chat",
-  "github-copilot-chat",
-  "jetbrains-ai-chat",
-  "vscode-copilot",
-];
+const EXPORTERS_DIR = join(__dirname, "../../..", "packages/exporters/src");
+const EXCLUDED_EXPORTERS = new Set(["base", "utils", "mcp-transformers"]);
+
+/** All current exporter directories (excluding helpers). */
+const ALL_EXPORTERS = readdirSync(EXPORTERS_DIR, { withFileTypes: true })
+  .filter(
+    (dirent) => dirent.isDirectory() && !EXCLUDED_EXPORTERS.has(dirent.name),
+  )
+  .map((dirent) => dirent.name)
+  .sort();
 
 describe.skip("Exporters Smoke Tests", () => {
   beforeEach(() => {

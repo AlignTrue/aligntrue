@@ -85,7 +85,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 | Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works  |
 | Overlays            | ✅         | ✅                | ✅        | Configuration validated    |
 | Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested           |
-| Exporters (43)      | ⚠️         | ✅                | ❌        | Smoke tests added          |
+| Exporters (51)      | ⚠️         | ✅                | ❌        | Smoke tests added          |
 | Idempotency         | ✅         | ✅                | ❌        | Byte-identical outputs     |
 | Scopes              | ✅         | ✅                | ✅        | Monorepo scenarios tested  |
 | Plugs               | ✅         | ✅                | ✅        | Slot/fill system validated |
@@ -101,7 +101,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 ### Integration Tests
 
-- `packages/cli/tests/integration/exporters-smoke.test.ts` - All 43 exporters
+- `packages/cli/tests/integration/exporters-smoke.test.ts` - All exporters (derived from packages/exporters/src)
 - `packages/cli/tests/integration/idempotency.test.ts` - Deterministic outputs
 - `packages/cli/tests/integration/backup.test.ts` - Backup/restore workflows
 - `packages/cli/tests/integration/git-sources.test.ts` - Git operations
