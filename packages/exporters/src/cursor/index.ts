@@ -174,13 +174,13 @@ export class CursorExporter extends ExporterBase {
     const typedConfig = config as {
       sync?: {
         edit_source?: string | string[];
-        experimental_two_way_sync?: boolean;
+        centralized?: boolean;
       };
     };
     const editSource = typedConfig.sync?.edit_source;
-    const isExperimental = typedConfig.sync?.experimental_two_way_sync || false;
+    const isDecentralized = typedConfig.sync?.centralized === false || false;
 
-    if (!editSource || isExperimental) return "";
+    if (!editSource || isDecentralized) return "";
 
     // Check if this output matches edit source pattern
     const patterns = Array.isArray(editSource) ? editSource : [editSource];

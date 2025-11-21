@@ -153,16 +153,16 @@ export class AgentsExporter extends ExporterBase {
       | {
           sync?: {
             edit_source?: string | string[];
-            experimental_two_way_sync?: boolean;
+            centralized?: boolean;
           };
         }
       | undefined;
     if (!config) return "";
 
     const editSource = config.sync?.edit_source;
-    const isExperimental = config.sync?.experimental_two_way_sync || false;
+    const isDecentralized = config.sync?.centralized === false || false;
 
-    if (!editSource || isExperimental) return "";
+    if (!editSource || isDecentralized) return "";
 
     // Check if this output matches edit source pattern
     const patterns = Array.isArray(editSource) ? editSource : [editSource];

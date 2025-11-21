@@ -322,9 +322,9 @@ async function reapplyPackSources(
 }
 
 /**
- * Handle two-way sync logic
+ * Handle decentralized sync logic
  *
- * EXPERIMENTAL: Only enabled when config.sync.experimental_two_way_sync is true
+ * EXPERIMENTAL: Only enabled when config.sync.centralized is false
  */
 async function handleTwoWaySync(
   context: SyncContext,
@@ -332,9 +332,9 @@ async function handleTwoWaySync(
 ): Promise<void> {
   const { cwd, config, configPath, engine, spinner } = context;
 
-  // Guard: Only proceed if experimental_two_way_sync is enabled
-  if (!config.sync?.experimental_two_way_sync) {
-    // Not experimental mode - skip two-way sync
+  // Guard: Only proceed if centralized is false (decentralized mode enabled)
+  if (config.sync?.centralized !== false) {
+    // Centralized mode (default) - skip decentralized sync
     return;
   }
 

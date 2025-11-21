@@ -203,7 +203,7 @@ aligntrue check                # Validate rules (great for CI)
 - [Glossary](https://aligntrue.ai/docs/03-concepts/glossary) - AlignTrue terminology and key concepts explained
 - [Customization](https://aligntrue.ai/docs/02-customization) - Plugs, overlays, and scopes for fork-safe customization
 - [Team Mode](https://aligntrue.ai/docs/03-concepts/team-mode) - Collaboration features for teams
-- [Sync Behavior](https://aligntrue.ai/docs/03-concepts/sync-behavior) - How two-way sync works
+- [Sync Behavior](https://aligntrue.ai/docs/03-concepts/sync-behavior) - How centralized rule management works
 - [Drift Detection](https://aligntrue.ai/docs/03-concepts/drift-detection) - Track alignment changes over time
 - [Git Workflows](https://aligntrue.ai/docs/03-concepts/git-workflows) - Pull and share rules via git
 - [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule packs

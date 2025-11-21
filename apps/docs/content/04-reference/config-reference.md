@@ -110,7 +110,7 @@ sync:
 
 **Experimental (Decentralized):**
 
-- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `experimental_two_way_sync: true`)
+- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `centralized: false`)
 
 Multiple files can be edited; changes merge automatically. Unsupported, use with caution.
 
