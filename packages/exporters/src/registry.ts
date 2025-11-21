@@ -60,6 +60,17 @@ export class ExporterRegistry {
       const content = readFileSync(manifestPath, "utf-8");
       const manifest = JSON.parse(content) as AdapterManifest;
 
+      // DEBUG: Log manifest properties before validation
+      console.debug("[ExporterRegistry] Loading manifest from:", manifestPath);
+      console.debug(
+        "[ExporterRegistry] Manifest properties:",
+        Object.keys(manifest),
+      );
+      console.debug(
+        "[ExporterRegistry] Manifest content:",
+        JSON.stringify(manifest, null, 2),
+      );
+
       // Validate against schema
       const validate = this.ajv.getSchema("manifest");
       if (!validate) {
@@ -80,9 +91,28 @@ export class ExporterRegistry {
             return `${field}: ${err.message ?? "invalid value"}`;
           })
           .join(", ");
+
+        // DEBUG: Log full validation error details
+        console.debug(
+          "[ExporterRegistry] Validation failed for:",
+          manifestPath,
+        );
+        console.debug(
+          "[ExporterRegistry] All validation errors:",
+          JSON.stringify(validate.errors, null, 2),
+        );
+        console.debug(
+          "[ExporterRegistry] Manifest being validated:",
+          JSON.stringify(manifest, null, 2),
+        );
+
         throw new Error(`Invalid manifest: ${errors}`);
       }
 
+      console.debug(
+        "[ExporterRegistry] Manifest validated successfully:",
+        manifest.name,
+      );
       return manifest;
     } catch (error) {
       if (error instanceof SyntaxError) {

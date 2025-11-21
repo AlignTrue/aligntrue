@@ -44,6 +44,10 @@
         "type": "string"
       },
       "description": "Optional: list of semantic mapping limitations or caveats"
+    },
+    "author": {
+      "type": "string",
+      "description": "Optional: author or organization name"
     }
   },
   "additionalProperties": false
