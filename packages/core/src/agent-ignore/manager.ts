@@ -307,10 +307,6 @@ export function removeAlignTruePatterns(
   filePath: string,
   dryRun = false,
 ): boolean {
-  if (!existsSync(filePath)) {
-    return false;
-  }
-
   const content = readIgnoreFile(filePath);
   if (!hasAlignTrueSection(content)) {
     return false;

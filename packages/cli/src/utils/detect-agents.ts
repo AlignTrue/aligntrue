@@ -478,76 +478,76 @@ export function detectFilesWithContent(
   for (const pattern of patterns) {
     const fullPath = join(cwd, pattern);
 
-    if (!existsSync(fullPath)) continue;
+    try {
+      const stats = statSync(fullPath);
 
-    const stats = statSync(fullPath);
+      // Handle directories (e.g., .cursor/rules/)
+      if (stats.isDirectory()) {
+        try {
+          const dirFiles = readdirSync(fullPath);
+          for (const file of dirFiles) {
+            // Skip non-markdown files
+            if (!file.endsWith(".md") && !file.endsWith(".mdc")) continue;
 
-    // Handle directories (e.g., .cursor/rules/)
-    if (stats.isDirectory()) {
-      try {
-        const dirFiles = readdirSync(fullPath);
-        for (const file of dirFiles) {
-          // Skip non-markdown files
-          if (!file.endsWith(".md") && !file.endsWith(".mdc")) continue;
+            const filePath = join(fullPath, file);
 
-          const filePath = join(fullPath, file);
+            try {
+              // Read file and get stats without pre-check (avoids TOCTOU race)
+              const content = readFileSync(filePath, "utf-8");
+              const fileStats = statSync(filePath);
 
-          try {
-            // Read file and get stats without pre-check (avoids TOCTOU race)
-            const content = readFileSync(filePath, "utf-8");
-            const fileStats = statSync(filePath);
+              if (!fileStats.isFile()) continue;
 
-            if (!fileStats.isFile()) continue;
+              const sectionCount = countSections(content);
+              const hasContent = content.trim().length > 0 && sectionCount > 0;
 
-            const sectionCount = countSections(content);
-            const hasContent = content.trim().length > 0 && sectionCount > 0;
-
-            files.push({
-              path: filePath,
-              relativePath: join(pattern, file),
-              agent: agentName,
-              format: detectFileFormat(filePath, content),
-              sectionCount,
-              lastModified: fileStats.mtime,
-              size: fileStats.size,
-              hasContent,
-            });
-          } catch {
-            // Skip files we can't read or that disappear
-            continue;
+              files.push({
+                path: filePath,
+                relativePath: join(pattern, file),
+                agent: agentName,
+                format: detectFileFormat(filePath, content),
+                sectionCount,
+                lastModified: fileStats.mtime,
+                size: fileStats.size,
+                hasContent,
+              });
+            } catch {
+              // Skip files we can't read or that disappear
+              continue;
+            }
           }
+        } catch {
+          // Skip directories we can't read
+          continue;
         }
-      } catch {
-        // Skip directories we can't read
-        continue;
       }
-    }
-    // Handle single files (e.g., AGENTS.md, CLAUDE.md)
-    else if (stats.isFile()) {
-      try {
-        // Read file without pre-check on stats (avoids TOCTOU race)
-        const content = readFileSync(fullPath, "utf-8");
-        const newStats = statSync(fullPath);
+      // Handle single files (e.g., AGENTS.md, CLAUDE.md)
+      else if (stats.isFile()) {
+        try {
+          // Read file without pre-check on stats (avoids TOCTOU race)
+          const content = readFileSync(fullPath, "utf-8");
 
-        if (!newStats.isFile()) continue;
+          const sectionCount = countSections(content);
+          const hasContent = content.trim().length > 0 && sectionCount > 0;
 
-        const sectionCount = countSections(content);
-        const hasContent = content.trim().length > 0 && sectionCount > 0;
-
-        files.push({
-          path: fullPath,
-          relativePath: pattern,
-          agent: agentName,
-          format: detectFileFormat(fullPath, content),
-          sectionCount,
-          lastModified: newStats.mtime,
-          size: newStats.size,
-          hasContent,
-        });
-      } catch {
-        // Skip files we can't read or that disappear
-        continue;
+          files.push({
+            path: fullPath,
+            relativePath: pattern,
+            agent: agentName,
+            format: detectFileFormat(fullPath, content),
+            sectionCount,
+            lastModified: stats.mtime,
+            size: stats.size,
+            hasContent,
+          });
+        } catch {
+          // Skip files we can't read or that disappear
+          continue;
+        }
       }
+    } catch {
+      // Skip paths that don't exist or can't be accessed
+      continue;
     }
   }
 
@@ -599,7 +599,7 @@ export function detectUntrackedFiles(
 
   // Helper to escape regex special characters
   const escapeRegex = (str: string): string => {
-    return str.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+    return str.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
   };
 
   // Helper to check if a file path matches edit_source patterns

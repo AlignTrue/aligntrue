@@ -61,7 +61,6 @@ const noCheckThenOperate = {
     },
   },
   create(context) {
-    const sourceCode = context.sourceCode || context.getSourceCode();
     let lastExistsSyncNode = null;
     let lastExistsSyncLine = -1;
 
@@ -256,7 +255,9 @@ const noEnvVarInOutput = {
 
         // Check if any argument references process.env
         const hasEnvRef = node.arguments.some((arg) => {
-          const source = context.sourceCode.getText(arg);
+          const source = (
+            context.sourceCode || context.getSourceCode()
+          ).getText(arg);
           return source.includes("process.env");
         });
 
