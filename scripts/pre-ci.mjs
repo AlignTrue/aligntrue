@@ -19,7 +19,7 @@ const steps = [
   { name: "Type check", cmd: "pnpm typecheck" },
   { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
   { name: "Format check", cmd: "pnpm format:check" },
-  { name: "Run tests", cmd: "pnpm test" },
+  { name: "Run tests", cmd: "TURBO_CONCURRENCY=1 pnpm test" },
   {
     name: "Validate bundle sizes",
     cmd: "node scripts/validate-bundle-sizes.mjs",
