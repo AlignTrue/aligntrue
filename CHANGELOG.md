@@ -17,7 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- File-system race conditions in agent ignore manager using atomic directory creation
+- File-system race conditions (TOCTOU) in agent detection and ignore file handling
+  - Removed pre-checks before file reads; rely on try/catch for error handling
+  - Prevents malicious or concurrent deletion between check and operation
+  - Resolves CodeQL alerts #258-262
+- Incomplete sanitization of glob patterns in edit source detection
+  - Added proper regex escaping for all special characters before glob-to-regex conversion
+  - Resolves CodeQL alert #260
+- Unused import in eslint.config.js excluded from linting
+  - Resolves CodeQL alert #259
 
 ### Added
 
