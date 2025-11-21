@@ -3,7 +3,7 @@
  * Parses existing agent files and extracts sections with metadata for merging
  */
 
-import { createHash } from "crypto";
+import { computeHash } from "./canonicalize.js";
 
 export interface ParsedSection {
   id: string; // Section heading as identifier
@@ -277,5 +277,5 @@ function parseMarkdownSections(
  */
 function computeSectionHash(heading: string, content: string): string {
   const normalized = `${heading}\n${content}`.trim();
-  return createHash("sha256").update(normalized, "utf-8").digest("hex");
+  return computeHash(normalized);
 }

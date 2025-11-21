@@ -5,6 +5,7 @@ import {
   computeDualHash,
 } from "../../src/plugs/hashing.js";
 import type { AlignPack } from "@aligntrue/schema";
+import { cloneDeep } from "@aligntrue/schema";
 
 describe("plugs hashing", () => {
   describe("computePreResolutionHash", () => {
@@ -146,7 +147,7 @@ describe("plugs hashing", () => {
       };
 
       // Create pack2 with different fill value (deep copy to avoid reference issues)
-      const pack2: AlignPack = JSON.parse(JSON.stringify(pack1));
+      const pack2: AlignPack = cloneDeep(pack1);
       pack2.plugs!.fills!["test.cmd"] = "pnpm test";
 
       const hash1 = computePostResolutionHash(pack1);

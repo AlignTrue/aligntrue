@@ -138,3 +138,32 @@ export function compareCanonical(a: unknown, b: unknown): boolean {
     return false;
   }
 }
+
+/**
+ * Deep clone an object using structuredClone (Node 17+)
+ *
+ * Uses native structuredClone for performance, with fallback to JSON
+ * parse/stringify for compatibility (though Node 20+ always has structuredClone).
+ *
+ * Preferred over `JSON.parse(JSON.stringify())` because it:
+ * - Handles more types (Date, Map, Set, etc.)
+ * - Faster performance
+ * - More explicit intent
+ *
+ * @param obj - Object to clone
+ * @returns Deeply cloned object
+ *
+ * @example
+ * ```typescript
+ * const original = { nested: { value: 1 }, arr: [1, 2] };
+ * const cloned = cloneDeep(original);
+ * cloned.nested.value = 2; // original.nested.value still 1
+ * ```
+ */
+export function cloneDeep<T>(obj: T): T {
+  if (typeof structuredClone !== "undefined") {
+    return structuredClone(obj);
+  }
+  // Fallback for older environments (shouldn't hit with Node 20+)
+  return JSON.parse(JSON.stringify(obj)) as T;
+}

@@ -14,6 +14,7 @@ export {
   parseJsonSafe,
   hashObject,
   compareCanonical,
+  cloneDeep,
   type Result,
 } from "./json-utils.js";
 
