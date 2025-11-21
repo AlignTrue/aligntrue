@@ -1,9 +1,9 @@
 ---
-title: "Choosing Your Edit Source"
+title: "Choosing your edit source"
 description: "Select which file to edit. All others become read-only exports."
 ---
 
-# Choosing Your Edit Source
+# Choosing your edit source
 
 The `sync.edit_source` setting controls which file(s) you can edit. All other files become read-only exports with warning comments.
 

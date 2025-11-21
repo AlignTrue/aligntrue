@@ -1,13 +1,13 @@
 ---
-title: "Experimental Features"
+title: "Experimental features"
 description: "Unsupported advanced features for expert users. Use at your own risk."
 ---
 
-# Experimental Features
+# Experimental features
 
 ⚠️ **Warning:** Features on this page are experimental, unsupported, and may change or be removed. Only use if you understand the risks and limitations.
 
-## Decentralized Rule Management
+## Decentralized rule management
 
 **Status:** Experimental | **Risk:** High | **Support:** None
 
@@ -80,6 +80,6 @@ sync:
 - Performance degrades with large numbers of edited files
 - Backup recovery is more complex with multiple source changes
 
-## Future Experimental Features
+## Future experimental features
 
 Additional experimental features will be documented here as they're added.

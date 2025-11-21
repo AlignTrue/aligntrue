@@ -1,7 +1,8 @@
 {
   "index": "Overview",
+  "multi-file-organization": "Multi-file rule organization",
   "plugs": "Plugs",
   "overlays": "Overlays",
   "scopes": "Scopes",
-  "technical-reference": "Technical Reference"
+  "technical-reference": "Technical reference"
 }
