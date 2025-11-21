@@ -431,6 +431,11 @@ async function configSet(
     const content = readFileSync(configPath, "utf-8");
     const config = parseYaml(content) as Record<string, unknown>;
 
+    // Check if we're changing mode to team
+    const oldMode = config["mode"];
+    const changingToTeam =
+      key === "mode" && value === "team" && oldMode !== "team";
+
     // Parse value (try JSON first, then treat as string)
     let parsedValue: unknown = value;
     try {
@@ -462,6 +467,38 @@ async function configSet(
     writeFileSync(configPath, yamlContent, "utf-8");
 
     clack.log.success(`Set ${key} = ${JSON.stringify(parsedValue)}`);
+
+    // Auto-generate lockfile when switching to team mode
+    if (changingToTeam) {
+      const cwd = process.cwd();
+      const { ensureLockfileExists } = await import(
+        "../utils/lockfile-helpers.js"
+      );
+      const { loadConfig } = await import("@aligntrue/core");
+
+      console.log(""); // Blank line
+      clack.log.info("Team mode enabled. Checking lockfile...");
+
+      // Reload config to get properly typed object
+      const typedConfig = await loadConfig(configPath);
+
+      const result = await ensureLockfileExists({
+        cwd,
+        config: typedConfig,
+        quiet: false,
+      });
+
+      if (result.success && !result.skipped) {
+        clack.log.info(
+          "Run 'aligntrue drift --gates' in CI to enforce lockfile",
+        );
+      } else if (!result.success) {
+        clack.log.warn(
+          `Could not auto-generate lockfile: ${result.error || "Unknown error"}`,
+        );
+        clack.log.info("Run 'aligntrue sync' to generate the lockfile");
+      }
+    }
   } catch (err) {
     clack.log.error(
       `Failed to set config value: ${err instanceof Error ? err.message : String(err)}`,
