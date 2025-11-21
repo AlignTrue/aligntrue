@@ -48,6 +48,7 @@ import {
   buildNextStepsMessage,
   type NextStepsSyncGuidance,
 } from "../utils/next-steps.js";
+import { getInvalidExporters } from "../utils/exporter-validation.js";
 
 // IRDocument type for internal use
 interface IRDocument {
@@ -595,6 +596,33 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   let selectedAgents: string[];
   if (exporters) {
     selectedAgents = exporters;
+
+    // Validate exporters before proceeding
+    try {
+      const invalidExporters = await getInvalidExporters(selectedAgents);
+      if (invalidExporters.length > 0) {
+        const details = invalidExporters
+          .map((issue) =>
+            issue.suggestion
+              ? `Unknown exporter "${issue.name}" (did you mean "${issue.suggestion}"?)`
+              : `Unknown exporter "${issue.name}"`,
+          )
+          .join("\n  - ");
+
+        console.error(`✗ Invalid exporter name(s):\n  - ${details}`);
+        console.error(
+          "\nRun 'aligntrue adapters list' to see available exporters.",
+        );
+        process.exit(1);
+      }
+    } catch (error) {
+      // Handle validation errors (e.g., exporters package not found)
+      console.error(
+        `✗ Failed to validate exporters: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      process.exit(1);
+    }
+
     const msg = `Using exporters from CLI: ${selectedAgents.join(", ")}`;
     if (nonInteractive) {
       console.log(msg);
@@ -651,24 +679,24 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   if (nonInteractive) {
     console.log("\nCreating files:");
+    if (createAgentsTemplate) {
+      console.log("  - AGENTS.md (your rules file - edit this to add rules)");
+    }
     console.log("  - .aligntrue/config.yaml (your configuration file)");
     console.log(
       "  - .aligntrue/.rules.yaml (internal format, auto-generated - don't edit directly)",
     );
-    if (createAgentsTemplate) {
-      console.log("  - AGENTS.md (your rules file - edit this to add rules)");
-    }
   } else {
     clack.log.info("\nWill create:");
-    clack.log.info(`  - .aligntrue/config.yaml (your configuration file)`);
-    clack.log.info(
-      `  - .aligntrue/.rules.yaml (internal format, auto-generated - don't edit directly)`,
-    );
     if (createAgentsTemplate) {
       clack.log.info(
         `  - AGENTS.md (your rules file - edit this to add rules)`,
       );
     }
+    clack.log.info(`  - .aligntrue/config.yaml (your configuration file)`);
+    clack.log.info(
+      `  - .aligntrue/.rules.yaml (internal format, auto-generated - don't edit directly)`,
+    );
 
     const confirmCreate = await clack.confirm({
       message: "Continue?",
@@ -780,30 +808,40 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       editSource = pattern || undefined;
     }
   } else if (createAgentsTemplate && !nonInteractive) {
-    // Scenario 2: New project, no imports - offer choice
-    const choice = await clack.select({
-      message: "Where do you want to edit your rules?",
-      options: [
-        {
-          value: "AGENTS.md",
-          label: "AGENTS.md (recommended - universal format)",
-          hint: "Single file, works with all agents. Edit here → auto-syncs to others. Sets 'sync.edit_source: AGENTS.md' in your config.",
-        },
-        {
-          value: ".aligntrue/rules/*.md",
-          label: ".aligntrue/rules/ (multi-file organization)",
-          hint: "Multiple .md files by topic. Edit here → auto-syncs to others. Sets 'sync.edit_source: .aligntrue/rules/*.md' in your config.",
-        },
-      ],
-      initialValue: "AGENTS.md",
-    });
+    // Scenario 2: New project, no imports
+    // If there are no other agent files, AGENTS.md is the obvious choice - skip prompt
+    if (
+      selectedImportCandidates.length === 0 &&
+      detectedAgentFiles.length === 0
+    ) {
+      // No other agent files - AGENTS.md is the only logical edit source
+      editSource = "AGENTS.md";
+    } else {
+      // Other agent files exist, so offer choice between AGENTS.md and .aligntrue/rules/
+      const choice = await clack.select({
+        message: "Where do you want to edit your rules?",
+        options: [
+          {
+            value: "AGENTS.md",
+            label: "AGENTS.md (recommended - universal format)",
+            hint: "Single file, works with all agents. Edit here → auto-syncs to others. Sets 'sync.edit_source: AGENTS.md' in your config.",
+          },
+          {
+            value: ".aligntrue/rules/*.md",
+            label: ".aligntrue/rules/ (multi-file organization)",
+            hint: "Multiple .md files by topic. Edit here → auto-syncs to others. Sets 'sync.edit_source: .aligntrue/rules/*.md' in your config.",
+          },
+        ],
+        initialValue: "AGENTS.md",
+      });
 
-    if (clack.isCancel(choice)) {
-      clack.cancel("Init cancelled");
-      process.exit(0);
+      if (clack.isCancel(choice)) {
+        clack.cancel("Init cancelled");
+        process.exit(0);
+      }
+
+      editSource = choice as string;
     }
-
-    editSource = choice as string;
   } else if (createAgentsTemplate) {
     // Non-interactive: use AGENTS.md
     editSource = "AGENTS.md";
