@@ -502,8 +502,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         hint: candidate.relativePath,
       }));
 
+      clack.log.info(
+        "These files will be imported into AlignTrue's internal format. You'll choose which file to edit after import.",
+      );
       const selection = await clack.multiselect({
-        message: "Select agent files to import (all selected by default):",
+        message: "Select agent files to import:",
         options,
         initialValues: options.map((option) => option.value),
         required: false,
@@ -552,12 +555,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
           {
             value: "create-agents",
             label: "Create AGENTS.md starter (recommended)",
-            hint: "Adds a starter markdown file for editing",
+            hint: "Creates a new AGENTS.md file with starter content. You'll edit this file, and AlignTrue will export to other agents automatically. This sets 'sync.edit_source: AGENTS.md' in your config.",
           },
           {
             value: "import-path",
             label: "Import from an existing file path",
-            hint: "Provide a path to a markdown or Cursor file",
+            hint: "Import rules from an existing markdown or Cursor (.mdc) file. The file will be converted to AlignTrue's format, and you can choose it as your edit source.",
           },
         ],
       });
@@ -621,12 +624,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else {
     const detectedId = detectProjectId();
     const projectIdResponse = await clack.text({
-      message: "Project ID (for rules identifier):",
+      message: "Project ID:",
       placeholder: detectedId,
       initialValue: detectedId,
       validate: (value) => {
         if (!value || value.trim().length === 0) {
-          return "Project ID is required";
+          return "Project ID is required (used to identify rules in this project)";
         }
         if (!/^[a-z0-9-]+$/.test(value)) {
           return "Use lowercase letters, numbers, and hyphens only";
@@ -648,17 +651,23 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   if (nonInteractive) {
     console.log("\nCreating files:");
-    console.log("  - .aligntrue/config.yaml (minimal solo config)");
-    console.log("  - .aligntrue/.rules.yaml (internal IR, auto-generated)");
+    console.log("  - .aligntrue/config.yaml (your configuration file)");
+    console.log(
+      "  - .aligntrue/.rules.yaml (internal format, auto-generated - don't edit directly)",
+    );
     if (createAgentsTemplate) {
-      console.log("  - AGENTS.md (starter template)");
+      console.log("  - AGENTS.md (your rules file - edit this to add rules)");
     }
   } else {
     clack.log.info("\nWill create:");
-    clack.log.info(`  - .aligntrue/config.yaml (minimal solo config)`);
-    clack.log.info(`  - .aligntrue/.rules.yaml (internal IR, auto-generated)`);
+    clack.log.info(`  - .aligntrue/config.yaml (your configuration file)`);
+    clack.log.info(
+      `  - .aligntrue/.rules.yaml (internal format, auto-generated - don't edit directly)`,
+    );
     if (createAgentsTemplate) {
-      clack.log.info(`  - AGENTS.md (starter template)`);
+      clack.log.info(
+        `  - AGENTS.md (your rules file - edit this to add rules)`,
+      );
     }
 
     const confirmCreate = await clack.confirm({
@@ -718,8 +727,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       ? selectedImportCandidates.filter((c) => c.agent === "cursor").length
       : 0;
 
+    const cursorMessage =
+      cursorFileCount > 0
+        ? `Detected: .cursor/rules/ (${cursorFileCount} files)`
+        : "Detected: .cursor/rules/";
     const useCursor = await clack.confirm({
-      message: `Detected: .cursor/rules/ ${cursorFileCount > 0 ? `(${cursorFileCount} files)` : ""}\n\nUse Cursor files as edit source?\n• Keep existing file organization\n• Automatically exports to AGENTS.md, CLAUDE.md`,
+      message: `${cursorMessage}\n\nUse Cursor files as your edit source?\n\nThis means:\n• You'll edit rules in .cursor/rules/*.mdc\n• Changes automatically sync to all configured agents (AGENTS.md, CLAUDE.md, etc.)\n• This sets 'sync.edit_source: .cursor/rules/*.mdc' in your config\n• Keep existing file organization`,
       initialValue: true,
     });
 
@@ -733,12 +746,17 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     } else {
       // User declined Cursor, ask for alternative
       const altChoice = await clack.select({
-        message: "Choose edit source:",
+        message: "Where do you want to edit your rules?",
         options: [
-          { value: "AGENTS.md", label: "AGENTS.md (single-file)" },
+          {
+            value: "AGENTS.md",
+            label: "AGENTS.md (single-file)",
+            hint: "Edit in AGENTS.md, exports to all agents. Config: 'sync.edit_source: AGENTS.md'",
+          },
           {
             value: ".aligntrue/rules/*.md",
             label: ".aligntrue/rules/ (multi-file)",
+            hint: "Edit multiple .md files, exports to all agents. Config: 'sync.edit_source: .aligntrue/rules/*.md'",
           },
         ],
       });
@@ -764,15 +782,17 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   } else if (createAgentsTemplate && !nonInteractive) {
     // Scenario 2: New project, no imports - offer choice
     const choice = await clack.select({
-      message: "Edit source configuration:",
+      message: "Where do you want to edit your rules?",
       options: [
         {
           value: "AGENTS.md",
           label: "AGENTS.md (recommended - universal format)",
+          hint: "Single file, works with all agents. Edit here → auto-syncs to others. Sets 'sync.edit_source: AGENTS.md' in your config.",
         },
         {
           value: ".aligntrue/rules/*.md",
           label: ".aligntrue/rules/ (multi-file organization)",
+          hint: "Multiple .md files by topic. Edit here → auto-syncs to others. Sets 'sync.edit_source: .aligntrue/rules/*.md' in your config.",
         },
       ],
       initialValue: "AGENTS.md",
