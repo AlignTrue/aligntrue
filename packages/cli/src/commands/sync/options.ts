@@ -67,7 +67,13 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--verbose",
     hasValue: false,
-    description: "Show detailed fidelity notes and warnings",
+    description:
+      "Show detailed fidelity notes and warnings (can be used twice: -vv)",
+  },
+  {
+    flag: "--json",
+    hasValue: false,
+    description: "Output in JSON format (for scripting/CI)",
   },
   {
     flag: "--quiet",
@@ -130,6 +136,7 @@ export interface SyncOptions {
   skipUpdateCheck: boolean;
   offline: boolean;
   verbose: boolean;
+  verboseFull: boolean; // True if -vv or --verbose multiple times
   quiet: boolean;
   yes: boolean;
   nonInteractive: boolean;
@@ -137,6 +144,7 @@ export interface SyncOptions {
   skipTwoWayDetection: boolean;
   autoEnable: boolean;
   showConflicts: boolean;
+  json?: boolean; // For structured output
 }
 
 /**
@@ -144,6 +152,17 @@ export interface SyncOptions {
  */
 export function parseSyncOptions(args: string[]): SyncOptions {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
+
+  // Check for multiple -v flags (e.g., -vv for full verbosity)
+  // Count consecutive -v in args (not parsing as separate flags)
+  let verboseFull = false;
+  let verboseCount = 0;
+  for (const arg of args) {
+    if (arg === "-v" || arg === "-vv" || arg === "-vvv") {
+      verboseCount += arg.length - 1; // Count the v's
+    }
+  }
+  verboseFull = verboseCount >= 2;
 
   return {
     help: parsed.help,
@@ -158,7 +177,9 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     skipUpdateCheck:
       (parsed.flags["skip-update-check"] as boolean | undefined) || false,
     offline: (parsed.flags["offline"] as boolean | undefined) || false,
-    verbose: (parsed.flags["verbose"] as boolean | undefined) || false,
+    verbose:
+      (parsed.flags["verbose"] as boolean | undefined) || verboseCount >= 1,
+    verboseFull,
     quiet: (parsed.flags["quiet"] as boolean | undefined) || false,
     yes: (parsed.flags["yes"] as boolean | undefined) || false,
     nonInteractive:
@@ -169,6 +190,7 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     autoEnable: (parsed.flags["auto-enable"] as boolean | undefined) || false,
     showConflicts:
       (parsed.flags["show-conflicts"] as boolean | undefined) || false,
+    json: (parsed.flags["json"] as boolean | undefined) || false,
   };
 }
 
@@ -206,6 +228,23 @@ export function showSyncHelp(): void {
       "Agent Detection:",
       "  Automatically detects new agents in workspace and prompts to enable them.",
       "  Use --no-detect to skip detection or --auto-enable to enable without prompting.",
+      "",
+      "Edit Source Management:",
+      "  When multi-file agent formats (e.g., Cursor) are detected with a single-file",
+      "  edit source (e.g., AGENTS.md), sync will recommend switching to the multi-file",
+      "  format to preserve file organization. Previous edit source is backed up.",
+      "",
+      "Output Modes:",
+      "  Default: Compact summary of detected content with hint to use --verbose",
+      "  --verbose: Show top files for each agent, useful for review",
+      "  --verbose --verbose (-vv): Show all files with full details",
+      "  --json: Machine-readable JSON output for scripting/CI",
+      "",
+      "Overwritten Rules Safety:",
+      "  When files are overwritten or sections conflict, originals are backed up:",
+      "  - File backups: .aligntrue/overwritten-rules/ (with timestamp)",
+      "  - Section conflicts: .aligntrue/overwritten-rules.md (with metadata)",
+      "  These can be reviewed and deleted at any time.",
     ],
   });
 }
