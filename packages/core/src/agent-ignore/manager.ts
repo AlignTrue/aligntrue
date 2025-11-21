@@ -29,13 +29,11 @@ const ALIGNTRUE_MARKER_END = "# AlignTrue: End duplicate prevention";
  * @returns File content or empty string if file doesn't exist
  */
 export function readIgnoreFile(filePath: string): string {
-  if (!existsSync(filePath)) {
-    return "";
-  }
-
   try {
+    // Attempt read without pre-check to avoid TOCTOU race condition
     return readFileSync(filePath, "utf-8");
   } catch {
+    // File doesn't exist or can't be read
     return "";
   }
 }
@@ -180,8 +178,9 @@ export function updateIgnoreFile(
   patterns: string[],
   dryRun = false,
 ): IgnoreFileUpdate {
-  const exists = existsSync(filePath);
-  const existingContent = exists ? readIgnoreFile(filePath) : "";
+  // Always attempt to read; let readIgnoreFile handle non-existence
+  const existingContent = readIgnoreFile(filePath);
+  const exists = existingContent.length > 0 || existsSync(filePath);
 
   // Filter out patterns that already exist (outside AlignTrue section)
   const contentWithoutSection = removeAlignTrueSection(existingContent);
