@@ -56,9 +56,7 @@ describe("doctor command", () => {
         "  - cursor",
         "  - agents",
         "sync:",
-        "  edit_source:",
-        "    - AGENTS.md",
-        "    - .cursor/rules/*.mdc",
+        "  edit_source: .cursor/rules/*.mdc",
       ].join("\n"),
       "utf-8",
     );

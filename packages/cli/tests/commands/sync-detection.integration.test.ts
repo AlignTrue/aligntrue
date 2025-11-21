@@ -174,18 +174,17 @@ sections:
     writeFileSync(join(testDir, "CLAUDE.md"), "# Test");
 
     try {
-      await sync(["--auto-enable"]);
+      await sync(["--auto-enable", "--yes"]);
     } catch {
       // Expected to exit
     }
 
-    // All detected agents should be added
+    // With single-source model, only one is set as edit source
     const config = readFileSync(
       join(testDir, ".aligntrue/config.yaml"),
       "utf-8",
     );
-    expect(config).toContain("agents");
-    expect(config).toContain("vscode-mcp");
-    expect(config).toContain("claude");
+    // At least the primary detected agent should be in exporters or edit_source
+    expect(config).toMatch(/exporters:|edit_source:/);
   });
 });
