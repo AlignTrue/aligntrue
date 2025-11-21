@@ -660,9 +660,18 @@ export function detectUntrackedFiles(
     for (const pattern of editSourcePatterns) {
       // Handle glob patterns
       if (pattern.includes("*")) {
+        // Validate pattern length to prevent ReDoS
+        if (pattern.length > 200) {
+          console.warn(
+            `Edit source pattern exceeds maximum length (200 chars), skipping: ${pattern.slice(0, 50)}...`,
+          );
+          continue;
+        }
         // Escape everything first, then replace \* with .*
         const escaped = escapeRegex(pattern);
         const regexPattern = escaped.replace(/\\\*/g, ".*");
+
+        // Safe: Pattern length validated (max 200), escaped, and only contains .* wildcards
         const regex = new RegExp(`^${regexPattern}$`);
         if (regex.test(relativePath)) {
           return true;

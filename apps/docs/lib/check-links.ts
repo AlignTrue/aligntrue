@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DOCS_ROOT = path.join(__dirname, "../content");
+// Static regex pattern for parsing markdown links - safe from ReDoS (bounded quantifiers)
 const LINK_PATTERN = /\[([^\]]+)\]\(\/docs\/([^)#]+)(?:#[^)]+)?\)/g;
 
 export interface BrokenLink {

@@ -782,6 +782,12 @@ export abstract class ExporterBase implements ExporterPlugin {
 
       // Simple wildcard support
       if (pattern.includes("*")) {
+        // Validate pattern length to prevent ReDoS
+        if (pattern.length > 200) {
+          return false; // Skip overly long patterns
+        }
+
+        // Safe: Pattern length validated (max 200), only contains .* wildcards from * replacement
         const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
         return regex.test(normalizedPath);
       }

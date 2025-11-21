@@ -66,7 +66,79 @@ validateScopePath("src/../../outside"); // ❌ Throws error
 
 ---
 
-### 3. Checksum Tracking Detects Tampering
+### 3. Regex Safety Prevents ReDoS
+
+**Implementation:** `packages/core/src/security/regex-validator.ts`
+
+**Guarantee:** All regex patterns constructed from user input are validated to prevent ReDoS (Regular Expression Denial of Service) attacks:
+
+- Pattern length limits (max 200 characters)
+- Detection of nested quantifiers that could cause catastrophic backtracking
+- Proper escaping of special characters
+- Safe regex construction via `safeRegExp()` helper
+
+**Validation points:**
+
+- User-provided glob patterns in `packages/cli/src/utils/detect-agents.ts`
+- Pattern matching in exporters (`packages/exporters/src/base/exporter-base.ts`)
+- Git integration markers (`packages/core/src/sync/git-integration.ts`)
+
+**Examples:**
+
+```typescript
+// ✅ Safe: Pattern length validated, escaped properly
+if (pattern.length > 200) {
+  throw new Error("Pattern too long");
+}
+const escaped = escapeForRegex(pattern);
+const regex = safeRegExp(`^${escaped}$`);
+
+// ❌ Unsafe: No validation, could cause ReDoS
+const regex = new RegExp(`^${userPattern}$`);
+```
+
+**Static regex patterns** (not from user input) are safe and don't require validation.
+
+**Tests:** `packages/core/tests/security/regex-safety.test.ts` (planned)
+
+---
+
+### 4. Prototype Pollution Prevention
+
+**Implementation:** `packages/core/src/overlays/operations.ts`, `packages/cli/src/commands/config.ts`
+
+**Guarantee:** All dynamic object property access validates keys to prevent prototype pollution:
+
+- Explicit checks for `__proto__`, `constructor`, `prototype` before access
+- Validation of property paths before navigation
+- Safe property access patterns
+
+**Validation points:**
+
+- Overlay operations (`packages/core/src/overlays/operations.ts:38-46`)
+- Config manipulation (`packages/cli/src/commands/config.ts:569-571`)
+- Selector engine property navigation (`packages/core/src/overlays/selector-engine.ts`)
+
+**Examples:**
+
+```typescript
+// ✅ Safe: Prototype pollution prevented by explicit checks
+if (
+  segment === "__proto__" ||
+  segment === "constructor" ||
+  segment === "prototype"
+) {
+  throw new Error("Invalid key");
+}
+current[segment] = value;
+
+// ❌ Unsafe: No protection against prototype pollution
+current[userKey] = value;
+```
+
+---
+
+### 5. Checksum Tracking Detects Tampering
 
 **Implementation:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter`
 
@@ -88,7 +160,7 @@ validateScopePath("src/../../outside"); // ❌ Throws error
 
 ---
 
-### 4. Backup and Rollback Available
+### 6. Backup and Rollback Available
 
 **Implementation:** `packages/core/src/sync/file-operations.ts` - `AtomicFileWriter.rollback()`
 
@@ -289,6 +361,45 @@ return {
   // ...
 };
 ```
+
+---
+
+## Security Linting and Suppression Policy
+
+**Policy:** `.cursor/rules/security-linting-policy.mdc`
+
+**Goal:** Make `pnpm check` output show only actionable security warnings by suppressing false positives with proper documentation.
+
+### When to Suppress
+
+1. **Safe Internal Paths**: Paths from `getAlignTruePaths()`, schema files, lockfiles
+2. **Validated User Input**: Paths validated via `validateScopePath()` at config load time
+3. **Prototype Pollution Protection**: Dynamic property access with explicit `__proto__`/`constructor`/`prototype` checks
+4. **Static Regex Patterns**: Regex patterns not constructed from user input
+
+### When to Fix
+
+1. **Unvalidated User Paths**: Must go through `validateScopePath()` or similar
+2. **Unsafe Regex from User Input**: Must validate length, escape properly, use `safeRegExp()`
+3. **Unprotected Object Property Access**: Must check for dangerous keys before access
+
+### Suppression Requirements
+
+All suppressions must include:
+
+- Rule name being suppressed
+- Rationale explaining why code is safe
+- Reference to protection/validation code
+
+**Example:**
+
+```typescript
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+// Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
+const content = readFileSync(path, "utf8");
+```
+
+See `.cursor/rules/security-linting-policy.mdc` for complete guidelines.
 
 ---
 

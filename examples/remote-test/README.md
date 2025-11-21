@@ -1,4 +1,4 @@
-# Remote Test Fixtures
+# Remote test fixtures
 
 This directory contains test fixtures for AlignTrue CLI integration tests. These files are copied to the `AlignTrue/examples` GitHub repository to enable deterministic testing of remote workflow and large rule set performance.
 
