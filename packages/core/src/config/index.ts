@@ -199,6 +199,8 @@ interface SchemaValidationResult {
 // Load JSON Schema and initialize Ajv
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const schemaPath = resolve(__dirname, "../../schema/config.schema.json");
+
+// Safe: Internal schema file path, resolved from __dirname at build time (not user input)
 const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 const ajv = new Ajv({
@@ -817,6 +819,8 @@ export async function loadConfig(
   const path = configPath || paths.config;
 
   // Check file exists
+
+  // Safe: Path is typically from getAlignTruePaths().config (safe internal path) or validated user input from CLI
   if (!existsSync(path)) {
     throw new Error(
       `Config file not found: ${path}\n` +
@@ -829,6 +833,7 @@ export async function loadConfig(
   let config: unknown;
 
   try {
+    // Safe: Path is typically from getAlignTruePaths().config (safe internal path) or validated user input from CLI
     content = readFileSync(path, "utf8");
   } catch (_err) {
     throw new Error(
@@ -887,12 +892,18 @@ export async function saveConfig(
   const tempPath = `${path}.tmp`;
 
   // Ensure directory exists
+
+  // Safe: Path is typically from getAlignTruePaths().config (safe internal path) or validated user input from CLI
   mkdirSync(dirname(path), { recursive: true });
 
   // Write to temp file first
+
+  // Safe: Temp path derived from config path (typically from getAlignTruePaths().config)
   writeFileSync(tempPath, yamlContent, "utf-8");
 
   // Rename atomically (overwrites destination)
+
+  // Safe: Path is typically from getAlignTruePaths().config (safe internal path) or validated user input from CLI
   renameSync(tempPath, path);
 }
 

@@ -1,4 +1,4 @@
-# New File Detection Test Specification
+# New file detection test specification
 
 This document outlines the integration tests that should be created for the new file detection feature.
 

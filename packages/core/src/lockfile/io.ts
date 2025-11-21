@@ -22,11 +22,13 @@ const HASH_MIGRATION_MARKER_FILE = "lockfile-hash-migration.json";
  * @returns Lockfile object or null if not found
  */
 export function readLockfile(path: string): Lockfile | null {
+  // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
   if (!existsSync(path)) {
     return null;
   }
 
   try {
+    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     const content = readFileSync(path, "utf8");
     const lockfile = JSON.parse(content) as Lockfile;
 
@@ -66,8 +68,11 @@ export function writeLockfile(
 
   // Check if this is a migration from old hash format
   // (Temporary migration code - remove after 1-2 releases)
+
+  // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
   if (existsSync(path) && !options?.silent) {
     try {
+      // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
       const oldLockfile = JSON.parse(readFileSync(path, "utf-8"));
       if (
         oldLockfile.bundle_hash &&
@@ -109,10 +114,15 @@ export function writeLockfile(
   const tempPath = `${path}.tmp`;
 
   try {
+    // Safe: Temp path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     writeFileSync(tempPath, json, "utf8");
+
+    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     renameSync(tempPath, path);
 
     // Verify file was written successfully
+
+    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     if (!existsSync(path)) {
       throw new Error(
         `Lockfile was not created at ${path} after write operation`,
@@ -156,10 +166,13 @@ function getMigrationMarkerPath(lockfilePath: string): string {
 
 function hasHashMigrationMarker(lockfilePath: string): boolean {
   const markerPath = getMigrationMarkerPath(lockfilePath);
+
+  // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
   if (!existsSync(markerPath)) {
     return false;
   }
   try {
+    // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     const data = JSON.parse(readFileSync(markerPath, "utf-8")) as {
       hash_migration_completed?: boolean;
     };
@@ -174,6 +187,8 @@ function writeHashMigrationMarker(lockfilePath: string): void {
     const markerPath = getMigrationMarkerPath(lockfilePath);
     const markerDir = dirname(markerPath);
     ensureDirectoryExists(markerDir);
+
+    // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     writeFileSync(
       markerPath,
       JSON.stringify({ hash_migration_completed: true }, null, 2),

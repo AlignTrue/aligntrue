@@ -4,7 +4,7 @@ description: A comprehensive list of AI agents, their supported rule formats and
 sidebar: false
 ---
 
-# AI Agents: A comprehensive guide
+# AI agents: A comprehensive guide
 
 This is a comprehensive list of AI agents, their supported rule formats and MCP support. If you're looking AlignTrue's ompatibility matrix, see [Agent Support](/docs/04-reference/agent-support).
 

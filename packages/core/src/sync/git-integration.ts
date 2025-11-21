@@ -262,7 +262,15 @@ export class GitIntegration {
     files: string[],
   ): string {
     // Remove existing managed section if present
-    const regex = new RegExp(`${marker}[\\s\\S]*?${endMarker}\\n?`, "g");
+    // Escape markers for safe regex construction (markers are hardcoded constants, not user input)
+    const escapedMarker = marker.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+    const escapedEndMarker = endMarker.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+
+    // Safe: Markers are hardcoded constants (lines 234-235), escaped for regex safety
+    const regex = new RegExp(
+      `${escapedMarker}[\\s\\S]*?${escapedEndMarker}\\n?`,
+      "g",
+    );
     content = content.replace(regex, "");
 
     // Sort files and format

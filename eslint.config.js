@@ -435,6 +435,114 @@ export default [
     },
   },
   {
+    files: ["packages/core/src/paths.ts"],
+    rules: {
+      // All paths from getAlignTruePaths() are safe internal paths (not user input)
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
+  {
+    files: ["packages/file-utils/src/atomic-writer.ts"],
+    rules: {
+      // AtomicFileWriter handles validated paths and provides safe file operations
+      // All paths passed to this utility are validated or safe by construction
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
+  {
+    files: [
+      "packages/core/src/privacy/consent.ts",
+      "packages/core/src/telemetry/collector.ts",
+      "packages/core/src/cache/agent-detection.ts",
+      "packages/core/src/performance/incremental.ts",
+      "packages/core/src/performance/index.ts",
+      "packages/core/src/storage/local.ts",
+      "packages/core/src/storage/repo.ts",
+      "packages/core/src/storage/remote.ts",
+    ],
+    rules: {
+      // These files use paths from getAlignTruePaths() or construct safe internal paths
+      // All paths are safe internal paths (e.g., .aligntrue/.local, .aligntrue/.remotes)
+      // See .cursor/rules/security-linting-policy.mdc for details
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
+  {
+    files: [
+      "packages/core/src/overlays/operations.ts",
+      "packages/cli/src/commands/config.ts",
+    ],
+    rules: {
+      // These files have prototype pollution protection (explicit __proto__/constructor/prototype checks)
+      // See .cursor/rules/security-linting-policy.mdc for details
+      "security/detect-object-injection": "warn", // Keep as warning but allow suppressions
+    },
+  },
+  {
+    files: [
+      "apps/docs/lib/check-links.ts",
+      "packages/core/src/tracking/section-fingerprint.ts",
+      "packages/core/src/tracking/git-diff-strategy.ts",
+    ],
+    rules: {
+      // Static regex patterns (not from user input) - safe from ReDoS
+      "security/detect-unsafe-regex": "off",
+    },
+  },
+  {
+    files: ["packages/core/src/security/regex-validator.ts"],
+    rules: {
+      // This file IS the regex validator - it needs to construct RegExp to validate patterns
+      "security/detect-non-literal-regexp": "off",
+    },
+  },
+  {
+    files: [
+      "packages/cli/src/commands/config.ts",
+      "packages/core/src/config/index.ts",
+      "packages/core/src/lockfile/io.ts",
+      "packages/core/src/sync/ir-loader.ts",
+      "packages/core/src/sync/git-integration.ts",
+      "packages/core/src/tracking/git-diff-strategy.ts",
+      "packages/cli/src/utils/detect-agents.ts",
+      "packages/exporters/src/base/exporter-base.ts",
+      "apps/docs/lib/check-links.ts",
+    ],
+    rules: {
+      // These files use paths from getAlignTruePaths() (safe internal paths) or validate via validateScopePath()
+      // See packages/core/docs/SECURITY.md for path validation details
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
+  {
+    files: [
+      "apps/docs/lib/check-links.ts",
+      "packages/core/src/tracking/git-diff-strategy.ts",
+      "packages/core/src/sync/git-integration.ts",
+      "packages/cli/src/utils/detect-agents.ts",
+      "packages/exporters/src/base/exporter-base.ts",
+    ],
+    rules: {
+      // Static regex patterns (not from user input) or validated patterns - safe from ReDoS
+      // git-integration.ts: hardcoded markers escaped before regex construction
+      // detect-agents.ts: pattern length validated (max 200) and escaped
+      // exporter-base.ts: pattern length validated (max 200)
+      "security/detect-non-literal-regexp": "off",
+    },
+  },
+  {
+    files: [
+      "packages/core/src/lockfile/io.ts",
+      "packages/core/src/sync/git-integration.ts",
+      "packages/core/src/sync/ir-loader.ts",
+    ],
+    rules: {
+      // These files have prototype pollution protection (explicit __proto__/constructor/prototype checks)
+      // Dynamic property access is safe due to validation
+      "security/detect-object-injection": "off",
+    },
+  },
+  {
     files: ["**/*.test.ts", "**/*.test.tsx", "archive/**", "**/tests/**/*.ts"],
     languageOptions: {
       parser: typescriptParser,

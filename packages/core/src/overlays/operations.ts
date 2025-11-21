@@ -47,9 +47,11 @@ export function setProperty(
 
     // Create intermediate objects if they don't exist
     if (!(segment in current)) {
+      // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 38-46)
       current[segment] = {};
     }
 
+    // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 38-46)
     const next = current[segment];
     if (!isPlainObject(next)) {
       throw new Error(
@@ -68,6 +70,7 @@ export function setProperty(
     finalKey !== "constructor" &&
     finalKey !== "prototype"
   ) {
+    // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 65-69)
     current[finalKey] = value;
   } else if (finalKey) {
     throw new Error(`Refusing to set dangerous property name "${finalKey}"`);
@@ -111,6 +114,7 @@ export function removeProperty(target: unknown, key: string): boolean {
       return false;
     }
 
+    // Safe: Prototype pollution prevented by explicit __proto__/constructor/prototype checks above (lines 110-114)
     const next = current[segment];
     if (!isPlainObject(next)) {
       return false;
