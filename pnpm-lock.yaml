@@ -151,6 +151,9 @@ importers:
       '@aligntrue/exporters':
         specifier: workspace:*
         version: link:../exporters
+      '@aligntrue/file-utils':
+        specifier: workspace:*
+        version: link:../file-utils
       '@aligntrue/plugin-contracts':
         specifier: workspace:*
         version: link:../plugin-contracts
