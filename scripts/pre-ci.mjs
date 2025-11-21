@@ -19,7 +19,11 @@ const steps = [
   { name: "Type check", cmd: "pnpm typecheck" },
   { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
   { name: "Format check", cmd: "pnpm format:check" },
-  { name: "Run tests", cmd: "TURBO_CONCURRENCY=1 pnpm test" },
+  {
+    name: "Run tests",
+    cmd: "TURBO_CONCURRENCY=1 pnpm test",
+    stdio: "inherit",
+  },
   {
     name: "Validate bundle sizes",
     cmd: "node scripts/validate-bundle-sizes.mjs",
@@ -39,16 +43,27 @@ for (const step of steps) {
     if (typeof step.cmd === "function") {
       step.cmd();
     } else {
-      execSync(step.cmd, { stdio: "pipe" });
+      execSync(step.cmd, {
+        stdio: step.stdio || "pipe",
+      });
     }
     const duration = ((Date.now() - start) / 1000).toFixed(1);
-    console.log(` ✓ (${duration}s)`);
+    if (step.stdio === "inherit") {
+      // For inherit mode, we already printed output, just show duration
+      console.log(`\n✓ ${step.name} completed (${duration}s)`);
+    } else {
+      console.log(` ✓ (${duration}s)`);
+    }
   } catch (err) {
-    console.log(` ✗`);
-    console.error(`\n❌ ${step.name} failed\n`);
-    console.error(
-      err.stdout?.toString() || err.stderr?.toString() || err.message,
-    );
+    if (step.stdio === "inherit") {
+      console.log(`\n✗ ${step.name} failed`);
+    } else {
+      console.log(` ✗`);
+      console.error(`\n❌ ${step.name} failed\n`);
+      console.error(
+        err.stdout?.toString() || err.stderr?.toString() || err.message,
+      );
+    }
     console.error(`\n💡 Fix the errors above and run 'pnpm pre-ci' again`);
     console.error(`   Or use 'git push --no-verify' to skip validation\n`);
     process.exit(1);
