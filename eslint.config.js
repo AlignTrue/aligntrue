@@ -192,6 +192,149 @@ const noUnderscoreMismatch = {
   },
 };
 
+// Custom rule to flag Math.random() usage (use crypto instead)
+const noMathRandom = {
+  meta: {
+    type: "problem",
+    fixable: false,
+    messages: {
+      unsafe:
+        "Math.random() is cryptographically insecure. Use crypto.getRandomValues() for security-sensitive randomness, or crypto.randomBytes() for seeds.",
+    },
+  },
+  create(context) {
+    return {
+      CallExpression(node) {
+        // Check for Math.random()
+        if (
+          node.callee &&
+          node.callee.type === "MemberExpression" &&
+          node.callee.object &&
+          node.callee.object.name === "Math" &&
+          node.callee.property &&
+          node.callee.property.name === "random"
+        ) {
+          // Allow in test files (they don't need crypto-grade randomness)
+          const filePath = context.filename;
+          if (filePath.includes(".test.") || filePath.includes("/tests/")) {
+            return;
+          }
+
+          context.report({
+            node,
+            messageId: "unsafe",
+          });
+        }
+      },
+    };
+  },
+};
+
+// Custom rule to flag process.env leaks in output (console.log, console.error, etc.)
+const noEnvVarInOutput = {
+  meta: {
+    type: "problem",
+    fixable: false,
+    messages: {
+      leak: "Potential environment variable leak in console output. Sanitize sensitive values before logging.",
+    },
+  },
+  create(context) {
+    return {
+      CallExpression(node) {
+        // Check for console.log/error/warn/info with process.env
+        const callName = node.callee?.property?.name || node.callee?.name;
+        if (!["log", "error", "warn", "info"].includes(callName)) return;
+
+        // Check if console is the object (for console.log etc)
+        const isConsoleCall =
+          (node.callee?.object?.name === "console" ||
+            node.callee?.name === "log") &&
+          node.callee?.type === "MemberExpression";
+
+        if (!isConsoleCall) return;
+
+        // Check if any argument references process.env
+        const hasEnvRef = node.arguments.some((arg) => {
+          const source = context.sourceCode.getText(arg);
+          return source.includes("process.env");
+        });
+
+        if (hasEnvRef) {
+          context.report({
+            node,
+            messageId: "leak",
+          });
+        }
+      },
+    };
+  },
+};
+
+// Custom rule to flag hardcoded secrets in strings
+const noHardcodedSecrets = {
+  meta: {
+    type: "problem",
+    fixable: false,
+    messages: {
+      secret:
+        "Possible hardcoded secret detected ({{type}}). Use environment variables instead.",
+    },
+  },
+  create(context) {
+    const secretPatterns = [
+      { regex: /api[_-]?key\s*=\s*['"][^'"]+['"]/i, type: "API key" },
+      {
+        regex: /password\s*=\s*['"][^'"]+['"]/i,
+        type: "password",
+      },
+      {
+        regex: /token\s*=\s*['"][^'"]+['"]/i,
+        type: "token",
+      },
+      {
+        regex: /secret\s*=\s*['"][^'"]+['"]/i,
+        type: "secret",
+      },
+      {
+        regex: /private[_-]?key\s*=\s*['"][^'"]+['"]/i,
+        type: "private key",
+      },
+      {
+        regex: /aws[_-]?secret\s*=\s*['"][^'"]+['"]/i,
+        type: "AWS secret",
+      },
+    ];
+
+    return {
+      Literal(node) {
+        if (typeof node.value !== "string") return;
+
+        // Skip test files (they can have dummy secrets)
+        const filePath = context.filename;
+        if (filePath.includes(".test.") || filePath.includes("/tests/")) {
+          return;
+        }
+
+        // Skip short strings (unlikely to be real secrets)
+        if (node.value.length < 10) return;
+
+        // Check against patterns
+        for (const { regex, type } of secretPatterns) {
+          if (regex.test(node.value)) {
+            context.report({
+              node,
+              messageId: "secret",
+              data: { type },
+            });
+            return;
+          }
+        }
+      },
+    };
+  },
+};
+
 export default [
   {
     ignores: [
@@ -234,6 +377,9 @@ export default [
           "no-check-then-operate": noCheckThenOperate,
           "no-underscore-mismatch": noUnderscoreMismatch,
           "no-asset-imports-in-ui": noAssetImportsInUI,
+          "no-math-random": noMathRandom,
+          "no-env-var-in-output": noEnvVarInOutput,
+          "no-hardcoded-secrets": noHardcodedSecrets,
         },
       },
     },
@@ -252,6 +398,9 @@ export default [
       // Custom rules
       "custom-rules/no-check-then-operate": "warn",
       "custom-rules/no-underscore-mismatch": "error",
+      "custom-rules/no-math-random": "warn",
+      "custom-rules/no-env-var-in-output": "warn",
+      "custom-rules/no-hardcoded-secrets": "warn",
       // TypeScript rules
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "off", // Handled by unused-imports
