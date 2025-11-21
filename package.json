@@ -43,7 +43,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "prettier --write",
-      "eslint --max-warnings 100"
+      "eslint --max-warnings 0 --no-warn-ignored"
     ],
     "*.{md,json,yml,yaml}": [
       "prettier --write"
