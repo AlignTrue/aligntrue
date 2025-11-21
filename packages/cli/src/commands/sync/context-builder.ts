@@ -2,7 +2,7 @@
  * Sync context builder - loads config, sources, exporters, and detects agents
  */
 
-import { existsSync, writeFileSync } from "fs";
+import { existsSync, writeFileSync, statSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import * as clack from "@clack/prompts";
@@ -19,6 +19,11 @@ import {
   detectNewAgents,
   detectUntrackedFiles,
 } from "../../utils/detect-agents.js";
+import {
+  formatDetectionOutput,
+  buildAgentSummary,
+  shouldRecommendEditSourceSwitch,
+} from "../../utils/detection-output-formatter.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -29,23 +34,6 @@ import { getInvalidExporters } from "../../utils/exporter-validation.js";
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-/**
- * Get human-readable time ago string
- */
-function getTimeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
-  if (seconds < 60) return `${seconds} seconds ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days !== 1 ? "s" : ""} ago`;
-  const weeks = Math.floor(days / 7);
-  return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
-}
 
 /**
  * Sync context containing all loaded resources
@@ -448,12 +436,18 @@ async function detectAndEnableAgents(
       // Extract old content if agent file exists and has content
       try {
         const agentFilePath = join(cwd, agent.filePath);
-        if (existsSync(agentFilePath)) {
+        const stats = statSync(agentFilePath);
+        // Only attempt extraction if it's a file, not a directory
+        if (stats.isFile()) {
           await extractAndSaveRules(
             agentFilePath,
             undefined, // Auto-detect format from path
             cwd,
             currentIR,
+          );
+        } else if (stats.isDirectory()) {
+          clack.log.info(
+            `Skipping extraction for ${agent.displayName} (directory format)`,
           );
         }
       } catch (error) {
@@ -493,7 +487,7 @@ async function detectAndEnableAgents(
       clack.log.info(`  Found: ${agent.filePath}`);
 
       const response = await clack.select({
-        message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be extracted to .aligntrue/extracted-rules.md and the file will be synced with your current rules.`,
+        message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and the file will be synced with your current rules.`,
         options: [
           {
             value: "yes",
@@ -533,7 +527,9 @@ async function detectAndEnableAgents(
           const agent = newAgents.find((a) => a.name === agentName);
           if (agent) {
             const agentFilePath = join(cwd, agent.filePath);
-            if (existsSync(agentFilePath)) {
+            const stats = statSync(agentFilePath);
+            // Only attempt extraction if it's a file, not a directory
+            if (stats.isFile()) {
               try {
                 await extractAndSaveRules(
                   agentFilePath,
@@ -546,6 +542,10 @@ async function detectAndEnableAgents(
                   `⚠ Failed to extract rules from ${agent.displayName}: ${error instanceof Error ? error.message : String(error)}`,
                 );
               }
+            } else if (stats.isDirectory()) {
+              clack.log.info(
+                `Skipping extraction for ${agent.displayName} (directory format)`,
+              );
             }
           }
         }
@@ -555,7 +555,7 @@ async function detectAndEnableAgents(
           `Enabled ${toEnable.length} agent(s): ${toEnable.join(", ")}`,
         );
         clack.log.info(
-          "Review extracted content in .aligntrue/extracted-rules.md if needed.",
+          "Review extracted content in .aligntrue/overwritten-rules.md if needed.",
         );
       }
 
@@ -574,10 +574,6 @@ async function detectAndEnableAgents(
   }
 }
 
-/**
- * Detect and handle untracked files with content
- * Prompts user to set edit source (single source model)
- */
 /**
  * Detect untracked files with content and prompt user for import strategy
  *
@@ -607,54 +603,93 @@ async function detectAndHandleUntrackedFiles(
     return;
   }
 
-  // Group files by agent/format
-  const cursorFiles = filesWithContent.filter((f) => f.format === "cursor-mdc");
-  const agentsMdFiles = filesWithContent.filter(
-    (f) => f.format === "agents" && f.relativePath === "AGENTS.md",
-  );
-  const claudeMdFiles = filesWithContent.filter(
-    (f) => f.format === "generic-markdown" && f.relativePath === "CLAUDE.md",
+  // Group files by agent
+  const filesByAgent = new Map<string, typeof filesWithContent>();
+  for (const file of filesWithContent) {
+    if (!filesByAgent.has(file.agent)) {
+      filesByAgent.set(file.agent, []);
+    }
+    filesByAgent.get(file.agent)!.push(file);
+  }
+
+  // Build summaries for formatted output
+  const summaries = [];
+  const displayNameMap: Record<string, string> = {
+    cursor: "Cursor",
+    agents: "AGENTS.md",
+    claude: "Claude",
+    crush: "Crush",
+    warp: "Warp",
+    gemini: "Gemini",
+  };
+
+  for (const [agent, files] of filesByAgent) {
+    const displayName = displayNameMap[agent] || agent;
+    summaries.push(buildAgentSummary(agent, displayName, files));
+  }
+
+  // Format and display detection with tiered verbosity (single consolidated display)
+  const formatted = formatDetectionOutput(summaries, filesByAgent, {
+    verbose: options.verbose,
+    verboseFull: options.verboseFull,
+    quiet: options.quiet,
+  });
+
+  if (formatted.text) {
+    console.log(formatted.text);
+  }
+
+  // Check if we should recommend edit_source switch
+  const detectedAgents = Array.from(filesByAgent.keys());
+  const switchRecommendation = shouldRecommendEditSourceSwitch(
+    detectedAgents,
+    editSource,
   );
 
   let newEditSource: string | undefined;
 
-  // Scenario 1: Multi-file agent detected (Cursor)
-  if (cursorFiles.length > 0) {
-    const totalSections = cursorFiles.reduce(
-      (sum, f) => sum + f.sectionCount,
-      0,
-    );
+  if (switchRecommendation.should_recommend) {
+    // Recommend switching to multi-file format
+    const agent = switchRecommendation.agent || "cursor";
+    const agentPatterns: Record<string, string> = {
+      cursor: ".cursor/rules/*.mdc",
+      amazonq: ".amazonq/rules/*.md",
+      augmentcode: ".augment/rules/*.md",
+      kilocode: ".kilocode/rules/*.md",
+      kiro: ".kiro/steering/*.md",
+    };
+    const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
-    clack.log.warn("⚠ Detected new content outside tracked files");
-    clack.log.info(
-      `  cursor: ${cursorFiles.length} file(s), ${totalSections} section(s)`,
-    );
-
-    for (const file of cursorFiles.slice(0, 15)) {
-      const timeAgo = getTimeAgo(file.lastModified);
-      clack.log.step(
-        `• ${file.relativePath} - ${file.sectionCount} sections, modified ${timeAgo}`,
-      );
-    }
-
-    if (cursorFiles.length > 15) {
-      clack.log.info(`  ... and ${cursorFiles.length - 15} more files`);
-    }
-
-    const response = await clack.confirm({
-      message: `Set as edit source?\n• Keep existing file organization\n• Exports automatically to AGENTS.md, CLAUDE.md`,
+    const recommendation = await clack.confirm({
+      message: `Found ${agent} with ${filesByAgent.get(agent)?.length || 0} files. Switch to multi-file edit source?\n  Preserves file organization and improves scalability`,
       initialValue: true,
     });
 
-    if (clack.isCancel(response)) {
+    if (clack.isCancel(recommendation)) {
       clack.cancel("Sync cancelled");
       process.exit(0);
     }
 
-    if (response) {
-      newEditSource = ".cursor/rules/*.mdc";
+    if (recommendation) {
+      newEditSource = recommendedSource;
+      // If switching from single-file source, back it up
+      if (editSource && !Array.isArray(editSource)) {
+        const { backupFileToOverwrittenRules } = await import(
+          "../../utils/extract-rules.js"
+        );
+        const currentSourcePath = resolve(cwd, editSource);
+        const backupResult = backupFileToOverwrittenRules(
+          currentSourcePath,
+          cwd,
+        );
+        if (backupResult.backed_up) {
+          clack.log.info(
+            `Backed up previous edit source to: ${backupResult.backup_path}`,
+          );
+        }
+      }
     } else {
-      // User declined, ask for alternative
+      // User declined switch, ask for alternative
       const altChoice = await clack.select({
         message: "Choose edit source instead:",
         options: [
@@ -670,36 +705,25 @@ async function detectAndHandleUntrackedFiles(
 
       newEditSource = altChoice as string;
     }
-  } else if (agentsMdFiles.length > 0 || claudeMdFiles.length > 0) {
-    // Scenario 2: Single-file formats detected
-    clack.log.warn("⚠ Detected new content in agent files");
-
-    if (agentsMdFiles.length > 0) {
-      clack.log.info(
-        `  AGENTS.md - ${agentsMdFiles[0]?.sectionCount || 0} sections`,
-      );
-    }
-    if (claudeMdFiles.length > 0) {
-      clack.log.info(
-        `  CLAUDE.md - ${claudeMdFiles[0]?.sectionCount || 0} sections`,
-      );
+  } else if (detectedAgents.length > 0) {
+    // Single-file formats detected
+    const options_choices: Array<{ value: string; label: string }> = [];
+    for (const agent of detectedAgents) {
+      const displayNameMap: Record<string, string> = {
+        agents: "AGENTS.md",
+        claude: "CLAUDE.md",
+      };
+      const filename = displayNameMap[agent] || `${agent.toUpperCase()}.md`;
+      options_choices.push({ value: filename, label: filename });
     }
 
-    const options: Array<{ value: string; label: string }> = [];
-    if (agentsMdFiles.length > 0) {
-      options.push({ value: "AGENTS.md", label: "AGENTS.md (recommended)" });
-    }
-    if (claudeMdFiles.length > 0) {
-      options.push({ value: "CLAUDE.md", label: "CLAUDE.md" });
-    }
-
-    if (options.length === 1) {
-      newEditSource = options[0]!.value;
+    if (options_choices.length === 1) {
+      newEditSource = options_choices[0]!.value;
       clack.log.info(`Using ${newEditSource} as edit source`);
     } else {
       const choice = await clack.select({
         message: "Choose edit source:",
-        options,
+        options: options_choices,
       });
 
       if (clack.isCancel(choice)) {
