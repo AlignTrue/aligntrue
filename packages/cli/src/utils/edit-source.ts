@@ -29,7 +29,7 @@ export function normalizeEditSources(
  */
 export function formatEditSourceLabel(raw: string): string {
   if (raw === "any_agent_file") {
-    return "Any agent file (two-way sync)";
+    return "Any agent file (experimental decentralized rule management)";
   }
   if (raw === ".rules.yaml" || raw === ".aligntrue/.rules.yaml") {
     return ".aligntrue/.rules.yaml (internal IR)";
