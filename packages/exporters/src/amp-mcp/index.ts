@@ -1,8 +1,9 @@
 /**
- * Roo Code MCP exporter
- * Exports AlignTrue rules to .roo/mcp.json MCP configuration format
+ * Amp MCP exporter
+ * Exports AlignTrue rules to .amp/settings.json MCP configuration format
  *
- * Uses centralized MCP generator with Roo Code-specific transformer
+ * Uses centralized MCP generator with Amp-specific transformer
+ * Note: Only project-level config is written (global ~/.config/amp/settings.json is not modified)
  */
 
 import { dirname } from "path";
@@ -13,14 +14,25 @@ import type {
   ExportResult,
 } from "@aligntrue/plugin-contracts";
 import { generateCanonicalMcpConfig } from "@aligntrue/core";
-import { RoocodeMcpTransformer } from "../mcp-transformers/index.js";
+import { BaseMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
 
-export class RoocodeMcpExporter extends ExporterBase {
-  name = "roocode-mcp";
+class AmpMcpTransformer extends BaseMcpTransformer {
+  transform(config: unknown): string {
+    return this.formatJson(config as Record<string, unknown>);
+  }
+
+  getOutputPath(baseDir: string): string {
+    const path = require("path");
+    return path.join(baseDir, ".amp", "settings.json");
+  }
+}
+
+export class AmpMcpExporter extends ExporterBase {
+  name = "amp-mcp";
   version = "1.0.0";
 
-  private transformer = new RoocodeMcpTransformer();
+  private transformer = new AmpMcpTransformer();
 
   async export(
     request: ScopedExportRequest,
@@ -45,7 +57,7 @@ export class RoocodeMcpExporter extends ExporterBase {
       options.unresolvedPlugsCount,
     );
 
-    // Transform to Roo Code-specific format
+    // Transform to Amp-specific format
     const content = this.transformer.transform(canonicalConfig);
 
     // Get output path
@@ -80,4 +92,4 @@ export class RoocodeMcpExporter extends ExporterBase {
   }
 }
 
-export default RoocodeMcpExporter;
+export default AmpMcpExporter;

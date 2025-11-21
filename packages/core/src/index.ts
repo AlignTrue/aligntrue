@@ -59,6 +59,9 @@ export * from "./resources/index.js";
 // Validation
 export * from "./validation/index.js";
 
+// MCP configuration
+export * from "./mcp/generator.js";
+
 // Migration utilities
 export * from "./migration/ruler-parser.js";
 export * from "./migration/ruler-merger.js";

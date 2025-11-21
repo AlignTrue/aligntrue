@@ -24,6 +24,12 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   "firebase-mcp": [".idx/mcp.json"], // Only detect if MCP config exists
   "kilocode-mcp": [".kilocode/mcp.json"], // Only detect if MCP config exists
   "roocode-mcp": [".roo/mcp.json"], // Only detect if MCP config exists
+  "amp-mcp": [".amp/settings.json"], // Only detect if MCP config exists
+  "junie-mcp": [".junie/mcp/mcp.json"], // Only detect if MCP config exists
+  "augmentcode-mcp": [".augment/settings.json"], // Only detect if MCP config exists
+  "goose-mcp": [".goose/config.yaml"], // Only detect if MCP config exists
+  "kiro-mcp": [".kiro/settings/mcp.json"], // Only detect if MCP config exists
+  "traeai-mcp": ["trae_config.yaml"], // Only detect if MCP config exists
 
   // Markdown format exporters
   claude: ["CLAUDE.md"],

@@ -1,19 +1,19 @@
 ---
 title: Agent support
-description: Complete compatibility matrix for AlignTrue's 44 exporters supporting 28+ AI coding agents
+description: Complete compatibility matrix for AlignTrue's 50 exporters supporting 28+ AI coding agents
 ---
 
 # Agent support
 
-AlignTrue supports **28+ AI coding agents** through **44 exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
+AlignTrue supports **28+ AI coding agents** through **50 exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 
 ## Coverage statistics
 
-- **44 total exporters** supporting **28+ agents**
-- **8 MCP configurations** for protocol-based agents
+- **51 total exporters** supporting **28+ agents**
+- **14 MCP configurations** for protocol-based agents
 - **15 agent-specific format exporters** for native configurations
 - **11 universal format agents** using AGENTS.md
-- **9 dual-output agents** with both universal + specific formats
+- **10 dual-output agents** with both universal + specific formats
 
 This comprehensive coverage ensures AlignTrue rules work across the entire AI coding agent ecosystem, from established tools like Cursor and GitHub Copilot to emerging agents like Windsurf and Roo Code.
 
@@ -21,7 +21,7 @@ This comprehensive coverage ensures AlignTrue rules work across the entire AI co
 
 ### 1. MCP (Model Context Protocol) config exporters
 
-These generate JSON configuration files for agents that support the MCP protocol. MCP allows agents to connect to external tools and data sources. AlignTrue creates `.mcp.json` or equivalent files with rule-based guidance.
+These generate JSON/YAML configuration files for agents that support the MCP protocol. MCP allows agents to connect to external tools and data sources. AlignTrue creates agent-specific MCP files with rule-based guidance. See [MCP Support](/docs/04-reference/mcp-support) for details.
 
 ### 2. Agent-Specific Format Exporters
 
@@ -116,6 +116,12 @@ See [Multi-file organization](/docs/02-customization/multi-file-organization) fo
 | **Kiro**            | kiro             | Agent-Specific   | `.kiro/steering/*.md`            | Directory-based steering files                       | Steering structure                          |
 | **Jules**           | jules            | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
 | **Amp**             | amp              | Universal Shared | AGENTS.md                        | Uses universal AGENTS.md format                      | Shared with other agents                    |
+| **Amp**             | amp-mcp          | MCP Config       | `.amp/settings.json`             | Amp MCP configuration (project-level)                | Project-level, not global config            |
+| **Junie**           | junie-mcp        | MCP Config       | `.junie/mcp/mcp.json`            | Junie MCP configuration                              | MCP directory structure                     |
+| **AugmentCode**     | augmentcode-mcp  | MCP Config       | `.augment/settings.json`         | AugmentCode MCP (project-level)                      | Project-level, not global config            |
+| **Goose**           | goose-mcp        | MCP Config       | `.goose/config.yaml`             | Goose YAML MCP configuration                         | YAML format                                 |
+| **Kiro**            | kiro-mcp         | MCP Config       | `.kiro/settings/mcp.json`        | Kiro MCP configuration                               | Settings directory structure                |
+| **Trae AI**         | traeai-mcp       | MCP Config       | `trae_config.yaml`               | Trae AI YAML MCP configuration                       | Root-level, typically git-ignored           |
 
 </div>
 
@@ -125,6 +131,7 @@ Built-in extensibility allows the community to [add support for new agents](/doc
 
 ## Related documentation
 
+- [MCP Support](/docs/04-reference/mcp-support) - Complete MCP protocol guide
 - [CLI Reference](/docs/04-reference/cli-reference) - Commands for working with exporters
 - [Adding Exporters](/docs/06-contributing/adding-exporters) - Guide for adding new agent support
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How AlignTrue syncs rules to agents

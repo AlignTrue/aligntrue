@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aligntrue.ai/schema/mcp-config-v1.schema.json",
+  "title": "AlignTrue MCP Configuration v1",
+  "description": "MCP (Model Context Protocol) configuration schema for AlignTrue",
+  "type": "object",
+  "required": [],
+  "additionalProperties": false,
+  "properties": {
+    "servers": {
+      "type": "array",
+      "description": "Array of MCP server configurations",
+      "items": {
+        "type": "object",
+        "required": ["name", "command"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique identifier for the MCP server (e.g., 'aligntrue')",
+            "minLength": 1
+          },
+          "command": {
+            "type": "string",
+            "description": "Command to execute the MCP server (e.g., 'npx', 'python', 'node')",
+            "minLength": 1
+          },
+          "args": {
+            "type": "array",
+            "description": "Arguments to pass to the command",
+            "items": {
+              "type": "string"
+            }
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables for the server",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "Disable this server without removing configuration (default: false)"
+          }
+        }
+      }
+    }
+  }
+}
