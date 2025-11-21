@@ -522,10 +522,15 @@ export function detectFilesWithContent(
         }
       }
       // Handle single files (e.g., AGENTS.md, CLAUDE.md)
-      else if (stats.isFile()) {
+      else {
         try {
           // Read file without pre-check on stats (avoids TOCTOU race)
           const content = readFileSync(fullPath, "utf-8");
+          // Get fresh stats after successful read to avoid TOCTOU race
+          const fileStats = statSync(fullPath);
+
+          // Skip if it's not actually a file (could have changed)
+          if (!fileStats.isFile()) continue;
 
           const sectionCount = countSections(content);
           const hasContent = content.trim().length > 0 && sectionCount > 0;
@@ -536,8 +541,8 @@ export function detectFilesWithContent(
             agent: agentName,
             format: detectFileFormat(fullPath, content),
             sectionCount,
-            lastModified: stats.mtime,
-            size: stats.size,
+            lastModified: fileStats.mtime,
+            size: fileStats.size,
             hasContent,
           });
         } catch {
