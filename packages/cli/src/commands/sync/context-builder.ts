@@ -441,6 +441,19 @@ async function detectAndEnableAgents(
     const toEnable: string[] = [];
     const toIgnore: string[] = [];
 
+    // Check if TTY is available for interactive prompts
+    const { isTTY } = await import("../../utils/tty-helper.js");
+    if (!isTTY()) {
+      // Non-TTY environment: treat all new agents as "ignore" to prevent hanging
+      clack.log.info(
+        `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected (non-interactive mode)`,
+      );
+      clack.log.info(
+        "Skipping prompts. Use --auto-enable or add agents manually to enable them.",
+      );
+      return;
+    }
+
     clack.log.info(
       `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected, let's review each one:`,
     );
