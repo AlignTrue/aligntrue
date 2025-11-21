@@ -141,7 +141,7 @@ export async function plugsCommand(args: string[]): Promise<void> {
         await resolvePlugs(pack, config);
         break;
       case "validate":
-        await validatePlugs(pack);
+        await validatePlugs(pack, config);
         break;
     }
   } catch (error) {
@@ -317,7 +317,10 @@ async function resolvePlugs(
 /**
  * Validate plugs (check for undeclared or unresolved)
  */
-async function validatePlugs(pack: AlignPack): Promise<void> {
+async function validatePlugs(
+  pack: AlignPack,
+  config?: AlignTrueConfig | null,
+): Promise<void> {
   console.log("┌  Validating Plugs\n│");
 
   if (!pack.plugs) {
@@ -331,9 +334,14 @@ async function validatePlugs(pack: AlignPack): Promise<void> {
 
   // Check for required slots without fills
   if (pack.plugs.slots) {
+    const configFills = config?.plugs?.fills || {};
+
     for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
       if (slotDef.required) {
-        const hasFill = pack.plugs.fills && pack.plugs.fills[slotName];
+        const configFill = configFills[slotName];
+        const irFill = pack.plugs.fills?.[slotName];
+        const hasFill = configFill || irFill;
+
         if (!hasFill) {
           errors.push(`Required slot "${slotName}" has no fill`);
         }
