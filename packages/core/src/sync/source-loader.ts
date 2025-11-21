@@ -65,33 +65,32 @@ export async function discoverSourceFiles(
     for (const relativePath of matches) {
       const absolutePath = join(cwd, relativePath);
 
-      // Skip if file doesn't exist (race condition)
-      if (!existsSync(absolutePath)) {
-        continue;
-      }
-
       try {
-        // Check file type before reading to minimize race condition window
-        const initialStats = statSync(absolutePath);
-        if (!initialStats.isFile()) {
-          continue;
-        }
-
-        // Read file content
+        // Read file content directly - handle errors if file doesn't exist or changed
         const content = readFileSync(absolutePath, "utf-8");
 
-        // Re-verify file type after read (defensive check)
-        // If file changed, we still use the content we successfully read
-        let stats = initialStats;
+        // Get file stats after reading to avoid race condition
+        // If file changed during read, we still use the content we successfully read
+        const now = new Date();
+        let stats: ReturnType<typeof statSync> = {
+          mtime: now,
+          isFile: () => true,
+        } as ReturnType<typeof statSync>;
+        let shouldSkip = false;
         try {
-          const postReadStats = statSync(absolutePath);
-          if (postReadStats.isFile()) {
-            stats = postReadStats;
+          const fileStats = statSync(absolutePath);
+          if (!fileStats.isFile()) {
+            // File changed to non-file after read, skip it
+            shouldSkip = true;
+          } else {
+            stats = fileStats;
           }
-          // If file changed to non-file, use initial stats (content was valid at read time)
         } catch {
           // Stat failed after read, but content was valid at read time
-          // Use initial stats we captured before reading
+          // Use the default stats object we initialized above
+        }
+        if (shouldSkip) {
+          continue;
         }
 
         // Parse sections from markdown
@@ -118,7 +117,7 @@ export async function discoverSourceFiles(
           path: relativePath,
           absolutePath,
           content,
-          mtime: stats.mtime,
+          mtime: stats!.mtime,
           sections: alignSections,
         });
       } catch {

@@ -498,25 +498,32 @@ export function detectFilesWithContent(
             const filePath = join(fullPath, file);
 
             try {
-              // Check file type before reading to minimize race condition window
-              const initialStats = statSync(filePath);
-              if (!initialStats.isFile()) continue;
-
-              // Read file content
+              // Read file content directly - handle errors if file doesn't exist or changed
               const content = readFileSync(filePath, "utf-8");
 
-              // Re-verify file type after read (defensive check)
-              // If file changed, we still use the content we successfully read
-              let fileStats = initialStats;
+              // Get file stats after reading to avoid race condition
+              // If file changed during read, we still use the content we successfully read
+              const now = new Date();
+              let fileStats: ReturnType<typeof statSync> = {
+                mtime: now,
+                size: content.length,
+                isFile: () => true,
+              } as ReturnType<typeof statSync>;
+              let shouldSkip = false;
               try {
-                const postReadStats = statSync(filePath);
-                if (postReadStats.isFile()) {
-                  fileStats = postReadStats;
+                const stats = statSync(filePath);
+                if (!stats.isFile()) {
+                  // File changed to non-file after read, skip it
+                  shouldSkip = true;
+                } else {
+                  fileStats = stats;
                 }
-                // If file changed to non-file, use initial stats (content was valid at read time)
               } catch {
                 // Stat failed after read, but content was valid at read time
-                // Use initial stats we captured before reading
+                // Use the default stats object we initialized above
+              }
+              if (shouldSkip) {
+                continue;
               }
 
               const sectionCount = countSections(content);
@@ -528,8 +535,8 @@ export function detectFilesWithContent(
                 agent: agentName,
                 format: detectFileFormat(filePath, content),
                 sectionCount,
-                lastModified: fileStats.mtime,
-                size: fileStats.size,
+                lastModified: fileStats!.mtime,
+                size: Number(fileStats!.size),
                 hasContent,
               });
             } catch {
@@ -545,25 +552,32 @@ export function detectFilesWithContent(
       // Handle single files (e.g., AGENTS.md, CLAUDE.md)
       else {
         try {
-          // Check file type before reading to minimize race condition window
-          const initialStats = statSync(fullPath);
-          if (!initialStats.isFile()) continue;
-
-          // Read file content
+          // Read file content directly - handle errors if file doesn't exist or changed
           const content = readFileSync(fullPath, "utf-8");
 
-          // Re-verify file type after read (defensive check)
-          // If file changed, we still use the content we successfully read
-          let fileStats = initialStats;
+          // Get file stats after reading to avoid race condition
+          // If file changed during read, we still use the content we successfully read
+          const now = new Date();
+          let fileStats: ReturnType<typeof statSync> = {
+            mtime: now,
+            size: content.length,
+            isFile: () => true,
+          } as ReturnType<typeof statSync>;
+          let shouldSkip = false;
           try {
-            const postReadStats = statSync(fullPath);
-            if (postReadStats.isFile()) {
-              fileStats = postReadStats;
+            const stats = statSync(fullPath);
+            if (!stats.isFile()) {
+              // File changed to non-file after read, skip it
+              shouldSkip = true;
+            } else {
+              fileStats = stats;
             }
-            // If file changed to non-file, use initial stats (content was valid at read time)
           } catch {
             // Stat failed after read, but content was valid at read time
-            // Use initial stats we captured before reading
+            // Use the default stats object we initialized above
+          }
+          if (shouldSkip) {
+            continue;
           }
 
           const sectionCount = countSections(content);
@@ -575,8 +589,8 @@ export function detectFilesWithContent(
             agent: agentName,
             format: detectFileFormat(fullPath, content),
             sectionCount,
-            lastModified: fileStats.mtime,
-            size: fileStats.size,
+            lastModified: fileStats!.mtime,
+            size: Number(fileStats!.size),
             hasContent,
           });
         } catch {
