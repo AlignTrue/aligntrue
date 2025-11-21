@@ -250,15 +250,27 @@ export class AtomicFileWriter {
 
   /**
    * Rollback writes by restoring from backups
+   * Silently skips missing backups (race condition safe)
    */
   rollback(): void {
     const errors: string[] = [];
 
     for (const [filePath, backupPath] of this.backups) {
       try {
+        // Check if backup exists before trying to read it
+        if (!existsSync(backupPath)) {
+          // Backup is missing - this is OK (race condition or cleanup)
+          // Just skip this file
+          continue;
+        }
+
         const backupContent = readFileSync(backupPath, "utf8");
         writeFileSync(filePath, backupContent, "utf8");
-        unlinkSync(backupPath);
+        try {
+          unlinkSync(backupPath);
+        } catch {
+          // Ignore cleanup errors
+        }
       } catch (_err) {
         errors.push(
           `  - ${filePath}: ${_err instanceof Error ? _err.message : String(_err)}`,
