@@ -19,14 +19,26 @@ git clone https://github.com/AlignTrue/aligntrue.git
 cd aligntrue
 pnpm install          # installs all workspace deps
 pnpm build            # builds every package the CLI imports
-cd packages/cli
-pnpm link --global    # exposes the aligntrue/aln binaries locally
 ```
 
-You can now run:
+**Run the CLI using absolute path:**
 
 ```bash
-aligntrue --version
+./packages/cli/dist/index.js --version
+./packages/cli/dist/index.js init --yes
+```
+
+**Why not `pnpm link --global`?**
+
+`pnpm link --global` doesn't work with `workspace:*` dependencies. Node.js ESM loader cannot resolve subpath exports through symlinks when dependencies use the workspace protocol. You'll get `ERR_PACKAGE_PATH_NOT_EXPORTED` errors.
+
+**For distribution testing:**
+
+Use the distribution simulation script that rewrites `workspace:*` to concrete versions:
+
+```bash
+cd packages/cli
+bash tests/scripts/test-distribution.sh
 ```
 
 For iterative development, rerun `pnpm build` after dependency changes or `pnpm --filter @aligntrue/cli build` after CLI-only edits.
