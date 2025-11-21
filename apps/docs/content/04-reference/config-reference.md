@@ -89,19 +89,32 @@ sync:
 
 #### sync.edit_source
 
-**Type:** `string | string[]`
+**Type:** `string` (recommended) or `string[]` (experimental)
 
 **Default:** Auto-detected during init. Falls back to `"AGENTS.md"` if no agents detected.
 
-**Values:**
+**Centralized (Recommended):**
 
 - `".rules.yaml"` - IR only (no agent edits detected)
-- `"AGENTS.md"` - Single file editing
-- `".cursor/rules/*.mdc"` - Glob pattern for multiple files
-- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns
-- `"any_agent_file"` - All agent files
+- `"AGENTS.md"` - Single file editing (most common)
+- `".cursor/rules/*.mdc"` - Glob pattern for Cursor scope files (recommended for Cursor)
 
-Which files accept edits and sync back to IR. Files matching this config are detected for changes; files not matching are marked read-only.
+One file/pattern is editable; all others become read-only exports. One-way sync: edit_source → IR → all configured agents.
+
+**Example:**
+
+```yaml
+sync:
+  edit_source: "AGENTS.md" # or ".cursor/rules/*.mdc"
+```
+
+**Experimental (Decentralized):**
+
+- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `experimental_two_way_sync: true`)
+
+Multiple files can be edited; changes merge automatically. Unsupported, use with caution.
+
+See [Experimental Features](/docs/04-reference/experimental) for details.
 
 **Deprecated:** `sync.two_way` (auto-migrates: `false` → `".rules.yaml"`, `true` → `"any_agent_file"`)
 

@@ -362,9 +362,9 @@ This enables:
 
 ## Two-way sync
 
-Multi-file sources work seamlessly with two-way sync:
+Multi-file sources work seamlessly with centralized rule management:
 
-1. **Edit any source file**: Make changes to `.aligntrue/rules/security.md`
+1. **Edit your source file**: Make changes to `.aligntrue/rules/security.md` (your edit_source)
 2. **Run sync**: `aligntrue sync`
 3. **Changes propagate**: Updates sync to all agent files
 

@@ -158,7 +158,7 @@ In solo mode, automatically imports any changes you made directly in agent files
 - Disabled in team mode (to prevent accidental overwrites)
 - Can be disabled with `aligntrue sync --no-auto-pull`
 
-This enables two-way sync: edit either AGENTS.md or agent files, and changes propagate to both.
+This enables centralized rule management: edit your configured edit_source file, and changes propagate to all other exports.
 
 **Related:** [Sync behavior](/docs/03-concepts/sync-behavior)
 

@@ -3,6 +3,7 @@
   "cli-reference": "CLI reference",
   "agent-support": "Agent support",
   "examples": "Examples",
+  "experimental": "⚠️ Experimental",
   "auto-updates": "Auto updates",
   "backup-restore": "Backup & restore",
   "file-watcher-setup": "File watcher setup",

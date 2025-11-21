@@ -323,7 +323,7 @@ overlays:
 
 ## Vendor bags (passive)
 
-**Note:** Vendor bags are a passive feature that preserves agent-specific metadata during two-way sync. You don't need to configure or manage them - they work automatically.
+**Note:** Vendor bags are a passive feature that preserves agent-specific metadata during sync. You don't need to configure or manage them - they work automatically.
 
 **What they do:**
 
@@ -334,7 +334,7 @@ overlays:
 
 **When they matter:**
 
-- Using two-way sync (editing agent files, pulling back to IR)
+- Editing agent files when they're your configured edit_source
 - Importing from agent-specific formats
 - Preserving agent hints and metadata
 
