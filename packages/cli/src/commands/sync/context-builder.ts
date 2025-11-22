@@ -141,7 +141,9 @@ export async function buildSyncContext(
   }
 
   // Step 3: Resolve sources (local, git, or bundle merge)
-  spinner.start("Resolving sources");
+  if (!options.quiet) {
+    spinner.start("Resolving sources");
+  }
 
   let sourcePath: string;
   let absoluteSourcePath: string;
@@ -177,12 +179,10 @@ export async function buildSyncContext(
       } else {
         spinner.stop();
       }
-    } else {
-      spinner.stop();
     }
 
     // Show merge info if multiple sources
-    if (bundleResult.sources.length > 1) {
+    if (bundleResult.sources.length > 1 && !options.quiet) {
       clack.log.info("Sources merged:");
       bundleResult.sources.forEach((src, idx) => {
         const prefix = idx === 0 ? "  Base:" : "  Overlay:";
@@ -198,7 +198,9 @@ export async function buildSyncContext(
       }
     }
   } catch (err) {
-    spinner.stop("Source resolution failed");
+    if (!options.quiet) {
+      spinner.stop("Source resolution failed");
+    }
 
     // Handle git source updates available in team mode
     if (err instanceof UpdatesAvailableError) {
@@ -296,8 +298,6 @@ export async function buildSyncContext(
   // Step 7: Load exporters
   if (!options.quiet) {
     spinner.start("Loading exporters");
-  } else {
-    spinner.start();
   }
 
   const engine = new SyncEngine();
@@ -351,11 +351,11 @@ export async function buildSyncContext(
       } else {
         spinner.stop();
       }
-    } else {
-      spinner.stop();
     }
   } catch (_error) {
-    spinner.stop("Exporter loading failed");
+    if (!options.quiet) {
+      spinner.stop("Exporter loading failed");
+    }
     throw ErrorFactory.syncFailed(
       `Failed to load exporters: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
@@ -364,8 +364,6 @@ export async function buildSyncContext(
   // Step 8: Validate rules
   if (!options.quiet) {
     spinner.start("Validating rules");
-  } else {
-    spinner.start();
   }
 
   try {
@@ -381,11 +379,11 @@ export async function buildSyncContext(
       } else {
         spinner.stop();
       }
-    } else {
-      spinner.stop();
     }
   } catch (_error) {
-    spinner.stop("Validation failed");
+    if (!options.quiet) {
+      spinner.stop("Validation failed");
+    }
     throw ErrorFactory.syncFailed(
       `Failed to validate rules: ${_error instanceof Error ? _error.message : String(_error)}`,
     );

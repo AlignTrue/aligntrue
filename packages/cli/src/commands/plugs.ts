@@ -472,6 +472,25 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         }
         process.exit(1);
       }
+    } else {
+      // Even if slot is not declared, validate URL format if slot name suggests it's a URL
+      // This prevents storing invalid URLs that would fail later during sync
+      if (
+        slotName.endsWith(".url") ||
+        slotName.endsWith("Url") ||
+        slotName.endsWith("_url")
+      ) {
+        const validation = validateFill(fillValue, "url");
+        if (!validation.valid) {
+          console.error(`✗ Validation failed for slot "${slotName}"\n`);
+          console.error(`  ${validation.error}\n`);
+          console.error(`  Expected format: url\n`);
+          console.error(
+            `  Tip: URLs must include protocol (e.g., https://example.com)\n`,
+          );
+          process.exit(1);
+        }
+      }
     }
 
     // Update config

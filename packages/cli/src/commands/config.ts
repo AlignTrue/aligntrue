@@ -295,10 +295,23 @@ async function showSummary(configPath: string): Promise<void> {
  */
 async function configGet(configPath: string, key: string): Promise<void> {
   try {
-    const content = readFileSync(configPath, "utf-8");
-    const config = parseYaml(content) as Record<string, unknown>;
+    // For runtime values like sync.edit_source that may be auto-detected,
+    // use loadConfig() to get the resolved value with defaults applied
+    const { loadConfig } = await import("@aligntrue/core");
+    const configWithDefaults = await loadConfig(configPath);
 
-    const value = getNestedValue(config, key);
+    // First try to get from config with defaults (includes auto-detected values)
+    let value = getNestedValue(
+      configWithDefaults as unknown as Record<string, unknown>,
+      key,
+    );
+
+    // If still undefined, check the raw config file
+    if (value === undefined) {
+      const content = readFileSync(configPath, "utf-8");
+      const rawConfig = parseYaml(content) as Record<string, unknown>;
+      value = getNestedValue(rawConfig, key);
+    }
 
     if (value === undefined) {
       if (key === "mode") {
@@ -307,14 +320,33 @@ async function configGet(configPath: string, key: string): Promise<void> {
           "\nNote: 'mode' is a runtime setting derived from your config and defaults.",
         );
         clack.log.info("Use 'aligntrue config show' to see the active mode.");
+        const content = readFileSync(configPath, "utf-8");
+        const rawConfig = parseYaml(content) as Record<string, unknown>;
         clack.log.info("\nAvailable stored config keys:");
-        listAllKeys(config).forEach((k) => clack.log.info(`  ${k}`));
+        listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
+        process.exit(1);
+      }
+
+      if (key === "sync.edit_source") {
+        clack.log.error(`Key not found: ${key}`);
+        clack.log.info(
+          "\nNote: 'sync.edit_source' may be auto-detected from your exporters.",
+        );
+        clack.log.info(
+          "Use 'aligntrue config show' to see the active edit_source.",
+        );
+        const content = readFileSync(configPath, "utf-8");
+        const rawConfig = parseYaml(content) as Record<string, unknown>;
+        clack.log.info("\nAvailable stored config keys:");
+        listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
         process.exit(1);
       }
 
       clack.log.error(`Key not found: ${key}`);
+      const content = readFileSync(configPath, "utf-8");
+      const rawConfig = parseYaml(content) as Record<string, unknown>;
       clack.log.info("\nAvailable keys:");
-      listAllKeys(config).forEach((k) => clack.log.info(`  ${k}`));
+      listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
       process.exit(1);
     }
 
