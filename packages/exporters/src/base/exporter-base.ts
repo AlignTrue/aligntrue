@@ -267,6 +267,30 @@ export abstract class ExporterBase implements ExporterPlugin {
     const interactive = options?.interactive ?? false;
     const force = options?.force ?? false;
 
+    // SAFETY: Backup file if it will be overwritten after manual edits
+    if (options) {
+      const { existsSync } = await import("fs");
+      const { computeFileChecksum } = await import("@aligntrue/file-utils");
+      const { safeBackupFile } = await import("@aligntrue/core");
+
+      if (existsSync(path)) {
+        const lastChecksumRecord = this.writer.getChecksum(path);
+
+        if (lastChecksumRecord) {
+          try {
+            const currentChecksum = computeFileChecksum(path);
+
+            if (currentChecksum !== lastChecksumRecord.checksum) {
+              // File was manually edited - backup before overwriting
+              safeBackupFile(path, process.cwd());
+            }
+          } catch {
+            // If checksum fails, continue (file might not exist anymore)
+          }
+        }
+      }
+    }
+
     // Set checksum handler on first write to enable conflict resolution
     if (!this.writer.getChecksum(path)) {
       this.writer.setChecksumHandler(this.handleChecksumConflict.bind(this));
