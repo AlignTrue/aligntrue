@@ -3,9 +3,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
+import { parse as parseYaml } from "yaml";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "config-commands-test");
 const CLI_PATH = join(process.cwd(), "dist", "index.js");
@@ -167,21 +168,32 @@ sync:
 
   describe("config unset", () => {
     it("should remove an optional config value", () => {
-      // First verify the value exists
-      const before = runCli(["config", "get", "sync.edit_source"]);
-      expect(before.trim()).toBe("AGENTS.md");
+      // Use sync.auto_pull - note that loadConfig() may provide defaults,
+      // so we verify removal by checking the raw config file, not via config get
+      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+
+      // First verify the value exists in the raw config
+      const beforeContent = readFileSync(configPath, "utf-8");
+      const beforeConfig = parseYaml(beforeContent) as Record<string, unknown>;
+      expect(beforeConfig.sync).toBeDefined();
+      expect((beforeConfig.sync as Record<string, unknown>).auto_pull).toBe(
+        false,
+      );
 
       // Unset it
-      runCli(["config", "unset", "sync.edit_source"]);
+      runCli(["config", "unset", "sync.auto_pull"]);
 
-      // Verify it's gone
-      try {
-        runCli(["config", "get", "sync.edit_source"]);
-        expect.fail("Should have thrown an error");
-      } catch (err: any) {
-        expect(err.status).toBe(1);
-        const output = err.stdout.toString() + err.stderr.toString();
-        expect(output).toContain("Key not found");
+      // Verify it's removed from the raw config file
+      const afterContent = readFileSync(configPath, "utf-8");
+      const afterConfig = parseYaml(afterContent) as Record<string, unknown>;
+      // The sync.auto_pull key should be gone (sync object may still exist with other keys)
+      if (afterConfig.sync) {
+        expect(
+          (afterConfig.sync as Record<string, unknown>).auto_pull,
+        ).toBeUndefined();
+      } else {
+        // If entire sync object was removed, that's also valid
+        expect(afterConfig.sync).toBeUndefined();
       }
     });
 
