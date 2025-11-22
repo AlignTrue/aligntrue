@@ -527,6 +527,7 @@ export class SyncEngine {
             }), // Pass config fills to exporters (Plugs system)
             interactive: options.interactive || false, // Enable interactive conflict resolution
             force: options.force || false, // Force overwrite without prompts
+            config: this.config, // Pass full config for edit_source checks and other config-dependent logic
           };
 
           try {
