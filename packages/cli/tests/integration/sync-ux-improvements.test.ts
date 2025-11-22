@@ -4,9 +4,15 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "fs";
+import {
+  writeFileSync,
+  mkdirSync,
+  readFileSync,
+  existsSync,
+  rmSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
-import { randomUUID } from "crypto";
 import { tmpdir } from "os";
 import {
   backupOverwrittenFile,
@@ -23,8 +29,7 @@ import type { DetectedFileWithContent } from "../../src/utils/detect-agents.js";
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `aligntrue-test-${randomUUID()}`);
-  mkdirSync(tmpDir, { recursive: true });
+  tmpDir = mkdtempSync(join(tmpdir(), "aligntrue-test-"));
 });
 
 afterEach(() => {
