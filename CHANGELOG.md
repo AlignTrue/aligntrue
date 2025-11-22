@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Silent error handling in drift detection - Added debug logging for allow list parsing failures
+- Restored test coverage by fixing skipped tests - Updated 5 sync command tests to use current IR schema format
+- Test IR format updated - Fixed tests using deprecated `rules` array format to use `sections` format
+
+### Improved
+
+- Refactored check command for maintainability - Extracted file size validation into separate helper module
+- Added refactoring strategy documentation - Documented incremental refactoring approach for large SyncEngine class
+
 ### Changed
 
 - **Edit source patterns now centralized** - Single source of truth for exporter-to-pattern mappings in `@aligntrue/core/config/edit-source-patterns`

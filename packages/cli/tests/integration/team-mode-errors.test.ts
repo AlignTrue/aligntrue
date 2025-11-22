@@ -104,11 +104,11 @@ sections: []
   });
 
   describe("Strict mode error messages", () => {
-    // Note: Allow list validation has been removed, test may need updating
-    // 1. Whether parseAllowList is throwing for this test's YAML format
-    // 2. Whether the try-catch around validation should be more strict
-    // 3. Whether we should split "parsing errors" from "validation errors"
+    // Note: Allow list validation has been removed - this test is obsolete
+    // Lockfile validation error messages are tested in other integration tests
     it.skip("shows correct commands when lockfile validation fails", async () => {
+      // Obsolete: Allow list validation was removed from the codebase
+      // Lockfile validation errors are tested elsewhere
       // Create team mode setup
       writeFileSync(
         join(testProjectContext.aligntrueDir, "config.yaml"), // Modified this line

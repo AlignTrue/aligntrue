@@ -18,12 +18,6 @@ describe("sync command - smoke tests", () => {
     }
   });
 
-  it.skip("requires config file to exist", async () => {
-    // TODO: Fix test mocking to properly work with clack and process.exit
-    // Real integration test is in tests/integration/sync-command.test.ts
-    // This smoke test is skipped because it requires proper mocking of async clack operations
-  });
-
   it("accepts --dry-run flag", async () => {
     // Just verify the flag is parsed without error
     const originalExit = process.exit;

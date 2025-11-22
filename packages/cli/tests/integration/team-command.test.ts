@@ -61,11 +61,11 @@ describe("Team Command Integration", () => {
       const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test-rule
-    severity: error
-    applies_to: "**/*.ts"
-    guidance: Test guidance
+sections:
+  - heading: Test rule
+    level: 2
+    content: Test guidance
+    fingerprint: test-rule
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
@@ -94,11 +94,11 @@ rules:
       const ir = `id: test-project
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test-rule
-    severity: error
-    applies_to: "**/*.ts"
-    guidance: Test guidance
+sections:
+  - heading: Test rule
+    level: 2
+    content: Test guidance
+    fingerprint: test-rule
 `;
       writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
 
