@@ -476,23 +476,15 @@ async function detectAndEnableAgents(
       try {
         const agentFilePath = join(cwd, agent.filePath);
         const stats = statSync(agentFilePath);
-        // Only attempt extraction if it's a file, not a directory
+        // Only attempt backup if it's a file, not a directory
         if (stats.isFile()) {
-          // Backup entire file before overwriting (preserves file structure)
+          // Backup entire file before overwriting (preserves file structure for recovery)
           const backupResult = backupFileToOverwrittenRules(agentFilePath, cwd);
           if (backupResult.backed_up && options.verbose) {
             clack.log.info(
               `Backed up ${agent.displayName} to: ${backupResult.backup_path}`,
             );
           }
-
-          // Also extract sections for deduplication
-          await extractAndSaveRules(
-            agentFilePath,
-            undefined, // Auto-detect format from path
-            cwd,
-            currentIR,
-          );
         } else if (stats.isDirectory()) {
           if (options.verbose) {
             clack.log.info(
@@ -502,7 +494,7 @@ async function detectAndEnableAgents(
         }
       } catch (error) {
         clack.log.warn(
-          `⚠ Failed to extract rules from ${agent.displayName}: ${error instanceof Error ? error.message : String(error)}`,
+          `⚠ Failed to backup ${agent.displayName}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -542,12 +534,12 @@ async function detectAndEnableAgents(
       clack.log.info(`  Found: ${agent.filePath}`);
 
       const response = await clack.select({
-        message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and the file will be synced with your current rules.`,
+        message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and the file will be synced with your current rules.`,
         options: [
           {
             value: "yes",
             label: "Yes, enable and export",
-            hint: "Add to exporters list and extract old content for review",
+            hint: "Add to exporters list and back up existing content",
           },
           {
             value: "no",
@@ -575,7 +567,7 @@ async function detectAndEnableAgents(
     } else {
       // Multiple agents: show batch prompt
       batchResponse = await clack.select({
-        message: `Enable these ${newAgents.length} new agents as export targets?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and files will be synced with your current rules.`,
+        message: `Enable these ${newAgents.length} new agents as export targets?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and files will be synced with your current rules.`,
         options: [
           {
             value: "yes",
@@ -610,12 +602,12 @@ async function detectAndEnableAgents(
           clack.log.info(`  Found: ${agent.filePath}`);
 
           const response = await clack.select({
-            message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and the file will be synced with your current rules.`,
+            message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and the file will be synced with your current rules.`,
             options: [
               {
                 value: "yes",
                 label: "Yes, enable and export",
-                hint: "Add to exporters list and extract old content for review",
+                hint: "Add to exporters list and back up existing content",
               },
               {
                 value: "no",
@@ -694,7 +686,7 @@ async function detectAndEnableAgents(
           `Enabled ${toEnable.length} agent(s): ${toEnable.join(", ")}`,
         );
         clack.log.info(
-          "Review extracted content in .aligntrue/overwritten-rules.md if needed.",
+          "Review backed up content in .aligntrue/overwritten-rules/ if needed.",
         );
       }
 

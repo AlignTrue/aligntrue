@@ -1,8 +1,10 @@
 /**
  * Extract and save rules from agent files
  * Supports two modes:
- * 1. Extract to overwritten-rules.md for section conflicts (safety feature)
- * 2. Backup entire file to overwritten-rules/ when replacing (migration)
+ * 1. Extract sections to extracted-rules.md for two-way sync detection
+ *    (when read-only agents are edited and those edits differ from current IR)
+ * 2. Backup entire file to overwritten-rules/ when replacing
+ *    (when new agents are first added and will be overwritten on sync)
  */
 
 import { readFileSync, appendFileSync } from "fs";
@@ -176,7 +178,6 @@ Date: ${dateStr} ${timeStr}
 Total sections: ${sections.length}
 Extracted: ${newSections.length} (new/different from current rules)
 Skipped: ${skippedDuplicates} (already in current rules)
-Reason: File enabled as export target in centralized mode
 ---
 
 `;
