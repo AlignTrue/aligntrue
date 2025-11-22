@@ -285,6 +285,6 @@ Select a backup with `scope: personal` to restore only personal rules.
 
 ## Next steps
 
-- [Join an Existing Team](/guides/join-team)
+- [Join an Existing Team](/docs/01-guides/03-join-team)
 - [Team Mode Concepts](/concepts/team-mode)
 - [Troubleshooting Remote Access](/reference/troubleshooting/remote-access)

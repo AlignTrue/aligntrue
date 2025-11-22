@@ -1107,8 +1107,8 @@ exporters:
 - [Overlays Guide](/docs/02-customization/overlays) - Rule property overrides
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Team collaboration with scopes
 - [CLI Reference](/docs/04-reference/cli-reference/team#aligntrue-scopes) - Complete command docs
-- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow with scopes
-- [Team Guide](/docs/01-guides/05-team-guide) - Team collaboration with scopes
+- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide) - Solo workflow with scopes
+- [Team Guide](/docs/01-guides/04-team-guide) - Team collaboration with scopes
 - [Complete Scenario Index](../../examples/SCENARIOS.md) - 13+ real-world examples
 
 ## Summary

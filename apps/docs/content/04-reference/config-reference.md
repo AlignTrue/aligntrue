@@ -474,4 +474,4 @@ sync.workflow_mode: must be one of auto, ir_source, native_format
 - [CLI Reference](/docs/04-reference/cli-reference) - Command-line options
 - [Workflows Guide](/docs/01-guides/01-workflows) - Choosing your workflow
 - [Team Mode](/docs/03-concepts/team-mode) - Team-specific config
-- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo setup
+- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide) - Solo setup

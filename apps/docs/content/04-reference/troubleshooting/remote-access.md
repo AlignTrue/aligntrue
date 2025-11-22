@@ -626,5 +626,5 @@ If you're still stuck:
 ## Related documentation
 
 - [Personal Repository Setup](/reference/personal-repo-setup)
-- [Joining a Team](/guides/join-team)
+- [Joining a Team](/docs/01-guides/03-join-team)
 - [Team Mode Concepts](/concepts/team-mode)
