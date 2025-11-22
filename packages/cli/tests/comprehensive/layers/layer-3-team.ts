@@ -7,6 +7,7 @@ import { execSync, type ExecException } from "node:child_process";
 import { writeFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface TeamScenario {
   name: string;
@@ -87,6 +88,9 @@ function runScenario(
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   console.log("=== Layer 3: Team Golden Paths ===\n");
 
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-3-log-"));

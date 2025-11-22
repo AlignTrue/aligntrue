@@ -8,6 +8,7 @@ import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { platform } from "node:os";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface EnvTest {
   name: string;
@@ -80,6 +81,9 @@ function runTest(
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   console.log("=== Layer 6: Environment Matrix ===\n");
   console.log(`Platform: ${platform()}`);
   console.log(`Node: ${process.version}`);

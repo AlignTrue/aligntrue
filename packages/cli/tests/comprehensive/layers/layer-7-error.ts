@@ -7,6 +7,7 @@ import { execSync, type ExecException } from "node:child_process";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface ErrorTest {
   name: string;
@@ -130,6 +131,9 @@ function runTest(
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   console.log("=== Layer 7: Error & UX ===\n");
 
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-7-log-"));

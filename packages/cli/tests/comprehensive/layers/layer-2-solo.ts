@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface Workflow {
   name: string;
@@ -208,6 +209,9 @@ function runWorkflow(
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   console.log("=== Layer 2: Solo Golden Paths ===\n");
 
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-2-log-"));
