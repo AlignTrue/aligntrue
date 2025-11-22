@@ -11,6 +11,7 @@ import {
   loadConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import { resolveConfigPath } from "../utils/path-resolvers.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -406,13 +407,6 @@ function summarize(checks: DoctorCheck[]) {
     else summary.error++;
   }
   return summary;
-}
-
-function resolveConfigPath(pathArg: string | undefined, cwd: string): string {
-  if (pathArg) {
-    return resolve(cwd, pathArg);
-  }
-  return getAlignTruePaths(cwd).config;
 }
 
 function resolveRulesPath(

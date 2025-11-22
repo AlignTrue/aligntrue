@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createHash } from "crypto";
+import { computeHash } from "@aligntrue/schema";
 import { AgentsExporter } from "../src/agents/index.js";
 import type {
   ScopedExportRequest,
@@ -20,7 +20,7 @@ import { tmpdir } from "os";
  */
 function generateFingerprint(heading: string, content: string): string {
   const combined = `${heading}::${content}`;
-  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+  return computeHash(combined).substring(0, 16);
 }
 
 describe("Duplicate content bug fix", () => {

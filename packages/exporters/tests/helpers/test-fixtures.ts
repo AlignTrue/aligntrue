@@ -3,8 +3,7 @@
  */
 import { readFileSync } from "fs";
 import { join } from "path";
-import { createHash } from "crypto";
-import { parseYamlToJson } from "@aligntrue/schema";
+import { computeHash, parseYamlToJson } from "@aligntrue/schema";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
@@ -16,7 +15,7 @@ import type {
  */
 function generateFingerprint(heading: string, content: string): string {
   const combined = `${heading}::${content}`;
-  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+  return computeHash(combined).substring(0, 16);
 }
 
 /**

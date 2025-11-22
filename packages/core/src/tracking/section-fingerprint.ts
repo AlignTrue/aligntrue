@@ -3,7 +3,7 @@
  * Used for change tracking and deduplication
  */
 
-import { createHash } from "crypto";
+import { computeHash } from "@aligntrue/schema";
 
 /**
  * Generate a stable fingerprint from section heading and content
@@ -25,10 +25,7 @@ export function generateFingerprint(heading: string, content: string): string {
 
   // Hash content for uniqueness (normalized to handle whitespace changes)
   const normalizedContent = normalizeContent(content);
-  const contentHash = createHash("sha256")
-    .update(normalizedContent)
-    .digest("hex")
-    .slice(0, 6); // First 6 chars sufficient for uniqueness
+  const contentHash = computeHash(normalizedContent).slice(0, 6); // First 6 chars sufficient for uniqueness
 
   return `${normalizedHeading}-${contentHash}`;
 }

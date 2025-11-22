@@ -4,8 +4,8 @@
  */
 
 import type { AlignSection } from "@aligntrue/schema";
+import { computeHash } from "@aligntrue/schema";
 import type { ParsedSection } from "./section-parser.js";
-import { createHash } from "crypto";
 
 // Re-export ParsedSection for convenience
 export type { ParsedSection };
@@ -170,7 +170,7 @@ function normalizeHeading(heading: string): string {
  */
 function computeIRSectionHash(section: AlignSection): string {
   const normalized = `${section.heading}\n${section.content}`.trim();
-  return createHash("sha256").update(normalized, "utf-8").digest("hex");
+  return computeHash(normalized);
 }
 
 /**
@@ -178,10 +178,10 @@ function computeIRSectionHash(section: AlignSection): string {
  */
 export function parsedToAlignSection(parsed: ParsedSection): AlignSection {
   // Generate fingerprint from heading for stable identity
-  const fingerprint = createHash("sha256")
-    .update(parsed.heading.toLowerCase().trim(), "utf-8")
-    .digest("hex")
-    .slice(0, 16);
+  const fingerprint = computeHash(parsed.heading.toLowerCase().trim()).slice(
+    0,
+    16,
+  );
 
   return {
     heading: parsed.heading,

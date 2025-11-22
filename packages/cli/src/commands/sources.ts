@@ -13,15 +13,7 @@ import {
 } from "fs";
 import { join, basename } from "path";
 import { loadConfig, saveConfig } from "@aligntrue/core";
-// Telemetry placeholder - not implemented yet
-async function recordEvent(_event: {
-  event: string;
-  properties?: Record<string, unknown>;
-}): Promise<void> {
-  // Telemetry is implemented in other commands via @aligntrue/core/telemetry
-  // Can be added here when needed
-  return Promise.resolve();
-}
+import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 
 /**
  * Main sources command handler
@@ -154,12 +146,9 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
     }
 
     // Record telemetry
-    await recordEvent({
-      event: "sources_list",
-      properties: {
-        file_count: ordered.length,
-        large_file_count: largeFiles.length,
-      },
+    recordEvent({
+      command_name: "sources_list",
+      align_hashes_used: [],
     });
 
     clack.outro("Done");
@@ -413,12 +402,9 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     }
 
     // Record telemetry
-    await recordEvent({
-      event: "sources_split",
-      properties: {
-        section_count: parsed.sections.length,
-        target_dir: targetDir,
-      },
+    recordEvent({
+      command_name: "sources_split",
+      align_hashes_used: [],
     });
 
     clack.outro(
