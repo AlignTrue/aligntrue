@@ -94,8 +94,6 @@ export class CursorExporter extends ExporterBase {
             };
           }
         | undefined;
-      const editSource = config?.sync?.edit_source;
-      const isDecentralized = config?.sync?.centralized === false || false;
 
       // Determine if this file is in edit_source (editable) or read-only
       // Normalize outputPath to relative path for matching
@@ -104,6 +102,9 @@ export class CursorExporter extends ExporterBase {
         /\\/g,
         "/",
       );
+
+      const editSource = config?.sync?.edit_source;
+      const isDecentralized = config?.sync?.centralized === false || false;
 
       let isEditSource = false;
       if (editSource && !isDecentralized) {
