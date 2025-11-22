@@ -11,7 +11,7 @@ import { tmpdir } from "os";
 import {
   backupOverwrittenFile,
   formatTimestampForFilename,
-} from "../../src/utils/overwritten-rules-manager.js";
+} from "@aligntrue/core";
 import {
   formatDetectionOutput,
   buildAgentSummary,
