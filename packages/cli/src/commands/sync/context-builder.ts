@@ -247,14 +247,15 @@ export async function buildSyncContext(
     );
   }
 
-  // Step 4: Detect new agents (unless --no-detect or --dry-run)
-  if (!options.noDetect && !options.dryRun) {
-    await detectAndEnableAgents(config, configPath, options);
-  }
-
-  // Step 4.5: Detect untracked files with content (unless --no-detect or --dry-run)
+  // Step 4: Detect untracked files with content (unless --no-detect or --dry-run)
+  // This determines edit_source first, which affects subsequent agent detection
   if (!options.noDetect && !options.dryRun) {
     await detectAndHandleUntrackedFiles(cwd, config, configPath, options);
+  }
+
+  // Step 4.5: Detect new agents (unless --no-detect or --dry-run)
+  if (!options.noDetect && !options.dryRun) {
+    await detectAndEnableAgents(config, configPath, options);
   }
 
   let lockfilePath: string | undefined;

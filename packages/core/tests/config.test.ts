@@ -440,7 +440,7 @@ unknownField: value
 
     await loadConfig(configPath);
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Unknown config field "unknownField"'),
+      expect.stringContaining('Unrecognized config field "unknownField"'),
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Valid fields:"),

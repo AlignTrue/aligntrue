@@ -1042,6 +1042,13 @@ export async function saveMinimalConfig(
     hasSyncChanges = true;
   }
 
+  // Always save edit_source if explicitly set
+  // (don't compare to computed default since defaults are dynamic based on exporters)
+  if (config.sync?.edit_source !== undefined) {
+    syncSection.edit_source = config.sync.edit_source;
+    hasSyncChanges = true;
+  }
+
   if (hasSyncChanges) {
     minimalConfig.sync = syncSection;
   }
