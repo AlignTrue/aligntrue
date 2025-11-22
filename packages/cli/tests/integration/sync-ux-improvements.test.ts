@@ -12,7 +12,7 @@ import {
   rmSync,
   mkdtempSync,
 } from "fs";
-import { join } from "path";
+import { join, normalize } from "path";
 import { tmpdir } from "os";
 import {
   backupOverwrittenFile,
@@ -66,9 +66,11 @@ describe("Overwritten Rules Manager", () => {
 
     // Verify
     expect(existsSync(backupPath)).toBe(true);
-    expect(backupPath).toContain(".aligntrue/overwritten-rules/rules");
-    expect(backupPath).toContain("AGENTS");
-    expect(backupPath).toMatch(
+    // Normalize path separators for cross-platform compatibility
+    const normalizedPath = normalize(backupPath).replace(/\\/g, "/");
+    expect(normalizedPath).toContain(".aligntrue/overwritten-rules/rules");
+    expect(normalizedPath).toContain("AGENTS");
+    expect(normalizedPath).toMatch(
       /AGENTS\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.md/,
     );
 
@@ -88,8 +90,12 @@ describe("Overwritten Rules Manager", () => {
     const backupPath = backupOverwrittenFile(sourceFile, tmpDir);
 
     // Verify directory structure is preserved
-    expect(backupPath).toContain(".aligntrue/overwritten-rules/.cursor/rules");
-    expect(backupPath).toContain("debugging");
+    // Normalize path separators for cross-platform compatibility
+    const normalizedPath = normalize(backupPath).replace(/\\/g, "/");
+    expect(normalizedPath).toContain(
+      ".aligntrue/overwritten-rules/.cursor/rules",
+    );
+    expect(normalizedPath).toContain("debugging");
     expect(existsSync(backupPath)).toBe(true);
   });
 });
