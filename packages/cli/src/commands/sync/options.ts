@@ -42,7 +42,7 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--force",
     hasValue: false,
     description:
-      "Bypass allow list validation and overwrite manually edited files (use with caution)",
+      "Bypass validation and force overwrite edit_source files with manual edits (read-only files auto-overwrite with backup)",
   },
   {
     flag: "--force-invalid-ir",
@@ -241,10 +241,11 @@ export function showSyncHelp(): void {
       "  --json: Machine-readable JSON output for scripting/CI",
       "",
       "Overwritten Rules Safety:",
-      "  When files are overwritten or sections conflict, originals are backed up:",
+      "  Manual edits are automatically backed up before overwriting:",
       "  - File backups: .aligntrue/overwritten-rules/ (with timestamp)",
       "  - Section conflicts: .aligntrue/overwritten-rules.md (with metadata)",
-      "  These can be reviewed and deleted at any time.",
+      "  - Happens automatically for read-only files (no --force needed)",
+      "  - These can be reviewed and deleted at any time.",
     ],
   });
 }

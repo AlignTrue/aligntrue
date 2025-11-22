@@ -704,6 +704,33 @@ Choice:
 
 **Best practice:** Edit `AGENTS.md` or agent files, not generated exports.
 
+### Automatic overwriting of read-only files
+
+Read-only files (files NOT matching `edit_source`) are automatically overwritten during sync if they've been manually edited:
+
+1. **Before overwriting**: Original content is backed up to `.aligntrue/overwritten-rules/` with a timestamp
+2. **During sync**: File is overwritten with clean IR content (no merge, no user edits preserved)
+3. **No --force needed**: This happens automatically for read-only files
+
+**Example:**
+
+```bash
+# edit_source is "AGENTS.md"
+# User manually edits .cursor/rules/aligntrue.mdc (read-only)
+
+aligntrue sync
+# Result:
+# 1. Backup created: .aligntrue/overwritten-rules/cursor/rules/aligntrue.2025-01-15T14-30-00.mdc
+# 2. File overwritten with IR content
+# 3. Manual edit is gone (preserved in backup)
+```
+
+**Why**: Read-only files are under AlignTrue's control. Manual edits are considered unauthorized and are overwritten to maintain consistency.
+
+**Safety**: All manual edits are backed up before overwriting, so nothing is lost.
+
+**When --force is needed**: For files that ARE in `edit_source`, use `--force` to overwrite manual edits during conflict resolution.
+
 ---
 
 ## New file detection
