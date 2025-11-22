@@ -479,11 +479,11 @@ aligntrue sources split
 
 ## Related documentation
 
-- [Choosing your organization structure](/docs/01-guides/07-organization-structure) - Decision guide for simple, organized, or complex structures
+- [Choosing your organization structure](/docs/01-guides/06-rule-structure) - Decision guide for simple, organized, or complex structures
 - [Agent support](/docs/04-reference/agent-support) - Which agents support multi-file natively
 - [Two-way sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
-- [Team mode](/docs/01-guides/05-team-guide) - Lockfile validation and drift detection
+- [Team mode](/docs/01-guides/04-team-guide) - Lockfile validation and drift detection
 
 ## Example
 

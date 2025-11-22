@@ -1,12 +1,13 @@
 {
   "00-edit-source": "Choosing your edit source",
   "01-workflows": "Workflows and scenarios",
-  "03-ci-cd-integration": "CI/CD integration",
-  "04-solo-developer-guide": "Solo developer guide",
-  "05-team-guide": "Team guide",
-  "06-multi-agent-workflows": "Multi-agent workflows",
-  "07-organization-structure": "Choosing your organization structure",
-  "join-team": "Joining a team",
-  "safety-best-practices": "Safety best practices",
-  "team-managed-sections": "Team-managed sections"
+  "02-solo-developer-guide": "Solo developer guide",
+  "03-join-team": "Joining a team",
+  "04-team-guide": "Team guide",
+  "05-multi-agent-workflows": "Multi-agent workflows",
+  "06-rule-structure": "Choosing your rule structure",
+  "07-ai-native-engineering": "AI-native engineering",
+  "08-team-managed-sections": "Team-managed sections",
+  "09-safety-best-practices": "Safety best practices",
+  "10-ci-cd-integration": "CI/CD integration"
 }

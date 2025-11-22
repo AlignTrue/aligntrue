@@ -32,7 +32,7 @@ Auto-detects agents, imports existing rules, or creates AGENTS.md. Generates and
 
 **Edit rules in your agent's native format.** AlignTrue works seamlessly with Cursor (`.mdc`), GitHub Copilot, Claude Code, and 28+ agents. No config changes needed.
 
-→ [Verify it works](https://aligntrue.ai/docs/00-getting-started/00-quickstart#verify-it-works) | [Solo guide](https://aligntrue.ai/docs/01-guides/04-solo-developer-guide)
+→ [Verify it works](https://aligntrue.ai/docs/00-getting-started/00-quickstart#verify-it-works) | [Solo guide](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide)
 
 ## Why AlignTrue
 
@@ -87,7 +87,7 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | Ruler migration          | Auto-detect and convert from Ruler                                                    | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
 | Backup & restore         | Selective file restoration with diff preview via `aligntrue revert`                   | [Backup & Restore](https://aligntrue.ai/docs/04-reference/backup-restore)     |
 | **Safety & Reliability** |                                                                                       |                                                                               |
-| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, section-level preservation     | [Safety Guide](https://aligntrue.ai/docs/01-guides/safety-best-practices)     |
+| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, section-level preservation     | [Safety Guide](https://aligntrue.ai/docs/01-guides/09-safety-best-practices)  |
 | Easy recovery            | Quick rollback with `aligntrue revert` showing preview and diff                       | [Backup & Restore](https://aligntrue.ai/docs/04-reference/backup-restore)     |
 | 1800+ tests              | Vitest + Playwright with reproducible, seed-controlled execution                      | [Architecture](https://aligntrue.ai/docs/08-development/architecture)         |
 | JSON Schema validation   | All IR and config validated with Ajv strict mode                                      | [Features](https://aligntrue.ai/docs/04-reference/features)                   |

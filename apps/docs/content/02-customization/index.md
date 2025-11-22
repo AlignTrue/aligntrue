@@ -345,8 +345,8 @@ You don't need to understand vendor bags to use AlignTrue effectively - they're 
 - [Plugs guide](/docs/02-customization/plugs) - Detailed plug usage with examples
 - [Overlays guide](/docs/02-customization/overlays) - Fork-safe customization patterns
 - [Scopes guide](/docs/02-customization/scopes) - Monorepo rule organization
-- [Solo developer guide](/docs/01-guides/04-solo-developer-guide) - Complete solo workflow
-- [Team guide](/docs/01-guides/05-team-guide) - Team collaboration patterns
+- [Solo developer guide](/docs/01-guides/02-solo-developer-guide) - Complete solo workflow
+- [Team guide](/docs/01-guides/04-team-guide) - Team collaboration patterns
 
 ## CLI commands
 
