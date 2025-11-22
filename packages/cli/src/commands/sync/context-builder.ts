@@ -24,6 +24,10 @@ import {
   buildAgentSummary,
   shouldRecommendEditSourceSwitch,
 } from "../../utils/detection-output-formatter.js";
+import {
+  getExporterFromEditSource,
+  getAgentDisplayName,
+} from "../../utils/edit-source-agent-mapping.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -441,11 +445,18 @@ async function detectAndEnableAgents(
   options: SyncOptions,
 ): Promise<void> {
   const cwd = process.cwd();
-  const newAgents = detectNewAgents(
+  let newAgents = detectNewAgents(
     cwd,
     config.exporters || [],
     config.detection?.ignored_agents || [],
   );
+
+  // Filter out the edit source agent to avoid prompting about it
+  // (it's already being used as the edit source, so it should be auto-enabled)
+  const editSourceAgent = getExporterFromEditSource(config.sync?.edit_source);
+  if (editSourceAgent) {
+    newAgents = newAgents.filter((a) => a.name !== editSourceAgent);
+  }
 
   if (newAgents.length === 0) return;
 
@@ -831,8 +842,9 @@ async function detectAndHandleUntrackedFiles(
       };
       const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
+      const agentDisplayName = getAgentDisplayName(agent);
       const recommendation = await clack.confirm({
-        message: `Found ${agent} with ${filesByAgent.get(agent)?.length || 0} files. Switch to multi-file edit source?\n  Preserves file organization and improves scalability`,
+        message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  Found ${filesByAgent.get(agent)?.length || 0} files. Preserves file organization and improves scalability.`,
         initialValue: true,
       });
 
@@ -912,6 +924,14 @@ async function detectAndHandleUntrackedFiles(
     if (!config.sync) config.sync = {};
     const previousEditSource = config.sync.edit_source;
     config.sync.edit_source = newEditSource;
+
+    // Auto-enable the new edit source agent as an exporter
+    const newExporter = getExporterFromEditSource(newEditSource);
+    if (newExporter && config.exporters) {
+      if (!config.exporters.includes(newExporter)) {
+        config.exporters.push(newExporter);
+      }
+    }
 
     await saveMinimalConfig(config, configPath);
     if (!isNonInteractive) {
