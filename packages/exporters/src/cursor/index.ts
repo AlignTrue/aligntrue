@@ -98,6 +98,13 @@ export class CursorExporter extends ExporterBase {
       const isDecentralized = config?.sync?.centralized === false || false;
 
       // Determine if this file is in edit_source (editable) or read-only
+      // Normalize outputPath to relative path for matching
+      const { relative } = await import("path");
+      const relativeOutputPath = relative(outputDir, outputPath).replace(
+        /\\/g,
+        "/",
+      );
+
       let isEditSource = false;
       if (editSource && !isDecentralized) {
         const patterns = Array.isArray(editSource) ? editSource : [editSource];
@@ -105,12 +112,13 @@ export class CursorExporter extends ExporterBase {
           // Simple glob match for .cursor/rules/*.mdc
           if (
             pattern === ".cursor/rules/*.mdc" &&
-            outputPath.includes(".cursor/rules/")
+            relativeOutputPath.startsWith(".cursor/rules/") &&
+            relativeOutputPath.endsWith(".mdc")
           ) {
             return true;
           }
           // Exact path match
-          if (outputPath.endsWith(pattern)) {
+          if (relativeOutputPath === pattern) {
             return true;
           }
           return false;
