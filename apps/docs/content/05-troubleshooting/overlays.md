@@ -557,7 +557,7 @@ aln link https://github.com/acme/standards --path vendor/acme-standards
 
 ---
 
-## When to Fork Instead
+## When to fork instead
 
 **Symptom:** You have many overlays or complex customizations.
 

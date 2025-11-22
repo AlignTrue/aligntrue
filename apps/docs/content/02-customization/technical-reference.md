@@ -212,7 +212,7 @@ merge:
 
 Last writer wins for conflicts.
 
-## Integration and Order
+## Integration and order
 
 When using multiple customization features together, they apply in this order:
 
@@ -220,7 +220,7 @@ When using multiple customization features together, they apply in this order:
 2. **Plugs** - Resolve template slots
 3. **Overlays** - Apply property overrides
 
-## Determinism and Hashing
+## Determinism and hashing
 
 ### Plugs
 

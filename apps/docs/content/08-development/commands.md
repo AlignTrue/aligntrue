@@ -294,7 +294,7 @@ pnpm update --latest --recursive
 pnpm audit
 ```
 
-## Versioning with Changesets
+## Versioning with changesets
 
 We use Changesets for managing package versions and changelogs.
 

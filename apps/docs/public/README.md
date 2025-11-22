@@ -1,4 +1,4 @@
-# Public Assets
+# Public assets
 
 This directory contains static assets served at the root path.
 
