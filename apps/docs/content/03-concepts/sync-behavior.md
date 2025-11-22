@@ -762,8 +762,7 @@ cursor: 3 file(s), 25 section(s)
 Enable these files as export targets?
 
 What happens:
-• Existing content will be extracted to .aligntrue/extracted-rules.md
-• A safety backup will be created
+• Existing content will be backed up to .aligntrue/overwritten-rules/
 • Files will be synced with your current rules from: AGENTS.md
 
 You can always change your edit source later.
@@ -773,19 +772,17 @@ You can always change your edit source later.
 
 **Files enabled as export targets:**
 
-- AlignTrue extracts existing content from the files to `.aligntrue/extracted-rules.md` for your review
-- Only content NOT already in your current rules is extracted (deduplication by content hash)
-- A safety backup is created
+- AlignTrue backs up the entire existing file to `.aligntrue/overwritten-rules/{file}-{timestamp}` for recovery
 - On the next sync, these files receive your current rules from `edit_source`
+- All existing content is preserved in the backup for your reference
 
-**Extract message:**
+**Backup message:**
 
 ```
 Files enabled as export targets
-Extracted 3 new section(s) to .aligntrue/extracted-rules.md
-(5 section(s) already in your current rules were skipped)
-
-Review extracted content in .aligntrue/extracted-rules.md and copy/move what you need.
+Backed up existing content:
+  • .aligntrue/overwritten-rules/cursor/rules/backend.2025-01-15T10-30-45.mdc
+  • .aligntrue/overwritten-rules/cursor/rules/frontend.2025-01-15T10-30-45.mdc
 
 Current edit source: AGENTS.md
 These files will be synced on your next sync.
@@ -795,33 +792,25 @@ To change your edit source, run: aligntrue config set sync.edit_source
 
 ### Old rules preservation
 
-When files are detected and enabled, their existing content is extracted to `.aligntrue/extracted-rules.md`:
+When files are detected and enabled, their existing content is backed up to `.aligntrue/overwritten-rules/`:
 
-**Format:**
+**Backup structure:**
 
-```markdown
----
-Extracted from: .cursor/rules/backend.mdc
-Date: 2025-01-15 10:30:45
-Total sections: 15
-Extracted: 3 (new/different from current rules)
-Skipped: 12 (already in current rules)
-Reason: File enabled as export target in centralized mode
----
-
-## Unique section heading
-
-Content here...
-
----
+```
+.aligntrue/overwritten-rules/
+  ├── cursor/
+  │   └── rules/
+  │       ├── backend.2025-01-15T10-30-45.mdc
+  │       └── frontend.2025-01-15T10-30-45.mdc
+  └── AGENTS.2025-01-15T10-30-45.md
 ```
 
 **File management:**
 
-- `.aligntrue/extracted-rules.md` is append-only (never deleted by AlignTrue)
-- New extractions are appended to the end of the file
-- You manually manage cleanup (copy/paste/delete what you need)
-- Deduplication by content hash helps avoid most duplicates automatically
+- Each backup includes a timestamp to distinguish multiple backups
+- All backups are preserved indefinitely
+- You manually manage cleanup (review and delete as needed)
+- Backups preserve the exact original file structure for full recovery
 
 ### Best practices
 
