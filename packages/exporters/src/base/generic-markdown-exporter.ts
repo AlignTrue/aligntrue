@@ -62,6 +62,9 @@ export class GenericMarkdownExporter extends ExporterBase {
 
     const sections = pack.sections;
 
+    // Debug logging flag (declared once at function level)
+    const DEBUG_EXPORT = process.env["DEBUG_EXPORT"] === "true";
+
     // Validate inputs
     if (sections.length === 0) {
       return {
@@ -79,6 +82,26 @@ export class GenericMarkdownExporter extends ExporterBase {
       ? "default"
       : scope.normalizedPath;
     const scopeSections = sectionsByScope.get(currentTargetScope) || [];
+
+    // Debug logging for scope filtering
+    if (DEBUG_EXPORT) {
+      console.log(
+        `[${this.name}] Export for scope: ${currentTargetScope}, total sections: ${sections.length}, filtered: ${scopeSections.length}`,
+      );
+      if (scopeSections.length === 0 && sections.length > 0) {
+        const scopes = Array.from(sectionsByScope.keys());
+        console.log(
+          `[${this.name}] No sections for scope "${currentTargetScope}", available scopes: ${scopes.join(", ")}`,
+        );
+        // Log sample section scopes
+        const sampleScopes = sections
+          .slice(0, 3)
+          .map((s) => s.vendor?.aligntrue?.source_scope || "no source_scope");
+        console.log(
+          `[${this.name}] Sample section source_scopes: ${sampleScopes.join(", ")}`,
+        );
+      }
+    }
 
     if (scopeSections.length === 0) {
       return {
@@ -113,7 +136,31 @@ export class GenericMarkdownExporter extends ExporterBase {
     const fidelityNotes = this.computeSectionFidelityNotes(scopeSections);
 
     // Write file atomically if not dry-run
-    const filesWritten = await this.writeFile(outputPath, content, dryRun);
+    if (DEBUG_EXPORT) {
+      console.log(
+        `[${this.name}] About to write ${outputPath}, content length: ${content.length}, sections: ${scopeSections.length}`,
+      );
+    }
+
+    let filesWritten: string[];
+    try {
+      filesWritten = await this.writeFile(outputPath, content, dryRun, options);
+      if (DEBUG_EXPORT) {
+        console.log(
+          `[${this.name}] Write result for ${outputPath}: ${filesWritten.length} file(s) written`,
+        );
+      }
+    } catch (error) {
+      // Log error but don't fail silently
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (DEBUG_EXPORT) {
+        console.error(
+          `[${this.name}] Failed to write ${outputPath}: ${errorMsg}`,
+        );
+      }
+      // Re-throw to let sync engine handle
+      throw error;
+    }
 
     return this.buildResult(filesWritten, contentHash, [
       ...warnings,

@@ -559,8 +559,26 @@ export class SyncEngine {
           };
 
           try {
+            const DEBUG_SYNC = process.env["DEBUG_SYNC"] === "true";
+            if (DEBUG_SYNC) {
+              console.log(
+                `[SyncEngine] Exporting ${exporter.name} for scope ${scope.path}, sections: ${scopedPack.sections.length}`,
+              );
+            }
+
             const result = await exporter.export(request, exportOptions);
             exportResults.set(`${exporter.name}:${scope.path}`, result);
+
+            if (DEBUG_SYNC) {
+              console.log(
+                `[SyncEngine] ${exporter.name} result: success=${result.success}, filesWritten=${result.filesWritten.length}`,
+              );
+              if (result.filesWritten.length > 0) {
+                console.log(
+                  `[SyncEngine] ${exporter.name} wrote: ${result.filesWritten.join(", ")}`,
+                );
+              }
+            }
 
             if (result.success) {
               written.push(...result.filesWritten);

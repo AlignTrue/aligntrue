@@ -296,7 +296,27 @@ export abstract class ExporterBase implements ExporterPlugin {
       this.writer.setChecksumHandler(this.handleChecksumConflict.bind(this));
     }
 
-    await this.writer.write(path, content, { interactive, force });
+    // Debug logging for file writes
+    const DEBUG_EXPORT = process.env["DEBUG_EXPORT"] === "true";
+    if (DEBUG_EXPORT) {
+      console.log(`[${this.name}] Writing file: ${path}`);
+      console.log(
+        `[${this.name}] Content length: ${content.length}, force: ${force}, interactive: ${interactive}`,
+      );
+    }
+
+    try {
+      await this.writer.write(path, content, { interactive, force });
+      if (DEBUG_EXPORT) {
+        console.log(`[${this.name}] Successfully wrote: ${path}`);
+      }
+    } catch (error) {
+      if (DEBUG_EXPORT) {
+        console.error(`[${this.name}] Failed to write ${path}:`, error);
+      }
+      // Re-throw to let caller handle
+      throw error;
+    }
 
     return [path];
   }
