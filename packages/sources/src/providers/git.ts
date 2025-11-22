@@ -246,9 +246,6 @@ export class GitProvider implements SourceProvider {
         }
 
         // Solo mode: auto-pull updates
-        console.log(
-          `Updates available for ${this.url} (${targetRef}), pulling latest...`,
-        );
         await this.pullUpdates(targetRef);
       } else {
         // No updates, just update last checked timestamp
