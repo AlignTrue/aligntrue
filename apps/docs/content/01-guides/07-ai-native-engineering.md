@@ -149,63 +149,72 @@ flowchart TD
 %% Top: Org & people
 %% -------------------------------
 subgraph OrgLayer["Org & people"]
-    Org["Org-wide\nstandards & policies"]
-    Dev["Engineers & tech leads"]
+  Org["Org-wide\nstandards & policies"]
+  Dev["Engineers & tech leads"]
+  Org -->|"Define\nAI-native standards"| Dev
 end
-
-Org -->|Define\nAI-native standards| Dev
 
 %% -------------------------------
 %% Middle: Repo with AlignTrue
 %% -------------------------------
 subgraph Repo["Repo with AlignTrue"]
-    ATCfg["AlignTrue packs & rules\n(.aligntrue/*.md, configs)"]
-    ATLock["Lockfile & allow list\n(.aligntrue.lock.json, .aligntrue.allow)"]
-end
+  ATCfg["AlignTrue packs & rules\n(.aligntrue/*.md,\nconfigs)"]
+  ATLock["Lockfile & allow list\n(.aligntrue.lock.json,\n.aligntrue.allow)"]
 
-Dev -->|Author & refine\nrules / packs| ATCfg
-ATCfg -->|aligntrue check --ci\nvalidate & enforce| ATLock
+  Dev -->|"Author & refine\nrules / packs"| ATCfg
+  ATCfg -->|"aligntrue check --ci\nvalidate & enforce"| ATLock
+end
 
 %% -------------------------------
 %% Lower middle: Agents & tools
 %% -------------------------------
-subgraph Agents["Agents & tools"]
-    Cursor["Cursor / IDE agents"]
-    ClaudeCode["Claude Code / editor agents"]
-    Copilot["GitHub Copilot\n/ other IDEs"]
-    CLIAgents["CLI & MCP-based agents"]
-    ReviewBots["CI / review bots"]
-end
+subgraph AgentsBox["Agents & tools"]
+  AgentsHub["Agents\n(shared behavior)"]
+  Cursor["Cursor / IDE agents"]
+  ClaudeCode["Claude Code\n/ editor agents"]
+  Copilot["GitHub Copilot\n/ other IDEs"]
+  CLIAgents["CLI & MCP-based agents"]
+  ReviewBots["CI / review bots"]
 
-ATCfg -->|aligntrue sync\nexport agent files| Cursor
-ATCfg --> ClaudeCode
-ATCfg --> Copilot
-ATCfg --> CLIAgents
-ATCfg --> ReviewBots
+  AgentsHub --> Cursor
+  AgentsHub --> ClaudeCode
+  AgentsHub --> Copilot
+  AgentsHub --> CLIAgents
+  AgentsHub --> ReviewBots
+end
 
 %% -------------------------------
 %% Bottom: SDLC phases
 %% -------------------------------
-subgraph SDLC["SDLC phases"]
-    Plan[Planning]
-    Design[Design & architecture]
-    Build[Build & implementation]
-    Test[Testing]
-    Review[Code review]
-    Docs[Documentation]
-    Ops[Deploy & operate]
+subgraph SDLCBox["SDLC phases"]
+  SDLCHub["SDLC\nentry point"]
+  Plan[Planning]
+  Design[Design & architecture]
+  Build[Build & implementation]
+  Test[Testing]
+  Review[Code review]
+  Docs[Documentation]
+  Ops[Deploy & operate]
+
+  SDLCHub --> Plan
+  SDLCHub --> Design
+  SDLCHub --> Build
+  SDLCHub --> Test
+  SDLCHub --> Review
+  SDLCHub --> Docs
+  SDLCHub --> Ops
 end
 
-Cursor --> Plan
-ClaudeCode --> Design
-Copilot --> Build
-CLIAgents --> Test
-ReviewBots --> Review
-Cursor --> Docs
-CLIAgents --> Ops
+%% Cross-layer connections
+ATLock -->|"aligntrue sync\nexport agent files"| AgentsHub
 
-%% Feedback loop
-SDLC -->|Feedback on\nrules & packs| Dev
+Cursor --> SDLCHub
+ClaudeCode --> SDLCHub
+Copilot --> SDLCHub
+CLIAgents --> SDLCHub
+ReviewBots --> SDLCHub
+
+SDLCBox -->|"Feedback on\nrules & packs"| Dev
 ```
 
 ---
