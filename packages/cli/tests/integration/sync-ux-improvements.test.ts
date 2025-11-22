@@ -164,7 +164,7 @@ describe("Detection Output Formatter", () => {
     });
 
     expect(result.text).toContain("Detected new content");
-    expect(result.text).toContain("cursor: 1 file");
+    expect(result.text).toContain("cursor (1 file)");
     expect(result.text).toContain("Run with --verbose to see file details");
     expect(result.text).not.toContain("file1.mdc"); // Should not show file list without verbose
   });

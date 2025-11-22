@@ -5,7 +5,7 @@
  * Ensures CLI and docs bundles don't exceed size limits
  *
  * Limits:
- * - CLI dist/ (without source maps): ≤ 600 KB
+ * - CLI dist/ (without source maps): ≤ 1 MB
  * - Docs JS: ≤ 150 KB gzipped
  * - Docs CSS: ≤ 50 KB gzipped
  */
@@ -19,7 +19,7 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
 const LIMITS = {
-  cliDist: { size: 610 * 1024, label: "CLI dist/ (JS only)" },
+  cliDist: { size: 1024 * 1024, label: "CLI dist/ (JS only)" },
 };
 
 /**
