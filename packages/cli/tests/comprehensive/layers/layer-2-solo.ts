@@ -147,6 +147,43 @@ const workflows: Workflow[] = [
       return { passed: true };
     },
   },
+  {
+    name: "Init with auto-sync (non-interactive mode)",
+    steps: [
+      {
+        description:
+          "Initialize AlignTrue with --yes flag (triggers auto-sync)",
+        command: "aligntrue init --yes --mode solo",
+        expectedExitCode: 0,
+      },
+    ],
+    validation: (workspace) => {
+      const configPath = join(workspace, ".aligntrue", "config.yaml");
+      const rulesPath = join(workspace, ".aligntrue", ".rules.yaml");
+      const agentsPath = join(workspace, "AGENTS.md");
+
+      if (!existsSync(configPath)) {
+        return { passed: false, error: "config.yaml not created after init" };
+      }
+      if (!existsSync(rulesPath)) {
+        return { passed: false, error: ".rules.yaml not created after init" };
+      }
+      if (!existsSync(agentsPath)) {
+        return { passed: false, error: "AGENTS.md not created after init" };
+      }
+
+      // Verify config has exporters
+      const config = readFileSync(configPath, "utf-8");
+      if (!config.includes("exporters")) {
+        return {
+          passed: false,
+          error: "config.yaml missing exporters configuration",
+        };
+      }
+
+      return { passed: true };
+    },
+  },
 ];
 
 function runWorkflow(
