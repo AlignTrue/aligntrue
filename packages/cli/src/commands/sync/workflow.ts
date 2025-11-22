@@ -134,11 +134,13 @@ export async function executeSyncWorkflow(
   // Execute sync operation
   if (options.acceptAgent) {
     // Manual agent → IR sync (pullback)
-    spinner.start(
-      options.dryRun
-        ? "Previewing import"
-        : `Importing from ${options.acceptAgent}`,
-    );
+    if (!options.quiet) {
+      spinner.start(
+        options.dryRun
+          ? "Previewing import"
+          : `Importing from ${options.acceptAgent}`,
+      );
+    }
     result = await engine.syncFromAgent(
       options.acceptAgent,
       context.absoluteSourcePath,
@@ -150,11 +152,19 @@ export async function executeSyncWorkflow(
       clack.log.info("Phase 2: Exporting IR to all configured agents");
     }
 
-    spinner.start(options.dryRun ? "Previewing changes" : "Syncing to agents");
+    if (!options.quiet) {
+      spinner.start(
+        options.dryRun ? "Previewing changes" : "Syncing to agents",
+      );
+    }
     result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
   }
 
-  spinner.stop(options.dryRun ? "Preview complete" : "Sync complete");
+  if (!options.quiet) {
+    spinner.stop(options.dryRun ? "Preview complete" : "Sync complete");
+  } else {
+    spinner.stop(); // Silent stop if spinner was never started
+  }
 
   // Step 4: Remove starter file after first successful sync
   if (!options.dryRun && result.success && !options.acceptAgent) {
@@ -162,7 +172,7 @@ export async function executeSyncWorkflow(
     const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
     try {
       unlinkSync(starterPath);
-      if (existsSync(syncedPath)) {
+      if (existsSync(syncedPath) && !options.quiet) {
         clack.log.info("Removed starter file (replaced by synced rules)");
       }
     } catch {
