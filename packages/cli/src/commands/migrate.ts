@@ -50,7 +50,6 @@ export async function migrate(args: string[]): Promise<void> {
         "aligntrue migrate team",
         "aligntrue promote <section>",
         "aligntrue demote <section>",
-        "aligntrue local <section>",
       ],
       notes: [
         "Subcommands:",
@@ -61,7 +60,6 @@ export async function migrate(args: string[]): Promise<void> {
         "Direct commands:",
         "  promote <section> - Promote personal rule to team",
         "  demote <section> - Demote team rule to personal",
-        "  local <section> - Make rule local-only",
       ],
     });
     return;
@@ -311,119 +309,6 @@ export async function demote(args: string[]): Promise<void> {
   console.log("\nThis rule is now personal and won't affect team members.");
 
   recordEvent({ command_name: "demote", align_hashes_used: [] });
-}
-
-/**
- * Local command - Make rule local-only
- */
-export async function local(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
-
-  if (parsed.help || parsed.positional.length === 0) {
-    showStandardHelp({
-      name: "local",
-      description: "Make rule local-only (never synced)",
-      usage: "aligntrue local <section> [options]",
-      args: ARG_DEFINITIONS,
-      examples: [
-        'aligntrue local "Sensitive Preferences"',
-        'aligntrue local "API Keys" --yes',
-      ],
-      notes: [
-        "This will:",
-        "  • Change storage: repo/remote → local",
-        "  • Move to .aligntrue/.local/",
-        "  • Never leave this machine",
-        "  • Not backed up to any remote",
-      ],
-    });
-    return;
-  }
-
-  const sectionHeading = parsed.positional[0]!;
-  const cwd = process.cwd();
-  const dryRun = parsed.flags["dry-run"] as boolean;
-  const yes = parsed.flags["yes"] as boolean;
-
-  if (isTTY()) {
-    clack.intro(`Make "${sectionHeading}" local-only`);
-  } else {
-    console.log(`Make "${sectionHeading}" local-only`);
-  }
-
-  // Create backup
-  const spinner = isTTY() ? createSpinner() : null;
-  if (spinner) {
-    spinner.start("Creating backup");
-  } else {
-    console.log("Creating backup...");
-  }
-
-  const backup = BackupManager.createBackup({
-    cwd,
-    created_by: "local",
-    action: `local-${sectionHeading}`,
-    notes: `Backup before making "${sectionHeading}" local-only`,
-  });
-
-  if (spinner) {
-    spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  } else {
-    console.log(`✓ Backup created: ${backup.timestamp}`);
-    console.log(
-      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  }
-
-  // Confirm
-  if (!yes && !dryRun) {
-    if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
-    }
-
-    const confirm = await clack.confirm({
-      message: `This will make "${sectionHeading}" local-only (not backed up). Continue?`,
-      initialValue: false,
-    });
-
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Operation cancelled");
-      return;
-    }
-  }
-
-  // Apply changes
-  if (!dryRun) {
-    if (spinner) {
-      spinner.start("Making local-only");
-    } else {
-      console.log("Making local-only...");
-    }
-    // Feature planned for future release
-    throw new Error(
-      "Local conversion not yet implemented. " +
-        "This feature is planned for a future release.",
-    );
-  } else {
-    if (isTTY()) {
-      clack.log.info("Dry run - no changes made");
-    } else {
-      console.log("Dry run - no changes made");
-    }
-  }
-
-  if (isTTY()) {
-    clack.outro(`✓ Made "${sectionHeading}" local-only`);
-  } else {
-    console.log(`✓ Made "${sectionHeading}" local-only`);
-  }
-  console.log("\n⚠ This rule will never leave this machine");
-  console.log("  Not backed up to any remote");
-  console.log("  Lost if machine dies");
-
-  recordEvent({ command_name: "local", align_hashes_used: [] });
 }
 
 /**
