@@ -28,6 +28,10 @@ import {
   getExporterFromEditSource,
   getAgentDisplayName,
 } from "../../utils/edit-source-agent-mapping.js";
+import {
+  promptEditSourceMergeStrategy,
+  type EditSourceMergeStrategy,
+} from "../../utils/edit-source-merge-strategy.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -54,6 +58,7 @@ export interface SyncContext {
   spinner: SpinnerLike;
   lockfilePath?: string;
   lockfileWritten?: boolean;
+  editSourceMergeStrategy?: EditSourceMergeStrategy;
 }
 
 /**
@@ -942,6 +947,31 @@ async function detectAndHandleUntrackedFiles(
       } else {
         clack.log.success(`Edit source set to: ${newEditSource}`);
       }
+
+      // Prompt for merge strategy when edit source actually changes
+      // Skip in auto-enable mode to prevent blocking
+      if (
+        previousEditSource &&
+        previousEditSource !== newEditSource &&
+        !options.autoEnable
+      ) {
+        const mergeStrategy = await promptEditSourceMergeStrategy(
+          previousEditSource,
+          newEditSource,
+          isNonInteractive,
+        );
+
+        // Store merge strategy in options for later use during export
+        options.editSourceMergeStrategy = mergeStrategy;
+
+        clack.log.info(
+          `Merge strategy: ${mergeStrategy === "keep-both" ? "Keep both (merge old and new)" : mergeStrategy === "keep-new" ? "Keep new only" : "Keep existing only"}`,
+        );
+      } else if (previousEditSource && previousEditSource !== newEditSource) {
+        // In auto-enable mode, default to keep-both
+        options.editSourceMergeStrategy = "keep-both";
+      }
+
       clack.log.info(
         "Content will be read from edit source and exported to all agents on next sync.",
       );
