@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface StateScenario {
   name: string;
@@ -118,6 +119,9 @@ function runScenario(
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   console.log("=== Layer 5: Statefulness ===\n");
 
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-5-log-"));

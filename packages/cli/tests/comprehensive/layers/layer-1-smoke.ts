@@ -7,6 +7,7 @@ import { execSync, type ExecException } from "node:child_process";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { assertTestSafety } from "../test-safety.js";
 
 interface TestScenario {
   name: string;
@@ -97,6 +98,9 @@ function runTest(scenario: TestScenario): {
 }
 
 function main() {
+  // Safety check: ensure tests run in isolated environment
+  assertTestSafety();
+
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-1-log-"));
   try {
     console.log("=== Layer 1: Smoke Tests ===\n");
