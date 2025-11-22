@@ -115,7 +115,8 @@ export async function executeSyncWorkflow(
   } = {
     configPath,
     dryRun: options.dryRun,
-    force: options.force,
+    // --yes flag enables automatic overwriting of read-only file edits
+    force: options.force || options.yes || false,
     interactive: !options.force && !options.yes && !options.nonInteractive,
   };
 
