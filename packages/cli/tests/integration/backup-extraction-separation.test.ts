@@ -368,4 +368,71 @@ Write tests for all changes`;
       expect(backupExists).toBe(false);
     });
   });
+
+  describe("Config edit_source persistence", () => {
+    it("should save edit_source to config even when matching computed default", async () => {
+      // Setup: Create a config with cursor as exporter
+      // The computed default for cursor would be ".cursor/rules/*.mdc"
+      // Verify that when we set edit_source to this value, it still gets saved
+
+      const { saveMinimalConfig } = await import("@aligntrue/core");
+      const { readFileSync } = await import("fs");
+
+      const aligntrueDir = join(tmpDir, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+
+      const config = {
+        mode: "solo" as const,
+        exporters: ["cursor", "agents"],
+        version: "1",
+        sync: {
+          edit_source: ".cursor/rules/*.mdc", // This matches the computed default for cursor
+          centralized: true,
+        },
+      };
+
+      const configPath = join(aligntrueDir, "config.yaml");
+
+      // Save the config
+      await saveMinimalConfig(config as any, configPath);
+
+      // Read the saved config file
+      const content = readFileSync(configPath, "utf-8");
+
+      // Verify: edit_source is present in the saved config
+      expect(content).toContain("edit_source");
+      expect(content).toContain(".cursor/rules/*.mdc");
+    });
+
+    it("should save edit_source when different from computed default", async () => {
+      const { saveMinimalConfig } = await import("@aligntrue/core");
+      const { readFileSync } = await import("fs");
+
+      const aligntrueDir = join(tmpDir, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+
+      // Create config where edit_source differs from computed default
+      const config = {
+        mode: "solo" as const,
+        exporters: ["cursor", "agents"],
+        version: "1",
+        sync: {
+          edit_source: "AGENTS.md", // Different from cursor's computed default
+          centralized: true,
+        },
+      };
+
+      const configPath = join(aligntrueDir, "config.yaml");
+
+      // Save the config
+      await saveMinimalConfig(config as any, configPath);
+
+      // Read the saved config file
+      const content = readFileSync(configPath, "utf-8");
+
+      // Verify: edit_source is present in the saved config
+      expect(content).toContain("edit_source");
+      expect(content).toContain("AGENTS.md");
+    });
+  });
 });
