@@ -16,7 +16,7 @@ import {
   parseCursorMdc,
   parseGenericMarkdown,
 } from "@aligntrue/exporters/utils/section-parser";
-import { backupOverwrittenFile } from "./overwritten-rules-manager.js";
+import { backupOverwrittenFile } from "@aligntrue/core";
 
 export interface ExtractRulesResult {
   extracted: boolean;

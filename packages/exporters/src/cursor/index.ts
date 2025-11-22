@@ -155,11 +155,16 @@ export class CursorExporter extends ExporterBase {
       allWarnings.push(...mergeResult.warnings, ...fidelityNotes);
 
       // Write file atomically if not dry-run
+      // Auto-apply force for read-only files (not in edit_source)
+      const writeOptions: ExportOptions = {
+        ...options,
+        force: !isEditSource || (options.force ?? false),
+      };
       const filesWritten = await this.writeFile(
         outputPath,
         content,
         dryRun,
-        options,
+        writeOptions,
       );
       allFilesWritten.push(...filesWritten);
 

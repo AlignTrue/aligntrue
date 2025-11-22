@@ -71,3 +71,13 @@ export * from "./scope-discovery.js";
 
 // Edit source utilities
 export { matchesEditSource } from "./utils/edit-source-matcher.js";
+
+// Overwritten rules management
+export {
+  backupOverwrittenFile,
+  safeBackupFile,
+  appendOverwrittenSection,
+  formatTimestampForFilename,
+  checkBackupExists,
+  type BackupResult,
+} from "./utils/overwritten-rules-manager.js";
