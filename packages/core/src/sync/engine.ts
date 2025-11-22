@@ -875,11 +875,9 @@ export class SyncEngine {
       const config = await loadConfig(configPath);
       this.config = config;
 
-      // Guard: Only proceed if centralized is false (decentralized mode enabled)
-      if (config.sync?.centralized !== false) {
-        // Centralized mode (default) - use simple single-source flow instead
-        return await this.syncToAgents(configPath, options);
-      }
+      // Note: In centralized mode (default), detectEditedFiles only returns files matching edit_source
+      // In decentralized mode (centralized: false), it can return files from any agent
+      // So we can run this in both modes - the filtering happens in detectEditedFiles
       // Get the project root (parent of .aligntrue directory)
       // configPath is typically .aligntrue/config.yaml, so we need to go up twice
       const absoluteConfigPath = resolvePath(configPath);
