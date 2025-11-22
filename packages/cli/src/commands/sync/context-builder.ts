@@ -589,11 +589,6 @@ async function detectAndHandleUntrackedFiles(
   configPath: string,
   options: SyncOptions,
 ): Promise<void> {
-  // Skip if non-interactive - this preserves deterministic behavior in CI/automation
-  if (options.yes || options.nonInteractive) {
-    return;
-  }
-
   const editSource = config.sync?.edit_source;
   const untrackedFiles = detectUntrackedFiles(cwd, editSource);
 
@@ -628,17 +623,6 @@ async function detectAndHandleUntrackedFiles(
     summaries.push(buildAgentSummary(agent, displayName, files));
   }
 
-  // Format and display detection with tiered verbosity (single consolidated display)
-  const formatted = formatDetectionOutput(summaries, filesByAgent, {
-    verbose: options.verbose,
-    verboseFull: options.verboseFull,
-    quiet: options.quiet,
-  });
-
-  if (formatted.text) {
-    console.log(formatted.text);
-  }
-
   // Check if we should recommend edit_source switch
   const detectedAgents = Array.from(filesByAgent.keys());
   const switchRecommendation = shouldRecommendEditSourceSwitch(
@@ -646,10 +630,12 @@ async function detectAndHandleUntrackedFiles(
     editSource,
   );
 
+  // In non-interactive mode (--yes), automatically set edit_source if needed
+  const isNonInteractive = options.yes || options.nonInteractive;
   let newEditSource: string | undefined;
 
-  if (switchRecommendation.should_recommend) {
-    // Recommend switching to multi-file format
+  if (isNonInteractive && switchRecommendation.should_recommend) {
+    // Auto-set edit_source to multi-file format when detected with --yes
     const agent = switchRecommendation.agent || "cursor";
     const agentPatterns: Record<string, string> = {
       cursor: ".cursor/rules/*.mdc",
@@ -658,80 +644,127 @@ async function detectAndHandleUntrackedFiles(
       kilocode: ".kilocode/rules/*.md",
       kiro: ".kiro/steering/*.md",
     };
-    const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
+    newEditSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
-    const recommendation = await clack.confirm({
-      message: `Found ${agent} with ${filesByAgent.get(agent)?.length || 0} files. Switch to multi-file edit source?\n  Preserves file organization and improves scalability`,
-      initialValue: true,
-    });
-
-    if (clack.isCancel(recommendation)) {
-      clack.cancel("Sync cancelled");
-      process.exit(0);
-    }
-
-    if (recommendation) {
-      newEditSource = recommendedSource;
-      // If switching from single-file source, back it up
-      if (editSource && !Array.isArray(editSource)) {
-        const { backupFileToOverwrittenRules } = await import(
-          "../../utils/extract-rules.js"
-        );
-        const currentSourcePath = resolve(cwd, editSource);
+    // If switching from single-file source, back it up
+    if (editSource && !Array.isArray(editSource)) {
+      const { backupFileToOverwrittenRules } = await import(
+        "../../utils/extract-rules.js"
+      );
+      const currentSourcePath = resolve(cwd, editSource);
+      if (existsSync(currentSourcePath)) {
         const backupResult = backupFileToOverwrittenRules(
           currentSourcePath,
           cwd,
         );
-        if (backupResult.backed_up) {
+        if (backupResult.backed_up && options.verbose) {
           clack.log.info(
             `Backed up previous edit source to: ${backupResult.backup_path}`,
           );
         }
       }
-    } else {
-      // User declined switch, ask for alternative
-      const altChoice = await clack.select({
-        message: "Choose edit source instead:",
-        options: [
-          { value: "AGENTS.md", label: "AGENTS.md (recommended)" },
-          { value: "CLAUDE.md", label: "CLAUDE.md" },
-        ],
-      });
-
-      if (clack.isCancel(altChoice)) {
-        clack.cancel("Sync cancelled");
-        process.exit(0);
-      }
-
-      newEditSource = altChoice as string;
     }
-  } else if (detectedAgents.length > 0) {
-    // Single-file formats detected
-    const options_choices: Array<{ value: string; label: string }> = [];
-    for (const agent of detectedAgents) {
-      const displayNameMap: Record<string, string> = {
-        agents: "AGENTS.md",
-        claude: "CLAUDE.md",
+  } else if (isNonInteractive) {
+    // Skip interactive prompts in non-interactive mode
+    return;
+  } else {
+    // Interactive mode - show formatted output and prompt user
+    // Format and display detection with tiered verbosity (single consolidated display)
+    const formatted = formatDetectionOutput(summaries, filesByAgent, {
+      verbose: options.verbose,
+      verboseFull: options.verboseFull,
+      quiet: options.quiet,
+    });
+
+    if (formatted.text) {
+      console.log(formatted.text);
+    }
+
+    if (switchRecommendation.should_recommend) {
+      // Recommend switching to multi-file format
+      const agent = switchRecommendation.agent || "cursor";
+      const agentPatterns: Record<string, string> = {
+        cursor: ".cursor/rules/*.mdc",
+        amazonq: ".amazonq/rules/*.md",
+        augmentcode: ".augment/rules/*.md",
+        kilocode: ".kilocode/rules/*.md",
+        kiro: ".kiro/steering/*.md",
       };
-      const filename = displayNameMap[agent] || `${agent.toUpperCase()}.md`;
-      options_choices.push({ value: filename, label: filename });
-    }
+      const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
-    if (options_choices.length === 1) {
-      newEditSource = options_choices[0]!.value;
-      clack.log.info(`Using ${newEditSource} as edit source`);
-    } else {
-      const choice = await clack.select({
-        message: "Choose edit source:",
-        options: options_choices,
+      const recommendation = await clack.confirm({
+        message: `Found ${agent} with ${filesByAgent.get(agent)?.length || 0} files. Switch to multi-file edit source?\n  Preserves file organization and improves scalability`,
+        initialValue: true,
       });
 
-      if (clack.isCancel(choice)) {
+      if (clack.isCancel(recommendation)) {
         clack.cancel("Sync cancelled");
         process.exit(0);
       }
 
-      newEditSource = choice as string;
+      if (recommendation) {
+        newEditSource = recommendedSource;
+        // If switching from single-file source, back it up
+        if (editSource && !Array.isArray(editSource)) {
+          const { backupFileToOverwrittenRules } = await import(
+            "../../utils/extract-rules.js"
+          );
+          const currentSourcePath = resolve(cwd, editSource);
+          const backupResult = backupFileToOverwrittenRules(
+            currentSourcePath,
+            cwd,
+          );
+          if (backupResult.backed_up) {
+            clack.log.info(
+              `Backed up previous edit source to: ${backupResult.backup_path}`,
+            );
+          }
+        }
+      } else {
+        // User declined switch, ask for alternative
+        const altChoice = await clack.select({
+          message: "Choose edit source instead:",
+          options: [
+            { value: "AGENTS.md", label: "AGENTS.md (recommended)" },
+            { value: "CLAUDE.md", label: "CLAUDE.md" },
+          ],
+        });
+
+        if (clack.isCancel(altChoice)) {
+          clack.cancel("Sync cancelled");
+          process.exit(0);
+        }
+
+        newEditSource = altChoice as string;
+      }
+    } else if (detectedAgents.length > 0) {
+      // Single-file formats detected
+      const options_choices: Array<{ value: string; label: string }> = [];
+      for (const agent of detectedAgents) {
+        const displayNameMap: Record<string, string> = {
+          agents: "AGENTS.md",
+          claude: "CLAUDE.md",
+        };
+        const filename = displayNameMap[agent] || `${agent.toUpperCase()}.md`;
+        options_choices.push({ value: filename, label: filename });
+      }
+
+      if (options_choices.length === 1) {
+        newEditSource = options_choices[0]!.value;
+        clack.log.info(`Using ${newEditSource} as edit source`);
+      } else {
+        const choice = await clack.select({
+          message: "Choose edit source:",
+          options: options_choices,
+        });
+
+        if (clack.isCancel(choice)) {
+          clack.cancel("Sync cancelled");
+          process.exit(0);
+        }
+
+        newEditSource = choice as string;
+      }
     }
   }
 
@@ -741,10 +774,12 @@ async function detectAndHandleUntrackedFiles(
     config.sync.edit_source = newEditSource;
 
     await saveMinimalConfig(config, configPath);
-    clack.log.success(`Edit source set to: ${newEditSource}`);
-    clack.log.info(
-      "Content will be read from edit source and exported to all agents on next sync.",
-    );
+    if (!isNonInteractive) {
+      clack.log.success(`Edit source set to: ${newEditSource}`);
+      clack.log.info(
+        "Content will be read from edit source and exported to all agents on next sync.",
+      );
+    }
   }
 }
 

@@ -322,9 +322,10 @@ async function reapplyPackSources(
 }
 
 /**
- * Handle decentralized sync logic
- *
- * EXPERIMENTAL: Only enabled when config.sync.centralized is false
+ * Handle two-way sync - merge edits from edit_source files into IR
+ * Works in both centralized (default) and decentralized modes
+ * In centralized mode: only reads from edit_source files
+ * In decentralized mode: reads from any agent file
  */
 async function handleTwoWaySync(
   context: SyncContext,
@@ -332,11 +333,9 @@ async function handleTwoWaySync(
 ): Promise<void> {
   const { cwd, config, configPath, engine, spinner } = context;
 
-  // Guard: Only proceed if centralized is false (decentralized mode enabled)
-  if (config.sync?.centralized !== false) {
-    // Centralized mode (default) - skip decentralized sync
-    return;
-  }
+  // Note: In centralized mode, detectEditedFiles only returns files matching edit_source
+  // In decentralized mode (centralized: false), it can return files from any agent
+  // So we can run this in both modes - the filtering happens in detectEditedFiles
 
   try {
     // Get last sync timestamp for accurate change detection
