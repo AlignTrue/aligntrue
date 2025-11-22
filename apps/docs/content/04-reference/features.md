@@ -58,14 +58,15 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
-## Developer experience & reliability
+## Safety & reliability
 
-**Code quality:**
+**Multi-layer safety system:**
 
-- TypeScript 5+ strict mode with comprehensive type coverage
-- Consistent error messages (what/why/how format with actionable fixes)
-- Automatic per-file backups (configurable, smart defaults)
-- Atomic operations prevent file corruption during syncs
+- **Mandatory workspace backups** - Full `.aligntrue/` directory and agent files backed up before every sync (cannot be disabled)
+- **Overwritten-rules backup** - Individual files backed up to `.aligntrue/overwritten-rules/` with timestamps before overwriting
+- **Section-level backup** - Conflicting sections preserved during merge operations
+- **Atomic file operations** - Temp file + rename pattern prevents corruption during writes
+- **Easy recovery** - `aligntrue revert` for quick rollback with preview and diff
 
 **Testing & validation:**
 
@@ -73,6 +74,11 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - Vitest + Playwright for CI/CD
 - JSON Schema 2020-12 validation with Ajv strict mode (all IR and config)
 - Canonical JSON (JCS) hashing for byte-identical reproducibility
+
+**Code quality:**
+
+- TypeScript 5+ strict mode with comprehensive type coverage
+- Consistent error messages (what/why/how format with actionable fixes)
 
 **Developer experience:**
 
@@ -136,7 +142,6 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 - **Section-based merging** - Sections matched by heading/content hash, user sections preserved
 - **Team-managed sections** - Protected sections with 🔒 markers and edit warnings
 - **Watch mode** - Continuous file watching with configurable debouncing
-- **Enhanced backup system** - Auto-backup enabled by default, selective file restoration with diff preview
 - **Agent detection** - Detect new agents in workspace and prompt to enable
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
 - **Dry-run mode** - Preview changes without writing files

@@ -1,4 +1,4 @@
-# Exporter Policy
+# Exporter policy
 
 This document defines the consistent policies that all AlignTrue exporters must follow.
 

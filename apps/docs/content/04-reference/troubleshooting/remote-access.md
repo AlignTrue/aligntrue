@@ -7,7 +7,7 @@ description: Solutions for common remote repository access issues
 
 This guide helps you resolve common issues when using remote repositories for personal rules in AlignTrue.
 
-## SSH Issues
+## SSH issues
 
 ### Permission Denied (publickey)
 
@@ -310,7 +310,7 @@ Your branch and 'origin/main' have diverged
    git push origin main
    ```
 
-## HTTPS Issues
+## HTTPS issues
 
 ### Authentication Failed
 
