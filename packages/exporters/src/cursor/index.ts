@@ -85,13 +85,62 @@ export class CursorExporter extends ExporterBase {
         outputPath = paths.cursorRulesScoped(targetScope, scopeName);
       }
 
-      // Merge with existing file to preserve user-added sections
-      const mergeResult = await this.readAndMerge(
-        outputPath,
-        scopeSections,
-        "cursor-mdc",
-        managedSections,
-      );
+      // Check if this file is in edit_source (editable) or read-only
+      const config = options.config as
+        | {
+            sync?: {
+              edit_source?: string | string[];
+              centralized?: boolean;
+            };
+          }
+        | undefined;
+      const editSource = config?.sync?.edit_source;
+      const isDecentralized = config?.sync?.centralized === false || false;
+
+      // Determine if this file is in edit_source (editable) or read-only
+      let isEditSource = false;
+      if (editSource && !isDecentralized) {
+        const patterns = Array.isArray(editSource) ? editSource : [editSource];
+        isEditSource = patterns.some((pattern) => {
+          // Simple glob match for .cursor/rules/*.mdc
+          if (
+            pattern === ".cursor/rules/*.mdc" &&
+            outputPath.includes(".cursor/rules/")
+          ) {
+            return true;
+          }
+          // Exact path match
+          if (outputPath.endsWith(pattern)) {
+            return true;
+          }
+          return false;
+        });
+      } else {
+        // No edit_source or decentralized mode - all files are editable
+        isEditSource = true;
+      }
+
+      // Only merge if file is in edit_source (to preserve user-added sections)
+      // For read-only files, overwrite with IR content only (don't preserve unauthorized edits)
+      const mergeResult = isEditSource
+        ? await this.readAndMerge(
+            outputPath,
+            scopeSections,
+            "cursor-mdc",
+            managedSections,
+          )
+        : {
+            mergedSections: scopeSections,
+            userSections: [],
+            stats: {
+              kept: 0,
+              updated: 0,
+              added: scopeSections.length,
+              userAdded: 0,
+              preservedEdits: 0,
+            },
+            warnings: [],
+          };
 
       // Generate .mdc content from merged sections
       const content = this.generateMdcFromSections(
