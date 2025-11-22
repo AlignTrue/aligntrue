@@ -121,6 +121,8 @@ export async function detectEditedFiles(
   const editedFiles: EditedFile[] = [];
   const warnings: EditSourceWarning[] = [];
   const paths = getAlignTruePaths(cwd);
+  // Use edit_source from config, which includes auto-detected values from applyDefaults()
+  // This ensures we have the resolved edit_source, not just the raw config value
   const editSource = config.sync?.edit_source;
 
   // Debug logging

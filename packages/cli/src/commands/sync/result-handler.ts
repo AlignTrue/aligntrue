@@ -50,9 +50,11 @@ export async function handleSyncResult(
 
       if (hasChanges) {
         // Show success message with files written
+        // Sort files alphabetically for deterministic output
+        const sortedFiles = [...uniqueWrittenFiles].sort();
         let message = "✓ Sync complete\n\n";
         message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-        uniqueWrittenFiles.forEach((file) => {
+        sortedFiles.forEach((file) => {
           message += `  - ${file}\n`;
         });
         message += "\n";
@@ -69,8 +71,9 @@ export async function handleSyncResult(
   }
 
   // Show written files in verbose mode or if quiet is off
+  // Sort files alphabetically for deterministic output
   if (result.written && result.written.length > 0 && options.verbose) {
-    const uniqueFiles = Array.from(new Set(result.written));
+    const uniqueFiles = Array.from(new Set(result.written)).sort();
     uniqueFiles.forEach((file) => {
       clack.log.info(`  ${file}`);
     });
@@ -114,6 +117,7 @@ export async function handleSyncResult(
       result.conflicts,
       options.showConflicts,
       options.verbose,
+      options,
     );
   }
 
@@ -363,6 +367,7 @@ async function displayConflicts(
   }>,
   showConflicts: boolean,
   verbose: boolean = false,
+  options?: { dryRun?: boolean },
 ): Promise<void> {
   const shouldShowDetails = showConflicts || verbose;
 
@@ -380,14 +385,19 @@ async function displayConflicts(
       );
 
       for (const file of sortedFiles) {
-        const timeStr = file.mtime.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
         const isWinner = file.path === conflict.winner;
         const marker = isWinner ? "✓" : " ";
-        clack.log.message(`  ${marker} ${file.path} (modified ${timeStr})`);
+        // In dry-run mode, don't show timestamps for deterministic output
+        if (options?.dryRun) {
+          clack.log.message(`  ${marker} ${file.path}`);
+        } else {
+          const timeStr = file.mtime.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
+          clack.log.message(`  ${marker} ${file.path} (modified ${timeStr})`);
+        }
       }
 
       clack.log.message(`  → Using: ${conflict.winner} (most recent)\n`);

@@ -125,24 +125,33 @@ export async function executeSyncWorkflow(
     syncOptions.defaultResolutionStrategy = "accept_agent";
   }
 
+  // Normalize acceptAgent format (accept both "agents" and "agents-md")
+  let normalizedAcceptAgent: string | undefined;
   if (options.acceptAgent !== undefined) {
-    syncOptions.acceptAgent = options.acceptAgent;
+    // Map format IDs to exporter names
+    // "agents-md" is the format ID, "agents" is the exporter name
+    if (options.acceptAgent === "agents-md") {
+      normalizedAcceptAgent = "agents";
+    } else {
+      normalizedAcceptAgent = options.acceptAgent;
+    }
+    syncOptions.acceptAgent = normalizedAcceptAgent;
   }
 
   let result: SyncResult;
 
   // Execute sync operation
-  if (options.acceptAgent) {
+  if (normalizedAcceptAgent) {
     // Manual agent → IR sync (pullback)
     if (!options.quiet) {
       spinner.start(
         options.dryRun
           ? "Previewing import"
-          : `Importing from ${options.acceptAgent}`,
+          : `Importing from ${normalizedAcceptAgent}`,
       );
     }
     result = await engine.syncFromAgent(
-      options.acceptAgent,
+      normalizedAcceptAgent,
       context.absoluteSourcePath,
       syncOptions,
     );
@@ -167,7 +176,7 @@ export async function executeSyncWorkflow(
   }
 
   // Step 4: Remove starter file after first successful sync
-  if (!options.dryRun && result.success && !options.acceptAgent) {
+  if (!options.dryRun && result.success && !normalizedAcceptAgent) {
     const starterPath = join(cwd, ".cursor/rules/aligntrue-starter.mdc");
     const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
     try {
