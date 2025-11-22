@@ -68,3 +68,6 @@ export * from "./migration/ruler-merger.js";
 
 // Scope discovery
 export * from "./scope-discovery.js";
+
+// Edit source utilities
+export { matchesEditSource } from "./utils/edit-source-matcher.js";

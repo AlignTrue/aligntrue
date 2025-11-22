@@ -12,7 +12,7 @@ import type {
 } from "@aligntrue/plugin-contracts";
 import type { AlignSection } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
-import { getAlignTruePaths } from "@aligntrue/core";
+import { getAlignTruePaths, matchesEditSource } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 
 export class CursorExporter extends ExporterBase {
@@ -85,7 +85,7 @@ export class CursorExporter extends ExporterBase {
         outputPath = paths.cursorRulesScoped(targetScope, scopeName);
       }
 
-      // Check if this file is in edit_source (editable) or read-only
+      // Determine if this file is in edit_source (editable) or read-only
       const config = options.config as
         | {
             sync?: {
@@ -95,7 +95,6 @@ export class CursorExporter extends ExporterBase {
           }
         | undefined;
 
-      // Determine if this file is in edit_source (editable) or read-only
       // Normalize outputPath to relative path for matching
       const { relative } = await import("path");
       const relativeOutputPath = relative(outputDir, outputPath).replace(
@@ -104,30 +103,14 @@ export class CursorExporter extends ExporterBase {
       );
 
       const editSource = config?.sync?.edit_source;
-      const isDecentralized = config?.sync?.centralized === false || false;
+      const isDecentralized = config?.sync?.centralized === false;
 
-      let isEditSource = false;
-      if (editSource && !isDecentralized) {
-        const patterns = Array.isArray(editSource) ? editSource : [editSource];
-        isEditSource = patterns.some((pattern) => {
-          // Simple glob match for .cursor/rules/*.mdc
-          if (
-            pattern === ".cursor/rules/*.mdc" &&
-            relativeOutputPath.startsWith(".cursor/rules/") &&
-            relativeOutputPath.endsWith(".mdc")
-          ) {
-            return true;
-          }
-          // Exact path match
-          if (relativeOutputPath === pattern) {
-            return true;
-          }
-          return false;
-        });
-      } else {
-        // No edit_source or decentralized mode - all files are editable
-        isEditSource = true;
-      }
+      // Use shared utility to check if file matches edit_source
+      const isEditSource = matchesEditSource(
+        relativeOutputPath,
+        editSource,
+        isDecentralized,
+      );
 
       // Only merge if file is in edit_source (to preserve user-added sections)
       // For read-only files, overwrite with IR content only (don't preserve unauthorized edits)
