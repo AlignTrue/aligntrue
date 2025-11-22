@@ -68,7 +68,7 @@ export async function buildSyncContext(
   }
 
   // Step 2: Load config
-  const spinner = createSpinner();
+  const spinner = createSpinner({ disabled: options.quiet });
   if (!options.quiet) {
     spinner.start("Loading configuration");
   }
@@ -785,6 +785,13 @@ async function detectAndHandleUntrackedFiles(
     };
     newEditSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
+    // Log the change (unless in quiet mode)
+    if (!options.quiet && editSource && editSource !== newEditSource) {
+      clack.log.info(
+        `Auto-switching edit_source from "${editSource}" to "${newEditSource}" (multi-file ${agent} detected)`,
+      );
+    }
+
     // If switching from single-file source, back it up
     if (editSource && !Array.isArray(editSource)) {
       const { backupFileToOverwrittenRules } = await import(
@@ -910,11 +917,18 @@ async function detectAndHandleUntrackedFiles(
   // Update config with new edit source
   if (newEditSource) {
     if (!config.sync) config.sync = {};
+    const previousEditSource = config.sync.edit_source;
     config.sync.edit_source = newEditSource;
 
     await saveMinimalConfig(config, configPath);
     if (!isNonInteractive) {
-      clack.log.success(`Edit source set to: ${newEditSource}`);
+      if (previousEditSource && previousEditSource !== newEditSource) {
+        clack.log.success(
+          `Edit source updated from "${previousEditSource}" to "${newEditSource}"`,
+        );
+      } else {
+        clack.log.success(`Edit source set to: ${newEditSource}`);
+      }
       clack.log.info(
         "Content will be read from edit source and exported to all agents on next sync.",
       );

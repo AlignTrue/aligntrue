@@ -9,6 +9,42 @@ Common issues when working with overlays and their solutions.
 
 ---
 
+## "Could not load rules" error
+
+**Symptom:** When running `aligntrue override add`, you get: "Could not load rules. The internal rules file (.aligntrue/.rules.yaml) is missing or invalid."
+
+**Root cause:** The override command requires a properly generated internal rules file (IR) to validate selectors. This file is created during `aligntrue sync`.
+
+**Fix:**
+
+1. **Run sync first:**
+
+   ```bash
+   aligntrue sync
+   ```
+
+2. **Then add your overlay:**
+
+   ```bash
+   aligntrue override add --selector 'sections[0]' --set severity=error
+   ```
+
+**Why this happens:**
+
+- The override command needs to validate that your selector matches actual rules in the IR
+- Without sync, there's no IR to validate against
+- This prevents you from creating invalid overlays that would fail later
+
+**Prevention:**
+
+Always run `aligntrue sync` after:
+
+- Initial project setup
+- Adding new packs or sources
+- Making significant rule changes
+
+---
+
 ## Overlay not applied
 
 **Symptom:** You defined an overlay but the check still uses upstream settings.

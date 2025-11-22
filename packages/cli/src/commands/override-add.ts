@@ -15,7 +15,7 @@ import {
 } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
-import { resolve } from "path";
+import { existsSync } from "fs";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -234,8 +234,9 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   const ir = await loadIrForValidation(config, cwd);
   if (!ir) {
     clack.log.error(
-      "Could not load .aligntrue/.rules.yaml to validate selector. Run 'aligntrue sync' first.",
+      "Could not load rules. The internal rules file (.aligntrue/.rules.yaml) is missing or invalid.",
     );
+    clack.log.info("To fix this, run: aligntrue sync");
     process.exit(1);
     return;
   }
@@ -308,14 +309,31 @@ async function loadIrForValidation(
 ): Promise<AlignPack | null> {
   try {
     const paths = getAlignTruePaths(cwd);
-    const sourcePath = config.sources?.[0]?.path || paths.rules;
-    const absoluteSourcePath = resolve(cwd, sourcePath);
-    const ir = await loadIR(absoluteSourcePath);
+
+    // Prioritize the IR file directly (which is always at .aligntrue/.rules.yaml)
+    const irPath = paths.rules;
+
+    // Check if IR file exists
+    if (!existsSync(irPath)) {
+      clack.log.warn(
+        `Internal rules file not found at ${irPath}. Run 'aligntrue sync' first to generate it.`,
+      );
+      return null;
+    }
+
+    // Load and validate the IR
+    const ir = await loadIR(irPath);
     if (ir && typeof ir === "object" && "sections" in ir) {
       return ir as AlignPack;
     }
+
+    clack.log.warn(
+      `Internal rules file at ${irPath} exists but does not contain expected sections.`,
+    );
     return null;
-  } catch {
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    clack.log.warn(`Failed to load internal rules file: ${errorMsg}`);
     return null;
   }
 }

@@ -287,6 +287,64 @@ Instead of:
    aligntrue sync
    ```
 
+## Edit source changed unexpectedly
+
+**Symptom:** After running `aligntrue sync`, your `sync.edit_source` configuration changed from one file to another.
+
+**Example:**
+
+- Before: `sync.edit_source` was `"AGENTS.md"`
+- After: `sync.edit_source` became `".cursor/rules/*.mdc"`
+
+**Root cause:** AlignTrue auto-detects when multi-file agents (like Cursor) are introduced and automatically switches to that format for better scalability and file organization.
+
+**When this happens:**
+
+1. You create new agent files (e.g., `.cursor/rules/aligntrue.mdc`)
+2. You run `aligntrue sync` with `--yes` flag (non-interactive mode)
+3. AlignTrue detects the multi-file structure and auto-switches edit_source
+4. The change is logged but may not be obvious in non-interactive mode
+
+**To see what changed:**
+
+```bash
+# Check current edit_source
+aligntrue config get sync.edit_source
+
+# Review recent sync output
+# Look for: "Auto-switching edit_source from X to Y"
+```
+
+**Fix if unwanted:**
+
+If you prefer to keep the original edit_source, reset it:
+
+```bash
+# Reset to AGENTS.md
+aligntrue config set sync.edit_source "AGENTS.md"
+
+# Run sync again
+aligntrue sync
+```
+
+**To prevent auto-detection:**
+
+Run sync interactively (without `--yes`):
+
+```bash
+aligntrue sync
+```
+
+This prompts you to confirm the edit_source switch before it happens.
+
+**Best practice:**
+
+- Use interactive mode (`aligntrue sync`) during setup to see and approve changes
+- Use non-interactive mode (`aligntrue sync --yes`) in CI after setup is complete
+- Document your chosen edit_source in project README so team members know the convention
+
+---
+
 ## Getting help
 
 If you're still stuck:
