@@ -34,35 +34,46 @@ export async function handleSyncResult(
     process.exit(1);
   }
 
-  // Sync succeeded
-  if (options.dryRun) {
-    clack.log.info("Dry-run mode: no files written");
+  // Sync succeeded - show success summary first
+  if (!options.quiet) {
+    if (options.dryRun) {
+      clack.log.info("Dry-run mode: no files written");
+    } else {
+      const loadedAdapters = registry
+        .list()
+        .map((name) => registry.get(name)!)
+        .filter(Boolean);
+      const exporterNames = loadedAdapters.map((a) => a.name);
+      const writtenFiles = result.written || [];
+      const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
+      const hasChanges = uniqueWrittenFiles.length > 0;
+
+      if (hasChanges) {
+        // Show success message with files written
+        let message = "✓ Sync complete\n\n";
+        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
+        uniqueWrittenFiles.forEach((file) => {
+          message += `  - ${file}\n`;
+        });
+        message += "\n";
+        message += "Your AI assistants are now aligned with these rules.\n\n";
+        message +=
+          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+        message +=
+          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+        clack.outro(message);
+      } else {
+        clack.outro("✓ Everything up to date - no changes needed");
+      }
+    }
   }
 
-  // Show written files
-  if (result.written && result.written.length > 0) {
+  // Show written files in verbose mode or if quiet is off
+  if (result.written && result.written.length > 0 && options.verbose) {
     const uniqueFiles = Array.from(new Set(result.written));
-    clack.log.success(
-      `${options.dryRun ? "Would write" : "Wrote"} ${uniqueFiles.length} file${uniqueFiles.length !== 1 ? "s" : ""}`,
-    );
     uniqueFiles.forEach((file) => {
       clack.log.info(`  ${file}`);
     });
-  }
-
-  // Show warnings
-  if (result.warnings && result.warnings.length > 0) {
-    displayWarnings(result.warnings, options.verbose, options.quiet);
-  }
-
-  // Show audit trail in dry-run
-  if (options.dryRun && result.auditTrail && result.auditTrail.length > 0) {
-    displayAuditTrail(result.auditTrail);
-  }
-
-  // Show provenance in dry-run
-  if (options.dryRun && result.auditTrail) {
-    displayProvenance(result.auditTrail);
   }
 
   // Record telemetry event on success
@@ -82,44 +93,28 @@ export async function handleSyncResult(
     // Telemetry errors should not fail the sync command
   }
 
-  // Show conflict summary if any
-  if (result.conflicts && result.conflicts.length > 0) {
-    await displayConflicts(result.conflicts, options.showConflicts);
+  // Show audit trail in dry-run
+  if (options.dryRun && result.auditTrail && result.auditTrail.length > 0) {
+    displayAuditTrail(result.auditTrail);
   }
 
-  // Show success message with next steps
-  if (!options.quiet) {
-    if (options.dryRun) {
-      clack.outro("✓ Preview complete");
-    } else {
-      const loadedAdapters = registry
-        .list()
-        .map((name) => registry.get(name)!)
-        .filter(Boolean);
-      const exporterNames = loadedAdapters.map((a) => a.name);
-      const writtenFiles = result.written || [];
-      const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
-      const hasChanges = uniqueWrittenFiles.length > 0;
+  // Show provenance in dry-run
+  if (options.dryRun && result.auditTrail) {
+    displayProvenance(result.auditTrail);
+  }
 
-      let message = "✓ Sync complete\n\n";
+  // Group all warnings at the end
+  if (result.warnings && result.warnings.length > 0) {
+    displayWarnings(result.warnings, options.verbose, options.quiet);
+  }
 
-      if (hasChanges) {
-        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-        uniqueWrittenFiles.forEach((file) => {
-          message += `  - ${file}\n`;
-        });
-        message += "\n";
-        message += "Your AI assistants are now aligned with these rules.\n\n";
-        message +=
-          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
-        message +=
-          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
-      } else {
-        message = "✓ Everything up to date - no changes needed";
-      }
-
-      clack.outro(message);
-    }
+  // Show conflict summary if any (after warnings)
+  if (result.conflicts && result.conflicts.length > 0) {
+    await displayConflicts(
+      result.conflicts,
+      options.showConflicts,
+      options.verbose,
+    );
   }
 
   // Check for agent format conflicts and offer to manage ignore files
@@ -258,14 +253,41 @@ function displayWarnings(
       clack.log.warn(warning);
     });
   } else {
-    // Show summary count for fidelity notes, full text for other warnings
-    const fidelityNotes = warnings.filter(
-      (w) => w.startsWith("[") && w.length > 3,
-    );
-    const otherWarnings = warnings.filter(
-      (w) => !w.startsWith("[") || w.length <= 3,
-    );
+    // Group vendor-specific warnings
+    const vendorWarningPattern =
+      /^\[([^\]]+)\]\s+Vendor-specific fields for other agents preserved: (.+)$/;
+    const vendorWarnings: Map<string, string[]> = new Map();
+    const otherWarnings: string[] = [];
+    const fidelityNotes: string[] = [];
 
+    for (const warning of warnings) {
+      // Check for vendor-specific warnings
+      const match = warning.match(vendorWarningPattern);
+      if (match && match[1] && match[2]) {
+        const agent = match[1];
+        const preservedAgents = match[2];
+        if (!vendorWarnings.has(preservedAgents)) {
+          vendorWarnings.set(preservedAgents, []);
+        }
+        vendorWarnings.get(preservedAgents)!.push(agent);
+      } else if (warning.startsWith("[") && warning.length > 3) {
+        // Fidelity notes (other types)
+        fidelityNotes.push(warning);
+      } else {
+        // Other warnings
+        otherWarnings.push(warning);
+      }
+    }
+
+    // Show consolidated vendor-specific warnings
+    for (const [preservedAgents, agents] of vendorWarnings.entries()) {
+      const agentList = agents.sort().join(", ");
+      clack.log.warn(
+        `⚠ Vendor-specific fields for ${preservedAgents} preserved by: ${agentList}`,
+      );
+    }
+
+    // Show summary count for other fidelity notes
     if (fidelityNotes.length > 0) {
       clack.log.info(
         `ℹ ${fidelityNotes.length} fidelity note${fidelityNotes.length !== 1 ? "s" : ""} (use --verbose to see details)`,
@@ -340,40 +362,49 @@ async function displayConflicts(
     winner: string;
   }>,
   showConflicts: boolean,
+  verbose: boolean = false,
 ): Promise<void> {
-  console.log("\n");
-  clack.log.warn("⚠️  CONFLICTS DETECTED\n");
+  const shouldShowDetails = showConflicts || verbose;
 
-  for (const conflict of conflicts) {
-    clack.log.warn(`Section "${conflict.heading}" edited in multiple files:`);
+  if (shouldShowDetails) {
+    // Show full details
+    console.log("\n");
+    clack.log.warn("⚠️  CONFLICTS DETECTED\n");
 
-    // Sort files by mtime to show chronologically
-    const sortedFiles = [...conflict.files].sort(
-      (a, b) => a.mtime.getTime() - b.mtime.getTime(),
+    for (const conflict of conflicts) {
+      clack.log.warn(`Section "${conflict.heading}" edited in multiple files:`);
+
+      // Sort files by mtime to show chronologically
+      const sortedFiles = [...conflict.files].sort(
+        (a, b) => a.mtime.getTime() - b.mtime.getTime(),
+      );
+
+      for (const file of sortedFiles) {
+        const timeStr = file.mtime.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+        const isWinner = file.path === conflict.winner;
+        const marker = isWinner ? "✓" : " ";
+        clack.log.message(`  ${marker} ${file.path} (modified ${timeStr})`);
+      }
+
+      clack.log.message(`  → Using: ${conflict.winner} (most recent)\n`);
+
+      // Show detailed content if --show-conflicts flag is present
+      if (showConflicts) {
+        await displayConflictDetails(conflict, sortedFiles);
+      }
+    }
+  } else {
+    // Show summary only
+    const conflictCount = conflicts.length;
+    clack.log.warn(
+      `⚠ ${conflictCount} section${conflictCount !== 1 ? "s" : ""} edited in multiple files (using most recent)`,
     );
-
-    for (const file of sortedFiles) {
-      const timeStr = file.mtime.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-      const isWinner = file.path === conflict.winner;
-      const marker = isWinner ? "✓" : " ";
-      clack.log.message(`  ${marker} ${file.path} (modified ${timeStr})`);
-    }
-
-    clack.log.message(`  → Using: ${conflict.winner} (most recent)\n`);
-
-    // Show detailed content if --show-conflicts flag is present
-    if (showConflicts) {
-      await displayConflictDetails(conflict, sortedFiles);
-    }
-  }
-
-  if (!showConflicts) {
     clack.log.info(
-      `Run 'aligntrue sync --show-conflicts' to see detailed changes\n`,
+      `Run 'aligntrue sync --show-conflicts' or 'aligntrue sync --verbose' to see details`,
     );
   }
 }

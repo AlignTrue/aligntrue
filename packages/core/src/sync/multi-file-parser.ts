@@ -496,12 +496,19 @@ export function mergeFromMultipleFiles(
           (c) => c.heading === section.heading,
         );
         if (conflictIndex >= 0) {
-          conflicts[conflictIndex]!.files.push({
-            path: file.path,
-            mtime: file.mtime,
-          });
+          // Check if file path already exists to avoid duplicates
+          const existingConflict = conflicts[conflictIndex]!;
+          const fileExists = existingConflict.files.some(
+            (f) => f.path === file.path,
+          );
+          if (!fileExists) {
+            existingConflict.files.push({
+              path: file.path,
+              mtime: file.mtime,
+            });
+          }
           // Update winner to most recent
-          conflicts[conflictIndex]!.winner = file.path;
+          existingConflict.winner = file.path;
         } else {
           conflicts.push({
             heading: section.heading,
