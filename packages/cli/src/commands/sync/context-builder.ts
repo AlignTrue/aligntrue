@@ -466,7 +466,9 @@ async function detectAndEnableAgents(
     // IR may not exist yet, that's OK
   }
 
-  const { extractAndSaveRules } = await import("../../utils/extract-rules.js");
+  const { extractAndSaveRules, backupFileToOverwrittenRules } = await import(
+    "../../utils/extract-rules.js"
+  );
 
   if (shouldAutoEnable) {
     // Auto-enable without prompting
@@ -478,6 +480,15 @@ async function detectAndEnableAgents(
         const stats = statSync(agentFilePath);
         // Only attempt extraction if it's a file, not a directory
         if (stats.isFile()) {
+          // Backup entire file before overwriting (preserves file structure)
+          const backupResult = backupFileToOverwrittenRules(agentFilePath, cwd);
+          if (backupResult.backed_up && options.verbose) {
+            clack.log.info(
+              `Backed up ${agent.displayName} to: ${backupResult.backup_path}`,
+            );
+          }
+
+          // Also extract sections for deduplication
           await extractAndSaveRules(
             agentFilePath,
             undefined, // Auto-detect format from path
@@ -647,6 +658,18 @@ async function detectAndEnableAgents(
             // Only attempt extraction if it's a file, not a directory
             if (stats.isFile()) {
               try {
+                // Backup entire file before overwriting (preserves file structure)
+                const backupResult = backupFileToOverwrittenRules(
+                  agentFilePath,
+                  cwd,
+                );
+                if (backupResult.backed_up && options.verbose) {
+                  clack.log.info(
+                    `Backed up ${agent.displayName} to: ${backupResult.backup_path}`,
+                  );
+                }
+
+                // Also extract sections for deduplication
                 await extractAndSaveRules(
                   agentFilePath,
                   undefined, // Auto-detect format from path
