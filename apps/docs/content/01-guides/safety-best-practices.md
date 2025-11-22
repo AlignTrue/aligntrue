@@ -93,6 +93,24 @@ You cannot disable this. It's a core safety feature.
 - Telemetry data
 - Files that can be regenerated
 
+### Overwritten rules safety (file-level)
+
+Before any file is overwritten (read-only or edit_source), AlignTrue automatically backs up manually edited content:
+
+- **Location**: `.aligntrue/overwritten-rules/` directory
+- **Format**: Timestamped copies preserving original path structure
+- **Example**: `.cursor/rules/aligntrue.mdc` → `.aligntrue/overwritten-rules/cursor/rules/aligntrue.2025-01-15T14-30-00.mdc`
+- **When**: Before overwriting files that were manually edited since last sync
+- **Review**: You can review and delete backups anytime
+
+**Two-tier safety:**
+
+1. Auto-backup (entire workspace before sync)
+2. Overwritten-rules backup (individual files before overwriting)
+3. Section-level backup (for conflicting sections during merge)
+
+Multiple layers ensure you never lose work.
+
 ### Backup retention
 
 Control how many backups to keep:

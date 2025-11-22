@@ -99,7 +99,7 @@ Files NOT matching your `edit_source` are **read-only** with warning comments:
 
 - Prevents accidental edits to exports
 - Ensures single source of truth
-- Guarantees next sync won't overwrite your changes
+- **Note**: Manual edits to read-only files ARE automatically overwritten on next sync (after backing up to `.aligntrue/overwritten-rules/`)
 
 **If you need to edit different files:**
 
