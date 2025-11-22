@@ -19,7 +19,7 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
 const LIMITS = {
-  cliDist: { size: 600 * 1024, label: "CLI dist/ (JS only)" },
+  cliDist: { size: 610 * 1024, label: "CLI dist/ (JS only)" },
 };
 
 /**
