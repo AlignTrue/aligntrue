@@ -3,7 +3,7 @@ title: Security
 description: Security, privacy, and on-prem practices for AlignTrue
 ---
 
-# Security, Privacy, and On-Prem Practices
+# Security, privacy, and on-prem practices
 
 AlignTrue is designed with security and privacy as core principles: local-first by default, no required cloud, deterministic outputs, and minimal data retention.
 
@@ -68,7 +68,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Path privacy** - Full home directory paths avoided in errors when possible
 - **No secrets in exports** - Cursor `.mdc` and other exports contain only rules, metadata, and hashes
 
-## Artifacts and Logs
+## Artifacts and logs
 
 - **Content hashes** - Stamped in lockfiles and returned by exporters for verification
 - **Concise, non-sensitive logs** - Logs are concise and non-sensitive by default
@@ -89,13 +89,13 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Release checksums** - Checksums attached to release artifacts
 - **Data-only packs** - Never execute code from Aligns or packs, treat as data only
 
-## MCP and IDE Integration
+## MCP and IDE integration
 
 - **Read-only operations** - MCP capabilities restricted to read-only operations within active workspace
 - **No arbitrary execution** - No arbitrary command execution exposed through MCP
 - **Minimal data exposure** - Return minimal necessary data for scope and rule queries
 
-## YAML and Parsing Safety
+## YAML and parsing safety
 
 - **Safe YAML parsing** - Reject anchors and custom executable types
 - **Reject unsafe values** - Reject `NaN` and `Infinity` in canonicalization and hash-relevant paths

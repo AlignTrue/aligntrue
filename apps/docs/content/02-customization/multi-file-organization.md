@@ -266,7 +266,7 @@ sync:
 ```markdown
 <!-- aligntrue:source security.md -->
 
-## Security Guidelines
+## Security guidelines
 
 ...
 

@@ -107,7 +107,7 @@ CI will validate that:
 - All documented exports exist in `package.json`
 - All export files exist in the `dist/` directory after build
 
-## Internal vs Public Exports
+## Internal vs public exports
 
 **Public exports** (documented here):
 
