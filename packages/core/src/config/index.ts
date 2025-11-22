@@ -594,9 +594,14 @@ function checkUnknownFields(
       }
       shownWarnings.add(warningKey);
       console.warn(
-        `Warning: Unknown config field "${key}" in ${configPath}\n` +
-          `  This field will be ignored. Valid fields: ${Array.from(knownFields).join(", ")}\n` +
-          `  Tip: Use "vendor.${key}" for custom fields that should be preserved`,
+        `Warning: Unrecognized config field "${key}" in ${configPath}\n` +
+          `\n` +
+          `This field will be ignored. Did you mean one of these?\n` +
+          `  - Common fields: version, mode, sync, sources, exporters\n` +
+          `  - Vendor fields: vendor.${key} (for custom/third-party integrations)\n` +
+          `\n` +
+          `Valid fields: ${Array.from(knownFields).join(", ")}\n` +
+          `Run 'aligntrue config list' to see all recognized fields`,
       );
     }
   }
@@ -678,9 +683,16 @@ export async function validateConfig(
 
     if (Array.isArray(editSource) && centralized !== false) {
       throw new Error(
-        `Multiple edit sources require centralized: false\n` +
+        `Error: Multiple edit sources require decentralized mode\n` +
           `  Current edit_source: ${JSON.stringify(editSource)}\n` +
-          `  Add "centralized: false" to sync config or use single edit source.`,
+          `\n` +
+          `To enable multi-file editing, run:\n` +
+          `  aligntrue config set sync.centralized false\n` +
+          `\n` +
+          `Or use a single edit source:\n` +
+          `  aligntrue config set sync.edit_source '"AGENTS.md"'\n` +
+          `\n` +
+          `Learn more: https://aligntrue.ai/docs/concepts/sync-behavior`,
       );
     }
   }
