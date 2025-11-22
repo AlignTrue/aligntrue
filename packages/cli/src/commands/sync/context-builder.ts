@@ -69,10 +69,18 @@ export async function buildSyncContext(
 
   // Step 2: Load config
   const spinner = createSpinner();
-  spinner.start("Loading configuration");
+  if (!options.quiet) {
+    spinner.start("Loading configuration");
+  }
 
   const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
-  spinner.stop("Configuration loaded");
+  if (!options.quiet) {
+    if (options.verbose) {
+      spinner.stop("Configuration loaded");
+    } else {
+      spinner.stop();
+    }
+  }
 
   const spinnerWithMessage = spinner as SpinnerLike & {
     message?: (text: string) => void;
@@ -159,11 +167,19 @@ export async function buildSyncContext(
         ? resolve(cwd, sourcePath)
         : sourcePath;
 
-    spinner.stop(
-      bundleResult.sources.length > 1
-        ? `Resolved and merged ${bundleResult.sources.length} sources`
-        : "Source resolved",
-    );
+    if (!options.quiet) {
+      if (options.verbose) {
+        spinner.stop(
+          bundleResult.sources.length > 1
+            ? `Resolved and merged ${bundleResult.sources.length} sources`
+            : "Source resolved",
+        );
+      } else {
+        spinner.stop();
+      }
+    } else {
+      spinner.stop();
+    }
 
     // Show merge info if multiple sources
     if (bundleResult.sources.length > 1) {
@@ -278,7 +294,11 @@ export async function buildSyncContext(
   }
 
   // Step 7: Load exporters
-  spinner.start("Loading exporters");
+  if (!options.quiet) {
+    spinner.start("Loading exporters");
+  } else {
+    spinner.start();
+  }
 
   const engine = new SyncEngine();
   const registry = new ExporterRegistry();
@@ -319,13 +339,20 @@ export async function buildSyncContext(
       }
     }
 
-    spinner.stop(
-      `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`,
-    );
-
-    if (loadedCount > 0) {
-      const names = exporterNames.slice(0, loadedCount).join(", ");
-      clack.log.success(`Active: ${names}`);
+    if (!options.quiet) {
+      if (options.verbose) {
+        spinner.stop(
+          `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`,
+        );
+        if (loadedCount > 0) {
+          const names = exporterNames.slice(0, loadedCount).join(", ");
+          clack.log.success(`Active: ${names}`);
+        }
+      } else {
+        spinner.stop();
+      }
+    } else {
+      spinner.stop();
     }
   } catch (_error) {
     spinner.stop("Exporter loading failed");
@@ -335,7 +362,11 @@ export async function buildSyncContext(
   }
 
   // Step 8: Validate rules
-  spinner.start("Validating rules");
+  if (!options.quiet) {
+    spinner.start("Validating rules");
+  } else {
+    spinner.start();
+  }
 
   try {
     const sections = bundleResult.pack.sections || [];
@@ -344,7 +375,15 @@ export async function buildSyncContext(
       if (!section) continue;
       // Section validation happens at parse time
     }
-    spinner.stop("Rules validated");
+    if (!options.quiet) {
+      if (options.verbose) {
+        spinner.stop("Rules validated");
+      } else {
+        spinner.stop();
+      }
+    } else {
+      spinner.stop();
+    }
   } catch (_error) {
     spinner.stop("Validation failed");
     throw ErrorFactory.syncFailed(
@@ -446,9 +485,11 @@ async function detectAndEnableAgents(
             currentIR,
           );
         } else if (stats.isDirectory()) {
-          clack.log.info(
-            `Skipping extraction for ${agent.displayName} (directory format)`,
-          );
+          if (options.verbose) {
+            clack.log.info(
+              `Skipping extraction for ${agent.displayName} (directory format)`,
+            );
+          }
         }
       } catch (error) {
         clack.log.warn(
@@ -478,11 +519,16 @@ async function detectAndEnableAgents(
       return;
     }
 
+    // Batch prompt for multiple agents
+    const agentList = newAgents.map((a) => a.displayName).join(", ");
     clack.log.info(
-      `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected, let's review each one:`,
+      `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected: ${agentList}`,
     );
 
-    for (const agent of newAgents) {
+    let batchResponse: "yes" | "no" | "review" | symbol;
+    if (newAgents.length === 1) {
+      // Single agent: show individual prompt
+      const agent = newAgents[0]!;
       clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
       clack.log.info(`  Found: ${agent.filePath}`);
 
@@ -509,13 +555,83 @@ async function detectAndEnableAgents(
 
       if (clack.isCancel(response)) {
         clack.cancel("Detection cancelled");
-        break;
+        return;
       }
 
       if (response === "yes") {
         toEnable.push(agent.name);
       } else if (response === "never") {
         toIgnore.push(agent.name);
+      }
+    } else {
+      // Multiple agents: show batch prompt
+      batchResponse = await clack.select({
+        message: `Enable these ${newAgents.length} new agents as export targets?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and files will be synced with your current rules.`,
+        options: [
+          {
+            value: "yes",
+            label: "Yes, enable all",
+            hint: "Enable all detected agents",
+          },
+          {
+            value: "review",
+            label: "Review individually",
+            hint: "Review each agent separately",
+          },
+          {
+            value: "no",
+            label: "No, skip for now",
+            hint: "Ask again next time",
+          },
+        ],
+      });
+
+      if (clack.isCancel(batchResponse)) {
+        clack.cancel("Detection cancelled");
+        return;
+      }
+
+      if (batchResponse === "yes") {
+        // Enable all
+        toEnable.push(...newAgents.map((a) => a.name));
+      } else if (batchResponse === "review") {
+        // Review individually
+        for (const agent of newAgents) {
+          clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
+          clack.log.info(`  Found: ${agent.filePath}`);
+
+          const response = await clack.select({
+            message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be extracted to .aligntrue/overwritten-rules.md and the file will be synced with your current rules.`,
+            options: [
+              {
+                value: "yes",
+                label: "Yes, enable and export",
+                hint: "Add to exporters list and extract old content for review",
+              },
+              {
+                value: "no",
+                label: "No, skip for now",
+                hint: "Ask again next time",
+              },
+              {
+                value: "never",
+                label: "Never ask about this agent",
+                hint: "Add to ignored list",
+              },
+            ],
+          });
+
+          if (clack.isCancel(response)) {
+            clack.cancel("Detection cancelled");
+            break;
+          }
+
+          if (response === "yes") {
+            toEnable.push(agent.name);
+          } else if (response === "never") {
+            toIgnore.push(agent.name);
+          }
+        }
       }
     }
 
@@ -543,9 +659,11 @@ async function detectAndEnableAgents(
                 );
               }
             } else if (stats.isDirectory()) {
-              clack.log.info(
-                `Skipping extraction for ${agent.displayName} (directory format)`,
-              );
+              if (options.verbose) {
+                clack.log.info(
+                  `Skipping extraction for ${agent.displayName} (directory format)`,
+                );
+              }
             }
           }
         }

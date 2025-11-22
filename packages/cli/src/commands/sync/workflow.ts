@@ -384,7 +384,7 @@ async function handleTwoWaySync(
         spinner.start("Merging changes from edited files");
       }
 
-      if (!options.quiet) {
+      if (!options.quiet && options.verbose) {
         clack.log.info(
           `Detected ${editedFiles.length} edited file${editedFiles.length !== 1 ? "s" : ""}:`,
         );
@@ -408,7 +408,9 @@ async function handleTwoWaySync(
           });
         }
 
-        clack.log.success("Merged changes from agent files to IR");
+        if (options.verbose) {
+          clack.log.success("Merged changes from agent files to IR");
+        }
       }
     } else {
       // No edits detected - this is normal when IR is the source of truth

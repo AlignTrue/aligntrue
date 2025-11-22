@@ -990,7 +990,11 @@ export class SyncEngine {
         conflicts = mergeResult.conflicts;
         if (conflicts.length > 0) {
           for (const conflict of conflicts) {
-            const fileList = conflict.files.map((f) => f.path).join(", ");
+            // Deduplicate file paths before joining
+            const uniquePaths = Array.from(
+              new Set(conflict.files.map((f) => f.path)),
+            );
+            const fileList = uniquePaths.join(", ");
             warnings.push(
               `Section "${conflict.heading}" edited in multiple files: ${fileList}`,
             );
