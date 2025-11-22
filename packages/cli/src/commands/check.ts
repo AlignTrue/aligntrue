@@ -443,64 +443,13 @@ export async function check(args: string[]): Promise<void> {
     }
 
     // Step 5: Check file organization (warnings only, non-blocking)
-    const fileOrgWarnings: string[] = [];
-
-    try {
-      const { analyzeFiles, getLargeFiles } = await import(
-        "../utils/file-size-detector.js"
-      );
-      const { DEFAULT_THRESHOLDS } = await import(
-        "../utils/file-size-detector.js"
-      );
-
-      // Get edit source files to analyze
-      const editSource = config.sync?.edit_source;
-      const filesToAnalyze: Array<{ path: string; relativePath: string }> = [];
-
-      if (editSource) {
-        const patterns = Array.isArray(editSource) ? editSource : [editSource];
-
-        for (const pattern of patterns) {
-          // Skip special patterns
-          if (
-            pattern === ".rules.yaml" ||
-            pattern === "any_agent_file" ||
-            pattern.includes("*")
-          ) {
-            continue;
-          }
-
-          // Check if file exists and add to analysis
-          const fullPath = resolve(process.cwd(), pattern);
-          if (existsSync(fullPath)) {
-            filesToAnalyze.push({
-              path: fullPath,
-              relativePath: pattern,
-            });
-          }
-        }
-      }
-
-      // Analyze files if we have any
-      if (filesToAnalyze.length > 0) {
-        // Use urgent threshold (1500 lines) for check command
-        const urgentThreshold = {
-          warning: DEFAULT_THRESHOLDS.urgent,
-          urgent: DEFAULT_THRESHOLDS.urgent,
-        };
-
-        const analyses = analyzeFiles(filesToAnalyze, urgentThreshold);
-        const largeFiles = getLargeFiles(analyses, false); // Only urgent files
-
-        for (const large of largeFiles) {
-          fileOrgWarnings.push(
-            `${large.relativePath} is very large (${large.lineCount} lines). Consider splitting: aligntrue sources split`,
-          );
-        }
-      }
-    } catch {
-      // Silent failure on file size analysis - not critical for validation
-    }
+    const { validateFileOrganization } = await import(
+      "./check/file-size-validator.js"
+    );
+    const fileOrgWarnings = await validateFileOrganization(
+      config,
+      process.cwd(),
+    );
 
     // Step 6: All validations passed
     stopSpinner("Validation complete");

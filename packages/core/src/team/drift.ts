@@ -572,8 +572,14 @@ export async function detectDrift(
         sources?: Array<{ value: string; resolved_hash?: string }>;
       };
       findings.push(...detectUpstreamDrift(lockfile, allowList));
-    } catch {
-      // Silently skip upstream drift if allow list can't be parsed
+    } catch (err) {
+      // Allow list is optional - skip upstream drift if unavailable
+      // Log in debug mode to help troubleshooting
+      if (process.env["DEBUG"] || process.env["ALIGNTRUE_DEBUG"]) {
+        console.warn(
+          `Failed to parse allow list at ${allowListPath}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
   }
 

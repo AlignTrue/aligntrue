@@ -90,6 +90,34 @@ export interface SyncResult {
 
 /**
  * Sync engine coordinating the full sync pipeline
+ *
+ * REFACTORING STRATEGY (for future AI agents):
+ * This class is large (1174+ lines) and handles multiple responsibilities.
+ * When editing this file, consider extracting logical units:
+ *
+ * 1. Scope resolution logic → Extract to scope-resolver.ts helper
+ *    - Keep resolveScopes() call, but move complex scope resolution logic
+ *
+ * 2. Overlay application → Already extracted to overlays/ module
+ *    - Keep applyOverlays() call as-is
+ *
+ * 3. Plug resolution helpers → Extract to plugs/helpers.ts
+ *    - Move complex plug resolution logic out of sync methods
+ *
+ * 4. Exporter execution → Consider exporter-executor.ts
+ *    - Extract exporter iteration and result handling
+ *
+ * 5. Conflict detection → Already partially in multi-file-parser.ts
+ *    - Keep coordination here, but move complex logic out
+ *
+ * Core orchestration should remain in SyncEngine class:
+ * - Loading config and IR
+ * - Coordinating workflow steps
+ * - Managing file writer state
+ * - Registering exporters
+ *
+ * Don't refactor immediately: Only when editing for other reasons.
+ * Goal: Incremental extraction, not massive rewrite.
  */
 export class SyncEngine {
   private config: AlignTrueConfig | null = null;
