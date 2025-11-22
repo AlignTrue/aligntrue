@@ -1133,7 +1133,16 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   } else if (shouldAuto) {
     // Auto-sync: simple first-time setup with no imports
     try {
-      const { sync } = await import("./sync/index.js");
+      const syncModule = await import("./sync/index.js");
+      const sync = syncModule.sync;
+
+      // Validate that sync is a function
+      if (typeof sync !== "function") {
+        throw new Error(
+          `Expected 'sync' to be a function, but got ${typeof sync}. This may indicate a build issue or module resolution problem.`,
+        );
+      }
+
       // Pass --yes, --no-detect, --skip-two-way-detection, and --quiet flags to sync
       // (prevents prompting, avoids edit detection, and suppresses internal details)
       const syncFlags = [
@@ -1145,10 +1154,21 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
       await sync(syncFlags);
       autoSyncPerformed = true;
     } catch (error) {
-      clack.log.error(
-        `Sync failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      clack.log.error(`Sync failed: ${errorMessage}`);
       clack.log.info("Resolve the issue, then run 'aligntrue sync' manually.");
+
+      // Log stack trace in debug mode
+      if (
+        process.env["DEBUG"] === "1" ||
+        process.env["ALIGNTRUE_DEBUG"] === "1"
+      ) {
+        if (error instanceof Error && error.stack) {
+          clack.log.error("Stack trace:");
+          clack.log.error(error.stack);
+        }
+      }
     }
   } else if (!syncWouldBeUseful) {
     // Deferred: no exporters or no edit sources
@@ -1176,19 +1196,39 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
 
     if (shouldSyncNow) {
       try {
-        const { sync } = await import("./sync/index.js");
+        const syncModule = await import("./sync/index.js");
+        const sync = syncModule.sync;
+
+        // Validate that sync is a function
+        if (typeof sync !== "function") {
+          throw new Error(
+            `Expected 'sync' to be a function, but got ${typeof sync}. This may indicate a build issue or module resolution problem.`,
+          );
+        }
+
         // Pass --skip-two-way-detection and --quiet flags to sync
         // (prevents edit detection, suppresses internal details)
         const syncFlags = ["--skip-two-way-detection", "--quiet"];
         await sync(syncFlags);
         autoSyncPerformed = true;
       } catch (error) {
-        clack.log.error(
-          `Sync failed: ${error instanceof Error ? error.message : String(error)}`,
-        );
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        clack.log.error(`Sync failed: ${errorMessage}`);
         clack.log.info(
           "Resolve the issue, then run 'aligntrue sync' manually.",
         );
+
+        // Log stack trace in debug mode
+        if (
+          process.env["DEBUG"] === "1" ||
+          process.env["ALIGNTRUE_DEBUG"] === "1"
+        ) {
+          if (error instanceof Error && error.stack) {
+            clack.log.error("Stack trace:");
+            clack.log.error(error.stack);
+          }
+        }
       }
     } else {
       clack.log.info("Run 'aligntrue sync' when you're ready.");
