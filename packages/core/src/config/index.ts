@@ -255,7 +255,7 @@ function validateConfigSchema(config: unknown): SchemaValidationResult {
 /**
  * Format validation errors for user display
  */
-function formatValidationErrors(
+function formatConfigValidationErrors(
   errors: SchemaValidationResult["errors"],
 ): string {
   if (!errors || errors.length === 0) {
@@ -861,7 +861,7 @@ export async function loadConfig(
   const schemaValidation = validateConfigSchema(config);
   if (!schemaValidation.valid) {
     throw new Error(
-      `Invalid config in ${path}:\n${formatValidationErrors(schemaValidation.errors)}\n` +
+      `Invalid config in ${path}:\n${formatConfigValidationErrors(schemaValidation.errors)}\n` +
         `  See config.schema.json for full specification.`,
     );
   }

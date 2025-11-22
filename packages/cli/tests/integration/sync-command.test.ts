@@ -179,7 +179,7 @@ sections:
       }
 
       // Verify: Backup directory exists
-      const backupDir = join(TEST_DIR, ".aligntrue", "backups");
+      const backupDir = join(TEST_DIR, ".aligntrue", ".backups");
       expect(existsSync(backupDir)).toBe(true);
     });
   });

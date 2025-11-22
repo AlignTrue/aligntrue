@@ -657,7 +657,7 @@ git add .aligntrue.lock.json .aligntrue.allow
 git commit -m "Enable AlignTrue team mode"
 ```
 
-See [Team Guide](/docs/01-guides/05-team-guide) for team collaboration workflows.
+See [Team Guide](/docs/01-guides/04-team-guide) for team collaboration workflows.
 
 ## Related documentation
 
@@ -666,7 +666,7 @@ See [Team Guide](/docs/01-guides/05-team-guide) for team collaboration workflows
 - [Overlays Guide](/docs/02-customization/overlays) - Rule customization
 - [Scopes Guide](/docs/02-customization/scopes) - Monorepo support
 - [CLI Reference](/docs/04-reference/cli-reference) - Complete command docs
-- [Team Guide](/docs/01-guides/05-team-guide) - Upgrade to team collaboration
+- [Team Guide](/docs/01-guides/04-team-guide) - Upgrade to team collaboration
 
 ## Summary
 

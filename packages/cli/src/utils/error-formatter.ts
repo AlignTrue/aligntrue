@@ -117,10 +117,12 @@ export function exitWithError(error: CLIError, exitCode: number = 1): never {
  *   { field: 'profile.id', message: 'Required field is missing' },
  *   { field: 'rules[0].id', message: 'Must be a valid identifier' }
  * ];
- * exitWithError(formatValidationErrors(validationErrors), 1);
+ * exitWithError(formatValidationErrorsForCLI(validationErrors), 1);
  * ```
  */
-export function formatValidationErrors(errors: ValidationError[]): CLIError {
+export function formatValidationErrorsForCLI(
+  errors: ValidationError[],
+): CLIError {
   return {
     title: "Validation failed",
     message: `Found ${errors.length} validation error${errors.length === 1 ? "" : "s"}`,

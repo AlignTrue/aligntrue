@@ -112,7 +112,7 @@ The generated files are included automatically.</xai:function_call">---
 Examples:
 
 - `/docs/00-getting-started/00-quickstart`
-- `/docs/01-guides/05-team-guide`
+- `/docs/01-guides/04-team-guide`
 - `/docs/02-customization/overlays`
 - `/docs/03-concepts/team-mode`
 - `/docs/04-reference/cli-reference`

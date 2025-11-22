@@ -72,7 +72,7 @@ export function validateAlignSchema(
   const valid = validateFn(obj);
 
   if (!valid) {
-    const errors = formatValidationErrors(validateFn.errors || []);
+    const errors = formatSchemaValidationErrors(validateFn.errors || []);
     return { valid: false, errors };
   }
 
@@ -157,7 +157,9 @@ export function validateAlignSchema(
 /**
  * Format Ajv errors into user-friendly messages
  */
-function formatValidationErrors(ajvErrors: ErrorObject[]): ValidationError[] {
+function formatSchemaValidationErrors(
+  ajvErrors: ErrorObject[],
+): ValidationError[] {
   return ajvErrors.map((err) => ({
     path: err.instancePath || "(root)",
     message: err.message || "Validation failed",

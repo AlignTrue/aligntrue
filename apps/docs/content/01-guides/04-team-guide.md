@@ -1108,7 +1108,7 @@ Tested by: @dev1, @dev2, @dev3"
 - [Team Mode](/docs/03-concepts/team-mode) - Team mode concepts
 - [Drift Detection](/docs/03-concepts/drift-detection) - Drift detection details
 - [CLI Reference](/docs/04-reference/cli-reference) - Complete command docs
-- [Solo Developer Guide](/docs/01-guides/04-solo-developer-guide) - Solo workflow
+- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide) - Solo workflow
 
 ## Summary
 
@@ -1132,6 +1132,6 @@ Tested by: @dev1, @dev2, @dev3"
 
 **Next steps:**
 
-- Set up [CI/CD integration](/docs/01-guides/03-ci-cd-integration)
+- Set up [CI/CD integration](/docs/01-guides/10-ci-cd-integration)
 - Configure [drift detection](/docs/03-concepts/drift-detection)
 - Review [team mode concepts](/docs/03-concepts/team-mode)
