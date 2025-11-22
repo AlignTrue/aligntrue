@@ -16,6 +16,10 @@ class NoopSpinner {
       console.log(message);
     }
   }
+
+  message(text: string): void {
+    console.log(text);
+  }
 }
 
 export type SpinnerLike = ClackSpinner | NoopSpinner;
