@@ -478,6 +478,14 @@ export function handleSyncError(error: Error): void {
     `Sync error: ${error instanceof Error ? error.message : String(error)}`,
   );
 
+  // Log stack trace in debug mode
+  if (process.env["DEBUG"] === "1" || process.env["ALIGNTRUE_DEBUG"] === "1") {
+    if (error instanceof Error && error.stack) {
+      clack.log.error("\nStack trace:");
+      clack.log.error(error.stack);
+    }
+  }
+
   // Show helpful suggestions
   if (error instanceof Error) {
     if (error.message.includes("lockfile")) {
