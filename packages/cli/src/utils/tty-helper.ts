@@ -37,7 +37,6 @@ export function shouldUseInteractive(forceNonInteractive: boolean): boolean {
   if (forceNonInteractive) return false;
 
   if (!isTTY()) {
-    console.log("Non-TTY environment detected, using non-interactive mode");
     return false;
   }
 
