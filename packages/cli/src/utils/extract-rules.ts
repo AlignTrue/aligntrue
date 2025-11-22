@@ -164,9 +164,11 @@ export async function extractAndSaveRules(
   }
 
   // Build extraction header
-  const relativePath = agentFilePath.startsWith(cwd)
+  let relativePath = agentFilePath.startsWith(cwd)
     ? agentFilePath.slice(cwd.length + 1)
     : agentFilePath;
+  // Normalize to forward slashes for cross-platform consistency
+  relativePath = relativePath.replace(/\\/g, "/");
 
   const now = new Date();
   const dateStr = now.toISOString().split("T")[0];
