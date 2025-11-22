@@ -10,6 +10,7 @@ import {
   openSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   statSync,
 } from "fs";
 import { join } from "path";
@@ -551,10 +552,12 @@ export function detectFilesWithContent(
       // Handle single files (e.g., AGENTS.md, CLAUDE.md)
       else {
         try {
+          // Resolve real path to avoid symlink race conditions
+          const resolvedPath = realpathSync(fullPath);
           // Use file descriptor to avoid race condition between read and stat
           let fd: number | null = null;
           try {
-            fd = openSync(fullPath, "r");
+            fd = openSync(resolvedPath, "r");
             const content = readFileSync(fd, "utf-8");
 
             // Get file stats using the same file descriptor
@@ -568,10 +571,10 @@ export function detectFilesWithContent(
             const hasContent = content.trim().length > 0 && sectionCount > 0;
 
             files.push({
-              path: fullPath,
+              path: resolvedPath,
               relativePath: pattern,
               agent: agentName,
-              format: detectFileFormat(fullPath, content),
+              format: detectFileFormat(resolvedPath, content),
               sectionCount,
               lastModified: fileStats.mtime,
               size: Number(fileStats.size),
