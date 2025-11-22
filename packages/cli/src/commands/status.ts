@@ -10,6 +10,7 @@ import {
   loadConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import { resolveConfigPath } from "../utils/path-resolvers.js";
 import { getLastSyncTimestamp } from "@aligntrue/core/sync/last-sync-tracker";
 import {
   detectAgentsWithValidation,
@@ -137,16 +138,6 @@ export async function status(args: string[]): Promise<void> {
   }
 
   renderStatus(summary);
-}
-
-/**
- * Resolve config path from flag or defaults
- */
-function resolveConfigPath(pathArg: string | undefined, cwd: string): string {
-  if (pathArg) {
-    return resolve(cwd, pathArg);
-  }
-  return getAlignTruePaths(cwd).config;
 }
 
 /**

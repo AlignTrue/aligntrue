@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
+import { computeHash } from "@aligntrue/schema";
 import { matchSections } from "../src/utils/section-matcher.js";
 import type { AlignSection } from "@aligntrue/schema";
 import type { ParsedSection } from "../src/utils/section-parser.js";
@@ -78,13 +79,10 @@ describe("Edit Preservation", () => {
 
   it("should keep sections when content matches", () => {
     // Compute the actual hash for matching content
-    const { createHash } = require("crypto");
     const content = "Same content";
     const heading = "Test Section";
     const normalized = `${heading}\n${content}`.trim();
-    const actualHash = createHash("sha256")
-      .update(normalized, "utf-8")
-      .digest("hex");
+    const actualHash = computeHash(normalized);
 
     const irSections: AlignSection[] = [
       {

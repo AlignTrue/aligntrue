@@ -10,14 +10,14 @@ import { dirname, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync, rmSync } from "fs";
 import { readFileSync } from "fs";
-import { createHash } from "crypto";
+import { computeHash } from "@aligntrue/schema";
 
 /**
  * Generate a stable fingerprint for tests
  */
 function generateFingerprint(heading: string, content: string): string {
   const combined = `${heading}::${content}`;
-  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+  return computeHash(combined).substring(0, 16);
 }
 
 const __filename = fileURLToPath(import.meta.url);

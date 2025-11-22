@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createHash } from "crypto";
+import { computeHash } from "@aligntrue/schema";
 import { join } from "path";
 import { mkdtempSync, rmSync, existsSync } from "fs";
 import { tmpdir } from "os";
@@ -22,7 +22,7 @@ import type { AlignPack, AlignSection } from "@aligntrue/schema";
  */
 function generateFingerprint(heading: string, content: string): string {
   const combined = `${heading}::${content}`;
-  return createHash("sha256").update(combined).digest("hex").substring(0, 16);
+  return computeHash(combined).substring(0, 16);
 }
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "agents");
