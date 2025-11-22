@@ -139,6 +139,20 @@ export function formatDetectionOutput(
 
   let output = "";
 
+  // Default: Show compact summary
+  if (!verbose && !verboseFull) {
+    const agentList = summaries
+      .map(
+        (s) =>
+          `${s.agentName} (${s.fileCount} file${s.fileCount !== 1 ? "s" : ""})`,
+      )
+      .join(", ");
+    output += `⚠ Detected new content: ${agentList}\n`;
+    output += `  Run with --verbose to see file details\n`;
+    return { text: output };
+  }
+
+  // Verbose: Show detailed output
   output += "▲  ⚠ Detected new content outside tracked files\n";
   output += "│\n";
 
@@ -148,12 +162,7 @@ export function formatDetectionOutput(
     output += `●    ${summary.agentName}: ${summary.fileCount} ${plural}, ${summary.totalSections} sections detected\n`;
   }
 
-  // Add hint if not verbose
-  if (!verbose && !verboseFull) {
-    output += "│\n";
-    output += "│    Run with --verbose to see file details\n";
-    return { text: output };
-  }
+  output += "│\n";
 
   output += "│\n";
 
