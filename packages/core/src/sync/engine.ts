@@ -561,6 +561,22 @@ export class SyncEngine {
           timestamp: new Date().toISOString(),
           details: `Updated IR from agent with ${agentRules.length} sections`,
         });
+
+        // Generate/update lockfile (delegated)
+        // This ensures lockfile stays in sync with updated IR
+        const lockfileGeneration = generateAndWriteLockfile(
+          this.ir!,
+          this.config!,
+          process.cwd(),
+          options.dryRun || false,
+        );
+        written.push(...lockfileGeneration.written);
+        if (lockfileGeneration.warnings) {
+          warnings.push(...lockfileGeneration.warnings);
+        }
+        if (lockfileGeneration.auditTrail) {
+          auditTrail.push(...lockfileGeneration.auditTrail);
+        }
       }
 
       return {
