@@ -123,81 +123,100 @@ export async function promote(args: string[]): Promise<void> {
     console.log(`Promote "${sectionHeading}" to team rule`);
   }
 
-  // Create backup
+  // Spinner state tracking
   const spinner = isTTY() ? createSpinner() : null;
-  if (spinner) {
-    spinner.start("Creating backup");
-  } else {
-    console.log("Creating backup...");
-  }
+  let spinnerActive = false;
+  const stopSpinner = (message?: string, code?: number) => {
+    if (spinnerActive && spinner) {
+      spinner.stop(message, code);
+      spinnerActive = false;
+    }
+  };
 
-  const backup = BackupManager.createBackup({
-    cwd,
-    created_by: "promote",
-    action: `promote-${sectionHeading}`,
-    notes: `Backup before promoting "${sectionHeading}" to team`,
-  });
-
-  if (spinner) {
-    spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  } else {
-    console.log(`✓ Backup created: ${backup.timestamp}`);
-    console.log(
-      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  }
-
-  // Confirm
-  if (!yes && !dryRun) {
-    if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
+  try {
+    // Create backup
+    if (spinner) {
+      spinner.start("Creating backup");
+      spinnerActive = true;
+    } else {
+      console.log("Creating backup...");
     }
 
-    const confirm = await clack.confirm({
-      message: `This will share "${sectionHeading}" with all team members. Continue?`,
-      initialValue: false,
+    const backup = BackupManager.createBackup({
+      cwd,
+      created_by: "promote",
+      action: `promote-${sectionHeading}`,
+      notes: `Backup before promoting "${sectionHeading}" to team`,
     });
 
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Promotion cancelled");
-      return;
-    }
-  }
-
-  // Apply changes
-  if (!dryRun) {
     if (spinner) {
-      spinner.start("Promoting to team");
+      stopSpinner(
+        `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      );
     } else {
-      console.log("Promoting to team...");
+      console.log(`✓ Backup created: ${backup.timestamp}`);
+      console.log(
+        `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      );
     }
-    // Feature planned for future release
-    throw new Error(
-      "Section promotion not yet implemented. " +
-        "This feature is planned for a future release.",
-    );
-  } else {
+
+    // Confirm
+    if (!yes && !dryRun) {
+      if (!isTTY()) {
+        exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
+      }
+
+      const confirm = await clack.confirm({
+        message: `This will share "${sectionHeading}" with all team members. Continue?`,
+        initialValue: false,
+      });
+
+      if (clack.isCancel(confirm) || !confirm) {
+        clack.cancel("Promotion cancelled");
+        return;
+      }
+    }
+
+    // Apply changes
+    if (!dryRun) {
+      if (spinner) {
+        spinner.start("Promoting to team");
+        spinnerActive = true;
+      } else {
+        console.log("Promoting to team...");
+      }
+      // Feature planned for future release
+      throw new Error(
+        "Section promotion not yet implemented. " +
+          "This feature is planned for a future release.",
+      );
+    } else {
+      if (isTTY()) {
+        clack.log.info("Dry run - no changes made");
+      } else {
+        console.log("Dry run - no changes made");
+      }
+    }
+
+    // Success message
+    // Ensure messages are printed BEFORE outro
+    console.log("\n⚠ This will be shared with all team members");
+    console.log("  Commit and push to share:");
+    console.log("  git add .aligntrue/");
+    console.log(`  git commit -m "feat: Promote ${sectionHeading} to team"`);
+    console.log("  git push");
+
     if (isTTY()) {
-      clack.log.info("Dry run - no changes made");
+      clack.outro(`✓ Promoted "${sectionHeading}" to team rule`);
     } else {
-      console.log("Dry run - no changes made");
+      console.log(`✓ Promoted "${sectionHeading}" to team rule`);
     }
-  }
 
-  if (isTTY()) {
-    clack.outro(`✓ Promoted "${sectionHeading}" to team rule`);
-  } else {
-    console.log(`✓ Promoted "${sectionHeading}" to team rule`);
+    recordEvent({ command_name: "promote", align_hashes_used: [] });
+  } catch (error) {
+    stopSpinner("Promotion failed", 1);
+    throw error;
   }
-  console.log("\n⚠ This will be shared with all team members");
-  console.log("  Commit and push to share:");
-  console.log("  git add .aligntrue/");
-  console.log(`  git commit -m "feat: Promote ${sectionHeading} to team"`);
-  console.log("  git push");
-
-  recordEvent({ command_name: "promote", align_hashes_used: [] });
 }
 
 /**
@@ -238,77 +257,96 @@ export async function demote(args: string[]): Promise<void> {
     console.log(`Demote "${sectionHeading}" to personal rule`);
   }
 
-  // Create backup
+  // Spinner state tracking
   const spinner = isTTY() ? createSpinner() : null;
-  if (spinner) {
-    spinner.start("Creating backup");
-  } else {
-    console.log("Creating backup...");
-  }
+  let spinnerActive = false;
+  const stopSpinner = (message?: string, code?: number) => {
+    if (spinnerActive && spinner) {
+      spinner.stop(message, code);
+      spinnerActive = false;
+    }
+  };
 
-  const backup = BackupManager.createBackup({
-    cwd,
-    created_by: "demote",
-    action: `demote-${sectionHeading}`,
-    notes: `Backup before demoting "${sectionHeading}" to personal`,
-  });
-
-  if (spinner) {
-    spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  } else {
-    console.log(`✓ Backup created: ${backup.timestamp}`);
-    console.log(
-      `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-  }
-
-  // Confirm
-  if (!yes && !dryRun) {
-    if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
+  try {
+    // Create backup
+    if (spinner) {
+      spinner.start("Creating backup");
+      spinnerActive = true;
+    } else {
+      console.log("Creating backup...");
     }
 
-    const confirm = await clack.confirm({
-      message: `This will remove "${sectionHeading}" from team rules. Continue?`,
-      initialValue: false,
+    const backup = BackupManager.createBackup({
+      cwd,
+      created_by: "demote",
+      action: `demote-${sectionHeading}`,
+      notes: `Backup before demoting "${sectionHeading}" to personal`,
     });
 
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Demotion cancelled");
-      return;
-    }
-  }
-
-  // Apply changes
-  if (!dryRun) {
     if (spinner) {
-      spinner.start("Demoting to personal");
+      stopSpinner(
+        `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      );
     } else {
-      console.log("Demoting to personal...");
+      console.log(`✓ Backup created: ${backup.timestamp}`);
+      console.log(
+        `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      );
     }
-    // Feature planned for future release
-    throw new Error(
-      "Section demotion not yet implemented. " +
-        "This feature is planned for a future release.",
-    );
-  } else {
+
+    // Confirm
+    if (!yes && !dryRun) {
+      if (!isTTY()) {
+        exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
+      }
+
+      const confirm = await clack.confirm({
+        message: `This will remove "${sectionHeading}" from team rules. Continue?`,
+        initialValue: false,
+      });
+
+      if (clack.isCancel(confirm) || !confirm) {
+        clack.cancel("Demotion cancelled");
+        return;
+      }
+    }
+
+    // Apply changes
+    if (!dryRun) {
+      if (spinner) {
+        spinner.start("Demoting to personal");
+        spinnerActive = true;
+      } else {
+        console.log("Demoting to personal...");
+      }
+      // Feature planned for future release
+      throw new Error(
+        "Section demotion not yet implemented. " +
+          "This feature is planned for a future release.",
+      );
+    } else {
+      if (isTTY()) {
+        clack.log.info("Dry run - no changes made");
+      } else {
+        console.log("Dry run - no changes made");
+      }
+    }
+
+    // Success message
+    // Ensure messages are printed BEFORE outro
+    console.log("\nThis rule is now personal and won't affect team members.");
+
     if (isTTY()) {
-      clack.log.info("Dry run - no changes made");
+      clack.outro(`✓ Demoted "${sectionHeading}" to personal rule`);
     } else {
-      console.log("Dry run - no changes made");
+      console.log(`✓ Demoted "${sectionHeading}" to personal rule`);
     }
-  }
 
-  if (isTTY()) {
-    clack.outro(`✓ Demoted "${sectionHeading}" to personal rule`);
-  } else {
-    console.log(`✓ Demoted "${sectionHeading}" to personal rule`);
+    recordEvent({ command_name: "demote", align_hashes_used: [] });
+  } catch (error) {
+    stopSpinner("Demotion failed", 1);
+    throw error;
   }
-  console.log("\nThis rule is now personal and won't affect team members.");
-
-  recordEvent({ command_name: "demote", align_hashes_used: [] });
 }
 
 /**

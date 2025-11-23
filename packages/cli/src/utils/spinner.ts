@@ -11,7 +11,7 @@ class NoopSpinner {
     }
   }
 
-  stop(message?: string): void {
+  stop(message?: string, _code?: number): void {
     if (message) {
       console.log(message);
     }
@@ -24,6 +24,34 @@ class NoopSpinner {
 
 export type SpinnerLike = ClackSpinner | NoopSpinner;
 
+/**
+ * Create a spinner instance that handles interactive/non-interactive modes
+ *
+ * Best Practices:
+ * 1. Always track spinner state (isActive) to prevent double-stops
+ * 2. Use stopSpinner() helper pattern to safely stop
+ * 3. NEVER call clack.log.*() after clack.outro()
+ * 4. Stop spinner without message if clack.outro() follows immediately
+ *    to avoid duplicate success messages
+ * 5. Use stop(msg, 1) for error states (red X)
+ *
+ * @example
+ * ```typescript
+ * const spinner = createSpinner();
+ * let spinnerActive = false;
+ * const stopSpinner = (msg?: string, code?: number) => {
+ *   if (spinnerActive) {
+ *     spinner.stop(msg, code);
+ *     spinnerActive = false;
+ *   }
+ * };
+ *
+ * spinner.start("Working...");
+ * spinnerActive = true;
+ * // ... work ...
+ * stopSpinner("Done"); // or stopSpinner() if followed by outro
+ * ```
+ */
 export function createSpinner(options?: { disabled?: boolean }): SpinnerLike {
   if (options?.disabled || !isInteractive) {
     return new NoopSpinner();
