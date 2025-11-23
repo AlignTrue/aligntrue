@@ -361,6 +361,23 @@ export function detectAgentFileDrift(
 
   // If no last sync timestamp, this is first run - no drift to detect
   if (lastSyncTimestamp === undefined || lastSyncTimestamp === null) {
+    // Debug: log why we're skipping drift detection
+    if (process.env["ALIGNTRUE_DEBUG"]) {
+      console.log(
+        `[drift] No last sync timestamp for ${basePath}, skipping agent file drift detection`,
+      );
+    }
+    return findings;
+  }
+
+  // Verify timestamp is valid (not in the future, not zero)
+  const now = Date.now();
+  if (lastSyncTimestamp > now || lastSyncTimestamp === 0) {
+    if (process.env["ALIGNTRUE_DEBUG"]) {
+      console.log(
+        `[drift] Invalid last sync timestamp: ${lastSyncTimestamp}, now: ${now}`,
+      );
+    }
     return findings;
   }
 
@@ -394,9 +411,18 @@ export function detectAgentFileDrift(
           message: `${path} modified after last sync`,
           suggestion: `Run: aligntrue sync --accept-agent ${agent}`,
         });
+      } else if (process.env["ALIGNTRUE_DEBUG"]) {
+        console.log(
+          `[drift] ${path} not modified: file=${agentTimestamp}, sync=${referenceTimestamp}, diff=${
+            agentTimestamp - referenceTimestamp
+          }`,
+        );
       }
-    } catch {
+    } catch (err) {
       // File exists but can't stat - skip
+      if (process.env["ALIGNTRUE_DEBUG"]) {
+        console.log(`[drift] Failed to stat ${fullPath}:`, err);
+      }
       continue;
     }
   }
@@ -605,6 +631,14 @@ export async function detectDrift(
   // Use .last-sync timestamp for accurate agent file drift detection
   const { getLastSyncTimestamp } = await import("../sync/last-sync-tracker.js");
   const lastSyncTime = getLastSyncTimestamp(basePath);
+
+  // Add debug logging if timestamp is missing
+  if (process.env["ALIGNTRUE_DEBUG"] && !lastSyncTime) {
+    console.log(
+      `[drift] Warning: No last sync timestamp found in ${basePath}/.aligntrue/.last-sync`,
+    );
+  }
+
   findings.push(...detectAgentFileDrift(basePath, lastSyncTime ?? undefined));
 
   // Calculate summary (Overlays system: includes new categories)

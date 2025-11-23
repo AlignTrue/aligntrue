@@ -1,6 +1,6 @@
 import { join } from "path";
 import { writeFileSync, readFileSync, mkdirSync } from "fs";
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import {
   runCli,
   createTestDir,
@@ -16,6 +16,11 @@ describe("Edit Source Merge", () => {
 
   afterAll(async () => {
     await cleanupTestDir(testDir);
+  });
+
+  afterEach(async () => {
+    // Wait for any pending async operations
+    await new Promise((resolve) => setTimeout(resolve, 100));
   });
 
   it("should merge content from Cursor rules into IR when switching edit source", async () => {
