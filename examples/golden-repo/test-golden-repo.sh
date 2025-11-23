@@ -58,6 +58,10 @@ fi
 
 # Test 4: Run sync
 echo "Test 4: Running sync..."
+# Ensure target directories exist to rule out creation permission issues
+mkdir -p .cursor/rules
+mkdir -p .vscode
+
 SYNC_START=$(date +%s)
 SYNC_OUTPUT=$(node ../../packages/cli/dist/index.js sync 2>&1)
 SYNC_EXIT=$?
@@ -83,6 +87,10 @@ if [ -f ".cursor/rules/aligntrue.mdc" ]; then
   pass "Cursor output exists"
 else
   fail "Cursor output not found"
+  echo "DEBUG: Sync output was:"
+  echo "$SYNC_OUTPUT"
+  echo "DEBUG: Directory listing:"
+  ls -R .cursor
 fi
 
 if [ -f "AGENTS.md" ]; then
