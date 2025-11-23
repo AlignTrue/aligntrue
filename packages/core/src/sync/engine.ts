@@ -5,11 +5,10 @@
 
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
-import type { SectionConflict } from "./multi-file-parser.js";
 import { loadConfig } from "../config/index.js";
 import { loadIR } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { resolve as resolvePath, dirname } from "path";
+import { resolve as resolvePath } from "path";
 import { resolvePlugsForPack } from "../plugs/index.js";
 import { applyOverlays } from "../overlays/index.js";
 import { getAlignTruePaths } from "../paths.js";
@@ -689,183 +688,8 @@ export class SyncEngine {
   }
 
   /**
-   * Sync from multiple edited agent files (decentralized mode)
-   * Detects edited agent files, merges to IR, then syncs back to all agents
-   *
-   * EXPERIMENTAL: Only enabled when config.sync.centralized is false
-   */
-  async syncFromMultipleAgents(
-    configPath: string,
-    options: SyncOptions = {},
-  ): Promise<SyncResult> {
-    const auditTrail: AuditEntry[] = [];
-    const written: string[] = [];
-    const warnings: string[] = [];
-    let conflicts: SectionConflict[] = [];
-
-    try {
-      // Load config
-      const config = await loadConfig(configPath);
-      this.config = config;
-
-      // Note: In centralized mode (default), detectEditedFiles only returns files matching edit_source
-      // In decentralized mode (centralized: false), it can return files from any agent
-      // So we can run this in both modes - the filtering happens in detectEditedFiles
-      // Get the project root (parent of .aligntrue directory)
-      // configPath is typically .aligntrue/config.yaml, so we need to go up twice
-      const absoluteConfigPath = resolvePath(configPath);
-      const aligntrueDir = dirname(absoluteConfigPath);
-      const cwd = dirname(aligntrueDir);
-      const paths = getAlignTruePaths(cwd);
-
-      // Import multi-file parser
-      const { detectEditedFiles, mergeFromMultipleFiles } = await import(
-        "./multi-file-parser.js"
-      );
-
-      // 1. Detect edited agent files
-      // Get last sync timestamp for accurate change detection
-      const { getLastSyncTimestamp } = await import("./last-sync-tracker.js");
-      const lastSyncTime = getLastSyncTimestamp(cwd);
-      const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
-
-      const detectionResult = await detectEditedFiles(
-        cwd,
-        config,
-        lastSyncDate,
-      );
-      const editedFiles = detectionResult.files;
-      const editSourceWarnings = detectionResult.warnings;
-
-      // Display edit_source warnings if any
-      if (editSourceWarnings.length > 0) {
-        for (const warning of editSourceWarnings) {
-          warnings.push(
-            `Warning: ${warning.filePath} was edited but is not in edit_source.\n` +
-              `  ${warning.reason}\n` +
-              `  Changes will not be synced. To enable editing this file, run:\n` +
-              `    ${warning.suggestedFix}`,
-          );
-        }
-      }
-
-      if (editedFiles.length === 0) {
-        // No edits detected - proceed with normal IR-to-agents sync
-        // Note: IR (.aligntrue/.rules.yaml) is ALWAYS the canonical source.
-        // edit_source controls which files can write TO IR (input gates).
-        // This is the expected path when no agent files have been edited.
-      } else {
-        auditTrail.push({
-          action: "update",
-          target: "multi-file-detection",
-          timestamp: new Date().toISOString(),
-          details: `Detected ${editedFiles.length} edited file(s)`,
-        });
-
-        // 2. Create mandatory safety backup before merging
-        if (!options.dryRun) {
-          try {
-            const { BackupManager } = await import("../backup/manager.js");
-            BackupManager.createBackup({
-              cwd,
-              created_by: "sync",
-              notes: "Safety backup before sync with edited agent files",
-              action: "pre-sync",
-              mode: config.mode,
-              includeAgentFiles: true,
-              editSource: config.sync?.edit_source || null,
-            });
-          } catch (backupErr) {
-            warnings.push(
-              `Warning: Failed to create safety backup: ${backupErr instanceof Error ? backupErr.message : String(backupErr)}`,
-            );
-          }
-        }
-
-        // 3. Load current IR
-        const currentIR = await loadIR(paths.rules, {
-          config: this.config,
-        });
-
-        // 4. Merge changes from agent files
-        const mergeResult = mergeFromMultipleFiles(editedFiles, currentIR);
-
-        // 5. Check for conflicts
-        conflicts = mergeResult.conflicts;
-        if (conflicts.length > 0) {
-          for (const conflict of conflicts) {
-            // Deduplicate file paths before joining
-            const uniquePaths = Array.from(
-              new Set(conflict.files.map((f) => f.path)),
-            );
-            const fileList = uniquePaths.join(", ");
-            warnings.push(
-              `Section "${conflict.heading}" edited in multiple files: ${fileList}`,
-            );
-            auditTrail.push({
-              action: "conflict",
-              target: conflict.heading,
-              timestamp: new Date().toISOString(),
-              details: `${conflict.reason}: ${fileList}`,
-            });
-          }
-        }
-
-        // 6. Write merged IR
-        if (!options.dryRun) {
-          const { saveIR } = await import("./ir-loader.js");
-          // Use silent mode to suppress validation warnings during merge
-          // Validation happens at parse time and before export
-          await saveIR(paths.rules, mergeResult.mergedPack, { silent: true });
-          written.push(paths.rules);
-
-          auditTrail.push({
-            action: "update",
-            target: paths.rules,
-            timestamp: new Date().toISOString(),
-            details: `Merged ${editedFiles.length} file(s) to IR`,
-          });
-        }
-      }
-
-      // 7. Export IR to all configured agents (always run)
-      const syncResult = await this.syncToAgents(paths.rules, options);
-
-      // 8. Update last sync timestamp on success
-      if (syncResult.success && !options.dryRun) {
-        const { updateLastSyncTimestamp } = await import(
-          "./last-sync-tracker.js"
-        );
-        updateLastSyncTimestamp(cwd);
-      }
-
-      const result: SyncResult = {
-        success: true,
-        written: [...written, ...(syncResult.written || [])],
-        warnings: [...warnings, ...(syncResult.warnings || [])],
-        auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
-      };
-      if (conflicts.length > 0) {
-        result.conflicts = conflicts;
-      }
-
-      if (syncResult.exportResults) {
-        result.exportResults = syncResult.exportResults;
-      }
-
-      return result;
-    } catch (err) {
-      return {
-        success: false,
-        written,
-        warnings: [err instanceof Error ? err.message : String(err)],
-        auditTrail,
-      };
-    }
-  }
-
-  /**
    * Scope-aware sync for team mode
+
    * Reads from multiple storage backends, merges by scope, and writes back
    */
   async syncWithScopes(options: SyncOptions = {}): Promise<SyncResult> {

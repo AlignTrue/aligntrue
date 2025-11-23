@@ -87,11 +87,6 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Skip agent detection",
   },
   {
-    flag: "--skip-two-way-detection",
-    hasValue: false,
-    description: "Skip two-way sync detection (internal use)",
-  },
-  {
     flag: "--auto-enable",
     hasValue: false,
     description: "Auto-enable detected agents without prompting",
@@ -141,7 +136,6 @@ export interface SyncOptions {
   yes: boolean;
   nonInteractive: boolean;
   noDetect: boolean;
-  skipTwoWayDetection: boolean;
   autoEnable: boolean;
   showConflicts: boolean;
   json?: boolean; // For structured output
@@ -186,8 +180,6 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     nonInteractive:
       (parsed.flags["non-interactive"] as boolean | undefined) || false,
     noDetect: (parsed.flags["no-detect"] as boolean | undefined) || false,
-    skipTwoWayDetection:
-      (parsed.flags["skip-two-way-detection"] as boolean | undefined) || false,
     autoEnable: (parsed.flags["auto-enable"] as boolean | undefined) || false,
     showConflicts:
       (parsed.flags["show-conflicts"] as boolean | undefined) || false,

@@ -38,17 +38,15 @@ import {
   parseAgentsMd,
   parseCursorMdc,
   parseGenericMarkdown,
-  type AlignPack,
 } from "@aligntrue/schema";
-import type {
-  EditedFile,
-  SectionConflict,
-} from "@aligntrue/core/sync/multi-file-parser";
 import {
   buildNextStepsMessage,
   type NextStepsSyncGuidance,
 } from "../utils/next-steps.js";
 import { getInvalidExporters } from "../utils/exporter-validation.js";
+// Import centralized patterns - this is the single source of truth
+// for exporter-to-edit-source mappings
+import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "@aligntrue/core/config/edit-source-patterns";
 
 // IRDocument type for internal use
 interface IRDocument {
@@ -57,6 +55,27 @@ interface IRDocument {
   spec_version: string;
   sections: Section[];
   [key: string]: unknown;
+}
+
+// Local types replacing removed core types
+interface EditedFile {
+  path: string;
+  absolutePath: string;
+  format: "agents" | "cursor-mdc" | "generic";
+  sections: {
+    heading: string;
+    content: string;
+    level: number;
+    hash: string;
+  }[];
+  mtime: Date;
+}
+
+interface SectionConflict {
+  heading: string;
+  files: Array<{ path: string; mtime: Date }>;
+  reason: string;
+  winner: string;
 }
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -102,28 +121,8 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 
 type ImportParser = "cursor" | "agents" | "generic";
 
-// Import centralized patterns - this is the single source of truth
-// for exporter-to-edit-source mappings
-import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "@aligntrue/core/config/edit-source-patterns";
-
 /**
  * Detect project ID intelligently from git repo or directory name
- *
- * Tries in order:
- * 1. Git remote URL (extracts repo name)
- * 2. Current directory name
- * 3. Fallback to "my-project"
- *
- * Sanitization rules:
- * - Lowercase everything
- * - Replace spaces, underscores, emoji, and other non-alphanumerics with hyphens
- * - Result contains only `[a-z0-9-]`
- *
- * Examples:
- * - "My Project 🚀" -> "my-project"
- * - "awesome_app" -> "awesome-app"
- *
- * @returns Sanitized project ID safe for config usage
  */
 function detectProjectId(): string {
   try {
@@ -736,10 +735,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Determine single edit source using smart defaults
   // Priority: Cursor (multi-file) > imported files > AGENTS.md
-  //
-  // Important: Interactive mode (no flags) prompts user to confirm choice.
-  // Non-interactive mode (--yes) skips prompts and auto-selects based on priorities.
-  // This is intentional - CI/automation needs deterministic behavior.
   let editSource: string | undefined;
 
   // Check for Cursor (multi-file agent)
@@ -748,8 +743,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     (c) => c.agent === "cursor",
   );
 
-  // Scenario 1: Cursor detected - interactive prompt if available
-  // Non-interactive mode will auto-select Cursor without prompting (see line 760)
   if ((hasCursor || hasCursorImport) && !nonInteractive) {
     const cursorFileCount = hasCursorImport
       ? selectedImportCandidates.filter((c) => c.agent === "cursor").length
@@ -797,27 +790,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       editSource = altChoice as string;
     }
   } else if (hasCursor || hasCursorImport) {
-    // Non-interactive mode: auto-select Cursor without prompting
-    // This ensures deterministic behavior in CI/automation while interactive mode gets user choice
     editSource = ".cursor/rules/*.mdc";
   } else if (selectedImportCandidates.length > 0) {
-    // Scenario: Importing from other agent - use that agent's pattern
     const firstImport = selectedImportCandidates[0];
     if (firstImport) {
       const pattern = getEditSourcePatternForAgent(firstImport);
       editSource = pattern || undefined;
     }
   } else if (createAgentsTemplate && !nonInteractive) {
-    // Scenario 2: New project, no imports
-    // If there are no other agent files, AGENTS.md is the obvious choice - skip prompt
     if (
       selectedImportCandidates.length === 0 &&
       detectedAgentFiles.length === 0
     ) {
-      // No other agent files - AGENTS.md is the only logical edit source
       editSource = "AGENTS.md";
     } else {
-      // Other agent files exist, so offer choice between AGENTS.md and .aligntrue/rules/
       const choice = await clack.select({
         message: "Where do you want to edit your rules?",
         options: [
@@ -843,10 +829,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       editSource = choice as string;
     }
   } else if (createAgentsTemplate) {
-    // Non-interactive: use AGENTS.md
     editSource = "AGENTS.md";
   } else {
-    // Fallback: use first selected agent's pattern
     const firstAgent = selectedAgents[0];
     editSource = firstAgent
       ? EXPORTER_TO_EDIT_SOURCE_PATTERN[
@@ -872,7 +856,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     const rulesDir = join(aligntrueDir, "rules");
     mkdirSync(rulesDir, { recursive: true });
 
-    // Create README.md
     const readmeContent = `# .aligntrue/rules/
 
 This directory contains your rule files. 
@@ -890,9 +873,6 @@ These files export to:
 To add new rule files, create .md files here and run \`aligntrue sync\`.
 `;
     writeFileSync(join(rulesDir, "README.md"), readmeContent, "utf-8");
-
-    // Create global.md with starter content or mark for import
-    // We'll create the starter content after imports are processed
   }
 
   // Check for agent format conflicts and offer to manage ignore files
@@ -916,7 +896,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
         });
 
         if (clack.isCancel(shouldManage)) {
-          // User cancelled, skip ignore management
           break;
         }
 
@@ -931,13 +910,11 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
               }
             });
 
-            // Update config to remember user's choice
             if (!config.sync) {
               config.sync = {};
             }
             config.sync.auto_manage_ignore_files = true;
 
-            // Re-write config with updated setting
             writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
             renameSync(configTempPath, configPath);
           } catch (error) {
@@ -946,19 +923,16 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
             );
           }
         } else {
-          // User declined, remember their choice
           if (!config.sync) {
             config.sync = {};
           }
           config.sync.auto_manage_ignore_files = false;
 
-          // Re-write config with updated setting
           writeFileSync(configTempPath, yaml.stringify(config), "utf-8");
           renameSync(configTempPath, configPath);
         }
       }
 
-      // Show warnings for agents without ignore support
       for (const warning of detection.warnings) {
         const message = formatWarningMessage(warning);
         clack.log.warn(message);
@@ -975,7 +949,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   let agentsMdContent: string | null = null;
 
   if (createAgentsTemplate && !useAlignTrueRules) {
-    // Create AGENTS.md only if not using .aligntrue/rules/
     const templateContent = generateAgentsMdStarter(projectIdValue);
     agentsMdContent = templateContent;
     const agentsMdPath = `${cwd}/AGENTS.md`;
@@ -984,7 +957,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
     renameSync(agentsMdTempPath, agentsMdPath);
     createdFiles.push("AGENTS.md");
   } else if (createAgentsTemplate && useAlignTrueRules) {
-    // Create .aligntrue/rules/global.md instead
     const templateContent = generateAgentsMdStarter(projectIdValue);
     agentsMdContent = templateContent;
     const globalMdPath = join(aligntrueDir, "rules", "global.md");
@@ -1043,7 +1015,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
     sections: packSections,
   };
 
-  // Write pure YAML to .aligntrue/.rules.yaml (internal)
   const warningComment = `# WARNING: This file is auto-generated by AlignTrue
 # DO NOT EDIT DIRECTLY - Edit your agent files (.cursor/*.mdc, AGENTS.md, CLAUDE.md, etc.) instead
 # Changes to this file will be overwritten on next sync
@@ -1063,7 +1034,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   renameSync(rulesTempPath, rulesPath);
   createdFiles.push(".aligntrue/.rules.yaml (internal)");
 
-  // Set timestamp baseline after creating IR
   const { updateLastSyncTimestamp } = await import(
     "@aligntrue/core/sync/last-sync-tracker"
   );
@@ -1080,17 +1050,13 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
     });
   }
 
-  // Step 10: Show configuration summary
   console.log("\n✓ AlignTrue initialized\n");
   console.log("Current configuration:");
   console.log(`  Mode: ${config.mode || "solo"}`);
-  console.log(
-    `  Centralized rule management: ${config.sync?.centralized !== false ? "enabled" : "disabled"}`,
-  );
+  console.log(`  Rule management: centralized`);
   console.log(`  Merge strategy: last-write-wins (automatic)`);
   console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
 
-  // Show editable files based on edit_source
   const editSourceDisplay = Array.isArray(config.sync?.edit_source)
     ? config.sync.edit_source.join(", ")
     : config.sync?.edit_source;
@@ -1103,7 +1069,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   console.log("  Edit: .aligntrue/config.yaml");
   console.log("  Or run: aligntrue config set <key> <value>");
 
-  // Step 11: Determine sync strategy
   const hasExporters = config.exporters && config.exporters.length > 0;
   const shouldAuto = shouldAutoSync({
     createdAgentsTemplate: createAgentsTemplate,
@@ -1131,26 +1096,17 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
       );
     }
   } else if (shouldAuto) {
-    // Auto-sync: simple first-time setup with no imports
     try {
       const syncModule = await import("./sync/index.js");
       const sync = syncModule.sync;
 
-      // Validate that sync is a function
       if (typeof sync !== "function") {
         throw new Error(
           `Expected 'sync' to be a function, but got ${typeof sync}. This may indicate a build issue or module resolution problem.`,
         );
       }
 
-      // Pass --yes, --no-detect, --skip-two-way-detection, and --quiet flags to sync
-      // (prevents prompting, avoids edit detection, and suppresses internal details)
-      const syncFlags = [
-        "--yes",
-        "--no-detect",
-        "--skip-two-way-detection",
-        "--quiet",
-      ];
+      const syncFlags = ["--yes", "--no-detect", "--quiet"];
       await sync(syncFlags);
       autoSyncPerformed = true;
     } catch (error) {
@@ -1159,7 +1115,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
       clack.log.error(`Sync failed: ${errorMessage}`);
       clack.log.info("Resolve the issue, then run 'aligntrue sync' manually.");
 
-      // Log stack trace in debug mode
       if (
         process.env["DEBUG"] === "1" ||
         process.env["ALIGNTRUE_DEBUG"] === "1"
@@ -1171,7 +1126,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
       }
     }
   } else if (!syncWouldBeUseful) {
-    // Deferred: no exporters or no edit sources
     const info = nonInteractive ? console.log : clack.log.info;
     if (!hasExporters) {
       info(
@@ -1183,7 +1137,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   } else if (nonInteractive) {
     console.log("\nNext: aligntrue sync");
   } else {
-    // Ask to sync now (multiple edit sources)
     const shouldSyncNow = await clack.confirm({
       message: "Run 'aligntrue sync' now?",
       initialValue: true,
@@ -1199,16 +1152,13 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
         const syncModule = await import("./sync/index.js");
         const sync = syncModule.sync;
 
-        // Validate that sync is a function
         if (typeof sync !== "function") {
           throw new Error(
             `Expected 'sync' to be a function, but got ${typeof sync}. This may indicate a build issue or module resolution problem.`,
           );
         }
 
-        // Pass --skip-two-way-detection and --quiet flags to sync
-        // (prevents edit detection, suppresses internal details)
-        const syncFlags = ["--skip-two-way-detection", "--quiet"];
+        const syncFlags = ["--quiet"];
         await sync(syncFlags);
         autoSyncPerformed = true;
       } catch (error) {
@@ -1219,7 +1169,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
           "Resolve the issue, then run 'aligntrue sync' manually.",
         );
 
-        // Log stack trace in debug mode
         if (
           process.env["DEBUG"] === "1" ||
           process.env["ALIGNTRUE_DEBUG"] === "1"
@@ -1235,7 +1184,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
     }
   }
 
-  // Show appropriate completion message
   if (autoSyncPerformed) {
     const info = nonInteractive ? console.log : clack.log.success;
     const exporterCount = config.exporters?.length ?? 0;
@@ -1267,7 +1215,6 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
     }
   }
 
-  // Record telemetry event
   recordEvent({ command_name: "init", align_hashes_used: [] });
 }
 
@@ -1296,26 +1243,79 @@ async function mergeAgentFileSections(
     return { sections: [], conflicts: [], stats: [] };
   }
 
-  const { mergeFromMultipleFiles } = await import(
-    "@aligntrue/core/sync/multi-file-parser"
+  // Local merge logic (last-write-wins)
+  const conflicts: SectionConflict[] = [];
+  const sectionsByHeading = new Map<
+    string,
+    { section: Section; file: string; mtime: Date }
+  >();
+
+  // Sort files by mtime (oldest first, so newest wins)
+  const sortedFiles = [...editedFiles].sort(
+    (a, b) => a.mtime.getTime() - b.mtime.getTime(),
   );
 
-  const basePack: AlignPack = {
-    id: packId,
-    version: "1.0.0",
-    spec_version: "1",
-    sections: [],
-  };
+  for (const file of sortedFiles) {
+    for (const section of file.sections) {
+      const key = section.heading.toLowerCase().trim();
+      const existing = sectionsByHeading.get(key);
 
-  const mergeResult = mergeFromMultipleFiles(editedFiles, basePack);
+      if (existing) {
+        // Conflict: same section in multiple files
+        const conflictIndex = conflicts.findIndex(
+          (c) => c.heading === section.heading,
+        );
+        if (conflictIndex >= 0) {
+          const existingConflict = conflicts[conflictIndex]!;
+          const fileExists = existingConflict.files.some(
+            (f) => f.path === file.path,
+          );
+          if (!fileExists) {
+            existingConflict.files.push({
+              path: file.path,
+              mtime: file.mtime,
+            });
+          }
+          existingConflict.winner = file.path;
+        } else {
+          conflicts.push({
+            heading: section.heading,
+            files: [
+              { path: existing.file, mtime: existing.mtime },
+              { path: file.path, mtime: file.mtime },
+            ],
+            reason: "Same section edited in multiple files",
+            winner: file.path,
+          });
+        }
+      }
+
+      // Last-write-wins: replace with newer version
+      sectionsByHeading.set(key, {
+        section: {
+          heading: section.heading,
+          content: section.content,
+          level: section.level,
+          fingerprint: section.hash, // Use parsed hash as fingerprint
+        } as Section,
+        file: file.path,
+        mtime: file.mtime,
+      });
+    }
+  }
+
+  const mergedSections = Array.from(sectionsByHeading.values()).map(
+    (entry) => entry.section,
+  );
+
   const stats = editedFiles.map((file) => ({
     path: file.path,
     count: file.sections.length,
   }));
 
   return {
-    sections: (mergeResult.mergedPack.sections || []) as Section[],
-    conflicts: mergeResult.conflicts || [],
+    sections: mergedSections,
+    conflicts,
     stats,
   };
 }

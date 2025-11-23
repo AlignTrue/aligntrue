@@ -49,13 +49,6 @@ export type ExporterName = keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN;
  */
 export const SPECIAL_EDIT_SOURCES = {
   /**
-   * Any agent file can be edited (experimental decentralized mode)
-   * Requires: centralized: false in config
-   * Note: This is experimental and unsupported
-   */
-  ANY_AGENT_FILE: "any_agent_file",
-
-  /**
    * Human-friendly multi-file organization
    * Use this when you want to split rules into multiple markdown files
    * Recommended for: teams, users migrating from Ruler

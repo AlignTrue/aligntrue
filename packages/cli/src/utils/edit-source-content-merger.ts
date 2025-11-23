@@ -3,10 +3,17 @@
  * Supports three strategies: keep-both, keep-new, keep-existing
  */
 
-import { readFileSync, existsSync, globSync } from "fs";
+import { readFileSync, existsSync, writeFileSync } from "fs";
+import { globSync } from "glob";
 import { join } from "path";
 import type { EditSourceMergeStrategy } from "./edit-source-merge-strategy.js";
 import { backupFileToOverwrittenRules } from "./extract-rules.js";
+
+function debugLog(msg: string) {
+  try {
+    writeFileSync("/tmp/aligntrue-debug.log", msg + "\n", { flag: "a" });
+  } catch {}
+}
 
 export interface MergeResult {
   /**
@@ -46,10 +53,14 @@ export async function mergeEditSourceContent(
   const backedUpFiles: string[] = [];
 
   // Read content from old edit source
+  debugLog(`[DEBUG] Reading old edit source: ${oldEditSource} in ${cwd}`);
   const oldContent = readEditSourceContent(oldEditSource, cwd);
+  debugLog(`[DEBUG] Old content length: ${oldContent.length}`);
 
   // Read content from new edit source
+  debugLog(`[DEBUG] Reading new edit source: ${newEditSource} in ${cwd}`);
   const newContent = readEditSourceContent(newEditSource, cwd);
+  debugLog(`[DEBUG] New content length: ${newContent.length}`);
 
   let contentToMerge = "";
   let summary = "";
@@ -113,21 +124,31 @@ function readEditSourceContent(
   editSource: string | string[] | undefined,
   cwd: string,
 ): string {
-  if (!editSource) return "";
+  if (!editSource) {
+    debugLog("[DEBUG] readEditSourceContent: editSource is undefined");
+    return "";
+  }
 
   const patterns = Array.isArray(editSource) ? editSource : [editSource];
   const allContent: string[] = [];
 
+  debugLog(
+    `[DEBUG] readEditSourceContent: patterns=${JSON.stringify(patterns)}, cwd=${cwd}`,
+  );
+
   for (const pattern of patterns) {
+    // Use absolute path for glob to be safe? No, pattern is relative.
     const files = globSync(pattern, { cwd });
+    debugLog(`[DEBUG] globSync('${pattern}') found: ${JSON.stringify(files)}`);
     for (const file of files) {
       const fullPath = join(cwd, file);
       if (existsSync(fullPath)) {
         try {
           const content = readFileSync(fullPath, "utf-8");
+          debugLog(`[DEBUG] read file ${fullPath}: length=${content.length}`);
           allContent.push(content);
-        } catch {
-          // Skip files that can't be read
+        } catch (err) {
+          debugLog(`[DEBUG] failed to read ${fullPath}: ${err}`);
         }
       }
     }
