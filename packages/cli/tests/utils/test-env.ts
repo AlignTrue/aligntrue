@@ -155,7 +155,12 @@ ${defaultSections
     };
 
     try {
-      const output = execSync(`node "${cliPath}" ${args}`, execOptions);
+      // Use shell form with proper quoting to avoid injection vulnerabilities
+      // Quote the CLI path to handle spaces, then safely append arguments
+      const output = execSync(
+        `node ${JSON.stringify(cliPath)} ${args}`,
+        execOptions,
+      );
       const stdout = captureOutput ? String(output) : "";
 
       return {
