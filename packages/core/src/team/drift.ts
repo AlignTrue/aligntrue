@@ -3,11 +3,12 @@
  * Detects misalignment between lockfile and approved sources
  */
 
-import { existsSync, readFileSync, statSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
 import { isPlainObject } from "../overlays/operations.js";
+import { getStoredHash } from "../sync/agent-export-hashes.js";
 
 /**
  * Drift categories (Overlays system enhanced)
@@ -351,61 +352,34 @@ export function detectLockfileDrift(
 /**
  * Detect agent file drift
  * Checks if agent files (AGENTS.md, .cursor/rules/*.mdc) have been modified after last sync
- * Only relevant when auto_pull is disabled (team mode default)
+ * Uses content hash comparison for reliability
  */
-export function detectAgentFileDrift(
-  basePath: string = ".",
-  lastSyncTimestamp?: number,
-): DriftFinding[] {
+export function detectAgentFileDrift(basePath: string = "."): DriftFinding[] {
   const findings: DriftFinding[] = [];
 
-  // If no last sync timestamp, this is first run - no drift to detect
-  if (lastSyncTimestamp === undefined || lastSyncTimestamp === null) {
-    // Debug: log why we're skipping drift detection
-    if (process.env["ALIGNTRUE_DEBUG"]) {
-      console.log(
-        `[drift] No last sync timestamp for ${basePath}, skipping agent file drift detection`,
-      );
-    }
-    return findings;
-  }
-
-  // Verify timestamp is valid (not in the future, not zero)
-  const now = Date.now();
-  if (lastSyncTimestamp > now || lastSyncTimestamp === 0) {
-    if (process.env["ALIGNTRUE_DEBUG"]) {
-      console.log(
-        `[drift] Invalid last sync timestamp: ${lastSyncTimestamp}, now: ${now}`,
-      );
-    }
-    return findings;
-  }
-
-  // Agent files to check
   const agentFiles = [
     { path: "AGENTS.md", agent: "agents" },
     { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
   ];
 
-  // Use last sync timestamp as reference
-  const referenceTimestamp = lastSyncTimestamp;
-
-  // Check each agent file
   for (const { path, agent } of agentFiles) {
     const fullPath = join(basePath, path);
-
-    // Skip if file doesn't exist
-    if (!existsSync(fullPath)) {
-      continue;
-    }
+    if (!existsSync(fullPath)) continue;
 
     try {
-      const stats = statSync(fullPath);
-      const agentTimestamp = stats.mtimeMs;
+      const currentContent = readFileSync(fullPath, "utf-8");
+      const currentHash = computeHash(currentContent);
+      const storedHash = getStoredHash(basePath, path);
 
-      // Agent file modified after reference timestamp
-      // Note: Use > for strict "after", not >= (file system rounding can cause issues)
-      if (agentTimestamp > referenceTimestamp) {
+      if (!storedHash) {
+        // No stored hash = first sync or legacy state, assume no drift to avoid false positives
+        if (process.env["ALIGNTRUE_DEBUG"]) {
+          console.log(`[drift] No stored hash for ${path}, skipping check`);
+        }
+        continue;
+      }
+
+      if (currentHash !== storedHash) {
         findings.push({
           category: "agent_file",
           rule_id: `_agent_${agent}`,
@@ -413,19 +387,11 @@ export function detectAgentFileDrift(
           suggestion: `Run: aligntrue sync --accept-agent ${agent}`,
         });
       }
-
-      if (process.env["ALIGNTRUE_DEBUG"]) {
-        console.log(`[drift] Checking ${path}:`);
-        console.log(`  File mtime: ${agentTimestamp}`);
-        console.log(`  Reference: ${referenceTimestamp}`);
-        console.log(`  Difference: ${agentTimestamp - referenceTimestamp}ms`);
-      }
     } catch (err) {
-      // File exists but can't stat - skip
+      // File read/hash failed - skip
       if (process.env["ALIGNTRUE_DEBUG"]) {
-        console.log(`[drift] Failed to stat ${fullPath}:`, err);
+        console.log(`[drift] Failed to check ${path}:`, err);
       }
-      continue;
     }
   }
 
@@ -630,57 +596,8 @@ export async function detectDrift(
     findings.push(...detectLockfileDrift(lockfile, currentBundleHash));
   }
 
-  // Use .last-sync timestamp for accurate agent file drift detection
-  const { getLastSyncTimestamp } = await import("../sync/last-sync-tracker.js");
-  let lastSyncTime = getLastSyncTimestamp(basePath);
-
-  // Fallback: If .last-sync doesn't exist, use IR file modification time
-  // This ensures agent file drift can still be detected even if .last-sync wasn't persisted
-  // The IR file is a better fallback than lockfile because it's not modified during drift checks
-  if (!lastSyncTime) {
-    const irPath = join(basePath, ".aligntrue/.rules.yaml");
-    if (existsSync(irPath)) {
-      try {
-        const stats = statSync(irPath);
-        // Subtract 1000ms (1 second) to ensure we catch files modified shortly after IR was written
-        // This compensates for filesystem timestamp precision and write delays
-        lastSyncTime = Math.floor(stats.mtimeMs - 1000);
-        if (process.env["ALIGNTRUE_DEBUG"]) {
-          console.log(
-            `[drift] No .last-sync file, using IR mtime (minus 1000ms) as reference: ${lastSyncTime}`,
-          );
-        }
-      } catch (err) {
-        if (process.env["ALIGNTRUE_DEBUG"]) {
-          console.log(`[drift] Failed to stat IR file: ${err}`);
-        }
-      }
-    } else if (existsSync(lockfilePath)) {
-      // Secondary fallback: use lockfile if IR not found (unlikely in team mode but possible)
-      try {
-        const stats = statSync(lockfilePath);
-        lastSyncTime = Math.floor(stats.mtimeMs - 1000);
-        if (process.env["ALIGNTRUE_DEBUG"]) {
-          console.log(
-            `[drift] No .last-sync or IR file, using lockfile mtime (minus 1000ms) as reference: ${lastSyncTime}`,
-          );
-        }
-      } catch (err) {
-        if (process.env["ALIGNTRUE_DEBUG"]) {
-          console.log(`[drift] Failed to stat lockfile: ${err}`);
-        }
-      }
-    }
-  }
-
-  // Add debug logging if timestamp is still missing
-  if (process.env["ALIGNTRUE_DEBUG"] && !lastSyncTime) {
-    console.log(
-      `[drift] Warning: No last sync reference found (.last-sync or lockfile)`,
-    );
-  }
-
-  findings.push(...detectAgentFileDrift(basePath, lastSyncTime ?? undefined));
+  // Agent file drift uses hash comparison (not timestamps)
+  findings.push(...detectAgentFileDrift(basePath));
 
   // Calculate summary (Overlays system: includes new categories)
   const by_category = {

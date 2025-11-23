@@ -11,6 +11,7 @@
     "./sync": "./dist/sync/index.js",
     "./sync/multi-file-parser": "./dist/sync/multi-file-parser.js",
     "./sync/last-sync-tracker": "./dist/sync/last-sync-tracker.js",
+    "./sync/agent-export-hashes": "./dist/sync/agent-export-hashes.js",
     "./scope": "./dist/scope.js",
     "./bundle": "./dist/bundle.js",
     "./lockfile": "./dist/lockfile/index.js",

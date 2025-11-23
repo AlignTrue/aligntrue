@@ -585,4 +585,22 @@ export default [
       "@typescript-eslint/no-deprecated": "off", // Allow deprecated APIs in tests
     },
   },
+  {
+    files: ["scripts/**/*.mjs", "scripts/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+    plugins: {
+      security,
+    },
+    rules: {
+      // Scripts use static known commands via execSync, parsed with static patterns
+      // See .cursor/rules/security-linting-policy.mdc Section 5 (Safe Child Process Execution)
+      "security/detect-child-process": "off",
+      // Scripts use safe internal paths from __dirname or package root
+      // See .cursor/rules/security-linting-policy.mdc Section 1 (Safe Internal Paths)
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
 ];
