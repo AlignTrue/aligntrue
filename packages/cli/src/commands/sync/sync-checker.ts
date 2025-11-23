@@ -1,0 +1,105 @@
+import { existsSync } from "fs";
+import { join } from "path";
+import { globSync } from "glob";
+import {
+  getLastSyncTimestamp,
+  wasFileModifiedSince,
+} from "@aligntrue/core/sync/last-sync-tracker";
+import { getAlignTruePaths, loadConfig } from "@aligntrue/core";
+import type { SyncOptions } from "./options.js";
+
+/**
+ * Check if sync is needed by comparing file modification times
+ * against last sync timestamp
+ *
+ * Returns true if:
+ * - No previous sync (first time)
+ * - Config changed
+ * - IR changed
+ * - Any agent file changed
+ * - Any source file changed
+ *
+ * @returns true if sync is needed, false if everything is up to date
+ */
+export async function checkIfSyncNeeded(
+  options: SyncOptions,
+): Promise<boolean> {
+  const cwd = process.cwd();
+  const paths = getAlignTruePaths(cwd);
+  const configPath = options.configPath || paths.config;
+
+  // If no last sync timestamp, sync is needed (first time)
+  const lastSyncTime = getLastSyncTimestamp(cwd);
+  if (!lastSyncTime) {
+    return true;
+  }
+
+  // Check if config changed
+  if (wasFileModifiedSince(configPath, lastSyncTime)) {
+    return true;
+  }
+
+  // Check if IR changed
+  if (
+    existsSync(paths.rules) &&
+    wasFileModifiedSince(paths.rules, lastSyncTime)
+  ) {
+    return true;
+  }
+
+  // Load config to check configured files
+  let config;
+  try {
+    config = await loadConfig(configPath);
+  } catch {
+    // If we can't load config, assume sync is needed
+    return true;
+  }
+
+  // Check AGENTS.md
+  const agentsMdPath = paths.agentsMd();
+  if (
+    existsSync(agentsMdPath) &&
+    wasFileModifiedSince(agentsMdPath, lastSyncTime)
+  ) {
+    return true;
+  }
+
+  // Check Cursor .mdc files
+  const cursorFiles = globSync(".cursor/rules/*.mdc", { cwd, absolute: true });
+  for (const file of cursorFiles) {
+    if (wasFileModifiedSince(file, lastSyncTime)) {
+      return true;
+    }
+  }
+
+  // Check configured source files
+  if (config.sources) {
+    for (const source of config.sources) {
+      if (source.type === "local" && source.path) {
+        const sourcePath = join(cwd, source.path);
+        if (
+          existsSync(sourcePath) &&
+          wasFileModifiedSince(sourcePath, lastSyncTime)
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Check configured source_files (multi-file support)
+  if (config.sync?.source_files && Array.isArray(config.sync.source_files)) {
+    for (const pattern of config.sync.source_files) {
+      const matches = globSync(pattern, { cwd, absolute: true });
+      for (const file of matches) {
+        if (wasFileModifiedSince(file, lastSyncTime)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Nothing changed
+  return false;
+}
