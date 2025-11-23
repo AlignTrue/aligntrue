@@ -12,6 +12,7 @@ import { execSync, type ExecException } from "node:child_process";
 import { mkdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { globSync } from "glob";
 
 const layerNames = [
   "Smoke Tests",
@@ -79,9 +80,10 @@ const layerScript = resolve(
 
 let layerFile: string;
 try {
-  const matches = execSync(`ls ${layerScript}`, { encoding: "utf-8" })
-    .trim()
-    .split("\n");
+  const matches = globSync(layerScript);
+  if (matches.length === 0) {
+    throw new Error("No matches found");
+  }
   layerFile = matches[0];
 } catch {
   console.error(`ERROR: Layer ${layer} script not found at ${layerScript}`);
