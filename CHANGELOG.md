@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Drift detection failure on CI** - Removed problematic fsync call from last-sync timestamp writes that was interfering with file timestamp ordering on macOS with Node 22, causing drift detection to report "no drift" after legitimate sync operations
 - **CodeQL alert (useless assignment)** - Removed unused initialization of `exportResults` variable in sync engine
 - **Golden repo test flakiness** - Added error handling and debug logging to improve test stability in CI environment
 - **Stuck spinner in sync command** - Fixed an issue where the "Resolving sources" spinner continued running during interactive prompts in non-verbose mode
