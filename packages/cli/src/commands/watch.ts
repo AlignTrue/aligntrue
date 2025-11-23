@@ -7,7 +7,7 @@ import * as clack from "@clack/prompts";
 import { resolve } from "path";
 import { existsSync, readFileSync } from "fs";
 import { loadConfig, addDriftDetection } from "@aligntrue/core";
-import { requireTTY, isTTY } from "../utils/tty-helper.js";
+import { isTTY } from "../utils/tty-helper.js";
 import { detectUntrackedFiles } from "../utils/detect-agents.js";
 
 /**
@@ -30,14 +30,18 @@ export async function watch(args: string[]): Promise<void> {
     return;
   }
 
-  // Watch requires TTY for live updates
-  requireTTY("watch");
+  // Check TTY support
+  // If non-interactive, we switch to simple logging instead of clack interactive UI
+  const interactive = isTTY();
+
+  // TTY is no longer strictly required, but we warn if running in background
+  // requireTTY("watch");
 
   const cwd = process.cwd();
   const configPath = resolve(cwd, ".aligntrue/config.yaml");
 
   if (!existsSync(configPath)) {
-    if (isTTY()) {
+    if (interactive) {
       clack.log.error("Not an AlignTrue project. Run 'aligntrue init' first.");
     } else {
       console.error(
@@ -70,11 +74,19 @@ export async function watch(args: string[]): Promise<void> {
   // Resolve watch patterns to absolute paths
   const watchPatterns = watchFiles.map((pattern) => resolve(cwd, pattern));
 
-  clack.intro("AlignTrue Watch Mode");
-  clack.log.info(`Watching for changes (debounce: ${debounce}ms)...`);
-  watchFiles.forEach((file) => {
-    clack.log.info(`  - ${file}`);
-  });
+  if (interactive) {
+    clack.intro("AlignTrue Watch Mode");
+    clack.log.info(`Watching for changes (debounce: ${debounce}ms)...`);
+    watchFiles.forEach((file) => {
+      clack.log.info(`  - ${file}`);
+    });
+  } else {
+    console.log("AlignTrue Watch Mode (non-interactive)");
+    console.log(`Watching for changes (debounce: ${debounce}ms)...`);
+    watchFiles.forEach((file) => {
+      console.log(`  - ${file}`);
+    });
+  }
 
   // Track sync state
   let syncTimer: NodeJS.Timeout | null = null;
@@ -93,13 +105,22 @@ export async function watch(args: string[]): Promise<void> {
       const { sync } = await import("./sync/index.js");
 
       // Run sync (handles all the complexity internally)
+      // Note: Sync might try to use interactive prompts if not configured correctly
+      // But in non-TTY environments, it usually detects and switches to non-interactive
       await sync([]);
 
-      clack.log.success(`✓ Synced at ${new Date().toLocaleTimeString()}`);
+      if (interactive) {
+        clack.log.success(`✓ Synced at ${new Date().toLocaleTimeString()}`);
+      } else {
+        console.log(`✓ Synced at ${new Date().toLocaleTimeString()}`);
+      }
     } catch (err) {
-      clack.log.error(
-        `Sync failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      const message = `Sync failed: ${err instanceof Error ? err.message : String(err)}`;
+      if (interactive) {
+        clack.log.error(message);
+      } else {
+        console.error(message);
+      }
     } finally {
       isSyncing = false;
     }
@@ -117,7 +138,11 @@ export async function watch(args: string[]): Promise<void> {
 
   watcher.on("change", (path: string) => {
     const relativePath = path.replace(cwd + "/", "");
-    clack.log.info(`File changed: ${relativePath}`);
+    if (interactive) {
+      clack.log.info(`File changed: ${relativePath}`);
+    } else {
+      console.log(`File changed: ${relativePath}`);
+    }
 
     // Clear existing timer
     if (syncTimer) {
@@ -150,10 +175,17 @@ export async function watch(args: string[]): Promise<void> {
           // Log to drift log
           addDriftDetection(cwd, relativePath, sectionCount, "pending_review");
 
-          clack.log.warn(
-            `[Watch] New file detected: ${relativePath} (${sectionCount} sections)`,
-          );
-          clack.log.info(`  ℹ Run 'aligntrue sync' to review and import`);
+          if (interactive) {
+            clack.log.warn(
+              `[Watch] New file detected: ${relativePath} (${sectionCount} sections)`,
+            );
+            clack.log.info(`  ℹ Run 'aligntrue sync' to review and import`);
+          } else {
+            console.warn(
+              `[Watch] New file detected: ${relativePath} (${sectionCount} sections)`,
+            );
+            console.info(`  ℹ Run 'aligntrue sync' to review and import`);
+          }
         }
       } catch {
         // Ignore read errors
@@ -163,12 +195,20 @@ export async function watch(args: string[]): Promise<void> {
 
   watcher.on("error", (err: unknown) => {
     const message = err instanceof Error ? err.message : String(err);
-    clack.log.error(`Watcher error: ${message}`);
+    if (interactive) {
+      clack.log.error(`Watcher error: ${message}`);
+    } else {
+      console.error(`Watcher error: ${message}`);
+    }
   });
 
   // Handle graceful shutdown
   const shutdown = () => {
-    clack.log.info("\nShutting down watcher...");
+    if (interactive) {
+      clack.log.info("\nShutting down watcher...");
+    } else {
+      console.log("\nShutting down watcher...");
+    }
     watcher.close();
     process.exit(0);
   };
@@ -176,5 +216,9 @@ export async function watch(args: string[]): Promise<void> {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  clack.log.success("✓ Watching for changes (Ctrl+C to stop)");
+  if (interactive) {
+    clack.log.success("✓ Watching for changes (Ctrl+C to stop)");
+  } else {
+    console.log("✓ Watching for changes (Ctrl+C to stop)");
+  }
 }
