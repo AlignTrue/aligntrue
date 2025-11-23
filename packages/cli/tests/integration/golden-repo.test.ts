@@ -50,22 +50,27 @@ describe("Golden Repository Workflows", () => {
 
     try {
       // Initialize fresh AlignTrue project
-      execSync(
-        `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents --project-id test-project --yes`,
-        {
-          cwd: projectDir,
-          stdio: "pipe",
-        },
-      );
+      const initCmd = `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents --project-id test-project --yes`;
+      const initOutput = execSync(initCmd, {
+        cwd: projectDir,
+        encoding: "utf-8",
+      });
+      console.log("Init output:", initOutput);
 
       // Run sync
-      execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
+      const syncCmd = `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`;
+      const syncOutput = execSync(syncCmd, {
         cwd: projectDir,
-        stdio: "pipe",
+        encoding: "utf-8",
       });
+      console.log("Sync output:", syncOutput);
     } catch (error) {
       // Log error details for debugging
       console.error("Init/Sync error:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       throw error;
     }
 
