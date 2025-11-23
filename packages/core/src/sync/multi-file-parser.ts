@@ -293,6 +293,30 @@ export async function detectEditedFiles(
             const content = readFileSync(mdcFd, "utf-8");
             const parsed = parseCursorMdc(content);
 
+            // Fix: Handle "headless" MDC files (frontmatter + body but no headings)
+            if (parsed.sections.length === 0 && parsed.header) {
+              // Strip YAML frontmatter to get body content
+              const bodyContent = parsed.header
+                .replace(/^---\n[\s\S]*?\n---\n/, "")
+                .trim();
+
+              if (bodyContent) {
+                // Create a default section from the body content
+                const { basename } = await import("path");
+                const filename = basename(relativePath, ".mdc");
+
+                parsed.sections.push({
+                  id: filename,
+                  heading: filename, // Use filename as rule name
+                  content: bodyContent,
+                  level: 1,
+                  startLine: 0,
+                  endLine: content.split("\n").length,
+                  hash: "", // Will be computed
+                });
+              }
+            }
+
             if (parsed.sections.length > 0) {
               editedFiles.push({
                 path: relativePath,
