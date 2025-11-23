@@ -34,42 +34,6 @@ export async function handleSyncResult(
     process.exit(1);
   }
 
-  // Sync succeeded - show success summary first
-  if (!options.quiet) {
-    if (options.dryRun) {
-      clack.log.info("Dry-run mode: no files written");
-    } else {
-      const loadedAdapters = registry
-        .list()
-        .map((name) => registry.get(name)!)
-        .filter(Boolean);
-      const exporterNames = loadedAdapters.map((a) => a.name);
-      const writtenFiles = result.written || [];
-      const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
-      const hasChanges = uniqueWrittenFiles.length > 0;
-
-      if (hasChanges) {
-        // Show success message with files written
-        // Sort files alphabetically for deterministic output
-        const sortedFiles = [...uniqueWrittenFiles].sort();
-        let message = "✓ Sync complete\n\n";
-        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-        sortedFiles.forEach((file) => {
-          message += `  - ${file}\n`;
-        });
-        message += "\n";
-        message += "Your AI assistants are now aligned with these rules.\n\n";
-        message +=
-          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
-        message +=
-          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
-        clack.outro(message);
-      } else {
-        clack.outro("✓ Everything up to date - no changes needed");
-      }
-    }
-  }
-
   // Show written files in verbose mode or if quiet is off
   // Sort files alphabetically for deterministic output
   if (result.written && result.written.length > 0 && options.verbose) {
@@ -122,6 +86,7 @@ export async function handleSyncResult(
   }
 
   // Check for agent format conflicts and offer to manage ignore files
+  // Important: This must happen BEFORE clack.outro() to preserve spinner/message state
   if (
     !options.dryRun &&
     context.config.exporters &&
@@ -226,6 +191,7 @@ export async function handleSyncResult(
   }
 
   // Verify lockfile status when enabled
+  // Important: This must happen BEFORE clack.outro()
   const lockfileExpected =
     context.config.mode === "team" && context.config.modules?.lockfile;
   if (!options.dryRun && lockfileExpected && context.lockfilePath) {
@@ -237,6 +203,42 @@ export async function handleSyncResult(
       clack.log.warn(
         `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
       );
+    }
+  }
+
+  // Sync succeeded - show success summary LAST (ending with outro)
+  if (!options.quiet) {
+    if (options.dryRun) {
+      clack.log.info("Dry-run mode: no files written");
+    } else {
+      const loadedAdapters = registry
+        .list()
+        .map((name) => registry.get(name)!)
+        .filter(Boolean);
+      const exporterNames = loadedAdapters.map((a) => a.name);
+      const writtenFiles = result.written || [];
+      const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
+      const hasChanges = uniqueWrittenFiles.length > 0;
+
+      if (hasChanges) {
+        // Show success message with files written
+        // Sort files alphabetically for deterministic output
+        const sortedFiles = [...uniqueWrittenFiles].sort();
+        let message = "✓ Sync complete\n\n";
+        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
+        sortedFiles.forEach((file) => {
+          message += `  - ${file}\n`;
+        });
+        message += "\n";
+        message += "Your AI assistants are now aligned with these rules.\n\n";
+        message +=
+          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+        message +=
+          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+        clack.outro(message);
+      } else {
+        clack.outro("✓ Everything up to date - no changes needed");
+      }
     }
   }
 }

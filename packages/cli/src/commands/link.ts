@@ -148,8 +148,17 @@ export async function link(args: string[]): Promise<void> {
 
   // Show spinner
   const spinner = isTTY() ? createSpinner() : null;
+  let spinnerActive = false;
+  const stopSpinner = (message?: string, code?: number) => {
+    if (spinnerActive && spinner) {
+      spinner.stop(message, code);
+      spinnerActive = false;
+    }
+  };
+
   if (spinner) {
     spinner.start("Checking git repository...");
+    spinnerActive = true;
   } else {
     console.log("Checking git repository...");
   }
@@ -166,7 +175,7 @@ export async function link(args: string[]): Promise<void> {
     // the repo manually with git submodule/subtree.
 
     if (spinner) {
-      spinner.stop("Git repository validated");
+      stopSpinner("Git repository validated");
     } else {
       console.log("✓ Git repository validated");
     }
@@ -226,6 +235,7 @@ export async function link(args: string[]): Promise<void> {
     // Validate pack integrity at vendor path
     if (spinner) {
       spinner.start("Validating pack integrity...");
+      spinnerActive = true;
     } else {
       console.log("Validating pack integrity...");
     }
@@ -233,7 +243,7 @@ export async function link(args: string[]): Promise<void> {
 
     if (!packValid.valid) {
       if (spinner) {
-        spinner.stop("Pack validation failed");
+        stopSpinner("Pack validation failed", 1);
       } else {
         console.log("✗ Pack validation failed");
       }
@@ -246,7 +256,7 @@ export async function link(args: string[]): Promise<void> {
     }
 
     if (spinner) {
-      spinner.stop("Pack validated");
+      stopSpinner("Pack validated");
     } else {
       console.log("✓ Pack validated");
     }
@@ -288,9 +298,9 @@ export async function link(args: string[]): Promise<void> {
     });
   } catch (_error) {
     if (spinner) {
-      spinner.stop("Error");
+      stopSpinner("Link failed", 1);
     } else {
-      console.log("✗ Error");
+      console.log("✗ Link failed");
     }
 
     if (_error && typeof _error === "object" && "code" in _error) {

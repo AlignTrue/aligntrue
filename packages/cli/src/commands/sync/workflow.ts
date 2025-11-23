@@ -46,6 +46,15 @@ export async function executeSyncWorkflow(
 ): Promise<SyncResult> {
   const { cwd, config, configPath, engine, spinner } = context;
 
+  // Track spinner state to prevent double-stops and stuck animations
+  let spinnerActive = false;
+  const stopSpinner = (message?: string): void => {
+    if (spinnerActive) {
+      spinner.stop(message);
+      spinnerActive = false;
+    }
+  };
+
   // Initialize interactive prompts for conflict resolution if needed
   if (options.verbose || !options.nonInteractive) {
     initializePrompts();
@@ -59,6 +68,7 @@ export async function executeSyncWorkflow(
   if (!options.dryRun) {
     if (!options.quiet) {
       spinner.start("Creating safety backup");
+      spinnerActive = true;
     }
     try {
       const backup = BackupManager.createBackup({
@@ -71,7 +81,7 @@ export async function executeSyncWorkflow(
         editSource: config.sync?.edit_source || null,
       });
       if (!options.quiet) {
-        spinner.stop(`Safety backup created: ${backup.timestamp}`);
+        stopSpinner(`Safety backup created: ${backup.timestamp}`);
         if (options.verbose) {
           clack.log.info(
             `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
@@ -80,7 +90,7 @@ export async function executeSyncWorkflow(
       }
     } catch (_error) {
       if (!options.quiet) {
-        spinner.stop("Backup failed");
+        stopSpinner("Backup failed");
         clack.log.warn(
           `Failed to create safety backup: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
@@ -100,6 +110,19 @@ export async function executeSyncWorkflow(
         `Two-way sync enabled (two_way=${String(config.sync?.two_way)})`,
       );
     }
+
+    // We pass spinner control functions to handleTwoWaySync but it manages its own spinner lifecycle
+    // Ideally we should refactor it to use the passed control functions, but for now
+    // we'll just let it be since it's a separate function scope.
+    // However, we need to make sure it doesn't conflict with our spinnerActive state.
+    // Since it's awaited, it should be fine as long as we don't have an active spinner when calling it.
+    if (spinnerActive) {
+      stopSpinner();
+    }
+
+    // We need to pass the spinner tracking mechanism to handleTwoWaySync or reimplement it there.
+    // For now, let's wrap the spinner calls in handleTwoWaySync to use our tracking if possible,
+    // or just ensure we are clean before calling it.
     await handleTwoWaySync(context, options);
     await reapplyPackSources(context, options);
   }
@@ -149,6 +172,7 @@ export async function executeSyncWorkflow(
           ? "Previewing import"
           : `Importing from ${normalizedAcceptAgent}`,
       );
+      spinnerActive = true;
     }
     result = await engine.syncFromAgent(
       normalizedAcceptAgent,
@@ -165,14 +189,16 @@ export async function executeSyncWorkflow(
       spinner.start(
         options.dryRun ? "Previewing changes" : "Syncing to agents",
       );
+      spinnerActive = true;
     }
     result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
   }
 
   if (!options.quiet) {
-    spinner.stop(options.dryRun ? "Preview complete" : "Sync complete");
+    // Stop without message, let result handler show outro/success message
+    stopSpinner();
   } else {
-    spinner.stop(); // Silent stop if spinner was never started
+    stopSpinner(); // Silent stop if spinner was never started
   }
 
   // Step 4: Remove starter file after first successful sync
@@ -357,6 +383,15 @@ async function handleTwoWaySync(
   // In decentralized mode (centralized: false), it can return files from any agent
   // So we can run this in both modes - the filtering happens in detectEditedFiles
 
+  // Local spinner tracking for this function since it might be called independently
+  let spinnerActive = false;
+  const stopSpinner = (message?: string): void => {
+    if (spinnerActive) {
+      spinner.stop(message);
+      spinnerActive = false;
+    }
+  };
+
   try {
     // Get last sync timestamp for accurate change detection
     const { getLastSyncTimestamp } = await import(
@@ -401,6 +436,7 @@ async function handleTwoWaySync(
 
       if (!options.quiet) {
         spinner.start("Merging changes from edited files");
+        spinnerActive = true;
       }
 
       if (!options.quiet && options.verbose) {
@@ -419,7 +455,7 @@ async function handleTwoWaySync(
       });
 
       if (!options.quiet) {
-        spinner.stop("Changes merged");
+        stopSpinner("Changes merged");
 
         if (twoWayResult.warnings && twoWayResult.warnings.length > 0) {
           twoWayResult.warnings.forEach((warning) => {
@@ -439,6 +475,8 @@ async function handleTwoWaySync(
       }
     }
   } catch (err) {
+    stopSpinner(); // Ensure spinner is stopped on error
+
     const errorMessage = err instanceof Error ? err.message : String(err);
 
     // Check if this is an IR validation error

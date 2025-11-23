@@ -107,7 +107,7 @@ export async function runSoloMigrationWizard(
     // Step 5: Apply changes
     spinner.start("Applying changes");
     await applySoloMigration(teamAction, config, cwd);
-    spinner.stop("Migration complete");
+    spinner.stop(); // Stop cleanly without message, outro follows
 
     // Step 6: Show summary
     clack.outro("Solo mode enabled!");
@@ -125,7 +125,7 @@ export async function runSoloMigrationWizard(
       teamSectionsAction: teamAction,
     };
   } catch (error) {
-    spinner.stop("Migration failed");
+    spinner.stop("Migration failed", 1);
     throw error;
   }
 }
