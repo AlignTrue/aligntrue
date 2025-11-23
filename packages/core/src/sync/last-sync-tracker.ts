@@ -9,8 +9,6 @@ import {
   writeFileSync,
   mkdirSync,
   statSync,
-  openSync,
-  fsyncSync,
 } from "fs";
 import { join, dirname } from "path";
 
@@ -63,16 +61,9 @@ export function updateLastSyncTimestamp(cwd: string): void {
       );
     }
 
-    // Add small delay to ensure file system has flushed
-    // This helps prevent race conditions in tests
-    if (process.env["NODE_ENV"] === "test") {
-      try {
-        const fd = openSync(lastSyncFile, "r");
-        fsyncSync(fd);
-      } catch {
-        // Ignore fsync errors in tests (e.g. if file deleted concurrently)
-      }
-    }
+    // Note: fsync was attempted here but caused issues with test timing on some systems
+    // The write is already flushed by writeFileSync, and additional fsync calls
+    // can interfere with file timestamp ordering. Removed for reliability.
   } catch (err) {
     // Log error for debugging but don't fail the sync
     console.warn(
