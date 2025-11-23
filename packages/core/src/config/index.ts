@@ -121,7 +121,6 @@ export interface AlignTrueConfig {
     watch_enabled?: boolean; // Enable watch mode
     watch_debounce?: number; // Debounce delay in milliseconds
     watch_files?: string[]; // Files/patterns to watch
-    source_files?: string | string[]; // Source file patterns for rules (derived from edit_source by default)
     source_order?: string[]; // Custom ordering of source files by basename
     source_markers?: "auto" | "always" | "never"; // Control source file markers in concatenated outputs (default: "auto")
     // Agent ignore file management
@@ -449,14 +448,14 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * Team/enterprise: auto (disabled, git history is backup)
    */
   /**
-   * source_files intentionally has NO default
+   * source_files intentionally REMOVED
    *
-   * edit_source and source_files are separate concepts:
-   * - edit_source: which files accept edits (for two-way sync detection)
-   * - source_files: where to load rules FROM (multi-file source organization)
+   * edit_source now controls both:
+   * - which files accept edits (for two-way sync detection)
+   * - where to load rules FROM (multi-file source organization)
    *
-   * When source_files is undefined, loadIR reads .rules.yaml directly, preserving its ID.
-   * Only set source_files explicitly when using multi-file source organization.
+   * When edit_source contains glob patterns, loadIR uses loadSourceFiles()
+   * When edit_source is undefined or single file, loadIR reads .rules.yaml directly
    */
 
   /**

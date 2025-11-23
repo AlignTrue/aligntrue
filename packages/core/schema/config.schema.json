@@ -176,22 +176,6 @@
           },
           "description": "File patterns to watch for changes (default: auto-detect from exporters)"
         },
-        "source_files": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Single file pattern for source rules"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Multiple file patterns for source rules"
-            }
-          ],
-          "description": "Source file patterns for rules (default: 'AGENTS.md'). Examples: 'AGENTS.md', '*.md', ['architecture.md', 'security.md'], '.aligntrue/rules/*.md'"
-        },
         "source_order": {
           "type": "array",
           "items": {
