@@ -43,11 +43,16 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
+      - name: Calculate lockfile hash
+        id: lockfile-hash
+        shell: bash
+        run: echo "HASH=$(git hash-object pnpm-lock.yaml)" >> $GITHUB_OUTPUT
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.workspace)) }}
+          key: ${{ runner.os }}-pnpm-store-${{ steps.lockfile-hash.outputs.HASH }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
