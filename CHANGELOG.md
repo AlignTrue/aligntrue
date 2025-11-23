@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Duplicate message when switching edit source - Removed redundant "Edit source updated" message that appeared before merge strategy prompt during `aligntrue sync`
+- Confusing UI in merge strategy prompt - Simplified option labels and hints to eliminate double parentheses and improve clarity
 - Silent error handling in drift detection - Added debug logging for allow list parsing failures
 - Restored test coverage by fixing skipped tests - Updated 5 sync command tests to use current IR schema format
 - Test IR format updated - Fixed tests using deprecated `rules` array format to use `sections` format

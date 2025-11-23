@@ -22,12 +22,13 @@ import {
 import {
   formatDetectionOutput,
   buildAgentSummary,
-  shouldRecommendEditSourceSwitch,
+  isMultiFileFormat,
 } from "../../utils/detection-output-formatter.js";
 import {
   getExporterFromEditSource,
   getAgentDisplayName,
 } from "../../utils/edit-source-agent-mapping.js";
+import { categorizeDetectedAgents } from "../../utils/edit-source-helpers.js";
 import {
   promptEditSourceMergeStrategy,
   type EditSourceMergeStrategy,
@@ -256,15 +257,10 @@ export async function buildSyncContext(
     );
   }
 
-  // Step 4: Detect untracked files with content (unless --no-detect or --dry-run)
-  // This determines edit_source first, which affects subsequent agent detection
+  // Step 4: Unified agent detection and onboarding
+  // Detects new agents, handles edit source upgrades, and enables exporters
   if (!options.noDetect && !options.dryRun) {
-    await detectAndHandleUntrackedFiles(cwd, config, configPath, options);
-  }
-
-  // Step 4.5: Detect new agents (unless --no-detect or --dry-run)
-  if (!options.noDetect && !options.dryRun) {
-    await detectAndEnableAgents(config, configPath, options);
+    await handleAgentDetectionAndOnboarding(cwd, config, configPath, options);
   }
 
   let lockfilePath: string | undefined;
@@ -441,312 +437,30 @@ export async function buildSyncContext(
 }
 
 /**
- * Detect and enable new agents
- * When enabling, extracts existing agent content to extracted-rules.md before overwriting
+ * Unified handler for agent detection and onboarding
+ * Replaces separate edit source detection and exporter enablement flows
  */
-async function detectAndEnableAgents(
-  config: AlignTrueConfig,
-  configPath: string,
-  options: SyncOptions,
-): Promise<void> {
-  const cwd = process.cwd();
-  let newAgents = detectNewAgents(
-    cwd,
-    config.exporters || [],
-    config.detection?.ignored_agents || [],
-  );
-
-  // Filter out the edit source agent to avoid prompting about it
-  // (it's already being used as the edit source, so it should be auto-enabled)
-  const editSourceAgent = getExporterFromEditSource(config.sync?.edit_source);
-  if (editSourceAgent) {
-    newAgents = newAgents.filter((a) => a.name !== editSourceAgent);
-  }
-
-  if (newAgents.length === 0) return;
-
-  const shouldAutoEnable =
-    options.autoEnable ||
-    options.yes ||
-    options.nonInteractive ||
-    config.detection?.auto_enable;
-
-  // Load current IR for deduplication when extracting old rules
-  const paths = getAlignTruePaths(cwd);
-  const { loadIR } = await import("@aligntrue/core");
-  let currentIR;
-  try {
-    currentIR = await loadIR(paths.rules, { config });
-  } catch {
-    // IR may not exist yet, that's OK
-  }
-
-  const { extractAndSaveRules, backupFileToOverwrittenRules } = await import(
-    "../../utils/extract-rules.js"
-  );
-
-  if (shouldAutoEnable) {
-    // Auto-enable without prompting
-    clack.log.info(`Auto-enabling ${newAgents.length} detected agent(s)...`);
-    for (const agent of newAgents) {
-      // Extract old content if agent file exists and has content
-      try {
-        const agentFilePath = join(cwd, agent.filePath);
-        const stats = statSync(agentFilePath);
-        // Only attempt backup if it's a file, not a directory
-        if (stats.isFile()) {
-          // Backup entire file before overwriting (preserves file structure for recovery)
-          const backupResult = backupFileToOverwrittenRules(agentFilePath, cwd);
-          if (backupResult.backed_up && options.verbose) {
-            clack.log.info(
-              `Backed up ${agent.displayName} to: ${backupResult.backup_path}`,
-            );
-          }
-        } else if (stats.isDirectory()) {
-          if (options.verbose) {
-            clack.log.info(
-              `Skipping extraction for ${agent.displayName} (directory format)`,
-            );
-          }
-        }
-      } catch (error) {
-        clack.log.warn(
-          `⚠ Failed to backup ${agent.displayName}: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-
-      config.exporters!.push(agent.name);
-      clack.log.success(`Enabled: ${agent.displayName}`);
-    }
-    await saveMinimalConfig(config, configPath);
-  } else {
-    // Prompt for each new agent
-    const toEnable: string[] = [];
-    const toIgnore: string[] = [];
-
-    // Check if TTY is available for interactive prompts
-    const { isTTY } = await import("../../utils/tty-helper.js");
-    if (!isTTY()) {
-      // Non-TTY environment: treat all new agents as "ignore" to prevent hanging
-      clack.log.info(
-        `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected (non-interactive mode)`,
-      );
-      clack.log.info(
-        "Skipping prompts. Use --auto-enable or add agents manually to enable them.",
-      );
-      return;
-    }
-
-    // Batch prompt for multiple agents
-    const agentList = newAgents.map((a) => a.displayName).join(", ");
-    clack.log.info(
-      `${newAgents.length} new agent${newAgents.length !== 1 ? "s" : ""} detected: ${agentList}`,
-    );
-
-    let batchResponse: "yes" | "no" | "review" | symbol;
-    if (newAgents.length === 1) {
-      // Single agent: show individual prompt
-      const agent = newAgents[0]!;
-      clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
-      clack.log.info(`  Found: ${agent.filePath}`);
-
-      const response = await clack.select({
-        message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and the file will be synced with your current rules.`,
-        options: [
-          {
-            value: "yes",
-            label: "Yes, enable and export",
-            hint: "Add to exporters list and back up existing content",
-          },
-          {
-            value: "no",
-            label: "No, skip for now",
-            hint: "Ask again next time",
-          },
-          {
-            value: "never",
-            label: "Never ask about this agent",
-            hint: "Add to ignored list",
-          },
-        ],
-      });
-
-      if (clack.isCancel(response)) {
-        clack.cancel("Detection cancelled");
-        return;
-      }
-
-      if (response === "yes") {
-        toEnable.push(agent.name);
-      } else if (response === "never") {
-        toIgnore.push(agent.name);
-      }
-    } else {
-      // Multiple agents: show batch prompt
-      batchResponse = await clack.select({
-        message: `Enable these ${newAgents.length} new agents as export targets?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and files will be synced with your current rules.`,
-        options: [
-          {
-            value: "yes",
-            label: "Yes, enable all",
-            hint: "Enable all detected agents",
-          },
-          {
-            value: "review",
-            label: "Review individually",
-            hint: "Review each agent separately",
-          },
-          {
-            value: "no",
-            label: "No, skip for now",
-            hint: "Ask again next time",
-          },
-        ],
-      });
-
-      if (clack.isCancel(batchResponse)) {
-        clack.cancel("Detection cancelled");
-        return;
-      }
-
-      if (batchResponse === "yes") {
-        // Enable all
-        toEnable.push(...newAgents.map((a) => a.name));
-      } else if (batchResponse === "review") {
-        // Review individually
-        for (const agent of newAgents) {
-          clack.log.warn(`⚠ New agent detected: ${agent.displayName}`);
-          clack.log.info(`  Found: ${agent.filePath}`);
-
-          const response = await clack.select({
-            message: `Enable ${agent.displayName} as an export target?\n\nExisting content will be backed up to .aligntrue/overwritten-rules/ and the file will be synced with your current rules.`,
-            options: [
-              {
-                value: "yes",
-                label: "Yes, enable and export",
-                hint: "Add to exporters list and back up existing content",
-              },
-              {
-                value: "no",
-                label: "No, skip for now",
-                hint: "Ask again next time",
-              },
-              {
-                value: "never",
-                label: "Never ask about this agent",
-                hint: "Add to ignored list",
-              },
-            ],
-          });
-
-          if (clack.isCancel(response)) {
-            clack.cancel("Detection cancelled");
-            break;
-          }
-
-          if (response === "yes") {
-            toEnable.push(agent.name);
-          } else if (response === "never") {
-            toIgnore.push(agent.name);
-          }
-        }
-      }
-    }
-
-    // Update config with choices
-    if (toEnable.length > 0 || toIgnore.length > 0) {
-      if (toEnable.length > 0) {
-        // Extract old content for each enabled agent before adding to config
-        for (const agentName of toEnable) {
-          const agent = newAgents.find((a) => a.name === agentName);
-          if (agent) {
-            const agentFilePath = join(cwd, agent.filePath);
-            const stats = statSync(agentFilePath);
-            // Only attempt extraction if it's a file, not a directory
-            if (stats.isFile()) {
-              try {
-                // Backup entire file before overwriting (preserves file structure)
-                const backupResult = backupFileToOverwrittenRules(
-                  agentFilePath,
-                  cwd,
-                );
-                if (backupResult.backed_up && options.verbose) {
-                  clack.log.info(
-                    `Backed up ${agent.displayName} to: ${backupResult.backup_path}`,
-                  );
-                }
-
-                // Also extract sections for deduplication
-                await extractAndSaveRules(
-                  agentFilePath,
-                  undefined, // Auto-detect format from path
-                  cwd,
-                  currentIR,
-                );
-              } catch (error) {
-                clack.log.warn(
-                  `⚠ Failed to extract rules from ${agent.displayName}: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-            } else if (stats.isDirectory()) {
-              if (options.verbose) {
-                clack.log.info(
-                  `Skipping extraction for ${agent.displayName} (directory format)`,
-                );
-              }
-            }
-          }
-        }
-
-        config.exporters!.push(...toEnable);
-        clack.log.success(
-          `Enabled ${toEnable.length} agent(s): ${toEnable.join(", ")}`,
-        );
-        clack.log.info(
-          "Review backed up content in .aligntrue/overwritten-rules/ if needed.",
-        );
-      }
-
-      if (toIgnore.length > 0) {
-        if (!config.detection) config.detection = {};
-        if (!config.detection.ignored_agents)
-          config.detection.ignored_agents = [];
-        config.detection.ignored_agents.push(...toIgnore);
-        clack.log.info(
-          `Ignoring ${toIgnore.length} agent(s): ${toIgnore.join(", ")}`,
-        );
-      }
-
-      await saveMinimalConfig(config, configPath);
-    }
-  }
-}
-
-/**
- * Detect untracked files with content and prompt user for import strategy
- *
- * Note: This function only runs in interactive mode. When --yes or --non-interactive
- * flags are used, this is skipped to avoid blocking automated workflows.
- *
- * In non-interactive mode, new agent files are auto-detected in separate workflow
- * but not interactively merged. This is intentional to maintain CI/automation reliability.
- */
-async function detectAndHandleUntrackedFiles(
+async function handleAgentDetectionAndOnboarding(
   cwd: string,
   config: AlignTrueConfig,
   configPath: string,
   options: SyncOptions,
 ): Promise<void> {
   const editSource = config.sync?.edit_source;
+
+  // 1. Detect all relevant files/agents
+  // Untracked files = potential content to import
   const untrackedFiles = detectUntrackedFiles(cwd, editSource);
-
-  // Only proceed if there are untracked files with content
   const filesWithContent = untrackedFiles.filter((f) => f.hasContent);
-  if (filesWithContent.length === 0) {
-    return;
-  }
 
-  // Group files by agent
+  // New agents = agents present on disk but not in exporters list
+  const newAgents = detectNewAgents(
+    cwd,
+    config.exporters || [],
+    config.detection?.ignored_agents || [],
+  );
+
+  // 2. Group files by agent for summaries
   const filesByAgent = new Map<string, typeof filesWithContent>();
   for (const file of filesWithContent) {
     if (!filesByAgent.has(file.agent)) {
@@ -755,7 +469,30 @@ async function detectAndHandleUntrackedFiles(
     filesByAgent.get(file.agent)!.push(file);
   }
 
-  // Build summaries for formatted output
+  // 3. Consolidate detected agent names
+  const detectedAgentNames = new Set<string>();
+  filesByAgent.forEach((_, agent) => detectedAgentNames.add(agent));
+  newAgents.forEach((a) => detectedAgentNames.add(a.name));
+
+  // Remove current edit source agent from detection list (we already know about it)
+  const currentEditSourceAgent = getExporterFromEditSource(editSource);
+  if (currentEditSourceAgent) {
+    detectedAgentNames.delete(currentEditSourceAgent);
+  }
+
+  if (detectedAgentNames.size === 0) {
+    return;
+  }
+
+  const uniqueDetectedAgents = Array.from(detectedAgentNames);
+
+  // 4. Categorize into "upgrade candidates" vs "export targets"
+  const { upgradeCandidates, exportTargets } = categorizeDetectedAgents(
+    uniqueDetectedAgents,
+    editSource,
+  );
+
+  // 5. Build summaries for display
   const summaries = [];
   const displayNameMap: Record<string, string> = {
     cursor: "Cursor",
@@ -766,25 +503,67 @@ async function detectAndHandleUntrackedFiles(
     gemini: "Gemini",
   };
 
-  for (const [agent, files] of filesByAgent) {
-    const displayName = displayNameMap[agent] || agent;
-    summaries.push(buildAgentSummary(agent, displayName, files));
+  for (const agent of uniqueDetectedAgents) {
+    const displayName = displayNameMap[agent] || getAgentDisplayName(agent);
+    const files = filesByAgent.get(agent) || [];
+
+    // If we have files content stats, use them. Otherwise mock summary for agents detected via detectNewAgents
+    if (files.length > 0) {
+      summaries.push(buildAgentSummary(agent, displayName, files));
+    } else {
+      // For agents detected by existence only (no content read yet or directory based)
+      const agentInfo = newAgents.find((a) => a.name === agent);
+      // Mock a summary for display consistency
+      summaries.push({
+        agentName: agent,
+        displayName,
+        fileCount: agentInfo ? 1 : 0, // approximate
+        totalSections: 0,
+        isMultiFile: isMultiFileFormat(agent),
+      });
+    }
   }
 
-  // Check if we should recommend edit_source switch
-  const detectedAgents = Array.from(filesByAgent.keys());
-  const switchRecommendation = shouldRecommendEditSourceSwitch(
-    detectedAgents,
-    editSource,
+  // 6. Handle non-interactive mode
+  const isNonInteractive = !!(
+    options.yes ||
+    options.nonInteractive ||
+    options.autoEnable ||
+    config.detection?.auto_enable
   );
 
-  // In non-interactive mode (--yes), automatically set edit_source if needed
-  const isNonInteractive = options.yes || options.nonInteractive;
-  let newEditSource: string | undefined;
+  if (isNonInteractive) {
+    await handleNonInteractiveOnboarding(
+      cwd,
+      config,
+      configPath,
+      options,
+      upgradeCandidates,
+      exportTargets,
+      editSource,
+    );
+    return;
+  }
 
-  if (isNonInteractive && switchRecommendation.should_recommend) {
-    // Auto-set edit_source to multi-file format when detected with --yes
-    const agent = switchRecommendation.agent || "cursor";
+  // 7. Interactive Mode Display
+  // Show unified detection summary
+  const formatted = formatDetectionOutput(summaries, filesByAgent, {
+    verbose: options.verbose,
+    verboseFull: options.verboseFull,
+    quiet: options.quiet,
+  });
+
+  if (formatted.text) {
+    console.log(formatted.text);
+  }
+
+  // 8. Handle Edit Source Upgrade (if applicable)
+  let newEditSource = editSource;
+  if (upgradeCandidates.length > 0) {
+    // We found a better edit source (multi-file) and we are currently single-file
+    const agent = upgradeCandidates[0]!; // Take first/best candidate
+    const agentDisplayName = getAgentDisplayName(agent);
+
     const agentPatterns: Record<string, string> = {
       cursor: ".cursor/rules/*.mdc",
       amazonq: ".amazonq/rules/*.md",
@@ -792,190 +571,243 @@ async function detectAndHandleUntrackedFiles(
       kilocode: ".kilocode/rules/*.md",
       kiro: ".kiro/steering/*.md",
     };
-    newEditSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
+    const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
-    // Log the change (unless in quiet mode)
-    if (!options.quiet && editSource && editSource !== newEditSource) {
-      clack.log.info(
-        `Auto-switching edit_source from "${editSource}" to "${newEditSource}" (multi-file ${agent} detected)`,
-      );
-    }
-
-    // If switching from single-file source, back it up
-    if (editSource && !Array.isArray(editSource)) {
-      const { backupFileToOverwrittenRules } = await import(
-        "../../utils/extract-rules.js"
-      );
-      const currentSourcePath = resolve(cwd, editSource);
-      if (existsSync(currentSourcePath)) {
-        const backupResult = backupFileToOverwrittenRules(
-          currentSourcePath,
-          cwd,
-        );
-        if (backupResult.backed_up && options.verbose) {
-          clack.log.info(
-            `Backed up previous edit source to: ${backupResult.backup_path}`,
-          );
-        }
-      }
-    }
-  } else if (isNonInteractive) {
-    // Skip interactive prompts in non-interactive mode
-    return;
-  } else {
-    // Interactive mode - show formatted output and prompt user
-    // Format and display detection with tiered verbosity (single consolidated display)
-    const formatted = formatDetectionOutput(summaries, filesByAgent, {
-      verbose: options.verbose,
-      verboseFull: options.verboseFull,
-      quiet: options.quiet,
+    const upgrade = await clack.confirm({
+      message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  Preserves file organization and improves scalability.`,
+      initialValue: true,
     });
 
-    if (formatted.text) {
-      console.log(formatted.text);
+    if (clack.isCancel(upgrade)) {
+      clack.cancel("Sync cancelled");
+      process.exit(0);
     }
 
-    if (switchRecommendation.should_recommend) {
-      // Recommend switching to multi-file format
-      const agent = switchRecommendation.agent || "cursor";
-      const agentPatterns: Record<string, string> = {
-        cursor: ".cursor/rules/*.mdc",
-        amazonq: ".amazonq/rules/*.md",
-        augmentcode: ".augment/rules/*.md",
-        kilocode: ".kilocode/rules/*.md",
-        kiro: ".kiro/steering/*.md",
-      };
-      const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
+    if (upgrade) {
+      newEditSource = recommendedSource;
 
-      const agentDisplayName = getAgentDisplayName(agent);
-      const recommendation = await clack.confirm({
-        message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  Found ${filesByAgent.get(agent)?.length || 0} files. Preserves file organization and improves scalability.`,
-        initialValue: true,
+      // Ask for merge strategy since we are switching sources
+      const mergeStrategy = await promptEditSourceMergeStrategy(
+        editSource,
+        newEditSource,
+        isNonInteractive,
+      );
+      options.editSourceMergeStrategy = mergeStrategy;
+
+      await updateEditSource(
+        cwd,
+        config,
+        configPath,
+        editSource,
+        newEditSource,
+        options,
+      );
+
+      // The upgraded agent is now the edit source, so remove it from export targets if present
+      const idx = exportTargets.indexOf(agent);
+      if (idx !== -1) exportTargets.splice(idx, 1);
+    }
+  }
+
+  // 9. Handle Export Targets (Batch)
+  // Consolidate all remaining agents (including the old edit source if we upgraded)
+  // Note: updateEditSource handles backing up the old source, but we might want to add it as an exporter explicitly?
+  // Actually, if we upgraded edit source, the old source (e.g. AGENTS.md) is now just a file.
+  // We should check if we want to keep syncing to it.
+
+  if (exportTargets.length > 0) {
+    // Filter out ignored agents
+    const targetsToPrompt = exportTargets.filter(
+      (t: string) => !(config.detection?.ignored_agents || []).includes(t),
+    );
+
+    if (targetsToPrompt.length > 0) {
+      const targetNames = targetsToPrompt
+        .map((t: string) => getAgentDisplayName(t))
+        .join(", ");
+
+      const response = await clack.select({
+        message: `Enable these detected agents as export targets?\n  ${targetNames}`,
+        options: [
+          {
+            value: "yes",
+            label: "Yes, enable and export",
+            hint: "Add to exporters list",
+          },
+          { value: "no", label: "No, skip for now" },
+          { value: "review", label: "Review individually" },
+        ],
       });
 
-      if (clack.isCancel(recommendation)) {
+      if (clack.isCancel(response)) {
         clack.cancel("Sync cancelled");
         process.exit(0);
       }
 
-      if (recommendation) {
-        newEditSource = recommendedSource;
-        // If switching from single-file source, back it up
-        if (editSource && !Array.isArray(editSource)) {
-          const { backupFileToOverwrittenRules } = await import(
-            "../../utils/extract-rules.js"
-          );
-          const currentSourcePath = resolve(cwd, editSource);
-          const backupResult = backupFileToOverwrittenRules(
-            currentSourcePath,
-            cwd,
-          );
-          if (backupResult.backed_up) {
+      if (response === "yes") {
+        await enableExporters(
+          cwd,
+          config,
+          configPath,
+          targetsToPrompt,
+          options,
+        );
+      } else if (response === "review") {
+        // Individual review logic could go here, keeping it simple for now
+        for (const agent of targetsToPrompt) {
+          const enable = await clack.confirm({
+            message: `Enable ${getAgentDisplayName(agent)} as export target?`,
+          });
+          if (!clack.isCancel(enable) && enable) {
+            await enableExporters(cwd, config, configPath, [agent], options);
+          }
+        }
+      }
+    }
+  }
+}
+
+async function handleNonInteractiveOnboarding(
+  cwd: string,
+  config: AlignTrueConfig,
+  configPath: string,
+  options: SyncOptions,
+  upgradeCandidates: string[],
+  exportTargets: string[],
+  currentEditSource: string | string[] | undefined,
+): Promise<void> {
+  // Auto-upgrade edit source if candidate exists
+  if (upgradeCandidates.length > 0) {
+    const agent = upgradeCandidates[0]!;
+    const agentPatterns: Record<string, string> = {
+      cursor: ".cursor/rules/*.mdc",
+      amazonq: ".amazonq/rules/*.md",
+      augmentcode: ".augment/rules/*.md",
+      kilocode: ".kilocode/rules/*.md",
+      kiro: ".kiro/steering/*.md",
+    };
+    const newEditSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
+
+    if (!options.quiet) {
+      clack.log.info(
+        `Auto-upgrading edit source to ${getAgentDisplayName(agent)} (multi-file)`,
+      );
+    }
+
+    await updateEditSource(
+      cwd,
+      config,
+      configPath,
+      currentEditSource,
+      newEditSource,
+      options,
+    );
+
+    // Remove from export targets
+    const idx = exportTargets.indexOf(agent);
+    if (idx !== -1) exportTargets.splice(idx, 1);
+  }
+
+  // Auto-enable exporters
+  if (exportTargets.length > 0) {
+    if (!options.quiet) {
+      clack.log.info(`Auto-enabling exporters: ${exportTargets.join(", ")}`);
+    }
+    await enableExporters(cwd, config, configPath, exportTargets, options);
+  }
+}
+
+async function updateEditSource(
+  cwd: string,
+  config: AlignTrueConfig,
+  configPath: string,
+  oldSource: string | string[] | undefined,
+  newSource: string,
+  options: SyncOptions,
+): Promise<void> {
+  if (!config.sync) config.sync = {};
+  config.sync.edit_source = newSource;
+
+  // Add new source agent as exporter if not present
+  const newExporter = getExporterFromEditSource(newSource);
+  if (
+    newExporter &&
+    config.exporters &&
+    !config.exporters.includes(newExporter)
+  ) {
+    config.exporters.push(newExporter);
+  }
+
+  await saveMinimalConfig(config, configPath);
+
+  // Backup old source if it was single file
+  if (oldSource && !Array.isArray(oldSource)) {
+    const { backupFileToOverwrittenRules } = await import(
+      "../../utils/extract-rules.js"
+    );
+    const currentSourcePath = resolve(cwd, oldSource);
+    if (existsSync(currentSourcePath)) {
+      const backupResult = backupFileToOverwrittenRules(currentSourcePath, cwd);
+      if (backupResult.backed_up && options.verbose) {
+        clack.log.info(
+          `Backed up previous edit source to: ${backupResult.backup_path}`,
+        );
+      }
+    }
+  }
+}
+
+async function enableExporters(
+  cwd: string,
+  config: AlignTrueConfig,
+  configPath: string,
+  agents: string[],
+  options: SyncOptions,
+): Promise<void> {
+  const { backupFileToOverwrittenRules } = await import(
+    "../../utils/extract-rules.js"
+  );
+
+  // Filter unique and not already present
+  const toAdd = agents.filter((a) => !(config.exporters || []).includes(a));
+
+  if (toAdd.length === 0) return;
+
+  for (const agent of toAdd) {
+    // Logic to backup existing file content if exists
+    // (Copied/adapted from detectAndEnableAgents)
+    // Find path for agent
+    const patterns = await import("../../utils/detect-agents.js").then(
+      (m) => m.AGENT_PATTERNS[agent] || [],
+    );
+    const agentFile = patterns.find((p) => existsSync(join(cwd, p)));
+
+    if (agentFile) {
+      try {
+        const fullPath = join(cwd, agentFile);
+        const stats = statSync(fullPath);
+        if (stats.isFile()) {
+          const backupResult = backupFileToOverwrittenRules(fullPath, cwd);
+          if (backupResult.backed_up && options.verbose) {
             clack.log.info(
-              `Backed up previous edit source to: ${backupResult.backup_path}`,
+              `Backed up existing ${agent} file to: ${backupResult.backup_path}`,
             );
           }
         }
-      } else {
-        // User declined switch, ask for alternative
-        const altChoice = await clack.select({
-          message: "Choose edit source instead:",
-          options: [
-            { value: "AGENTS.md", label: "AGENTS.md (recommended)" },
-            { value: "CLAUDE.md", label: "CLAUDE.md" },
-          ],
-        });
-
-        if (clack.isCancel(altChoice)) {
-          clack.cancel("Sync cancelled");
-          process.exit(0);
-        }
-
-        newEditSource = altChoice as string;
-      }
-    } else if (detectedAgents.length > 0) {
-      // Single-file formats detected
-      const options_choices: Array<{ value: string; label: string }> = [];
-      for (const agent of detectedAgents) {
-        const displayNameMap: Record<string, string> = {
-          agents: "AGENTS.md",
-          claude: "CLAUDE.md",
-        };
-        const filename = displayNameMap[agent] || `${agent.toUpperCase()}.md`;
-        options_choices.push({ value: filename, label: filename });
-      }
-
-      if (options_choices.length === 1) {
-        newEditSource = options_choices[0]!.value;
-        clack.log.info(`Using ${newEditSource} as edit source`);
-      } else {
-        const choice = await clack.select({
-          message: "Choose edit source:",
-          options: options_choices,
-        });
-
-        if (clack.isCancel(choice)) {
-          clack.cancel("Sync cancelled");
-          process.exit(0);
-        }
-
-        newEditSource = choice as string;
+      } catch {
+        // ignore backup errors
       }
     }
   }
 
-  // Update config with new edit source
-  if (newEditSource) {
-    if (!config.sync) config.sync = {};
-    const previousEditSource = config.sync.edit_source;
-    config.sync.edit_source = newEditSource;
+  if (!config.exporters) config.exporters = [];
+  config.exporters.push(...toAdd);
+  await saveMinimalConfig(config, configPath);
 
-    // Auto-enable the new edit source agent as an exporter
-    const newExporter = getExporterFromEditSource(newEditSource);
-    if (newExporter && config.exporters) {
-      if (!config.exporters.includes(newExporter)) {
-        config.exporters.push(newExporter);
-      }
-    }
-
-    await saveMinimalConfig(config, configPath);
-    if (!isNonInteractive) {
-      if (previousEditSource && previousEditSource !== newEditSource) {
-        clack.log.success(
-          `Edit source updated from "${previousEditSource}" to "${newEditSource}"`,
-        );
-      } else {
-        clack.log.success(`Edit source set to: ${newEditSource}`);
-      }
-
-      // Prompt for merge strategy when edit source actually changes
-      // Skip in auto-enable mode to prevent blocking
-      if (
-        previousEditSource &&
-        previousEditSource !== newEditSource &&
-        !options.autoEnable
-      ) {
-        const mergeStrategy = await promptEditSourceMergeStrategy(
-          previousEditSource,
-          newEditSource,
-          isNonInteractive,
-        );
-
-        // Store merge strategy in options for later use during export
-        options.editSourceMergeStrategy = mergeStrategy;
-
-        clack.log.info(
-          `Merge strategy: ${mergeStrategy === "keep-both" ? "Keep both (merge old and new)" : mergeStrategy === "keep-new" ? "Keep new only" : "Keep existing only"}`,
-        );
-      } else if (previousEditSource && previousEditSource !== newEditSource) {
-        // In auto-enable mode, default to keep-both
-        options.editSourceMergeStrategy = "keep-both";
-      }
-
-      clack.log.info(
-        "Content will be read from edit source and exported to all agents on next sync.",
-      );
-    }
+  if (!options.quiet) {
+    clack.log.success(
+      `Enabled exporters: ${toAdd.map((a) => getAgentDisplayName(a)).join(", ")}`,
+    );
   }
 }
 
