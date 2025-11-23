@@ -128,11 +128,15 @@ async function killProcessesOnPort(port) {
 
 async function cleanCache() {
   const nextDir = join(DOCS_DIR, ".next");
+  const outDir = join(DOCS_DIR, "out");
 
   info("Cleaning stale cache...");
 
   if (existsSync(nextDir)) {
     await rm(nextDir, { recursive: true, force: true });
+  }
+  if (existsSync(outDir)) {
+    await rm(outDir, { recursive: true, force: true });
   }
 
   success("Cache cleaned");
