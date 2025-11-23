@@ -189,7 +189,7 @@ export async function runTeamMigrationWizard(
     // Migration logic in development
     spinner.start("Applying changes");
     await applyMigrationActions(actions, config, cwd);
-    spinner.stop("Migration complete");
+    spinner.stop(); // Stop cleanly without message, outro follows
 
     // Step 7: Show summary
     clack.outro("Team mode enabled!");
@@ -207,7 +207,7 @@ export async function runTeamMigrationWizard(
       actions,
     };
   } catch (error) {
-    spinner.stop("Backup failed");
+    spinner.stop("Backup failed", 1);
     throw error;
   }
 }
