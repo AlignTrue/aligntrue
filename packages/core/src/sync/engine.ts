@@ -595,10 +595,45 @@ export class SyncEngine {
     // Map agent name to file path
     const agentFilePaths: Record<string, string> = {
       agents: paths.agentsMd(),
-      cursor: join(cwd, ".cursor/rules/aligntrue.mdc"),
     };
 
-    const filePath = agentFilePaths[agent];
+    let filePath = agentFilePaths[agent];
+
+    // Special handling for Cursor: check config for edit_source pattern
+    if (agent === "cursor") {
+      const config = this.config || (await loadConfig());
+      const editSource = config.sync?.edit_source;
+
+      // Use configured pattern if available, otherwise default
+      const cursorPattern = Array.isArray(editSource)
+        ? editSource.find((p) => p.includes(".cursor") || p.includes(".mdc"))
+        : editSource &&
+            (editSource.includes(".cursor") || editSource.includes(".mdc"))
+          ? editSource
+          : join(cwd, ".cursor/rules/aligntrue.mdc"); // Fallback to default
+
+      if (cursorPattern && cursorPattern.includes("*")) {
+        // It's a glob pattern - we need to find matching files
+        // For accept-agent, we prioritize aligntrue.mdc if it exists, otherwise first match
+        const { glob } = await import("glob");
+        const matches = await glob(cursorPattern, { cwd, absolute: true });
+
+        if (matches.length > 0) {
+          // Prefer aligntrue.mdc if present in matches
+          const preferred = matches.find((p) => p.endsWith("aligntrue.mdc"));
+          filePath = preferred || matches[0];
+        } else {
+          // No matches found for glob
+          filePath = join(cwd, ".cursor/rules/aligntrue.mdc");
+        }
+      } else {
+        // Direct path
+        filePath = cursorPattern
+          ? resolvePath(cwd, cursorPattern)
+          : join(cwd, ".cursor/rules/aligntrue.mdc");
+      }
+    }
+
     if (!filePath || !existsSync(filePath)) {
       throw new Error(`Agent file not found: ${agent}`);
     }
