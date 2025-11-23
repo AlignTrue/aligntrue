@@ -34,6 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING: Simplified Edit Source Switching**
+  - When switching edit sources (e.g., AGENTS.md → Cursor), AlignTrue now treats the **new source as the truth** instead of merging content.
+  - **New behavior:**
+    1. Old source files are backed up to `.aligntrue/overwritten-rules/` and deleted from workspace.
+    2. Content from new source replaces the internal rules (IR).
+    3. Sync runs immediately to update all exporters with the new rules.
+  - **Removed:** `editSourceMergeStrategy` option and prompts (keep-both/keep-new/keep-existing).
+  - **Migration:** Users who relied on merging content during a switch can manually recover sections from the backup file.
 - **Unified rule loading configuration** - `sync.source_files` option has been **removed**. The `sync.edit_source` option now controls BOTH file monitoring (for edits) AND content loading.
   - Glob patterns in `edit_source` (e.g. `.cursor/rules/*.mdc`) now automatically trigger multi-file rule loading
   - Single file patterns (e.g. `AGENTS.md`) continue to work as single edit sources

@@ -343,6 +343,36 @@ This prompts you to confirm the edit_source switch before it happens.
 - Use non-interactive mode (`aligntrue sync --yes`) in CI after setup is complete
 - Document your chosen edit_source in project README so team members know the convention
 
+## Recovering rules after edit source switch
+
+**Symptom:** You switched edit sources (e.g. from `AGENTS.md` to Cursor rules) and need to access your old rules that weren't automatically copied over.
+
+**Fix:**
+
+AlignTrue automatically backs up your old source files before switching. You can find them in the `.aligntrue/overwritten-rules/` directory.
+
+1. **List available backups:**
+
+   ```bash
+   ls -la .aligntrue/overwritten-rules/
+   ```
+
+   You'll see files with timestamps, e.g., `AGENTS.2025-11-23T10-30-00.md`.
+
+2. **View content:**
+
+   ```bash
+   cat .aligntrue/overwritten-rules/AGENTS.2025-11-23T10-30-00.md
+   ```
+
+3. **Copy sections back:**
+   Manually copy any missing sections from the backup file into your new edit source files (e.g., `.cursor/rules/global.mdc`).
+
+4. **Run sync to update all agents:**
+   ```bash
+   aligntrue sync
+   ```
+
 ---
 
 ## Getting help
