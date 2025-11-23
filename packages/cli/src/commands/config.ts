@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import * as clack from "@clack/prompts";
 import { spawn } from "child_process";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { getAlignTruePaths } from "@aligntrue/core";
+import { getAlignTruePaths, isValidConfigKey } from "@aligntrue/core";
 import type { AlignTrueConfig } from "@aligntrue/core";
 import {
   parseCommonArgs,
@@ -367,51 +367,18 @@ async function configGet(configPath: string, key: string): Promise<void> {
 /**
  * Valid config keys (dot notation)
  * Keys starting with "vendor." are always allowed for custom vendor data
+ * Note: We now use isValidConfigKey from core for validation
  */
-const VALID_CONFIG_KEYS = [
-  "mode",
-  "version",
-  "profile",
-  "profile.id",
-  "profile.name",
-  "sources",
-  "exporters",
-  "sync",
-  "sync.edit_source",
-  "sync.two_way",
-  "sync.workflow_mode",
-  "sync.primary_agent",
-  "sync.on_conflict",
-  "sync.auto_pull",
-  "sync.source_files",
-  "modules",
-  "modules.lockfile",
-  "modules.bundle",
-  "modules.checks",
-  "lockfile",
-  "lockfile.mode",
-  "git",
-  "git.mode",
-  "scopes",
-  "managed",
-  "managed.sections",
-  "managed.source_url",
-  "backup",
-  "backup.auto_backup",
-  "backup.backup_on",
-  "backup.retention_days",
-  "approval",
-  "approval.internal",
-  "approval.external",
-  "resources",
-  "resources.rules",
-  "performance",
-  "performance.max_file_size_mb",
-];
+// const VALID_CONFIG_KEYS = [
+//   "mode",
+// ... (removed full list to avoid duplication)
+// ];
 
 /**
  * Check if a config key is valid
+ * DEPRECATED: Use isValidConfigKey from core
  */
+/*
 function isValidConfigKey(key: string): boolean {
   // Allow vendor keys
   if (key.startsWith("vendor.")) {
@@ -435,6 +402,7 @@ function isValidConfigKey(key: string): boolean {
 
   return false;
 }
+*/
 
 /**
  * Set a config value with validation
@@ -445,14 +413,33 @@ async function configSet(
   value: string,
 ): Promise<void> {
   try {
+    // Check for common personal remote mistake
+    if (key.startsWith("sources.personal")) {
+      clack.log.error(`Invalid config key: ${key}`);
+      clack.log.info(
+        "\nDid you mean 'storage.personal'? Personal remote rules are configured in 'storage', not 'sources'.",
+      );
+      clack.log.info(
+        "See: https://aligntrue.ai/docs/concepts/team-mode#personal-rules",
+      );
+      process.exit(2);
+    }
+
     // Validate key before setting
     if (!isValidConfigKey(key)) {
       clack.log.error(`Invalid config key: ${key}`);
       clack.log.info("\nValid keys:");
-      VALID_CONFIG_KEYS.slice(0, 20).forEach((k) => clack.log.info(`  ${k}`));
-      if (VALID_CONFIG_KEYS.length > 20) {
-        clack.log.info(`  ... and ${VALID_CONFIG_KEYS.length - 20} more`);
-      }
+      // Show some common valid keys
+      const commonKeys = [
+        "mode",
+        "sync.edit_source",
+        "sync.workflow_mode",
+        "exporters",
+        "git.mode",
+        "modules.lockfile",
+      ];
+      commonKeys.forEach((k) => clack.log.info(`  ${k}`));
+      clack.log.info(`  ... and others`);
       clack.log.info("\nVendor keys (vendor.*) are also allowed");
       clack.log.info(
         "\nRun 'aligntrue config list' to see all current config keys",

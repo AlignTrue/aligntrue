@@ -703,6 +703,42 @@ export async function validateConfig(
 
   // Validate exporters array if present
   if (config.exporters && Array.isArray(config.exporters)) {
+    const MAX_EXPORTERS = 20;
+    const WARN_EXPORTERS_THRESHOLD = 10;
+
+    // Check count limits
+    if (config.exporters.length > MAX_EXPORTERS) {
+      throw new Error(
+        `Too many exporters configured (${config.exporters.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
+      );
+    }
+
+    if (config.exporters.length > WARN_EXPORTERS_THRESHOLD) {
+      const warningKey = "too-many-exporters";
+      if (!shownWarnings.has(warningKey)) {
+        shownWarnings.add(warningKey);
+        console.warn(
+          `Warning: ${config.exporters.length} exporters configured. This may slow down sync operations.`,
+        );
+      }
+    }
+
+    // Check for duplicates
+    const uniqueExporters = new Set(config.exporters);
+    if (uniqueExporters.size !== config.exporters.length) {
+      const seen = new Set();
+      const duplicates = new Set();
+      for (const exporter of config.exporters) {
+        if (seen.has(exporter)) {
+          duplicates.add(exporter);
+        }
+        seen.add(exporter);
+      }
+      throw new Error(
+        `Duplicate exporters found: ${Array.from(duplicates).join(", ")}`,
+      );
+    }
+
     for (let i = 0; i < config.exporters.length; i++) {
       const exporter = config.exporters[i];
       if (typeof exporter !== "string" || exporter.trim() === "") {
@@ -1131,6 +1167,105 @@ export function getModeHints(
 
   // Use global default or fall back to metadata_only
   return config.export?.mode_hints?.default ?? "metadata_only";
+}
+
+/**
+ * Check if a path is a valid config key
+ */
+export function isValidConfigKey(key: string): boolean {
+  const validKeys = new Set([
+    "version",
+    "mode",
+    "modules",
+    "modules.lockfile",
+    "modules.bundle",
+    "modules.checks",
+    "modules.mcp",
+    "lockfile",
+    "lockfile.mode",
+    "git",
+    "git.mode",
+    "git.branch_check_interval",
+    "git.tag_check_interval",
+    "git.offline_fallback",
+    "git.auto_gitignore",
+    "sync",
+    "sync.auto_pull",
+    "sync.primary_agent",
+    "sync.on_conflict",
+    "sync.workflow_mode",
+    "sync.show_diff_on_pull",
+    "sync.edit_source",
+    "sync.centralized",
+    "sync.scope_prefixing",
+    "sync.watch_enabled",
+    "sync.watch_debounce",
+    "sync.watch_files",
+    "managed",
+    "managed.files",
+    "managed.sections",
+    "managed.source_url",
+    "sources",
+    "exporters",
+    "scopes",
+    "merge",
+    "merge.strategy",
+    "merge.order",
+    "performance",
+    "performance.max_file_size_mb",
+    "performance.max_directory_depth",
+    "performance.ignore_patterns",
+    "export",
+    "export.mode_hints",
+    "export.max_hint_blocks",
+    "export.max_hint_tokens",
+    "backup",
+    "backup.keep_count",
+    "detection",
+    "detection.auto_enable",
+    "detection.ignored_agents",
+    "overlays",
+    "plugs",
+    "plugs.fills",
+    "mcp",
+    "mcp.servers",
+    "resources",
+    "resources.rules",
+    "resources.mcps",
+    "resources.skills",
+    "storage",
+  ]);
+
+  // Allow vendor keys
+  if (key.startsWith("vendor.")) {
+    return true;
+  }
+
+  // Check exact match
+  if (validKeys.has(key)) {
+    return true;
+  }
+
+  // Check if it's a nested key under a valid parent or array index
+  // e.g., "sources.0.type" is valid if "sources" is valid
+  const parts = key.split(".");
+  for (let i = parts.length - 1; i > 0; i--) {
+    const parentKey = parts.slice(0, i).join(".");
+    if (validKeys.has(parentKey)) {
+      return true;
+    }
+  }
+
+  // Special case for dynamic keys like resources.*.storage
+  if (key.startsWith("resources.")) {
+    return true;
+  }
+
+  if (key.startsWith("storage.")) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

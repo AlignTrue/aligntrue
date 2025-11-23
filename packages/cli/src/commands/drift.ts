@@ -54,6 +54,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Enable strict mode (exit non-zero on drift detection)",
   },
   {
+    flag: "--post-sync",
+    hasValue: false,
+    description: "Ignore lockfile drift (useful after automated sync)",
+  },
+  {
     flag: "--json",
     hasValue: false,
     description: "Output results in JSON format",
@@ -151,7 +156,11 @@ export async function drift(args: string[]): Promise<void> {
     lockfilePath: ".aligntrue.lock.json",
     allowListPath: ".aligntrue/allow.yaml",
   };
-  const driftResults = await detectDriftForConfig(configWithPaths);
+  const ignoreLockfileDrift = Boolean(parsedArgs.flags["post-sync"]);
+  const driftResults = await detectDriftForConfig(
+    configWithPaths,
+    ignoreLockfileDrift,
+  );
 
   // Record telemetry
   await recordEvent({
