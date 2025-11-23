@@ -139,7 +139,6 @@ export interface SyncOptions {
   autoEnable: boolean;
   showConflicts: boolean;
   json?: boolean; // For structured output
-  editSourceMergeStrategy?: "keep-both" | "keep-new" | "keep-existing"; // Set during sync when edit source changes
 }
 
 /**

@@ -180,6 +180,36 @@ You can override this:
 aligntrue init --yes --edit-source "AGENTS.md"
 ```
 
+## Switching edit sources
+
+When you switch your edit source (e.g. from `AGENTS.md` to `.cursor/rules/*.mdc`), AlignTrue treats the **new source as the source of truth**.
+
+**What happens during a switch:**
+
+1. **Backup:** The old edit source files are backed up to `.aligntrue/overwritten-rules/`
+2. **Replace:** Content from the new edit source replaces your internal rules (IR)
+3. **Sync:** New rules are immediately synced to all exporters (including overwriting the old source file with a read-only version)
+
+**Example: Switching from AGENTS.md to Cursor**
+
+```bash
+# Current: AGENTS.md is edit source
+aligntrue config set sync.edit_source ".cursor/rules/*.mdc"
+aligntrue sync
+```
+
+Output:
+
+```
+✓ Switched edit source: AGENTS.md → .cursor/rules/*.mdc
+Backed up previous rules to: .aligntrue/overwritten-rules/AGENTS.2025-11-23.md
+✓ Updated IR with sections from new source
+✓ Synced to all agents
+```
+
+**Recovering old rules:**
+If you need content from your old source that wasn't in the new source, you can manually copy sections from the backup file in `.aligntrue/overwritten-rules/`.
+
 ## Advanced options
 
 ### Multi-source editing (experimental)

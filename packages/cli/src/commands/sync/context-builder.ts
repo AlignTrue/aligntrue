@@ -2,7 +2,7 @@
  * Sync context builder - loads config, sources, exporters, and detects agents
  */
 
-import { existsSync, writeFileSync, statSync } from "fs";
+import { existsSync, writeFileSync, statSync, unlinkSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { createHash } from "crypto";
@@ -31,11 +31,7 @@ import {
   getAgentDisplayName,
 } from "../../utils/edit-source-agent-mapping.js";
 import { categorizeDetectedAgents } from "../../utils/edit-source-helpers.js";
-import {
-  promptEditSourceMergeStrategy,
-  type EditSourceMergeStrategy,
-} from "../../utils/edit-source-merge-strategy.js";
-import { mergeEditSourceContent } from "../../utils/edit-source-content-merger.js";
+import { prepareEditSourceSwitch } from "../../utils/edit-source-content-merger.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -72,7 +68,6 @@ export interface SyncContext {
   spinner: SpinnerLike;
   lockfilePath?: string;
   lockfileWritten?: boolean;
-  editSourceMergeStrategy?: EditSourceMergeStrategy;
 }
 
 /**
@@ -645,7 +640,7 @@ async function handleAgentDetectionAndOnboarding(
     const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
 
     const upgrade = await clack.confirm({
-      message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  Preserves file organization and improves scalability.`,
+      message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  ${agentDisplayName} files will become your source of truth.`,
       initialValue: true,
     });
 
@@ -656,14 +651,6 @@ async function handleAgentDetectionAndOnboarding(
 
     if (upgrade) {
       const newEditSource = recommendedSource;
-
-      // Ask for merge strategy since we are switching sources
-      const mergeStrategy = await promptEditSourceMergeStrategy(
-        editSource,
-        newEditSource,
-        isNonInteractive,
-      );
-      options.editSourceMergeStrategy = mergeStrategy;
 
       await updateEditSource(
         cwd,
@@ -772,11 +759,6 @@ async function handleNonInteractiveOnboarding(
       );
     }
 
-    // Default to keep-both in non-interactive mode if not specified
-    if (!options.editSourceMergeStrategy) {
-      options.editSourceMergeStrategy = "keep-both";
-    }
-
     await updateEditSource(
       cwd,
       config,
@@ -827,58 +809,43 @@ async function updateEditSource(
 
   await saveMinimalConfig(config, configPath);
 
-  // Apply merge strategy if provided
-  // Default to "keep-both" if not specified (safe default)
-  const strategy = options.editSourceMergeStrategy || "keep-both";
-
-  if (options.verbose) {
-    clack.log.info(`Applying edit source merge strategy: ${strategy}`);
-  }
-
   try {
     // Load dependencies dynamically
-    const { loadIR, saveIR, updateLastSyncTimestamp } = await import(
-      "@aligntrue/core"
-    );
+    const { saveIR, updateLastSyncTimestamp } = await import("@aligntrue/core");
     const { parseGenericMarkdown } = await import(
       "@aligntrue/exporters/utils/section-parser"
     );
     // generateFingerprint is now local
 
-    // Load current IR content
-    let currentIR: AlignPack | undefined;
-    const irPath = join(cwd, ".aligntrue/.rules.yaml");
-    if (existsSync(irPath)) {
-      try {
-        currentIR = await loadIR(irPath);
-      } catch {
-        // Ignore load error, will treat as empty
+    // Prepare edit source switch (backup old files, read new content)
+    const result = await prepareEditSourceSwitch(oldSource, newSource, cwd);
+
+    if (result.summary && options.verbose) {
+      clack.log.info(result.summary);
+    } else if (result.backedUpFiles.length > 0) {
+      // Always inform user about backups, even if not verbose (unless quiet)
+      if (!options.quiet) {
+        clack.log.info(
+          `Backed up previous rules to: .aligntrue/overwritten-rules/`,
+        );
       }
     }
 
-    // Merge content
-    // Note: we don't have textual IR content easily available, so we pass undefined for currentIRContent
-    // This means "keep-existing" strategy will just preserve IR object as is (handled below)
-    const mergeResult = await mergeEditSourceContent(
-      oldSource,
-      newSource,
-      undefined, // currentIRContent
-      cwd,
-      strategy,
-    );
-
-    if (mergeResult.summary && options.verbose) {
-      clack.log.info(mergeResult.summary);
+    // Delete old files to ensure clean sync (prevent exporters from preserving "old" content)
+    for (const file of result.backedUpFiles) {
+      try {
+        const fullPath = join(cwd, file);
+        unlinkSync(fullPath);
+      } catch {
+        // Ignore deletion errors (file may not exist anymore)
+      }
     }
 
-    // If we have content to merge (keep-both or keep-new), parse and update IR
-    if (
-      (strategy === "keep-both" || strategy === "keep-new") &&
-      mergeResult.contentToMerge
-    ) {
+    // If we have content, parse and update IR
+    if (result.content) {
       // Parse merged content into sections
       // We use generic markdown parser which works for both AGENTS.md and most rule files
-      const parsed = parseGenericMarkdown(mergeResult.contentToMerge);
+      const parsed = parseGenericMarkdown(result.content);
 
       if (parsed.sections.length > 0) {
         // Convert to AlignSection format
@@ -889,36 +856,16 @@ async function updateEditSource(
           fingerprint: generateFingerprint(s.heading),
         }));
 
-        // Update IR
-        if (!currentIR) {
-          currentIR = {
-            id: "merged-rules",
-            version: "1.0.0",
-            spec_version: "1",
-            sections: [],
-          } as AlignPack;
-        }
-
-        // Merge sections based on strategy
-        if (
-          strategy === "keep-both" &&
-          currentIR.sections &&
-          currentIR.sections.length > 0
-        ) {
-          // For keep-both, preserve existing sections and append new ones (avoiding duplicates)
-          const existingHeadings = new Set(
-            currentIR.sections.map((s) => s.heading),
-          );
-          const uniqueNewSections = newSections.filter(
-            (s) => !existingHeadings.has(s.heading),
-          );
-          currentIR.sections = [...currentIR.sections, ...uniqueNewSections];
-        } else {
-          // For keep-new or empty IR, replace sections
-          currentIR.sections = newSections;
-        }
+        // Replace IR completely (New Source As Truth)
+        const currentIR = {
+          id: "merged-rules",
+          version: "1.0.0",
+          spec_version: "1",
+          sections: newSections,
+        } as AlignPack;
 
         // Save updated IR
+        const irPath = join(cwd, ".aligntrue/.rules.yaml");
         await saveIR(irPath, currentIR);
 
         // Update last sync timestamp to prevent immediate two-way sync from overwriting our work
@@ -927,14 +874,14 @@ async function updateEditSource(
 
         if (options.verbose) {
           clack.log.success(
-            `Updated IR with ${newSections.length} merged sections`,
+            `Updated IR with ${newSections.length} sections from new source`,
           );
         }
       }
     }
   } catch (err) {
     clack.log.warn(
-      `Failed to merge content from edit sources: ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to switch edit source cleanly: ${err instanceof Error ? err.message : String(err)}`,
     );
     // Fallback to simple backup behavior (old behavior) if merge fails
     // Backup old source if it was single file
