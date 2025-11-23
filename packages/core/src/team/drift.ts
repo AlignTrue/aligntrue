@@ -404,6 +404,7 @@ export function detectAgentFileDrift(
       const agentTimestamp = stats.mtimeMs;
 
       // Agent file modified after reference timestamp
+      // Note: Use > for strict "after", not >= (file system rounding can cause issues)
       if (agentTimestamp > referenceTimestamp) {
         findings.push({
           category: "agent_file",
@@ -411,12 +412,13 @@ export function detectAgentFileDrift(
           message: `${path} modified after last sync`,
           suggestion: `Run: aligntrue sync --accept-agent ${agent}`,
         });
-      } else if (process.env["ALIGNTRUE_DEBUG"]) {
-        console.log(
-          `[drift] ${path} not modified: file=${agentTimestamp}, sync=${referenceTimestamp}, diff=${
-            agentTimestamp - referenceTimestamp
-          }`,
-        );
+      }
+
+      if (process.env["ALIGNTRUE_DEBUG"]) {
+        console.log(`[drift] Checking ${path}:`);
+        console.log(`  File mtime: ${agentTimestamp}`);
+        console.log(`  Reference: ${referenceTimestamp}`);
+        console.log(`  Difference: ${agentTimestamp - referenceTimestamp}ms`);
       }
     } catch (err) {
       // File exists but can't stat - skip
@@ -630,12 +632,51 @@ export async function detectDrift(
 
   // Use .last-sync timestamp for accurate agent file drift detection
   const { getLastSyncTimestamp } = await import("../sync/last-sync-tracker.js");
-  const lastSyncTime = getLastSyncTimestamp(basePath);
+  let lastSyncTime = getLastSyncTimestamp(basePath);
 
-  // Add debug logging if timestamp is missing
+  // Fallback: If .last-sync doesn't exist, use IR file modification time
+  // This ensures agent file drift can still be detected even if .last-sync wasn't persisted
+  // The IR file is a better fallback than lockfile because it's not modified during drift checks
+  if (!lastSyncTime) {
+    const irPath = join(basePath, ".aligntrue/.rules.yaml");
+    if (existsSync(irPath)) {
+      try {
+        const stats = statSync(irPath);
+        // Subtract 1000ms (1 second) to ensure we catch files modified shortly after IR was written
+        // This compensates for filesystem timestamp precision and write delays
+        lastSyncTime = Math.floor(stats.mtimeMs - 1000);
+        if (process.env["ALIGNTRUE_DEBUG"]) {
+          console.log(
+            `[drift] No .last-sync file, using IR mtime (minus 1000ms) as reference: ${lastSyncTime}`,
+          );
+        }
+      } catch (err) {
+        if (process.env["ALIGNTRUE_DEBUG"]) {
+          console.log(`[drift] Failed to stat IR file: ${err}`);
+        }
+      }
+    } else if (existsSync(lockfilePath)) {
+      // Secondary fallback: use lockfile if IR not found (unlikely in team mode but possible)
+      try {
+        const stats = statSync(lockfilePath);
+        lastSyncTime = Math.floor(stats.mtimeMs - 1000);
+        if (process.env["ALIGNTRUE_DEBUG"]) {
+          console.log(
+            `[drift] No .last-sync or IR file, using lockfile mtime (minus 1000ms) as reference: ${lastSyncTime}`,
+          );
+        }
+      } catch (err) {
+        if (process.env["ALIGNTRUE_DEBUG"]) {
+          console.log(`[drift] Failed to stat lockfile: ${err}`);
+        }
+      }
+    }
+  }
+
+  // Add debug logging if timestamp is still missing
   if (process.env["ALIGNTRUE_DEBUG"] && !lastSyncTime) {
     console.log(
-      `[drift] Warning: No last sync timestamp found in ${basePath}/.aligntrue/.last-sync`,
+      `[drift] Warning: No last sync reference found (.last-sync or lockfile)`,
     );
   }
 
