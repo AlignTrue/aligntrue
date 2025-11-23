@@ -6,7 +6,7 @@
 import { resolve } from "path";
 import type { AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
-import type { AuditEntry } from "./engine.js";
+import type { AuditEntry, OperationResult } from "./engine.js";
 import {
   readLockfile,
   writeLockfile,
@@ -15,13 +15,20 @@ import {
   generateLockfile,
 } from "../lockfile/index.js";
 
-export interface LockfileValidationResult {
+/**
+ * Result of a lockfile validation operation
+ * (Tracks operation success, not data validity)
+ */
+export interface LockfileOperationResult extends Partial<OperationResult> {
   success: boolean;
   auditTrail: AuditEntry[];
   warnings: string[];
 }
 
-export interface LockfileGenerationResult {
+/**
+ * Result of a lockfile write operation
+ */
+export interface LockfileWriteResult extends Partial<OperationResult> {
   written: string[];
   auditTrail: AuditEntry[];
   warnings: string[];
@@ -34,7 +41,7 @@ export function validateAndEnforceLockfile(
   ir: AlignPack,
   config: AlignTrueConfig,
   cwd: string,
-): LockfileValidationResult {
+): LockfileOperationResult {
   const auditTrail: AuditEntry[] = [];
   const warnings: string[] = [];
   const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
@@ -93,7 +100,7 @@ export function generateAndWriteLockfile(
   config: AlignTrueConfig,
   cwd: string,
   dryRun: boolean,
-): LockfileGenerationResult {
+): LockfileWriteResult {
   const auditTrail: AuditEntry[] = [];
   const warnings: string[] = [];
   const written: string[] = [];

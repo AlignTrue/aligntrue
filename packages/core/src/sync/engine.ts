@@ -71,14 +71,20 @@ export interface AuditEntry {
 }
 
 /**
+ * Base result for sync operations that write files
+ */
+export interface OperationResult {
+  written: string[];
+  warnings: string[];
+  auditTrail: AuditEntry[];
+}
+
+/**
  * Result of a sync operation
  */
-export interface SyncResult {
+export interface SyncResult extends Partial<OperationResult> {
   success: boolean;
-  written: string[];
-  warnings?: string[];
   exportResults?: Map<string, ExportResult>;
-  auditTrail?: AuditEntry[];
   conflicts?: Array<{
     heading: string;
     files: Array<{ path: string; mtime: Date }>;
@@ -124,14 +130,6 @@ export class SyncEngine {
    */
   registerExporter(exporter: ExporterPlugin): void {
     this.exporters.set(exporter.name, exporter);
-  }
-
-  private static hasResetState(
-    exporter: ExporterPlugin,
-  ): exporter is ExporterPlugin & { resetState: () => void } {
-    return (
-      typeof (exporter as { resetState?: unknown }).resetState === "function"
-    );
   }
 
   /**
@@ -792,7 +790,7 @@ export class SyncEngine {
 
       const result: SyncResult = {
         success: true,
-        written: [...written, ...syncResult.written],
+        written: [...written, ...(syncResult.written || [])],
         warnings: [...warnings, ...(syncResult.warnings || [])],
         auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
       };
@@ -934,7 +932,7 @@ export class SyncEngine {
 
       return {
         success: syncResult.success,
-        written: [...written, ...syncResult.written],
+        written: [...written, ...(syncResult.written || [])],
         warnings: [...warnings, ...(syncResult.warnings || [])],
         exportResults,
         auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
