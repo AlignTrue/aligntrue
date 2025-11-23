@@ -1238,7 +1238,11 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   // Show appropriate completion message
   if (autoSyncPerformed) {
     const info = nonInteractive ? console.log : clack.log.success;
-    info("\n✓ Setup complete! Your agents are now aligned.");
+    const exporterCount = config.exporters?.length ?? 0;
+    const agentWord = exporterCount === 1 ? "agent" : "agents";
+    info(
+      `\n✓ Setup complete! Your ${agentWord} ${exporterCount === 1 ? "is" : "are"} now aligned.`,
+    );
     info(
       "\nNext: Start coding! Edit your agent files anytime and run 'aligntrue sync' to update.",
     );
