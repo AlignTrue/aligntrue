@@ -576,6 +576,14 @@ export class SyncEngine {
         if (lockfileGeneration.auditTrail) {
           auditTrail.push(...lockfileGeneration.auditTrail);
         }
+
+        // Update last sync timestamp after accepting agent changes
+        // This ensures drift detection doesn't report the agent file as modified
+        const cwd = resolvePath(irPath, "..", "..");
+        const { updateLastSyncTimestamp } = await import(
+          "./last-sync-tracker.js"
+        );
+        updateLastSyncTimestamp(cwd);
       }
 
       return {
