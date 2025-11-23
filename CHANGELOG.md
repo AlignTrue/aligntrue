@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Config validation enhancements - Added warnings for incompatible mode/lockfile combinations (solo+lockfile or team without lockfile)
 - Refactored check command for maintainability - Extracted file size validation into separate helper module
 - Added refactoring strategy documentation - Documented incremental refactoring approach for large SyncEngine class
+- **API Improvements for Plugin Developers**
+  - Added optional `resetState()` method to `ExporterPlugin` interface in `@aligntrue/plugin-contracts`
+  - Allows exporters to clear internal state (like warning counters) between sync runs
+  - Fully backward compatible (optional method)
+  - Cleaned up internal type assertions in core engine
 
 ### Changed
 
