@@ -187,11 +187,12 @@ export class SyncEngine {
 
     try {
       // When loading IR from a specific path, don't use multi-file loading
-      // Clear source_files to prevent loadIR from using loadSourceFiles
+      // Clear edit_source to prevent loadIR from using loadSourceFiles
       const loadConfig = { ...this.config };
       if (loadConfig.sync) {
         loadConfig.sync = { ...loadConfig.sync };
-        delete loadConfig.sync.source_files;
+        // Explicitly remove edit_source to force single-file loading
+        delete loadConfig.sync.edit_source;
       }
 
       this.ir = await loadIR(sourcePath, {

@@ -66,6 +66,9 @@ describe("Golden Repository Workflows", () => {
     // Verify outputs exist
     // Init creates 5 starter rules, sync exports them
     // After first sync, starter file is removed and replaced with synced output
+    // NOTE: In fresh init with default settings, the edit source is AGENTS.md (single file).
+    // Since AGENTS.md is the edit source, it is NOT overwritten with read-only markers.
+    // The .cursor/rules/aligntrue.mdc file IS generated as a read-only export.
     const syncedCursorExists = await fs
       .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
       .then(() => true)

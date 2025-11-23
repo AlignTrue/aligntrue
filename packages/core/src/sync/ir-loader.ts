@@ -32,11 +32,19 @@ export async function loadIR(
   const force = options?.force || false;
   const config = options?.config;
 
-  // If config provided with source_files, use multi-file loading
-  if (config?.sync?.source_files) {
+  // If config provided with edit_source containing wildcards, use multi-file loading
+  const editSource = config?.sync?.edit_source;
+  const hasWildcard =
+    typeof editSource === "string" &&
+    (editSource.includes("*") ||
+      editSource.includes("?") ||
+      editSource.includes("["));
+  const isArray = Array.isArray(editSource);
+
+  if (hasWildcard || isArray) {
     const cwd = dirname(sourcePath);
     const { loadSourceFiles } = await import("./source-loader.js");
-    return loadSourceFiles(cwd, config);
+    return loadSourceFiles(cwd, config!);
   }
 
   // Check file exists

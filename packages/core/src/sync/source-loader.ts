@@ -29,12 +29,26 @@ export async function discoverSourceFiles(
   cwd: string,
   config: AlignTrueConfig,
 ): Promise<SourceFile[]> {
-  // Get source patterns from config (no default fallback - all exporters are equal)
-  const patterns = config.sync?.source_files;
-  if (!patterns) {
+  // Get source patterns from edit_source (only if it contains wildcards or is array)
+  const editSource = config.sync?.edit_source;
+  if (!editSource) {
     return [];
   }
-  const patternArray = Array.isArray(patterns) ? patterns : [patterns];
+
+  // Check if edit_source indicates multi-file mode
+  const isArray = Array.isArray(editSource);
+  const hasWildcard =
+    typeof editSource === "string" &&
+    (editSource.includes("*") ||
+      editSource.includes("?") ||
+      editSource.includes("["));
+
+  if (!isArray && !hasWildcard) {
+    // Single specific file (e.g. AGENTS.md) - loadIR handles this directly
+    return [];
+  }
+
+  const patternArray = Array.isArray(editSource) ? editSource : [editSource];
 
   const allFiles: SourceFile[] = [];
 

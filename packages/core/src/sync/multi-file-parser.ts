@@ -146,12 +146,15 @@ export async function detectEditedFiles(
   }
 
   // NEW: Check source files if explicitly configured (multi-file support)
-  // Note: We skip this if source_files is not configured to avoid duplicate AGENTS.md detection
-  if (
-    config.sync?.source_files &&
-    Array.isArray(config.sync.source_files) &&
-    config.sync.source_files.length > 0
-  ) {
+  // Note: We check if edit_source is configured as array or glob pattern
+  const isGlobSource =
+    typeof editSource === "string" &&
+    (editSource.includes("*") ||
+      editSource.includes("?") ||
+      editSource.includes("["));
+  const isArraySource = Array.isArray(editSource);
+
+  if (isGlobSource || isArraySource) {
     const { discoverSourceFiles } = await import("./source-loader.js");
     const sourceFiles = await discoverSourceFiles(cwd, config);
 
