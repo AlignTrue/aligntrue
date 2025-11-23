@@ -209,17 +209,19 @@ export async function handleSyncResult(
   }
 
   // Update last sync timestamp after successful sync
-  try {
-    const { updateLastSyncTimestamp } = await import(
-      "@aligntrue/core/sync/last-sync-tracker"
-    );
-    updateLastSyncTimestamp(cwd);
-  } catch (err) {
-    // Log warning but don't fail sync
-    if (options.verbose) {
-      clack.log.warn(
-        `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
+  if (!options.dryRun) {
+    try {
+      const { updateLastSyncTimestamp } = await import(
+        "@aligntrue/core/sync/last-sync-tracker"
       );
+      updateLastSyncTimestamp(cwd);
+    } catch (err) {
+      // Log warning but don't fail sync
+      if (options.verbose) {
+        clack.log.warn(
+          `Failed to update last sync timestamp: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
   }
 

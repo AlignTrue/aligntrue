@@ -87,8 +87,6 @@ export async function buildSyncContext(
   if (!options.quiet) {
     if (options.verbose) {
       spinner.stop("Configuration loaded");
-    } else {
-      spinner.stop();
     }
   }
 
@@ -186,8 +184,6 @@ export async function buildSyncContext(
             ? `Resolved and merged ${bundleResult.sources.length} sources`
             : "Source resolved",
         );
-      } else {
-        spinner.stop();
       }
     }
 
@@ -354,8 +350,6 @@ export async function buildSyncContext(
           const names = exporterNames.slice(0, loadedCount).join(", ");
           clack.log.success(`Active: ${names}`);
         }
-      } else {
-        spinner.stop();
       }
     }
   } catch (_error) {
@@ -382,8 +376,6 @@ export async function buildSyncContext(
     if (!options.quiet) {
       if (options.verbose) {
         spinner.stop("Rules validated");
-      } else {
-        spinner.stop();
       }
     }
   } catch (_error) {

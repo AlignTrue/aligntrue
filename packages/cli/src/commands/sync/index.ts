@@ -8,6 +8,7 @@ import { parseSyncOptions, showSyncHelp } from "./options.js";
 import { buildSyncContext } from "./context-builder.js";
 import { executeSyncWorkflow } from "./workflow.js";
 import { handleSyncResult, handleSyncError } from "./result-handler.js";
+import { checkIfSyncNeeded } from "./sync-checker.js";
 
 /**
  * Sync command implementation
@@ -25,6 +26,18 @@ export async function sync(args: string[]): Promise<void> {
   }
 
   try {
+    // Early check if sync is needed (unless explicit flags override)
+    if (!options.force && !options.acceptAgent && !options.dryRun) {
+      const syncNeeded = await checkIfSyncNeeded(options);
+      if (!syncNeeded) {
+        if (!options.quiet) {
+          clack.log.success("Everything already in sync");
+          clack.outro("✓ No changes detected");
+        }
+        return; // Early exit - nothing to do
+      }
+    }
+
     // Phase 1: Build sync context (load config, sources, exporters)
     const context = await buildSyncContext(options);
 
