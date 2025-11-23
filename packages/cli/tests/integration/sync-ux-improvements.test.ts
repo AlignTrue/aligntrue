@@ -171,4 +171,38 @@ sections: []
       "Everything already in sync",
     );
   });
+
+  it("runs full sync when new agent files detected (even with old mtimes)", async () => {
+    // 1. Setup initial state with just agents exporter
+    const config = { exporters: ["agents"] };
+    writeFileSync(
+      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      yaml.stringify(config),
+    );
+    const ir = `id: test\nversion: 1.0.0\nspec_version: "1"\nsections: []`;
+    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+
+    // 2. Update last sync timestamp AFTER creating files
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    lastSyncTracker.updateLastSyncTimestamp(TEST_DIR);
+
+    // 3. Add Cursor .mdc files with OLD mtimes (simulating copied files)
+    // This mimics the user's scenario where they copy files with preserved timestamps
+    const { mkdirSync, utimesSync } = await import("fs");
+    mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
+    const cursorFile = join(TEST_DIR, ".cursor", "rules", "test.mdc");
+    writeFileSync(cursorFile, "# Test rule\n\nTest content\n");
+
+    // Set mtime to be OLDER than last sync (simulating copied file)
+    const oldTime = new Date(Date.now() - 100000); // 100 seconds ago
+    utimesSync(cursorFile, oldTime, oldTime);
+
+    // 4. Run sync - should detect new agent (cursor) even though mtime is old
+    await sync([]);
+
+    // 5. Verify full sync ran (not early exit)
+    expect(clack.log.success).not.toHaveBeenCalledWith(
+      "Everything already in sync",
+    );
+  });
 });
