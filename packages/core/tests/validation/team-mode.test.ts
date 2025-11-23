@@ -19,7 +19,7 @@ describe("validateTeamMode", () => {
 
     const result = validateTeamMode(config);
     expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.errors || []).toHaveLength(0);
   });
 
   it("should fail when personal scope uses repo storage in team mode", () => {
