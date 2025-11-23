@@ -3,7 +3,7 @@
  */
 
 import type { AlignPack } from "@aligntrue/schema";
-import type { Lockfile, ValidationResult, Mismatch } from "./types.js";
+import type { Lockfile, LockfileValidationResult, Mismatch } from "./types.js";
 import { hashSection } from "./generator.js";
 
 /**
@@ -16,12 +16,12 @@ import { hashSection } from "./generator.js";
  *
  * @param lockfile - Existing lockfile
  * @param currentPack - Current AlignPack to validate against
- * @returns ValidationResult with detailed diff information
+ * @returns LockfileValidationResult with detailed diff information
  */
 export function validateLockfile(
   lockfile: Lockfile,
   currentPack: AlignPack,
-): ValidationResult {
+): LockfileValidationResult {
   const mismatches: Mismatch[] = [];
   const newRules: string[] = [];
   const deletedRules: string[] = [];
@@ -103,7 +103,7 @@ function formatProvenance(mismatch: Mismatch): string {
  * @param currentPack - Optional current pack for enhanced rename detection
  */
 export function formatValidationResult(
-  result: ValidationResult,
+  result: LockfileValidationResult,
   _currentPack?: AlignPack,
 ): string {
   if (result.valid) {

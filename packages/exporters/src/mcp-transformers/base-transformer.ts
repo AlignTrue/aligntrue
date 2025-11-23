@@ -25,14 +25,14 @@ export abstract class BaseMcpTransformer {
   /**
    * Format JSON with standard options (2-space indent, trailing newline)
    */
-  protected formatJson(obj: unknown): string {
+  formatJson(obj: unknown): string {
     return JSON.stringify(obj, null, 2) + "\n";
   }
 
   /**
    * Extract vendor fields for a specific client
    */
-  protected extractVendorFields(
+  extractVendorFields(
     config: CanonicalMcpConfig,
     clientName: string,
   ): Record<string, unknown> {

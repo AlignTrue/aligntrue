@@ -11,8 +11,6 @@ export { GitIntegration } from "./sync/git-integration.js";
 export * from "./scope.js";
 export * from "./bundle.js";
 export * from "./lockfile/index.js";
-// Explicit re-export to avoid ambiguity with sync
-export type { ValidationResult } from "./lockfile/index.js";
 
 // Performance monitoring and optimization
 export * from "./performance/index.js";
@@ -58,6 +56,9 @@ export * from "./resources/index.js";
 
 // Validation
 export * from "./validation/index.js";
+
+// Errors
+export * from "./errors.js";
 
 // MCP configuration
 export * from "./mcp/generator.js";

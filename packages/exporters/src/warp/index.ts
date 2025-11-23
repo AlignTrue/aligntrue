@@ -1,37 +1,13 @@
 /**
  * WARP.md exporter
- * Delegates to GenericMarkdownExporter with Warp-specific configuration
+ * Generated via markdown-exporter-factory
  */
 
-import type {
-  ExporterPlugin,
-  ScopedExportRequest,
-  ExportOptions,
-  ExportResult,
-} from "@aligntrue/plugin-contracts";
-import { GenericMarkdownExporter } from "../base/generic-markdown-exporter.js";
+import { createMarkdownExporter } from "../base/markdown-exporter-factory.js";
 
-export class WarpExporter implements ExporterPlugin {
-  name = "warp";
-  version = "1.0.0";
-
-  private delegate = new GenericMarkdownExporter(
-    "warp",
-    "WARP.md",
-    "WARP.md",
-    "for Warp",
-  );
-
-  async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
-  ): Promise<ExportResult> {
-    return this.delegate.export(request, options);
-  }
-
-  resetState(): void {
-    this.delegate.resetState();
-  }
-}
-
-export default WarpExporter;
+export default createMarkdownExporter({
+  name: "warp",
+  filename: "WARP.md",
+  title: "WARP.md",
+  description: "for Warp",
+});

@@ -64,7 +64,7 @@ export interface Mismatch {
   result_hash?: string;
 }
 
-export interface ValidationResult {
+export interface LockfileValidationResult {
   valid: boolean;
   mismatches: Mismatch[];
   newRules: string[];

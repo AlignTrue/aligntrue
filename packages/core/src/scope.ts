@@ -2,12 +2,12 @@
  * Hierarchical scope resolution with merge rules for monorepo support
  */
 
-import { posix } from "path";
 import micromatch from "micromatch";
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { ResolvedScope } from "@aligntrue/plugin-contracts";
 
-import type { AlignTrueConfig } from "./config/index.js";
+import type { AlignTrueConfig } from "./config/types.js";
+import { validateGlobPattern, checkScopePath } from "./validation/index.js";
 
 /**
  * Scope definition with path-based includes/excludes
@@ -53,39 +53,20 @@ export interface ScopedRules {
 /**
  * Normalize a file path to use forward slashes (Windows compatibility)
  */
-export function normalizePath(filepath: string): string {
-  // Convert backslashes to forward slashes
-  let normalized = filepath.replace(/\\/g, "/");
+import { normalizePath } from "./paths.js";
 
-  // Remove leading ./ if present
-  if (normalized.startsWith("./")) {
-    normalized = normalized.slice(2);
-  }
-
-  // Ensure no leading slash (relative paths)
-  if (normalized.startsWith("/")) {
-    normalized = normalized.slice(1);
-  }
-
-  return normalized;
-}
+export { normalizePath };
 
 /**
  * Validate that a path doesn't contain dangerous traversal patterns
  */
 export function validateScopePath(path: string): void {
-  // Check for absolute paths before normalization
-  if (posix.isAbsolute(path) || path.startsWith("/")) {
-    throw new Error(`Invalid scope path "${path}": absolute paths not allowed`);
-  }
-
-  const normalized = normalizePath(path);
-
-  // Check for parent directory traversal
-  if (normalized.includes("..")) {
-    throw new Error(
-      `Invalid scope path "${path}": parent directory traversal (..) not allowed`,
-    );
+  const result = checkScopePath(path);
+  if (!result.valid) {
+    // Throw error to maintain backward compatibility
+    const message =
+      result.errors?.[0]?.message || `Invalid scope path "${path}"`;
+    throw new Error(message);
   }
 }
 
@@ -98,6 +79,13 @@ export function validateGlobPatterns(patterns?: string[]): void {
   }
 
   for (const pattern of patterns) {
+    const result = validateGlobPattern(pattern);
+    if (!result.valid) {
+      const message =
+        result.errors?.[0]?.message || `Invalid glob pattern "${pattern}"`;
+      throw new Error(message);
+    }
+
     try {
       // micromatch.makeRe can throw on truly invalid patterns
       // It returns a RegExp for valid patterns (very permissive)

@@ -5,23 +5,22 @@
 
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
-import type { ResolvedScope, Scope, MergeOrder } from "../scope.js";
 import type { SectionConflict } from "./multi-file-parser.js";
 import { loadConfig } from "../config/index.js";
-import { resolveScopes } from "../scope.js";
 import { loadIR } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { posix, resolve as resolvePath, dirname } from "path";
-import {
-  readLockfile,
-  writeLockfile,
-  validateLockfile,
-  enforceLockfile,
-  generateLockfile,
-} from "../lockfile/index.js";
+import { resolve as resolvePath, dirname } from "path";
 import { resolvePlugsForPack } from "../plugs/index.js";
 import { applyOverlays } from "../overlays/index.js";
 import { getAlignTruePaths } from "../paths.js";
+
+// New helper modules
+import {
+  validateAndEnforceLockfile,
+  generateAndWriteLockfile,
+} from "./lockfile-manager.js";
+import { resolveSyncScopes } from "./scope-resolver.js";
+import { executeExporters } from "./exporter-executor.js";
 
 // Import types from plugin-contracts package
 import type {
@@ -90,34 +89,6 @@ export interface SyncResult {
 
 /**
  * Sync engine coordinating the full sync pipeline
- *
- * REFACTORING STRATEGY (for future AI agents):
- * This class is large (1174+ lines) and handles multiple responsibilities.
- * When editing this file, consider extracting logical units:
- *
- * 1. Scope resolution logic → Extract to scope-resolver.ts helper
- *    - Keep resolveScopes() call, but move complex scope resolution logic
- *
- * 2. Overlay application → Already extracted to overlays/ module
- *    - Keep applyOverlays() call as-is
- *
- * 3. Plug resolution helpers → Extract to plugs/helpers.ts
- *    - Move complex plug resolution logic out of sync methods
- *
- * 4. Exporter execution → Consider exporter-executor.ts
- *    - Extract exporter iteration and result handling
- *
- * 5. Conflict detection → Already partially in multi-file-parser.ts
- *    - Keep coordination here, but move complex logic out
- *
- * Core orchestration should remain in SyncEngine class:
- * - Loading config and IR
- * - Coordinating workflow steps
- * - Managing file writer state
- * - Registering exporters
- *
- * Don't refactor immediately: Only when editing for other reasons.
- * Goal: Incremental extraction, not massive rewrite.
  */
 export class SyncEngine {
   private config: AlignTrueConfig | null = null;
@@ -271,7 +242,7 @@ export class SyncEngine {
   ): Promise<SyncResult> {
     const warnings: string[] = [];
     const written: string[] = [];
-    const exportResults = new Map<string, ExportResult>();
+    let exportResults = new Map<string, ExportResult>();
     const auditTrail: AuditEntry[] = [];
 
     try {
@@ -367,80 +338,28 @@ export class SyncEngine {
         });
       }
 
-      // Lockfile validation (if team mode)
-      const lockfilePath = resolvePath(process.cwd(), ".aligntrue.lock.json");
-      const lockfileMode = this.config.lockfile?.mode || "off";
-      const isTeamMode =
-        this.config.mode === "team" || this.config.mode === "enterprise";
-
-      if (isTeamMode && this.config.modules?.lockfile) {
-        const existingLockfile = readLockfile(lockfilePath);
-
-        if (existingLockfile) {
-          // Validate lockfile against current IR
-          const validation = validateLockfile(existingLockfile, this.ir);
-          const enforcement = enforceLockfile(lockfileMode, validation);
-
-          // Audit trail: Lockfile validation
-          auditTrail.push({
-            action: validation.valid ? "update" : "conflict",
-            target: lockfilePath,
-            source: "lockfile",
-            timestamp: new Date().toISOString(),
-            details: enforcement.message || "Lockfile validation completed",
-          });
-
-          // Abort sync if strict mode failed
-          if (!enforcement.success) {
-            return {
-              success: false,
-              written: [],
-              warnings: [
-                enforcement.message ||
-                  "Lockfile validation failed in strict mode",
-              ],
-              auditTrail,
-            };
-          }
-        } else {
-          // No lockfile exists - will be generated after sync
-          auditTrail.push({
-            action: "create",
-            target: lockfilePath,
-            source: "lockfile",
-            timestamp: new Date().toISOString(),
-            details: "No existing lockfile found, will generate after sync",
-          });
-        }
+      // Lockfile validation (delegated)
+      const lockfileValidation = validateAndEnforceLockfile(
+        this.ir,
+        this.config,
+        process.cwd(),
+      );
+      if (lockfileValidation.auditTrail) {
+        auditTrail.push(...lockfileValidation.auditTrail);
+      }
+      if (!lockfileValidation.success) {
+        return {
+          success: false,
+          written: [],
+          warnings: lockfileValidation.warnings || [],
+          auditTrail,
+        };
       }
 
-      // Resolve scopes
-      const scopeConfig: {
-        scopes: Scope[];
-        merge?: { strategy?: "deep"; order?: MergeOrder };
-      } = {
-        scopes: this.config.scopes || [],
-      };
+      // Resolve scopes (delegated)
+      const scopes = resolveSyncScopes(this.config, process.cwd());
 
-      if (this.config.merge) {
-        scopeConfig.merge = this.config.merge;
-      }
-
-      const resolvedScopes = resolveScopes(process.cwd(), scopeConfig);
-
-      // If no scopes defined, create default scope
-      const scopes =
-        resolvedScopes.length > 0
-          ? resolvedScopes
-          : [
-              {
-                path: ".",
-                normalizedPath: ".",
-                isDefault: true,
-              } as ResolvedScope,
-            ];
-
-      // Get exporters to run
+      // Get active exporters
       const exporterNames = this.config.exporters || ["cursor", "agents"];
       const activeExporters: ExporterPlugin[] = [];
 
@@ -461,219 +380,36 @@ export class SyncEngine {
         );
       }
 
-      // Reset state on all exporters before starting new sync cycle
-      // This prevents accumulation of rules across multiple syncs
-      for (const exporter of activeExporters) {
-        if (SyncEngine.hasResetState(exporter)) {
-          exporter.resetState();
-        }
-      }
+      // Execute exporters (delegated)
+      const executionResult = await executeExporters(
+        activeExporters,
+        scopes,
+        this.ir,
+        this.config,
+        this.fileWriter,
+        {
+          dryRun: options.dryRun || false,
+          interactive: options.interactive || false,
+          force: options.force || false,
+          unresolvedPlugsCount: this.unresolvedPlugsCount,
+        },
+      );
 
-      // For each scope, merge rules and call exporters
-      for (const scope of scopes) {
-        // For now, just use all rules from IR (scoped merge will be enhanced in later steps)
-        // The current applyScopeMerge signature expects rule groups by level
-        const _mergeOrder = this.config.merge?.order || [
-          "root",
-          "path",
-          "local",
-        ];
+      written.push(...executionResult.written);
+      warnings.push(...executionResult.warnings);
+      auditTrail.push(...executionResult.auditTrail);
+      exportResults = executionResult.exportResults;
 
-        // Build scoped pack (sections-only)
-        let scopedPack: AlignPack = {
-          id: this.ir.id,
-          version: this.ir.version,
-          spec_version: this.ir.spec_version,
-          sections: this.ir.sections,
-          ...(this.ir.summary && { summary: this.ir.summary }),
-          ...(this.ir.owner && { owner: this.ir.owner }),
-          ...(this.ir.source && { source: this.ir.source }),
-          ...(this.ir.source_sha && { source_sha: this.ir.source_sha }),
-          ...(this.ir.vendor_path && { vendor_path: this.ir.vendor_path }),
-          ...(this.ir.vendor_type && { vendor_type: this.ir.vendor_type }),
-          ...(this.ir.tags && { tags: this.ir.tags }),
-          ...(this.ir.deps && { deps: this.ir.deps }),
-          ...(this.ir.scope && { scope: this.ir.scope }),
-          ...(this.ir.plugs && { plugs: this.ir.plugs }),
-          ...(this.ir.integrity && { integrity: this.ir.integrity }),
-          ...(this.ir._markdown_meta && {
-            _markdown_meta: this.ir._markdown_meta,
-          }),
-        };
-
-        // Resolve plugs if config fills are provided
-        if (
-          this.config?.plugs?.fills &&
-          Object.keys(this.config.plugs.fills).length > 0
-        ) {
-          const { resolvePlugsForPack } = await import("../plugs/index.js");
-          const resolved = resolvePlugsForPack(
-            scopedPack,
-            this.config.plugs.fills,
-          );
-
-          if (resolved.success && resolved.rules.length > 0) {
-            // Update sections with resolved content
-            scopedPack.sections = scopedPack.sections.map((section, idx) => {
-              const resolvedRule = resolved.rules[idx];
-              if (resolvedRule?.guidance) {
-                return {
-                  ...section,
-                  content: resolvedRule.guidance,
-                };
-              }
-              return section;
-            });
-          }
-        }
-
-        // Call each exporter with scoped pack
-        for (const exporter of activeExporters) {
-          const outputPath = `.${exporter.name}/${scope.path === "." ? "root" : scope.path}`;
-
-          // Security: Validate output paths don't escape workspace
-          if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
-            warnings.push(
-              `Skipped ${exporter.name} for scope ${scope.path}: invalid output path "${outputPath}"`,
-            );
-            continue;
-          }
-
-          const request: ScopedExportRequest = {
-            scope,
-            pack: scopedPack,
-            outputPath,
-          };
-
-          const exportOptions: ExportOptions = {
-            outputDir: process.cwd(),
-            dryRun: options.dryRun || false,
-            backup: true, // Always true for internal signaling if needed, though exporter ignores it now
-            unresolvedPlugsCount: this.unresolvedPlugsCount, // Pass unresolved plugs count to exporters (Plugs system)
-            managedSections: this.config?.managed?.sections || [], // Pass team-managed sections to exporters
-            ...(this.config?.plugs?.fills && {
-              plugFills: this.config.plugs.fills,
-            }), // Pass config fills to exporters (Plugs system)
-            interactive: options.interactive || false, // Enable interactive conflict resolution
-            force: options.force || false, // Force overwrite without prompts
-            config: this.config, // Pass full config for edit_source checks and other config-dependent logic
-          };
-
-          try {
-            const DEBUG_SYNC = process.env["DEBUG_SYNC"] === "true";
-            if (DEBUG_SYNC) {
-              console.log(
-                `[SyncEngine] Exporting ${exporter.name} for scope ${scope.path}, sections: ${scopedPack.sections.length}`,
-              );
-            }
-
-            const result = await exporter.export(request, exportOptions);
-            exportResults.set(`${exporter.name}:${scope.path}`, result);
-
-            if (DEBUG_SYNC) {
-              console.log(
-                `[SyncEngine] ${exporter.name} result: success=${result.success}, filesWritten=${result.filesWritten.length}`,
-              );
-              if (result.filesWritten.length > 0) {
-                console.log(
-                  `[SyncEngine] ${exporter.name} wrote: ${result.filesWritten.join(", ")}`,
-                );
-              }
-            }
-
-            if (result.success) {
-              written.push(...result.filesWritten);
-
-              // Audit trail: Files written
-              for (const file of result.filesWritten) {
-                auditTrail.push({
-                  action: options.dryRun ? "update" : "create",
-                  target: file,
-                  source: `${exporter.name} exporter`,
-                  hash: result.contentHash,
-                  timestamp: new Date().toISOString(),
-                  details: options.dryRun
-                    ? `Would write file (dry-run)`
-                    : `Wrote file successfully`,
-                });
-              }
-
-              // Track files for overwrite protection (if not dry-run)
-              if (!options.dryRun) {
-                for (const file of result.filesWritten) {
-                  try {
-                    this.fileWriter.trackFile(file);
-                  } catch {
-                    // Ignore tracking errors (file might not exist yet)
-                  }
-                }
-              }
-
-              // Collect fidelity notes as warnings
-              if (result.fidelityNotes && result.fidelityNotes.length > 0) {
-                warnings.push(
-                  ...result.fidelityNotes.map(
-                    (note: string) => `[${exporter.name}] ${note}`,
-                  ),
-                );
-              }
-            } else {
-              throw new Error(
-                `Exporter ${exporter.name} failed for scope ${scope.path}`,
-              );
-            }
-          } catch (_err) {
-            // Rollback on error
-            if (!options.dryRun) {
-              try {
-                this.fileWriter.rollback();
-              } catch (rollbackErr) {
-                warnings.push(
-                  `Rollback warning: ${rollbackErr instanceof Error ? rollbackErr.message : String(rollbackErr)}`,
-                );
-              }
-            }
-
-            throw new Error(
-              `Export failed for ${exporter.name} (scope: ${scope.path})\n` +
-                `  ${_err instanceof Error ? _err.message : String(_err)}`,
-            );
-          }
-        }
-      }
-
-      // Generate/update lockfile after successful sync (if team mode and not dry-run)
-      if (isTeamMode && this.config.modules?.lockfile && !options.dryRun) {
-        try {
-          const lockfile = generateLockfile(
-            this.ir,
-            this.config.mode as "team" | "enterprise",
-          );
-
-          // Validate lockfile path is absolute
-          const absoluteLockfilePath = lockfilePath.startsWith("/")
-            ? lockfilePath
-            : resolvePath(process.cwd(), lockfilePath);
-
-          writeLockfile(absoluteLockfilePath, lockfile);
-          written.push(absoluteLockfilePath);
-
-          // Audit trail: Lockfile generated
-          auditTrail.push({
-            action: "update",
-            target: absoluteLockfilePath,
-            source: "lockfile",
-            hash: lockfile.bundle_hash,
-            timestamp: new Date().toISOString(),
-            details: `Generated lockfile with ${lockfile.rules?.length || 0} entry hashes`,
-          });
-        } catch (_err) {
-          const errorMsg = _err instanceof Error ? _err.message : String(_err);
-          warnings.push(
-            `Failed to generate lockfile at ${lockfilePath}: ${errorMsg}`,
-          );
-        }
-      }
+      // Generate/update lockfile (delegated)
+      const lockfileGeneration = generateAndWriteLockfile(
+        this.ir,
+        this.config,
+        process.cwd(),
+        options.dryRun || false,
+      );
+      written.push(...lockfileGeneration.written);
+      warnings.push(...lockfileGeneration.warnings);
+      auditTrail.push(...lockfileGeneration.auditTrail);
 
       // Cleanup old backups
       if (!options.dryRun) {
@@ -1060,7 +796,6 @@ export class SyncEngine {
         warnings: [...warnings, ...(syncResult.warnings || [])],
         auditTrail: [...auditTrail, ...(syncResult.auditTrail || [])],
       };
-
       if (conflicts.length > 0) {
         result.conflicts = conflicts;
       }
