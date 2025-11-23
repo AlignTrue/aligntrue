@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Improved
 
+- Config validation enhancements - Added warnings for incompatible mode/lockfile combinations (solo+lockfile or team without lockfile)
 - Refactored check command for maintainability - Extracted file size validation into separate helper module
 - Added refactoring strategy documentation - Documented incremental refactoring approach for large SyncEngine class
 
