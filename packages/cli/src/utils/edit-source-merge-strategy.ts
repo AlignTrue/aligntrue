@@ -34,18 +34,18 @@ export async function promptEditSourceMergeStrategy(
     options: [
       {
         value: "keep-both",
-        label: "Keep both (merge old and new content)",
-        hint: "Combine content from both sources",
+        label: "Merge both",
+        hint: "Combine old and new rule content",
       },
       {
         value: "keep-new",
-        label: "Keep new only (replace with new source)",
-        hint: "Old content backed up, new source becomes canonical",
+        label: "Use new source",
+        hint: "Replace current rules (old content backed up)",
       },
       {
         value: "keep-existing",
-        label: "Keep existing only (preserve current rules)",
-        hint: "New content backed up, current IR content stays",
+        label: "Keep existing",
+        hint: "Preserve current rules (new content backed up)",
       },
     ],
     initialValue: "keep-both",
