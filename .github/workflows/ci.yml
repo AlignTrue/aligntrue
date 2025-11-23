@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
@@ -84,7 +84,7 @@ jobs:
       - name: 📈 Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage/coverage-final.json
+          directory: ./
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
