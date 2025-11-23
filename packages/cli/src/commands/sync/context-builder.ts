@@ -899,8 +899,24 @@ async function updateEditSource(
           } as AlignPack;
         }
 
-        // Replace sections
-        currentIR.sections = newSections;
+        // Merge sections based on strategy
+        if (
+          strategy === "keep-both" &&
+          currentIR.sections &&
+          currentIR.sections.length > 0
+        ) {
+          // For keep-both, preserve existing sections and append new ones (avoiding duplicates)
+          const existingHeadings = new Set(
+            currentIR.sections.map((s) => s.heading),
+          );
+          const uniqueNewSections = newSections.filter(
+            (s) => !existingHeadings.has(s.heading),
+          );
+          currentIR.sections = [...currentIR.sections, ...uniqueNewSections];
+        } else {
+          // For keep-new or empty IR, replace sections
+          currentIR.sections = newSections;
+        }
 
         // Save updated IR
         await saveIR(irPath, currentIR);

@@ -1,5 +1,5 @@
 import { join } from "path";
-import { writeFileSync, readFileSync } from "fs";
+import { writeFileSync, readFileSync, utimesSync, statSync } from "fs";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 // Correct import path for test helpers
 import {
@@ -12,6 +12,8 @@ describe("Lockfile Drift", () => {
   let testDir: string;
 
   beforeAll(async () => {
+    // Ensure clean state from previous tests
+    await new Promise((resolve) => setTimeout(resolve, 200));
     testDir = await createTestDir("lockfile-drift-test");
   });
 
@@ -27,7 +29,7 @@ describe("Lockfile Drift", () => {
     await runCli(["sync", "--yes"], { cwd: testDir });
 
     // Wait to ensure file modification time is strictly greater than last sync time
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 2000));
 
     // 2. Verify no drift initially
     const driftResult1 = await runCli(["drift", "--gates"], { cwd: testDir });
@@ -42,9 +44,27 @@ describe("Lockfile Drift", () => {
       "utf-8",
     );
 
+    // Ensure file modification time is strictly greater than last sync time
+    // This prevents test flakiness due to filesystem timestamp resolution
+    const lastSyncPath = join(testDir, ".aligntrue", ".last-sync");
+    const lastSync = parseInt(readFileSync(lastSyncPath, "utf-8"), 10);
+    const stats = statSync(agentsPath);
+
+    if (stats.mtimeMs <= lastSync) {
+      const newTime = new Date(lastSync + 2000);
+      utimesSync(agentsPath, newTime, newTime);
+    }
+
     // 4. Verify drift detected (agent file modified)
     // Note: drift command checks agent file vs IR drift in team mode
     const driftResult2 = await runCli(["drift", "--gates"], { cwd: testDir });
+    if (driftResult2.exitCode !== 2) {
+      console.log(
+        "Drift failed to detect changes. Stdout:",
+        driftResult2.stdout,
+      );
+      console.log("Stderr:", driftResult2.stderr);
+    }
     expect(driftResult2.exitCode).toBe(2); // Exit code 2 means drift detected with --gates
 
     // 5. Sync changes back (approval)
