@@ -556,12 +556,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
           {
             value: "create-agents",
             label: "Create AGENTS.md starter (recommended)",
-            hint: "Creates a new AGENTS.md file with starter content. You'll edit this file, and AlignTrue will export to other agents automatically. This sets 'sync.edit_source: AGENTS.md' in your config.",
+            hint: "Writes a starter AGENTS.md, sets `sync.edit_source: AGENTS.md`, and enables automatic exports to other agents.",
           },
           {
             value: "import-path",
             label: "Import from an existing file path",
-            hint: "Import rules from an existing markdown or Cursor (.mdc) file. The file will be converted to AlignTrue's format, and you can choose it as your edit source.",
+            hint: "Convert an existing markdown or Cursor (.mdc) file to AlignTrue format and pick it as your edit source.",
           },
         ],
       });
