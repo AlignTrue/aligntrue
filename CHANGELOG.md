@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **CodeQL alert (useless assignment)** - Removed unused initialization of `exportResults` variable in sync engine
+- **Golden repo test flakiness** - Added error handling and debug logging to improve test stability in CI environment
 - **Stuck spinner in sync command** - Fixed an issue where the "Resolving sources" spinner continued running during interactive prompts in non-verbose mode
 - Confusing pluralization in init completion message - Message now uses singular "agent" when only 1 exporter is configured, plural "agents" for multiple exporters
 - Duplicate message when switching edit source - Removed redundant "Edit source updated" message that appeared before merge strategy prompt during `aligntrue sync`
