@@ -6,9 +6,12 @@
 import {
   existsSync,
   readFileSync,
-  writeFileSync,
   mkdirSync,
   statSync,
+  openSync,
+  writeSync,
+  fsyncSync,
+  closeSync,
 } from "fs";
 import { join, dirname } from "path";
 
@@ -44,14 +47,41 @@ export function getLastSyncTimestamp(cwd: string): number | null {
 export function updateLastSyncTimestamp(cwd: string): void {
   const lastSyncFile = join(cwd, ".aligntrue", ".last-sync");
   const timestamp = Date.now();
+  const content = timestamp.toString();
 
   try {
     const dir = dirname(lastSyncFile);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(lastSyncFile, timestamp.toString(), "utf-8");
 
-    // Verify the timestamp was written successfully
-    const written = getLastSyncTimestamp(cwd);
+    // Use reliable write pattern: open -> write -> fsync -> close
+    // This ensures data is flushed to disk on all platforms (critical for macOS/Linux CI)
+    const fd = openSync(lastSyncFile, "w");
+    try {
+      writeSync(fd, content);
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
+
+    // Verify the timestamp was written successfully with retries
+    // This handles race conditions where filesystem metadata lags slightly
+    let written: number | null = null;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      written = getLastSyncTimestamp(cwd);
+      if (written !== null && Math.abs(written - timestamp) <= 1000) {
+        break;
+      }
+      // Small busy-wait to let filesystem settle
+      const start = Date.now();
+      while (Date.now() - start < 10) {
+        /* busy wait */
+      }
+      attempts++;
+    }
+
     if (written === null || Math.abs(written - timestamp) > 1000) {
       console.warn(
         `Warning: Last sync timestamp may not have been written correctly.\n` +
@@ -60,10 +90,6 @@ export function updateLastSyncTimestamp(cwd: string): void {
           `  File: ${lastSyncFile}`,
       );
     }
-
-    // Note: fsync was attempted here but caused issues with test timing on some systems
-    // The write is already flushed by writeFileSync, and additional fsync calls
-    // can interfere with file timestamp ordering. Removed for reliability.
   } catch (err) {
     // Log error for debugging but don't fail the sync
     console.warn(
