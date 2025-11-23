@@ -4,7 +4,7 @@
 
 import type {
   LockfileMode,
-  ValidationResult,
+  LockfileValidationResult,
   EnforcementResult,
 } from "./types.js";
 import { formatValidationResult } from "./validator.js";
@@ -23,7 +23,7 @@ import { formatValidationResult } from "./validator.js";
  */
 export function enforceLockfile(
   mode: LockfileMode,
-  validation: ValidationResult,
+  validation: LockfileValidationResult,
 ): EnforcementResult {
   // Off mode: skip all validation
   if (mode === "off") {

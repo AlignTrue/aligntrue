@@ -1,37 +1,13 @@
 /**
  * CRUSH.md exporter
- * Delegates to GenericMarkdownExporter with Crush-specific configuration
+ * Generated via markdown-exporter-factory
  */
 
-import type {
-  ExporterPlugin,
-  ScopedExportRequest,
-  ExportOptions,
-  ExportResult,
-} from "@aligntrue/plugin-contracts";
-import { GenericMarkdownExporter } from "../base/generic-markdown-exporter.js";
+import { createMarkdownExporter } from "../base/markdown-exporter-factory.js";
 
-export class CrushExporter implements ExporterPlugin {
-  name = "crush";
-  version = "1.0.0";
-
-  private delegate = new GenericMarkdownExporter(
-    "crush",
-    "CRUSH.md",
-    "CRUSH.md",
-    "for Crush",
-  );
-
-  async export(
-    request: ScopedExportRequest,
-    options: ExportOptions,
-  ): Promise<ExportResult> {
-    return this.delegate.export(request, options);
-  }
-
-  resetState(): void {
-    this.delegate.resetState();
-  }
-}
-
-export default CrushExporter;
+export default createMarkdownExporter({
+  name: "crush",
+  filename: "CRUSH.md",
+  title: "CRUSH.md",
+  description: "for Crush",
+});

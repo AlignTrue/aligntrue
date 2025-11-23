@@ -149,7 +149,6 @@ export {
   validateFill,
   validateCommand,
   validateFile,
-  validateUrl,
   validateText,
   type PlugFormat,
   type ValidationResult,

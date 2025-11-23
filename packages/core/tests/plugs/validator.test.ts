@@ -22,23 +22,23 @@ describe("validateCommand", () => {
   it("rejects empty commands", () => {
     const result = validateCommand("");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("empty");
+    expect(result.errors?.[0].message).toContain("empty");
   });
 
   it("rejects absolute paths", () => {
     const result1 = validateCommand("/usr/bin/test");
     expect(result1.valid).toBe(false);
-    expect(result1.error).toContain("absolute path");
+    expect(result1.errors?.[0].message).toContain("absolute");
 
     const result2 = validateCommand("C:\\Program Files\\test.exe");
     expect(result2.valid).toBe(false);
-    expect(result2.error).toContain("absolute path");
+    expect(result2.errors?.[0].message).toContain("absolute");
   });
 
   it("rejects parent directory traversal", () => {
     const result = validateCommand("../scripts/test.sh");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("parent directory");
+    expect(result.errors?.[0].message).toContain("parent directory");
   });
 });
 
@@ -52,23 +52,23 @@ describe("validateFile", () => {
   it("rejects empty paths", () => {
     const result = validateFile("");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("empty");
+    expect(result.errors?.[0].message).toContain("empty");
   });
 
   it("rejects absolute paths", () => {
     const result1 = validateFile("/etc/config.json");
     expect(result1.valid).toBe(false);
-    expect(result1.error).toContain("absolute");
+    expect(result1.errors?.[0].message).toContain("absolute");
 
     const result2 = validateFile("C:\\config\\settings.json");
     expect(result2.valid).toBe(false);
-    expect(result2.error).toContain("absolute");
+    expect(result2.errors?.[0].message).toContain("absolute");
   });
 
   it("rejects parent directory traversal", () => {
     const result = validateFile("../secrets.json");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("parent directory");
+    expect(result.errors?.[0].message).toContain("parent directory");
   });
 });
 
@@ -82,25 +82,25 @@ describe("validateUrl", () => {
   it("rejects empty URLs", () => {
     const result = validateUrl("");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("empty");
+    expect(result.errors?.[0].message).toContain("empty");
   });
 
   it("rejects URLs without protocol", () => {
     const result = validateUrl("example.com");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("protocol");
+    expect(result.errors?.[0].message).toContain("Invalid URL");
   });
 
   it("rejects invalid protocols", () => {
     const result = validateUrl("ftp://example.com");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("http");
+    expect(result.errors?.[0].message).toContain("protocol");
   });
 
   it("rejects malformed URLs", () => {
     const result = validateUrl("not a url");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("Invalid URL");
+    expect(result.errors?.[0].message).toContain("Invalid URL");
   });
 });
 
@@ -115,7 +115,7 @@ describe("validateText", () => {
   it("rejects empty text", () => {
     const result = validateText("");
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("empty");
+    expect(result.errors?.[0].message).toContain("empty");
   });
 });
 
