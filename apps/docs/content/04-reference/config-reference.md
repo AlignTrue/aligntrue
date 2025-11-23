@@ -112,11 +112,9 @@ sync:
 
 - `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `centralized: false`)
 
-Multiple files can be edited; changes merge automatically. Experimental, unsupported - use with caution.
+Multiple files can be edited; changes merge automatically. **No longer supported** - use single `edit_source` instead.
 
-See [Experimental Features](/docs/04-reference/experimental) for details.
-
-**Deprecated:** `sync.two_way` (no longer supported)
+**Deprecated:** `sync.two_way` and `sync.centralized` (no longer supported)
 
 #### sync.scope_prefixing
 
