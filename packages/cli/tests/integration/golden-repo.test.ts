@@ -78,12 +78,34 @@ describe("Golden Repository Workflows", () => {
 
     // List directories for debugging
     const filesList = await fs.readdir(projectDir, { recursive: true });
+    console.log("Project directory:", projectDir);
     console.log("Project files:", filesList);
+
+    // Check if .cursor directory exists
+    const cursorDir = join(projectDir, ".cursor");
+    console.log(
+      ".cursor directory exists:",
+      await fs
+        .access(cursorDir)
+        .then(() => true)
+        .catch(() => false),
+    );
+
+    // Check if .cursor/rules directory exists
+    const rulesDir = join(projectDir, ".cursor/rules");
+    console.log(
+      ".cursor/rules directory exists:",
+      await fs
+        .access(rulesDir)
+        .then(() => true)
+        .catch(() => false),
+    );
 
     const syncedCursorExists = await fs
       .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
       .then(() => true)
       .catch(() => false);
+    console.log(".cursor/rules/aligntrue.mdc exists:", syncedCursorExists);
     const agentsExists = await fs
       .access(join(projectDir, "AGENTS.md"))
       .then(() => true)
