@@ -548,7 +548,6 @@ async function handleAgentDetectionAndOnboarding(
   }
 
   // 8. Handle Edit Source Upgrade (if applicable)
-  let newEditSource = editSource;
   if (upgradeCandidates.length > 0) {
     // We found a better edit source (multi-file) and we are currently single-file
     const agent = upgradeCandidates[0]!; // Take first/best candidate
@@ -574,7 +573,7 @@ async function handleAgentDetectionAndOnboarding(
     }
 
     if (upgrade) {
-      newEditSource = recommendedSource;
+      const newEditSource = recommendedSource;
 
       // Ask for merge strategy since we are switching sources
       const mergeStrategy = await promptEditSourceMergeStrategy(

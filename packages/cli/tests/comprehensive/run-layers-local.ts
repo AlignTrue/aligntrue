@@ -20,6 +20,7 @@ import { execSync, type ExecException } from "node:child_process";
 import { mkdirSync, writeFileSync, readFileSync, mkdtempSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { globSync } from "glob";
 
 interface LayerResult {
   layer: number;
@@ -88,9 +89,10 @@ async function runLayer(layer: number): Promise<LayerResult> {
   let layerFile: string;
   try {
     // Use glob to find the layer file
-    const matches = execSync(`ls ${layerScript}`, { encoding: "utf-8" })
-      .trim()
-      .split("\n");
+    const matches = globSync(layerScript);
+    if (matches.length === 0) {
+      throw new Error("No matches found");
+    }
     layerFile = matches[0];
   } catch {
     console.error(`ERROR: Layer ${layer} script not found`);
