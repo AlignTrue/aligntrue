@@ -63,7 +63,8 @@ mkdir -p .cursor/rules
 mkdir -p .vscode
 
 SYNC_START=$(date +%s)
-SYNC_OUTPUT=$(node ../../packages/cli/dist/index.js sync 2>&1)
+# Use --auto-enable to accept discovered agents in CI (non-interactive)
+SYNC_OUTPUT=$(node ../../packages/cli/dist/index.js sync --auto-enable --non-interactive 2>&1)
 SYNC_EXIT=$?
 SYNC_END=$(date +%s)
 SYNC_DURATION=$((SYNC_END - SYNC_START))
