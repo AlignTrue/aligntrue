@@ -90,9 +90,21 @@ export async function checkIfSyncNeeded(
     }
   }
 
-  // Check configured source_files (multi-file support)
-  if (config.sync?.source_files && Array.isArray(config.sync.source_files)) {
-    for (const pattern of config.sync.source_files) {
+  // Check configured edit_source (for multi-file support via glob/array)
+  // Note: edit_source now controls both change detection and loading
+  const editSource = config.sync?.edit_source;
+  const isArray = Array.isArray(editSource);
+  const hasWildcard =
+    typeof editSource === "string" &&
+    (editSource.includes("*") ||
+      editSource.includes("?") ||
+      editSource.includes("["));
+
+  if (editSource && (isArray || hasWildcard)) {
+    const patterns = isArray
+      ? (editSource as string[])
+      : [editSource as string];
+    for (const pattern of patterns) {
       const matches = globSync(pattern, { cwd, absolute: true });
       for (const file of matches) {
         if (wasFileModifiedSince(file, lastSyncTime)) {

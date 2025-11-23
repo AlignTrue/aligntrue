@@ -38,26 +38,25 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "AGENTS.md",
+          edit_source: "AGENTS.md",
         },
       };
 
       const files = await discoverSourceFiles(testDir, config);
 
-      expect(files).toHaveLength(1);
-      expect(files[0].path).toBe("AGENTS.md");
-      expect(files[0].content).toBe("# Test\n\nContent");
-      expect(files[0].sections).toHaveLength(1);
+      // Should return empty array for single file (handled by loadIR directly)
+      expect(files).toHaveLength(0);
     });
 
     it("normalizes heading levels to at least 2", async () => {
-      writeFileSync(join(testDir, "AGENTS.md"), "# Title\n\nDetails");
+      mkdirSync(join(testDir, "rules"), { recursive: true });
+      writeFileSync(join(testDir, "rules/AGENTS.md"), "# Title\n\nDetails");
 
       const config: AlignTrueConfig = {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "AGENTS.md",
+          edit_source: "rules/*.md",
         },
       };
 
@@ -83,7 +82,7 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "rules/*.md",
+          edit_source: "rules/*.md",
         },
       };
 
@@ -105,7 +104,7 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: ["arch.md", "security.md"],
+          edit_source: ["arch.md", "security.md"],
         },
       };
 
@@ -123,7 +122,7 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "nonexistent/*.md",
+          edit_source: "nonexistent/*.md",
         },
       };
 
@@ -331,7 +330,7 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "rules/*.md",
+          edit_source: "rules/*.md",
           source_order: ["security.md", "arch.md"],
         },
       };
@@ -354,7 +353,7 @@ describe("source-loader", () => {
         exporters: ["cursor"],
         mode: "solo",
         sync: {
-          source_files: "nonexistent/*.md",
+          edit_source: "nonexistent/*.md",
         },
       };
 

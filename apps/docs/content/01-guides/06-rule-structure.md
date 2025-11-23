@@ -121,7 +121,7 @@ exporters:
   - agents
 
 sync:
-  source_files: ".aligntrue/rules/*.md"
+  edit_source: ".aligntrue/rules/*.md"
   source_order:
     - architecture.md
     - security.md
@@ -187,14 +187,14 @@ See [Multi-file organization](/docs/02-customization/multi-file-organization) fo
 
 ### Source file patterns
 
-The `source_files` field accepts various patterns:
+The `edit_source` field accepts various patterns when organizing rules in multiple files:
 
 ```yaml
 # All .md files in directory
-source_files: ".aligntrue/rules/*.md"
+edit_source: ".aligntrue/rules/*.md"
 
 # Recursive (includes subdirectories)
-source_files: ".aligntrue/rules/**/*.md"
+edit_source: ".aligntrue/rules/**/*.md"
 
 # Specific files
 source_files:

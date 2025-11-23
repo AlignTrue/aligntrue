@@ -64,8 +64,17 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
     // Load config
     const config = await loadConfig(undefined, cwd);
 
-    // Get source file patterns
-    const sourceFiles = config.sync?.source_files || "AGENTS.md";
+    // Get source file patterns (now from edit_source)
+    const editSource = config.sync?.edit_source || "AGENTS.md";
+    // If edit_source is array or wildcard, it's a multi-file source
+    const isArray = Array.isArray(editSource);
+    const hasWildcard =
+      typeof editSource === "string" &&
+      (editSource.includes("*") ||
+        editSource.includes("?") ||
+        editSource.includes("["));
+
+    const sourceFiles = isArray || hasWildcard ? editSource : "AGENTS.md";
     const sourceOrder = config.sync?.source_order;
 
     // Display configuration
@@ -378,11 +387,11 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     // Update config
     const configToUpdate = await loadConfig(undefined, cwd);
     configToUpdate.sync = configToUpdate.sync || {};
-    configToUpdate.sync.source_files = `${targetDir}/*.md`;
+    configToUpdate.sync.edit_source = `${targetDir}/*.md`;
     await saveConfig(configToUpdate, undefined, cwd);
 
     clack.log.success(
-      `\nUpdated config: sync.source_files = "${targetDir}/*.md"`,
+      `\nUpdated config: sync.edit_source = "${targetDir}/*.md"`,
     );
 
     // Ask about backing up AGENTS.md

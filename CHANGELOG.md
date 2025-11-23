@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Stuck spinner in sync command** - Fixed an issue where the "Resolving sources" spinner continued running during interactive prompts in non-verbose mode
 - Confusing pluralization in init completion message - Message now uses singular "agent" when only 1 exporter is configured, plural "agents" for multiple exporters
 - Duplicate message when switching edit source - Removed redundant "Edit source updated" message that appeared before merge strategy prompt during `aligntrue sync`
 - Confusing UI in merge strategy prompt - Simplified option labels and hints to eliminate double parentheses and improve clarity
@@ -24,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Unified rule loading configuration** - `sync.source_files` option has been **removed**. The `sync.edit_source` option now controls BOTH file monitoring (for edits) AND content loading.
+  - Glob patterns in `edit_source` (e.g. `.cursor/rules/*.mdc`) now automatically trigger multi-file rule loading
+  - Single file patterns (e.g. `AGENTS.md`) continue to work as single edit sources
+  - This eliminates the common configuration error where rules were watched but not loaded
 - **Edit source patterns now centralized** - Single source of truth for exporter-to-pattern mappings in `@aligntrue/core/config/edit-source-patterns`
 - **Removed IR-only edit source option** - `edit_source: ".rules.yaml"` is no longer supported (use human-friendly `.aligntrue/rules/*.md` instead)
 - **Added support for multi-file markdown organization** - New recommended option `edit_source: ".aligntrue/rules/*.md"` for teams

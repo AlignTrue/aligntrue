@@ -75,7 +75,7 @@ project/
 
 ```yaml
 sync:
-  source_files: ".aligntrue/rules/*.md"
+  edit_source: ".aligntrue/rules/*.md"
 ```
 
 **Why:** AlignTrue exports to each agent's format (merged for single-file agents, split for multi-file agents).

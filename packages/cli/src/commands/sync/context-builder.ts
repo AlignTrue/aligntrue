@@ -178,13 +178,11 @@ export async function buildSyncContext(
         : sourcePath;
 
     if (!options.quiet) {
-      if (options.verbose) {
-        spinner.stop(
-          bundleResult.sources.length > 1
-            ? `Resolved and merged ${bundleResult.sources.length} sources`
-            : "Source resolved",
-        );
-      }
+      spinner.stop(
+        bundleResult.sources.length > 1
+          ? `Resolved and merged ${bundleResult.sources.length} sources`
+          : "Source resolved",
+      );
     }
 
     // Show merge info if multiple sources
