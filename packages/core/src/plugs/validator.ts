@@ -3,12 +3,16 @@
  * Validates fill values against slot format requirements
  */
 
-export type PlugFormat = "command" | "file" | "url" | "text";
+import {
+  ValidationResult,
+  validateRelativePath,
+  validateUrl as validateUrlFramework,
+  valid,
+  invalid,
+} from "../validation/index.js";
 
-export interface ValidationResult {
-  valid: boolean;
-  error?: string;
-}
+export type PlugFormat = "command" | "file" | "url" | "text";
+export type { ValidationResult };
 
 /**
  * Validate a command format fill
@@ -17,28 +21,7 @@ export interface ValidationResult {
  * - Must be a simple command or relative path
  */
 export function validateCommand(value: string): ValidationResult {
-  if (!value || value.trim() === "") {
-    return { valid: false, error: "Command cannot be empty" };
-  }
-
-  // Check for absolute paths
-  if (value.startsWith("/") || /^[A-Z]:[/\\]/.test(value)) {
-    return {
-      valid: false,
-      error:
-        "Command cannot be an absolute path. Use relative paths or command names only.",
-    };
-  }
-
-  // Check for parent directory traversal
-  if (value.includes("../") || value.includes("..\\")) {
-    return {
-      valid: false,
-      error: "Command cannot contain parent directory traversal (../).",
-    };
-  }
-
-  return { valid: true };
+  return validateRelativePath(value, "Command");
 }
 
 /**
@@ -48,27 +31,7 @@ export function validateCommand(value: string): ValidationResult {
  * - No parent directory traversal
  */
 export function validateFile(value: string): ValidationResult {
-  if (!value || value.trim() === "") {
-    return { valid: false, error: "File path cannot be empty" };
-  }
-
-  // Check for absolute paths
-  if (value.startsWith("/") || /^[A-Z]:[/\\]/.test(value)) {
-    return {
-      valid: false,
-      error: "File path must be relative, not absolute.",
-    };
-  }
-
-  // Check for parent directory traversal
-  if (value.includes("../") || value.includes("..\\")) {
-    return {
-      valid: false,
-      error: "File path cannot contain parent directory traversal (../).",
-    };
-  }
-
-  return { valid: true };
+  return validateRelativePath(value, "File path");
 }
 
 /**
@@ -76,29 +39,7 @@ export function validateFile(value: string): ValidationResult {
  * - Must be a valid URL with protocol
  */
 export function validateUrl(value: string): ValidationResult {
-  if (!value || value.trim() === "") {
-    return { valid: false, error: "URL cannot be empty" };
-  }
-
-  try {
-    const url = new URL(value);
-
-    // Ensure protocol is present and valid
-    if (!url.protocol || !["http:", "https:"].includes(url.protocol)) {
-      return {
-        valid: false,
-        error: "URL must use http:// or https:// protocol.",
-      };
-    }
-
-    return { valid: true };
-  } catch {
-    return {
-      valid: false,
-      error:
-        "Invalid URL format. Must include protocol (e.g., https://example.com).",
-    };
-  }
+  return validateUrlFramework(value);
 }
 
 /**
@@ -107,10 +48,10 @@ export function validateUrl(value: string): ValidationResult {
  */
 export function validateText(value: string): ValidationResult {
   if (!value || value.trim() === "") {
-    return { valid: false, error: "Text value cannot be empty" };
+    return invalid("Text value cannot be empty");
   }
 
-  return { valid: true };
+  return valid();
 }
 
 /**

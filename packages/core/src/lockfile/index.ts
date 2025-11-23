@@ -12,7 +12,7 @@ export type {
   LockfileEntry,
   LockfileMode,
   Mismatch,
-  ValidationResult,
+  LockfileValidationResult,
   EnforcementResult,
 } from "./types.js";
 

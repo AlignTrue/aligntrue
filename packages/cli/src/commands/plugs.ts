@@ -465,7 +465,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
       const validation = validateFill(fillValue, format);
       if (!validation.valid) {
         console.error(`✗ Validation failed for slot "${slotName}"\n`);
-        console.error(`  ${validation.error}\n`);
+        console.error(`  ${validation.errors?.[0]?.message}\n`);
         console.error(`  Expected format: ${format}\n`);
         if (slotDef.example) {
           console.error(`  Example: ${slotDef.example}\n`);
@@ -483,7 +483,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         const validation = validateFill(fillValue, "url");
         if (!validation.valid) {
           console.error(`✗ Validation failed for slot "${slotName}"\n`);
-          console.error(`  ${validation.error}\n`);
+          console.error(`  ${validation.errors?.[0]?.message}\n`);
           console.error(`  Expected format: url\n`);
           console.error(
             `  Tip: URLs must include protocol (e.g., https://example.com)\n`,

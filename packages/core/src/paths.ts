@@ -6,6 +6,19 @@
  */
 
 import { join } from "path";
+import {
+  validateRelativePath,
+  checkScopePath,
+  validateUrl,
+  validateGlobPattern,
+} from "./validation/index.js";
+
+export {
+  validateRelativePath,
+  checkScopePath,
+  validateUrl,
+  validateGlobPattern,
+};
 
 /**
  * Standard AlignTrue file paths
@@ -121,4 +134,24 @@ export function getAlignTrueDir(cwd: string = process.cwd()): string {
  */
 export function getCacheDir(type: string, cwd: string = process.cwd()): string {
   return join(cwd, ".aligntrue", ".cache", type);
+}
+
+/**
+ * Normalize a file path to use forward slashes (Windows compatibility)
+ */
+export function normalizePath(filepath: string): string {
+  // Convert backslashes to forward slashes
+  let normalized = filepath.replace(/\\/g, "/");
+
+  // Remove leading ./ if present
+  if (normalized.startsWith("./")) {
+    normalized = normalized.slice(2);
+  }
+
+  // Ensure no leading slash (relative paths)
+  if (normalized.startsWith("/")) {
+    normalized = normalized.slice(1);
+  }
+
+  return normalized;
 }

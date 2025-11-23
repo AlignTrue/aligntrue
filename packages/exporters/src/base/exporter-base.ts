@@ -802,6 +802,8 @@ export abstract class ExporterBase implements ExporterPlugin {
     filePath: string,
     editSource: string | string[] | undefined,
   ): boolean {
+    // Re-implementation of basic matching to avoid async import in sync method
+    // Or circular dependency with core
     if (!editSource) {
       // Default to AGENTS.md if no edit_source specified
       return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");

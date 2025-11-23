@@ -5,27 +5,17 @@
 
 import type { AlignTrueConfig } from "../config/index.js";
 import { isPlainObject } from "../overlays/operations.js";
-
-export interface ValidationError {
-  field: string;
-  message: string;
-  fix?: string;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-}
+import { ValidationResult, ValidationIssue, valid } from "./framework.js";
 
 /**
  * Validate team mode configuration
  */
 export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
-  const errors: ValidationError[] = [];
+  const errors: ValidationIssue[] = [];
 
   // Only validate if in team mode
   if (config.mode !== "team") {
-    return { valid: true, errors: [] };
+    return valid();
   }
 
   // Check for invalid storage combinations
@@ -34,18 +24,18 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
       // In team mode, personal + repo is not allowed
       if (scope === "personal" && storageConfig.type === "repo") {
         errors.push({
-          field: `storage.${scope}.type`,
+          path: `storage.${scope}.type`,
           message: "Personal rules cannot use 'repo' storage in team mode",
-          fix: "Change to 'local' or 'remote'",
+          hint: "Change to 'local' or 'remote'",
         });
       }
 
       // Validate remote storage has URL
       if (storageConfig.type === "remote" && !storageConfig.url) {
         errors.push({
-          field: `storage.${scope}.url`,
+          path: `storage.${scope}.url`,
           message: `Remote storage for scope "${scope}" requires url`,
-          fix: "Add url field with git repository URL",
+          hint: "Add url field with git repository URL",
         });
       }
     }
@@ -62,9 +52,9 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
         Object.keys(resourceConfig.scopes).length === 0
       ) {
         errors.push({
-          field: `resources.${resourceType}.scopes`,
+          path: `resources.${resourceType}.scopes`,
           message: `Resource "${resourceType}" must have at least one scope defined`,
-          fix: "Add scopes configuration",
+          hint: "Add scopes configuration",
         });
       }
 
@@ -73,9 +63,9 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
         for (const scope of Object.keys(resourceConfig.scopes)) {
           if (!resourceConfig.storage[scope]) {
             errors.push({
-              field: `resources.${resourceType}.storage.${scope}`,
+              path: `resources.${resourceType}.storage.${scope}`,
               message: `No storage configuration for scope "${scope}"`,
-              fix: `Add storage.${scope} configuration`,
+              hint: `Add storage.${scope} configuration`,
             });
           }
 
@@ -87,9 +77,9 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
             storageConfig.type === "repo"
           ) {
             errors.push({
-              field: `resources.${resourceType}.storage.${scope}.type`,
+              path: `resources.${resourceType}.storage.${scope}.type`,
               message: "Personal scope cannot use 'repo' storage in team mode",
-              fix: "Change to 'local' or 'remote'",
+              hint: "Change to 'local' or 'remote'",
             });
           }
         }
@@ -97,10 +87,14 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
     }
   }
 
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
+  if (errors.length > 0) {
+    return {
+      valid: false,
+      errors,
+    };
+  }
+
+  return valid();
 }
 
 /**
@@ -128,7 +122,7 @@ export async function validateStorageAccess(
 export function validateScopeConfig(
   scopes: Record<string, unknown>,
 ): ValidationResult {
-  const errors: ValidationError[] = [];
+  const errors: ValidationIssue[] = [];
 
   for (const [scope, config] of Object.entries(scopes)) {
     if (!isPlainObject(config)) {
@@ -136,17 +130,21 @@ export function validateScopeConfig(
     }
     if (!config["sections"]) {
       errors.push({
-        field: `scopes.${scope}.sections`,
+        path: `scopes.${scope}.sections`,
         message: `Scope "${scope}" must have sections defined`,
-        fix: "Add sections array or '*' for all sections",
+        hint: "Add sections array or '*' for all sections",
       });
     }
   }
 
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
+  if (errors.length > 0) {
+    return {
+      valid: false,
+      errors,
+    };
+  }
+
+  return valid();
 }
 
 /**
