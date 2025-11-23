@@ -13,9 +13,11 @@ import {
   mkdirSync,
   mkdtempSync,
   copyFileSync,
+  rmSync,
 } from "fs";
 import { dirname, join } from "path";
 import { tmpdir } from "os";
+import { randomBytes } from "crypto";
 import { computeHash } from "@aligntrue/schema";
 
 /**
@@ -170,15 +172,27 @@ export class AtomicFileWriter {
     }
 
     // Create backup if file exists
+    let backupTempDir: string | undefined;
     if (existsSync(filePath)) {
       try {
         const originalContent = readFileSync(filePath, "utf8");
-        // Create backup in secure temp directory instead of target directory
-        const backupTempDir = mkdtempSync(join(tmpdir(), "aligntrue-backup-"));
+        // Create backup in secure temp directory with cryptographic randomness
+        const randomSuffix = randomBytes(8).toString("hex");
+        backupTempDir = mkdtempSync(
+          join(tmpdir(), `aligntrue-backup-${randomSuffix}-`),
+        );
         const backup = join(backupTempDir, "backup.tmp");
         writeFileSync(backup, originalContent, "utf8");
         this.backups.set(filePath, backup);
       } catch (_err) {
+        // Clean up backup temp directory if it was created
+        if (backupTempDir && existsSync(backupTempDir)) {
+          try {
+            rmSync(backupTempDir, { recursive: true, force: true });
+          } catch {
+            // Ignore cleanup errors
+          }
+        }
         throw new Error(
           `Failed to create backup of ${filePath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
@@ -186,12 +200,19 @@ export class AtomicFileWriter {
       }
     }
 
-    // Write to temp file
-    const tempDir = mkdtempSync(join(tmpdir(), "aligntrue-"));
+    // Write to temp file with cryptographic randomness
+    const randomSuffix = randomBytes(8).toString("hex");
+    const tempDir = mkdtempSync(join(tmpdir(), `aligntrue-${randomSuffix}-`));
     const tempPath = join(tempDir, "tempfile.tmp");
     try {
       writeFileSync(tempPath, content, "utf8");
     } catch (_err) {
+      // Clean up temp directory on failure
+      try {
+        rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
       throw new Error(
         `Failed to write temp file: ${tempPath}\n` +
           `  ${_err instanceof Error ? _err.message : String(_err)}`,
@@ -208,15 +229,21 @@ export class AtomicFileWriter {
           copyFileSync(tempPath, filePath);
           unlinkSync(tempPath);
         } catch (_copyErr) {
+          // Clean up temp directory on failure
+          try {
+            rmSync(tempDir, { recursive: true, force: true });
+          } catch {
+            // Ignore cleanup errors
+          }
           throw new Error(
             `Failed to copy temp file: ${tempPath} → ${filePath}\n` +
               `  ${_copyErr instanceof Error ? _copyErr.message : String(_copyErr)}`,
           );
         }
       } else {
-        // Clean up temp file on failure
+        // Clean up temp directory on failure
         try {
-          unlinkSync(tempPath);
+          rmSync(tempDir, { recursive: true, force: true });
         } catch {
           // Ignore cleanup errors
         }
@@ -226,6 +253,13 @@ export class AtomicFileWriter {
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
+    }
+
+    // Clean up temp directory after successful write
+    try {
+      rmSync(tempDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
     }
 
     // Track checksum
