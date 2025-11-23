@@ -8,7 +8,11 @@ import {
   cleanupTestDir,
 } from "../utils/integration-helpers.js";
 
-describe("Lockfile Drift", () => {
+// Skip on Windows due to file timestamp precision issues
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
+
+describeSkipWindows("Lockfile Drift", () => {
   let testDir: string;
 
   beforeAll(async () => {
