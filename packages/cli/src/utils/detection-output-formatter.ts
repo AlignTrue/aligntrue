@@ -205,3 +205,56 @@ export function formatDetectionOutput(
 
   return { text: output };
 }
+
+/**
+ * Check if new agent is multi-file and current source is single-file
+ * Returns true if switch is recommended
+ *
+ * This is used internally in the unified onboarding flow but exported for testing
+ */
+export function shouldRecommendEditSourceSwitch(
+  newAgents: string[],
+  currentEditSource: string | string[] | undefined,
+): { should_recommend: boolean; agent?: string; reason?: string } {
+  // 1. Check if current source is already multi-file
+  // If so, NEVER recommend switching (we don't upgrade multi->multi or multi->single)
+  const currentSources = Array.isArray(currentEditSource)
+    ? currentEditSource
+    : currentEditSource
+      ? [currentEditSource]
+      : [];
+
+  const isCurrentMultiFile = currentSources.some(
+    (src) =>
+      src.includes(".cursor/rules") ||
+      src.includes(".amazonq/rules") ||
+      src.includes(".augment/rules") ||
+      src.includes(".kilocode/rules") ||
+      src.includes(".kiro/steering") ||
+      src.includes("*"), // Generic glob assumption
+  );
+
+  if (isCurrentMultiFile) {
+    return {
+      should_recommend: false,
+      reason: "Current source is already multi-file",
+    };
+  }
+
+  // 2. Find best upgrade candidate (multi-file agent)
+  const newMultiFileAgent = newAgents.find((a) => isMultiFileFormat(a));
+
+  if (!newMultiFileAgent) {
+    return {
+      should_recommend: false,
+      reason: "No multi-file agent detected to upgrade to",
+    };
+  }
+
+  // 3. If we got here: Current is single-file (or undefined) AND we found a multi-file agent
+  return {
+    should_recommend: true,
+    agent: newMultiFileAgent,
+    reason: "New multi-file agent detected with single-file current source",
+  };
+}
