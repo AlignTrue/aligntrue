@@ -6,6 +6,7 @@ import {
   wasFileModifiedSince,
 } from "@aligntrue/core/sync/last-sync-tracker";
 import { getAlignTruePaths, loadConfig } from "@aligntrue/core";
+import { detectNewAgents } from "../../utils/detect-agents.js";
 import type { SyncOptions } from "./options.js";
 
 /**
@@ -18,6 +19,7 @@ import type { SyncOptions } from "./options.js";
  * - IR changed
  * - Any agent file changed
  * - Any source file changed
+ * - New agent files detected that aren't configured yet
  *
  * @returns true if sync is needed, false if everything is up to date
  */
@@ -98,6 +100,17 @@ export async function checkIfSyncNeeded(
         }
       }
     }
+  }
+
+  // Check for new agent files that aren't configured yet
+  // This handles the case where files were added/copied but have old mtimes
+  const newAgents = detectNewAgents(
+    cwd,
+    config.exporters || [],
+    config.detection?.ignored_agents || [],
+  );
+  if (newAgents.length > 0) {
+    return true; // New agents need to be detected and onboarded
   }
 
   // Nothing changed
