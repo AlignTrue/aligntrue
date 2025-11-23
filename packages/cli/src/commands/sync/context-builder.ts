@@ -5,6 +5,7 @@
 import { existsSync, writeFileSync, statSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
+import { createHash } from "crypto";
 import * as clack from "@clack/prompts";
 import {
   getAlignTruePaths,
@@ -12,6 +13,7 @@ import {
   type AlignTrueConfig,
   saveMinimalConfig,
 } from "@aligntrue/core";
+import type { AlignPack } from "@aligntrue/schema";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
@@ -33,6 +35,7 @@ import {
   promptEditSourceMergeStrategy,
   type EditSourceMergeStrategy,
 } from "../../utils/edit-source-merge-strategy.js";
+import { mergeEditSourceContent } from "../../utils/edit-source-content-merger.js";
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
@@ -43,6 +46,16 @@ import { getInvalidExporters } from "../../utils/exporter-validation.js";
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+/**
+ * Generate fingerprint for section (matching schema behavior)
+ */
+function generateFingerprint(heading: string): string {
+  return createHash("sha256")
+    .update(heading.toLowerCase().trim())
+    .digest("hex")
+    .slice(0, 16);
+}
 
 /**
  * Sync context containing all loaded resources
@@ -83,7 +96,7 @@ export async function buildSyncContext(
     spinner.start("Loading configuration");
   }
 
-  const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
+  let config: AlignTrueConfig = await loadConfigWithValidation(configPath);
   if (!options.quiet) {
     spinner.stop(options.verbose ? "Configuration loaded" : undefined);
   }
@@ -252,7 +265,80 @@ export async function buildSyncContext(
   // Step 4: Unified agent detection and onboarding
   // Detects new agents, handles edit source upgrades, and enables exporters
   if (!options.noDetect && !options.dryRun) {
-    await handleAgentDetectionAndOnboarding(cwd, config, configPath, options);
+    const changed = await handleAgentDetectionAndOnboarding(
+      cwd,
+      config,
+      configPath,
+      options,
+    );
+
+    if (changed) {
+      if (options.verbose) {
+        clack.log.info("Configuration or sources changed, reloading...");
+      }
+
+      // Reload config
+      const newConfig = await loadConfigWithValidation(configPath);
+      // Update config object
+      // We can't just assign to config because it's a let, but resolveAndMergeSources uses it
+      config = newConfig;
+
+      // Disable auto-pull for this run since we just performed onboarding actions
+      // This prevents auto-pull from immediately overwriting our work
+      if (!config.sync) config.sync = {};
+      config.sync.auto_pull = false;
+
+      // Re-resolve sources
+      if (!options.quiet) {
+        spinner.start("Refreshing sources");
+      }
+
+      try {
+        // Create a temporary config copy without edit_source for resolution
+        // This forces reading from the IR file (.rules.yaml) which we just updated with merged content
+        // Otherwise it would read from the new edit_source files which don't have the merged content yet
+        const resolveConfig = { ...config };
+        if (resolveConfig.sync) {
+          resolveConfig.sync = { ...resolveConfig.sync };
+          delete resolveConfig.sync.edit_source;
+        }
+
+        bundleResult = await resolveAndMergeSources(resolveConfig, {
+          cwd,
+          offlineMode: options.offline || options.skipUpdateCheck,
+          forceRefresh: true, // Force refresh since files changed
+          warnConflicts: true,
+          onGitProgress: handleGitProgress,
+        });
+
+        // Update paths
+        sourcePath =
+          config.sources?.[0]?.type === "local"
+            ? config.sources[0].path || paths.rules
+            : bundleResult.sources[0]?.sourcePath || ".aligntrue/.rules.yaml";
+
+        absoluteSourcePath =
+          config.sources?.[0]?.type === "local"
+            ? resolve(cwd, sourcePath)
+            : sourcePath;
+
+        if (!options.quiet) {
+          spinner.stop(
+            bundleResult.sources.length > 1
+              ? `Refreshed and merged ${bundleResult.sources.length} sources`
+              : "Sources refreshed",
+          );
+        }
+      } catch (err) {
+        if (!options.quiet) {
+          spinner.stop("Source refresh failed");
+        }
+        throw ErrorFactory.fileWriteFailed(
+          "refresh",
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
   }
 
   let lockfilePath: string | undefined;
@@ -431,7 +517,8 @@ async function handleAgentDetectionAndOnboarding(
   config: AlignTrueConfig,
   configPath: string,
   options: SyncOptions,
-): Promise<void> {
+): Promise<boolean> {
+  let changed = false;
   const editSource = config.sync?.edit_source;
 
   // 1. Detect all relevant files/agents
@@ -467,7 +554,7 @@ async function handleAgentDetectionAndOnboarding(
   }
 
   if (detectedAgentNames.size === 0) {
-    return;
+    return false;
   }
 
   const uniqueDetectedAgents = Array.from(detectedAgentNames);
@@ -519,7 +606,7 @@ async function handleAgentDetectionAndOnboarding(
   );
 
   if (isNonInteractive) {
-    await handleNonInteractiveOnboarding(
+    return await handleNonInteractiveOnboarding(
       cwd,
       config,
       configPath,
@@ -528,7 +615,6 @@ async function handleAgentDetectionAndOnboarding(
       exportTargets,
       editSource,
     );
-    return;
   }
 
   // 7. Interactive Mode Display
@@ -587,6 +673,7 @@ async function handleAgentDetectionAndOnboarding(
         newEditSource,
         options,
       );
+      changed = true;
 
       // The upgraded agent is now the edit source, so remove it from export targets if present
       const idx = exportTargets.indexOf(agent);
@@ -637,6 +724,7 @@ async function handleAgentDetectionAndOnboarding(
           targetsToPrompt,
           options,
         );
+        changed = true;
       } else if (response === "review") {
         // Individual review logic could go here, keeping it simple for now
         for (const agent of targetsToPrompt) {
@@ -645,11 +733,14 @@ async function handleAgentDetectionAndOnboarding(
           });
           if (!clack.isCancel(enable) && enable) {
             await enableExporters(cwd, config, configPath, [agent], options);
+            changed = true;
           }
         }
       }
     }
   }
+
+  return changed;
 }
 
 async function handleNonInteractiveOnboarding(
@@ -660,7 +751,9 @@ async function handleNonInteractiveOnboarding(
   upgradeCandidates: string[],
   exportTargets: string[],
   currentEditSource: string | string[] | undefined,
-): Promise<void> {
+): Promise<boolean> {
+  let changed = false;
+
   // Auto-upgrade edit source if candidate exists
   if (upgradeCandidates.length > 0) {
     const agent = upgradeCandidates[0]!;
@@ -679,6 +772,11 @@ async function handleNonInteractiveOnboarding(
       );
     }
 
+    // Default to keep-both in non-interactive mode if not specified
+    if (!options.editSourceMergeStrategy) {
+      options.editSourceMergeStrategy = "keep-both";
+    }
+
     await updateEditSource(
       cwd,
       config,
@@ -687,6 +785,7 @@ async function handleNonInteractiveOnboarding(
       newEditSource,
       options,
     );
+    changed = true;
 
     // Remove from export targets
     const idx = exportTargets.indexOf(agent);
@@ -699,7 +798,10 @@ async function handleNonInteractiveOnboarding(
       clack.log.info(`Auto-enabling exporters: ${exportTargets.join(", ")}`);
     }
     await enableExporters(cwd, config, configPath, exportTargets, options);
+    changed = true;
   }
+
+  return changed;
 }
 
 async function updateEditSource(
@@ -725,18 +827,116 @@ async function updateEditSource(
 
   await saveMinimalConfig(config, configPath);
 
-  // Backup old source if it was single file
-  if (oldSource && !Array.isArray(oldSource)) {
-    const { backupFileToOverwrittenRules } = await import(
-      "../../utils/extract-rules.js"
+  // Apply merge strategy if provided
+  // Default to "keep-both" if not specified (safe default)
+  const strategy = options.editSourceMergeStrategy || "keep-both";
+
+  if (options.verbose) {
+    clack.log.info(`Applying edit source merge strategy: ${strategy}`);
+  }
+
+  try {
+    // Load dependencies dynamically
+    const { loadIR, saveIR, updateLastSyncTimestamp } = await import(
+      "@aligntrue/core"
     );
-    const currentSourcePath = resolve(cwd, oldSource);
-    if (existsSync(currentSourcePath)) {
-      const backupResult = backupFileToOverwrittenRules(currentSourcePath, cwd);
-      if (backupResult.backed_up && options.verbose) {
-        clack.log.info(
-          `Backed up previous edit source to: ${backupResult.backup_path}`,
+    const { parseGenericMarkdown } = await import(
+      "@aligntrue/exporters/utils/section-parser"
+    );
+    // generateFingerprint is now local
+
+    // Load current IR content
+    let currentIR: AlignPack | undefined;
+    const irPath = join(cwd, ".aligntrue/.rules.yaml");
+    if (existsSync(irPath)) {
+      try {
+        currentIR = await loadIR(irPath);
+      } catch {
+        // Ignore load error, will treat as empty
+      }
+    }
+
+    // Merge content
+    // Note: we don't have textual IR content easily available, so we pass undefined for currentIRContent
+    // This means "keep-existing" strategy will just preserve IR object as is (handled below)
+    const mergeResult = await mergeEditSourceContent(
+      oldSource,
+      newSource,
+      undefined, // currentIRContent
+      cwd,
+      strategy,
+    );
+
+    if (mergeResult.summary && options.verbose) {
+      clack.log.info(mergeResult.summary);
+    }
+
+    // If we have content to merge (keep-both or keep-new), parse and update IR
+    if (
+      (strategy === "keep-both" || strategy === "keep-new") &&
+      mergeResult.contentToMerge
+    ) {
+      // Parse merged content into sections
+      // We use generic markdown parser which works for both AGENTS.md and most rule files
+      const parsed = parseGenericMarkdown(mergeResult.contentToMerge);
+
+      if (parsed.sections.length > 0) {
+        // Convert to AlignSection format
+        const newSections = parsed.sections.map((s) => ({
+          heading: s.heading,
+          content: s.content,
+          level: s.level,
+          fingerprint: generateFingerprint(s.heading),
+        }));
+
+        // Update IR
+        if (!currentIR) {
+          currentIR = {
+            id: "merged-rules",
+            version: "1.0.0",
+            spec_version: "1",
+            sections: [],
+          } as AlignPack;
+        }
+
+        // Replace sections
+        currentIR.sections = newSections;
+
+        // Save updated IR
+        await saveIR(irPath, currentIR);
+
+        // Update last sync timestamp to prevent immediate two-way sync from overwriting our work
+        // This marks current files as "synced" so they aren't treated as new edits
+        updateLastSyncTimestamp(cwd);
+
+        if (options.verbose) {
+          clack.log.success(
+            `Updated IR with ${newSections.length} merged sections`,
+          );
+        }
+      }
+    }
+  } catch (err) {
+    clack.log.warn(
+      `Failed to merge content from edit sources: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    // Fallback to simple backup behavior (old behavior) if merge fails
+    // Backup old source if it was single file
+    if (oldSource && !Array.isArray(oldSource)) {
+      const { backupFileToOverwrittenRules } = await import(
+        "../../utils/extract-rules.js"
+      );
+      const currentSourcePath = resolve(cwd, oldSource);
+      if (existsSync(currentSourcePath)) {
+        const backupResult = backupFileToOverwrittenRules(
+          currentSourcePath,
+          cwd,
         );
+        if (backupResult.backed_up && options.verbose) {
+          clack.log.info(
+            `Backed up previous edit source to: ${backupResult.backup_path}`,
+          );
+        }
       }
     }
   }

@@ -117,11 +117,6 @@
           "type": "boolean",
           "description": "Show diff summary when auto-pull executes (default: true)"
         },
-        "two_way": {
-          "type": "boolean",
-          "description": "DEPRECATED: Use 'edit_source' instead. Enable two-way sync: detect edited agent files and merge back to IR (default: true)",
-          "deprecated": true
-        },
         "edit_source": {
           "oneOf": [
             {
@@ -137,22 +132,6 @@
             }
           ],
           "description": "Which file(s) accept edits: 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (multi-file glob), '.aligntrue/rules/*.md' (AlignTrue-managed multi-file). Default is single source. Array requires centralized: false."
-        },
-        "centralized": {
-          "type": "boolean",
-          "description": "Centralized rule management (default: true). Set to false for experimental decentralized multi-source editing. Requires edit_source to be an array when false.",
-          "default": true
-        },
-        "backup_on_overwrite": {
-          "type": "string",
-          "enum": ["auto", "always", "never"],
-          "description": "DEPRECATED: Inline .bak files are no longer supported",
-          "deprecated": true
-        },
-        "backup_extension": {
-          "type": "string",
-          "description": "DEPRECATED: Inline .bak files are no longer supported",
-          "deprecated": true
         },
         "scope_prefixing": {
           "type": "string",

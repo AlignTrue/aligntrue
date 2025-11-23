@@ -76,9 +76,7 @@ export interface AlignTrueConfig {
     on_conflict?: "prompt" | "keep_ir" | "accept_agent";
     workflow_mode?: "auto" | "ir_source" | "native_format";
     show_diff_on_pull?: boolean;
-    two_way?: boolean; // DEPRECATED: Use edit_source instead
     edit_source?: string | string[];
-    centralized?: boolean;
     scope_prefixing?: "off" | "auto" | "always";
     watch_enabled?: boolean;
     watch_debounce?: number;

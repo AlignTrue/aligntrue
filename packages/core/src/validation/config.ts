@@ -235,11 +235,6 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   }
 
   /**
-   * two_way is deprecated - no migration needed (no backward compatibility required)
-   * Users on old config will need to manually update
-   */
-
-  /**
    * Set edit_source default if not specified
    *
    * Default logic (single source only):
@@ -251,8 +246,6 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    * Note: edit_source controls which files accept edits and sync TO canonical IR.
    * IR (.aligntrue/.rules.yaml) is always the canonical source of truth.
    * This setting just controls the input gate to IR.
-   *
-   * Multi-source editing requires centralized: false (not set here).
    */
   if (result.sync.edit_source === undefined) {
     // Priority order: cursor (multi-file) > agents (universal) > others
@@ -531,27 +524,6 @@ export async function validateConfig(
     }
   }
 
-  // Validate centralized and edit_source
-  if (config.sync) {
-    const editSource = config.sync.edit_source;
-    const centralized = config.sync.centralized;
-
-    if (Array.isArray(editSource) && centralized !== false) {
-      throw new Error(
-        `Error: Multiple edit sources require decentralized mode\n` +
-          `  Current edit_source: ${JSON.stringify(editSource)}\n` +
-          `\n` +
-          `To enable multi-file editing, run:\n` +
-          `  aligntrue config set sync.centralized false\n` +
-          `\n` +
-          `Or use a single edit source:\n` +
-          `  aligntrue config set sync.edit_source '"AGENTS.md"'\n` +
-          `\n` +
-          `Learn more: https://aligntrue.ai/docs/concepts/sync-behavior`,
-      );
-    }
-  }
-
   // Validate exporters array if present
   if (config.exporters && Array.isArray(config.exporters)) {
     const MAX_EXPORTERS = 20;
@@ -762,7 +734,6 @@ export function isValidConfigKey(key: string): boolean {
     "sync.workflow_mode",
     "sync.show_diff_on_pull",
     "sync.edit_source",
-    "sync.centralized",
     "sync.scope_prefixing",
     "sync.watch_enabled",
     "sync.watch_debounce",

@@ -1,18 +1,17 @@
 ---
 title: "Sync behavior"
-description: "Technical reference for centralized rule management, editing, exporting, and optional experimental decentralized mode. Source of truth for how AlignTrue actually works."
+description: "Technical reference for rule management, editing, and exporting. Source of truth for how AlignTrue actually works."
 ---
 
 # Sync behavior
 
 Complete technical reference for AlignTrue's sync system. This document is the source of truth for what AlignTrue actually does—no marketing, no aspirations, just the real behavior.
 
-> **For practical setup and workflow examples,** see [Choosing Your Edit Source](/docs/01-guides/00-edit-source).  
-> **Experimental features:** See [Experimental Features](/docs/04-reference/experimental) for decentralized rule management.
+> **For practical setup and workflow examples,** see [Choosing Your Edit Source](/docs/01-guides/00-edit-source).
 
-## Default: Centralized rule management
+## Rule management
 
-AlignTrue uses **centralized rule management** by default: you designate ONE edit source, edit that file, and changes flow one-way to all other read-only exports.
+AlignTrue uses **centralized rule management**: you designate ONE edit source, edit that file, and changes flow one-way to all other read-only exports.
 
 **When you run `aligntrue sync`:**
 
@@ -175,192 +174,30 @@ Step 5b: Non-interactive (CI, pipe, redirect)
 ### How edit detection works
 
 ```typescript
-// Pseudo-code from packages/core/src/sync/multi-file-parser.ts
-
+// Pseudo-code
 function detectEditedFiles(cwd, config) {
   const editedFiles = [];
 
-  // Check each agent file's modification time
-  if (existsSync(AGENTS_MD)) {
-    const mtime = statSync(AGENTS_MD).mtime;
-    // Since lastSyncTime is NOT passed, this is always true
-    // So every file is considered "edited" by default
-    editedFiles.push({ path: "AGENTS.md", mtime, sections: parsed });
-  }
-
-  if (existsSync(CURSOR_MDC)) {
-    const mtime = statSync(CURSOR_MDC).mtime;
-    editedFiles.push({
-      path: ".cursor/rules/aligntrue.mdc",
-      mtime,
-      sections: parsed,
-    });
+  // Check edit_source file(s) modification time
+  if (matchesEditSource(file, editSource)) {
+    const mtime = statSync(file).mtime;
+    // Every file is considered "edited" by default to ensure current state is captured
+    editedFiles.push({ path: file, mtime, sections: parsed });
   }
 
   return editedFiles;
 }
 ```
 
-**Important:** The mtime check is not comparing against a saved "last sync time". Every agent file is always considered "edited" on every sync. The actual filtering happens at the merge stage (only if sections actually changed).
+**Important:** The mtime check captures the current state of your edit source. Every sync reads your edit source to ensure IR matches your intent.
 
 ### How merging works
 
-```typescript
-// Pseudo-code from packages/core/src/sync/multi-file-parser.ts
+When multiple files match your `edit_source` glob (e.g., `.cursor/rules/*.mdc`), they are merged into the IR.
 
-function mergeFromMultipleFiles(editedFiles, currentIR) {
-  const sectionsByHeading = new Map();
-
-  // Sort by mtime: oldest first, so newest wins
-  const sorted = editedFiles.sort(
-    (a, b) => a.mtime - b.mtime, // Ascending
-  );
-
-  for (const file of sorted) {
-    for (const section of file.sections) {
-      const key = section.heading.toLowerCase();
-
-      // Last-write-wins: newer file replaces older
-      sectionsByHeading.set(key, {
-        heading: section.heading,
-        content: section.content,
-        sourceFile: file.path,
-        mtime: file.mtime,
-      });
-    }
-  }
-
-  return mergedSections;
-}
-```
-
-**Algorithm:**
-
-1. Sort files by mtime (oldest → newest)
-2. Process in order
-3. Same heading? Overwrite with newer version
-4. Result: newest file's sections always win
-
-**Example:**
-
-```
-File A (10:00 AM): ## Security, ## Testing
-File B (11:00 AM): ## Security, ## CI/CD
-
-Merge result:
-• ## Security ← from File B (newer)
-• ## Testing ← from File A (only in A)
-• ## CI/CD ← from File B (only in B)
-```
-
-## What does NOT happen
-
-### ❌ No conflict detection
-
-There is **no** detection of conflicting edits. If two files have the same section with different content:
-
-```
-File A: ## Security
-  Content: "Use bcrypt for passwords"
-
-File B: ## Security
-  Content: "Use argon2 for passwords"
-
-Result: File B's version wins (if newer by mtime)
-
-No warning. No prompt. Just last-write-wins.
-```
-
-### ❌ No automatic background sync
-
-The system does **not** watch files or sync in the background. You must explicitly run `aligntrue sync`.
-
-### ❌ No timestamp tracking for conflict detection
-
-There is no `.aligntrue/.last-sync` file that tracks when the last sync happened. The mtime check is absolute (file modified recently?), not relative to last sync.
-
-### ❌ No prompts for multi-file edits
-
-Even if multiple files changed, there are no prompts. Just automatic merge.
-
-### ❌ No workflow modes
-
-The config has `sync.workflow_mode`, `sync.primary_agent`, and `sync.auto_pull` fields, but they are **not implemented**. Don't use them.
-
-## Practical implications
-
-### For solo developers
-
-**Pro:** Simple, fast, predictable
-
-- Edit in any file
-- Run sync
-- Everything updates
-- Done
-
-**Con:** If you're not careful with edits
-
-- Edit AGENTS.md at 10:00
-- Edit .cursor/rules at 10:05 with conflicting content
-- Run sync → .cursor/rules wins (it's newer)
-
-**Mitigation:** Pick one file as primary (usually AGENTS.md) and edit there most of the time.
-
-### For teams with soft lockfile mode
-
-**Pro:** Changes go out fast, team lead approves after
-
-- Engineer makes change
-- Sync succeeds (warning shown)
-- Agent files updated
-- Team lead reviews at their pace
-- Approve when ready
-
-**Con:** Unapproved changes might reach agents temporarily
-
-- If you want strict control, use strict mode instead
-
-### For teams with strict lockfile mode
-
-**Pro:** Explicit approval required before any change
-
-- Engineer makes change
-- Sync blocks or prompts
-- Change doesn't go out until approved
-- Audit trail in git history
-
-**Con:** Requires team coordination
-
-- Someone needs to approve
-- Or use `--force` (not recommended)
-
-### For teams with central rule management
-
-**Pro:** Single source of truth
-
-- Team lead maintains rules in central repo
-- Engineers pull rules, can't edit locally
-- All changes reviewed before publication
-
-**Con:** Requires different workflow
-
-- Engineers can't make quick local changes
-- Must go through team lead review
-
-## Disabling two-way sync
-
-If you want **only** IR → agents export (no agent→IR merge):
-
-```yaml
-sync:
-  two_way: false
-```
-
-Then:
-
-- Agent file edits are ignored
-- Only IR is used as source
-- Agent files are treated as read-only exports
+1. Parse all files matching the glob
+2. Collect all sections
+3. Update IR with the latest content
 
 ## Overview
 
@@ -477,60 +314,21 @@ sync:
   edit_source: "AGENTS.md"  # Single file
   # OR
   edit_source: ".cursor/rules/*.mdc"  # Glob pattern
-  # OR
-  edit_source: ["AGENTS.md", ".cursor/rules/*.mdc"]  # Multiple
-  # OR
-  edit_source: "any_agent_file"  # All agents
-```
-
-**Deprecated:**
-
-```yaml
-# OLD (still works, auto-migrates)
-sync:
-  two_way: true # → edit_source: "any_agent_file"
 ```
 
 **Section-Level Merging:**
 
-Two-way sync uses section-based merging:
+Sync uses section-based merging:
 
 - **Sections matched by heading** (case-insensitive)
 - **Change detection via SHA-256 hash**
 - **User sections preserved** alongside team sections
-- **Last-write-wins** when same section edited in multiple files
 
 **Flow:**
 
 ```
-Any agent file → Parse sections → Merge to IR → Export to all agent files
+Edit Source File → Parse sections → Merge to IR → Export to all agent files
 ```
-
-### Two-way sync flow
-
-```mermaid
-graph LR
-    A[Edit AGENTS.md or .mdc] --> B[aligntrue sync]
-    B --> C[Detect edited files]
-    C --> D[Parse sections by heading]
-    D --> E[Merge to IR last-write-wins]
-    E --> F[Export to all agents]
-    F --> G[All files updated]
-
-    style A fill:#f5f5f5,stroke:#666,stroke-width:1px
-    style B fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-    style C fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-    style D fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-    style E fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-```
-
-**What happens:**
-
-1. Detect edited agent files by modification time
-2. Parse sections from edited files by heading
-3. Merge sections into IR (last-write-wins for conflicts)
-4. Write updated `.aligntrue/.rules.yaml`
-5. Export merged IR to all configured agents
 
 **Team-Managed Sections:**
 
@@ -550,7 +348,7 @@ Managed sections are marked with 🔒 icon and HTML comments warning against dir
 **Example:**
 
 ```bash
-# Standard two-way sync (default)
+# Standard sync (default)
 aligntrue sync
 
 # Watch mode for continuous sync
@@ -590,80 +388,6 @@ aligntrue sync --accept-agent cursor
 ```
 
 Without `--accept-agent`, IR always wins.
-
-### Section-level merging behavior
-
-Two-way sync uses section-based merging instead of field-level conflict detection:
-
-**Match by heading:**
-
-- Sections matched by heading (case-insensitive, whitespace-trimmed)
-- Content hash (SHA-256) determines if section changed
-
-**Merge actions:**
-
-- **Keep:** Section unchanged in both IR and agent file
-- **Update:** Section changed in IR, updates agent file
-- **Add:** New section in IR, adds to agent file
-- **User-added:** Section only in agent file, preserved
-
-**Example merge:**
-
-```markdown
-# AGENTS.md (edited by user)
-
-## Testing
-
-Run tests before committing.
-
-## My workflow notes
-
-Personal notes here.
-
-# .cursor/rules/aligntrue.mdc (from IR)
-
-## Testing
-
-Run all tests before committing.
-
-## Security
-
-Validate all input.
-```
-
-**After sync:**
-
-- "Testing" section updated with IR content
-- "My Workflow Notes" preserved as user-added section
-- "Security" section added from IR
-- Result: All 3 sections in both files
-
-### Conflict resolution
-
-**Last-write-wins strategy:**
-
-When same section edited in multiple agent files:
-
-- Files sorted by modification time (oldest first)
-- Newest version wins
-- Warning logged for conflicts
-
-**Example:**
-
-```
-⚠ Section "Testing" edited in multiple files: AGENTS.md, .cursor/rules/aligntrue.mdc
-  Using version from .cursor/rules/aligntrue.mdc (most recent)
-```
-
-**Team-managed sections:**
-
-Changes to team-managed sections trigger warnings:
-
-```
-⚠ Team-managed section "Security" was modified
-  Reverting to team version
-  To keep your changes, rename the section or submit a PR
-```
 
 ### Non-interactive mode
 
@@ -1379,7 +1103,6 @@ $ echo $?
 | Setting            | Default         | Actual Behavior                             |
 | ------------------ | --------------- | ------------------------------------------- |
 | `mode`             | `solo`          | No lockfile, no team features               |
-| `sync.two_way`     | `true`          | Detect and merge agent file edits           |
 | `lockfile.mode`    | (N/A solo)      | Soft (team mode) - warn on drift            |
 | Conflict handling  | Last-write-wins | Most recent file's version used, no prompts |
 | Prompts            | None            | All merges automatic                        |
@@ -1412,10 +1135,6 @@ A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for schedule
 
 ---
 
-## Advanced: Experimental decentralized mode
-
-For experimental multi-source editing with two-way sync between multiple edit sources, see [Experimental Features](/docs/04-reference/experimental). This is an unsupported feature for advanced users only.
-
 ## See also
 
 - [Choosing Your Edit Source](/docs/01-guides/00-edit-source) - For practical setup and workflow examples
@@ -1425,4 +1144,3 @@ For experimental multi-source editing with two-way sync between multiple edit so
 - [Git Sources Guide](/docs/04-reference/git-sources) - Pull rules from repositories
 - [Troubleshooting](/docs/05-troubleshooting) - Common sync issues
 - [Extending AlignTrue](/docs/06-contributing/adding-exporters) - Create custom exporters
-- [Experimental Features](/docs/04-reference/experimental) - Advanced experimental features

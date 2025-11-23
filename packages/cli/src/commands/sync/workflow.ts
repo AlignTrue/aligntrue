@@ -2,14 +2,13 @@
  * Sync workflow execution - handles backup, two-way sync, and sync execution
  */
 
-import { existsSync, unlinkSync, writeFileSync } from "fs";
+import { existsSync, unlinkSync } from "fs";
 import { join, resolve as resolvePath } from "path";
 import * as clack from "@clack/prompts";
-import { BackupManager, getAlignTruePaths } from "@aligntrue/core";
+import { BackupManager } from "@aligntrue/core";
 import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
-import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 import { initializePrompts } from "../../utils/prompts.js";
 
 /**
@@ -99,33 +98,8 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 2: Two-way sync - detect and merge agent file edits
-  if (
-    !options.acceptAgent &&
-    !options.skipTwoWayDetection &&
-    config.sync?.two_way !== false
-  ) {
-    if (!options.quiet && options.verbose) {
-      clack.log.info(
-        `Two-way sync enabled (two_way=${String(config.sync?.two_way)})`,
-      );
-    }
-
-    // We pass spinner control functions to handleTwoWaySync but it manages its own spinner lifecycle
-    // Ideally we should refactor it to use the passed control functions, but for now
-    // we'll just let it be since it's a separate function scope.
-    // However, we need to make sure it doesn't conflict with our spinnerActive state.
-    // Since it's awaited, it should be fine as long as we don't have an active spinner when calling it.
-    if (spinnerActive) {
-      stopSpinner();
-    }
-
-    // We need to pass the spinner tracking mechanism to handleTwoWaySync or reimplement it there.
-    // For now, let's wrap the spinner calls in handleTwoWaySync to use our tracking if possible,
-    // or just ensure we are clean before calling it.
-    await handleTwoWaySync(context, options);
-    await reapplyPackSources(context, options);
-  }
+  // Step 2: Two-way sync (REMOVED - see edit_source migration)
+  // Edit source detection and merging now happens in handleAgentDetectionAndOnboarding (Step 4 of context builder)
 
   // Step 3: Execute sync operation
   const syncOptions: {
@@ -319,191 +293,4 @@ export async function executeSyncWorkflow(
   clearPromptHandler();
 
   return result;
-}
-
-/**
- * Reapply pack sources after two-way sync to ensure overlays remain.
- */
-async function reapplyPackSources(
-  context: SyncContext,
-  options: SyncOptions,
-): Promise<void> {
-  const sourceCount = context.config.sources?.length ?? 0;
-  const mergedSourceCount = context.bundleResult.sources.length;
-
-  if (options.verbose) {
-    clack.log.info(
-      `Pack source summary: config=${sourceCount}, merged=${mergedSourceCount}`,
-    );
-  }
-
-  if (sourceCount <= 1 && mergedSourceCount <= 1) {
-    return;
-  }
-
-  if (options.verbose) {
-    clack.log.info("Reapplying pack sources after agent edits");
-  }
-
-  const merged = await resolveAndMergeSources(context.config, {
-    cwd: context.cwd,
-    offlineMode: options.offline || options.skipUpdateCheck,
-    forceRefresh: options.forceRefresh,
-    warnConflicts: true,
-  });
-
-  const yaml = await import("yaml");
-  const bundleYaml = yaml.stringify(merged.pack);
-  const paths = getAlignTruePaths(context.cwd);
-
-  const targetPath =
-    context.config.sources?.[0]?.type === "local"
-      ? resolvePath(context.cwd, context.config.sources[0].path || paths.rules)
-      : resolvePath(context.cwd, paths.rules);
-
-  writeFileSync(targetPath, bundleYaml, "utf-8");
-
-  context.bundleResult = merged;
-  context.absoluteSourcePath = targetPath;
-}
-
-/**
- * Handle two-way sync - merge edits from edit_source files into IR
- * Works in both centralized (default) and decentralized modes
- * In centralized mode: only reads from edit_source files
- * In decentralized mode: reads from any agent file
- */
-async function handleTwoWaySync(
-  context: SyncContext,
-  options: SyncOptions,
-): Promise<void> {
-  const { cwd, config, configPath, engine, spinner } = context;
-
-  // Note: In centralized mode, detectEditedFiles only returns files matching edit_source
-  // In decentralized mode (centralized: false), it can return files from any agent
-  // So we can run this in both modes - the filtering happens in detectEditedFiles
-
-  // Local spinner tracking for this function since it might be called independently
-  let spinnerActive = false;
-  const stopSpinner = (message?: string): void => {
-    if (spinnerActive) {
-      spinner.stop(message);
-      spinnerActive = false;
-    }
-  };
-
-  try {
-    // Get last sync timestamp for accurate change detection
-    const { getLastSyncTimestamp } = await import(
-      "@aligntrue/core/sync/last-sync-tracker"
-    );
-    const lastSyncTime = getLastSyncTimestamp(cwd);
-    const lastSyncDate = lastSyncTime ? new Date(lastSyncTime) : undefined;
-
-    // Log detection attempt in verbose mode (if not quiet)
-    if (!options.quiet && options.verbose) {
-      clack.log.info(
-        `Checking for edits since: ${lastSyncDate?.toISOString() || "never"}`,
-      );
-    }
-
-    // Dynamic import at runtime
-    const multiFileParser = "@aligntrue/core/sync/multi-file-parser";
-    // @ts-ignore - Dynamic import resolved at runtime
-    const { detectEditedFiles } = await import(multiFileParser);
-
-    // Detect edited agent files with lastSyncDate
-    const detectionResult = await detectEditedFiles(cwd, config, lastSyncDate);
-    const editedFiles = detectionResult.files || [];
-    const editSourceWarnings = detectionResult.warnings || [];
-
-    // Display edit_source warnings if any
-    if (editSourceWarnings.length > 0) {
-      for (const warning of editSourceWarnings) {
-        clack.log.warn(
-          `⚠ ${warning.filePath} was edited but is not in edit_source`,
-        );
-        clack.log.info(`  ${warning.reason}`);
-        clack.log.info(`  To enable editing: ${warning.suggestedFix}`);
-      }
-    }
-
-    if (editedFiles.length > 0) {
-      // Phase 1: Agent edits → IR
-      if (!options.quiet && options.verbose) {
-        clack.log.info("Phase 1: Merging agent file edits into IR");
-      }
-
-      if (!options.quiet) {
-        spinner.start("Merging changes from edited files");
-        spinnerActive = true;
-      }
-
-      if (!options.quiet && options.verbose) {
-        clack.log.info(
-          `Detected ${editedFiles.length} edited file${editedFiles.length !== 1 ? "s" : ""}:`,
-        );
-        editedFiles.forEach((f: { path: string; sections: unknown[] }) => {
-          clack.log.info(`  - ${f.path}: ${f.sections.length} section(s)`);
-        });
-      }
-
-      // Run two-way sync via engine
-      const twoWayResult = await engine.syncFromMultipleAgents(configPath, {
-        dryRun: options.dryRun,
-        force: options.force,
-      });
-
-      if (!options.quiet) {
-        stopSpinner("Changes merged");
-
-        if (twoWayResult.warnings && twoWayResult.warnings.length > 0) {
-          twoWayResult.warnings.forEach((warning) => {
-            clack.log.warn(`⚠ ${warning}`);
-          });
-        }
-
-        if (options.verbose) {
-          clack.log.success("Merged changes from agent files to IR");
-        }
-      }
-    } else {
-      // No edits detected - this is normal when IR is the source of truth
-      if (!options.quiet && options.verbose) {
-        clack.log.info("Phase 1: No agent file edits detected since last sync");
-        clack.log.info("  → IR is already up to date");
-      }
-    }
-  } catch (err) {
-    stopSpinner(); // Ensure spinner is stopped on error
-
-    const errorMessage = err instanceof Error ? err.message : String(err);
-
-    // Check if this is an IR validation error
-    const isValidationError = errorMessage.includes("Invalid IR");
-
-    if (isValidationError && !options.forceInvalidIR) {
-      // Validation errors should fail the sync unless --force-invalid-ir is used
-      clack.log.error(`✗ IR validation failed`);
-      clack.log.error(`\n${errorMessage}\n`);
-      clack.log.info(
-        "Note: .aligntrue/.rules.yaml is auto-generated. Edit AGENTS.md or agent files instead.",
-      );
-      clack.log.info(
-        "To bypass validation (not recommended), use: aligntrue sync --force-invalid-ir",
-      );
-      process.exit(1);
-    }
-
-    // For other errors or when forced, warn and continue
-    if (options.forceInvalidIR && isValidationError) {
-      clack.log.warn(
-        `⚠ IR validation failed but continuing due to --force-invalid-ir flag`,
-      );
-      clack.log.warn(`  ${errorMessage}`);
-    } else {
-      clack.log.warn(`⚠ Two-way sync failed: ${errorMessage}`);
-    }
-    clack.log.info("Continuing with one-way sync...");
-  }
 }
