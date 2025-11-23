@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Confusing pluralization in init completion message - Message now uses singular "agent" when only 1 exporter is configured, plural "agents" for multiple exporters
 - Duplicate message when switching edit source - Removed redundant "Edit source updated" message that appeared before merge strategy prompt during `aligntrue sync`
 - Confusing UI in merge strategy prompt - Simplified option labels and hints to eliminate double parentheses and improve clarity
 - Silent error handling in drift detection - Added debug logging for allow list parsing failures

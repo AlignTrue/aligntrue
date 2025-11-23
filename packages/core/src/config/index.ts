@@ -198,7 +198,12 @@ interface SchemaValidationResult {
 
 // Load JSON Schema and initialize Ajv
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const schemaPath = resolve(__dirname, "../../schema/config.schema.json");
+// Schema path works for both source (src/config -> ../../schema) and dist (dist/config -> ../schema)
+// Try dist path first (runtime), fall back to source path (tests)
+let schemaPath = resolve(__dirname, "../schema/config.schema.json");
+if (!existsSync(schemaPath)) {
+  schemaPath = resolve(__dirname, "../../schema/config.schema.json");
+}
 
 // Safe: Internal schema file path, resolved from __dirname at build time (not user input)
 const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
