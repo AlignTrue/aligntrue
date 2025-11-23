@@ -241,6 +241,48 @@ When `mode: team` is enabled in config:
 
 ---
 
+## `aligntrue watch`
+
+Watch agent files and automatically sync changes when you save.
+
+**Usage:**
+
+```bash
+aligntrue watch [options]
+```
+
+**Flags:**
+
+| Flag              | Description                          | Default |
+| ----------------- | ------------------------------------ | ------- |
+| `--debounce <ms>` | Delay in milliseconds before syncing | `500`   |
+| `--help`, `-h`    | Show help                            | -       |
+
+**What it does:**
+
+1. Monitors configured agent files (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`)
+2. Detects file changes and new file additions
+3. Trigger `aligntrue sync` automatically
+4. Updates internal IR and other agents in real-time
+
+**Requirements:**
+
+- **Interactive Terminal (TTY):** Watch mode requires an interactive terminal session to run. It will not work in background processes or non-interactive CI environments.
+
+**Examples:**
+
+```bash
+# Start watching with default settings
+aligntrue watch
+
+# Watch with longer debounce (1 second)
+aligntrue watch --debounce 1000
+```
+
+**See also:** [File Watcher Setup](/docs/04-reference/file-watcher-setup) for more details.
+
+---
+
 ## `aligntrue check`
 
 Validate rules and lockfile without syncing. Great for CI/CD pipelines.

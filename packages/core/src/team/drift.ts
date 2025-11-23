@@ -420,7 +420,10 @@ export function detectLocalOverlayDrift(
  * High-level drift detection for CLI usage
  * Takes config object and handles file paths internally
  */
-export async function detectDriftForConfig(config: unknown): Promise<{
+export async function detectDriftForConfig(
+  config: unknown,
+  ignoreLockfileDrift: boolean = false,
+): Promise<{
   driftDetected: boolean;
   mode: string;
   lockfilePath: string;
@@ -472,7 +475,12 @@ export async function detectDriftForConfig(config: unknown): Promise<{
       // Unable to compute bundle hash; currentBundleHash remains undefined.
     }
 
-    const result = await detectDrift(lockfilePath, basePath, currentBundleHash);
+    const result = await detectDrift(
+      lockfilePath,
+      basePath,
+      currentBundleHash,
+      ignoreLockfileDrift,
+    );
 
     return Promise.resolve({
       driftDetected: result.has_drift,
@@ -525,6 +533,7 @@ export async function detectDrift(
   lockfilePath: string,
   basePath: string = ".",
   currentBundleHash?: string,
+  ignoreLockfileDrift: boolean = false,
 ): Promise<DriftResult> {
   // Check if lockfile exists
   if (!existsSync(lockfilePath)) {
@@ -588,7 +597,8 @@ export async function detectDrift(
   findings.push(...detectLocalOverlayDrift(lockfile, basePath));
 
   // New drift detection types
-  if (currentBundleHash) {
+  // Filter lockfile drift if ignoreLockfileDrift is true
+  if (currentBundleHash && !ignoreLockfileDrift) {
     findings.push(...detectLockfileDrift(lockfile, currentBundleHash));
   }
 
