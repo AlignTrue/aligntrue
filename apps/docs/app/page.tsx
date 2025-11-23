@@ -738,6 +738,7 @@ export default function HomePage() {
                     style={{
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "center",
                       gap: "1rem",
                       marginBottom: "1.5rem",
                     }}
@@ -828,6 +829,7 @@ export default function HomePage() {
                     style={{
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "center",
                       gap: "1rem",
                       marginBottom: "1.5rem",
                     }}
@@ -856,7 +858,7 @@ export default function HomePage() {
                         margin: 0,
                       }}
                     >
-                      Initialize
+                      Init & Sync
                     </h3>
                   </div>
                   <div
