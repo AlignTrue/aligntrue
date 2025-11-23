@@ -516,7 +516,9 @@ scopes:
 `,
     );
 
-    await expect(loadConfig(configPath)).rejects.toThrow(/path/);
+    await expect(loadConfig(configPath)).rejects.toThrow(
+      /parent directory traversal/,
+    );
   });
 
   it("path traversal checks still work", async () => {

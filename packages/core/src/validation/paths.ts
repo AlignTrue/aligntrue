@@ -23,18 +23,22 @@ export function validateRelativePath(
   // Check for absolute paths
   // Unix absolute or Windows drive letter
   if (path.startsWith("/") || /^[A-Z]:[/\\]/i.test(path)) {
-    return invalid(`${label} must be relative, not absolute.`, path, {
+    return invalid(`absolute paths not allowed`, path, {
       hint: "Remove leading slash or drive letter.",
     });
   }
 
   // Check for parent directory traversal
-  if (path.includes("../") || path.includes("..\\")) {
-    return invalid(
-      `${label} cannot contain parent directory traversal (../).`,
-      path,
-      { hint: "Paths must remain within the project root." },
-    );
+  // Match: ../, ..\\, bare .., or trailing .. (after normalization)
+  if (
+    path.includes("../") ||
+    path.includes("..\\") ||
+    path === ".." ||
+    path.endsWith("/..")
+  ) {
+    return invalid(`parent directory traversal`, path, {
+      hint: "Paths must remain within the project root.",
+    });
   }
 
   return valid();
