@@ -48,20 +48,26 @@ describe("Golden Repository Workflows", () => {
     const projectDir = join(testProjectContext.projectDir, "fresh-project");
     await fs.mkdir(projectDir, { recursive: true });
 
-    // Initialize fresh AlignTrue project
-    execSync(
-      `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents --project-id test-project --yes`,
-      {
+    try {
+      // Initialize fresh AlignTrue project
+      execSync(
+        `node ${join(REPO_ROOT, "packages/cli/dist/index.js")} init --exporters cursor,agents --project-id test-project --yes`,
+        {
+          cwd: projectDir,
+          stdio: "pipe",
+        },
+      );
+
+      // Run sync
+      execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
         cwd: projectDir,
         stdio: "pipe",
-      },
-    );
-
-    // Run sync
-    execSync(`node ${join(REPO_ROOT, "packages/cli/dist/index.js")} sync`, {
-      cwd: projectDir,
-      stdio: "pipe",
-    });
+      });
+    } catch (error) {
+      // Log error details for debugging
+      console.error("Init/Sync error:", error);
+      throw error;
+    }
 
     // Verify outputs exist
     // Init creates 5 starter rules, sync exports them
@@ -69,6 +75,11 @@ describe("Golden Repository Workflows", () => {
     // NOTE: In fresh init with default settings, the edit source is AGENTS.md (single file).
     // Since AGENTS.md is the edit source, it is NOT overwritten with read-only markers.
     // The .cursor/rules/aligntrue.mdc file IS generated as a read-only export.
+
+    // List directories for debugging
+    const filesList = await fs.readdir(projectDir, { recursive: true });
+    console.log("Project files:", filesList);
+
     const syncedCursorExists = await fs
       .access(join(projectDir, ".cursor/rules/aligntrue.mdc"))
       .then(() => true)
