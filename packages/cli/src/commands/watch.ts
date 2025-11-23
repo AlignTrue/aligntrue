@@ -156,6 +156,9 @@ export async function watch(args: string[]): Promise<void> {
   });
 
   // Detect new files added
+  // Drift log is ONLY created for NEW untracked files detected during watch mode
+  // The log is persisted at .aligntrue/.drift-log.json
+  // This allows pending imports to persist across watch sessions until handled by 'aligntrue sync'
   watcher.on("add", (path: string) => {
     const relativePath = path.replace(cwd + "/", "");
 

@@ -1,0 +1,13 @@
+version: "1"
+mode: team
+modules:
+  lockfile: true
+  bundle: true
+managed:
+  sections:
+    - "Security Standards"
+    - "Code Review Checklist"
+  source_url: "https://github.com/company/rules"
+exporters:
+  - agents-md
+  - cursor

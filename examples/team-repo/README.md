@@ -43,6 +43,13 @@ aln drift --json
 aln drift --gates
 ```
 
+### Testing team-managed sections
+
+Team-managed sections let teams control specific sections while allowing personal additions.
+
+See `config-with-managed-sections.yaml` for configuration example.
+Exported files will show `[TEAM-MANAGED]` markers on specified sections.
+
 ## Team workflows
 
 ### Approve new rule source
