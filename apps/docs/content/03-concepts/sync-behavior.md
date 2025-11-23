@@ -116,7 +116,24 @@ aligntrue sync                     # Changes flow: Cursor files → IR → all a
 
 **Result:** Changes synced to IR and exported to all other agents (AGENTS.md, etc.).
 
-### 3. Team mode with soft lockfile
+### 3. Switching edit sources
+
+When switching edit source (e.g. `AGENTS.md` → Cursor), AlignTrue treats the **new source as the source of truth**.
+
+```bash
+# Current: AGENTS.md
+# New: Cursor files
+aligntrue config set sync.edit_source ".cursor/rules/*.mdc"
+aligntrue sync
+```
+
+**Result:**
+
+1. Backup created for old source (`AGENTS.md`)
+2. New source (`Cursor`) replaces IR content completely
+3. Sync runs immediately, updating all files (including overwriting `AGENTS.md` with read-only version)
+
+### 4. Team mode with soft lockfile
 
 ```bash
 # Config: mode: team, edit_source: "AGENTS.md", lockfile.mode: soft
@@ -130,44 +147,6 @@ aligntrue sync         # Changes validated against lockfile
 - Bundle hash computed and checked
 - If hash not approved: warning shown, sync continues (soft mode)
 - Team lead approves later via `aligntrue team approve --current`
-
-### 4. Team mode with strict lockfile
-
-```bash
-# Config: mode: team, lockfile.mode: strict
-aligntrue sync
-```
-
-**Flow:**
-
-- Changes merge to IR
-- Bundle hash computed and checked
-- If hash not approved: ❌ Sync blocked, changes not exported
-- Team lead must approve before sync can complete
-
-**Flow:**
-
-```
-Step 1-2: Detect and merge
-
-Step 3: Compute bundle hash
-  sha256:def456...
-
-Step 4: Check allow list
-  ❌ Not found (blocking)
-
-Step 5a: Interactive terminal (TTY)
-  Prompt: "Approve this bundle and continue?"
-  • Yes → Add to allow list, export
-  • No → Abort, nothing written
-
-Step 5b: Non-interactive (CI, pipe, redirect)
-  Error and exit code 1
-  Message: "Bundle hash not in allow list (strict mode)"
-  Solution shown: "Run: aligntrue team approve --current"
-```
-
-**Result:** Nothing happens until approved (team lead or engineer via `--force`).
 
 ## Technical details: edit detection and merging
 
@@ -1104,6 +1083,7 @@ $ echo $?
 | ------------------ | --------------- | ------------------------------------------- |
 | `mode`             | `solo`          | No lockfile, no team features               |
 | `lockfile.mode`    | (N/A solo)      | Soft (team mode) - warn on drift            |
+| `lockfile.mode`    | (N/A solo)      | Soft (team mode) - warn on drift            |
 | Conflict handling  | Last-write-wins | Most recent file's version used, no prompts |
 | Prompts            | None            | All merges automatic                        |
 | Timestamp tracking | None            | No `.last-sync` file used                   |
@@ -1112,25 +1092,25 @@ $ echo $?
 
 ## Common questions
 
-**Q: Can I have Cursor and AGENTS.md in sync?**  
+**Q: Can I have Cursor and AGENTS.md in sync?**
 A: Yes, by default. Edit either one, run `aligntrue sync`, both stay synchronized.
 
-**Q: What if I edit both files before syncing?**  
+**Q: What if I edit both files before syncing?**
 A: Last-write-wins by mtime. Whichever you edited more recently is used.
 
-**Q: Can I prevent edits to certain files?**  
+**Q: Can I prevent edits to certain files?**
 A: Not at the file level. In team mode, you can use lockfile validation to block unapproved changes.
 
-**Q: What happens if both files have the same section but I edited different sections in each?**  
+**Q: What happens if both files have the same section but I edited different sections in each?**
 A: Sections are independent. Both are kept unless there's a heading conflict. If same heading, newer file wins.
 
-**Q: Is there a `.last-sync` file I should commit?**  
+**Q: Is there a `.last-sync` file I should commit?**
 A: No. That file is not used in the current implementation.
 
-**Q: What does `sync.primary_agent` do?**  
+**Q: What does `sync.primary_agent` do?**
 A: It's a configuration field but not implemented. Don't use it.
 
-**Q: Can I set up automatic syncing?**  
+**Q: Can I set up automatic syncing?**
 A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for scheduled syncs.
 
 ---

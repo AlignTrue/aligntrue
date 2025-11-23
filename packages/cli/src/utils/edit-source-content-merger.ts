@@ -1,12 +1,15 @@
 /**
  * Handle content merging when edit source changes during sync
- * Supports three strategies: keep-both, keep-new, keep-existing
+ *
+ * Simplified Strategy (v2): "New Source As Truth"
+ * - Always replace IR with new source content
+ * - Always backup old source files to overwritten-rules/
+ * - No prompt, no complex merge logic
  */
 
 import { readFileSync, existsSync, writeFileSync } from "fs";
 import { globSync } from "glob";
 import { join } from "path";
-import type { EditSourceMergeStrategy } from "./edit-source-merge-strategy.js";
 import { backupFileToOverwrittenRules } from "./extract-rules.js";
 
 function debugLog(msg: string) {
@@ -15,16 +18,13 @@ function debugLog(msg: string) {
   } catch {}
 }
 
-export interface MergeResult {
+export interface EditSourceSwitchResult {
   /**
-   * Content to merge into IR
-   * - keep-both: combined old and new
-   * - keep-new: new content only
-   * - keep-existing: existing IR content (new backed up)
+   * New content to replace IR with
    */
-  contentToMerge: string;
+  content: string;
   /**
-   * Files that were backed up
+   * Files that were backed up from old source
    */
   backedUpFiles: string[];
   /**
@@ -34,84 +34,47 @@ export interface MergeResult {
 }
 
 /**
- * Merge content from old and new edit sources based on strategy
+ * Prepare for edit source switch:
+ * 1. Read content from new edit source (to become new IR)
+ * 2. Backup files from old edit source (for safety)
  *
  * @param oldEditSource - Previous edit source pattern
  * @param newEditSource - New edit source pattern
- * @param currentIRContent - Current IR content (if any)
  * @param cwd - Working directory
- * @param strategy - Merge strategy (keep-both, keep-new, keep-existing)
- * @returns Merge result with content and summary
+ * @returns Result with new content and backup info
  */
-export async function mergeEditSourceContent(
+export async function prepareEditSourceSwitch(
   oldEditSource: string | string[] | undefined,
   newEditSource: string,
-  currentIRContent: string | undefined,
   cwd: string,
-  strategy: EditSourceMergeStrategy,
-): Promise<MergeResult> {
+): Promise<EditSourceSwitchResult> {
   const backedUpFiles: string[] = [];
 
-  // Read content from old edit source
-  debugLog(`[DEBUG] Reading old edit source: ${oldEditSource} in ${cwd}`);
-  const oldContent = readEditSourceContent(oldEditSource, cwd);
-  debugLog(`[DEBUG] Old content length: ${oldContent.length}`);
+  // 1. Backup old source files
+  if (oldEditSource) {
+    debugLog(`[DEBUG] Backing up old edit source: ${oldEditSource} in ${cwd}`);
+    const oldFiles = getEditSourceFiles(oldEditSource, cwd);
 
-  // Read content from new edit source
+    for (const file of oldFiles) {
+      const fullPath = join(cwd, file);
+      if (existsSync(fullPath)) {
+        const result = backupFileToOverwrittenRules(fullPath, cwd);
+        if (result.backed_up) {
+          backedUpFiles.push(file);
+        }
+      }
+    }
+  }
+
+  // 2. Read content from new edit source
   debugLog(`[DEBUG] Reading new edit source: ${newEditSource} in ${cwd}`);
   const newContent = readEditSourceContent(newEditSource, cwd);
   debugLog(`[DEBUG] New content length: ${newContent.length}`);
 
-  let contentToMerge = "";
-  let summary = "";
-
-  switch (strategy) {
-    case "keep-both": {
-      // Merge old and new content
-      contentToMerge = mergeContents(oldContent, newContent);
-      summary = "Merged old and new rule content";
-      break;
-    }
-
-    case "keep-new": {
-      // Keep new content, backup old files
-      contentToMerge = newContent;
-      if (oldEditSource) {
-        const oldFiles = getEditSourceFiles(oldEditSource, cwd);
-        for (const file of oldFiles) {
-          const fullPath = join(cwd, file);
-          if (existsSync(fullPath)) {
-            const result = backupFileToOverwrittenRules(fullPath, cwd);
-            if (result.backed_up) {
-              backedUpFiles.push(file);
-            }
-          }
-        }
-      }
-      summary = `Replaced with new content (backed up ${backedUpFiles.length} old file(s))`;
-      break;
-    }
-
-    case "keep-existing": {
-      // Keep existing IR content, backup new files
-      contentToMerge = currentIRContent || "";
-      const newFiles = getEditSourceFiles(newEditSource, cwd);
-      for (const file of newFiles) {
-        const fullPath = join(cwd, file);
-        if (existsSync(fullPath)) {
-          const result = backupFileToOverwrittenRules(fullPath, cwd);
-          if (result.backed_up) {
-            backedUpFiles.push(file);
-          }
-        }
-      }
-      summary = `Preserved existing rules (backed up ${backedUpFiles.length} new file(s))`;
-      break;
-    }
-  }
+  const summary = `Switched to new source (backed up ${backedUpFiles.length} old file(s))`;
 
   return {
-    contentToMerge,
+    content: newContent,
     backedUpFiles,
     summary,
   };
@@ -137,9 +100,10 @@ function readEditSourceContent(
   );
 
   for (const pattern of patterns) {
-    // Use absolute path for glob to be safe? No, pattern is relative.
+    // Use globSync to find files matching pattern
     const files = globSync(pattern, { cwd });
     debugLog(`[DEBUG] globSync('${pattern}') found: ${JSON.stringify(files)}`);
+
     for (const file of files) {
       const fullPath = join(cwd, file);
       if (existsSync(fullPath)) {
@@ -175,17 +139,4 @@ function getEditSourceFiles(
   }
 
   return allFiles;
-}
-
-/**
- * Simple merge of two content strings
- * Combines both with a separator, avoiding duplicates
- */
-function mergeContents(oldContent: string, newContent: string): string {
-  if (!oldContent) return newContent;
-  if (!newContent) return oldContent;
-
-  // Simple concat with separator - more sophisticated merging
-  // would happen at IR level
-  return `${oldContent}\n\n${newContent}`;
 }
