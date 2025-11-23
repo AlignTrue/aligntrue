@@ -103,14 +103,9 @@ export class CursorExporter extends ExporterBase {
       );
 
       const editSource = config?.sync?.edit_source;
-      const isDecentralized = config?.sync?.centralized === false;
 
       // Use shared utility to check if file matches edit_source
-      const isEditSource = matchesEditSource(
-        relativeOutputPath,
-        editSource,
-        isDecentralized,
-      );
+      const isEditSource = matchesEditSource(relativeOutputPath, editSource);
 
       // Only merge if file is in edit_source (to preserve user-added sections)
       // For read-only files, overwrite with IR content only (don't preserve unauthorized edits)

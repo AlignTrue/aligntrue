@@ -259,9 +259,7 @@ async function showSummary(configPath: string): Promise<void> {
 
     console.log("Current configuration:");
     console.log(`  Mode: ${config.mode || "solo"}`);
-    console.log(
-      `  Centralized rule management: ${config.sync?.centralized !== false ? "enabled" : "disabled"}`,
-    );
+    console.log(`  Rule management: centralized`);
     console.log(`  Merge strategy: last-write-wins (automatic)`);
     console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
 

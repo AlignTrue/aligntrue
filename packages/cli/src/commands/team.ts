@@ -427,9 +427,6 @@ async function teamEnable(
       `  Lockfile: enabled (${config.lockfile?.mode || "soft"} mode)`,
     );
     console.log(`  Bundle: enabled`);
-    console.log(
-      `  Centralized rule management: ${config.sync?.centralized !== false ? "enabled" : "disabled"}`,
-    );
     if (config.managed?.sections && config.managed.sections.length > 0) {
       console.log(`  Team-managed sections: ${config.managed.sections.length}`);
       config.managed.sections.forEach((s) => console.log(`    - ${s}`));
@@ -637,9 +634,6 @@ async function teamDisable(
     console.log("\n✓ Team mode disabled\n");
     console.log("Current configuration:");
     console.log(`  Mode: solo`);
-    console.log(
-      `  Centralized rule management: ${config.sync?.centralized !== false ? "enabled" : "disabled"}`,
-    );
     console.log(
       `  You can edit: ${Array.isArray(config.sync?.edit_source) ? config.sync.edit_source.join(", ") : config.sync?.edit_source || "AGENTS.md"}`,
     );

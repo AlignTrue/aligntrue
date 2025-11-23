@@ -39,9 +39,6 @@ export function normalizeEditSources(
  */
 export function formatEditSourceLabel(raw: string): string {
   // Handle special values
-  if (raw === SPECIAL_EDIT_SOURCES.ANY_AGENT_FILE) {
-    return "Any agent file (experimental decentralized rule management)";
-  }
   if (raw === SPECIAL_EDIT_SOURCES.ALIGNTRUE_RULES) {
     return ".aligntrue/rules/*.md (multi-file organization)";
   }
