@@ -101,6 +101,11 @@ export interface ExporterPlugin {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult>;
+  /**
+   * Optional reset method called before a new sync operation
+   * Use this to clear internal state like warnings or counters
+   */
+  resetState?(): void;
 }
 
 /**

@@ -1,5 +1,16 @@
 /**
  * Configuration validation and defaults
+ *
+ * This module handles all configuration validation:
+ * 1. JSON Schema validation (via Ajv)
+ * 2. Default value application (applyDefaults)
+ * 3. Structural and semantic validation (validateConfig)
+ *
+ * Future refactoring:
+ * If this file exceeds 1000 lines, consider splitting into:
+ * - config-schema.ts: Schema validation and Ajv setup
+ * - config-defaults.ts: Default application logic
+ * - config-validation.ts: Structural/semantic validation
  */
 
 import { readFileSync, existsSync } from "fs";

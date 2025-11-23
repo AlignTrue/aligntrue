@@ -14,9 +14,9 @@ import type {
   ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
-import type { AuditEntry } from "./engine.js";
+import type { AuditEntry, OperationResult } from "./engine.js";
 
-export interface ExporterExecutionResult {
+export interface ExporterExecutionResult extends OperationResult {
   written: string[];
   warnings: string[];
   auditTrail: AuditEntry[];
@@ -46,12 +46,7 @@ export async function executeExporters(
 
   // Reset state on all exporters
   for (const exporter of exporters) {
-    if (
-      typeof (exporter as unknown as { resetState?: unknown }).resetState ===
-      "function"
-    ) {
-      (exporter as unknown as { resetState: () => void }).resetState();
-    }
+    exporter.resetState?.();
   }
 
   // For each scope, merge rules and call exporters
