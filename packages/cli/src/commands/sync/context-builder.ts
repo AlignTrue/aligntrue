@@ -749,9 +749,21 @@ async function enableExporters(
   agents: string[],
   options: SyncOptions,
 ): Promise<void> {
-  const { backupFileToOverwrittenRules } = await import(
+  const { extractAndSaveRules, backupFileToOverwrittenRules } = await import(
     "../../utils/extract-rules.js"
   );
+
+  // Load current IR for deduplication if available
+  let currentIR;
+  try {
+    const { loadIR } = await import("@aligntrue/core");
+    const irPath = join(cwd, ".aligntrue/.rules.yaml");
+    if (existsSync(irPath)) {
+      currentIR = await loadIR(irPath);
+    }
+  } catch {
+    // Ignore if IR loading fails
+  }
 
   // Filter unique and not already present
   const toAdd = agents.filter((a) => !(config.exporters || []).includes(a));
@@ -772,6 +784,30 @@ async function enableExporters(
         const fullPath = join(cwd, agentFile);
         const stats = statSync(fullPath);
         if (stats.isFile()) {
+          // Extract content to extracted-rules.md before backing up
+          // Only if content extraction enabled (implicit default)
+          try {
+            const extractionResult = await extractAndSaveRules(
+              fullPath,
+              undefined, // Auto-detect format
+              cwd,
+              currentIR,
+            );
+
+            if (extractionResult.extracted && options.verbose) {
+              clack.log.info(
+                `Extracted ${extractionResult.sectionCount} rule section(s) from ${agent} to extracted-rules.md`,
+              );
+            }
+          } catch (extractErr) {
+            // Log but don't block enablement
+            if (options.verbose) {
+              clack.log.warn(
+                `Failed to extract rules from ${agentFile}: ${extractErr instanceof Error ? extractErr.message : String(extractErr)}`,
+              );
+            }
+          }
+
           const backupResult = backupFileToOverwrittenRules(fullPath, cwd);
           if (backupResult.backed_up && options.verbose) {
             clack.log.info(
