@@ -500,6 +500,27 @@ async function configSet(
 
     clack.log.success(`Set ${key} = ${JSON.stringify(parsedValue)}`);
 
+    // Check for mode/lockfile compatibility warnings (P3 enhancement)
+    if (key === "mode") {
+      const modules = config["modules"] as { lockfile?: boolean } | undefined;
+      const lockfileEnabled = modules?.lockfile === true;
+
+      if (value === "solo" && lockfileEnabled) {
+        clack.log.warn("⚠️  Warning: Solo mode with lockfile enabled");
+        clack.log.info("   Lockfiles are typically only needed in team mode.");
+        clack.log.info(
+          "   To disable: aligntrue config set modules.lockfile false",
+        );
+      }
+
+      if (value === "team" && !lockfileEnabled && !changingToTeam) {
+        // Note: changingToTeam already triggers auto-lockfile generation below, so skip warning in that case
+        clack.log.warn("⚠️  Warning: Team mode usually requires a lockfile");
+        clack.log.info("   We recommend enabling it for drift detection.");
+        clack.log.info("   To enable: aligntrue team enable (recommended)");
+      }
+    }
+
     // Auto-generate lockfile when switching to team mode
     if (changingToTeam) {
       const cwd = process.cwd();
