@@ -85,9 +85,7 @@ export async function buildSyncContext(
 
   const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
   if (!options.quiet) {
-    if (options.verbose) {
-      spinner.stop("Configuration loaded");
-    }
+    spinner.stop(options.verbose ? "Configuration loaded" : undefined);
   }
 
   const spinnerWithMessage = spinner as SpinnerLike & {
@@ -340,14 +338,14 @@ export async function buildSyncContext(
     }
 
     if (!options.quiet) {
-      if (options.verbose) {
-        spinner.stop(
-          `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`,
-        );
-        if (loadedCount > 0) {
-          const names = exporterNames.slice(0, loadedCount).join(", ");
-          clack.log.success(`Active: ${names}`);
-        }
+      spinner.stop(
+        options.verbose
+          ? `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`
+          : undefined,
+      );
+      if (options.verbose && loadedCount > 0) {
+        const names = exporterNames.slice(0, loadedCount).join(", ");
+        clack.log.success(`Active: ${names}`);
       }
     }
   } catch (_error) {
@@ -372,9 +370,7 @@ export async function buildSyncContext(
       // Section validation happens at parse time
     }
     if (!options.quiet) {
-      if (options.verbose) {
-        spinner.stop("Rules validated");
-      }
+      spinner.stop(options.verbose ? "Rules validated" : undefined);
     }
   } catch (_error) {
     if (!options.quiet) {

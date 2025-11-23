@@ -240,7 +240,7 @@ export class SyncEngine {
   ): Promise<SyncResult> {
     const warnings: string[] = [];
     const written: string[] = [];
-    let exportResults = new Map<string, ExportResult>();
+    let exportResults: Map<string, ExportResult>;
     const auditTrail: AuditEntry[] = [];
 
     try {
