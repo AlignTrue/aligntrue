@@ -1,5 +1,5 @@
 import { join } from "path";
-import { writeFileSync, readFileSync, utimesSync, statSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 // Correct import path for test helpers
 import {
@@ -8,11 +8,7 @@ import {
   cleanupTestDir,
 } from "../utils/integration-helpers.js";
 
-// Skip on Windows due to file timestamp precision issues
-const describeSkipWindows =
-  process.platform === "win32" ? describe.skip : describe;
-
-describeSkipWindows("Lockfile Drift", () => {
+describe("Lockfile Drift", () => {
   let testDir: string;
 
   beforeAll(async () => {
@@ -32,9 +28,6 @@ describeSkipWindows("Lockfile Drift", () => {
     // Initial sync to generate lockfile
     await runCli(["sync", "--yes"], { cwd: testDir });
 
-    // Wait to ensure file modification time is strictly greater than last sync time
-    await new Promise((r) => setTimeout(r, 2000));
-
     // 2. Verify no drift initially
     const driftResult1 = await runCli(["drift", "--gates"], { cwd: testDir });
     expect(driftResult1.exitCode).toBe(0);
@@ -48,19 +41,8 @@ describeSkipWindows("Lockfile Drift", () => {
       "utf-8",
     );
 
-    // Ensure file modification time is strictly greater than last sync time
-    // This prevents test flakiness due to filesystem timestamp resolution
-    const lastSyncPath = join(testDir, ".aligntrue", ".last-sync");
-    const lastSync = parseInt(readFileSync(lastSyncPath, "utf-8"), 10);
-    const stats = statSync(agentsPath);
-
-    if (stats.mtimeMs <= lastSync) {
-      const newTime = new Date(lastSync + 2000);
-      utimesSync(agentsPath, newTime, newTime);
-    }
-
     // 4. Verify drift detected (agent file modified)
-    // Note: drift command checks agent file vs IR drift in team mode
+    // Note: drift command checks agent file vs stored hash in team mode
     const driftResult2 = await runCli(["drift", "--gates"], { cwd: testDir });
     if (driftResult2.exitCode !== 2) {
       console.log(

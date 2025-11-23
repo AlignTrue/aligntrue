@@ -74,6 +74,28 @@ cd ../..
 aligntrue sync
 ```
 
+### Agent file drift
+
+**What it detects:** Manual edits to agent files (`AGENTS.md`, `.cursor/rules/*.mdc`) that haven't been synced back to the IR.
+
+**Common causes:**
+
+- Developer edited `AGENTS.md` directly but didn't run `aligntrue sync --accept-agent`
+- Copy/pasting new rules into agent files
+
+**How to fix:**
+
+```bash
+# If changes are intended (pull back to IR):
+aligntrue sync --accept-agent agents
+
+# If changes are accidental (overwrite with IR):
+aligntrue sync
+```
+
+**Mechanism:**
+Uses content hashing (SHA-256) to detect changes reliably across all platforms. Timestamps are not used.
+
 ### Severity remap drift
 
 **What it will detect:** Changes to `.aligntrue.team.yaml` severity remapping rules.
