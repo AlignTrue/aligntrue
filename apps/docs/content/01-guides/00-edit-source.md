@@ -198,7 +198,7 @@ sync:
 - Set `centralized: false` in config
 - `edit_source` must be an array
 
-**Warning:** This is experimental. See [Experimental Features](/docs/04-reference/experimental) for details and limitations.
+**Note:** Decentralized mode is no longer supported.
 
 ### Editing IR directly
 
