@@ -1,10 +1,14 @@
 import { globSync } from "glob";
 import { join } from "path";
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdtempSync, rmSync } from "fs";
+import { tmpdir } from "os";
 
-const cwd = "/tmp/test-glob";
-mkdirSync(cwd, { recursive: true });
-writeFileSync(join(cwd, "AGENTS.md"), "content");
+const cwd = mkdtempSync(join(tmpdir(), "test-glob-"));
+try {
+  writeFileSync(join(cwd, "AGENTS.md"), "content");
 
-const files = globSync("AGENTS.md", { cwd });
-console.log("Files:", files);
+  const files = globSync("AGENTS.md", { cwd });
+  console.log("Files:", files);
+} finally {
+  rmSync(cwd, { recursive: true, force: true });
+}

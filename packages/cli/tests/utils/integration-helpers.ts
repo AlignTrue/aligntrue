@@ -19,9 +19,10 @@ export async function runCli(
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ): Promise<RunResult> {
   try {
-    // Use node to run the CLI
-    // Ensure we quote args if needed (simple approach)
-    const command = `node ${CLI_PATH} ${args.join(" ")}`;
+    // Use node to run the CLI with properly quoted path to prevent shell injection
+    const quotedPath = JSON.stringify(CLI_PATH);
+    const quotedArgs = args.map((a) => JSON.stringify(a)).join(" ");
+    const command = `node ${quotedPath} ${quotedArgs}`;
 
     const stdout = execSync(command, {
       cwd: options.cwd,
