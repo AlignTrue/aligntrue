@@ -116,7 +116,7 @@ if [ "${LAYER}" = "all" ]; then
     LAYER_SCRIPT="${TEST_DIR}/aligntrue/packages/cli/tests/comprehensive/layers/layer-${i}.ts"
     if [ -f "${LAYER_SCRIPT}" ]; then
       log "Executing layer ${i}..."
-      node --loader tsx "${LAYER_SCRIPT}" 2>&1 | tee -a "${LOG_FILE}"
+      node --import tsx "${LAYER_SCRIPT}" 2>&1 | tee -a "${LOG_FILE}"
     else
       warn "Layer ${i} script not found: ${LAYER_SCRIPT}"
     fi
@@ -124,7 +124,7 @@ if [ "${LAYER}" = "all" ]; then
 else
   if [ -f "${LAYER_SCRIPT}" ]; then
     log "Executing layer ${LAYER}..."
-    node --loader tsx "${LAYER_SCRIPT}" 2>&1 | tee -a "${LOG_FILE}"
+    node --import tsx "${LAYER_SCRIPT}" 2>&1 | tee -a "${LOG_FILE}"
   else
     error "Layer script not found: ${LAYER_SCRIPT}"
     exit 2

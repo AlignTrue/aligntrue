@@ -90,7 +90,7 @@ if (layerFiles.length === 0) {
 const layerFile = layerFiles[0];
 
 try {
-  execSync(`node --loader tsx ${layerFile}`, {
+  execSync(`node --import tsx ${layerFile}`, {
     cwd: process.env.TEST_WORKSPACE,
     stdio: "inherit",
     env: {
