@@ -96,20 +96,6 @@ function DocsFooter() {
             />
           </a>
           <a
-            href="https://app.codecov.io/github/AlignTrue/aligntrue"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Code Coverage"
-            style={{ textDecoration: "none" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://img.shields.io/codecov/c/github/AlignTrue/aligntrue?token=CODECOV_TOKEN&color=f01f7f&logo=codecov"
-              alt="Code Coverage"
-              style={{ height: "20px", display: "block" }}
-            />
-          </a>
-          <a
             href="https://github.com/AlignTrue/aligntrue/security/code-scanning"
             target="_blank"
             rel="noopener noreferrer"
