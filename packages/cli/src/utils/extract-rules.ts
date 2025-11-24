@@ -38,8 +38,14 @@ export interface BackupFileResult {
  */
 function normalizeContent(content: string): string {
   return content
-    .replace(/\r\n/g, "\n") // Normalize line endings
-    .trim();
+    .replace(/\r\n/g, "\n") // Normalize line endings (CRLF -> LF)
+    .replace(/\n{3,}/g, "\n\n") // Collapse 3+ blank lines to exactly 2
+    .replace(/[ \t]+/g, " ") // Normalize whitespace (multiple spaces/tabs -> single space)
+    .replace(/\n /g, "\n") // Remove leading spaces on lines
+    .replace(/ \n/g, "\n") // Remove trailing spaces on lines
+    .replace(/^ +/gm, "") // Explicitly remove leading spaces on all lines
+    .replace(/ +$/gm, "") // Explicitly remove trailing spaces on all lines
+    .trim(); // Remove leading/trailing whitespace
 }
 
 /**
