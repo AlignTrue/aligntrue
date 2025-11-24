@@ -318,6 +318,40 @@ Number of backups to keep (older backups auto-deleted).
 
 Which commands trigger auto-backup.
 
+### managed
+
+**Type:** `object`
+
+**Default:** `undefined`
+
+**Team mode only.**
+
+Controls which sections are protected as managed content and how they are documented in agent exports.
+
+```yaml
+managed:
+  sections:
+    - "Security Standards"
+    - "Code Review Checklist"
+  source_url: "https://github.com/company/rules"
+```
+
+#### managed.sections
+
+**Type:** `array of strings`
+
+List of section headings that are treated as team-managed. Each managed section is marked with `[TEAM-MANAGED]` warnings in exported files and cannot be edited directly without removing it from this list.
+
+#### managed.source_url
+
+**Type:** `string`
+
+**Optional**
+
+URL to the canonical repository or documentation for team-managed sections. Displayed to developers so they can find the source of truth.
+
+**See also:** [Team-managed sections guide](/docs/01-guides/08-team-managed-sections)
+
 ## Advanced configuration
 
 ### scopes

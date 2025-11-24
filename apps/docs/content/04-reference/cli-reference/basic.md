@@ -304,6 +304,7 @@ aligntrue check [options]
 
 1. **Schema validation** - `.aligntrue/.rules.yaml` matches JSON Schema
 2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
+3. **File organization** - Warns when rule files exceed 1500 lines and recommends `aligntrue sources split`
 
 **Interactive vs CI modes:** By default `aligntrue check` shows spinner updates and friendly logs. Use `--ci` (or set `CI=true`) to run non-interactively—ideal for CI pipelines, git hooks, or any scripted invocation.
 
