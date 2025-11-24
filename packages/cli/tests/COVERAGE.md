@@ -74,22 +74,22 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 ## Features
 
-| Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                      |
-| ------------------- | ---------- | ----------------- | --------- | -------------------------- |
-| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works   |
-| Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested           |
-| Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested      |
-| Allow lists         | ✅         | ✅                | ⚠️        | Validation works           |
-| Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested     |
-| Git sources         | ⚠️         | ✅                | ❌        | Local repos tested         |
-| Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works  |
-| Overlays            | ✅         | ✅                | ✅        | Configuration validated    |
-| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested           |
-| Exporters (51)      | ⚠️         | ✅                | ❌        | Smoke tests added          |
-| Idempotency         | ✅         | ✅                | ❌        | Byte-identical outputs     |
-| Scopes              | ✅         | ✅                | ✅        | Monorepo scenarios tested  |
-| Plugs               | ✅         | ✅                | ✅        | Slot/fill system validated |
-| Combined features   | ✅         | ✅                | ✅        | All three together tested  |
+| Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                       |
+| ------------------- | ---------- | ----------------- | --------- | --------------------------- |
+| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works    |
+| Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested            |
+| Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested       |
+| Allow lists         | ✅         | ✅                | ⚠️        | Validation works            |
+| Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested      |
+| Git sources         | ⚠️         | ✅                | ❌        | Local repos tested          |
+| Vendored packs      | ⚠️         | ✅                | ❌        | Structure detection works   |
+| Overlays            | ✅         | ✅                | ✅        | Configuration validated     |
+| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested            |
+| Exporters (51)      | ⚠️         | ⚠️                | ❌        | Core exporters tested       |
+| Idempotency         | ✅         | ⚠️                | ❌        | Determinism ensured by core |
+| Scopes              | ✅         | ✅                | ✅        | Monorepo scenarios tested   |
+| Plugs               | ✅         | ✅                | ✅        | Slot/fill system validated  |
+| Combined features   | ✅         | ✅                | ✅        | All three together tested   |
 
 ## Test Files
 
@@ -101,9 +101,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 ### Integration Tests
 
-- `packages/cli/tests/integration/exporters-smoke.test.ts` - All exporters (derived from packages/exporters/src)
-- `packages/cli/tests/integration/idempotency.test.ts` - Deterministic outputs
-- `packages/cli/tests/integration/backup.test.ts` - Backup/restore workflows
+- `packages/cli/tests/integration/backup-extraction-separation.test.ts` - Backup vs extraction logic
 - `packages/cli/tests/integration/git-sources.test.ts` - Git operations
 - `packages/cli/tests/integration/overlays.test.ts` - Overlay configuration validation
 - `packages/cli/tests/integration/scopes-monorepo.test.ts` - Scopes for monorepos
