@@ -8,6 +8,98 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode, AlignTrueConfig } from "../config/index.js";
+import { resolvePlugsForPack } from "../plugs/index.js";
+
+/**
+ * Result of loading and resolving IR
+ */
+export interface IRResult {
+  ir: AlignPack;
+  success: boolean;
+  warnings: string[];
+  unresolvedPlugsCount: number;
+}
+
+/**
+ * Load IR from a YAML file or multiple source files and resolve plugs
+ *
+ * @param sourcePath - Path to the source file or directory
+ * @param options - Loading options (mode, max size, force flag, config, strict plugs)
+ */
+export async function loadIRAndResolvePlugs(
+  sourcePath: string,
+  options?: {
+    mode?: AlignTrueMode;
+    maxFileSizeMb?: number;
+    force?: boolean;
+    config?: AlignTrueConfig;
+    strictPlugs?: boolean;
+    plugFills?: Record<string, string>;
+  },
+): Promise<IRResult> {
+  const warnings: string[] = [];
+  let unresolvedPlugsCount = 0;
+
+  try {
+    // Load base IR
+    const ir = await loadIR(sourcePath, options);
+
+    // Resolve plugs (Plugs system)
+    if (ir.plugs) {
+      const plugsResult = resolvePlugsForPack(
+        ir,
+        options?.plugFills, // Pass config fills so they're available during resolution
+        options?.strictPlugs ? { failOnUnresolved: true } : {},
+      );
+
+      if (!plugsResult.success) {
+        return {
+          ir, // Return partial IR for context
+          success: false,
+          warnings: plugsResult.errors || ["Plugs resolution failed"],
+          unresolvedPlugsCount: 0,
+        };
+      }
+
+      // Update sections with resolved guidance (only if sections exist)
+      if (ir.sections) {
+        // Guidance in sections is embedded in content, resolution updates content implicitly?
+        // resolvePlugsForPack logic likely handles the substitution if modifying pack in place
+        // Let's verify if resolvePlugsForPack modifies ir in place.
+        // Looking at usage in SyncEngine, it seems it returns resolved rules but doesn't modify IR structure?
+        // SyncEngine: "Update sections with resolved guidance... This is a no-op for sections format"
+        // So we just checking resolution success.
+      }
+
+      // Add unresolved plugs as warnings and track count
+      if (plugsResult.unresolvedRequired.length > 0) {
+        unresolvedPlugsCount = plugsResult.unresolvedRequired.length;
+        warnings.push(
+          `Unresolved required plugs: ${plugsResult.unresolvedRequired.join(", ")}`,
+        );
+      }
+    }
+
+    return {
+      ir,
+      success: true,
+      warnings,
+      unresolvedPlugsCount,
+    };
+  } catch (err) {
+    return {
+      ir: {
+        id: "error",
+        version: "0.0.0",
+        spec_version: "1",
+        sections: [],
+      } as AlignPack, // Dummy pack
+      success: false,
+      warnings: [err instanceof Error ? err.message : String(err)],
+      unresolvedPlugsCount: 0,
+    };
+  }
+}
 
 /**
  * Load IR from a YAML file or multiple source files
@@ -42,6 +134,10 @@ export async function loadIR(
   const isArray = Array.isArray(editSource);
 
   if (hasWildcard || isArray) {
+    // When using loadIR directly, we respect multi-file loading.
+    // However, SyncEngine.loadIRFromSource explicitly disables it to force loading from IR path.
+    // We should probably respect that logic if the caller handles it.
+    // In this case, if options.config has edit_source removed (as SyncEngine does), this block is skipped.
     const cwd = dirname(sourcePath);
     const { loadSourceFiles } = await import("./source-loader.js");
     return loadSourceFiles(cwd, config!);

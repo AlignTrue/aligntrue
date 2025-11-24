@@ -9,6 +9,7 @@ import { execSync } from "child_process";
 import { IStorageBackend, Rules } from "./backend.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { parseNaturalMarkdown } from "../parsing/natural-markdown.js";
+import { sectionsToMarkdown } from "../parsing/markdown-generator.js";
 
 export class RemoteStorageBackend implements IStorageBackend {
   private fileWriter: AtomicFileWriter;
@@ -64,7 +65,7 @@ export class RemoteStorageBackend implements IStorageBackend {
     }
 
     // Convert sections to markdown
-    const content = this.sectionsToMarkdown(rules);
+    const content = sectionsToMarkdown(rules, `${this.scope} Rules`);
 
     // Write atomically
     await this.fileWriter.write(this.rulesFile, content);
@@ -141,18 +142,5 @@ export class RemoteStorageBackend implements IStorageBackend {
       // For now, just warn
       console.warn(`Failed to pull remote for scope "${this.scope}":`, err);
     }
-  }
-
-  private sectionsToMarkdown(rules: Rules): string {
-    let markdown = `# ${this.scope} Rules\n\n`;
-
-    for (const section of rules) {
-      const level = section.level || 2;
-      const heading = "#".repeat(level);
-      markdown += `${heading} ${section.heading}\n\n`;
-      markdown += `${section.content}\n\n`;
-    }
-
-    return markdown;
   }
 }

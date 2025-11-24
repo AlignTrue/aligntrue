@@ -1,5 +1,5 @@
 import { join } from "path";
-import { writeFileSync, readFileSync, readdirSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 // Correct import path for test helpers
 import {
@@ -32,24 +32,6 @@ describe("Lockfile Drift", () => {
         "Initial sync failed:",
         syncResult1.stdout,
         syncResult1.stderr,
-      );
-    }
-    // Debug: check hash file after first sync
-    const hashFilePath = join(
-      testDir,
-      ".aligntrue",
-      ".agent-export-hashes.json",
-    );
-    const aligntrueDir = join(testDir, ".aligntrue");
-    try {
-      const files = readdirSync(aligntrueDir);
-      console.log("Files in .aligntrue:", files);
-      const hashContent = readFileSync(hashFilePath, "utf-8");
-      console.log("Hash file after sync:", hashContent);
-    } catch (e) {
-      console.log(
-        "Error reading hash file:",
-        e instanceof Error ? e.message : String(e),
       );
     }
     expect(syncResult1.exitCode).toBe(0);

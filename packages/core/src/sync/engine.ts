@@ -4,14 +4,12 @@
  */
 
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
-import type { AlignTrueConfig } from "../config/index.js";
+import type { AlignTrueConfig, AlignTrueMode } from "../config/index.js";
 import { loadConfig } from "../config/index.js";
-import { loadIR } from "./ir-loader.js";
+import { loadIRAndResolvePlugs } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { resolve as resolvePath } from "path";
-import { resolvePlugsForPack } from "../plugs/index.js";
 import { applyOverlays } from "../overlays/index.js";
-import { getAlignTruePaths } from "../paths.js";
 
 // New helper modules
 import {
@@ -20,6 +18,7 @@ import {
 } from "./lockfile-manager.js";
 import { resolveSyncScopes } from "./scope-resolver.js";
 import { executeExporters } from "./exporter-executor.js";
+import { syncFromAgent as performAgentPullback } from "./agent-pullback.js";
 
 // Import types from plugin-contracts package
 import type {
@@ -27,6 +26,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
+  SyncOptions,
 } from "@aligntrue/plugin-contracts";
 
 // Re-export for convenience
@@ -35,21 +35,8 @@ export type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
+  SyncOptions,
 };
-
-/**
- * Options for sync operations
- */
-export interface SyncOptions {
-  acceptAgent?: string;
-  dryRun?: boolean;
-  backup?: boolean;
-  configPath?: string;
-  force?: boolean;
-  interactive?: boolean;
-  defaultResolutionStrategy?: string;
-  strict?: boolean; // Fail if required plugs are unresolved
-}
 
 /**
  * Audit trail entry for sync operations
@@ -163,71 +150,51 @@ export class SyncEngine {
         delete loadConfig.sync.edit_source;
       }
 
-      this.ir = await loadIR(sourcePath, {
+      const loadOptions: {
+        mode: AlignTrueMode;
+        maxFileSizeMb: number;
+        force: boolean;
+        config: AlignTrueConfig;
+        strictPlugs?: boolean;
+        plugFills?: Record<string, string>;
+      } = {
         mode: this.config.mode,
         maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
         force: force || false,
         config: loadConfig,
-      });
+      };
+
+      // Only include optional properties if they have defined values
+      if (strict !== undefined) {
+        loadOptions.strictPlugs = strict;
+      }
+      if (configFills !== undefined) {
+        loadOptions.plugFills = configFills;
+      }
+
+      const result = await loadIRAndResolvePlugs(sourcePath, loadOptions);
+
+      if (!result.success) {
+        return {
+          success: false,
+          warnings: result.warnings,
+        };
+      }
+
+      this.ir = result.ir;
+      this.unresolvedPlugsCount = result.unresolvedPlugsCount;
+
+      if (result.warnings.length > 0) {
+        return { success: true, warnings: result.warnings };
+      }
+
+      return { success: true };
     } catch (err) {
       return {
         success: false,
         warnings: [err instanceof Error ? err.message : String(err)],
       };
     }
-
-    if (!this.ir) {
-      return { success: false, warnings: ["Failed to load IR"] };
-    }
-
-    const warnings: string[] = [];
-
-    // Resolve plugs (Plugs system)
-    if (this.ir.plugs) {
-      const plugsResult = resolvePlugsForPack(
-        this.ir,
-        configFills, // Pass config fills so they're available during resolution
-        strict ? { failOnUnresolved: true } : {},
-      );
-
-      if (!plugsResult.success) {
-        return {
-          success: false,
-          warnings: plugsResult.errors || ["Plugs resolution failed"],
-        };
-      }
-
-      // Update sections with resolved guidance (only if sections exist)
-      if (this.ir.sections) {
-        for (const resolvedRule of plugsResult.rules) {
-          const section = this.ir.sections.find(
-            (s) => s.heading === resolvedRule.ruleId,
-          );
-          if (section && resolvedRule.guidance) {
-            // Guidance in sections is embedded in content, not a separate field
-            // This is a no-op for sections format
-          }
-        }
-      }
-
-      // Add unresolved plugs as warnings and track count
-      if (plugsResult.unresolvedRequired.length > 0) {
-        this.unresolvedPlugsCount = plugsResult.unresolvedRequired.length;
-        warnings.push(
-          `Unresolved required plugs: ${plugsResult.unresolvedRequired.join(", ")}`,
-        );
-      } else {
-        this.unresolvedPlugsCount = 0;
-      }
-    } else {
-      this.unresolvedPlugsCount = 0;
-    }
-
-    if (warnings.length > 0) {
-      return { success: true, warnings };
-    }
-
-    return { success: true };
   }
 
   /**
@@ -424,9 +391,7 @@ export class SyncEngine {
       // Update last sync timestamp on success
       if (!options.dryRun) {
         const cwd = resolvePath(irPath, "..", "..");
-        const { updateLastSyncTimestamp } = await import(
-          "./last-sync-tracker.js"
-        );
+        const { updateLastSyncTimestamp } = await import("./tracking.js");
         updateLastSyncTimestamp(cwd);
       }
 
@@ -454,245 +419,13 @@ export class SyncEngine {
   /**
    * Sync from agent to IR (pullback direction)
    * Requires explicit --accept-agent flag
-   * Note: Uses mock data in Step 14; real parsers in Step 17
    */
   async syncFromAgent(
     agent: string,
     irPath: string,
     options: SyncOptions = {},
   ): Promise<SyncResult> {
-    const warnings: string[] = [];
-    const written: string[] = [];
-    const auditTrail: AuditEntry[] = [];
-
-    try {
-      // Load config and IR
-      await this.loadConfiguration(options.configPath);
-      await this.loadIRFromSource(
-        irPath,
-        options.force,
-        false,
-        this.config?.plugs?.fills,
-      );
-
-      if (!this.config || !this.ir) {
-        throw new Error("Configuration or IR not loaded");
-      }
-
-      // Audit trail: Starting agent→IR sync
-      auditTrail.push({
-        action: "update",
-        target: irPath,
-        source: agent,
-        timestamp: new Date().toISOString(),
-        details: `Starting agent→IR sync from ${agent}`,
-      });
-
-      // Load agent rules for explicit --accept-agent pullback
-      const agentRules = await this.loadAgentRules(agent, options);
-
-      if (!agentRules || agentRules.length === 0) {
-        warnings.push(`No rules found in agent ${agent}`);
-        return {
-          success: true,
-          written: [],
-          warnings,
-          auditTrail,
-        };
-      }
-
-      // Audit trail: Agent rules loaded
-      auditTrail.push({
-        action: "update",
-        target: agent,
-        source: agent,
-        timestamp: new Date().toISOString(),
-        details: `Loaded ${agentRules.length} rules from agent`,
-      });
-
-      // Conflict detection happens at multi-file-parser level
-      // This is the correct approach for sections-only format
-      auditTrail.push({
-        action: "update",
-        target: irPath,
-        source: agent,
-        timestamp: new Date().toISOString(),
-        details: `Accepting all changes from ${agent} (conflict detection not yet implemented for sections)`,
-      });
-
-      // Team mode: full conflict detection
-      // Sections are used now instead of rules
-      const conflictResult = {
-        status: "success" as const,
-        conflicts: [],
-      };
-
-      if (conflictResult.conflicts.length > 0) {
-        // Audit trail: Conflicts detected
-        auditTrail.push({
-          action: "conflict",
-          target: irPath,
-          source: agent,
-          timestamp: new Date().toISOString(),
-          details: `Detected ${conflictResult.conflicts.length} conflict(s)`,
-        });
-
-        // Conflict detection removed - not needed for sections-only format
-        // In sections-only format, we use last-write-wins (auto-pull)
-      }
-
-      // Write updated IR (if not dry-run)
-      if (!options.dryRun) {
-        // Update IR with agent sections
-        this.ir!.sections = agentRules;
-
-        // Write IR to file
-        const { stringify } = await import("yaml");
-        const { writeFileSync } = await import("fs");
-        const irContent = stringify(this.ir);
-        writeFileSync(irPath, irContent, "utf-8");
-        written.push(irPath);
-
-        auditTrail.push({
-          action: "update",
-          target: irPath,
-          source: agent,
-          timestamp: new Date().toISOString(),
-          details: `Updated IR from agent with ${agentRules.length} sections`,
-        });
-
-        // Generate/update lockfile (delegated)
-        // This ensures lockfile stays in sync with updated IR
-        const lockfileGeneration = generateAndWriteLockfile(
-          this.ir!,
-          this.config!,
-          process.cwd(),
-          options.dryRun || false,
-        );
-        written.push(...lockfileGeneration.written);
-        if (lockfileGeneration.warnings) {
-          warnings.push(...lockfileGeneration.warnings);
-        }
-        if (lockfileGeneration.auditTrail) {
-          auditTrail.push(...lockfileGeneration.auditTrail);
-        }
-
-        // Update last sync timestamp after accepting agent changes
-        // This ensures drift detection doesn't report the agent file as modified
-        const cwd = resolvePath(irPath, "..", "..");
-        const { updateLastSyncTimestamp } = await import(
-          "./last-sync-tracker.js"
-        );
-        updateLastSyncTimestamp(cwd);
-      }
-
-      return {
-        success: true,
-        written,
-        warnings,
-        auditTrail,
-      };
-    } catch (_err) {
-      return {
-        success: false,
-        written: [],
-        warnings: [_err instanceof Error ? _err.message : String(_err)],
-        auditTrail,
-      };
-    }
-  }
-
-  /**
-   * Load agent sections from an on-disk agent file (cursor, AGENTS.md, etc.)
-   * Used by syncFromAgent when --accept-agent is passed.
-   */
-  private async loadAgentRules(
-    agent: string,
-    _options: SyncOptions,
-  ): Promise<import("@aligntrue/schema").AlignSection[]> {
-    const cwd = process.cwd();
-    const paths = getAlignTruePaths(cwd);
-    const { join } = await import("path");
-    const { existsSync, readFileSync } = await import("fs");
-
-    // Map agent name to file path
-    const agentFilePaths: Record<string, string> = {
-      agents: paths.agentsMd(),
-    };
-
-    let filePath = agentFilePaths[agent];
-
-    // Special handling for Cursor: check config for edit_source pattern
-    if (agent === "cursor") {
-      const config = this.config || (await loadConfig());
-      const editSource = config.sync?.edit_source;
-
-      // Use configured pattern if available, otherwise default
-      const cursorPattern = Array.isArray(editSource)
-        ? editSource.find((p) => p.includes(".cursor") || p.includes(".mdc"))
-        : editSource &&
-            (editSource.includes(".cursor") || editSource.includes(".mdc"))
-          ? editSource
-          : join(cwd, ".cursor/rules/aligntrue.mdc"); // Fallback to default
-
-      if (cursorPattern && cursorPattern.includes("*")) {
-        // It's a glob pattern - we need to find matching files
-        // For accept-agent, we prioritize aligntrue.mdc if it exists, otherwise first match
-        const { glob } = await import("glob");
-        const matches = await glob(cursorPattern, { cwd, absolute: true });
-
-        if (matches.length > 0) {
-          // Prefer aligntrue.mdc if present in matches
-          const preferred = matches.find((p) => p.endsWith("aligntrue.mdc"));
-          filePath = preferred || matches[0];
-        } else {
-          // No matches found for glob
-          filePath = join(cwd, ".cursor/rules/aligntrue.mdc");
-        }
-      } else {
-        // Direct path
-        filePath = cursorPattern
-          ? resolvePath(cwd, cursorPattern)
-          : join(cwd, ".cursor/rules/aligntrue.mdc");
-      }
-    }
-
-    if (!filePath || !existsSync(filePath)) {
-      throw new Error(`Agent file not found: ${agent}`);
-    }
-
-    // For explicit --accept-agent, parse directly (bypass edit_source check)
-    const content = readFileSync(filePath, "utf-8");
-    const { generateFingerprint } = await import("./multi-file-parser.js");
-
-    // Dynamic import of parser from exporters package
-    const parseModule = "@aligntrue/exporters/utils/section-parser";
-    // @ts-ignore - Dynamic import of peer dependency (resolved at runtime)
-    const parsers = await import(parseModule);
-
-    let parsed: {
-      sections: Array<{
-        heading: string;
-        content: string;
-        level: number;
-        hash: string;
-      }>;
-    };
-    if (agent === "agents") {
-      parsed = parsers.parseAgentsMd(content);
-    } else if (agent === "cursor") {
-      parsed = parsers.parseCursorMdc(content);
-    } else {
-      throw new Error(`Unsupported agent for import: ${agent}`);
-    }
-
-    // Convert parsed sections to AlignSection format
-    return parsed.sections.map((s) => ({
-      heading: s.heading,
-      content: s.content,
-      level: s.level,
-      fingerprint: generateFingerprint(s.heading),
-    }));
+    return performAgentPullback(agent, irPath, options);
   }
 
   /**

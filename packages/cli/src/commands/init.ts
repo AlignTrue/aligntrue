@@ -1035,7 +1035,7 @@ To add new rule files, create .md files here and run \`aligntrue sync\`.
   createdFiles.push(".aligntrue/.rules.yaml (internal)");
 
   const { updateLastSyncTimestamp } = await import(
-    "@aligntrue/core/sync/last-sync-tracker"
+    "@aligntrue/core/sync/tracking"
   );
   updateLastSyncTimestamp(cwd);
 
