@@ -4,7 +4,7 @@
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, sep } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import Ajv, { type ErrorObject } from "ajv";
 import type { AnySchemaObject } from "ajv";
@@ -120,7 +120,13 @@ export class ExporterRegistry {
           normalizedPath.includes("/src/") &&
           !normalizedPath.includes("/dist/")
         ) {
-          const distPath = absolutePath.replace("/src/", "/dist/");
+          // Replace src/ with dist/ using the normalized path, then convert back to platform-specific
+          const distNormalizedPath = normalizedPath.replace(
+            /\/src\//,
+            "/dist/",
+          );
+          // Convert forward slashes back to platform separator (\ on Windows, / on Unix)
+          const distPath = distNormalizedPath.split("/").join(sep);
           if (existsSync(distPath)) {
             absolutePath = distPath;
           }
