@@ -99,12 +99,12 @@ const env = {
   LOG_FILE: logFile,
 };
 
-console.log(`Executing: node --loader tsx ${layerFile}\n`);
+console.log(`Executing: node --import tsx ${layerFile}\n`);
 
 const startTime = Date.now();
 
 try {
-  execSync(`node --loader tsx ${layerFile}`, {
+  execSync(`node --import tsx ${layerFile}`, {
     cwd: workspace,
     env,
     stdio: "inherit",

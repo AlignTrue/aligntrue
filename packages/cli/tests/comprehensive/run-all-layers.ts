@@ -186,7 +186,7 @@ try {
     }
 
     try {
-      execSync(`node --loader tsx ${layerFile}`, {
+      execSync(`node --import tsx ${layerFile}`, {
         cwd: workspace,
         stdio: "inherit",
         env: {

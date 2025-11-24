@@ -115,7 +115,7 @@ async function runLayer(layer: number): Promise<LayerResult> {
   };
 
   try {
-    const output = execSync(`node --loader tsx ${layerFile}`, {
+    const output = execSync(`node --import tsx ${layerFile}`, {
       cwd: workspace,
       encoding: "utf-8",
       env,
