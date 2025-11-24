@@ -207,11 +207,11 @@ function validateExporterCount() {
   const exportersPath = join(rootDir, "packages/exporters/src");
   const entries = readdirSync(exportersPath);
 
-  // Filter to only directories, excluding base, utils, and files
+  // Filter to only directories, excluding base, utils, mcp-transformers, and files
   const exporterDirs = entries.filter((entry) => {
     const fullPath = join(exportersPath, entry);
     const isDir = statSync(fullPath).isDirectory();
-    const isExporter = !["base", "utils"].includes(entry);
+    const isExporter = !["base", "utils", "mcp-transformers"].includes(entry);
     return isDir && isExporter;
   });
 
