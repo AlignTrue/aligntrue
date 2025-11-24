@@ -25,7 +25,7 @@
     "nextra-theme-docs": "4.6.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "simple-icons": "^15.20.0"
+    "simple-icons": "^15.22.0"
   },
   "devDependencies": {
     "@pagefind/default-ui": "^1.1.0",
