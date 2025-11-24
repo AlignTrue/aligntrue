@@ -7,138 +7,116 @@ description: "Technical reference for rule management, editing, and exporting. S
 
 Complete technical reference for AlignTrue's sync system. This document is the source of truth for what AlignTrue actually does—no marketing, no aspirations, just the real behavior.
 
-> **For practical setup and workflow examples,** see [Choosing Your Edit Source](/docs/01-guides/00-edit-source).
-
 ## Rule management
 
-AlignTrue uses **centralized rule management**: you designate ONE edit source, edit that file, and changes flow one-way to all other read-only exports.
+AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run sync, and changes flow to all configured agents.
 
 **When you run `aligntrue sync`:**
 
 1. **Load config** from `.aligntrue/config.yaml`
 2. **Check for team mode** - if enabled, validate lockfile
-3. **Detect new agent files with content** - prompts to import untracked files
-4. **Load your edit source** - the file pattern you configured to edit
-5. **Detect edits to your edit source** by checking modification times (mtime)
-6. **Create backup** (if enabled) - backs up both internal state and agent files
-7. **Merge edits to IR** - your edit source sections update `.aligntrue/.rules.yaml`
-8. **Export IR** to all configured agent files (read-only exports)
-9. **Done** - no interaction required
+3. **Load rules** from `.aligntrue/rules/*.md` (your source of truth)
+4. **Detect edits** by checking modification times (mtime)
+5. **Create backup** (if enabled) - backs up both internal state and agent files
+6. **Merge to IR** - your rules are loaded into `.aligntrue/.rules.yaml`
+7. **Export to all agents** - IR syncs to Cursor, AGENTS.md, VS Code, etc. (read-only exports)
+8. **Done** - no interaction required
 
 **Key facts:**
 
-- ✅ Single source of truth (your `edit_source`)
-- ✅ One-way sync (edit_source → IR → exports)
-- ✅ Other formats are **read-only** with warning comments
+- ✅ Single source of truth (your `.aligntrue/rules/` directory)
+- ✅ One-way sync (rules directory → IR → exports)
+- ✅ Agent files are **read-only** with warning comments
 - ✅ Works in **both solo and team mode**
 - ✅ Clear ownership, no conflicts
-- ❌ Editing read-only exports does not sync back (correct behavior)
+- ❌ Editing agent files does not sync back (correct behavior - they are exports)
 
-## How centralized rule management works
+## How unidirectional sync works
 
 **Your workflow:**
 
-1. You choose ONE edit source: `"AGENTS.md"` or `".cursor/rules/*.mdc"` etc.
-2. Edit that file as your primary source of truth
-3. Run `aligntrue sync` - changes flow from your edit source → internal rules → all exports
-4. All other formats are read-only (have warning comments)
+1. You edit files in `.aligntrue/rules/` (e.g., `global.md`, `backend.md`, `testing.md`)
+2. Run `aligntrue sync`
+3. Changes flow from rules directory → internal IR → all configured agents
+4. All other formats (Cursor, AGENTS.md, etc.) are read-only exports
 
 **One-way flow:**
 
 ```
-edit_source → IR (.aligntrue/.rules.yaml) → all configured agents (read-only)
+.aligntrue/rules/*.md → IR (.aligntrue/.rules.yaml) → all configured agents (read-only)
 ```
 
-**Why centralized?**
+**Why unidirectional?**
 
 - Single source of truth prevents conflicts
 - Clear ownership - you know who edited what
 - Predictable behavior - same edits produce same results every time
 - Perfect for teams - pairs with team mode for approval workflows
+- No bidirectional sync confusion
 
 ## Configuration examples
 
-### Single file edit source
+### Solo developer with rules directory
 
 ```yaml
 # .aligntrue/config.yaml
 mode: solo
-sync:
-  edit_source: "AGENTS.md"
+sources:
+  - type: local
+    path: .aligntrue/rules
+exporters:
+  - cursor
+  - agents
 ```
 
-Edit AGENTS.md, run `aligntrue sync`, changes export to all agents.
+Edit `.aligntrue/rules/global.md`, run `aligntrue sync`, changes export to all agents.
 
-### Glob pattern edit source (still single source)
+### Team mode with rules directory
 
 ```yaml
 # .aligntrue/config.yaml
-mode: solo
-sync:
-  edit_source: ".cursor/rules/*.mdc"
-  scope_prefixing: "auto"
-```
-
-Edit any `.cursor/rules/*.mdc` file, run `aligntrue sync`, changes export to all agents.
-
-### Team mode with centralized management
-
-```yaml
 mode: team
-sync:
-  edit_source: "AGENTS.md"
+sources:
+  - type: local
+    path: .aligntrue/rules
+exporters:
+  - cursor
+  - agents
 
 lockfile:
   mode: soft # Warn on unapproved changes (default)
 ```
 
-Edit AGENTS.md → changes validated against lockfile → team approves if needed.
+Edit `.aligntrue/rules/` → changes validated against lockfile → team approves if needed.
 
 ## Common sync scenarios
 
-### 1. Solo developer with AGENTS.md
+### 1. Solo developer editing local rules
 
 ```bash
-# Config: edit_source: "AGENTS.md"
-nano AGENTS.md         # Edit your rules
-aligntrue sync         # Changes flow: AGENTS.md → IR → all agents
-```
+# Edit your rules
+nano .aligntrue/rules/global.md
+nano .aligntrue/rules/backend.md
 
-**Result:** Changes synced to all configured agents (Cursor, VS Code, etc.) within seconds.
-
-### 2. Developer using Cursor native format
-
-```bash
-# Config: edit_source: ".cursor/rules/*.mdc"
-nano .cursor/rules/backend.mdc    # Edit Cursor files
-aligntrue sync                     # Changes flow: Cursor files → IR → all agents
-```
-
-**Result:** Changes synced to IR and exported to all other agents (AGENTS.md, etc.).
-
-### 3. Switching edit sources
-
-When switching edit source (e.g. `AGENTS.md` → Cursor), AlignTrue treats the **new source as the source of truth**.
-
-```bash
-# Current: AGENTS.md
-# New: Cursor files
-aligntrue config set sync.edit_source ".cursor/rules/*.mdc"
+# Sync to all agents
 aligntrue sync
 ```
 
-**Result:**
+**Result:** Changes synced to all configured agents (Cursor, AGENTS.md, etc.) within seconds.
 
-1. Backup created for old source (`AGENTS.md`)
-2. New source (`Cursor`) replaces IR content completely
-3. Sync runs immediately, updating all files (including overwriting `AGENTS.md` with read-only version)
-
-### 4. Team mode with soft lockfile
+### 2. Team editing with lockfile approval
 
 ```bash
-# Config: mode: team, edit_source: "AGENTS.md", lockfile.mode: soft
-nano AGENTS.md         # Edit rules
-aligntrue sync         # Changes validated against lockfile
+# Edit rules
+nano .aligntrue/rules/global.md
+
+# Sync detects changes
+aligntrue sync
+# ◇ Detected 1 edited file(s)
+# ◇ Merging changes from rules
+# ✓ Merged changes to IR
+# ⚠ Bundle hash not in allow list (soft mode - warning)
+# ✓ Synced to: .cursor/rules/*.mdc, AGENTS.md
 ```
 
 **Flow:**
@@ -148,56 +126,59 @@ aligntrue sync         # Changes validated against lockfile
 - If hash not approved: warning shown, sync continues (soft mode)
 - Team lead approves later via `aligntrue team approve --current`
 
-## Technical details: edit detection and merging
+## Technical details: rule loading and merging
 
-### How edit detection works
+### How rule loading works
 
 ```typescript
 // Pseudo-code
-function detectEditedFiles(cwd, config) {
-  const editedFiles = [];
+function loadRules(cwd, config) {
+  const rulesDir = ".aligntrue/rules";
+  const rules = [];
 
-  // Check edit_source file(s) modification time
-  if (matchesEditSource(file, editSource)) {
-    const mtime = statSync(file).mtime;
-    // Every file is considered "edited" by default to ensure current state is captured
-    editedFiles.push({ path: file, mtime, sections: parsed });
+  // Load all *.md files
+  const files = glob(`${rulesDir}/*.md`);
+  for (const file of files) {
+    const parsed = parseMarkdown(file);
+    rules.push(...parsed.sections);
   }
 
-  return editedFiles;
+  return rules;
 }
 ```
 
-**Important:** The mtime check captures the current state of your edit source. Every sync reads your edit source to ensure IR matches your intent.
+**Important:** Every sync reads all rule files from `.aligntrue/rules/` to ensure IR matches your intent.
 
 ### How merging works
 
-When multiple files match your `edit_source` glob (e.g., `.cursor/rules/*.mdc`), they are merged into the IR.
+When you have multiple files in `.aligntrue/rules/` (e.g., `global.md`, `backend.md`, `testing.md`), they are merged into the IR:
 
-1. Parse all files matching the glob
-2. Collect all sections
+1. Parse all `*.md` files in `.aligntrue/rules/`
+2. Collect all sections from all files
 3. Update IR with the latest content
+
+**Files are loaded in alphabetical order** for determinism.
 
 ## Overview
 
 AlignTrue synchronizes rules between three locations:
 
-1. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated, pure YAML format with section fingerprints)
-2. **User-Editable Files** - `AGENTS.md` (natural markdown with YAML frontmatter), `.cursor/*.mdc`, `.vscode/mcp.json`, etc.
-3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only, tracks section fingerprints)
+1. **Rules Directory** - `.aligntrue/rules/*.md` (your editable source, natural markdown with YAML frontmatter)
+2. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated, pure YAML format with section fingerprints)
+3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only, tracks section fingerprints for approval)
 
-The sync engine maintains consistency while allowing both IR→agent and agent→IR flows. For details on authoring rules in natural markdown format, see [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections).
+The sync engine maintains consistency with one-way flow from rules directory to all exports.
 
 ## Sync directions
 
-### IR → Agent (default)
+### Rules Directory → IR → Agents (default)
 
 **When:** Every `aligntrue sync` command (default direction)
 
 **Flow:**
 
 ```
-IR (.aligntrue/.rules.yaml) → Parse → Validate → Export → Agent files
+Rules Directory (.aligntrue/rules/*.md) → Parse → Validate → Merge to IR → Export → Agent files
 ```
 
 ### Visual flow
@@ -206,14 +187,16 @@ IR (.aligntrue/.rules.yaml) → Parse → Validate → Export → Agent files
 sequenceDiagram
     participant User
     participant CLI as aligntrue sync
+    participant Rules as .aligntrue/rules/*.md
     participant IR as .aligntrue/.rules.yaml
     participant Cursor as .cursor/rules/*.mdc
     participant AGENTS as AGENTS.md
     participant MCP as .vscode/mcp.json
 
     User->>CLI: aligntrue sync
-    CLI->>IR: Load rules
-    IR->>CLI: Parse & validate
+    CLI->>Rules: Load rules
+    Rules->>CLI: Parse & validate
+    CLI->>IR: Merge to IR
     CLI->>Cursor: Export .mdc format
     CLI->>AGENTS: Export universal format
     CLI->>MCP: Export MCP config
@@ -223,12 +206,14 @@ sequenceDiagram
 **What happens:**
 
 1. Load configuration from `.aligntrue/config.yaml`
-2. Parse rules from `.aligntrue/.rules.yaml` (internal IR)
-3. Validate against JSON Schema
-4. Resolve scopes and merge rules
-5. Export to each enabled agent (Cursor, AGENTS.md, etc.)
-6. Write agent files atomically (temp+rename)
-7. Update lockfile (team mode only)
+2. Read all `*.md` files from `.aligntrue/rules/`
+3. Parse sections from rule files
+4. Validate against JSON Schema
+5. Merge into IR (`.aligntrue/.rules.yaml`)
+6. Resolve scopes and merge rules
+7. Export to each enabled agent (Cursor, AGENTS.md, etc.)
+8. Write agent files atomically (temp+rename)
+9. Update lockfile (team mode only)
 
 **Example:**
 
@@ -259,128 +244,42 @@ aligntrue sync --force
 
 ---
 
-### Agent → IR (edit source sync)
-
-**When:** Automatic with every `aligntrue sync` (when files match `edit_source`)
-
-**Edit Source Configuration:**
-
-Edit files matching your `sync.edit_source` configuration and changes automatically merge back to IR, then sync to all other agents.
-
-```bash
-# Edit files in your edit_source
-vi AGENTS.md
-# or
-vi .cursor/rules/backend.mdc
-
-# Sync detects edits and merges automatically
-aligntrue sync
-# ◇ Detected 1 edited file(s)
-# ◇ Merging changes from agent files to IR
-# ✓ Merged changes from agent files to IR
-# ✓ Synced to: .cursor/rules/*.mdc, AGENTS.md
-```
-
-**Configuration:**
-
-```yaml
-# .aligntrue/config.yaml
-exporters:
-  - cursor
-  - agents
-
-sync:
-  edit_source: "AGENTS.md"  # Single file
-  # OR
-  edit_source: ".cursor/rules/*.mdc"  # Glob pattern
-```
-
-**Section-Level Merging:**
-
-Sync uses section-based merging:
-
-- **Sections matched by heading** (case-insensitive)
-- **Change detection via SHA-256 hash**
-- **User sections preserved** alongside team sections
-
-**Flow:**
-
-```
-Edit Source File → Parse sections → Merge to IR → Export to all agent files
-```
-
-**Team-Managed Sections:**
-
-Team mode can designate sections as managed:
-
-```yaml
-# .aligntrue/config.yaml
-managed:
-  sections:
-    - "Security"
-    - "Compliance"
-  source_url: "https://github.com/company/rules"
-```
-
-Managed sections are marked with 🔒 icon and HTML comments warning against direct edits.
-
-**Example:**
-
-```bash
-# Standard sync (default)
-aligntrue sync
-
-# Watch mode for continuous sync
-aligntrue watch
-```
-
-See the [Quickstart](/docs/00-getting-started/00-quickstart) to get started.
-
----
-
 ## Precedence rules
 
-### IR wins by default
+### Rules directory is authoritative
 
-**.aligntrue/.rules.yaml is the internal authority.**
+**`.aligntrue/rules/*.md` is the primary source of truth.**
 
-**Format:** Pure YAML (not markdown). This is an internal file auto-generated by AlignTrue. Users should edit `AGENTS.md` or agent-specific files instead.
+Your rules in `.aligntrue/rules/` define what IR contains. Agent files are exports.
 
-If you edit both IR and agent files:
+If you edit both rules and agent files:
 
-- `aligntrue sync` → IR overwrites agent files (no prompt)
-- `aligntrue sync --accept-agent` → Triggers conflict resolution
+- `aligntrue sync` → Rules overwrite agent files (no prompt)
 
 **Recommended workflow:**
 
-1. Edit `AGENTS.md` or agent files
+1. Edit `.aligntrue/rules/*.md`
 2. Run `aligntrue sync`
 3. All agent files updated automatically
 
-### Explicit pullback required
+### Agent files are read-only
 
-To pull changes from agent files back to IR:
+Agent files (Cursor, AGENTS.md, etc.) receive exports from IR and should not be manually edited.
 
-```bash
-# Must explicitly opt in
-aligntrue sync --accept-agent cursor
-```
-
-Without `--accept-agent`, IR always wins.
-
-### Non-interactive mode
-
-For CI or scripting, use default strategy:
+If you edit an agent file:
 
 ```bash
-# Keep IR, discard all agent changes (default)
-aligntrue sync --force
-
-# Accept all agent changes (coming in Step 17)
-aligntrue sync --accept-agent cursor --force
+aligntrue sync
+# ⚠ Checksum mismatch: AGENTS.md
+#
+# This file was manually edited since last sync.
+# Backing up to .aligntrue/overwritten-rules/AGENTS.2025-01-15T10-30-45.md
+# Overwriting with current rules from IR.
 ```
 
-No prompts, uses default resolution strategy.
+**Why**: Agent files are under AlignTrue's control. Manual edits are overwritten to maintain consistency.
+
+**Best practice:** Edit `.aligntrue/rules/*.md`, not agent files.
 
 ### Manual edit detection
 
@@ -405,140 +304,30 @@ Choice:
 - Stores hash in `.aligntrue/.checksums.json`
 - Compares before overwriting
 
-**Best practice:** Edit `AGENTS.md` or agent files, not generated exports.
+### Automatic overwriting of agent files
 
-### Automatic overwriting of read-only files
-
-Read-only files (files NOT matching `edit_source`) are automatically overwritten during sync if they've been manually edited:
+Agent files are automatically overwritten during sync if manually edited:
 
 1. **Before overwriting**: Original content is backed up to `.aligntrue/overwritten-rules/` with a timestamp
 2. **During sync**: File is overwritten with clean IR content (no merge, no user edits preserved)
-3. **No --force needed**: This happens automatically for read-only files
+3. **No --force needed**: This happens automatically for agent files
 
 **Example:**
 
 ```bash
-# edit_source is "AGENTS.md"
-# User manually edits .cursor/rules/aligntrue.mdc (read-only)
+# Edit .aligntrue/rules/
+nano .aligntrue/rules/global.md
 
+# Sync overwrites agent files with new content
 aligntrue sync
 # Result:
-# 1. Backup created: .aligntrue/overwritten-rules/cursor/rules/aligntrue.2025-01-15T14-30-00.mdc
-# 2. File overwritten with IR content
-# 3. Manual edit is gone (preserved in backup)
+# 1. Backup created: .aligntrue/overwritten-rules/AGENTS.2025-01-15T14-30-00.md
+# 2. Files overwritten with IR content
 ```
 
-**Why**: Read-only files are under AlignTrue's control. Manual edits are considered unauthorized and are overwritten to maintain consistency.
+**Why**: Agent files are exports under AlignTrue's control. Manual edits are considered unauthorized and are overwritten to maintain consistency.
 
 **Safety**: All manual edits are backed up before overwriting, so nothing is lost.
-
-**When --force is needed**: For files that ARE in `edit_source`, use `--force` to overwrite manual edits during conflict resolution.
-
----
-
-## New file detection
-
-In centralized mode (default), AlignTrue automatically detects agent files with content that aren't tracked in your `edit_source` configuration.
-
-### How it works
-
-When you run `aligntrue sync`:
-
-1. **Scans workspace** for all agent files (`.mdc`, `.md`, etc.)
-2. **Parses content** to find files with sections
-3. **Compares against edit_source** to identify untracked files
-4. **Prompts for action** if untracked files with content are found
-
-### The prompt
-
-```
-⚠ Detected files with content outside your edit source
-
-In centralized mode, these files will become export targets.
-Any existing content will be extracted for your review.
-
-cursor: 3 file(s), 25 section(s)
-  • .cursor/rules/backend.mdc - 10 sections, modified 2 days ago
-  • .cursor/rules/frontend.mdc - 8 sections, modified 2 days ago
-  • .cursor/rules/testing.mdc - 7 sections, modified 1 week ago
-
-Enable these files as export targets?
-
-What happens:
-• Existing content will be backed up to .aligntrue/overwritten-rules/
-• Files will be synced with your current rules from: AGENTS.md
-
-You can always change your edit source later.
-```
-
-### What happens when you confirm
-
-**Files enabled as export targets:**
-
-- AlignTrue backs up the entire existing file to `.aligntrue/overwritten-rules/{file}-{timestamp}` for recovery
-- On the next sync, these files receive your current rules from `edit_source`
-- All existing content is preserved in the backup for your reference
-
-**Backup message:**
-
-```
-Files enabled as export targets
-Backed up existing content:
-  • .aligntrue/overwritten-rules/cursor/rules/backend.2025-01-15T10-30-45.mdc
-  • .aligntrue/overwritten-rules/cursor/rules/frontend.2025-01-15T10-30-45.mdc
-
-Current edit source: AGENTS.md
-These files will be synced on your next sync.
-
-To change your edit source, run: aligntrue config set sync.edit_source
-```
-
-### Old rules preservation
-
-When files are detected and enabled, their existing content is backed up to `.aligntrue/overwritten-rules/`:
-
-**Backup structure:**
-
-```
-.aligntrue/overwritten-rules/
-  ├── cursor/
-  │   └── rules/
-  │       ├── backend.2025-01-15T10-30-45.mdc
-  │       └── frontend.2025-01-15T10-30-45.mdc
-  └── AGENTS.2025-01-15T10-30-45.md
-```
-
-**File management:**
-
-- Each backup includes a timestamp to distinguish multiple backups
-- All backups are preserved indefinitely
-- You manually manage cleanup (review and delete as needed)
-- Backups preserve the exact original file structure for full recovery
-
-### Best practices
-
-**When you discover untracked agent files:**
-
-1. Run `aligntrue sync`
-2. Review the detected files
-3. Confirm to enable them as export targets
-4. AlignTrue extracts old content to `.aligntrue/extracted-rules.md`
-5. Review the extracted content for anything you want to keep
-6. Copy/paste important sections into your `edit_source` file (e.g., `AGENTS.md`)
-7. On next sync, files are automatically synced with your current rules
-
-**For rules from other sources:**
-
-1. Copy rules into a temporary agent file (e.g., `CLAUDE.md`, `.cursor/rules/temp.mdc`)
-2. Run `aligntrue sync`
-3. Confirm to enable the file
-4. Review extracted content in `.aligntrue/extracted-rules.md`
-5. Copy/paste the rules you want into your edit source
-6. Delete the temporary file (or leave it - it will continue receiving your synced rules)
-7. Edit source files to remove duplicates
-8. Run `aligntrue sync` again
-
-**Better to merge first, clean up later** than lose content.
 
 ---
 
@@ -669,7 +458,7 @@ aligntrue sync --dry-run
 
 Audit trail:
   [2025-10-27T12:00:00Z] Loaded config from .aligntrue/config.yaml
-  [2025-10-27T12:00:01Z] Parsed 3 rules from .aligntrue/.rules.yaml
+  [2025-10-27T12:00:01Z] Parsed 3 rules from .aligntrue/rules/
   [2025-10-27T12:00:02Z] Resolved 2 scopes
   [2025-10-27T12:00:03Z] Exported to cursor (1 file)
   [2025-10-27T12:00:04Z] Exported to agents (1 file)
@@ -872,7 +661,7 @@ aligntrue sync
     {
       "rule_id": "my-project.backend.use-typescript",
       "content_hash": "a3b2c1d4e5f6...",
-      "source": "local:.aligntrue/.rules.yaml"
+      "source": "local:.aligntrue/rules/"
     }
   ],
   "bundle_hash": "e5f6a7b8c9d0..."
@@ -992,7 +781,7 @@ aligntrue check --ci
 
 ```bash
 # Check file sizes
-ls -lh AGENTS.md .aligntrue/.rules.yaml
+ls -lh .aligntrue/rules/*.md .aligntrue/.rules.yaml
 
 # Run with dry-run to test
 aligntrue sync --dry-run
@@ -1003,25 +792,19 @@ aligntrue sync --dry-run
 
 ---
 
-### Conflicts on every sync
+### Agent files not updating
 
-**Cause:** Agent and IR are both being edited.
+**Cause:** Agent files are read-only exports. Edit `.aligntrue/rules/` instead.
 
 **Fix:**
 
-**Option 1: Native format workflow (recommended)**
+```bash
+# Edit rule files
+nano .aligntrue/rules/global.md
 
-- Edit `AGENTS.md` or any agent file
-- Run `aligntrue sync` to propagate changes
-- Enable bidirectional sync with `auto_pull: true`
-
-**Option 2: Manual control**
-
-- Edit `AGENTS.md` as primary file
-- Run `aligntrue sync` to update other agents
-- Disable auto-pull with `auto_pull: false`
-
-**Tip:** Use native format workflow for flexibility - edit any file, changes sync everywhere.
+# Sync exports to agents
+aligntrue sync
+```
 
 ---
 
@@ -1079,36 +862,30 @@ $ echo $?
 
 ## The actual defaults
 
-| Setting            | Default         | Actual Behavior                             |
-| ------------------ | --------------- | ------------------------------------------- |
-| `mode`             | `solo`          | No lockfile, no team features               |
-| `lockfile.mode`    | (N/A solo)      | Soft (team mode) - warn on drift            |
-| `lockfile.mode`    | (N/A solo)      | Soft (team mode) - warn on drift            |
-| Conflict handling  | Last-write-wins | Most recent file's version used, no prompts |
-| Prompts            | None            | All merges automatic                        |
-| Timestamp tracking | None            | No `.last-sync` file used                   |
-| Workflow modes     | Not implemented | Fields exist but ignored                    |
-| Primary agent      | Not implemented | Fields exist but ignored                    |
+| Setting           | Default         | Actual Behavior                      |
+| ----------------- | --------------- | ------------------------------------ |
+| `mode`            | `solo`          | No lockfile, no team features        |
+| `lockfile.mode`   | (N/A solo)      | Soft (team mode) - warn on drift     |
+| Conflict handling | Last-write-wins | Most recent file's version used      |
+| Prompts           | None            | All merges automatic                 |
+| Git mode          | ignore          | Agent files not committed by default |
 
 ## Common questions
 
-**Q: Can I have Cursor and AGENTS.md in sync?**
-A: Yes, by default. Edit either one, run `aligntrue sync`, both stay synchronized.
+**Q: Where do I edit my rules?**
+A: Edit files in `.aligntrue/rules/` (e.g., `global.md`, `backend.md`, `testing.md`).
 
-**Q: What if I edit both files before syncing?**
-A: Last-write-wins by mtime. Whichever you edited more recently is used.
+**Q: Can I have Cursor and AGENTS.md in sync?**
+A: Yes, by default. Edit `.aligntrue/rules/`, run `aligntrue sync`, both stay synchronized.
+
+**Q: What if I edit an agent file directly?**
+A: It will be backed up and overwritten on the next sync. Agent files are read-only exports. Edit `.aligntrue/rules/` instead.
 
 **Q: Can I prevent edits to certain files?**
 A: Not at the file level. In team mode, you can use lockfile validation to block unapproved changes.
 
-**Q: What happens if both files have the same section but I edited different sections in each?**
-A: Sections are independent. Both are kept unless there's a heading conflict. If same heading, newer file wins.
-
 **Q: Is there a `.last-sync` file I should commit?**
 A: No. That file is not used in the current implementation.
-
-**Q: What does `sync.primary_agent` do?**
-A: It's a configuration field but not implemented. Don't use it.
 
 **Q: Can I set up automatic syncing?**
 A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for scheduled syncs.
@@ -1117,7 +894,6 @@ A: No. Use `aligntrue watch` for continuous file watching, or CI/CD for schedule
 
 ## See also
 
-- [Choosing Your Edit Source](/docs/01-guides/00-edit-source) - For practical setup and workflow examples
 - [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections) - Authoring rules with sections and fingerprints
 - [Command Reference](/docs/04-reference/cli-reference) - Detailed flag documentation
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
