@@ -9,7 +9,8 @@ import { execFileSync } from "child_process";
 import { parse as parseYaml } from "yaml";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "config-commands-test");
-const CLI_PATH = join(process.cwd(), "dist", "index.js");
+// Use __dirname to get reliable path regardless of where tests are run from
+const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 /**
  * Helper to safely run CLI commands with proper path handling
@@ -35,9 +36,12 @@ describe("Config Commands", () => {
     const _config = {
       mode: "solo",
       exporters: ["cursor", "agents"],
-      sync: {
-        edit_source: "AGENTS.md",
-        auto_pull: false,
+      modules: {
+        lockfile: false,
+        bundle: false,
+      },
+      performance: {
+        max_file_size_mb: 10,
       },
     };
     writeFileSync(
@@ -46,9 +50,11 @@ describe("Config Commands", () => {
 exporters:
   - cursor
   - agents
-sync:
-  edit_source: "AGENTS.md"
-  auto_pull: false
+modules:
+  lockfile: false
+  bundle: false
+performance:
+  max_file_size_mb: 10
 `,
       "utf-8",
     );
@@ -68,8 +74,8 @@ sync:
     });
 
     it("should get a nested value using dot notation", () => {
-      const result = runCli(["config", "get", "sync.edit_source"]);
-      expect(result.trim()).toBe("AGENTS.md");
+      const result = runCli(["config", "get", "modules.lockfile"]);
+      expect(result.trim()).toBe("false");
     });
 
     it("should get an array value", () => {
@@ -109,14 +115,14 @@ sync:
     });
 
     it("should set a nested value using dot notation", () => {
-      runCli(["config", "set", "sync.auto_pull", "true"]);
-      const result = runCli(["config", "get", "sync.auto_pull"]);
+      runCli(["config", "set", "modules.lockfile", "true"]);
+      const result = runCli(["config", "get", "modules.lockfile"]);
       expect(result.trim()).toBe("true");
     });
 
     it("should set a boolean value", () => {
-      runCli(["config", "set", "sync.auto_pull", "true"]);
-      const result = runCli(["config", "get", "sync.auto_pull"]);
+      runCli(["config", "set", "modules.bundle", "true"]);
+      const result = runCli(["config", "get", "modules.bundle"]);
       expect(result.trim()).toBe("true");
     });
 
@@ -154,46 +160,46 @@ sync:
       const result = runCli(["config", "list"]);
       expect(result).toContain("mode = solo");
       expect(result).toContain("exporters = ");
-      expect(result).toContain("sync.edit_source = AGENTS.md");
-      expect(result).toContain("sync.auto_pull = false");
+      expect(result).toContain("modules.lockfile = false");
+      expect(result).toContain("modules.bundle = false");
     });
 
     it("should show all nested keys with dot notation", () => {
       const result = runCli(["config", "list"]);
       // Should use dot notation for nested keys
-      expect(result).toContain("sync.edit_source");
-      expect(result).toContain("sync.auto_pull");
+      expect(result).toContain("modules.lockfile");
+      expect(result).toContain("performance.max_file_size_mb");
     });
   });
 
   describe("config unset", () => {
     it("should remove an optional config value", () => {
-      // Use sync.auto_pull - note that loadConfig() may provide defaults,
+      // Use modules.bundle - note that loadConfig() may provide defaults,
       // so we verify removal by checking the raw config file, not via config get
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
 
       // First verify the value exists in the raw config
       const beforeContent = readFileSync(configPath, "utf-8");
       const beforeConfig = parseYaml(beforeContent) as Record<string, unknown>;
-      expect(beforeConfig.sync).toBeDefined();
-      expect((beforeConfig.sync as Record<string, unknown>).auto_pull).toBe(
+      expect(beforeConfig.modules).toBeDefined();
+      expect((beforeConfig.modules as Record<string, unknown>).bundle).toBe(
         false,
       );
 
       // Unset it
-      runCli(["config", "unset", "sync.auto_pull"]);
+      runCli(["config", "unset", "modules.bundle"]);
 
       // Verify it's removed from the raw config file
       const afterContent = readFileSync(configPath, "utf-8");
       const afterConfig = parseYaml(afterContent) as Record<string, unknown>;
-      // The sync.auto_pull key should be gone (sync object may still exist with other keys)
-      if (afterConfig.sync) {
+      // The modules.bundle key should be gone (modules object may still exist with other keys)
+      if (afterConfig.modules) {
         expect(
-          (afterConfig.sync as Record<string, unknown>).auto_pull,
+          (afterConfig.modules as Record<string, unknown>).bundle,
         ).toBeUndefined();
       } else {
-        // If entire sync object was removed, that's also valid
-        expect(afterConfig.sync).toBeUndefined();
+        // If entire modules object was removed, that's also valid
+        expect(afterConfig.modules).toBeUndefined();
       }
     });
 

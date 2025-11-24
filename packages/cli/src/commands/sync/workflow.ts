@@ -1,9 +1,9 @@
 /**
- * Sync workflow execution - handles backup, two-way sync, and sync execution
+ * Sync workflow execution - handles unidirectional sync from .aligntrue/rules/ to agents
  */
 
 import { existsSync, unlinkSync } from "fs";
-import { join, resolve as resolvePath } from "path";
+import { join } from "path";
 import * as clack from "@clack/prompts";
 import { BackupManager } from "@aligntrue/core";
 import { clearPromptHandler } from "@aligntrue/plugin-contracts";
@@ -38,6 +38,9 @@ export interface SyncResult {
 
 /**
  * Execute sync workflow
+ *
+ * This is a unidirectional sync: .aligntrue/rules/*.md -> agent-specific formats
+ * The .aligntrue/rules/ directory is the single source of truth.
  */
 export async function executeSyncWorkflow(
   context: SyncContext,
@@ -77,7 +80,7 @@ export async function executeSyncWorkflow(
         action: "pre-sync",
         mode: config.mode,
         includeAgentFiles: true,
-        editSource: config.sync?.edit_source || null,
+        editSource: null, // No longer using edit source
       });
       if (!options.quiet) {
         stopSpinner(`Safety backup created: ${backup.timestamp}`);
@@ -98,77 +101,38 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 2: Two-way sync (REMOVED - see edit_source migration)
-  // Edit source detection and merging now happens in handleAgentDetectionAndOnboarding (Step 4 of context builder)
-
-  // Step 3: Execute sync operation
+  // Step 2: Execute sync operation (unidirectional: rules -> agents)
   const syncOptions: {
     configPath: string;
     dryRun: boolean;
     force: boolean;
     interactive: boolean;
-    acceptAgent?: string;
     defaultResolutionStrategy?: string;
   } = {
     configPath,
     dryRun: options.dryRun || false,
-    // --yes flag enables automatic overwriting of read-only file edits
+    // --yes flag enables automatic overwriting
     force: options.force || options.yes || false,
     interactive: !options.force && !options.yes && !options.nonInteractive,
   };
 
   // Only set defaultResolutionStrategy if we have a value
   if (options.force || options.yes || options.nonInteractive) {
-    syncOptions.defaultResolutionStrategy = "accept_agent";
-  }
-
-  // Normalize acceptAgent format (accept both "agents" and "agents-md")
-  let normalizedAcceptAgent: string | undefined;
-  if (options.acceptAgent !== undefined) {
-    // Map format IDs to exporter names
-    // "agents-md" is the format ID, "agents" is the exporter name
-    if (options.acceptAgent === "agents-md") {
-      normalizedAcceptAgent = "agents";
-    } else {
-      normalizedAcceptAgent = options.acceptAgent;
-    }
-    if (normalizedAcceptAgent !== undefined) {
-      syncOptions.acceptAgent = normalizedAcceptAgent;
-    }
+    syncOptions.defaultResolutionStrategy = "overwrite";
   }
 
   let result: SyncResult;
 
-  // Execute sync operation
-  if (normalizedAcceptAgent) {
-    // Manual agent → IR sync (pullback)
-    if (!options.quiet) {
-      spinner.start(
-        options.dryRun
-          ? "Previewing import"
-          : `Importing from ${normalizedAcceptAgent}`,
-      );
-      spinnerActive = true;
-    }
-    result = await engine.syncFromAgent(
-      normalizedAcceptAgent,
-      context.absoluteSourcePath,
-      syncOptions,
-    );
-  } else {
-    // IR → agents sync (default)
-    if (options.verbose) {
-      clack.log.info("Phase 2: Exporting IR to all configured agents");
-    }
-
-    if (!options.quiet) {
-      spinner.start(
-        options.dryRun ? "Previewing changes" : "Syncing to agents",
-      );
-      spinnerActive = true;
-    }
-    result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
+  // Execute sync operation: .aligntrue/rules/*.md -> agents
+  if (options.verbose) {
+    clack.log.info("Exporting rules to all configured agents");
   }
+
+  if (!options.quiet) {
+    spinner.start(options.dryRun ? "Previewing changes" : "Syncing to agents");
+    spinnerActive = true;
+  }
+  result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
 
   if (!options.quiet) {
     // Stop without message, let result handler show outro/success message
@@ -177,8 +141,8 @@ export async function executeSyncWorkflow(
     stopSpinner(); // Silent stop if spinner was never started
   }
 
-  // Step 4: Remove starter file after first successful sync
-  if (!options.dryRun && result.success && !normalizedAcceptAgent) {
+  // Step 3: Remove starter file after first successful sync
+  if (!options.dryRun && result.success) {
     const starterPath = join(cwd, ".cursor/rules/aligntrue-starter.mdc");
     const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
     try {
@@ -191,7 +155,7 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 5: Auto-cleanup old backups
+  // Step 4: Auto-cleanup old backups
   if (!options.dryRun) {
     const keepCount = config.backup?.keep_count || 20;
     try {
@@ -206,7 +170,7 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 6: Update .gitignore if configured
+  // Step 5: Update .gitignore if configured
   if (
     !options.dryRun &&
     result.success &&
@@ -233,60 +197,6 @@ export async function executeSyncWorkflow(
             `Failed to update .gitignore: ${_error instanceof Error ? _error.message : String(_error)}`,
           );
         }
-      }
-    }
-  }
-
-  // Step 7: Check edit source file sizes and provide hints
-  if (result.success && !options.dryRun) {
-    try {
-      const { analyzeFiles, formatFileSizeWarnings } = await import(
-        "../../utils/file-size-detector.js"
-      );
-
-      // Get edit source files to analyze
-      const editSource = config.sync?.edit_source;
-      const filesToAnalyze: Array<{ path: string; relativePath: string }> = [];
-
-      if (editSource) {
-        const patterns = Array.isArray(editSource) ? editSource : [editSource];
-
-        for (const pattern of patterns) {
-          // Skip special patterns
-          if (
-            pattern === ".rules.yaml" ||
-            pattern === "any_agent_file" ||
-            pattern.includes("*")
-          ) {
-            continue;
-          }
-
-          // Check if file exists and add to analysis
-          const fullPath = resolvePath(cwd, pattern);
-          if (existsSync(fullPath)) {
-            filesToAnalyze.push({
-              path: fullPath,
-              relativePath: pattern,
-            });
-          }
-        }
-      }
-
-      // Analyze files if we have any
-      if (filesToAnalyze.length > 0) {
-        const analyses = analyzeFiles(filesToAnalyze);
-        const warnings = formatFileSizeWarnings(analyses);
-
-        if (warnings) {
-          console.log(warnings);
-        }
-      }
-    } catch (_error) {
-      // Silent failure on file size analysis - not critical
-      if (options.verbose) {
-        clack.log.warn(
-          `Failed to analyze file sizes: ${_error instanceof Error ? _error.message : String(_error)}`,
-        );
       }
     }
   }

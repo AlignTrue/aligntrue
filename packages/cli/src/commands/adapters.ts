@@ -20,7 +20,6 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
-import { normalizeEditSources } from "../utils/edit-source.js";
 
 const CONFIG_PATH = ".aligntrue/config.yaml";
 
@@ -429,21 +428,8 @@ async function enableAdapters(
     );
   }
 
-  try {
-    const refreshedConfig = await tryLoadConfig(CONFIG_PATH);
-    const editSources = normalizeEditSources(refreshedConfig.sync?.edit_source);
-    const editSourceLabels = editSources.map((src) => src.label).join(", ");
-
-    console.log(`\nEdit sources: ${editSourceLabels} (auto-configured)`);
-    console.log("\nTo view all settings:  aligntrue status");
-    console.log(
-      "To customize sources:  aligntrue config set sync.edit_source <pattern>",
-    );
-  } catch {
-    console.log(
-      "\nTip: Run 'aligntrue status' to view and manage edit sources.",
-    );
-  }
+  console.log("\nRule source: .aligntrue/rules/*.md");
+  console.log("\nTo view all settings:  aligntrue status");
 
   console.log("\nNext step:");
   console.log("  Run: aligntrue sync");

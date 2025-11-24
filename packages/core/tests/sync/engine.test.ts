@@ -501,39 +501,8 @@ sections:
     });
   });
 
-  describe("syncFromAgent", () => {
-    it("loads agent rules with mock implementation", async () => {
-      // Setup: create config and rules files
-      const config = `version: "1"
-mode: solo
-sources:
-  - type: local
-    path: rules.yaml
-exporters: ['cursor']
-`;
-      const rules = `id: test-pack
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Example Rule
-    level: 2
-    content: This is a test rule for TypeScript files.
-    fingerprint: example-rule
-`;
-      const configPath = join(CONFIG_DIR, "config.yaml");
-      const rulesPath = join(TEST_DIR, "rules.yaml");
-      writeFileSync(configPath, config, "utf8");
-      writeFileSync(rulesPath, rules, "utf8");
-
-      const result = await engine.syncFromAgent("cursor", rulesPath, {
-        configPath,
-      });
-
-      // Should fail because agent file doesn't exist
-      expect(result.success).toBe(false);
-      expect(result.warnings?.[0]).toContain("Agent file not found");
-    });
-  });
+  // Note: syncFromAgent was removed in the Ruler-style architecture refactor
+  // Agent pullback is no longer supported - .aligntrue/rules/*.md is the single source of truth
 
   describe("clear", () => {
     it("clears internal state", async () => {

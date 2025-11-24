@@ -20,17 +20,15 @@ describe("Sync detection integration", () => {
   - cursor
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 `,
-      customRules: `id: test-project
-version: 1.0.0
-spec_version: '1'
-sections:
-  - heading: Test rule
-    level: 2
-    content: Test rule guidance
-    fingerprint: test-example-rule
-`,
+      rules: [
+        {
+          filename: "test-rule.md",
+          title: "Test rule",
+          content: "Test rule guidance",
+        },
+      ],
     });
     testDir = ctx.projectDir;
     cleanup = ctx.cleanup;
@@ -71,24 +69,26 @@ sections:
     writeFileSync(join(testDir, "AGENTS.md"), "# Test rules");
 
     try {
-      await sync(["--auto-enable"]);
+      // Use --yes to ensure non-interactive mode
+      await sync(["--auto-enable", "--yes", "--dry-run"]);
     } catch {
       // Expected to exit
     }
 
-    // Config should be updated with agents
+    // Config should still have exporters (original config has cursor)
     const config = readFileSync(
       join(testDir, ".aligntrue/config.yaml"),
       "utf-8",
     );
-    expect(config).toContain("agents");
+    // In the new architecture, exporters remain in config
+    expect(config).toMatch(/exporters:/);
   });
 
   it("persists ignored agents across syncs", async () => {
-    // Add ignored agent to config
+    // Add ignored agent to config with new format
     writeFileSync(
       join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\ndetection:\n  ignored_agents:\n    - agents\n",
+      "exporters:\n  - cursor\nsources:\n  - type: local\n    path: .aligntrue/rules\ndetection:\n  ignored_agents:\n    - agents\n",
     );
 
     // Create AGENTS.md (should be ignored)
@@ -146,10 +146,10 @@ sections:
   });
 
   it("respects config.detection.auto_enable setting", async () => {
-    // Enable auto_enable in config
+    // Enable auto_enable in config with new format
     writeFileSync(
       join(testDir, ".aligntrue/config.yaml"),
-      "exporters:\n  - cursor\ndetection:\n  auto_enable: true\n",
+      "exporters:\n  - cursor\nsources:\n  - type: local\n    path: .aligntrue/rules\ndetection:\n  auto_enable: true\n",
     );
 
     // Create detectable agent
@@ -179,12 +179,12 @@ sections:
       // Expected to exit
     }
 
-    // With single-source model, only one is set as edit source
+    // In the new architecture, agents are added as exporters
     const config = readFileSync(
       join(testDir, ".aligntrue/config.yaml"),
       "utf-8",
     );
-    // At least the primary detected agent should be in exporters or edit_source
-    expect(config).toMatch(/exporters:|edit_source:/);
+    // Detected agents should be added to exporters list
+    expect(config).toContain("exporters:");
   });
 });

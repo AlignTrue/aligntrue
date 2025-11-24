@@ -3,20 +3,20 @@
  * Extracted from check.ts for better maintainability
  */
 
-import { resolve } from "path";
-import { existsSync } from "fs";
+import { join } from "path";
+import { existsSync, readdirSync, statSync } from "fs";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
 /**
  * Validate file organization and return warnings for large files
- * Analyzes edit_source files and warns if they exceed size thresholds
+ * Analyzes .aligntrue/rules/*.md files and warns if they exceed size thresholds
  *
  * @param config - AlignTrue configuration
  * @param cwd - Current working directory
  * @returns Array of warning messages for large files
  */
 export async function validateFileOrganization(
-  config: AlignTrueConfig,
+  _config: AlignTrueConfig,
   cwd: string,
 ): Promise<string[]> {
   const warnings: string[] = [];
@@ -29,29 +29,21 @@ export async function validateFileOrganization(
       "../../utils/file-size-detector.js"
     );
 
-    // Get edit source files to analyze
-    const editSource = config.sync?.edit_source;
+    // In new architecture, analyze .aligntrue/rules/*.md files
+    const rulesDir = join(cwd, ".aligntrue", "rules");
     const filesToAnalyze: Array<{ path: string; relativePath: string }> = [];
 
-    if (editSource) {
-      const patterns = Array.isArray(editSource) ? editSource : [editSource];
+    if (existsSync(rulesDir)) {
+      const files = readdirSync(rulesDir).filter((f) => f.endsWith(".md"));
 
-      for (const pattern of patterns) {
-        // Skip special patterns
-        if (
-          pattern === ".rules.yaml" ||
-          pattern === "any_agent_file" ||
-          pattern.includes("*")
-        ) {
-          continue;
-        }
+      for (const file of files) {
+        const fullPath = join(rulesDir, file);
+        const stat = statSync(fullPath);
 
-        // Check if file exists and add to analysis
-        const fullPath = resolve(cwd, pattern);
-        if (existsSync(fullPath)) {
+        if (stat.isFile()) {
           filesToAnalyze.push({
             path: fullPath,
-            relativePath: pattern,
+            relativePath: `.aligntrue/rules/${file}`,
           });
         }
       }
@@ -70,7 +62,7 @@ export async function validateFileOrganization(
 
       for (const large of largeFiles) {
         warnings.push(
-          `${large.relativePath} is very large (${large.lineCount} lines). Consider splitting: aligntrue sources split`,
+          `${large.relativePath} is very large (${large.lineCount} lines). Consider splitting into smaller rules.`,
         );
       }
     }

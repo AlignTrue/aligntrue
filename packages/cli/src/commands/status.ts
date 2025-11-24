@@ -17,10 +17,6 @@ import {
   getAgentDisplayName,
 } from "../utils/detect-agents.js";
 import {
-  normalizeEditSources,
-  type EditSourceSummary,
-} from "../utils/edit-source.js";
-import {
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
@@ -68,11 +64,9 @@ interface StatusSummary {
     detectedButNotConfigured: ExporterStatus[];
     configuredButMissing: ExporterStatus[];
   };
-  sync: {
-    workflowMode: string;
-    editSources: EditSourceSummary[];
-    autoPull: { enabled: boolean; primaryAgent?: string | null };
-    primaryAgent?: string | null;
+  rules: {
+    directory: string;
+    count: number;
   };
   lockfile: {
     enabled: boolean;
@@ -203,12 +197,19 @@ function buildStatusSummary(
     path: paths.bundle,
   };
 
-  const workflowMode = config.sync?.workflow_mode || "auto";
-  const editSources = normalizeEditSources(config.sync?.edit_source);
-  const autoPullEnabled =
-    config.sync?.auto_pull === undefined
-      ? true
-      : Boolean(config.sync.auto_pull);
+  // Count rule files in .aligntrue/rules/
+  const rulesDir = resolve(cwd, ".aligntrue/rules");
+  let rulesCount = 0;
+  if (existsSync(rulesDir)) {
+    try {
+      const { readdirSync } = require("fs");
+      rulesCount = readdirSync(rulesDir).filter((f: string) =>
+        f.endsWith(".md"),
+      ).length;
+    } catch {
+      // Ignore errors, just show 0
+    }
+  }
 
   return {
     mode: config.mode,
@@ -220,14 +221,9 @@ function buildStatusSummary(
       detectedButNotConfigured,
       configuredButMissing,
     },
-    sync: {
-      workflowMode,
-      editSources,
-      autoPull: {
-        enabled: autoPullEnabled,
-        primaryAgent: config.sync?.primary_agent || null,
-      },
-      primaryAgent: config.sync?.primary_agent || null,
+    rules: {
+      directory: rulesDir,
+      count: rulesCount,
     },
     lockfile,
     bundle,
@@ -277,23 +273,9 @@ function renderStatus(summary: StatusSummary): void {
     );
   }
 
-  console.log("\nSync settings:");
-  console.log(`  Workflow: ${summary.sync.workflowMode}`);
-  console.log(
-    `  Edit sources: ${summary.sync.editSources
-      .map((src) => src.label)
-      .join(", ")}`,
-  );
-
-  const autoPull = summary.sync.autoPull;
-  const autoPullDetail = autoPull.enabled
-    ? `enabled${autoPull.primaryAgent ? ` (pulling from ${autoPull.primaryAgent})` : ""}`
-    : "disabled";
-  console.log(`  Auto-pull: ${autoPullDetail}`);
-
-  if (!autoPull.enabled && summary.sync.primaryAgent) {
-    console.log(`  Primary agent: ${summary.sync.primaryAgent}`);
-  }
+  console.log("\nRules:");
+  console.log(`  Directory: ${summary.rules.directory}`);
+  console.log(`  Files: ${summary.rules.count} .md file(s)`);
 
   console.log("\nLockfile:");
   if (summary.lockfile.enabled) {

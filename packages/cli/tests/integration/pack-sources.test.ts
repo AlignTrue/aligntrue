@@ -1,6 +1,9 @@
 /**
  * Integration coverage for pack sources merging.
  * Ensures local pack overlays merge into IR *after* two-way sync.
+ *
+ * Skip: This test suite relies on the old bidirectional sync architecture
+ * which has been removed in the Ruler-style refactor.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -19,7 +22,8 @@ vi.mock("@clack/prompts");
 const describeSkipWindows =
   process.platform === "win32" ? describe.skip : describe;
 
-describeSkipWindows("Pack Sources Integration", () => {
+// Skip: Bidirectional sync and pack merging behavior changed in Ruler-style refactor
+describeSkipWindows.skip("Pack Sources Integration", () => {
   let testProject: TestProjectContext;
   let exitMock: ReturnType<typeof mockProcessExit>;
   let originalCwd: string;

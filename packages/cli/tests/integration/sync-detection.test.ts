@@ -9,7 +9,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 
 const TEST_DIR = join(process.cwd(), "temp-sync-detection-test");
-const CLI_PATH = join(process.cwd(), "dist/index.js");
+// Use __dirname to get reliable path regardless of where tests are run from
+const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 function runCLI(args: string[]): {
   stdout: string;
@@ -81,7 +82,9 @@ describe("Sync Detection Integration Tests", () => {
     expect(syncResult.exitCode).toBe(0);
   });
 
-  test("sync detects Cursor .mdc file edits by mtime", async () => {
+  // Skip: This test was for bidirectional sync mtime detection which has been removed
+  // in the Ruler-style architecture refactor. Sync is now unidirectional (IR -> agents).
+  test.skip("sync detects Cursor .mdc file edits by mtime", async () => {
     // Setup: init project
     const initResult = runCLI(["init", "--yes"]);
     expect(initResult.exitCode).toBe(0);

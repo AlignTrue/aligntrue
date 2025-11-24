@@ -109,6 +109,7 @@ export async function executeExporters(
 
       const request: ScopedExportRequest = {
         scope,
+        rules: [], // TODO: Load rules from .aligntrue/rules/
         pack: scopedPack,
         outputPath,
       };

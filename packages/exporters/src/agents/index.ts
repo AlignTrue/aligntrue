@@ -1,8 +1,8 @@
 /**
  * AGENTS.md exporter
- * Exports AlignTrue rules to universal AGENTS.md format
+ * Exports AlignTrue rules as links to .aligntrue/rules/*.md files
  *
- * Format: Single root-level AGENTS.md file with v1 versioned structure
+ * Format: AGENTS.md file with links to rule files (not concatenated content)
  * Target agents: Claude, Copilot, Aider, and other AGENTS.md-compatible tools
  */
 
@@ -10,46 +10,38 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
+  ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
-import { getAlignTruePaths } from "@aligntrue/core";
+import type { RuleFile, RuleFrontmatter } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
-
-/**
- * State for collecting all scopes before generating single merged file
- */
-interface ExporterState {
-  allSections: Array<{ section: AlignSection; scopePath: string }>;
-  seenScopes: Set<string>;
-}
+import { join } from "path";
 
 export class AgentsExporter extends ExporterBase {
   name = "agents";
   version = "1.0.0";
-
-  // State for accumulating sections across multiple scope calls
-  private state: ExporterState = {
-    allSections: [],
-    seenScopes: new Set(),
+  capabilities: ExporterCapabilities = {
+    multiFile: false, // Single file format
+    twoWaySync: false, // No longer supports two-way sync
+    scopeAware: true, // Can filter by scope
+    preserveStructure: false, // Link-based, doesn't preserve file structure
+    nestedDirectories: true, // Supports nested scope directories
   };
 
   override async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    // Store config for use in helper methods
-    this.currentConfig = options.config;
+    // Get rules from request (handles backward compatibility with pack)
+    const rules = this.getRulesFromRequest(request);
 
-    const sections = pack.sections;
+    // Filter rules that should be exported to this agent
+    const exportableRules = rules.filter((rule) =>
+      this.shouldExportRule(rule, "agents"),
+    );
 
-    // Validate inputs
-    if (sections.length === 0) {
-      // Empty scope is allowed, just skip accumulation
+    if (exportableRules.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -57,268 +49,194 @@ export class AgentsExporter extends ExporterBase {
       };
     }
 
-    // Accumulate content with scope information
-    const scopePath = this.formatScopePath(scope);
+    // Group rules by nested location for proper AGENTS.md placement
+    const rulesByLocation = this.groupRulesByLocation(exportableRules);
 
-    // Natural markdown sections
-    sections.forEach((section) => {
-      this.state.allSections.push({ section, scopePath });
-    });
+    const allFilesWritten: string[] = [];
+    const contentHashes: string[] = [];
 
-    this.state.seenScopes.add(scopePath);
+    for (const [location, locationRules] of rulesByLocation.entries()) {
+      // Determine output path
+      const outputPath =
+        location === ""
+          ? join(outputDir, "AGENTS.md")
+          : join(outputDir, location, "AGENTS.md");
 
-    // Determine output path based on scope
-    // For non-default scopes, write to nested directory structure
-    const paths = getAlignTruePaths(outputDir);
-    let outputPath: string;
-    if (scope.isDefault) {
-      // Default scope: write to root AGENTS.md
-      outputPath = paths.agentsMd();
-    } else {
-      // Named scope: write to scope-specific nested directory
-      // e.g., apps/web/AGENTS.md
-      outputPath = paths.agentsMdScoped(scope.path);
-    }
-
-    // Get managed sections from options
-    const managedSections =
-      (options as { managedSections?: string[] }).managedSections || [];
-
-    // Get scope prefixing config from options
-    const scopePrefixing =
-      (options as { scopePrefixing?: "off" | "auto" | "always" })
-        .scopePrefixing || "off";
-
-    // Merge with existing file to preserve user-added sections
-    const allSectionsIR = this.state.allSections.map(({ section }) => section);
-    const mergeResult = await this.readAndMerge(
-      outputPath,
-      allSectionsIR,
-      "agents",
-      managedSections,
-    );
-
-    // Generate AGENTS.md content - natural markdown mode
-    const result = this.generateSectionsContent(
-      mergeResult.mergedSections,
-      options.unresolvedPlugsCount,
-      managedSections,
-      scopePrefixing,
-      outputPath, // Pass output path for read-only check
-    );
-    const content = result.content;
-    const warnings = [...result.warnings, ...mergeResult.warnings];
-
-    // Compute content hash from merged sections
-    const contentHash = computeContentHash({
-      sections: mergeResult.mergedSections,
-    });
-    const fidelityNotes = this.computeSectionFidelityNotes(
-      mergeResult.mergedSections,
-    );
-
-    // Write file atomically if not dry-run
-    const filesWritten = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options,
-    );
-
-    const exportResult = this.buildResult(filesWritten, contentHash, [
-      ...warnings,
-      ...fidelityNotes,
-    ]);
-
-    return exportResult;
-  }
-
-  /**
-   * Format scope path for display in AGENTS.md
-   * Default scope (path: ".") → "all files"
-   * Named scope → actual path
-   */
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
-  }
-
-  /**
-   * Generate read-only warning header if this file is not the edit source
-   */
-  private generateReadOnlyHeader(outputPath: string): string {
-    const config = this.currentConfig as
-      | {
-          sync?: {
-            edit_source?: string | string[];
-            centralized?: boolean;
-          };
-        }
-      | undefined;
-    if (!config) return "";
-
-    const editSource = config.sync?.edit_source;
-    const isDecentralized = config.sync?.centralized === false || false;
-
-    if (!editSource || isDecentralized) return "";
-
-    // Check if this output matches edit source pattern
-    const patterns = Array.isArray(editSource) ? editSource : [editSource];
-    const isEditSource = patterns.some((pattern) => {
-      // Check for AGENTS.md pattern
-      if (pattern === "AGENTS.md" && outputPath.endsWith("/AGENTS.md")) {
-        return true;
-      }
-      // Exact path match
-      if (outputPath.endsWith(pattern)) {
-        return true;
-      }
-      return false;
-    });
-
-    if (isEditSource) return "";
-
-    // Not edit source - add read-only warning
-    const sourceDisplay = Array.isArray(editSource)
-      ? editSource.join(", ")
-      : editSource;
-    return `<!--
-WARNING: Read-only export from AlignTrue
-
-This file is automatically generated. Changes will be overwritten on next sync.
-
-Edit source: ${sourceDisplay}
-To modify these rules, edit ${sourceDisplay} instead, then run 'aligntrue sync'.
--->
-
-`;
-  }
-
-  /**
-   * Generate AGENTS.md content from natural markdown sections
-   * Much simpler than rule-based format - just render sections as-is
-   * Optionally adds scope prefixes based on config
-   */
-  private generateSectionsContent(
-    sections: AlignSection[],
-    unresolvedPlugs?: number,
-    managedSections: string[] = [],
-    scopePrefixing: "off" | "auto" | "always" = "off",
-    outputPath?: string,
-  ): {
-    content: string;
-    warnings: string[];
-  } {
-    // Add read-only warning if not edit source
-    const readOnlyWarning = outputPath
-      ? this.generateReadOnlyHeader(outputPath)
-      : "";
-
-    // Render sections with team-managed markers and optional scope prefixes
-    const sectionsMarkdown = this.renderSectionsWithPrefixes(
-      sections,
-      managedSections,
-      scopePrefixing,
-    );
-
-    // No header or footer - keep files clean and editable
-    // Content hash and fidelity notes shown in CLI output only
-
-    return {
-      content: readOnlyWarning + sectionsMarkdown,
-      warnings: [],
-    };
-  }
-
-  /**
-   * Render sections with optional scope prefixes
-   * Adds scope prefixes to headings based on vendor.aligntrue.source_scope
-   */
-  private renderSectionsWithPrefixes(
-    sections: AlignSection[],
-    managedSections: string[] = [],
-    scopePrefixing: "off" | "auto" | "always" = "off",
-  ): string {
-    if (sections.length === 0) {
-      return "";
-    }
-
-    // Check if we need prefixing
-    const shouldPrefix = scopePrefixing !== "off";
-
-    // For "auto" mode, check if multiple scopes are present
-    const hasMultipleScopes =
-      scopePrefixing === "auto" &&
-      new Set(sections.map((s) => s.vendor?.aligntrue?.source_scope)).size > 1;
-
-    const rendered = sections.map((section) => {
-      const lines: string[] = [];
-
-      // Add source marker before section
-      const marker = this.generateSourceMarker(section, this.currentConfig);
-      if (marker) {
-        lines.push(marker.trim()); // Remove trailing newline, we'll add it later
-        lines.push("");
-      }
-
-      // Check if team-managed
-      const isManaged = managedSections.some(
-        (managed) =>
-          managed.toLowerCase().trim() === section.heading.toLowerCase().trim(),
+      // Generate link-based content
+      const content = this.generateLinkBasedContent(
+        locationRules,
+        location,
+        outputDir,
       );
 
-      if (isManaged) {
-        lines.push(
-          "<!-- [TEAM-MANAGED]: This section is managed by your team.",
-        );
-        lines.push(
-          "Local edits will be preserved in backups but may be overwritten on next sync.",
-        );
-        lines.push(
-          "To keep changes, rename the section or remove from managed list. -->",
-        );
-        lines.push("");
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(this.computeHash(content));
+
+      // Write file
+      const files = await this.writeFile(outputPath, content, dryRun, {
+        ...options,
+        force: true, // Always force overwrite for read-only exports
+      });
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
       }
+    }
 
-      // Determine heading with optional scope prefix
-      let heading = section.heading;
-      const sourceScope = section.vendor?.aligntrue?.source_scope;
+    const combinedHash =
+      contentHashes.length > 0
+        ? this.computeHash(contentHashes.sort().join(""))
+        : "";
 
-      if (shouldPrefix && sourceScope && sourceScope !== "default") {
-        // Add prefix if:
-        // - scopePrefixing is "always", OR
-        // - scopePrefixing is "auto" AND multiple scopes detected
-        if (scopePrefixing === "always" || hasMultipleScopes) {
-          // Capitalize first letter of scope
-          const scopeName =
-            sourceScope.charAt(0).toUpperCase() + sourceScope.slice(1);
-          heading = `${scopeName}: ${heading}`;
+    return this.buildResult(allFilesWritten, combinedHash, []);
+  }
+
+  override translateFrontmatter(
+    frontmatter: RuleFrontmatter,
+  ): Record<string, unknown> {
+    // AGENTS.md uses minimal frontmatter - just title and description
+    const result: Record<string, unknown> = {};
+
+    if (frontmatter["title"]) {
+      result["title"] = frontmatter["title"];
+    }
+
+    if (frontmatter["description"]) {
+      result["description"] = frontmatter["description"];
+    }
+
+    // Include agents-specific metadata if present
+    if (frontmatter["agents"]) {
+      Object.assign(result, frontmatter["agents"]);
+    }
+
+    return result;
+  }
+
+  /**
+   * Group rules by their nested_location
+   */
+  private groupRulesByLocation(rules: RuleFile[]): Map<string, RuleFile[]> {
+    const byLocation = new Map<string, RuleFile[]>();
+
+    for (const rule of rules) {
+      const location = rule.frontmatter.nested_location || "";
+      if (!byLocation.has(location)) {
+        byLocation.set(location, []);
+      }
+      byLocation.get(location)!.push(rule);
+    }
+
+    return byLocation;
+  }
+
+  /**
+   * Generate link-based AGENTS.md content
+   */
+  private generateLinkBasedContent(
+    rules: RuleFile[],
+    location: string,
+    _outputDir: string, // Unused but kept for potential future use
+  ): string {
+    const lines: string[] = [];
+
+    // Read-only marker
+    lines.push(`<!--
+  READ-ONLY: This file is auto-generated by AlignTrue.
+  DO NOT EDIT DIRECTLY. Changes will be overwritten.
+  Edit rules in .aligntrue/rules/ instead.
+-->`);
+    lines.push("");
+
+    // Header
+    lines.push("# Agent Rules");
+    lines.push("");
+    lines.push(
+      "This file contains links to the canonical rules in `.aligntrue/rules/`.",
+    );
+    lines.push("AI agents should follow these linked guidelines.");
+    lines.push("");
+
+    // Group rules by category (using scope or a default "General" category)
+    const rulesByCategory = this.groupRulesByCategory(rules);
+
+    for (const [category, categoryRules] of rulesByCategory.entries()) {
+      lines.push(`## ${category}`);
+      lines.push("");
+
+      for (const rule of categoryRules) {
+        const title =
+          rule.frontmatter.title || rule.filename.replace(/\.md$/, "");
+        const description = rule.frontmatter.description || "";
+
+        // Compute relative path from AGENTS.md to the rule file
+        const rulesDir =
+          location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
+        const linkPath = `./${rulesDir}/${rule.filename}`;
+
+        if (description) {
+          lines.push(`- [${title}](${linkPath}) - ${description}`);
+        } else {
+          lines.push(`- [${title}](${linkPath})`);
         }
       }
 
-      // Heading with proper level
-      const headingPrefix = "#".repeat(section.level);
-      lines.push(`${headingPrefix} ${heading}`);
       lines.push("");
+    }
 
-      // Content
-      lines.push(section.content.trim());
+    return lines.join("\n");
+  }
 
-      return lines.join("\n");
-    });
+  /**
+   * Group rules by category for organized output
+   */
+  private groupRulesByCategory(rules: RuleFile[]): Map<string, RuleFile[]> {
+    const byCategory = new Map<string, RuleFile[]>();
 
-    return rendered.join("\n\n");
+    for (const rule of rules) {
+      // Use scope as category, or "General" if no scope
+      const category = rule.frontmatter.scope || "General";
+      const displayCategory = this.formatCategoryName(category);
+
+      if (!byCategory.has(displayCategory)) {
+        byCategory.set(displayCategory, []);
+      }
+      byCategory.get(displayCategory)!.push(rule);
+    }
+
+    // Ensure "General" is first if it exists
+    const sorted = new Map<string, RuleFile[]>();
+    if (byCategory.has("General")) {
+      sorted.set("General", byCategory.get("General")!);
+    }
+    for (const [cat, r] of byCategory) {
+      if (cat !== "General") {
+        sorted.set(cat, r);
+      }
+    }
+
+    return sorted;
+  }
+
+  /**
+   * Format category name for display
+   */
+  private formatCategoryName(scope: string): string {
+    if (scope === "." || scope === "" || scope === "General") {
+      return "General";
+    }
+
+    // Capitalize and clean up scope path
+    return scope
+      .split("/")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" / ");
   }
 
   /**
    * Reset internal state (useful for testing)
    */
   resetState(): void {
-    this.state = {
-      allSections: [],
-      seenScopes: new Set(),
-    };
+    // No state to reset in new implementation
   }
 }

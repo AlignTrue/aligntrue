@@ -23,7 +23,6 @@ import {
   validateGlobPatterns,
   validateMergeOrder,
 } from "../scope.js";
-import { EXPORTER_TO_EDIT_SOURCE_PATTERN } from "../config/edit-source-patterns.js";
 import type {
   AlignTrueConfig,
   AlignTrueMode,
@@ -229,53 +228,9 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   result.git.offline_fallback = result.git.offline_fallback ?? true;
   result.git.auto_gitignore = result.git.auto_gitignore ?? "auto";
 
-  // Apply sync defaults
+  // Apply sync defaults (minimal - most sync config removed in new architecture)
   if (!result.sync) {
     result.sync = {};
-  }
-
-  /**
-   * Set edit_source default if not specified
-   *
-   * Default logic (single source only):
-   * - Prefer Cursor (multi-file) if enabled
-   * - Fallback to AGENTS.md if agents exporter enabled
-   * - Otherwise first enabled exporter
-   * - No fallback - if no exporters configured, edit_source remains undefined
-   *
-   * Note: edit_source controls which files accept edits and sync TO canonical IR.
-   * IR (.aligntrue/.rules.yaml) is always the canonical source of truth.
-   * This setting just controls the input gate to IR.
-   */
-  if (result.sync.edit_source === undefined) {
-    // Priority order: cursor (multi-file) > agents (universal) > others
-    const priorityOrder = ["cursor", "agents", "copilot", "claude", "aider"];
-
-    for (const exporter of priorityOrder) {
-      if ((result.exporters || []).includes(exporter)) {
-        const pattern =
-          EXPORTER_TO_EDIT_SOURCE_PATTERN[
-            exporter as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
-          ];
-        if (pattern) {
-          result.sync.edit_source = pattern;
-          break;
-        }
-      }
-    }
-    // If no priority exporters, use first enabled
-    if (!result.sync.edit_source && (result.exporters || []).length > 0) {
-      const firstExporter = (result.exporters || [])[0];
-      if (firstExporter) {
-        const pattern =
-          EXPORTER_TO_EDIT_SOURCE_PATTERN[
-            firstExporter as keyof typeof EXPORTER_TO_EDIT_SOURCE_PATTERN
-          ];
-        if (pattern) {
-          result.sync.edit_source = pattern;
-        }
-      }
-    }
   }
 
   /**
@@ -285,91 +240,19 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sync.scope_prefixing = "off";
   }
 
-  /**
-   * Set backup defaults
-   *
-   * Solo mode: auto (enabled)
-   * Team/enterprise: auto (disabled, git history is backup)
-   */
-  /**
-   * source_files intentionally REMOVED
-   *
-   * edit_source now controls both:
-   * - which files accept edits (for two-way sync detection)
-   * - where to load rules FROM (multi-file source organization)
-   *
-   * When edit_source contains glob patterns, loadIR uses loadSourceFiles()
-   * When edit_source is undefined or single file, loadIR reads .rules.yaml directly
-   */
-
-  /**
-   * Solo mode: Auto-pull ENABLED by default
-   *
-   * Rationale: Solo devs benefit from native-format editing (edit .cursor rules directly).
-   * Auto-pull keeps IR in sync with agent edits automatically.
-   *
-   * - auto_pull: true (pulls from primary_agent before each sync)
-   * - on_conflict: accept_agent (agent edits win over IR when conflicts detected)
-   * - primary_agent: auto-detected from first importable exporter
-   * - workflow_mode: auto (prompt on first conflict to choose workflow)
-   * - show_diff_on_pull: true (show brief diff when auto-pull executes)
-   *
-   * To disable: Set sync.auto_pull: false in config
-   */
-  if (result.mode === "solo") {
-    result.sync.auto_pull = result.sync.auto_pull ?? true;
-    result.sync.on_conflict = result.sync.on_conflict ?? "accept_agent";
-    result.sync.workflow_mode = result.sync.workflow_mode ?? "auto";
-    result.sync.show_diff_on_pull = result.sync.show_diff_on_pull ?? true;
-
-    // Auto-detect primary_agent if not set (first exporter that supports import)
-    if (
-      !result.sync.primary_agent &&
-      result.exporters &&
-      result.exporters.length > 0
-    ) {
-      const importableAgents = [
-        "cursor",
-        "copilot",
-        "claude",
-        "aider",
-        "agents",
-      ];
-      const detected = result.exporters.find((e) =>
-        importableAgents.includes(e.toLowerCase()),
-      );
-      if (detected) {
-        result.sync.primary_agent = detected;
-      }
-    }
-  } else {
-    /**
-     * Team/enterprise mode: Auto-pull DISABLED by default
-     *
-     * Rationale: Teams need explicit review before accepting agent edits.
-     * IR is the single source of truth, modified only through explicit commands.
-     *
-     * - auto_pull: false (manual import only with --accept-agent)
-     * - on_conflict: prompt (ask user to resolve conflicts)
-     * - workflow_mode: ir_source (IR is source of truth)
-     * - show_diff_on_pull: true (show diff when manual import via --accept-agent)
-     *
-     * To enable: Set sync.auto_pull: true in config (not recommended for teams)
-     */
-    result.sync.auto_pull = result.sync.auto_pull ?? false;
-    result.sync.on_conflict = result.sync.on_conflict ?? "prompt";
-    result.sync.workflow_mode = result.sync.workflow_mode ?? "ir_source";
-    result.sync.show_diff_on_pull = result.sync.show_diff_on_pull ?? true;
-  }
+  // NOTE: Removed deprecated sync properties (auto_pull, on_conflict, workflow_mode,
+  // show_diff_on_pull, primary_agent, edit_source, source_files, source_markers).
+  // The new architecture uses .aligntrue/rules/*.md as the single source of truth
+  // with unidirectional sync to agents. No bidirectional sync or edit source switching.
 
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
     result.exporters = ["cursor", "agents"];
   }
 
-  // Apply source defaults
+  // Apply source defaults (now points to rules directory, not .rules.yaml)
   if (!result.sources || result.sources.length === 0) {
-    result.sources = [{ type: "local", path: ".aligntrue/.rules.yaml" }];
+    result.sources = [{ type: "local", path: ".aligntrue/rules" }];
   }
 
   // Apply performance defaults

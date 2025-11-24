@@ -95,44 +95,6 @@
       "description": "Sync behavior configuration",
       "additionalProperties": false,
       "properties": {
-        "auto_pull": {
-          "type": "boolean",
-          "description": "Automatically pull changes from primary agent on sync (default: true for solo, false for team)"
-        },
-        "primary_agent": {
-          "type": "string",
-          "description": "Primary agent to auto-pull from (e.g., 'cursor', 'copilot')"
-        },
-        "on_conflict": {
-          "type": "string",
-          "enum": ["prompt", "keep_ir", "accept_agent"],
-          "description": "Conflict resolution strategy: prompt (interactive), keep_ir (default), accept_agent (auto-accept)"
-        },
-        "workflow_mode": {
-          "type": "string",
-          "enum": ["auto", "ir_source", "native_format"],
-          "description": "Editing workflow preference: auto (ask on conflict), ir_source (edit .rules.yaml or AGENTS.md), native_format (edit agent files)"
-        },
-        "show_diff_on_pull": {
-          "type": "boolean",
-          "description": "Show diff summary when auto-pull executes (default: true)"
-        },
-        "edit_source": {
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "Single file pattern for accepting edits (recommended)"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Multiple file patterns for accepting edits (requires centralized: false)"
-            }
-          ],
-          "description": "Which file(s) accept edits: 'AGENTS.md' (single file), '.cursor/rules/*.mdc' (multi-file glob), '.aligntrue/rules/*.md' (AlignTrue-managed multi-file). Default is single source. Array requires centralized: false."
-        },
         "scope_prefixing": {
           "type": "string",
           "enum": ["off", "auto", "always"],
@@ -153,14 +115,14 @@
           "items": {
             "type": "string"
           },
-          "description": "File patterns to watch for changes (default: auto-detect from exporters)"
+          "description": "File patterns to watch for changes (default: .aligntrue/rules/**/*.md)"
         },
         "source_order": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Custom ordering of source files by basename (default: alphabetical). Example: ['architecture.md', 'security.md', 'coding.md']"
+          "description": "Custom ordering of rule files by basename (default: alphabetical). Example: ['architecture.md', 'security.md', 'coding.md']"
         },
         "source_markers": {
           "type": "string",
@@ -178,18 +140,6 @@
             }
           ],
           "description": "Automatically manage agent ignore files to prevent duplicate context. true: always manage, false: never manage, prompt: ask user (default: prompt)"
-        },
-        "ignore_file_priority": {
-          "type": "string",
-          "enum": ["native", "custom"],
-          "description": "Priority for format selection when multiple formats are available. native: use agent's native format (default), custom: use custom_format_priority"
-        },
-        "custom_format_priority": {
-          "type": "object",
-          "description": "Override native format priority per agent (e.g., {cursor: 'agents'} to prefer AGENTS.md over .mdc)",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },

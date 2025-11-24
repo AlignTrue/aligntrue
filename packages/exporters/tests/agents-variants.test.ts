@@ -130,13 +130,13 @@ describe("AGENTS.md-based exporter variants", () => {
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0]).toContain("AGENTS.md");
 
-      // Verify file content
+      // Verify file content - now link-based, not content-based
       const content = readFileSync(result.filesWritten[0], "utf-8");
-      // AGENTS.md format uses different headers
       expect(content.length).toBeGreaterThan(0);
-      expect(content).toContain("Test rule for " + variant);
-      // DEPRECATED: Footer check removed - footers no longer included
-      // expect(content).toContain("Content Hash:"); // Note: no hyphen in "Content Hash"
+      // New link-based format contains links to rules, not rule content directly
+      expect(content).toContain(".aligntrue/rules/");
+      expect(content).toContain("[test-rule]");
+      expect(content).toContain("# Agent Rules");
     }
   });
 

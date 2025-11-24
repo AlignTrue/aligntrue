@@ -2,7 +2,7 @@
  * Sync context builder - loads config, sources, exporters, and detects agents
  */
 
-import { existsSync, writeFileSync, statSync, unlinkSync } from "fs";
+import { existsSync, writeFileSync, statSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { createHash } from "crypto";
@@ -13,26 +13,57 @@ import {
   type AlignTrueConfig,
   saveMinimalConfig,
 } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
-import {
-  detectNewAgents,
-  detectUntrackedFiles,
-} from "../../utils/detect-agents.js";
-import {
-  formatDetectionOutput,
-  buildAgentSummary,
-  isMultiFileFormat,
-} from "../../utils/detection-output-formatter.js";
-import {
-  getExporterFromEditSource,
-  getAgentDisplayName,
-} from "../../utils/edit-source-agent-mapping.js";
-import { categorizeDetectedAgents } from "../../utils/edit-source-helpers.js";
-import { prepareEditSourceSwitch } from "../../utils/edit-source-content-merger.js";
+
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
+
+// Helper functions (replaced edit-source utilities)
+function _getExporterFromEditSource(
+  _source: string | string[] | undefined,
+): string | undefined {
+  return undefined; // No longer used with unidirectional sync
+}
+
+function getAgentDisplayName(agent: string): string {
+  const displayNames: Record<string, string> = {
+    cursor: "Cursor",
+    agents: "AGENTS.md",
+    claude: "Claude",
+    copilot: "Copilot",
+    windsurf: "Windsurf",
+    aider: "Aider",
+    "gemini-cli": "Gemini CLI",
+  };
+  return displayNames[agent] || agent;
+}
+
+function _categorizeDetectedAgents(
+  _detected: Array<{ agent: string; detected: boolean }>,
+  _currentAgent: string | undefined,
+  _exporters: string[],
+): { upgradeCandidates: string[]; exportTargets: string[] } {
+  return { upgradeCandidates: [], exportTargets: [] };
+}
+
+async function _prepareEditSourceSwitch(
+  _oldSource: string | string[] | undefined,
+  _newSource: string,
+  _cwd: string,
+): Promise<{
+  summary?: string;
+  content?: string;
+  backedUpFiles: string[];
+  sections: Array<{
+    heading: string;
+    content: string;
+    level: number;
+    fingerprint: string;
+  }>;
+}> {
+  return { backedUpFiles: [], sections: [] };
+}
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
 import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
@@ -46,7 +77,7 @@ const __dirname = dirname(__filename);
 /**
  * Generate fingerprint for section (matching schema behavior)
  */
-function generateFingerprint(heading: string): string {
+function _generateFingerprint(heading: string): string {
   return createHash("sha256")
     .update(heading.toLowerCase().trim())
     .digest("hex")
@@ -275,100 +306,6 @@ export async function buildSyncContext(
     );
   }
 
-  // Step 4: Unified agent detection and onboarding
-  // Detects new agents, handles edit source upgrades, and enables exporters
-  if (!options.noDetect && !options.dryRun) {
-    const changed = await handleAgentDetectionAndOnboarding(
-      cwd,
-      config,
-      configPath,
-      options,
-    );
-
-    if (changed) {
-      if (options.verbose) {
-        clack.log.info("Configuration or sources changed, reloading...");
-      }
-
-      // Reload config
-      const newConfig = await loadConfigWithValidation(configPath);
-      // Update config object
-      // We can't just assign to config because it's a let, but resolveAndMergeSources uses it
-      config = newConfig;
-
-      // Disable auto-pull for this run since we just performed onboarding actions
-      // This prevents auto-pull from immediately overwriting our work
-      if (!config.sync) config.sync = {};
-      config.sync.auto_pull = false;
-
-      // Re-resolve sources
-      if (!options.quiet) {
-        spinner.start("Refreshing sources");
-      }
-
-      try {
-        // Create a temporary config copy without edit_source for resolution
-        // This forces reading from the IR file (.rules.yaml) which we just updated with merged content
-        // Otherwise it would read from the new edit_source files which don't have the merged content yet
-        const resolveConfig = { ...config };
-        if (resolveConfig.sync) {
-          resolveConfig.sync = { ...resolveConfig.sync };
-          delete resolveConfig.sync.edit_source;
-        }
-
-        const resolveOpts2: {
-          cwd: string;
-          offlineMode?: boolean;
-          forceRefresh: boolean;
-          warnConflicts: boolean;
-          onGitProgress: (update: GitProgressUpdate) => void;
-        } = {
-          cwd,
-          forceRefresh: true, // Force refresh since files changed
-          warnConflicts: true,
-          onGitProgress: handleGitProgress,
-        };
-
-        const offlineVal2 = options.offline || options.skipUpdateCheck;
-        if (offlineVal2 !== undefined) {
-          resolveOpts2.offlineMode = offlineVal2;
-        }
-
-        bundleResult = await resolveAndMergeSources(
-          resolveConfig,
-          resolveOpts2,
-        );
-
-        // Update paths
-        sourcePath =
-          config.sources?.[0]?.type === "local"
-            ? config.sources[0].path || paths.rules
-            : bundleResult.sources[0]?.sourcePath || ".aligntrue/.rules.yaml";
-
-        absoluteSourcePath =
-          config.sources?.[0]?.type === "local"
-            ? resolve(cwd, sourcePath)
-            : sourcePath;
-
-        if (!options.quiet) {
-          spinner.stop(
-            bundleResult.sources.length > 1
-              ? `Refreshed and merged ${bundleResult.sources.length} sources`
-              : "Sources refreshed",
-          );
-        }
-      } catch (err) {
-        if (!options.quiet) {
-          spinner.stop("Source refresh failed");
-        }
-        throw ErrorFactory.fileWriteFailed(
-          "refresh",
-          err instanceof Error ? err.message : String(err),
-        );
-      }
-    }
-  }
-
   let lockfilePath: string | undefined;
   let lockfileWritten = false;
 
@@ -495,25 +432,33 @@ export async function buildSyncContext(
     );
   }
 
-  // Step 9: Write merged bundle to local IR
+  // Step 9: Write merged bundle to local IR (only for file-based sources)
+  // Skip for directory-based sources (new rule file format)
   if (bundleResult.sources.length > 0) {
-    try {
-      const yaml = await import("yaml");
-      const bundleYaml = yaml.stringify(bundleResult.pack);
+    const targetPath =
+      config.sources?.[0]?.type === "local"
+        ? resolve(cwd, config.sources[0].path || paths.rules)
+        : resolve(cwd, paths.rules);
 
-      const targetPath =
-        config.sources?.[0]?.type === "local"
-          ? resolve(cwd, config.sources[0].path || paths.rules)
-          : resolve(cwd, paths.rules);
+    // Check if target is a directory (new format - rules are already in place)
+    const targetStat = existsSync(targetPath) ? statSync(targetPath) : null;
+    const isDirectory = targetStat?.isDirectory() || false;
 
-      writeFileSync(targetPath, bundleYaml, "utf-8");
-      absoluteSourcePath = targetPath;
-    } catch (err) {
-      throw ErrorFactory.fileWriteFailed(
-        "merged bundle",
-        err instanceof Error ? err.message : String(err),
-      );
+    if (!isDirectory) {
+      // Old format: Write merged bundle to a file
+      try {
+        const yaml = await import("yaml");
+        const bundleYaml = yaml.stringify(bundleResult.pack);
+        writeFileSync(targetPath, bundleYaml, "utf-8");
+        absoluteSourcePath = targetPath;
+      } catch (err) {
+        throw ErrorFactory.fileWriteFailed(
+          "merged bundle",
+          err instanceof Error ? err.message : String(err),
+        );
+      }
     }
+    // For directories, absoluteSourcePath is already set correctly
   }
 
   const context: SyncContext = {
@@ -536,420 +481,7 @@ export async function buildSyncContext(
   return context;
 }
 
-/**
- * Unified handler for agent detection and onboarding
- * Replaces separate edit source detection and exporter enablement flows
- */
-async function handleAgentDetectionAndOnboarding(
-  cwd: string,
-  config: AlignTrueConfig,
-  configPath: string,
-  options: SyncOptions,
-): Promise<boolean> {
-  let changed = false;
-  const editSource = config.sync?.edit_source;
-
-  // 1. Detect all relevant files/agents
-  // Untracked files = potential content to import
-  const untrackedFiles = detectUntrackedFiles(cwd, editSource);
-  const filesWithContent = untrackedFiles.filter((f) => f.hasContent);
-
-  // New agents = agents present on disk but not in exporters list
-  const newAgents = detectNewAgents(
-    cwd,
-    config.exporters || [],
-    config.detection?.ignored_agents || [],
-  );
-
-  // 2. Group files by agent for summaries
-  const filesByAgent = new Map<string, typeof filesWithContent>();
-  for (const file of filesWithContent) {
-    if (!filesByAgent.has(file.agent)) {
-      filesByAgent.set(file.agent, []);
-    }
-    filesByAgent.get(file.agent)!.push(file);
-  }
-
-  // 3. Consolidate detected agent names
-  const detectedAgentNames = new Set<string>();
-  filesByAgent.forEach((_, agent) => detectedAgentNames.add(agent));
-  newAgents.forEach((a) => detectedAgentNames.add(a.name));
-
-  // Remove current edit source agent from detection list (we already know about it)
-  const currentEditSourceAgent = getExporterFromEditSource(editSource);
-  if (currentEditSourceAgent) {
-    detectedAgentNames.delete(currentEditSourceAgent);
-  }
-
-  if (detectedAgentNames.size === 0) {
-    return false;
-  }
-
-  const uniqueDetectedAgents = Array.from(detectedAgentNames);
-
-  // 4. Categorize into "upgrade candidates" vs "export targets"
-  const { upgradeCandidates, exportTargets } = categorizeDetectedAgents(
-    uniqueDetectedAgents,
-    editSource,
-  );
-
-  // 5. Build summaries for display
-  const summaries = [];
-  const displayNameMap: Record<string, string> = {
-    cursor: "Cursor",
-    agents: "AGENTS.md",
-    claude: "Claude",
-    crush: "Crush",
-    warp: "Warp",
-    gemini: "Gemini",
-  };
-
-  for (const agent of uniqueDetectedAgents) {
-    const displayName = displayNameMap[agent] || getAgentDisplayName(agent);
-    const files = filesByAgent.get(agent) || [];
-
-    // If we have files content stats, use them. Otherwise mock summary for agents detected via detectNewAgents
-    if (files.length > 0) {
-      summaries.push(buildAgentSummary(agent, displayName, files));
-    } else {
-      // For agents detected by existence only (no content read yet or directory based)
-      const agentInfo = newAgents.find((a) => a.name === agent);
-      // Mock a summary for display consistency
-      summaries.push({
-        agentName: agent,
-        displayName,
-        fileCount: agentInfo ? 1 : 0, // approximate
-        totalSections: 0,
-        isMultiFile: isMultiFileFormat(agent),
-      });
-    }
-  }
-
-  // 6. Handle non-interactive mode
-  const isNonInteractive = !!(
-    options.yes ||
-    options.nonInteractive ||
-    options.autoEnable ||
-    config.detection?.auto_enable
-  );
-
-  if (isNonInteractive) {
-    return await handleNonInteractiveOnboarding(
-      cwd,
-      config,
-      configPath,
-      options,
-      upgradeCandidates,
-      exportTargets,
-      editSource,
-    );
-  }
-
-  // 7. Interactive Mode Display
-  // Show unified detection summary
-  const formatOpts: {
-    verbose?: boolean;
-    verboseFull?: boolean;
-    quiet?: boolean;
-  } = {};
-
-  if (options.verbose !== undefined) {
-    formatOpts.verbose = options.verbose;
-  }
-  if (options.verboseFull !== undefined) {
-    formatOpts.verboseFull = options.verboseFull;
-  }
-  if (options.quiet !== undefined) {
-    formatOpts.quiet = options.quiet;
-  }
-  const formatted = formatDetectionOutput(summaries, filesByAgent, formatOpts);
-
-  if (formatted.text) {
-    console.log(formatted.text);
-  }
-
-  // 8. Handle Edit Source Upgrade (if applicable)
-  if (upgradeCandidates.length > 0) {
-    // We found a better edit source (multi-file) and we are currently single-file
-    const agent = upgradeCandidates[0]!; // Take first/best candidate
-    const agentDisplayName = getAgentDisplayName(agent);
-
-    const agentPatterns: Record<string, string> = {
-      cursor: ".cursor/rules/*.mdc",
-      amazonq: ".amazonq/rules/*.md",
-      augmentcode: ".augment/rules/*.md",
-      kilocode: ".kilocode/rules/*.md",
-      kiro: ".kiro/steering/*.md",
-    };
-    const recommendedSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
-
-    const upgrade = await clack.confirm({
-      message: `Upgrade to the more flexible ${agentDisplayName} edit source?\n  ${agentDisplayName} files will become your source of truth.`,
-      initialValue: true,
-    });
-
-    if (clack.isCancel(upgrade)) {
-      clack.cancel("Sync cancelled");
-      process.exit(0);
-    }
-
-    if (upgrade) {
-      const newEditSource = recommendedSource;
-
-      await updateEditSource(
-        cwd,
-        config,
-        configPath,
-        editSource,
-        newEditSource,
-        options,
-      );
-      changed = true;
-
-      // The upgraded agent is now the edit source, so remove it from export targets if present
-      const idx = exportTargets.indexOf(agent);
-      if (idx !== -1) exportTargets.splice(idx, 1);
-    }
-  }
-
-  // 9. Handle Export Targets (Batch)
-  // Consolidate all remaining agents (including the old edit source if we upgraded)
-  // Note: updateEditSource handles backing up the old source, but we might want to add it as an exporter explicitly?
-  // Actually, if we upgraded edit source, the old source (e.g. AGENTS.md) is now just a file.
-  // We should check if we want to keep syncing to it.
-
-  if (exportTargets.length > 0) {
-    // Filter out ignored agents
-    const targetsToPrompt = exportTargets.filter(
-      (t: string) => !(config.detection?.ignored_agents || []).includes(t),
-    );
-
-    if (targetsToPrompt.length > 0) {
-      const targetNames = targetsToPrompt
-        .map((t: string) => getAgentDisplayName(t))
-        .join(", ");
-
-      const response = await clack.select({
-        message: `Enable these detected agents as export targets?\n  ${targetNames}`,
-        options: [
-          {
-            value: "yes",
-            label: "Yes, enable and export",
-            hint: "Add to exporters list",
-          },
-          { value: "no", label: "No, skip for now" },
-          { value: "review", label: "Review individually" },
-        ],
-      });
-
-      if (clack.isCancel(response)) {
-        clack.cancel("Sync cancelled");
-        process.exit(0);
-      }
-
-      if (response === "yes") {
-        await enableExporters(
-          cwd,
-          config,
-          configPath,
-          targetsToPrompt,
-          options,
-        );
-        changed = true;
-      } else if (response === "review") {
-        // Individual review logic could go here, keeping it simple for now
-        for (const agent of targetsToPrompt) {
-          const enable = await clack.confirm({
-            message: `Enable ${getAgentDisplayName(agent)} as export target?`,
-          });
-          if (!clack.isCancel(enable) && enable) {
-            await enableExporters(cwd, config, configPath, [agent], options);
-            changed = true;
-          }
-        }
-      }
-    }
-  }
-
-  return changed;
-}
-
-async function handleNonInteractiveOnboarding(
-  cwd: string,
-  config: AlignTrueConfig,
-  configPath: string,
-  options: SyncOptions,
-  upgradeCandidates: string[],
-  exportTargets: string[],
-  currentEditSource: string | string[] | undefined,
-): Promise<boolean> {
-  let changed = false;
-
-  // Auto-upgrade edit source if candidate exists
-  if (upgradeCandidates.length > 0) {
-    const agent = upgradeCandidates[0]!;
-    const agentPatterns: Record<string, string> = {
-      cursor: ".cursor/rules/*.mdc",
-      amazonq: ".amazonq/rules/*.md",
-      augmentcode: ".augment/rules/*.md",
-      kilocode: ".kilocode/rules/*.md",
-      kiro: ".kiro/steering/*.md",
-    };
-    const newEditSource = agentPatterns[agent] || ".cursor/rules/*.mdc";
-
-    if (!options.quiet) {
-      clack.log.info(
-        `Auto-upgrading edit source to ${getAgentDisplayName(agent)} (multi-file)`,
-      );
-    }
-
-    await updateEditSource(
-      cwd,
-      config,
-      configPath,
-      currentEditSource,
-      newEditSource,
-      options,
-    );
-    changed = true;
-
-    // Remove from export targets
-    const idx = exportTargets.indexOf(agent);
-    if (idx !== -1) exportTargets.splice(idx, 1);
-  }
-
-  // Auto-enable exporters
-  if (exportTargets.length > 0) {
-    if (!options.quiet) {
-      clack.log.info(`Auto-enabling exporters: ${exportTargets.join(", ")}`);
-    }
-    await enableExporters(cwd, config, configPath, exportTargets, options);
-    changed = true;
-  }
-
-  return changed;
-}
-
-async function updateEditSource(
-  cwd: string,
-  config: AlignTrueConfig,
-  configPath: string,
-  oldSource: string | string[] | undefined,
-  newSource: string,
-  options: SyncOptions,
-): Promise<void> {
-  if (!config.sync) config.sync = {};
-  config.sync.edit_source = newSource;
-
-  // Add new source agent as exporter if not present
-  const newExporter = getExporterFromEditSource(newSource);
-  if (
-    newExporter &&
-    config.exporters &&
-    !config.exporters.includes(newExporter)
-  ) {
-    config.exporters.push(newExporter);
-  }
-
-  await saveMinimalConfig(config, configPath);
-
-  try {
-    // Load dependencies dynamically
-    const { saveIR, updateLastSyncTimestamp } = await import("@aligntrue/core");
-    const { parseGenericMarkdown } = await import(
-      "@aligntrue/exporters/utils/section-parser"
-    );
-    // generateFingerprint is now local
-
-    // Prepare edit source switch (backup old files, read new content)
-    const result = await prepareEditSourceSwitch(oldSource, newSource, cwd);
-
-    if (result.summary && options.verbose) {
-      clack.log.info(result.summary);
-    } else if (result.backedUpFiles.length > 0) {
-      // Always inform user about backups, even if not verbose (unless quiet)
-      if (!options.quiet) {
-        clack.log.info(
-          `Backed up previous rules to: .aligntrue/overwritten-rules/`,
-        );
-      }
-    }
-
-    // Delete old files to ensure clean sync (prevent exporters from preserving "old" content)
-    for (const file of result.backedUpFiles) {
-      try {
-        const fullPath = join(cwd, file);
-        unlinkSync(fullPath);
-      } catch {
-        // Ignore deletion errors (file may not exist anymore)
-      }
-    }
-
-    // If we have content, parse and update IR
-    if (result.content) {
-      // Parse merged content into sections
-      // We use generic markdown parser which works for both AGENTS.md and most rule files
-      const parsed = parseGenericMarkdown(result.content);
-
-      if (parsed.sections.length > 0) {
-        // Convert to AlignSection format
-        const newSections = parsed.sections.map((s) => ({
-          heading: s.heading,
-          content: s.content,
-          level: s.level,
-          fingerprint: generateFingerprint(s.heading),
-        }));
-
-        // Replace IR completely (New Source As Truth)
-        const currentIR = {
-          id: "merged-rules",
-          version: "1.0.0",
-          spec_version: "1",
-          sections: newSections,
-        } as AlignPack;
-
-        // Save updated IR
-        const irPath = join(cwd, ".aligntrue/.rules.yaml");
-        await saveIR(irPath, currentIR);
-
-        // Update last sync timestamp to prevent immediate two-way sync from overwriting our work
-        // This marks current files as "synced" so they aren't treated as new edits
-        updateLastSyncTimestamp(cwd);
-
-        if (options.verbose) {
-          clack.log.success(
-            `Updated IR with ${newSections.length} sections from new source`,
-          );
-        }
-      }
-    }
-  } catch (err) {
-    clack.log.warn(
-      `Failed to switch edit source cleanly: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    // Fallback to simple backup behavior (old behavior) if merge fails
-    // Backup old source if it was single file
-    if (oldSource && !Array.isArray(oldSource)) {
-      const { backupFileToOverwrittenRules } = await import(
-        "../../utils/extract-rules.js"
-      );
-      const currentSourcePath = resolve(cwd, oldSource);
-      if (existsSync(currentSourcePath)) {
-        const backupResult = backupFileToOverwrittenRules(
-          currentSourcePath,
-          cwd,
-        );
-        if (backupResult.backed_up && options.verbose) {
-          clack.log.info(
-            `Backed up previous edit source to: ${backupResult.backup_path}`,
-          );
-        }
-      }
-    }
-  }
-}
-
-async function enableExporters(
+async function _enableExporters(
   cwd: string,
   config: AlignTrueConfig,
   configPath: string,

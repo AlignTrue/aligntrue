@@ -32,7 +32,7 @@ describe("IR Loader", () => {
     }
   });
 
-  // Removed markdown loading tests - IR files are now YAML-only (.aligntrue/.rules.yaml)
+  // Removed markdown loading tests - IR files are now YAML-only (.aligntrue/rules)
   // Users edit agent files (AGENTS.md, .cursor/*.mdc) which are synced to the internal IR
 
   describe("Load from YAML", () => {

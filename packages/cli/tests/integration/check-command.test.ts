@@ -117,23 +117,32 @@ sections:
     });
 
     it("runs without --ci flag by default", async () => {
-      const config = { exporters: ["cursor"] };
+      // Create config with explicit source pointing to rules directory
+      const config = {
+        exporters: ["cursor"],
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+      };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
         yaml.stringify(config),
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: test.rule.example
-    severity: error
-    applies_to: ["**/*.ts"]
-    guidance: Test guidance
+      // Create rules directory with a valid rule file
+      mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
+      const ruleContent = `---
+title: "Test rule example"
+description: "Test guidance"
+---
+# Test rule example
+
+Test guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "rules", "test-rule.md"),
+        ruleContent,
+        "utf-8",
+      );
 
       const exitMock = mockProcessExit();
 

@@ -55,7 +55,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -112,7 +112,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: false,
         on_conflict: "prompt",
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -157,7 +157,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -206,7 +206,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: true,
         on_conflict: "accept_agent",
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       scopes: [
         {
           path: "packages/frontend",
@@ -272,11 +272,8 @@ describe("saveMinimalConfig", () => {
         mode: "off",
       },
       git: {},
-      sync: {
-        auto_pull: true, // Default for solo
-        on_conflict: "prompt", // Non-default for solo
-      },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      // Note: sync.auto_pull and sync.on_conflict were removed in Ruler-style refactor
+      sources: [{ type: "local", path: ".aligntrue/rules/*.md" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -301,8 +298,6 @@ describe("saveMinimalConfig", () => {
     expect(loaded.version).toBe(originalConfig.version);
     expect(loaded.modules).toEqual(originalConfig.modules);
     expect(loaded.lockfile?.mode).toBe(originalConfig.lockfile?.mode);
-    expect(loaded.sync?.auto_pull).toBe(originalConfig.sync?.auto_pull);
-    expect(loaded.sync?.on_conflict).toBe(originalConfig.sync?.on_conflict);
   });
 
   it("saveConfig writes all fields (team mode behavior)", async () => {
@@ -327,7 +322,7 @@ describe("saveMinimalConfig", () => {
         auto_pull: false,
         on_conflict: "prompt",
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -361,11 +356,13 @@ describe("saveMinimalConfig", () => {
       on_conflict: "prompt",
     });
     expect(parsed.sources).toEqual([
-      { type: "local", path: ".aligntrue/.rules.yaml" },
+      { type: "local", path: ".aligntrue/rules" },
     ]);
   });
 
-  it("handles non-default sync settings", async () => {
+  it("handles non-default sync settings (deprecated fields stripped)", async () => {
+    // NOTE: sync.auto_pull and sync.on_conflict are deprecated in the new architecture.
+    // They should be stripped from the minimal config since they have no effect.
     const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
     mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 
@@ -384,10 +381,10 @@ describe("saveMinimalConfig", () => {
       },
       git: {},
       sync: {
-        auto_pull: false, // Non-default for solo
-        on_conflict: "prompt", // Non-default for solo
+        auto_pull: false, // Deprecated - will be stripped
+        on_conflict: "prompt", // Deprecated - will be stripped
       },
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -406,9 +403,7 @@ describe("saveMinimalConfig", () => {
     const parsed = yaml.parse(written);
 
     expect(parsed.exporters).toEqual(["cursor"]);
-    expect(parsed.sync).toEqual({
-      auto_pull: false,
-      on_conflict: "prompt",
-    });
+    // Deprecated sync fields are stripped - sync object should be undefined or empty
+    expect(parsed.sync).toBeUndefined();
   });
 });

@@ -2,13 +2,14 @@
  * Source resolver - handles fetching from local, git, and url sources
  */
 
-import { existsSync } from "fs";
+import { existsSync, statSync } from "fs";
 import { resolve, extname } from "path";
 import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
 import {
   mergePacks,
   type BundleResult,
   ensureSectionsArray,
+  loadRulesDirectory,
 } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
@@ -89,14 +90,50 @@ export async function resolveSource(
 
     if (!existsSync(resolvedPath)) {
       throw new Error(
-        `Source file not found: ${source.path}\n` +
+        `Source not found: ${source.path}\n` +
           `  Resolved path: ${resolvedPath}\n` +
-          `  Check that the file exists and the path is correct.`,
+          `  Check that the path exists.`,
       );
     }
 
-    // LocalProvider expects a base path and fetches relative to it
-    // For single file sources, use the parent directory as base
+    // Check if path is a directory (new rule-based format)
+    const stat = statSync(resolvedPath);
+    if (stat.isDirectory()) {
+      // Load all .md rule files from the directory
+      const rules = await loadRulesDirectory(resolvedPath, cwd, {
+        recursive: true,
+      });
+
+      // Convert rules to AlignPack format
+      const sections = rules.map((rule) => ({
+        heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+        content: rule.content,
+        level: 2, // Schema requires level 2-6 (## through ######)
+        fingerprint: rule.hash,
+        source_file: rule.path,
+        frontmatter: rule.frontmatter,
+      }));
+
+      // Return synthesized YAML content for backward compatibility
+      const pack: AlignPack = {
+        id: "local-rules",
+        version: "1.0.0",
+        spec_version: "1",
+        sections,
+      };
+
+      // Stringify to YAML for content field (backward compat)
+      const { stringify } = await import("yaml");
+      const content = stringify(pack);
+
+      return {
+        content,
+        sourcePath: source.path,
+        sourceType: "local",
+      };
+    }
+
+    // Handle single file sources (legacy .rules.yaml format)
     const { dirname, basename } = await import("path");
     const baseDir = dirname(resolvedPath);
     const fileName = basename(resolvedPath);

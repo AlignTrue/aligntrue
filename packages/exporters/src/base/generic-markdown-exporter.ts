@@ -1,25 +1,22 @@
 /**
  * Generic Markdown Exporter
- * Base class for all AGENTS.md-style exporters (CLAUDE.md, WARP.md, etc.)
+ * Base class for all link-based exporters (CLAUDE.md, WARP.md, etc.)
  *
- * Provides configurable filename, title, and description while sharing
- * all core functionality: sections, rules, mode hints, prioritization, etc.
+ * Creates files with links to .aligntrue/rules/*.md instead of concatenated content.
  */
 
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
   ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { RuleFile, RuleFrontmatter } from "@aligntrue/schema";
 import { join } from "path";
 import { ExporterBase } from "./index.js";
 
 /**
- * Generic configurable markdown exporter
+ * Generic configurable markdown exporter with link-based output
  * Used as delegate for agent-specific exporters
  */
 export class GenericMarkdownExporter extends ExporterBase {
@@ -27,9 +24,9 @@ export class GenericMarkdownExporter extends ExporterBase {
   version = "1.0.0";
   capabilities: ExporterCapabilities = {
     multiFile: false, // Single-file format
-    twoWaySync: true, // Supports editing and pullback
+    twoWaySync: false, // No longer supports two-way sync
     scopeAware: true, // Can filter by scope
-    preserveStructure: false, // Concatenates everything
+    preserveStructure: false, // Link-based
     nestedDirectories: true, // Supports nested scope directories
   };
 
@@ -54,118 +51,81 @@ export class GenericMarkdownExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    // Store config for use in helper methods
-    this.currentConfig = options.config;
+    // Get rules from request (handles backward compatibility with pack)
+    const rules = this.getRulesFromRequest(request);
 
-    const sections = pack.sections;
-
-    // Debug logging flag (declared once at function level)
-    const DEBUG_EXPORT = process.env["DEBUG_EXPORT"] === "true";
-
-    // Validate inputs
-    if (sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
-    }
-
-    // Group sections by target scope (vendor.aligntrue.source_scope)
-    const sectionsByScope = this.groupSectionsByScope(sections, scope);
-
-    // Only process sections for the current scope
-    const currentTargetScope = scope.isDefault
-      ? "default"
-      : scope.normalizedPath;
-    const scopeSections = sectionsByScope.get(currentTargetScope) || [];
-
-    // Debug logging for scope filtering
-    if (DEBUG_EXPORT) {
-      console.log(
-        `[${this.name}] Export for scope: ${currentTargetScope}, total sections: ${sections.length}, filtered: ${scopeSections.length}`,
-      );
-      if (scopeSections.length === 0 && sections.length > 0) {
-        const scopes = Array.from(sectionsByScope.keys());
-        console.log(
-          `[${this.name}] No sections for scope "${currentTargetScope}", available scopes: ${scopes.join(", ")}`,
-        );
-        // Log sample section scopes
-        const sampleScopes = sections
-          .slice(0, 3)
-          .map((s) => s.vendor?.aligntrue?.source_scope || "no source_scope");
-        console.log(
-          `[${this.name}] Sample section source_scopes: ${sampleScopes.join(", ")}`,
-        );
-      }
-    }
-
-    if (scopeSections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
-    }
-
-    // Determine output path for this scope
-    let outputPath: string;
-    if (scope.isDefault) {
-      // Default scope: write to root file (e.g. AGENTS.md)
-      outputPath = join(outputDir, this.filename);
-    } else {
-      // Named scope: write to scope-specific nested directory
-      // e.g., apps/web/AGENTS.md
-      const scopePath = scope.normalizedPath || scope.path || ".";
-      outputPath = join(outputDir, scopePath, this.filename);
-    }
-
-    // Generate content - natural markdown mode
-    const result = this.generateSectionsContent(
-      scopeSections,
-      options.unresolvedPlugsCount,
-      outputPath, // Pass output path for read-only check
+    // Filter rules that should be exported to this agent
+    const exportableRules = rules.filter((rule) =>
+      this.shouldExportRule(rule, this.name),
     );
-    const content = result.content;
-    const warnings = result.warnings;
 
-    const contentHash = computeContentHash({ sections: scopeSections });
-    const fidelityNotes = this.computeSectionFidelityNotes(scopeSections);
+    if (exportableRules.length === 0) {
+      return {
+        success: true,
+        filesWritten: [],
+        contentHash: "",
+      };
+    }
 
-    // Write file atomically if not dry-run
-    if (DEBUG_EXPORT) {
-      console.log(
-        `[${this.name}] About to write ${outputPath}, content length: ${content.length}, sections: ${scopeSections.length}`,
+    // Group rules by nested location
+    const rulesByLocation = this.groupRulesByLocation(exportableRules);
+
+    const allFilesWritten: string[] = [];
+    const contentHashes: string[] = [];
+
+    for (const [location, locationRules] of rulesByLocation.entries()) {
+      // Determine output path
+      const outputPath =
+        location === ""
+          ? join(outputDir, this.filename)
+          : join(outputDir, location, this.filename);
+
+      // Generate link-based content
+      const content = this.generateLinkBasedContent(
+        locationRules,
+        location,
+        outputDir,
       );
+
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(this.computeHash(content));
+
+      // Write file
+      const files = await this.writeFile(outputPath, content, dryRun, {
+        ...options,
+        force: true, // Always force overwrite for read-only exports
+      });
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
     }
 
-    let filesWritten: string[];
-    try {
-      filesWritten = await this.writeFile(outputPath, content, dryRun, options);
-      if (DEBUG_EXPORT) {
-        console.log(
-          `[${this.name}] Write result for ${outputPath}: ${filesWritten.length} file(s) written`,
-        );
-      }
-    } catch (error) {
-      // Log error but don't fail silently
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      if (DEBUG_EXPORT) {
-        console.error(
-          `[${this.name}] Failed to write ${outputPath}: ${errorMsg}`,
-        );
-      }
-      // Re-throw to let sync engine handle
-      throw error;
+    const combinedHash =
+      contentHashes.length > 0
+        ? this.computeHash(contentHashes.sort().join(""))
+        : "";
+
+    return this.buildResult(allFilesWritten, combinedHash, []);
+  }
+
+  override translateFrontmatter(
+    frontmatter: RuleFrontmatter,
+  ): Record<string, unknown> {
+    // Minimal frontmatter - just title and description
+    const result: Record<string, unknown> = {};
+
+    if (frontmatter["title"]) {
+      result["title"] = frontmatter["title"];
     }
 
-    return this.buildResult(filesWritten, contentHash, [
-      ...warnings,
-      ...fidelityNotes,
-    ]);
+    if (frontmatter["description"]) {
+      result["description"] = frontmatter["description"];
+    }
+
+    return result;
   }
 
   resetState(): void {
@@ -173,133 +133,121 @@ export class GenericMarkdownExporter extends ExporterBase {
   }
 
   /**
-   * Group sections by their target scope
-   * Uses vendor.aligntrue.source_scope if present, otherwise uses provided scope
+   * Group rules by their nested_location
    */
-  private groupSectionsByScope(
-    sections: AlignSection[],
-    fallbackScope: ResolvedScope,
-  ): Map<string, AlignSection[]> {
-    const sectionsByScope = new Map<string, AlignSection[]>();
+  private groupRulesByLocation(rules: RuleFile[]): Map<string, RuleFile[]> {
+    const byLocation = new Map<string, RuleFile[]>();
 
-    for (const section of sections) {
-      // Check for source_scope in vendor metadata
-      const sourceScope = section.vendor?.aligntrue?.source_scope;
-      const targetScope =
-        sourceScope ||
-        (fallbackScope.isDefault ? "default" : fallbackScope.normalizedPath);
-
-      if (!sectionsByScope.has(targetScope)) {
-        sectionsByScope.set(targetScope, []);
+    for (const rule of rules) {
+      const location = rule.frontmatter.nested_location || "";
+      if (!byLocation.has(location)) {
+        byLocation.set(location, []);
       }
-      sectionsByScope.get(targetScope)!.push(section);
+      byLocation.get(location)!.push(rule);
     }
 
-    return sectionsByScope;
-  }
-
-  private formatScopePath(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "all files";
-    }
-    return scope.path;
+    return byLocation;
   }
 
   /**
-   * Generate read-only warning header if this file is not the edit source
+   * Generate link-based content for the markdown file
    */
-  private generateReadOnlyHeader(outputPath: string): string {
-    const config = this.currentConfig as
-      | {
-          sync?: {
-            edit_source?: string | string[];
-            centralized?: boolean;
-          };
+  private generateLinkBasedContent(
+    rules: RuleFile[],
+    location: string,
+    _outputDir: string,
+  ): string {
+    const lines: string[] = [];
+
+    // Read-only marker
+    lines.push(`<!--
+  READ-ONLY: This file is auto-generated by AlignTrue.
+  DO NOT EDIT DIRECTLY. Changes will be overwritten.
+  Edit rules in .aligntrue/rules/ instead.
+-->`);
+    lines.push("");
+
+    // Header
+    lines.push(`# ${this.title}`);
+    lines.push("");
+    lines.push(
+      `This file contains links to the canonical rules in \`.aligntrue/rules/\`.`,
+    );
+    lines.push(`AI agents should follow these linked guidelines.`);
+    lines.push("");
+
+    // Group rules by category
+    const rulesByCategory = this.groupRulesByCategory(rules);
+
+    for (const [category, categoryRules] of rulesByCategory.entries()) {
+      lines.push(`## ${category}`);
+      lines.push("");
+
+      for (const rule of categoryRules) {
+        const title =
+          rule.frontmatter.title || rule.filename.replace(/\.md$/, "");
+        const description = rule.frontmatter.description || "";
+
+        // Compute relative path from file to the rule file
+        const rulesDir =
+          location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
+        const linkPath = `./${rulesDir}/${rule.filename}`;
+
+        if (description) {
+          lines.push(`- [${title}](${linkPath}) - ${description}`);
+        } else {
+          lines.push(`- [${title}](${linkPath})`);
         }
-      | undefined;
-    if (!config) return "";
-
-    const editSource = config.sync?.edit_source;
-    const isDecentralized = config.sync?.centralized === false || false;
-
-    if (!editSource || isDecentralized) return "";
-
-    // Check if this output matches edit source pattern
-    const patterns = Array.isArray(editSource) ? editSource : [editSource];
-    const isEditSource = patterns.some((pattern) => {
-      // Check for filename match (CLAUDE.md, WARP.md, etc.)
-      if (
-        pattern === this.filename &&
-        outputPath.endsWith(`/${this.filename}`)
-      ) {
-        return true;
-      }
-      // Exact path match
-      if (outputPath.endsWith(pattern)) {
-        return true;
-      }
-      return false;
-    });
-
-    if (isEditSource) return "";
-
-    // Not edit source - add read-only warning
-    const sourceDisplay = Array.isArray(editSource)
-      ? editSource.join(", ")
-      : editSource;
-    return `<!--
-WARNING: Read-only export from AlignTrue
-
-This file is automatically generated. Changes will be overwritten on next sync.
-
-Edit source: ${sourceDisplay}
-To modify these rules, edit ${sourceDisplay} instead, then run 'aligntrue sync'.
--->
-
-`;
-  }
-
-  private generateSectionsContent(
-    sections: AlignSection[],
-    _unresolvedPlugs?: number,
-    outputPath?: string,
-  ): {
-    content: string;
-    warnings: string[];
-  } {
-    // Add read-only warning if not edit source
-    const readOnlyWarning = outputPath
-      ? this.generateReadOnlyHeader(outputPath)
-      : "";
-
-    // Generate sections with source markers
-    let sectionsContent = "";
-    for (const section of sections) {
-      // Add source marker before section
-      const marker = this.generateSourceMarker(section, this.currentConfig);
-      if (marker) {
-        sectionsContent += `\n${marker}`;
       }
 
-      // Render the section
-      sectionsContent += this.formatSection(section);
+      lines.push("");
     }
 
-    // No header or footer - keep files clean and editable
-    // Content hash and fidelity notes shown in CLI output only
-
-    return {
-      content: (readOnlyWarning + sectionsContent).trim(),
-      warnings: [],
-    };
+    return lines.join("\n");
   }
 
   /**
-   * Format a single section as markdown
+   * Group rules by category for organized output
    */
-  private formatSection(section: AlignSection): string {
-    // Use the base class renderSections method for a single section
-    return this.renderSections([section], false);
+  private groupRulesByCategory(rules: RuleFile[]): Map<string, RuleFile[]> {
+    const byCategory = new Map<string, RuleFile[]>();
+
+    for (const rule of rules) {
+      const category = rule.frontmatter.scope || "General";
+      const displayCategory = this.formatCategoryName(category);
+
+      if (!byCategory.has(displayCategory)) {
+        byCategory.set(displayCategory, []);
+      }
+      byCategory.get(displayCategory)!.push(rule);
+    }
+
+    // Ensure "General" is first if it exists
+    const sorted = new Map<string, RuleFile[]>();
+    if (byCategory.has("General")) {
+      sorted.set("General", byCategory.get("General")!);
+    }
+    for (const [cat, r] of byCategory) {
+      if (cat !== "General") {
+        sorted.set(cat, r);
+      }
+    }
+
+    return sorted;
+  }
+
+  /**
+   * Format category name for display
+   */
+  private formatCategoryName(scope: string): string {
+    if (scope === "." || scope === "" || scope === "General") {
+      return "General";
+    }
+
+    return scope
+      .split("/")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" / ");
   }
 }
 

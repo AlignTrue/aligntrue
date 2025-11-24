@@ -12,7 +12,7 @@ import {
   readdirSync,
 } from "fs";
 import { join, basename } from "path";
-import { loadConfig, saveConfig } from "@aligntrue/core";
+import { loadConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 
 /**
@@ -62,35 +62,39 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
     clack.intro("Source files");
 
     // Load config
-    const config = await loadConfig(undefined, cwd);
+    await loadConfig(undefined, cwd);
 
-    // Get source file patterns (now from edit_source)
-    const editSource = config.sync?.edit_source || "AGENTS.md";
-    // If edit_source is array or wildcard, it's a multi-file source
-    const isArray = Array.isArray(editSource);
-    const hasWildcard =
-      typeof editSource === "string" &&
-      (editSource.includes("*") ||
-        editSource.includes("?") ||
-        editSource.includes("["));
-
-    const sourceFiles = isArray || hasWildcard ? editSource : "AGENTS.md";
-    const sourceOrder = config.sync?.source_order;
-
-    // Display configuration
-    clack.log.info(
-      `Source patterns: ${Array.isArray(sourceFiles) ? sourceFiles.join(", ") : sourceFiles}`,
-    );
-    if (sourceOrder && sourceOrder.length > 0) {
-      clack.log.info(`Custom order: ${sourceOrder.join(", ")}`);
-    }
-
-    // Discover actual files
-    const { discoverSourceFiles, orderSourceFiles } = await import(
+    // In new architecture, sources are in .aligntrue/rules/*.md
+    const rulesDir = join(cwd, ".aligntrue", "rules");
+    const { loadRulesDirectory, orderSourceFiles } = await import(
       "@aligntrue/core"
     );
-    const discovered = await discoverSourceFiles(cwd, config);
-    const ordered = orderSourceFiles(discovered, sourceOrder);
+
+    // Display configuration
+    clack.log.info(`Source directory: .aligntrue/rules/`);
+
+    // Load rule files from the rules directory
+    const ruleFiles = await loadRulesDirectory(rulesDir, cwd, {
+      recursive: true,
+    });
+
+    // Convert to format compatible with orderSourceFiles
+    const discovered = ruleFiles.map((rule) => ({
+      path: rule.path,
+      absolutePath: join(cwd, rule.path),
+      content: rule.content,
+      mtime: new Date(),
+      sections: [
+        {
+          heading: rule.frontmatter.title || rule.filename,
+          content: rule.content,
+          level: 1,
+          fingerprint: rule.hash,
+        },
+      ],
+    }));
+
+    const ordered = orderSourceFiles(discovered);
 
     if (ordered.length === 0) {
       clack.log.warn("No source files found");
@@ -384,15 +388,10 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       );
     }
 
-    // Update config
-    const configToUpdate = await loadConfig(undefined, cwd);
-    configToUpdate.sync = configToUpdate.sync || {};
-    configToUpdate.sync.edit_source = `${targetDir}/*.md`;
-    await saveConfig(configToUpdate, undefined, cwd);
-
-    clack.log.success(
-      `\nUpdated config: sync.edit_source = "${targetDir}/*.md"`,
-    );
+    // NOTE: edit_source removed in new architecture.
+    // Split files are now placed in .aligntrue/rules/ by default.
+    // No config update needed - files are the source of truth.
+    clack.log.success(`\nSplit ${createdFiles.length} rules to ${targetDir}/`);
 
     // Ask about backing up AGENTS.md
     if (!yes) {
