@@ -151,5 +151,5 @@ aligntrue revert --preview
 ## Related
 
 - [Team mode guide](/docs/01-guides/04-team-guide)
-- [Workflows and scenarios](/docs/01-guides/01-workflows)
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
 - [Backup and restore](/docs/04-reference/cli-reference#backup)

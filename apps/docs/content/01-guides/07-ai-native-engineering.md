@@ -40,7 +40,7 @@ Agents should not each have their own "secret" rules. With AlignTrue, you write 
 
 **How it works:**
 
-1. Write rules in your chosen [edit source](/docs/01-guides/00-edit-source) (AGENTS.md, `.cursor/rules/*.mdc`, etc.)
+1. Write rules in `.aligntrue/rules/` directory (the single source of truth)
 2. Run `aligntrue sync` to export to all configured agents
 3. All agents stay in sync from one source
 
@@ -266,7 +266,7 @@ See [Agent support](/docs/04-reference/agent-support) for the full list.
 
 ### Step 3: Write your rules
 
-Edit your [edit source](/docs/01-guides/00-edit-source) (default is `AGENTS.md`):
+Edit your rules in `.aligntrue/rules/`:
 
 ```markdown
 # Project rules
@@ -324,7 +324,7 @@ See [Team guide](/docs/01-guides/04-team-guide) for complete workflows.
 
 ## Next steps
 
-- [Choosing your edit source](/docs/01-guides/00-edit-source) - Select which file to edit
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Understand how rules sync to agents
 - [Multi-agent workflows](/docs/01-guides/05-multi-agent-workflows) - Use multiple agents simultaneously
 - [Customization](/docs/02-customization) - Plugs, overlays, and scopes
 - [Rule structure](/docs/01-guides/06-rule-structure) - Organize rules for your project size

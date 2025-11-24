@@ -98,7 +98,7 @@ Yes! AlignTrue supports centralized rule management - you choose ONE file to edi
 - `AGENTS.md` (universal format, recommended)
 - Agent files like `.cursor/rules/*.mdc` (agent-specific)
 
-In solo mode, auto-pull is enabled by default, so changes flow both directions. In team mode, manually pull changes with `aligntrue sync --accept-agent`. See [Workflows guide](/docs/01-guides/01-workflows) for details.
+Changes flow from `.aligntrue/rules/` through the IR to all agent exports. See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
 
 ### Do I need to run sync every time?
 

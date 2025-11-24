@@ -171,7 +171,7 @@ sync:
   workflow_mode: "native_format" # auto | ir_source | native_format
 ```
 
-See [Workflows guide](/docs/01-guides/01-workflows) for choosing your workflow.
+See [Sync behavior](/docs/03-concepts/sync-behavior) for details on how rules sync to agents.
 
 **Examples:**
 
