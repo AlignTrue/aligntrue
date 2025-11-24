@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### BREAKING CHANGES
+
+**Fundamental architectural shift to Ruler-style unidirectional sync**
+
+This release introduces a complete architectural refactor. The complex bidirectional sync system has been replaced with a simple, reliable unidirectional model: `.aligntrue/rules/*.md` files are the single source of truth, with exports flowing outward to agent-specific formats.
+
+**Migration:** Run `aligntrue init` in existing projects to import rules from agent files into `.aligntrue/rules/`. Review and deduplicate imported rules as needed.
+
+- **New canonical IR format:** `.aligntrue/rules/*.md` (markdown with YAML frontmatter) replaces `.aligntrue/.rules.yaml`
+- **Removed:** `sync.edit_source` config option and all related configuration
+- **Removed:** `sync.auto_pull`, `sync.primary_agent`, `sync.on_conflict`, `sync.workflow_mode`, `sync.show_diff_on_pull` config options
+- **Removed:** Agent pullback (`--accept-agent` flag and related logic)
+- **Removed:** Edit source switching prompts and logic
+- **Removed:** Bidirectional sync capabilities
+- **New init behavior:** Automatically scans for and imports existing agent rules into `.aligntrue/rules/`
+- **New export format:** Single-file agents (AGENTS.md, CLAUDE.md, etc.) now use links to rule files instead of concatenated content
+- **New frontmatter:** Comprehensive schema with export controls (`exclude_from`, `export_only_to`) and agent-specific metadata blocks
+
+**Why this change:**
+
+- Simpler mental model: edit rules in one place, export everywhere
+- More reliable: eliminates complex merge strategies and conflict resolution
+- Better organization: one rule per file with clear frontmatter
+- Export controls: fine-grained control over which rules export to which agents
+- Link-based exports: proven to work better than concatenated files
+
+### Added
+
+- **Frontmatter schema:** Comprehensive YAML frontmatter for rule files with selection mechanisms (scope, globs, apply_to) and export controls (exclude_from, export_only_to)
+- **Rule file parser/writer:** New utilities in `@aligntrue/core` for loading and saving `.aligntrue/rules/*.md` files
+- **Nested directory support:** Auto-detects nested `.aligntrue/rules/` directories and mirrors structure to agent exports
+- **Rule import:** `aligntrue init` now scans for existing Cursor, AGENTS.md, CLAUDE.md and other agent files and imports them
+- **Starter templates:** If no existing rules found during init, creates practical starter rules (global, typescript, testing, documentation, debugging)
+- **Export controls:** `exclude_from` and `export_only_to` frontmatter fields for fine-grained export control
+- **Link-based exports:** Single-file agents (AGENTS.md, CLAUDE.md) now contain links to rule files instead of concatenated content
+
+### Removed
+
+- `packages/cli/src/utils/edit-source-content-merger.ts`
+- `packages/cli/src/utils/edit-source-agent-mapping.ts`
+- `packages/cli/src/utils/edit-source.ts`
+- `packages/cli/src/utils/edit-source-helpers.ts`
+- `packages/core/src/config/edit-source-patterns.ts`
+- `packages/core/src/utils/edit-source-matcher.ts`
+- `packages/core/src/sync/agent-pullback.ts`
+- All edit source tests
+
 ### Fixed
 
 - **CodeQL security alerts** - Fixed insecure temporary file creation (HIGH severity) by using cryptographic randomness for temp directory names and ensuring proper cleanup; fixed shell command injection vulnerability (MEDIUM severity) in test utilities by safely quoting shell arguments

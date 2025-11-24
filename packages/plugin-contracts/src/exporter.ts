@@ -5,7 +5,7 @@
  * Exporters convert AlignTrue IR (Intermediate Representation) to agent-specific formats.
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { AlignPack, RuleFile, RuleFrontmatter } from "@aligntrue/schema";
 
 /**
  * Resolved scope information
@@ -34,7 +34,8 @@ export interface ResolvedScope {
  */
 export interface ScopedExportRequest {
   scope: ResolvedScope; // Scope this export is for
-  pack: AlignPack; // Full pack with rules or sections
+  rules: RuleFile[]; // Rules to export (optional, for future use)
+  pack: AlignPack; // Pack with sections for this scope
   outputPath: string; // Suggested output path (e.g., .cursor/rules/apps-web.mdc)
 }
 
@@ -101,6 +102,13 @@ export interface ExporterPlugin {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult>;
+
+  /**
+   * Translate AlignTrue frontmatter to agent-specific metadata
+   * Optional: only needed for exporters that use the new rule-based format
+   */
+  translateFrontmatter?(frontmatter: RuleFrontmatter): Record<string, unknown>;
+
   /**
    * Optional reset method called before a new sync operation
    * Use this to clear internal state like warnings or counters

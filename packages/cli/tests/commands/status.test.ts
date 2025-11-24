@@ -44,29 +44,28 @@ describe("status command", () => {
   });
 
   function writeBasicProject(): void {
-    mkdirSync(".aligntrue", { recursive: true });
+    mkdirSync(".aligntrue/rules", { recursive: true });
     writeFileSync(
       ".aligntrue/config.yaml",
       [
-        "version: '1'",
         "mode: solo",
+        "sources:",
+        "  - type: local",
+        "    path: .aligntrue/rules",
         "exporters:",
         "  - cursor",
         "  - agents",
-        "sync:",
-        "  edit_source: .cursor/rules/*.mdc",
-        "  auto_pull: true",
-        "  primary_agent: cursor",
       ].join("\n"),
       "utf-8",
     );
+    // Create a simple rule file
     writeFileSync(
-      ".aligntrue/.rules.yaml",
-      "id: test\nversion: 1.0.0\nspec_version: '1'\nsections: []\n",
+      ".aligntrue/rules/sample.md",
+      "---\ntitle: Sample Rule\noriginal_source: test\n---\n\n## Sample\n\nSample content\n",
       "utf-8",
     );
     mkdirSync(".cursor/rules", { recursive: true });
-    writeFileSync(".cursor/rules/aligntrue.mdc", "## Sample", "utf-8");
+    writeFileSync(".cursor/rules/sample.mdc", "## Sample", "utf-8");
     writeFileSync(".aligntrue/.last-sync", `${Date.now() - 60_000}`, "utf-8");
   }
 

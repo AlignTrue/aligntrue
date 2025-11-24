@@ -28,25 +28,9 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Custom config file path (default: .aligntrue/config.yaml)",
   },
   {
-    flag: "--accept-agent",
-    hasValue: true,
-    description: "Pull changes from agent back to IR",
-  },
-  {
-    flag: "--no-auto-pull",
-    hasValue: false,
-    description: "Disable auto-pull for this sync",
-  },
-  {
-    flag: "--show-auto-pull-diff",
-    hasValue: false,
-    description: "Show full diff when auto-pull executes",
-  },
-  {
     flag: "--force",
     hasValue: false,
-    description:
-      "Bypass validation and force overwrite edit_source files with manual edits (read-only files auto-overwrite with backup)",
+    description: "Force overwrite files even if they have local changes",
   },
   {
     flag: "--force-invalid-ir",
@@ -99,19 +83,13 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--yes",
     alias: "-y",
     hasValue: false,
-    description:
-      "Accept all prompts including file overwrite conflicts (use with --accept-agent for conflicts)",
+    description: "Accept all prompts including file overwrite conflicts",
   },
   {
     flag: "--non-interactive",
     alias: "-n",
     hasValue: false,
     description: "Run without prompts (uses defaults)",
-  },
-  {
-    flag: "--show-conflicts",
-    hasValue: false,
-    description: "Show detailed conflict information with section content",
   },
   {
     flag: "--help",
@@ -159,8 +137,6 @@ export function parseSyncOptions(args: string[]): SyncOptions {
       (parsed.flags["non-interactive"] as boolean | undefined) || false,
     noDetect: (parsed.flags["no-detect"] as boolean | undefined) || false,
     autoEnable: (parsed.flags["auto-enable"] as boolean | undefined) || false,
-    showConflicts:
-      (parsed.flags["show-conflicts"] as boolean | undefined) || false,
     json: (parsed.flags["json"] as boolean | undefined) || false,
   };
 
@@ -168,11 +144,6 @@ export function parseSyncOptions(args: string[]): SyncOptions {
   const configPath = parsed.flags["config"] as string | undefined;
   if (configPath !== undefined) {
     opts.configPath = configPath;
-  }
-
-  const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
-  if (acceptAgent !== undefined) {
-    opts.acceptAgent = acceptAgent;
   }
 
   return opts;
@@ -184,52 +155,44 @@ export function parseSyncOptions(args: string[]): SyncOptions {
 export function showSyncHelp(): void {
   showStandardHelp({
     name: "sync",
-    description: "Sync rules from IR to configured agents (default direction)",
+    description:
+      "Sync rules from .aligntrue/rules/ to configured agents (unidirectional)",
     usage: "aligntrue sync [options]",
     args: ARG_DEFINITIONS,
     examples: [
       "aligntrue sync",
       "aligntrue sync --dry-run",
       "aligntrue sync --config custom/config.yaml",
-      "aligntrue sync --accept-agent cursor",
+      "aligntrue sync --verbose",
     ],
     notes: [
       "Description:",
-      "  Loads rules from configured sources (local files, git repositories),",
-      "  resolves scopes, merges multiple sources if configured, and syncs to",
-      "  configured agent exporters (Cursor, AGENTS.md, VS Code MCP, etc.).",
+      "  Loads rules from .aligntrue/rules/*.md (the single source of truth),",
+      "  and exports them to configured agent formats (Cursor, AGENTS.md, etc.).",
+      "",
+      "  The .aligntrue/rules/ directory is the canonical source for all rules.",
+      "  Edit rules directly in .aligntrue/rules/*.md, then run sync to export.",
       "",
       "  Supports:",
-      "  - Local sources: .aligntrue/.rules.yaml or custom paths",
+      "  - Local rules: .aligntrue/rules/*.md files",
       "  - Git sources: remote repositories with automatic caching",
-      "  - Multiple sources: automatic bundle merging with conflict resolution",
+      "  - Nested directories: auto-detected and mirrored to agent formats",
       "",
       "  In team mode with lockfile enabled, validates lockfile before syncing.",
       "",
-      "  Default direction: IR → agents (internal IR to agent config files)",
-      "  Pullback direction: agents → IR (with --accept-agent flag or auto-pull enabled)",
-      "",
       "Agent Detection:",
-      "  Automatically detects new agents in workspace and prompts to enable them.",
+      "  Automatically detects agents in workspace and prompts to enable them.",
       "  Use --no-detect to skip detection or --auto-enable to enable without prompting.",
       "",
-      "Edit Source Management:",
-      "  When multi-file agent formats (e.g., Cursor) are detected with a single-file",
-      "  edit source (e.g., AGENTS.md), sync will recommend switching to the multi-file",
-      "  format to preserve file organization. Previous edit source is backed up.",
-      "",
       "Output Modes:",
-      "  Default: Compact summary of detected content with hint to use --verbose",
-      "  --verbose: Show top files for each agent, useful for review",
+      "  Default: Compact summary of exported content",
+      "  --verbose: Show files for each agent, useful for review",
       "  --verbose --verbose (-vv): Show all files with full details",
       "  --json: Machine-readable JSON output for scripting/CI",
       "",
-      "Overwritten Rules Safety:",
-      "  Manual edits are automatically backed up before overwriting:",
-      "  - File backups: .aligntrue/overwritten-rules/ (with timestamp)",
-      "  - Section conflicts: .aligntrue/overwritten-rules.md (with metadata)",
-      "  - Happens automatically for read-only files (no --force needed)",
-      "  - These can be reviewed and deleted at any time.",
+      "Safety:",
+      "  A backup is created before each sync operation.",
+      "  Restore with: aligntrue backup restore --to <timestamp>",
     ],
   });
 }

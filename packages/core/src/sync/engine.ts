@@ -1,6 +1,8 @@
 /**
  * Core sync orchestration engine
- * Coordinates IR loading, scope resolution, exporter execution, and conflict detection
+ *
+ * Coordinates unidirectional sync from .aligntrue/rules/*.md to agent-specific formats.
+ * The .aligntrue/rules/ directory is the single source of truth.
  */
 
 import type { AlignPack, AlignSection } from "@aligntrue/schema";
@@ -18,7 +20,6 @@ import {
 } from "./lockfile-manager.js";
 import { resolveSyncScopes } from "./scope-resolver.js";
 import { executeExporters } from "./exporter-executor.js";
-import { syncFromAgent as performAgentPullback } from "./agent-pullback.js";
 
 // Import types from plugin-contracts package
 import type {
@@ -141,14 +142,8 @@ export class SyncEngine {
     }
 
     try {
-      // When loading IR from a specific path, don't use multi-file loading
-      // Clear edit_source to prevent loadIR from using loadSourceFiles
-      const loadConfig = { ...this.config };
-      if (loadConfig.sync) {
-        loadConfig.sync = { ...loadConfig.sync };
-        // Explicitly remove edit_source to force single-file loading
-        delete loadConfig.sync.edit_source;
-      }
+      // NOTE: edit_source removed in new architecture. The source path points
+      // directly to .aligntrue/rules/ directory (or .rules.yaml for legacy).
 
       const loadOptions: {
         mode: AlignTrueMode;
@@ -161,7 +156,7 @@ export class SyncEngine {
         mode: this.config.mode,
         maxFileSizeMb: this.config.performance?.max_file_size_mb || 10,
         force: force || false,
-        config: loadConfig,
+        config: this.config,
       };
 
       // Only include optional properties if they have defined values
@@ -303,8 +298,9 @@ export class SyncEngine {
       }
 
       // Lockfile validation (delegated)
+      // TODO: Replace with actual rules when rule loading is fully implemented
       const lockfileValidation = validateAndEnforceLockfile(
-        this.ir,
+        [], // Rules will be loaded from .aligntrue/rules/
         this.config,
         process.cwd(),
       );
@@ -365,8 +361,9 @@ export class SyncEngine {
       exportResults = executionResult.exportResults;
 
       // Generate/update lockfile (delegated)
+      // TODO: Replace with actual rules when rule loading is fully implemented
       const lockfileGeneration = generateAndWriteLockfile(
-        this.ir,
+        [], // Rules will be loaded from .aligntrue/rules/
         this.config,
         process.cwd(),
         options.dryRun || false,
@@ -414,18 +411,6 @@ export class SyncEngine {
         warnings: [_err instanceof Error ? _err.message : String(_err)],
       };
     }
-  }
-
-  /**
-   * Sync from agent to IR (pullback direction)
-   * Requires explicit --accept-agent flag
-   */
-  async syncFromAgent(
-    agent: string,
-    irPath: string,
-    options: SyncOptions = {},
-  ): Promise<SyncResult> {
-    return performAgentPullback(agent, irPath, options);
   }
 
   /**

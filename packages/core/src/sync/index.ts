@@ -1,6 +1,8 @@
 /**
- * Two-way sync engine: IR ↔ agents
- * Default: IR → agent; explicit --accept-agent for pullback
+ * Unidirectional sync engine: .aligntrue/rules/*.md → agents
+ *
+ * The .aligntrue/rules/ directory is the single source of truth.
+ * All sync operations flow outward to agent-specific formats.
  */
 
 import { SyncEngine } from "./engine.js";
@@ -14,12 +16,7 @@ export {
   ensureDirectoryExists,
 } from "@aligntrue/file-utils";
 export { loadIR, saveIR } from "./ir-loader.js";
-export {
-  discoverSourceFiles,
-  orderSourceFiles,
-  mergeSourceFiles,
-  loadSourceFiles,
-} from "./source-loader.js";
+export { orderSourceFiles, mergeSourceFiles } from "./source-loader.js";
 export type { SourceFile } from "./source-loader.js";
 export {
   getLastSyncTimestamp,
@@ -46,26 +43,17 @@ export {
 const globalEngine = new SyncEngine();
 
 /**
- * Sync IR to agents (default direction)
- * Convenience wrapper around SyncEngine.syncToAgents
+ * Sync rules to agents (unidirectional)
+ * Reads from .aligntrue/rules/*.md, writes to agent-specific formats
+ *
+ * @param irPath Path to the IR source (for compatibility, will be ignored in favor of rules directory)
+ * @param options Sync options
  */
 export async function syncToAgents(
   irPath: string,
   options: Parameters<SyncEngine["syncToAgents"]>[1] = {},
 ): Promise<ReturnType<SyncEngine["syncToAgents"]>> {
   return globalEngine.syncToAgents(irPath, options);
-}
-
-/**
- * Sync from agent to IR (pullback direction)
- * Convenience wrapper around SyncEngine.syncFromAgent
- */
-export async function syncFromAgent(
-  agent: string,
-  irPath: string,
-  options: Parameters<SyncEngine["syncFromAgent"]>[2] = {},
-): Promise<ReturnType<SyncEngine["syncFromAgent"]>> {
-  return globalEngine.syncFromAgent(agent, irPath, options);
 }
 
 /**

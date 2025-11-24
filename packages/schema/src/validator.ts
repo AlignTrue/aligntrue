@@ -307,6 +307,10 @@ export interface AlignSection {
   // "personal": excluded from lockfile, can change freely
   scope?: "team" | "personal";
 
+  // Source file path (relative to workspace root)
+  // Used to track where this section originally came from
+  source_file?: string;
+
   // Agent-specific metadata (for round-trip preservation)
   vendor?: Record<string, unknown> & {
     aligntrue?: AlignTrueVendorMetadata;

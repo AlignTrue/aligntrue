@@ -10,7 +10,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { sync } from "../../src/commands/sync/index.js";
-import { mockProcessExit } from "../helpers/exit-mock.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
@@ -59,9 +58,10 @@ afterEach(async () => {
 
 describeSkipWindows("Sync Command Integration", () => {
   describe("Basic Sync (IR → Agents)", () => {
-    it("reads IR from .aligntrue/.rules.yaml and syncs to exporters", async () => {
-      // Setup: Create config and IR
+    it("reads rules from .aligntrue/rules/*.md and syncs to exporters", async () => {
+      // Setup: Create config and rules directory
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor", "agents"],
       };
       writeFileSync(
@@ -70,16 +70,22 @@ describeSkipWindows("Sync Command Integration", () => {
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
+      // Create rules directory if not present
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create a rule file in the new format
+      const ruleContent = `---
+title: Test rule example
+description: A test rule
+original_source: test-template
+---
+
+# Test rule example
+
+Test guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      writeFileSync(join(rulesDir, "test-rule.md"), ruleContent, "utf-8");
 
       // Execute sync
       try {
@@ -88,26 +94,28 @@ sections:
         // May throw from process.exit if command fails
       }
 
-      // Verify: Cursor export created
-      const cursorPath = join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc");
+      // Verify: Cursor export created (1:1 mapping now)
+      const cursorPath = join(TEST_DIR, ".cursor", "rules", "test-rule.mdc");
       expect(existsSync(cursorPath)).toBe(true);
 
       const cursorContent = readFileSync(cursorPath, "utf-8");
       expect(cursorContent).toContain("Test rule example");
       expect(cursorContent).toContain("Test guidance");
 
-      // Verify: AGENTS.md export created
+      // Verify: AGENTS.md export created (link-based format)
       const agentsMdPath = join(TEST_DIR, "AGENTS.md");
       expect(existsSync(agentsMdPath)).toBe(true);
 
       const agentsMdContent = readFileSync(agentsMdPath, "utf-8");
+      // Link-based format contains links to rules, not full content
       expect(agentsMdContent).toContain("Test rule example");
-      expect(agentsMdContent).toContain("Test guidance");
+      expect(agentsMdContent).toContain(".aligntrue/rules/test-rule.md");
     });
 
     it("respects configured exporters in config", async () => {
       // Setup: Config with only cursor exporter
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -116,16 +124,21 @@ sections:
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
+      // Create rules directory if not present
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create a rule file in the new format
+      const ruleContent = `---
+title: Test rule example
+original_source: test-template
+---
+
+# Test rule example
+
+Test guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      writeFileSync(join(rulesDir, "test-rule.md"), ruleContent, "utf-8");
 
       // Execute sync
       try {
@@ -134,9 +147,9 @@ sections:
         // May throw from process.exit if command fails
       }
 
-      // Verify: Only cursor export created
+      // Verify: Only cursor export created (1:1 mapping)
       expect(
-        existsSync(join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc")),
+        existsSync(join(TEST_DIR, ".cursor", "rules", "test-rule.mdc")),
       ).toBe(true);
       expect(existsSync(join(TEST_DIR, "AGENTS.md"))).toBe(false);
     });
@@ -144,6 +157,7 @@ sections:
     it("creates backup before syncing", async () => {
       // Setup
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -152,21 +166,26 @@ sections:
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
+      // Create rules directory if not present
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create a rule file in the new format
+      const ruleContent = `---
+title: Test rule example
+original_source: test-template
+---
+
+# Test rule example
+
+Test guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      writeFileSync(join(rulesDir, "test-rule.md"), ruleContent, "utf-8");
 
       // Create existing export to backup
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
       writeFileSync(
-        join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc"),
+        join(TEST_DIR, ".cursor", "rules", "test-rule.mdc"),
         "# Old content\n",
         "utf-8",
       );
@@ -188,6 +207,7 @@ sections:
     it("shows changes without writing files with --dry-run", async () => {
       // Setup
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -196,16 +216,21 @@ sections:
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
+      // Create rules directory if not present
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create a rule file in the new format
+      const ruleContent = `---
+title: Test rule example
+original_source: test-template
+---
+
+# Test rule example
+
+Test guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      writeFileSync(join(rulesDir, "test-rule.md"), ruleContent, "utf-8");
 
       // Execute sync with dry-run
       try {
@@ -216,32 +241,25 @@ sections:
 
       // Verify: No files created
       expect(
-        existsSync(join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc")),
+        existsSync(join(TEST_DIR, ".cursor", "rules", "test-rule.mdc")),
       ).toBe(false);
     });
   });
 
   describe("Error Handling", () => {
     it("exits with error if config not found", async () => {
-      const exitMock = mockProcessExit();
+      // Delete config file created by setupTestProject
+      const fs = await import("fs");
+      fs.unlinkSync(join(TEST_DIR, ".aligntrue", "config.yaml"));
 
-      try {
-        try {
-          await sync([]);
-        } catch {
-          // May throw from process.exit if command fails
-        }
-      } catch {
-        // Expected exit
-      }
-
-      expect(exitMock.exitCode).toBe(2);
-      exitMock.restore();
+      // Should throw when config is missing
+      await expect(sync([])).rejects.toThrow();
     });
 
-    it("exits with error if IR not found", async () => {
-      // Setup: Config exists but no IR
+    it("exits with error if rules directory not found", async () => {
+      // Setup: Config exists but no rules directory
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -250,21 +268,15 @@ sections:
         "utf-8",
       );
 
-      const exitMock = mockProcessExit();
-
-      try {
-        try {
-          await sync([]);
-        } catch {
-          // May throw from process.exit if command fails
-        }
-      } catch {
-        // Expected exit
+      // Delete the rules directory if it exists
+      const fs = await import("fs");
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      if (fs.existsSync(rulesDir)) {
+        fs.rmSync(rulesDir, { recursive: true });
       }
 
-      // Sync should fail when IR is missing (non-zero exit code)
-      expect(exitMock.exitCode).toBeGreaterThan(0);
-      exitMock.restore();
+      // Should throw when rules directory is missing
+      await expect(sync([])).rejects.toThrow();
     });
   });
 
@@ -272,6 +284,7 @@ sections:
     it("syncs multiple rules correctly", async () => {
       // Setup
       const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -280,24 +293,41 @@ sections:
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: First rule
-    level: 2
-    content: First rule guidance
-    fingerprint: rule-1
-  - heading: Second rule
-    level: 2
-    content: Second rule guidance
-    fingerprint: rule-2
-  - heading: Third rule
-    level: 2
-    content: Third rule guidance
-    fingerprint: rule-3
+      // Create rules directory if not present
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create multiple rule files
+      const rule1 = `---
+title: First rule
+original_source: test-template
+---
+
+# First rule
+
+First rule guidance
 `;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      const rule2 = `---
+title: Second rule
+original_source: test-template
+---
+
+# Second rule
+
+Second rule guidance
+`;
+      const rule3 = `---
+title: Third rule
+original_source: test-template
+---
+
+# Third rule
+
+Third rule guidance
+`;
+      writeFileSync(join(rulesDir, "first-rule.md"), rule1, "utf-8");
+      writeFileSync(join(rulesDir, "second-rule.md"), rule2, "utf-8");
+      writeFileSync(join(rulesDir, "third-rule.md"), rule3, "utf-8");
 
       // Execute sync
       try {
@@ -306,17 +336,31 @@ sections:
         // May throw from process.exit if command fails
       }
 
-      // Verify: All sections in export
-      const cursorContent = readFileSync(
-        join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc"),
+      // Verify: Each rule has its own .mdc file (1:1 mapping)
+      expect(
+        existsSync(join(TEST_DIR, ".cursor", "rules", "first-rule.mdc")),
+      ).toBe(true);
+      expect(
+        existsSync(join(TEST_DIR, ".cursor", "rules", "second-rule.mdc")),
+      ).toBe(true);
+      expect(
+        existsSync(join(TEST_DIR, ".cursor", "rules", "third-rule.mdc")),
+      ).toBe(true);
+
+      // Verify content in each file
+      const firstRuleContent = readFileSync(
+        join(TEST_DIR, ".cursor", "rules", "first-rule.mdc"),
         "utf-8",
       );
-      expect(cursorContent).toContain("First rule");
-      expect(cursorContent).toContain("Second rule");
-      expect(cursorContent).toContain("Third rule");
-      expect(cursorContent).toContain("First rule guidance");
-      expect(cursorContent).toContain("Second rule guidance");
-      expect(cursorContent).toContain("Third rule guidance");
+      expect(firstRuleContent).toContain("First rule");
+      expect(firstRuleContent).toContain("First rule guidance");
+
+      const secondRuleContent = readFileSync(
+        join(TEST_DIR, ".cursor", "rules", "second-rule.mdc"),
+        "utf-8",
+      );
+      expect(secondRuleContent).toContain("Second rule");
+      expect(secondRuleContent).toContain("Second rule guidance");
     });
   });
 });

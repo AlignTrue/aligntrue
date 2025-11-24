@@ -10,6 +10,7 @@ import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
 import type { OverlayDefinition } from "../overlays/types.js";
 import { ensureSectionsArray } from "../validation/sections.js";
+import type { RuleFile } from "../rules/file-io.js";
 
 /**
  * Generate lockfile from an AlignPack bundle
@@ -136,11 +137,56 @@ export function generateLockfile(
 }
 
 /**
+ * Generate lockfile from RuleFiles
+ * @param rules Array of rule files
+ * @param mode Config mode
+ */
+export function generateLockfileFromRules(
+  rules: RuleFile[],
+  mode: "team" | "enterprise",
+): Lockfile {
+  const entries: LockfileEntry[] = [];
+  const contentHashes: string[] = [];
+
+  for (const rule of rules) {
+    const hash = rule.hash;
+    const entry: LockfileEntry = {
+      rule_id: rule.path, // Use relative path as ID
+      content_hash: hash,
+    };
+
+    entries.push(entry);
+    contentHashes.push(hash);
+  }
+
+  // Sort entries by rule_id for determinism
+  entries.sort((a, b) => a.rule_id.localeCompare(b.rule_id));
+
+  // Generate bundle hash from sorted content hashes
+  const bundleHash = computeBundleHash(contentHashes.sort());
+
+  return {
+    version: "1",
+    generated_at: new Date().toISOString(),
+    mode,
+    rules: entries,
+    bundle_hash: bundleHash,
+  };
+}
+
+/**
  * Hash a single section using canonical JSON
  * Section hashing for natural markdown support (Team mode enhancements)
  */
 export function hashSection(section: AlignSection): string {
   return computeContentHash(section, true);
+}
+
+/**
+ * Hash a rule file
+ */
+export function hashRuleFile(rule: RuleFile): string {
+  return rule.hash;
 }
 
 /**

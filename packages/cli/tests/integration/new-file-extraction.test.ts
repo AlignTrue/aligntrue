@@ -8,7 +8,9 @@ import {
   cleanupTestDir,
 } from "../utils/integration-helpers.js";
 
-describe("New File Extraction", () => {
+// Skip: This test suite was for bidirectional extraction which has been removed
+// in the Ruler-style architecture refactor. Sync is now unidirectional (IR -> agents).
+describe.skip("New File Extraction", () => {
   let testDir: string;
 
   beforeAll(async () => {

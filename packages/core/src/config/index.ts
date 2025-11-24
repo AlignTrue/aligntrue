@@ -215,49 +215,31 @@ export async function saveMinimalConfig(
   }
 
   // Build sync section only if there are non-default values
+  // NOTE: Deprecated sync properties (auto_pull, on_conflict, workflow_mode,
+  // primary_agent, show_diff_on_pull, edit_source) removed in new architecture.
   const syncSection: Partial<typeof config.sync> = {};
   let hasSyncChanges = false;
 
   if (
-    config.sync?.auto_pull !== defaults.sync?.auto_pull &&
-    config.sync?.auto_pull !== undefined
+    config.sync?.scope_prefixing !== defaults.sync?.scope_prefixing &&
+    config.sync?.scope_prefixing !== undefined
   ) {
-    syncSection.auto_pull = config.sync.auto_pull;
+    syncSection.scope_prefixing = config.sync.scope_prefixing;
     hasSyncChanges = true;
   }
   if (
-    config.sync?.on_conflict !== defaults.sync?.on_conflict &&
-    config.sync?.on_conflict !== undefined
+    config.sync?.watch_enabled !== undefined &&
+    config.sync?.watch_enabled !== false
   ) {
-    syncSection.on_conflict = config.sync.on_conflict;
+    syncSection.watch_enabled = config.sync.watch_enabled;
     hasSyncChanges = true;
   }
-  if (
-    config.sync?.workflow_mode !== defaults.sync?.workflow_mode &&
-    config.sync?.workflow_mode !== undefined
-  ) {
-    syncSection.workflow_mode = config.sync.workflow_mode;
+  if (config.sync?.watch_debounce !== undefined) {
+    syncSection.watch_debounce = config.sync.watch_debounce;
     hasSyncChanges = true;
   }
-  if (
-    config.sync?.primary_agent !== defaults.sync?.primary_agent &&
-    config.sync?.primary_agent !== undefined
-  ) {
-    syncSection.primary_agent = config.sync.primary_agent;
-    hasSyncChanges = true;
-  }
-  if (
-    config.sync?.show_diff_on_pull !== defaults.sync?.show_diff_on_pull &&
-    config.sync?.show_diff_on_pull !== undefined
-  ) {
-    syncSection.show_diff_on_pull = config.sync.show_diff_on_pull;
-    hasSyncChanges = true;
-  }
-
-  // Always save edit_source if explicitly set
-  // (don't compare to computed default since defaults are dynamic based on exporters)
-  if (config.sync?.edit_source !== undefined) {
-    syncSection.edit_source = config.sync.edit_source;
+  if (config.sync?.watch_files && config.sync.watch_files.length > 0) {
+    syncSection.watch_files = config.sync.watch_files;
     hasSyncChanges = true;
   }
 
@@ -265,9 +247,9 @@ export async function saveMinimalConfig(
     minimalConfig.sync = syncSection;
   }
 
-  // Sources: only if not default
+  // Sources: only if not default (now defaults to rules directory)
   const defaultSources = JSON.stringify([
-    { type: "local", path: ".aligntrue/.rules.yaml" },
+    { type: "local", path: ".aligntrue/rules" },
   ]);
   const currentSources = JSON.stringify(config.sources);
   if (currentSources !== defaultSources && config.sources !== undefined) {

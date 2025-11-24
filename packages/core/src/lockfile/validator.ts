@@ -5,6 +5,7 @@
 import type { AlignPack } from "@aligntrue/schema";
 import type { Lockfile, LockfileValidationResult, Mismatch } from "./types.js";
 import { hashSection } from "./generator.js";
+import type { RuleFile } from "../rules/file-io.js";
 
 /**
  * Validate lockfile against current bundle
@@ -68,6 +69,63 @@ export function validateLockfile(
   // Check for deleted sections
   for (const entry of lockfile.rules) {
     if (!currentSectionIds.has(entry.rule_id)) {
+      deletedRules.push(entry.rule_id);
+    }
+  }
+
+  const valid =
+    mismatches.length === 0 &&
+    newRules.length === 0 &&
+    deletedRules.length === 0;
+
+  return {
+    valid,
+    mismatches,
+    newRules,
+    deletedRules,
+  };
+}
+
+/**
+ * Validate lockfile against current rules
+ * @param lockfile Existing lockfile
+ * @param rules Current rule files
+ */
+export function validateLockfileFromRules(
+  lockfile: Lockfile,
+  rules: RuleFile[],
+): LockfileValidationResult {
+  const mismatches: Mismatch[] = [];
+  const newRules: string[] = [];
+  const deletedRules: string[] = [];
+
+  const lockfileMap = new Map(
+    lockfile.rules.map((entry) => [entry.rule_id, entry]),
+  );
+
+  // Filter logic if needed (e.g. ignore personal rules? Global rules?)
+  // For now assume all passed rules should be in lockfile (except global, handled by caller)
+
+  const currentRuleIds = new Set(rules.map((r) => r.path));
+
+  for (const rule of rules) {
+    const lockfileEntry = lockfileMap.get(rule.path);
+
+    if (!lockfileEntry) {
+      newRules.push(rule.path);
+    } else {
+      if (rule.hash !== lockfileEntry.content_hash) {
+        mismatches.push({
+          rule_id: rule.path,
+          expected_hash: lockfileEntry.content_hash,
+          actual_hash: rule.hash,
+        });
+      }
+    }
+  }
+
+  for (const entry of lockfile.rules) {
+    if (!currentRuleIds.has(entry.rule_id)) {
       deletedRules.push(entry.rule_id);
     }
   }

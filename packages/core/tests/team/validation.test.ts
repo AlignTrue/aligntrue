@@ -30,7 +30,7 @@ describe("validateTeamConfig", () => {
       version: "1",
       mode: "solo",
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -43,7 +43,7 @@ describe("validateTeamConfig", () => {
       mode: "team",
       modules: { lockfile: false },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -61,7 +61,7 @@ describe("validateTeamConfig", () => {
       modules: { lockfile: true },
       lockfile: { mode: "soft" },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -75,7 +75,7 @@ describe("validateTeamConfig", () => {
       modules: { lockfile: true },
       lockfile: { mode: "off" },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -93,7 +93,7 @@ describe("validateTeamConfig", () => {
       modules: { lockfile: true },
       lockfile: { mode: "soft" },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -107,7 +107,7 @@ describe("validateTeamConfig", () => {
       modules: { lockfile: true },
       lockfile: { mode: "strict" },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamConfig(config);
@@ -125,7 +125,7 @@ describe("validateTeamLockfile", () => {
       version: "1",
       mode: "solo",
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamLockfile(config);
@@ -138,7 +138,7 @@ describe("validateTeamLockfile", () => {
       mode: "team",
       modules: { lockfile: false },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamLockfile(config);
@@ -153,7 +153,7 @@ describe("validateTeamLockfile", () => {
       mode: "team",
       modules: { lockfile: true },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamLockfile(config);
@@ -171,7 +171,7 @@ describe("validateTeamLockfile", () => {
       mode: "team",
       modules: { lockfile: true },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamLockfile(config);
@@ -186,7 +186,7 @@ describe("validateTeamLockfile", () => {
       mode: "team",
       modules: { lockfile: true },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamLockfile(config, "custom/lockfile.json");
@@ -205,7 +205,7 @@ describe("validateTeamSources", () => {
       version: "1",
       mode: "solo",
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const errors = validateTeamSources(config);
@@ -264,7 +264,7 @@ describe("getTeamValidationErrors", () => {
       version: "1",
       mode: "solo",
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const result = getTeamValidationErrors(config);
@@ -281,7 +281,7 @@ describe("getTeamValidationErrors", () => {
       mode: "team",
       modules: { lockfile: false },
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     const result = getTeamValidationErrors(config);
