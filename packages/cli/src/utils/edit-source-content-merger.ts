@@ -7,15 +7,14 @@
  * - No prompt, no complex merge logic
  */
 
-import { readFileSync, existsSync, writeFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { globSync } from "glob";
 import { join } from "path";
 import { backupFileToOverwrittenRules } from "./extract-rules.js";
 
-function debugLog(msg: string) {
-  try {
-    writeFileSync("/tmp/aligntrue-debug.log", msg + "\n", { flag: "a" });
-  } catch {}
+// Debug logging disabled - use console.debug() with NODE_DEBUG if needed
+function debugLog(_msg: string) {
+  // No-op: debug logs should not write to disk for security and determinism
 }
 
 export interface EditSourceSwitchResult {

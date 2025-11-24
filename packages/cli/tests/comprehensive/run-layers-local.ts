@@ -17,7 +17,13 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { mkdirSync, writeFileSync, readFileSync, mkdtempSync } from "node:fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  mkdtempSync,
+  existsSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { globSync } from "glob";
@@ -56,7 +62,7 @@ console.log(`CLI path: ${cliPath}`);
 console.log(`Running all 8 layers\n`);
 
 // Verify CLI is built
-if (!require("fs").existsSync(cliPath)) {
+if (!existsSync(cliPath)) {
   console.error(
     `ERROR: CLI not built. Run 'pnpm build' first or 'cd ${workspaceRoot} && pnpm build'`,
   );
