@@ -25,8 +25,16 @@ describe("Lockfile Drift", () => {
     // 1. Initialize in team mode
     await runCli(["init", "--yes", "--mode", "team"], { cwd: testDir });
 
-    // Initial sync to generate lockfile
-    await runCli(["sync", "--yes"], { cwd: testDir });
+    // Initial sync to generate lockfile and store hashes
+    const syncResult1 = await runCli(["sync", "--yes"], { cwd: testDir });
+    if (syncResult1.exitCode !== 0) {
+      console.log(
+        "Initial sync failed:",
+        syncResult1.stdout,
+        syncResult1.stderr,
+      );
+    }
+    expect(syncResult1.exitCode).toBe(0);
 
     // 2. Verify no drift initially
     const driftResult1 = await runCli(["drift", "--gates"], { cwd: testDir });
@@ -50,6 +58,14 @@ describe("Lockfile Drift", () => {
         driftResult2.stdout,
       );
       console.log("Stderr:", driftResult2.stderr);
+      // Debug: check if hash file exists
+      const hashFile = join(testDir, ".aligntrue", ".agent-export-hashes.json");
+      try {
+        const hashes = readFileSync(hashFile, "utf-8");
+        console.log("Hash file exists:", hashes);
+      } catch {
+        console.log("Hash file not found:", hashFile);
+      }
     }
     expect(driftResult2.exitCode).toBe(2); // Exit code 2 means drift detected with --gates
 
