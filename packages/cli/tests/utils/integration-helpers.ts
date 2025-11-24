@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from "child_process";
+import { execFileSync } from "child_process";
 import { resolve, join, dirname } from "path";
 import { rmSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
@@ -20,21 +20,17 @@ export async function runCli(
 ): Promise<RunResult> {
   try {
     // Run the CLI using execFileSync to avoid shell interpretation vulnerabilities
-    const stdout = execFileSync(
-      "node",
-      [CLI_PATH, ...args],
-      {
-        cwd: options.cwd,
-        env: {
-          ...process.env,
-          ...options.env,
-          NODE_ENV: "test",
-          ALIGNTRUE_NO_TELEMETRY: "1",
-        },
-        encoding: "utf-8",
-        stdio: "pipe", // Capture output
-      }
-    );
+    const stdout = execFileSync("node", [CLI_PATH, ...args], {
+      cwd: options.cwd,
+      env: {
+        ...process.env,
+        ...options.env,
+        NODE_ENV: "test",
+        ALIGNTRUE_NO_TELEMETRY: "1",
+      },
+      encoding: "utf-8",
+      stdio: "pipe", // Capture output
+    });
 
     return { stdout, stderr: "", exitCode: 0 };
   } catch (error: any) {
