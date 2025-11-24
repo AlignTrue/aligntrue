@@ -138,13 +138,9 @@ cat .cursor/rules/aligntrue.mdc
 
 The best way to prevent conflicts is to set a workflow mode:
 
-```yaml
-# .aligntrue/config.yaml
-sync:
-  workflow_mode: "native_format" # or "ir_source"
-```
+Edit files in `.aligntrue/rules/` and run `aligntrue sync`.
 
-See [Workflows guide](/docs/01-guides/01-workflows) for details.
+See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
 
 ### 2. Edit only one source
 
@@ -371,6 +367,6 @@ If you didn't have backups enabled:
 ## Related pages
 
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Understanding auto-pull and sync
-- [Workflows guide](/docs/01-guides/01-workflows) - Choosing your workflow
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
 - [Backup and restore](/docs/04-reference/backup-restore) - Using backups
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works

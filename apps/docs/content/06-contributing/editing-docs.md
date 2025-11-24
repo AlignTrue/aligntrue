@@ -236,7 +236,7 @@ See these pages for diagram examples:
 
 - [How it works](/docs) - Homepage flow diagram
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Sequence diagrams
-- [Workflows](/docs/01-guides/01-workflows) - Decision tree
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
 - [Solo vs team](/docs/00-getting-started/02-solo-vs-team-mode) - Architecture comparison
 - [Customization](/docs/02-customization) - Decision flowchart
 
