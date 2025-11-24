@@ -42,7 +42,7 @@ AlignTrue uses a pnpm workspace with the following packages:
 - `packages/cli` - Command-line interface
 - `packages/core` - Core sync engine and configuration
 - `packages/schema` - IR validation and canonicalization
-- `packages/exporters` - Agent-specific exporters (43 adapters)
+- `packages/exporters` - Agent-specific exporters (50 exporters)
 - `packages/sources` - Multi-source pulling (local, git)
 - `apps/docs` - Documentation site (Nextra)
 

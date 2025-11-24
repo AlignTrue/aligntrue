@@ -85,7 +85,7 @@ node dist/index.js --help
 
 ### packages/exporters
 
-Agent-specific export adapters (51 exporters for 28+ agents).
+Agent-specific export adapters (50 exporters for 28+ agents).
 
 **Responsibilities:**
 

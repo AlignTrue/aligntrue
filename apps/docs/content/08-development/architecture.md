@@ -143,7 +143,7 @@ Rules merge with precedence from most specific to least specific.
 
 ## Exporters
 
-AlignTrue includes 44 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks this against `packages/exporters/src`.
+AlignTrue includes 50 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks this against `packages/exporters/src`.
 
 ### Categories
 
@@ -230,7 +230,7 @@ aligntrue/
 │   ├── file-utils/       # Shared utilities
 │   ├── core/             # Config, sync engine, bundle/lockfile
 │   ├── sources/          # Multi-source pulling (local, git)
-│   ├── exporters/        # Agent-specific exports (43 adapters)
+│   ├── exporters/        # Agent-specific exports (50 exporters)
 │   ├── cli/              # aligntrue/aln CLI
 │   ├── testkit/          # Conformance vectors and golden tests
 │   └── ui/               # Design system components

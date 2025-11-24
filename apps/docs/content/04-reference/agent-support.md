@@ -9,7 +9,7 @@ AlignTrue supports **28+ AI coding agents** through **50 exporters**. Each expor
 
 ## Coverage statistics
 
-- **51 total exporters** supporting **28+ agents**
+- **50 total exporters** supporting **28+ agents**
 - **14 MCP configurations** for protocol-based agents
 - **15 agent-specific format exporters** for native configurations
 - **11 universal format agents** using AGENTS.md

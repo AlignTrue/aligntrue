@@ -7,7 +7,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 **Update criteria:** This page should be updated whenever features are implemented, removed, or significantly changed. It serves as the single source of truth for AlignTrue's current capabilities.
 
--## Core platform
+## Core platform
 
 - Natural markdown authoring in your detected agent format or universal `AGENTS.md`
 - Two-way sync engine with section-based merging (IR ↔ agents)
@@ -95,7 +95,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 ## Core format & architecture
 
-- **Natural markdown sections** - Primary content format, all 51 exporters support it
+- **Natural markdown sections** - Primary content format, all 50 exporters support it
 - **Agent-native editing** - Edit in your detected agent format (Cursor `.mdc`, etc.) or universal `AGENTS.md`
 - **IR (`.aligntrue/.rules.yaml`)** - Internal representation, auto-generated from your edits
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
