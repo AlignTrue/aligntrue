@@ -1766,14 +1766,15 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 ## @aligntrue/core
 
-| Export Path                  | Purpose                                  | Example                                                                           |
-| ---------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
-| `.`                          | Main entry point with core functionality | `import { loadConfig, SyncEngine } from '@aligntrue/core'`                        |
-| `./telemetry/collector.js`   | Telemetry collection utilities           | `import { recordEvent } from '@aligntrue/core/telemetry/collector.js'`            |
-| `./team/allow.js`            | Team mode allow list management          | `import { parseAllowList } from '@aligntrue/core/team/allow.js'`                  |
-| `./team/drift.js`            | Drift detection for team mode            | `import { detectDriftForConfig } from '@aligntrue/core/team/drift.js'`            |
-| `./lockfile`                 | Lockfile generation and validation       | `import { generateLockfile, validateLockfile } from '@aligntrue/core/lockfile'`   |
-| `./parsing/natural-markdown` | Natural markdown parsing                 | `import { parseNaturalMarkdown } from '@aligntrue/core/parsing/natural-markdown'` |
+| Export Path                  | Purpose                                          | Example                                                                                      |
+| ---------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `.`                          | Main entry point with core functionality         | `import { loadConfig, SyncEngine } from '@aligntrue/core'`                                   |
+| `./telemetry/collector.js`   | Telemetry collection utilities                   | `import { recordEvent } from '@aligntrue/core/telemetry/collector.js'`                       |
+| `./team/allow.js`            | Team mode allow list management                  | `import { parseAllowList } from '@aligntrue/core/team/allow.js'`                             |
+| `./team/drift.js`            | Drift detection for team mode                    | `import { detectDriftForConfig } from '@aligntrue/core/team/drift.js'`                       |
+| `./lockfile`                 | Lockfile generation and validation               | `import { generateLockfile, validateLockfile } from '@aligntrue/core/lockfile'`              |
+| `./parsing/natural-markdown` | Natural markdown parsing                         | `import { parseNaturalMarkdown } from '@aligntrue/core/parsing/natural-markdown'`            |
+| `./sync/tracking`            | Last sync timestamp and agent file hash tracking | `import { getLastSyncTimestamp, storeAgentExportHash } from '@aligntrue/core/sync/tracking'` |
 
 ## @aligntrue/schema
 
