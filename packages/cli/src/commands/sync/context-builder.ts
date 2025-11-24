@@ -86,7 +86,11 @@ export async function buildSyncContext(
   }
 
   // Step 2: Load config
-  const spinner = createSpinner({ disabled: options.quiet });
+  const spinnerOpts: { disabled?: boolean } = {};
+  if (options.quiet !== undefined) {
+    spinnerOpts.disabled = options.quiet;
+  }
+  const spinner = createSpinner(spinnerOpts);
   if (!options.quiet) {
     spinner.start("Loading configuration");
   }
@@ -164,13 +168,27 @@ export async function buildSyncContext(
   let bundleResult: Awaited<ReturnType<typeof resolveAndMergeSources>>;
 
   try {
-    bundleResult = await resolveAndMergeSources(config, {
+    const resolveOpts: {
+      cwd: string;
+      offlineMode?: boolean;
+      forceRefresh?: boolean;
+      warnConflicts: boolean;
+      onGitProgress: (update: GitProgressUpdate) => void;
+    } = {
       cwd,
-      offlineMode: options.offline || options.skipUpdateCheck,
-      forceRefresh: options.forceRefresh,
       warnConflicts: true,
       onGitProgress: handleGitProgress,
-    });
+    };
+
+    const offlineVal = options.offline || options.skipUpdateCheck;
+    if (offlineVal !== undefined) {
+      resolveOpts.offlineMode = offlineVal;
+    }
+    if (options.forceRefresh !== undefined) {
+      resolveOpts.forceRefresh = options.forceRefresh;
+    }
+
+    bundleResult = await resolveAndMergeSources(config, resolveOpts);
 
     // Use first source path for conflict detection and display
     sourcePath =
@@ -298,13 +316,28 @@ export async function buildSyncContext(
           delete resolveConfig.sync.edit_source;
         }
 
-        bundleResult = await resolveAndMergeSources(resolveConfig, {
+        const resolveOpts2: {
+          cwd: string;
+          offlineMode?: boolean;
+          forceRefresh: boolean;
+          warnConflicts: boolean;
+          onGitProgress: (update: GitProgressUpdate) => void;
+        } = {
           cwd,
-          offlineMode: options.offline || options.skipUpdateCheck,
           forceRefresh: true, // Force refresh since files changed
           warnConflicts: true,
           onGitProgress: handleGitProgress,
-        });
+        };
+
+        const offlineVal2 = options.offline || options.skipUpdateCheck;
+        if (offlineVal2 !== undefined) {
+          resolveOpts2.offlineMode = offlineVal2;
+        }
+
+        bundleResult = await resolveAndMergeSources(
+          resolveConfig,
+          resolveOpts2,
+        );
 
         // Update paths
         sourcePath =
@@ -614,11 +647,22 @@ async function handleAgentDetectionAndOnboarding(
 
   // 7. Interactive Mode Display
   // Show unified detection summary
-  const formatted = formatDetectionOutput(summaries, filesByAgent, {
-    verbose: options.verbose,
-    verboseFull: options.verboseFull,
-    quiet: options.quiet,
-  });
+  const formatOpts: {
+    verbose?: boolean;
+    verboseFull?: boolean;
+    quiet?: boolean;
+  } = {};
+
+  if (options.verbose !== undefined) {
+    formatOpts.verbose = options.verbose;
+  }
+  if (options.verboseFull !== undefined) {
+    formatOpts.verboseFull = options.verboseFull;
+  }
+  if (options.quiet !== undefined) {
+    formatOpts.quiet = options.quiet;
+  }
+  const formatted = formatDetectionOutput(summaries, filesByAgent, formatOpts);
 
   if (formatted.text) {
     console.log(formatted.text);

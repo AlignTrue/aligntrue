@@ -8,6 +8,7 @@ import { join } from "path";
 import { IStorageBackend, Rules } from "./backend.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { parseNaturalMarkdown } from "../parsing/natural-markdown.js";
+import { sectionsToMarkdown } from "../parsing/markdown-generator.js";
 
 export class LocalStorageBackend implements IStorageBackend {
   private fileWriter: AtomicFileWriter;
@@ -52,7 +53,7 @@ export class LocalStorageBackend implements IStorageBackend {
     const rulesFile = join(this.storagePath, "rules.md");
 
     // Convert sections to markdown
-    const content = this.sectionsToMarkdown(rules);
+    const content = sectionsToMarkdown(rules, "Local Rules");
 
     // Write atomically
     await this.fileWriter.write(rulesFile, content);
@@ -61,18 +62,5 @@ export class LocalStorageBackend implements IStorageBackend {
   async sync(): Promise<void> {
     // Local storage doesn't sync to remote
     // This is a no-op
-  }
-
-  private sectionsToMarkdown(rules: Rules): string {
-    let markdown = "# Local Rules\n\n";
-
-    for (const section of rules) {
-      const level = section.level || 2;
-      const heading = "#".repeat(level);
-      markdown += `${heading} ${section.heading}\n\n`;
-      markdown += `${section.content}\n\n`;
-    }
-
-    return markdown;
   }
 }

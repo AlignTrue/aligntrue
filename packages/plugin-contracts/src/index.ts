@@ -22,6 +22,9 @@ export type {
   AdapterManifest,
 } from "./exporter.js";
 
+// Sync options
+export type { SyncOptions } from "./sync.js";
+
 // Prompt utilities for interactive conflict resolution
 export type { ConflictResolution, PromptFunction } from "./prompts.js";
 
