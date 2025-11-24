@@ -7,378 +7,124 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
   ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
-import { getAlignTruePaths, matchesEditSource } from "@aligntrue/core";
+import type { RuleFrontmatter } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
+import { join } from "path";
+import yaml from "js-yaml";
 
 export class CursorExporter extends ExporterBase {
   name = "cursor";
   version = "1.0.0";
   capabilities: ExporterCapabilities = {
     multiFile: true, // Multi-file format (.mdc files)
-    twoWaySync: true, // Supports editing and pullback
+    twoWaySync: false, // No longer supports two-way sync
     scopeAware: true, // Can filter by scope
     preserveStructure: true, // Maintains file organization
     nestedDirectories: true, // Supports nested scope directories
   };
 
-  // NOTE: Cursor always uses native frontmatter format (modeHints='native')
-  // This ensures round-trip fidelity for vendor.cursor fields
-  // The mode_hints config is intentionally ignored for this exporter
-
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = pack.sections;
+    // Get rules from request (handles backward compatibility with pack)
+    const rules = this.getRulesFromRequest(request);
 
-    // NOTE: ALL sections from the pack are exported to .cursor/rules/*.mdc files
-    // Line count differences between AGENTS.md and .mdc files are due to:
-    // 1. Fidelity notes footer in .mdc (explains format limitations)
-    // 2. Content hash footer for drift detection
-    // 3. Different whitespace/formatting conventions
-    // Testing gotcha: Compare section headings, not line counts, to verify completeness
-
-    // Handle empty sections gracefully (valid in early setup)
-    if (sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
-    }
-
-    // Cursor always uses native frontmatter format, ignore config
-    // This preserves round-trip fidelity for vendor.cursor fields
-    const _modeHints = "native"; // Force native, ignore config
-
-    const paths = getAlignTruePaths(outputDir);
-    const managedSections =
-      (options as { managedSections?: string[] }).managedSections || [];
-
-    // Group sections by target scope (vendor.aligntrue.source_scope)
-    const sectionsByScope = this.groupSectionsByScope(sections, scope);
-
-    // Export each scope group to its file
     const allFilesWritten: string[] = [];
     const allWarnings: string[] = [];
     let combinedContentHash = "";
 
-    for (const [targetScope, scopeSections] of sectionsByScope.entries()) {
-      // Determine output path for this scope
-      // For non-default scopes, write to nested directory structure
+    // Hash of all exported content
+    const contentHashes: string[] = [];
+
+    for (const rule of rules) {
+      if (!this.shouldExportRule(rule, "cursor")) {
+        continue;
+      }
+
+      // Determine output path
+      // If rule has nested_location, put it there.
+      // Else put in root .cursor/rules/
+      const nestedLoc = rule.frontmatter.nested_location;
+      const filename = rule.filename.replace(/\.md$/, ".mdc");
+
       let outputPath: string;
-      if (targetScope === "default" || scope.isDefault) {
-        // Default scope: write to root .cursor/rules/aligntrue.mdc
-        outputPath = paths.cursorRules("default");
+      if (nestedLoc) {
+        outputPath = join(outputDir, nestedLoc, ".cursor/rules", filename);
       } else {
-        // Named scope: write to scope-specific nested directory
-        // e.g., apps/web/.cursor/rules/web.mdc
-        const scopeName = targetScope.split("/").pop() || targetScope;
-        outputPath = paths.cursorRulesScoped(targetScope, scopeName);
+        outputPath = join(outputDir, ".cursor/rules", filename);
       }
 
-      // Determine if this file is in edit_source (editable) or read-only
-      const config = options.config as
-        | {
-            sync?: {
-              edit_source?: string | string[];
-              centralized?: boolean;
-            };
-          }
-        | undefined;
+      // Generate content
+      const cursorFrontmatter = this.translateFrontmatter(rule.frontmatter);
 
-      // Normalize outputPath to relative path for matching
-      const { relative } = await import("path");
-      const relativeOutputPath = relative(outputDir, outputPath).replace(
-        /\\/g,
-        "/",
-      );
+      // Add read-only marker to content (not frontmatter)
+      // We put the read-only marker as an HTML comment after frontmatter
+      const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
 
-      const editSource = config?.sync?.edit_source;
-
-      // Use shared utility to check if file matches edit_source
-      const isEditSource = matchesEditSource(relativeOutputPath, editSource);
-
-      // Only merge if file is in edit_source (to preserve user-added sections)
-      // For read-only files, overwrite with IR content only (don't preserve unauthorized edits)
-      const mergeResult = isEditSource
-        ? await this.readAndMerge(
-            outputPath,
-            scopeSections,
-            "cursor-mdc",
-            managedSections,
-          )
-        : {
-            mergedSections: scopeSections,
-            userSections: [],
-            stats: {
-              kept: 0,
-              updated: 0,
-              added: scopeSections.length,
-              userAdded: 0,
-              preservedEdits: 0,
-            },
-            warnings: [],
-          };
-
-      // Generate .mdc content from merged sections
-      const content = this.generateMdcFromSections(
-        scope, // Use original scope for metadata
-        mergeResult.mergedSections,
-        options.unresolvedPlugsCount,
-        managedSections,
-        options.config, // Pass config for source markers
-        outputPath, // Pass output path for read-only check
-      );
-      const contentHash = computeContentHash({
-        scope,
-        sections: mergeResult.mergedSections,
+      // Stringify frontmatter using js-yaml directly
+      const yamlContent = yaml.dump(cursorFrontmatter, {
+        sortKeys: true,
+        noRefs: true,
       });
-      const fidelityNotes = this.computeSectionFidelityNotes(
-        mergeResult.mergedSections,
-      );
+      const frontmatterStr = `---\n${yamlContent}---`;
 
-      // Combine merge warnings with fidelity notes
-      allWarnings.push(...mergeResult.warnings, ...fidelityNotes);
+      // Construct full file content
+      const fullContent = `${frontmatterStr}\n\n${readOnlyMarker}\n${rule.content}`;
 
-      // Write file atomically if not dry-run
-      // Auto-apply force for read-only files (not in edit_source)
-      const writeOptions: ExportOptions = {
-        ...options,
-        force: !isEditSource || (options.force ?? false),
-      };
-      const filesWritten = await this.writeFile(
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(rule.hash);
+
+      // Write file
+      const files = await this.writeFile(
         outputPath,
-        content,
+        fullContent,
         dryRun,
-        writeOptions,
+        { ...options, force: true }, // Always force overwrite for read-only exports
       );
-      allFilesWritten.push(...filesWritten);
 
-      // Use first scope's hash as combined hash
-      if (!combinedContentHash) {
-        combinedContentHash = contentHash;
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
       }
+    }
+
+    if (contentHashes.length > 0) {
+      combinedContentHash = this.computeHash(contentHashes.sort().join(""));
     }
 
     return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
   }
 
-  /**
-   * Group sections by their target scope
-   * Uses vendor.aligntrue.source_scope if present, otherwise uses provided scope
-   */
-  private groupSectionsByScope(
-    sections: AlignSection[],
-    fallbackScope: ResolvedScope,
-  ): Map<string, AlignSection[]> {
-    const sectionsByScope = new Map<string, AlignSection[]>();
+  override translateFrontmatter(
+    frontmatter: RuleFrontmatter,
+  ): Record<string, unknown> {
+    const cursorMeta = frontmatter["cursor"] || {};
+    const result: Record<string, unknown> = { ...cursorMeta };
 
-    for (const section of sections) {
-      // Check for source_scope in vendor metadata
-      const sourceScope = section.vendor?.aligntrue?.source_scope;
-      const targetScope =
-        sourceScope ||
-        (fallbackScope.isDefault ? "default" : fallbackScope.normalizedPath);
-
-      if (!sectionsByScope.has(targetScope)) {
-        sectionsByScope.set(targetScope, []);
-      }
-      sectionsByScope.get(targetScope)!.push(section);
+    // Map common fields if not already present in cursor meta
+    if (frontmatter["description"] && !result["description"]) {
+      result["description"] = frontmatter["description"];
     }
 
-    return sectionsByScope;
-  }
-
-  /**
-   * Generate scope-specific filename
-   * Default scope (path: ".") → "aligntrue.mdc"
-   * Named scope → "{normalized-path}.mdc" (slashes → hyphens)
-   */
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "aligntrue.mdc";
+    if (frontmatter["globs"] && !result["globs"]) {
+      result["globs"] = frontmatter["globs"];
     }
 
-    // Normalize path: replace slashes with hyphens
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.mdc`;
-  }
-
-  /**
-   * Generate read-only warning header if this file is not the edit source
-   */
-  private generateReadOnlyHeader(outputPath: string, config?: unknown): string {
-    if (!config) return "";
-
-    const typedConfig = config as {
-      sync?: {
-        edit_source?: string | string[];
-        centralized?: boolean;
-      };
-    };
-    const editSource = typedConfig.sync?.edit_source;
-    const isDecentralized = typedConfig.sync?.centralized === false || false;
-
-    if (!editSource || isDecentralized) return "";
-
-    // Check if this output matches edit source pattern
-    const patterns = Array.isArray(editSource) ? editSource : [editSource];
-    const isEditSource = patterns.some((pattern) => {
-      // Simple glob match for .cursor/rules/*.mdc
-      if (
-        pattern === ".cursor/rules/*.mdc" &&
-        outputPath.includes(".cursor/rules/")
-      ) {
-        return true;
-      }
-      // Exact path match
-      if (outputPath.endsWith(pattern)) {
-        return true;
-      }
-      return false;
-    });
-
-    if (isEditSource) return "";
-
-    // Not edit source - add read-only warning
-    const sourceDisplay = Array.isArray(editSource)
-      ? editSource.join(", ")
-      : editSource;
-    return `<!--
-WARNING: Read-only export from AlignTrue
-
-This file is automatically generated. Changes will be overwritten on next sync.
-
-Edit source: ${sourceDisplay}
-To modify these rules, edit ${sourceDisplay} instead, then run 'aligntrue sync'.
--->
-
-`;
-  }
-
-  /**
-   * Generate .mdc content from natural markdown sections
-   * Extracts Cursor-specific frontmatter from vendor metadata, applies smart defaults
-   */
-  private generateMdcFromSections(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-    unresolvedPlugs?: number,
-    managedSections: string[] = [],
-    config?: unknown,
-    outputPath?: string,
-  ): string {
-    // Extract Cursor-specific metadata from first section's vendor bag
-    const frontmatter = this.generateFrontmatterFromSections(scope, sections);
-
-    // Add read-only warning if not edit source
-    const readOnlyWarning = outputPath
-      ? this.generateReadOnlyHeader(outputPath, config)
-      : "";
-
-    // Generate sections with source markers
-    let sectionsContent = "";
-    for (const section of sections) {
-      // Add source marker before section
-      const marker = this.generateSourceMarker(section, config);
-      if (marker) {
-        sectionsContent += `${marker}\n`;
-      }
-
-      // Render the section with team-managed markers
-      sectionsContent += this.renderSectionsWithManaged(
-        [section],
-        false,
-        managedSections,
-      );
+    // If apply_to is present, map to 'when' if not present?
+    // Cursor uses 'alwaysApply' usually.
+    // If apply_to is "alwaysOn", set alwaysApply: true?
+    // Or just leave it to cursor meta.
+    if (
+      frontmatter["apply_to"] === "alwaysOn" &&
+      result["alwaysApply"] === undefined
+    ) {
+      result["alwaysApply"] = true;
     }
 
-    // No footer - keep files clean
-    // Fidelity notes will be shown in CLI output instead
-
-    return `${frontmatter}\n${readOnlyWarning}${sectionsContent}`;
-  }
-
-  /**
-   * Generate Cursor frontmatter from sections
-   * Extracts vendor.cursor metadata or applies smart defaults
-   * Includes scope globs if scope has include patterns
-   */
-  private generateFrontmatterFromSections(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-  ): string {
-    const lines: string[] = ["---"];
-
-    // Check first section for Cursor-specific vendor metadata
-    const firstSection = sections[0];
-    const cursorVendor = firstSection?.vendor?.["cursor"] as
-      | Record<string, unknown>
-      | undefined;
-
-    // Smart defaults for Cursor
-    if (cursorVendor) {
-      // Use explicit vendor metadata if present (bracket notation for index signature)
-      if (cursorVendor["alwaysApply"]) {
-        lines.push("alwaysApply: true");
-      } else if (cursorVendor["intelligent"]) {
-        lines.push("intelligent: true");
-        if (cursorVendor["description"]) {
-          lines.push(`description: ${cursorVendor["description"]}`);
-        }
-      }
-
-      // Globs from vendor metadata
-      const globs = cursorVendor["globs"];
-      if (globs && Array.isArray(globs) && globs.length > 0) {
-        const hasSpecificGlobs = !(globs.length === 1 && globs[0] === "**/*");
-        if (hasSpecificGlobs) {
-          lines.push(`globs:`);
-          globs.forEach((glob: string) => {
-            lines.push(`  - "${glob}"`);
-          });
-        }
-      }
-
-      // Title and tags
-      if (cursorVendor["title"]) {
-        lines.push(`title: ${cursorVendor["title"]}`);
-      }
-      if (
-        cursorVendor["tags"] &&
-        Array.isArray(cursorVendor["tags"]) &&
-        cursorVendor["tags"].length > 0
-      ) {
-        lines.push("tags:");
-        cursorVendor["tags"].forEach((tag: string) => {
-          lines.push(`  - ${tag}`);
-        });
-      }
-    } else {
-      // Apply smart defaults for generic markdown
-      // Default to "always" mode for natural markdown (most user-friendly)
-      lines.push("alwaysApply: true");
-    }
-
-    // Add scope globs if scope has include patterns
-    // Only add if not already present from vendor metadata
-    if (scope.include && scope.include.length > 0 && !cursorVendor?.["globs"]) {
-      lines.splice(lines.length - 1, 0, "globs:");
-      scope.include.forEach((glob: string) => {
-        lines.splice(lines.length - 1, 0, `  - "${glob}"`);
-      });
-    }
-
-    lines.push("---");
-    return lines.join("\n");
+    return result;
   }
 }

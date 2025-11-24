@@ -6,6 +6,7 @@
  * - Fidelity notes generation
  * - Atomic file writing with dry-run support
  * - Manifest validation
+ * - Export control checks
  *
  * Reduces duplication by ~1,075 LOC across exporter implementations.
  */
@@ -18,14 +19,18 @@ import type {
   AdapterManifest,
 } from "@aligntrue/plugin-contracts";
 import { getPromptHandler } from "@aligntrue/plugin-contracts";
-import type { AlignSection } from "@aligntrue/schema";
+import type {
+  AlignSection,
+  AlignPack,
+  RuleFile,
+  RuleFrontmatter,
+} from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import * as SectionRenderer from "./section-renderer.js";
-import * as FileMerger from "./file-merger.js";
 
 /**
  * Abstract base class for all exporters
@@ -55,6 +60,135 @@ export abstract class ExporterBase implements ExporterPlugin {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult>;
+
+  /**
+   * Translate AlignTrue frontmatter to agent-specific metadata
+   * Default implementation returns minimal common fields.
+   * Subclasses can override to include agent-specific fields.
+   */
+  translateFrontmatter(frontmatter: RuleFrontmatter): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    if (frontmatter["title"]) result["title"] = frontmatter["title"];
+    if (frontmatter["description"])
+      result["description"] = frontmatter["description"];
+    if (frontmatter["scope"]) result["scope"] = frontmatter["scope"];
+    if (frontmatter["globs"]) result["globs"] = frontmatter["globs"];
+    return result;
+  }
+
+  /**
+   * Check if a rule should be exported based on exclude_from/export_only_to
+   */
+  protected shouldExportRule(rule: RuleFile, exporterName: string): boolean {
+    const { exclude_from, export_only_to } = rule.frontmatter;
+
+    if (exclude_from && exclude_from.includes(exporterName)) {
+      return false;
+    }
+
+    if (export_only_to && export_only_to.length > 0) {
+      return export_only_to.includes(exporterName);
+    }
+
+    return true;
+  }
+
+  /**
+   * Get rules from request
+   *
+   * Converts pack.sections to RuleFile[] format for exporters.
+   * If rules are provided directly (future), use them instead.
+   *
+   * @param request - Export request with pack
+   * @returns Array of RuleFile objects
+   */
+  protected getRulesFromRequest(request: ScopedExportRequest): RuleFile[] {
+    // Use rules directly if provided
+    if (
+      request.rules !== undefined &&
+      Array.isArray(request.rules) &&
+      request.rules.length > 0
+    ) {
+      return request.rules;
+    }
+
+    // Convert pack.sections to RuleFile[]
+    if (
+      request.pack !== undefined &&
+      request.pack.sections !== undefined &&
+      Array.isArray(request.pack.sections)
+    ) {
+      return this.convertSectionsToRules(request.pack.sections, request.pack);
+    }
+
+    return [];
+  }
+
+  /**
+   * Convert AlignSection[] to RuleFile[]
+   * @param sections - Sections from AlignPack
+   * @param pack - Parent AlignPack for metadata
+   * @returns Array of RuleFile objects
+   */
+  protected convertSectionsToRules(
+    sections: AlignSection[],
+    pack: AlignPack,
+  ): RuleFile[] {
+    return sections.map((section) => {
+      // Use source_file if available (preserves original filename from rules directory)
+      // Otherwise fall back to sanitizing heading
+      const sourceFile = section.source_file;
+      let filename: string;
+      let path: string;
+
+      if (sourceFile) {
+        // Extract filename from path (e.g., ".aligntrue/rules/test-rule.md" -> "test-rule.md")
+        filename = sourceFile.split("/").pop() || "untitled.md";
+        path = sourceFile;
+      } else {
+        filename = this.sanitizeFilename(section.heading) + ".md";
+        path = filename;
+      }
+
+      const content = section.content;
+      const hash = computeContentHash(content);
+
+      // Extract frontmatter from section if available (new format stores it there)
+      const sectionFrontmatter = (
+        section as AlignSection & { frontmatter?: RuleFrontmatter }
+      ).frontmatter;
+
+      const frontmatter: RuleFrontmatter = {
+        title: section.heading,
+        ...(section.scope && { scope: section.scope }),
+        ...(pack.owner && { original_source: pack.owner }),
+        ...sectionFrontmatter, // Merge any frontmatter from the section
+        content_hash: hash,
+      };
+
+      return {
+        content,
+        frontmatter,
+        path,
+        filename,
+        hash,
+      };
+    });
+  }
+
+  /**
+   * Sanitize a string for use as a filename
+   * @param input - String to sanitize
+   * @returns Filename-safe string
+   */
+  private sanitizeFilename(input: string): string {
+    return (
+      input
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "untitled"
+    );
+  }
 
   /**
    * Compute content hash from canonical IR
@@ -277,7 +411,7 @@ export abstract class ExporterBase implements ExporterPlugin {
     // Non-interactive without force: abort with helpful error
     throw new Error(
       `File has been manually edited: ${filePath}\n` +
-        `  Use --force to overwrite or --yes to accept (requires --accept-agent for conflicts)\n` +
+        `  Use --force to overwrite or --yes to accept\n` +
         `  Or run sync interactively without --non-interactive or --yes flags`,
     );
   }
@@ -369,48 +503,6 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
-   * Read and merge existing file with IR sections
-   *
-   * Enables section-level merging: IR sections + user-added sections coexist.
-   * Used for two-way sync and personal section preservation.
-   *
-   * @param outputPath - Path to existing agent file
-   * @param irSections - Sections from IR
-   * @param formatType - File format for parsing
-   * @param managedSections - Array of team-managed section headings
-   * @returns Merged sections, user sections, stats, and warnings
-   *
-   * @example
-   * ```typescript
-   * const merge = await this.readAndMerge(
-   *   outputPath,
-   *   pack.sections,
-   *   'cursor-mdc',
-   *   config.managed?.sections || []
-   * );
-   * // Use merge.mergedSections for export
-   * ```
-   */
-  protected async readAndMerge(
-    outputPath: string,
-    irSections: AlignSection[],
-    formatType: "agents" | "cursor-mdc" | "generic",
-    managedSections: string[] = [],
-  ): Promise<{
-    mergedSections: AlignSection[];
-    userSections: FileMerger.ParsedSection[];
-    stats: FileMerger.MergeStats;
-    warnings: string[];
-  }> {
-    return FileMerger.readAndMerge(
-      outputPath,
-      irSections,
-      formatType,
-      managedSections,
-    );
-  }
-
-  /**
    * Render sections with team-managed markers
    *
    * Enhanced version of renderSections that adds team-managed markers
@@ -466,40 +558,25 @@ export abstract class ExporterBase implements ExporterPlugin {
    * Render read-only file marker
    *
    * Adds an HTML comment warning at the top of files that should not be edited.
-   * Files are read-only if they don't match the edit_source configuration.
+   * All exported files are now read-only by default.
    *
    * @param currentFile - Current file path being exported
-   * @param editSource - Edit source configuration from config
-   * @param cwd - Current working directory for path resolution
-   * @returns HTML comment marker if file is read-only, empty string if editable
-   *
-   * @example
-   * ```typescript
-   * const marker = this.renderReadOnlyMarker(
-   *   "AGENTS.md",
-   *   ".cursor/rules/*.mdc",
-   *   "/path/to/project"
-   * );
-   * // Returns warning comment if AGENTS.md is not in edit_source
-   * ```
+   * @param _editSource - Deprecated/Unused
+   * @param _cwd - Current working directory for path resolution
+   * @returns HTML comment marker
    */
   protected renderReadOnlyMarker(
-    currentFile: string,
-    editSource: string | string[] | undefined,
-    _cwd: string,
+    _currentFile: string, // Unused but kept for API compatibility
+    _editSource?: string | string[],
+    _cwd?: string,
   ): string {
-    return SectionRenderer.renderReadOnlyMarker(currentFile, editSource);
-  }
-
-  /**
-   * Check if a file matches the edit_source configuration
-   * Simplified version - ideally import from multi-file-parser
-   */
-  private matchesEditSource(
-    filePath: string,
-    editSource: string | string[] | undefined,
-  ): boolean {
-    return SectionRenderer.matchesEditSource(filePath, editSource);
+    // Simplified: Always return read-only marker for agent files
+    return `<!--
+  READ-ONLY: This file is auto-generated by AlignTrue.
+  DO NOT EDIT DIRECTLY. Changes will be overwritten.
+  Edit rules in .aligntrue/rules/ instead.
+-->
+`;
   }
 }
 

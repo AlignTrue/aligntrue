@@ -71,18 +71,15 @@ export interface AlignTrueConfig {
     auto_gitignore?: "auto" | "always" | "never";
   };
   sync?: {
-    auto_pull?: boolean;
-    primary_agent?: string;
-    on_conflict?: "prompt" | "keep_ir" | "accept_agent";
-    workflow_mode?: "auto" | "ir_source" | "native_format";
-    show_diff_on_pull?: boolean;
-    edit_source?: string | string[];
+    // NOTE: Deprecated properties removed in new architecture:
+    // auto_pull, primary_agent, on_conflict, workflow_mode, show_diff_on_pull,
+    // edit_source, source_order, source_markers
+    // The new architecture uses .aligntrue/rules/*.md as single source of truth
+    // with unidirectional sync to agents.
     scope_prefixing?: "off" | "auto" | "always";
     watch_enabled?: boolean;
     watch_debounce?: number;
     watch_files?: string[];
-    source_order?: string[];
-    source_markers?: "auto" | "always" | "never";
     auto_manage_ignore_files?: boolean | "prompt";
     ignore_file_priority?: "native" | "custom";
     custom_format_priority?: Record<string, string>;

@@ -16,7 +16,15 @@ export type {
   EnforcementResult,
 } from "./types.js";
 
-export { generateLockfile, hashSection } from "./generator.js";
-export { validateLockfile, formatValidationResult } from "./validator.js";
+export {
+  generateLockfile,
+  generateLockfileFromRules,
+  hashSection,
+} from "./generator.js";
+export {
+  validateLockfile,
+  validateLockfileFromRules,
+  formatValidationResult,
+} from "./validator.js";
 export { enforceLockfile } from "./enforcer.js";
 export { readLockfile, writeLockfile } from "./io.js";

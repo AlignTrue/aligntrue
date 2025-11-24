@@ -12,7 +12,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "sync-validation-test");
-const CLI_PATH = join(process.cwd(), "dist", "index.js");
+// Use __dirname to get reliable path regardless of where tests are run from
+const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 /**
  * Helper to safely run CLI commands with proper path handling

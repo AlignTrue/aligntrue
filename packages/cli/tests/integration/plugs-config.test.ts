@@ -123,14 +123,14 @@ plugs:
   });
 
   it("validates fill format", async () => {
-    // Create minimal config
+    // Create minimal config with explicit source path
     const configPath = join(testDir, ".aligntrue/config.yaml");
     writeFileSync(
       configPath,
-      `version: "1"\nmode: solo\nexporters:\n  - agents\n`,
+      `version: "1"\nmode: solo\nexporters:\n  - agents\nsources:\n  - type: local\n    path: .aligntrue/.rules.yaml\n`,
     );
 
-    // Create IR with slot
+    // Create IR with slot (legacy format for this test)
     const irPath = join(testDir, ".aligntrue/.rules.yaml");
     writeFileSync(
       irPath,
@@ -209,7 +209,7 @@ sections: []
   });
 
   it("shows config fills in list command", async () => {
-    // Create config with fill
+    // Create config with fill and explicit source path
     const configPath = join(testDir, ".aligntrue/config.yaml");
     writeFileSync(
       configPath,
@@ -220,10 +220,13 @@ plugs:
     test.cmd: "pnpm test"
 exporters:
   - agents
+sources:
+  - type: local
+    path: .aligntrue/.rules.yaml
 `,
     );
 
-    // Create IR with slot
+    // Create IR with slot (legacy format for this test)
     const irPath = join(testDir, ".aligntrue/.rules.yaml");
     writeFileSync(
       irPath,

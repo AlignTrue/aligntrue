@@ -44,29 +44,30 @@ describe("doctor command", () => {
   });
 
   function writeHealthyProject(): void {
-    mkdirSync(".aligntrue", { recursive: true });
+    mkdirSync(".aligntrue/rules", { recursive: true });
     writeFileSync(
       ".aligntrue/config.yaml",
       [
-        "version: '1'",
         "mode: solo",
         "modules:",
         "  lockfile: false",
+        "sources:",
+        "  - type: local",
+        "    path: .aligntrue/rules",
         "exporters:",
         "  - cursor",
         "  - agents",
-        "sync:",
-        "  edit_source: .cursor/rules/*.mdc",
       ].join("\n"),
       "utf-8",
     );
+    // Create a simple rule file
     writeFileSync(
-      ".aligntrue/.rules.yaml",
-      "id: test\nversion: 1.0.0\nspec_version: '1'\nsections: []\n",
+      ".aligntrue/rules/sample.md",
+      "---\ntitle: Sample Rule\noriginal_source: test\n---\n\n## Sample\n\nSample content\n",
       "utf-8",
     );
     mkdirSync(".cursor/rules", { recursive: true });
-    writeFileSync(".cursor/rules/aligntrue.mdc", "## Sample", "utf-8");
+    writeFileSync(".cursor/rules/sample.mdc", "## Sample", "utf-8");
     writeFileSync("AGENTS.md", "# Sample\n", "utf-8");
   }
 
@@ -102,11 +103,11 @@ describe("doctor command", () => {
   it("warns when exporter outputs are missing", async () => {
     writeHealthyProject();
     // Remove Cursor file to trigger warning
-    rmSync(".cursor/rules/aligntrue.mdc");
+    rmSync(".cursor/rules/sample.mdc");
 
     await expect(doctor([])).resolves.toBeUndefined();
 
     const output = logSpy.mock.calls.map((call) => call[0]).join("\n");
-    expect(output).toContain(".cursor/rules/*.mdc");
+    expect(output).toContain("cursor");
   });
 });

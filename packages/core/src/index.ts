@@ -70,9 +70,6 @@ export * from "./migration/ruler-merger.js";
 // Scope discovery
 export * from "./scope-discovery.js";
 
-// Edit source utilities
-export { matchesEditSource } from "./utils/edit-source-matcher.js";
-
 // Overwritten rules management
 export {
   backupOverwrittenFile,
@@ -82,3 +79,17 @@ export {
   checkBackupExists,
   type BackupResult,
 } from "./utils/overwritten-rules-manager.js";
+
+// Rule Management
+export {
+  parseRuleFile,
+  writeRuleFile,
+  loadRulesDirectory,
+  type RuleFile,
+} from "./rules/file-io.js";
+
+export {
+  detectNestedRuleDirs,
+  detectNestedAgentFiles,
+  type NestedAgentFile,
+} from "./rules/nested-detector.js";

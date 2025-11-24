@@ -59,3 +59,12 @@ export {
   type ParsedSection,
   type ParsedFile,
 } from "./section-parser.js";
+
+// Frontmatter Schema
+export {
+  type RuleFrontmatter,
+  type CursorMetadata,
+  type AgentMetadata,
+  type RuleFile,
+  frontmatterSchema,
+} from "./frontmatter.js";

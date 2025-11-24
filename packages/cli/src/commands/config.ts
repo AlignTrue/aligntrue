@@ -56,7 +56,7 @@ export async function config(args: string[]): Promise<void> {
         "aligntrue config get mode",
         "aligntrue config set mode team",
         "aligntrue config list",
-        "aligntrue config unset sync.edit_source",
+        "aligntrue config unset sync.scope_prefixing",
       ],
       notes: [
         "Subcommands:",
@@ -75,7 +75,7 @@ export async function config(args: string[]): Promise<void> {
         "  The edit command opens .aligntrue/config.yaml in your default editor.",
         "",
         "  The get/set/list/unset commands allow programmatic config management.",
-        "  Use dot notation for nested keys (e.g., sync.edit_source).",
+        "  Use dot notation for nested keys (e.g., sync.scope_prefixing).",
       ],
     });
     process.exit(0);
@@ -125,7 +125,7 @@ export async function config(args: string[]): Promise<void> {
     if (!key) {
       clack.log.error("Missing key argument");
       clack.log.info("Usage: aligntrue config unset <key>");
-      clack.log.info("Example: aligntrue config unset sync.edit_source");
+      clack.log.info("Example: aligntrue config unset sync.scope_prefixing");
       process.exit(2);
     }
     await configUnset(configPath, key);
@@ -161,24 +161,18 @@ async function showConfig(configPath: string): Promise<void> {
     console.log(`  Version: ${cfg.version}`);
     console.log(`  Exporters: ${cfg.exporters?.join(", ") || "none"}`);
 
+    // NOTE: Deprecated sync properties (workflow_mode, auto_pull, primary_agent, on_conflict)
+    // removed in new architecture. Sync is now unidirectional from .aligntrue/rules/ to agents.
     if (cfg.sync) {
       console.log(`\n🔄 Sync:`);
-      const workflowMode = cfg.sync.workflow_mode || "auto";
-      console.log(`  Workflow mode: ${workflowMode}`);
-      if (workflowMode === "native_format") {
-        console.log(
-          `    → Edit in primary agent, AlignTrue syncs automatically`,
-        );
-      } else if (workflowMode === "ir_source") {
-        console.log(`    → Edit AGENTS.md as source of truth`);
-      } else if (workflowMode === "auto") {
-        console.log(`    → Auto-detects based on import source`);
+      console.log(`  Source: .aligntrue/rules/*.md`);
+      console.log(`  Direction: Outward to agents (unidirectional)`);
+      if (cfg.sync.scope_prefixing) {
+        console.log(`  Scope prefixing: ${cfg.sync.scope_prefixing}`);
       }
-      console.log(`  Auto-pull: ${cfg.sync.auto_pull ?? "not set"}`);
-      if (cfg.sync.primary_agent) {
-        console.log(`  Primary agent: ${cfg.sync.primary_agent}`);
+      if (cfg.sync.watch_enabled) {
+        console.log(`  Watch mode: enabled`);
       }
-      console.log(`  On conflict: ${cfg.sync.on_conflict || "prompt"}`);
     }
 
     if (cfg.modules) {
@@ -293,8 +287,7 @@ async function showSummary(configPath: string): Promise<void> {
  */
 async function configGet(configPath: string, key: string): Promise<void> {
   try {
-    // For runtime values like sync.edit_source that may be auto-detected,
-    // use loadConfig() to get the resolved value with defaults applied
+    // Use loadConfig() to get the resolved value with defaults applied
     const { loadConfig } = await import("@aligntrue/core");
     const configWithDefaults = await loadConfig(configPath);
 
@@ -325,20 +318,8 @@ async function configGet(configPath: string, key: string): Promise<void> {
         process.exit(1);
       }
 
-      if (key === "sync.edit_source") {
-        clack.log.error(`Key not found: ${key}`);
-        clack.log.info(
-          "\nNote: 'sync.edit_source' may be auto-detected from your exporters.",
-        );
-        clack.log.info(
-          "Use 'aligntrue config show' to see the active edit_source.",
-        );
-        const content = readFileSync(configPath, "utf-8");
-        const rawConfig = parseYaml(content) as Record<string, unknown>;
-        clack.log.info("\nAvailable stored config keys:");
-        listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
-        process.exit(1);
-      }
+      // NOTE: sync.edit_source removed in new architecture.
+      // All rules now live in .aligntrue/rules/*.md
 
       clack.log.error(`Key not found: ${key}`);
       const content = readFileSync(configPath, "utf-8");
@@ -430,8 +411,8 @@ async function configSet(
       // Show some common valid keys
       const commonKeys = [
         "mode",
-        "sync.edit_source",
-        "sync.workflow_mode",
+        "sync.scope_prefixing",
+        "sync.watch_enabled",
         "exporters",
         "git.mode",
         "modules.lockfile",

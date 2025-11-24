@@ -4,16 +4,16 @@
  */
 
 import { resolve } from "path";
-import type { AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import type { AuditEntry, OperationResult } from "./engine.js";
 import {
   readLockfile,
   writeLockfile,
-  validateLockfile,
+  validateLockfileFromRules,
   enforceLockfile,
-  generateLockfile,
+  generateLockfileFromRules,
 } from "../lockfile/index.js";
+import type { RuleFile } from "../rules/file-io.js";
 
 /**
  * Result of a lockfile validation operation
@@ -38,7 +38,7 @@ export interface LockfileWriteResult extends Partial<OperationResult> {
  * Validate and enforce lockfile state
  */
 export function validateAndEnforceLockfile(
-  ir: AlignPack,
+  rules: RuleFile[],
   config: AlignTrueConfig,
   cwd: string,
 ): LockfileOperationResult {
@@ -55,8 +55,8 @@ export function validateAndEnforceLockfile(
   const existingLockfile = readLockfile(lockfilePath);
 
   if (existingLockfile) {
-    // Validate lockfile against current IR
-    const validation = validateLockfile(existingLockfile, ir);
+    // Validate lockfile against current rules
+    const validation = validateLockfileFromRules(existingLockfile, rules);
     const enforcement = enforceLockfile(lockfileMode, validation);
 
     // Audit trail: Lockfile validation
@@ -96,7 +96,7 @@ export function validateAndEnforceLockfile(
  * Generate and write lockfile
  */
 export function generateAndWriteLockfile(
-  ir: AlignPack,
+  rules: RuleFile[],
   config: AlignTrueConfig,
   cwd: string,
   dryRun: boolean,
@@ -112,7 +112,10 @@ export function generateAndWriteLockfile(
   }
 
   try {
-    const lockfile = generateLockfile(ir, config.mode as "team" | "enterprise");
+    const lockfile = generateLockfileFromRules(
+      rules,
+      config.mode as "team" | "enterprise",
+    );
 
     // Validate lockfile path is absolute
     const absoluteLockfilePath = lockfilePath.startsWith("/")

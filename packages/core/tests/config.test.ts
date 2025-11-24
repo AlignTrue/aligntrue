@@ -50,7 +50,7 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 `,
     );
 
@@ -264,7 +264,7 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
   - type: git
     url: https://github.com/example/rules
 scopes:
@@ -408,7 +408,7 @@ describe("Default Application", () => {
     const withDefaults = applyDefaults(config);
     expect(withDefaults.sources).toHaveLength(1);
     expect(withDefaults.sources![0].type).toBe("local");
-    expect(withDefaults.sources![0].path).toBe(".aligntrue/.rules.yaml");
+    expect(withDefaults.sources![0].path).toBe(".aligntrue/rules");
   });
 
   it("merge preserves user-specified fields", () => {
@@ -739,12 +739,12 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 `,
     );
 
     const config = await loadConfig(configPath);
-    expect(config.sources[0].path).toBe(".aligntrue/.rules.yaml");
+    expect(config.sources[0].path).toBe(".aligntrue/rules");
   });
 
   it("rejects absolute local source paths", async () => {
@@ -772,12 +772,12 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: apps/web/.aligntrue/.rules.yaml
+    path: apps/web/.aligntrue/rules
 `,
     );
 
     const config = await loadConfig(configPath);
-    expect(config.sources[0].path).toBe("apps/web/.aligntrue/.rules.yaml");
+    expect(config.sources[0].path).toBe("apps/web/.aligntrue/rules");
   });
 
   it("rejects mixed traversal in source paths", async () => {
@@ -823,7 +823,7 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
   - type: local
     path: ../../malicious.md
 `,
@@ -921,7 +921,7 @@ describe("Config Saving", () => {
         checks: true,
       },
       exporters: ["cursor", "agents"],
-      sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
 
     await saveConfig(config, configPath);

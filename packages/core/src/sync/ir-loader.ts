@@ -102,10 +102,12 @@ export async function loadIRAndResolvePlugs(
 }
 
 /**
- * Load IR from a YAML file or multiple source files
+ * Load IR from a YAML file, directory of markdown files, or multiple source files
  *
- * Note: The IR file (.aligntrue/.rules.yaml) is internal and auto-generated.
- * Users should edit agent files (AGENTS.md, .cursor/*.mdc) instead.
+ * Supports:
+ * - Single YAML file (.yaml/.yml)
+ * - Single markdown file (.md)
+ * - Directory of markdown files (loads all *.md recursively)
  *
  * @param sourcePath - Path to the source file or directory
  * @param options - Loading options (mode, max size, force flag, config)
@@ -119,29 +121,43 @@ export async function loadIR(
     config?: AlignTrueConfig;
   },
 ): Promise<AlignPack> {
+  const { lstatSync } = await import("fs");
+
   const mode = options?.mode || "solo";
   const maxFileSizeMb = options?.maxFileSizeMb || 10;
   const force = options?.force || false;
-  const config = options?.config;
 
-  // If config provided with edit_source containing wildcards, use multi-file loading
-  const editSource = config?.sync?.edit_source;
-  const hasWildcard =
-    typeof editSource === "string" &&
-    (editSource.includes("*") ||
-      editSource.includes("?") ||
-      editSource.includes("["));
-  const isArray = Array.isArray(editSource);
+  // Check if sourcePath is a directory - if so, load rules from .md files
+  if (existsSync(sourcePath)) {
+    const stat = lstatSync(sourcePath);
+    if (stat.isDirectory()) {
+      const { loadRulesDirectory } = await import("../rules/file-io.js");
+      const rules = await loadRulesDirectory(sourcePath, process.cwd(), {
+        recursive: true,
+      });
 
-  if (hasWildcard || isArray) {
-    // When using loadIR directly, we respect multi-file loading.
-    // However, SyncEngine.loadIRFromSource explicitly disables it to force loading from IR path.
-    // We should probably respect that logic if the caller handles it.
-    // In this case, if options.config has edit_source removed (as SyncEngine does), this block is skipped.
-    const cwd = dirname(sourcePath);
-    const { loadSourceFiles } = await import("./source-loader.js");
-    return loadSourceFiles(cwd, config!);
+      // Convert RuleFile[] to AlignPack format
+      const sections = rules.map((rule) => ({
+        heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+        content: rule.content,
+        level: 2, // Schema requires level 2-6 (## through ######)
+        fingerprint: rule.hash.slice(0, 16),
+        scope: rule.frontmatter.scope,
+        source_file: rule.path,
+        frontmatter: rule.frontmatter,
+      }));
+
+      return {
+        id: "rules-bundle",
+        version: "1.0.0",
+        spec_version: "1",
+        sections,
+      } as AlignPack;
+    }
   }
+
+  // NOTE: edit_source removed in new architecture. Multi-file loading now happens
+  // through loadRulesDirectory() for .aligntrue/rules/ directory, not loadSourceFiles().
 
   // Check file exists
 
