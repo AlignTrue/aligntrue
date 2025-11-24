@@ -17,19 +17,19 @@
     "@theguild/remark-mermaid": "^0.3.0",
     "@vercel/analytics": "^1.5.0",
     "fast-glob": "^3.3.2",
-    "lucide-react": "^0.553.0",
+    "lucide-react": "^0.554.0",
     "mermaid": "11.12.1",
-    "next": "16.0.1",
+    "next": "16.0.4",
     "next-themes": "^0.4.6",
     "nextra": "4.6.0",
     "nextra-theme-docs": "4.6.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "simple-icons": "^15.20.0"
+    "simple-icons": "^15.22.0"
   },
   "devDependencies": {
     "@pagefind/default-ui": "^1.1.0",
-    "@types/react": "^19.2.3",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "fast-xml-parser": "^5.3.1",
     "pagefind": "^1.1.0"
