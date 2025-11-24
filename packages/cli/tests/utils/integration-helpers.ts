@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { resolve, join, dirname } from "path";
 import { rmSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
@@ -19,22 +19,22 @@ export async function runCli(
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ): Promise<RunResult> {
   try {
-    // Use node to run the CLI with properly quoted path to prevent shell injection
-    const quotedPath = JSON.stringify(CLI_PATH);
-    const quotedArgs = args.map((a) => JSON.stringify(a)).join(" ");
-    const command = `node ${quotedPath} ${quotedArgs}`;
-
-    const stdout = execSync(command, {
-      cwd: options.cwd,
-      env: {
-        ...process.env,
-        ...options.env,
-        NODE_ENV: "test",
-        ALIGNTRUE_NO_TELEMETRY: "1",
-      },
-      encoding: "utf-8",
-      stdio: "pipe", // Capture output
-    });
+    // Run the CLI using execFileSync to avoid shell interpretation vulnerabilities
+    const stdout = execFileSync(
+      "node",
+      [CLI_PATH, ...args],
+      {
+        cwd: options.cwd,
+        env: {
+          ...process.env,
+          ...options.env,
+          NODE_ENV: "test",
+          ALIGNTRUE_NO_TELEMETRY: "1",
+        },
+        encoding: "utf-8",
+        stdio: "pipe", // Capture output
+      }
+    );
 
     return { stdout, stderr: "", exitCode: 0 };
   } catch (error: any) {
