@@ -7,6 +7,10 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../../utils/command-utilities.js";
+import type { SyncOptions } from "@aligntrue/plugin-contracts";
+
+// Re-export SyncOptions for use by other CLI modules
+export type { SyncOptions };
 
 /**
  * Argument definitions for sync command
@@ -118,30 +122,6 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
 ];
 
 /**
- * Parsed sync options
- */
-export interface SyncOptions {
-  help: boolean;
-  dryRun: boolean;
-  configPath: string | undefined;
-  acceptAgent: string | undefined;
-  force: boolean;
-  forceInvalidIR: boolean;
-  forceRefresh: boolean;
-  skipUpdateCheck: boolean;
-  offline: boolean;
-  verbose: boolean;
-  verboseFull: boolean; // True if -vv or --verbose multiple times
-  quiet: boolean;
-  yes: boolean;
-  nonInteractive: boolean;
-  noDetect: boolean;
-  autoEnable: boolean;
-  showConflicts: boolean;
-  json?: boolean; // For structured output
-}
-
-/**
  * Parse command line arguments for sync command
  */
 export function parseSyncOptions(args: string[]): SyncOptions {
@@ -158,11 +138,10 @@ export function parseSyncOptions(args: string[]): SyncOptions {
   }
   verboseFull = verboseCount >= 2;
 
-  return {
+  // Build options object, only including optional properties when they have defined values
+  const opts: SyncOptions = {
     help: parsed.help,
     dryRun: (parsed.flags["dry-run"] as boolean | undefined) || false,
-    configPath: parsed.flags["config"] as string | undefined,
-    acceptAgent: parsed.flags["accept-agent"] as string | undefined,
     force: (parsed.flags["force"] as boolean | undefined) || false,
     forceInvalidIR:
       (parsed.flags["force-invalid-ir"] as boolean | undefined) || false,
@@ -184,6 +163,19 @@ export function parseSyncOptions(args: string[]): SyncOptions {
       (parsed.flags["show-conflicts"] as boolean | undefined) || false,
     json: (parsed.flags["json"] as boolean | undefined) || false,
   };
+
+  // Conditionally add optional string properties
+  const configPath = parsed.flags["config"] as string | undefined;
+  if (configPath !== undefined) {
+    opts.configPath = configPath;
+  }
+
+  const acceptAgent = parsed.flags["accept-agent"] as string | undefined;
+  if (acceptAgent !== undefined) {
+    opts.acceptAgent = acceptAgent;
+  }
+
+  return opts;
 }
 
 /**

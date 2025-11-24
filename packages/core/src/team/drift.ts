@@ -8,7 +8,7 @@ import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
 import { isPlainObject } from "../overlays/operations.js";
-import { getStoredHash } from "../sync/agent-export-hashes.js";
+import { getStoredHash } from "../sync/tracking.js";
 
 /**
  * Drift categories (Overlays system enhanced)

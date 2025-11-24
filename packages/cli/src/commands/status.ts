@@ -11,7 +11,7 @@ import {
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { resolveConfigPath } from "../utils/path-resolvers.js";
-import { getLastSyncTimestamp } from "@aligntrue/core/sync/last-sync-tracker";
+import { getLastSyncTimestamp } from "@aligntrue/core/sync/tracking";
 import {
   detectAgentsWithValidation,
   getAgentDisplayName,

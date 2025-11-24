@@ -6,7 +6,6 @@
 import { SyncEngine } from "./engine.js";
 
 export type { SyncOptions, SyncResult } from "./engine.js";
-export type { EditInfo, ConflictInfo } from "./edit-detector.js";
 export { SyncEngine } from "./engine.js";
 export {
   AtomicFileWriter,
@@ -27,7 +26,9 @@ export {
   updateLastSyncTimestamp,
   wasFileModifiedSince,
   getFileModificationTime,
-} from "./last-sync-tracker.js";
+  storeAgentExportHash,
+  getAgentExportHashes,
+} from "./tracking.js";
 export {
   loadDriftLog,
   saveDriftLog,
@@ -39,7 +40,7 @@ export {
   type DriftLog,
   type DriftDetection,
   type DriftStatus,
-} from "./drift-log.js";
+} from "./drift-detection.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();

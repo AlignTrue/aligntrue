@@ -1,5 +1,17 @@
 /**
  * Resource manager - Generic resource handling for rules, MCPs, skills, etc.
+ *
+ * EXTENSIBILITY:
+ * This abstract class provides a unified interface for managing different types of
+ * AI resources (Rules, MCP Configs, Skills) across multiple storage backends.
+ *
+ * It abstracts away:
+ * - Storage backend initialization (Local, Repo, Remote)
+ * - Scope management
+ * - Synchronization logic
+ *
+ * Future resource types (e.g., Skills) can be added by extending this class
+ * and implementing format conversion methods.
  */
 
 import type { ResourceType, ResourceConfig } from "../config/index.js";

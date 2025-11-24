@@ -111,7 +111,7 @@ export async function executeSyncWorkflow(
     defaultResolutionStrategy?: string;
   } = {
     configPath,
-    dryRun: options.dryRun,
+    dryRun: options.dryRun || false,
     // --yes flag enables automatic overwriting of read-only file edits
     force: options.force || options.yes || false,
     interactive: !options.force && !options.yes && !options.nonInteractive,
@@ -132,7 +132,9 @@ export async function executeSyncWorkflow(
     } else {
       normalizedAcceptAgent = options.acceptAgent;
     }
-    syncOptions.acceptAgent = normalizedAcceptAgent;
+    if (normalizedAcceptAgent !== undefined) {
+      syncOptions.acceptAgent = normalizedAcceptAgent;
+    }
   }
 
   let result: SyncResult;

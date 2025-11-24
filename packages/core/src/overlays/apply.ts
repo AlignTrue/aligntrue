@@ -210,23 +210,23 @@ function detectConflicts(
     }
 
     // Check for conflicts with previous overlays
-    for (const [prevSelector, prevProps] of modifications.entries()) {
-      if (prevSelector === overlay.selector) {
-        // Same selector - check for property overlap
-        const overlap = properties.filter((p) => prevProps.includes(p));
-        if (overlap.length > 0) {
-          warnings.push(
-            `Multiple overlays modify same properties on "${overlay.selector}": ${overlap.join(", ")} (last wins)`,
-          );
-        }
-      }
-    }
+    if (modifications.has(overlay.selector)) {
+      const prevProps = modifications.get(overlay.selector)!;
 
-    // Record modifications
-    if (!modifications.has(overlay.selector)) {
-      modifications.set(overlay.selector, []);
+      // Check for property overlap
+      const overlap = properties.filter((p) => prevProps.includes(p));
+      if (overlap.length > 0) {
+        warnings.push(
+          `Multiple overlays modify same properties on "${overlay.selector}": ${overlap.join(", ")} (last wins)`,
+        );
+      }
+
+      // Add new properties to the existing list for future checks
+      prevProps.push(...properties);
+    } else {
+      // First time seeing this selector
+      modifications.set(overlay.selector, properties);
     }
-    modifications.get(overlay.selector)!.push(...properties);
   }
 }
 

@@ -6,6 +6,10 @@ import { existsSync, readFileSync } from "fs";
 import { relative } from "path";
 import * as clack from "@clack/prompts";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
+import {
+  updateLastSyncTimestamp,
+  storeAgentExportHash,
+} from "@aligntrue/core/sync";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import type { SyncResult } from "./workflow.js";
@@ -72,15 +76,19 @@ export async function handleSyncResult(
 
   // Group all warnings at the end
   if (result.warnings && result.warnings.length > 0) {
-    displayWarnings(result.warnings, options.verbose, options.quiet);
+    displayWarnings(
+      result.warnings,
+      options.verbose || false,
+      options.quiet || false,
+    );
   }
 
   // Show conflict summary if any (after warnings)
   if (result.conflicts && result.conflicts.length > 0) {
     await displayConflicts(
       result.conflicts,
-      options.showConflicts,
-      options.verbose,
+      options.showConflicts || false,
+      options.verbose || false,
       options,
     );
   }
@@ -176,22 +184,20 @@ export async function handleSyncResult(
   // Update last sync timestamp after successful sync
   if (!options.dryRun) {
     try {
-      const { updateLastSyncTimestamp } = await import(
-        "@aligntrue/core/sync/last-sync-tracker"
-      );
       updateLastSyncTimestamp(cwd);
 
       // Store agent export hashes for drift detection
+      // Always store hashes for agent files after successful sync, regardless of result.written
+      // (even if no exporter files were written, we still track agent file state)
+      const { readFileSync, existsSync: fsExists } = await import("fs");
+      const { join: pathJoin } = await import("path");
+
+      // Files to track for drift
+      const trackedFiles = ["AGENTS.md", ".cursor/rules/aligntrue.mdc"];
+
+      // If result.written has files, also check those
       if (result.written && result.written.length > 0) {
-        const { storeAgentExportHash } = await import(
-          "@aligntrue/core/sync/agent-export-hashes"
-        );
-        const { readFileSync } = await import("fs");
         const { resolve, relative } = await import("path");
-
-        // Files to track for drift
-        const trackedFiles = ["AGENTS.md", ".cursor/rules/aligntrue.mdc"];
-
         for (const file of result.written) {
           // Normalize path to check if it's one we track
           const absPath = resolve(cwd, file);
@@ -208,12 +214,23 @@ export async function handleSyncResult(
         }
       }
 
+      // Always store hashes for tracked files that exist, even if not in result.written
+      // This ensures we have a baseline hash for drift detection
+      for (const trackedFile of trackedFiles) {
+        const filePath = pathJoin(cwd, trackedFile);
+        if (fsExists(filePath)) {
+          try {
+            const content = readFileSync(filePath, "utf-8");
+            storeAgentExportHash(cwd, trackedFile, content);
+          } catch {
+            // Ignore read errors
+          }
+        }
+      }
+
       // Special case: When accepting agent changes, update the hash for that agent file
       // because we won't be re-exporting it, but it is now "synced"
       if (options.acceptAgent) {
-        const { storeAgentExportHash } = await import(
-          "@aligntrue/core/sync/agent-export-hashes"
-        );
         const { readFileSync } = await import("fs");
         const { join } = await import("path");
 

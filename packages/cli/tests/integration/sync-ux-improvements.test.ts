@@ -5,7 +5,7 @@ import { sync } from "../../src/commands/sync/index.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
-import * as lastSyncTracker from "@aligntrue/core/sync/last-sync-tracker";
+import * as lastSyncTracker from "@aligntrue/core/sync/tracking";
 
 vi.mock("@clack/prompts");
 

@@ -4,7 +4,7 @@
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, dirname, resolve, sep } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import Ajv, { type ErrorObject } from "ajv";
 import type { AnySchemaObject } from "ajv";
@@ -98,50 +98,43 @@ export class ExporterRegistry {
    */
   async loadHandler(handlerPath: string): Promise<ExporterPlugin> {
     try {
-      // Convert to absolute path and file URL for ESM import
+      // Convert to absolute path
       let absolutePath = resolve(handlerPath);
 
       // Normalize path separators for cross-platform support
       const normalizedPath = absolutePath.replace(/\\/g, "/");
       const { existsSync } = await import("node:fs");
 
-      // Strategy 1: If path already points to .js, use it directly
-      if (handlerPath.endsWith(".js")) {
-        // For npm installations, the manifest should already point to .js
-        if (existsSync(absolutePath)) {
-          // Path exists as-is, use it
-        } else if (normalizedPath.includes("/node_modules/")) {
-          // In node_modules but file doesn't exist - try dist/ variant
-          const distPath = normalizedPath
-            .replace("/src/", "/dist/")
-            .replace(/\//g, sep);
+      // Ensure we load the built .js artifact
+      // If the manifest points to .ts (dev source), always swap to .js (built artifact)
+      // We rely on 'pnpm build' to generate these artifacts before use.
+      if (absolutePath.endsWith(".ts")) {
+        absolutePath = absolutePath.replace(/\.ts$/, ".js");
+      }
+
+      // Verify file exists
+      if (!existsSync(absolutePath)) {
+        // Try to find it in dist/ if we are in a monorepo source context
+        // This helps when running tests against built artifacts
+        if (
+          normalizedPath.includes("/src/") &&
+          !normalizedPath.includes("/dist/")
+        ) {
+          const distPath = absolutePath.replace("/src/", "/dist/");
           if (existsSync(distPath)) {
             absolutePath = distPath;
           }
         }
-      }
-      // Strategy 2: Legacy .ts handling (for old manifests or dev)
-      else if (
-        normalizedPath.includes("/src/") &&
-        handlerPath.endsWith(".ts")
-      ) {
-        const distPath = normalizedPath
-          .replace("/src/", "/dist/")
-          .replace(/\.ts$/, ".js")
-          .replace(/\//g, sep);
 
-        // Check if dist version exists, use it if available
-        // This prevents "stripping types" errors in production
-        if (existsSync(distPath)) {
-          absolutePath = distPath;
-        } else {
-          // Fallback: try original path (for dev with ts-node)
-          absolutePath = normalizedPath.replace(/\//g, sep);
+        if (!existsSync(absolutePath)) {
+          throw new Error(
+            `Handler file not found: ${absolutePath}\n` +
+              `Make sure to build the project before running: pnpm build`,
+          );
         }
       }
 
       const fileUrl = pathToFileURL(absolutePath).href;
-
       const module = await import(fileUrl);
 
       // Look for default export or named exports

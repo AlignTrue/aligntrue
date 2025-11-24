@@ -4,7 +4,7 @@ import { globSync } from "glob";
 import {
   getLastSyncTimestamp,
   wasFileModifiedSince,
-} from "@aligntrue/core/sync/last-sync-tracker";
+} from "@aligntrue/core/sync/tracking";
 import { getAlignTruePaths, loadConfig } from "@aligntrue/core";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import type { SyncOptions } from "./options.js";

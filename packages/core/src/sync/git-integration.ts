@@ -1,6 +1,16 @@
 /**
  * Git integration for managing generated files
  * Supports three modes: ignore, commit, branch
+ *
+ * Usage:
+ * - Used by SyncWorkflow to manage visibility of generated agent files
+ * - 'ignore': Adds generated files to .gitignore (default for personal/local rules)
+ * - 'commit': Ensures files are NOT in .gitignore (for team/shared rules)
+ * - 'branch': Creates a feature branch and stages files (for PR workflows)
+ *
+ * Configuration:
+ * - Controlled by `git.mode` and `git.auto_gitignore` in .aligntrue/config.yaml
+ * - Can be overridden per-adapter using `git.overrides`
  */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
