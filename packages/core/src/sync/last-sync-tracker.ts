@@ -8,10 +8,7 @@ import {
   readFileSync,
   mkdirSync,
   statSync,
-  openSync,
-  writeSync,
-  fsyncSync,
-  closeSync,
+  writeFileSync,
 } from "fs";
 import { join, dirname } from "path";
 
@@ -47,55 +44,18 @@ export function getLastSyncTimestamp(cwd: string): number | null {
 export function updateLastSyncTimestamp(cwd: string): void {
   const lastSyncFile = join(cwd, ".aligntrue", ".last-sync");
   const timestamp = Date.now();
-  const content = timestamp.toString();
 
   try {
     const dir = dirname(lastSyncFile);
     mkdirSync(dir, { recursive: true });
-
-    // Use reliable write pattern: open -> write -> fsync -> close
-    // This ensures data is flushed to disk on all platforms (critical for macOS/Linux CI)
-    const fd = openSync(lastSyncFile, "w");
-    try {
-      writeSync(fd, content);
-      fsyncSync(fd);
-    } finally {
-      closeSync(fd);
-    }
-
-    // Verify the timestamp was written successfully with retries
-    // This handles race conditions where filesystem metadata lags slightly
-    let written: number | null = null;
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts) {
-      written = getLastSyncTimestamp(cwd);
-      if (written !== null && Math.abs(written - timestamp) <= 1000) {
-        break;
-      }
-      // Small busy-wait to let filesystem settle
-      const start = Date.now();
-      while (Date.now() - start < 10) {
-        /* busy wait */
-      }
-      attempts++;
-    }
-
-    if (written === null || Math.abs(written - timestamp) > 1000) {
-      console.warn(
-        `Warning: Last sync timestamp may not have been written correctly.\n` +
-          `  Expected: ${timestamp}\n` +
-          `  Read back: ${written}\n` +
-          `  File: ${lastSyncFile}`,
-      );
-    }
+    // Simple write is sufficient as this is only used for "last synced X ago" messages
+    // Drift detection now uses content hashes, so precise timestamp ordering is not critical
+    writeFileSync(lastSyncFile, timestamp.toString(), "utf-8");
   } catch (err) {
     // Log error for debugging but don't fail the sync
     console.warn(
       `Warning: Failed to update last sync timestamp at ${lastSyncFile}\n` +
-        `  ${err instanceof Error ? err.message : String(err)}\n` +
-        `  This may affect change detection on next sync.`,
+        `  ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 }
