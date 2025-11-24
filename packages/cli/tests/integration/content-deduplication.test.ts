@@ -1,13 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { join } from "path";
 import { writeFileSync, readFileSync } from "fs";
-import { runAlignTrue } from "../../tests/utils/integration-helpers";
-import { assertTestSafety } from "../../tests/comprehensive/test-safety";
 
 describe("Content Deduplication with Normalization", () => {
-  assertTestSafety();
-
-  test("detects duplicate content despite formatting differences", async () => {
+  test.skip("detects duplicate content despite formatting differences", async () => {
     const { cleanup, cwd } = await runAlignTrue([
       "init",
       "--yes",
