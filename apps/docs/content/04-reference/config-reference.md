@@ -74,47 +74,18 @@ sources:
 
 **Default:** Mode-specific (see below)
 
-Controls which files accept edits, sync direction, auto-pull, and conflict resolution.
+Controls sync behavior and optional features.
 
 ```yaml
 sync:
-  edit_source: "AGENTS.md" # Which files accept edits
-  scope_prefixing: "auto" # Scope prefixes in AGENTS.md (off/auto/always)
-  auto_pull: true # Auto-import from primary agent
-  primary_agent: cursor # Which agent to auto-pull from
-  on_conflict: accept_agent # How to resolve conflicts
-  workflow_mode: native_format # Editing workflow preference
-  show_diff_on_pull: true # Show diff when auto-pull runs
+  scope_prefixing: "auto" # Scope prefixes in exports (off/auto/always)
+  watch_enabled: true # Enable watch mode
+  watch_debounce: 500 # Debounce time in milliseconds
+  watch_files: [] # Specific files to watch (if omitted, watches rules directory)
+  auto_manage_ignore_files: "prompt" # Auto-manage .gitignore and ignore files
+  ignore_file_priority: "native" # How to prioritize ignore files
+  custom_format_priority: {} # Custom format priorities for conflict resolution
 ```
-
-#### sync.edit_source
-
-**Type:** `string` (recommended) or `string[]` (experimental)
-
-**Default:** Auto-detected during init. Falls back to `"AGENTS.md"` if no agents detected.
-
-**Centralized (Recommended - Default):**
-
-- `"AGENTS.md"` - Single file editing (most common, universal format)
-- `".cursor/rules/*.mdc"` - Glob pattern for Cursor scope files (recommended for Cursor)
-- `".aligntrue/rules/*.md"` - Human-friendly multi-file organization (recommended for teams)
-
-One file/pattern is editable; all others become read-only exports. One-way sync: edit_source → IR → all configured agents.
-
-**Example:**
-
-```yaml
-sync:
-  edit_source: "AGENTS.md" # or ".cursor/rules/*.mdc" or ".aligntrue/rules/*.md"
-```
-
-**Experimental (Decentralized):**
-
-- `["AGENTS.md", ".cursor/rules/*.mdc"]` - Array of patterns (requires `centralized: false`)
-
-Multiple files can be edited; changes merge automatically. **No longer supported** - use single `edit_source` instead.
-
-**Deprecated:** `sync.two_way` and `sync.centralized` (no longer supported)
 
 #### sync.scope_prefixing
 
@@ -132,55 +103,57 @@ Add scope prefixes to AGENTS.md section headings when syncing from multi-file so
 
 Example: Section from `backend.mdc` becomes "Backend: Security" in AGENTS.md.
 
-Only applies when `edit_source` is `.cursor/rules/*.mdc` or similar multi-file pattern.
+Only applies when exporting Cursor or similar multi-scope exporters.
 
-#### sync.auto_pull
-
-**Type:** `boolean`
-
-**Default:** `true` (solo), `false` (team/enterprise)
-
-Automatically import changes from primary agent before syncing.
-
-#### sync.primary_agent
-
-**Type:** `string`
-
-**Default:** Auto-detected from first importable exporter
-
-Which agent to auto-pull from (cursor, copilot, claude, aider, agents).
-
-#### sync.on_conflict
-
-**Type:** `string`
-
-**Values:** `"prompt"` | `"keep_ir"` | `"accept_agent"`
-
-**Default:** `"accept_agent"` (solo), `"prompt"` (team/enterprise)
-
-How to resolve conflicts when both IR and agent files are edited.
-
-#### sync.workflow_mode
-
-**Type:** `string`
-
-**Values:** `"auto"` | `"ir_source"` | `"native_format"`
-
-**Default:** `"auto"` (solo), `"ir_source"` (team/enterprise)
-
-Preferred editing workflow:
-
-- **auto** - Prompt on first conflict
-- **ir_source** - Edit `.aligntrue/.rules.yaml` or `AGENTS.md`
-- **native_format** - Edit agent files directly (e.g., `.cursor/*.mdc`)
-
-#### sync.show_diff_on_pull
+#### sync.watch_enabled
 
 **Type:** `boolean`
 
-**Default:** `true`
+**Default:** `false`
 
-Show diff summary when auto-pull imports changes.
+Enable watch mode for continuous file monitoring and automatic syncing.
+
+#### sync.watch_debounce
+
+**Type:** `number`
+
+**Default:** `500`
+
+Debounce time in milliseconds for file watching. Prevents multiple syncs from rapid file changes.
+
+#### sync.watch_files
+
+**Type:** `array of strings`
+
+**Default:** `[]` (watch rules directory)
+
+Specific files to watch for changes. If empty, watches the entire rules directory.
+
+#### sync.auto_manage_ignore_files
+
+**Type:** `boolean` | `"prompt"`
+
+**Default:** `"prompt"`
+
+Automatically manage `.gitignore` and agent-specific ignore files to prevent duplicate rules across formats.
+
+#### sync.ignore_file_priority
+
+**Type:** `string`
+
+**Values:** `"native"` | `"custom"`
+
+**Default:** `"native"`
+
+How to handle conflicting ignore file settings when multiple exporters have different formats.
+
+#### sync.custom_format_priority
+
+**Type:** `object`
+
+**Default:** `{}`
+
+Custom priority order for formats when conflicts occur. Example: `{ "agents-md": "cursor" }` makes Cursor format preferred over AGENTS.md.
 
 ## Agent detection
 

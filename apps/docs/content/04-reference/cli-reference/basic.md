@@ -74,16 +74,13 @@ aligntrue sync [options]
 
 **Flags:**
 
-| Flag                    | Description                                   | Default                  |
-| ----------------------- | --------------------------------------------- | ------------------------ |
-| `--dry-run`             | Preview changes without writing files         | `false`                  |
-| `--force`               | Override performance limits and safety checks | `false`                  |
-| `--accept-agent <name>` | Pull changes from agent back to IR            | -                        |
-| `--no-auto-pull`        | Disable auto-pull for this sync               | `false`                  |
-| `--show-auto-pull-diff` | Show full diff when auto-pull executes        | `false`                  |
-| `--no-detect`           | Skip agent detection                          | `false`                  |
-| `--auto-enable`         | Auto-enable detected agents without prompting | `false`                  |
-| `--config <path>`       | Custom config file path                       | `.aligntrue/config.yaml` |
+| Flag              | Description                                   | Default                  |
+| ----------------- | --------------------------------------------- | ------------------------ |
+| `--dry-run`       | Preview changes without writing files         | `false`                  |
+| `--force`         | Override performance limits and safety checks | `false`                  |
+| `--no-detect`     | Skip agent detection                          | `false`                  |
+| `--auto-enable`   | Auto-enable detected agents without prompting | `false`                  |
+| `--config <path>` | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **Non-interactive modes:**
 
@@ -200,14 +197,11 @@ aligntrue sync --yes
 # CI/automation: skip prompts (doesn't auto-enable)
 aligntrue sync --non-interactive
 
-# Pull changes from agent to IR (manual)
-aligntrue sync --accept-agent cursor
-
 # Preview without writing
 aligntrue sync --dry-run
 
-# Pull changes from Cursor back to AGENTS.md
-aligntrue sync --accept-agent cursor
+# Force sync with safety overrides
+aligntrue sync --force
 ```
 
 **Exit codes:**
