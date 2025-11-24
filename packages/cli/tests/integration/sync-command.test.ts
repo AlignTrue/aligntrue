@@ -268,44 +268,6 @@ sections:
     });
   });
 
-  describe("Custom Config Path", () => {
-    it.skip("loads config from custom path with --config flag", async () => {
-      // TODO: Fix - custom config path feature may not be implemented or works differently
-      // Setup: Custom config location
-      mkdirSync(join(TEST_DIR, "custom"), { recursive: true });
-      const config = {
-        exporters: ["cursor"],
-      };
-      writeFileSync(
-        join(TEST_DIR, "custom", "my-config.yaml"),
-        yaml.stringify(config),
-        "utf-8",
-      );
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
-`;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
-
-      // Execute sync with custom config
-      try {
-        await sync(["--config", "custom/my-config.yaml"]);
-      } catch {
-        // May throw from process.exit if command fails
-      }
-
-      // Verify: Sync completed with custom config
-      expect(
-        existsSync(join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc")),
-      ).toBe(true);
-    });
-  });
-
   describe("Multiple Rules", () => {
     it("syncs multiple rules correctly", async () => {
       // Setup
