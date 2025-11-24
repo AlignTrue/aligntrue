@@ -180,6 +180,61 @@ export async function handleSyncResult(
         "@aligntrue/core/sync/last-sync-tracker"
       );
       updateLastSyncTimestamp(cwd);
+
+      // Store agent export hashes for drift detection
+      if (result.written && result.written.length > 0) {
+        const { storeAgentExportHash } = await import(
+          "@aligntrue/core/sync/agent-export-hashes"
+        );
+        const { readFileSync } = await import("fs");
+        const { resolve, relative } = await import("path");
+
+        // Files to track for drift
+        const trackedFiles = ["AGENTS.md", ".cursor/rules/aligntrue.mdc"];
+
+        for (const file of result.written) {
+          // Normalize path to check if it's one we track
+          const absPath = resolve(cwd, file);
+          const relPath = relative(cwd, absPath);
+
+          if (trackedFiles.includes(relPath)) {
+            try {
+              const content = readFileSync(absPath, "utf-8");
+              storeAgentExportHash(cwd, relPath, content);
+            } catch {
+              // Ignore read errors
+            }
+          }
+        }
+      }
+
+      // Special case: When accepting agent changes, update the hash for that agent file
+      // because we won't be re-exporting it, but it is now "synced"
+      if (options.acceptAgent) {
+        const { storeAgentExportHash } = await import(
+          "@aligntrue/core/sync/agent-export-hashes"
+        );
+        const { readFileSync } = await import("fs");
+        const { join } = await import("path");
+
+        // Map agent name to file path
+        // This logic ideally belongs in core/paths or exporter plugins, but simple mapping works for now
+        let agentPath: string | undefined;
+        if (options.acceptAgent === "agents") {
+          agentPath = "AGENTS.md";
+        } else if (options.acceptAgent === "cursor") {
+          agentPath = ".cursor/rules/aligntrue.mdc";
+        }
+
+        if (agentPath && existsSync(join(cwd, agentPath))) {
+          try {
+            const content = readFileSync(join(cwd, agentPath), "utf-8");
+            storeAgentExportHash(cwd, agentPath, content);
+          } catch {
+            // Ignore read errors
+          }
+        }
+      }
     } catch (err) {
       // Log warning but don't fail sync
       if (options.verbose) {

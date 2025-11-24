@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **CodeQL security alerts** - Fixed insecure temporary file creation (HIGH severity) by using cryptographic randomness for temp directory names and ensuring proper cleanup; fixed shell command injection vulnerability (MEDIUM severity) in test utilities by safely quoting shell arguments
-- **Drift detection reliability on CI** - Fixed intermittent drift detection failures on CI runners (macOS/Linux) by improving .last-sync file write reliability with fsync and retries, adding a robust fallback to IR file modification time (with 1s safety buffer), and adding comprehensive debug logging for timestamp comparisons
+- **Drift detection reliability** - Replaced timestamp-based agent file drift detection with content hash comparison for deterministic, cross-platform reliability. This fixes intermittent CI failures and handles copy/paste workflows correctly.
 - **CodeQL alert (useless assignment)** - Removed unused initialization of `exportResults` variable in sync engine
 - **Golden repo test flakiness** - Added error handling and debug logging to improve test stability in CI environment
 - **Stuck spinner in sync command** - Fixed an issue where the "Resolving sources" spinner continued running during interactive prompts in non-verbose mode
