@@ -214,7 +214,7 @@ Skipped: ${skippedDuplicates} (already in current rules)
 }
 
 /**
- * Backup an entire file being replaced (e.g., when switching edit_source)
+ * Backup an entire file being replaced
  * Preserves original file structure with timestamp in overwritten-rules/ folder
  *
  * @param filePath - Absolute or relative path to file being backed up

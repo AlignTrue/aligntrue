@@ -241,7 +241,7 @@ export interface EditSourceRecommendation {
 }
 
 /**
- * Recommend edit_source configuration based on detected agents
+ * Recommend primary agent configuration based on detected agents
  * Priority: Cursor > AGENTS.md > other single-file > any_agent_file
  */
 export function recommendEditSource(
