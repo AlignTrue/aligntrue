@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, readdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { execSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -226,6 +227,13 @@ function main() {
     generateContributing();
     generateDevelopment();
     generateSecurity();
+
+    // Format generated files to match project style
+    console.log("\nFormatting generated files...");
+    execSync(
+      "npx prettier --write README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md",
+      { stdio: "pipe" },
+    );
 
     console.log("\n✓ All repo files generated successfully");
     console.log("\nNext steps:");
