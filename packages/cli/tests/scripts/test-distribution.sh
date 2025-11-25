@@ -248,8 +248,8 @@ main() {
         log_success "init: created project"
         
         # Verify files were created
-        if [ -f ".aligntrue/config.yaml" ] && [ -f ".aligntrue/.rules.yaml" ]; then
-            log_success "init: config and IR files created"
+        if [ -f ".aligntrue/config.yaml" ] && [ -d ".aligntrue/rules" ]; then
+            log_success "init: config and rules directory created"
         else
             log_error "init: missing expected files"
             exit 1
