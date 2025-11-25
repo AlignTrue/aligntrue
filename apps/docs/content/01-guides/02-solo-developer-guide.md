@@ -79,7 +79,7 @@ cursor .
 
 **What happened:**
 
-- Created `.aligntrue/.rules.yaml` (internal IR, auto-generated)
+- Created `.aligntrue/rules` (internal IR, auto-generated)
 - Created or detected your agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
 - Pulled example packs from local examples
 - Exported to all detected agent formats
@@ -181,7 +181,7 @@ git push -u origin main
 cd ~/projects/project-a
 aligntrue init
 
-# Add to .aligntrue/.rules.yaml:
+# Add to .aligntrue/rules:
 sources:
   - git: https://github.com/you/my-standards
     ref: main
@@ -224,7 +224,7 @@ aligntrue sync
 
 ```bash
 # 1. Pull third-party pack
-# .aligntrue/.rules.yaml:
+# .aligntrue/rules:
 sources:
   - git: https://github.com/community/typescript-standards
     ref: v1.0.0
@@ -449,7 +449,7 @@ git commit -m "chore: Add AlignTrue rules"
 
 - `AGENTS.md` - Your rules (primary editing file)
 - `.aligntrue/config.yaml` - Configuration settings
-- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
+- `.aligntrue/rules` - Internal IR (auto-generated)
 - `.cursor/rules/` - Exported Cursor rules (optional)
 
 **What NOT to commit:**

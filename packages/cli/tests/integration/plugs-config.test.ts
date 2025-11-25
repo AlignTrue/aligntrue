@@ -79,7 +79,7 @@ describe("plugs config integration", () => {
     );
 
     // Create IR with slot
-    const irPath = join(testDir, ".aligntrue/.rules.yaml");
+    const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
       `id: test-pack
@@ -127,11 +127,11 @@ plugs:
     const configPath = join(testDir, ".aligntrue/config.yaml");
     writeFileSync(
       configPath,
-      `version: "1"\nmode: solo\nexporters:\n  - agents\nsources:\n  - type: local\n    path: .aligntrue/.rules.yaml\n`,
+      `version: "1"\nmode: solo\nexporters:\n  - agents\nsources:\n  - type: local\n    path: .aligntrue/rules\n`,
     );
 
     // Create IR with slot (legacy format for this test)
-    const irPath = join(testDir, ".aligntrue/.rules.yaml");
+    const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
       `id: test-pack
@@ -179,7 +179,7 @@ exporters:
     );
 
     // Create minimal IR
-    const irPath = join(testDir, ".aligntrue/.rules.yaml");
+    const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
       `id: test-pack
@@ -222,12 +222,12 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 `,
     );
 
     // Create IR with slot (legacy format for this test)
-    const irPath = join(testDir, ".aligntrue/.rules.yaml");
+    const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
       `id: test-pack

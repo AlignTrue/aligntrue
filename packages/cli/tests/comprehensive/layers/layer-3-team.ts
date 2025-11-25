@@ -48,7 +48,7 @@ const scenarios: TeamScenario[] = [
       "aligntrue sync",
     ],
     validation: (workspace) => {
-      const rulesPath = join(workspace, ".aligntrue", ".rules.yaml");
+      const rulesPath = join(workspace, ".aligntrue", "rules");
       return { passed: existsSync(rulesPath) };
     },
   },

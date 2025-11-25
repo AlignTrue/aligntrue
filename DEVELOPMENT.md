@@ -56,7 +56,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 ### IR-first design
 
-- `.aligntrue/.rules.yaml` (IR) is the canonical source, not bundles
+- `.aligntrue/rules` (IR) is the canonical source, not bundles
 - Natural markdown sections compile to IR
 - All operations work on IR directly
 - Canonicalization only at lock/publish boundaries
@@ -2386,7 +2386,7 @@ const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("legacy-marker");
 
 // After
-const rulesPath = join(testDir, ".aligntrue", ".rules.yaml");
+const rulesPath = join(testDir, ".aligntrue", "rules");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("spec_version:");
 expect(content).toContain("id: test-rule");

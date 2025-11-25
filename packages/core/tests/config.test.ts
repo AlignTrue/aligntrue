@@ -788,7 +788,7 @@ version: "1"
 mode: solo
 sources:
   - type: local
-    path: src/../../outside/.rules.yaml
+    path: src/../../outside/rules
 `,
     );
 

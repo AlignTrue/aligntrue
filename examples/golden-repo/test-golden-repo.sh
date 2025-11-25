@@ -41,8 +41,8 @@ fi
 
 # Test 2: IR file exists (internal)
 echo "Test 2: IR file exists..."
-if [ -f ".aligntrue/.rules.yaml" ]; then
-  pass "IR file exists (.aligntrue/.rules.yaml)"
+if [ -f ".aligntrue/rules" ]; then
+  pass "IR file exists (.aligntrue/rules)"
 else
   fail "IR file not found"
   exit 1

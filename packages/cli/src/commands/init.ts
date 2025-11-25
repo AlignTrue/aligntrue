@@ -272,15 +272,20 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       };
     });
 
-    // Pre-select detected formats
+    // Pre-select detected formats only (no default selection)
     const initialValues = FORMAT_OPTIONS.filter((opt) =>
       detectedFormats.has(opt.exporter),
     ).map((opt) => opt.exporter);
 
+    // Show hint before the prompt
+    clack.log.info(
+      "Use space to select formats. You can add or change them later with 'aligntrue adapters'.",
+    );
+
     const selected = await clack.multiselect({
       message: "Which formats do you want to export to?",
       options: formatChoices,
-      initialValues: initialValues.length > 0 ? initialValues : ["agents"],
+      initialValues: initialValues,
       required: false,
     });
 
@@ -291,10 +296,14 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
     selectedExporters = selected as string[];
 
-    // Show note about other formats
+    // Show smart continue message based on selection
     if (selectedExporters.length > 0) {
       clack.log.info(
-        "Tip: See all available formats with 'aligntrue adapters list'",
+        `✓ Enabling ${selectedExporters.length} agent format${selectedExporters.length > 1 ? "s" : ""}`,
+      );
+    } else {
+      clack.log.info(
+        "No formats selected. You can add them later with 'aligntrue adapters enable <format>'.",
       );
     }
   } else {

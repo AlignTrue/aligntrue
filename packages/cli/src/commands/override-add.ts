@@ -82,7 +82,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
         "Important:",
         "  - Rules in IR are stored in a sections array without explicit IDs by default",
         "  - Use array index selectors (sections[0], sections[1], etc.) to target specific sections",
-        "  - To find the index, check .aligntrue/.rules.yaml and count sections from 0",
+        "  - To find the index, check .aligntrue/rules/ and count sections from 0",
         "  - Property paths use dot notation (e.g., profile.version, sync.scope_prefixing)",
         "  - Run 'aligntrue override selectors' to list available selectors based on the current IR",
         "",
@@ -234,7 +234,7 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
   const ir = await loadIrForValidation(config, cwd);
   if (!ir) {
     clack.log.error(
-      "Could not load rules. The internal rules file (.aligntrue/.rules.yaml) is missing or invalid.",
+      "Could not load rules. The rules directory (.aligntrue/rules/) is missing or invalid.",
     );
     clack.log.info("To fix this, run: aligntrue sync");
     process.exit(1);
@@ -247,7 +247,7 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
       `Selector did not match the current rules: ${selectorResult.error ?? "unknown error"}`,
     );
     console.log(
-      "\nTip: Use 'aligntrue override selectors' to list valid selectors for your current rules, or verify the ID/index in .aligntrue/.rules.yaml.",
+      "\nTip: Use 'aligntrue override selectors' to list valid selectors for your current rules, or verify the ID/index in .aligntrue/rules/.",
     );
     process.exit(1);
     return;
@@ -310,7 +310,7 @@ async function loadIrForValidation(
   try {
     const paths = getAlignTruePaths(cwd);
 
-    // Prioritize the IR file directly (which is always at .aligntrue/.rules.yaml)
+    // Prioritize the rules directory (which is always at .aligntrue/rules)
     const irPath = paths.rules;
 
     // Check if IR file exists

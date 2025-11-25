@@ -180,9 +180,9 @@ git:
         expect(agentsMd).toContain("Testing Preferences");
 
         // Verify IR was created
-        expect(
-          existsSync(join(testProjectPath, ".aligntrue/.rules.yaml")),
-        ).toBe(true);
+        expect(existsSync(join(testProjectPath, ".aligntrue/rules"))).toBe(
+          true,
+        );
       } catch (error: any) {
         const stderr = error.stderr?.toString() || "";
         if (stderr.includes("consent") || stderr.includes("network")) {
@@ -259,7 +259,7 @@ git:
 
       // Create team rules
       writeFileSync(
-        join(testProjectPath, ".aligntrue/.rules.yaml"),
+        join(testProjectPath, ".aligntrue/rules"),
         `id: team-rules
 version: "1.0.0"
 spec_version: "1"
@@ -279,7 +279,7 @@ sections:
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
   - type: git
     url: ${EXAMPLES_REPO}
     ref: ${COMMIT_HASH}

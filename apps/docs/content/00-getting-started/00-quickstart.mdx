@@ -47,7 +47,7 @@ aligntrue init
 This auto-detects any existing agent files (Cursor `.mdc`, `CLAUDE.md`, etc.), imports them into AlignTrue, and only creates a fresh `AGENTS.md` starter when no agent files exist. After the import it writes:
 
 - `.aligntrue/config.yaml` - Configuration with detected exporters
-- `.aligntrue/.rules.yaml` - Internal format (auto-generated, don't edit)
+- `.aligntrue/rules` - Internal format (auto-generated, don't edit)
 - `AGENTS.md` - **Only** when you explicitly create a starter file during init
 
 > **Tip:** At the end of `aligntrue init`, you'll be prompted to run `aligntrue sync`. Confirm to export immediately or decline and run it later when you're ready.
@@ -104,7 +104,7 @@ Edit any agent file (Cursor .mdc, AGENTS.md, etc.)
     ↓
 aligntrue sync (auto-detects edits, merges changes)
     ↓
-.aligntrue/.rules.yaml (internal IR, auto-generated)
+.aligntrue/rules (internal IR, auto-generated)
     ↓
 All agent files (synced in native formats)
 ```
@@ -182,13 +182,13 @@ Need deeper checks (VS Code MCP, Windsurf, Warp, etc.)? See the [agent verificat
 AlignTrue uses a simple three-step process:
 
 1. **Write rules** - Edit `AGENTS.md` in natural markdown
-2. **Generate IR** - AlignTrue converts to internal format (`.aligntrue/.rules.yaml`)
+2. **Generate IR** - AlignTrue converts to internal format (`.aligntrue/rules`)
 3. **Export** - Rules sync to all configured agents (`.cursor/*.mdc`, `AGENTS.md`, etc.)
 
 **Workflow:**
 
 ```
-AGENTS.md (you edit) → .aligntrue/.rules.yaml (auto-generated) → Agent exports
+AGENTS.md (you edit) → .aligntrue/rules (auto-generated) → Agent exports
 ```
 
 **Key concepts:**

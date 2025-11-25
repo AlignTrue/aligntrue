@@ -42,19 +42,13 @@ modules:
 `,
     );
 
-    // Write IR with MODIFIED content (different from lockfile)
+    // Create rules directory with MODIFIED content (different from lockfile)
+    const rulesDir = join(aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
     writeFileSync(
-      join(aligntrueDir, ".rules.yaml"),
-      `
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule one
-    level: 2
-    content: "MODIFIED guidance that produces different hash"
-    fingerprint: test-rule-one
-`,
+      join(rulesDir, "test-rule-one.md"),
+      "## Test rule one\n\nMODIFIED guidance that produces different hash\n",
+      "utf-8",
     );
 
     // Write lockfile with OLD bundle hash (from different content)
@@ -129,25 +123,19 @@ modules:
 `,
     );
 
-    // Write IR with current content
-    const irPath = join(aligntrueDir, ".rules.yaml");
+    // Create rules directory with current content
+    const rulesDir = join(aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    const rulePath = join(rulesDir, "test-rule-one.md");
     writeFileSync(
-      irPath,
-      `
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule one
-    level: 2
-    content: "MODIFIED guidance in agent file"
-    fingerprint: test-rule-one
-`,
+      rulePath,
+      "## Test rule one\n\nMODIFIED guidance in agent file\n",
+      "utf-8",
     );
 
-    // Set IR timestamp to past
+    // Set rules timestamp to past
     const pastTime = Date.now() - 60000; // 1 minute ago
-    utimesSync(irPath, new Date(pastTime), new Date(pastTime));
+    utimesSync(rulePath, new Date(pastTime), new Date(pastTime));
 
     // Write .last-sync file (for drift detection baseline)
     writeFileSync(join(aligntrueDir, ".last-sync"), pastTime.toString());
@@ -260,18 +248,12 @@ modules:
     );
 
     // Write IR with content different from lockfile
+    // Create rules directory if it doesn't exist
+    mkdirSync(join(aligntrueDir, "rules"), { recursive: true });
     writeFileSync(
-      join(aligntrueDir, ".rules.yaml"),
-      `
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule one
-    level: 2
-    content: "MODIFIED guidance for gates test"
-    fingerprint: test-rule-one
-`,
+      join(aligntrueDir, "rules", "test-rule-one.md"),
+      "## Test rule one\n\nMODIFIED guidance for gates test\n",
+      "utf-8",
     );
 
     // Write lockfile with OLD bundle hash (from different content)
@@ -350,18 +332,12 @@ modules:
     );
 
     // Write IR with content different from lockfile
+    // Create rules directory if it doesn't exist
+    mkdirSync(join(aligntrueDir, "rules"), { recursive: true });
     writeFileSync(
-      join(aligntrueDir, ".rules.yaml"),
-      `
-id: test-rules
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule one
-    level: 2
-    content: "MODIFIED guidance for JSON output test"
-    fingerprint: test-rule-one
-`,
+      join(aligntrueDir, "rules", "test-rule-one.md"),
+      "## Test rule one\n\nMODIFIED guidance for JSON output test\n",
+      "utf-8",
     );
 
     // Write lockfile with OLD bundle hash (from different content)

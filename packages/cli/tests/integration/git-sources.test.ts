@@ -143,7 +143,7 @@ git:
   - agents
 sources:
   - type: local
-    path: vendor/test-pack/.aligntrue/.rules.yaml
+    path: vendor/test-pack/.aligntrue/rules
 `,
         "utf-8",
       );
@@ -153,7 +153,7 @@ sources:
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/test-pack/.aligntrue/.rules.yaml"),
+        join(TEST_DIR, "vendor/test-pack/.aligntrue/rules"),
         `id: vendored-pack
 version: "1.0.0"
 spec_version: "1"
@@ -167,7 +167,7 @@ sections:
 
       // Verify structure exists
       expect(
-        existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/.rules.yaml")),
+        existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/rules")),
       ).toBe(true);
 
       // Try to sync (should use vendored pack)
@@ -186,7 +186,7 @@ sections:
         // which happens before sync, so we allow sync failures
         // but we verify the test directory was set up correctly
         expect(
-          existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/.rules.yaml")),
+          existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/rules")),
         ).toBe(true);
       }
     });
@@ -204,9 +204,9 @@ sections:
   - agents
 sources:
   - type: local
-    path: vendor/pack-a/.aligntrue/.rules.yaml
+    path: vendor/pack-a/.aligntrue/rules
   - type: local
-    path: vendor/pack-b/.aligntrue/.rules.yaml
+    path: vendor/pack-b/.aligntrue/rules
 `,
         "utf-8",
       );
@@ -216,7 +216,7 @@ sources:
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/pack-a/.aligntrue/.rules.yaml"),
+        join(TEST_DIR, "vendor/pack-a/.aligntrue/rules"),
         `id: pack-a
 version: "1.0.0"
 spec_version: "1"
@@ -233,7 +233,7 @@ sections:
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/pack-b/.aligntrue/.rules.yaml"),
+        join(TEST_DIR, "vendor/pack-b/.aligntrue/rules"),
         `id: pack-b
 version: "1.0.0"
 spec_version: "1"
@@ -246,12 +246,12 @@ sections:
       );
 
       // Verify structure
-      expect(
-        existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/.rules.yaml")),
-      ).toBe(true);
-      expect(
-        existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/.rules.yaml")),
-      ).toBe(true);
+      expect(existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/rules"))).toBe(
+        true,
+      );
+      expect(existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/rules"))).toBe(
+        true,
+      );
 
       // Try to sync (should merge both packs)
       try {
@@ -277,10 +277,10 @@ sections:
       } catch {
         // If sync fails, verify test setup was correct
         expect(
-          existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/.rules.yaml")),
+          existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/rules")),
         ).toBe(true);
         expect(
-          existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/.rules.yaml")),
+          existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/rules")),
         ).toBe(true);
       }
     });
@@ -298,7 +298,7 @@ sections:
       );
 
       writeFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         `id: valid-pack
 version: "1.0.0"
 spec_version: "1"
@@ -332,7 +332,7 @@ sections:
       );
 
       writeFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         `# Missing id, version, spec_version
 sections:
   - heading: Test

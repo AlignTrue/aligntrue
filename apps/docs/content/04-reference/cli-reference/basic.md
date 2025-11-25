@@ -24,7 +24,7 @@ aligntrue init [options]
 
 1. Detects AI coding agents in your workspace (Cursor, Copilot, Claude Code, etc.)
 2. Creates `.aligntrue/config.yaml` with detected agents enabled
-3. Creates `.aligntrue/.rules.yaml` (internal IR) and `AGENTS.md` (primary user-editable file)
+3. Creates `.aligntrue/rules` (internal IR) and `AGENTS.md` (primary user-editable file)
 4. Auto-configures sync settings
 
 **Interactive prompts:**
@@ -237,7 +237,7 @@ aligntrue check [options]
 
 **What it validates:**
 
-1. **Schema validation** - `.aligntrue/.rules.yaml` matches JSON Schema
+1. **Schema validation** - `.aligntrue/rules` matches JSON Schema
 2. **Lockfile validation** - `.aligntrue.lock.json` matches current rules (team mode only)
 3. **File organization** - Warns when rule files exceed 1500 lines and recommends `aligntrue sources split`
 
@@ -613,7 +613,7 @@ aligntrue doctor [--config path] [--json]
 **What it checks:**
 
 1. Config file exists and loads without validation errors.
-2. `.aligntrue/.rules.yaml` exists and is non-empty.
+2. `.aligntrue/rules` exists and is non-empty.
 3. Each exporter’s output files exist (Cursor `.mdc`, `AGENTS.md`, MCP configs, etc.).
 4. Lockfile/bundle files exist when modules are enabled.
 5. Agent detection vs configured exporters (warns if agents are detected but not configured, or vice versa).

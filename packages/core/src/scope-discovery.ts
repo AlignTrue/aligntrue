@@ -60,13 +60,22 @@ export async function discoverScopes(
 
       if (existsSync(aligntrueDir)) {
         const configPath = join(aligntrueDir, "config.yaml");
-        const rulesPath = join(aligntrueDir, ".rules.yaml");
+        const rulesDir = join(aligntrueDir, "rules");
+
+        // Check for rules directory with markdown files
+        let ruleFiles: string[] = [];
+        if (existsSync(rulesDir)) {
+          const { readdirSync } = await import("fs");
+          ruleFiles = readdirSync(rulesDir)
+            .filter((f) => f.endsWith(".md"))
+            .map((f) => join(rulesDir, f));
+        }
 
         discovered.push({
           path: relative(rootDir, fullPath),
           configPath: existsSync(configPath) ? configPath : "",
-          hasRules: existsSync(rulesPath),
-          ruleFiles: existsSync(rulesPath) ? [rulesPath] : [],
+          hasRules: ruleFiles.length > 0,
+          ruleFiles,
         });
       }
 

@@ -321,7 +321,7 @@ These errors indicate missing files, permissions, or system issues:
   ```
   ✗ Rules file not found
 
-  Could not locate: .aligntrue/.rules.yaml
+  Could not locate: .aligntrue/rules
 
   Hint: Run 'aligntrue init' to create initial rules
 

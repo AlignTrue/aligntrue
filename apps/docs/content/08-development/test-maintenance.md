@@ -56,7 +56,7 @@ const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("legacy-marker");
 
 // After
-const rulesPath = join(testDir, ".aligntrue", ".rules.yaml");
+const rulesPath = join(testDir, ".aligntrue", "rules");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("spec_version:");
 expect(content).toContain("id: test-rule");

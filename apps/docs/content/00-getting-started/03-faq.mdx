@@ -81,7 +81,7 @@ Accept the import prompts to pull existing agent files into AlignTrue, then run 
 
 You can edit either your agent-specific files or AGENTS.md - AlignTrue syncs changes automatically in solo mode.
 
-**Don't edit `.aligntrue/.rules.yaml`** - This is auto-generated (like a build artifact). Think of it like `package-lock.json` - it exists for tooling, not for editing.
+**Don't edit `.aligntrue/rules`** - This is auto-generated (like a build artifact). Think of it like `package-lock.json` - it exists for tooling, not for editing.
 
 ### How do I sync rules to agents?
 
@@ -205,7 +205,7 @@ You'll be prompted for consent before any network operation.
 ### Where does AlignTrue store data?
 
 - **Config:** `.aligntrue/config.yaml`
-- **Rules (internal):** `.aligntrue/.rules.yaml` (auto-generated)
+- **Rules (internal):** `.aligntrue/rules` (auto-generated)
 - **Rules (user-editable):** `AGENTS.md` or agent files
 - **Lockfile:** `.aligntrue.lock.json` (team mode)
 - **Cache:** `.aligntrue/.cache/` (git sources)
@@ -223,7 +223,7 @@ See [CI/CD integration guide](/docs/01-guides/10-ci-cd-integration).
 
 ### What's the IR (Intermediate Representation)?
 
-The IR is AlignTrue's internal format stored in `.aligntrue/.rules.yaml`. When you write rules in `AGENTS.md` or agent files, they're converted to IR, then synced to all other agents. The IR file is auto-generated - you don't need to edit it directly.
+The IR is AlignTrue's internal format stored in `.aligntrue/rules`. When you write rules in `AGENTS.md` or agent files, they're converted to IR, then synced to all other agents. The IR file is auto-generated - you don't need to edit it directly.
 
 ### How does AlignTrue handle agent-specific features?
 

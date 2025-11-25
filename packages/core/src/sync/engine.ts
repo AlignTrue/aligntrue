@@ -436,7 +436,7 @@ export class SyncEngine {
 
       if (!scopesArray || !storageConfig) {
         // Fall back to regular sync if no scope config
-        const irPath = resolvePath(process.cwd(), ".aligntrue/.rules.yaml");
+        const irPath = resolvePath(process.cwd(), ".aligntrue/rules");
         return this.syncToAgents(irPath, options);
       }
 
@@ -498,7 +498,7 @@ export class SyncEngine {
       });
 
       // Now sync to agents using the merged IR
-      const irPath = resolvePath(process.cwd(), ".aligntrue/.rules.yaml");
+      const irPath = resolvePath(process.cwd(), ".aligntrue/rules");
       const syncResult = await this.syncToAgents(irPath, options);
 
       // Write back to respective storage backends (only team scope in team mode)

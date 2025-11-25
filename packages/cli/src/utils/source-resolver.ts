@@ -133,7 +133,7 @@ export async function resolveSource(
       };
     }
 
-    // Handle single file sources (legacy .rules.yaml format)
+    // Handle single file sources (legacy format or specific file)
     const { dirname, basename } = await import("path");
     const baseDir = dirname(resolvedPath);
     const fileName = basename(resolvedPath);
@@ -251,7 +251,7 @@ export async function resolveSources(
   },
 ): Promise<ResolvedSource[]> {
   const sources = config.sources || [
-    { type: "local" as const, path: ".aligntrue/.rules.yaml" },
+    { type: "local" as const, path: ".aligntrue/rules" },
   ];
 
   const resolved: ResolvedSource[] = [];

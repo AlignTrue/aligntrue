@@ -457,7 +457,7 @@ export async function detectDriftForConfig(
     let currentBundleHash: string | undefined;
     try {
       // Load current rules and compute bundle hash
-      const irPath = join(basePath, ".aligntrue/.rules.yaml");
+      const irPath = join(basePath, ".aligntrue/rules");
       if (existsSync(irPath)) {
         const { loadIR } = await import("../sync/ir-loader.js");
         const { generateLockfile } = await import("../lockfile/index.js");

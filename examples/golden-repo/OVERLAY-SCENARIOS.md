@@ -16,7 +16,7 @@ This document demonstrates overlay workflows using the golden repository as a ba
 cd examples/golden-repo
 
 # Verify initial state
-cat .aligntrue/.rules.yaml
+cat .aligntrue/rules
 ```
 
 2. **Add overlay to customize severity:**
@@ -50,7 +50,7 @@ cat .aligntrue.lock.json | jq '.dependencies[] | select(.overlay_hash != null)'
       "version": "1.0.0",
       "source": {
         "type": "local",
-        "path": ".aligntrue/.rules.yaml"
+        "path": ".aligntrue/rules"
       },
       "content_hash": "sha256:abc123...",
       "overlay_hash": "sha256:def456...",
@@ -65,7 +65,7 @@ cat .aligntrue.lock.json | jq '.dependencies[] | select(.overlay_hash != null)'
 4. **Modify upstream rules (add new check):**
 
 ```markdown
-# Edit .aligntrue/.rules.yaml or AGENTS.md
+# Edit .aligntrue/rules or AGENTS.md
 
 ## Rule: performance.avoid.nested.loops
 
@@ -151,7 +151,7 @@ overlays:
 
 ```bash
 # Take snapshot of upstream
-cat .aligntrue/.rules.yaml | grep -A10 "code.review.no.todos" > /tmp/original-upstream.md
+cat .aligntrue/rules | grep -A10 "code.review.no.todos" > /tmp/original-upstream.md
 
 # Sync and record lockfile
 aln sync
@@ -608,7 +608,7 @@ After testing scenarios:
 rm -f .aligntrue-overlay.yaml
 
 # Restore original rules
-git checkout .aligntrue/.rules.yaml
+git checkout .aligntrue/rules
 
 # Regenerate clean lockfile
 aln sync

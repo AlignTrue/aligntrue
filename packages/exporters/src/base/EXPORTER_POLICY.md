@@ -89,7 +89,7 @@ The content hash is returned in `ExportResult` and displayed by the CLI, not emb
 
 ### 5. Overlay Effects in IR vs Exports
 
-**Rule:** Overlays modify the canonical IR (`.aligntrue/.rules.yaml`) and affect behavior, but metadata changes (severity, check options, etc.) may not be visible in all export formats.
+**Rule:** Overlays modify the canonical IR (`.aligntrue/rules`) and affect behavior, but metadata changes (severity, check options, etc.) may not be visible in all export formats.
 
 **Rationale:**
 
@@ -99,7 +99,7 @@ The content hash is returned in `ExportResult` and displayed by the CLI, not emb
 - Users can verify overlay application via:
   - `aligntrue override status` - see active overlays
   - `aligntrue override diff` - see what changed
-  - `.aligntrue/.rules.yaml` - inspect the canonical IR directly
+  - `.aligntrue/rules` - inspect the canonical IR directly
   - CLI output during sync - warnings show overlay application
 
 **Example:**
@@ -115,7 +115,7 @@ overlays:
 
 After sync:
 
-- ✅ IR has `severity: "error"` in `.aligntrue/.rules.yaml`
+- ✅ IR has `severity: "error"` in `.aligntrue/rules`
 - ✅ Behavior changes (linting treats this as error)
 - ✅ `aligntrue override status` shows the override is active
 - ⚠️ AGENTS.md still shows "## Global principles" (no severity indicator)
@@ -145,7 +145,7 @@ AlignTrue follows a unidirectional sync architecture where `.aligntrue/rules/*.m
 ```
 Rules Directory (.aligntrue/rules/*.md) ← USER EDITS HERE
   ↓ [compile to IR]
-IR (.aligntrue/.rules.yaml) ← INTERNAL REPRESENTATION
+IR (.aligntrue/rules) ← INTERNAL REPRESENTATION
   ↓ [export via all enabled exporters]
 Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← READ-ONLY EXPORTS
 ```
@@ -160,7 +160,7 @@ Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← READ-ONLY EXPORTS
 
 **IR (Intermediate Representation):**
 
-- `.aligntrue/.rules.yaml` is the compiled internal representation
+- `.aligntrue/rules` is the compiled internal representation
 - Auto-generated from rules directory
 - Users should NOT edit this file directly
 - All operations work on IR, then export to agents

@@ -225,7 +225,7 @@ export async function buildSyncContext(
     sourcePath =
       config.sources?.[0]?.type === "local"
         ? config.sources[0].path || paths.rules
-        : bundleResult.sources[0]?.sourcePath || ".aligntrue/.rules.yaml";
+        : bundleResult.sources[0]?.sourcePath || ".aligntrue/rules";
 
     absoluteSourcePath =
       config.sources?.[0]?.type === "local"
@@ -499,7 +499,7 @@ async function _enableExporters(
   let currentIR;
   try {
     const { loadIR } = await import("@aligntrue/core");
-    const irPath = join(cwd, ".aligntrue/.rules.yaml");
+    const irPath = join(cwd, ".aligntrue/rules");
     if (existsSync(irPath)) {
       currentIR = await loadIR(irPath);
     }
@@ -597,20 +597,23 @@ async function checkAgentsWithCache(
     if (detection.missing.length > 0) {
       clack.log.warn(`New agents detected: ${detection.missing.join(", ")}`);
 
-      if (!options.yes && !options.nonInteractive) {
-        const shouldAdd = await clack.confirm({
+      let shouldAdd = false;
+
+      if (options.yes || options.nonInteractive) {
+        // Auto-accept in non-interactive mode
+        shouldAdd = true;
+      } else {
+        const response = await clack.confirm({
           message: "Add detected agents to exporters?",
           initialValue: true,
         });
+        shouldAdd = !clack.isCancel(response) && response;
+      }
 
-        if (!clack.isCancel(shouldAdd) && shouldAdd) {
-          config.exporters = [
-            ...(config.exporters || []),
-            ...detection.missing,
-          ];
-          await saveMinimalConfig(config, configPath, cwd);
-          clack.log.success("Updated exporters in config");
-        }
+      if (shouldAdd) {
+        config.exporters = [...(config.exporters || []), ...detection.missing];
+        await saveMinimalConfig(config, configPath, cwd);
+        clack.log.success("Updated exporters in config");
       }
     }
 

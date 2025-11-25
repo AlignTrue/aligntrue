@@ -222,7 +222,7 @@ try {
 **Accepted patterns:**
 
 - `src/components`
-- `apps/web/.aligntrue/.rules.yaml`
+- `apps/web/.aligntrue/rules`
 - `.` (current directory)
 - Paths with dots in filenames (e.g., `config.test.ts`)
 

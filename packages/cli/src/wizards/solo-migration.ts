@@ -4,7 +4,7 @@
  */
 
 import * as clack from "@clack/prompts";
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
 import * as yaml from "yaml";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
@@ -179,16 +179,34 @@ async function applySoloMigration(
   config: AlignTrueConfig,
   cwd: string,
 ): Promise<void> {
-  // Load IR
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  // Load IR from rules directory
+  const irPath = join(cwd, ".aligntrue", "rules");
   let ir: ParsedIR;
   try {
-    const irContent = readFileSync(irPath, "utf-8");
-    ir = yaml.parse(irContent) as ParsedIR;
+    const { loadRulesDirectory } = require("@aligntrue/core");
+    const rules = loadRulesDirectory(irPath, cwd, { recursive: true });
+
+    // Convert to ParsedIR format
+    ir = {
+      version: "1",
+      sections: rules.map(
+        (rule: {
+          frontmatter: { title?: string; scope?: string };
+          filename: string;
+          content: string;
+          hash: string;
+        }) => ({
+          heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+          content: rule.content,
+          scope: rule.frontmatter.scope,
+          fingerprint: rule.hash.slice(0, 16),
+        }),
+      ),
+    } as ParsedIR;
   } catch (error: unknown) {
     const isError = error instanceof Error;
     if (isError && "code" in error && error.code === "ENOENT") {
-      // If IR doesn't exist, we can still proceed with config changes
+      // If rules directory doesn't exist, we can still proceed with config changes
       // but we should initialize an empty IR structure.
       ir = { version: "1", sections: [] };
     } else {

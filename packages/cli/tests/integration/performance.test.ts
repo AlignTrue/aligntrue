@@ -50,7 +50,7 @@ describePerformanceBenchmarks("Performance Benchmarks", () => {
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 exporters:
   - agents
 git:
@@ -60,7 +60,7 @@ git:
 
     // Minimal rules file (YAML format)
     await fs.writeFile(
-      join(projectDir, ".aligntrue/.rules.yaml"),
+      join(projectDir, ".aligntrue/rules"),
       `id: perf-test
 version: 1.0.0
 spec_version: "1"
@@ -261,7 +261,7 @@ ${largeSections
   .join("\n")}
 `;
 
-    await fs.writeFile(join(projectDir, ".aligntrue/.rules.yaml"), irContent);
+    await fs.writeFile(join(projectDir, ".aligntrue/rules"), irContent);
 
     // Create config
     await fs.writeFile(
@@ -270,7 +270,7 @@ ${largeSections
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 exporters:
   - agents
 git:

@@ -5,7 +5,7 @@ This example demonstrates path-based rule application for monorepos with differe
 ## What's inside
 
 - **`.aligntrue/config.yaml`** - Solo mode with scopes configuration
-- **`.aligntrue/.rules.yaml`** - Internal IR (auto-generated from AGENTS.md)
+- **`.aligntrue/rules`** - Internal IR (auto-generated from AGENTS.md)
 - **`apps/web/`** - Next.js frontend (TypeScript + React)
 - **`packages/api/`** - Node.js backend (TypeScript)
 - **`services/worker/`** - Python worker service
@@ -36,7 +36,7 @@ Each directory gets appropriate stack-specific rules while sharing base standard
 ### 1. View scope configuration
 
 ```bash
-cat .aligntrue/.rules.yaml
+cat .aligntrue/rules
 ```
 
 You'll see scopes section with:

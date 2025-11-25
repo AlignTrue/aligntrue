@@ -501,8 +501,7 @@ export async function onboard(args: string[]): Promise<void> {
         details: plugsInfo.unresolvedKeys
           .slice(0, 5)
           .map(
-            (key) =>
-              `  - ${key}: Add fill in .aligntrue/.rules.yaml or pack YAML`,
+            (key) => `  - ${key}: Add fill in .aligntrue/rules/ or pack YAML`,
           ),
         command: "aligntrue plugs list",
       });

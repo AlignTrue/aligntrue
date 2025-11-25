@@ -500,7 +500,7 @@ scopes:
 Sections include `vendor.aligntrue.source_scope` metadata. Check with:
 
 ```bash
-cat .aligntrue/.rules.yaml | grep source_scope
+cat .aligntrue/rules | grep source_scope
 ```
 
 ---

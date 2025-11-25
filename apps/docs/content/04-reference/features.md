@@ -97,7 +97,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 - **Natural markdown sections** - Primary content format, all 50 exporters support it
 - **Agent-native editing** - Edit in your detected agent format (Cursor `.mdc`, etc.) or universal `AGENTS.md`
-- **IR (`.aligntrue/.rules.yaml`)** - Internal representation, auto-generated from your edits
+- **IR (`.aligntrue/rules`)** - Internal representation, auto-generated from your edits
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
 - **Canonical JSON (JCS)** - Deterministic hashing for lockfiles and drift detection
 

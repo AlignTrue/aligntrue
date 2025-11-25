@@ -52,7 +52,7 @@ describe.skip("Watch Mode Tests", () => {
     );
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       `id: test-pack
 version: "1.0.0"
 spec_version: "1"
@@ -106,7 +106,7 @@ sections:
     );
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       `id: test-pack
 version: "1.0.0"
 spec_version: "1"
@@ -134,7 +134,7 @@ sections:
 
     // Modify the rules file
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       `id: test-pack
 version: "1.0.0"
 spec_version: "1"
@@ -177,7 +177,7 @@ sync:
     );
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       `id: test-pack
 version: "1.0.0"
 spec_version: "1"
@@ -206,7 +206,7 @@ sections:
     // Make multiple rapid changes
     for (let i = 0; i < 3; i++) {
       writeFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         `id: test-pack
 version: "1.0.0"
 spec_version: "1"
@@ -239,7 +239,7 @@ sections:
     );
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       `id: test-pack
 version: "1.0.0"
 spec_version: "1"
