@@ -108,17 +108,9 @@ See [File watcher setup](/docs/04-reference/file-watcher-setup).
 
 ### What if I have conflicts?
 
-AlignTrue detects conflicts when multiple agent files have different changes. You'll be prompted to choose which version to keep.
+AlignTrue uses a unidirectional sync model: rules in `.aligntrue/rules/` are the single source of truth, and all agent files are read-only exports. This eliminates conflicts by design.
 
-Configure primary agent to avoid prompts:
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  primary_agent: "agents" # Use AGENTS.md as source
-  # or "cursor"  # Use Cursor files as source
-  auto_pull: true # Pull from primary before syncing
-```
+If you need to update rules, edit the files in `.aligntrue/rules/` and run `aligntrue sync`.
 
 ## Team usage
 

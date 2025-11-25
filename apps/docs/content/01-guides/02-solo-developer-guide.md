@@ -42,7 +42,7 @@ aligntrue sync
 - Local-first operation (no required network calls)
 - Lockfile disabled by default (no drift detection overhead)
 - Bundle disabled by default (no dependency merging)
-- Fast iteration with auto-pull
+- Fast iteration
 - Full customization (plugs, overlays, scopes)
 
 **What you don't need:**
@@ -83,7 +83,7 @@ cursor .
 - Created or detected your agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
 - Pulled example packs from local examples
 - Exported to all detected agent formats
-- Auto-pull enabled (syncs your edits automatically)
+- Ready to sync rules to all agents
 
 **Next steps:**
 
@@ -107,7 +107,7 @@ cursor .
 #     url: https://github.com/AlignTrue/aligntrue
 #     path: examples/packs/testing.yaml
 
-# 3. Pull pack (auto-pull enabled by default)
+# 3. Sync rules to all agents
 aligntrue sync
 
 # 3. Audit plugs (see what needs customization)
@@ -401,33 +401,6 @@ rules:
 
 **Why:** Simple rules are easier to understand and maintain.
 
-### Use auto-pull for quick iteration
-
-Auto-pull is enabled by default in solo mode:
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  auto_pull: true # Pulls updates on every sync
-```
-
-**Benefits:**
-
-- Always get latest git-sourced packs
-- Automatic updates on sync
-- Fast iteration
-
-**Disable if:**
-
-- You want explicit control over updates
-- You're working offline
-
-```bash
-# Disable auto-pull
-aligntrue config edit
-# Set sync.auto_pull: false
-```
-
 ### Backup before major changes
 
 ```bash
@@ -674,7 +647,7 @@ See [Team Guide](/docs/01-guides/04-team-guide) for team collaboration workflows
 
 1. **Quick setup** - `aligntrue init && aligntrue sync` (60 seconds)
 2. **Customize** - Use plugs, overlays, and scopes as needed
-3. **Iterate fast** - Auto-pull enabled, no team overhead
+3. **Iterate fast** - No team overhead
 4. **Version control** - Commit rules to git
 5. **Share easily** - Git source or local packs
 

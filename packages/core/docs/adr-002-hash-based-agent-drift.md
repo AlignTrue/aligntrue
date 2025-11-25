@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-We need to detect when an agent file (e.g., `AGENTS.md`) has been manually edited by a user after it was last synced from the AlignTrue IR. This allows us to prompt the user to run `aligntrue sync --accept-agent` to pull those changes back into the canonical IR.
+We need to detect when an agent file (e.g., `AGENTS.md`) has been manually edited by a user after it was last synced from the AlignTrue IR. This allows us to detect drift and alert users that their agent files have diverged from the canonical rules.
 
 Initially, we implemented this using file modification timestamps (`mtime`) compared against a `.last-sync` timestamp file. However, this proved unreliable across different operating systems and CI environments due to:
 
@@ -28,9 +28,9 @@ We will replace timestamp-based drift detection with **content hash comparison**
 3. When `aligntrue drift` runs, it reads the current agent files, computes their SHA-256 hash, and compares it to the stored hash.
 4. If the hashes differ, drift is reported.
 
-### Special Handling
+### Hash Updates
 
-- When running `aligntrue sync --accept-agent`, we update the stored hash to match the currently accepted file content, as this file is now considered "in sync" with the IR.
+- The stored hash is updated after each successful sync, when the exported content matches the agent file.
 
 ## Consequences
 

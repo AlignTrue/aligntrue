@@ -21,7 +21,6 @@ export class AgentsExporter extends ExporterBase {
   version = "1.0.0";
   capabilities: ExporterCapabilities = {
     multiFile: false, // Single file format
-    twoWaySync: false, // No longer supports two-way sync
     scopeAware: true, // Can filter by scope
     preserveStructure: false, // Link-based, doesn't preserve file structure
     nestedDirectories: true, // Supports nested scope directories

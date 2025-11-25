@@ -177,8 +177,8 @@ aligntrue check   # Validate in CI
 
 **Centralized editing:**
 
-- Edit your configured `edit_source` file → sync to all agents (default)
-- Auto-pull enabled for `primary_agent` by default
+- Edit rules in `.aligntrue/rules/` → sync to all agents
+- All agent files are read-only exports
 
 See [guides](/docs/01-guides/02-solo-developer-guide) for details.
 
@@ -186,7 +186,6 @@ See [guides](/docs/01-guides/02-solo-developer-guide) for details.
 
 ```bash
 aligntrue sync --dry-run       # Preview changes
-aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
 aligntrue check                # Validate rules (great for CI)
 ```
 

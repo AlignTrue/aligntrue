@@ -141,8 +141,8 @@ Rule guidance here
     });
   });
 
-  describe("Auto-Pull on Sync", () => {
-    it("enables auto-pull by default for solo mode", () => {
+  describe("Minimal Config", () => {
+    it("works with minimal config (exporters only)", () => {
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
 
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
@@ -150,7 +150,7 @@ Rule guidance here
       // Minimal solo config (no sync section)
       writeFileSync(configPath, "exporters:\n  - cursor\n", "utf-8");
 
-      // Load and verify defaults would be applied
+      // Load and verify minimal config is valid
       const config = readFileSync(configPath, "utf-8");
       expect(config).toContain("exporters:");
       expect(config).not.toContain("sync:"); // Defaults applied at runtime
@@ -159,7 +159,7 @@ Rule guidance here
       // This test verifies minimal config doesn't require sync section
     });
 
-    it("detects primary agent from exporters", () => {
+    it("supports multiple exporters", () => {
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
 
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
@@ -173,8 +173,8 @@ Rule guidance here
       const exporters = config.match(/exporters:\s*\n\s*-\s*(\w+)/g);
 
       expect(exporters).toBeTruthy();
-      // First exporter that supports import becomes primary
       expect(config).toContain("cursor");
+      expect(config).toContain("agents");
     });
   });
 

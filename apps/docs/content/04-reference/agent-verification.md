@@ -52,7 +52,7 @@ Use this guide whenever an AI agent is not referencing your rules. It covers the
 
 ## When rules still don’t load
 
-- Confirm that you are editing the same file listed under `Edit sources` in `aligntrue status`. If you manually edit generated files (e.g., `.cursor/rules/*.mdc` without enabling auto-pull), run `aligntrue sync --accept-agent <name>`.
+- Edit rules in `.aligntrue/rules/` and run `aligntrue sync` to export to all agents. Agent files are read-only exports.
 - If an agent continues to ignore the file, delete its cache directory (`.cursor/`, `.windsurf/`, etc.), re-run `aligntrue sync`, and reopen the agent.
 - For team mode, ensure the lockfile is up to date (`aligntrue sync` or `aligntrue check --ci`) before troubleshooting exports.
 

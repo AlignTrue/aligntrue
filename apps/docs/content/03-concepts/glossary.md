@@ -148,20 +148,6 @@ Each exporter:
 - Adapts formatting to agent requirements
 - Adds **fidelity notes** when parity isn't exact
 
-### Auto-pull
-
-In solo mode, automatically imports any changes you made directly in agent files (e.g., `.cursor/rules/*.mdc`) back into AGENTS.md before syncing.
-
-**Behavior:**
-
-- Enabled by default in solo mode
-- Disabled in team mode (to prevent accidental overwrites)
-- Can be disabled with `aligntrue sync --no-auto-pull`
-
-This enables centralized rule management: edit your configured edit_source file, and changes propagate to all other exports.
-
-**Related:** [Sync behavior](/docs/03-concepts/sync-behavior)
-
 ### Bundle
 
 Merging rules from multiple packs/sources into a single coherent rule set (team mode only).
@@ -218,7 +204,6 @@ Default mode for individual developers. Optimized for fast iteration with minima
 - No lockfile required
 - No bundle overhead
 - Simple rule management
-- Auto-pull enabled by default
 - Fast sync operations
 
 **Use case:** Single developer, single project, local rules only
@@ -235,7 +220,6 @@ Collaborative mode with reproducibility guarantees and approval workflows.
 - Bundle support for multi-source rules
 - Allow list validation for approved sources
 - Drift detection enabled
-- Auto-pull disabled by default
 
 **Enable with:** `aligntrue team enable`
 
@@ -259,7 +243,7 @@ Main AlignTrue configuration stored in `.aligntrue/config.yaml`. Defines:
 - **Sources** - Where rules come from (local files, git repositories)
 - **Exporters** - Which agent formats to export to
 - **Scopes** - Path-based rule application (monorepos)
-- **Modules** - Feature toggles (lockfile, bundle, auto-pull)
+- **Modules** - Feature toggles (lockfile, bundle)
 
 **Related:** [Config reference](/docs/04-reference/config-reference)
 

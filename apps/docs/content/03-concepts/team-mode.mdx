@@ -26,7 +26,6 @@ Team mode enables collaborative rule management with:
 | Bundle generation     | ❌        | ✅        |
 | Allow list validation | ❌        | ✅        |
 | Drift detection       | ❌        | ✅        |
-| Auto-pull             | ✅        | ❌        |
 
 <Callout type="warning" title=".aligntrue.bundle.yaml status">
   `modules.bundle` enables multi-source merging in memory, but the CLI does
@@ -241,9 +240,9 @@ When switching between solo and team modes, AlignTrue preserves your sync workfl
 
 **Settings preserved during mode transitions:**
 
-- `sync.auto_pull` - Whether to automatically pull agent changes
-- `sync.workflow_mode` - Workflow mode (ir_first or native_format)
-- `sync.primary_agent` - Primary agent for sync operations
+- Exporter configuration
+- Detection settings
+- Backup configuration
 - `sync.on_conflict` - Conflict resolution strategy
 
 **What changes:**
@@ -747,11 +746,11 @@ Personal testing preferences - not managed.
 3. Team lead merges changes
 4. All developers sync to get updates
 
-### Two-way sync behavior
+### Sync behavior
 
-With centralized rule management enabled (default):
+With team mode enabled:
 
-- Personal sections sync from your edit_source
+- Personal rules sync from `.aligntrue/rules/`
 - Managed sections always overwrite with team version
 - Warnings shown if managed sections edited locally
 
@@ -762,7 +761,7 @@ $ aligntrue sync
 ⚠ Team-managed section "Security" was modified locally
   Reverting to team version
   To keep your changes, rename the section or submit a PR to team repo
-````
+```
 
 ### Personal vs team sections
 
@@ -770,7 +769,7 @@ $ aligntrue sync
 | ------------------- | --------------------- | -------------------- |
 | Marked with 🔒      | Yes                   | No                   |
 | Local edits allowed | No (overwritten)      | Yes                  |
-| Syncs from agent    | No                    | Yes (if edit_source) |
+| Source              | Team bundle           | `.aligntrue/rules/`  |
 | Change process      | PR to team repo       | Edit locally         |
 
 ### Example team setup
@@ -941,3 +940,4 @@ aligntrue drift
 - **[Git Workflows](/docs/03-concepts/git-workflows)** - Git-based rule sharing and vendoring
 - **[Onboarding](/docs/06-contributing/team-onboarding)** - Developer onboarding checklists
 - **[Examples](/docs/04-reference/examples)** - team-repo and vendored-pack examples
+````

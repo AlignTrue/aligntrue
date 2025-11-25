@@ -14,7 +14,6 @@ Use AlignTrue to maintain consistent rules across multiple AI coding agents. Wri
 This guide covers:
 
 - Setting up AlignTrue with multiple agents (Cursor, Copilot, Claude Code, etc.)
-- Choosing the right workflow for multi-agent setups
 - Handling agent-specific settings with vendor bags
 - Migrating from existing multi-agent configurations
 - Troubleshooting common multi-agent issues
@@ -33,36 +32,24 @@ Edit `.aligntrue/config.yaml`:
 version: "1"
 mode: solo
 
-sources:
-  - type: local
-    path: .aligntrue/.rules.yaml
-
 exporters:
   - cursor # Cursor IDE
   - agents # GitHub Copilot, Claude Code, Aider
   - copilot # GitHub Copilot specific format
   - claude # Claude Code specific format
   - windsurf # Windsurf
-
-sync:
-  primary_agent: "agents" # Use AGENTS.md as source
-  auto_pull: false # Disable for multi-agent
 ```
 
 ### Workflow
 
-1. **Edit rules** in `AGENTS.md` or agent files:
+1. **Edit rules** in `.aligntrue/rules/`:
 
 ```markdown
 ---
 id: my-project.standards
-version: "1.0.0"
-spec_version: "1"
 ---
 
-# My project rules
-
-## Code standards
+# Code standards
 
 Enable strict mode in tsconfig.json for better type safety.
 ```
@@ -106,25 +93,17 @@ Each file contains the same rules in agent-specific format.
 version: "1"
 mode: solo
 
-sources:
-  - type: local
-    path: .aligntrue/.rules.yaml
-
 exporters:
   - cursor # Primary editor
   - copilot # Code suggestions
   - claude # Code review
   - agents # Universal fallback
 
-sync:
-  primary_agent: "cursor"
-  auto_pull: false
-
 git:
   mode: commit # Commit all agent files
 ```
 
-**Result:** All three agents get the same rules. Edit `AGENTS.md` once, sync to all.
+**Result:** All three agents get the same rules. Edit `.aligntrue/rules/` once, sync to all.
 
 ### Example 2: VS Code ecosystem
 
@@ -134,19 +113,11 @@ git:
 version: "1"
 mode: solo
 
-sources:
-  - type: local
-    path: .aligntrue/.rules.yaml
-
 exporters:
   - vscode-mcp # VS Code MCP config
   - agents # Universal format
   - copilot # GitHub Copilot
   - cline # Cline extension
-
-sync:
-  primary_agent: "agents"
-  auto_pull: false
 
 git:
   mode: commit
@@ -162,16 +133,8 @@ git:
 version: "1"
 mode: solo
 
-sources:
-  - type: local
-    path: .aligntrue/.rules.yaml
-
 exporters:
   - agents # Universal format only
-
-sync:
-  workflow_mode: "native_format"
-  auto_pull: true
 
 git:
   mode: commit
@@ -189,84 +152,6 @@ git:
 
 - No agent-specific optimizations
 - Some agents may not support all features
-
-## Choosing your workflow
-
-### Manual review workflow (recommended)
-
-**Best for multi-agent setups.**
-
-Edit `AGENTS.md` or any agent file as your source. Review changes before syncing to other agents.
-
-**Configuration:**
-
-```yaml
-sync:
-  primary_agent: "agents"
-  auto_pull: false # Important: disable for multi-agent
-```
-
-**Why this works:**
-
-- Single source of truth (AGENTS.md or agent files)
-- No conflicts between agents
-- Clear edit → sync → deploy flow
-- Works with any number of agents
-
-**Workflow:**
-
-```bash
-# 1. Edit rules
-vi AGENTS.md
-
-# 2. Review changes (dry-run)
-aligntrue sync --dry-run
-
-# 3. Sync to all agents
-aligntrue sync
-
-# 4. Commit changes
-git add .aligntrue/ .cursor/ AGENTS.md
-git commit -m "Update rules"
-```
-
-### Agent-native workflow (advanced)
-
-**Use with caution for multi-agent setups.**
-
-Edit agent files directly. AlignTrue pulls changes back to internal IR.
-
-**Configuration:**
-
-```yaml
-sync:
-  primary_agent: "cursor" # Only one agent for auto-pull
-  auto_pull: true
-```
-
-**Limitations with multiple agents:**
-
-- Auto-pull only works with ONE primary agent
-- Editing multiple agent files creates conflicts
-- Harder to maintain consistency
-
-**When to use:**
-
-- You primarily use one agent (e.g., Cursor)
-- Other agents are secondary/read-only
-- You prefer agent's native UI for editing
-
-**Workflow:**
-
-```bash
-# 1. Edit primary agent (Cursor)
-vi .cursor/rules/aligntrue.mdc
-
-# 2. Sync (auto-pulls from Cursor, pushes to others)
-aligntrue sync
-
-# 3. Other agents updated automatically
-```
 
 ## Agent-specific settings (advanced)
 
@@ -325,8 +210,6 @@ Full example with three agents:
 ```markdown
 ---
 id: my-project.code-review
-version: "1.0.0"
-spec_version: "1"
 ---
 
 # Code review rules
@@ -376,12 +259,12 @@ aligntrue init
 
 - Deduplicates identical rules
 - Preserves agent-specific settings in vendor bags
-- Creates unified `AGENTS.md` and `.aligntrue/.rules.yaml`
+- Creates unified rules in `.aligntrue/rules/`
 
 **Step 3: Review merged rules**
 
 ```bash
-cat AGENTS.md
+ls .aligntrue/rules/
 ```
 
 **Step 4: Sync to all agents**
@@ -497,58 +380,21 @@ Fidelity Notes:
 
 **Solution:** Accept limitations or use agent-specific exporters for full feature support.
 
-### Conflicts when editing multiple agents
-
-**Problem:** Edited Cursor rules and AGENTS.md, now getting conflicts.
-
-**Cause:** Auto-pull tries to pull from multiple sources.
-
-**Fix:** Use IR-source workflow for multi-agent:
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  workflow_mode: "native_format" # Edit agent files
-  auto_pull: true # Enable bidirectional sync
-```
-
-**Workflow:**
-
-```bash
-# 1. Enable bidirectional sync
-aligntrue config set sync.workflow_mode native_format
-aligntrue config set sync.auto_pull true
-
-# 2. Edit any agent file
-vi AGENTS.md
-# or
-vi .cursor/rules/aligntrue.mdc
-
-# 3. Sync propagates changes to all agents
-aligntrue sync
-```
-
 ## Best practices
 
-### 1. Use native format workflow for flexibility
+### 1. Single source of truth
 
-Edit `AGENTS.md` or any agent file. AlignTrue keeps them all synced.
+Edit rules in `.aligntrue/rules/` only. All agent files are read-only exports.
 
-**Why:** Edit in the format you're most comfortable with, changes sync everywhere.
+**Why:** Prevents conflicts and ensures consistency across all agents.
 
-### 2. Primary editing file: AGENTS.md
-
-Use `AGENTS.md` as your main editing file for universal compatibility.
-
-**Why:** Works with all agents, simple format, easy to read and edit.
-
-### 3. Use vendor bags sparingly
+### 2. Use vendor bags sparingly
 
 Only use vendor bags for truly agent-specific settings. Keep core rules consistent.
 
 **Why:** Too many vendor bags make rules hard to maintain and understand.
 
-### 4. Test sync with --dry-run first
+### 3. Test sync with --dry-run first
 
 Preview changes before writing files.
 
@@ -558,7 +404,7 @@ aligntrue sync --dry-run
 
 **Why:** Catch issues before overwriting agent files.
 
-### 5. Commit agent files to git (optional)
+### 4. Commit agent files to git (optional)
 
 Decide whether to commit generated agent files.
 
@@ -581,11 +427,11 @@ AGENTS.md
 .windsurf/
 ```
 
-### 6. Document your agent setup
+### 5. Document your agent setup
 
 Add a note to your README:
 
-```markdown
+````markdown
 ## AI agent setup
 
 This project uses AlignTrue for consistent AI agent behavior.
@@ -599,18 +445,10 @@ This project uses AlignTrue for consistent AI agent behavior.
 
 **Setup:**
 
-<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
-
-<Tabs.Tab>`bash npm install -g aligntrue && aligntrue sync `</Tabs.Tab>
-
-<Tabs.Tab>`bash yarn global add aligntrue && aligntrue sync `</Tabs.Tab>
-
-<Tabs.Tab>`bash pnpm add -g aligntrue && aligntrue sync `</Tabs.Tab>
-
-<Tabs.Tab>`bash bun install -g aligntrue && aligntrue sync `</Tabs.Tab>
-
-</Tabs>
+```bash
+npm install -g aligntrue && aligntrue sync
 ```
+````
 
 **Agents will automatically load rules from:**
 
@@ -626,20 +464,17 @@ This project uses AlignTrue for consistent AI agent behavior.
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Get started quickly
 - [Agent Support](/docs/04-reference/agent-support) - Full agent compatibility matrix
 - [Vendor Bags Reference](/docs/04-reference/vendor-bags) - Agent-specific settings
-- [Sync Behavior](/docs/03-concepts/sync-behavior) - Technical sync details
 
 ## Summary
 
 **Multi-agent workflow checklist:**
 
-- ✅ Configure multiple exporters in config.yaml
-- ✅ Edit AGENTS.md or any agent file
-- ✅ Enable bidirectional sync for flexibility
-- ✅ Use vendor bags only for agent-specific settings
-- ✅ Test with --dry-run before syncing
-- ✅ Commit strategy (agent files or not)
-- ✅ Document setup for team members
+- Configure multiple exporters in config.yaml
+- Edit rules in `.aligntrue/rules/` (single source of truth)
+- Use vendor bags only for agent-specific settings
+- Test with --dry-run before syncing
+- Decide commit strategy (agent files or not)
+- Document setup for team members
 
-**Key takeaway:** AlignTrue makes multi-agent workflows simple by keeping all agent files synced automatically. Edit any file, changes flow everywhere.
-
+**Key takeaway:** AlignTrue makes multi-agent workflows simple by keeping all agent files synced automatically. Edit rules once in `.aligntrue/rules/`, changes flow to all agents.
 ```
