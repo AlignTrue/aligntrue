@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Git source sync** - Fixed `Unsupported file format` error when syncing from git sources by using temporary bundle file instead of trying to write to `.aligntrue/rules` directory for non-local sources
+- **Command coverage test** - Removed non-existent "update" command from test list to prevent CI failure
+- **Git source test** - Fixed assertion logic to properly check sync output for completion messages
+
 ### Removed (Cleanup of Deprecated Features)
 
 **Cleanup of bidirectional sync artifacts** - Removed dead code and non-functional features left from earlier architecture:
