@@ -113,6 +113,11 @@ export interface SyncOptions {
   autoEnable?: boolean;
 
   /**
+   * Skip warning about configured exporters not being detected (used during init)
+   */
+  skipNotFoundWarning?: boolean;
+
+  /**
    * Show detailed conflict information with section content
    */
   showConflicts?: boolean;
