@@ -6,7 +6,7 @@
 import { posix } from "path";
 import type { AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
-import type { ResolvedScope } from "../scope.js";
+import { filterSectionsByScope, type ResolvedScope } from "../scope.js";
 import type { AtomicFileWriter } from "@aligntrue/file-utils";
 import type {
   ExporterPlugin,
@@ -49,16 +49,17 @@ export async function executeExporters(
     exporter.resetState?.();
   }
 
-  // For each scope, merge rules and call exporters
+  // For each scope, filter sections and call exporters
   for (const scope of scopes) {
-    // Build scoped pack (sections-only)
-    // Note: Ideally we'd filter sections by scope here, but current logic just passes full IR
-    // Scoped merge logic will be enhanced in future
+    // Filter sections by scope
+    const scopedSections = filterSectionsByScope(ir.sections, scope);
+
+    // Build scoped pack with filtered sections
     let scopedPack: AlignPack = {
       id: ir.id,
       version: ir.version,
       spec_version: ir.spec_version,
-      sections: ir.sections,
+      sections: scopedSections,
       ...(ir.summary && { summary: ir.summary }),
       ...(ir.owner && { owner: ir.owner }),
       ...(ir.source && { source: ir.source }),

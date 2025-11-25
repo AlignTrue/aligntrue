@@ -325,3 +325,74 @@ export function groupRulesByLevel(
 
   return grouped;
 }
+
+/**
+ * Filter sections by scope path
+ *
+ * Sections are filtered based on their source scope or source_file path.
+ * - Default scope (".") includes all sections without a specific scope
+ * - Named scopes include sections that match the scope path
+ * - Sections with source_file within the scope path are included
+ *
+ * @param sections - All sections from the pack
+ * @param scope - The resolved scope to filter for
+ * @returns Sections that belong to the given scope
+ */
+export function filterSectionsByScope(
+  sections: AlignSection[],
+  scope: ResolvedScope,
+): AlignSection[] {
+  const targetPath = scope.normalizedPath || scope.path;
+  const isDefaultScope =
+    scope.isDefault || targetPath === "." || targetPath === "";
+
+  return sections.filter((section) => {
+    // Check section's source scope (from vendor metadata)
+    const sectionScope = section.vendor?.aligntrue?.source_scope;
+
+    // Check section's source file path for scope inference
+    const sourceFile = section.source_file;
+
+    // Determine the section's scope:
+    // 1. Explicit source_scope from vendor metadata
+    // 2. Inferred from source_file path
+    // 3. Default to root scope
+    let normalizedSectionScope = ".";
+
+    if (sectionScope) {
+      normalizedSectionScope = normalizePath(sectionScope);
+    } else if (sourceFile) {
+      // Infer scope from source file path
+      // e.g., ".aligntrue/rules/backend/api.md" -> "backend"
+      // e.g., ".aligntrue/rules/testing.md" -> "." (root)
+      const normalizedSourceFile = normalizePath(sourceFile);
+      const rulesPrefix = ".aligntrue/rules/";
+      if (normalizedSourceFile.startsWith(rulesPrefix)) {
+        const relativePath = normalizedSourceFile.slice(rulesPrefix.length);
+        const lastSlash = relativePath.lastIndexOf("/");
+        if (lastSlash > 0) {
+          // Has subdirectory - use that as scope
+          normalizedSectionScope = relativePath.slice(0, lastSlash);
+        }
+        // else: file is at root of rules dir, scope is "."
+      }
+    }
+
+    // Default scope: include sections without a specific scope
+    // or sections explicitly targeting the default scope
+    if (isDefaultScope) {
+      return (
+        normalizedSectionScope === "." ||
+        normalizedSectionScope === "" ||
+        !normalizedSectionScope
+      );
+    }
+
+    // Named scope: include sections that match the scope path
+    // or are within the scope's path hierarchy
+    return (
+      normalizedSectionScope === targetPath ||
+      normalizedSectionScope.startsWith(targetPath + "/")
+    );
+  });
+}
