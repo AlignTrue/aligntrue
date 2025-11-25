@@ -210,7 +210,7 @@ try {
         name: layerNames[layer - 1],
         passed: false,
         duration: Date.now() - layerStart,
-        error: `Exit code: ${execErr.status || 1}`,
+        error: `Exit code: ${execErr.code || 1}`,
       });
 
       console.error(`\n✗ Layer ${layer} failed`);

@@ -125,7 +125,7 @@ try {
 } catch (err) {
   const execErr = err as ExecException;
   console.error(`\n✗ Layer ${layer} failed`);
-  console.error(`Exit code: ${execErr.status || 1}`);
+  console.error(`Exit code: ${execErr.code || 1}`);
   console.error(`Log file: ${logFile}`);
 
   // Cleanup
