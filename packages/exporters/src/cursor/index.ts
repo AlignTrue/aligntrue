@@ -19,7 +19,6 @@ export class CursorExporter extends ExporterBase {
   version = "1.0.0";
   capabilities: ExporterCapabilities = {
     multiFile: true, // Multi-file format (.mdc files)
-    twoWaySync: false, // No longer supports two-way sync
     scopeAware: true, // Can filter by scope
     preserveStructure: true, // Maintains file organization
     nestedDirectories: true, // Supports nested scope directories

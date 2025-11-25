@@ -340,7 +340,7 @@ export async function buildSyncContext(
   }
 
   // Step 6: Check for new agents (with caching)
-  if (!options.dryRun && !options.acceptAgent) {
+  if (!options.dryRun) {
     await checkAgentsWithCache(cwd, config, configPath, options);
   }
 

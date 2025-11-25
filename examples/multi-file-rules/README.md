@@ -104,7 +104,6 @@ project/
 
 This feature provides similar functionality to Ruler's nested directory support, but with:
 
-- **Two-way sync**: Edit any source file or agent file
-- **Conflict detection**: Automatic detection and resolution of conflicting edits
+- **Unidirectional sync**: Edit rules in `.aligntrue/rules/`, sync to all agents
 - **Team mode**: Lockfile validation and drift detection
-- **Agent parity**: Consistent behavior across all 43+ supported agents
+- **Agent parity**: Consistent behavior across all 50+ supported agents

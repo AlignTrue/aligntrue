@@ -65,12 +65,13 @@ export function HowItWorksDiagram() {
 
     const diagramDefinition = `
 graph TD
-    A[Write in any format<br/>AGENTS, CLAUDE, etc.] --> B[Run <code>aligntrue sync</code>]
+    A[Write once, sync to all<br/>agents & team members] --> B[Run <code>aligntrue sync</code>]
     B --> C[Cursor .mdc]
     B --> D[GitHub Copilot]
     B --> E[Claude Code]
     B --> F[VS Code MCP]
-    B --> G[28+ other agents]
+    B --> G[20+ other agents]
+    B --> H[All team members]
     
     style A fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style B fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px,font-family:monospace,font-size:15px,font-weight:600
@@ -109,7 +110,7 @@ graph TD
         padding: "2rem 0",
         overflow: "auto",
       }}
-      aria-label="Diagram showing AlignTrue workflow from AGENTS.md to multiple agent outputs"
+      aria-label="Diagram showing AlignTrue workflow from centralized AI rules to multiple agent outputs and team members"
     />
   );
 }

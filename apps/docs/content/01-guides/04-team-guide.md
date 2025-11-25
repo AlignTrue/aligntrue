@@ -44,7 +44,6 @@ git push origin main
 - Lockfile enabled (off/soft/strict validation)
 - Allow list required (approved sources only)
 - Bundle enabled (dependency merging)
-- Auto-pull disabled by default (explicit updates)
 
 ## Team setup workflow
 

@@ -27,7 +27,7 @@ AlignTrue uses `.aligntrue/config.yaml` for all configuration. The file is creat
 
 **Default:** `"solo"`
 
-Operating mode that determines default behavior for lockfiles, bundles, and auto-pull.
+Operating mode that determines default behavior for lockfiles and bundles.
 
 ```yaml
 mode: solo # or team, enterprise
@@ -407,18 +407,6 @@ exporters:
   - agents
 ```
 
-### Solo with auto-pull
-
-```yaml
-exporters:
-  - cursor
-  - agents
-sync:
-  auto_pull: true
-  primary_agent: cursor
-  workflow_mode: native_format
-```
-
 ### Team mode
 
 ```yaml
@@ -431,9 +419,6 @@ modules:
   bundle: true
 lockfile:
   mode: strict
-sync:
-  auto_pull: false
-  workflow_mode: ir_source
 ```
 
 ### With agent detection
@@ -447,9 +432,6 @@ detection:
   ignored_agents:
     - windsurf
     - aider
-sync:
-  auto_pull: true
-  primary_agent: cursor
 ```
 
 ## Validation
@@ -466,12 +448,6 @@ Invalid mode "typo": must be one of solo, team, enterprise
 
 ```
 At least one exporter must be configured
-```
-
-**Invalid sync.workflow_mode:**
-
-```
-sync.workflow_mode: must be one of auto, ir_source, native_format
 ```
 
 ## See also

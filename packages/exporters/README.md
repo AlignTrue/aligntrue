@@ -405,7 +405,7 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 
 **Next:**
 
-- Step 14: Complete two-way sync engine with precedence and conflict resolution
+- Step 14: Complete sync engine
 
 ---
 

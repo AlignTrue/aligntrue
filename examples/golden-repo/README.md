@@ -12,11 +12,11 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 
 ## Solo Developer Workflow
 
-This repository demonstrates the **agent-format-first workflow** for solo developers:
+This repository demonstrates the **rules-first workflow** for solo developers:
 
-1. **Edit rules in your preferred format** (`AGENTS.md` or `.cursor/*.mdc`)
+1. **Edit rules in `.aligntrue/rules/`**
 2. **Save changes**
-3. **Run sync** (auto-pulls from primary agent, pushes to all others)
+3. **Run sync** (exports to all configured agents)
 
 No YAML knowledge required! The internal IR (`.aligntrue/.rules.yaml`) is generated automatically.
 
@@ -134,15 +134,11 @@ exporters:
   - agents
   - vscode-mcp
 
-sync:
-  auto_pull: true
-  primary_agent: cursor
-
 git:
   mode: ignore
 ```
 
-**Note:** The `sources` path points to `.aligntrue/.rules.yaml` (internal IR), but users should edit `AGENTS.md` or agent files directly. The IR is auto-generated during sync.
+**Note:** The `sources` path points to `.aligntrue/.rules.yaml` (internal IR). Users should edit rules in `.aligntrue/rules/`. The IR is auto-generated during sync.
 
 ### Rule Format
 

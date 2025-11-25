@@ -76,7 +76,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 
 | Feature             | Unit Tests | Integration Tests | E2E Tests | Notes                       |
 | ------------------- | ---------- | ----------------- | --------- | --------------------------- |
-| Two-way sync        | ✅         | ✅                | ⚠️        | Core functionality works    |
+| Sync engine         | ✅         | ✅                | ⚠️        | Core functionality works    |
 | Lockfile generation | ✅         | ✅                | ⚠️        | Team mode tested            |
 | Drift detection     | ✅         | ✅                | ⚠️        | Multiple modes tested       |
 | Allow lists         | ✅         | ✅                | ⚠️        | Validation works            |

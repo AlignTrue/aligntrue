@@ -21,7 +21,6 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | ------------------------ | --------------------- | --------------------------------------- |
 | **Organization**         | Simple or organized   | Organized or complex                    |
 | **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default) |
-| **Auto-pull**            | ✅ Enabled (default)  | ❌ Disabled (explicit updates)          |
 | **Allow lists**          | ❌ Not required       | ✅ Required (approved sources)          |
 | **Drift detection**      | ❌ Not available      | ✅ Available (aligntrue drift)          |
 | **Bundle generation**    | ❌ Disabled           | ✅ Enabled (dependency merging)         |
@@ -40,9 +39,8 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 
 ```mermaid
 graph TD
-    S1[AGENTS.md] --> S2[.aligntrue/.rules.yaml]
+    S1[.aligntrue/rules/] --> S2[.aligntrue/.rules.yaml]
     S2 --> S3[Agent exports]
-    S4[Auto-pull enabled] -.-> S2
 
     style S2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
 ```
@@ -69,7 +67,7 @@ graph TD
 
 **Why:**
 
-- Fast iteration with auto-pull
+- Fast iteration
 - No lockfile overhead
 - Simple setup and maintenance
 - Full customization with plugs and overlays
@@ -259,7 +257,6 @@ aligntrue sync
 | ---------------- | ------------- | ------------------------------------------ |
 | **Config**       | `mode: solo`  | `mode: team`                               |
 | **New files**    | None          | `.aligntrue.lock.json`, `.aligntrue.allow` |
-| **Auto-pull**    | Enabled       | Disabled                                   |
 | **Validation**   | Basic schema  | Schema + allow list + lockfile             |
 | **Sync speed**   | Fast          | Slightly slower (validation)               |
 | **Git workflow** | Optional      | Recommended (commit lockfile)              |
@@ -270,7 +267,6 @@ aligntrue sync
 | ----------------- | ------------------------ | --------------------- |
 | **Config**        | `mode: team`             | `mode: solo`          |
 | **Files removed** | Keep lockfile/allow list | Can delete (optional) |
-| **Auto-pull**     | Disabled                 | Enabled               |
 | **Validation**    | Full validation          | Basic schema only     |
 | **Sync speed**    | Validation overhead      | Fast                  |
 | **Git workflow**  | Lockfile required        | Optional              |

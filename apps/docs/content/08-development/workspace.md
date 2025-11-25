@@ -51,7 +51,7 @@ Config management and sync engine.
 **Responsibilities:**
 
 - Parse and validate `.aligntrue.yaml` config
-- Two-way sync engine (IR ↔ agents)
+- Sync engine (rules → IR → agents)
 - Bundle resolution (team mode)
 - Lockfile management (team mode)
 - Hierarchical scope resolution

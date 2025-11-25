@@ -9,8 +9,8 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 
 ## Core platform
 
-- Natural markdown authoring in your detected agent format or universal `AGENTS.md`
-- Two-way sync engine with section-based merging (IR ↔ agents)
+- Natural markdown authoring in `.aligntrue/rules/` directory
+- Unidirectional sync engine (rules → IR → agents)
 - 50 exporters supporting 28+ AI coding agents with auto-detection
 - Lockfiles and bundles for team mode (reproducible builds)
 - Drift detection for CI validation
@@ -27,7 +27,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 **Basic:**
 
 - `init` — 60-second setup with agent auto-detection
-- `sync` — Two-way sync with watch mode and dry-run
+- `sync` — Export rules to agents with watch mode and dry-run
 - `check` — Rule and config validation
 - `config` — View/edit configuration
 - `watch` — Watch files and auto-sync on changes
@@ -138,8 +138,8 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 
 ## Sync engine
 
-- **Two-way sync** - IR ↔ agents (bidirectional), section-based merging, last-write-wins
-- **Section-based merging** - Sections matched by heading/content hash, user sections preserved
+- **Unidirectional sync** - Rules → IR → agents (one-way export)
+- **Section-based organization** - Sections matched by heading/content hash
 - **Team-managed sections** - Protected sections with 🔒 markers and edit warnings
 - **Watch mode** - Continuous file watching with configurable debouncing
 - **Agent detection** - Detect new agents in workspace and prompt to enable

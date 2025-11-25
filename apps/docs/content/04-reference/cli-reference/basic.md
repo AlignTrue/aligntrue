@@ -95,20 +95,9 @@ See [Running sync in CI/automation](/docs/05-troubleshooting#running-sync-in-cia
 
 1. Loads configuration from `.aligntrue/config.yaml`
 2. Detects new agents in workspace and prompts to enable them (unless `--no-detect` or `--yes`/`--non-interactive`)
-3. Auto-pulls changes from primary agent (if enabled and no conflicts)
-4. Shows diff summary of what changed during auto-pull
-5. Parses rules from `.aligntrue/.rules.yaml` (internal IR)
-6. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
-7. Detects conflicts if multiple files were manually edited
-8. Updates lockfile (team mode only)
-
-**Auto-pull behavior:**
-
-Auto-pull automatically imports changes from your primary agent before syncing. It runs when:
-
-- `sync.auto_pull` is `true` in config (default for solo mode)
-- Primary agent is configured (auto-detected on init)
-- No conflicts detected between primary agent and other agent files
+3. Loads rules from `.aligntrue/rules/` directory
+4. Generates agent-specific files (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+5. Updates lockfile (team mode only)
 
 See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
 
@@ -144,46 +133,11 @@ detection:
     - aider
 ```
 
-**Conflict detection:**
-
-If multiple agent files were modified since last sync, you'll see:
-
-```
-⚠ Conflict detected:
-  - You edited AGENTS.md (primary agent)
-  - Changes also found in .cursor/rules/aligntrue.mdc
-
-? How would you like to resolve this conflict?
-  > Keep my edits to AGENTS.md (skip auto-pull)
-    Accept changes from cursor and pull to AGENTS.md
-    Abort sync and review manually
-```
-
-See [Resolving conflicts](/docs/05-troubleshooting/conflicts) for resolution strategies.
-
-**Workflow modes:**
-
-Configure your preferred workflow to avoid conflict prompts:
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  workflow_mode: "native_format" # auto | ir_source | native_format
-```
-
-See [Sync behavior](/docs/03-concepts/sync-behavior) for details on how rules sync to agents.
-
 **Examples:**
 
 ```bash
-# Standard sync (with auto-pull if enabled)
+# Standard sync
 aligntrue sync
-
-# Disable auto-pull for this sync
-aligntrue sync --no-auto-pull
-
-# Show full diff of auto-pull changes
-aligntrue sync --show-auto-pull-diff
 
 # Skip agent detection
 aligntrue sync --no-detect
@@ -209,19 +163,6 @@ aligntrue sync --force
 - `0` - Success
 - `1` - Validation error (config not found, source missing, lockfile drift)
 - `2` - System error (permissions, disk space, etc.)
-
-**Conflict resolution:**
-
-If sync detects manual edits to generated files, you'll see:
-
-```
-⚠ Conflict detected in .cursor/rules/aligntrue.mdc
-
-[i] Keep IR (discard manual edits)
-[a] Accept agent (pull manual edits to AGENTS.md)
-[d] Show diff
-[q] Quit
-```
 
 **Team mode behavior:**
 
@@ -636,9 +577,8 @@ aligntrue status [--config path] [--json]
 
 1. Mode, profile ID, and config path.
 2. Exporters and whether their files were detected.
-3. Edit sources, auto-pull status, and primary agent.
-4. Lockfile/bundle enablement and whether the files exist.
-5. Last sync timestamp (with relative age).
+3. Lockfile/bundle enablement and whether the files exist.
+4. Last sync timestamp (with relative age).
 
 **Examples:**
 

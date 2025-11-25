@@ -902,7 +902,7 @@ export default function HomePage() {
                   >
                     <strong>Auto-detects</strong>, <strong>imports</strong> &{" "}
                     <strong>syncs</strong> existing rules, or creates smart
-                    defaults if desired.
+                    defaults if needed.
                   </p>
                 </div>
               </div>
@@ -982,14 +982,13 @@ export default function HomePage() {
                   marginTop: "2rem",
                   fontSize: "1rem",
                   color: "var(--fg-muted)",
-                  maxWidth: "48rem",
+                  maxWidth: "36rem",
                   margin: "2rem auto 0",
                 }}
               >
-                Write your rules once in <code>Cursor's .mdc</code>,{" "}
-                <code>AGENTS.md</code>, or <code>CLAUDE.md</code>, etc. & run{" "}
-                <code>aligntrue sync</code>. AlignTrue automatically generates
-                agent-specific formats for all your tools.
+                Write your rules once in & run <code>aligntrue sync</code>.
+                AlignTrue automatically generates agent-specific formats for all
+                your AI tools or team members.
               </p>
             </div>
           </section>
@@ -1081,10 +1080,10 @@ export default function HomePage() {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    Two-way sync
+                    Automatic sync
                   </h3>
                   <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                    Sync rule changes to all agents automatically. No manual
+                    Edit rules once, sync to all agents automatically. No manual
                     copying or outdated rules.
                   </p>
                 </div>
@@ -1175,12 +1174,11 @@ export default function HomePage() {
                   <FileText size={24} stroke="white" aria-hidden="true" />
                 </div>
                 <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-                  Edit anywhere, sync everywhere
+                  Centralized rule management
                 </h3>
                 <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                  Edit: <code>AGENTS.md</code> or any agent file
-                  <br />
-                  Sync: <code>aligntrue sync</code>
+                  Write AI rules once & automatically sync everywhere for
+                  everyone.
                 </p>
               </div>
               <div style={{ textAlign: "center" }}>
@@ -1202,8 +1200,8 @@ export default function HomePage() {
                   Agent adapters
                 </h3>
                 <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
-                  Generates each agent's native files & keeps existing settings.
-                  Extensible!
+                  Generates each agent's native formats & keeps existing
+                  settings.
                 </p>
               </div>
               <div style={{ textAlign: "center" }}>

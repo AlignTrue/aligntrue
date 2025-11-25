@@ -3,7 +3,7 @@ export * from "./config/index.js";
 // Explicit re-export to avoid ambiguity with lockfile
 export type { ScopeConfig } from "./config/index.js";
 
-// Two-way sync engine
+// Sync engine
 export * from "./sync/index.js";
 export { GitIntegration } from "./sync/git-integration.js";
 

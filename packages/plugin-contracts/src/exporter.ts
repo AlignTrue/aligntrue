@@ -82,7 +82,6 @@ export interface ExportResult {
  */
 export interface ExporterCapabilities {
   multiFile: boolean; // Can handle multiple source files
-  twoWaySync: boolean; // Supports editing and pullback
   scopeAware: boolean; // Can filter by scope
   preserveStructure: boolean; // Maintains file organization
   nestedDirectories: boolean; // Supports writing to nested scope directories

@@ -130,7 +130,7 @@ jobs:
       - run: aligntrue drift --gates
 ```
 
-[View full integration guide →](https://aligntrue.ai/docs/01-guides/01-workflows)
+[View solo developer guide →](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide)
 
 ## Broad agent support
 
@@ -181,16 +181,15 @@ aligntrue check   # Validate in CI
 
 **Centralized editing:**
 
-- Edit your configured `edit_source` file → sync to all agents (default)
-- Auto-pull enabled for `primary_agent` by default
+- Edit rules in `.aligntrue/rules/` → sync to all agents
+- All agent files are read-only exports
 
-See [workflows guide](https://aligntrue.ai/docs/01-guides/01-workflows) for details.
+See [guides](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide) for details.
 
 **Optional verification:**
 
 ```bash
 aligntrue sync --dry-run       # Preview changes
-aligntrue sync --no-auto-pull  # Disable auto-pull for this sync
 aligntrue check                # Validate rules (great for CI)
 ```
 

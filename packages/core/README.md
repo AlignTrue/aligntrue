@@ -4,7 +4,7 @@ Core sync orchestration, configuration management, and scope resolution for Alig
 
 ## Overview
 
-This package provides the core functionality for AlignTrue's two-way sync engine:
+This package provides the core functionality for AlignTrue's sync engine:
 
 - **Configuration management** - Load and validate `.aligntrue/config.yaml`
 - **Scope resolution** - Path-based rule scoping for monorepos
@@ -532,7 +532,7 @@ pnpm build
 
 **Step 10:** Implement adapter registry with hybrid manifests ✅  
 **Steps 11-13:** Implement actual exporters (Cursor, AGENTS.md, MCP) ✅  
-**Step 14:** Complete two-way sync with conflict resolution UI ✅  
+**Step 14:** Complete sync engine ✅  
 **Step 23:** Full CLI integration ✅  
 **Step 28:** Windows CI matrix validation ✅
 
