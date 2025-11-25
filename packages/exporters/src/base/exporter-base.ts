@@ -186,7 +186,8 @@ export abstract class ExporterBase implements ExporterPlugin {
       input
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "untitled"
+        .replace(/^-+/, "") // Remove leading dashes (avoids alternation ReDoS)
+        .replace(/-+$/, "") || "untitled" // Remove trailing dashes
     );
   }
 
