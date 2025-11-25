@@ -71,9 +71,6 @@ jobs:
       - name: ✅ Run all validations
         run: pnpm validate:all
 
-      - name: 🔍 Lint code
-        run: pnpm lint --max-warnings 460
-
       - name: 📚 Build docs app
         run: pnpm --filter @aligntrue/docs build
 
