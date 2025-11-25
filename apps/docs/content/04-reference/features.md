@@ -1,6 +1,6 @@
 ---
 title: "Features"
-description: "Up-to-date feature list: two‑way sync, lockfile, deterministic exports, multi‑agent support, and more."
+description: "Up-to-date feature list: unidirectional sync, lockfile, deterministic exports, multi‑agent support, and more."
 ---
 
 # Features
@@ -69,7 +69,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 **Testing & validation:**
 
-- 1800+ deterministic tests with fixed seeds and reproducible execution
+- 1700+ deterministic tests with fixed seeds and reproducible execution
 - Vitest + Playwright for CI/CD
 - JSON Schema 2020-12 validation with Ajv strict mode (all IR and config)
 - Canonical JSON (JCS) hashing for byte-identical reproducibility
@@ -95,7 +95,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Core format & architecture
 
 - **Natural markdown sections** - Primary content format, all 50 exporters support it
-- **Agent-native editing** - Edit in your detected agent format (Cursor `.mdc`, etc.) or universal `AGENTS.md`
+- **Unidirectional sync** - Edit in `.aligntrue/rules/`, auto-export to all agent formats
 - **IR (`.aligntrue/rules`)** - Internal representation, auto-generated from your edits
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
 - **Canonical JSON (JCS)** - Deterministic hashing for lockfiles and drift detection

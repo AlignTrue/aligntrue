@@ -137,9 +137,9 @@ Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`) are:
 
 To propose changes to team rules:
 
-1. Edit `AGENTS.md` or agent files directly
+1. Edit files in `.aligntrue/rules/`
 2. Run `aligntrue sync`
-3. Commit the changes to `.aligntrue/rules`
+3. Commit the changes to `.aligntrue/rules/` and agent exports
 4. Push and create a PR
 5. Team lead reviews and approves
 6. After merge, everyone runs `aligntrue sync` to get updates
@@ -148,7 +148,7 @@ To propose changes to team rules:
 
 To change your personal rules:
 
-1. Edit `AGENTS.md` or agent files (personal sections)
+1. Edit files in `.aligntrue/rules/` (personal sections)
 2. Run `aligntrue sync`
 3. Changes stay local or sync to your personal remote
 4. No approval needed
@@ -199,7 +199,7 @@ aligntrue sync
 2. Edit rules:
 
    ```bash
-   # Edit AGENTS.md or agent files
+   # Edit .aligntrue/rules/
    aligntrue sync
    ```
 

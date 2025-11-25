@@ -30,17 +30,17 @@ aligntrue sync
 
 Auto-detects agents, imports existing rules, or creates AGENTS.md. Generates and updates each agent's native files (Cursor, AGENTS.md, VS Code, etc.).
 
-**Edit rules in your agent's native format.** AlignTrue works seamlessly with Cursor (`.mdc`), GitHub Copilot, Claude Code, and 28+ agents. No config changes needed.
+**Edit rules in `.aligntrue/rules/`.** AlignTrue works seamlessly with Cursor, GitHub Copilot, Claude Code, and 28+ agents, automatically exporting to each in their native format.
 
 → [Verify it works](https://aligntrue.ai/docs/00-getting-started/00-quickstart#verify-it-works) | [Solo guide](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide)
 
 ## Why AlignTrue
 
-- **Works with your existing setup** - Auto-detects your agents and lets you edit in native formats
-- **60-second setup** - No configuration required for common workflows
-- **Centralized editing** - Edit your configured edit source file; changes sync everywhere automatically (solo mode)
+- **Auto-detects and imports** - Discovers 28+ agents automatically, imports existing rules from Cursor, AGENTS.md, Claude, and more
+- **60-second setup with zero config** - Run `aligntrue init` and AlignTrue handles agent detection and rule import
+- **Single source of truth** - Edit rules in `.aligntrue/rules/`; changes sync to all agents automatically
 - **Preview before applying** - `--dry-run` mode shows exactly what will change
-- **Safe by default** - Three-layer safety system: mandatory workspace backups, overwritten-rules backup, and section-level preservation
+- **Three-layer safety with one-command rollback** - Mandatory workspace backups, overwritten-rules backup, section-level preservation, and `aligntrue revert` with diff preview
 
 ## Built for reliability
 
@@ -70,7 +70,7 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | **Agent Support**        |                                                                                       |                                                                               |
 | Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                                                 |
 | 28+ agents               | Comprehensive coverage through 50 exporters                                           | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
-| Native format editing    | Edit in `.cursor/rules/*.mdc`, `AGENTS.md`, or your agent's native format             | [Getting Started](https://aligntrue.ai/docs/00-getting-started/00-quickstart) |
+| Unidirectional sync      | Edit in `.aligntrue/rules/`, sync to all agents automatically                         | [Getting Started](https://aligntrue.ai/docs/00-getting-started/00-quickstart) |
 | Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                      | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
 | **Team Collaboration**   |                                                                                       |                                                                               |
 | Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds                 | [Team Mode](https://aligntrue.ai/docs/03-concepts/team-mode)                  |
@@ -93,11 +93,11 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | Deterministic hashing    | JCS-based reproducible hashing for lockfiles and integrity                            | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
 | TypeScript strict mode   | Comprehensive type coverage across the entire codebase                                | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
 
-## Integration examples
+## Add to your workflow
 
-Use AlignTrue in your CI/CD pipelines and development workflows.
+Integrate AlignTrue into your development and CI/CD pipelines in seconds. Use validation gates, precommit hooks, and automated checks.
 
-**NPM scripts:**
+**NPM scripts (precommit hooks):**
 
 ```json
 {
@@ -147,8 +147,8 @@ AlignTrue supports **28+ AI coding agents** through **50 exporters**:
 
 **Coverage:**
 
-- 44 total exporters supporting 28+ agents
-- 8 MCP configurations for protocol-based agents
+- 50 total exporters supporting 28+ agents
+- 14 MCP configurations for protocol-based agents
 - 15 unique format exporters for agent-specific formats
 - 11 universal format agents using AGENTS.md
 - 9 dual-output agents with both universal + specific formats
@@ -158,9 +158,9 @@ AlignTrue supports **28+ AI coding agents** through **50 exporters**:
 ## How it works
 
 1. **AlignTrue detects your agents** - Finds Cursor, Copilot, Claude Code, and 28+ others automatically
-2. **Edit in your native format** - Use `.cursor/rules/*.mdc`, `AGENTS.md`, or whatever you already use
-3. **Run sync** - AlignTrue updates all agents with your changes
-4. **Stay aligned** - Centralized rule management keeps everything consistent automatically
+2. **Edit in `.aligntrue/rules/`** - Create and edit markdown files with your rules
+3. **Run sync** - AlignTrue exports to all agents in their native formats
+4. **Stay aligned** - All agents receive identical rules automatically
 
 ## Common workflows
 
@@ -191,6 +191,15 @@ See [guides](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide) for de
 aligntrue sync --dry-run       # Preview changes
 aligntrue check                # Validate rules (great for CI)
 ```
+
+**Migrating from Ruler:**
+
+```bash
+aligntrue migrate ruler        # Convert Ruler config to AlignTrue
+aligntrue sync                 # Sync to all agents
+```
+
+See [migration guide](https://aligntrue.ai/docs/01-guides/migrating-from-ruler) for details.
 
 ## Who is this for?
 
