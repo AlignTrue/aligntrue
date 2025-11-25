@@ -1,5 +1,8 @@
 version: "1"
 mode: solo
+sources:
+  - type: local
+    path: .aligntrue/rules
 exporters:
   - cursor
   - agents
