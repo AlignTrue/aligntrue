@@ -301,9 +301,6 @@ async function teamEnable(
       clack.log.success(`Backup created: ${backup.timestamp}`);
     }
 
-    // NOTE: Deprecated sync properties (auto_pull, workflow_mode, primary_agent, on_conflict)
-    // removed in new architecture. No longer need to preserve them.
-
     // Update config
     config.mode = "team";
     config.modules = {
@@ -535,9 +532,6 @@ async function teamDisable(
     } else {
       console.log(`Backup created: ${backup.timestamp}`);
     }
-
-    // NOTE: Deprecated sync properties (auto_pull, workflow_mode, primary_agent, on_conflict)
-    // removed in new architecture. No longer need to preserve them.
 
     // Update config
     config.mode = "solo";

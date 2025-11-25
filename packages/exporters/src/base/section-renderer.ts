@@ -219,75 +219,39 @@ export function generateSourceAttribution(sections: AlignSection[]): string {
 }
 
 /**
- * Check if a file matches the edit_source configuration
+ * Check if a file is in the rules directory (editable source)
  */
-export function matchesEditSource(
-  filePath: string,
-  editSource: string | string[] | undefined,
-): boolean {
-  if (!editSource) {
-    // Default to AGENTS.md if no edit_source specified
-    return filePath === "AGENTS.md" || filePath.endsWith("/AGENTS.md");
-  }
-
-  if (editSource === "any_agent_file") {
-    return true;
-  }
-
-  const patterns = Array.isArray(editSource) ? editSource : [editSource];
+export function isEditableRulesFile(filePath: string): boolean {
   const normalizedPath = filePath.replace(/\\/g, "/");
-
-  return patterns.some((pattern) => {
-    if (pattern === normalizedPath) return true;
-
-    if (pattern.includes("*")) {
-      if (pattern.length > 200) {
-        return false;
-      }
-      // Safe: Pattern length validated (max 200)
-      const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
-      return regex.test(normalizedPath);
-    }
-
-    return false;
-  });
+  return (
+    normalizedPath.includes(".aligntrue/rules/") ||
+    normalizedPath.startsWith(".aligntrue/rules/")
+  );
 }
 
 /**
- * Render read-only file marker
+ * Render read-only file marker for agent exports
  */
 export function renderReadOnlyMarker(
   currentFile: string,
-  editSource: string | string[] | undefined,
+  _editSource?: string | string[] | undefined, // Kept for API compatibility
 ): string {
-  const isEditable = matchesEditSource(currentFile, editSource);
-
-  if (isEditable) {
-    return ""; // File is editable, no marker needed
+  // All agent export files are read-only in the new architecture
+  // Rules in .aligntrue/rules/ are the single source of truth
+  if (isEditableRulesFile(currentFile)) {
+    return ""; // Rules files are editable, no marker needed
   }
-
-  // File is read-only - generate warning marker
-  const editableFiles = Array.isArray(editSource)
-    ? editSource
-    : editSource
-      ? [editSource]
-      : ["AGENTS.md"];
 
   const lines: string[] = [
     "<!-- WARNING: READ-ONLY FILE - DO NOT EDIT",
     "",
-    `This file is auto-generated from: ${editableFiles.join(", ")}`,
+    "This file is auto-generated from: .aligntrue/rules/",
     "",
     "Edits to this file will be LOST on next sync.",
     "AlignTrue does not track changes to read-only files.",
     "",
     "To make changes:",
-    "  Option 1: Edit the source files listed above",
-    "  Option 2: Enable editing this file in config:",
-    "  ",
-    "    # .aligntrue/config.yaml",
-    "    sync:",
-    `      edit_source: ["${currentFile}", "${editableFiles[0]}"]`,
+    "  Edit files in .aligntrue/rules/ then run 'aligntrue sync'",
     "",
     `Generated: ${new Date().toISOString()}`,
     "-->",

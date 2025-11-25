@@ -384,7 +384,7 @@ export function detectAgentFileDrift(basePath: string = "."): DriftFinding[] {
           category: "agent_file",
           rule_id: `_agent_${agent}`,
           message: `${path} modified after last sync`,
-          suggestion: `Run: aligntrue sync --accept-agent ${agent}`,
+          suggestion: `Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/`,
         });
       }
     } catch (err) {

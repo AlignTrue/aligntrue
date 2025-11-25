@@ -161,8 +161,6 @@ async function showConfig(configPath: string): Promise<void> {
     console.log(`  Version: ${cfg.version}`);
     console.log(`  Exporters: ${cfg.exporters?.join(", ") || "none"}`);
 
-    // NOTE: Deprecated sync properties (workflow_mode, auto_pull, primary_agent, on_conflict)
-    // removed in new architecture. Sync is now unidirectional from .aligntrue/rules/ to agents.
     if (cfg.sync) {
       console.log(`\n🔄 Sync:`);
       console.log(`  Source: .aligntrue/rules/*.md`);
