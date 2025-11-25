@@ -182,7 +182,7 @@ Detects manual edits between writes:
 2. Before next write, recompute hash and compare
 3. If mismatch, throw error (or call custom handler)
 
-**Why:** Prevents accidentally overwriting user edits. Critical for `aligntrue sync --accept-agent` where users may manually edit agent files between syncs.
+**Why:** Prevents accidentally overwriting user edits in source files. Critical for detecting manual changes between syncs.
 
 ### Backup and Rollback
 

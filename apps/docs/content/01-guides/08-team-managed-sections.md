@@ -42,7 +42,7 @@ To keep changes, rename the section or remove from managed list. -->
 
 1. **You edit a team-managed section locally**
 2. **Run `aligntrue sync`**
-3. **Your changes merge to IR** (via your configured edit_source)
+3. **Your changes merge to IR** (from `.aligntrue/rules/`)
 4. **Lockfile validation checks bundle hash**
    - Soft mode: Warning shown, sync continues
    - Strict mode: Blocked until approved

@@ -311,7 +311,7 @@ describe("adapters command", () => {
       // Verify config updated - check exporters list specifically
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
       expect(config).toContain("agents");
-      // Verify cursor is not in the exporters list (may appear in primary_agent)
+      // Verify cursor is not in the exporters list
       const exportersSection = config.split("exporters:")[1]?.split("\n")[1];
       expect(exportersSection).not.toContain("cursor");
     });

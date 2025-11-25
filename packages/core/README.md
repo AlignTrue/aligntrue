@@ -8,7 +8,7 @@ This package provides the core functionality for AlignTrue's sync engine:
 
 - **Configuration management** - Load and validate `.aligntrue/config.yaml`
 - **Scope resolution** - Path-based rule scoping for monorepos
-- **Sync engine** - Orchestrate IR→agent (default) and agent→IR (with --accept-agent) sync
+- **Sync engine** - Orchestrate IR→agent (unidirectional) sync
 - **Conflict detection** - Identify field-level differences between IR and agent state
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
 - **Lockfile with hash modes** - Drift detection with off/soft/strict enforcement (team mode)
@@ -450,9 +450,9 @@ By default, sync reads from IR (`.aligntrue/.rules.yaml` or `.aligntrue.yaml`) a
 await engine.syncToAgents(".aligntrue/.rules.yaml");
 ```
 
-### Pullback Direction: Agent → IR
+### Unidirectional Sync Direction: IR → Agent
 
-With `--accept-agent`, sync reads from agent format and updates IR:
+Sync always reads from IR and writes to agent format:
 
 ```typescript
 await engine.syncFromAgent("cursor", ".aligntrue/.rules.yaml", {
