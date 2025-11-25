@@ -43,16 +43,14 @@ describeSkipWindows("Check Command Integration", () => {
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
-`;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      // Create rules directory with markdown file
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+      writeFileSync(
+        join(rulesDir, "test-rule-example.md"),
+        "## Test rule example\n\nTest guidance\n",
+        "utf-8",
+      );
 
       try {
         await check([]);
@@ -67,7 +65,7 @@ sections:
   });
 
   describe("Invalid IR", () => {
-    it("reports errors for missing required fields", async () => {
+    it("reports errors for missing rules directory", async () => {
       const config = { exporters: ["cursor"] };
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
@@ -75,19 +73,8 @@ sections:
         "utf-8",
       );
 
-      const invalidIr = `id: test-project
-version: 1.0.0
-sections:
-  - heading: Test rule example
-    level: 2
-    content: ""
-    fingerprint: test-rule-example
-`;
-      writeFileSync(
-        join(TEST_DIR, ".aligntrue", ".rules.yaml"),
-        invalidIr,
-        "utf-8",
-      );
+      // Don't create rules directory - this should cause check to fail
+      // as there are no rules to validate
 
       const exitMock = mockProcessExit();
 
@@ -160,16 +147,14 @@ Test guidance
         "utf-8",
       );
 
-      const ir = `id: test-project
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test rule example
-    level: 2
-    content: Test guidance
-    fingerprint: test-rule-example
-`;
-      writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+      // Create rules directory with markdown file
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+      writeFileSync(
+        join(rulesDir, "test-rule-example.md"),
+        "## Test rule example\n\nTest guidance\n",
+        "utf-8",
+      );
 
       const exitMock = mockProcessExit();
 

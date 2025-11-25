@@ -48,10 +48,6 @@ export interface SetupOptions {
   customConfig?: string;
   /** Custom rule files to create (new format) */
   rules?: RuleFileSpec[];
-  /** @deprecated Use rules instead - Custom .rules.yaml content (legacy format) */
-  customRules?: string;
-  /** Use legacy .rules.yaml format instead of rules directory */
-  useLegacyFormat?: boolean;
 }
 
 /**
@@ -69,14 +65,7 @@ exporters:
 `;
 
 /**
- * Default minimal .rules.yaml for tests (legacy format)
- */
-const DEFAULT_RULES_YAML = `spec_version: "1"
-sections: []
-`;
-
-/**
- * Default rule files for tests (new format)
+ * Default rule files for tests
  */
 const DEFAULT_RULES: RuleFileSpec[] = [
   {
@@ -143,13 +132,7 @@ function createRuleFile(rulesDir: string, rule: RuleFileSpec): void {
 export function setupTestProject(
   options: SetupOptions = {},
 ): TestProjectContext {
-  const {
-    skipFiles = false,
-    customConfig,
-    rules,
-    customRules,
-    useLegacyFormat = false,
-  } = options;
+  const { skipFiles = false, customConfig, rules } = options;
 
   // Create directory structure
   const projectDir = mkdtempSync(join(tmpdir(), "aligntrue-test-project-"));
@@ -157,25 +140,17 @@ export function setupTestProject(
   mkdirSync(aligntrueDir, { recursive: true });
 
   const rulesDir = join(aligntrueDir, "rules");
-  if (!useLegacyFormat) {
-    mkdirSync(rulesDir, { recursive: true });
-  }
+  mkdirSync(rulesDir, { recursive: true });
 
   // Create standard files unless skipped
   if (!skipFiles) {
     const configContent = customConfig ?? DEFAULT_CONFIG;
     writeFileSync(join(aligntrueDir, "config.yaml"), configContent);
 
-    if (useLegacyFormat) {
-      // Legacy format: single .rules.yaml file
-      const rulesContent = customRules ?? DEFAULT_RULES_YAML;
-      writeFileSync(join(aligntrueDir, ".rules.yaml"), rulesContent);
-    } else {
-      // New format: individual .md files in rules directory
-      const ruleFiles = rules ?? DEFAULT_RULES;
-      for (const rule of ruleFiles) {
-        createRuleFile(rulesDir, rule);
-      }
+    // Individual .md files in rules directory
+    const ruleFiles = rules ?? DEFAULT_RULES;
+    for (const rule of ruleFiles) {
+      createRuleFile(rulesDir, rule);
     }
   }
 

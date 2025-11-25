@@ -171,7 +171,7 @@ async function runDoctor(
       id: "rules.exists",
       label: `Rules file (${rulesRelative})`,
       status: "error",
-      hint: "Run 'aligntrue sync' to regenerate .aligntrue/.rules.yaml",
+      hint: "Run 'aligntrue sync' to regenerate .aligntrue/rules/",
     });
   }
 

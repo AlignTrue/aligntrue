@@ -120,7 +120,7 @@ sources:
     ref: main
     path: .aligntrue.yaml
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 
 scopes:
   - path: "."

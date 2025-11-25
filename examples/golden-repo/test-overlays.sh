@@ -38,8 +38,8 @@ info() {
 cleanup() {
   info "Cleaning up test artifacts"
   rm -f .aligntrue-overlay.yaml
-  rm -f .aligntrue/.rules.yaml.bak
-  git checkout .aligntrue/.rules.yaml 2>/dev/null || true
+  rm -f .aligntrue/rules.bak
+  git checkout .aligntrue/rules 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -66,7 +66,7 @@ else
 fi
 
 # Verify golden repo structure
-if [ ! -f ".aligntrue/.rules.yaml" ]; then
+if [ ! -f ".aligntrue/rules" ]; then
   fail "Not in golden-repo directory or .rules.yaml missing"
   exit 1
 fi
@@ -75,7 +75,7 @@ echo "Scenario 1: Clean Merge (Upstream Update with Overlays)"
 echo "--------------------------------------------------------"
 
 # Backup original rules
-cp .aligntrue/.rules.yaml .aligntrue/.rules.yaml.bak
+cp .aligntrue/rules .aligntrue/rules.bak
 
 # Add overlay to config
 if [ ! -f ".aligntrue.yaml" ]; then
@@ -87,7 +87,7 @@ profile:
 
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 
 overlays:
   - selector:

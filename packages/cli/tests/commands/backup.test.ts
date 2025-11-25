@@ -36,9 +36,13 @@ describe("backup command", () => {
 
     // Create sample files
     writeFileSync(join(aligntrueDir, "config.yaml"), "mode: solo", "utf-8");
+
+    // Create rules directory with markdown file
+    const rulesDir = join(aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
     writeFileSync(
-      join(aligntrueDir, ".rules.yaml"),
-      "id: test\nversion: 1.0.0\nspec_version: '1'\nrules: []",
+      join(rulesDir, "global.md"),
+      "## Global\n\nTest rules\n",
       "utf-8",
     );
 

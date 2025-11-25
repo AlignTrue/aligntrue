@@ -239,7 +239,7 @@ After every successful sync, AlignTrue automatically cleans up old backups based
 **Internal state (always):**
 
 - `.aligntrue/config.yaml` - Configuration
-- `.aligntrue/.rules.yaml` - Internal IR
+- `.aligntrue/rules` - Internal IR
 - `.aligntrue/privacy-consent.json` - Privacy settings (if exists)
 - Any other files in `.aligntrue/` directory
 
@@ -286,7 +286,7 @@ Each backup includes a `manifest.json`:
 {
   "version": "1",
   "timestamp": "2025-11-18T14-30-00-000",
-  "files": ["config.yaml", ".rules.yaml"],
+  "files": ["config.yaml", "rules"],
   "agent_files": [
     "AGENTS.md",
     ".cursor/rules/rule1.mdc",

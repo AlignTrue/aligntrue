@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 # Check required files exist
 echo "✓ Checking files..."
 test -f .aligntrue/config.yaml || { echo "✗ config.yaml missing"; exit 1; }
-test -f .aligntrue/.rules.yaml || { echo "✗ .rules.yaml missing"; exit 1; }
+test -f .aligntrue/rules || { echo "✗ .rules.yaml missing"; exit 1; }
 test -f upstream-pack.yaml || { echo "✗ upstream-pack.yaml missing"; exit 1; }
 test -f SCENARIOS.md || { echo "✗ SCENARIOS.md missing"; exit 1; }
 

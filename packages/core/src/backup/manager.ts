@@ -303,7 +303,7 @@ export class BackupManager {
    * Restore a backup
    *
    * This method restores all backed-up files including:
-   * - Configuration files (.aligntrue/config.yaml, .aligntrue/.rules.yaml)
+   * - Configuration files (.aligntrue/config.yaml, .aligntrue/rules/)
    * - Cache and tracking files
    * - Agent files (AGENTS.md, .cursor/rules/*.mdc, etc.) from agent-files/ directory
    *

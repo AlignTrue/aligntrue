@@ -3,9 +3,8 @@
  * Lists available selectors for overlays to help authors target rules reliably
  */
 
-import { existsSync, readFileSync } from "fs";
-import { parseYamlToJson } from "@aligntrue/schema";
-import { ensureSectionsArray } from "@aligntrue/core";
+import { existsSync } from "fs";
+import { ensureSectionsArray, loadIR } from "@aligntrue/core";
 import type { AlignPack } from "@aligntrue/schema";
 import {
   parseCommonArgs,
@@ -17,7 +16,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--rules",
     hasValue: true,
-    description: "Path to rules file (default: .aligntrue/.rules.yaml)",
+    description: "Path to rules directory (default: .aligntrue/rules)",
   },
   {
     flag: "--limit",
@@ -38,19 +37,19 @@ export async function overrideSelectors(args: string[]): Promise<void> {
       examples: [
         "aligntrue override selectors",
         "aligntrue override selectors --limit 10",
-        "aligntrue override selectors --rules bundles/team.rules.yaml",
+        "aligntrue override selectors --rules .aligntrue/rules",
       ],
       notes: [
         "Use this command to discover available selectors before running 'override add'.",
         "Each section shows both index-based and rule[id=...] selectors (when fingerprints exist).",
-        "Selectors are derived from .aligntrue/.rules.yaml (IR).",
+        "Selectors are derived from .aligntrue/rules/ directory.",
       ],
     });
     return;
   }
 
   const rulesPath =
-    (parsed.flags["rules"] as string | undefined) || ".aligntrue/.rules.yaml";
+    (parsed.flags["rules"] as string | undefined) || ".aligntrue/rules";
   const limitFlag = parsed.flags["limit"] as string | undefined;
   const limit =
     limitFlag === undefined
@@ -58,21 +57,20 @@ export async function overrideSelectors(args: string[]): Promise<void> {
       : Math.max(0, Number.parseInt(limitFlag, 10) || 0);
 
   if (!existsSync(rulesPath)) {
-    console.error(`✗ Rules file not found: ${rulesPath}`);
+    console.error(`✗ Rules directory not found: ${rulesPath}`);
     console.error(
-      "  Run 'aligntrue sync' to generate IR before listing selectors.",
+      "  Run 'aligntrue sync' to generate rules before listing selectors.",
     );
     process.exit(1);
   }
 
   let pack: AlignPack;
   try {
-    const content = readFileSync(rulesPath, "utf-8");
-    const parsedYaml = parseYamlToJson(content);
-    pack = parsedYaml as AlignPack;
+    // Load IR from rules directory (handles both directory of .md files and legacy .yaml)
+    pack = await loadIR(rulesPath);
     ensureSectionsArray(pack);
   } catch (err) {
-    console.error("✗ Failed to read rules file");
+    console.error("✗ Failed to read rules");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }

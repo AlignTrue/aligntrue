@@ -134,7 +134,7 @@ git push
 
 **What to commit:**
 
-- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
+- `.aligntrue/rules` - Internal IR (auto-generated)
 - `.aligntrue/config.yaml` - Team configuration
 - `.aligntrue.allow` - Approved sources
 - `.aligntrue.lock.json` - Lockfile with pinned hashes
@@ -236,7 +236,7 @@ git push
 cd ~/projects/team-project
 aligntrue init
 
-# Add to .aligntrue/.rules.yaml:
+# Add to .aligntrue/rules:
 sources:
   - git: https://github.com/org/team-standards
     ref: v1.0.0
@@ -257,7 +257,7 @@ git push origin main
 **Setup:**
 
 ```yaml
-# .aligntrue/.rules.yaml
+# .aligntrue/rules
 sources:
   - git: https://github.com/community/typescript-pack
     ref: v1.0.0
@@ -280,7 +280,7 @@ overlays:
 
 ```bash
 # 1. Team lead adds overlays
-# (edit .aligntrue/.rules.yaml)
+# (edit .aligntrue/rules)
 
 # 2. Sync and test
 aligntrue sync
@@ -322,7 +322,7 @@ company-monorepo/
 **Configuration:**
 
 ```yaml
-# .aligntrue/.rules.yaml
+# .aligntrue/rules
 sources:
   - git: https://github.com/company/base-standards
     ref: v2.0.0
@@ -449,7 +449,7 @@ Team mode provides comprehensive drift detection to catch misalignment early. Th
 
 **When it happens:**
 
-- Someone edited `.aligntrue/.rules.yaml` directly
+- Someone edited `.aligntrue/rules` directly
 - Bundle dependencies changed
 - Source rules updated outside of `.aligntrue/rules/`
 
@@ -507,7 +507,7 @@ lockfile:
 - Agent files are manually edited directly (outside of AlignTrue)
 - Sync process detects unexpected changes
 
-**Why it matters:** In team mode, agent files are exports from IR (`.aligntrue/.rules.yaml`), which is the single source of truth. Manual edits to agent files are backed up and overwritten to maintain consistency.
+**Why it matters:** In team mode, agent files are exports from IR (`.aligntrue/rules`), which is the single source of truth. Manual edits to agent files are backed up and overwritten to maintain consistency.
 
 **How to detect:**
 

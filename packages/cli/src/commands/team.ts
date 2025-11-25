@@ -492,7 +492,7 @@ async function teamDisable(
       "modules.lockfile: true → false",
       "modules.bundle: true → false",
       "Delete .aligntrue.lock.json (no purpose in solo mode)",
-      "Preserve .aligntrue/.rules.yaml (team rules become solo public rules)",
+      "Preserve .aligntrue/rules/ (team rules become solo public rules)",
     ];
 
     if (nonInteractive) {

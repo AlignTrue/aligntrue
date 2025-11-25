@@ -18,7 +18,7 @@ AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run s
 3. **Load rules** from `.aligntrue/rules/*.md` (your source of truth)
 4. **Detect edits** by checking modification times (mtime)
 5. **Create backup** (if enabled) - backs up both internal state and agent files
-6. **Merge to IR** - your rules are loaded into `.aligntrue/.rules.yaml`
+6. **Merge to IR** - your rules are loaded into `.aligntrue/rules`
 7. **Export to all agents** - IR syncs to Cursor, AGENTS.md, VS Code, etc. (read-only exports)
 8. **Done** - no interaction required
 
@@ -43,7 +43,7 @@ AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run s
 **One-way flow:**
 
 ```
-.aligntrue/rules/*.md → IR (.aligntrue/.rules.yaml) → all configured agents (read-only)
+.aligntrue/rules/*.md → IR (.aligntrue/rules) → all configured agents (read-only)
 ```
 
 **Why unidirectional?**
@@ -164,7 +164,7 @@ When you have multiple files in `.aligntrue/rules/` (e.g., `global.md`, `backend
 AlignTrue synchronizes rules between three locations:
 
 1. **Rules Directory** - `.aligntrue/rules/*.md` (your editable source, natural markdown with YAML frontmatter)
-2. **Intermediate Representation (IR)** - `.aligntrue/.rules.yaml` (internal, auto-generated, pure YAML format with section fingerprints)
+2. **Intermediate Representation (IR)** - `.aligntrue/rules` (internal, auto-generated, pure YAML format with section fingerprints)
 3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only, tracks section fingerprints for approval)
 
 The sync engine maintains consistency with one-way flow from rules directory to all exports.
@@ -188,7 +188,7 @@ sequenceDiagram
     participant User
     participant CLI as aligntrue sync
     participant Rules as .aligntrue/rules/*.md
-    participant IR as .aligntrue/.rules.yaml
+    participant IR as .aligntrue/rules
     participant Cursor as .cursor/rules/*.mdc
     participant AGENTS as AGENTS.md
     participant MCP as .vscode/mcp.json
@@ -209,7 +209,7 @@ sequenceDiagram
 2. Read all `*.md` files from `.aligntrue/rules/`
 3. Parse sections from rule files
 4. Validate against JSON Schema
-5. Merge into IR (`.aligntrue/.rules.yaml`)
+5. Merge into IR (`.aligntrue/rules`)
 6. Resolve scopes and merge rules
 7. Export to each enabled agent (Cursor, AGENTS.md, etc.)
 8. Write agent files atomically (temp+rename)
@@ -342,7 +342,7 @@ Some exporters create one file per scope:
 **Cursor (`.cursor/rules/*.mdc`):**
 
 ```
-.aligntrue/.rules.yaml (with scopes):
+.aligntrue/rules (with scopes):
   - default scope → .cursor/rules/rule1.mdc, rule2.mdc, etc.
   - apps/web scope → apps/web/.cursor/rules/rule1.mdc, rule2.mdc, etc.
   - packages/core scope → packages/core/.cursor/rules/rule1.mdc, rule2.mdc, etc.
@@ -369,7 +369,7 @@ Other exporters merge all scopes into one file:
 **AGENTS.md:**
 
 ```
-.aligntrue/.rules.yaml (with scopes):
+.aligntrue/rules (with scopes):
   - default scope
   - apps/web scope
   - packages/core scope
@@ -784,7 +784,7 @@ aligntrue check --ci
 
 ```bash
 # Check file sizes
-ls -lh .aligntrue/rules/*.md .aligntrue/.rules.yaml
+ls -lh .aligntrue/rules/*.md .aligntrue/rules
 
 # Run with dry-run to test
 aligntrue sync --dry-run

@@ -11,7 +11,7 @@ Common issues when working with overlays and their solutions.
 
 ## "Could not load rules" error
 
-**Symptom:** When running `aligntrue override add`, you get: "Could not load rules. The internal rules file (.aligntrue/.rules.yaml) is missing or invalid."
+**Symptom:** When running `aligntrue override add`, you get: "Could not load rules. The internal rules file (.aligntrue/rules) is missing or invalid."
 
 **Root cause:** The override command requires a properly generated internal rules file (IR) to validate selectors. This file is created during `aligntrue sync`.
 

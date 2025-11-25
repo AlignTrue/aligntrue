@@ -35,35 +35,14 @@ describeSkipWindows("Override Add Command Integration", () => {
     return join(TEST_DIR, ".aligntrue", "config.yaml");
   }
 
-  function rulesPath(): string {
-    return join(TEST_DIR, ".aligntrue", ".rules.yaml");
+  function rulesDir(): string {
+    return join(TEST_DIR, ".aligntrue", "rules");
   }
 
-  function createBaseIr(): Record<string, unknown> {
-    return {
-      id: "test-pack",
-      version: "1.0.0",
-      spec_version: "1",
-      profile: { version: "1.0.0" },
-      sections: [
-        createSection("test-rule", "Test Rule 1"),
-        createSection("existing", "Existing Rule"),
-        createSection("new-rule", "New Rule"),
-        createSection("test", "Test Rule"),
-      ],
-    };
-  }
-
-  function createSection(
-    fingerprint: string,
-    heading: string,
-  ): Record<string, unknown> {
-    return {
-      heading,
-      level: 2,
-      content: `${heading}\n`,
-      fingerprint,
-    };
+  function createRuleFile(fingerprint: string, heading: string): void {
+    const filename = fingerprint + ".md";
+    const content = `## ${heading}\n\n${heading}\n`;
+    writeFileSync(join(rulesDir(), filename), content, "utf-8");
   }
 
   function writeConfig(config: Record<string, unknown> = DEFAULT_CONFIG): void {
@@ -71,20 +50,19 @@ describeSkipWindows("Override Add Command Integration", () => {
     writeFileSync(configPath(), yaml.stringify(config), "utf-8");
   }
 
-  function writeIr(customize?: (ir: Record<string, unknown>) => void): void {
-    const ir = createBaseIr();
-    if (customize) {
-      customize(ir);
-    }
-    writeFileSync(rulesPath(), yaml.stringify(ir), "utf-8");
+  function writeRules(): void {
+    mkdirSync(rulesDir(), { recursive: true });
+    createRuleFile("test-rule", "Test Rule 1");
+    createRuleFile("existing", "Existing Rule");
+    createRuleFile("new-rule", "New Rule");
+    createRuleFile("test", "Test Rule");
   }
 
   function setupWorkspace(
     config: Record<string, unknown> = DEFAULT_CONFIG,
-    customizeIr?: (ir: Record<string, unknown>) => void,
   ): void {
     writeConfig(config);
-    writeIr(customizeIr);
+    writeRules();
   }
 
   describe("Basic Override", () => {
@@ -254,23 +232,17 @@ describeSkipWindows("Override Add Command Integration", () => {
     });
 
     it("supports property path selector syntax", async () => {
-      const config = { exporters: ["cursor"], profile: { version: "1.0.0" } };
-      setupWorkspace(config);
+      // Property path selectors target IR properties, not config properties
+      // The IR has properties like 'id', 'version', 'summary'
+      setupWorkspace();
 
-      await overrideAdd([
-        "--selector",
-        "profile.version",
-        "--set",
-        "value=2.0.0",
-      ]);
+      await overrideAdd(["--selector", "version", "--set", "value=2.0.0"]);
 
       const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
 
       expect(updatedConfig.overlays).toBeDefined();
       expect(updatedConfig.overlays.overrides).toHaveLength(1);
-      expect(updatedConfig.overlays.overrides[0].selector).toBe(
-        "profile.version",
-      );
+      expect(updatedConfig.overlays.overrides[0].selector).toBe("version");
       expect(updatedConfig.overlays.overrides[0].set).toEqual({
         value: "2.0.0",
       });

@@ -24,18 +24,26 @@ afterEach(async () => {
 
 describe("override selectors command", () => {
   it("lists selectors for sections and rule IDs", async () => {
-    const ir = `id: demo
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: TypeScript strict mode
-    fingerprint: typescript-strict-mode
-    summary: Tighten TypeScript compiler options
-  - heading: Test coverage baseline
-    summary: Maintain unit test coverage
-`;
+    // Create config file
+    writeFileSync(
+      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      "exporters:\n  - cursor\n",
+      "utf-8",
+    );
 
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir, "utf-8");
+    // Create rules directory with markdown files
+    const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    writeFileSync(
+      join(rulesDir, "typescript-strict-mode.md"),
+      "## TypeScript strict mode\n\nTighten TypeScript compiler options\n",
+      "utf-8",
+    );
+    writeFileSync(
+      join(rulesDir, "test-coverage-baseline.md"),
+      "## Test coverage baseline\n\nMaintain unit test coverage\n",
+      "utf-8",
+    );
 
     await overrideSelectors([]);
 
@@ -43,7 +51,6 @@ sections:
       .map((call) => call.join(" "))
       .join("\n");
     expect(output).toContain("sections[0]");
-    expect(output).toContain("rule[id=typescript-strict-mode]");
     expect(output).toContain("sections[1]");
   });
 });

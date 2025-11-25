@@ -183,7 +183,7 @@ export async function check(args: string[]): Promise<void> {
     // Step 2: Resolve source (local or git)
     const source = config.sources?.[0] || {
       type: "local" as const,
-      path: ".aligntrue/.rules.yaml",
+      path: ".aligntrue/rules",
     };
 
     let rulesContent: string;

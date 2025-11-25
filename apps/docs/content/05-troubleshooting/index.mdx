@@ -264,7 +264,7 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 ```
 
 ---
@@ -274,7 +274,7 @@ sources:
 **Error:**
 
 ```
-✖ Source file not found: .aligntrue/.rules.yaml
+✖ Source file not found: .aligntrue/rules
 
 Check 'sources' in .aligntrue/config.yaml
 Hint: Create .rules.yaml or update source path
@@ -292,7 +292,7 @@ aligntrue init
 
 # Or create minimal file manually
 mkdir -p .aligntrue
-echo 'rules: []' > .aligntrue/.rules.yaml
+echo 'rules: []' > .aligntrue/rules
 ```
 
 **2. Fix path in config:**
@@ -301,13 +301,13 @@ echo 'rules: []' > .aligntrue/.rules.yaml
 # .aligntrue/config.yaml
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml # Check this path
+    path: .aligntrue/rules # Check this path
 ```
 
 **3. Verify file exists:**
 
 ```bash
-ls -la .aligntrue/.rules.yaml
+ls -la .aligntrue/rules
 ```
 
 ---
@@ -374,10 +374,10 @@ aligntrue sync
 
 ```bash
 # Check what changed
-git diff .aligntrue/.rules.yaml
+git diff .aligntrue/rules
 
 # Revert unwanted changes
-git checkout .aligntrue/.rules.yaml
+git checkout .aligntrue/rules
 
 # Sync again
 aligntrue sync
@@ -467,7 +467,7 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 ```
 
 ---
@@ -698,7 +698,7 @@ This is useful for:
 
 ```yaml
 # ✅ Both work on Windows
-path: .aligntrue/.rules.yaml
+path: .aligntrue/rules
 path: .aligntrue\.rules.yaml
 
 # Internally converted to forward slashes
@@ -729,7 +729,7 @@ chmod 755 .aligntrue/
 
 # Fix file permissions
 chmod 644 .aligntrue/config.yaml
-chmod 644 .aligntrue/.rules.yaml
+chmod 644 .aligntrue/rules
 
 # Verify ownership
 ls -la .aligntrue/

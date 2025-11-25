@@ -35,7 +35,7 @@ engine.registerExporter(cursorExporter);
 engine.registerExporter(agentsMdExporter);
 
 // Sync IR to agents (default direction)
-const result = await engine.syncToAgents(".aligntrue/.rules.yaml", {
+const result = await engine.syncToAgents(".aligntrue/rules", {
   configPath: ".aligntrue/config.yaml",
   dryRun: false,
   backup: true,
@@ -70,7 +70,7 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
   - type: git
     url: https://github.com/AlignTrue/aligntrue
     path: examples/packs/global.yaml
@@ -200,7 +200,7 @@ lockfile:
 
 `modules.bundle` toggles the merge pipeline that combines multiple sources into a single `AlignPack`. The merge happens in memory today—the CLI does **not** persist `.aligntrue.bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
 
-- Continue committing `.aligntrue/.rules.yaml` (IR) and `.aligntrue.lock.json`.
+- Continue committing `.aligntrue/rules` (IR) and `.aligntrue.lock.json`.
 - Leave `modules.bundle: true` enabled so your repo stays compatible when disk bundles arrive.
 - If you need a bundle artifact today, call the merge helpers directly from `@aligntrue/core/src/bundle.ts` in your own tooling.
 
@@ -444,10 +444,10 @@ Mock exporters available in `tests/mocks/`:
 
 ### Default Direction: IR → Agents
 
-By default, sync reads from IR (`.aligntrue/.rules.yaml` or `.aligntrue.yaml`) and writes to agent-specific formats:
+By default, sync reads from IR (`.aligntrue/rules` or `.aligntrue.yaml`) and writes to agent-specific formats:
 
 ```typescript
-await engine.syncToAgents(".aligntrue/.rules.yaml");
+await engine.syncToAgents(".aligntrue/rules");
 ```
 
 ### Unidirectional Sync Direction: IR → Agent
@@ -455,7 +455,7 @@ await engine.syncToAgents(".aligntrue/.rules.yaml");
 Sync always reads from IR and writes to agent format:
 
 ```typescript
-await engine.syncFromAgent("cursor", ".aligntrue/.rules.yaml", {
+await engine.syncFromAgent("cursor", ".aligntrue/rules", {
   acceptAgent: "cursor",
 });
 ```
