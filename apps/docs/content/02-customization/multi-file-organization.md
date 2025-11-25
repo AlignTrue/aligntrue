@@ -50,10 +50,7 @@ project/
 
 **Configuration:**
 
-```yaml
-sync:
-  edit_source: ".cursor/rules/*.mdc"
-```
+Rules are stored in `.aligntrue/rules/` and synced to agent files.
 
 **Why:** Uses Cursor's native multi-file format with full feature support.
 
@@ -73,10 +70,7 @@ project/
 
 **Configuration:**
 
-```yaml
-sync:
-  edit_source: ".aligntrue/rules/*.md"
-```
+This is the default configuration - rules from `.aligntrue/rules/` are synced to all agents.
 
 **Why:** AlignTrue exports to each agent's format (merged for single-file agents, split for multi-file agents).
 

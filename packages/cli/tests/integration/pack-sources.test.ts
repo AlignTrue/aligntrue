@@ -41,8 +41,6 @@ sources:
 exporters:
   - cursor
   - agents
-sync:
-  edit_source: AGENTS.md
 `;
 
     const rulesYaml = `id: base-pack

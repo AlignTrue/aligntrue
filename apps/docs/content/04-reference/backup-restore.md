@@ -245,7 +245,7 @@ After every successful sync, AlignTrue automatically cleans up old backups based
 
 **Agent files (included by default):**
 
-- Files matching your `edit_source` configuration (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`)
+- Source files from `.aligntrue/rules/` directory
 - Only files you can actually edit are backed up
 - Stored in separate `agent-files/` subdirectory within backup
 - Ensures you can recover your edits if something goes wrong

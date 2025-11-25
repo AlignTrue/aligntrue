@@ -96,7 +96,7 @@ You cannot disable this. It's a core safety feature.
 
 ### Overwritten rules safety (file-level)
 
-Before any file is overwritten (read-only or edit_source), AlignTrue automatically backs up manually edited content:
+Before any file is overwritten, AlignTrue automatically backs up manually edited content:
 
 - **Location**: `.aligntrue/overwritten-rules/` directory
 - **Format**: Timestamped copies preserving original path structure
