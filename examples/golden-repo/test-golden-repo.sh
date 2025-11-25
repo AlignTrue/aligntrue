@@ -39,12 +39,12 @@ else
   exit 1
 fi
 
-# Test 2: IR file exists (internal)
-echo "Test 2: IR file exists..."
-if [ -f ".aligntrue/rules" ]; then
-  pass "IR file exists (.aligntrue/rules)"
+# Test 2: Rules directory exists (internal)
+echo "Test 2: Rules directory exists..."
+if [ -d ".aligntrue/rules" ]; then
+  pass "Rules directory exists (.aligntrue/rules)"
 else
-  fail "IR file not found"
+  fail "Rules directory not found"
   exit 1
 fi
 
