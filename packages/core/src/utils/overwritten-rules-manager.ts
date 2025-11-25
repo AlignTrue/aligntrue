@@ -4,7 +4,6 @@
  *
  * Two-tier safety system:
  * 1. File-level: overwritten-rules/ folder for complete file backups with timestamp
- *    - Used when switching edit_source from one file to another
  *    - Preserves original path structure: AGENTS.md → overwritten-rules/AGENTS.2025-11-21T15-30-00.md
  *    - Used when replacing entire files with new content
  *

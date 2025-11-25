@@ -83,7 +83,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
         "  - Rules in IR are stored in a sections array without explicit IDs by default",
         "  - Use array index selectors (sections[0], sections[1], etc.) to target specific sections",
         "  - To find the index, check .aligntrue/.rules.yaml and count sections from 0",
-        "  - Property paths use dot notation (e.g., profile.version, sync.workflow_mode)",
+        "  - Property paths use dot notation (e.g., profile.version, sync.scope_prefixing)",
         "  - Run 'aligntrue override selectors' to list available selectors based on the current IR",
         "",
         "Common Use Cases:",
