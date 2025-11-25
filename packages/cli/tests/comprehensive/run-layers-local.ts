@@ -146,7 +146,7 @@ async function runLayer(layer: number): Promise<LayerResult> {
 
     console.error(`✗ Layer ${layer} failed (${duration}ms)`);
     console.error(
-      `Exit code: ${execErr.status || 1}\n${errorOutput.slice(0, 500)}\n`,
+      `Exit code: ${execErr.code || 1}\n${errorOutput.slice(0, 500)}\n`,
     );
 
     return {

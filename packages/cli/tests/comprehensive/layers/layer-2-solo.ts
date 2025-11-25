@@ -219,7 +219,7 @@ function runWorkflow(
       });
     } catch (err) {
       const execErr = err as ExecException;
-      exitCode = execErr.status || 1;
+      exitCode = execErr.code || 1;
       output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
     }
 

@@ -12,6 +12,8 @@ import { loadIRAndResolvePlugs } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { resolve as resolvePath } from "path";
 import { applyOverlays } from "../overlays/index.js";
+import { loadRulesDirectory } from "../rules/file-io.js";
+import { getAlignTruePaths } from "../paths.js";
 
 // New helper modules
 import {
@@ -295,11 +297,14 @@ export class SyncEngine {
       }
 
       // Lockfile validation (delegated)
-      // TODO: Replace with actual rules when rule loading is fully implemented
+      // Load rules from .aligntrue/rules/ directory for validation
+      const cwd = process.cwd();
+      const paths = getAlignTruePaths(cwd);
+      const rules = await loadRulesDirectory(paths.rules, cwd);
       const lockfileValidation = validateAndEnforceLockfile(
-        [], // Rules will be loaded from .aligntrue/rules/
+        rules,
         this.config,
-        process.cwd(),
+        cwd,
       );
       if (lockfileValidation.auditTrail) {
         auditTrail.push(...lockfileValidation.auditTrail);
@@ -358,11 +363,11 @@ export class SyncEngine {
       exportResults = executionResult.exportResults;
 
       // Generate/update lockfile (delegated)
-      // TODO: Replace with actual rules when rule loading is fully implemented
+      // Use the same rules loaded for validation
       const lockfileGeneration = generateAndWriteLockfile(
-        [], // Rules will be loaded from .aligntrue/rules/
+        rules,
         this.config,
-        process.cwd(),
+        cwd,
         options.dryRun || false,
       );
       written.push(...lockfileGeneration.written);
