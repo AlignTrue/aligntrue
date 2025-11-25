@@ -97,7 +97,7 @@ export async function status(args: string[]): Promise<void> {
       examples: ["aligntrue status", "aligntrue status --json"],
       notes: [
         "Shows mode, configured exporters, detection status, last sync time,",
-        "lockfile/bundle state, edit sources, and auto-pull configuration.",
+        "and lockfile/bundle state.",
       ],
     });
     return;

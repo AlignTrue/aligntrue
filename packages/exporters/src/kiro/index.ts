@@ -20,7 +20,6 @@ export class KiroExporter extends ExporterBase {
   version = "1.0.0";
   capabilities: ExporterCapabilities = {
     multiFile: true, // Multi-file format (.kiro/steering/*.md)
-    twoWaySync: false, // Read-only exports
     scopeAware: true, // Can filter by scope
     preserveStructure: true, // Maintains file organization
     nestedDirectories: true, // Supports nested scope directories

@@ -140,31 +140,30 @@ This is working as designed. To verify overlays are applied, use the diagnostic 
 
 ## Canonical Source Architecture
 
-AlignTrue follows an IR-first architecture where `.aligntrue/.rules.yaml` is ALWAYS the canonical source of truth.
+AlignTrue follows a unidirectional sync architecture where `.aligntrue/rules/*.md` files are the single source of truth.
 
 ```
-Edit Sources (controlled by edit_source config)
-  ↓ [two-way sync merges edits]
-IR (.aligntrue/.rules.yaml) ← ALWAYS CANONICAL
+Rules Directory (.aligntrue/rules/*.md) ← USER EDITS HERE
+  ↓ [compile to IR]
+IR (.aligntrue/.rules.yaml) ← INTERNAL REPRESENTATION
   ↓ [export via all enabled exporters]
-Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← ALL EQUAL OUTPUTS
+Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← READ-ONLY EXPORTS
 ```
 
 ### Key Concepts
 
+**Rules Directory:**
+
+- `.aligntrue/rules/*.md` is where users edit their rules
+- Natural markdown format with optional YAML frontmatter
+- Users edit these files directly
+
 **IR (Intermediate Representation):**
 
-- `.aligntrue/.rules.yaml` is the single source of truth
-- Auto-generated from edit sources
+- `.aligntrue/.rules.yaml` is the compiled internal representation
+- Auto-generated from rules directory
 - Users should NOT edit this file directly
 - All operations work on IR, then export to agents
-
-**edit_source:**
-
-- Controls which files accept edits and sync TO canonical IR
-- Options: `"AGENTS.md"`, `".cursor/rules/*.mdc"`, `".aligntrue/rules/*.md"`, `"any_agent_file"` (experimental), or custom patterns
-- This is about INPUT GATES to IR, not about what's canonical
-- Multiple edit sources = multiple input gates to the same canonical IR (experimental, requires `centralized: false`)
 
 **Exporters:**
 
@@ -172,17 +171,15 @@ Agent Files (AGENTS.md, .mdc, MCP configs, etc.) ← ALL EQUAL OUTPUTS
 - No exporter is more "canonical" than others
 - Each exporter writes its agent-specific format
 - Content hash and fidelity notes returned in `ExportResult`, not embedded in files
+- All agent files are read-only exports
 
 ### Common Misconceptions
 
 ❌ **Wrong:** "AGENTS.md is the canonical format"
-✅ **Right:** "IR is canonical. AGENTS.md is one of many equal outputs."
+✅ **Right:** "Rules directory is canonical. AGENTS.md is one of many equal outputs."
 
-❌ **Wrong:** "edit_source defines the canonical source"
-✅ **Right:** "edit_source defines input gates to the canonical IR"
-
-❌ **Wrong:** "If I have multiple edit sources, I have multiple canonical sources"
-✅ **Right:** "Multiple edit sources merge into one canonical IR"
+❌ **Wrong:** "I can edit agent files and sync back"
+✅ **Right:** "Agent files are read-only exports. Edit rules in `.aligntrue/rules/`."
 
 ## Implementation Checklist
 

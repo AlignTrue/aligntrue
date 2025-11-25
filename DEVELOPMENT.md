@@ -61,12 +61,12 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 - All operations work on IR directly
 - Canonicalization only at lock/publish boundaries
 
-### Two-way sync
+### Unidirectional sync
 
-- Default: IR → agents (export rules to agent files)
-- Optional: agent → IR (pull changes back from agent files)
-- `--accept-agent` flag enables explicit pullback
-- Auto-pull enabled by default for seamless workflows
+- `.aligntrue/rules/*.md` is the single source of truth
+- Sync flows from rules → IR → agent files
+- All agent files are read-only exports
+- No bidirectional sync or conflict resolution needed
 
 ## Determinism
 
@@ -102,7 +102,7 @@ Keep these modules consolidated and deterministic:
 - `packages/core/src/plugs/hashing.ts` – SHA-256 integrity hashing built on `computeHash` from schema
 - `packages/schema/src/validator.ts` – IR validation with Ajv strict mode
 - `packages/core/src/config/` – Config parsing and validation
-- `packages/core/src/sync/` – Two-way sync engine (IR ↔ agents)
+- `packages/core/src/sync/` – Sync engine (rules → IR → agents)
 - `packages/core/src/bundle.ts` – Dependency merge + precedence (team mode)
 - `packages/core/src/lockfile/` – Lockfile generation with canonical hashing
 - `packages/core/src/scope.ts` – Hierarchical scope resolution
@@ -2483,7 +2483,7 @@ Config management and sync engine.
 **Responsibilities:**
 
 - Parse and validate `.aligntrue.yaml` config
-- Two-way sync engine (IR ↔ agents)
+- Sync engine (rules → IR → agents)
 - Bundle resolution (team mode)
 - Lockfile management (team mode)
 - Hierarchical scope resolution

@@ -1,8 +1,8 @@
 /**
  * Extract and save rules from agent files
  * Supports two modes:
- * 1. Extract sections to extracted-rules.md for two-way sync detection
- *    (when read-only agents are edited and those edits differ from current IR)
+ * 1. Extract sections to extracted-rules.md for drift detection
+ *    (when agent files are edited and those edits differ from current IR)
  * 2. Backup entire file to overwritten-rules/ when replacing
  *    (when new agents are first added and will be overwritten on sync)
  */

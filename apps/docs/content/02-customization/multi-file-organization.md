@@ -356,19 +356,19 @@ sections:
 
 This enables:
 
-- Two-way sync (editing the right source file)
+- Tracking which file each section came from
 - Debugging which file a section came from
-- Conflict resolution
+- Clear provenance for rules
 
-## Two-way sync
+## Sync workflow
 
-Multi-file sources work seamlessly with centralized rule management:
+Multi-file sources work seamlessly with unidirectional sync:
 
-1. **Edit your source file**: Make changes to `.aligntrue/rules/security.md` (your edit_source)
+1. **Edit your source file**: Make changes to `.aligntrue/rules/security.md`
 2. **Run sync**: `aligntrue sync`
 3. **Changes propagate**: Updates sync to all agent files
 
-AlignTrue tracks which file each section came from, so edits to agent files can be merged back to the correct source file.
+AlignTrue tracks which file each section came from, making it easy to find and update rules.
 
 ## Best practices
 
@@ -481,7 +481,7 @@ aligntrue sources split
 
 - [Choosing your organization structure](/docs/01-guides/06-rule-structure) - Decision guide for simple, organized, or complex structures
 - [Agent support](/docs/04-reference/agent-support) - Which agents support multi-file natively
-- [Two-way sync](/docs/03-concepts/sync-behavior) - Edit agent files or source files
+- [Sync behavior](/docs/03-concepts/sync-behavior) - How rules sync to agents
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
 - [Team mode](/docs/01-guides/04-team-guide) - Lockfile validation and drift detection
 

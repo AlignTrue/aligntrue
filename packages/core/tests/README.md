@@ -226,8 +226,7 @@ it("detects severity conflicts", () => {
 
 - **Step 10:** Adapter registry tests
 - **Steps 11-13:** Real exporter integration tests
-- **Step 14:** Full two-way sync tests with conflict resolution
-- **Step 17:** Agent→IR import tests
+- **Step 14:** Full sync engine tests
 
 ## Contributing to Tests
 

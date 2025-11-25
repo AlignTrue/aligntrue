@@ -27,7 +27,7 @@ export async function sync(args: string[]): Promise<void> {
 
   try {
     // Early check if sync is needed (unless explicit flags override)
-    if (!options.force && !options.acceptAgent && !options.dryRun) {
+    if (!options.force && !options.dryRun) {
       const syncNeeded = await checkIfSyncNeeded(options);
       if (!syncNeeded) {
         if (!options.quiet) {
@@ -41,7 +41,7 @@ export async function sync(args: string[]): Promise<void> {
     // Phase 1: Build sync context (load config, sources, exporters)
     const context = await buildSyncContext(options);
 
-    // Phase 2: Execute sync workflow (backup, two-way sync, sync execution)
+    // Phase 2: Execute sync workflow (backup, export to agents)
     const result = await executeSyncWorkflow(context, options);
 
     // Phase 3: Handle and display results

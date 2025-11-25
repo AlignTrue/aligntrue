@@ -21,7 +21,6 @@ aligntrue config edit   # Open config in default editor
 - Shows effective configuration with defaults
 - Lists enabled modules (lockfile, bundle, checks, mcp)
 - Shows exporter configuration
-- Displays sync settings (auto-pull, primary agent, workflow mode)
 
 **`edit` subcommand:**
 
@@ -48,9 +47,7 @@ Exporters:
   - agents
 
 Sync:
-  auto_pull: true
-  primary_agent: cursor
-  workflow_mode: native_format
+  scope_prefixing: true
 
 Config file: .aligntrue/config.yaml
 ```

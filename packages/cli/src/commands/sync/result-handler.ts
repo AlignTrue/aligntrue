@@ -227,31 +227,6 @@ export async function handleSyncResult(
           }
         }
       }
-
-      // Special case: When accepting agent changes, update the hash for that agent file
-      // because we won't be re-exporting it, but it is now "synced"
-      if (options.acceptAgent) {
-        const { readFileSync } = await import("fs");
-        const { join } = await import("path");
-
-        // Map agent name to file path
-        // This logic ideally belongs in core/paths or exporter plugins, but simple mapping works for now
-        let agentPath: string | undefined;
-        if (options.acceptAgent === "agents") {
-          agentPath = "AGENTS.md";
-        } else if (options.acceptAgent === "cursor") {
-          agentPath = ".cursor/rules/aligntrue.mdc";
-        }
-
-        if (agentPath && existsSync(join(cwd, agentPath))) {
-          try {
-            const content = readFileSync(join(cwd, agentPath), "utf-8");
-            storeAgentExportHash(cwd, agentPath, content);
-          } catch {
-            // Ignore read errors
-          }
-        }
-      }
     } catch (err) {
       // Log warning but don't fail sync
       if (options.verbose) {

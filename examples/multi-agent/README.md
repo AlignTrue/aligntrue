@@ -236,25 +236,6 @@ git commit -m "Update rules"
 - No conflicts between agents
 - Clear edit → sync → deploy flow
 
-### Native-format workflow (advanced)
-
-Edit agent files directly (one primary agent only):
-
-```bash
-# 1. Edit primary agent (Cursor)
-vi .cursor/rules/aligntrue.mdc
-
-# 2. Sync (auto-pulls from Cursor, pushes to others)
-aligntrue sync --accept-agent cursor
-
-# 3. Other agents updated automatically
-```
-
-**Limitations:**
-
-- Auto-pull only works with ONE primary agent
-- Editing multiple agent files creates conflicts
-
 ## Fidelity notes
 
 Each exporter includes fidelity notes explaining format limitations.
