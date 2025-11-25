@@ -132,6 +132,39 @@ export class GenericMarkdownExporter extends ExporterBase {
   }
 
   /**
+   * Format conditions from frontmatter into human-readable text
+   * Handles any frontmatter values without hardcoded mappings
+   */
+  private formatConditions(frontmatter: RuleFrontmatter): string {
+    const parts: string[] = [];
+
+    // Always/activation - show actual value
+    const when = frontmatter.cursor?.when || frontmatter.apply_to;
+    if (when === "alwaysOn") {
+      parts.push("Always applied.");
+    } else if (when) {
+      parts.push(`Apply when: ${when}.`);
+    }
+
+    // Globs - just show the actual glob patterns
+    if (frontmatter.globs?.length) {
+      const globList = frontmatter.globs.map((g) => `\`${g}\``).join(", ");
+      parts.push(`For files: ${globList}.`);
+    }
+
+    // Scope - just show the path
+    if (
+      frontmatter.scope &&
+      frontmatter.scope !== "." &&
+      frontmatter.scope !== "General"
+    ) {
+      parts.push(`Scope: \`${frontmatter.scope}\`.`);
+    }
+
+    return parts.join(" ");
+  }
+
+  /**
    * Group rules by their nested_location
    */
   private groupRulesByLocation(rules: RuleFile[]): Map<string, RuleFile[]> {
@@ -186,14 +219,22 @@ export class GenericMarkdownExporter extends ExporterBase {
         const title =
           rule.frontmatter.title || rule.filename.replace(/\.md$/, "");
         const description = rule.frontmatter.description || "";
+        const conditions = this.formatConditions(rule.frontmatter);
 
         // Compute relative path from file to the rule file
         const rulesDir =
           location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
         const linkPath = `./${rulesDir}/${rule.filename}`;
 
-        if (description) {
-          lines.push(`- [${title}](${linkPath}) - ${description}`);
+        // Format: [Title](path): description. conditions.
+        if (description && conditions) {
+          lines.push(
+            `- [${title}](${linkPath}): ${description}. ${conditions}`,
+          );
+        } else if (description) {
+          lines.push(`- [${title}](${linkPath}): ${description}`);
+        } else if (conditions) {
+          lines.push(`- [${title}](${linkPath}): ${conditions}`);
         } else {
           lines.push(`- [${title}](${linkPath})`);
         }
