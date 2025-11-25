@@ -1,12 +1,11 @@
-<!-- 
+<!--
   ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
-  
+
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
-  
+
   Source: apps/docs/content/06-contributing/creating-packs.md
 -->
-
 
 # Creating packs
 
@@ -338,7 +337,6 @@ We're here to help!
 
 **Thank you** for contributing to AlignTrue and helping make AI-human alignment better for everyone.
 
-
 ---
 
-*This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.*
+_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._
