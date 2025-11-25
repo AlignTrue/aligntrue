@@ -1,7 +1,0 @@
-sources:
-  - type: local
-    path: .aligntrue/.rules.yaml
-exporters:
-  - cursor
-sync:
-  edit_source: .cursor/rules/*.mdc
