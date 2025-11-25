@@ -334,7 +334,7 @@ overlays:
 
 **When they matter:**
 
-- Editing agent files when they're your configured edit_source
+- Preserving agent-specific fields when importing from agent formats
 - Importing from agent-specific formats
 - Preserving agent hints and metadata
 

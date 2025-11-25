@@ -113,30 +113,24 @@ project/
 
 ### Configuration
 
-**Multiple agents (neutral source):**
+**Multiple agents:**
 
 ```yaml
 exporters:
   - cursor
   - agents
-
-sync:
-  edit_source: ".aligntrue/rules/*.md"
-  source_order:
-    - architecture.md
-    - security.md
-    - testing.md
 ```
 
-**Single agent (Cursor native):**
+Rules are stored in `.aligntrue/rules/` by default and synced to all agents.
+
+**Single agent (Cursor only):**
 
 ```yaml
 exporters:
   - cursor
-
-sync:
-  edit_source: ".cursor/rules/*.mdc"
 ```
+
+Rules are stored in `.aligntrue/rules/` and synced to Cursor.
 
 ### Creating the structure
 
@@ -185,27 +179,22 @@ AlignTrue automatically adapts exports:
 
 See [Multi-file organization](/docs/02-customization/multi-file-organization) for details.
 
-### Source file patterns
+### Rule file organization
 
-The `edit_source` field accepts various patterns when organizing rules in multiple files:
+AlignTrue automatically loads all `*.md` files from `.aligntrue/rules/` directory:
 
 ```yaml
-# All .md files in directory
-edit_source: ".aligntrue/rules/*.md"
-
-# Recursive (includes subdirectories)
-edit_source: ".aligntrue/rules/**/*.md"
-
-# Specific files
-source_files:
-  - ".aligntrue/rules/architecture.md"
-  - ".aligntrue/rules/security.md"
-
-# Multiple directories
-source_files:
-  - ".aligntrue/rules/*.md"
-  - "docs/guidelines/*.md"
+# Default: all files in .aligntrue/rules/
+.aligntrue/
+├── rules/
+│   ├── architecture.md
+│   ├── security.md
+│   ├── testing.md
+│   └── subdir/
+│       └── advanced.md
 ```
+
+Files are loaded in alphabetical order. Subdirectories are also supported for further organization.
 
 ### Example workflow
 

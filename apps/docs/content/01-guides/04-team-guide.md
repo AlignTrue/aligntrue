@@ -450,8 +450,8 @@ Team mode provides comprehensive drift detection to catch misalignment early. Th
 **When it happens:**
 
 - Someone edited `.aligntrue/.rules.yaml` directly
-- Rules were imported from agent files (`--accept-agent`)
 - Bundle dependencies changed
+- Source rules updated outside of `.aligntrue/rules/`
 
 **How to detect:**
 
@@ -500,61 +500,33 @@ lockfile:
 
 ### 2. Agent file drift
 
-**What it detects:** Agent files (AGENTS.md, .cursor/rules/\*.mdc) modified after IR.
+**What it detects:** Agent files (AGENTS.md, .cursor/rules/\*.mdc) checksums don't match previous exports.
 
 **When it happens:**
 
-- Developer edited AGENTS.md directly in team mode
-- Cursor rules file modified outside of AlignTrue sync
+- Agent files are manually edited directly (outside of AlignTrue)
+- Sync process detects unexpected changes
 
-**Why it matters:** In team mode, IR (`.aligntrue/.rules.yaml`) is the single source of truth. Editing agent files directly bypasses lockfile validation and can cause divergence.
+**Why it matters:** In team mode, agent files are exports from IR (`.aligntrue/.rules.yaml`), which is the single source of truth. Manual edits to agent files are backed up and overwritten to maintain consistency.
 
 **How to detect:**
 
 ```bash
 aligntrue drift
-
-# Output:
-# AGENT FILE DRIFT:
-#   _agent_agents
-#     AGENTS.md modified after last sync
-#     Suggestion: Run: aligntrue sync --accept-agent agents
+# Shows if agent files have been manually edited since last sync
 ```
 
 **How to resolve:**
 
-Option 1: Accept agent changes (pull into IR):
-
 ```bash
-# Import changes from agent file into IR
-aligntrue sync --accept-agent agents
-
-# This will:
-# 1. Parse AGENTS.md
-# 2. Update .aligntrue/.rules.yaml
-# 3. Regenerate lockfile
-# 4. Prompt to approve new bundle hash (if strict mode)
-```
-
-Option 2: Discard agent changes (overwrite from IR):
-
-```bash
-# Sync IR to agents (overwrites AGENTS.md)
+# Sync IR to agents (overwrites manual edits with clean IR content)
 aligntrue sync
 
-# Agent file will be regenerated from IR
+# Backups of manually edited content saved to .aligntrue/overwritten-rules/
+ls .aligntrue/overwritten-rules/
 ```
 
-**Prevention:** In team mode, `aligntrue sync` shows a warning when agent files are newer than IR:
-
-```bash
-aligntrue sync
-
-# Output:
-# ⚠ AGENTS.md modified after IR
-#   In team mode, edit .aligntrue/.rules.yaml instead
-#   Or run: aligntrue sync --accept-agent agents
-```
+**Best practice:** Always edit rules in `.aligntrue/rules/`, never directly edit agent files in team mode. Agent files are always generated exports.
 
 ### 3. Upstream drift
 
