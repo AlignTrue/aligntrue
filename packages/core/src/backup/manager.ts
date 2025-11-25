@@ -105,15 +105,15 @@ export class BackupManager {
     const agentFiles: string[] = [];
     const includeAgentFiles = options.includeAgentFiles !== false;
 
-    if (includeAgentFiles && options.editSource) {
+    if (includeAgentFiles && options.agentFilePatterns) {
       // Create agent-files subdirectory in backup
       const agentFilesDir = join(backupDir, "agent-files");
       mkdirSync(agentFilesDir, { recursive: true });
 
-      // Resolve patterns from edit_source
-      const patterns = Array.isArray(options.editSource)
-        ? options.editSource
-        : [options.editSource];
+      // Resolve patterns from agentFilePatterns
+      const patterns = Array.isArray(options.agentFilePatterns)
+        ? options.agentFilePatterns
+        : [options.agentFilePatterns];
 
       // Find all matching agent files
       const agentFilePaths = new Set<string>();

@@ -388,9 +388,6 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       );
     }
 
-    // NOTE: edit_source removed in new architecture.
-    // Split files are now placed in .aligntrue/rules/ by default.
-    // No config update needed - files are the source of truth.
     clack.log.success(`\nSplit ${createdFiles.length} rules to ${targetDir}/`);
 
     // Ask about backing up AGENTS.md

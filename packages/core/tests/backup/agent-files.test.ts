@@ -1,6 +1,6 @@
 /**
  * Tests for agent file backup and restore
- * Validates that agent files matching edit_source are backed up and restored
+ * Validates that agent files matching patterns are backed up and restored
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -43,12 +43,12 @@ describe("BackupManager agent files", () => {
     }
   });
 
-  it("should backup AGENTS.md when in edit_source", () => {
+  it("should backup AGENTS.md when pattern matches", () => {
     const options: BackupOptions = {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: "AGENTS.md",
+      agentFilePatterns: "AGENTS.md",
     };
 
     const backup = BackupManager.createBackup(options);
@@ -63,12 +63,12 @@ describe("BackupManager agent files", () => {
     expect(content).toBe("# Test rules\n");
   });
 
-  it("should backup .cursor/*.mdc files when glob pattern in edit_source", () => {
+  it("should backup .cursor/*.mdc files when glob pattern matches", () => {
     const options: BackupOptions = {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: ".cursor/rules/*.mdc",
+      agentFilePatterns: ".cursor/rules/*.mdc",
     };
 
     const backup = BackupManager.createBackup(options);
@@ -87,12 +87,12 @@ describe("BackupManager agent files", () => {
     expect(existsSync(backupFilePath)).toBe(true);
   });
 
-  it("should backup multiple files when array of patterns in edit_source", () => {
+  it("should backup multiple files when array of patterns", () => {
     const options: BackupOptions = {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: ["AGENTS.md", ".cursor/rules/*.mdc"],
+      agentFilePatterns: ["AGENTS.md", ".cursor/rules/*.mdc"],
     };
 
     const backup = BackupManager.createBackup(options);
@@ -107,7 +107,7 @@ describe("BackupManager agent files", () => {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: false,
-      editSource: "AGENTS.md",
+      agentFilePatterns: "AGENTS.md",
     };
 
     const backup = BackupManager.createBackup(options);
@@ -118,12 +118,12 @@ describe("BackupManager agent files", () => {
     ).toBe(true);
   });
 
-  it("should not backup agent files when editSource not provided", () => {
+  it("should not backup agent files when agentFilePatterns not provided", () => {
     const options: BackupOptions = {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      // editSource not provided
+      // agentFilePatterns not provided
     };
 
     const backup = BackupManager.createBackup(options);
@@ -140,7 +140,7 @@ describe("BackupManager agent files", () => {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: "AGENTS.md",
+      agentFilePatterns: "AGENTS.md",
     };
 
     const backup = BackupManager.createBackup(options);
@@ -167,7 +167,7 @@ describe("BackupManager agent files", () => {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: ["AGENTS.md", ".cursor/rules/*.mdc"],
+      agentFilePatterns: ["AGENTS.md", ".cursor/rules/*.mdc"],
     };
 
     const backup = BackupManager.createBackup(options);
@@ -194,7 +194,7 @@ describe("BackupManager agent files", () => {
       cwd: testRoot,
       created_by: "test",
       includeAgentFiles: true,
-      editSource: "nonexistent.md",
+      agentFilePatterns: "nonexistent.md",
     };
 
     // Should not throw

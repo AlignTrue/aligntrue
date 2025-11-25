@@ -80,7 +80,7 @@ export async function executeSyncWorkflow(
         action: "pre-sync",
         mode: config.mode,
         includeAgentFiles: true,
-        editSource: null, // No longer using edit source
+        agentFilePatterns: null, // No agent file patterns specified
       });
       if (!options.quiet) {
         stopSpinner(`Safety backup created: ${backup.timestamp}`);

@@ -3,8 +3,7 @@ exporters:
   - agents
 
 sync:
-  auto_pull: true
-  on_conflict: accept_agent
+  scope_prefixing: "auto"
 
 backup:
   auto_backup: true

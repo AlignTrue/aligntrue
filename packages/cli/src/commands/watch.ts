@@ -162,9 +162,7 @@ export async function watch(args: string[]): Promise<void> {
   watcher.on("add", (path: string) => {
     const relativePath = path.replace(cwd + "/", "");
 
-    // NOTE: edit_source removed in new architecture.
-    // In new architecture, all files in .aligntrue/rules/ are the source.
-    // Detect untracked files without edit_source patterns (will detect agent files).
+    // Detect untracked agent files
     const untrackedFiles = detectUntrackedFiles(cwd, undefined);
     const isUntracked = untrackedFiles.some(
       (f) => f.relativePath === relativePath,

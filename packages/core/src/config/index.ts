@@ -215,8 +215,6 @@ export async function saveMinimalConfig(
   }
 
   // Build sync section only if there are non-default values
-  // NOTE: Deprecated sync properties (auto_pull, on_conflict, workflow_mode,
-  // primary_agent, show_diff_on_pull, edit_source) removed in new architecture.
   const syncSection: Partial<typeof config.sync> = {};
   let hasSyncChanges = false;
 

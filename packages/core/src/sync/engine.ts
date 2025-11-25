@@ -142,9 +142,6 @@ export class SyncEngine {
     }
 
     try {
-      // NOTE: edit_source removed in new architecture. The source path points
-      // directly to .aligntrue/rules/ directory (or .rules.yaml for legacy).
-
       const loadOptions: {
         mode: AlignTrueMode;
         maxFileSizeMb: number;
