@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { relative } from "path";
+import { relative, basename } from "path";
 import matter from "gray-matter";
 import yaml from "js-yaml";
 import { glob } from "glob";
@@ -33,7 +33,7 @@ export function parseRuleFile(filePath: string, cwd: string): RuleFile {
   const parsed = matter(rawContent, matterOptions);
   const frontmatter = parsed.data as RuleFrontmatter;
   const relativePath = relative(cwd, filePath);
-  const filename = relativePath.split("/").pop() || "unknown.md";
+  const filename = basename(relativePath);
 
   // Ensure content hash matches actual content
   const computedHash = computeContentHash(rawContent);
