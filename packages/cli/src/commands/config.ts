@@ -318,9 +318,6 @@ async function configGet(configPath: string, key: string): Promise<void> {
         process.exit(1);
       }
 
-      // NOTE: sync.edit_source removed in new architecture.
-      // All rules now live in .aligntrue/rules/*.md
-
       clack.log.error(`Key not found: ${key}`);
       const content = readFileSync(configPath, "utf-8");
       const rawConfig = parseYaml(content) as Record<string, unknown>;

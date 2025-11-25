@@ -71,11 +71,6 @@ export interface AlignTrueConfig {
     auto_gitignore?: "auto" | "always" | "never";
   };
   sync?: {
-    // NOTE: Deprecated properties removed in new architecture:
-    // auto_pull, primary_agent, on_conflict, workflow_mode, show_diff_on_pull,
-    // edit_source, source_order, source_markers
-    // The new architecture uses .aligntrue/rules/*.md as single source of truth
-    // with unidirectional sync to agents.
     scope_prefixing?: "off" | "auto" | "always";
     watch_enabled?: boolean;
     watch_debounce?: number;

@@ -48,10 +48,10 @@ export interface BackupOptions {
   mode?: "solo" | "team" | "enterprise";
   /** Scope information */
   scopes?: Record<string, { sections: number; storage: string }>;
-  /** Include agent files matching edit_source patterns (default: true) */
+  /** Include agent files in backup (default: true) */
   includeAgentFiles?: boolean;
-  /** Edit source patterns to determine which agent files to back up */
-  editSource?: string | string[] | null;
+  /** File patterns to determine which agent files to back up */
+  agentFilePatterns?: string | string[] | null;
 }
 
 export interface RestoreOptions {

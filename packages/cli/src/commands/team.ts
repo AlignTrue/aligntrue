@@ -366,8 +366,6 @@ async function teamEnable(
       configWithDefaults.sources = existingSources;
     }
 
-    // NOTE: Deprecated sync property restoration removed in new architecture.
-
     spinner = createSpinner();
     spinner.start("Writing team configuration");
     spinnerActive = true;
@@ -556,8 +554,6 @@ async function teamDisable(
 
     // Apply defaults to fill in other missing fields
     const configWithDefaults = applyDefaults(config);
-
-    // NOTE: Deprecated sync property restoration removed in new architecture.
 
     // Write config back atomically
     const yamlContent = stringifyYaml(configWithDefaults);
