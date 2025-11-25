@@ -182,13 +182,15 @@ export abstract class ExporterBase implements ExporterPlugin {
    * @returns Filename-safe string
    */
   private sanitizeFilename(input: string): string {
-    return (
-      input
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+/, "") // Remove leading dashes (avoids alternation ReDoS)
-        .replace(/-+$/, "") || "untitled" // Remove trailing dashes
-    );
+    // Replace non-alphanumeric sequences with dashes, then remove leading/trailing dashes
+    // Using split/filter/join avoids ReDoS vulnerabilities from ambiguous regex quantifiers
+    const result = input
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .split("-")
+      .filter(Boolean)
+      .join("-");
+    return result || "untitled";
   }
 
   /**
