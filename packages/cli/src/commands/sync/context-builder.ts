@@ -14,6 +14,7 @@ import {
   saveMinimalConfig,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 
@@ -435,10 +436,23 @@ export async function buildSyncContext(
   // Step 9: Write merged bundle to local IR (only for file-based sources)
   // Skip for directory-based sources (new rule file format)
   if (bundleResult.sources.length > 0) {
-    const targetPath =
-      config.sources?.[0]?.type === "local"
-        ? resolve(cwd, config.sources[0].path || paths.rules)
-        : resolve(cwd, paths.rules);
+    // For git sources, use a temporary bundle file instead of .aligntrue/rules
+    // to preserve the git source as the canonical source
+    const isGitSource = config.sources?.[0]?.type === "git";
+    let targetPath: string;
+
+    if (isGitSource) {
+      // Use a temporary bundle file for git sources
+      targetPath = resolve(cwd, ".aligntrue/.temp/bundle.yaml");
+      const tempDir = dirname(targetPath);
+      ensureDirectoryExists(tempDir);
+    } else {
+      // For local sources, use the configured path or default
+      targetPath =
+        config.sources?.[0]?.type === "local"
+          ? resolve(cwd, config.sources[0].path || paths.rules)
+          : resolve(cwd, paths.rules);
+    }
 
     // Write merged bundle to file (skip if target is a directory - new format)
     // Uses EAFP pattern to avoid TOCTOU race condition
