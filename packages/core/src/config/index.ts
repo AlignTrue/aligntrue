@@ -219,13 +219,6 @@ export async function saveMinimalConfig(
   let hasSyncChanges = false;
 
   if (
-    config.sync?.scope_prefixing !== defaults.sync?.scope_prefixing &&
-    config.sync?.scope_prefixing !== undefined
-  ) {
-    syncSection.scope_prefixing = config.sync.scope_prefixing;
-    hasSyncChanges = true;
-  }
-  if (
     config.sync?.watch_enabled !== undefined &&
     config.sync?.watch_enabled !== false
   ) {

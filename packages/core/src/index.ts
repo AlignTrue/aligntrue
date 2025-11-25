@@ -74,7 +74,6 @@ export * from "./scope-discovery.js";
 export {
   backupOverwrittenFile,
   safeBackupFile,
-  appendOverwrittenSection,
   formatTimestampForFilename,
   checkBackupExists,
   type BackupResult,

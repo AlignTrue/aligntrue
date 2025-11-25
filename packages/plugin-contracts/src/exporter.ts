@@ -58,7 +58,6 @@ export interface ExportOptions {
   backupOptions?: BackupOptions; // Backup configuration
   config?: unknown; // Optional AlignTrue config for mode hints and caps
   unresolvedPlugsCount?: number; // Count of unresolved required plugs (Plugs system)
-  managedSections?: string[]; // List of team-managed section headings
   plugFills?: Record<string, string> | undefined; // Plug fills from config (override IR fills)
   interactive?: boolean; // Enable interactive prompts for conflict resolution (default: false)
   force?: boolean; // Force overwrite without prompts (default: false)

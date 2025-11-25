@@ -141,61 +141,6 @@ export function renderSections(
 }
 
 /**
- * Render sections with team-managed markers
- */
-export function renderSectionsWithManaged(
-  sections: AlignSection[],
-  includeVendor: boolean,
-  managedSections: string[] = [],
-): string {
-  if (sections.length === 0) {
-    return "";
-  }
-
-  const rendered = sections.map((section) => {
-    const lines: string[] = [];
-
-    // Check if team-managed
-    const isManaged = managedSections.some(
-      (managed) =>
-        managed.toLowerCase().trim() === section.heading.toLowerCase().trim(),
-    );
-
-    if (isManaged) {
-      lines.push("<!-- [TEAM-MANAGED]: This section is managed by your team.");
-      lines.push(
-        "Local edits will be preserved in backups but may be overwritten on next sync.",
-      );
-      lines.push(
-        "To keep changes, rename the section or remove from managed list. -->",
-      );
-      lines.push("");
-    }
-
-    // Heading with proper level
-    const headingPrefix = "#".repeat(section.level);
-    lines.push(`${headingPrefix} ${section.heading}`);
-    lines.push("");
-
-    // Add vendor metadata
-    if (includeVendor && section.vendor) {
-      lines.push(`<!-- aligntrue:vendor ${JSON.stringify(section.vendor)} -->`);
-      lines.push("");
-    }
-
-    // Content
-    const normalizedContent = normalizeMarkdownFormatting(
-      section.content.trim(),
-    );
-    lines.push(normalizedContent);
-
-    return lines.join("\n");
-  });
-
-  return rendered.join("\n\n");
-}
-
-/**
  * Generate source attribution comment
  */
 export function generateSourceAttribution(sections: AlignSection[]): string {

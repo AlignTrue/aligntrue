@@ -71,18 +71,12 @@ export interface AlignTrueConfig {
     auto_gitignore?: "auto" | "always" | "never";
   };
   sync?: {
-    scope_prefixing?: "off" | "auto" | "always";
     watch_enabled?: boolean;
     watch_debounce?: number;
     watch_files?: string[];
     auto_manage_ignore_files?: boolean | "prompt";
     ignore_file_priority?: "native" | "custom";
     custom_format_priority?: Record<string, string>;
-  };
-  managed?: {
-    files?: string[];
-    sections?: string[];
-    source_url?: string;
   };
   sources?: Array<{
     type: "local" | "git" | "url";

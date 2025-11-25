@@ -66,10 +66,7 @@ export async function watch(args: string[]): Promise<void> {
   }
 
   // Determine files to watch
-  const watchFiles = config.sync?.watch_files || [
-    "AGENTS.md",
-    ".cursor/rules/*.mdc",
-  ];
+  const watchFiles = config.sync?.watch_files || [".aligntrue/rules/**/*.md"];
 
   // Resolve watch patterns to absolute paths
   const watchPatterns = watchFiles.map((pattern) => resolve(cwd, pattern));

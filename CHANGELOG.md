@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed (Cleanup of Deprecated Features)
+
+**Cleanup of bidirectional sync artifacts** - Removed dead code and non-functional features left from earlier architecture:
+
+- **Team-managed sections infrastructure** - Config schema, renderers, and tests for marking sections `[TEAM-MANAGED]`
+- **Section merger and bidirectional logic** - `file-merger.ts`, `section-matcher.ts` for merging user edits from agent files
+- **Scope prefixing option** (`sync.scope_prefixing`) - Unused configuration for scope prefixes in exports
+- **Update command and allow list** - Deprecated `aligntrue update check/apply` and `.aligntrue/allow.yaml` infrastructure (use git PR review instead)
+- **Section extraction utility** (`extract-rules.ts`) - Dead code for drift detection from agent file edits
+- **recommendEditSource function** - Edit source recommendation for bidirectional sync
+- **Skipped and placeholder tests** - Removed obsolete test stubs for bidirectional workflows
+
+**Watch mode fix** - Changed default watch files from agent exports (read-only) to `.aligntrue/rules/**/*.md` (source of truth)
+
+**Impact:** ~1000-1500 lines of code removed, simpler codebase, cleaner mental model for unidirectional sync
+
 ### BREAKING CHANGES
 
 **Fundamental architectural shift to Ruler-style unidirectional sync**
