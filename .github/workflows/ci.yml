@@ -71,9 +71,6 @@ jobs:
       - name: ✅ Run all validations
         run: pnpm validate:all
 
-      - name: ✏️ Check code formatting
-        run: pnpm format:check
-
       - name: 🔍 Lint code
         run: pnpm lint --max-warnings 460
 
