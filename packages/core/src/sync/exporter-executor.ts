@@ -120,7 +120,6 @@ export async function executeExporters(
         dryRun: options.dryRun,
         backup: true,
         unresolvedPlugsCount: options.unresolvedPlugsCount,
-        managedSections: config.managed?.sections || [],
         ...(config.plugs?.fills && {
           plugFills: config.plugs.fills,
         }),

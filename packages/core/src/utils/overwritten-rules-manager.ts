@@ -1,21 +1,16 @@
 /**
  * Overwritten Rules Manager
- * Handles backup of overwritten rule files and extraction of overwritten sections
+ * Handles backup of overwritten rule files
  *
- * Two-tier safety system:
- * 1. File-level: overwritten-rules/ folder for complete file backups with timestamp
- *    - Preserves original path structure: AGENTS.md → overwritten-rules/AGENTS.2025-11-21T15-30-00.md
- *    - Used when replacing entire files with new content
+ * File-level safety system:
+ * - overwritten-rules/ folder for complete file backups with timestamp
+ * - Preserves original path structure: AGENTS.md → overwritten-rules/AGENTS.2025-11-21T15-30-00.md
+ * - Used when replacing entire files with new content
  *
- * 2. Section-level: overwritten-rules.md for conflicting sections during merge
- *    - Used when last-write-wins resolution occurs during section merging
- *    - Includes source file and timestamp metadata
- *    - Useful for auditing what was overwritten and when
- *
- * Both are optional safety features that users can review and delete at any time.
+ * Backups are optional safety features that users can review and delete at any time.
  */
 
-import { readFileSync, writeFileSync, copyFileSync } from "fs";
+import { copyFileSync } from "fs";
 import { dirname, join } from "path";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 
@@ -82,64 +77,6 @@ export function backupOverwrittenFile(
   copyFileSync(sourcePath, targetPath);
 
   return targetPath;
-}
-
-/**
- * Append a conflicting section to overwritten-rules.md
- * Used when last-write-wins resolution happens during merge
- *
- * @param cwd - Current working directory
- * @param section - Section object with heading and content
- * @param sourceFile - Original file the section came from
- * @param timestamp - Optional timestamp for metadata
- */
-export function appendOverwrittenSection(
-  cwd: string,
-  section: { heading: string; content: string },
-  sourceFile: string,
-  timestamp?: string,
-): void {
-  const ts = timestamp || new Date().toISOString().split("T")[0];
-  const overwrittenRulesPath = join(cwd, ".aligntrue", "overwritten-rules.md");
-
-  // Ensure .aligntrue directory exists
-  ensureDirectoryExists(join(cwd, ".aligntrue"));
-
-  // Check if file exists and has content
-  let header = "";
-  try {
-    readFileSync(overwrittenRulesPath, "utf-8");
-    // File exists, just append
-  } catch {
-    // File doesn't exist, add header
-    header = `# Overwritten Rules
-
-This file contains rule sections that were automatically overwritten during syncs.
-These are saved as a safety feature. You can review and delete any sections at any time.
-
----
-
-`;
-  }
-
-  // Build section entry
-  const entry = `## ${section.heading}
-
-**Source:** ${sourceFile}
-**Date:** ${ts}
-
-${section.content}
-
----
-
-`;
-
-  // Append to file
-  const fullContent = header + entry;
-  writeFileSync(overwrittenRulesPath, fullContent, {
-    flag: "a",
-    encoding: "utf-8",
-  });
 }
 
 /**

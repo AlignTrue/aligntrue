@@ -95,11 +95,6 @@
       "description": "Sync behavior configuration",
       "additionalProperties": false,
       "properties": {
-        "scope_prefixing": {
-          "type": "string",
-          "enum": ["off", "auto", "always"],
-          "description": "Add scope prefixes to section headings in single-file exports: off (no prefixes), auto (prefix when multiple scopes detected), always (always prefix). Default: off"
-        },
         "watch_enabled": {
           "type": "boolean",
           "description": "Enable watch mode for auto-sync on file changes (default: false)"
@@ -453,24 +448,6 @@
           "type": "string",
           "enum": ["pr_approval", "allowlist"],
           "description": "Approval mode for external dependency sources"
-        }
-      }
-    },
-    "managed": {
-      "type": "object",
-      "description": "Team-managed sections configuration",
-      "additionalProperties": false,
-      "properties": {
-        "sections": {
-          "type": "array",
-          "description": "List of section headings that are team-managed",
-          "items": {
-            "type": "string"
-          }
-        },
-        "source_url": {
-          "type": "string",
-          "description": "Optional URL to the source repository for team-managed sections"
         }
       }
     },

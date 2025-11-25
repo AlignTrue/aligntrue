@@ -87,24 +87,6 @@ sync:
   custom_format_priority: {} # Custom format priorities for conflict resolution
 ```
 
-#### sync.scope_prefixing
-
-**Type:** `string`
-
-**Default:** `"off"`
-
-**Values:** `"off"` | `"auto"` | `"always"`
-
-Add scope prefixes to AGENTS.md section headings when syncing from multi-file sources:
-
-- **off** - No prefixes
-- **auto** - Prefix only when multiple scopes detected
-- **always** - Always prefix non-default scopes
-
-Example: Section from `backend.mdc` becomes "Backend: Security" in AGENTS.md.
-
-Only applies when exporting Cursor or similar multi-scope exporters.
-
 #### sync.watch_enabled
 
 **Type:** `boolean`

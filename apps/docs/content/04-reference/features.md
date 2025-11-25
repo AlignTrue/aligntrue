@@ -17,7 +17,7 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 
-## CLI (22 commands)
+## CLI (21 commands)
 
 **Diagnostics:**
 
@@ -44,7 +44,6 @@ description: "Up-to-date feature list: two‑way sync, lockfile, deterministic e
 - `team` — Team mode management (enable, status, approve, list-allowed, remove)
 - `drift` — Detect drift between lockfile and allowed sources
 - `link` — Vendor rule packs from git repositories
-- `update` — Check for CLI updates
 - `onboard` — Interactive onboarding wizard
 
 **Utilities:**
@@ -105,7 +104,6 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 - **Lockfile generation** (`.aligntrue.lock.json`) - SHA-256 content hashes, reproducible builds
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
-- **Allow lists** (`.aligntrue/allow.yaml`) - Approved sources for team workflows
 - **Drift detection** - Compare lockfile vs allowed sources, multiple output formats (human, JSON, SARIF)
 - **Bundle merging** - Combine multiple sources with conflict resolution
 - **Team commands** - `team enable`, `team status`, `team approve`, `team list-allowed`, `team remove`
@@ -140,7 +138,6 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 
 - **Unidirectional sync** - Rules → IR → agents (one-way export)
 - **Section-based organization** - Sections matched by heading/content hash
-- **Team-managed sections** - Protected sections with 🔒 markers and edit warnings
 - **Watch mode** - Continuous file watching with configurable debouncing
 - **Agent detection** - Detect new agents in workspace and prompt to enable
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking

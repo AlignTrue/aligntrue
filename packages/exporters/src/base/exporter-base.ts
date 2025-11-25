@@ -507,29 +507,6 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
-   * Render sections with team-managed markers
-   *
-   * Enhanced version of renderSections that adds team-managed markers
-   * for protected sections.
-   *
-   * @param sections - Sections to render
-   * @param includeVendor - Whether to include vendor metadata
-   * @param managedSections - Array of team-managed section headings
-   * @returns Rendered markdown with team-managed markers
-   */
-  protected renderSectionsWithManaged(
-    sections: AlignSection[],
-    includeVendor: boolean,
-    managedSections: string[] = [],
-  ): string {
-    return SectionRenderer.renderSectionsWithManaged(
-      sections,
-      includeVendor,
-      managedSections,
-    );
-  }
-
-  /**
    * Generate source attribution comment
    * Shows which files contributed sections to this export
    *
@@ -583,7 +560,3 @@ export abstract class ExporterBase implements ExporterPlugin {
 `;
   }
 }
-
-// Re-export types for convenience
-import type { ParsedSection, MergeStats } from "../utils/section-matcher.js";
-export type { ParsedSection, MergeStats };

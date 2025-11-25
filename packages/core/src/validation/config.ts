@@ -233,13 +233,6 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sync = {};
   }
 
-  /**
-   * Set scope_prefixing default
-   */
-  if (result.sync.scope_prefixing === undefined) {
-    result.sync.scope_prefixing = "off";
-  }
-
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
     result.exporters = ["cursor", "agents"];
@@ -606,14 +599,9 @@ export function isValidConfigKey(key: string): boolean {
     "git.offline_fallback",
     "git.auto_gitignore",
     "sync",
-    "sync.scope_prefixing",
     "sync.watch_enabled",
     "sync.watch_debounce",
     "sync.watch_files",
-    "managed",
-    "managed.files",
-    "managed.sections",
-    "managed.source_url",
     "sources",
     "exporters",
     "scopes",

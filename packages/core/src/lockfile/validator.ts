@@ -222,45 +222,13 @@ export interface LockfileTeamValidationResult {
 }
 
 /**
- * Validate lockfile sources (DEPRECATED - removed allow list)
- * Approval now happens via git PR review
- */
-export function validateAgainstAllowList(
-  _lockfile: Lockfile,
-  _mode: "solo" | "team" | "enterprise",
-  _allowListPath: string = ".aligntrue/allow.yaml",
-): LockfileTeamValidationError[] {
-  // DEPRECATED: No longer validate against allow list
-  // Approval now happens via git PR review
-  return [];
-}
-
-/**
- * Check for drift from allowed hash versions (DEPRECATED - removed allow list)
+ * Validate lockfile for team mode
  *
- * Compares lockfile hashes with expected hashes from allow list.
- * This is a foundation for Session 6 drift detection.
- */
-export function checkDriftFromAllowedHashes(
-  _lockfile: Lockfile,
-  _mode: "solo" | "team" | "enterprise",
-  _allowListPath: string = ".aligntrue/allow.yaml",
-): LockfileTeamValidationError[] {
-  // DEPRECATED: No longer check drift against allow list
-  // Drift detection now happens via git diff and PR review
-  return [];
-}
-
-/**
- * Validate lockfile for team mode (simplified - no allow list)
- *
- * Combines allow list validation and drift detection.
  * Returns all validation errors.
  */
 export function validateLockfileTeamMode(
-  lockfile: Lockfile,
+  _lockfile: Lockfile,
   mode: "solo" | "team" | "enterprise",
-  allowListPath: string = ".aligntrue/allow.yaml",
 ): LockfileTeamValidationResult {
   // Only validate in team mode
   if (mode !== "team") {
@@ -270,18 +238,10 @@ export function validateLockfileTeamMode(
     };
   }
 
-  const errors: LockfileTeamValidationError[] = [];
-
-  // Run all validation checks
-  errors.push(...validateAgainstAllowList(lockfile, mode, allowListPath));
-  errors.push(...checkDriftFromAllowedHashes(lockfile, mode, allowListPath));
-
-  // Only actual errors block (not warnings)
-  const hasErrors = errors.some((e) => e.type === "error");
-
+  // Validation is now handled via git PR review
   return {
-    valid: !hasErrors,
-    errors,
+    valid: true,
+    errors: [],
   };
 }
 

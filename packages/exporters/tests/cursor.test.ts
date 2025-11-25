@@ -316,22 +316,6 @@ describe("CursorExporter", () => {
   });
 });
 
-// DEPRECATED: generateMdcFooter tests removed
-// Footer generation has been removed from exports
-describe.skip("generateMdcFooter", () => {
-  it.skip("generates footer with content hash", () => {
-    // This test is skipped because footers have been removed
-  });
-
-  it.skip("includes fidelity notes when provided", () => {
-    // This test is skipped because footers have been removed
-  });
-
-  it.skip("omits fidelity notes section when empty", () => {
-    // This test is skipped because footers have been removed
-  });
-});
-
 // Helper functions
 
 function createRequest(
