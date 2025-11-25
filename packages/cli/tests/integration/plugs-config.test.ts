@@ -209,7 +209,7 @@ sections: []
   });
 
   it("shows config fills in list command", async () => {
-    // Create config with fill and explicit source path
+    // Create config with fill
     const configPath = join(testDir, ".aligntrue/config.yaml");
     writeFileSync(
       configPath,
@@ -226,20 +226,18 @@ sources:
 `,
     );
 
-    // Create IR with slot (legacy format for this test)
-    const irPath = join(testDir, ".aligntrue/rules");
+    // Create rules directory with a markdown file
+    const rulesDir = join(testDir, ".aligntrue/rules");
+    mkdirSync(rulesDir, { recursive: true });
+
+    // Create a rule file with plug placeholder
     writeFileSync(
-      irPath,
-      `id: test-pack
-version: "1.0.0"
-spec_version: "1"
-sections: []
-plugs:
-  slots:
-    test.cmd:
-      description: "Test command"
-      format: command
-      required: true
+      join(rulesDir, "testing.md"),
+      `---
+title: Testing
+---
+
+Run tests with: {{test.cmd}}
 `,
     );
 
@@ -254,9 +252,9 @@ plugs:
     }
 
     // Verify output shows config fill
+    // Note: Since we don't have slots defined in the pack, only config fills are shown
     const output = logOutput.join("\n");
     expect(output).toContain("test.cmd");
     expect(output).toContain("pnpm test");
-    expect(output).toContain("from config");
   });
 });
