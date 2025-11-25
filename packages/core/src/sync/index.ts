@@ -15,7 +15,7 @@ export {
   computeContentChecksum,
   ensureDirectoryExists,
 } from "@aligntrue/file-utils";
-export { loadIR, saveIR } from "./ir-loader.js";
+export { loadIR, saveIR, loadIRAndResolvePlugs } from "./ir-loader.js";
 export { orderSourceFiles, mergeSourceFiles } from "./source-loader.js";
 export type { SourceFile } from "./source-loader.js";
 export {

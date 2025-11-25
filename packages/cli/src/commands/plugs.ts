@@ -12,9 +12,10 @@ import {
   loadConfig,
   saveConfig, // saveConfig is exported from @aligntrue/core/config and re-exported via core/index
   type AlignTrueConfig,
+  loadIRAndResolvePlugs,
   // This enables plugs.fills persistence to .aligntrue/config.yaml
 } from "@aligntrue/core";
-import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
+import type { AlignPack } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
@@ -23,7 +24,7 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { resolveSource } from "../utils/source-resolver.js";
+import { resolve } from "path";
 
 /**
  * Argument definitions for plugs command
@@ -111,22 +112,59 @@ export async function plugsCommand(args: string[]): Promise<void> {
     // Load config
     const config = await tryLoadConfig(configPath);
 
-    // Resolve source
+    // Resolve source path
+    const cwd = process.cwd();
     const source = config.sources?.[0] || {
       type: "local" as const,
       path: ".aligntrue/rules",
     };
+    const sourcePath =
+      source.type === "local" && source.path
+        ? resolve(cwd, source.path)
+        : resolve(cwd, ".aligntrue/rules");
 
+    // Load IR using the same mechanism as sync command
     let pack: AlignPack;
     try {
-      const resolved = await resolveSource(source);
-      pack = parseYamlToJson(resolved.content) as AlignPack;
+      const loadOptions: Parameters<typeof loadIRAndResolvePlugs>[1] = {
+        mode: config.mode,
+      };
+      if (config.plugs?.fills) {
+        loadOptions.plugFills = config.plugs.fills;
+      }
+      const result = await loadIRAndResolvePlugs(sourcePath, loadOptions);
+
+      if (!result.success || !result.ir) {
+        exitWithError(
+          Errors.fileWriteFailed(
+            sourcePath,
+            result.warnings?.join(", ") || "Failed to load IR",
+          ),
+          2,
+        );
+      }
+
+      pack = result.ir;
+
+      // Merge config-defined slots into pack.plugs if they exist
+      // This allows slots to be defined in config for directory-based rules
+      if (config.plugs) {
+        if (!pack.plugs) {
+          pack.plugs = {};
+        }
+        // Config fills are already applied by loadIRAndResolvePlugs
+        // but we need to ensure they're visible in the pack for listing
+        if (config.plugs.fills) {
+          pack.plugs.fills = {
+            ...pack.plugs.fills,
+            ...config.plugs.fills,
+          };
+        }
+      }
     } catch (err) {
       exitWithError(
         Errors.fileWriteFailed(
-          source.type === "local"
-            ? source.path || "unknown"
-            : source.url || "unknown",
+          sourcePath,
           err instanceof Error ? err.message : String(err),
         ),
         2,
@@ -437,15 +475,38 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     const config = await loadConfig(configPath);
 
     // Load IR to get slot format
+    const cwd = process.cwd();
     const source = config.sources?.[0] || {
       type: "local" as const,
       path: ".aligntrue/rules",
     };
+    const sourcePath =
+      source.type === "local" && source.path
+        ? resolve(cwd, source.path)
+        : resolve(cwd, ".aligntrue/rules");
 
     let pack: AlignPack;
     try {
-      const resolved = await resolveSource(source);
-      pack = parseYamlToJson(resolved.content) as AlignPack;
+      const setLoadOptions: Parameters<typeof loadIRAndResolvePlugs>[1] = {
+        mode: config.mode,
+      };
+      if (config.plugs?.fills) {
+        setLoadOptions.plugFills = config.plugs.fills;
+      }
+      const result = await loadIRAndResolvePlugs(sourcePath, setLoadOptions);
+
+      if (!result.success || !result.ir) {
+        console.error("Warning: Could not load IR to validate slot format");
+        console.error("  Proceeding without format validation\n");
+        pack = {
+          id: "empty",
+          version: "1.0.0",
+          spec_version: "1",
+          sections: [],
+        };
+      } else {
+        pack = result.ir;
+      }
     } catch {
       console.error("Warning: Could not load IR to validate slot format");
       console.error("  Proceeding without format validation\n");
@@ -473,8 +534,10 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         process.exit(1);
       }
     } else {
-      // Even if slot is not declared, validate URL format if slot name suggests it's a URL
-      // This prevents storing invalid URLs that would fail later during sync
+      // Even if slot is not declared, validate format based on slot name conventions
+      // This prevents storing invalid values that would fail later during sync
+
+      // URL format validation for slots ending in .url, Url, or _url
       if (
         slotName.endsWith(".url") ||
         slotName.endsWith("Url") ||
@@ -487,6 +550,46 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
           console.error(`  Expected format: url\n`);
           console.error(
             `  Tip: URLs must include protocol (e.g., https://example.com)\n`,
+          );
+          process.exit(1);
+        }
+      }
+
+      // Command format validation for slots ending in .cmd, Cmd, _cmd, .command, or _command
+      if (
+        slotName.endsWith(".cmd") ||
+        slotName.endsWith("Cmd") ||
+        slotName.endsWith("_cmd") ||
+        slotName.endsWith(".command") ||
+        slotName.endsWith("_command")
+      ) {
+        const validation = validateFill(fillValue, "command");
+        if (!validation.valid) {
+          console.error(`✗ Validation failed for slot "${slotName}"\n`);
+          console.error(`  ${validation.errors?.[0]?.message}\n`);
+          console.error(`  Expected format: command\n`);
+          console.error(
+            `  Tip: Commands must be relative paths (no absolute paths like /usr/bin/...)\n`,
+          );
+          process.exit(1);
+        }
+      }
+
+      // File format validation for slots ending in .file, File, _file, .path, or _path
+      if (
+        slotName.endsWith(".file") ||
+        slotName.endsWith("File") ||
+        slotName.endsWith("_file") ||
+        slotName.endsWith(".path") ||
+        slotName.endsWith("_path")
+      ) {
+        const validation = validateFill(fillValue, "file");
+        if (!validation.valid) {
+          console.error(`✗ Validation failed for slot "${slotName}"\n`);
+          console.error(`  ${validation.errors?.[0]?.message}\n`);
+          console.error(`  Expected format: file\n`);
+          console.error(
+            `  Tip: File paths must be relative (no absolute paths)\n`,
           );
           process.exit(1);
         }

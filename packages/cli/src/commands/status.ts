@@ -2,8 +2,8 @@
  * Status command - Display workspace health at a glance
  */
 
-import { existsSync } from "fs";
-import { resolve } from "path";
+import { existsSync, readdirSync } from "fs";
+import { resolve, join } from "path";
 import * as clack from "@clack/prompts";
 import {
   getAlignTruePaths,
@@ -197,15 +197,12 @@ function buildStatusSummary(
     path: paths.bundle,
   };
 
-  // Count rule files in .aligntrue/rules/
+  // Count rule files in .aligntrue/rules/ (recursively)
   const rulesDir = resolve(cwd, ".aligntrue/rules");
   let rulesCount = 0;
   if (existsSync(rulesDir)) {
     try {
-      const { readdirSync } = require("fs");
-      rulesCount = readdirSync(rulesDir).filter((f: string) =>
-        f.endsWith(".md"),
-      ).length;
+      rulesCount = countMarkdownFilesRecursively(rulesDir);
     } catch {
       // Ignore errors, just show 0
     }
@@ -309,6 +306,25 @@ function formatLastSyncLabel(timestamp: number | null): string {
   const absolute = new Date(timestamp).toLocaleString();
   const relative = formatRelativeTimestamp(timestamp);
   return `${absolute} (${relative})`;
+}
+
+/**
+ * Count markdown files recursively in a directory
+ */
+function countMarkdownFilesRecursively(dir: string): number {
+  let count = 0;
+  const entries = readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      count += countMarkdownFilesRecursively(fullPath);
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      count++;
+    }
+  }
+
+  return count;
 }
 
 /**
