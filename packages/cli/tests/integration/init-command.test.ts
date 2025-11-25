@@ -67,6 +67,19 @@ describeSkipWindows("Init Command Integration", () => {
       expect(files.length).toBeGreaterThan(0);
     });
 
+    it("creates .aligntrue/README.md with documentation", async () => {
+      await init(["--yes", "--project-id", "test-project"]);
+
+      const readmePath = join(TEST_DIR, ".aligntrue", "README.md");
+      expect(existsSync(readmePath)).toBe(true);
+
+      const readmeContent = readFileSync(readmePath, "utf-8");
+      expect(readmeContent).toContain("rules/");
+      expect(readmeContent).toContain("ONLY DIRECTORY YOU SHOULD EDIT");
+      expect(readmeContent).toContain("config.yaml");
+      expect(readmeContent).toContain("aligntrue sync");
+    });
+
     it("does not create cursor starter files automatically", async () => {
       await init([
         "--yes",

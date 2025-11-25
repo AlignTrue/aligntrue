@@ -40,7 +40,8 @@ const FORMAT_OPTIONS: FormatOption[] = [
   {
     exporter: "agents",
     format: "AGENTS.md",
-    usedBy: "Copilot, Codex, Aider, Jules, and 10+ more",
+    usedBy:
+      "GitHub Copilot, OpenAI Codex, Aider, Roo Code, Jules, Amp, Open Code, and more",
     detectPatterns: ["AGENTS.md"],
   },
   {
@@ -376,19 +377,21 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   writeFileSync(configPath, yaml.stringify(config), "utf-8");
   createdFiles.push(".aligntrue/config.yaml");
 
-  // Add README to rules dir
-  const readmeContent = `# .aligntrue/rules/
+  // Add README to .aligntrue directory
+  const aligntrueReadmeContent = `# .aligntrue
 
-This directory is the single source of truth for your agent rules.
-Edit files here and run \`aligntrue sync\` to update your agents.
+This directory contains your AlignTrue configuration and rules.
 
-## Organization
-- You can create subdirectories (e.g. \`frontend/\`)
-- AlignTrue detects nested directories and mirrors them to agents
-- Frontmatter controls export behavior (exclude_from, export_only_to)
+## Directory structure
 
-## Format
-Markdown files with YAML frontmatter:
+- **\`rules/\`** - THE ONLY DIRECTORY YOU SHOULD EDIT. This is your single source of truth for all agent rules.
+- **\`config.yaml\`** - Configuration file (created during init, can be edited for settings)
+- **\`overwritten-rules/\`** - Automatic backups of files manually edited after export (gitignored, for your reference only)
+- **\`.cache/\`** - Generated cache for performance (gitignored)
+
+## Editing rules
+
+All your rules belong in \`rules/\` as markdown files:
 
 \`\`\`markdown
 ---
@@ -402,8 +405,36 @@ cursor:
 # My Rule Content
 ...
 \`\`\`
+
+After editing, run:
+\`\`\`bash
+aligntrue sync
+\`\`\`
+
+## Safe by default
+
+- AlignTrue never edits agent-specific folders like \`.cursor/plans/\`, \`.cursor/memories/\`, etc.
+- Only configuration files defined in \`.aligntrue/\` and exported agent files are touched.
+- Backups are automatically created before overwriting any manually edited files.
+
+## Organization
+
+- You can create subdirectories in \`rules/\` (e.g. \`rules/frontend/\`, \`rules/api/\`)
+- AlignTrue detects nested directories and mirrors them to agents
+- Frontmatter options like \`exclude_from\` and \`export_only_to\` control which exporters receive each rule
+
+## More information
+
+- View exported files in your root directory (e.g., \`AGENTS.md\`, \`.cursor/rules/\`)
+- Check \`config.yaml\` for settings (exporters, sources, git integration)
+- Run \`aligntrue --help\` for CLI commands
 `;
-  writeFileSync(join(rulesDir, "README.md"), readmeContent, "utf-8");
+  writeFileSync(
+    join(aligntrueDir, "README.md"),
+    aligntrueReadmeContent,
+    "utf-8",
+  );
+  createdFiles.push(".aligntrue/README.md");
 
   // Report creation
   if (nonInteractive) {

@@ -1,7 +1,12 @@
 /**
  * Firebender exporter
  * Exports AlignTrue rules to Firebender firebender.json format
- * Combines rules and MCP configuration in a single JSON file
+ *
+ * Features:
+ * - Combines rules and MCP configuration in a single JSON file
+ * - Includes source_file references for direct reading from .aligntrue/rules/
+ * - Firebender can optionally read rules directly from referenced source files
+ * - Full content is included for environments without direct file access
  */
 
 import { join } from "path";
@@ -30,6 +35,7 @@ interface FirebenderConfig {
 
 /**
  * Firebender section for natural markdown format
+ * Can optionally include source_file reference for direct file reading
  */
 interface FirebenderSection {
   heading: string;
@@ -37,6 +43,7 @@ interface FirebenderSection {
   content: string;
   fingerprint: string;
   scope?: string;
+  source_file?: string; // Path to original rule file for direct reading
   [key: string]: unknown; // Additional vendor.firebender fields
 }
 
@@ -166,6 +173,12 @@ export class FirebenderExporter extends ExporterBase {
     // Add scope if not default
     if (scopePath !== "all files") {
       firebenderSection.scope = scopePath;
+    }
+
+    // Add source file reference if available
+    // Firebender can optionally read directly from .aligntrue/rules/ files
+    if (section.source_file) {
+      firebenderSection.source_file = section.source_file;
     }
 
     // Extract vendor.firebender fields to top level
