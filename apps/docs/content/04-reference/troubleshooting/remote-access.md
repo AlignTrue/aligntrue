@@ -104,7 +104,7 @@ Start-Service ssh-agent
 ssh-add $HOME\.ssh\id_ed25519
 ```
 
-### Wrong Host Key
+### Wrong host key
 
 **Error:**
 
@@ -131,7 +131,7 @@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
 
 ## Clone issues
 
-### Repository Not Found
+### Repository not found
 
 **Error:**
 
@@ -450,7 +450,7 @@ SSH doesn't use SSL certificates, so this avoids the issue entirely.
 
 ## Branch issues
 
-### Branch Not Found
+### Branch not found
 
 **Error:**
 
@@ -521,7 +521,7 @@ remote: Permission to user/repo.git denied
    # Update config with new URL
    ```
 
-### File Permission Errors
+### File permission errors
 
 **Error:**
 

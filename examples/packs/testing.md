@@ -19,7 +19,7 @@ Before adding a test:
 4. Will it remain fast and stable?
 5. Is maintenance worth it?
 
-## Test Pyramid
+## Test pyramid
 
 - **Default to unit tests** - Fast, isolated, deterministic
 - **Use integration only for cross-cutting seams** - Database, API boundaries
@@ -27,7 +27,7 @@ Before adding a test:
 
 Prefer unit over integration over e2e. Add more unit tests if pyramid is imbalanced.
 
-## Determinism Requirements
+## Determinism requirements
 
 Tests must be deterministic:
 
@@ -39,7 +39,7 @@ Tests must be deterministic:
 
 **Error:** Sleep-based synchronization (`sleep`, `setTimeout`, `time.sleep`, `Thread.sleep`) is not allowed in tests. Wait on explicit conditions with timeouts instead.
 
-## Speed Requirements
+## Speed requirements
 
 Target sub-second per test:
 
@@ -65,7 +65,7 @@ Target sub-second per test:
 - **Prefer builders/factories** - Over large JSON fixtures
 - **Golden files only for stable outputs** - Screenshots, API responses
 
-## External Systems
+## External systems
 
 - **Use fakes or emulators** - Database, queue, cache, HTTP
 - **Replace real services** - testcontainers, in-memory equivalents

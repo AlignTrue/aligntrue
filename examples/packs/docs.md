@@ -9,7 +9,7 @@ tags: ["documentation", "readme", "changelog", "paved-road"]
 
 This pack establishes documentation standards: readme-first approach, CI-enforced checks, copy-pasteable snippets, and minimal DRY-based references.
 
-## Core Principles
+## Core principles
 
 - **Readme-first**: Single authoritative README at repo root
 - **Change behavior? Change docs**: Update documentation in the same PR
@@ -17,7 +17,7 @@ This pack establishes documentation standards: readme-first approach, CI-enforce
 - **DRY and reference-first**: Link to docs, don't duplicate
 - **CI-enforced**: Lint, link-check, spell-check in CI
 
-## Repository Structure
+## Repository structure
 
 Short-form at top level:
 
@@ -50,7 +50,7 @@ Every repository must have a README with:
 - How to build
 - How to contribute
 
-## Behavioral Changes
+## Behavioral changes
 
 **Requirement:** Behavior changes must include documentation updates.
 
@@ -70,7 +70,7 @@ Automated checks in every PR:
 - **Spell-check** - Where configured
 - **Generated sites** - Built but not committed to repo
 
-## Release Notes
+## Release notes
 
 Maintain changelog with:
 
@@ -79,7 +79,7 @@ Maintain changelog with:
 - Group changes by type: Added, Changed, Fixed, Removed
 - Clear, user-facing descriptions
 
-## Documentation Anti-patterns
+## Documentation anti-patterns
 
 - Outdated examples
 - Broken links

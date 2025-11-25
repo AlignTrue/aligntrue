@@ -26,7 +26,7 @@ The TDD cycle:
 - **Documentation** - Tests show usage
 - **Faster debugging** - Failures caught immediately
 
-## Small Steps
+## Small steps
 
 Keep steps tiny:
 
@@ -58,7 +58,7 @@ If tests are hard to write:
 - Look for hidden assumptions
 - Redesign, don't force tests
 
-## Test Organization
+## Test organization
 
 - **Organize by domain**, not type
 - **Describe behavior**, not implementation
@@ -72,7 +72,7 @@ If tests are hard to write:
 - **Stub returns** - Controlled, predictable responses
 - **Test real units** - Don't mock the code under test
 
-## Refactoring Discipline
+## Refactoring discipline
 
 Safe refactoring:
 
@@ -82,7 +82,7 @@ Safe refactoring:
 4. **Revert if needed** - Git diff shows exactly what changed
 5. **Commit** - Before next feature
 
-## Emerging Architecture
+## Emerging architecture
 
 Don't design upfront:
 
@@ -91,7 +91,7 @@ Don't design upfront:
 - **DRY emerges** - Through refactoring
 - **Boundaries become clear** - Through mocking and testing
 
-## Common TDD Mistakes
+## Common TDD mistakes
 
 - **Writing all tests first** - Defeats incremental design
 - **Tests too large** - Hard to diagnose failures
