@@ -1,8 +1,30 @@
-# Testing Requirements
+<!--
+  STARTER RULE: This is a starting point to help you get going.
+  Update, expand, or replace it based on your project's needs.
+-->
 
-Every new feature must include unit tests. Test files should be co-located with source files using the .test.ts or .spec.ts naming convention.
+# Testing Standards
 
-Examples:
+Add or update tests for any nontrivial change. Use the existing test framework and patterns in this project.
+
+## Test Quality
+
+- Prefer fast, focused unit tests.
+- Only use integration or end-to-end tests when necessary.
+- Test behavior, not implementation details.
+- Keep tests independent and deterministic.
+- Use descriptive test names that explain what is being tested.
+
+## Test Design
+
+- Tests should act as executable specs: clear names, simple setups, deterministic assertions.
+- Explain why a test is missing if you cannot add one, and call out the risk.
+- When fixing a bug, add a regression test that fails before the fix and passes after.
+- Aim for test coverage that gives confidence in correctness (target 80%+ for critical code).
+
+## Test Co-location
+
+Place test files next to source files using the `.test.*` or `.spec.*` naming convention:
 
 - src/utils/parser.ts → src/utils/parser.test.ts
 - src/components/Button.tsx → src/components/Button.test.tsx
