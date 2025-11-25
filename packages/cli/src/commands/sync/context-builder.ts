@@ -440,25 +440,28 @@ export async function buildSyncContext(
         ? resolve(cwd, config.sources[0].path || paths.rules)
         : resolve(cwd, paths.rules);
 
-    // Check if target is a directory (new format - rules are already in place)
-    const targetStat = existsSync(targetPath) ? statSync(targetPath) : null;
-    const isDirectory = targetStat?.isDirectory() || false;
-
-    if (!isDirectory) {
-      // Old format: Write merged bundle to a file
-      try {
-        const yaml = await import("yaml");
-        const bundleYaml = yaml.stringify(bundleResult.pack);
-        writeFileSync(targetPath, bundleYaml, "utf-8");
-        absoluteSourcePath = targetPath;
-      } catch (err) {
+    // Write merged bundle to file (skip if target is a directory - new format)
+    // Uses EAFP pattern to avoid TOCTOU race condition
+    try {
+      const yaml = await import("yaml");
+      const bundleYaml = yaml.stringify(bundleResult.pack);
+      writeFileSync(targetPath, bundleYaml, "utf-8");
+      absoluteSourcePath = targetPath;
+    } catch (err) {
+      // EISDIR means target is a directory (new format - rules already in place)
+      // This is expected and OK - skip writing, rules are already in place
+      const isDirectoryError =
+        err instanceof Error &&
+        "code" in err &&
+        (err as NodeJS.ErrnoException).code === "EISDIR";
+      if (!isDirectoryError) {
         throw ErrorFactory.fileWriteFailed(
           "merged bundle",
           err instanceof Error ? err.message : String(err),
         );
       }
+      // For directories, absoluteSourcePath is already set correctly
     }
-    // For directories, absoluteSourcePath is already set correctly
   }
 
   const context: SyncContext = {
