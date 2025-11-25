@@ -10,7 +10,7 @@ import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { createSpinner } from "../utils/spinner.js";
+import { withSpinner, createManagedSpinner } from "../utils/spinner.js";
 
 interface BackupArgs {
   // Common
@@ -146,45 +146,37 @@ async function handleCreate(
   args: BackupArgs,
   argv: string[],
 ): Promise<void> {
-  const spinner = createSpinner();
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
-
-  spinner.start("Creating backup...");
-  spinnerActive = true;
-
   // Parse notes from argv manually if needed
   const notesIndex = argv.indexOf("--notes");
   const notes =
     notesIndex >= 0 && argv[notesIndex + 1] ? argv[notesIndex + 1] : args.notes;
 
-  try {
-    const backupOptions: { cwd: string; created_by: string; notes?: string } = {
-      cwd,
-      created_by: "manual",
-    };
-    if (notes) {
-      backupOptions.notes = notes;
-    }
-    const backup = BackupManager.createBackup(backupOptions);
+  await withSpinner(
+    "Creating backup...",
+    async () => {
+      const backupOptions: { cwd: string; created_by: string; notes?: string } =
+        {
+          cwd,
+          created_by: "manual",
+        };
+      if (notes) {
+        backupOptions.notes = notes;
+      }
+      const backup = BackupManager.createBackup(backupOptions);
 
-    stopSpinner("Backup created");
-
-    clack.log.success(`Backup: ${backup.timestamp}`);
-    if (backup.manifest.notes) {
-      clack.log.info(`Notes: ${backup.manifest.notes}`);
-    }
-    clack.log.info(`Files: ${backup.manifest.files.length} backed up`);
-    clack.log.step(`Location: ${backup.path}`);
-  } catch (error) {
-    stopSpinner("Backup failed", 1);
-    throw error;
-  }
+      clack.log.success(`Backup: ${backup.timestamp}`);
+      if (backup.manifest.notes) {
+        clack.log.info(`Notes: ${backup.manifest.notes}`);
+      }
+      clack.log.info(`Files: ${backup.manifest.files.length} backed up`);
+      clack.log.step(`Location: ${backup.path}`);
+    },
+    "Backup created",
+    (err) => {
+      clack.log.error(`Backup failed: ${err.message}`);
+      throw err;
+    },
+  );
 }
 
 async function handleList(cwd: string): Promise<void> {
@@ -264,33 +256,24 @@ async function handleRestore(
     return;
   }
 
-  const spinner = createSpinner();
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
+  await withSpinner(
+    "Restoring backup...",
+    async () => {
+      const restoreOptions: { cwd: string; timestamp?: string } = { cwd };
+      if (toTimestamp) {
+        restoreOptions.timestamp = toTimestamp;
+      }
+      const restored = BackupManager.restoreBackup(restoreOptions);
 
-  spinner.start("Restoring backup...");
-  spinnerActive = true;
-
-  try {
-    const restoreOptions: { cwd: string; timestamp?: string } = { cwd };
-    if (toTimestamp) {
-      restoreOptions.timestamp = toTimestamp;
-    }
-    const restored = BackupManager.restoreBackup(restoreOptions);
-
-    stopSpinner("Restore complete");
-
-    clack.log.success(`Restored backup: ${restored.timestamp}`);
-    clack.log.info(`Files restored: ${restored.manifest.files.length}`);
-  } catch (error) {
-    stopSpinner("Restore failed", 1);
-    throw error;
-  }
+      clack.log.success(`Restored backup: ${restored.timestamp}`);
+      clack.log.info(`Files restored: ${restored.manifest.files.length}`);
+    },
+    "Restore complete",
+    (err) => {
+      clack.log.error(`Restore failed: ${err.message}`);
+      throw err;
+    },
+  );
 }
 
 async function handleCleanup(
@@ -339,29 +322,20 @@ async function handleCleanup(
     return;
   }
 
-  const spinner = createSpinner();
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
+  await withSpinner(
+    "Cleaning up old backups...",
+    async () => {
+      const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
 
-  spinner.start("Cleaning up old backups...");
-  spinnerActive = true;
-
-  try {
-    const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
-
-    stopSpinner("Cleanup complete");
-
-    clack.log.success(`Removed ${removed} backup${removed === 1 ? "" : "s"}`);
-    clack.log.info(`${keepCount} backups remaining`);
-  } catch (error) {
-    stopSpinner("Cleanup failed", 1);
-    throw error;
-  }
+      clack.log.success(`Removed ${removed} backup${removed === 1 ? "" : "s"}`);
+      clack.log.info(`${keepCount} backups remaining`);
+    },
+    "Cleanup complete",
+    (err) => {
+      clack.log.error(`Cleanup failed: ${err.message}`);
+      throw err;
+    },
+  );
 }
 
 async function handleLegacyCleanup(cwd: string): Promise<void> {
@@ -369,24 +343,16 @@ async function handleLegacyCleanup(cwd: string): Promise<void> {
   const { unlinkSync } = await import("fs");
   const { join } = await import("path");
 
-  const spinner = createSpinner();
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
+  const spinner = createManagedSpinner();
 
   spinner.start("Scanning for legacy .bak files...");
-  spinnerActive = true;
 
   const bakFiles = globSync(["**/*.bak", ".bak"], {
     cwd,
     ignore: ["node_modules/**", ".git/**", ".aligntrue/**"],
   });
 
-  stopSpinner(`Found ${bakFiles.length} legacy file(s)`);
+  spinner.stop(`Found ${bakFiles.length} legacy file(s)`);
 
   if (bakFiles.length === 0) {
     clack.log.success("No legacy .bak files found");

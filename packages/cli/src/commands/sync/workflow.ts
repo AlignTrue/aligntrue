@@ -48,15 +48,6 @@ export async function executeSyncWorkflow(
 ): Promise<SyncResult> {
   const { cwd, config, configPath, engine, spinner } = context;
 
-  // Track spinner state to prevent double-stops and stuck animations
-  let spinnerActive = false;
-  const stopSpinner = (message?: string): void => {
-    if (spinnerActive) {
-      spinner.stop(message);
-      spinnerActive = false;
-    }
-  };
-
   // Initialize interactive prompts for conflict resolution if needed
   if (options.verbose || !options.nonInteractive) {
     initializePrompts();
@@ -70,7 +61,6 @@ export async function executeSyncWorkflow(
   if (!options.dryRun) {
     if (!options.quiet) {
       spinner.start("Creating safety backup");
-      spinnerActive = true;
     }
     try {
       const backup = BackupManager.createBackup({
@@ -83,7 +73,7 @@ export async function executeSyncWorkflow(
         agentFilePatterns: null, // No agent file patterns specified
       });
       if (!options.quiet) {
-        stopSpinner(`Safety backup created: ${backup.timestamp}`);
+        spinner.stop(`Safety backup created: ${backup.timestamp}`);
         if (options.verbose) {
           clack.log.info(
             `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
@@ -92,7 +82,7 @@ export async function executeSyncWorkflow(
       }
     } catch (_error) {
       if (!options.quiet) {
-        stopSpinner("Backup failed");
+        spinner.stop("Backup failed");
         clack.log.warn(
           `Failed to create safety backup: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
@@ -130,15 +120,12 @@ export async function executeSyncWorkflow(
 
   if (!options.quiet) {
     spinner.start(options.dryRun ? "Previewing changes" : "Syncing to agents");
-    spinnerActive = true;
   }
   result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
 
   if (!options.quiet) {
     // Stop without message, let result handler show outro/success message
-    stopSpinner();
-  } else {
-    stopSpinner(); // Silent stop if spinner was never started
+    spinner.stop();
   }
 
   // Step 3: Remove starter file after first successful sync

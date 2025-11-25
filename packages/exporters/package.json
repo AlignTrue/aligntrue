@@ -37,11 +37,8 @@
     "@aligntrue/file-utils": "workspace:*",
     "@aligntrue/plugin-contracts": "workspace:*",
     "@aligntrue/schema": "workspace:*",
-    "@types/js-yaml": "^4.0.9",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "gray-matter": "^4.0.3",
-    "js-yaml": ">=4.1.1",
     "yaml": "^2.6.1"
   },
   "license": "MIT",
