@@ -26,7 +26,7 @@ import {
 } from "../utils/command-utilities.js";
 import { resolveSource } from "../utils/source-resolver.js";
 import { getInvalidExporters } from "../utils/exporter-validation.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for check command
@@ -103,15 +103,8 @@ export async function check(args: string[]): Promise<void> {
     envCiValue !== "0";
   const ciMode = ciFlag || envCi;
 
-  const spinner = createSpinner({ disabled: ciMode || jsonOutput });
+  const spinner = createManagedSpinner({ disabled: ciMode || jsonOutput });
   spinner.start("Validating AlignTrue rules");
-  let spinnerActive = true;
-  const stopSpinner = (text: string): void => {
-    if (spinnerActive) {
-      spinner.stop(text);
-      spinnerActive = false;
-    }
-  };
 
   try {
     // Step 1: Load config (with standardized error handling)
@@ -123,7 +116,7 @@ export async function check(args: string[]): Promise<void> {
     } catch (_error) {
       const message = _error instanceof Error ? _error.message : String(_error);
       if (jsonOutput) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.log(
           JSON.stringify(
             {
@@ -137,7 +130,7 @@ export async function check(args: string[]): Promise<void> {
         process.exit(2);
       }
 
-      stopSpinner("Validation failed");
+      spinner.stop("Validation failed");
       exitWithError(
         Errors.validationFailed([
           `Failed to validate exporters: ${message}`,
@@ -155,7 +148,7 @@ export async function check(args: string[]): Promise<void> {
       );
 
       if (jsonOutput) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.log(
           JSON.stringify(
             {
@@ -170,7 +163,7 @@ export async function check(args: string[]): Promise<void> {
         process.exit(1);
       }
 
-      stopSpinner("Validation failed");
+      spinner.stop("Validation failed");
       exitWithError(
         {
           ...Errors.configValidationFailed(configPath, details),
@@ -194,7 +187,7 @@ export async function check(args: string[]): Promise<void> {
       rulesContent = resolved.content;
       rulesPath = resolved.sourcePath;
     } catch (err) {
-      stopSpinner("Validation failed");
+      spinner.stop("Validation failed");
       exitWithError(
         Errors.fileWriteFailed(
           source.type === "local"
@@ -221,7 +214,7 @@ export async function check(args: string[]): Promise<void> {
       const parseResult = parseNaturalMarkdown(rulesContent);
 
       if (parseResult.errors.length > 0) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         const errorList = parseResult.errors
           .map((err) => `  Line ${err.line}: ${err.message}`)
           .join("\n");
@@ -231,7 +224,7 @@ export async function check(args: string[]): Promise<void> {
       }
 
       if (parseResult.sections.length === 0) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.error("✗ No sections found in markdown\n");
         console.error(`  File: ${rulesPath}\n`);
         process.exit(1);
@@ -251,7 +244,7 @@ export async function check(args: string[]): Promise<void> {
 
         // Handle edge cases: empty YAML returns undefined, comments-only returns null
         if (alignData === undefined || alignData === null) {
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.error("✗ Empty or invalid rules file\n");
           console.error(`  File: ${rulesPath}`);
           console.error(
@@ -265,7 +258,7 @@ export async function check(args: string[]): Promise<void> {
 
         // Verify it's actually an object (not a string, array, or primitive)
         if (typeof alignData !== "object" || Array.isArray(alignData)) {
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.error("✗ Invalid rules file structure\n");
           console.error(`  File: ${rulesPath}`);
           console.error(
@@ -280,7 +273,7 @@ export async function check(args: string[]): Promise<void> {
           process.exit(1);
         }
       } catch (_err) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.error("✗ Invalid YAML in rules file\n");
         console.error(
           `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
@@ -301,7 +294,7 @@ export async function check(args: string[]): Promise<void> {
       const details = (schemaResult.errors || []).map(
         (err) => `${err.path}: ${err.message}`,
       );
-      stopSpinner("Validation failed");
+      spinner.stop("Validation failed");
       exitWithError(
         {
           ...Errors.validationFailed(details),
@@ -326,7 +319,7 @@ export async function check(args: string[]): Promise<void> {
 
       // Check if lockfile exists
       if (!existsSync(lockfilePath)) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.error("✗ Lockfile validation failed\n");
         console.error("  Lockfile not found (required in team mode)");
         console.error(`  Expected: ${lockfilePath}\n`);
@@ -338,7 +331,7 @@ export async function check(args: string[]): Promise<void> {
       try {
         const lockfile = readLockfile(lockfilePath);
         if (!lockfile) {
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.error("✗ Lockfile validation failed\n");
           console.error("  Failed to read lockfile\n");
           process.exit(2);
@@ -346,7 +339,7 @@ export async function check(args: string[]): Promise<void> {
         const validation = validateLockfile(lockfile, alignData as AlignPack);
 
         if (!validation.valid) {
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.error("✗ Lockfile drift detected\n");
 
           // Show mismatches
@@ -377,7 +370,7 @@ export async function check(args: string[]): Promise<void> {
           process.exit(1);
         }
       } catch (_err) {
-        stopSpinner("Validation failed");
+        spinner.stop("Validation failed");
         console.error("✗ Lockfile validation failed\n");
         console.error(
           `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
@@ -414,7 +407,7 @@ export async function check(args: string[]): Promise<void> {
       if (!overlayResult.valid) {
         if (jsonOutput) {
           // JSON output mode
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.log(
             JSON.stringify(
               {
@@ -428,7 +421,7 @@ export async function check(args: string[]): Promise<void> {
           );
         } else {
           // Human-readable output
-          stopSpinner("Validation failed");
+          spinner.stop("Validation failed");
           console.error("✗ Overlay validation failed\n");
           console.error(formatOverlayValidationResult(overlayResult));
           console.error("");
@@ -452,7 +445,7 @@ export async function check(args: string[]): Promise<void> {
     );
 
     // Step 6: All validations passed
-    stopSpinner("Validation complete");
+    spinner.stop("Validation complete");
 
     if (jsonOutput) {
       // JSON output mode
@@ -529,7 +522,7 @@ export async function check(args: string[]): Promise<void> {
       console.log("");
     }
   } catch (err) {
-    stopSpinner("Validation failed");
+    spinner.stop("Validation failed");
     if (err instanceof Error && err.name === "ProcessExitError") {
       throw err;
     }

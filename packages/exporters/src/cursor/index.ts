@@ -12,7 +12,7 @@ import type {
 import type { RuleFrontmatter } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 import { join } from "path";
-import yaml from "js-yaml";
+import { stringify as stringifyYaml } from "yaml";
 
 export class CursorExporter extends ExporterBase {
   name = "cursor";
@@ -65,11 +65,8 @@ export class CursorExporter extends ExporterBase {
       // We put the read-only marker as an HTML comment after frontmatter
       const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
 
-      // Stringify frontmatter using js-yaml directly
-      const yamlContent = yaml.dump(cursorFrontmatter, {
-        sortKeys: true,
-        noRefs: true,
-      });
+      // Stringify frontmatter using yaml library
+      const yamlContent = stringifyYaml(cursorFrontmatter);
       const frontmatterStr = `---\n${yamlContent}---`;
 
       // Construct full file content

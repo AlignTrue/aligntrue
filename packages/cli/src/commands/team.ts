@@ -15,7 +15,7 @@ import {
 } from "../utils/command-utilities.js";
 import { isTTY } from "../utils/tty-helper.js";
 import { applyDefaults } from "@aligntrue/core";
-import { createSpinner, SpinnerLike } from "../utils/spinner.js";
+import { createManagedSpinner, type SpinnerLike } from "../utils/spinner.js";
 import { buildNextStepsMessage } from "../utils/next-steps.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -215,14 +215,6 @@ async function teamEnable(
 ): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
   let spinner: SpinnerLike | null = null;
-  let spinnerActive = false;
-  const stopSpinner = (text: string): void => {
-    if (!spinnerActive || !spinner) {
-      return;
-    }
-    spinner.stop(text);
-    spinnerActive = false;
-  };
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -363,9 +355,8 @@ async function teamEnable(
       configWithDefaults.sources = existingSources;
     }
 
-    spinner = createSpinner();
+    spinner = createManagedSpinner();
     spinner.start("Writing team configuration");
-    spinnerActive = true;
 
     // Write config back atomically
     const yamlContent = stringifyYaml(configWithDefaults);
@@ -391,7 +382,9 @@ async function teamEnable(
       await runTeamMigrationWizard(config, process.cwd());
     }
 
-    stopSpinner("Team configuration updated");
+    if (spinner) {
+      spinner.stop("Team configuration updated");
+    }
 
     // Show configuration summary
     console.log("\n✓ Team mode enabled\n");
@@ -437,7 +430,9 @@ async function teamEnable(
       clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
     }
   } catch (err) {
-    stopSpinner("Team mode enable failed");
+    if (spinner) {
+      spinner.stop("Team mode enable failed", 1);
+    }
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
