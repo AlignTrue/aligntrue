@@ -31,6 +31,11 @@
       "source": "/dup-rules",
       "destination": "/docs/03-concepts/preventing-duplicate-rules",
       "permanent": true
+    },
+    {
+      "source": "/agent-ignore",
+      "destination": "/docs/03-concepts/preventing-duplicate-rules#agent-ignore-files",
+      "permanent": true
     }
   ],
   "headers": [
