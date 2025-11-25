@@ -3,7 +3,7 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import { mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -24,6 +24,60 @@ import { createSpinner } from "../utils/spinner.js";
 
 import { scanForExistingRules } from "./init/rule-importer.js";
 import { createStarterTemplates } from "./init/starter-templates.js";
+
+/**
+ * Format options for exporter selection
+ * Shows formats (not individual agents) with "used by" descriptions
+ */
+interface FormatOption {
+  exporter: string;
+  format: string;
+  usedBy: string;
+  detectPatterns: string[];
+}
+
+const FORMAT_OPTIONS: FormatOption[] = [
+  {
+    exporter: "agents",
+    format: "AGENTS.md",
+    usedBy: "Copilot, Codex, Aider, Jules, and 10+ more",
+    detectPatterns: ["AGENTS.md"],
+  },
+  {
+    exporter: "cursor",
+    format: ".cursor/rules/",
+    usedBy: "Cursor",
+    detectPatterns: [".cursor/rules/", ".cursor/"],
+  },
+  {
+    exporter: "claude",
+    format: "CLAUDE.md",
+    usedBy: "Claude Code",
+    detectPatterns: ["CLAUDE.md"],
+  },
+  {
+    exporter: "cline",
+    format: ".clinerules",
+    usedBy: "Cline",
+    detectPatterns: [".clinerules"],
+  },
+];
+
+/**
+ * Detect which formats are present in the workspace
+ */
+function detectFormats(cwd: string): Set<string> {
+  const detected = new Set<string>();
+  for (const option of FORMAT_OPTIONS) {
+    for (const pattern of option.detectPatterns) {
+      if (existsSync(join(cwd, pattern))) {
+        detected.add(option.exporter);
+        break;
+      }
+    }
+  }
+  return detected;
+}
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -166,16 +220,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   scanner.stop("Scan complete");
 
   let rulesToWrite = importedRules;
-  const detectedExporters = new Set<string>();
-
-  // Infer exporters from imported rules
-  for (const rule of importedRules) {
-    const source = rule.frontmatter.original_source;
-    if (source === "cursor") detectedExporters.add("cursor");
-    if (source === "agents") detectedExporters.add("agents");
-    if (source === "claude") detectedExporters.add("claude");
-  }
-
   let isFreshStart = false;
 
   if (rulesToWrite.length > 0) {
@@ -188,9 +232,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // No rules found, will use starter templates
     isFreshStart = true;
     rulesToWrite = createStarterTemplates();
-    // Default exporters for fresh start
-    detectedExporters.add("agents");
-    detectedExporters.add("cursor");
   }
 
   // Step 3: Confirm (if interactive)
@@ -209,6 +250,58 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       clack.cancel("Run 'aligntrue init' when you're ready to start.");
       process.exit(0);
     }
+  }
+
+  // Step 3b: Format selection (if interactive and no --exporters flag)
+  let selectedExporters: string[] = [];
+
+  if (exporters) {
+    // User provided --exporters flag, use those
+    selectedExporters = exporters;
+  } else if (!nonInteractive) {
+    // Interactive mode: show format selection
+    const detectedFormats = detectFormats(cwd);
+
+    // Build options for multi-select
+    const formatChoices = FORMAT_OPTIONS.map((opt) => {
+      const isDetected = detectedFormats.has(opt.exporter);
+      return {
+        value: opt.exporter,
+        label: `${opt.format}`,
+        hint: `${opt.usedBy}${isDetected ? " (detected)" : ""}`,
+      };
+    });
+
+    // Pre-select detected formats
+    const initialValues = FORMAT_OPTIONS.filter((opt) =>
+      detectedFormats.has(opt.exporter),
+    ).map((opt) => opt.exporter);
+
+    const selected = await clack.multiselect({
+      message: "Which formats do you want to export to?",
+      options: formatChoices,
+      initialValues: initialValues.length > 0 ? initialValues : ["agents"],
+      required: false,
+    });
+
+    if (clack.isCancel(selected)) {
+      clack.cancel("Run 'aligntrue init' when you're ready to start.");
+      process.exit(0);
+    }
+
+    selectedExporters = selected as string[];
+
+    // Show note about other formats
+    if (selectedExporters.length > 0) {
+      clack.log.info(
+        "Tip: See all available formats with 'aligntrue adapters list'",
+      );
+    }
+  } else {
+    // Non-interactive mode: use detected or default to agents
+    const detectedFormats = detectFormats(cwd);
+    selectedExporters =
+      detectedFormats.size > 0 ? Array.from(detectedFormats) : ["agents"];
   }
 
   // Step 4: Create files
@@ -230,14 +323,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     createdFiles.push(join(".aligntrue/rules", rule.path));
   }
 
-  // Determine final exporters list
-  let finalExporters: string[] = [];
-  if (exporters) {
-    finalExporters = exporters;
-  } else {
-    finalExporters = Array.from(detectedExporters);
-    if (finalExporters.length === 0) finalExporters = ["agents"];
-  }
+  // Use selected exporters
+  const finalExporters = selectedExporters;
 
   // Generate config
   const config: Partial<AlignTrueConfig> = {
@@ -304,10 +391,17 @@ cursor:
   // Step 5: Sync
   console.log("\n✓ AlignTrue initialized\n");
 
-  const shouldSync = !noSync;
+  const shouldSync = !noSync && finalExporters.length > 0;
   let autoSyncPerformed = false;
 
-  if (shouldSync) {
+  if (finalExporters.length === 0) {
+    // No exporters configured - skip sync and inform user
+    logMessage(
+      "No exporters configured. Add one with 'aligntrue adapters enable <format>'",
+      "info",
+      nonInteractive,
+    );
+  } else if (shouldSync) {
     // For fresh starts, auto-sync without prompting (we know exactly what will be synced)
     if (isFreshStart) {
       await runSync();
@@ -336,17 +430,21 @@ cursor:
     logMessage(msg, "success", nonInteractive);
   }
 
-  // Outro - different message for fresh starts vs imports
-  const outroMsg = isFreshStart
-    ? `\nYour starter rules are ready. Add or update them any time in .aligntrue/rules/:
-  1. Edit rules or add new .md files
-  2. Run 'aligntrue sync' to update your agents`
-    : `\nNext steps:
-  1. Review rules in .aligntrue/rules/
-  2. Edit or add new .md files
-  3. Run 'aligntrue sync' to update agents`;
+  // Outro with helpful commands
+  const outroLines = [
+    "",
+    isFreshStart
+      ? "Your starter rules are ready. Add or update them any time in .aligntrue/rules/"
+      : "Initialization complete. Review your rules in .aligntrue/rules/",
+    "",
+    "Helpful commands:",
+    "  aligntrue sync       Sync rules to your agents",
+    "  aligntrue adapters   Manage agent formats",
+    "  aligntrue status     Check sync health",
+    "  aligntrue --help     See all commands",
+  ];
 
-  logMessage(outroMsg, "info", nonInteractive);
+  logMessage(outroLines.join("\n"), "info", nonInteractive);
 
   recordEvent({ command_name: "init", align_hashes_used: [] });
 }
