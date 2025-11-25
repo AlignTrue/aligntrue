@@ -56,10 +56,28 @@ const FORMAT_OPTIONS: FormatOption[] = [
     detectPatterns: ["CLAUDE.md"],
   },
   {
+    exporter: "windsurf",
+    format: ".windsurf/rules/",
+    usedBy: "Windsurf",
+    detectPatterns: [".windsurf/rules/", ".windsurf/"],
+  },
+  {
     exporter: "cline",
     format: ".clinerules",
     usedBy: "Cline",
     detectPatterns: [".clinerules"],
+  },
+  {
+    exporter: "copilot",
+    format: ".github/copilot-instructions.md",
+    usedBy: "GitHub Copilot",
+    detectPatterns: [".github/copilot-instructions.md"],
+  },
+  {
+    exporter: "zed",
+    format: ".zed/rules.md",
+    usedBy: "Zed",
+    detectPatterns: [".zed/rules.md", ".zed/"],
   },
 ];
 
@@ -447,10 +465,13 @@ cursor:
       : "Initialization complete. Review your rules in .aligntrue/rules/",
     "",
     "Helpful commands:",
-    "  aligntrue sync       Sync rules to your agents",
-    "  aligntrue adapters   Manage agent formats",
-    "  aligntrue status     Check sync health",
-    "  aligntrue --help     See all commands",
+    "  aligntrue sync        Sync rules to your agents",
+    "  aligntrue adapters    Manage agent formats",
+    "  aligntrue status      Check sync health",
+    ...(mode !== "team"
+      ? ["  aligntrue team enable Enable team mode for collaboration"]
+      : []),
+    "  aligntrue --help      See all commands",
   ];
 
   logMessage(outroLines.join("\n"), "info", nonInteractive);
@@ -462,7 +483,7 @@ async function runSync() {
   try {
     const syncModule = await import("./sync/index.js");
     const sync = syncModule.sync;
-    await sync(["--quiet"]);
+    await sync(["--quiet", "--skip-not-found-warning"]);
   } catch (error) {
     console.error(
       `Sync failed: ${error instanceof Error ? error.message : String(error)}`,

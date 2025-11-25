@@ -617,7 +617,7 @@ async function checkAgentsWithCache(
       }
     }
 
-    if (detection.notFound.length > 0) {
+    if (detection.notFound.length > 0 && !options.skipNotFoundWarning) {
       clack.log.info(
         `Configured exporters not detected: ${detection.notFound.join(", ")}\n` +
           "  (These agents may not be installed)",

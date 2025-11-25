@@ -75,6 +75,12 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Skip agent detection",
   },
   {
+    flag: "--skip-not-found-warning",
+    hasValue: false,
+    description:
+      "Skip warning about configured exporters not being detected (used during init)",
+  },
+  {
     flag: "--auto-enable",
     hasValue: false,
     description: "Auto-enable detected agents without prompting",

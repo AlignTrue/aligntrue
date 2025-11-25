@@ -3,7 +3,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { relative } from "path";
+import { relative, basename } from "path";
 import * as clack from "@clack/prompts";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
@@ -118,6 +118,9 @@ export async function handleSyncResult(
       );
 
       if (detection.hasIssues) {
+        // Collect all ignore file updates
+        const allIgnoreUpdates = [];
+
         // Handle conflicts that can be resolved with ignore files
         for (const conflict of detection.conflicts) {
           const shouldPrompt =
@@ -153,15 +156,7 @@ export async function handleSyncResult(
               false,
             );
 
-            const allUpdates = [...updates, ...nestedUpdates];
-
-            allUpdates.forEach((update) => {
-              if (update.created) {
-                clack.log.success(`Created ${update.filePath}`);
-              } else if (update.modified) {
-                clack.log.success(`Updated ${update.filePath}`);
-              }
-            });
+            allIgnoreUpdates.push(...updates, ...nestedUpdates);
           } catch (error) {
             clack.log.warn(
               `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
@@ -169,13 +164,36 @@ export async function handleSyncResult(
           }
         }
 
+        // Show consolidated ignore file messages
+        if (allIgnoreUpdates.length > 0) {
+          const createdFiles = allIgnoreUpdates
+            .filter((u) => u.created)
+            .map((u) => basename(u.filePath));
+          const modifiedFiles = allIgnoreUpdates
+            .filter((u) => u.modified)
+            .map((u) => basename(u.filePath));
+
+          if (createdFiles.length > 0 || modifiedFiles.length > 0) {
+            const parts: string[] = [];
+            if (createdFiles.length > 0) {
+              parts.push(`created ${createdFiles.join(", ")}`);
+            }
+            if (modifiedFiles.length > 0) {
+              parts.push(`updated ${modifiedFiles.join(", ")}`);
+            }
+            clack.log.info(
+              `Agent ignore files ${parts.join(" and ")} for duplicate rule prevention. Read-only agent exports added to .gitignore.`,
+            );
+          }
+        }
+
         // Show warnings for agents without ignore support
-        for (const warning of detection.warnings) {
-          const message = formatWarningMessage(warning);
-          clack.log.warn(message);
-          clack.log.info(
-            `Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules`,
-          );
+        if (detection.warnings.length > 0) {
+          for (const warning of detection.warnings) {
+            const message = formatWarningMessage(warning);
+            clack.log.warn(message);
+          }
+          clack.log.info(`Learn more: https://aligntrue.ai/dup-rules`);
         }
       }
     }
