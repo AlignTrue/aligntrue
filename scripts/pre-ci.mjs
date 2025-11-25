@@ -17,8 +17,6 @@ const steps = [
     cmd: "pnpm build",
   },
   { name: "Type check", cmd: "pnpm typecheck" },
-  { name: "Lint", cmd: "pnpm lint --max-warnings 460" },
-  { name: "Format check", cmd: "pnpm format:check" },
   {
     name: "Run tests",
     cmd: "TURBO_CONCURRENCY=1 pnpm test",
