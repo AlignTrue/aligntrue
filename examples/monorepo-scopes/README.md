@@ -87,8 +87,8 @@ Expected output:
 ```
 ✓ Sync complete
 ✓ Applied 3 scopes
-Wrote 2 files:
-  - .cursor/rules/aligntrue.mdc
+Wrote 5 files:
+  - .cursor/rules/*.mdc (multiple files)
   - AGENTS.md
 ```
 

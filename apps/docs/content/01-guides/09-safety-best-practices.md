@@ -41,7 +41,8 @@ $ aligntrue sync --dry-run
 Previewing changes (dry-run mode)
 
 Files that would be written:
-  .cursor/rules/aligntrue.mdc
+  .cursor/rules/rule1.mdc
+  .cursor/rules/rule2.mdc
   AGENTS.md
 
 Changes preview:
@@ -99,7 +100,7 @@ Before any file is overwritten (read-only or edit_source), AlignTrue automatical
 
 - **Location**: `.aligntrue/overwritten-rules/` directory
 - **Format**: Timestamped copies preserving original path structure
-- **Example**: `.cursor/rules/aligntrue.mdc` → `.aligntrue/overwritten-rules/cursor/rules/aligntrue.2025-01-15T14-30-00.mdc`
+- **Example**: `.cursor/rules/rule1.mdc` → `.aligntrue/overwritten-rules/cursor/rules/rule1.2025-01-15T14-30-00.mdc`
 - **When**: Before overwriting files that were manually edited since last sync
 - **Review**: You can review and delete backups anytime
 
@@ -361,7 +362,7 @@ $ aligntrue sync
 
 ✔ Safety backup created: 2025-11-18T14-30-00-000
 ✔ Syncing to agents
-✗ Error writing .cursor/rules/aligntrue.mdc
+✗ Error writing .cursor/rules/rule1.mdc
 
 # Your files are unchanged
 # Backup is available if needed

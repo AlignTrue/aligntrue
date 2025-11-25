@@ -270,7 +270,8 @@ Backups are stored locally in `.aligntrue/.backups/`:
       .rules.yaml
       agent-files/
         AGENTS.md
-        .cursor/rules/aligntrue.mdc
+        .cursor/rules/rule1.mdc
+        .cursor/rules/rule2.mdc
     2025-11-18T12-15-45-123/
       manifest.json
       config.yaml
@@ -286,7 +287,11 @@ Each backup includes a `manifest.json`:
   "version": "1",
   "timestamp": "2025-11-18T14-30-00-000",
   "files": ["config.yaml", ".rules.yaml"],
-  "agent_files": ["AGENTS.md", ".cursor/rules/aligntrue.mdc"],
+  "agent_files": [
+    "AGENTS.md",
+    ".cursor/rules/rule1.mdc",
+    ".cursor/rules/rule2.mdc"
+  ],
   "created_by": "sync",
   "action": "pre-sync",
   "mode": "solo"
