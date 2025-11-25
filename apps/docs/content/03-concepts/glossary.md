@@ -93,12 +93,12 @@ The internal YAML format that AlignTrue uses internally. Stored in `.aligntrue/r
 - Auto-generated from AGENTS.md or imported from agent files
 - Machine-parseable, pure YAML (no markdown)
 - Used internally for validation and export
-- **Do not edit directly** - always edit AGENTS.md or agent files instead
+- **Do not edit directly** - always edit `.aligntrue/rules/` instead
 
 The IR sits between user-editable files and exported agent formats:
 
 ```
-AGENTS.md (you edit) → IR (.rules.yaml - auto-generated) → Agent exports (.mdc, MCP configs, etc.)
+.aligntrue/rules/*.md (you edit) → IR (auto-generated) → Agent exports (.mdc, AGENTS.md, MCP configs, etc.)
 ```
 
 **Important:** Think of `.aligntrue/rules` like a lock file or build artifact - it's generated automatically and shouldn't be manually edited.
