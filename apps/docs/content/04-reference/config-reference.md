@@ -305,7 +305,7 @@ List of section headings that are treated as team-managed. Each managed section 
 
 URL to the canonical repository or documentation for team-managed sections. Displayed to developers so they can find the source of truth.
 
-**See also:** [Team-managed sections guide](/docs/01-guides/08-team-managed-sections)
+**See also:** [Team guide](/docs/01-guides/04-team-guide)
 
 ## Advanced configuration
 

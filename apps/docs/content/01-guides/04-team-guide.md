@@ -37,7 +37,6 @@ git push origin main
 - **Drift detection** - Detect upstream changes and local modifications
 - **Bundle** - Dependency merging with precedence rules
 - **Audit trail** - Track who changed what and when
-- **Team-managed sections** - Protect specific sections from individual edits (see [Team-managed sections guide](/docs/01-guides/08-team-managed-sections))
 
 **What changes from solo mode:**
 

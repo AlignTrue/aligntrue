@@ -613,5 +613,5 @@ git push
 
 - [Backup & restore reference](/docs/04-reference/backup-restore) - Full command documentation
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
-- [Team-managed sections](/docs/01-guides/08-team-managed-sections) - Team collaboration guide
+- [Team guide](/docs/01-guides/04-team-guide) - Team collaboration
 - [Configuration reference](/docs/04-reference/config-reference) - All config options
