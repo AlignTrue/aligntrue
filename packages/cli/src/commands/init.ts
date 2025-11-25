@@ -4,7 +4,7 @@
  */
 
 import { mkdirSync, writeFileSync } from "fs";
-import { join, basename, dirname } from "path";
+import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import {
@@ -20,7 +20,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { shouldUseInteractive } from "../utils/tty-helper.js";
-import { execSync } from "child_process";
+import { createSpinner } from "../utils/spinner.js";
 
 import { scanForExistingRules } from "./init/rule-importer.js";
 import { createStarterTemplates } from "./init/starter-templates.js";
@@ -62,32 +62,19 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 ];
 
 /**
- * Detect project ID intelligently from git repo or directory name
+ * Output helper for dual interactive/non-interactive mode
+ * Logs to console in non-interactive mode, uses clack in interactive mode
  */
-function _detectProjectId(): string {
-  try {
-    // Try git remote
-    const gitRemote = execSync("git config --get remote.origin.url", {
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "ignore"],
-    }).trim();
-
-    const match = gitRemote.match(/\/([^/]+?)(?:\.git)?$/);
-    if (match && match[1]) {
-      return match[1].toLowerCase().replace(/[^a-z0-9-]/g, "-");
-    }
-  } catch {
-    // Git not available or no remote
+function logMessage(
+  message: string,
+  type: "info" | "success" = "info",
+  nonInteractive: boolean = false,
+): void {
+  if (nonInteractive) {
+    console.log(message);
+  } else {
+    clack.log[type](message);
   }
-
-  // Fallback to directory name
-  const dirName = basename(process.cwd());
-  const sanitized = dirName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-  if (sanitized && sanitized !== "." && sanitized !== "..") {
-    return sanitized;
-  }
-
-  return "my-project";
 }
 
 /**
@@ -128,7 +115,6 @@ export async function init(args: string[] = []): Promise<void> {
   const nonInteractive = !useInteractive;
 
   const mode = parsed.flags["mode"] as string | undefined;
-  const _projectId = parsed.flags["project-id"] as string | undefined;
   const exportersArg = parsed.flags["exporters"] as string | undefined;
   const exporters = exportersArg
     ? exportersArg.split(",").map((e) => e.trim())
@@ -151,15 +137,10 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Step 1: Detect project context
   const paths = getAlignTruePaths(cwd);
-  let contextResult = detectContext(cwd);
+  const contextResult = detectContext(cwd);
 
-  // Handle already-initialized case (simplified for now to focus on migration)
+  // Handle already-initialized case
   if (contextResult.context === "already-initialized") {
-    // For now, just warn and exit unless force?
-    // The previous logic handled team mode joining.
-    // We should preserve it if possible, but for this refactor I'm simplifying.
-    // If user runs init in initialized project, we might want to re-scan rules?
-
     const message = `✗ AlignTrue already initialized in this project
     
 Next steps:
@@ -177,17 +158,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   // Step 2: Scan for existing rules
-  if (!nonInteractive) {
-    clack.spinner().start("Scanning for existing rules...");
-  } else {
-    console.log("Scanning for existing rules...");
-  }
+  const scanner = createSpinner({ disabled: nonInteractive });
+  scanner.start("Scanning for existing rules...");
 
   const importedRules = await scanForExistingRules(cwd);
 
-  if (!nonInteractive) {
-    clack.spinner().stop("Scan complete");
-  }
+  scanner.stop("Scan complete");
 
   let rulesToWrite = importedRules;
   const detectedExporters = new Set<string>();
@@ -201,20 +177,18 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   if (rulesToWrite.length > 0) {
-    const msg = `Found ${rulesToWrite.length} existing rules to import.`;
-    if (nonInteractive) {
-      console.log(msg);
-    } else {
-      clack.log.info(msg);
-    }
+    logMessage(
+      `Found ${rulesToWrite.length} existing rules to import.`,
+      "info",
+      nonInteractive,
+    );
   } else {
     // No rules found, use starter templates
-    const msg = "No existing rules found. Creating starter templates.";
-    if (nonInteractive) {
-      console.log(msg);
-    } else {
-      clack.log.info(msg);
-    }
+    logMessage(
+      "No existing rules found. Creating starter templates.",
+      "info",
+      nonInteractive,
+    );
     rulesToWrite = createStarterTemplates();
     // Default exporters for fresh start
     detectedExporters.add("agents");
@@ -319,7 +293,9 @@ cursor:
     console.log("\nCreated files:");
     createdFiles.forEach((f) => console.log(`  ✓ ${f}`));
   } else {
-    createdFiles.forEach((f) => clack.log.success(`Created ${f}`));
+    createdFiles.forEach((f) =>
+      logMessage(`Created ${f}`, "success", nonInteractive),
+    );
   }
 
   // Step 5: Sync
@@ -348,8 +324,7 @@ cursor:
 
   if (autoSyncPerformed) {
     const msg = "\n✓ Initial sync complete! Your agents are now aligned.";
-    if (nonInteractive) console.log(msg);
-    else clack.log.success(msg);
+    logMessage(msg, "success", nonInteractive);
   }
 
   // Outro
@@ -358,8 +333,7 @@ cursor:
   2. Edit or add new .md files
   3. Run 'aligntrue sync' to update agents`;
 
-  if (nonInteractive) console.log(msg);
-  else clack.log.info(msg);
+  logMessage(msg, "info", nonInteractive);
 
   recordEvent({ command_name: "init", align_hashes_used: [] });
 }

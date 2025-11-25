@@ -109,7 +109,7 @@ git diff .aligntrue.lock.json
 7. **Verify exporter output:**
 
 ```bash
-cat .cursor/rules/aligntrue.mdc | grep -A5 "typescript.no.any"
+grep -r "typescript.no.any" .cursor/rules/*.mdc
 
 # Should show severity: error (from overlay)
 # Should show new rule: performance.avoid.nested.loops (from upstream)

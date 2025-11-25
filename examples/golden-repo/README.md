@@ -7,7 +7,7 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 - **`.aligntrue/config.yaml`** - Minimal solo mode configuration (2 lines)
 - **`.aligntrue/.rules.yaml`** - Internal IR file (auto-generated, don't edit directly)
 - **`AGENTS.md`** - Primary user-editable file with 5 example rules
-- **`.cursor/rules/aligntrue.mdc`** - Generated Cursor rules (with content hash)
+- **`.cursor/rules/*.mdc`** - Generated Cursor rules (one file per rule)
 - **`.vscode/mcp.json`** - VS Code MCP configuration
 
 ## Solo Developer Workflow
@@ -54,10 +54,13 @@ Expected output:
 
 ```
 ✓ Sync complete
-Wrote 3 files:
-  - .cursor/rules/aligntrue.mdc
+Wrote 7 files:
+  - .cursor/rules/testing.mdc
+  - .cursor/rules/code-review.mdc
+  - .cursor/rules/security.mdc
+  - .cursor/rules/documentation.mdc
+  - .cursor/rules/typescript.mdc
   - AGENTS.md
-  - .vscode/mcp.json
 ```
 
 ### 4. Inspect the Outputs
@@ -65,7 +68,8 @@ Wrote 3 files:
 **Cursor Rules:**
 
 ```bash
-cat .cursor/rules/aligntrue.mdc
+ls -la .cursor/rules/
+cat .cursor/rules/*.mdc
 ```
 
 **Universal Format:**
@@ -102,7 +106,7 @@ node ../../packages/cli/dist/index.js sync
 
 ```bash
 # Check that outputs changed
-git diff .cursor/rules/aligntrue.mdc .vscode/mcp.json .aligntrue/.rules.yaml
+git diff .cursor/rules/ .aligntrue/.rules.yaml
 ```
 
 The content hashes will update automatically, and the internal IR (`.aligntrue/.rules.yaml`) will be regenerated.

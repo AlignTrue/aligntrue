@@ -15,7 +15,7 @@ guidance: Write unit tests for all new features.
 
 ### Cursor
 
-**File:** `.cursor/rules/aligntrue.mdc`
+**File:** `.cursor/rules/require-tests.mdc` (one file per rule)
 
 **Format:**
 
@@ -331,7 +331,7 @@ aligntrue sync
 Check what features are supported per agent:
 
 ```bash
-tail -20 .cursor/rules/aligntrue.mdc
+tail -20 .cursor/rules/*.mdc
 tail -20 AGENTS.md
 ```
 

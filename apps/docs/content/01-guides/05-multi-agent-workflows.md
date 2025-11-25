@@ -74,7 +74,7 @@ ls -la .windsurf/
 After syncing, you should see:
 
 ```
-.cursor/rules/aligntrue.mdc    # Cursor format
+.cursor/rules/*.mdc            # Cursor format (one file per rule)
 AGENTS.md                       # Universal format
 .windsurf/rules.md             # Windsurf format
 ```
@@ -366,7 +366,7 @@ aligntrue sync
 
 ```bash
 # Look for fidelity notes in exported files
-tail -20 .cursor/rules/aligntrue.mdc
+tail -20 .cursor/rules/*.mdc
 tail -20 AGENTS.md
 ```
 
