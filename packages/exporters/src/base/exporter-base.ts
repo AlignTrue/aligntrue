@@ -28,7 +28,7 @@ import type {
 import { computeContentHash } from "@aligntrue/schema";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { readFileSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import * as SectionRenderer from "./section-renderer.js";
 
@@ -143,7 +143,8 @@ export abstract class ExporterBase implements ExporterPlugin {
 
       if (sourceFile) {
         // Extract filename from path (e.g., ".aligntrue/rules/test-rule.md" -> "test-rule.md")
-        filename = sourceFile.split("/").pop() || "untitled.md";
+        // Use basename() which handles both forward and back slashes on all platforms
+        filename = basename(sourceFile) || "untitled.md";
         path = sourceFile;
       } else {
         filename = this.sanitizeFilename(section.heading) + ".md";
