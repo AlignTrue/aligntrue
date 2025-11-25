@@ -26,6 +26,11 @@
       "source": "/remote-setup",
       "destination": "/docs/01-guides/team-workflows",
       "permanent": true
+    },
+    {
+      "source": "/dup-rules",
+      "destination": "/docs/03-concepts/preventing-duplicate-rules",
+      "permanent": true
     }
   ],
   "headers": [
