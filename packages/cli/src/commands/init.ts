@@ -176,6 +176,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     if (source === "claude") detectedExporters.add("claude");
   }
 
+  let isFreshStart = false;
+
   if (rulesToWrite.length > 0) {
     logMessage(
       `Found ${rulesToWrite.length} existing rules to import.`,
@@ -183,12 +185,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       nonInteractive,
     );
   } else {
-    // No rules found, use starter templates
-    logMessage(
-      "No existing rules found. Creating starter templates.",
-      "info",
-      nonInteractive,
-    );
+    // No rules found, will use starter templates
+    isFreshStart = true;
     rulesToWrite = createStarterTemplates();
     // Default exporters for fresh start
     detectedExporters.add("agents");
@@ -197,13 +195,18 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
   // Step 3: Confirm (if interactive)
   if (!nonInteractive) {
+    // For fresh starts, combine the "no rules found" message with the confirm
+    const confirmMessage = isFreshStart
+      ? "No existing rules found. Create default starter rules? (you can add your own rules later)"
+      : `Initialize AlignTrue with ${rulesToWrite.length} rules?`;
+
     const confirm = await clack.confirm({
-      message: `Initialize AlignTrue with ${rulesToWrite.length} rules?`,
+      message: confirmMessage,
       initialValue: true,
     });
 
     if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Init cancelled");
+      clack.cancel("Run 'aligntrue init' when you're ready to start.");
       process.exit(0);
     }
   }
@@ -305,7 +308,12 @@ cursor:
   let autoSyncPerformed = false;
 
   if (shouldSync) {
-    if (!nonInteractive) {
+    // For fresh starts, auto-sync without prompting (we know exactly what will be synced)
+    if (isFreshStart) {
+      await runSync();
+      autoSyncPerformed = true;
+    } else if (!nonInteractive) {
+      // For imported rules, ask user if they want to sync now
       const syncNow = await clack.confirm({
         message: "Run initial sync now?",
         initialValue: true,
@@ -317,6 +325,7 @@ cursor:
         autoSyncPerformed = true;
       }
     } else {
+      // Non-interactive mode always syncs
       await runSync();
       autoSyncPerformed = true;
     }
@@ -327,13 +336,17 @@ cursor:
     logMessage(msg, "success", nonInteractive);
   }
 
-  // Outro
-  const msg = `\nNext steps:
+  // Outro - different message for fresh starts vs imports
+  const outroMsg = isFreshStart
+    ? `\nYour starter rules are ready. Add or update them any time in .aligntrue/rules/:
+  1. Edit rules or add new .md files
+  2. Run 'aligntrue sync' to update your agents`
+    : `\nNext steps:
   1. Review rules in .aligntrue/rules/
   2. Edit or add new .md files
   3. Run 'aligntrue sync' to update agents`;
 
-  logMessage(msg, "info", nonInteractive);
+  logMessage(outroMsg, "info", nonInteractive);
 
   recordEvent({ command_name: "init", align_hashes_used: [] });
 }
