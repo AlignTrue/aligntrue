@@ -9,7 +9,7 @@ tags: ["vercel", "deployment", "nextjs", "paved-road"]
 
 Best practices for deploying Next.js apps on Vercel: environment management, performance optimization, and reliability.
 
-## Environment Configuration
+## Environment configuration
 
 **Three tiers:**
 
@@ -33,7 +33,7 @@ const API_KEY = "sk-1234567890";
 const API_KEY = process.env.API_KEY;
 ```
 
-## Build Optimization
+## Build optimization
 
 **Output format:**
 
@@ -49,7 +49,7 @@ const API_KEY = process.env.API_KEY;
 - Build command: `pnpm build`
 - Output directory: `.next`
 
-## Environment Variables
+## Environment variables
 
 **Tier strategy:**
 
@@ -66,7 +66,7 @@ DATABASE_URL=postgres://...                     # Server-only
 3. Team-level secrets
 4. Local `.env.local` (not committed)
 
-## Performance Optimization
+## Performance optimization
 
 **Core Web Vitals targets:**
 
@@ -107,7 +107,7 @@ export async function updatePost(id: string) {
 }
 ```
 
-## Error Handling and Monitoring
+## Error handling and monitoring
 
 **Error page:**
 
@@ -122,7 +122,7 @@ export async function updatePost(id: string) {
 - Uptime monitoring
 - Log aggregation
 
-## Deployment Workflow
+## Deployment workflow
 
 **GitHub integration:**
 
@@ -138,7 +138,7 @@ export async function updatePost(id: string) {
 - Build succeeds
 - Performance budgets met
 
-## Secrets Rotation
+## Secrets rotation
 
 **Schedule:**
 
@@ -159,7 +159,7 @@ export async function updatePost(id: string) {
 - Use feature flags for risky changes
 - Blue-green deploys for staged rollout
 
-## Common Issues
+## Common issues
 
 **Build timeout:**
 

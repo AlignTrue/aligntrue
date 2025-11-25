@@ -9,7 +9,7 @@ tags: ["debugging", "troubleshooting", "determinism", "paved-road"]
 
 This pack establishes systematic debugging practices: reproduce deterministically, reduce to the smallest failing case, classify failures, inspect evidence, and prevent recurrence with tests.
 
-## Debugging Workflow
+## Debugging workflow
 
 Follow this systematic workflow for complex debugging sessions:
 
@@ -24,7 +24,7 @@ Follow this systematic workflow for complex debugging sessions:
 9. **Clean up** and harden
 10. **Validate broadly** before merge
 
-## Reproduction Scripts
+## Reproduction scripts
 
 **Requirement:** Non-trivial bugs require a minimal reproduction script.
 
@@ -35,7 +35,7 @@ Create a reproduction script showing the exact failure:
 - Documents the failure condition
 - Used in regression testing
 
-## Regression Prevention
+## Regression prevention
 
 **Requirement:** Bug fix PRs must include regression tests.
 
@@ -45,7 +45,7 @@ Before implementing the fix:
 - Make the test pass with the fix
 - Ensure test would catch this bug in future
 
-## Temp Artifact Policy
+## Temp artifact policy
 
 Prefix AI-generated debug artifacts with `temp-`:
 
@@ -56,7 +56,7 @@ Prefix AI-generated debug artifacts with `temp-`:
 
 **Error:** Debug artifacts committed to repo without `temp-` prefix are not allowed.
 
-## Root Cause Communication
+## Root cause communication
 
 In PR description, explain:
 
@@ -64,7 +64,7 @@ In PR description, explain:
 - **Minimal fix** - The smallest change that resolves it
 - **Prevention** - How test prevents recurrence
 
-## Common Debugging Mistakes
+## Common debugging mistakes
 
 - Changing code before reproducing
 - Not reducing to minimal case

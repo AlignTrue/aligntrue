@@ -9,7 +9,7 @@ tags: ["security", "compliance", "secrets", "supply-chain", "paved-road"]
 
 Security standards: never commit secrets, control dependencies, enforce compliance, and build with least privilege.
 
-## Core Principles
+## Core principles
 
 - **Never commit secrets** - Treat repo as public
 - **Control dependencies** - Lockfiles and audit required
@@ -18,7 +18,7 @@ Security standards: never commit secrets, control dependencies, enforce complian
 - **Build with least privilege** - Limited access and provenance
 - **Keep data and logs safe** - No production data in tests
 
-## Secrets Management
+## Secrets management
 
 **Requirement:** Pre-commit and CI scans required.
 
@@ -37,7 +37,7 @@ Never commit:
 3. Add regression check to prevent recurrence
 4. Document in security incident tracking
 
-## Supply Chain Security
+## Supply chain security
 
 Require:
 
@@ -55,7 +55,7 @@ Maintenance:
 - **Test updates** before merging
 - **Document security updates** in changelog
 
-## Dependency Audit
+## Dependency audit
 
 **Requirement:** High and critical vulnerabilities must be resolved.
 
@@ -74,7 +74,7 @@ pip-audit
 2. Add explicit waiver with tracking issue
 3. Remove the dependency if unused
 
-## License Compliance
+## License compliance
 
 Check third-party licenses:
 
@@ -82,7 +82,7 @@ Check third-party licenses:
 - **Document exceptions** - With justification
 - **Use license-check tools** - SPDX compliance
 
-## Static Application Security Testing (SAST)
+## Static application security testing (SAST)
 
 In CI:
 
@@ -91,7 +91,7 @@ In CI:
 - **Surface reports** - As artifacts
 - **Fix or waive** - With issue tracking
 
-## Environment Configuration
+## Environment configuration
 
 **Requirement:** `.env.example` documents required variables.
 
@@ -117,7 +117,7 @@ For runtime:
 - **Sign artifacts** - When enabled
 - **Scan containers** - For vulnerabilities
 
-## Data Safety
+## Data safety
 
 - **No production data** in tests
 - **Redact secrets/PII** in logs

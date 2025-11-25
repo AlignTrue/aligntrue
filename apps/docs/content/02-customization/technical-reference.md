@@ -40,7 +40,7 @@ This page provides technical implementation details for working with plugs, over
 
 AlignTrue supports two authoring formats:
 
-### Natural Markdown Sections (Recommended for Packs)
+### Natural markdown sections (recommended for packs)
 
 ```markdown
 ---
