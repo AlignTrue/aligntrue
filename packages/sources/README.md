@@ -20,10 +20,10 @@ import { createProvider } from "@aligntrue/sources";
 
 const provider = createProvider({
   type: "local",
-  path: ".aligntrue/.rules.yaml",
+  path: ".aligntrue/rules",
 });
 
-const content = await provider.fetch(".rules.yaml");
+const content = await provider.fetch("rules");
 ```
 
 **Security:**

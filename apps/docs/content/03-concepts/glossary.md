@@ -86,7 +86,7 @@ The primary user-editable file where you write and maintain rules in markdown fo
 
 ### Intermediate representation (IR)
 
-The internal YAML format that AlignTrue uses internally. Stored in `.aligntrue/.rules.yaml`.
+The internal YAML format that AlignTrue uses internally. Stored in `.aligntrue/rules`.
 
 **Key characteristics:**
 
@@ -101,7 +101,7 @@ The IR sits between user-editable files and exported agent formats:
 AGENTS.md (you edit) → IR (.rules.yaml - auto-generated) → Agent exports (.mdc, MCP configs, etc.)
 ```
 
-**Important:** Think of `.aligntrue/.rules.yaml` like a lock file or build artifact - it's generated automatically and shouldn't be manually edited.
+**Important:** Think of `.aligntrue/rules` like a lock file or build artifact - it's generated automatically and shouldn't be manually edited.
 
 ### Cursor rules (.mdc)
 
@@ -131,7 +131,7 @@ The process of converting and pushing your rules to all configured agent formats
 
 **What happens:**
 
-1. Loads your rules from AGENTS.md or `.aligntrue/.rules.yaml`
+1. Loads your rules from AGENTS.md or `.aligntrue/rules`
 2. Validates them against the Align Spec
 3. Exports to all configured agent formats (.mdc, AGENTS.md, MCP configs, etc.)
 4. Writes updated files to disk
@@ -183,7 +183,7 @@ Comparing your current rule state against a committed lockfile to detect when ru
 **Drift scenarios:**
 
 - A pack was updated but lockfile wasn't regenerated
-- Someone manually edited `.aligntrue/.rules.yaml`
+- Someone manually edited `.aligntrue/rules`
 - A rule source is no longer accessible
 - A team member pushed different rules than the lockfile
 

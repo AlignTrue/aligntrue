@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { writeFileSync } from "fs";
+import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { sync } from "../../src/commands/sync/index.js";
 import * as clack from "@clack/prompts";
@@ -54,16 +54,10 @@ describeSkipWindows("Sync UX Improvements", () => {
       yaml.stringify(config),
     );
 
-    const ir = `id: test
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Rule 1
-    content: Content 1
-    level: 2
-    fingerprint: rule-1
-`;
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+    // Create rules directory with markdown file
+    const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    writeFileSync(join(rulesDir, "rule-1.md"), "## Rule 1\n\nContent 1\n");
 
     // Ensure timestamp is strictly newer than file creation
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -88,12 +82,9 @@ sections:
       join(TEST_DIR, ".aligntrue", "config.yaml"),
       yaml.stringify(config),
     );
-    const ir = `id: test
-version: 1.0.0
-spec_version: "1"
-sections: []
-`;
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+    // Create empty rules directory
+    const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+    mkdirSync(rulesDir, { recursive: true });
 
     // Ensure no .last-sync file
     // (Fresh test dir doesn't have it)
@@ -124,8 +115,8 @@ sections: []
       join(TEST_DIR, ".aligntrue", "config.yaml"),
       yaml.stringify(config),
     );
-    const ir = `id: test\nversion: 1.0.0\nspec_version: "1"\nsections: []`;
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+    // Create empty rules directory
+    mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
 
     // Set last sync to past
     lastSyncTracker.updateLastSyncTimestamp(TEST_DIR);
@@ -159,8 +150,8 @@ sections: []
       join(TEST_DIR, ".aligntrue", "config.yaml"),
       yaml.stringify(config),
     );
-    const ir = `id: test\nversion: 1.0.0\nspec_version: "1"\nsections: []`;
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+    // Create empty rules directory
+    mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
     lastSyncTracker.updateLastSyncTimestamp(TEST_DIR);
 
     // 2. Run sync with --force
@@ -179,8 +170,8 @@ sections: []
       join(TEST_DIR, ".aligntrue", "config.yaml"),
       yaml.stringify(config),
     );
-    const ir = `id: test\nversion: 1.0.0\nspec_version: "1"\nsections: []`;
-    writeFileSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"), ir);
+    // Create empty rules directory
+    mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
 
     // 2. Update last sync timestamp AFTER creating files
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -188,7 +179,7 @@ sections: []
 
     // 3. Add Cursor .mdc files with OLD mtimes (simulating copied files)
     // This mimics the user's scenario where they copy files with preserved timestamps
-    const { mkdirSync, utimesSync } = await import("fs");
+    const { utimesSync } = await import("fs");
     mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
     const cursorFile = join(TEST_DIR, ".cursor", "rules", "test.mdc");
     writeFileSync(cursorFile, "# Test rule\n\nTest content\n");

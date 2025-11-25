@@ -114,7 +114,7 @@ export async function plugsCommand(args: string[]): Promise<void> {
     // Resolve source
     const source = config.sources?.[0] || {
       type: "local" as const,
-      path: ".aligntrue/.rules.yaml",
+      path: ".aligntrue/rules",
     };
 
     let pack: AlignPack;
@@ -439,7 +439,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     // Load IR to get slot format
     const source = config.sources?.[0] || {
       type: "local" as const,
-      path: ".aligntrue/.rules.yaml",
+      path: ".aligntrue/rules",
     };
 
     let pack: AlignPack;

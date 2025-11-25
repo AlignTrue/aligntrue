@@ -5,7 +5,7 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 ## What's Inside
 
 - **`.aligntrue/config.yaml`** - Minimal solo mode configuration (2 lines)
-- **`.aligntrue/.rules.yaml`** - Internal IR file (auto-generated, don't edit directly)
+- **`.aligntrue/rules`** - Internal IR file (auto-generated, don't edit directly)
 - **`AGENTS.md`** - Primary user-editable file with 5 example rules
 - **`.cursor/rules/*.mdc`** - Generated Cursor rules (one file per rule)
 - **`.vscode/mcp.json`** - VS Code MCP configuration
@@ -18,7 +18,7 @@ This repository demonstrates the **rules-first workflow** for solo developers:
 2. **Save changes**
 3. **Run sync** (exports to all configured agents)
 
-No YAML knowledge required! The internal IR (`.aligntrue/.rules.yaml`) is generated automatically.
+No YAML knowledge required! The internal IR (`.aligntrue/rules`) is generated automatically.
 
 ## Quick Start
 
@@ -106,10 +106,10 @@ node ../../packages/cli/dist/index.js sync
 
 ```bash
 # Check that outputs changed
-git diff .cursor/rules/ .aligntrue/.rules.yaml
+git diff .cursor/rules/ .aligntrue/rules
 ```
 
-The content hashes will update automatically, and the internal IR (`.aligntrue/.rules.yaml`) will be regenerated.
+The content hashes will update automatically, and the internal IR (`.aligntrue/rules`) will be regenerated.
 
 ## Advanced Features
 
@@ -131,7 +131,7 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 
 exporters:
   - cursor
@@ -142,7 +142,7 @@ git:
   mode: ignore
 ```
 
-**Note:** The `sources` path points to `.aligntrue/.rules.yaml` (internal IR). Users should edit rules in `.aligntrue/rules/`. The IR is auto-generated during sync.
+**Note:** The `sources` path points to `.aligntrue/rules` (internal IR). Users should edit rules in `.aligntrue/rules/`. The IR is auto-generated during sync.
 
 ### Rule Format
 

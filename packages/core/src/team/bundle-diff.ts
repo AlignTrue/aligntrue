@@ -51,10 +51,10 @@ export async function compareBundles(
 
   // For now, we'll load the current bundle and compare with approved
   // In a full implementation, we'd need to track previous bundles
-  const rulesPath = resolve(cwd, ".aligntrue/.rules.yaml");
+  const rulesPath = resolve(cwd, ".aligntrue/rules");
 
   if (!existsSync(rulesPath)) {
-    throw new Error("Rules file not found. Run 'aligntrue sync' first.");
+    throw new Error("Rules directory not found. Run 'aligntrue sync' first.");
   }
 
   const currentBundle = await loadIR(rulesPath);
@@ -146,10 +146,10 @@ export async function compareDetailedBundles(
 ): Promise<DetailedBundleDiff> {
   // Load bundles
   const { loadIR } = await import("../sync/ir-loader.js");
-  const rulesPath = resolve(cwd, ".aligntrue/.rules.yaml");
+  const rulesPath = resolve(cwd, ".aligntrue/rules");
 
   if (!existsSync(rulesPath)) {
-    throw new Error("Rules file not found. Run 'aligntrue sync' first.");
+    throw new Error("Rules directory not found. Run 'aligntrue sync' first.");
   }
 
   const currentBundle = await loadIR(rulesPath);

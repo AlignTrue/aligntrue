@@ -22,7 +22,7 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 
 **Validates:**
 
-- `.aligntrue/.rules.yaml` matches the Align schema
+- `.aligntrue/rules` matches the Align schema
 - `.aligntrue.lock.json` hashes match the current IR
 - Overlay definitions (if configured)
 

@@ -20,9 +20,13 @@ describe("BackupManager", () => {
       "version: 1\nmode: solo",
       "utf-8",
     );
+
+    // Create rules directory with markdown file
+    const rulesDir = join(aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
     writeFileSync(
-      join(aligntrueDir, ".rules.yaml"),
-      "# Rules\n\nTest rules",
+      join(rulesDir, "global.md"),
+      "## Global\n\nTest rules",
       "utf-8",
     );
 
@@ -52,7 +56,7 @@ describe("BackupManager", () => {
       );
       expect(backup.manifest.version).toBe("1");
       expect(backup.manifest.files).toContain("config.yaml");
-      expect(backup.manifest.files).toContain(".rules.yaml");
+      expect(backup.manifest.files).toContain("rules/global.md");
       expect(backup.manifest.files).toContain("subdir/test.txt");
       expect(backup.manifest.created_by).toBe("manual");
     });

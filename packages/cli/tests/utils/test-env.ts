@@ -97,32 +97,31 @@ export class TestEnv {
   }
 
   /**
-   * Create a minimal valid IR
+   * Create a minimal valid IR (rules directory with markdown files)
    */
   createIR(
     sections: Array<{ heading: string; content: string; level?: number }> = [],
   ): string {
-    this.mkdir(".aligntrue");
+    this.mkdir(".aligntrue/rules");
 
     const defaultSections =
       sections.length > 0
         ? sections
         : [{ heading: "Test Section", content: "Test content.", level: 2 }];
 
-    const yaml = `id: test-pack
-version: "1.0.0"
-spec_version: "1"
-sections:
-${defaultSections
-  .map(
-    (s) => `  - heading: ${s.heading}
-    content: ${s.content}
-    level: ${s.level || 2}`,
-  )
-  .join("\n")}
-`;
+    // Write each section as a separate markdown file
+    for (const section of defaultSections) {
+      const filename =
+        section.heading
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") + ".md";
+      const level = section.level || 2;
+      const content = `${"#".repeat(level)} ${section.heading}\n\n${section.content}\n`;
+      this.writeFile(`.aligntrue/rules/${filename}`, content);
+    }
 
-    return this.writeFile(".aligntrue/.rules.yaml", yaml);
+    return this.path(".aligntrue/rules");
   }
 
   /**

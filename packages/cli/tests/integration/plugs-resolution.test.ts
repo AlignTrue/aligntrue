@@ -54,15 +54,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(parsed.plugs).toBeDefined();
@@ -100,15 +97,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(parsed.plugs.fills).toBeDefined();
@@ -151,15 +145,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(Object.keys(parsed.plugs.slots)).toHaveLength(3);
@@ -196,13 +187,13 @@ describeSkipWindows("Plugs Resolution Integration", () => {
       };
 
       writeFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         yaml.stringify(ir),
         "utf-8",
       );
 
       const irContent = readFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         "utf-8",
       );
       const parsed = yaml.parse(irContent);
@@ -241,15 +232,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(parsed.plugs.slots.required.required).toBe(true);
@@ -282,15 +270,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(parsed.plugs.slots["test.cmd"].example).toBe("pytest -q");
@@ -342,15 +327,12 @@ describeSkipWindows("Plugs Resolution Integration", () => {
     };
 
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
+      join(TEST_DIR, ".aligntrue/rules"),
       yaml.stringify(ir),
       "utf-8",
     );
 
-    const irContent = readFileSync(
-      join(TEST_DIR, ".aligntrue/.rules.yaml"),
-      "utf-8",
-    );
+    const irContent = readFileSync(join(TEST_DIR, ".aligntrue/rules"), "utf-8");
     const parsed = yaml.parse(irContent);
 
     expect(parsed.plugs.fills["test.cmd"]).toBe("pnpm test");
@@ -394,13 +376,13 @@ describeSkipWindows("Plugs Resolution Integration", () => {
       };
 
       writeFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         yaml.stringify(ir),
         "utf-8",
       );
 
       const irContent = readFileSync(
-        join(TEST_DIR, ".aligntrue/.rules.yaml"),
+        join(TEST_DIR, ".aligntrue/rules"),
         "utf-8",
       );
       const parsed = yaml.parse(irContent);

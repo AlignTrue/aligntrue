@@ -56,12 +56,12 @@ export async function ensureLockfileExists(
 
   // Generate lockfile
   try {
-    // Find IR file
-    const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+    // Find rules directory
+    const irPath = join(cwd, ".aligntrue", "rules");
     if (!existsSync(irPath)) {
       return {
         success: false,
-        error: "IR file not found. Run 'aligntrue sync' first.",
+        error: "Rules directory not found. Run 'aligntrue sync' first.",
       };
     }
 

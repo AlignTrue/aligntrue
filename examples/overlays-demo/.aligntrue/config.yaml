@@ -3,7 +3,7 @@ version: "1"
 
 sources:
   - type: local
-    path: ".aligntrue/.rules.yaml"
+    path: ".aligntrue/rules"
 
 adapters:
   - type: cursor

@@ -36,7 +36,7 @@ describe("check command overlay validation - integration", () => {
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 overlays:
   overrides:
     - selector: 'rule[id="test-rule"]'
@@ -76,7 +76,7 @@ sections:
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 overlays:
   overrides:
     - selector: 'rule[id="non-existent"]'
@@ -124,7 +124,7 @@ sections:
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 overlays:
   overrides:
 ${overlays}
@@ -162,7 +162,7 @@ sections:
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 overlays:
   overrides:
     - selector: 'rule[id="test-rule"]'

@@ -35,7 +35,7 @@ describeSkipWindows.skip("Pack Sources Integration", () => {
 mode: solo
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
   - type: local
     path: debugging.md
 exporters:
@@ -110,7 +110,7 @@ sections:
     expect(agentsMd).toContain("Regression Prevention");
 
     const irContent = readFileSync(
-      join(testProject.projectDir, ".aligntrue/.rules.yaml"),
+      join(testProject.projectDir, ".aligntrue/rules"),
       "utf-8",
     );
     expect(irContent).toContain("Debugging Workflow");

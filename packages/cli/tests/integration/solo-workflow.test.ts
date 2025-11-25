@@ -63,9 +63,7 @@ describe("Solo Workflow Integration", () => {
       );
 
       expect(existsSync(cursorPath)).toBe(true);
-      expect(existsSync(join(TEST_DIR, ".aligntrue", ".rules.yaml"))).toBe(
-        false,
-      ); // IR created on sync, not init
+      expect(existsSync(join(TEST_DIR, ".aligntrue", "rules"))).toBe(false); // Rules directory created on sync, not init
     });
 
     it("creates native format starter (not YAML IR)", () => {
@@ -75,7 +73,7 @@ describe("Solo Workflow Integration", () => {
         "rules",
         "aligntrue-starter.mdc",
       );
-      const irPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
 
       // Simulate init behavior
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
@@ -86,7 +84,7 @@ describe("Solo Workflow Integration", () => {
       );
 
       expect(existsSync(cursorPath)).toBe(true);
-      expect(existsSync(irPath)).toBe(false);
+      expect(existsSync(rulesDir)).toBe(false);
 
       // Verify native format (markdown, not YAML)
       const content = readFileSync(cursorPath, "utf-8");
@@ -218,7 +216,7 @@ modules:
   describe("Zero YAML Interaction", () => {
     it("solo dev workflow never requires editing YAML IR", () => {
       const cursorPath = join(TEST_DIR, ".cursor", "rules", "my-rules.mdc");
-      const _irPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
+      const _rulesDir = join(TEST_DIR, ".aligntrue", "rules");
 
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
 

@@ -273,11 +273,6 @@ export function recommendEditSource(
           label: "Any agent file",
           description: "Maximum flexibility, may cause section conflicts",
         },
-        {
-          value: ".rules.yaml",
-          label: "Internal YAML only (Advanced/Complex)",
-          description: "WARNING: Requires editing raw YAML, not recommended",
-        },
       ],
     };
   }
@@ -296,11 +291,6 @@ export function recommendEditSource(
           value: "any_agent_file",
           label: "Any agent file",
           description: "Maximum flexibility, may cause section conflicts",
-        },
-        {
-          value: ".rules.yaml",
-          label: "Internal YAML only (Advanced/Complex)",
-          description: "WARNING: Requires editing raw YAML, not recommended",
         },
       ],
     };
@@ -329,11 +319,6 @@ export function recommendEditSource(
           label: "Any agent file",
           description: "Maximum flexibility, may cause section conflicts",
         },
-        {
-          value: ".rules.yaml",
-          label: "Internal YAML only (Advanced/Complex)",
-          description: "WARNING: Requires editing raw YAML, not recommended",
-        },
       ],
     };
   }
@@ -351,11 +336,6 @@ export function recommendEditSource(
         value: "any_agent_file",
         label: "Any agent file",
         description: "Maximum flexibility, may cause section conflicts",
-      },
-      {
-        value: ".rules.yaml",
-        label: "Internal YAML only (Advanced/Complex)",
-        description: "WARNING: Requires editing raw YAML, not recommended",
       },
     ],
   };

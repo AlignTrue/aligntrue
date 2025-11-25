@@ -108,7 +108,7 @@ aligntrue config
 
 Team rules are:
 
-- Stored in `.aligntrue/.rules.yaml` in the main repository
+- Stored in `.aligntrue/rules` in the main repository
 - Committed to version control
 - Visible to all team members
 - Require approval to change (depending on mode)
@@ -139,7 +139,7 @@ To propose changes to team rules:
 
 1. Edit `AGENTS.md` or agent files directly
 2. Run `aligntrue sync`
-3. Commit the changes to `.aligntrue/.rules.yaml`
+3. Commit the changes to `.aligntrue/rules`
 4. Push and create a PR
 5. Team lead reviews and approves
 6. After merge, everyone runs `aligntrue sync` to get updates
@@ -206,7 +206,7 @@ aligntrue sync
 3. Commit and push:
 
    ```bash
-   git add .aligntrue/.rules.yaml
+   git add .aligntrue/rules
    git commit -m "feat: Add security scanning rule"
    git push origin add-security-rule
    ```
@@ -233,7 +233,7 @@ git commit -m "chore: Update lockfile"
 git push origin feature-branch
 
 # Or revert your changes:
-git checkout .aligntrue/.rules.yaml
+git checkout .aligntrue/rules
 aligntrue sync
 ```
 
@@ -309,7 +309,7 @@ See [Personal Repository Setup](/reference/personal-repo-setup) for detailed tro
 ### DON'T
 
 - ❌ Commit agent files to the repository
-- ❌ Edit `.aligntrue/.rules.yaml` directly
+- ❌ Edit `.aligntrue/rules` directly
 - ❌ Put personal rules in the main repository
 - ❌ Skip sync after pulling changes
 - ❌ Force push lockfile changes

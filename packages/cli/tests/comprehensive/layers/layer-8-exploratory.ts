@@ -50,7 +50,7 @@ const tests: ExploratoryTest[] = [
       "aligntrue init --mode solo",
       "aligntrue sync &",
       "sleep 0.1",
-      "rm .aligntrue/.rules.yaml || true",
+      "rm .aligntrue/rules || true",
       "wait",
       "aligntrue sync",
     ],

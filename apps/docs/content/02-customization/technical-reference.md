@@ -18,7 +18,7 @@ This page provides technical implementation details for working with plugs, over
 
 **Plugs slots:**
 
-- Declared in pack files (natural markdown sections or `.aligntrue/.rules.yaml` IR)
+- Declared in pack files (natural markdown sections or `.aligntrue/rules` IR)
 - Example: `examples/packs/testing.md` with natural markdown sections
 
 **Plugs fills:**
@@ -67,7 +67,7 @@ Run tests before committing: [[plug:test.cmd]]
 ### Direct YAML (internal IR format)
 
 ```yaml
-# .aligntrue/.rules.yaml (generated/maintained by system)
+# .aligntrue/rules (generated/maintained by system)
 id: testing-pack
 version: 1.0.0
 plugs:

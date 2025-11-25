@@ -56,14 +56,14 @@ See [Agent Support](/docs/04-reference/agent-support) for all 43 available expor
 
 **Type:** `array of objects`
 
-**Default:** `[{ type: "local", path: ".aligntrue/.rules.yaml" }]`
+**Default:** `[{ type: "local", path: ".aligntrue/rules" }]`
 
 Where to load rules from. Supports local files and git repositories.
 
 ```yaml
 sources:
   - type: local
-    path: .aligntrue/.rules.yaml
+    path: .aligntrue/rules
 ```
 
 ## Sync behavior

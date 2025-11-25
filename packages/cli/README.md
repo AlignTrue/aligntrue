@@ -114,7 +114,7 @@ aligntrue init
 **What it creates:**
 
 - `.aligntrue/config.yaml` - Configuration with solo mode defaults
-- `.aligntrue/.rules.yaml` - Internal IR (auto-generated)
+- `.aligntrue/rules` - Internal IR (auto-generated)
 
 **Scenarios handled:**
 
@@ -137,20 +137,20 @@ aligntrue init
 │
 ◇  Will create:
 │    - .aligntrue/config.yaml
-│    - .aligntrue/.rules.yaml
+│    - .aligntrue/rules
 │
 ◇  Continue?
 │  Yes
 │
 ◇  Files created
 │  ✓ Created .aligntrue/config.yaml
-│  ✓ Created .aligntrue/.rules.yaml
+│  ✓ Created .aligntrue/rules
 │
 ◇  Run sync now?
 │  Yes
 │
 └  Next steps:
-     1. Edit rules: AGENTS.md or .aligntrue/.rules.yaml
+     1. Edit rules: AGENTS.md or .aligntrue/rules
      2. Run sync: aligntrue sync
 ```
 
@@ -180,7 +180,7 @@ aligntrue import <agent> [options]
 
 - `--coverage` - Show import coverage report (default: true)
 - `--no-coverage` - Skip coverage report
-- `--write` - Write imported rules to .aligntrue/.rules.yaml
+- `--write` - Write imported rules to .aligntrue/rules
 - `--dry-run` - Preview without writing files
 - `--help, -h` - Show help message
 
@@ -319,7 +319,7 @@ aligntrue sync --force
 **What it does:**
 
 1. Loads `.aligntrue/config.yaml` configuration
-2. Validates source file exists (default: `.aligntrue/.rules.yaml`)
+2. Validates source file exists (default: `.aligntrue/rules`)
 3. Discovers and loads exporters from registry
 4. Resolves hierarchical scopes (if configured)
 5. Validates lockfile (team mode only)
@@ -368,7 +368,7 @@ Run: aligntrue init
 **Source file not found:**
 
 ```
-✗ Source file not found: .aligntrue/.rules.yaml
+✗ Source file not found: .aligntrue/rules
 Check your config.yaml sources section
 ```
 

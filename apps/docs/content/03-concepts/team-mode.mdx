@@ -30,7 +30,7 @@ Team mode enables collaborative rule management with:
 <Callout type="warning" title=".aligntrue.bundle.yaml status">
   `modules.bundle` enables multi-source merging in memory, but the CLI does
   **not** write `.aligntrue.bundle.yaml` yet. Keep the flag enabled for forward
-  compatibility; expect to continue committing `.aligntrue/.rules.yaml` and
+  compatibility; expect to continue committing `.aligntrue/rules` and
   `.aligntrue.lock.json` until the bundle writer ships.
 </Callout>
 
@@ -229,7 +229,7 @@ aligntrue team disable
 1. Creates automatic backup before migration
 2. Updates config: removes team mode settings
 3. Deletes `.aligntrue.lock.json` (no purpose in solo mode)
-4. Preserves `.aligntrue/.rules.yaml` (team rules become solo public rules)
+4. Preserves `.aligntrue/rules` (team rules become solo public rules)
 5. Shows confirmation message with backup timestamp
 
 **Note:** Team rules become regular solo rules. You can make them private by editing AGENTS.md.
@@ -631,7 +631,7 @@ In team mode, sections can be marked as "personal" to exclude them from lockfile
 
 ### Marking sections as personal
 
-Add `scope: personal` to section frontmatter in `.aligntrue/.rules.yaml`:
+Add `scope: personal` to section frontmatter in `.aligntrue/rules`:
 
 ```yaml
 sections:
@@ -683,7 +683,7 @@ PERSONAL RULES (not validated):
 
 1. Edit `AGENTS.md` or `.cursor/rules/*.mdc` with personal sections
 2. Run `aligntrue sync --accept-agent cursor` to pull changes to IR
-3. Mark sections as personal in `.aligntrue/.rules.yaml`
+3. Mark sections as personal in `.aligntrue/rules`
 4. Sync exports: `aligntrue sync`
 
 **Team member workflow:**
@@ -698,7 +698,7 @@ echo "## My Shortcuts\n\nPersonal notes" >> AGENTS.md
 # Pull personal changes to IR
 aligntrue sync --accept-agent agents
 
-# Mark as personal in .aligntrue/.rules.yaml
+# Mark as personal in .aligntrue/rules
 # (manually edit or use future migration command)
 
 # Sync exports

@@ -112,16 +112,6 @@ describeSkipWindows("Init Command Integration", () => {
 
       expect(config.exporters).toEqual(["cursor", "agents"]);
     });
-
-    // Skip: Init no longer uses .rules.yaml - rules are stored in .aligntrue/rules/*.md
-    it.skip("uses provided project-id in rules", async () => {
-      await init(["--yes", "--project-id", "my-custom-project"]);
-
-      const rulesPath = join(TEST_DIR, ".aligntrue", ".rules.yaml");
-      const rulesContent = readFileSync(rulesPath, "utf-8");
-
-      expect(rulesContent).toContain("my-custom-project");
-    });
   });
 
   describe("Already Initialized", () => {
@@ -158,7 +148,6 @@ describeSkipWindows("Init Command Integration", () => {
       // Check no .tmp files exist
       const files = [
         join(TEST_DIR, ".aligntrue", "config.yaml.tmp"),
-        join(TEST_DIR, ".aligntrue", ".rules.yaml.tmp"),
         join(TEST_DIR, ".cursor", "rules", "aligntrue-starter.mdc.tmp"),
       ];
 
@@ -203,7 +192,7 @@ describeSkipWindows("Init Command Integration", () => {
       // Create a team mode config
       const teamConfig = {
         mode: "team",
-        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor", "agents"],
         modules: { lockfile: true, bundle: true },
       };
@@ -226,16 +215,12 @@ describeSkipWindows("Init Command Integration", () => {
         "utf-8",
       );
 
-      // Create minimal IR
-      const ir = {
-        id: "test-project",
-        version: "1.0.0",
-        spec_version: "1",
-        sections: [],
-      };
+      // Create minimal rules directory
+      const rulesDir = join(aligntrueDir, "rules");
+      mkdirSync(rulesDir, { recursive: true });
       writeFileSync(
-        join(aligntrueDir, ".rules.yaml"),
-        yaml.stringify(ir),
+        join(rulesDir, "global.md"),
+        "## Global\n\nTest content.\n",
         "utf-8",
       );
 
@@ -279,7 +264,7 @@ describeSkipWindows("Init Command Integration", () => {
 
       // Create a config without explicit mode
       const config = {
-        sources: [{ type: "local", path: ".aligntrue/.rules.yaml" }],
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
       writeFileSync(
@@ -301,16 +286,12 @@ describeSkipWindows("Init Command Integration", () => {
         "utf-8",
       );
 
-      // Create minimal IR
-      const ir = {
-        id: "test-project",
-        version: "1.0.0",
-        spec_version: "1",
-        sections: [],
-      };
+      // Create minimal rules directory
+      const rulesDir = join(aligntrueDir, "rules");
+      mkdirSync(rulesDir, { recursive: true });
       writeFileSync(
-        join(aligntrueDir, ".rules.yaml"),
-        yaml.stringify(ir),
+        join(rulesDir, "global.md"),
+        "## Global\n\nTest content.\n",
         "utf-8",
       );
 
@@ -379,61 +360,6 @@ describeSkipWindows("Init Command Integration", () => {
       }
 
       expect(exitCode).toBe(0);
-    });
-  });
-
-  // Skip: These tests reference .rules.yaml which no longer exists in the new architecture
-  // Rules are now stored in .aligntrue/rules/*.md
-  describe.skip("Importing existing agent files", () => {
-    it("imports AGENTS.md without overwriting content", async () => {
-      const agentsPath = join(TEST_DIR, "AGENTS.md");
-      writeFileSync(
-        agentsPath,
-        "## Existing Rules\n\nAlways run tests before commit.\n",
-        "utf-8",
-      );
-
-      await init(["--yes", "--project-id", "test-project"]);
-
-      const finalAgentsContent = readFileSync(agentsPath, "utf-8");
-      expect(finalAgentsContent).toContain("Existing Rules");
-
-      const rulesContent = readFileSync(
-        join(TEST_DIR, ".aligntrue", ".rules.yaml"),
-        "utf-8",
-      );
-      expect(rulesContent).toContain("Existing Rules");
-    });
-
-    it("imports cursor .mdc files when present", async () => {
-      const cursorDir = join(TEST_DIR, ".cursor", "rules");
-      mkdirSync(cursorDir, { recursive: true });
-      const cursorFile = join(cursorDir, "custom.mdc");
-      writeFileSync(
-        cursorFile,
-        `---
-title: Custom
-alwaysApply: true
----
-
-## Cursor Rule
-
-Be nice to cursors.
-`,
-        "utf-8",
-      );
-
-      await init(["--yes", "--project-id", "test-project"]);
-
-      const rulesContent = readFileSync(
-        join(TEST_DIR, ".aligntrue", ".rules.yaml"),
-        "utf-8",
-      );
-      expect(rulesContent).toContain("Cursor Rule");
-
-      // Ensure original file left untouched
-      const cursorContent = readFileSync(cursorFile, "utf-8");
-      expect(cursorContent).toContain("Cursor Rule");
     });
   });
 });

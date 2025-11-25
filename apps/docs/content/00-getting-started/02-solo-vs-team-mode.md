@@ -39,7 +39,7 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 
 ```mermaid
 graph TD
-    S1[.aligntrue/rules/] --> S2[.aligntrue/.rules.yaml]
+    S1[.aligntrue/rules/] --> S2[.aligntrue/rules]
     S2 --> S3[Agent exports]
 
     style S2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
@@ -49,7 +49,7 @@ graph TD
 
 ```mermaid
 graph TD
-    T1[AGENTS.md] --> T2[.aligntrue/.rules.yaml]
+    T1[AGENTS.md] --> T2[.aligntrue/rules]
     T2 --> T3[.aligntrue.lock.json]
     T3 --> T4[Agent exports]
     T5[CI validation] -.-> T3
@@ -275,7 +275,7 @@ aligntrue sync
 
 Solo mode can store rule sections in two places:
 
-- **Public rules (repo-backed)** live in `.aligntrue/.rules.yaml` and are committed alongside the rest of your project. Everyone who clones the repo gets the same rules. When you enable team mode, these sections become the shared team rules that require approval to change.
+- **Public rules (repo-backed)** live in `.aligntrue/rules` and are committed alongside the rest of your project. Everyone who clones the repo gets the same rules. When you enable team mode, these sections become the shared team rules that require approval to change.
 - **Private/personal rules (remote)** live in a separate private git repo and sync only with machines where you configure that remote. They remain personal even when collaborators clone the main repo.
 
 ### How to mark public rules as private
@@ -298,16 +298,16 @@ storage:
 
 1. Modify `storage.personal` in `.aligntrue/config.yaml`:
    - Set `type: local` to keep sections machine-local (`.aligntrue/.local/personal/rules.md`)
-   - Remove the entire `storage.personal` block to move sections back into the main repo (`.aligntrue/.rules.yaml`)
+   - Remove the entire `storage.personal` block to move sections back into the main repo (`.aligntrue/rules`)
 
 2. Copy any sections you still need from:
    - `.aligntrue/.remotes/personal/rules.md` (if remote storage)
    - `.aligntrue/.local/personal/rules.md` (if local storage)
    - Or your private repo directly
 
-   Back into `.aligntrue/.rules.yaml`.
+   Back into `.aligntrue/rules`.
 
-3. Run `aligntrue sync` and commit `.aligntrue/.rules.yaml` to publish the now-public sections with the rest of your repo.
+3. Run `aligntrue sync` and commit `.aligntrue/rules` to publish the now-public sections with the rest of your repo.
 
 You can repeat these steps anytime: flip storage between repo/local/remote or rerun `aligntrue migrate personal` when you want to reclassify sections without touching the rest of your config.
 
@@ -319,7 +319,7 @@ Yes! This is the recommended approach. Start with solo mode to learn AlignTrue, 
 
 ### What happens to my rules when I switch modes?
 
-Your rules stay the same. Only the validation and workflow change. Your `.aligntrue/.rules.yaml` file is unchanged.
+Your rules stay the same. Only the validation and workflow change. Your `.aligntrue/rules` file is unchanged.
 
 ### Do I need team mode for projects with multiple users?
 

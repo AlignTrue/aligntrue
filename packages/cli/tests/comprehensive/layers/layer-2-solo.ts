@@ -44,14 +44,14 @@ const workflows: Workflow[] = [
     ],
     validation: (workspace) => {
       const configPath = join(workspace, ".aligntrue", "config.yaml");
-      const rulesPath = join(workspace, ".aligntrue", ".rules.yaml");
+      const rulesPath = join(workspace, ".aligntrue", "rules");
       const agentsPath = join(workspace, "AGENTS.md");
 
       if (!existsSync(configPath)) {
         return { passed: false, error: "config.yaml not created" };
       }
       if (!existsSync(rulesPath)) {
-        return { passed: false, error: ".rules.yaml not created" };
+        return { passed: false, error: "rules directory not created" };
       }
       if (!existsSync(agentsPath)) {
         return { passed: false, error: "AGENTS.md not created" };
@@ -80,9 +80,9 @@ const workflows: Workflow[] = [
       },
     ],
     validation: (workspace) => {
-      const rulesPath = join(workspace, ".aligntrue", ".rules.yaml");
+      const rulesPath = join(workspace, ".aligntrue", "rules");
       if (!existsSync(rulesPath)) {
-        return { passed: false, error: ".rules.yaml not updated" };
+        return { passed: false, error: "rules directory not updated" };
       }
 
       const content = readFileSync(rulesPath, "utf-8");
@@ -159,14 +159,17 @@ const workflows: Workflow[] = [
     ],
     validation: (workspace) => {
       const configPath = join(workspace, ".aligntrue", "config.yaml");
-      const rulesPath = join(workspace, ".aligntrue", ".rules.yaml");
+      const rulesPath = join(workspace, ".aligntrue", "rules");
       const agentsPath = join(workspace, "AGENTS.md");
 
       if (!existsSync(configPath)) {
         return { passed: false, error: "config.yaml not created after init" };
       }
       if (!existsSync(rulesPath)) {
-        return { passed: false, error: ".rules.yaml not created after init" };
+        return {
+          passed: false,
+          error: "rules directory not created after init",
+        };
       }
       if (!existsSync(agentsPath)) {
         return { passed: false, error: "AGENTS.md not created after init" };

@@ -31,7 +31,7 @@ Each is covered in [Scenarios](#scenarios) with full configurations.
 **Scenario:** You use `@acme/standards` but want to treat one check as an error.
 
 ```yaml
-# .aligntrue/.rules.yaml
+# .aligntrue/rules
 sources:
   - git: https://github.com/acme/standards
     ref: v1.2.0
@@ -142,7 +142,7 @@ aligntrue override selectors
 Sample output:
 
 ```
-Selector inventory (.aligntrue/.rules.yaml)
+Selector inventory (.aligntrue/rules)
 Found 3 sections. Use these selectors in overlays:
 
   1. TypeScript strict mode
@@ -161,7 +161,7 @@ Top-level property selectors:
 ```
 
 Use `sections[index]` when a section does not have a `fingerprint` field.  
-Use `rule[id=...]` when fingerprints exist (they map to the `fingerprint` in `.aligntrue/.rules.yaml`).
+Use `rule[id=...]` when fingerprints exist (they map to the `fingerprint` in `.aligntrue/rules`).
 
 ### By rule ID
 
@@ -414,7 +414,7 @@ overlays:
 ```bash
 # 1. Team lead adds overlays
 # 2. Commit to git
-git add .aligntrue/.rules.yaml
+git add .aligntrue/rules
 git commit -m "chore: Enforce stricter console.log and any-type rules"
 
 # 3. Team members pull and sync
@@ -912,12 +912,12 @@ See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehens
 
 ### Understanding what overlays affect
 
-Overlays modify the canonical IR (`.aligntrue/.rules.yaml`) and affect **behavior** of checks and linting, even if the changes aren't visible in markdown exports.
+Overlays modify the canonical IR (`.aligntrue/rules`) and affect **behavior** of checks and linting, even if the changes aren't visible in markdown exports.
 
 **Example:**
 
 - Overlay changes `severity: "warning"` → `severity: "error"`
-- IR file `.aligntrue/.rules.yaml` now has `severity: error`
+- IR file `.aligntrue/rules` now has `severity: error`
 - Check behavior changes (errors fail CI instead of warnings)
 - Exported AGENTS.md still shows `## Rule Name` (no severity indicator)
 
@@ -939,7 +939,7 @@ aligntrue override diff
 # Shows: Original → Modified with overlay applied
 
 # 3. Inspect the canonical IR directly
-cat .aligntrue/.rules.yaml | grep -A 5 "your-rule-id"
+cat .aligntrue/rules | grep -A 5 "your-rule-id"
 # Shows: severity: "error" (modified by overlay)
 
 # 4. Check CLI output during sync
@@ -951,7 +951,7 @@ aligntrue sync
 
 If you don't see severity changes in AGENTS.md or other exports, this is **expected**. Here's why:
 
-- **IR is canonical:** `.aligntrue/.rules.yaml` contains overlay-modified content
+- **IR is canonical:** `.aligntrue/rules` contains overlay-modified content
 - **Exports are simplified:** Markdown formats prioritize readability
 - **Behavior is affected:** Checks use the modified IR behavior
 - **Verification:** Use `aligntrue override diff` and `aligntrue override status` to confirm
@@ -979,7 +979,7 @@ Overlays are working correctly if:
 
 - ✅ `aligntrue override status` shows "Healthy: yes"
 - ✅ `aligntrue override diff` shows the change applied
-- ✅ `.aligntrue/.rules.yaml` contains the modified value
+- ✅ `.aligntrue/rules` contains the modified value
 - ✅ Check behavior changes as expected
 
 ## Scenarios

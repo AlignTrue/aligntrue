@@ -3,9 +3,9 @@
  * Guides users through solo → team mode conversion
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
@@ -221,16 +221,32 @@ function detectPersonalRulesInRepo(
 ): Array<{ heading: string; scope: string; storage: string }> {
   const results: Array<{ heading: string; scope: string; storage: string }> =
     [];
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  const irPath = join(cwd, ".aligntrue", "rules");
 
   try {
-    // Check IR file
-    const irContent = readFileSync(irPath, "utf-8");
-    const ir = parseYaml(irContent);
+    // Check rules directory - load all markdown files
+    const { loadRulesDirectory } = require("@aligntrue/core");
+    const rules = loadRulesDirectory(irPath, cwd, { recursive: true });
 
-    if (!ir || !ir.sections || !Array.isArray(ir.sections)) {
+    // Convert to sections format
+    const sections = rules.map(
+      (rule: {
+        frontmatter: { title?: string; scope?: string };
+        filename: string;
+        content: string;
+        hash: string;
+      }) => ({
+        heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+        content: rule.content,
+        scope: rule.frontmatter.scope,
+      }),
+    );
+
+    if (!sections || sections.length === 0) {
       return results;
     }
+
+    const ir = { sections };
 
     // Check config for scope definitions
     const typedConfig = config as unknown as AlignTrueConfig;
@@ -290,17 +306,34 @@ async function applyMigrationActions(
   config: AlignTrueConfig,
   cwd: string,
 ): Promise<void> {
-  // Load IR
-  const irPath = join(cwd, ".aligntrue", ".rules.yaml");
+  // Load IR from rules directory
+  const irPath = join(cwd, ".aligntrue", "rules");
   let ir: ParsedIR;
 
   try {
-    const irContent = readFileSync(irPath, "utf-8");
-    ir = parseYaml(irContent) as ParsedIR;
+    const { loadRulesDirectory } = require("@aligntrue/core");
+    const rules = loadRulesDirectory(irPath, cwd, { recursive: true });
+
+    // Convert to ParsedIR format
+    ir = {
+      sections: rules.map(
+        (rule: {
+          frontmatter: { title?: string; scope?: string };
+          filename: string;
+          content: string;
+          hash: string;
+        }) => ({
+          heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+          content: rule.content,
+          scope: rule.frontmatter.scope,
+          fingerprint: rule.hash.slice(0, 16),
+        }),
+      ),
+    } as ParsedIR;
   } catch (error: unknown) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       throw new Error(
-        "IR file (.aligntrue/.rules.yaml) not found. Please run 'aligntrue init' first.",
+        "Rules directory (.aligntrue/rules/) not found. Please run 'aligntrue init' first.",
       );
     }
     throw error;
