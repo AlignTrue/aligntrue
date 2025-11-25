@@ -75,13 +75,19 @@ Accept the import prompts to pull existing agent files into AlignTrue, then run 
 
 ### Where do I write rules?
 
-**Edit your detected agent files** - AlignTrue auto-detects Cursor, GitHub Copilot, Claude Code, and 28+ agents during `init` and lets you edit in your native format (`.cursor/rules/*.mdc`, etc.).
+**Edit `.aligntrue/rules/`** - Create markdown files in the `.aligntrue/rules/` directory. This is your single source of truth for all rules.
 
-**AGENTS.md is the universal fallback** - If no agent is detected, or you prefer a single universal file that works across multiple agents, AlignTrue creates `AGENTS.md`.
+**Example structure:**
 
-You can edit either your agent-specific files or AGENTS.md - AlignTrue syncs changes automatically in solo mode.
+```
+.aligntrue/rules/
+  ├── global.md         # Global project rules
+  ├── backend.md        # Backend-specific rules
+  ├── frontend.md       # Frontend-specific rules
+  └── testing.md        # Testing guidelines
+```
 
-**Don't edit `.aligntrue/rules`** - This is auto-generated (like a build artifact). Think of it like `package-lock.json` - it exists for tooling, not for editing.
+All agent files (Cursor, AGENTS.md, etc.) are auto-generated exports from `.aligntrue/rules/`. Do not edit them directly.
 
 ### How do I sync rules to agents?
 
@@ -93,12 +99,15 @@ This generates agent-specific files like `.cursor/rules/*.mdc`, `AGENTS.md`, etc
 
 ### Can I edit agent files directly?
 
-Yes! AlignTrue supports centralized rule management - you choose ONE file to edit:
+**No.** Agent files like `.cursor/rules/*.mdc` and `AGENTS.md` are read-only exports generated from `.aligntrue/rules/`.
 
-- `AGENTS.md` (universal format, recommended)
-- Agent files like `.cursor/rules/*.mdc` (agent-specific)
+If you edit agent files directly:
 
-Changes flow from `.aligntrue/rules/` through the IR to all agent exports. See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
+- Changes will be backed up to `.aligntrue/overwritten-rules/`
+- Changes will be overwritten on the next sync
+- Always edit `.aligntrue/rules/` instead
+
+See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
 
 ### Do I need to run sync every time?
 
