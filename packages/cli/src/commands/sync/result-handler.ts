@@ -164,7 +164,7 @@ export async function handleSyncResult(
           }
         }
 
-        // Show consolidated ignore file messages
+        // Show consolidated ignore file messages with docs link
         if (allIgnoreUpdates.length > 0) {
           const createdFiles = allIgnoreUpdates
             .filter((u) => u.created)
@@ -182,18 +182,17 @@ export async function handleSyncResult(
               parts.push(`updated ${modifiedFiles.join(", ")}`);
             }
             clack.log.info(
-              `Agent ignore files ${parts.join(" and ")} for duplicate rule prevention. Read-only agent exports added to .gitignore.`,
+              `Agent ignore files ${parts.join(" and ")} for duplicate rule prevention. Read-only agent exports added to .gitignore. Details: https://aligntrue.ai/agent-ignore`,
             );
           }
         }
 
-        // Show warnings for agents without ignore support
-        if (detection.warnings.length > 0) {
+        // Show warnings for agents without ignore support (verbose mode only)
+        if (detection.warnings.length > 0 && options.verbose) {
           for (const warning of detection.warnings) {
             const message = formatWarningMessage(warning);
             clack.log.warn(message);
           }
-          clack.log.info(`Learn more: https://aligntrue.ai/dup-rules`);
         }
       }
     }
