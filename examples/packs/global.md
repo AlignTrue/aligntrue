@@ -9,7 +9,7 @@ tags: ["global", "baseline", "ci", "paved-road"]
 
 This pack establishes paved-road commands and consistent workflow patterns for AI-assisted repositories. It complements docs, testing, and TDD packs while deferring to security requirements.
 
-## Core Principles
+## Core principles
 
 - Establish paved-road commands and use them consistently
 - Keep PRs focused and small
@@ -43,7 +43,7 @@ Every repository must have CI workflow configuration:
 
 Add CI workflow in `.github/workflows/` that runs tests and lints on every PR.
 
-## Version Control Hygiene
+## Version control hygiene
 
 Keep generated artifacts out of version control:
 
@@ -51,7 +51,7 @@ Keep generated artifacts out of version control:
 - Remove any accidentally committed build artifacts
 - Verify with: `git ls-files | grep -E '(dist/|build/|out/|\\.tsbuildinfo)'` (should return nothing)
 
-## Deterministic Behavior
+## Deterministic behavior
 
 Ensure reproducible builds and behavior:
 
@@ -60,13 +60,13 @@ Ensure reproducible builds and behavior:
 - Use stable ordering for collections
 - Delegate supply-chain specifics to security pack
 
-## Documentation Updates
+## Documentation updates
 
 - Update docs and examples when interfaces change
 - Reference other packs using @ notation
 - Keep README and guides in sync with code
 
-## Output Contract
+## Output contract
 
 For significant changes:
 
