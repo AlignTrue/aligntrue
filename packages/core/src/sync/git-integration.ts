@@ -258,7 +258,9 @@ export class GitIntegration {
       // File doesn't exist, content remains ""
     }
 
-    content = this.addManagedSection(content, marker, endMarker, files);
+    // Always include overwritten-rules in the patterns
+    const allPatterns = [".aligntrue/overwritten-rules/", ...files];
+    content = this.addManagedSection(content, marker, endMarker, allPatterns);
     writeFileSync(gitignorePath, content, "utf-8");
   }
 
