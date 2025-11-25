@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { relative, basename } from "path";
 import matter from "gray-matter";
-import yaml from "js-yaml";
+import { parse, stringify } from "yaml";
 import { glob } from "glob";
 import type { RuleFrontmatter, RuleFile } from "@aligntrue/schema";
 import { computeContentHash } from "@aligntrue/schema";
@@ -9,12 +9,12 @@ import { computeContentHash } from "@aligntrue/schema";
 // Re-export RuleFile from schema
 export type { RuleFile } from "@aligntrue/schema";
 
-// Configure gray-matter to use js-yaml 4.x API (which doesn't have safeLoad)
+// Configure gray-matter to use yaml library
 const matterOptions = {
   engines: {
     yaml: {
-      parse: (str: string) => yaml.load(str) as object,
-      stringify: (obj: object) => yaml.dump(obj),
+      parse: (str: string) => parse(str) as object,
+      stringify: (obj: object) => stringify(obj),
     },
   },
 };
@@ -61,16 +61,13 @@ export function parseRuleFile(filePath: string, cwd: string): RuleFile {
  * @param rule Rule object
  */
 export function writeRuleFile(filePath: string, rule: RuleFile): void {
-  // Build frontmatter YAML using js-yaml directly (gray-matter uses deprecated API)
+  // Build frontmatter YAML using yaml library
   const updatedFrontmatter = {
     ...rule.frontmatter,
   };
 
   // Build content string with frontmatter
-  const frontmatterYaml = yaml.dump(updatedFrontmatter, {
-    sortKeys: true,
-    noRefs: true,
-  });
+  const frontmatterYaml = stringify(updatedFrontmatter);
   const contentWithFrontmatter = `---\n${frontmatterYaml}---\n${rule.content}`;
 
   // Update content hash
@@ -78,10 +75,7 @@ export function writeRuleFile(filePath: string, rule: RuleFile): void {
   updatedFrontmatter.content_hash = hash;
 
   // Rebuild with updated hash
-  const finalFrontmatterYaml = yaml.dump(updatedFrontmatter, {
-    sortKeys: true,
-    noRefs: true,
-  });
+  const finalFrontmatterYaml = stringify(updatedFrontmatter);
   const finalContent = `---\n${finalFrontmatterYaml}---\n${rule.content}`;
 
   writeFileSync(filePath, finalContent, "utf-8");

@@ -11,7 +11,7 @@ import { diffLines } from "diff";
 import { isTTY } from "../utils/tty-helper.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 /**
  * Execute revert command
@@ -235,21 +235,9 @@ export async function revert(args: string[]): Promise<void> {
     }
 
     // Restore backup
-    const spinner = isTTY() ? createSpinner() : null;
-    let spinnerActive = false;
-    const stopSpinner = (message?: string, code?: number) => {
-      if (spinnerActive && spinner) {
-        spinner.stop(message, code);
-        spinnerActive = false;
-      }
-    };
+    const spinner = createManagedSpinner({ disabled: !isTTY() });
 
-    if (spinner) {
-      spinner.start("Restoring backup");
-      spinnerActive = true;
-    } else {
-      console.log("Restoring backup...");
-    }
+    spinner.start("Restoring backup");
 
     const restoreOptions: {
       cwd: string;
@@ -266,8 +254,8 @@ export async function revert(args: string[]): Promise<void> {
 
     BackupManager.restoreBackup(restoreOptions);
 
-    if (spinner) {
-      stopSpinner(); // Stop cleanly without message, outro follows
+    if (isTTY()) {
+      spinner.stop(); // Stop cleanly without message, outro follows
       clack.outro(`✓ Restored from backup ${selectedTimestamp}`);
     } else {
       console.log("✓ Backup restored");

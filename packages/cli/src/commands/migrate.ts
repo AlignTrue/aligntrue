@@ -18,7 +18,7 @@ import {
 } from "../utils/command-utilities.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -123,24 +123,10 @@ export async function promote(args: string[]): Promise<void> {
     console.log(`Promote "${sectionHeading}" to team rule`);
   }
 
-  // Spinner state tracking
-  const spinner = isTTY() ? createSpinner() : null;
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive && spinner) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
-
   try {
     // Create backup
-    if (spinner) {
-      spinner.start("Creating backup");
-      spinnerActive = true;
-    } else {
-      console.log("Creating backup...");
-    }
+    const spinner = createManagedSpinner({ disabled: !isTTY() });
+    spinner.start("Creating backup");
 
     const backup = BackupManager.createBackup({
       cwd,
@@ -149,16 +135,9 @@ export async function promote(args: string[]): Promise<void> {
       notes: `Backup before promoting "${sectionHeading}" to team`,
     });
 
-    if (spinner) {
-      stopSpinner(
-        `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-      );
-    } else {
-      console.log(`✓ Backup created: ${backup.timestamp}`);
-      console.log(
-        `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-      );
-    }
+    spinner.stop(
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
 
     // Confirm
     if (!yes && !dryRun) {
@@ -179,12 +158,6 @@ export async function promote(args: string[]): Promise<void> {
 
     // Apply changes
     if (!dryRun) {
-      if (spinner) {
-        spinner.start("Promoting to team");
-        spinnerActive = true;
-      } else {
-        console.log("Promoting to team...");
-      }
       // Feature planned for future release
       throw new Error(
         "Section promotion not yet implemented. " +
@@ -214,7 +187,11 @@ export async function promote(args: string[]): Promise<void> {
 
     recordEvent({ command_name: "promote", align_hashes_used: [] });
   } catch (error) {
-    stopSpinner("Promotion failed", 1);
+    if (isTTY()) {
+      clack.log.error("Promotion failed");
+    } else {
+      console.log("Promotion failed");
+    }
     throw error;
   }
 }
@@ -257,24 +234,10 @@ export async function demote(args: string[]): Promise<void> {
     console.log(`Demote "${sectionHeading}" to personal rule`);
   }
 
-  // Spinner state tracking
-  const spinner = isTTY() ? createSpinner() : null;
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive && spinner) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
-
   try {
     // Create backup
-    if (spinner) {
-      spinner.start("Creating backup");
-      spinnerActive = true;
-    } else {
-      console.log("Creating backup...");
-    }
+    const spinner = createManagedSpinner({ disabled: !isTTY() });
+    spinner.start("Creating backup");
 
     const backup = BackupManager.createBackup({
       cwd,
@@ -283,16 +246,9 @@ export async function demote(args: string[]): Promise<void> {
       notes: `Backup before demoting "${sectionHeading}" to personal`,
     });
 
-    if (spinner) {
-      stopSpinner(
-        `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-      );
-    } else {
-      console.log(`✓ Backup created: ${backup.timestamp}`);
-      console.log(
-        `  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-      );
-    }
+    spinner.stop(
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+    );
 
     // Confirm
     if (!yes && !dryRun) {
@@ -313,12 +269,6 @@ export async function demote(args: string[]): Promise<void> {
 
     // Apply changes
     if (!dryRun) {
-      if (spinner) {
-        spinner.start("Demoting to personal");
-        spinnerActive = true;
-      } else {
-        console.log("Demoting to personal...");
-      }
       // Feature planned for future release
       throw new Error(
         "Section demotion not yet implemented. " +
@@ -344,7 +294,11 @@ export async function demote(args: string[]): Promise<void> {
 
     recordEvent({ command_name: "demote", align_hashes_used: [] });
   } catch (error) {
-    stopSpinner("Demotion failed", 1);
+    if (isTTY()) {
+      clack.log.error("Demotion failed");
+    } else {
+      console.log("Demotion failed");
+    }
     throw error;
   }
 }

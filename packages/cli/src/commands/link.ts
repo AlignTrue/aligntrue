@@ -38,7 +38,7 @@ import {
 import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for link command
@@ -147,21 +147,8 @@ export async function link(args: string[]): Promise<void> {
   }
 
   // Show spinner
-  const spinner = isTTY() ? createSpinner() : null;
-  let spinnerActive = false;
-  const stopSpinner = (message?: string, code?: number) => {
-    if (spinnerActive && spinner) {
-      spinner.stop(message, code);
-      spinnerActive = false;
-    }
-  };
-
-  if (spinner) {
-    spinner.start("Checking git repository...");
-    spinnerActive = true;
-  } else {
-    console.log("Checking git repository...");
-  }
+  const spinner = createManagedSpinner({ disabled: !isTTY() });
+  spinner.start("Checking git repository...");
 
   try {
     // Load config
@@ -174,11 +161,7 @@ export async function link(args: string[]): Promise<void> {
     // a full GitProvider with url/ref. The validation happens when user vendored
     // the repo manually with git submodule/subtree.
 
-    if (spinner) {
-      stopSpinner("Git repository validated");
-    } else {
-      console.log("✓ Git repository validated");
-    }
+    spinner.stop("Git repository validated");
 
     // Detect if vendoring method is already set up
     const vendorInfo = detectVendorType(absoluteVendorPath);
@@ -233,20 +216,11 @@ export async function link(args: string[]): Promise<void> {
     }
 
     // Validate pack integrity at vendor path
-    if (spinner) {
-      spinner.start("Validating pack integrity...");
-      spinnerActive = true;
-    } else {
-      console.log("Validating pack integrity...");
-    }
+    spinner.start("Validating pack integrity...");
     const packValid = await validateVendoredPack(absoluteVendorPath);
 
     if (!packValid.valid) {
-      if (spinner) {
-        stopSpinner("Pack validation failed", 1);
-      } else {
-        console.log("✗ Pack validation failed");
-      }
+      spinner.stop("Pack validation failed", 1);
       exitWithError({
         title: "Invalid pack",
         message: packValid.error || "Pack validation failed",
@@ -255,11 +229,7 @@ export async function link(args: string[]): Promise<void> {
       });
     }
 
-    if (spinner) {
-      stopSpinner("Pack validated");
-    } else {
-      console.log("✓ Pack validated");
-    }
+    spinner.stop("Pack validated");
 
     // Note: Allow list check removed - approval now via git PR review
 
@@ -297,11 +267,7 @@ export async function link(args: string[]): Promise<void> {
       align_hashes_used: [],
     });
   } catch (_error) {
-    if (spinner) {
-      stopSpinner("Link failed", 1);
-    } else {
-      console.log("✗ Link failed");
-    }
+    spinner.stop("Link failed", 1);
 
     if (_error && typeof _error === "object" && "code" in _error) {
       throw _error;
