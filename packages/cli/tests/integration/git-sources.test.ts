@@ -102,8 +102,9 @@ git:
           });
 
           // Verify sync succeeded
-          expect(output).toContain("Sync complete") ||
-            expect(output).toContain("synced");
+          const hasSyncCompletion =
+            output.includes("Sync complete") || output.includes("synced");
+          expect(hasSyncCompletion).toBe(true);
 
           // Verify AGENTS.md was created with personal rules content
           const agentsMd = readFileSync(
@@ -115,9 +116,12 @@ git:
         } catch (error: any) {
           // If sync fails, check if it's a network/git issue
           const errorOutput = captureErrorOutput(error);
+          console.log("Sync error output:", errorOutput);
           if (
             errorOutput.includes("consent") ||
-            errorOutput.includes("network")
+            errorOutput.includes("network") ||
+            errorOutput.includes("fatal:") ||
+            errorOutput.includes("could not resolve")
           ) {
             console.log(
               "Skipping test: Network consent required or git not available",

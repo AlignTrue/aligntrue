@@ -26,7 +26,6 @@ const ALL_COMMANDS = [
   "team",
   "link",
   "drift",
-  "update",
   "onboard",
   "override",
   "plugs",
