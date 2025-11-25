@@ -156,9 +156,6 @@ export async function loadIR(
     }
   }
 
-  // NOTE: edit_source removed in new architecture. Multi-file loading now happens
-  // through loadRulesDirectory() for .aligntrue/rules/ directory, not loadSourceFiles().
-
   // Check file exists
 
   // Safe: Paths from config are validated via validateScopePath() at config load time (packages/core/src/config/index.ts:662)

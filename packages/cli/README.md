@@ -278,8 +278,7 @@ Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, e
 
 **Features:**
 
-- Default: IR → agents sync (rules.md to agent config files)
-- Pullback: agents → IR sync with `--accept-agent` flag
+- Unidirectional sync: rules → IR → agents
 - Preview changes with `--dry-run` before writing
 - Non-interactive mode for CI with `--force`
 - Lockfile validation in team mode (soft/strict enforcement)
@@ -291,19 +290,15 @@ Sync your rules to configured agent exporters (Cursor, AGENTS.md, VS Code MCP, e
 aligntrue sync [options]
 ```
 
-**Basic Options:**
+**Options:**
 
 - `--dry-run` - Preview changes without writing files
 - `--config <path>` - Custom config file path (default: .aligntrue/config.yaml)
-
-**Advanced Options:**
-
-- `--accept-agent <name>` - Pull changes from agent back to IR (requires Step 17)
 - `--force` - Non-interactive mode (skip prompts)
 
 **Examples:**
 
-Default sync (IR → agents):
+Sync rules to all agents:
 
 ```bash
 aligntrue sync
@@ -313,12 +308,6 @@ Preview changes:
 
 ```bash
 aligntrue sync --dry-run
-```
-
-Import from Cursor (mock data):
-
-```bash
-aligntrue sync --accept-agent cursor
 ```
 
 Non-interactive for CI:
@@ -337,52 +326,17 @@ aligntrue sync --force
 6. Syncs IR to agent config files
 7. Shows files written, warnings, conflicts
 
-### Auto-Pull Behavior
+### Sync Behavior
 
-AlignTrue supports bi-directional sync with agent config files.
-
-**Solo Mode (Default: Enabled)**
-
-When `sync.auto_pull: true` (default), AlignTrue automatically pulls changes from your primary agent before syncing:
-
-```bash
-# Edit .cursor/rules/aligntrue.mdc directly
-# Changes automatically sync back to .aligntrue/.rules.yaml
-aligntrue sync
-```
+AlignTrue uses unidirectional sync from `.aligntrue/rules/` to agent files.
 
 **Workflow:**
 
-1. Auto-pull from primary agent (e.g., cursor)
-2. Merge agent changes into IR
-3. Sync IR to all configured agents
+1. Edit files in `.aligntrue/rules/` (the single source of truth)
+2. Run `aligntrue sync`
+3. Changes flow to all configured agent exports (Cursor, AGENTS.md, etc.)
 
-**To disable:**
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  auto_pull: false
-```
-
-**Team Mode (Default: Disabled)**
-
-In team mode, IR is the single source of truth. Agent edits require explicit approval:
-
-```bash
-# Accept rules from agent (pullback into IR)
-aligntrue sync --accept-agent cursor
-```
-
-**Primary Agent**
-
-Auto-detected from your first importable exporter (cursor, agents, etc.). To set manually:
-
-```yaml
-# .aligntrue/config.yaml
-sync:
-  primary_agent: cursor
-```
+All agent files are read-only exports. If you manually edit an agent file, it will be backed up and overwritten on the next sync.
 
 **Output example:**
 

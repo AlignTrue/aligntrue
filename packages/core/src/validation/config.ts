@@ -240,11 +240,6 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.sync.scope_prefixing = "off";
   }
 
-  // NOTE: Removed deprecated sync properties (auto_pull, on_conflict, workflow_mode,
-  // show_diff_on_pull, primary_agent, edit_source, source_files, source_markers).
-  // The new architecture uses .aligntrue/rules/*.md as the single source of truth
-  // with unidirectional sync to agents. No bidirectional sync or edit source switching.
-
   // Apply exporter defaults
   if (!result.exporters || result.exporters.length === 0) {
     result.exporters = ["cursor", "agents"];
@@ -611,12 +606,6 @@ export function isValidConfigKey(key: string): boolean {
     "git.offline_fallback",
     "git.auto_gitignore",
     "sync",
-    "sync.auto_pull",
-    "sync.primary_agent",
-    "sync.on_conflict",
-    "sync.workflow_mode",
-    "sync.show_diff_on_pull",
-    "sync.edit_source",
     "sync.scope_prefixing",
     "sync.watch_enabled",
     "sync.watch_debounce",

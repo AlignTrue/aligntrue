@@ -623,23 +623,23 @@ export function detectAllFilesWithContent(
 }
 
 /**
- * Detect untracked files (files with content not in edit_source)
+ * Detect untracked files (agent files with content outside rules directory)
  * @param cwd - Current working directory
- * @param editSource - Current edit_source configuration
+ * @param excludePatterns - File patterns to exclude from detection (e.g., known agent patterns)
  * @returns Array of untracked files with content
  */
 export function detectUntrackedFiles(
   cwd: string,
-  editSource: EditSourceConfig | undefined,
+  excludePatterns: EditSourceConfig | undefined,
 ): DetectedFileWithContent[] {
   const allFiles = detectAllFilesWithContent(cwd);
   const untrackedFiles: DetectedFileWithContent[] = [];
 
-  // Normalize edit_source to array
-  const editSourcePatterns = editSource
-    ? Array.isArray(editSource)
-      ? editSource
-      : [editSource]
+  // Normalize patterns to array
+  const patterns = excludePatterns
+    ? Array.isArray(excludePatterns)
+      ? excludePatterns
+      : [excludePatterns]
     : [];
 
   // Helper to escape regex special characters
@@ -647,9 +647,9 @@ export function detectUntrackedFiles(
     return str.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
   };
 
-  // Helper to check if a file path matches edit_source patterns
+  // Helper to check if a file path matches exclude patterns
   const isTracked = (relativePath: string): boolean => {
-    for (const pattern of editSourcePatterns) {
+    for (const pattern of patterns) {
       // Handle glob patterns
       if (pattern.includes("*")) {
         // Validate pattern length to prevent ReDoS
