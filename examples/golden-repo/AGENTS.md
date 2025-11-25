@@ -11,8 +11,9 @@ AI agents should follow these linked guidelines.
 
 ## General
 
-- [typescript](./.aligntrue/rules/typescript.md)
 - [testing](./.aligntrue/rules/testing.md)
 - [security](./.aligntrue/rules/security.md)
+- [global](./.aligntrue/rules/global.md)
 - [documentation](./.aligntrue/rules/documentation.md)
 - [code-review](./.aligntrue/rules/code-review.md)
+- [ai-guidance](./.aligntrue/rules/ai-guidance.md)
