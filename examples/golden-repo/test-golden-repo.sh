@@ -64,8 +64,11 @@ mkdir -p .vscode
 
 SYNC_START=$(date +%s)
 # Use --auto-enable to accept discovered agents in CI (non-interactive)
+# Disable set -e temporarily to capture exit code and show errors
+set +e
 SYNC_OUTPUT=$(node ../../packages/cli/dist/index.js sync --auto-enable --non-interactive 2>&1)
 SYNC_EXIT=$?
+set -e
 SYNC_END=$(date +%s)
 SYNC_DURATION=$((SYNC_END - SYNC_START))
 
@@ -77,8 +80,10 @@ if [ $SYNC_EXIT -eq 0 ]; then
     fail "Sync took >10s (expected <5s for 5 rules)"
   fi
 else
-  fail "Sync command failed"
+  fail "Sync command failed (exit code: $SYNC_EXIT)"
+  echo "=== Sync Error Output ==="
   echo "$SYNC_OUTPUT"
+  echo "=== End Error Output ==="
   exit 1
 fi
 
