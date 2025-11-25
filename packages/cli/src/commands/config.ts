@@ -165,9 +165,6 @@ async function showConfig(configPath: string): Promise<void> {
       console.log(`\n🔄 Sync:`);
       console.log(`  Source: .aligntrue/rules/*.md`);
       console.log(`  Direction: Outward to agents (unidirectional)`);
-      if (cfg.sync.scope_prefixing) {
-        console.log(`  Scope prefixing: ${cfg.sync.scope_prefixing}`);
-      }
       if (cfg.sync.watch_enabled) {
         console.log(`  Watch mode: enabled`);
       }
@@ -262,11 +259,6 @@ async function showSummary(configPath: string): Promise<void> {
       console.log(
         `  Bundle: ${config.modules?.bundle ? "enabled" : "disabled"}`,
       );
-    }
-
-    if (config.managed?.sections && config.managed.sections.length > 0) {
-      console.log(`  Team-managed sections: ${config.managed.sections.length}`);
-      config.managed.sections.forEach((s) => console.log(`    - ${s}`));
     }
 
     console.log("\nTo change settings:");
@@ -406,7 +398,6 @@ async function configSet(
       // Show some common valid keys
       const commonKeys = [
         "mode",
-        "sync.scope_prefixing",
         "sync.watch_enabled",
         "exporters",
         "git.mode",

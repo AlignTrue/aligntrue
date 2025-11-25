@@ -224,124 +224,6 @@ export function detectNewAgents(
 }
 
 /**
- * Edit source configuration type
- */
-export type EditSourceConfig = string | string[];
-
-/**
- * Edit source recommendation with alternatives
- */
-export interface EditSourceRecommendation {
-  default: EditSourceConfig;
-  alternatives: Array<{
-    value: EditSourceConfig;
-    label: string;
-    description: string;
-  }>;
-}
-
-/**
- * Recommend primary agent configuration based on detected agents
- * Priority: Cursor > AGENTS.md > other single-file > any_agent_file
- */
-export function recommendEditSource(
-  detectedAgents: string[],
-): EditSourceRecommendation {
-  // Priority 1: Cursor (most advanced/configurable)
-  if (detectedAgents.includes("cursor")) {
-    return {
-      default: ".cursor/rules/*.mdc",
-      alternatives: [
-        {
-          value: ".cursor/rules/*.mdc",
-          label: "Cursor rules (Recommended)",
-          description:
-            "Full feature support: scopes, vendor metadata, frontmatter",
-        },
-        {
-          value: "AGENTS.md",
-          label: "AGENTS.md only",
-          description: "Single markdown file, works with all AI assistants",
-        },
-        {
-          value: ["AGENTS.md", ".cursor/rules/*.mdc"],
-          label: "Both Cursor and AGENTS.md",
-          description: "Edit in either place, changes sync automatically",
-        },
-        {
-          value: "any_agent_file",
-          label: "Any agent file",
-          description: "Maximum flexibility, may cause section conflicts",
-        },
-      ],
-    };
-  }
-
-  // Priority 2: AGENTS.md (universal standard)
-  if (detectedAgents.includes("agents")) {
-    return {
-      default: "AGENTS.md",
-      alternatives: [
-        {
-          value: "AGENTS.md",
-          label: "AGENTS.md only (Recommended)",
-          description: "Single markdown file, works with all AI assistants",
-        },
-        {
-          value: "any_agent_file",
-          label: "Any agent file",
-          description: "Maximum flexibility, may cause section conflicts",
-        },
-      ],
-    };
-  }
-
-  // Priority 3: Other single-file agents
-  const singleFileAgents = detectedAgents.filter((a) =>
-    ["claude", "crush", "warp", "gemini"].includes(a),
-  );
-  if (singleFileAgents.length > 0) {
-    const firstAgent = singleFileAgents[0]!;
-    const file =
-      AGENT_PATTERNS[firstAgent]?.[0] || `${firstAgent.toUpperCase()}.md`;
-    const displayName = AGENT_DISPLAY_NAMES[firstAgent] || firstAgent;
-
-    return {
-      default: file,
-      alternatives: [
-        {
-          value: file,
-          label: `${displayName} only (Recommended)`,
-          description: `Single ${file} file for ${displayName}`,
-        },
-        {
-          value: "any_agent_file",
-          label: "Any agent file",
-          description: "Maximum flexibility, may cause section conflicts",
-        },
-      ],
-    };
-  }
-
-  // Priority 4: No agents detected - default to AGENTS.md
-  return {
-    default: "AGENTS.md",
-    alternatives: [
-      {
-        value: "AGENTS.md",
-        label: "AGENTS.md (Recommended)",
-        description: "Single markdown file, works with all AI assistants",
-      },
-      {
-        value: "any_agent_file",
-        label: "Any agent file",
-        description: "Maximum flexibility, may cause section conflicts",
-      },
-    ],
-  };
-}
-
-/**
  * File format types
  */
 export type FileFormat =
@@ -610,7 +492,7 @@ export function detectAllFilesWithContent(
  */
 export function detectUntrackedFiles(
   cwd: string,
-  excludePatterns: EditSourceConfig | undefined,
+  excludePatterns: string | string[] | undefined,
 ): DetectedFileWithContent[] {
   const allFiles = detectAllFilesWithContent(cwd);
   const untrackedFiles: DetectedFileWithContent[] = [];

@@ -17,7 +17,6 @@ export { watch } from "./watch.js";
 export { plugsCommand as plugs } from "./plugs.js";
 export { link } from "./link.js";
 export { drift } from "./drift.js";
-export { update } from "./update.js";
 export { onboard } from "./onboard.js";
 export { overrideCommand as override } from "./override.js";
 export { sources } from "./sources.js";

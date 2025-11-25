@@ -394,10 +394,6 @@ async function teamEnable(
       `  Lockfile: enabled (${config.lockfile?.mode || "soft"} mode)`,
     );
     console.log(`  Bundle: enabled`);
-    if (config.managed?.sections && config.managed.sections.length > 0) {
-      console.log(`  Team-managed sections: ${config.managed.sections.length}`);
-      config.managed.sections.forEach((s) => console.log(`    - ${s}`));
-    }
 
     console.log("\nNext steps:");
     console.log("  1. Run first sync: aligntrue sync");

@@ -1,9 +1,9 @@
-<!--
+<!-- 
   ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
-
+  
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
-
+  
   Source: apps/docs/content/08-development/*.md
 -->
 
@@ -26,6 +26,7 @@
 - [Workspace structure](#workspace-structure)
 
 ---
+
 
 # Architecture
 
@@ -364,7 +365,9 @@ This ensures determinism matches CI exactly.
 - Explore [development commands](https://aligntrue.ai/docs/08-development/commands)
 - See [setup guide](https://aligntrue.ai/docs/08-development/setup) for installation
 
+
 ---
+
 
 # Archiving components checklist
 
@@ -585,7 +588,9 @@ This real example shows the process:
 - [Development setup](https://aligntrue.ai/docs/08-development/setup)
 - [CHANGELOG](/CHANGELOG.md)
 
+
 ---
+
 
 # Preventing CI failures
 
@@ -931,7 +936,9 @@ pnpm typecheck
 4. **Use the right import paths** - Check source files for canonical exports
 5. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
 
+
 ---
+
 
 CI now runs a series of fail-fast checks. When one of them fails, look for the matching error message below.
 
@@ -990,7 +997,9 @@ TS2322: Type '"agents"' is not assignable to type '"agents-md"'.
 2. Run `pnpm validate:workspace` and `pnpm verify:workspace-links`.
 3. If CI still fails, run `pnpm clean && pnpm install` to refresh workspace links.
 
+
 ---
+
 
 # Code standards
 
@@ -1240,7 +1249,9 @@ pnpm validate:docs
 - See [Documentation standards](https://aligntrue.ai/docs/08-development/architecture#documentation) for docs authoring
 - See [Testing decision framework](https://aligntrue.ai/docs/08-development/test-maintenance) for test strategy
 
+
 ---
+
 
 # Development commands
 
@@ -1616,7 +1627,9 @@ Example: `feat: Add new command` or `fix: Resolve memory leak`
 - Understand [architecture concepts](https://aligntrue.ai/docs/08-development/architecture)
 - See [setup guide](https://aligntrue.ai/docs/08-development/setup) for installation
 
+
 ---
+
 
 # Dependabot auto-merge strategy
 
@@ -1741,7 +1754,9 @@ To verify security patch auto-merge works:
 - [GitHub auto-merge API](https://docs.github.com/en/rest/pulls/merges?apiVersion=2022-11-28#enable-auto-merge-for-a-pull-request)
 - [CI failure prevention](https://aligntrue.ai/docs/08-development/ci-failures)
 
+
 ---
+
 
 # Package exports
 
@@ -1869,7 +1884,9 @@ CI will validate that:
 - Type definitions (`.d.ts`) are automatically generated during build
 - Exports must use ES modules format (`type: "module"` in package.json)
 
+
 ---
+
 
 # Release process
 
@@ -2037,7 +2054,9 @@ Before merging "Version Packages" PR:
 - [Semantic Versioning](https://semver.org/)
 - [Keep a Changelog](https://keepachangelog.com/)
 
+
 ---
+
 
 # Development setup
 
@@ -2050,17 +2069,17 @@ Before merging "Version Packages" PR:
 
 <Tabs items={["npm", "yarn", "Homebrew (macOS)", "Direct"]}>
 
-<Tabs.Tab>`bash npm install -g pnpm@9 `</Tabs.Tab>
+<Tabs.Tab>```bash npm install -g pnpm@9 ```</Tabs.Tab>
 
-<Tabs.Tab>`bash yarn global add pnpm@9 `</Tabs.Tab>
+<Tabs.Tab>```bash yarn global add pnpm@9 ```</Tabs.Tab>
 
 <Tabs.Tab>
-`bash brew install pnpm pnpm env use --global 9 # Set version to 9+ `
+  ```bash brew install pnpm pnpm env use --global 9 # Set version to 9+ ```
 </Tabs.Tab>
 
 <Tabs.Tab>
-Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
-installers.
+  Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
+  installers.
 </Tabs.Tab>
 
 </Tabs>
@@ -2331,7 +2350,9 @@ pnpm --filter @aligntrue/schema build
 - Explore [development commands](https://aligntrue.ai/docs/08-development/commands)
 - Understand [architectural concepts](https://aligntrue.ai/docs/08-development/architecture)
 
+
 ---
+
 
 # Test maintenance: Core format and path changes
 
@@ -2433,7 +2454,9 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 - [Development setup](https://aligntrue.ai/docs/08-development/setup)
 
+
 ---
+
 
 # Workspace structure
 
@@ -2648,8 +2671,11 @@ See [development commands](https://aligntrue.ai/docs/08-development/commands) fo
 - Learn [development commands](https://aligntrue.ai/docs/08-development/commands)
 - Understand [architecture concepts](https://aligntrue.ai/docs/08-development/architecture)
 
----
 
 ---
 
-_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._
+
+
+---
+
+*This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.*

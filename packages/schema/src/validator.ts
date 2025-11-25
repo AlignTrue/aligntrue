@@ -286,7 +286,6 @@ export interface AlignPack {
 export interface AlignTrueVendorMetadata {
   source_scope?: string; // Scope this section originated from (e.g., "backend", "frontend", "default")
   source_file?: string; // Original file path (e.g., ".cursor/rules/backend.mdc")
-  last_modified?: string; // ISO 8601 timestamp of last modification
   ruleset?: string; // Ruleset ID this section belongs to
 }
 

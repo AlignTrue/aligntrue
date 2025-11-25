@@ -23,7 +23,6 @@ import {
   watch,
   link,
   drift,
-  update,
   plugs,
   onboard,
   override,
@@ -89,7 +88,6 @@ async function main() {
     );
     console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
-    console.log("  update         Check and apply updates (check, apply)");
     console.log("  onboard        Generate developer onboarding checklist");
     console.log(
       "  override       Manage overlays for fork-safe customization (add, status, diff, remove)\n",
@@ -138,7 +136,6 @@ async function main() {
     ["plugs", plugs],
     ["link", link],
     ["drift", drift],
-    ["update", update],
     ["onboard", onboard],
     ["override", override],
     ["sources", sources],

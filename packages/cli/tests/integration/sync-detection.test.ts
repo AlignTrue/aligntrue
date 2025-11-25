@@ -82,43 +82,6 @@ describe("Sync Detection Integration Tests", () => {
     expect(syncResult.exitCode).toBe(0);
   });
 
-  // Skip: This test was for bidirectional sync mtime detection which has been removed
-  // in the Ruler-style architecture refactor. Sync is now unidirectional (IR -> agents).
-  test.skip("sync detects Cursor .mdc file edits by mtime", async () => {
-    // Setup: init project
-    const initResult = runCLI(["init", "--yes"]);
-    expect(initResult.exitCode).toBe(0);
-
-    // Run initial sync to establish baseline
-    const initialSync = runCLI(["sync"]);
-    expect(initialSync.exitCode).toBe(0);
-
-    // Wait to ensure mtime difference
-    await sleep(1100);
-
-    // Edit a Cursor file
-    const cursorDir = join(TEST_DIR, ".cursor", "rules");
-    const cursorFiles = existsSync(cursorDir)
-      ? require("fs").readdirSync(cursorDir)
-      : [];
-    const mdcFile = cursorFiles.find((f: string) => f.endsWith(".mdc"));
-
-    if (mdcFile) {
-      const cursorFilePath = join(cursorDir, mdcFile);
-      appendFileSync(
-        cursorFilePath,
-        "\n## Cursor Custom Rule\n\nTest content\n",
-      );
-
-      // Run sync with verbose
-      const syncResult = runCLI(["sync", "--verbose"]);
-
-      // Verify detection
-      expect(syncResult.exitCode).toBe(0);
-      expect(syncResult.stdout).toContain("Checking for edits since:");
-    }
-  });
-
   test("sync updates last-sync timestamp after successful sync", async () => {
     // Setup: init project
     const initResult = runCLI(["init", "--yes"]);
