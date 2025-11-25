@@ -190,7 +190,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   }
 
   let rulesToWrite = importedRules;
-  let _isFreshStart = false;
   const detectedExporters = new Set<string>();
 
   // Infer exporters from imported rules
@@ -217,7 +216,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       clack.log.info(msg);
     }
     rulesToWrite = createStarterTemplates();
-    _isFreshStart = true;
     // Default exporters for fresh start
     detectedExporters.add("agents");
     detectedExporters.add("cursor");
