@@ -286,9 +286,10 @@ Used by: Cursor (`.cursor/rules/*.mdc`), AugmentCode (`.augment/rules/*.md`)
 
 ```
 .cursor/rules/
-  aligntrue.mdc        # Default scope
-  apps-web.mdc         # apps/web scope
-  packages-core.mdc    # packages/core scope
+  rule1.mdc            # Default scope, rule 1
+  rule2.mdc            # Default scope, rule 2
+  apps-web-rule1.mdc   # apps/web scope, rule 1
+  packages-core-rule1.mdc  # packages/core scope, rule 1
 ```
 
 **Implementation tips:**
@@ -350,7 +351,11 @@ Used by: Agents requiring both rules + config (e.g., Cursor + MCP)
 
 ```typescript
 return {
-  filesWritten: [".cursor/rules/aligntrue.mdc", ".cursor/mcp.json"],
+  filesWritten: [
+    ".cursor/rules/rule1.mdc",
+    ".cursor/rules/rule2.mdc",
+    ".cursor/mcp.json",
+  ],
   // ...
 };
 ```

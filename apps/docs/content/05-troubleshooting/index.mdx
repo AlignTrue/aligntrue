@@ -316,7 +316,7 @@ ls -la .aligntrue/.rules.yaml
 
 **Symptoms:**
 
-- Added pack appears in `aligntrue sync` output, but `AGENTS.md` and `.cursor/rules/aligntrue.mdc` never show the new sections.
+- Added pack appears in `aligntrue sync` output, but `AGENTS.md` and `.cursor/rules/*.mdc` files never show the new sections.
 - Running `aligntrue sync` repeatedly keeps overwriting the pack content with the local `AGENTS.md`.
 
 **Cause:** On first sync, AlignTrue imports edits from `AGENTS.md` (or agent exports) before writing to the internal IR. Without replaying configured `sources`, that import could overwrite pack overlays.
@@ -414,7 +414,7 @@ lockfile:
 **Fix:**
 
 1. `aligntrue status` — confirm the exporter shows `✓ detected`, the edit sources match the file you are editing, and the config path is correct.
-2. `aligntrue doctor` — verify it reports the expected files (e.g., `.cursor/rules/aligntrue.mdc`, `AGENTS.md`, `.vscode/mcp.json`) as present.
+2. `aligntrue doctor` — verify it reports the expected files (e.g., `.cursor/rules/*.mdc`, `AGENTS.md`, `.vscode/mcp.json`) as present.
 3. Open the file the exporter wrote and confirm your latest rules are there. If not, re-run `aligntrue sync`.
 4. Restart the agent or IDE so it reloads the file. Most IDE agents cache `AGENTS.md` or MCP configs until restart.
 

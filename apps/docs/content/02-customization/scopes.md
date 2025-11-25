@@ -226,11 +226,11 @@ scopes:
 # Produces nested agent files:
 apps/web/.cursor/rules/web.mdc              # Cursor export for web scope
 apps/web/AGENTS.md                          # AGENTS export for web scope
-packages/api/.cursor/rules/api.mdc          # Cursor export for api scope
+packages/api/.cursor/rules/*.mdc             # Cursor exports for api scope (one file per rule)
 packages/api/AGENTS.md                      # AGENTS export for api scope
-services/worker/.cursor/rules/worker.mdc    # Cursor export for worker scope
+services/worker/.cursor/rules/*.mdc         # Cursor exports for worker scope (one file per rule)
 services/worker/AGENTS.md                   # AGENTS export for worker scope
-.cursor/rules/aligntrue.mdc                 # Root rules (no scope)
+.cursor/rules/*.mdc                         # Root rules (no scope, one file per rule)
 AGENTS.md                                   # Root rules (no scope)
 ```
 
@@ -274,9 +274,9 @@ globs:
 
 If no scopes are configured, behavior is unchanged:
 
-- Single root `.cursor/rules/aligntrue.mdc`
-- Single root `AGENTS.md`
-- Legacy single-file exports continue to work
+- Root `.cursor/rules/*.mdc` (one file per rule)
+- Root `AGENTS.md`
+- Multi-file exports per rule as standard
 
 ## Merge order and precedence
 

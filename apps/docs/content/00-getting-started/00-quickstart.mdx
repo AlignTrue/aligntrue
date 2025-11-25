@@ -60,7 +60,7 @@ aligntrue sync
 
 This syncs to all your detected agents in their native formats:
 
-- `.cursor/rules/aligntrue.mdc` (if Cursor detected)
+- `.cursor/rules/*.mdc` (if Cursor detected - one file per rule)
 - `AGENTS.md` (universal format for Copilot, Claude, Aider, etc.)
 - `.vscode/mcp.json` (if VS Code MCP detected)
 
@@ -122,7 +122,7 @@ After running `aligntrue sync`, you'll have agent-specific rule files:
 
 **For Cursor:**
 
-- `.cursor/rules/aligntrue.mdc` - Rules in Cursor's native format
+- `.cursor/rules/*.mdc` - Rules in Cursor's native format (one file per rule)
 
 **For GitHub Copilot, Claude Code, Aider, and others:**
 

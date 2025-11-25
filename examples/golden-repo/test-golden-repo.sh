@@ -89,7 +89,7 @@ fi
 
 # Test 5: Verify outputs exist
 echo "Test 5: Verifying outputs..."
-if [ -f ".cursor/rules/aligntrue.mdc" ]; then
+if ls .cursor/rules/*.mdc 1>/dev/null 2>&1; then
   pass "Cursor output exists"
 else
   fail "Cursor output not found"
@@ -126,7 +126,7 @@ fi
 
 # Test 7: Verify file sizes are reasonable
 echo "Test 7: Verifying file sizes..."
-CURSOR_SIZE=$(wc -c < .cursor/rules/aligntrue.mdc | tr -d ' ')
+CURSOR_SIZE=$(cat .cursor/rules/*.mdc 2>/dev/null | wc -c | tr -d ' ')
 AGENTS_SIZE=$(wc -c < AGENTS.md | tr -d ' ')
 
 if [ $CURSOR_SIZE -gt 500 ] && [ $CURSOR_SIZE -lt 10000 ]; then

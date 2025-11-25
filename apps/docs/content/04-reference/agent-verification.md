@@ -17,7 +17,7 @@ Use this guide whenever an AI agent is not referencing your rules. It covers the
 ## Cursor (.cursor/rules/\*.mdc)
 
 1. Run `aligntrue status` and confirm `cursor` shows `✓ detected`.
-2. Run `aligntrue sync` (or `aligntrue doctor`) to regenerate `.cursor/rules/aligntrue.mdc`.
+2. Run `aligntrue sync` (or `aligntrue doctor`) to regenerate `.cursor/rules/*.mdc` files.
 3. In Cursor:
    - Settings → Features → Cursor Rules → ensure “Rules folder” is enabled.
    - Click “Open rules folder” and verify your file path matches the output of `aligntrue status`.

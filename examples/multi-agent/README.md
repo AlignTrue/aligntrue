@@ -6,7 +6,7 @@ This example demonstrates syncing the same rules to multiple AI coding agents (C
 
 - **`.aligntrue/config.yaml`** - Multiple exporters configuration
 - **`AGENTS.md`** - Primary user-editable rules file with vendor bags for agent-specific hints
-- **`.cursor/rules/aligntrue.mdc`** - Generated Cursor format
+- **`.cursor/rules/*.mdc`** - Generated Cursor format (one file per rule)
 - **`.github/copilot-instructions.md`** - Generated Copilot format
 - **`.vscode/mcp.json`** - Generated VS Code MCP config
 - **`COMPARISON.md`** - Side-by-side agent outputs
@@ -57,8 +57,10 @@ Expected output:
 
 ```
 ✓ Sync complete
-Wrote 4 files:
-  - .cursor/rules/aligntrue.mdc
+Wrote 7 files:
+  - .cursor/rules/rule1.mdc
+  - .cursor/rules/rule2.mdc
+  - .cursor/rules/rule3.mdc
   - AGENTS.md
   - .github/copilot-instructions.md
   - .vscode/mcp.json
@@ -68,7 +70,8 @@ Wrote 4 files:
 
 ```bash
 # View Cursor format
-cat .cursor/rules/aligntrue.mdc
+ls -la .cursor/rules/
+cat .cursor/rules/*.mdc
 
 # View universal format
 cat AGENTS.md
@@ -136,7 +139,7 @@ rules:
 
 ### Cursor
 
-**Format:** `.cursor/rules/aligntrue.mdc`
+**Format:** `.cursor/rules/*.mdc` (one file per rule)
 
 **Features:**
 

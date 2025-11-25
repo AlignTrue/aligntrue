@@ -3,8 +3,11 @@
 .aligntrue/.last-sync
 .aligntrue/.agent-export-hashes.json
 
-# Generated files (outputs of sync)
-# Note: We track these in the example to demonstrate expected outputs
-# In real projects, you may want to gitignore these
-# .cursor/rules/*.mdc
-# AGENTS.md
+# START AlignTrue Generated Files
+/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/code-review.mdc
+/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/documentation.mdc
+/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/security.mdc
+/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/testing.mdc
+/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/typescript.mdc
+/Users/gabe/Sites/aligntrue/examples/golden-repo/AGENTS.md
+# END AlignTrue Generated Files

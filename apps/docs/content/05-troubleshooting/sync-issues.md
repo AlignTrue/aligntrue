@@ -182,7 +182,7 @@ aligntrue config get sync.edit_source
 
    ```bash
    # Check for read-only warning at top of file
-   head -20 .cursor/rules/aligntrue.mdc
+   head -20 .cursor/rules/*.mdc
    ```
 
    If you see `<!-- WARNING: READ-ONLY FILE`, you should edit the source file listed in the warning instead.
@@ -300,7 +300,7 @@ Instead of:
 
 **When this happens:**
 
-1. You create new agent files (e.g., `.cursor/rules/aligntrue.mdc`)
+1. You create new agent files (e.g., `.cursor/rules/rule1.mdc`, `.cursor/rules/rule2.mdc`)
 2. You run `aligntrue sync` with `--yes` flag (non-interactive mode)
 3. AlignTrue detects the multi-file structure and auto-switches edit_source
 4. The change is logged but may not be obvious in non-interactive mode

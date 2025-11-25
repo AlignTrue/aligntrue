@@ -236,7 +236,9 @@ aligntrue sync --force
 ◇ Syncing to 2 agents...
 │
 ◆ Files written:
-│  • .cursor/rules/aligntrue.mdc (3 rules)
+│  • .cursor/rules/rule1.mdc
+│  • .cursor/rules/rule2.mdc
+│  • .cursor/rules/rule3.mdc
 │  • AGENTS.md (3 rules)
 │
 ◇ Sync complete! No conflicts detected.
@@ -286,7 +288,7 @@ aligntrue sync
 If sync detects manual edits to generated files:
 
 ```
-⚠ Checksum mismatch: .cursor/rules/aligntrue.mdc
+⚠ Checksum mismatch: .cursor/rules/rule1.mdc
 
 This file was manually edited since last sync.
 
@@ -341,9 +343,9 @@ Some exporters create one file per scope:
 
 ```
 .aligntrue/.rules.yaml (with scopes):
-  - default scope → .cursor/rules/aligntrue.mdc
-  - apps/web scope → .cursor/rules/apps-web.mdc
-  - packages/core scope → .cursor/rules/packages-core.mdc
+  - default scope → .cursor/rules/rule1.mdc, rule2.mdc, etc.
+  - apps/web scope → apps/web/.cursor/rules/rule1.mdc, rule2.mdc, etc.
+  - packages/core scope → packages/core/.cursor/rules/rule1.mdc, rule2.mdc, etc.
 ```
 
 **Filename conversion:**
@@ -464,8 +466,9 @@ Audit trail:
   [2025-10-27T12:00:04Z] Exported to agents (1 file)
 
 Files to write:
-  • .cursor/rules/aligntrue.mdc (2.4 KB, hash: a3b2c1d4...)
-  • AGENTS.md (1.8 KB, hash: e5f6a7b8...)
+  • .cursor/rules/rule1.mdc (1.2 KB, hash: a3b2c1d4...)
+  • .cursor/rules/rule2.mdc (1.2 KB, hash: e5f6a7b8...)
+  • AGENTS.md (1.8 KB, hash: c1a2b3d4...)
 
 Warnings: None
 

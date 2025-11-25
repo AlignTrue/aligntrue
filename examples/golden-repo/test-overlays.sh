@@ -234,12 +234,12 @@ echo "Scenario 4: Exporter Integration"
 echo "---------------------------------"
 
 # Verify overlay reflected in exported files
-if [ -f ".cursor/rules/aligntrue.mdc" ]; then
-  if grep -q "typescript.no.any" .cursor/rules/aligntrue.mdc; then
+if ls .cursor/rules/*.mdc 1>/dev/null 2>&1; then
+  if grep -r "typescript.no.any" .cursor/rules/*.mdc; then
     pass "Cursor export contains overlayed rule"
 
     # Check if severity reflects overlay (error vs warn)
-    if grep -A5 "typescript.no.any" .cursor/rules/aligntrue.mdc | grep -q "error"; then
+    if grep -A5 "typescript.no.any" .cursor/rules/*.mdc | grep -q "error"; then
       pass "Cursor export shows overlay severity (error)"
     else
       info "Cursor export severity check skipped (format varies)"
