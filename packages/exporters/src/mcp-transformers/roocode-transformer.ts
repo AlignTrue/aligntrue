@@ -5,4 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const RoocodeMcpTransformer = createMcpTransformer(".roo/mcp.json");
+export const RoocodeMcpTransformer = createMcpTransformer({
+  path: ".roo/mcp.json",
+  format: "generic",
+});

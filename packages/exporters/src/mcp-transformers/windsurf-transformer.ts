@@ -5,6 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const WindsurfMcpTransformer = createMcpTransformer(
-  ".windsurf/mcp_config.json",
-);
+export const WindsurfMcpTransformer = createMcpTransformer({
+  path: ".windsurf/mcp_config.json",
+  format: "windsurf",
+});

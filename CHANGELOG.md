@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **MCP server configuration propagation** - MCP exporters now read from centralized `config.mcp.servers` and propagate to agent-specific MCP files (.vscode/mcp.json, .cursor/mcp.json, .mcp.json, etc.) with deterministic hashing
 - **Align manifest system (.align.yaml)** - New manifest format for curated bundles with includes, customizations, and defaults for easy sharing
 - **URL source support (type: url)** - Fetch rules directly from HTTP/HTTPS endpoints with ETag caching and offline fallback
 - **Align add/remove CLI commands** - New commands to add/remove align sources from configuration (`aligntrue add <url>`, `aligntrue remove <url>`)
