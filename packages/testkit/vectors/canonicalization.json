@@ -208,6 +208,6 @@
       ]
     },
     "expected_jcs": "{\"deps\":[],\"id\":\"aligns/base/base-testing\",\"profile\":\"align\",\"rules\":[{\"check\":{\"evidence\":\"Sleep found in tests\",\"inputs\":{\"allow\":false,\"include\":[\"**/*.test.ts\"],\"pattern\":\"sleep|setTimeout\"},\"type\":\"regex\"},\"id\":\"no-sleeps\",\"severity\":\"MUST\"}],\"scope\":{\"applies_to\":[\"*\"]},\"spec_version\":\"1\",\"summary\":\"Testing baseline\",\"tags\":[\"testing\",\"determinism\"],\"version\":\"1.0.0\"}",
-    "expected_sha256": "d5b3d0e02b000e971f458d7f1c3567a92c9817d30423c2e1683f2a19e34f6edd"
+    "expected_sha256": "8ccd3fc99d8afdc71556ab8f0bae02bfff9f5abd04e0e90e9bef9e155d3ac3d5"
   }
 ]
