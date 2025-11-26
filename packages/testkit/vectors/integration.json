@@ -1,72 +1,72 @@
 {
-  "name": "integration-real-world-packs",
-  "description": "Validates against production packs from AlignTrue/aligns repository",
-  "note": "These hashes should be fetched from the actual pack files in AlignTrue/aligns",
-  "packs": [
+  "name": "integration-real-world-aligns",
+  "description": "Validates against production aligns from AlignTrue/aligns repository",
+  "note": "These hashes should be fetched from the actual align files in AlignTrue/aligns",
+  "aligns": [
     {
-      "id": "packs/base/base-global",
+      "id": "aligns/base/base-global",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-global.aligntrue.yaml",
+      "path": "aligns/base/base-global.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-testing",
+      "id": "aligns/base/base-testing",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-testing.aligntrue.yaml",
+      "path": "aligns/base/base-testing.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-docs",
+      "id": "aligns/base/base-docs",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-docs.aligntrue.yaml",
+      "path": "aligns/base/base-docs.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-security",
+      "id": "aligns/base/base-security",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-security.aligntrue.yaml",
+      "path": "aligns/base/base-security.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-debugging",
+      "id": "aligns/base/base-debugging",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-debugging.aligntrue.yaml",
+      "path": "aligns/base/base-debugging.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-tdd",
+      "id": "aligns/base/base-tdd",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-tdd.aligntrue.yaml",
+      "path": "aligns/base/base-tdd.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-rule-authoring",
+      "id": "aligns/base/base-rule-authoring",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-rule-authoring.aligntrue.yaml",
+      "path": "aligns/base/base-rule-authoring.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/base/base-typescript",
+      "id": "aligns/base/base-typescript",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/base/base-typescript.aligntrue.yaml",
+      "path": "aligns/base/base-typescript.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/stacks/nextjs-app-router",
+      "id": "aligns/stacks/nextjs-app-router",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/stacks/nextjs-app-router.aligntrue.yaml",
+      "path": "aligns/stacks/nextjs-app-router.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/stacks/web-quality",
+      "id": "aligns/stacks/web-quality",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/stacks/web-quality.aligntrue.yaml",
+      "path": "aligns/stacks/web-quality.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     },
     {
-      "id": "packs/stacks/vercel-deployments",
+      "id": "aligns/stacks/vercel-deployments",
       "repo": "https://github.com/AlignTrue/aligns",
-      "path": "packs/stacks/vercel-deployments.aligntrue.yaml",
+      "path": "aligns/stacks/vercel-deployments.aligntrue.yaml",
       "expected_integrity": "FETCH_FROM_REPO"
     }
   ]

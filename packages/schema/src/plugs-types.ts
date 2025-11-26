@@ -1,8 +1,8 @@
 /**
  * Type definitions for Plugs v1.1
  *
- * Plugs enable stack-agnostic rule authoring by allowing base packs to declare
- * configurable slots that stack packs or repos can fill with concrete values.
+ * Plugs enable stack-agnostic rule authoring by allowing base aligns to declare
+ * configurable slots that stack aligns or repos can fill with concrete values.
  */
 
 /**
@@ -11,7 +11,7 @@
 export type PlugFormat = "command" | "text" | "file" | "url";
 
 /**
- * Slot declaration in base packs
+ * Slot declaration in base aligns
  * Declares a configurable value that must be provided by stack/repo
  */
 export interface PlugSlot {
@@ -22,16 +22,16 @@ export interface PlugSlot {
 }
 
 /**
- * Fill provided by stack packs or repo-local aligns
+ * Fill provided by stack aligns or repo-local aligns
  * Supplies concrete value for a declared slot
  */
 export type PlugFill = string; // Non-empty single-line scalar
 
 /**
- * Plugs section in align pack
+ * Plugs section in align align
  */
 export interface Plugs {
-  slots?: Record<string, PlugSlot>; // Declared by base packs
+  slots?: Record<string, PlugSlot>; // Declared by base aligns
   fills?: Record<string, PlugFill>; // Provided by stack/repo
 }
 

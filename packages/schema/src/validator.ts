@@ -59,9 +59,9 @@ export interface ValidationOptions {
 }
 
 /**
- * Validate an Align pack against the JSON Schema
+ * Validate an Align align against the JSON Schema
  *
- * @param obj - Parsed Align pack object
+ * @param obj - Parsed Align align object
  * @param options - Validation options for mode-dependent rules
  * @returns ValidationResult with errors if invalid
  */
@@ -79,24 +79,24 @@ export function validateAlignSchema(
   // Mode-specific validation
   const modeErrors: ValidationError[] = [];
   const mode = options?.mode || "solo";
-  const pack = obj as Record<string, unknown>;
+  const align = obj as Record<string, unknown>;
 
   if (mode === "team") {
     // Team mode requires summary
-    if (!pack["summary"]) {
+    if (!align["summary"]) {
       modeErrors.push({
         path: "/summary",
         message: "summary is required in team mode",
       });
     }
     // Provenance fields required when source is specified
-    if (pack["source"] && !pack["owner"]) {
+    if (align["source"] && !align["owner"]) {
       modeErrors.push({
         path: "/owner",
         message: "owner is required when source is specified in team mode",
       });
     }
-    if (pack["source"] && !pack["source_sha"]) {
+    if (align["source"] && !align["source_sha"]) {
       modeErrors.push({
         path: "/source_sha",
         message: "source_sha is required when source is specified in team mode",
@@ -106,40 +106,40 @@ export function validateAlignSchema(
 
   if (mode === "catalog") {
     // Catalog mode requires all team fields plus distribution metadata
-    if (!pack["summary"]) {
+    if (!align["summary"]) {
       modeErrors.push({
         path: "/summary",
         message: "summary is required in catalog mode",
       });
     }
-    if (!pack["owner"]) {
+    if (!align["owner"]) {
       modeErrors.push({
         path: "/owner",
         message: "owner is required in catalog mode",
       });
     }
-    if (!pack["source"]) {
+    if (!align["source"]) {
       modeErrors.push({
         path: "/source",
         message: "source is required in catalog mode",
       });
     }
-    if (!pack["source_sha"]) {
+    if (!align["source_sha"]) {
       modeErrors.push({
         path: "/source_sha",
         message: "source_sha is required in catalog mode",
       });
     }
     if (
-      !pack["tags"] ||
-      (Array.isArray(pack["tags"]) && pack["tags"].length === 0)
+      !align["tags"] ||
+      (Array.isArray(align["tags"]) && align["tags"].length === 0)
     ) {
       modeErrors.push({
         path: "/tags",
         message: "tags are required in catalog mode",
       });
     }
-    if (!pack["integrity"] && options?.requireIntegrity !== false) {
+    if (!align["integrity"] && options?.requireIntegrity !== false) {
       modeErrors.push({
         path: "/integrity",
         message: "integrity is required in catalog mode",
@@ -169,12 +169,12 @@ function formatSchemaValidationErrors(
 }
 
 /**
- * Validate Align pack integrity hash
+ * Validate Align align integrity hash
  *
  * Extracts the stored hash from integrity.value, recomputes the hash,
  * and compares. Returns detailed result.
  *
- * @param alignYaml - YAML string of Align pack
+ * @param alignYaml - YAML string of Align align
  * @returns IntegrityResult with validation details
  */
 export function validateAlignIntegrity(alignYaml: string): IntegrityResult {
@@ -220,9 +220,9 @@ export function validateAlignIntegrity(alignYaml: string): IntegrityResult {
 }
 
 /**
- * Validate both schema and integrity of an Align pack
+ * Validate both schema and integrity of an Align align
  *
- * @param alignYaml - YAML string of Align pack
+ * @param alignYaml - YAML string of Align align
  * @returns Combined validation result
  */
 export function validateAlign(alignYaml: string): {
@@ -236,8 +236,8 @@ export function validateAlign(alignYaml: string): {
   return { schema, integrity };
 }
 
-// Export types for Align pack structure based on schema (v1)
-export interface AlignPack {
+// Export types for Align align structure based on schema (v1)
+export interface Align {
   id: string;
   version: string;
   spec_version: "1";
@@ -248,7 +248,7 @@ export interface AlignPack {
   source?: string;
   source_sha?: string;
 
-  // Vendored pack metadata (Team mode)
+  // Vendored align metadata (Team mode)
   vendor_path?: string;
   vendor_type?: "submodule" | "subtree" | "manual";
 

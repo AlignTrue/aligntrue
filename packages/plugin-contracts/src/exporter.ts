@@ -5,7 +5,7 @@
  * Exporters convert AlignTrue IR (Intermediate Representation) to agent-specific formats.
  */
 
-import type { AlignPack, RuleFile, RuleFrontmatter } from "@aligntrue/schema";
+import type { Align, RuleFile, RuleFrontmatter } from "@aligntrue/schema";
 
 /**
  * Resolved scope information
@@ -35,7 +35,7 @@ export interface ResolvedScope {
 export interface ScopedExportRequest {
   scope: ResolvedScope; // Scope this export is for
   rules: RuleFile[]; // Rules to export (optional, for future use)
-  pack: AlignPack; // Pack with sections for this scope
+  align: Align; // Align with sections for this scope
   outputPath: string; // Suggested output path (e.g., .cursor/rules/apps-web.mdc)
 }
 

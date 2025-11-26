@@ -1,7 +1,7 @@
-# Dependency chain pack
+# Dependency chain align
 # Tests: rules that depend on each other
 
-id: packs/testkit/dependency-chain
+id: aligns/testkit/dependency-chain
 version: 1.0.0
 spec_version: "1"
 summary: Tests rule dependencies

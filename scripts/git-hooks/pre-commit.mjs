@@ -43,7 +43,7 @@ async function main() {
   try {
     const docsSources = [
       "apps/docs/content/index.mdx",
-      "apps/docs/content/06-contributing/creating-packs.md",
+      "apps/docs/content/06-contributing/creating-aligns.md",
       "apps/docs/content/07-policies/security.md",
     ];
     const devDocsPattern = /^apps\/docs\/content\/08-development\/.+\.mdx?$/;

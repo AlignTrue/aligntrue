@@ -1,7 +1,7 @@
-# Canonicalization edge cases pack
+# Canonicalization edge cases align
 # Tests: deterministic hashing with various data types
 
-id: packs/testkit/canonicalization-edge-cases
+id: aligns/testkit/canonicalization-edge-cases
 version: 1.0.0
 spec_version: "1"
 summary: Tests canonicalization edge cases

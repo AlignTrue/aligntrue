@@ -24,8 +24,8 @@ class TestExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { pack } = request;
-    const { sections } = pack;
+    const { align } = request;
+    const { sections } = align;
     const { outputDir, dryRun = false } = options;
 
     const content = "test export content";
@@ -216,8 +216,8 @@ describe("ExporterBase", () => {
           isDefault: true,
           normalizedPath: "default",
         },
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections: [
@@ -252,8 +252,8 @@ describe("ExporterBase", () => {
           isDefault: true,
           normalizedPath: "default",
         },
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections: [
