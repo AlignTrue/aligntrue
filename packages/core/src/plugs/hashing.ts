@@ -58,15 +58,17 @@ export function computePostResolutionHash(pack: AlignPack): string | undefined {
     return undefined;
   }
 
-  // Create a copy with resolved guidance
+  // Create a copy with resolved content
   const packCopy = cloneDeep(pack) as unknown as Record<string, unknown>;
 
-  // Update sections with resolved guidance
+  // Update sections with resolved content
   for (const resolvedRule of resolveResult.rules) {
     const sections = packCopy["sections"] as Array<Record<string, unknown>>;
-    const rule = sections?.find?.((r) => r["id"] === resolvedRule.ruleId);
-    if (rule && resolvedRule.guidance) {
-      rule["guidance"] = resolvedRule.guidance;
+    const section = sections?.find?.(
+      (s) => s["fingerprint"] === resolvedRule.ruleId,
+    );
+    if (section && resolvedRule.content) {
+      section["content"] = resolvedRule.content;
     }
   }
 

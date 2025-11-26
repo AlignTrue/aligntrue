@@ -1,8 +1,8 @@
 # Mock agent rules with one rule deleted
-rules:
-  - id: testing.require-tests
-    severity: warn
-    guidance: All features should have tests.
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: Testing Requirements
+    level: 2
+    content: All features should have tests.
+    fingerprint: testing-require-tests
 
-  # style.no-any deleted from agent
+  # style-no-any deleted from agent

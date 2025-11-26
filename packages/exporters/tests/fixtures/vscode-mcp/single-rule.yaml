@@ -1,7 +1,6 @@
-rules:
-  - id: testing.require-tests
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+sections:
+  - heading: Testing Requirements
+    level: 2
+    content: |
       All features must have tests to ensure reliability.
+    fingerprint: testing-require-tests

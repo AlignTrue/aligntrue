@@ -1,21 +1,18 @@
-rules:
-  - id: security.no-secrets
-    severity: error
-    applies_to:
-      - "**/*"
-    guidance: |
+sections:
+  - heading: Security No Secrets
+    level: 2
+    content: |
       Never commit secrets or API keys to version control.
+    fingerprint: security-no-secrets
 
-  - id: testing.require-tests
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+  - heading: Testing Requirements
+    level: 2
+    content: |
       All features should have tests.
+    fingerprint: testing-require-tests
 
-  - id: docs.update-readme
-    severity: info
-    applies_to:
-      - "README.md"
-    guidance: |
+  - heading: README Updates
+    level: 2
+    content: |
       Keep README updated with significant changes.
+    fingerprint: docs-update-readme

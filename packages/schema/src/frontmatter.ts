@@ -34,6 +34,10 @@ export interface RuleFrontmatter {
   /** Brief description */
   description?: string;
 
+  // Enable/disable
+  /** Whether this rule is enabled (default: true) */
+  enabled?: boolean;
+
   // Selection (Where rule applies)
   /** Hierarchical scope path (relative to repo root) */
   scope?: string;
@@ -103,6 +107,7 @@ export const frontmatterSchema = {
   properties: {
     title: { type: "string" },
     description: { type: "string" },
+    enabled: { type: "boolean" },
     scope: { type: "string" },
     globs: { type: "array", items: { type: "string" } },
     apply_to: { type: "string" },

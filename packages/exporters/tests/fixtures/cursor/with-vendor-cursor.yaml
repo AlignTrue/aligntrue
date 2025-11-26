@@ -1,13 +1,12 @@
 id: test-pack-vendor
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.require-tests
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+sections:
+  - heading: Testing Requirements
+    level: 2
+    content: |
       All features must have tests.
+    fingerprint: testing-require-tests
     vendor:
       cursor:
         ai_hint: "Suggest test scaffolding with vitest"
