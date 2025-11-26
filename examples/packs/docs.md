@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-docs"
+id: "aligns/base/base-docs"
 version: "1.0.0"
 summary: "Docs-as-code baseline: readme-first, CI-enforced, minimal and testable"
 tags: ["documentation", "readme", "changelog", "paved-road"]
@@ -7,7 +7,7 @@ tags: ["documentation", "readme", "changelog", "paved-road"]
 
 # Docs-as-Code Baseline
 
-This pack establishes documentation standards: readme-first approach, CI-enforced checks, copy-pasteable snippets, and minimal DRY-based references.
+This align establishes documentation standards: readme-first approach, CI-enforced checks, copy-pasteable snippets, and minimal DRY-based references.
 
 ## Core principles
 

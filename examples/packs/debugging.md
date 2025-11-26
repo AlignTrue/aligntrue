@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-debugging"
+id: "aligns/base/base-debugging"
 version: "1.0.0"
 summary: "Systematic debugging workflow: reproduce, reduce, root-cause, fix, prevent"
 tags: ["debugging", "troubleshooting", "determinism", "paved-road"]
@@ -7,7 +7,7 @@ tags: ["debugging", "troubleshooting", "determinism", "paved-road"]
 
 # Systematic debugging workflow
 
-This pack establishes systematic debugging practices: reproduce deterministically, reduce to the smallest failing case, classify failures, inspect evidence, and prevent recurrence with tests.
+This align establishes systematic debugging practices: reproduce deterministically, reduce to the smallest failing case, classify failures, inspect evidence, and prevent recurrence with tests.
 
 ## Debugging workflow
 

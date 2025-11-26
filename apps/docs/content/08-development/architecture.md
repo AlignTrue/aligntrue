@@ -130,7 +130,7 @@ sources:
     include:
       - https://github.com/org/repo # All .md in root
       - https://github.com/org/repo@v2.0.0 # Specific version
-      - https://github.com/org/repo/packs # All .md in directory
+      - https://github.com/org/repo/aligns # All .md in directory
       - https://github.com/org/repo/security.md # Single file
 ```
 
@@ -262,7 +262,7 @@ aligntrue/
 ├── apps/
 │   └── docs/             # Nextra documentation site
 ├── examples/             # Example configurations
-├── catalog/              # Curated rule packs
+├── catalog/              # Curated rule aligns
 └── scripts/              # Build and setup scripts
 ```
 
@@ -342,7 +342,7 @@ Cloud features stay in the cloud repo, never imported here. Keep this repo focus
 ## CI gates and quality checks
 
 - **Bundle size:** CLI tarball must stay under 600 KB
-- **Pack vendoring:** Pack files must not be vendored in CLI
+- **Align vendoring:** Align files must not be vendored in CLI
 - **Schema changes:** IR format changes require version bump + changelog
 - **Determinism:** Tests run with `TZ=UTC` to match CI environment
 - **Type checking:** Full typecheck across all packages on pre-push

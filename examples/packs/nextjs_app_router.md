@@ -1,5 +1,5 @@
 ---
-id: "packs/stacks/nextjs-app-router"
+id: "aligns/stacks/nextjs-app-router"
 version: "1.0.0"
 summary: "Best practices for Next.js App Router: server/client boundaries, caching, data fetching"
 tags: ["nextjs", "react", "app-router", "paved-road"]

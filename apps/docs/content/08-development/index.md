@@ -25,7 +25,7 @@ Resources for contributing to AlignTrue and understanding the codebase.
 ### Documentation
 
 - [Editing docs](../06-contributing/editing-docs) - How to update documentation
-- [Creating packs](../06-contributing/creating-packs) - Publishing rule packs
+- [Creating aligns](../06-contributing/creating-aligns) - Publishing rule aligns
 
 ## Development workflow
 

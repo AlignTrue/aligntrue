@@ -1,31 +1,31 @@
-# Example packs
+# Example aligns
 
-These example packs demonstrate proper AlignTrue pack format and can be imported via GitHub URLs or copied locally.
+These example aligns demonstrate proper AlignTrue align format and can be imported via GitHub URLs or copied locally.
 
 ## Usage
 
 ### Import via GitHub URL
 
-Reference packs directly from this repository:
+Reference aligns directly from this repository:
 
 ```yaml
 # .aligntrue.yaml
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/packs/testing.yaml
+    path: examples/aligns/testing.yaml
 ```
 
 Or use raw GitHub URLs:
 
 ```bash
-curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/AlignTrue/aligntrue/main/examples/packs/global.yaml
+curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/AlignTrue/aligntrue/main/examples/aligns/global.yaml
 ```
 
 ### Copy locally
 
 ```bash
-cp examples/packs/testing.yaml .aligntrue/rules.yaml
+cp examples/aligns/testing.yaml .aligntrue/rules.yaml
 aligntrue sync
 ```
 
@@ -34,12 +34,12 @@ aligntrue sync
 ```yaml
 sources:
   - type: local
-    path: examples/packs/testing.yaml
+    path: examples/aligns/testing.yaml
 ```
 
-## Available Packs
+## Available Aligns
 
-### Base Packs (Universal)
+### Base Aligns (Universal)
 
 - `global.yaml` - Universal baseline rules for all projects
 - `docs.yaml` - Documentation standards and README requirements
@@ -50,18 +50,18 @@ sources:
 - `security.yaml` - Security, secrets scanning, and supply chain
 - `rule-authoring.yaml` - Best practices for writing AlignTrue rules
 
-### Stack-Specific Packs
+### Stack-Specific Aligns
 
 - `nextjs_app_router.yaml` - Next.js App Router patterns and best practices
 - `vercel_deployments.yaml` - Vercel deployment configuration and environment management
 - `web_quality.yaml` - Web performance, Core Web Vitals, and accessibility standards
 
-## Pack Format
+## Align Format
 
 All examples use YAML format with the following structure:
 
 ```yaml
-id: "packs/namespace/pack-name"
+id: "aligns/namespace/align-name"
 version: "1.0.0"
 profile: "align"
 spec_version: "1"
@@ -76,15 +76,15 @@ rules:
       Clear guidance for AI assistants
 ```
 
-## Sharing Your Own Packs
+## Sharing Your Own Aligns
 
-There is no central catalog registry. Share your packs by:
+There is no central catalog registry. Share your aligns by:
 
 1. **Publishing to GitHub** - Users can import via git URLs
 2. **Sharing files directly** - Users can copy YAML files locally
-3. **Creating a collection** - Organize multiple packs in a repository
+3. **Creating a collection** - Organize multiple aligns in a repository
 
-See `examples/packs.yaml` and `examples/namespaces.yaml` for namespace conventions.
+See `examples/aligns.yaml` and `examples/namespaces.yaml` for namespace conventions.
 
 ## Testing
 

@@ -4,14 +4,14 @@ import {
   computePostResolutionHash,
   computeDualHash,
 } from "../../src/plugs/hashing.js";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { cloneDeep } from "@aligntrue/schema";
 
 describe("plugs hashing", () => {
   describe("computePreResolutionHash", () => {
-    it("produces deterministic hash for pack with plugs", () => {
-      const pack: AlignPack = {
-        id: "test/pack",
+    it("produces deterministic hash for align with plugs", () => {
+      const align: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -33,16 +33,16 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const hash1 = computePreResolutionHash(pack);
-      const hash2 = computePreResolutionHash(pack);
+      const hash1 = computePreResolutionHash(align);
+      const hash2 = computePreResolutionHash(align);
 
       expect(hash1).toBe(hash2);
       expect(hash1).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("produces same hash regardless of fill values", () => {
-      const pack1: AlignPack = {
-        id: "test/pack",
+      const align1: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -67,18 +67,18 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const pack2: AlignPack = {
-        ...pack1,
+      const align2: Align = {
+        ...align1,
         plugs: {
-          ...pack1.plugs,
+          ...align1.plugs,
           fills: {
             "test.cmd": "pnpm test", // Different fill value
           },
         },
       };
 
-      const hash1 = computePreResolutionHash(pack1);
-      const hash2 = computePreResolutionHash(pack2);
+      const hash1 = computePreResolutionHash(align1);
+      const hash2 = computePreResolutionHash(align2);
 
       // Pre-resolution hash should be the same because template is the same
       expect(hash1).toBe(hash2);
@@ -87,8 +87,8 @@ describe("plugs hashing", () => {
 
   describe("computePostResolutionHash", () => {
     it("produces hash after resolution", () => {
-      const pack: AlignPack = {
-        id: "test/pack",
+      const align: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -113,15 +113,15 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const hash = computePostResolutionHash(pack);
+      const hash = computePostResolutionHash(align);
 
       expect(hash).toBeDefined();
       expect(hash).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("produces different hash for different fill values", () => {
-      const pack1: AlignPack = {
-        id: "test/pack",
+      const align1: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -146,20 +146,20 @@ describe("plugs hashing", () => {
         ],
       };
 
-      // Create pack2 with different fill value (deep copy to avoid reference issues)
-      const pack2: AlignPack = cloneDeep(pack1);
-      pack2.plugs!.fills!["test.cmd"] = "pnpm test";
+      // Create align2 with different fill value (deep copy to avoid reference issues)
+      const align2: Align = cloneDeep(align1);
+      align2.plugs!.fills!["test.cmd"] = "pnpm test";
 
-      const hash1 = computePostResolutionHash(pack1);
-      const hash2 = computePostResolutionHash(pack2);
+      const hash1 = computePostResolutionHash(align1);
+      const hash2 = computePostResolutionHash(align2);
 
       // Post-resolution hash should be different because resolved text differs
       expect(hash1).not.toBe(hash2);
     });
 
     it("returns undefined if resolution fails", () => {
-      const pack: AlignPack = {
-        id: "test/pack",
+      const align: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -184,7 +184,7 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const hash = computePostResolutionHash(pack);
+      const hash = computePostResolutionHash(align);
 
       expect(hash).toBeUndefined();
     });
@@ -192,8 +192,8 @@ describe("plugs hashing", () => {
 
   describe("computeDualHash", () => {
     it("computes both pre and post resolution hashes", () => {
-      const pack: AlignPack = {
-        id: "test/pack",
+      const align: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -218,7 +218,7 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const result = computeDualHash(pack);
+      const result = computeDualHash(align);
 
       expect(result.preResolutionHash).toBeDefined();
       expect(result.preResolutionHash).toMatch(/^[a-f0-9]{64}$/);
@@ -228,8 +228,8 @@ describe("plugs hashing", () => {
     });
 
     it("tracks unresolved required plugs", () => {
-      const pack: AlignPack = {
-        id: "test/pack",
+      const align: Align = {
+        id: "test/align",
         version: "1.0.0",
         spec_version: "1",
         plugs: {
@@ -256,7 +256,7 @@ describe("plugs hashing", () => {
         ],
       };
 
-      const result = computeDualHash(pack);
+      const result = computeDualHash(align);
 
       expect(result.unresolvedRequired).toContain("test.cmd");
       expect(result.unresolvedRequired).toContain("build.cmd");

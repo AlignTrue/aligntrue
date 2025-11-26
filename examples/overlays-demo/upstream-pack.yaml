@@ -5,8 +5,8 @@ spec_version: "1"
 profile:
   id: example/upstream-standards
   version: "1.0.0"
-  name: Upstream Standards Pack
-  summary: Example upstream pack for overlay demonstration
+  name: Upstream Standards Align
+  summary: Example upstream align for overlay demonstration
 
 sections:
   - heading: "Avoid console.log in production code"

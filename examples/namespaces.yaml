@@ -1,10 +1,10 @@
 # Namespace Registry (Reference)
 #
-# Documents namespace conventions for example packs.
+# Documents namespace conventions for example aligns.
 # This is for reference only - no central registry exists.
 #
-# When creating your own packs:
-# 1. Use a unique namespace (e.g., packs/yourorg/*)
+# When creating your own aligns:
+# 1. Use a unique namespace (e.g., aligns/yourorg/*)
 # 2. Share via git URLs or local files
 # 3. No registration required
 
@@ -13,26 +13,26 @@ updated_at: "2025-10-31T00:00:00.000Z"
 
 namespaces:
   # AlignTrue org namespaces
-  - namespace: "packs/aligntrue/*"
+  - namespace: "aligns/aligntrue/*"
     owner: "AlignTrue"
-    notes: "Official AlignTrue maintained packs"
+    notes: "Official AlignTrue maintained aligns"
 
-  # Base namespace (for core packs)
-  - namespace: "packs/base/*"
+  # Base namespace (for core aligns)
+  - namespace: "aligns/base/*"
     owner: "AlignTrue"
-    notes: "Core base packs (base-global, base-docs, etc.)"
+    notes: "Core base aligns (base-global, base-docs, etc.)"
 
-  # Stacks namespace (for framework/platform-specific packs)
-  - namespace: "packs/stacks/*"
+  # Stacks namespace (for framework/platform-specific aligns)
+  - namespace: "aligns/stacks/*"
     owner: "AlignTrue"
-    notes: "Framework and platform-specific packs (Next.js, Vercel, etc.)"
+    notes: "Framework and platform-specific aligns (Next.js, Vercel, etc.)"
 
   # Example namespaces (add more via PR):
   #
-  # - namespace: "packs/yourorg/*"
+  # - namespace: "aligns/yourorg/*"
   #   owner: "yourorg"
-  #   notes: "Your organization's packs"
+  #   notes: "Your organization's aligns"
   #
-  # - namespace: "packs/yourusername/*"
+  # - namespace: "aligns/yourusername/*"
   #   owner: "yourusername"
-  #   notes: "Personal packs by @yourusername"
+  #   notes: "Personal aligns by @yourusername"

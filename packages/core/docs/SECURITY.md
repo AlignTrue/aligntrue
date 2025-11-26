@@ -473,7 +473,7 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 **Supply chain attacks:**
 
 - Compromised npm dependencies
-- Malicious YAML in catalog packs
+- Malicious YAML in catalog aligns
 
 **Mitigation:**
 
@@ -483,7 +483,7 @@ if (outputPath.includes("..") || posix.isAbsolute(outputPath)) {
 
 **Future:**
 
-- Sigstore signing for catalog packs
+- Sigstore signing for catalog aligns
 - Dependency scanning in CI
 - Catalog governance policies
 

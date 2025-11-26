@@ -43,7 +43,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 - `team` — Team mode management (enable, status, approve, list-allowed, remove)
 - `drift` — Detect drift between lockfile and allowed sources
-- `link` — Vendor rule packs from git repositories
+- `link` — Vendor rule aligns from git repositories
 - `onboard` — Interactive onboarding wizard
 
 **Utilities:**
@@ -89,7 +89,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Documentation
 
 - Nextra docs site with quickstart, concepts, and reference
-- 11 curated example packs
+- 11 curated example aligns
 - Agent compatibility matrix
 
 ## Core format & architecture
@@ -148,9 +148,9 @@ See [Sync Behavior](/docs/03-concepts/sync-behavior) for details.
 ## Customization system
 
 - **Plugs** - Dynamic value slots with validation (slots + fills)
-- **Overlays** - Surgical modifications to packs (set/remove operations)
+- **Overlays** - Surgical modifications to aligns (set/remove operations)
 - **Overlay validation** - Stale selector detection, ambiguous match warnings, size limits
-- **Three-way merge** - Merge overlays with base pack changes
+- **Three-way merge** - Merge overlays with base align changes
 
 See [Customization](/docs/02-customization) for complete guides.
 
@@ -167,7 +167,7 @@ See [Scopes](/docs/02-customization/scopes) for details.
 
 - **Git provider** - Pull rules from remote repositories with caching
 - **Vendoring** - Git submodule/subtree support via `aligntrue link`
-- **Vendor validation** - Pack integrity checks for vendored sources
+- **Vendor validation** - Align integrity checks for vendored sources
 - **Privacy consent** - Respects user consent for network operations
 
 See [Git Workflows](/docs/03-concepts/git-workflows) for details.

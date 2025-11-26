@@ -6,7 +6,7 @@ Detailed scenarios demonstrating overlay use cases with expected outputs.
 
 ### Use case
 
-Team wants stricter enforcement than upstream default. Upstream pack has `no-console-log` as warning, but team policy requires error.
+Team wants stricter enforcement than upstream default. Upstream align has `no-console-log` as warning, but team policy requires error.
 
 ### Upstream rule
 

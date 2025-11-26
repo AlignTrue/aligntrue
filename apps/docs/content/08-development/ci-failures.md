@@ -63,7 +63,7 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 The following files are auto-generated from documentation source and cannot be directly edited:
 
 - `README.md` (generated from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-packs.md`)
+- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-aligns.md`)
 - `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
 
 **Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
@@ -141,7 +141,7 @@ Additionally, CI tests multiple Node.js versions:
 - `scopes-monorepo.test.ts`
 - `plugs-resolution.test.ts`
 - `customization-combined.test.ts`
-- `pack-sources.test.ts`
+- `align-sources.test.ts`
 - `override-add-command.test.ts`
 - `override-remove-command.test.ts`
 - `override-status-command.test.ts`
@@ -238,7 +238,7 @@ type Result = {
 Common type locations:
 
 - **Schema types:** `@aligntrue/schema`
-  - `AlignRule`, `AlignPack`, `validateAlignSchema`, `validateRuleId`
+  - `AlignRule`, `Align`, `validateAlignSchema`, `validateRuleId`
 - **Core types:** `@aligntrue/core`
   - `AlignTrueConfig`, `SyncEngine`, `BackupManager`
 - **Team types:** `@aligntrue/core/team/drift.js`

@@ -177,17 +177,17 @@ pnpm typecheck     # Type checking
 
 ## Catalog
 
-Local catalog with 11 curated packs:
+Local catalog with 11 curated aligns:
 
-- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
-- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
+- **Base Aligns** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
+- **Stack Aligns** (3): nextjs-app-router, vercel-deployments, web-quality
 
 **Structure:**
 
 ```
 catalog/
-├── examples/          # YAML pack definitions
-├── packs.yaml         # Registry metadata
+├── examples/          # YAML align definitions
+├── aligns.yaml         # Registry metadata
 └── namespaces.yaml    # Namespace ownership
 ```
 

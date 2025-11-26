@@ -318,8 +318,8 @@ Fixtures are located in `examples/remote-test/`:
 **Git Sources (`git-sources.test.ts`):**
 
 - Pull personal rules from GitHub repo
-- Vendor pack structure detection
-- Pack integrity validation
+- Vendor align structure detection
+- Align integrity validation
 
 **Personal Remote (`personal-remote.test.ts`):**
 

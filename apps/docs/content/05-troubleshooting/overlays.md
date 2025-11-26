@@ -40,7 +40,7 @@ Common issues when working with overlays and their solutions.
 Always run `aligntrue sync` after:
 
 - Initial project setup
-- Adding new packs or sources
+- Adding new aligns or sources
 - Making significant rule changes
 
 ---
@@ -142,7 +142,7 @@ aln override add --selector 'profile.version' --set value="2.0.0"
 
 #### 4. Check Removed from Upstream
 
-**Problem:** Upstream pack removed or renamed the check.
+**Problem:** Upstream align removed or renamed the check.
 
 **Diagnosis:**
 
@@ -463,9 +463,9 @@ aln plugs status
 
 ### Solution
 
-**Rule:** Overlays handle pack-level customization, plugs handle agent-specific config.
+**Rule:** Overlays handle align-level customization, plugs handle agent-specific config.
 
-**Option A:** Use overlay for pack changes:
+**Option A:** Use overlay for align changes:
 
 ```yaml
 # Remove plug slot
@@ -563,7 +563,7 @@ modules:
 ```
 ✗ Overlay validation failed
 
-Pack not found: @acme/standards
+Align not found: @acme/standards
 
 Hint: Ensure git sources are pulled in CI
 ```
@@ -581,14 +581,14 @@ Add source pull to CI:
   run: aln check --ci
 ```
 
-Or vendor pack:
+Or vendor align:
 
 ```bash
-# Vendor pack (commit to repo)
+# Vendor align (commit to repo)
 git submodule add https://github.com/acme/standards vendor/acme-standards
 aln link https://github.com/acme/standards --path vendor/acme-standards
 
-# CI will have pack without network call
+# CI will have align without network call
 ```
 
 ---
@@ -601,7 +601,7 @@ aln link https://github.com/acme/standards --path vendor/acme-standards
 
 ❌ **Don't overlay if:**
 
-- You have >5 overlays for same pack
+- You have >5 overlays for same align
 - You're changing check logic (not just severity/inputs)
 - You need to add new checks
 - Upstream updates are irrelevant to you
@@ -610,7 +610,7 @@ aln link https://github.com/acme/standards --path vendor/acme-standards
 ✅ **Fork instead:**
 
 ```bash
-# Clone upstream pack
+# Clone upstream align
 git clone https://github.com/acme/standards my-standards
 
 # Customize freely
@@ -677,7 +677,7 @@ aln drift
 
 ```bash
 # View overlay hashes in lockfile
-cat .aligntrue.lock.json | jq '.dependencies[] | {pack: .id, overlay_hash: .overlay_hash}'
+cat .aligntrue.lock.json | jq '.dependencies[] | {align: .id, overlay_hash: .overlay_hash}'
 
 # Compare overlay hash between runs
 git diff .aligntrue.lock.json
@@ -856,7 +856,7 @@ overlays:
 - **Commands:** `docs/commands.md` - CLI reference for overlay commands
 - **Drift Detection:** `docs/drift-detection.md` - Automated staleness checks
 - **Team Mode:** `docs/team-mode.md` - Team approval workflows
-- **Git Sources:** `docs/git-sources.md` - Working with upstream packs
+- **Git Sources:** `docs/git-sources.md` - Working with upstream aligns
 
 ---
 
