@@ -73,6 +73,34 @@ When you organize your rules across multiple files, AlignTrue adapts exports bas
 
 See [Multi-file organization](/docs/02-customization/multi-file-organization) for details.
 
+## Export format options
+
+Agents with native multi-file support can optionally use AGENTS.md instead. Configure format per agent in your config:
+
+```yaml
+exporters:
+  cursor:
+    format: native # Default: .cursor/rules/*.mdc
+  amazonq:
+    format: agents-md # Use AGENTS.md instead
+```
+
+See [Export formats](/docs/02-customization/export-formats) for complete configuration options.
+
+## Per-rule targeting
+
+Control which agents receive specific rules using frontmatter:
+
+```yaml
+# Only export to specific agents
+export_only_to: [cursor, amazonq]
+
+# Exclude from specific agents
+exclude_from: [copilot]
+```
+
+See [Per-rule targeting](/docs/02-customization/per-rule-targeting) for details.
+
 ## Full compatibility matrix
 
 <div style="overflow-x: auto; max-width: 100%;">

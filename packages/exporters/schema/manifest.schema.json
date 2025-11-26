@@ -48,6 +48,19 @@
     "author": {
       "type": "string",
       "description": "Optional: author or organization name"
+    },
+    "supportedFormats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["native", "agents-md"]
+      },
+      "description": "Optional: export formats this adapter supports (default: ['native'])"
+    },
+    "defaultFormat": {
+      "type": "string",
+      "enum": ["native", "agents-md"],
+      "description": "Optional: default export format for this adapter (default: 'native')"
     }
   },
   "additionalProperties": false

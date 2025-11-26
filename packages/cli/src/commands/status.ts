@@ -9,6 +9,7 @@ import {
   getAlignTruePaths,
   loadConfig,
   type AlignTrueConfig,
+  getExporterNames,
 } from "@aligntrue/core";
 import { resolveConfigPath } from "../utils/path-resolvers.js";
 import { getLastSyncTimestamp } from "@aligntrue/core/sync/tracking";
@@ -144,10 +145,10 @@ function buildStatusSummary(
   cwd: string,
 ): StatusSummary {
   const paths = getAlignTruePaths(cwd);
-  const exporters = config.exporters ?? [];
+  const exporters = getExporterNames(config.exporters);
   const detection = detectAgentsWithValidation(cwd, exporters);
 
-  const configured: ExporterStatus[] = exporters.map((name) => ({
+  const configured: ExporterStatus[] = exporters.map((name: string) => ({
     name,
     displayName: getAgentDisplayName(name),
     detected: detection.detected.includes(name),

@@ -38,6 +38,13 @@ export {
   type DriftDetection,
   type DriftStatus,
 } from "./drift-detection.js";
+export {
+  cleanupOldExports,
+  cleanupEmptyDirs,
+  getAgentPatterns,
+  agentHasExistingFiles,
+  type CleanupResult,
+} from "./cleanup.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();

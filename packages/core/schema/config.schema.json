@@ -135,6 +135,11 @@
             }
           ],
           "description": "Automatically manage agent ignore files to prevent duplicate context. true: always manage, false: never manage, prompt: ask user (default: prompt)"
+        },
+        "cleanup": {
+          "type": "string",
+          "enum": ["all", "managed"],
+          "description": "Cleanup mode when switching export formats. all: remove all files matching agent patterns (default), managed: only remove files previously created by AlignTrue"
         }
       }
     },
@@ -215,12 +220,31 @@
       }
     },
     "exporters": {
-      "type": "array",
-      "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents')",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "oneOf": [
+        {
+          "type": "array",
+          "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents')",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        {
+          "type": "object",
+          "description": "Exporter adapters with optional format configuration",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": ["native", "agents-md"],
+                "description": "Export format: native (multi-file or agent-specific format), agents-md (universal AGENTS.md)"
+              }
+            }
+          }
+        }
+      ]
     },
     "scopes": {
       "type": "array",

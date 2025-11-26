@@ -6,7 +6,11 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import * as clack from "@clack/prompts";
 import { spawn } from "child_process";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { getAlignTruePaths, isValidConfigKey } from "@aligntrue/core";
+import {
+  getAlignTruePaths,
+  isValidConfigKey,
+  getExporterNames,
+} from "@aligntrue/core";
 import type { AlignTrueConfig } from "@aligntrue/core";
 import {
   parseCommonArgs,
@@ -159,7 +163,9 @@ async function showConfig(configPath: string): Promise<void> {
     // Display key settings
     console.log(`\n📋 Configuration:`);
     console.log(`  Version: ${cfg.version}`);
-    console.log(`  Exporters: ${cfg.exporters?.join(", ") || "none"}`);
+    console.log(
+      `  Exporters: ${getExporterNames(cfg.exporters).join(", ") || "none"}`,
+    );
 
     if (cfg.sync) {
       console.log(`\n🔄 Sync:`);
@@ -250,7 +256,9 @@ async function showSummary(configPath: string): Promise<void> {
     console.log(`  Mode: ${config.mode || "solo"}`);
     console.log(`  Rule management: centralized`);
     console.log(`  Merge strategy: last-write-wins (automatic)`);
-    console.log(`  Exporters: ${config.exporters?.join(", ") || "none"}`);
+    console.log(
+      `  Exporters: ${getExporterNames(config.exporters).join(", ") || "none"}`,
+    );
 
     if (config.mode === "team") {
       console.log(

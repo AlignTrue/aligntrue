@@ -31,6 +31,7 @@ import {
   doctor,
   add,
   remove,
+  rules,
 } from "./commands/index.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
@@ -84,6 +85,7 @@ async function main() {
     console.log(
       "  sources        Manage multi-file rule organization (list, split)",
     );
+    console.log("  rules          List rules and view agent targeting");
     console.log("  scopes         Manage scopes (list, discover)\n");
 
     console.log("Team Commands:");
@@ -147,6 +149,7 @@ async function main() {
     ["doctor", doctor],
     ["add", add],
     ["remove", remove],
+    ["rules", rules],
   ]);
 
   // Check if user provided a flag-like argument as command

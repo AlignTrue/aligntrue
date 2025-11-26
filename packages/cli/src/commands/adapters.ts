@@ -6,6 +6,7 @@ import {
   saveConfig,
   saveMinimalConfig,
   type AlignTrueConfig,
+  getExporterNames,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { join, dirname } from "path";
@@ -177,7 +178,7 @@ async function discoverAndCategorize(): Promise<{
 
   // Categorize adapters
   const adapters: AdapterInfo[] = [];
-  const configuredExporters = new Set(config.exporters || []);
+  const configuredExporters = new Set(getExporterNames(config.exporters));
   const seenNames = new Set<string>();
 
   // Add installed (in config and found)
@@ -287,7 +288,7 @@ async function enableAdapters(
         hint: a.manifest?.outputs.join(", ") || "",
       }));
 
-    const currentlyEnabled = new Set(config.exporters || []);
+    const currentlyEnabled = new Set(getExporterNames(config.exporters));
 
     const selected = await clack.multiselect({
       message: "Select adapters to enable:",
@@ -378,7 +379,7 @@ async function enableAdapters(
   }
 
   // Update config
-  const currentExporters = new Set(config.exporters || []);
+  const currentExporters = new Set(getExporterNames(config.exporters));
   let addedCount = 0;
 
   for (const name of adaptersToEnable) {
@@ -394,6 +395,7 @@ async function enableAdapters(
     return;
   }
 
+  // Always use array format for simplicity in adapters command
   config.exporters = Array.from(currentExporters).sort();
 
   // Save config (use minimal save for solo mode to keep config clean)
@@ -449,7 +451,7 @@ async function disableAdapter(args: string[]): Promise<void> {
 
   const { config } = await discoverAndCategorize();
 
-  const currentExporters = config.exporters || [];
+  const currentExporters = getExporterNames(config.exporters);
 
   if (!currentExporters.includes(adapterName)) {
     console.error(`✗ Adapter not enabled: ${adapterName}`);
@@ -467,7 +469,7 @@ async function disableAdapter(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  // Remove adapter
+  // Remove adapter and always use array format for simplicity
   config.exporters = currentExporters.filter((e: string) => e !== adapterName);
 
   // Save config (use minimal save for solo mode to keep config clean)
@@ -504,7 +506,7 @@ async function detectNewAgentsCommand(): Promise<void> {
 
   const newAgents = detectNewAgents(
     cwd,
-    config.exporters || [],
+    getExporterNames(config.exporters),
     config.detection?.ignored_agents || [],
   );
 

@@ -12,6 +12,7 @@ import {
   SyncEngine,
   type AlignTrueConfig,
   saveMinimalConfig,
+  getExporterNames,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
@@ -167,7 +168,9 @@ export async function buildSyncContext(
   };
 
   try {
-    const invalidExporters = await getInvalidExporters(config.exporters);
+    const invalidExporters = await getInvalidExporters(
+      getExporterNames(config.exporters),
+    );
     if (invalidExporters.length > 0) {
       const message = invalidExporters
         .map((issue) =>
@@ -368,10 +371,13 @@ export async function buildSyncContext(
     const manifestPaths = registry.discoverAdapters(exportersDistPath);
 
     // Load manifests and handlers for configured exporters
-    const exporterNames = config.exporters || ["cursor", "agents"];
+    const exporterNamesArray = getExporterNames(config.exporters) || [
+      "cursor",
+      "agents",
+    ];
     let loadedCount = 0;
 
-    for (const exporterName of exporterNames) {
+    for (const exporterName of exporterNamesArray) {
       const manifestPath = manifestPaths.find((path) => {
         const manifest = registry.loadManifest(path);
         return manifest.name === exporterName;
@@ -396,7 +402,7 @@ export async function buildSyncContext(
           : undefined,
       );
       if (options.verbose && loadedCount > 0) {
-        const names = exporterNames.slice(0, loadedCount).join(", ");
+        const names = exporterNamesArray.slice(0, loadedCount).join(", ");
         clack.log.success(`Active: ${names}`);
       }
     }
@@ -508,7 +514,8 @@ async function _enableExporters(
   const { backupOverwrittenFile } = await import("@aligntrue/core");
 
   // Filter unique and not already present
-  const toAdd = agents.filter((a) => !(config.exporters || []).includes(a));
+  const existingExporters = getExporterNames(config.exporters);
+  const toAdd = agents.filter((a) => !existingExporters.includes(a));
 
   if (toAdd.length === 0) return;
 
@@ -548,8 +555,9 @@ async function _enableExporters(
     }
   }
 
-  if (!config.exporters) config.exporters = [];
-  config.exporters.push(...toAdd);
+  // Always use array format for simplicity
+  const currentExporters = getExporterNames(config.exporters);
+  config.exporters = [...currentExporters, ...toAdd];
   await saveMinimalConfig(config, configPath);
 
   if (!options.quiet) {
@@ -575,7 +583,10 @@ async function checkAgentsWithCache(
     "../../utils/detect-agents.js"
   );
 
-  const detection = detectAgentsWithValidation(cwd, config.exporters || []);
+  const detection = detectAgentsWithValidation(
+    cwd,
+    getExporterNames(config.exporters),
+  );
   const cache = loadDetectionCache(cwd);
 
   if (shouldWarnAboutDetection(detection, cache)) {
@@ -596,7 +607,11 @@ async function checkAgentsWithCache(
       }
 
       if (shouldAdd) {
-        config.exporters = [...(config.exporters || []), ...detection.missing];
+        // Always use array format for simplicity
+        config.exporters = [
+          ...getExporterNames(config.exporters),
+          ...detection.missing,
+        ];
         await saveMinimalConfig(config, configPath, cwd);
         clack.log.success("Updated exporters in config");
       }
@@ -613,7 +628,7 @@ async function checkAgentsWithCache(
     saveDetectionCache(cwd, {
       timestamp: new Date().toISOString(),
       detected: detection.detected,
-      configured: config.exporters || [],
+      configured: getExporterNames(config.exporters),
     });
   }
 }

@@ -20,6 +20,7 @@ export type {
   ExporterPlugin,
   ExporterCapabilities,
   AdapterManifest,
+  ExporterFormat,
 } from "./exporter.js";
 
 // Sync options

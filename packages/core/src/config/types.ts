@@ -6,6 +6,12 @@ import type { MergeOrder } from "../scope.js";
 
 export type AlignTrueMode = "solo" | "team" | "enterprise";
 export type ModeHints = "off" | "metadata_only" | "hints" | "native";
+export type ExporterFormat = "native" | "agents-md";
+export type CleanupMode = "all" | "managed";
+
+export interface ExporterConfig {
+  format?: ExporterFormat;
+}
 export type ResourceType = "rules" | "mcps" | "skills";
 export type ScopeType = "team" | "personal" | string; // Allow custom scopes
 export type StorageType = "repo" | "local" | "remote";
@@ -77,6 +83,7 @@ export interface AlignTrueConfig {
     auto_manage_ignore_files?: boolean | "prompt";
     ignore_file_priority?: "native" | "custom";
     custom_format_priority?: Record<string, string>;
+    cleanup?: CleanupMode;
   };
   sources?: Array<{
     type: "local" | "git" | "url";
@@ -88,7 +95,7 @@ export interface AlignTrueConfig {
     version?: string;
     include?: string[];
   }>;
-  exporters?: string[];
+  exporters?: string[] | Record<string, ExporterConfig>;
   scopes?: Array<{
     path: string;
     inherit?: boolean;
