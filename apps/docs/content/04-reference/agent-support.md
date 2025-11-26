@@ -3,6 +3,12 @@ title: Agent support
 description: Complete compatibility matrix for AlignTrue's 50 exporters supporting 28+ AI coding agents
 ---
 
+import { Callout } from "nextra/components"
+
+<Callout type="warning">
+**Agent configurations and capabilities change frequently.** If you find information on this page that is out of date or incorrect, please [create a pull request](https://github.com/AlignTrue/aligntrue/pulls) or [open an issue](https://github.com/AlignTrue/aligntrue/issues) to help us keep this documentation current.
+</Callout>
+
 # Agent support
 
 AlignTrue supports **28+ AI coding agents** through **50 exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.

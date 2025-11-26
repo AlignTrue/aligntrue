@@ -4,11 +4,15 @@ description: A comprehensive list of AI agents, their supported rule formats and
 sidebar: false
 ---
 
+import { Callout } from "nextra/components"
+
+<Callout type="warning">
+**Agent configurations and capabilities change frequently.** If you find information on this page that is out of date or incorrect, please [create a pull request](https://github.com/AlignTrue/aligntrue/pulls) or [open an issue](https://github.com/AlignTrue/aligntrue/issues) to help us keep this documentation current.
+</Callout>
+
 # AI agents: A comprehensive guide
 
-This is a comprehensive list of AI agents, their supported rule formats and MCP support. If you're looking AlignTrue's ompatibility matrix, see [Agent Support](/docs/04-reference/agent-support).
-
-If you see anything missing or out of date, submit an update.
+This is a comprehensive list of AI agents, their supported rule formats and MCP support. If you're looking AlignTrue's compatibility matrix, see [Agent Support](/docs/04-reference/agent-support).
 
 ## AI agent rule format support
 
