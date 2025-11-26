@@ -110,8 +110,8 @@ async function main() {
   print("🔄 Fetching code scanning alerts...", COLORS.bold);
 
   try {
-    // Fetch code scanning alerts via GitHub REST API
-    const cmd = `gh api repos/${CONFIG.REPO}/code-scanning/alerts --paginate --jq '.[] | {number, state, rule: .rule.id, severity: .rule.security_severity_level, title: .rule.name, url: .url}'`;
+    // Fetch code scanning alerts via GitHub REST API with actionable details
+    const cmd = `gh api repos/${CONFIG.REPO}/code-scanning/alerts --paginate --jq '.[] | {number, state, rule: .rule.id, severity: .rule.security_severity_level, title: .rule.name, url: .url, file: .most_recent_instance.location.path, line: .most_recent_instance.location.start_line, endLine: .most_recent_instance.location.end_line, message: .most_recent_instance.message.text}'`;
 
     const json = runCommand(cmd);
     const alerts = json ? JSON.parse(`[${json.split("\n").join(",")}]`) : [];
@@ -152,6 +152,16 @@ async function main() {
           severityColor,
         );
         print(`       Severity: ${alert.severity || "unknown"}`);
+        if (alert.file) {
+          const lineRange =
+            alert.endLine && alert.endLine !== alert.line
+              ? `${alert.line}-${alert.endLine}`
+              : alert.line;
+          print(`       Location: ${alert.file}:${lineRange}`);
+        }
+        if (alert.message) {
+          print(`       Issue: ${alert.message}`);
+        }
         print(`       Link: ${alert.url}`, COLORS.blue);
       });
       print("");
