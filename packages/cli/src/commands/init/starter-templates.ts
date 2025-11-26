@@ -159,13 +159,33 @@ Never log secrets, tokens, passwords, or personal data.
     const hash = computeContentHash(content);
     const filename = `${t.title}.md`;
 
+    // Build smart defaults for frontmatter
+    const frontmatterDefaults: Record<string, unknown> = {
+      title: t.title,
+      content_hash: hash,
+      original_source: "starter-template",
+    };
+
+    // Add description for all templates
+    const descriptions: Record<string, string> = {
+      global: "Core coding principles and development practices for all files",
+      testing: "Testing standards and best practices for this project",
+      "ai-guidance": "Guidance for AI-assisted development and code generation",
+      security: "Security and privacy guidelines for this project",
+    };
+
+    if (descriptions[t.title]) {
+      frontmatterDefaults["description"] = descriptions[t.title];
+    }
+
+    // Global rule: set to always apply
+    if (t.title === "global") {
+      frontmatterDefaults["apply_to"] = "alwaysOn";
+    }
+
     return {
       content,
-      frontmatter: {
-        title: t.title,
-        content_hash: hash,
-        original_source: "starter-template",
-      },
+      frontmatter: frontmatterDefaults,
       path: filename,
       filename,
       hash,
