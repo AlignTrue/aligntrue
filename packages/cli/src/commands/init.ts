@@ -560,6 +560,27 @@ aligntrue sync
     logMessage(msg, "success", nonInteractive);
   }
 
+  // Show multi-format message if any selected exporters support multiple formats
+  const multiFormatAgents = [
+    "cursor",
+    "amazonq",
+    "kilocode",
+    "augmentcode",
+    "kiro",
+    "trae-ai",
+  ];
+  const hasMultiFormatAgents = finalExporters.some((e: string) =>
+    multiFormatAgents.includes(e),
+  );
+  if (hasMultiFormatAgents) {
+    logMessage(
+      "\nSome agents support multiple export formats (native multi-file or AGENTS.md).\n" +
+        "Configure in .aligntrue/config.yaml. See docs at https://aligntrue.ai/docs/02-customization/export-formats",
+      "info",
+      nonInteractive,
+    );
+  }
+
   // Outro with helpful commands
   const outroLines = [
     "",

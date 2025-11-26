@@ -122,16 +122,19 @@ function ensureSection(
 export function convertRulerConfig(
   rulerConfig: RulerConfig,
 ): Partial<AlignTrueConfig> {
+  // Use array format for exporters (can be converted to object format later if needed)
+  const exporters: string[] = [];
+
   const config: Partial<AlignTrueConfig> = {
     mode: "solo",
-    exporters: [],
+    exporters,
   };
 
   // Convert enabled agents
   if (rulerConfig.agents) {
     for (const [agent, settings] of Object.entries(rulerConfig.agents)) {
       if (settings.enabled !== false) {
-        config.exporters!.push(agent);
+        exporters.push(agent);
       }
     }
   }

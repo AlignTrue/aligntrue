@@ -28,10 +28,22 @@ import type {
   AlignTrueConfig,
   AlignTrueMode,
   ModeHints,
+  ExporterConfig,
 } from "../config/types.js";
 
 // Track shown warnings to prevent duplication
 const shownWarnings = new Set<string>();
+
+/**
+ * Get exporter count from exporters config (handles array or object format)
+ */
+function getExporterCount(
+  exporters: string[] | Record<string, ExporterConfig> | undefined,
+): number {
+  if (!exporters) return 0;
+  if (Array.isArray(exporters)) return exporters.length;
+  return Object.keys(exporters).length;
+}
 
 /**
  * Validation result from schema validation
@@ -131,7 +143,7 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     // If only exporters configured (minimal config), default to solo
     if (
       result.exporters &&
-      result.exporters.length > 0 &&
+      getExporterCount(result.exporters) > 0 &&
       !result.modules?.lockfile &&
       !result.modules?.bundle
     ) {
@@ -461,50 +473,119 @@ export async function validateConfig(
     }
   }
 
-  // Validate exporters array if present
-  if (config.exporters && Array.isArray(config.exporters)) {
+  // Validate exporters (array or object format)
+  if (config.exporters) {
     const MAX_EXPORTERS = 20;
     const WARN_EXPORTERS_THRESHOLD = 10;
 
-    // Check count limits
-    if (config.exporters.length > MAX_EXPORTERS) {
-      throw new Error(
-        `Too many exporters configured (${config.exporters.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
-      );
-    }
+    // Valid format values
+    const VALID_FORMATS = ["native", "agents-md"] as const;
 
-    if (config.exporters.length > WARN_EXPORTERS_THRESHOLD) {
-      const warningKey = "too-many-exporters";
-      if (!shownWarnings.has(warningKey)) {
-        shownWarnings.add(warningKey);
-        console.warn(
-          `Warning: ${config.exporters.length} exporters configured. This may slow down sync operations.`,
-        );
-      }
-    }
+    // Agents that support multiple formats (native + agents-md)
+    const MULTI_FORMAT_AGENTS = new Set([
+      "cursor",
+      "amazonq",
+      "kilocode",
+      "augmentcode",
+      "kiro",
+      "trae-ai",
+    ]);
 
-    // Check for duplicates
-    const uniqueExporters = new Set(config.exporters);
-    if (uniqueExporters.size !== config.exporters.length) {
-      const seen = new Set();
-      const duplicates = new Set();
-      for (const exporter of config.exporters) {
-        if (seen.has(exporter)) {
-          duplicates.add(exporter);
-        }
-        seen.add(exporter);
-      }
-      throw new Error(
-        `Duplicate exporters found: ${Array.from(duplicates).join(", ")}`,
-      );
-    }
-
-    for (let i = 0; i < config.exporters.length; i++) {
-      const exporter = config.exporters[i];
-      if (typeof exporter !== "string" || exporter.trim() === "") {
+    if (Array.isArray(config.exporters)) {
+      // Handle array format
+      if (config.exporters.length > MAX_EXPORTERS) {
         throw new Error(
-          `Invalid exporter at index ${i}: must be non-empty string`,
+          `Too many exporters configured (${config.exporters.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
         );
+      }
+
+      if (config.exporters.length > WARN_EXPORTERS_THRESHOLD) {
+        const warningKey = "too-many-exporters";
+        if (!shownWarnings.has(warningKey)) {
+          shownWarnings.add(warningKey);
+          console.warn(
+            `Warning: ${config.exporters.length} exporters configured. This may slow down sync operations.`,
+          );
+        }
+      }
+
+      // Check for duplicates
+      const uniqueExporters = new Set(config.exporters);
+      if (uniqueExporters.size !== config.exporters.length) {
+        const seen = new Set();
+        const duplicates = new Set();
+        for (const exporter of config.exporters) {
+          if (seen.has(exporter)) {
+            duplicates.add(exporter);
+          }
+          seen.add(exporter);
+        }
+        throw new Error(
+          `Duplicate exporters found: ${Array.from(duplicates).join(", ")}`,
+        );
+      }
+
+      for (let i = 0; i < config.exporters.length; i++) {
+        const exporter = config.exporters[i];
+        if (typeof exporter !== "string" || exporter.trim() === "") {
+          throw new Error(
+            `Invalid exporter at index ${i}: must be non-empty string`,
+          );
+        }
+      }
+    } else if (typeof config.exporters === "object") {
+      // Handle object format with format configuration
+      const exporterNames = Object.keys(config.exporters);
+
+      if (exporterNames.length > MAX_EXPORTERS) {
+        throw new Error(
+          `Too many exporters configured (${exporterNames.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
+        );
+      }
+
+      if (exporterNames.length > WARN_EXPORTERS_THRESHOLD) {
+        const warningKey = "too-many-exporters";
+        if (!shownWarnings.has(warningKey)) {
+          shownWarnings.add(warningKey);
+          console.warn(
+            `Warning: ${exporterNames.length} exporters configured. This may slow down sync operations.`,
+          );
+        }
+      }
+
+      for (const [name, exporterConfig] of Object.entries(config.exporters)) {
+        if (name.trim() === "") {
+          throw new Error(`Invalid exporter name: must be non-empty string`);
+        }
+
+        // Validate format if specified
+        if (exporterConfig && typeof exporterConfig === "object") {
+          const format = (exporterConfig as { format?: string }).format;
+          if (format !== undefined) {
+            // Check if format value is valid
+            if (
+              !VALID_FORMATS.includes(format as (typeof VALID_FORMATS)[number])
+            ) {
+              const warningKey = `invalid-format-${name}`;
+              if (!shownWarnings.has(warningKey)) {
+                shownWarnings.add(warningKey);
+                console.warn(
+                  `Warning: Invalid format "${format}" for exporter "${name}". ` +
+                    `Valid options: ${VALID_FORMATS.join(", ")}. Using default "native".`,
+                );
+              }
+            }
+
+            // Check if agent supports the requested format
+            if (format === "agents-md" && !MULTI_FORMAT_AGENTS.has(name)) {
+              // Single-format agents can only use agents-md if they're already agents-md based
+              // This is just a warning since "agents-md" is valid for all
+            } else if (format === "native" && !MULTI_FORMAT_AGENTS.has(name)) {
+              // For agents without native support, warn but allow
+              // The "agents" exporter handles this case
+            }
+          }
+        }
       }
     }
   }

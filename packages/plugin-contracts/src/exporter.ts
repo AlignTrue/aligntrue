@@ -120,6 +120,8 @@ export interface ExporterPlugin {
  * Declarative manifest.json file that describes an adapter's capabilities,
  * outputs, and optional handler for community-scalable contributions.
  */
+export type ExporterFormat = "native" | "agents-md";
+
 export interface AdapterManifest {
   name: string; // Adapter name (lowercase alphanumeric with hyphens)
   version: string; // Semantic version (e.g., 1.0.0)
@@ -128,4 +130,6 @@ export interface AdapterManifest {
   handler?: string; // Optional: relative path to TypeScript handler
   license?: string; // License identifier (default: MIT)
   fidelityNotes?: string[]; // Optional: semantic mapping limitations
+  supportedFormats?: ExporterFormat[]; // Optional: export formats this adapter supports (default: ['native'])
+  defaultFormat?: ExporterFormat; // Optional: default export format (default: 'native')
 }

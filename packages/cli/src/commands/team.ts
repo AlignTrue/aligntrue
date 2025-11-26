@@ -14,7 +14,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { isTTY } from "../utils/tty-helper.js";
-import { applyDefaults } from "@aligntrue/core";
+import { applyDefaults, getExporterNames } from "@aligntrue/core";
 import { createManagedSpinner, type SpinnerLike } from "../utils/spinner.js";
 import { buildNextStepsMessage } from "../utils/next-steps.js";
 
@@ -191,9 +191,10 @@ async function teamStatus(): Promise<void> {
     }
 
     // Exporters
-    if (config.exporters && config.exporters.length > 0) {
-      console.log(`\nExporters: ${config.exporters.length} configured`);
-      config.exporters.forEach((exporter) => {
+    const exporterNames = getExporterNames(config.exporters);
+    if (exporterNames.length > 0) {
+      console.log(`\nExporters: ${exporterNames.length} configured`);
+      exporterNames.forEach((exporter: string) => {
         console.log(`  - ${exporter}`);
       });
     }

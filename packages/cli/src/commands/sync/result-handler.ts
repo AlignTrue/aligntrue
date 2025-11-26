@@ -10,6 +10,7 @@ import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
 } from "@aligntrue/core/sync";
+import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import type { SyncResult } from "./workflow.js";
@@ -95,11 +96,8 @@ export async function handleSyncResult(
 
   // Check for agent format conflicts and offer to manage ignore files
   // Important: This must happen BEFORE clack.outro() to preserve spinner/message state
-  if (
-    !options.dryRun &&
-    context.config.exporters &&
-    context.config.exporters.length > 1
-  ) {
+  const exporterNames = getExporterNames(context.config.exporters);
+  if (!options.dryRun && exporterNames.length > 1) {
     const autoManage = context.config.sync?.auto_manage_ignore_files ?? true;
 
     // Only check if not explicitly disabled
@@ -113,7 +111,7 @@ export async function handleSyncResult(
       } = await import("@aligntrue/core/agent-ignore");
 
       const detection = detectConflicts(
-        context.config.exporters,
+        exporterNames,
         context.config.sync?.custom_format_priority,
       );
 

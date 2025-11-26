@@ -5,7 +5,11 @@
 
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { type AlignTrueConfig, ensureSectionsArray } from "@aligntrue/core";
+import {
+  type AlignTrueConfig,
+  ensureSectionsArray,
+  getExporterNames,
+} from "@aligntrue/core";
 import type { Align } from "@aligntrue/schema";
 import { validateAlignSchema } from "@aligntrue/schema";
 import {
@@ -112,7 +116,9 @@ export async function check(args: string[]): Promise<void> {
 
     let invalidExporters;
     try {
-      invalidExporters = await getInvalidExporters(config.exporters);
+      invalidExporters = await getInvalidExporters(
+        getExporterNames(config.exporters),
+      );
     } catch (_error) {
       const message = _error instanceof Error ? _error.message : String(_error);
       if (jsonOutput) {

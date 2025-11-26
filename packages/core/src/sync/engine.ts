@@ -7,7 +7,11 @@
 
 import type { Align, AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig, AlignTrueMode } from "../config/index.js";
-import { loadConfig } from "../config/index.js";
+import {
+  loadConfig,
+  normalizeExporterConfig,
+  getExporterNames,
+} from "../config/index.js";
 import { loadIRAndResolvePlugs } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { resolve as resolvePath } from "path";
@@ -321,11 +325,34 @@ export class SyncEngine {
       // Resolve scopes (delegated)
       const scopes = resolveSyncScopes(this.config, process.cwd());
 
-      // Get active exporters
-      const exporterNames = this.config.exporters || ["cursor", "agents"];
+      // Get active exporters (normalized from array or object format)
+      const normalizedExporters = normalizeExporterConfig(
+        this.config.exporters,
+      );
+      const exporterNames = getExporterNames(this.config.exporters);
+
+      // Fall back to defaults if no exporters configured
+      const effectiveExporterNames =
+        exporterNames.length > 0 ? exporterNames : ["cursor", "agents"];
+
       const activeExporters: ExporterPlugin[] = [];
 
-      for (const name of exporterNames) {
+      for (const name of effectiveExporterNames) {
+        // Check format setting - if "agents-md", skip native exporter
+        // (the agents exporter will handle this agent's rules in AGENTS.md)
+        const exporterConfig = normalizedExporters[name] || {};
+        if (exporterConfig.format === "agents-md" && name !== "agents") {
+          // Skip native exporter when format is agents-md
+          // Ensure "agents" exporter is included instead
+          if (!effectiveExporterNames.includes("agents")) {
+            const agentsExporter = this.exporters.get("agents");
+            if (agentsExporter && !activeExporters.includes(agentsExporter)) {
+              activeExporters.push(agentsExporter);
+            }
+          }
+          continue;
+        }
+
         const exporter = this.exporters.get(name);
         if (exporter) {
           activeExporters.push(exporter);
