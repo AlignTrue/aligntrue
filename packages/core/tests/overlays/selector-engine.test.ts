@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import {
   evaluateSelector,
   evaluateSelectors,
@@ -11,12 +11,12 @@ import {
   findAmbiguousSelectors,
 } from "../../src/overlays/selector-engine.js";
 
-// Mock AlignPack IR for testing
-const mockIR: AlignPack = {
-  id: "test-pack",
+// Mock Align IR for testing
+const mockIR: Align = {
+  id: "test-align",
   version: "1.0.0",
   spec_version: "1",
-  summary: "Test pack for overlay engine",
+  summary: "Test align for overlay engine",
   sections: [
     {
       heading: "Rule One",
@@ -75,7 +75,7 @@ describe("evaluateSelector - rule selectors", () => {
   });
 
   it("detects multiple matching rules (ambiguous)", () => {
-    const duplicateIR: AlignPack = {
+    const duplicateIR: Align = {
       ...mockIR,
       sections: [
         { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },
@@ -94,7 +94,7 @@ describe("evaluateSelector - property path selectors", () => {
     const result = evaluateSelector("id", mockIR);
     expect(result.success).toBe(true);
     expect(result.targetPath).toEqual(["id"]);
-    expect(result.targetValue).toBe("test-pack");
+    expect(result.targetValue).toBe("test-align");
   });
 
   it("matches nested property", () => {
@@ -186,7 +186,7 @@ describe("evaluateSelectors - batch evaluation", () => {
   it("returns results in same order as input", () => {
     const selectors = ["id", "version", "spec_version"];
     const results = evaluateSelectors(selectors, mockIR);
-    expect(results[0].targetValue).toBe("test-pack");
+    expect(results[0].targetValue).toBe("test-align");
     expect(results[1].targetValue).toBe("1.0.0");
     expect(results[2].targetValue).toBe("1");
   });
@@ -223,7 +223,7 @@ describe("findStaleSelectors", () => {
   });
 
   it("excludes ambiguous selectors from stale list", () => {
-    const duplicateIR: AlignPack = {
+    const duplicateIR: Align = {
       ...mockIR,
       sections: [
         { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },
@@ -239,7 +239,7 @@ describe("findStaleSelectors", () => {
 
 describe("findAmbiguousSelectors", () => {
   it("finds selectors that match multiple targets", () => {
-    const duplicateIR: AlignPack = {
+    const duplicateIR: Align = {
       ...mockIR,
       sections: [
         { heading: "Dup A", level: 2, content: "A", fingerprint: "dup" },

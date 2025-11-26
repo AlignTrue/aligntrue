@@ -2,7 +2,7 @@
  * Lockfile validator with mismatch detection (simplified - no allow list)
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import type { Lockfile, LockfileValidationResult, Mismatch } from "./types.js";
 import { hashSection } from "./generator.js";
 import type { RuleFile } from "../rules/file-io.js";
@@ -16,12 +16,12 @@ import type { RuleFile } from "../rules/file-io.js";
  * - Deleted sections (in lockfile but not in bundle)
  *
  * @param lockfile - Existing lockfile
- * @param currentPack - Current AlignPack to validate against
+ * @param currentAlign - Current Align to validate against
  * @returns LockfileValidationResult with detailed diff information
  */
 export function validateLockfile(
   lockfile: Lockfile,
-  currentPack: AlignPack,
+  currentAlign: Align,
 ): LockfileValidationResult {
   const mismatches: Mismatch[] = [];
   const newRules: string[] = [];
@@ -33,11 +33,11 @@ export function validateLockfile(
   );
 
   // Filter to only team-scoped sections (skip personal sections in validation)
-  const teamSections = currentPack.sections.filter(
+  const teamSections = currentAlign.sections.filter(
     (section) => section.scope !== "personal",
   );
 
-  // Validate section-based pack using fingerprints
+  // Validate section-based align using fingerprints
   const currentSectionIds = new Set(teamSections.map((s) => s.fingerprint));
 
   // Check for mismatches and new sections (only for team sections)
@@ -158,11 +158,11 @@ function formatProvenance(mismatch: Mismatch): string {
  * Format validation result as human-readable message
  *
  * @param result - Validation result
- * @param currentPack - Optional current pack for enhanced rename detection
+ * @param currentAlign - Optional current align for enhanced rename detection
  */
 export function formatValidationResult(
   result: LockfileValidationResult,
-  _currentPack?: AlignPack,
+  _currentAlign?: Align,
 ): string {
   if (result.valid) {
     return "Lockfile is up to date";

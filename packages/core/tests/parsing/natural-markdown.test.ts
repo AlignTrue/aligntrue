@@ -28,7 +28,7 @@ Never commit secrets.
 
   it("parses markdown with YAML frontmatter", () => {
     const markdown = `---
-id: packs/typescript
+id: aligns/typescript
 version: 2.1.0
 tags: [typescript, quality]
 ---
@@ -39,7 +39,7 @@ Use strict mode.
 `;
 
     const result = parseNaturalMarkdown(markdown);
-    expect(result.metadata.id).toBe("packs/typescript");
+    expect(result.metadata.id).toBe("aligns/typescript");
     expect(result.metadata.version).toBe("2.1.0");
     expect(result.metadata.tags).toEqual(["typescript", "quality"]);
     expect(result.sections).toHaveLength(1);
@@ -61,9 +61,9 @@ Content.
 
   it("handles all metadata fields", () => {
     const markdown = `---
-id: my-pack
+id: my-align
 version: 1.2.3
-summary: A test pack
+summary: A test align
 tags: [test]
 owner: myorg
 source: https://github.com/myorg/rules
@@ -76,9 +76,9 @@ Content.
 `;
 
     const result = parseNaturalMarkdown(markdown);
-    expect(result.metadata.id).toBe("my-pack");
+    expect(result.metadata.id).toBe("my-align");
     expect(result.metadata.version).toBe("1.2.3");
-    expect(result.metadata.summary).toBe("A test pack");
+    expect(result.metadata.summary).toBe("A test align");
     expect(result.metadata.owner).toBe("myorg");
     expect(result.metadata.source).toContain("github.com");
     expect(result.metadata.source_sha).toBe("abc123");
@@ -102,7 +102,7 @@ Content.
 
   it("merges extraction errors with parse errors", () => {
     const markdown = `---
-id: test-pack
+id: test-align
 ---
 
 ## Testing
@@ -136,7 +136,7 @@ describe("generateNaturalMarkdown", () => {
     ];
 
     const markdown = generateNaturalMarkdown(
-      { id: "unnamed-pack", version: "1.0.0" },
+      { id: "unnamed-align", version: "1.0.0" },
       sections,
     );
 
@@ -159,7 +159,7 @@ describe("generateNaturalMarkdown", () => {
 
     const markdown = generateNaturalMarkdown(
       {
-        id: "packs/typescript",
+        id: "aligns/typescript",
         version: "2.0.0",
         tags: ["typescript"],
       },
@@ -167,7 +167,7 @@ describe("generateNaturalMarkdown", () => {
     );
 
     expect(markdown).toContain("---");
-    expect(markdown).toContain("id: packs/typescript");
+    expect(markdown).toContain("id: aligns/typescript");
     expect(markdown).toContain("version: 2.0.0");
     expect(markdown).toContain("## Testing");
   });
@@ -185,7 +185,7 @@ describe("generateNaturalMarkdown", () => {
     ];
 
     const markdown = generateNaturalMarkdown(
-      { id: "my-pack", version: "1.0.0" },
+      { id: "my-align", version: "1.0.0" },
       sections,
       { preamble: "Introduction text." },
     );
@@ -258,7 +258,7 @@ describe("generateNaturalMarkdown", () => {
 
   it("round-trips correctly", () => {
     const original = `---
-id: test-pack
+id: test-align
 version: 1.5.0
 ---
 

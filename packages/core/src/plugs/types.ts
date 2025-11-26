@@ -24,7 +24,7 @@ export interface ResolveTextResult {
 /**
  * Result of resolving plugs for an entire align
  */
-export interface ResolvePackResult {
+export interface ResolveAlignResult {
   success: boolean;
   rules: Array<{
     ruleId: string;

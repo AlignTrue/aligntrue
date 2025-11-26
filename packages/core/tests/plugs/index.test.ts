@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { resolvePlugsForPack } from "../../src/plugs/index.js";
-import type { AlignPack } from "@aligntrue/schema";
+import { resolvePlugsForAlign } from "../../src/plugs/index.js";
+import type { Align } from "@aligntrue/schema";
 
-describe("resolvePlugsForPack", () => {
-  it("resolves all plugs in pack rules", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+describe("resolvePlugsForAlign", () => {
+  it("resolves all plugs in align rules", () => {
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -36,7 +36,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(true);
     expect(result.rules).toHaveLength(2);
@@ -46,8 +46,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("handles rules without content", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -60,7 +60,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(true);
     expect(result.rules).toHaveLength(1);
@@ -69,8 +69,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("tracks unresolved required plugs", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -98,7 +98,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(true);
     expect(result.unresolvedRequired).toContain("test.cmd");
@@ -108,8 +108,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("fails in strict mode with unresolved required plugs", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -131,7 +131,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack, undefined, {
+    const result = resolvePlugsForAlign(align, undefined, {
       failOnUnresolved: true,
     });
 
@@ -142,8 +142,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("merges additional fills from stack/repo", () => {
-    const pack: AlignPack = {
-      id: "test/base-pack",
+    const align: Align = {
+      id: "test/base-align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -169,7 +169,7 @@ describe("resolvePlugsForPack", () => {
       "test.cmd": "pnpm test",
     };
 
-    const result = resolvePlugsForPack(pack, additionalFills);
+    const result = resolvePlugsForAlign(align, additionalFills);
 
     expect(result.success).toBe(true);
     expect(result.rules[0].content).toContain("pnpm test");
@@ -177,8 +177,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("detects undeclared plug references", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -200,7 +200,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(false);
     expect(result.errors).toBeDefined();
@@ -208,9 +208,9 @@ describe("resolvePlugsForPack", () => {
     expect(result.errors![0]).toContain("undeclared.cmd");
   });
 
-  it("handles pack without plugs", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+  it("handles align without plugs", () => {
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -223,7 +223,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(true);
     expect(result.rules[0].content).toBe("No plugs here\n");
@@ -231,8 +231,8 @@ describe("resolvePlugsForPack", () => {
   });
 
   it("catches validation errors and returns gracefully", () => {
-    const pack: AlignPack = {
-      id: "test/pack",
+    const align: Align = {
+      id: "test/align",
       version: "1.0.0",
       spec_version: "1",
       plugs: {
@@ -257,7 +257,7 @@ describe("resolvePlugsForPack", () => {
       ],
     };
 
-    const result = resolvePlugsForPack(pack);
+    const result = resolvePlugsForAlign(align);
 
     expect(result.success).toBe(false);
     expect(result.errors).toBeDefined();

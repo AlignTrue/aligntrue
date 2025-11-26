@@ -82,7 +82,7 @@ describe("plugs config integration", () => {
     const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -134,7 +134,7 @@ plugs:
     const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections: []
@@ -182,7 +182,7 @@ exporters:
     const irPath = join(testDir, ".aligntrue/rules");
     writeFileSync(
       irPath,
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections: []
@@ -252,7 +252,7 @@ Run tests with: {{test.cmd}}
     }
 
     // Verify output shows config fill
-    // Note: Since we don't have slots defined in the pack, only config fills are shown
+    // Note: Since we don't have slots defined in the align, only config fills are shown
     const output = logOutput.join("\n");
     expect(output).toContain("test.cmd");
     expect(output).toContain("pnpm test");

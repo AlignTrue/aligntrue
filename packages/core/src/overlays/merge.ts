@@ -3,10 +3,10 @@
  * Merges upstream updates while preserving local overlays
  *
  * Algorithm: base + overlay + new_base → result
- * - base: Original upstream pack (before overlays)
+ * - base: Original upstream align (before overlays)
  * - overlay: Local customizations applied
- * - new_base: Updated upstream pack
- * - result: Merged pack with overlays reapplied to new base
+ * - new_base: Updated upstream align
+ * - result: Merged align with overlays reapplied to new base
  *
  * Conflict detection categories:
  * - removed: Property was removed upstream but locally modified
@@ -14,7 +14,7 @@
  * - moved: Property was moved upstream but locally modified
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { deepClone, isPlainObject } from "./operations.js";
 import type { OverlayDefinition } from "./types.js";
 
@@ -52,7 +52,7 @@ export interface MergeResult {
   /** Whether merge completed without conflicts */
   success: boolean;
   /** Merged IR (on success or auto-resolved) */
-  mergedIR?: AlignPack;
+  mergedIR?: Align;
   /** Conflicts detected (may have auto-resolutions) */
   conflicts: MergeConflict[];
   /** Auto-resolved conflicts (non-blocking) */
@@ -91,16 +91,16 @@ interface PropertyChange {
 /**
  * Perform three-way merge of overlays
  *
- * @param base - Original upstream pack (before overlays)
+ * @param base - Original upstream align (before overlays)
  * @param overlays - Local overlay definitions
- * @param newBase - Updated upstream pack
+ * @param newBase - Updated upstream align
  * @param options - Merge options
  * @returns Merge result with conflicts or merged IR
  */
 export function threeWayMerge(
-  base: AlignPack,
+  base: Align,
   overlays: OverlayDefinition[],
-  newBase: AlignPack,
+  newBase: Align,
   options?: MergeOptions,
 ): MergeResult {
   const result: MergeResult = {
@@ -171,8 +171,8 @@ export function threeWayMerge(
  * @returns Map of rule ID to property changes
  */
 function detectChanges(
-  oldIR: AlignPack,
-  newIR: AlignPack,
+  oldIR: Align,
+  newIR: Align,
 ): Map<string, PropertyChange[]> {
   const changes = new Map<string, PropertyChange[]>();
 
@@ -306,15 +306,15 @@ function toRecord(value: unknown): Record<string, unknown> | undefined {
  * Checks if overlay targets were changed upstream
  *
  * @param overlay - Overlay definition
- * @param base - Original upstream pack
- * @param newBase - Updated upstream pack
+ * @param base - Original upstream align
+ * @param newBase - Updated upstream align
  * @param upstreamChanges - Map of upstream changes by rule ID
  * @returns Array of conflicts detected
  */
 function detectOverlayConflicts(
   overlay: OverlayDefinition,
-  base: AlignPack,
-  newBase: AlignPack,
+  base: Align,
+  newBase: Align,
   upstreamChanges: Map<string, PropertyChange[]>,
 ): MergeConflict[] {
   const conflicts: MergeConflict[] = [];

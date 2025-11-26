@@ -5,16 +5,16 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
 import { extname, dirname } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { validateAlignSchema, type AlignPack } from "@aligntrue/schema";
+import { validateAlignSchema, type Align } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode, AlignTrueConfig } from "../config/index.js";
-import { resolvePlugsForPack } from "../plugs/index.js";
+import { resolvePlugsForAlign } from "../plugs/index.js";
 
 /**
  * Result of loading and resolving IR
  */
 export interface IRResult {
-  ir: AlignPack;
+  ir: Align;
   success: boolean;
   warnings: string[];
   unresolvedPlugsCount: number;
@@ -46,7 +46,7 @@ export async function loadIRAndResolvePlugs(
 
     // Resolve plugs (Plugs system)
     if (ir.plugs) {
-      const plugsResult = resolvePlugsForPack(
+      const plugsResult = resolvePlugsForAlign(
         ir,
         options?.plugFills, // Pass config fills so they're available during resolution
         options?.strictPlugs ? { failOnUnresolved: true } : {},
@@ -64,8 +64,8 @@ export async function loadIRAndResolvePlugs(
       // Update sections with resolved guidance (only if sections exist)
       if (ir.sections) {
         // Guidance in sections is embedded in content, resolution updates content implicitly?
-        // resolvePlugsForPack logic likely handles the substitution if modifying pack in place
-        // Let's verify if resolvePlugsForPack modifies ir in place.
+        // resolvePlugsForAlign logic likely handles the substitution if modifying align in place
+        // Let's verify if resolvePlugsForAlign modifies ir in place.
         // Looking at usage in SyncEngine, it seems it returns resolved rules but doesn't modify IR structure?
         // SyncEngine: "Update sections with resolved guidance... This is a no-op for sections format"
         // So we just checking resolution success.
@@ -93,7 +93,7 @@ export async function loadIRAndResolvePlugs(
         version: "0.0.0",
         spec_version: "1",
         sections: [],
-      } as AlignPack, // Dummy pack
+      } as Align, // Dummy align
       success: false,
       warnings: [err instanceof Error ? err.message : String(err)],
       unresolvedPlugsCount: 0,
@@ -120,7 +120,7 @@ export async function loadIR(
     force?: boolean;
     config?: AlignTrueConfig;
   },
-): Promise<AlignPack> {
+): Promise<Align> {
   const { lstatSync } = await import("fs");
 
   const mode = options?.mode || "solo";
@@ -136,7 +136,7 @@ export async function loadIR(
         recursive: true,
       });
 
-      // Convert RuleFile[] to AlignPack format
+      // Convert RuleFile[] to Align format
       // Use frontmatter.id if specified, otherwise use filename (without .md extension)
       // This makes rule IDs intuitive and stable - typescript-strict.md becomes rule[id=typescript-strict]
       const sections = rules.map((rule) => ({
@@ -156,7 +156,7 @@ export async function loadIR(
         version: "1.0.0",
         spec_version: "1",
         sections,
-      } as AlignPack;
+      } as Align;
     }
   }
 
@@ -215,9 +215,9 @@ export async function loadIR(
       );
       const parsed = parseNaturalMarkdown(content);
 
-      // Convert to AlignPack format
+      // Convert to Align format
       ir = {
-        id: parsed.metadata.id || "imported-pack",
+        id: parsed.metadata.id || "imported-align",
         version: parsed.metadata.version || "1.0.0",
         spec_version: "1",
         sections: parsed.sections,
@@ -259,12 +259,12 @@ export async function loadIR(
 
   // Defensive: Ensure sections array exists (for backward compatibility)
   // This must be done BEFORE validation since schema requires sections
-  const pack = ir as AlignPack;
-  if (!pack.sections) {
-    pack.sections = [];
+  const align = ir as Align;
+  if (!align.sections) {
+    align.sections = [];
   }
 
-  const validation = validateAlignSchema(pack);
+  const validation = validateAlignSchema(align);
   if (!validation.valid) {
     const errorList =
       validation.errors
@@ -278,7 +278,7 @@ export async function loadIR(
             if (match && match[1]) {
               const field = match[1];
               const hints: Record<string, string> = {
-                id: 'Pack identifier (e.g., "my-project")',
+                id: 'Align identifier (e.g., "my-project")',
                 version: 'Semantic version (e.g., "1.0.0")',
                 spec_version: 'Must be "1"',
               };
@@ -297,25 +297,25 @@ export async function loadIR(
     );
   }
 
-  return pack;
+  return align;
 }
 
 /**
  * Save IR to a YAML file
  *
  * @param targetPath - Path to save the IR file
- * @param pack - AlignPack to save
+ * @param align - Align to save
  * @param options - Save options
  * @param options.silent - Skip validation errors (for intermediate merge states)
  */
 export async function saveIR(
   targetPath: string,
-  pack: AlignPack,
+  align: Align,
   options?: { silent?: boolean },
 ): Promise<void> {
-  // Validate pack before saving (unless silent mode)
+  // Validate align before saving (unless silent mode)
   if (!options?.silent) {
-    const validation = validateAlignSchema(pack);
+    const validation = validateAlignSchema(align);
     if (!validation.valid) {
       const errorList =
         validation.errors
@@ -329,7 +329,7 @@ export async function saveIR(
               if (match && match[1]) {
                 const field = match[1];
                 const hints: Record<string, string> = {
-                  id: 'Pack identifier (e.g., "my-project")',
+                  id: 'Align identifier (e.g., "my-project")',
                   version: 'Semantic version (e.g., "1.0.0")',
                   spec_version: 'Must be "1"',
                 };
@@ -341,7 +341,7 @@ export async function saveIR(
           .join("\n") || "  Unknown validation error";
 
       throw new Error(
-        `✗ Invalid IR pack:\n\n${errorList}\n\n` +
+        `✗ Invalid IR align:\n\n${errorList}\n\n` +
           `Fix: Add missing fields before saving.`,
       );
     }
@@ -357,7 +357,7 @@ export async function saveIR(
   }
 
   // Convert to YAML
-  const yamlContent = stringifyYaml(pack, {
+  const yamlContent = stringifyYaml(align, {
     indent: 2,
     lineWidth: 0, // No line wrapping
     defaultStringType: "QUOTE_DOUBLE",

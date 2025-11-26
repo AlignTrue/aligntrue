@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import {
   applyOverlays,
   normalizeLineEndings,
@@ -12,8 +12,8 @@ import {
 import type { OverlayDefinition } from "../../src/overlays/types.js";
 
 // Mock IR for testing
-const mockIR: AlignPack = {
-  id: "test-pack",
+const mockIR: Align = {
+  id: "test-align",
   version: "1.0.0",
   spec_version: "1",
   sections: [
@@ -185,7 +185,7 @@ describe("applyOverlays", () => {
 
 describe("normalizeLineEndings", () => {
   it("normalizes CRLF to LF", () => {
-    const ir: AlignPack = {
+    const ir: Align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -204,7 +204,7 @@ describe("normalizeLineEndings", () => {
   });
 
   it("ensures single trailing LF", () => {
-    const ir: AlignPack = {
+    const ir: Align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",

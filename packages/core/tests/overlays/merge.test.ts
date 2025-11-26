@@ -8,13 +8,13 @@ import {
   generatePatchFile,
   type MergeConflict,
 } from "../../src/overlays/merge.js";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import type { OverlayDefinition } from "../../src/overlays/types.js";
 
 describe("threeWayMerge", () => {
   describe("no conflicts", () => {
     it("applies overlay to new base when property unchanged", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -34,7 +34,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -57,7 +57,7 @@ describe("threeWayMerge", () => {
     });
 
     it("handles new properties added upstream", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -76,7 +76,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -98,7 +98,7 @@ describe("threeWayMerge", () => {
 
   describe("conflict detection", () => {
     it("detects modified property conflict", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -118,7 +118,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -140,7 +140,7 @@ describe("threeWayMerge", () => {
     });
 
     it("detects removed property conflict", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -161,7 +161,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -184,7 +184,7 @@ describe("threeWayMerge", () => {
     });
 
     it("detects conflicts for remove operations", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -204,7 +204,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -227,7 +227,7 @@ describe("threeWayMerge", () => {
 
   describe("auto-resolution", () => {
     it("auto-resolves with 'ours' strategy", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -247,7 +247,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -272,7 +272,7 @@ describe("threeWayMerge", () => {
     });
 
     it("auto-resolves with 'theirs' strategy", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -292,7 +292,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -315,7 +315,7 @@ describe("threeWayMerge", () => {
     });
 
     it("requires manual resolution by default", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -335,7 +335,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -358,7 +358,7 @@ describe("threeWayMerge", () => {
 
   describe("multiple overlays", () => {
     it("tracks all overlay applications", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -388,7 +388,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -415,7 +415,7 @@ describe("threeWayMerge", () => {
     });
 
     it("detects conflicts across multiple overlays", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -445,7 +445,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [
@@ -473,13 +473,13 @@ describe("threeWayMerge", () => {
 
   describe("edge cases", () => {
     it("handles empty overlay list", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [],
       };
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [],
@@ -492,7 +492,7 @@ describe("threeWayMerge", () => {
     });
 
     it("handles identical base and newBase", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [
@@ -518,7 +518,7 @@ describe("threeWayMerge", () => {
     });
 
     it("handles non-rule selectors gracefully", () => {
-      const base: AlignPack = {
+      const base: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.0" },
         sections: [],
@@ -531,7 +531,7 @@ describe("threeWayMerge", () => {
         },
       ];
 
-      const newBase: AlignPack = {
+      const newBase: Align = {
         spec_version: "1",
         profile: { id: "test", version: "1.0.1" },
         sections: [],
@@ -576,7 +576,7 @@ describe("generatePatchFile", () => {
       baseHash: "abc123def456",
       newBaseHash: "789ghi012jkl",
       timestamp: "2025-10-30T12:00:00Z",
-      source: "github.com/example/pack",
+      source: "github.com/example/align",
     };
 
     const patch = generatePatchFile(conflicts, metadata);
@@ -585,7 +585,7 @@ describe("generatePatchFile", () => {
     expect(patch).toContain("# Generated: 2025-10-30T12:00:00Z");
     expect(patch).toContain("# Base: abc123de");
     expect(patch).toContain("# Updated: 789ghi01");
-    expect(patch).toContain("# Source: github.com/example/pack");
+    expect(patch).toContain("# Source: github.com/example/align");
     expect(patch).toContain("## Selector: rule[id=rule1]");
     expect(patch).toContain("## Selector: rule[id=rule2]");
     expect(patch).toContain("### MODIFIED: severity");

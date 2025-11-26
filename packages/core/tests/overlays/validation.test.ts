@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import {
   validateOverlays,
   detectRedundantOverlays,
@@ -13,8 +13,8 @@ import {
 import type { OverlayDefinition } from "../../src/overlays/types.js";
 
 describe("validateOverlays", () => {
-  const baseIR: AlignPack = {
-    id: "test-pack",
+  const baseIR: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections: [
@@ -115,7 +115,7 @@ describe("validateOverlays", () => {
 
   describe("ambiguous selector detection", () => {
     it("detects ambiguous selector (duplicate rule IDs)", () => {
-      const irWithDuplicates: AlignPack = {
+      const irWithDuplicates: Align = {
         ...baseIR,
         sections: [
           {
@@ -411,7 +411,7 @@ describe("validateOverlays", () => {
         },
       ];
 
-      const irWithPlugs: AlignPack = {
+      const irWithPlugs: Align = {
         ...baseIR,
         sections: [
           {
@@ -436,8 +436,8 @@ describe("validateOverlays", () => {
 });
 
 describe("detectRedundantOverlays", () => {
-  const baseIR: AlignPack = {
-    id: "test-pack",
+  const baseIR: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections: [
@@ -523,8 +523,8 @@ describe("detectRedundantOverlays", () => {
 });
 
 describe("areOverlaysValid", () => {
-  const baseIR: AlignPack = {
-    id: "test-pack",
+  const baseIR: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections: [
@@ -560,7 +560,7 @@ describe("areOverlaysValid", () => {
   });
 
   it("returns true despite warnings (warnings don't fail validation)", () => {
-    const irWithPlugs: AlignPack = {
+    const irWithPlugs: Align = {
       ...baseIR,
       sections: [
         {

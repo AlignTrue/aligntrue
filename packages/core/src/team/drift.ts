@@ -14,11 +14,11 @@ import { getStoredHash } from "../sync/tracking.js";
  * Drift categories (Overlays system enhanced)
  */
 export type DriftCategory =
-  | "upstream" // base_hash differs: upstream pack updated
+  | "upstream" // base_hash differs: upstream align updated
   | "overlay" // overlay_hash differs: local overlay config changed
   | "result" // result_hash differs: unexpected application result
   | "severity_remap" // Severity remapping rules changed (Session 7)
-  | "vendorized" // Vendored pack differs from source
+  | "vendorized" // Vendored align differs from source
   | "local_overlay" // Legacy: use "overlay" instead
   | "lockfile" // Lockfile bundle hash differs from current rules
   | "agent_file"; // Agent files modified after IR
@@ -134,7 +134,7 @@ export function detectUpstreamDrift(
 
 /**
  * Detect vendorized drift
- * Compares vendored pack hash with source hash
+ * Compares vendored align hash with source hash
  */
 export function detectVendorizedDrift(
   lockfile: Lockfile,
@@ -154,8 +154,8 @@ export function detectVendorizedDrift(
       const finding: DriftFinding = {
         category: "vendorized",
         rule_id: entry.rule_id,
-        message: `Vendored pack not found at ${entry.vendor_path}`,
-        suggestion: `Restore vendored pack or run: aligntrue sync`,
+        message: `Vendored align not found at ${entry.vendor_path}`,
+        suggestion: `Restore vendored align or run: aligntrue sync`,
         lockfile_hash: entry.content_hash,
         vendor_path: entry.vendor_path,
       };
@@ -172,8 +172,8 @@ export function detectVendorizedDrift(
       const finding: DriftFinding = {
         category: "vendorized",
         rule_id: entry.rule_id,
-        message: `Vendored pack missing .aligntrue.yaml at ${entry.vendor_path}`,
-        suggestion: `Ensure vendor path contains valid AlignTrue pack`,
+        message: `Vendored align missing .aligntrue.yaml at ${entry.vendor_path}`,
+        suggestion: `Ensure vendor path contains valid AlignTrue align`,
         lockfile_hash: entry.content_hash,
         vendor_path: entry.vendor_path,
       };
@@ -184,8 +184,8 @@ export function detectVendorizedDrift(
       continue;
     }
 
-    // For now, we can't easily compute the hash of the vendored pack
-    // without running the full pack loader. This would be a more complex
+    // For now, we can't easily compute the hash of the vendored align
+    // without running the full align loader. This would be a more complex
     // Current approach is sufficient for drift detection
     // Detailed vendored hash comparison can be added if needed
   }

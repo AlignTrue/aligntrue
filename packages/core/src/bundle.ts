@@ -1,5 +1,5 @@
 /**
- * Bundle merging - combine multiple AlignPacks into a single pack
+ * Bundle merging - combine multiple AlignAligns into a single align
  *
  * Merge strategy:
  * - Sections with same fingerprint: last source wins (with warning)
@@ -8,7 +8,7 @@
  * - Scopes: union of all scopes
  */
 
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import { ensureSectionsArray } from "./validation/sections.js";
 
 export interface BundleOptions {
@@ -18,7 +18,7 @@ export interface BundleOptions {
   warnConflicts?: boolean;
 
   /**
-   * Bundle ID for the merged pack (default: "merged-bundle")
+   * Bundle ID for the merged align (default: "merged-bundle")
    */
   bundleId?: string;
 
@@ -30,9 +30,9 @@ export interface BundleOptions {
 
 export interface BundleResult {
   /**
-   * Merged AlignPack
+   * Merged Align
    */
-  pack: AlignPack;
+  align: Align;
 
   /**
    * Conflicts detected during merge
@@ -50,24 +50,24 @@ export interface BundleResult {
 }
 
 /**
- * Merge multiple AlignPacks into a single bundle
+ * Merge multiple AlignAligns into a single bundle
  *
- * @param packs - Array of AlignPacks to merge (in precedence order)
+ * @param aligns - Array of AlignAligns to merge (in precedence order)
  * @param options - Merge options
- * @returns Merged pack with conflict information
+ * @returns Merged align with conflict information
  */
-export function mergePacks(
-  packs: AlignPack[],
+export function mergeAligns(
+  aligns: Align[],
   options?: BundleOptions,
 ): BundleResult {
-  if (packs.length === 0) {
-    throw new Error("Cannot merge empty pack array");
+  if (aligns.length === 0) {
+    throw new Error("Cannot merge empty align array");
   }
 
-  // Handle single pack case
-  const singlePackResult = handleSinglePack(packs);
-  if (singlePackResult) {
-    return singlePackResult;
+  // Handle single align case
+  const singleAlignResult = handleSingleAlign(aligns);
+  if (singleAlignResult) {
+    return singleAlignResult;
   }
 
   // Extract options
@@ -81,29 +81,29 @@ export function mergePacks(
 
   // Merge sections with conflict detection
   const mergedSections = mergeSections(
-    packs,
+    aligns,
     conflicts,
     warnings,
     warnConflicts,
   );
 
-  // Merge other pack components
-  const mergedPlugs = mergePlugs(packs, warnings);
-  const mergedScope = mergeScopes(packs);
-  const mergedTags = mergeTags(packs);
-  const mergedDeps = mergeDeps(packs);
+  // Merge other align components
+  const mergedPlugs = mergePlugs(aligns, warnings);
+  const mergedScope = mergeScopes(aligns);
+  const mergedTags = mergeTags(aligns);
+  const mergedDeps = mergeDeps(aligns);
 
-  // Assemble final pack
-  const lastPack = packs[packs.length - 1];
-  if (!lastPack) {
-    throw new Error("Last pack is undefined");
+  // Assemble final align
+  const lastAlign = aligns[aligns.length - 1];
+  if (!lastAlign) {
+    throw new Error("Last align is undefined");
   }
 
-  const mergedPack = assembleMergedPack(
+  const mergedAlign = assembleMergedAlign(
     bundleId,
     bundleVersion,
     mergedSections,
-    lastPack,
+    lastAlign,
     mergedPlugs,
     mergedScope,
     mergedTags,
@@ -111,52 +111,52 @@ export function mergePacks(
   );
 
   return {
-    pack: mergedPack,
+    align: mergedAlign,
     conflicts,
     warnings,
   };
 }
 
 /**
- * Handle single pack case with deterministic sorting
+ * Handle single align case with deterministic sorting
  */
-function handleSinglePack(packs: AlignPack[]): BundleResult | null {
-  if (packs.length !== 1) {
+function handleSingleAlign(aligns: Align[]): BundleResult | null {
+  if (aligns.length !== 1) {
     return null;
   }
 
-  const pack = packs[0];
-  if (!pack) {
-    throw new Error("First pack is undefined");
+  const align = aligns[0];
+  if (!align) {
+    throw new Error("First align is undefined");
   }
 
   // Defensive: Initialize sections to empty array if missing
-  ensureSectionsArray(pack);
+  ensureSectionsArray(align);
 
-  // Sort sections by fingerprint for determinism if pack has sections
-  if (pack.sections.length > 1) {
-    const sortedSections = [...pack.sections].sort((a, b) =>
+  // Sort sections by fingerprint for determinism if align has sections
+  if (align.sections.length > 1) {
+    const sortedSections = [...align.sections].sort((a, b) =>
       a.fingerprint.localeCompare(b.fingerprint),
     );
     return {
-      pack: { ...pack, sections: sortedSections },
+      align: { ...align, sections: sortedSections },
       conflicts: [],
       warnings: [],
     };
   }
 
   return {
-    pack,
+    align,
     conflicts: [],
     warnings: [],
   };
 }
 
 /**
- * Merge sections from multiple packs with conflict detection
+ * Merge sections from multiple aligns with conflict detection
  */
 function mergeSections(
-  packs: AlignPack[],
+  aligns: Align[],
   conflicts: BundleResult["conflicts"],
   warnings: string[],
   warnConflicts: boolean,
@@ -170,16 +170,16 @@ function mergeSections(
     }
   >();
 
-  for (let i = 0; i < packs.length; i++) {
-    const pack = packs[i];
-    if (!pack) continue;
+  for (let i = 0; i < aligns.length; i++) {
+    const align = aligns[i];
+    if (!align) continue;
 
     // Defensive: Initialize sections to empty array if missing
-    ensureSectionsArray(pack);
+    ensureSectionsArray(align);
 
-    const sourceName = pack.id || `source-${i}`;
+    const sourceName = align.id || `source-${i}`;
 
-    for (const section of pack.sections) {
+    for (const section of align.sections) {
       const existing = sectionMap.get(section.fingerprint);
 
       if (existing) {
@@ -216,65 +216,65 @@ function mergeSections(
 }
 
 /**
- * Assemble final merged pack from components
+ * Assemble final merged align from components
  */
-function assembleMergedPack(
+function assembleMergedAlign(
   bundleId: string,
   bundleVersion: string,
   mergedSections: AlignSection[],
-  lastPack: AlignPack,
-  mergedPlugs: AlignPack["plugs"] | undefined,
-  mergedScope: AlignPack["scope"] | undefined,
+  lastAlign: Align,
+  mergedPlugs: Align["plugs"] | undefined,
+  mergedScope: Align["scope"] | undefined,
   mergedTags: string[],
   mergedDeps: string[],
-): AlignPack {
-  // Build base pack
-  const mergedPack: AlignPack = {
+): Align {
+  // Build base align
+  const mergedAlign: Align = {
     id: bundleId,
     version: bundleVersion,
     spec_version: "1",
     sections: mergedSections,
   };
 
-  // Add optional fields from last pack
-  if (lastPack.summary) {
-    mergedPack.summary = lastPack.summary;
+  // Add optional fields from last align
+  if (lastAlign.summary) {
+    mergedAlign.summary = lastAlign.summary;
   }
-  if (lastPack.owner) {
-    mergedPack.owner = lastPack.owner;
+  if (lastAlign.owner) {
+    mergedAlign.owner = lastAlign.owner;
   }
-  if (lastPack.source) {
-    mergedPack.source = lastPack.source;
+  if (lastAlign.source) {
+    mergedAlign.source = lastAlign.source;
   }
-  if (lastPack.source_sha) {
-    mergedPack.source_sha = lastPack.source_sha;
+  if (lastAlign.source_sha) {
+    mergedAlign.source_sha = lastAlign.source_sha;
   }
 
   // Add merged fields
   if (mergedPlugs) {
-    mergedPack.plugs = mergedPlugs;
+    mergedAlign.plugs = mergedPlugs;
   }
   if (mergedScope) {
-    mergedPack.scope = mergedScope;
+    mergedAlign.scope = mergedScope;
   }
   if (mergedTags.length > 0) {
-    mergedPack.tags = mergedTags;
+    mergedAlign.tags = mergedTags;
   }
   if (mergedDeps.length > 0) {
-    mergedPack.deps = mergedDeps;
+    mergedAlign.deps = mergedDeps;
   }
 
-  return mergedPack;
+  return mergedAlign;
 }
 
 /**
- * Merge plugs from multiple packs
+ * Merge plugs from multiple aligns
  * Combines fills, validates no slot conflicts
  */
 function mergePlugs(
-  packs: AlignPack[],
+  aligns: Align[],
   warnings: string[],
-): AlignPack["plugs"] | undefined {
+): Align["plugs"] | undefined {
   const allSlots: Record<
     string,
     {
@@ -286,12 +286,12 @@ function mergePlugs(
   > = {};
   const allFills: Record<string, string> = {};
 
-  for (const pack of packs) {
-    if (!pack.plugs) continue;
+  for (const align of aligns) {
+    if (!align.plugs) continue;
 
     // Merge slots (detect conflicts)
-    if (pack.plugs.slots) {
-      for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
+    if (align.plugs.slots) {
+      for (const [slotName, slotDef] of Object.entries(align.plugs.slots)) {
         const existing = allSlots[slotName];
 
         if (existing) {
@@ -311,8 +311,8 @@ function mergePlugs(
     }
 
     // Merge fills (last wins)
-    if (pack.plugs.fills) {
-      for (const [slotName, fillValue] of Object.entries(pack.plugs.fills)) {
+    if (align.plugs.fills) {
+      for (const [slotName, fillValue] of Object.entries(align.plugs.fills)) {
         if (allFills[slotName] && allFills[slotName] !== fillValue) {
           warnings.push(
             `Plug fill conflict: "${slotName}" filled multiple times. Using last value.`,
@@ -331,7 +331,7 @@ function mergePlugs(
     return undefined;
   }
 
-  const result: AlignPack["plugs"] = {};
+  const result: Align["plugs"] = {};
   if (Object.keys(allSlots).length > 0) {
     result.slots = allSlots;
   }
@@ -343,20 +343,20 @@ function mergePlugs(
 }
 
 /**
- * Merge scopes from multiple packs (union)
+ * Merge scopes from multiple aligns (union)
  */
-function mergeScopes(packs: AlignPack[]): AlignPack["scope"] | undefined {
+function mergeScopes(aligns: Align[]): Align["scope"] | undefined {
   const allAppliesTo: string[] = [];
   const allExcludes: string[] = [];
 
-  for (const pack of packs) {
-    if (!pack.scope) continue;
+  for (const align of aligns) {
+    if (!align.scope) continue;
 
-    if (pack.scope.applies_to) {
-      allAppliesTo.push(...pack.scope.applies_to);
+    if (align.scope.applies_to) {
+      allAppliesTo.push(...align.scope.applies_to);
     }
-    if (pack.scope.excludes) {
-      allExcludes.push(...pack.scope.excludes);
+    if (align.scope.excludes) {
+      allExcludes.push(...align.scope.excludes);
     }
   }
 
@@ -368,7 +368,7 @@ function mergeScopes(packs: AlignPack[]): AlignPack["scope"] | undefined {
   const uniqueAppliesTo = [...new Set(allAppliesTo)].sort();
   const uniqueExcludes = [...new Set(allExcludes)].sort();
 
-  const result: AlignPack["scope"] = {};
+  const result: Align["scope"] = {};
   if (uniqueAppliesTo.length > 0) {
     result.applies_to = uniqueAppliesTo;
   }
@@ -380,14 +380,14 @@ function mergeScopes(packs: AlignPack[]): AlignPack["scope"] | undefined {
 }
 
 /**
- * Merge tags from multiple packs (union, deduplicated)
+ * Merge tags from multiple aligns (union, deduplicated)
  */
-function mergeTags(packs: AlignPack[]): string[] {
+function mergeTags(aligns: Align[]): string[] {
   const allTags = new Set<string>();
 
-  for (const pack of packs) {
-    if (pack.tags) {
-      for (const tag of pack.tags) {
+  for (const align of aligns) {
+    if (align.tags) {
+      for (const tag of align.tags) {
         allTags.add(tag);
       }
     }
@@ -397,15 +397,15 @@ function mergeTags(packs: AlignPack[]): string[] {
 }
 
 /**
- * Merge deps from multiple packs (union, deduplicated, preserve order)
+ * Merge deps from multiple aligns (union, deduplicated, preserve order)
  */
-function mergeDeps(packs: AlignPack[]): string[] {
+function mergeDeps(aligns: Align[]): string[] {
   const allDeps = new Set<string>();
   const depOrder: string[] = [];
 
-  for (const pack of packs) {
-    if (pack.deps) {
-      for (const dep of pack.deps) {
+  for (const align of aligns) {
+    if (align.deps) {
+      for (const dep of align.deps) {
         if (!allDeps.has(dep)) {
           allDeps.add(dep);
           depOrder.push(dep);
@@ -418,27 +418,27 @@ function mergeDeps(packs: AlignPack[]): string[] {
 }
 
 /**
- * Filter pack sections by scope configuration
+ * Filter align sections by scope configuration
  * Used to create scope-specific exports
  *
- * @param pack - Full AlignPack to filter
+ * @param align - Full Align to filter
  * @param scope - Scope configuration with optional rulesets filter
- * @returns Filtered pack with only sections matching the scope
+ * @returns Filtered align with only sections matching the scope
  */
-export function filterPackByScope(
-  pack: AlignPack,
+export function filterAlignByScope(
+  align: Align,
   scope: { path: string; rulesets?: string[] },
-): AlignPack {
+): Align {
   // If no rulesets specified, include all sections
   if (!scope.rulesets || scope.rulesets.length === 0) {
-    return pack;
+    return align;
   }
 
   // Filter sections that match scope rulesets
   // A section matches if:
   // 1. It has no ruleset (applies to all scopes), OR
   // 2. Its ruleset is in the scope's rulesets array
-  const filteredSections = pack.sections.filter((section) => {
+  const filteredSections = align.sections.filter((section) => {
     // Sections without ruleset apply to all scopes
     if (!section.vendor?.aligntrue?.ruleset) {
       return true;
@@ -448,9 +448,9 @@ export function filterPackByScope(
     return scope.rulesets!.includes(sectionRuleset);
   });
 
-  // Return pack with filtered sections
+  // Return align with filtered sections
   return {
-    ...pack,
+    ...align,
     sections: filteredSections,
   };
 }

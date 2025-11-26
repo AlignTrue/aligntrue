@@ -53,7 +53,7 @@ describe.skip("Watch Mode Tests", () => {
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -107,7 +107,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -135,7 +135,7 @@ sections:
     // Modify the rules file
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -178,7 +178,7 @@ sync:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -207,7 +207,7 @@ sections:
     for (let i = 0; i < 3; i++) {
       writeFileSync(
         join(TEST_DIR, ".aligntrue/rules"),
-        `id: test-pack
+        `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -240,7 +240,7 @@ sections:
 
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: "1.0.0"
 spec_version: "1"
 sections:

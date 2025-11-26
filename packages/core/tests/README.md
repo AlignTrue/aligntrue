@@ -17,7 +17,7 @@ tests/
   config.test.ts            # Configuration (43 tests)
   scope.test.ts             # Scope resolution (40 tests)
   fixtures/                 # Shared test fixtures
-    valid-pack.yaml         # Valid IR example
+    valid-align.yaml         # Valid IR example
 ```
 
 ## Running Tests
@@ -69,7 +69,7 @@ Most failing tests use incorrect test fixtures that don't match the actual IR sc
 
 ```yaml
 # ❌ INVALID
-id: test.pack
+id: test.align
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -82,7 +82,7 @@ rules:
 
 ```yaml
 # ✅ VALID
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -111,7 +111,7 @@ rules:
    - Fix volatile field handling test expectations
 
 **Reference fixture:**
-See `tests/fixtures/valid-pack.yaml` for a complete valid example.
+See `tests/fixtures/valid-align.yaml` for a complete valid example.
 
 ## Mock Exporters
 
