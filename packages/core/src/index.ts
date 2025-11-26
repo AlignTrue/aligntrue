@@ -48,6 +48,9 @@ export * from "./cache/index.js";
 // Storage system
 export * from "./storage/index.js";
 
+// Source URL parsing
+export * from "./sources/url-parser.js";
+
 // Parsing utilities
 export type { Section } from "./parsing/section-extractor.js";
 

@@ -289,6 +289,25 @@ export async function handleSyncResult(
         // Sort files alphabetically for deterministic output
         const sortedFiles = [...uniqueWrittenFiles].sort();
         let message = "✓ Sync complete\n\n";
+
+        // Add source summary showing precedence
+        if (context.config.sources && context.config.sources.length > 0) {
+          message += "Sources (highest priority first):\n";
+          message += "  1. .aligntrue/rules/ (local) - Your rules\n";
+          for (let i = 0; i < context.config.sources.length; i++) {
+            const source = context.config.sources[i];
+            if (!source) continue;
+            const sourceDisplay =
+              source.type === "git"
+                ? `${source.url || ""}${source.path ? `/${source.path}` : ""}`
+                : source.type === "local"
+                  ? source.path || "(local)"
+                  : source.url || "(unknown)";
+            message += `  ${i + 2}. ${sourceDisplay}\n`;
+          }
+          message += "\n";
+        }
+
         message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
         sortedFiles.forEach((file) => {
           message += `  - ${file}\n`;
@@ -298,7 +317,8 @@ export async function handleSyncResult(
         message +=
           "Next: Start coding! Your agents will follow the rules automatically.\n\n";
         message +=
-          "Tip: Update rules anytime by editing AGENTS.md or any agent file and running: aligntrue sync";
+          "Tip: Update rules anytime by editing .aligntrue/rules and running: aligntrue sync\n";
+        message += "Docs: aligntrue.ai/sources";
         clack.outro(message);
       } else {
         clack.outro("✓ Everything up to date - no changes needed");

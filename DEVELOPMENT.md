@@ -133,6 +133,31 @@ vendor:
       theme: "dark" # Stable, included in hash
 ```
 
+## Source precedence and merge
+
+When multiple sources provide rules, first source wins (highest priority):
+
+1. **Local rules** (`.aligntrue/rules/`) - ALWAYS FIRST, ALWAYS WINS
+2. First external source listed in config
+3. Second external source listed in config
+4. ... (in order)
+
+This ensures local customizations always override external sources on conflict.
+
+### External sources
+
+Configured via `sources` array with new `include` syntax:
+
+```yaml
+sources:
+  - type: git
+    include:
+      - https://github.com/org/repo # All .md in root
+      - https://github.com/org/repo@v2.0.0 # Specific version
+      - https://github.com/org/repo/packs # All .md in directory
+      - https://github.com/org/repo/security.md # Single file
+```
+
 ## Hierarchical scopes
 
 Path-based rules with merge order for monorepos:

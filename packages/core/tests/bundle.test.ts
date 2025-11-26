@@ -43,7 +43,7 @@ describe("Bundle Merging", () => {
     expect(result.warnings).toHaveLength(0);
   });
 
-  it("should detect and resolve rule conflicts (last wins)", () => {
+  it("should detect and resolve rule conflicts (first wins)", () => {
     const pack1: AlignPack = {
       id: "pack1",
       version: "1.0.0",
@@ -76,10 +76,11 @@ describe("Bundle Merging", () => {
 
     expect(result.pack.sections).toHaveLength(1);
     expect(result.pack.sections[0].content).toBe(
-      "Warning rule for conflicting section",
-    ); // pack2 wins
+      "Error rule for conflicting section",
+    ); // pack1 wins (first source)
     expect(result.conflicts).toHaveLength(1);
     expect(result.conflicts[0].fingerprint).toBe("fp:test-rule-conflict");
+    expect(result.conflicts[0].resolution).toBe("pack1");
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 

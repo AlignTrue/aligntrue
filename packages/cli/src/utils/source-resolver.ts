@@ -11,6 +11,7 @@ import {
   ensureSectionsArray,
   loadRulesDirectory,
 } from "@aligntrue/core";
+import { parseSourceURL } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig, ConsentManager } from "@aligntrue/core";
@@ -238,6 +239,60 @@ export async function resolveSource(
 }
 
 /**
+ * Expand sources with include arrays into individual source items
+ * Converts include URLs into separate git sources, one per URL
+ */
+function expandSourcesWithInclude(
+  sources: NonNullable<AlignTrueConfig["sources"]>,
+): NonNullable<AlignTrueConfig["sources"]> {
+  const expanded: NonNullable<AlignTrueConfig["sources"]> = [];
+
+  for (const source of sources) {
+    if (!source) continue;
+
+    // If source has include array, expand it
+    const sourceWithInclude = source as {
+      type?: string;
+      include?: string[];
+      url?: string;
+      path?: string;
+      ref?: string;
+    };
+
+    if (sourceWithInclude.type === "git" && sourceWithInclude.include) {
+      // Expand each include URL into a separate source
+      for (const includeUrl of sourceWithInclude.include) {
+        try {
+          const parsed = parseSourceURL(includeUrl);
+          // Create a new git source from the parsed URL
+          const expandedSource: NonNullable<AlignTrueConfig["sources"]>[0] = {
+            type: "git" as const,
+            url: `https://${parsed.host}/${parsed.org}/${parsed.repo}`,
+          };
+          if (parsed.ref) {
+            expandedSource.ref = parsed.ref;
+          }
+          if (parsed.path) {
+            expandedSource.path = parsed.path;
+          }
+          expanded.push(expandedSource);
+        } catch (error) {
+          throw new Error(
+            `Failed to parse include URL: ${includeUrl}\n` +
+              `  ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+    } else {
+      // Keep non-include sources as-is
+      expanded.push(source);
+    }
+  }
+
+  return expanded;
+}
+
+/**
  * Resolve all sources from config
  * Returns array of resolved sources in order
  */
@@ -250,9 +305,12 @@ export async function resolveSources(
     onGitProgress?: (update: GitProgressUpdate) => void;
   },
 ): Promise<ResolvedSource[]> {
-  const sources = config.sources || [
+  let sources = config.sources || [
     { type: "local" as const, path: ".aligntrue/rules" },
   ];
+
+  // Expand any sources with include arrays
+  sources = expandSourcesWithInclude(sources);
 
   const resolved: ResolvedSource[] = [];
 
