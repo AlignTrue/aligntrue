@@ -29,6 +29,8 @@ import {
   sources,
   status,
   doctor,
+  add,
+  remove,
 } from "./commands/index.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
@@ -76,7 +78,9 @@ async function main() {
     console.log("Development Commands:");
     console.log("  adapters       Manage exporters (list, enable, disable)\n");
 
-    console.log("Organization Commands:");
+    console.log("Source Management:");
+    console.log("  add            Add an align from a URL");
+    console.log("  remove         Remove an align source");
     console.log(
       "  sources        Manage multi-file rule organization (list, split)",
     );
@@ -141,6 +145,8 @@ async function main() {
     ["sources", sources],
     ["status", status],
     ["doctor", doctor],
+    ["add", add],
+    ["remove", remove],
   ]);
 
   // Check if user provided a flag-like argument as command

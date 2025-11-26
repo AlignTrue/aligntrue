@@ -17,7 +17,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 
-## CLI (21 commands)
+## CLI (23 commands)
 
 **Diagnostics:**
 
@@ -38,6 +38,11 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - `plugs` — Manage plugs (audit, resolve, set)
 - `scopes` — List configured scopes
 - `sources` — Manage multi-file rule organization (list, split)
+
+**Source Management:**
+
+- `add` — Add an align from a URL to configuration
+- `remove` — Remove an align source from configuration
 
 **Team:**
 

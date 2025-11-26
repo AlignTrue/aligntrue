@@ -84,7 +84,7 @@ There is no central catalog registry. Share your aligns by:
 2. **Sharing files directly** - Users can copy YAML files locally
 3. **Creating a collection** - Organize multiple aligns in a repository
 
-See `examples/aligns.yaml` and `examples/namespaces.yaml` for namespace conventions.
+Each align file contains its own metadata in YAML frontmatter. See the [Creating Aligns](/docs/06-contributing/creating-aligns) guide for namespace conventions.
 
 ## Testing
 

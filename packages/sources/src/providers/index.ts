@@ -15,6 +15,11 @@ export interface GitSourceConfig extends SourceConfig {
   forceRefresh?: boolean; // bypass cache
 }
 
+/**
+ * URL-specific configuration (re-exported from url.ts)
+ */
+export { UrlSourceConfig } from "./url.js";
+
 export interface SourceProvider {
   type: SourceType;
   fetch(ref: string): Promise<string>;
@@ -34,6 +39,8 @@ export type {
   GitProgressPhase,
 } from "./git.js";
 export { LocalProvider } from "./local.js";
+export { UrlProvider } from "./url.js";
+export type { UrlProviderOptions } from "./url.js";
 
 // Re-export error types
 export { UpdatesAvailableError } from "./errors.js";
