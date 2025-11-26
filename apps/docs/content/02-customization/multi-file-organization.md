@@ -475,6 +475,7 @@ aligntrue sources split
 
 - [Choosing your organization structure](/docs/01-guides/06-rule-structure) - Decision guide for simple, organized, or complex structures
 - [Agent support](/docs/04-reference/agent-support) - Which agents support multi-file natively
+- [Per-rule targeting](/docs/02-customization/per-rule-targeting) - Control which agents receive specific rules
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How rules sync to agents
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
 - [Team mode](/docs/01-guides/04-team-guide) - Lockfile validation and drift detection
