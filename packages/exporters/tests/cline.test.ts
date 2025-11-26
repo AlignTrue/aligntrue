@@ -57,7 +57,7 @@ describe("ClineExporter", () => {
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.clinerules\/rules\.md$/,
+        /\.clinerules\/testing-requirements\.md$/,
       );
     });
   });
