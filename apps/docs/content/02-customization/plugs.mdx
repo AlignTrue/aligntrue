@@ -6,15 +6,15 @@ description: Dynamic configuration slots for stack-specific and project-specific
 # Plugs guide
 
 <Callout type="info">
-  **Solo developer?** You can skip this page unless you're using rule packs that
-  require project-specific values. Most solo workflows don't need plugs.
+  **Solo developer?** You can skip this page unless you're using rule aligns
+  that require project-specific values. Most solo workflows don't need plugs.
 </Callout>
 
 Plugs provide template-based customization for rules that need different values across projects, stacks, or teams. Instead of forking rules to change test commands or file paths, you declare slots and fill them with project-specific values.
 
 **You need plugs when:**
 
-- You use packs that contain `[[plug:...]]` template slots
+- You use aligns that contain `[[plug:...]]` template slots
 - You want to customize test commands or file paths across projects
 - You need organization-wide metadata (company name, URLs) in rules
 
@@ -164,8 +164,8 @@ Fills provide the actual values for slots.
 
 Fills merge in this order (last writer wins):
 
-1. **Base pack** - Default fills from upstream
-2. **Stack pack(s)** - Stack-specific defaults (e.g., `nextjs-pack` provides `test.cmd: "pnpm test"`)
+1. **Base align** - Default fills from upstream
+2. **Stack align(s)** - Stack-specific defaults (e.g., `nextjs-align` provides `test.cmd: "pnpm test"`)
 3. **Repo-local** - Your project's fills (highest priority)
 
 ### Setting fills
@@ -216,7 +216,7 @@ exporters:
   - cursor
 ```
 
-**Config fills take precedence over IR fills**, allowing you to override pack defaults without modifying the pack itself.
+**Config fills take precedence over IR fills**, allowing you to override align defaults without modifying the align itself.
 
 #### Removing fills
 
@@ -420,13 +420,13 @@ See [CLI Reference](/docs/04-reference/cli-reference/plugs) for complete command
 **Setup:**
 
 ```yaml
-# Pull upstream TypeScript pack
+# Pull upstream TypeScript align
 sources:
   - git: https://github.com/org/typescript-standards
     ref: v1.0.0
 ```
 
-**Upstream pack includes:**
+**Upstream align includes:**
 
 ```yaml
 rules:
@@ -459,7 +459,7 @@ aligntrue sync
 
 **Goal:** Team uses shared base rules with stack-specific test commands.
 
-**Base pack (shared):**
+**Base align (shared):**
 
 ```yaml
 # base-rules.yaml
@@ -476,19 +476,19 @@ plugs:
       required: true
 ```
 
-**Stack pack (Next.js team):**
+**Stack align (Next.js team):**
 
 ```yaml
-# nextjs-pack.yaml
+# nextjs-align.yaml
 plugs:
   fills:
     test.cmd: "pnpm test" # Default for Next.js projects
 ```
 
-**Stack pack (Python team):**
+**Stack align (Python team):**
 
 ```yaml
-# python-pack.yaml
+# python-align.yaml
 plugs:
   fills:
     test.cmd: "pytest -q" # Default for Python projects
@@ -503,8 +503,8 @@ aligntrue plugs set test.cmd "pnpm test:ci"
 
 **Merge order:**
 
-1. Base pack: declares slot
-2. Stack pack: provides stack default
+1. Base align: declares slot
+2. Stack align: provides stack default
 3. Repo-local: overrides if needed
 
 ### Scenario 3: Multi-stack monorepo
@@ -730,13 +730,13 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 ### For solo developers
 
 1. **Set fills early** - Run `aligntrue plugs list` after init
-2. **Use stack packs** - Let stack packs provide sensible defaults
+2. **Use stack aligns** - Let stack aligns provide sensible defaults
 3. **Override selectively** - Only set fills when defaults don't work
 4. **Document decisions** - Add comments in .aligntrue/rules explaining custom fills
 
 ### For teams
 
-1. **Share stack packs** - Create org-specific stack packs with common fills
+1. **Share stack aligns** - Create org-specific stack aligns with common fills
 2. **Document required plugs** - List required plugs in team onboarding docs
 3. **Validate in CI** - Run `aligntrue plugs list` in CI to catch missing fills
 4. **Review fill changes** - Treat fill changes like code changes (PR review)
@@ -752,7 +752,7 @@ Real-world examples showing how to use plugs for project-specific customization:
 
 ### Test command customization
 
-**Problem:** You're using a shared rule pack that references `[[plug:test.cmd]]` but your project uses a specific test runner. Some projects use `pytest -q`, others use `pnpm test`, and some use `cargo test`. You need to customize the test command without forking the pack.
+**Problem:** You're using a shared rule align that references `[[plug:test.cmd]]` but your project uses a specific test runner. Some projects use `pytest -q`, others use `pnpm test`, and some use `cargo test`. You need to customize the test command without forking the align.
 
 **Solution:** Use plugs to fill the test command slot with your project-specific value.
 
@@ -764,7 +764,7 @@ mode: solo
 
 sources:
   - type: local
-    path: "shared-pack.yaml"
+    path: "shared-align.yaml"
 
 plugs:
   fills:
@@ -777,13 +777,13 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** The pack references `[[plug:test.cmd]]` in rules, your project fills it with `pnpm test`, and exported rules contain the resolved command. No pack forking required.
+**Expected outcome:** The align references `[[plug:test.cmd]]` in rules, your project fills it with `pnpm test`, and exported rules contain the resolved command. No align forking required.
 
 **Keywords:** test command, different test runners, pytest vs jest, custom test command, project-specific testing, test automation
 
 ### Organization metadata
 
-**Problem:** Your team uses shared rule packs that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
+**Problem:** Your team uses shared rule aligns that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
 
 **Solution:** Use plugs to provide organization metadata that gets resolved across all rules.
 
@@ -795,7 +795,7 @@ mode: team
 
 sources:
   - type: local
-    path: "team-pack.yaml"
+    path: "team-align.yaml"
 
 plugs:
   fills:
@@ -810,13 +810,13 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Rules reference organization metadata via plugs, all projects use consistent values, easy to update across all projects, and no hardcoded company-specific values in packs.
+**Expected outcome:** Rules reference organization metadata via plugs, all projects use consistent values, easy to update across all projects, and no hardcoded company-specific values in aligns.
 
 **Keywords:** company name, organization URLs, author names, team metadata, company-specific values, organization branding
 
 ### Stack-Specific Paths
 
-**Problem:** Your shared rule pack references configuration file paths like config file (`[[plug:config.file]]`), environment file (`[[plug:env.file]]`), and build output (`[[plug:build.output]]`). Different stacks use different locations: Next.js uses `next.config.js`, `.env.local`, `.next/`; Node.js uses `config/default.json`, `.env`, `dist/`; Python uses `config.yaml`, `.env`, `build/`.
+**Problem:** Your shared rule align references configuration file paths like config file (`[[plug:config.file]]`), environment file (`[[plug:env.file]]`), and build output (`[[plug:build.output]]`). Different stacks use different locations: Next.js uses `next.config.js`, `.env.local`, `.next/`; Node.js uses `config/default.json`, `.env`, `dist/`; Python uses `config.yaml`, `.env`, `build/`.
 
 **Solution:** Use plugs to specify stack-specific paths that match your project structure.
 
@@ -828,9 +828,9 @@ mode: solo
 
 sources:
   - type: local
-    path: "base-pack.yaml"
+    path: "base-align.yaml"
   - type: local
-    path: "nextjs-pack.yaml"
+    path: "nextjs-align.yaml"
 
 plugs:
   fills:
@@ -845,7 +845,7 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Rules reference file paths via plugs, each stack uses appropriate locations, no path assumptions in shared packs, and easy to adapt to different project structures.
+**Expected outcome:** Rules reference file paths via plugs, each stack uses appropriate locations, no path assumptions in shared aligns, and easy to adapt to different project structures.
 
 **Keywords:** config file paths, stack-specific locations, different file locations, path customization, project structure, framework conventions
 

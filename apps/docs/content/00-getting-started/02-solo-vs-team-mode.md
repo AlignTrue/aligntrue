@@ -151,7 +151,7 @@ aligntrue sync  # Validated against allow list
 # Repository owner
 aligntrue team enable
 # Edit config: lockfile.mode: strict
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 aligntrue sync
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Enable team mode (strict)"
@@ -176,7 +176,7 @@ aligntrue sync  # Fails if lockfile doesn't match
 
 ```bash
 # Security team approves sources
-aligntrue team approve sha256:abc123...  # Vendored pack
+aligntrue team approve sha256:abc123...  # Vendored align
 aligntrue team approve internal-standards@org/rules@v2.0.0
 
 # Development teams

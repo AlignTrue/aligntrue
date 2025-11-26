@@ -178,12 +178,12 @@ exclude:
 
 ### rulesets (optional)
 
-List of rule pack IDs to apply to this scope.
+List of rule align IDs to apply to this scope.
 
 **Rules:**
 
-- Rule pack IDs from sources
-- Applied in order (later packs override earlier)
+- Rule align IDs from sources
+- Applied in order (later aligns override earlier)
 - Defaults to all rules if omitted
 
 **Examples:**
@@ -192,7 +192,7 @@ List of rule pack IDs to apply to this scope.
 # Base + stack-specific
 rulesets: ["base-rules", "nextjs-rules"]
 
-# Multiple stack packs
+# Multiple stack aligns
 rulesets: ["base-rules", "typescript-rules", "react-rules", "nextjs-rules"]
 
 # Single ruleset
@@ -480,7 +480,7 @@ overlays:
         severity: "warn" # Error in new, warn in legacy
 ```
 
-**Alternative with separate rule packs:**
+**Alternative with separate rule aligns:**
 
 ```yaml
 sources:
@@ -693,7 +693,7 @@ merge:
 
 1. **Start simple** - Use scopes only when you have multiple stacks
 2. **Shared base** - Use base rules across all scopes
-3. **Stack-specific** - Add stack packs per scope
+3. **Stack-specific** - Add stack aligns per scope
 4. **Document structure** - Add comments explaining scope boundaries
 
 **Example:**
@@ -834,7 +834,7 @@ aligntrue check
 
 1. Include pattern doesn't match files
 2. Exclude pattern blocks files
-3. Ruleset ID doesn't match source pack
+3. Ruleset ID doesn't match source align
 
 **Solution:** Adjust include/exclude patterns or ruleset IDs.
 

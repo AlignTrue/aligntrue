@@ -10,20 +10,20 @@ description: "Detect and report drift between the lockfile and approved sources,
   lockfiles and team mode.
 </Callout>
 
-Drift detection helps teams monitor alignment between their lockfile and approved rule sources. It identifies when rules have changed upstream, when vendored packs differ from their sources, or when severity remapping policies have been modified.
+Drift detection helps teams monitor alignment between their lockfile and approved rule sources. It identifies when rules have changed upstream, when vendored aligns differ from their sources, or when severity remapping policies have been modified.
 
 ## Overview
 
 Drift detection compares your lockfile's rule hashes against:
 
 - **Allowed sources** - Approved versions in `.aligntrue.allow`
-- **Vendored packs** - Integrity of git submodule/subtree vendored rules
+- **Vendored aligns** - Integrity of git submodule/subtree vendored rules
 - **Severity remapping** - Policy changes in `.aligntrue.team.yaml`
 
 **Key benefits:**
 
 - Catch upstream rule changes before they cause issues
-- Verify vendored pack integrity
+- Verify vendored align integrity
 - Monitor policy compliance
 - CI/CD integration with `--gates` flag
 
@@ -35,7 +35,7 @@ Drift detection compares your lockfile's rule hashes against:
 
 **Common causes:**
 
-- Upstream pack updated to new version
+- Upstream align updated to new version
 - Local modifications to rules
 - Allow list not updated after rule changes
 
@@ -54,19 +54,19 @@ aligntrue sync --force
 
 ### Vendorized drift
 
-**What it detects:** Vendored pack (git submodule/subtree) differs from source or is missing.
+**What it detects:** Vendored align (git submodule/subtree) differs from source or is missing.
 
 **Common causes:**
 
-- Vendored pack deleted or moved
-- Pack updated without re-linking
+- Vendored align deleted or moved
+- Align updated without re-linking
 - Missing `.aligntrue.yaml` in vendored path
 
 **How to fix:**
 
 ```bash
-# Update vendored pack
-cd vendor/pack-name
+# Update vendored align
+cd vendor/align-name
 git pull
 cd ../..
 
@@ -343,7 +343,7 @@ performance:
 
 **Upstream drift:**
 
-1. Review changelog for upstream pack
+1. Review changelog for upstream align
 2. Test changes in dev environment
 3. Approve new version or pin current
 4. Update documentation
@@ -351,7 +351,7 @@ performance:
 **Vendorized drift:**
 
 1. Check git submodule/subtree status
-2. Update vendored pack if appropriate
+2. Update vendored align if appropriate
 3. Re-link and re-sync
 4. Commit vendored changes
 

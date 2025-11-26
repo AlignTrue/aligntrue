@@ -138,7 +138,7 @@ aligntrue privacy grant git
 
 ## Vendoring workflows
 
-Vendor rule packs with git submodules or subtrees for offline use and version control.
+Vendor rule aligns with git submodules or subtrees for offline use and version control.
 
 ### Why vendor?
 

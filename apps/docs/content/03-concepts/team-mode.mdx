@@ -57,7 +57,7 @@ This generates `.aligntrue.lock.json` with deterministic bundle hash.
 
 ### Lockfile with sections
 
-Lockfiles track section fingerprints for natural markdown packs:
+Lockfiles track section fingerprints for natural markdown aligns:
 
 ```json
 {
@@ -71,7 +71,7 @@ Lockfiles track section fingerprints for natural markdown packs:
 }
 ```
 
-For rule-based packs, `rule_id` contains the explicit rule ID. For section-based packs, it contains the section fingerprint (prefixed with `fp:`).
+For rule-based aligns, `rule_id` contains the explicit rule ID. For section-based aligns, it contains the section fingerprint (prefixed with `fp:`).
 
 Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
 
@@ -115,12 +115,12 @@ The allow list (`.aligntrue.allow`) specifies which rule sources your team has a
 version: 1
 sources:
   - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
     resolved_hash: sha256:abc123...
     comment: Official base rules
   - type: hash
     value: sha256:def456...
-    comment: Vendored custom pack
+    comment: Vendored custom align
 ```
 
 ### Source formats
@@ -129,7 +129,7 @@ sources:
 
 Format: `git:URL`
 
-Example: `git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml`
+Example: `git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml`
 
 **Pros:**
 
@@ -142,7 +142,7 @@ Example: `git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml`
 - Requires resolution (git clone)
 - Network dependency
 
-**Best for:** External sources, example packs, shared repositories
+**Best for:** External sources, example aligns, shared repositories
 
 #### Hash format
 
@@ -161,12 +161,12 @@ Example: `sha256:abc123def456...`
 - Hard to audit (what is this hash?)
 - Can't update without changing hash
 
-**Best for:** Vendored packs, local sources, submodules
+**Best for:** Vendored aligns, local sources, submodules
 
 ### Recommendation
 
 - **External sources:** Use `id@version` format for clarity and semantic updates
-- **Vendored packs:** Use `sha256:hash` format for immutability
+- **Vendored aligns:** Use `sha256:hash` format for immutability
 
 ## Allow list management
 
@@ -267,11 +267,11 @@ aligntrue team list-allowed
 ```
 Approved rule sources:
 
-1.  git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+1.  git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
     → sha256:abc123...
 
 2.  sha256:def456...
-    # Vendored pack
+    # Vendored align
 
 Total: 2 sources
 ```
@@ -282,7 +282,7 @@ Remove source(s) from allow list.
 
 ```bash
 # Remove by git URL
-aligntrue team remove git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+aligntrue team remove git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 
 # Remove by hash
 aligntrue team remove sha256:abc123...
@@ -345,14 +345,14 @@ When adding a new rule source:
 # 2. Sync and commit (approval via PR)
 aligntrue sync
 git add .aligntrue.lock.json
-git commit -m "chore: Add new pack"
+git commit -m "chore: Add new align"
 
 # 3. Sync
 aligntrue sync
 
 # 4. Commit allow list and lockfile
 git add .aligntrue.allow .aligntrue.lock.json
-git commit -m "Add new rule source: new-pack"
+git commit -m "Add new rule source: new-align"
 git push
 ```
 
@@ -376,7 +376,7 @@ cat .aligntrue.lock.json | jq '.sources'
 aligntrue sync
 
 # 3. Remove from allow list
-aligntrue team remove old-pack@vendor/rules@v1.0.0
+aligntrue team remove old-align@vendor/rules@v1.0.0
 
 # 4. Commit
 git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
@@ -390,7 +390,7 @@ git push
 
 ```
 ✗ Unapproved sources in team mode:
-  - custom-pack@example/org@v1.0.0
+  - custom-align@example/org@v1.0.0
 
 To approve sources:
   Add to .aligntrue/config.yaml and commit via PR
@@ -506,14 +506,14 @@ cat .aligntrue/config.yaml
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/packs/global.yaml
+    path: examples/aligns/global.yaml
 ```
 
 ### When to use hash
 
 ✅ **Use for:**
 
-- Vendored packs (git submodule/subtree)
+- Vendored aligns (git submodule/subtree)
 - Offline workflows
 - Maximum immutability
 - When provenance is already known
@@ -842,7 +842,7 @@ The lockfile includes an optional `base_hash` field for advanced overlay resolut
   "sources": [
     {
       "type": "git",
-      "url": "https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml",
+      "url": "https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml",
       "hash": "sha256:abc...",
       "base_hash": "sha256:def..."
     }
@@ -850,15 +850,15 @@ The lockfile includes an optional `base_hash` field for advanced overlay resolut
 }
 ```
 
-This field enables overlay resolution for local modifications atop base packs.
+This field enables overlay resolution for local modifications atop base aligns.
 
-### Private/vendored pack workflows
+### Private/vendored align workflows
 
 See [Git Workflows](/docs/03-concepts/git-workflows) for:
 
 - Git submodule setup
 - Git subtree setup
-- Vendored pack integrity validation
+- Vendored align integrity validation
 
 ### Git resolution
 
@@ -939,5 +939,5 @@ aligntrue drift
 - **[Auto-Updates](/docs/04-reference/auto-updates)** - Scheduled update workflows
 - **[Git Workflows](/docs/03-concepts/git-workflows)** - Git-based rule sharing and vendoring
 - **[Onboarding](/docs/06-contributing/team-onboarding)** - Developer onboarding checklists
-- **[Examples](/docs/04-reference/examples)** - team-repo and vendored-pack examples
+- **[Examples](/docs/04-reference/examples)** - team-repo and vendored-align examples
 ````

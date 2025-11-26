@@ -5,7 +5,7 @@ description: Recommended plug keys and overlay patterns for template authors and
 
 # Recommended conventions
 
-Standardized plug keys and overlay patterns help template authors create consistent, interoperable rule packs. Users benefit by reusing fills across multiple templates.
+Standardized plug keys and overlay patterns help template authors create consistent, interoperable rule aligns. Users benefit by reusing fills across multiple templates.
 
 Using these conventions is optional but recommended.
 
@@ -82,8 +82,8 @@ Overlays customize upstream rules. These patterns are commonly used:
 
 ### Use standard keys when:
 
-- Creating a new template pack
-- Adding plugs to an existing pack
+- Creating a new template align
+- Adding plugs to an existing align
 - Documenting plugs in your README
 - Contributing to community packages
 
@@ -98,7 +98,7 @@ Overlays customize upstream rules. These patterns are commonly used:
 1. **Reference conventions first** - Check if a standard key exists before creating a new one
 2. **Use descriptive names** - Be clear about what the plug is for
 3. **Provide examples** - Always include an example value for required plugs
-4. **Document your plugs** - Add a section in your pack's README explaining custom plugs
+4. **Document your plugs** - Add a section in your align's README explaining custom plugs
 5. **Test with real fills** - Before publishing, set fills and verify output
 6. **Consider your users** - Will they recognize standard keys like `test.cmd`?
 
@@ -111,14 +111,14 @@ When a community template library is built, conventions will:
 - Surface popular patterns to new authors
 - Suggest standard keys to prevent duplication
 
-For now, following these conventions in your packs creates an immediate benefit: users can reuse the same fills across multiple templates from different authors.
+For now, following these conventions in your aligns creates an immediate benefit: users can reuse the same fills across multiple templates from different authors.
 
 ## Examples
 
-### Simple pack with standard plugs
+### Simple align with standard plugs
 
 ```yaml
-id: my-testing-pack
+id: my-testing-align
 version: "1.0.0"
 plugs:
   slots:
@@ -140,7 +140,7 @@ aligntrue plugs set test.cmd "pnpm test"
 aligntrue plugs set docs.url "https://docs.example.com"
 ```
 
-Both fills work across any pack using these standard keys.
+Both fills work across any align using these standard keys.
 
 ### Custom namespace for domain-specific plugs
 
@@ -164,4 +164,4 @@ Document these in your README so users understand.
 
 - [Plugs guide](/docs/02-customization/plugs) - Complete plugs documentation
 - [Overlays guide](/docs/02-customization/overlays) - Complete overlays documentation
-- [Creating packs](/docs/06-contributing/creating-packs) - How to author packs
+- [Creating aligns](/docs/06-contributing/creating-aligns) - How to author aligns
