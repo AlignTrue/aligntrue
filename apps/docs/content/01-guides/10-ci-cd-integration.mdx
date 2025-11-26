@@ -351,22 +351,20 @@ jobs:
             echo "drift=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Apply updates
-        if: steps.drift.outputs.drift == 'true'
-        run: aligntrue update apply
-
-      - name: Create PR
+      - name: Create PR for Review
         if: steps.drift.outputs.drift == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          title: "chore: Update AlignTrue rules"
+          title: "chore: Review AlignTrue drift"
           body: |
-            Automated update of AlignTrue rules.
+            Drift detected in rules.
 
-            Drift detected in:
+            Detected drift in:
             $(cat drift.json | jq -r '.categories | keys[]')
-          branch: aligntrue-auto-update
-          commit-message: "chore: Update AlignTrue rules"
+
+            Approve this PR to accept the drift or make corrections.
+          branch: aligntrue-drift-review
+          commit-message: "chore: Review AlignTrue drift"
 ```
 
 ### Lockfile regeneration

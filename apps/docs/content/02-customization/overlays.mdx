@@ -52,7 +52,7 @@ aligntrue sync
 # ✓ Lockfile updated with overlay hash
 ```
 
-**Result:** `no-console-log` now fails CI instead of warning, and you still get upstream updates with `aligntrue update`.
+**Result:** `no-console-log` now fails CI instead of warning, with your customization preserved when upstream changes.
 
 **On this page:** [When to Use](#when-to-use-overlays-vs-plugs-vs-forks) · [Overlay Anatomy](#overlay-anatomy) · [Selectors](#selector-strategies) · [Scenarios](#scenarios) · [Performance](#performance-characteristics)
 
@@ -523,23 +523,19 @@ overlays:
         - "autofix" # Conflicts with our framework
 ```
 
-**Update workflow:**
+**Overlay workflow:**
 
 ```bash
-# 1. Update upstream
-aligntrue update check
-
-# 2. Review changes
+# 1. Review current overlays
 aligntrue override status  # Check overlay health
 
-# 3. Apply update
-aligntrue update apply
-
-# 4. Overlays preserved, applied to new version
+# 2. Sync with overlays applied
 aligntrue sync
+
+# 3. Overlays are applied on each sync
 ```
 
-**Result:** Get upstream updates while keeping customizations.
+**Result:** Overlays automatically apply to your rules on each sync.
 
 ## Conflict resolution
 
@@ -763,8 +759,8 @@ aligntrue override remove 'rule[id=no-console-log]' --force
 # Sync applies overlays automatically
 aligntrue sync
 
-# Update preserves overlays
-aligntrue update
+# Check overlay status anytime
+aligntrue override status
 ```
 
 See [CLI Reference](/docs/04-reference/cli-reference/overlays) for complete command documentation.
@@ -890,9 +886,9 @@ aligntrue override diff
 
 **Fix:** Consolidate overlays into single definition. Last overlay wins if multiple target same rule.
 
-### Update breaks overlays
+### Overlays not applying
 
-**Symptom:** After `aligntrue update`, overlays fail to apply.
+**Symptom:** Overlays don't apply to synced content.
 
 **Diagnosis:**
 

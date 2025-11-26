@@ -162,7 +162,7 @@ Fills provide the actual values for slots.
 
 ### Fill sources (merge order)
 
-Fills merge in this order (last writer wins):
+Fills merge in this order (first source wins):
 
 1. **Base align** - Default fills from upstream
 2. **Stack align(s)** - Stack-specific defaults (e.g., `nextjs-align` provides `test.cmd: "pnpm test"`)
