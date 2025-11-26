@@ -4,11 +4,11 @@ import { resolve } from "path";
 import { validateAlign } from "../src/validator.js";
 
 /**
- * Validate an Align pack file
+ * Validate an Align align file
  *
  * Usage:
- *   pnpm validate path/to/pack.yaml
- *   node --import tsx scripts/validate-align.ts path/to/pack.yaml
+ *   pnpm validate path/to/align.yaml
+ *   node --import tsx scripts/validate-align.ts path/to/align.yaml
  */
 
 function main() {

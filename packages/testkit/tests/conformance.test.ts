@@ -5,14 +5,14 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { runCanonVectors, runGoldenPacks } from "../src/runner.js";
+import { runCanonVectors, runGoldenAligns } from "../src/runner.js";
 import {
   canonicalizeJson,
   computeHash,
   parseYamlToJson,
   validateAlign,
 } from "@aligntrue/schema";
-import type { CanonVector, PackValidator } from "../src/types.js";
+import type { CanonVector, AlignValidator } from "../src/types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,18 +79,18 @@ describe("Conformance: Check Vectors", () => {
   }
 });
 
-describe("Conformance: Golden Packs", () => {
+describe("Conformance: Golden Aligns", () => {
   const goldenFiles = readdirSync(goldenDir).filter((f) =>
     f.endsWith(".aligntrue.yaml"),
   );
-  const goldenPacks = new Map<string, string>();
+  const goldenAligns = new Map<string, string>();
 
   for (const file of goldenFiles) {
-    goldenPacks.set(file, readFileSync(join(goldenDir, file), "utf-8"));
+    goldenAligns.set(file, readFileSync(join(goldenDir, file), "utf-8"));
   }
 
-  const validator: PackValidator = {
-    validatePack: (yaml: string) => {
+  const validator: AlignValidator = {
+    validateAlign: (yaml: string) => {
       try {
         const validation = validateAlign(yaml);
 
@@ -133,36 +133,36 @@ describe("Conformance: Golden Packs", () => {
     },
   };
 
-  it("passes all golden pack validations", () => {
-    const results = runGoldenPacks(goldenPacks, validator);
+  it("passes all golden align validations", () => {
+    const results = runGoldenAligns(goldenAligns, validator);
 
     if (results.failed > 0) {
-      console.error("Golden pack failures:", results.failures);
+      console.error("Golden align failures:", results.failures);
     }
 
     expect(results.failures).toHaveLength(0);
     expect(results.passed).toBe(results.total);
   });
 
-  it("validates each golden pack individually", () => {
-    for (const [filename, content] of goldenPacks) {
-      const singlePack = new Map([[filename, content]]);
-      const results = runGoldenPacks(singlePack, validator);
+  it("validates each golden align individually", () => {
+    for (const [filename, content] of goldenAligns) {
+      const singleAlign = new Map([[filename, content]]);
+      const results = runGoldenAligns(singleAlign, validator);
 
       if (results.failed > 0) {
-        console.error(`Golden pack ${filename} failed:`, results.failures);
+        console.error(`Golden align ${filename} failed:`, results.failures);
       }
 
       expect(results.passed).toBe(1);
     }
   });
 
-  it("has exactly 5 golden packs", () => {
+  it("has exactly 5 golden aligns", () => {
     expect(goldenFiles).toHaveLength(5);
   });
 
-  it("golden packs have computed integrity hashes", () => {
-    for (const [_filename, content] of goldenPacks) {
+  it("golden aligns have computed integrity hashes", () => {
+    for (const [_filename, content] of goldenAligns) {
       const parsed = parseYamlToJson(content) as any;
 
       expect(parsed.integrity).toBeDefined();
@@ -202,7 +202,7 @@ describe("Conformance: Summary", () => {
     console.log("\nConformance Testkit Summary:");
     console.log(`  Canonicalization vectors: ${canonVectors.length}`);
     console.log(`  Check runner vectors: ${checkVectorCount}`);
-    console.log(`  Golden packs: ${goldenFiles.length}`);
+    console.log(`  Golden aligns: ${goldenFiles.length}`);
     console.log(
       `  Total: ${canonVectors.length + checkVectorCount + goldenFiles.length}`,
     );

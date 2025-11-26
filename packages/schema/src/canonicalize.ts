@@ -118,7 +118,7 @@ export function computeHash(data: string): string {
 }
 
 /**
- * Compute integrity hash for an Align pack
+ * Compute integrity hash for an Align align
  *
  * Process:
  * 1. Parse YAML to object (if string) or use object directly
@@ -127,7 +127,7 @@ export function computeHash(data: string): string {
  * 4. Apply JCS canonicalization
  * 5. Compute SHA-256 hash
  *
- * @param alignInput - YAML string or object of Align pack
+ * @param alignInput - YAML string or object of Align align
  * @returns Hex-encoded SHA-256 hash
  */
 export function computeAlignHash(alignInput: string | unknown): string {
@@ -157,7 +157,7 @@ export function computeAlignHash(alignInput: string | unknown): string {
 /**
  * Validate that a stored hash matches the computed hash
  *
- * @param alignYaml - YAML string of Align pack
+ * @param alignYaml - YAML string of Align align
  * @param storedHash - The hash value from integrity.value field
  * @returns true if hashes match
  */

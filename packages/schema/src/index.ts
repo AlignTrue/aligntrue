@@ -26,7 +26,7 @@ export {
   type ValidationResult,
   type ValidationError,
   type IntegrityResult,
-  type AlignPack,
+  type Align,
   type AlignScope,
   type AlignSection,
   type AlignIntegrity,
@@ -34,7 +34,7 @@ export {
 } from "./validator.js";
 
 // Re-export scope types for cross-package consistency
-// Note: AlignScope is the IR-level scope (applies_to patterns in packs)
+// Note: AlignScope is the IR-level scope (applies_to patterns in aligns)
 // For config-level scopes, see @aligntrue/core/scope
 export type { AlignScope as AlignIRScope } from "./validator.js";
 

@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { validateAlignSchema, parseYamlToJson } from "../src/index.js";
 
 describe("Plugs schema validation", () => {
-  it("validates align pack with plugs slots", () => {
+  it("validates align align with plugs slots", () => {
     const yaml = `
-id: "test/base-pack"
+id: "test/base-align"
 version: "1.0.0"
 spec_version: "1"
 plugs:
@@ -32,9 +32,9 @@ sections:
     expect(result.errors).toBeUndefined();
   });
 
-  it("validates align pack with plugs fills", () => {
+  it("validates align align with plugs fills", () => {
     const yaml = `
-id: "test/stack-pack"
+id: "test/stack-align"
 version: "1.0.0"
 spec_version: "1"
 plugs:
@@ -55,9 +55,9 @@ sections:
     expect(result.errors).toBeUndefined();
   });
 
-  it("validates align pack with both slots and fills", () => {
+  it("validates align align with both slots and fills", () => {
     const yaml = `
-id: "test/combined-pack"
+id: "test/combined-align"
 version: "1.0.0"
 spec_version: "1"
 plugs:
@@ -82,7 +82,7 @@ sections:
     expect(result.errors).toBeUndefined();
   });
 
-  it("validates align pack without plugs", () => {
+  it("validates align align without plugs", () => {
     const yaml = `
 id: "test/no-plugs"
 version: "1.0.0"

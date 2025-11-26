@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Computes integrity hashes for golden packs
+ * Computes integrity hashes for golden aligns
  */
 import { readFileSync, writeFileSync, readdirSync } from "fs";
 import { join, dirname } from "path";
@@ -15,7 +15,7 @@ const files = readdirSync(goldenDir).filter((f) =>
   f.endsWith(".aligntrue.yaml"),
 );
 
-console.log(`Computing hashes for ${files.length} golden packs...\n`);
+console.log(`Computing hashes for ${files.length} golden aligns...\n`);
 
 for (const file of files) {
   const path = join(goldenDir, file);
@@ -38,4 +38,4 @@ for (const file of files) {
   }
 }
 
-console.log("\nAll golden packs updated.");
+console.log("\nAll golden aligns updated.");

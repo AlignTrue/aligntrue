@@ -115,7 +115,7 @@ describe("LocalProvider", () => {
     it("reads YAML files correctly", async () => {
       const provider = new LocalProvider(TEST_DIR);
       const filePath = "rules.yaml";
-      const content = `id: test-pack
+      const content = `id: test-align
 version: 1.0.0
 spec_version: "1"
 rules:
@@ -136,7 +136,7 @@ rules:
       const content = `# Test Rules
 
 \`\`\`aligntrue
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 rules:

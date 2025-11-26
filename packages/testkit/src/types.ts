@@ -48,10 +48,10 @@ export interface CheckVector {
 }
 
 /**
- * Integration test vector referencing production packs
+ * Integration test vector referencing production aligns
  */
 export interface IntegrationVector {
-  /** Pack identifier */
+  /** Align identifier */
   id: string;
   /** Repository URL */
   repo: string;

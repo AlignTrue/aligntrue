@@ -166,7 +166,7 @@ integrity:
   value: "<computed>"
 `;
 
-  it("computes hash for valid Align pack", () => {
+  it("computes hash for valid Align align", () => {
     const hash = computeAlignHash(minimalAlign);
 
     expect(hash).toHaveLength(64);
@@ -204,7 +204,7 @@ integrity:
     expect(hash1).toBe(hash2);
   });
 
-  it("handles pack without integrity field (solo mode)", () => {
+  it("handles align without integrity field (solo mode)", () => {
     const soloAlign = `
 id: "test-solo"
 version: "1.0.0"
@@ -293,7 +293,7 @@ integrity:
 
 describe("vendor bag canonicalization", () => {
   it("includes vendor fields by default", () => {
-    const pack = {
+    const align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -310,14 +310,14 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash1 = computeAlignHash(pack);
-    const hash2 = computeAlignHash(pack);
+    const hash1 = computeAlignHash(align);
+    const hash2 = computeAlignHash(align);
     expect(hash1).toBe(hash2);
     expect(hash1).toHaveLength(64);
   });
 
   it("excludes vendor.*.volatile fields from hash", () => {
-    const packWithVolatile = {
+    const alignWithVolatile = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -339,7 +339,7 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const packWithDifferentVolatile = {
+    const alignWithDifferentVolatile = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -361,13 +361,13 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash1 = computeAlignHash(packWithVolatile);
-    const hash2 = computeAlignHash(packWithDifferentVolatile);
+    const hash1 = computeAlignHash(alignWithVolatile);
+    const hash2 = computeAlignHash(alignWithDifferentVolatile);
     expect(hash1).toBe(hash2); // Hashes match despite different session_id
   });
 
   it("includes non-volatile vendor fields in hash", () => {
-    const pack1 = {
+    const align1 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -389,7 +389,7 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const pack2 = {
+    const align2 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -411,13 +411,13 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash1 = computeAlignHash(pack1);
-    const hash2 = computeAlignHash(pack2);
+    const hash1 = computeAlignHash(align1);
+    const hash2 = computeAlignHash(align2);
     expect(hash1).not.toBe(hash2); // Hashes differ due to ai_hint change
   });
 
   it("handles multiple volatile fields", () => {
-    const pack1 = {
+    const align1 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -440,7 +440,7 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const pack2 = {
+    const align2 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -463,13 +463,13 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash1 = computeAlignHash(pack1);
-    const hash2 = computeAlignHash(pack2);
+    const hash1 = computeAlignHash(align1);
+    const hash2 = computeAlignHash(align2);
     expect(hash1).toBe(hash2); // Both volatile fields excluded
   });
 
   it("handles volatile fields in multiple rules", () => {
-    const pack1 = {
+    const align1 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -495,7 +495,7 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const pack2 = {
+    const align2 = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -521,13 +521,13 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash1 = computeAlignHash(pack1);
-    const hash2 = computeAlignHash(pack2);
+    const hash1 = computeAlignHash(align1);
+    const hash2 = computeAlignHash(align2);
     expect(hash1).toBe(hash2); // All volatile fields across rules excluded
   });
 
   it("handles vendor bag without volatile fields", () => {
-    const pack = {
+    const align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -545,7 +545,7 @@ describe("vendor bag canonicalization", () => {
       ],
     };
 
-    const hash = computeAlignHash(pack);
+    const hash = computeAlignHash(align);
     expect(hash).toHaveLength(64);
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
   });

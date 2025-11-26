@@ -128,10 +128,10 @@ export function runCheckVectors(
 }
 
 /**
- * Pack validator implementation interface
+ * Align validator implementation interface
  */
-export interface PackValidator {
-  validatePack: (yaml: string) => {
+export interface AlignValidator {
+  validateAlign: (yaml: string) => {
     valid: boolean;
     hash?: string;
     errors?: string[];
@@ -139,18 +139,18 @@ export interface PackValidator {
 }
 
 /**
- * Run validation on golden packs
+ * Run validation on golden aligns
  */
-export function runGoldenPacks(
-  packFiles: Map<string, string>,
-  validator: PackValidator,
+export function runGoldenAligns(
+  alignFiles: Map<string, string>,
+  validator: AlignValidator,
 ): VectorResults {
   const failures: VectorFailure[] = [];
-  const total = packFiles.size;
+  const total = alignFiles.size;
 
-  for (const [filename, content] of packFiles) {
+  for (const [filename, content] of alignFiles) {
     try {
-      const result = validator.validatePack(content);
+      const result = validator.validateAlign(content);
 
       if (!result.valid) {
         failures.push({
@@ -203,13 +203,13 @@ function getIntegrityValue(obj: unknown): string | undefined {
 /**
  * Run all conformance vectors
  *
- * This is a convenience function that runs canonicalization, check, and golden pack vectors
+ * This is a convenience function that runs canonicalization, check, and golden align vectors
  * using the AlignTrue reference implementation.
  */
 export function runAllVectors(
   canonVectors: CanonVector[],
   checkVectors: CheckVector[],
-  goldenPacks: Map<string, string>,
+  goldenAligns: Map<string, string>,
 ): {
   canonicalization: VectorResults;
   checks: VectorResults;
@@ -230,8 +230,8 @@ export function runAllVectors(
     runCheck: async () => ({ pass: true, findings: [] }),
   };
 
-  const packValidator: PackValidator = {
-    validatePack: (yaml: string) => {
+  const alignValidator: AlignValidator = {
+    validateAlign: (yaml: string) => {
       try {
         const validation = validateAlign(yaml);
 
@@ -276,7 +276,7 @@ export function runAllVectors(
 
   const canonResults = runCanonVectors(canonVectors, canonImpl);
   const checkResults = runCheckVectors(checkVectors, checkImpl);
-  const goldenResults = runGoldenPacks(goldenPacks, packValidator);
+  const goldenResults = runGoldenAligns(goldenAligns, alignValidator);
 
   return {
     canonicalization: canonResults,

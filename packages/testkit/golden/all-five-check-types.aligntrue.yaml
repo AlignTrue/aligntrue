@@ -1,7 +1,7 @@
-# All five check types pack (legacy)
+# All five check types align (legacy)
 # Tests: converted to sections-only format
 
-id: packs/testkit/all-five-check-types
+id: aligns/testkit/all-five-check-types
 version: 1.0.0
 spec_version: "1"
 summary: Tests all five check types

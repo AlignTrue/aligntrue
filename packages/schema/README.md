@@ -1,6 +1,6 @@
 # @aligntrue/schema
 
-JSON Schema validation, canonicalization, and integrity hashing for AlignTrue Align packs.
+JSON Schema validation, canonicalization, and integrity hashing for AlignTrue Align aligns.
 
 ## Overview
 
@@ -9,7 +9,7 @@ This package provides the core validation and canonicalization utilities for Ali
 - **JSON Schema validation** using Ajv in strict mode
 - **JCS (RFC 8785) canonicalization** for lockfile and catalog publishing only
 - **SHA-256 integrity hashing** with verification
-- **TypeScript types** for Align pack structure
+- **TypeScript types** for Align align structure
 
 ## Canonicalization Strategy
 
@@ -39,7 +39,7 @@ Parse YAML string to JavaScript object. Resolves anchors and aliases.
 ```typescript
 import { parseYamlToJson } from "@aligntrue/schema";
 
-const yaml = 'id: "packs/test/example"\nversion: "1.0.0"';
+const yaml = 'id: "aligns/test/example"\nversion: "1.0.0"';
 const obj = parseYamlToJson(yaml);
 ```
 
@@ -68,7 +68,7 @@ const hash = computeHash("hello world");
 
 #### `computeAlignHash(alignYaml: string): string`
 
-Compute integrity hash for an Align pack YAML document. This function:
+Compute integrity hash for an Align align YAML document. This function:
 
 1. Parses YAML to object
 2. Sets `integrity.value` to `"<pending>"`
@@ -79,7 +79,7 @@ Compute integrity hash for an Align pack YAML document. This function:
 import { computeAlignHash } from "@aligntrue/schema";
 
 const yaml = `
-id: "packs/test/example"
+id: "aligns/test/example"
 version: "1.0.0"
 profile: "align"
 spec_version: "1"
@@ -107,12 +107,12 @@ const isValid = verifyAlignHash(alignYaml, storedHash);
 
 #### `validateAlignSchema(obj: unknown): ValidationResult`
 
-Validate an Align pack object against the JSON Schema.
+Validate an Align align object against the JSON Schema.
 
 ```typescript
 import { validateAlignSchema } from "@aligntrue/schema";
 
-const result = validateAlignSchema(packObject);
+const result = validateAlignSchema(alignObject);
 if (!result.valid) {
   console.error("Schema validation failed:", result.errors);
 }
@@ -136,7 +136,7 @@ interface ValidationError {
 
 #### `validateAlignIntegrity(alignYaml: string): IntegrityResult`
 
-Validate the integrity hash of an Align pack.
+Validate the integrity hash of an Align align.
 
 ```typescript
 import { validateAlignIntegrity } from "@aligntrue/schema";
@@ -162,7 +162,7 @@ interface IntegrityResult {
 
 #### `validateAlign(alignYaml: string)`
 
-Validate both schema and integrity of an Align pack in one call.
+Validate both schema and integrity of an Align align in one call.
 
 ```typescript
 import { validateAlign } from "@aligntrue/schema";
@@ -178,28 +178,28 @@ if (!result.integrity.valid) {
 
 ### TypeScript Types
 
-Export types for Align pack structure:
+Export types for Align align structure:
 
 ```typescript
 import type {
-  AlignPack,
+  Align,
   AlignScope,
   AlignSection,
   AlignIntegrity,
 } from "@aligntrue/schema";
 
-const pack: AlignPack = {
-  id: "packs/test/example",
+const align: Align = {
+  id: "aligns/test/example",
   version: "1.0.0",
   spec_version: "1",
-  summary: "Example pack",
+  summary: "Example align",
   tags: ["test"],
   sections: [
     {
       id: "section-1",
       heading: "Getting started",
       level: 1,
-      content: "Introduction to the pack",
+      content: "Introduction to the align",
     },
   ],
   integrity: {
@@ -211,10 +211,10 @@ const pack: AlignPack = {
 
 ## CLI Scripts
 
-### Validate an Align pack
+### Validate an Align align
 
 ```bash
-pnpm validate path/to/pack.yaml
+pnpm validate path/to/align.yaml
 ```
 
 Output shows schema validation, integrity validation, and overall status.
@@ -339,7 +339,7 @@ This package ensures deterministic hashing through:
 3. **Placeholder handling**: `integrity.value` set to `"<pending>"` during hash computation
 4. **UTF-8 encoding**: Consistent byte representation
 
-The same Align pack content will always produce the same hash, regardless of:
+The same Align align content will always produce the same hash, regardless of:
 
 - Key ordering in YAML
 - Whitespace or formatting

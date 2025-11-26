@@ -1,10 +1,10 @@
-# Minimal valid Align pack
-# Tests: absolute minimum required fields for a valid pack
+# Minimal valid Align align
+# Tests: absolute minimum required fields for a valid align
 
-id: packs/testkit/minimal-valid
+id: aligns/testkit/minimal-valid
 version: 1.0.0
 spec_version: "1"
-summary: Minimal valid pack for conformance testing
+summary: Minimal valid align for conformance testing
 sections:
   - heading: "Minimal Example"
     level: 2
