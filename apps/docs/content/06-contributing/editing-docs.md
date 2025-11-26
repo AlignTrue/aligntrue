@@ -21,12 +21,12 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 
 ## File mapping
 
-| Docs Source                                           | Generated File    | Purpose                          |
-| ----------------------------------------------------- | ----------------- | -------------------------------- |
-| `apps/docs/content/index.mdx`                         | `README.md`       | GitHub landing page              |
-| `apps/docs/content/06-contributing/creating-packs.md` | `CONTRIBUTING.md` | Contribution guide               |
-| `apps/docs/content/08-development/*.md`               | `DEVELOPMENT.md`  | Development guide (concatenated) |
-| `apps/docs/content/07-policies/security.md`           | `SECURITY.md`     | Security policy                  |
+| Docs Source                                            | Generated File    | Purpose                          |
+| ------------------------------------------------------ | ----------------- | -------------------------------- |
+| `apps/docs/content/index.mdx`                          | `README.md`       | GitHub landing page              |
+| `apps/docs/content/06-contributing/creating-aligns.md` | `CONTRIBUTING.md` | Contribution guide               |
+| `apps/docs/content/08-development/*.md`                | `DEVELOPMENT.md`  | Development guide (concatenated) |
+| `apps/docs/content/07-policies/security.md`            | `SECURITY.md`     | Security policy                  |
 
 ## Editing workflow
 
@@ -39,7 +39,7 @@ Edit files in `apps/docs/content/`:
 apps/docs/content/index.mdx
 
 # Edit contribution guide (becomes CONTRIBUTING.md)
-apps/docs/content/06-contributing/creating-packs.md
+apps/docs/content/06-contributing/creating-aligns.md
 
 # Edit development pages (become DEVELOPMENT.md)
 apps/docs/content/08-development/setup.mdx

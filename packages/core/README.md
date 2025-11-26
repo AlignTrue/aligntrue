@@ -73,7 +73,7 @@ sources:
     path: .aligntrue/rules
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/packs/global.yaml
+    path: examples/aligns/global.yaml
 ```
 
 **Source Types:**
@@ -89,7 +89,7 @@ Git sources fetch rules from any git repository:
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/packs/global.yaml
+    path: examples/aligns/global.yaml
   - type: git
     url: https://github.com/yourorg/rules
     path: rules/testing.yaml
@@ -137,13 +137,13 @@ import {
 } from "@aligntrue/core";
 
 // Generate lockfile from IR
-const lockfile = generateLockfile(alignPack, "team");
+const lockfile = generateLockfile(alignAlign, "team");
 writeLockfile(".aligntrue.lock.json", lockfile);
 
 // Validate on subsequent syncs
 const existingLockfile = readLockfile(".aligntrue.lock.json");
 if (existingLockfile) {
-  const validation = validateLockfile(existingLockfile, currentPack);
+  const validation = validateLockfile(existingLockfile, currentAlign);
   const enforcement = enforceLockfile("soft", validation);
 
   if (!enforcement.success) {
@@ -191,14 +191,14 @@ lockfile:
 **Key features:**
 
 - Per-rule SHA-256 hashes for granular drift detection
-- Bundle hash for quick validation of entire pack
+- Bundle hash for quick validation of entire align
 - Excludes `vendor.*.volatile` fields from hashing
 - Atomic writes (temp+rename) prevent partial state
 - Sorted JSON keys for deterministic output
 
 ### Bundle file generation
 
-`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `AlignPack`. The merge happens in memory today—the CLI does **not** persist `.aligntrue.bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
+`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `Align`. The merge happens in memory today—the CLI does **not** persist `.aligntrue.bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
 
 - Continue committing `.aligntrue/rules` (IR) and `.aligntrue.lock.json`.
 - Leave `modules.bundle: true` enabled so your repo stays compatible when disk bundles arrive.
@@ -348,7 +348,7 @@ Loads IR from markdown or YAML file.
 
 - Auto-detects format (.md, .markdown, .yaml, .yml)
 - Validates against schema
-- Returns `AlignPack`
+- Returns `Align`
 
 ## Exports
 
@@ -408,7 +408,7 @@ export type {
 ### With schema
 
 - Uses `validateAlignSchema` for IR validation
-- Uses types: `AlignPack`, `AlignRule`
+- Uses types: `Align`, `AlignRule`
 
 ### With plugin-contracts
 

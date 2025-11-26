@@ -1,23 +1,23 @@
-# Example Packs Registry
+# Example Aligns Registry
 #
-# Local reference registry for example packs included in this repository.
+# Local reference registry for example aligns included in this repository.
 # These are examples only - no central catalog exists.
 #
-# To use a pack:
+# To use a align:
 # 1. Import via git source in .aligntrue/config.yaml:
 #    sources:
 #      - type: git
 #        url: https://github.com/AlignTrue/aligntrue
-#        path: examples/packs/<filename>.md
+#        path: examples/aligns/<filename>.md
 # 2. Or copy the file locally and reference it with type: local
-# 3. See examples/packs/README.md for more details
+# 3. See examples/aligns/README.md for more details
 
 version: "1.0.0"
 
-packs:
-  - id: packs/base/base-global
+aligns:
+  - id: aligns/base/base-global
     version: "1.0.0"
-    path: examples/packs/global.md
+    path: examples/aligns/global.md
     name: Base Global
     slug: base-global
     description: Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Start here for any new project.
@@ -55,9 +55,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-docs
+  - id: aligns/base/base-docs
     version: "1.0.0"
-    path: examples/packs/docs.md
+    path: examples/aligns/docs.md
     name: Base Documentation
     slug: base-docs
     description: Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates. Keeps documentation minimal, testable, and always current.
@@ -94,9 +94,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-typescript
+  - id: aligns/base/base-typescript
     version: "1.0.0"
-    path: examples/packs/typescript.md
+    path: examples/aligns/typescript.md
     name: TypeScript Standards
     slug: base-typescript
     description: TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings, no 'any' types, type-only imports, and input validation at boundaries.
@@ -131,9 +131,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-testing
+  - id: aligns/base/base-testing
     version: "1.0.0"
-    path: examples/packs/testing.md
+    path: examples/aligns/testing.md
     name: Testing Baseline
     slug: base-testing
     description: Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance, no sleep-based timing, and speed requirements under 1 second per test.
@@ -170,9 +170,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-tdd
+  - id: aligns/base/base-tdd
     version: "1.0.0"
-    path: examples/packs/tdd.md
+    path: examples/aligns/tdd.md
     name: TDD Workflow
     slug: base-tdd
     description: Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation, minimal changes to pass, and deterministic test execution.
@@ -208,9 +208,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-debugging
+  - id: aligns/base/base-debugging
     version: "1.0.0"
-    path: examples/packs/debugging.md
+    path: examples/aligns/debugging.md
     name: Debugging Workflow
     slug: base-debugging
     description: Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles with regression test requirements.
@@ -246,9 +246,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-security
+  - id: aligns/base/base-security
     version: "1.0.0"
-    path: examples/packs/security.md
+    path: examples/aligns/security.md
     name: Security and Compliance
     slug: base-security
     description: Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Prevents secret commits, enforces lockfiles, and blocks vulnerable dependencies.
@@ -286,9 +286,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/base/base-rule-authoring
+  - id: aligns/base/base-rule-authoring
     version: "1.0.0"
-    path: examples/packs/rule-authoring.md
+    path: examples/aligns/rule-authoring.md
     name: Rule Authoring Guide
     slug: base-rule-authoring
     description: Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Ensures rules are focused, well-scoped, and maintainable.
@@ -325,9 +325,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/stacks/nextjs-app-router
+  - id: aligns/stacks/nextjs-app-router
     version: "1.0.0"
-    path: examples/packs/nextjs_app_router.md
+    path: examples/aligns/nextjs_app_router.md
     name: Next.js App Router
     slug: nextjs-app-router
     description: Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Enforces Server Components by default and proper input validation.
@@ -362,9 +362,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/stacks/vercel-deployments
+  - id: aligns/stacks/vercel-deployments
     version: "1.0.0"
-    path: examples/packs/vercel_deployments.md
+    path: examples/aligns/vercel_deployments.md
     name: Vercel Deployments
     slug: vercel-deployments
     description: Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene. Prevents secret leaks and ensures proper environment variable usage.
@@ -399,9 +399,9 @@ packs:
       author: AlignTrue
       source_url: https://github.com/AlignTrue/aligntrue
 
-  - id: packs/stacks/web-quality
+  - id: aligns/stacks/web-quality
     version: "1.0.0"
-    path: examples/packs/web_quality.md
+    path: examples/aligns/web_quality.md
     name: Web Quality Standards
     slug: web-quality
     description: Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s, next/image usage, next/font optimization, and WCAG 2.0 AA compliance.

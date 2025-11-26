@@ -154,7 +154,7 @@ sources:
     include:
       - https://github.com/org/repo # All .md in root
       - https://github.com/org/repo@v2.0.0 # Specific version
-      - https://github.com/org/repo/packs # All .md in directory
+      - https://github.com/org/repo/aligns # All .md in directory
       - https://github.com/org/repo/security.md # Single file
 ```
 
@@ -286,7 +286,7 @@ aligntrue/
 ├── apps/
 │   └── docs/             # Nextra documentation site
 ├── examples/             # Example configurations
-├── catalog/              # Curated rule packs
+├── catalog/              # Curated rule aligns
 └── scripts/              # Build and setup scripts
 ```
 
@@ -366,7 +366,7 @@ Cloud features stay in the cloud repo, never imported here. Keep this repo focus
 ## CI gates and quality checks
 
 - **Bundle size:** CLI tarball must stay under 600 KB
-- **Pack vendoring:** Pack files must not be vendored in CLI
+- **Align vendoring:** Align files must not be vendored in CLI
 - **Schema changes:** IR format changes require version bump + changelog
 - **Determinism:** Tests run with `TZ=UTC` to match CI environment
 - **Type checking:** Full typecheck across all packages on pre-push
@@ -489,7 +489,7 @@ Add entry explaining:
 ```markdown
 ### Archived
 
-- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated packs.
+- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated aligns.
 ```
 
 ### 7. Update future features documentation
@@ -672,7 +672,7 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 The following files are auto-generated from documentation source and cannot be directly edited:
 
 - `README.md` (generated from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-packs.md`)
+- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-aligns.md`)
 - `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
 
 **Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
@@ -750,7 +750,7 @@ Additionally, CI tests multiple Node.js versions:
 - `scopes-monorepo.test.ts`
 - `plugs-resolution.test.ts`
 - `customization-combined.test.ts`
-- `pack-sources.test.ts`
+- `align-sources.test.ts`
 - `override-add-command.test.ts`
 - `override-remove-command.test.ts`
 - `override-status-command.test.ts`
@@ -847,7 +847,7 @@ type Result = {
 Common type locations:
 
 - **Schema types:** `@aligntrue/schema`
-  - `AlignRule`, `AlignPack`, `validateAlignSchema`, `validateRuleId`
+  - `AlignRule`, `Align`, `validateAlignSchema`, `validateRuleId`
 - **Core types:** `@aligntrue/core`
   - `AlignTrueConfig`, `SyncEngine`, `BackupManager`
 - **Team types:** `@aligntrue/core/team/drift.js`
@@ -1091,7 +1091,7 @@ const clone = cloneDeep(obj);
 **Locations where JSON utilities are recommended:**
 
 - Object cloning in overlay operations
-- Pack hashing before resolution
+- Align hashing before resolution
 - Type-safe parsing of untrusted JSON
 
 ### Canonicalization
@@ -1803,9 +1803,9 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 ## @aligntrue/schema
 
-| Export Path | Purpose                     | Example                                                            |
-| ----------- | --------------------------- | ------------------------------------------------------------------ |
-| `.`         | Schema types and validation | `import type { AlignPack, AlignSection } from '@aligntrue/schema'` |
+| Export Path | Purpose                     | Example                                                        |
+| ----------- | --------------------------- | -------------------------------------------------------------- |
+| `.`         | Schema types and validation | `import type { Align, AlignSection } from '@aligntrue/schema'` |
 
 ## @aligntrue/plugin-contracts
 
@@ -1833,9 +1833,9 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 ## @aligntrue/testkit
 
-| Export Path | Purpose                        | Example                                               |
-| ----------- | ------------------------------ | ----------------------------------------------------- |
-| `.`         | Testing utilities and fixtures | `import { createTestPack } from '@aligntrue/testkit'` |
+| Export Path | Purpose                        | Example                                                |
+| ----------- | ------------------------------ | ------------------------------------------------------ |
+| `.`         | Testing utilities and fixtures | `import { createTestAlign } from '@aligntrue/testkit'` |
 
 ## @aligntrue/ui
 
@@ -2634,17 +2634,17 @@ pnpm typecheck     # Type checking
 
 ## Catalog
 
-Local catalog with 11 curated packs:
+Local catalog with 11 curated aligns:
 
-- **Base Packs** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
-- **Stack Packs** (3): nextjs-app-router, vercel-deployments, web-quality
+- **Base Aligns** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
+- **Stack Aligns** (3): nextjs-app-router, vercel-deployments, web-quality
 
 **Structure:**
 
 ```
 catalog/
-├── examples/          # YAML pack definitions
-├── packs.yaml         # Registry metadata
+├── examples/          # YAML align definitions
+├── aligns.yaml         # Registry metadata
 └── namespaces.yaml    # Namespace ownership
 ```
 

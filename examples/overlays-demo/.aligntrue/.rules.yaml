@@ -1,11 +1,11 @@
-id: overlay-demo-pack
+id: overlay-demo-align
 version: "1.0.0"
 spec_version: "1"
 
 profile:
   id: example/overlay-demo
   version: "1.0.0"
-  name: Overlays Demo Pack
+  name: Overlays Demo Align
   summary: Demonstrate fork-safe customization using overlays
 
 sections:

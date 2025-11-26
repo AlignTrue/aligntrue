@@ -1,6 +1,6 @@
 # Plugs commands
 
-Manage dynamic configuration slots and fills in rule packs. Plugs allow template-based customization for stack-specific values.
+Manage dynamic configuration slots and fills in rule aligns. Plugs allow template-based customization for stack-specific values.
 
 ## `aligntrue plugs list`
 

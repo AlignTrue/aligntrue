@@ -11,7 +11,7 @@ profile:
   id: example/overlays-demo
   version: "1.0.0"
 
-# Import upstream pack rules (simulated)
+# Import upstream align rules (simulated)
 rules:
   - id: no-console-log
     summary: Avoid console.log in production code

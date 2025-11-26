@@ -25,7 +25,7 @@ Write sections with level 2 headings (`##`):
 
 ```markdown
 ---
-id: "packs/example/my-rules"
+id: "aligns/example/my-rules"
 version: "1.0.0"
 summary: "Example rules using natural markdown sections"
 tags: ["example", "sections"]
@@ -33,7 +33,7 @@ tags: ["example", "sections"]
 
 # My project rules
 
-This pack establishes our project standards.
+This align establishes our project standards.
 
 ## Testing requirements
 
@@ -73,23 +73,23 @@ All natural markdown files must include YAML frontmatter:
 
 ```yaml
 ---
-id: "packs/namespace/pack-id"
+id: "aligns/namespace/align-id"
 version: "1.0.0"
-summary: "One-line description of the pack"
+summary: "One-line description of the align"
 tags: ["tag1", "tag2"]
 ---
 ```
 
 **Required fields:**
 
-- `id` - Pack identifier (e.g., `packs/base/base-testing`)
+- `id` - Align identifier (e.g., `aligns/base/base-testing`)
 - `version` - Semantic version
 - `summary` - Brief description
 - `tags` - Search tags
 
 **Optional fields:**
 
-- `author` - Pack author name
+- `author` - Align author name
 - `license` - License identifier (default: CC0-1.0)
 
 ## Fingerprints
@@ -245,13 +245,13 @@ Never expose internal errors to users...
 
 ## Advanced examples
 
-### Multi-section pack
+### Multi-section align
 
-Create packs with many sections organized hierarchically:
+Create aligns with many sections organized hierarchically:
 
 ```markdown
 ---
-id: "packs/my-org/comprehensive"
+id: "aligns/my-org/comprehensive"
 version: "1.0.0"
 summary: "Comprehensive coding standards"
 tags: ["standards", "comprehensive"]
@@ -304,9 +304,9 @@ Each `##` heading becomes a separate rule:
 
 Subsections under each rule (`###`) are included in the parent rule's content.
 
-### Included example packs
+### Included example aligns
 
-Example packs in `examples/packs/` demonstrate natural markdown:
+Example aligns in `examples/aligns/` demonstrate natural markdown:
 
 - `global.md` - Base global rules
 - `testing.md` - Testing standards
@@ -316,9 +316,9 @@ Example packs in `examples/packs/` demonstrate natural markdown:
 
 ## Backward compatibility
 
-Natural markdown sections coexist with rule-based packs:
+Natural markdown sections coexist with rule-based aligns:
 
-**Rule-based pack (legacy):**
+**Rule-based align (legacy):**
 
 ```yaml
 id: my-rules
@@ -329,7 +329,7 @@ rules:
     guidance: Text here
 ```
 
-**Section-based pack (natural markdown):**
+**Section-based align (natural markdown):**
 
 ```markdown
 # My rules
@@ -359,11 +359,11 @@ Natural markdown sections:
 
 - Cannot express complex rule metadata (checks, autofixes)
 - Are simpler than rule-based format
-- Work best for guidance-focused packs
+- Work best for guidance-focused aligns
 
 For complex rule definitions with machine-checkable conditions, use rule-based YAML format.
 
 ## Related pages
 
 - [Getting Started](/docs/00-getting-started/00-quickstart) - Quick start guide
-- [Example Packs](/docs/04-reference/examples) - Curated example packs
+- [Example Aligns](/docs/04-reference/examples) - Curated example aligns

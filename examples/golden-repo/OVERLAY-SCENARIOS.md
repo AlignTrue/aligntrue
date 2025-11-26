@@ -343,13 +343,13 @@ aln override diff typescript.no.any
 
 ---
 
-## Scenario 4: Multi-Pack Overlay
+## Scenario 4: Multi-Align Overlay
 
-**Goal:** Demonstrate overlays across multiple packs with same check ID.
+**Goal:** Demonstrate overlays across multiple aligns with same check ID.
 
 ### Setup
 
-1. **Add second pack (simulate):**
+1. **Add second align (simulate):**
 
 ```yaml
 # .aligntrue.yaml
@@ -360,7 +360,7 @@ sources:
     path: vendor/security-rules/rules.md
 ```
 
-2. **Both packs have "no-secrets" check:**
+2. **Both aligns have "no-secrets" check:**
 
 ```markdown
 # .aligntrue/rules.md
@@ -376,20 +376,20 @@ sources:
 **Severity:** warn
 ```
 
-### Apply Pack-Specific Overlays
+### Apply Align-Specific Overlays
 
-3. **Override each pack differently:**
+3. **Override each align differently:**
 
 ```yaml
 overlays:
   overrides:
-    # Override local pack (make more strict)
+    # Override local align (make more strict)
     - selector: "rule[id=security.no.secrets]"
       set:
         severity: "error"
         "check.inputs.scanComments": true
 
-    # Override vendor pack (less strict for legacy)
+    # Override vendor align (less strict for legacy)
     # Note: Selector applies to all rules with this ID
     # Use property paths for more granular control if needed
     - selector: "rule[id=security.no.secrets-vendor]"
@@ -398,7 +398,7 @@ overlays:
         "check.inputs.scanComments": false
 ```
 
-4. **Verify pack-specific application:**
+4. **Verify align-specific application:**
 
 ```bash
 aln override status
@@ -410,8 +410,8 @@ aln override status
 
 ### Success Criteria
 
-✅ Same check ID in multiple packs  
-✅ Each pack has independent overlay  
+✅ Same check ID in multiple aligns  
+✅ Each align has independent overlay  
 ✅ Overlays don't interfere  
 ✅ Lockfile tracks both overlay hashes
 

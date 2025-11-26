@@ -293,7 +293,7 @@ scopes:
 
 1. Include pattern matches files
 2. Exclude pattern doesn't block files
-3. Ruleset ID matches source pack
+3. Ruleset ID matches source align
 
 **Solution:** Adjust include/exclude patterns or ruleset IDs.
 

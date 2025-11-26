@@ -1,24 +1,24 @@
 # Overlays demo
 
-This example demonstrates fork-safe customization of upstream rule packs using overlays. Customize severity, inputs, and behavior without forking.
+This example demonstrates fork-safe customization of upstream rule aligns using overlays. Customize severity, inputs, and behavior without forking.
 
 ## What's inside
 
 - **`.aligntrue/config.yaml`** - Solo mode configuration with local source
 - **`AGENTS.md`** - Primary user-editable file with base rules and overlays applied
-- **`upstream-pack.yaml`** - Simulated upstream pack (3 rules)
+- **`upstream-align.yaml`** - Simulated upstream align (3 rules)
 - **`SCENARIOS.md`** - Detailed scenarios with expected outputs
 - **`test-overlays.sh`** - Validation script
 
 ## Quick start
 
-### 1. View upstream pack
+### 1. View upstream align
 
 ```bash
-cat upstream-pack.yaml
+cat upstream-align.yaml
 ```
 
-You'll see 3 rules from a simulated upstream pack:
+You'll see 3 rules from a simulated upstream align:
 
 - `no-console-log` (severity: warn)
 - `max-complexity` (threshold: 10)
@@ -112,14 +112,14 @@ overlays:
 
 **Without overlays (forking):**
 
-- Fork upstream pack
+- Fork upstream align
 - Make changes
 - Lose upstream updates
 - Maintain your fork forever
 
 **With overlays (fork-safe):**
 
-- Pull upstream pack
+- Pull upstream align
 - Apply overlays for customization
 - Get upstream updates automatically
 - Overlays reapply on top of updates

@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 echo "✓ Checking files..."
 test -f .aligntrue/config.yaml || { echo "✗ config.yaml missing"; exit 1; }
 test -f .aligntrue/rules || { echo "✗ .rules.yaml missing"; exit 1; }
-test -f upstream-pack.yaml || { echo "✗ upstream-pack.yaml missing"; exit 1; }
+test -f upstream-align.yaml || { echo "✗ upstream-align.yaml missing"; exit 1; }
 test -f SCENARIOS.md || { echo "✗ SCENARIOS.md missing"; exit 1; }
 
 # Check overlays section exists in config.yaml

@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-global"
+id: "aligns/base/base-global"
 version: "1.0.0"
 summary: "Global baseline for AI-assisted repos: CI gates, contribution workflow, deterministic behavior"
 tags: ["global", "baseline", "ci", "paved-road"]
@@ -7,7 +7,7 @@ tags: ["global", "baseline", "ci", "paved-road"]
 
 # Global baseline for AI-assisted repos
 
-This pack establishes paved-road commands and consistent workflow patterns for AI-assisted repositories. It complements docs, testing, and TDD packs while deferring to security requirements.
+This align establishes paved-road commands and consistent workflow patterns for AI-assisted repositories. It complements docs, testing, and TDD aligns while deferring to security requirements.
 
 ## Core principles
 
@@ -58,12 +58,12 @@ Ensure reproducible builds and behavior:
 - Pin tool versions in package managers
 - Seed randomness in tests
 - Use stable ordering for collections
-- Delegate supply-chain specifics to security pack
+- Delegate supply-chain specifics to security align
 
 ## Documentation updates
 
 - Update docs and examples when interfaces change
-- Reference other packs using @ notation
+- Reference other aligns using @ notation
 - Keep README and guides in sync with code
 
 ## Output contract

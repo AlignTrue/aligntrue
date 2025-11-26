@@ -40,7 +40,7 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 | Export Path | Purpose                     | Example                                                            |
 | ----------- | --------------------------- | ------------------------------------------------------------------ |
-| `.`         | Schema types and validation | `import type { AlignPack, AlignSection } from '@aligntrue/schema'` |
+| `.`         | Schema types and validation | `import type { Align, AlignSection } from '@aligntrue/schema'` |
 
 ## @aligntrue/plugin-contracts
 
@@ -70,7 +70,7 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 | Export Path | Purpose                        | Example                                               |
 | ----------- | ------------------------------ | ----------------------------------------------------- |
-| `.`         | Testing utilities and fixtures | `import { createTestPack } from '@aligntrue/testkit'` |
+| `.`         | Testing utilities and fixtures | `import { createTestAlign } from '@aligntrue/testkit'` |
 
 ## @aligntrue/ui
 
