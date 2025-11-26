@@ -228,13 +228,6 @@ function main() {
     generateDevelopment();
     generateSecurity();
 
-    // Format generated files to match project style
-    console.log("\nFormatting generated files...");
-    execSync(
-      "npx prettier --write README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md",
-      { stdio: "pipe" },
-    );
-
     console.log("\n✓ All repo files generated successfully");
     console.log("\nNext steps:");
     console.log(
