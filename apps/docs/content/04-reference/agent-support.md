@@ -131,6 +131,27 @@ See [Multi-file organization](/docs/02-customization/multi-file-organization) fo
 
 </div>
 
+## Targeting rules to specific agents
+
+You can control which agents receive specific rules using frontmatter options:
+
+```yaml
+# .aligntrue/rules/cursor-specific.md
+---
+title: Cursor-specific debugging
+export_only_to: [cursor]
+---
+```
+
+This is useful for:
+
+- Agent-specific guidance and tips
+- Experimental rules you want to test in one agent
+- Performance or compliance requirements
+- Reducing noise by excluding irrelevant rules
+
+See [Per-rule targeting](/docs/02-customization/per-rule-targeting) for details.
+
 ## Extensibility
 
 Built-in extensibility allows the community to [add support for new agents](/docs/06-contributing/adding-exporters). Each exporter follows a consistent pattern and can be contributed via pull request.
