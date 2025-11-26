@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Windows test timeouts** - Fixed exporter tests hanging on Windows CI by simplifying atomic file write implementation. Replaced complex temp directory creation with same-directory temp files and hidden backup files, eliminating EXDEV (cross-device link) errors and mkdtempSync delays on Windows
+
 ### Added
 
 - **MCP server configuration propagation** - MCP exporters now read from centralized `config.mcp.servers` and propagate to agent-specific MCP files (.vscode/mcp.json, .cursor/mcp.json, .mcp.json, etc.) with deterministic hashing
