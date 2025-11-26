@@ -30,7 +30,7 @@ export class CursorExporter extends ExporterBase {
   ): Promise<ExportResult> {
     const { outputDir, dryRun = false } = options;
 
-    // Get rules from request (handles backward compatibility with pack)
+    // Get rules from request (handles backward compatibility with align)
     const rules = this.getRulesFromRequest(request);
 
     const allFilesWritten: string[] = [];

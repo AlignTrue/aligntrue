@@ -37,7 +37,7 @@ describe("IR Loader", () => {
 
   describe("Load from YAML", () => {
     it("loads valid YAML", async () => {
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -51,7 +51,7 @@ sections:
 
       const ir = await loadIR(path);
 
-      expect(ir.id).toBe("test-pack");
+      expect(ir.id).toBe("test-align");
       expect(ir.version).toBe("1.0.0");
       expect(ir.spec_version).toBe("1");
       expect(ir.sections).toHaveLength(1);
@@ -59,7 +59,7 @@ sections:
     });
 
     it("fails on invalid YAML syntax", async () => {
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -74,7 +74,7 @@ sections:
     });
 
     it("surfaces YAML line numbers in errors", async () => {
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -90,7 +90,7 @@ sections:
 
   describe("Format auto-detection", () => {
     it("detects .yaml extension", async () => {
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -103,7 +103,7 @@ sections:
       writeFileSync(path, yaml, "utf8");
 
       const ir = await loadIR(path);
-      expect(ir.id).toBe("test-pack");
+      expect(ir.id).toBe("test-align");
     });
 
     it("rejects unsupported extensions", async () => {
@@ -122,7 +122,7 @@ sections:
     });
 
     it("fails on invalid IR schema", async () => {
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:

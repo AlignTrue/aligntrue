@@ -66,10 +66,10 @@ export class FirebenderExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, pack } = request;
+    const { scope, align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = pack.sections;
+    const sections = align.sections;
 
     // Validate inputs
     if (sections.length === 0) {

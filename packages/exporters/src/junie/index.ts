@@ -27,9 +27,9 @@ export class JunieExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope: _scope, pack } = request;
+    const { scope: _scope, align } = request;
     const { outputDir, dryRun = false } = options;
-    const sections = pack.sections;
+    const sections = align.sections;
 
     if (sections.length === 0) {
       return {

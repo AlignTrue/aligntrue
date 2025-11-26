@@ -20,10 +20,10 @@ export class OpenhandsConfigExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { pack } = request;
+    const { align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = pack.sections;
+    const sections = align.sections;
 
     if (sections.length === 0) {
       return {

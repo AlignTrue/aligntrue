@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { ExporterRegistry } from "../src/registry.js";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { mkdirSync, rmSync, readFileSync } from "fs";
@@ -12,15 +12,15 @@ import { mkdirSync, rmSync, readFileSync } from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Helper to create request with pack
+// Helper to create request with align
 function createTestRequest(sections: AlignSection[], scope: any): any {
-  const pack: AlignPack = {
-    id: "test-pack",
+  const align: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections,
   };
-  return { scope, sections, pack };
+  return { scope, sections, align };
 }
 
 describe("GeminiExporter", () => {
@@ -114,8 +114,8 @@ describe("GeminiExporter", () => {
       {
         scope,
         sections,
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections,
@@ -131,8 +131,8 @@ describe("GeminiExporter", () => {
       {
         scope,
         sections,
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections,
@@ -162,8 +162,8 @@ describe("GeminiExporter", () => {
       {
         scope: { root: ".", applies_to: ["**/*.ts"] },
         sections,
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections,
@@ -193,8 +193,8 @@ describe("GeminiExporter", () => {
       {
         scope: { root: ".", applies_to: ["**/*.ts"] },
         sections,
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections,

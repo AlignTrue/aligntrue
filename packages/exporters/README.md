@@ -234,7 +234,7 @@ export class MyAdapterExporter implements ExporterPlugin {
     options: ExportOptions,
   ): Promise<ExportResult> {
     // request.scope - Scope this export is for
-    // request.pack - Pack with sections for this scope
+    // request.align - Align with sections for this scope
     // request.outputPath - Suggested output path
 
     // options.outputDir - Base output directory
@@ -325,7 +325,7 @@ interface ExporterPlugin {
 ```typescript
 interface ScopedExportRequest {
   scope: ResolvedScope; // Scope this export is for
-  pack: AlignPack; // Pack with sections for this scope
+  align: Align; // Align with sections for this scope
   outputPath: string; // Suggested output path
 }
 ```

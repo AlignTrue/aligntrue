@@ -18,7 +18,7 @@ describe("IR Loader - Performance Guardrails", () => {
   });
 
   const validYaml = `
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -33,7 +33,7 @@ sections:
     writeFileSync(filePath, validYaml, "utf-8");
 
     const ir = await loadIR(filePath, { mode: "solo", maxFileSizeMb: 10 });
-    expect(ir.id).toBe("test-pack");
+    expect(ir.id).toBe("test-align");
   });
 
   it("warns in solo mode when file exceeds limit", async () => {
@@ -80,7 +80,7 @@ sections:
       maxFileSizeMb: 10,
       force: true,
     });
-    expect(ir.id).toBe("test-pack");
+    expect(ir.id).toBe("test-align");
   }, 120000); // 120s timeout for large file parsing in Windows CI (slower I/O)
 
   it("uses default values when options not provided", async () => {
@@ -89,7 +89,7 @@ sections:
 
     // Should load with defaults (solo mode, 10MB limit, force: false)
     const ir = await loadIR(filePath);
-    expect(ir.id).toBe("test-pack");
+    expect(ir.id).toBe("test-align");
   });
 
   it("respects custom max file size", async () => {
@@ -105,12 +105,12 @@ sections:
 
     // Should pass with 5MB limit (well above the 3MB actual size)
     const ir = await loadIR(filePath, { mode: "team", maxFileSizeMb: 5 });
-    expect(ir.id).toBe("test-pack");
+    expect(ir.id).toBe("test-align");
   }, 60000); // 60s timeout for 2MB file parsing in Windows CI
 
   it("checks YAML files for size", async () => {
     const filePath = join(testDir, "rules.yaml");
-    const validYaml = `id: test-pack
+    const validYaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -124,12 +124,12 @@ sections:
     writeFileSync(filePath, validYaml, "utf-8");
 
     const ir = await loadIR(filePath, { mode: "solo", maxFileSizeMb: 10 });
-    expect(ir.id).toBe("test-pack");
+    expect(ir.id).toBe("test-align");
   });
 
   it("checks YAML files for size limit exceeds", async () => {
     const filePath = join(testDir, "large.yaml");
-    const validYaml = `id: test-pack
+    const validYaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
