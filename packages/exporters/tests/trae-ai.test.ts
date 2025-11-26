@@ -57,7 +57,7 @@ describe("TraeAiExporter", () => {
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0]).toBe(
-        join(TEST_OUTPUT_DIR, ".trae", "rules", "project_rules.md"),
+        join(TEST_OUTPUT_DIR, ".trae", "rules", "testing-requirements.md"),
       );
     });
   });

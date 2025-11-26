@@ -1,6 +1,6 @@
 /**
  * Trae AI exporter
- * Exports AlignTrue rules to Trae AI .trae/rules/ directory format
+ * Exports AlignTrue rules to Trae AI .trae/rules/*.md format
  */
 
 import { join } from "path";
@@ -8,11 +8,8 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
   ExporterCapabilities,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 export class TraeAiExporter extends ExporterBase {
@@ -29,72 +26,57 @@ export class TraeAiExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = align.sections;
+    // Get rules from request (handles backward compatibility with align.sections)
+    const rules = this.getRulesFromRequest(request);
 
-    if (sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
+    const allFilesWritten: string[] = [];
+    const allWarnings: string[] = [];
+    let combinedContentHash = "";
+
+    // Hash of all exported content
+    const contentHashes: string[] = [];
+
+    for (const rule of rules) {
+      if (!this.shouldExportRule(rule, "trae-ai")) {
+        continue;
+      }
+
+      // Determine output path
+      const filename = rule.filename.replace(/\.md$/, ".md"); // Already .md, keep it
+      const outputPath = join(outputDir, ".trae", "rules", filename);
+
+      // Strip starter rule comments from content (only relevant in source files, not exports)
+      const cleanedContent = this.stripStarterRuleComment(rule.content);
+
+      // Add read-only marker to content
+      const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
+
+      // Construct full file content with heading from rule title
+      const fullContent = `# ${rule.frontmatter.title || "Rule"}\n\n${readOnlyMarker}\n${cleanedContent}`;
+
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(rule.hash);
+
+      // Write file
+      const files = await this.writeFile(
+        outputPath,
+        fullContent,
+        dryRun,
+        { ...options, force: true }, // Always force overwrite for read-only exports
+      );
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
     }
 
-    const filename = this.getScopeFilename(scope);
-    const outputPath = join(outputDir, ".trae", "rules", filename);
-
-    // Generate content from sections
-    const { content, warnings } = this.generateSectionContent(scope, sections);
-    const contentHash = computeContentHash({ scope, sections });
-    const fidelityNotes = this.computeSectionFidelityNotes(sections);
-
-    const filesWritten = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options,
-    );
-
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    if (warnings.length > 0) {
-      result.warnings = warnings;
+    if (contentHashes.length > 0) {
+      combinedContentHash = this.computeHash(contentHashes.sort().join(""));
     }
 
-    return result;
-  }
-
-  /**
-   * Generate Trae AI content from sections (natural markdown)
-   */
-  private generateSectionContent(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-  ): { content: string; warnings: string[] } {
-    const lines: string[] = [];
-
-    const scopeDesc = scope.isDefault
-      ? "Trae AI project rules"
-      : `Trae AI rules for ${scope.path}`;
-    lines.push(`# ${scopeDesc}`);
-    lines.push("");
-
-    // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(sections, false);
-    lines.push(sectionsMarkdown);
-
-    return { content: lines.join("\n"), warnings: [] };
-  }
-
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "project_rules.md";
-    }
-
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.md`;
+    return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
   }
 
   resetState(): void {
