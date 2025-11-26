@@ -10,6 +10,7 @@ import {
   getAlignTruePaths,
   loadConfig,
   type AlignTrueConfig,
+  getExporterNames,
 } from "@aligntrue/core";
 import { resolveConfigPath } from "../utils/path-resolvers.js";
 import {
@@ -204,7 +205,8 @@ async function runDoctor(
   }
 
   // Exporter outputs
-  if (config?.exporters && config.exporters.length > 0) {
+  const exporterNames = config ? getExporterNames(config.exporters) : [];
+  if (exporterNames.length > 0) {
     let manifestMap: Map<string, AdapterManifest> | null = null;
     try {
       manifestMap = await loadExporterManifests();
@@ -219,7 +221,7 @@ async function runDoctor(
       });
     }
 
-    for (const exporterName of config.exporters) {
+    for (const exporterName of exporterNames) {
       const manifest = manifestMap?.get(exporterName);
       if (!manifest) {
         checks.push({
@@ -243,7 +245,7 @@ async function runDoctor(
 
   // Detection vs config
   if (config) {
-    const detection = detectAgentsWithValidation(cwd, config.exporters ?? []);
+    const detection = detectAgentsWithValidation(cwd, exporterNames);
     if (detection.missing.length > 0) {
       const names = detection.missing
         .map((name) => getAgentDisplayName(name))

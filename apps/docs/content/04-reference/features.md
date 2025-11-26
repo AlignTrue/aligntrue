@@ -19,7 +19,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Plugs and overlays for safe customization
 - URL-based rule sources with ETag caching and offline fallback
 
-## CLI (23 commands)
+## CLI (24 commands)
 
 **Diagnostics:**
 
@@ -38,6 +38,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 - `adapters` — Manage exporters (list, enable, disable)
 - `plugs` — Manage plugs (audit, resolve, set)
+- `rules` — Manage and export rules (list, inspect)
 - `scopes` — List configured scopes
 - `sources` — Manage multi-file rule organization (list, split)
 

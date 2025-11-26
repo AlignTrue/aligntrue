@@ -5,7 +5,11 @@ import {
   getLastSyncTimestamp,
   wasFileModifiedSince,
 } from "@aligntrue/core/sync/tracking";
-import { getAlignTruePaths, loadConfig } from "@aligntrue/core";
+import {
+  getAlignTruePaths,
+  loadConfig,
+  getExporterNames,
+} from "@aligntrue/core";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import type { SyncOptions } from "./options.js";
 
@@ -105,7 +109,7 @@ export async function checkIfSyncNeeded(
   // This handles the case where files were added/copied but have old mtimes
   const newAgents = detectNewAgents(
     cwd,
-    config.exporters || [],
+    getExporterNames(config.exporters),
     config.detection?.ignored_agents || [],
   );
   if (newAgents.length > 0) {

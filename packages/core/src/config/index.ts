@@ -25,6 +25,53 @@ import {
 // Re-export types
 export * from "./types.js";
 
+// Re-export ExporterFormat from plugin-contracts for convenience
+export type { ExporterFormat } from "@aligntrue/plugin-contracts";
+
+import type { ExporterConfig } from "./types.js";
+
+/**
+ * Normalize exporter configuration to object format
+ *
+ * Converts string array format to object format with empty config.
+ * @example
+ * // Input: ["cursor", "claude"]
+ * // Output: { cursor: {}, claude: {} }
+ *
+ * // Input: { cursor: { format: "native" }, claude: {} }
+ * // Output: { cursor: { format: "native" }, claude: {} }
+ */
+export function normalizeExporterConfig(
+  exporters: string[] | Record<string, ExporterConfig> | undefined,
+): Record<string, ExporterConfig> {
+  if (!exporters) {
+    return {};
+  }
+
+  if (Array.isArray(exporters)) {
+    return Object.fromEntries(exporters.map((name) => [name, {}]));
+  }
+
+  return exporters;
+}
+
+/**
+ * Get list of exporter names from config (handles both array and object formats)
+ */
+export function getExporterNames(
+  exporters: string[] | Record<string, ExporterConfig> | undefined,
+): string[] {
+  if (!exporters) {
+    return [];
+  }
+
+  if (Array.isArray(exporters)) {
+    return exporters;
+  }
+
+  return Object.keys(exporters);
+}
+
 // Re-export validation functions for backward compatibility
 export {
   validateConfig,
@@ -155,7 +202,8 @@ export async function saveMinimalConfig(
   const minimalConfig: Partial<AlignTrueConfig> = {};
 
   // Always include exporters (required field)
-  if (config.exporters && config.exporters.length > 0) {
+  const exporterCount = getExporterNames(config.exporters).length;
+  if (config.exporters && exporterCount > 0) {
     minimalConfig.exporters = config.exporters;
   }
 
