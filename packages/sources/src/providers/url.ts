@@ -348,8 +348,19 @@ export class UrlProvider implements SourceProvider {
    * Validate URL format and reject dangerous patterns
    */
   private validateUrl(url: string): void {
-    // Only allow https (and http for local development)
-    if (!url.startsWith("https://") && !url.startsWith("http://")) {
+    // Validate URL format using URL constructor (secure parsing)
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      throw new Error(
+        `Invalid URL format: ${url}\n` + `  Expected a valid HTTP/HTTPS URL`,
+      );
+    }
+
+    // Only allow https and http protocols (secure protocol validation)
+    const protocol = parsedUrl.protocol;
+    if (protocol !== "https:" && protocol !== "http:") {
       throw new Error(
         `Invalid URL protocol: ${url}\n` +
           `  Only https:// and http:// URLs are supported`,
@@ -361,15 +372,6 @@ export class UrlProvider implements SourceProvider {
       throw new Error(
         `Invalid URL: ${url}\n` +
           `  URLs cannot contain '..' (path traversal detected)`,
-      );
-    }
-
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch {
-      throw new Error(
-        `Invalid URL format: ${url}\n` + `  Expected a valid HTTP/HTTPS URL`,
       );
     }
   }

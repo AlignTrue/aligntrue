@@ -115,7 +115,7 @@ export class StorageManager {
         return { accessible: false, error: "Invalid git URL format" };
       }
 
-      // Test SSH connectivity
+      // Test SSH connectivity (git@host:path format)
       if (url.startsWith("git@")) {
         const host = url.split("@")[1]?.split(":")[0];
         if (!host || !this.isValidHostname(host)) {
@@ -145,20 +145,21 @@ export class StorageManager {
         }
       }
 
-      // Test HTTPS connectivity
-      if (url.startsWith("https://")) {
-        try {
+      // Test HTTPS connectivity (validated using URL constructor)
+      try {
+        const parsed = new URL(url);
+        if (parsed.protocol === "https:") {
           execFileSync("git", ["ls-remote", url, "HEAD"], {
             timeout: 10000,
             stdio: "pipe",
           });
           return { accessible: true };
-        } catch (err) {
-          return {
-            accessible: false,
-            error: `HTTPS connection failed: ${err instanceof Error ? err.message : String(err)}`,
-          };
         }
+      } catch (err) {
+        return {
+          accessible: false,
+          error: `HTTPS connection failed: ${err instanceof Error ? err.message : String(err)}`,
+        };
       }
 
       return { accessible: false, error: "Unknown URL format" };

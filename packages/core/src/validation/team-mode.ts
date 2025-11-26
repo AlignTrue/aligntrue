@@ -104,16 +104,41 @@ export function validateTeamMode(config: AlignTrueConfig): ValidationResult {
 export async function validateStorageAccess(
   url: string,
 ): Promise<{ accessible: boolean; error?: string }> {
-  // Basic URL format validation
-  // Full git connectivity check can be added when needed
-  if (!url.includes("git@") && !url.includes("https://")) {
-    return {
-      accessible: false,
-      error: "URL must be SSH (git@...) or HTTPS (https://...)",
-    };
+  // Validate HTTPS URLs using URL constructor
+  if (url.startsWith("https://")) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:") {
+        return {
+          accessible: false,
+          error: "HTTPS URL protocol validation failed",
+        };
+      }
+    } catch {
+      return {
+        accessible: false,
+        error: "Invalid HTTPS URL format",
+      };
+    }
+    return { accessible: true };
   }
 
-  return { accessible: true };
+  // Validate git@ SSH URLs with basic pattern matching
+  if (url.startsWith("git@")) {
+    // Basic git@ URL pattern: git@host:path/to/repo[.git]
+    if (!/^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9/_.-]+$/.test(url)) {
+      return {
+        accessible: false,
+        error: "Invalid git@ SSH URL format",
+      };
+    }
+    return { accessible: true };
+  }
+
+  return {
+    accessible: false,
+    error: "URL must be SSH (git@...) or HTTPS (https://...)",
+  };
 }
 
 /**
