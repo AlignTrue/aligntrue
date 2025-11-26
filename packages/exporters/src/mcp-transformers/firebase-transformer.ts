@@ -5,4 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const FirebaseMcpTransformer = createMcpTransformer(".idx/mcp.json");
+export const FirebaseMcpTransformer = createMcpTransformer({
+  path: ".idx/mcp.json",
+  format: "generic",
+});

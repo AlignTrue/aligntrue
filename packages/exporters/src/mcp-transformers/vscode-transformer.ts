@@ -5,4 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const VscodeMcpTransformer = createMcpTransformer(".vscode/mcp.json");
+export const VscodeMcpTransformer = createMcpTransformer({
+  path: ".vscode/mcp.json",
+  format: "vscode",
+});

@@ -1,12 +1,11 @@
-<!-- 
+<!--
   ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
-  
+
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
-  
+
   Source: apps/docs/content/index.mdx
 -->
-
 
 # Introduction
 
@@ -60,33 +59,33 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 
 ### Complete feature matrix
 
-| Feature                  | Description                                                                           | Learn more                                                |
-| ------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| **Core Sync**            |                                                                                       |                                                           |
+| Feature                  | Description                                                                           | Learn more                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Core Sync**            |                                                                                       |                                                                               |
 | Centralized editing      | Edit your configured edit source file; AlignTrue keeps everything aligned             | [Sync Behavior](https://aligntrue.ai/docs/03-concepts/sync-behavior)          |
 | Dry-run mode             | Preview changes before applying with `--dry-run`                                      | [Basic Commands](https://aligntrue.ai/docs/04-reference/cli-reference/basic)  |
 | Watch mode               | Continuous file watching with auto-sync on changes                                    | [Basic Commands](https://aligntrue.ai/docs/04-reference/cli-reference/basic)  |
 | Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, and section-level preservation | [Backup & Restore](https://aligntrue.ai/docs/04-reference/backup-restore)     |
 | Atomic operations        | Safe file writes prevent corruption during syncs                                      | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
-| **Agent Support**        |                                                                                       |                                                           |
-| Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                             |
+| **Agent Support**        |                                                                                       |                                                                               |
+| Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                                                 |
 | 28+ agents               | Comprehensive coverage through 50 exporters                                           | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
 | Unidirectional sync      | Edit in `.aligntrue/rules/`, sync to all agents automatically                         | [Getting Started](https://aligntrue.ai/docs/00-getting-started/00-quickstart) |
 | Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                      | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)         |
-| **Team Collaboration**   |                                                                                       |                                                           |
+| **Team Collaboration**   |                                                                                       |                                                                               |
 | Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds                 | [Team Mode](https://aligntrue.ai/docs/03-concepts/team-mode)                  |
 | Drift detection          | Compare lockfile vs allowed sources with multiple output formats                      | [Drift Detection](https://aligntrue.ai/docs/03-concepts/drift-detection)      |
-| CI validation            | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift`    | [CI/CD Integration](#integration-examples)                |
-| **Customization**        |                                                                                       |                                                           |
+| CI validation            | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift`    | [CI/CD Integration](#integration-examples)                                    |
+| **Customization**        |                                                                                       |                                                                               |
 | Plugs                    | Dynamic value slots with validation for flexible rules                                | [Customization](https://aligntrue.ai/docs/02-customization)                   |
 | Overlays                 | Surgical modifications to aligns for safe fork-resistant customization                | [Customization](https://aligntrue.ai/docs/02-customization)                   |
 | Scopes                   | Hierarchical rules for monorepos and complex projects                                 | [Scopes](https://aligntrue.ai/docs/02-customization/scopes)                   |
-| **Developer Experience** |                                                                                       |                                                           |
+| **Developer Experience** |                                                                                       |                                                                               |
 | .gitignore automation    | Smart management of generated files                                                   | [Git Workflows](https://aligntrue.ai/docs/03-concepts/git-workflows)          |
 | Verbose output           | Detailed execution logs with `--verbose` flag                                         | [CLI Reference](https://aligntrue.ai/docs/04-reference/cli-reference)         |
 | Ruler migration          | Auto-detect and convert from Ruler                                                    | [Features](https://aligntrue.ai/docs/04-reference/features)                   |
 | Backup & restore         | Selective file restoration with diff preview via `aligntrue revert`                   | [Backup & Restore](https://aligntrue.ai/docs/04-reference/backup-restore)     |
-| **Safety & Reliability** |                                                                                       |                                                           |
+| **Safety & Reliability** |                                                                                       |                                                                               |
 | Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, section-level preservation     | [Safety Guide](https://aligntrue.ai/docs/01-guides/09-safety-best-practices)  |
 | Easy recovery            | Quick rollback with `aligntrue revert` showing preview and diff                       | [Backup & Restore](https://aligntrue.ai/docs/04-reference/backup-restore)     |
 | 1800+ tests              | Vitest + Playwright with reproducible, seed-controlled execution                      | [Architecture](https://aligntrue.ai/docs/08-development/architecture)         |
@@ -257,7 +256,6 @@ Setting up AlignTrue for local development:
 
 MIT (see [LICENSE](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE))
 
-
 ---
 
-*This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`.*
+_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._

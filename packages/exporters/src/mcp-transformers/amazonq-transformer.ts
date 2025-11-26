@@ -5,4 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const AmazonqMcpTransformer = createMcpTransformer(".amazonq/mcp.json");
+export const AmazonqMcpTransformer = createMcpTransformer({
+  path: ".amazonq/mcp.json",
+  format: "generic",
+});

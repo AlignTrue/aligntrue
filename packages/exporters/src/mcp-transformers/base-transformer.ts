@@ -28,22 +28,4 @@ export abstract class BaseMcpTransformer {
   formatJson(obj: unknown): string {
     return JSON.stringify(obj, null, 2) + "\n";
   }
-
-  /**
-   * Extract vendor fields for a specific client
-   */
-  extractVendorFields(
-    config: CanonicalMcpConfig,
-    clientName: string,
-  ): Record<string, unknown> {
-    const vendorFields: Record<string, unknown> = {};
-
-    config.sections.forEach((section) => {
-      if (section[`vendor.${clientName}`]) {
-        Object.assign(vendorFields, section[`vendor.${clientName}`]);
-      }
-    });
-
-    return vendorFields;
-  }
 }

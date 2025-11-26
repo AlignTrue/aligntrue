@@ -59,27 +59,27 @@ AlignTrue uses a centralized MCP configuration in `.aligntrue/config.yaml`:
 ```yaml
 mcp:
   servers:
-    - name: aligntrue
-      command: npx
-      args: ["-y", "@aligntrue/cli", "mcp-server"]
-    - name: custom-tool
+    - name: my-custom-server
       command: python
       args: ["./tools/custom-mcp.py"]
       env:
         API_KEY: "${process.env.CUSTOM_API_KEY}"
+    - name: nodejs-server
+      command: node
+      args: ["./mcp-server.js"]
 ```
 
-This central definition is transformed into agent-specific formats automatically.
+This central definition is propagated to agent-specific MCP configuration files automatically during sync.
 
 ## Exporter capabilities
 
 Each MCP exporter:
 
-- Reads from centralized config in `.aligntrue/config.yaml`
-- Generates agent-specific MCP JSON/YAML format
-- Includes content hash for determinism
-- Supports fidelity notes for partial compatibility
-- Handles vendor-specific MCP extensions
+- Reads MCP server definitions from `.aligntrue/config.yaml`
+- Generates agent-specific MCP server configuration files
+- Propagates your centralized server definitions to each agent's required format
+- Includes content hash for determinism and verification
+- Supports vendor-specific customizations
 
 ## Configuration schema
 
