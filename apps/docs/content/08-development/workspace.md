@@ -175,9 +175,9 @@ pnpm test:watch    # Watch mode
 pnpm typecheck     # Type checking
 ```
 
-## Catalog
+## Example aligns
 
-Local catalog with 11 curated aligns:
+Local examples with 11 curated aligns:
 
 - **Base Aligns** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
 - **Stack Aligns** (3): nextjs-app-router, vercel-deployments, web-quality
@@ -185,11 +185,14 @@ Local catalog with 11 curated aligns:
 **Structure:**
 
 ```
-catalog/
-├── examples/          # YAML align definitions
-├── aligns.yaml         # Registry metadata
-└── namespaces.yaml    # Namespace ownership
+examples/aligns/
+├── global.md           # Universal baseline rules
+├── typescript.md       # TypeScript standards
+├── testing.md          # Testing best practices
+└── ...                 # Other example aligns
 ```
+
+Each align is a self-contained `.md` file with YAML frontmatter containing metadata (id, version, tags, etc.) and markdown content for rules.
 
 ## Package dependencies
 

@@ -68,3 +68,13 @@ export {
   type RuleFile,
   frontmatterSchema,
 } from "./frontmatter.js";
+
+// Align Manifest (for .align.yaml files)
+export {
+  type AlignManifest,
+  type AlignIncludes,
+  type AlignDefaults,
+  type AlignCustomization,
+  isValidManifestId,
+  parseManifestId,
+} from "./align-manifest.js";

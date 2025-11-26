@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Align manifest system (.align.yaml)** - New manifest format for curated bundles with includes, customizations, and defaults for easy sharing
+- **URL source support (type: url)** - Fetch rules directly from HTTP/HTTPS endpoints with ETag caching and offline fallback
+- **Align add/remove CLI commands** - New commands to add/remove align sources from configuration (`aligntrue add <url>`, `aligntrue remove <url>`)
+- **Manifest loading utilities** - Core functions for loading manifests, applying customizations, parsing align URLs with query parameters
+- **enabled field in rule frontmatter** - Non-destructive way to disable rules without deleting them (default: true if not present)
 - **Plugs and overlays conventions reference** - New documentation guide with recommended plug keys (test.cmd, docs.url, org.name, etc.) and overlay patterns to improve ecosystem interoperability
 - **Example aligns with plugs** - Updated `testing.md` and `typescript.md` with plug slots and overlay hints to demonstrate best practices
 - **Conventions guidance for align authors** - New section in creating-aligns guide encouraging use of standard plug keys for better user experience
@@ -23,9 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Plugs API consistency** - Changed plugs resolution result from `guidance` to `content` field to align with canonical schema
 - **Bundle merge logic** - Changed from last-wins to first-wins precedence for better predictability and local-first workflow
 - **Git sources documentation** - Updated to show new `include` syntax with examples (backward compatible with old `url`/`path` format)
 - **Architecture documentation** - Updated to explain first-wins precedence and source priority order
+- **Pack terminology to align** - Renamed "pack" concept to "align" throughout codebase and documentation for clarity
 
 ### Fixed
 

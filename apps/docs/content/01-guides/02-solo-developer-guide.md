@@ -98,7 +98,7 @@ cursor .
 
 ```bash
 # 1. Browse examples
-# Check examples/aligns/ directory or examples/aligns.yaml
+# Check examples/aligns/ directory
 
 # 2. Import align via git source
 # Add to .aligntrue/config.yaml:
