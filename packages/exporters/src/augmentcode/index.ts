@@ -1,7 +1,6 @@
 /**
  * AugmentCode exporter
- * Exports AlignTrue rules to AugmentCode .augment/rules/ directory format
- * Also writes legacy .augment-guidelines file for backward compatibility
+ * Exports AlignTrue rules to AugmentCode .augment/rules/*.md format
  */
 
 import { join } from "path";
@@ -9,11 +8,8 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
   ExporterCapabilities,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 export class AugmentCodeExporter extends ExporterBase {
@@ -30,88 +26,57 @@ export class AugmentCodeExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = align.sections;
+    // Get rules from request (handles backward compatibility with align.sections)
+    const rules = this.getRulesFromRequest(request);
 
-    if (sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
-    }
+    const allFilesWritten: string[] = [];
+    const allWarnings: string[] = [];
+    let combinedContentHash = "";
 
-    const filename = this.getScopeFilename(scope);
-    const outputPath = join(outputDir, ".augment", "rules", filename);
+    // Hash of all exported content
+    const contentHashes: string[] = [];
 
-    // Generate content from sections
-    const { content, warnings } = this.generateSectionContent(scope, sections);
-    const contentHash = computeContentHash({ scope, sections });
-    const fidelityNotes = this.computeSectionFidelityNotes(sections);
+    for (const rule of rules) {
+      if (!this.shouldExportRule(rule, "augmentcode")) {
+        continue;
+      }
 
-    const filesWritten: string[] = [];
+      // Determine output path
+      const filename = rule.filename.replace(/\.md$/, ".md"); // Already .md, keep it
+      const outputPath = join(outputDir, ".augment", "rules", filename);
 
-    // Write primary file
-    const primaryFiles = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options,
-    );
-    filesWritten.push(...primaryFiles);
+      // Strip starter rule comments from content (only relevant in source files, not exports)
+      const cleanedContent = this.stripStarterRuleComment(rule.content);
 
-    // Write legacy .augment-guidelines file for default scope only
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      const legacyPath = join(outputDir, ".augment-guidelines");
-      const legacyFiles = await this.writeFile(
-        legacyPath,
-        content,
+      // Add read-only marker to content
+      const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
+
+      // Construct full file content with heading from rule title
+      const fullContent = `# ${rule.frontmatter.title || "Rule"}\n\n${readOnlyMarker}\n${cleanedContent}`;
+
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(rule.hash);
+
+      // Write file
+      const files = await this.writeFile(
+        outputPath,
+        fullContent,
         dryRun,
-        options,
+        { ...options, force: true }, // Always force overwrite for read-only exports
       );
-      filesWritten.push(...legacyFiles);
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
     }
 
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    if (warnings.length > 0) {
-      result.warnings = warnings;
+    if (contentHashes.length > 0) {
+      combinedContentHash = this.computeHash(contentHashes.sort().join(""));
     }
 
-    return result;
-  }
-
-  /**
-   * Generate AugmentCode content from sections (natural markdown)
-   */
-  private generateSectionContent(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-  ): { content: string; warnings: string[] } {
-    const lines: string[] = [];
-
-    const scopeDesc = scope.isDefault
-      ? "AugmentCode rules (default scope)"
-      : `AugmentCode rules for ${scope.path}`;
-    lines.push(`# ${scopeDesc}`);
-    lines.push("");
-
-    // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(sections, false);
-    lines.push(sectionsMarkdown);
-
-    return { content: lines.join("\n"), warnings: [] };
-  }
-
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "rules.md";
-    }
-
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.md`;
+    return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
   }
 
   resetState(): void {

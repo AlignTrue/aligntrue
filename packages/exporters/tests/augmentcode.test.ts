@@ -58,13 +58,9 @@ describe("AugmentCodeExporter", () => {
       const result = await exporter.export(request, options);
 
       expect(result.success).toBe(true);
-      // Should write 2 files: primary .augment/rules/rules.md and legacy .augment-guidelines
-      expect(result.filesWritten).toHaveLength(2);
+      expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.augment\/rules\/rules\.md$/,
-      );
-      expect(result.filesWritten[1].replace(/\\/g, "/")).toMatch(
-        /\.augment-guidelines$/,
+        /\.augment\/rules\/testing-requirements\.md$/,
       );
     });
   });

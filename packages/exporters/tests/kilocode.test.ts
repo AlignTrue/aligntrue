@@ -6,7 +6,6 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { rmSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { KiloCodeExporter } from "../src/kilocode/index.js";
-import type { Align, AlignSection } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
   ExportOptions,
@@ -58,7 +57,7 @@ describe("KiloCodeExporter", () => {
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.kilocode\/rules\/rules\.md$/,
+        /\.kilocode\/rules\/testing-requirements\.md$/,
       );
     });
   });
