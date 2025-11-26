@@ -55,7 +55,7 @@ exporters:
 
       expect(result).toContain("security.md");
       // With first-wins, local rules should be listed first in precedence
-      expect(result).toContain(".aligntrue/rules");
+      expect(result).toMatch(/\.aligntrue[\\\/]rules/); // Cross-platform path matching
     });
   });
 
@@ -83,7 +83,7 @@ exporters:
       });
 
       // Output should show source summary
-      expect(result).toContain(".aligntrue/rules");
+      expect(result).toMatch(/\.aligntrue[\\\/]rules/); // Cross-platform path matching
     });
   });
 
