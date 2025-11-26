@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import { generateLockfile } from "../../src/lockfile/generator.js";
 
 const baseSection: AlignSection = {
@@ -9,7 +9,7 @@ const baseSection: AlignSection = {
   fingerprint: "rule.sample",
 };
 
-const basePack: AlignPack = {
+const baseAlign: Align = {
   id: "bundle.test",
   version: "1.0.0",
   spec_version: "1",
@@ -18,8 +18,8 @@ const basePack: AlignPack = {
 
 describe("lockfile generator hashing", () => {
   it("captures non-volatile vendor metadata", () => {
-    const packWithTimestamp: AlignPack = {
-      ...basePack,
+    const alignWithTimestamp: Align = {
+      ...baseAlign,
       sections: [
         {
           ...baseSection,
@@ -32,8 +32,8 @@ describe("lockfile generator hashing", () => {
       ],
     };
 
-    const packWithNewTimestamp: AlignPack = {
-      ...basePack,
+    const alignWithNewTimestamp: Align = {
+      ...baseAlign,
       sections: [
         {
           ...baseSection,
@@ -46,8 +46,8 @@ describe("lockfile generator hashing", () => {
       ],
     };
 
-    const lockfileA = generateLockfile(packWithTimestamp, "team");
-    const lockfileB = generateLockfile(packWithNewTimestamp, "team");
+    const lockfileA = generateLockfile(alignWithTimestamp, "team");
+    const lockfileB = generateLockfile(alignWithNewTimestamp, "team");
 
     expect(lockfileA.rules[0].content_hash).not.toBe(
       lockfileB.rules[0].content_hash,
@@ -55,8 +55,8 @@ describe("lockfile generator hashing", () => {
   });
 
   it("ignores vendor volatile fields", () => {
-    const packWithVolatile: AlignPack = {
-      ...basePack,
+    const alignWithVolatile: Align = {
+      ...baseAlign,
       sections: [
         {
           ...baseSection,
@@ -72,8 +72,8 @@ describe("lockfile generator hashing", () => {
       ],
     };
 
-    const packWithUpdatedVolatile: AlignPack = {
-      ...basePack,
+    const alignWithUpdatedVolatile: Align = {
+      ...baseAlign,
       sections: [
         {
           ...baseSection,
@@ -89,8 +89,8 @@ describe("lockfile generator hashing", () => {
       ],
     };
 
-    const lockfileA = generateLockfile(packWithVolatile, "team");
-    const lockfileB = generateLockfile(packWithUpdatedVolatile, "team");
+    const lockfileA = generateLockfile(alignWithVolatile, "team");
+    const lockfileB = generateLockfile(alignWithUpdatedVolatile, "team");
 
     expect(lockfileA.rules[0].content_hash).toBe(
       lockfileB.rules[0].content_hash,

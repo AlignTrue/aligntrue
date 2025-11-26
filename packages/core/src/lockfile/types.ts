@@ -10,14 +10,14 @@ export interface LockfileEntry {
   source?: string;
   source_sha?: string;
   // Triple-hash format for overlay tracking (Overlays system)
-  // base_hash: Hash of upstream pack (before overlays)
+  // base_hash: Hash of upstream align (before overlays)
   // overlay_hash: Hash of overlay configuration (when overlays applied)
   // result_hash: Hash of final result (after overlays applied)
   base_hash?: string;
   overlay_hash?: string;
   result_hash?: string;
   // Vendoring provenance (Team mode)
-  vendor_path?: string; // Path where pack is vendored
+  vendor_path?: string; // Path where align is vendored
   vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
   // Plugs tracking (Plugs system)
   pre_resolution_hash?: string; // Hash before plug resolution (template)
@@ -37,7 +37,7 @@ export interface Lockfile {
    */
   team_yaml_hash?: string;
   /**
-   * Total count of unresolved required plugs across all packs (Plugs system)
+   * Total count of unresolved required plugs across all aligns (Plugs system)
    */
   total_unresolved_plugs?: number;
   /**

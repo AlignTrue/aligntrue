@@ -3,17 +3,17 @@ import { readLockfile, writeLockfile } from "../../src/lockfile/io.js";
 import { generateLockfile } from "../../src/lockfile/generator.js";
 import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
 import { join } from "path";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 
 describe("lockfile I/O", () => {
   const testDir = join(process.cwd(), "packages/core/tests/lockfile/temp");
   const lockfilePath = join(testDir, ".aligntrue.lock.json");
 
-  const mockPack: AlignPack = {
-    id: "test.pack",
+  const mockAlign: Align = {
+    id: "test.align",
     version: "1.0.0",
     spec_version: "1",
-    summary: "Test pack",
+    summary: "Test align",
     owner: "test-org",
     source: "https://github.com/test-org/aligns",
     source_sha: "abc123",
@@ -44,7 +44,7 @@ describe("lockfile I/O", () => {
 
   describe("writeLockfile", () => {
     it("writes lockfile to disk", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, lockfile);
 
@@ -53,7 +53,7 @@ describe("lockfile I/O", () => {
 
     it("creates parent directory if missing", () => {
       const nestedPath = join(testDir, "nested/dir/.aligntrue.lock.json");
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(nestedPath, lockfile);
 
@@ -61,7 +61,7 @@ describe("lockfile I/O", () => {
     });
 
     it("formats JSON with 2-space indent", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, lockfile);
 
@@ -73,7 +73,7 @@ describe("lockfile I/O", () => {
     });
 
     it("adds trailing newline", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, lockfile);
 
@@ -82,7 +82,7 @@ describe("lockfile I/O", () => {
     });
 
     it("sorts JSON keys", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, lockfile);
 
@@ -108,11 +108,11 @@ describe("lockfile I/O", () => {
     });
 
     it("overwrites existing file", () => {
-      const lockfile1 = generateLockfile(mockPack, "team");
+      const lockfile1 = generateLockfile(mockAlign, "team");
       const lockfile2 = generateLockfile(
         {
-          ...mockPack,
-          sections: [{ ...mockPack.sections[0], guidance: "Modified" }],
+          ...mockAlign,
+          sections: [{ ...mockAlign.sections[0], guidance: "Modified" }],
         },
         "team",
       );
@@ -129,13 +129,13 @@ describe("lockfile I/O", () => {
     });
 
     it("only shows migration warning once and writes marker", () => {
-      const lockfile1 = generateLockfile(mockPack, "team");
+      const lockfile1 = generateLockfile(mockAlign, "team");
       const lockfile2 = generateLockfile(
         {
-          ...mockPack,
+          ...mockAlign,
           sections: [
             {
-              ...mockPack.sections[0],
+              ...mockAlign.sections[0],
               fingerprint: "second-rule",
               heading: "Second Rule",
             },
@@ -182,7 +182,7 @@ describe("lockfile I/O", () => {
     });
 
     it("uses atomic write (temp+rename)", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, lockfile);
 
@@ -192,7 +192,7 @@ describe("lockfile I/O", () => {
     });
 
     it("throws on write errors", () => {
-      const lockfile = generateLockfile(mockPack, "team");
+      const lockfile = generateLockfile(mockAlign, "team");
       // Use a path that will definitely fail on all platforms
       // On Windows: invalid drive letter, On Unix: root with no permissions
       const invalidPath =
@@ -208,7 +208,7 @@ describe("lockfile I/O", () => {
 
   describe("readLockfile", () => {
     it("reads lockfile from disk", () => {
-      const original = generateLockfile(mockPack, "team");
+      const original = generateLockfile(mockAlign, "team");
       writeLockfile(lockfilePath, original);
 
       const read = readLockfile(lockfilePath);
@@ -251,7 +251,7 @@ describe("lockfile I/O", () => {
     });
 
     it("preserves all lockfile fields", () => {
-      const original = generateLockfile(mockPack, "team");
+      const original = generateLockfile(mockAlign, "team");
       writeLockfile(lockfilePath, original);
 
       const read = readLockfile(lockfilePath);
@@ -266,7 +266,7 @@ describe("lockfile I/O", () => {
 
   describe("round-trip", () => {
     it("maintains data integrity", () => {
-      const original = generateLockfile(mockPack, "team");
+      const original = generateLockfile(mockAlign, "team");
 
       writeLockfile(lockfilePath, original);
       const read = readLockfile(lockfilePath);
@@ -275,23 +275,23 @@ describe("lockfile I/O", () => {
     });
 
     it("handles multiple rules", () => {
-      const packWithMultipleRules: AlignPack = {
-        ...mockPack,
+      const alignWithMultipleRules: Align = {
+        ...mockAlign,
         sections: [
-          mockPack.sections[0],
+          mockAlign.sections[0],
           {
-            ...mockPack.sections[0],
+            ...mockAlign.sections[0],
             id: "test.rule.two",
             fingerprint: "test.rule.two",
           },
           {
-            ...mockPack.sections[0],
+            ...mockAlign.sections[0],
             id: "test.rule.three",
             fingerprint: "test.rule.three",
           },
         ],
       };
-      const original = generateLockfile(packWithMultipleRules, "team");
+      const original = generateLockfile(alignWithMultipleRules, "team");
 
       writeLockfile(lockfilePath, original);
       const read = readLockfile(lockfilePath);

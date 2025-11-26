@@ -119,7 +119,7 @@ describe("writePatchFile", () => {
 
     const result = writePatchFile(conflicts, metadata, {
       artifactsDir: TEST_ARTIFACTS_DIR,
-      source: "github.com/example/pack",
+      source: "github.com/example/align",
     });
 
     expect(result.success).toBe(true);
@@ -127,7 +127,7 @@ describe("writePatchFile", () => {
     // Read file and check for source
     const { readFileSync } = require("fs");
     const content = readFileSync(result.path!, "utf-8");
-    expect(content).toContain("# Source: github.com/example/pack");
+    expect(content).toContain("# Source: github.com/example/align");
   });
 
   // Skip on Windows: chmod read-only behavior is inconsistent across Windows versions

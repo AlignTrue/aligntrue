@@ -3,7 +3,7 @@
  */
 
 import micromatch from "micromatch";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import type { ResolvedScope } from "@aligntrue/plugin-contracts";
 
 import type { AlignTrueConfig } from "./config/types.js";
@@ -311,16 +311,16 @@ export function applyScopeMerge(
  * This is a helper for callers who need to organize sections before merging
  */
 export function groupRulesByLevel(
-  packs: Array<{ pack: AlignPack; level: "root" | "path" | "local" }>,
+  aligns: Array<{ align: Align; level: "root" | "path" | "local" }>,
 ): Map<"root" | "path" | "local", AlignSection[]> {
   const grouped = new Map<"root" | "path" | "local", AlignSection[]>();
   grouped.set("root", []);
   grouped.set("path", []);
   grouped.set("local", []);
 
-  for (const { pack, level } of packs) {
+  for (const { align, level } of aligns) {
     const existing = grouped.get(level)!;
-    existing.push(...pack.sections);
+    existing.push(...align.sections);
   }
 
   return grouped;
@@ -334,7 +334,7 @@ export function groupRulesByLevel(
  * - Named scopes include sections that match the scope path
  * - Sections with source_file within the scope path are included
  *
- * @param sections - All sections from the pack
+ * @param sections - All sections from the align
  * @param scope - The resolved scope to filter for
  * @returns Sections that belong to the given scope
  */

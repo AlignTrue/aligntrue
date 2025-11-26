@@ -5,7 +5,7 @@
  * The .aligntrue/rules/ directory is the single source of truth.
  */
 
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import type { AlignTrueConfig, AlignTrueMode } from "../config/index.js";
 import { loadConfig } from "../config/index.js";
 import { loadIRAndResolvePlugs } from "./ir-loader.js";
@@ -87,7 +87,7 @@ export interface SyncResult extends Partial<OperationResult> {
  */
 export class SyncEngine {
   private config: AlignTrueConfig | null = null;
-  private ir: AlignPack | null = null;
+  private ir: Align | null = null;
   private fileWriter: AtomicFileWriter;
   private exporters: Map<string, ExporterPlugin> = new Map();
   private unresolvedPlugsCount: number = 0; // Track unresolved required plugs count (Plugs system)
@@ -278,7 +278,7 @@ export class SyncEngine {
 
         // Update IR with modified version
         if (overlayResult.modifiedIR) {
-          this.ir = overlayResult.modifiedIR as AlignPack;
+          this.ir = overlayResult.modifiedIR as Align;
         }
 
         // Add overlay warnings

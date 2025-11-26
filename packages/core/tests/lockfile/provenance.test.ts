@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import {
   generateLockfile,
   validateLockfile,
@@ -13,8 +13,8 @@ import {
 describe("Lockfile Provenance Tracking", () => {
   describe("generateLockfile with full provenance", () => {
     it("includes all provenance fields when present", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         owner: "mycompany/platform",
@@ -36,7 +36,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
       expect(lockfile.rules).toHaveLength(2);
       expect(lockfile.rules[0]).toMatchObject({
@@ -55,8 +55,8 @@ describe("Lockfile Provenance Tracking", () => {
     });
 
     it("handles partial provenance (only source)", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         source: "github.com/mycompany/rules",
@@ -70,7 +70,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
       expect(lockfile.rules[0]).toMatchObject({
         rule_id: "test.rule.one",
@@ -81,8 +81,8 @@ describe("Lockfile Provenance Tracking", () => {
     });
 
     it("handles missing provenance (solo mode)", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         sections: [
@@ -95,7 +95,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
       expect(lockfile.rules[0]).toMatchObject({
         rule_id: "test.rule.one",
@@ -109,8 +109,8 @@ describe("Lockfile Provenance Tracking", () => {
 
   describe("validateLockfile with provenance", () => {
     it("includes provenance in mismatch details", () => {
-      const originalPack: AlignPack = {
-        id: "test-pack",
+      const originalAlign: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         owner: "mycompany/platform",
@@ -126,10 +126,10 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(originalPack, "team");
+      const lockfile = generateLockfile(originalAlign, "team");
 
-      const modifiedPack: AlignPack = {
-        ...originalPack,
+      const modifiedAlign: Align = {
+        ...originalAlign,
         sections: [
           {
             id: "test.rule.one",
@@ -140,7 +140,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const validation = validateLockfile(lockfile, modifiedPack);
+      const validation = validateLockfile(lockfile, modifiedAlign);
 
       expect(validation.valid).toBe(false);
       expect(validation.mismatches).toHaveLength(1);
@@ -158,8 +158,8 @@ describe("Lockfile Provenance Tracking", () => {
     });
 
     it("validates successfully with matching provenance", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         owner: "mycompany/platform",
@@ -174,8 +174,8 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
-      const validation = validateLockfile(lockfile, pack);
+      const lockfile = generateLockfile(align, "team");
+      const validation = validateLockfile(lockfile, align);
 
       expect(validation.valid).toBe(true);
       expect(validation.mismatches).toHaveLength(0);
@@ -184,8 +184,8 @@ describe("Lockfile Provenance Tracking", () => {
 
   describe("formatValidationResult with provenance", () => {
     it("displays provenance in mismatch error messages", () => {
-      const originalPack: AlignPack = {
-        id: "test-pack",
+      const originalAlign: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         owner: "aligntrue",
@@ -201,10 +201,10 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(originalPack, "team");
+      const lockfile = generateLockfile(originalAlign, "team");
 
-      const modifiedPack: AlignPack = {
-        ...originalPack,
+      const modifiedAlign: Align = {
+        ...originalAlign,
         sections: [
           {
             heading: "Base No Console",
@@ -215,7 +215,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const validation = validateLockfile(lockfile, modifiedPack);
+      const validation = validateLockfile(lockfile, modifiedAlign);
       const message = formatValidationResult(validation);
 
       expect(message).toContain("Lockfile validation failed");
@@ -229,8 +229,8 @@ describe("Lockfile Provenance Tracking", () => {
     });
 
     it("handles mismatches without provenance gracefully", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         sections: [
@@ -243,10 +243,10 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
-      const modifiedPack: AlignPack = {
-        ...pack,
+      const modifiedAlign: Align = {
+        ...align,
         sections: [
           {
             heading: "Test Rule One",
@@ -257,7 +257,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const validation = validateLockfile(lockfile, modifiedPack);
+      const validation = validateLockfile(lockfile, modifiedAlign);
       const message = formatValidationResult(validation);
 
       expect(message).toContain("Lockfile validation failed");
@@ -268,8 +268,8 @@ describe("Lockfile Provenance Tracking", () => {
     });
 
     it("displays partial provenance", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         source: "github.com/mycompany/rules",
@@ -282,10 +282,10 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
-      const modifiedPack: AlignPack = {
-        ...pack,
+      const modifiedAlign: Align = {
+        ...align,
         sections: [
           {
             id: "test.rule.one",
@@ -295,7 +295,7 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const validation = validateLockfile(lockfile, modifiedPack);
+      const validation = validateLockfile(lockfile, modifiedAlign);
       const message = formatValidationResult(validation);
 
       expect(message).toContain("source=github.com/mycompany/rules");
@@ -305,7 +305,7 @@ describe("Lockfile Provenance Tracking", () => {
   });
 
   describe("provenance stability", () => {
-    it("same pack produces same lockfile hashes regardless of provenance", () => {
+    it("same align produces same lockfile hashes regardless of provenance", () => {
       const baseRules = [
         {
           id: "test.rule.one",
@@ -314,8 +314,8 @@ describe("Lockfile Provenance Tracking", () => {
         },
       ];
 
-      const packWithProvenance: AlignPack = {
-        id: "test-pack",
+      const alignWithProvenance: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         owner: "mycompany",
@@ -324,15 +324,15 @@ describe("Lockfile Provenance Tracking", () => {
         sections: baseRules,
       };
 
-      const packWithoutProvenance: AlignPack = {
-        id: "test-pack",
+      const alignWithoutProvenance: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         sections: baseRules,
       };
 
-      const lockfile1 = generateLockfile(packWithProvenance, "team");
-      const lockfile2 = generateLockfile(packWithoutProvenance, "team");
+      const lockfile1 = generateLockfile(alignWithProvenance, "team");
+      const lockfile2 = generateLockfile(alignWithoutProvenance, "team");
 
       // Content hashes should match (provenance not part of hash)
       expect(lockfile1.rules[0].content_hash).toBe(
@@ -347,8 +347,8 @@ describe("Lockfile Provenance Tracking", () => {
 
   describe("provenance change detection", () => {
     it("detects source_sha changes even with same content", () => {
-      const pack: AlignPack = {
-        id: "test-pack",
+      const align: Align = {
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         source: "github.com/mycompany/rules",
@@ -362,20 +362,20 @@ describe("Lockfile Provenance Tracking", () => {
         ],
       };
 
-      const lockfile = generateLockfile(pack, "team");
+      const lockfile = generateLockfile(align, "team");
 
       // Same content, different SHA (e.g., rebase/cherry-pick)
-      const packWithNewSha: AlignPack = {
-        ...pack,
+      const alignWithNewSha: Align = {
+        ...align,
         source_sha: "def456",
       };
 
       // Content hash matches (same rule content)
-      const validation = validateLockfile(lockfile, packWithNewSha);
+      const validation = validateLockfile(lockfile, alignWithNewSha);
       expect(validation.valid).toBe(true); // Content didn't change
 
       // But we can see SHA changed in lockfile entry provenance
-      const newLockfile = generateLockfile(packWithNewSha, "team");
+      const newLockfile = generateLockfile(alignWithNewSha, "team");
       expect(newLockfile.rules[0].source_sha).toBe("def456");
       expect(lockfile.rules[0].source_sha).toBe("abc123");
     });

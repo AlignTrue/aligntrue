@@ -19,9 +19,9 @@ export interface ParsedSourceURL {
  * Examples:
  *   https://github.com/company/rules
  *   https://github.com/company/rules@v2.0.0
- *   https://github.com/company/rules/packs
- *   https://github.com/company/rules/packs/security.md
- *   https://github.com/company/rules@v2.0.0/packs/security.md
+ *   https://github.com/company/rules/aligns
+ *   https://github.com/company/rules/aligns/security.md
+ *   https://github.com/company/rules@v2.0.0/aligns/security.md
  */
 export function parseSourceURL(url: string): ParsedSourceURL {
   // Return type explicitly set to avoid type inference issues
@@ -40,7 +40,7 @@ export function parseSourceURL(url: string): ParsedSourceURL {
         `Examples:\n` +
         `  - https://github.com/company/rules\n` +
         `  - https://github.com/company/rules@v2.0.0\n` +
-        `  - https://github.com/company/rules/packs/security.md`,
+        `  - https://github.com/company/rules/aligns/security.md`,
     );
   }
 

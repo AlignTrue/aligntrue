@@ -4,7 +4,7 @@
  */
 
 import { basename } from "path";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 
 export interface SourceFile {
   path: string;
@@ -51,17 +51,17 @@ export function orderSourceFiles(
 }
 
 /**
- * Merge multiple source files into a single AlignPack
+ * Merge multiple source files into a single Align
  * Adds source file metadata to each section for provenance
  *
  * @param files - Ordered list of source files
  * @param preservedId - Optional ID to preserve from existing IR (instead of using "multi-file-source")
- * @returns Merged AlignPack with all sections
+ * @returns Merged Align with all sections
  */
 export function mergeSourceFiles(
   files: SourceFile[],
   preservedId?: string,
-): AlignPack {
+): Align {
   const allSections: AlignSection[] = [];
 
   for (const file of files) {

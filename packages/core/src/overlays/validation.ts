@@ -4,7 +4,7 @@
  * plug conflicts, and size limit violations
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import type {
   OverlayDefinition,
@@ -18,13 +18,13 @@ import type {
  * Checks for stale selectors, ambiguous matches, plug conflicts, and size limits
  *
  * @param overlays - Array of overlay definitions to validate
- * @param ir - AlignPack IR to validate against
+ * @param ir - Align IR to validate against
  * @param options - Validation options
  * @returns Validation result with errors and warnings
  */
 export function validateOverlays(
   overlays: OverlayDefinition[],
-  ir: AlignPack,
+  ir: Align,
   options?: {
     /** Maximum number of overlays allowed (default: 50) */
     maxOverrides?: number;
@@ -91,12 +91,12 @@ export function validateOverlays(
  * Check if selector is stale (no matches in current IR)
  *
  * @param overlay - Overlay definition
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Error if stale, undefined otherwise
  */
 function checkStaleSelector(
   overlay: OverlayDefinition,
-  ir: AlignPack,
+  ir: Align,
 ): OverlayValidationError | undefined {
   const result = evaluateSelector(overlay.selector, ir);
 
@@ -117,12 +117,12 @@ function checkStaleSelector(
  * Check if selector is ambiguous (multiple matches)
  *
  * @param overlay - Overlay definition
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Error if ambiguous, undefined otherwise
  */
 function checkAmbiguousSelector(
   overlay: OverlayDefinition,
-  ir: AlignPack,
+  ir: Align,
 ): OverlayValidationError | undefined {
   const result = evaluateSelector(overlay.selector, ir);
 
@@ -144,12 +144,12 @@ function checkAmbiguousSelector(
  * Plug keys are identified by the presence of "plugs" in the rule
  *
  * @param overlay - Overlay definition
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Warning if conflicts detected, undefined otherwise
  */
 function checkPlugConflicts(
   overlay: OverlayDefinition,
-  ir: AlignPack,
+  ir: Align,
 ): OverlayValidationWarning | undefined {
   // Only check rule selectors (property and array selectors don't have plugs)
   if (!overlay.selector.startsWith("rule[id=")) {
@@ -161,7 +161,7 @@ function checkPlugConflicts(
     return undefined;
   }
 
-  // Sections don't have plugs - plugs are defined at pack level only
+  // Sections don't have plugs - plugs are defined at align level only
   // Return early (no plug conflicts to check at section level)
   return undefined;
 }
@@ -239,12 +239,12 @@ function validateSizeLimits(
  * and all its remove operations target non-existent keys
  *
  * @param overlays - Array of overlay definitions
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Array of warnings for redundant overlays
  */
 export function detectRedundantOverlays(
   overlays: OverlayDefinition[],
-  ir: AlignPack,
+  ir: Align,
 ): OverlayValidationWarning[] {
   const warnings: OverlayValidationWarning[] = [];
 
@@ -295,13 +295,13 @@ export function detectRedundantOverlays(
  * Returns true if overlays are valid (no errors), false otherwise
  *
  * @param overlays - Array of overlay definitions
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @param options - Validation options
  * @returns True if valid, false if errors detected
  */
 export function areOverlaysValid(
   overlays: OverlayDefinition[],
-  ir: AlignPack,
+  ir: Align,
   options?: {
     maxOverrides?: number;
     maxOperationsPerOverride?: number;

@@ -4,7 +4,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import { computeContentHash, computeHash } from "@aligntrue/schema";
 import type { Lockfile, LockfileEntry } from "./types.js";
 import { computeDualHash } from "../plugs/hashing.js";
@@ -13,32 +13,32 @@ import { ensureSectionsArray } from "../validation/sections.js";
 import type { RuleFile } from "../rules/file-io.js";
 
 /**
- * Generate lockfile from an AlignPack bundle
+ * Generate lockfile from an Align bundle
  *
  * Uses canonical JSON (JCS) with vendor.volatile fields excluded
  * Supports triple-hash format when overlays are present (Overlays system)
  *
- * @param pack - AlignPack to generate lockfile from
+ * @param align - Align to generate lockfile from
  * @param mode - Config mode (team or enterprise)
  * @param teamYamlPath - Optional path to .aligntrue.team.yaml for hash capture
- * @param overlays - Optional overlay definitions applied to this pack
- * @param basePack - Optional base pack (before overlays) for triple-hash
+ * @param overlays - Optional overlay definitions applied to this align
+ * @param baseAlign - Optional base align (before overlays) for triple-hash
  * @returns Lockfile with per-rule and bundle hashes
  */
 export function generateLockfile(
-  pack: AlignPack,
+  align: Align,
   mode: "team" | "enterprise",
   teamYamlPath?: string,
   overlays?: OverlayDefinition[],
-  basePack?: AlignPack,
+  baseAlign?: Align,
 ): Lockfile {
   const entries: LockfileEntry[] = [];
   const contentHashes: string[] = [];
 
   // Compute dual hashes for plugs (Plugs system)
   let dualHashResult: ReturnType<typeof computeDualHash> | undefined;
-  if (pack.plugs) {
-    dualHashResult = computeDualHash(pack);
+  if (align.plugs) {
+    dualHashResult = computeDualHash(align);
   }
 
   // Compute overlay hash if overlays present (Overlays system)
@@ -46,24 +46,24 @@ export function generateLockfile(
     overlays && overlays.length > 0 ? computeOverlayHash(overlays) : undefined;
 
   // Defensive: ensure sections exists
-  ensureSectionsArray(pack, { throwOnInvalid: true });
+  ensureSectionsArray(align, { throwOnInvalid: true });
 
   // Filter to only team-scoped sections (exclude personal sections from lockfile)
-  const teamSections = pack.sections.filter(
+  const teamSections = align.sections.filter(
     (section) => section.scope !== "personal",
   );
 
   // Track personal sections count for metadata
-  const personalSectionsCount = pack.sections.length - teamSections.length;
+  const personalSectionsCount = align.sections.length - teamSections.length;
 
   // Generate entries from team sections using fingerprints
   for (const section of teamSections) {
     const resultHash = hashSection(section);
 
-    // Compute base hash if base pack provided (Overlays system)
+    // Compute base hash if base align provided (Overlays system)
     let baseHash: string | undefined;
-    if (basePack) {
-      const baseSection = basePack.sections.find(
+    if (baseAlign) {
+      const baseSection = baseAlign.sections.find(
         (s) => s.fingerprint === section.fingerprint,
       );
       if (baseSection) {
@@ -74,19 +74,19 @@ export function generateLockfile(
     const entry: LockfileEntry = {
       rule_id: section.fingerprint, // Use fingerprint as ID for sections
       content_hash: resultHash, // Alias to result_hash for backward compatibility
-      ...(pack.owner && { owner: pack.owner }),
-      ...(pack.source && { source: pack.source }),
-      ...(pack.source_sha && { source_sha: pack.source_sha }),
+      ...(align.owner && { owner: align.owner }),
+      ...(align.source && { source: align.source }),
+      ...(align.source_sha && { source_sha: align.source_sha }),
       // Triple-hash format when overlays present (Overlays system)
       ...(baseHash && { base_hash: baseHash }),
       ...(overlayHash && { overlay_hash: overlayHash }),
       ...(overlayHash && { result_hash: resultHash }),
       // Team mode: Capture vendoring provenance
-      ...(pack.vendor_path && { vendor_path: pack.vendor_path }),
-      ...(pack.vendor_type && { vendor_type: pack.vendor_type }),
+      ...(align.vendor_path && { vendor_path: align.vendor_path }),
+      ...(align.vendor_type && { vendor_type: align.vendor_type }),
     };
 
-    // Add plugs hashes if pack has plugs (Plugs system)
+    // Add plugs hashes if align has plugs (Plugs system)
     if (dualHashResult) {
       entry.pre_resolution_hash = dualHashResult.preResolutionHash;
       if (dualHashResult.postResolutionHash) {
