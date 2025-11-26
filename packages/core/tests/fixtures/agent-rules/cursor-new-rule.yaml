@@ -1,16 +1,16 @@
 # Mock agent rules with new rule added
-rules:
-  - id: testing.require-tests
-    severity: warn
-    guidance: All features should have tests.
-    applies_to: ["**/*.ts"]
+sections:
+  - heading: Testing Requirements
+    level: 2
+    content: All features should have tests.
+    fingerprint: testing-require-tests
 
-  - id: style.no-any
-    severity: warn
-    guidance: Avoid using any type.
-    applies_to: ["**/*.ts"]
+  - heading: Style No Any
+    level: 2
+    content: Avoid using any type.
+    fingerprint: style-no-any
 
-  - id: security.no-secrets
-    severity: error
-    guidance: Never commit secrets or API keys.
-    applies_to: ["**/*"]
+  - heading: Security No Secrets
+    level: 2
+    content: Never commit secrets or API keys.
+    fingerprint: security-no-secrets

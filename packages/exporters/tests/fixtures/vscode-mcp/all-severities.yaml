@@ -1,21 +1,18 @@
-rules:
-  - id: security.no-secrets
-    severity: error
-    applies_to:
-      - "**/*"
-    guidance: |
+sections:
+  - heading: Security No Secrets
+    level: 2
+    content: |
       Never commit secrets or API keys to version control.
+    fingerprint: security-no-secrets
 
-  - id: testing.require-tests
-    severity: warn
-    applies_to:
-      - "src/**/*.ts"
-    guidance: |
+  - heading: Testing Requirements
+    level: 2
+    content: |
       All features should have tests.
+    fingerprint: testing-require-tests
 
-  - id: style.prefer-const
-    severity: info
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+  - heading: Style Prefer Const
+    level: 2
+    content: |
       Use const instead of let when variables are not reassigned.
+    fingerprint: style-prefer-const

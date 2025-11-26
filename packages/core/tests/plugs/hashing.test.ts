@@ -25,10 +25,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };
@@ -59,10 +59,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };
@@ -105,10 +105,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };
@@ -138,10 +138,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };
@@ -176,10 +176,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Check [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Check [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };
@@ -210,10 +210,10 @@ describe("plugs hashing", () => {
         },
         sections: [
           {
-            id: "test.rule",
-            severity: "error",
-            applies_to: ["**/*.ts"],
-            guidance: "Run [[plug:test.cmd]]",
+            heading: "Test Rule",
+            level: 2,
+            content: "Run [[plug:test.cmd]]",
+            fingerprint: "test-rule",
           },
         ],
       };

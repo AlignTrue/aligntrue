@@ -1,22 +1,19 @@
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: testing.require-tests
-    severity: error
-    applies_to:
-      - "src/**/*.ts"
-    guidance: |
+sections:
+  - heading: Testing Requirements
+    level: 2
+    content: |
       All features must have tests to ensure reliability.
-  - id: docs.update-readme
-    severity: warn
-    applies_to:
-      - "README.md"
-    guidance: |
+    fingerprint: testing-require-tests
+  - heading: README Updates
+    level: 2
+    content: |
       Keep README updated with significant changes.
-  - id: style.use-prettier
-    severity: info
-    applies_to:
-      - "**/*.{ts,js,json}"
-    guidance: |
+    fingerprint: docs-update-readme
+  - heading: Prettier Formatting
+    level: 2
+    content: |
       Format code with Prettier before committing.
+    fingerprint: style-use-prettier

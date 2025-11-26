@@ -1,9 +1,8 @@
 id: test-pack
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: test-rule
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: Test rule for testing
+sections:
+  - heading: Test Rule
+    level: 2
+    content: Test rule for testing
+    fingerprint: test-rule

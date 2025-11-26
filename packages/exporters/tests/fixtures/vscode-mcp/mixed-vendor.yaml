@@ -1,10 +1,9 @@
-rules:
-  - id: linting.use-eslint
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+sections:
+  - heading: Linting with ESLint
+    level: 2
+    content: |
       Use ESLint for consistent code quality.
+    fingerprint: linting-use-eslint
     vendor:
       vscode:
         diagnostic_severity: "Warning"

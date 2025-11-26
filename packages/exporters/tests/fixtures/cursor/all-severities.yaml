@@ -1,24 +1,21 @@
 id: test-pack-severities
 version: 1.0.0
 spec_version: "1"
-rules:
-  - id: critical.security
-    severity: error
-    applies_to:
-      - "**/*"
-    guidance: |
+sections:
+  - heading: Security Critical
+    level: 2
+    content: |
       Security violations must be fixed immediately.
+    fingerprint: critical-security
 
-  - id: important.performance
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+  - heading: Performance Important
+    level: 2
+    content: |
       Performance issues should be addressed.
+    fingerprint: important-performance
 
-  - id: nice-to-have.style
-    severity: info
-    applies_to:
-      - "**/*.ts"
-    guidance: |
+  - heading: Style Suggestions
+    level: 2
+    content: |
       Style suggestions to consider.
+    fingerprint: nice-to-have-style

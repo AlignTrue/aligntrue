@@ -85,10 +85,10 @@ export async function executeExporters(
         // Update sections with resolved content
         scopedPack.sections = scopedPack.sections.map((section, idx) => {
           const resolvedRule = resolved.rules[idx];
-          if (resolvedRule?.guidance) {
+          if (resolvedRule?.content) {
             return {
               ...section,
-              content: resolvedRule.guidance,
+              content: resolvedRule.content,
             };
           }
           return section;
