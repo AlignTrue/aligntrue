@@ -49,6 +49,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result = await exporter.export(request, options);
@@ -64,6 +75,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result = await exporter.export(request, options);
@@ -94,6 +116,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result = await exporter.export(request, options);
@@ -111,6 +144,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: true,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result = await exporter.export(request, options);
@@ -164,6 +208,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result = await exporter.export(request, options);
@@ -179,6 +234,17 @@ describe("VsCodeMcpExporter", () => {
       const options: ExportOptions = {
         outputDir: TEST_OUTPUT_DIR,
         dryRun: false,
+        config: {
+          mcp: {
+            servers: [
+              {
+                name: "test-server",
+                command: "node",
+                args: ["./server.js"],
+              },
+            ],
+          },
+        },
       };
 
       const result1 = await exporter.export(request1, options);
