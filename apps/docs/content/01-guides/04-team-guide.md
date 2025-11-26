@@ -401,42 +401,17 @@ aligntrue drift
 #   - Latest: sha256:def456...
 #   - Changes: 3 new rules, 2 modified rules
 
-# 2. Review changes
-aligntrue update check
-
-# Output:
-# Update available: base-global v1.0.0 → v1.1.0
-#
-# New rules (3):
-#   - security.check-deps
-#   - security.no-eval
-#   - testing.coverage-threshold
-#
-# Modified rules (2):
-#   - testing.require-tests (severity: warn → error)
-#   - docs.require-readme (applies_to: ["README.md"] → ["*.md"])
-
-# 3. Apply update
-aligntrue update apply
-
-# 4. Test with team
+# 2. Test with team
 aligntrue check
 aligntrue sync
 
-# 5. Commit with changelog
+# 3. Commit changes
 git add .aligntrue.lock.json
-git commit -m "chore: Update base-global to v1.1.0
-
-Changes:
-- Added 3 new security rules
-- Upgraded testing.require-tests to error
-- Extended docs.require-readme to all markdown files
-
-Tested by: @dev1, @dev2"
+git commit -m "chore: Update approved rule sources"
 git push
 ```
 
-**Result:** Team updates to new version with full visibility into changes.
+**Result:** Team stays synchronized with approved external sources through git-native PR reviews.
 
 ## Drift detection
 

@@ -72,7 +72,7 @@ You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
 
 ## Testing Package Installation Locally
 
-**IMPORTANT:** `pnpm align` creates tarballs with `workspace:*` dependencies intact, which npm cannot resolve during global installation.
+**IMPORTANT:** `pnpm pack` creates tarballs with `workspace:*` dependencies intact, which npm cannot resolve during global installation.
 
 ### For local testing
 
@@ -115,6 +115,6 @@ Always use `pnpm publish` which automatically rewrites `workspace:*` to concrete
 ### Never use
 
 - `pnpm link --global` for testing (will fail with ERR_PACKAGE_PATH_NOT_EXPORTED)
-- `npm install -g <tarball>` from `pnpm align` (will fail with workspace protocol errors)
+- `npm install -g <tarball>` from `pnpm pack` (will fail with workspace protocol errors)
 
 Use absolute paths or the distribution simulation script instead.

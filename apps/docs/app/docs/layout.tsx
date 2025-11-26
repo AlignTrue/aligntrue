@@ -85,7 +85,7 @@ function DocsFooter() {
             href="https://nodejs.org/"
             target="_blank"
             rel="noopener noreferrer"
-            title="Node.js 22+"
+            title="Node.js 20+"
             style={{ textDecoration: "none" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}

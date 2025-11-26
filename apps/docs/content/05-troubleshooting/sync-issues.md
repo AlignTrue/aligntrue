@@ -68,7 +68,7 @@ cat AGENTS.md | grep -A 5 "Testing rules"
 
 **Causes:**
 
-1. **Duplicate sections** (last-write-wins applied)
+1. **Duplicate sections** (first-wins precedence applied)
 2. **Files not detected** as edited
 3. **Parse errors** in markdown
 
@@ -138,7 +138,7 @@ cat AGENTS.md | grep -A 5 "Testing rules"
    aligntrue sync
    ```
 
-**AlignTrue's behavior:** When the same section appears in multiple files, last-write-wins (most recently modified file) is used.
+**AlignTrue's behavior:** When the same section appears in multiple files, first-wins precedence is applied (local rules always first, then external sources in order).
 
 ## Sync shows no changes but files are different
 

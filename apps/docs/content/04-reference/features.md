@@ -9,13 +9,15 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 ## Core platform
 
-- Natural markdown authoring in `.aligntrue/rules/` directory
-- Unidirectional sync engine (rules → IR → agents)
+- Natural markdown authoring in `.aligntrue/rules/` directory with optional enabled/disabled field in frontmatter
+- Unidirectional sync engine (rules → IR → agents) with first-wins merge precedence
 - 50 exporters supporting 28+ AI coding agents with auto-detection
+- MCP server configuration propagation from centralized `config.mcp.servers`
 - Lockfiles and bundles for team mode (reproducible builds)
 - Drift detection for CI validation
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
+- URL-based rule sources with ETag caching and offline fallback
 
 ## CLI (23 commands)
 

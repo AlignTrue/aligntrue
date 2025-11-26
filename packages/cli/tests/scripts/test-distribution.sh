@@ -4,7 +4,7 @@
 # Distribution Simulation Script
 #
 # This script simulates the npm distribution experience by:
-# 1. Creating a tarball with pnpm align
+# 1. Creating a tarball with pnpm pack
 # 2. Extracting and rewriting workspace:* to concrete versions
 # 3. Setting up proper module resolution
 # 4. Running smoke tests
@@ -99,14 +99,14 @@ main() {
     # Clean up old tarballs first
     rm -f aligntrue-cli-*.tgz
     
-    if ! pnpm align --align-destination "$CLI_DIR" >/dev/null 2>&1; then
+    if ! pnpm pack >/dev/null 2>&1; then
         log_error "Failed to create tarball"
         exit 1
     fi
     
     TARBALL=$(ls aligntrue-cli-*.tgz 2>/dev/null | head -1)
     if [ -z "$TARBALL" ]; then
-        log_error "Tarball not found after pnpm align"
+        log_error "Tarball not found after pnpm pack"
         exit 1
     fi
     

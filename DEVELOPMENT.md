@@ -734,7 +734,7 @@ CI runs on multiple platforms to catch platform-specific issues:
 
 Additionally, CI tests multiple Node.js versions:
 
-- **Node 20** - LTS (all platforms)
+- **Node 20** - LTS minimum (all platforms)
 - **Node 22** - Current LTS (all platforms)
 
 ### Windows test limitations
@@ -2068,7 +2068,7 @@ Before merging "Version Packages" PR:
 
 ## Prerequisites
 
-- **Node.js** 22 or later (`.node-version` file included for Volta/asdf/nvm)
+- **Node.js** 20 or later (`.node-version` file included for Volta/asdf/nvm)
 - **pnpm** 9 or later
 
 **Install pnpm:**
