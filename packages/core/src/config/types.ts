@@ -86,6 +86,7 @@ export interface AlignTrueConfig {
     check_interval?: number;
     id?: string;
     version?: string;
+    include?: string[];
   }>;
   exporters?: string[];
   scopes?: Array<{

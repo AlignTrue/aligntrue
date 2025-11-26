@@ -10,8 +10,8 @@ import {
   type BundleResult,
   ensureSectionsArray,
   loadRulesDirectory,
+  parseSourceURL,
 } from "@aligntrue/core";
-import { parseSourceURL } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
 import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
 import type { AlignTrueConfig, ConsentManager } from "@aligntrue/core";
@@ -265,8 +265,13 @@ function expandSourcesWithInclude(
         try {
           const parsed = parseSourceURL(includeUrl);
           // Create a new git source from the parsed URL
-          const expandedSource: NonNullable<AlignTrueConfig["sources"]>[0] = {
-            type: "git" as const,
+          const expandedSource: {
+            type: "git" | "local" | "url";
+            url?: string;
+            path?: string;
+            ref?: string;
+          } = {
+            type: "git",
             url: `https://${parsed.host}/${parsed.org}/${parsed.repo}`,
           };
           if (parsed.ref) {
@@ -275,7 +280,9 @@ function expandSourcesWithInclude(
           if (parsed.path) {
             expandedSource.path = parsed.path;
           }
-          expanded.push(expandedSource);
+          expanded.push(
+            expandedSource as NonNullable<AlignTrueConfig["sources"]>[0],
+          );
         } catch (error) {
           throw new Error(
             `Failed to parse include URL: ${includeUrl}\n` +
