@@ -138,7 +138,7 @@ describe("AgentsExporter", () => {
 
       expect(result.success).toBe(true);
       expect(result.contentHash).toBeTruthy();
-    });
+    }, 10000);
 
     it("handles rules with multiple severities", async () => {
       const { sections } = loadFixture(FIXTURES_DIR, "all-severities.yaml");

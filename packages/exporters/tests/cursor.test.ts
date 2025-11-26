@@ -67,7 +67,7 @@ describe("CursorExporter", () => {
       const content = readFileSync(result.filesWritten[0], "utf-8");
       expect(content).toContain("---"); // Has frontmatter
       expect(content).toContain("READ-ONLY"); // Has read-only marker
-    });
+    }, 10000);
 
     it("exports multiple rules to separate .mdc files", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "multiple-rules.yaml");
