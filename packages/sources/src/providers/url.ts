@@ -204,6 +204,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: headers are validated HTTP response headers (etag, last-modified).
     // this.url is validated via validateUrl() at constructor. No user input flows through headers.
+    // lgtm[js/file-access-to-http]: Headers are safe (etag/last-modified from cached metadata). URL is validated in constructor via validateUrl().
     const response = await fetch(this.url, { headers });
 
     // 304 Not Modified - content unchanged
@@ -228,6 +229,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
     // Cache directory is created at constructor, never from user input.
+    // lgtm[js/http-to-file-access]: Cache file path is controlled (computed from URL hash, not user input). URL validated in constructor. Cache dir created safely in constructor (line 100-104).
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata
@@ -266,6 +268,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
     // Cache directory is created at constructor, never from user input.
+    // lgtm[js/http-to-file-access]: Cache file path is controlled (computed from URL hash, not user input). URL validated in constructor. Cache dir created safely in constructor (line 100-104).
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata
