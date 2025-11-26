@@ -13,7 +13,7 @@ import {
   loadIR,
   evaluateSelector,
 } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { existsSync } from "fs";
 import { isTTY } from "../utils/tty-helper.js";
@@ -306,7 +306,7 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
 async function loadIrForValidation(
   config: Awaited<ReturnType<typeof loadConfig>>,
   cwd: string,
-): Promise<AlignPack | null> {
+): Promise<Align | null> {
   try {
     const paths = getAlignTruePaths(cwd);
 
@@ -324,7 +324,7 @@ async function loadIrForValidation(
     // Load and validate the IR
     const ir = await loadIR(irPath);
     if (ir && typeof ir === "object" && "sections" in ir) {
-      return ir as AlignPack;
+      return ir as Align;
     }
 
     clack.log.warn(

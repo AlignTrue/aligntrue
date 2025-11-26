@@ -46,8 +46,8 @@ export function formatURLParseError(url: string, reason: string): string {
   message += `  Examples:\n`;
   message += `    - https://github.com/company/rules\n`;
   message += `    - https://github.com/company/rules@v2.0.0\n`;
-  message += `    - https://github.com/company/rules/packs\n`;
-  message += `    - https://github.com/company/rules/packs/security.md\n`;
+  message += `    - https://github.com/company/rules/aligns\n`;
+  message += `    - https://github.com/company/rules/aligns/security.md\n`;
   return message;
 }
 
@@ -66,7 +66,7 @@ export function formatIncludeValidationError(
   message += `    - type: git\n`;
   message += `      include:\n`;
   message += `        - https://github.com/company/rules\n`;
-  message += `        - https://github.com/company/rules@v2.0.0/packs\n`;
+  message += `        - https://github.com/company/rules@v2.0.0/aligns\n`;
   return message;
 }
 

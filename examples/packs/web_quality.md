@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-web-quality"
+id: "aligns/base/base-web-quality"
 version: "1.0.0"
 summary: "Web quality baseline: accessibility, performance, resilience, mobile-first"
 tags: ["web", "accessibility", "performance", "quality", "paved-road"]

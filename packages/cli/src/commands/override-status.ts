@@ -10,7 +10,7 @@ import {
   loadIR,
   getAlignTruePaths,
 } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
 import { isTTY } from "../utils/tty-helper.js";
@@ -147,7 +147,7 @@ async function runOverrideStatus(
       try {
         const match = evaluateSelector(
           overlay.selector,
-          ir as unknown as AlignPack,
+          ir as unknown as Align,
         );
         if (match.success) {
           health = "healthy";

@@ -1,6 +1,6 @@
 # Shared organization standards
 
-This pack contains rules shared across all organization repositories.
+This align contains rules shared across all organization repositories.
 
 ## Rule: TypeScript strict mode
 
