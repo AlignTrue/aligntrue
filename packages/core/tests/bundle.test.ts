@@ -321,7 +321,7 @@ describe("Bundle Merging", () => {
       expect(result.warnings).toHaveLength(0);
     });
 
-    it("should detect and resolve section conflicts (last wins)", () => {
+    it("should detect and resolve section conflicts (first wins by precedence)", () => {
       const pack1: AlignPack = {
         id: "pack1",
         version: "1.0.0",
@@ -339,7 +339,7 @@ describe("Bundle Merging", () => {
       const result = mergePacks([pack1, pack2]);
 
       expect(result.pack.sections).toHaveLength(1);
-      expect(result.pack.sections?.[0]?.content).toBe("Content from pack2");
+      expect(result.pack.sections?.[0]?.content).toBe("Content from pack1");
       expect(result.conflicts).toHaveLength(1);
       expect(result.conflicts[0].fingerprint).toBe("fp:testing-guidelines");
       expect(result.warnings).toHaveLength(1);

@@ -67,6 +67,7 @@ interface StatusSummary {
   rules: {
     directory: string;
     count: number;
+    files: string[];
   };
   lockfile: {
     enabled: boolean;
@@ -200,9 +201,11 @@ function buildStatusSummary(
   // Count rule files in .aligntrue/rules/ (recursively)
   const rulesDir = resolve(cwd, ".aligntrue/rules");
   let rulesCount = 0;
+  let ruleFiles: string[] = [];
   if (existsSync(rulesDir)) {
     try {
-      rulesCount = countMarkdownFilesRecursively(rulesDir);
+      ruleFiles = listMarkdownFilesRecursively(rulesDir);
+      rulesCount = ruleFiles.length;
     } catch {
       // Ignore errors, just show 0
     }
@@ -221,6 +224,7 @@ function buildStatusSummary(
     rules: {
       directory: rulesDir,
       count: rulesCount,
+      files: ruleFiles,
     },
     lockfile,
     bundle,
@@ -272,7 +276,14 @@ function renderStatus(summary: StatusSummary): void {
 
   console.log("\nRules:");
   console.log(`  Directory: ${summary.rules.directory}`);
-  console.log(`  Files: ${summary.rules.count} .md file(s)`);
+  if (summary.rules.files.length > 0) {
+    console.log(`  Files: ${summary.rules.count} .md file(s)`);
+    for (const file of summary.rules.files) {
+      console.log(`    - ${file}`);
+    }
+  } else {
+    console.log(`  Files: ${summary.rules.count} .md file(s)`);
+  }
 
   console.log("\nLockfile:");
   if (summary.lockfile.enabled) {
@@ -309,22 +320,23 @@ function formatLastSyncLabel(timestamp: number | null): string {
 }
 
 /**
- * Count markdown files recursively in a directory
+ * List markdown files recursively in a directory
  */
-function countMarkdownFilesRecursively(dir: string): number {
-  let count = 0;
+function listMarkdownFilesRecursively(dir: string): string[] {
+  const files: string[] = [];
   const entries = readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
-      count += countMarkdownFilesRecursively(fullPath);
+      const subFiles = listMarkdownFilesRecursively(fullPath);
+      files.push(...subFiles.map((f) => join(entry.name, f)));
     } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      count++;
+      files.push(entry.name);
     }
   }
 
-  return count;
+  return files.sort();
 }
 
 /**
