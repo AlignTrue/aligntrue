@@ -21,12 +21,12 @@ describeFn("GitProvider (integration)", () => {
     }
   });
 
-  it("fetches packs/testing.md content from examples repo", async () => {
+  it("fetches aligns/testing.md content from examples repo", async () => {
     const provider = new GitProvider(
       {
         type: "git",
         url: repoUrl,
-        path: "packs/testing.md",
+        path: "aligns/testing.md",
       },
       cacheDir,
     );
@@ -41,7 +41,7 @@ describeFn("GitProvider (integration)", () => {
       {
         type: "git",
         url: repoUrl,
-        path: "packs/debugging.md",
+        path: "aligns/debugging.md",
       },
       cacheDir,
     );
@@ -58,7 +58,7 @@ describeFn("GitProvider (integration)", () => {
       {
         type: "git",
         url: repoUrl,
-        path: "packs/does-not-exist.md",
+        path: "aligns/does-not-exist.md",
       },
       cacheDir,
     );

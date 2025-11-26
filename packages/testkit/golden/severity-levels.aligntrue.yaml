@@ -1,7 +1,7 @@
-# Severity levels pack
+# Severity levels align
 # Tests: all three severity levels (error, warn, info)
 
-id: packs/testkit/severity-levels
+id: aligns/testkit/severity-levels
 version: 1.0.0
 spec_version: "1"
 summary: Tests all severity levels

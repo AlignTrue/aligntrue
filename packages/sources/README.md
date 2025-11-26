@@ -116,7 +116,7 @@ sources:
 
 ### Network Errors
 
-If you see `Network unavailable, using cached pack`:
+If you see `Network unavailable, using cached align`:
 
 - This is expected when offline
 - Cache will be refreshed on next online sync

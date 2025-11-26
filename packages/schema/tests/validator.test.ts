@@ -7,7 +7,7 @@ import {
 import { computeAlignHash } from "../src/canonicalize.js";
 
 describe("validateAlignSchema (v1)", () => {
-  const validSoloPack = {
+  const validSoloAlign = {
     id: "test-valid",
     version: "1.0.0",
     spec_version: "1",
@@ -21,11 +21,11 @@ describe("validateAlignSchema (v1)", () => {
     ],
   };
 
-  const validTeamPack = {
-    id: "team-pack",
+  const validTeamAlign = {
+    id: "team-align",
     version: "1.0.0",
     spec_version: "1",
-    summary: "Team pack",
+    summary: "Team align",
     owner: "mycompany/platform",
     source: "github.com/mycompany/rules",
     source_sha: "abc123def456",
@@ -39,20 +39,20 @@ describe("validateAlignSchema (v1)", () => {
     ],
   };
 
-  it("validates a minimal solo pack", () => {
-    const result = validateAlignSchema(validSoloPack);
+  it("validates a minimal solo align", () => {
+    const result = validateAlignSchema(validSoloAlign);
     expect(result.valid).toBe(true);
     expect(result.errors).toBeUndefined();
   });
 
-  it("validates a team pack with provenance", () => {
-    const result = validateAlignSchema(validTeamPack, { mode: "team" });
+  it("validates a team align with provenance", () => {
+    const result = validateAlignSchema(validTeamAlign, { mode: "team" });
     expect(result.valid).toBe(true);
     expect(result.errors).toBeUndefined();
   });
 
-  it("rejects pack with missing required field (id)", () => {
-    const invalid = { ...validSoloPack };
+  it("rejects align with missing required field (id)", () => {
+    const invalid = { ...validSoloAlign };
     delete (invalid as Record<string, unknown>).id;
 
     const result = validateAlignSchema(invalid);
@@ -60,34 +60,34 @@ describe("validateAlignSchema (v1)", () => {
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects pack with invalid version format", () => {
-    const invalid = { ...validSoloPack, version: "not-semver" };
+  it("rejects align with invalid version format", () => {
+    const invalid = { ...validSoloAlign, version: "not-semver" };
 
     const result = validateAlignSchema(invalid);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects pack with wrong spec_version", () => {
-    const invalid = { ...validSoloPack, spec_version: "0" };
+  it("rejects align with wrong spec_version", () => {
+    const invalid = { ...validSoloAlign, spec_version: "0" };
 
     const result = validateAlignSchema(invalid);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
   });
 
-  it("rejects pack with summary too long", () => {
-    const invalid = { ...validTeamPack, summary: "x".repeat(201) };
+  it("rejects align with summary too long", () => {
+    const invalid = { ...validTeamAlign, summary: "x".repeat(201) };
 
     const result = validateAlignSchema(invalid);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
   });
 
-  it("accepts pack with empty sections array (fresh projects)", () => {
-    const emptyPack = { ...validSoloPack, sections: [] };
+  it("accepts align with empty sections array (fresh projects)", () => {
+    const emptyAlign = { ...validSoloAlign, sections: [] };
 
-    const result = validateAlignSchema(emptyPack);
+    const result = validateAlignSchema(emptyAlign);
     expect(result.valid).toBe(true);
     expect(result.errors).toBeUndefined();
   });
@@ -97,7 +97,7 @@ describe("validateAlignSchema (v1)", () => {
 
   it("rejects integrity with wrong algo", () => {
     const invalid = {
-      ...validSoloPack,
+      ...validSoloAlign,
       integrity: {
         algo: "sha256",
         value: "<computed>",
@@ -111,7 +111,7 @@ describe("validateAlignSchema (v1)", () => {
 
   it("rejects integrity with invalid hash format", () => {
     const invalid = {
-      ...validSoloPack,
+      ...validSoloAlign,
       integrity: {
         algo: "jcs-sha256",
         value: "not-a-valid-hash",
@@ -125,7 +125,7 @@ describe("validateAlignSchema (v1)", () => {
 
   it("accepts integrity with valid hex hash", () => {
     const align = {
-      ...validSoloPack,
+      ...validSoloAlign,
       integrity: {
         algo: "jcs-sha256",
         value: "a".repeat(64),
@@ -184,7 +184,7 @@ integrity:
     expect(result.computedHash).toBe("<computed>");
   });
 
-  it("handles pack without integrity field (solo mode)", () => {
+  it("handles align without integrity field (solo mode)", () => {
     const soloYaml = `
 id: "test-solo"
 version: "1.0.0"
@@ -215,7 +215,7 @@ describe("validateAlign", () => {
 id: "test-combined"
 version: "1.0.0"
 spec_version: "1"
-summary: "Test pack for combined validation"
+summary: "Test align for combined validation"
 sections:
   - heading: "Quality"
     level: 2
@@ -226,7 +226,7 @@ integrity:
   value: "PLACEHOLDER"
 `;
 
-  it("validates both schema and integrity for valid pack", () => {
+  it("validates both schema and integrity for valid align", () => {
     const correctHash = computeAlignHash(validAlignYaml);
     const alignWithHash = validAlignYaml.replace("PLACEHOLDER", correctHash);
 
@@ -255,7 +255,7 @@ integrity:
     expect(result.integrity.valid).toBe(false);
   });
 
-  it("handles packs with <computed> placeholder", () => {
+  it("handles aligns with <computed> placeholder", () => {
     const alignWithPlaceholder = validAlignYaml.replace(
       "PLACEHOLDER",
       "<computed>",
@@ -268,12 +268,12 @@ integrity:
 });
 
 describe("provenance fields validation", () => {
-  it("accepts pack with full provenance in team mode", () => {
-    const pack = {
-      id: "team-pack",
+  it("accepts align with full provenance in team mode", () => {
+    const align = {
+      id: "team-align",
       version: "1.0.0",
       spec_version: "1",
-      summary: "Team pack",
+      summary: "Team align",
       owner: "mycompany/platform",
       source: "github.com/mycompany/rules",
       source_sha: "abc123def456",
@@ -287,13 +287,13 @@ describe("provenance fields validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack, { mode: "team" });
+    const result = validateAlignSchema(align, { mode: "team" });
     expect(result.valid).toBe(true);
   });
 
   it("allows missing provenance in solo mode", () => {
-    const pack = {
-      id: "solo-pack",
+    const align = {
+      id: "solo-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -306,13 +306,13 @@ describe("provenance fields validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack, { mode: "solo" });
+    const result = validateAlignSchema(align, { mode: "solo" });
     expect(result.valid).toBe(true);
   });
 
   it("requires summary in team mode", () => {
-    const pack = {
-      id: "team-pack",
+    const align = {
+      id: "team-align",
       version: "1.0.0",
       spec_version: "1",
       owner: "mycompany/platform",
@@ -329,14 +329,14 @@ describe("provenance fields validation", () => {
       // missing summary
     };
 
-    const result = validateAlignSchema(pack, { mode: "team" });
+    const result = validateAlignSchema(align, { mode: "team" });
     expect(result.valid).toBe(false);
     expect(result.errors?.some((e) => e.path === "/summary")).toBe(true);
   });
 
   it("requires owner when source is specified in team mode", () => {
-    const pack = {
-      id: "team-pack",
+    const align = {
+      id: "team-align",
       version: "1.0.0",
       spec_version: "1",
       summary: "Test",
@@ -353,14 +353,14 @@ describe("provenance fields validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack, { mode: "team" });
+    const result = validateAlignSchema(align, { mode: "team" });
     expect(result.valid).toBe(false);
     expect(result.errors?.some((e) => e.path === "/owner")).toBe(true);
   });
 
   it("requires source_sha when source is specified in team mode", () => {
-    const pack = {
-      id: "team-pack",
+    const align = {
+      id: "team-align",
       version: "1.0.0",
       spec_version: "1",
       summary: "Test",
@@ -377,7 +377,7 @@ describe("provenance fields validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack, { mode: "team" });
+    const result = validateAlignSchema(align, { mode: "team" });
     expect(result.valid).toBe(false);
     expect(result.errors?.some((e) => e.path === "/source_sha")).toBe(true);
   });
@@ -385,7 +385,7 @@ describe("provenance fields validation", () => {
 
 describe("mode-dependent validation", () => {
   it("solo mode: minimal fields only", () => {
-    const pack = {
+    const align = {
       id: "solo",
       version: "1.0.0",
       spec_version: "1",
@@ -399,13 +399,13 @@ describe("mode-dependent validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack, { mode: "solo" });
+    const result = validateAlignSchema(align, { mode: "solo" });
     expect(result.valid).toBe(true);
   });
 
   it("catalog mode: requires all distribution metadata", () => {
-    const incompletePack = {
-      id: "catalog-pack",
+    const incompleteAlign = {
+      id: "catalog-align",
       version: "1.0.0",
       spec_version: "1",
       summary: "Test",
@@ -420,17 +420,17 @@ describe("mode-dependent validation", () => {
       // missing: owner, source, source_sha, tags, integrity
     };
 
-    const result = validateAlignSchema(incompletePack, { mode: "catalog" });
+    const result = validateAlignSchema(incompleteAlign, { mode: "catalog" });
     expect(result.valid).toBe(false);
     expect(result.errors?.length).toBeGreaterThan(0);
   });
 
-  it("catalog mode: validates complete pack", () => {
-    const completePack = {
-      id: "packs/test/catalog",
+  it("catalog mode: validates complete align", () => {
+    const completeAlign = {
+      id: "aligns/test/catalog",
       version: "1.0.0",
       spec_version: "1",
-      summary: "Test catalog pack",
+      summary: "Test catalog align",
       owner: "test/team",
       source: "github.com/test/rules",
       source_sha: "abc123",
@@ -449,14 +449,14 @@ describe("mode-dependent validation", () => {
       },
     };
 
-    const result = validateAlignSchema(completePack, { mode: "catalog" });
+    const result = validateAlignSchema(completeAlign, { mode: "catalog" });
     expect(result.valid).toBe(true);
   });
 });
 
 describe("vendor bags in validation", () => {
   it("accepts sections with vendor metadata", () => {
-    const pack = {
+    const align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -474,12 +474,12 @@ describe("vendor bags in validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack);
+    const result = validateAlignSchema(align);
     expect(result.valid).toBe(true);
   });
 
   it("accepts sections with vendor._meta field", () => {
-    const pack = {
+    const align = {
       id: "test",
       version: "1.0.0",
       spec_version: "1",
@@ -497,7 +497,7 @@ describe("vendor bags in validation", () => {
       ],
     };
 
-    const result = validateAlignSchema(pack);
+    const result = validateAlignSchema(align);
     expect(result.valid).toBe(true);
   });
 });

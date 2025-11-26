@@ -23,21 +23,21 @@ Language-agnostic test vectors in `vectors/`:
 - `checks/manifest-policy.json` - 3 manifest policy check vectors
 - `checks/regex.json` - 5 regex check vectors
 - `checks/command-runner.json` - 3 command runner check vectors
-- `integration.json` - References to 11 production packs from AlignTrue/aligns
+- `integration.json` - References to 11 production aligns from AlignTrue/aligns
 
 **Total: 40 test vectors**
 
-### Golden Packs (YAML)
+### Golden Aligns (YAML)
 
-Synthetic minimal packs in `golden/` demonstrating specific behaviors:
+Synthetic minimal aligns in `golden/` demonstrating specific behaviors:
 
-1. `minimal-valid.aligntrue.yaml` - Absolute minimum valid pack
+1. `minimal-valid.aligntrue.yaml` - Absolute minimum valid align
 2. `canonicalization-edge-cases.aligntrue.yaml` - Unicode, floats, nested structures
 3. `all-five-check-types.aligntrue.yaml` - One rule of each check type
 4. `severity-levels.aligntrue.yaml` - MUST, SHOULD, MAY severities
-5. `dependency-chain.aligntrue.yaml` - Pack dependencies
+5. `dependency-chain.aligntrue.yaml` - Align dependencies
 
-All golden packs include:
+All golden aligns include:
 
 - Computed integrity hashes
 - Inline comments explaining what they test
@@ -50,7 +50,7 @@ The `@aligntrue/testkit` package provides:
 
 - `runCanonVectors(vectors, impl)` - Test canonicalization implementation
 - `runCheckVectors(vectors, impl)` - Test check runner implementation
-- `runGoldenPacks(packs, validator)` - Test pack validation
+- `runGoldenAligns(aligns, validator)` - Test align validation
 - `runAllVectors(...)` - Complete conformance suite
 
 ## Usage (Internal)
@@ -121,16 +121,16 @@ Each vector has:
 
 **Contract:** Apply `rule` to `file_tree` and verify findings match `expected_findings`.
 
-### 4. Golden Packs
+### 4. Golden Aligns
 
-Validate complete Align packs:
+Validate complete Align aligns:
 
 ```python
 # Python example
 import yaml
 
 with open('golden/minimal-valid.aligntrue.yaml') as f:
-    pack_yaml = f.read()
+    align_yaml = f.read()
 
 # Your validator should:
 # 1. Parse YAML to JSON
@@ -138,17 +138,17 @@ with open('golden/minimal-valid.aligntrue.yaml') as f:
 # 3. Compute integrity hash
 # 4. Verify stored hash matches computed hash
 
-result = your_validate_align(pack_yaml)
+result = your_validate_align(align_yaml)
 assert result.schema_valid
 assert result.integrity_valid
 ```
 
 ### 5. Integration Vectors
 
-The `integration.json` file references 11 production packs from the AlignTrue/aligns repository. To use:
+The `integration.json` file references 11 production aligns from the AlignTrue/aligns repository. To use:
 
 1. Clone https://github.com/AlignTrue/aligns
-2. Read the pack files at the specified paths
+2. Read the align files at the specified paths
 3. Verify your implementation computes matching integrity hashes
 
 ## Vector Formats
@@ -195,9 +195,9 @@ The `integration.json` file references 11 production packs from the AlignTrue/al
 
 ```json
 {
-  "id": "packs/base/base-testing",
+  "id": "aligns/base/base-testing",
   "repo": "https://github.com/AlignTrue/aligns",
-  "path": "packs/base/base-testing.aligntrue.yaml",
+  "path": "aligns/base/base-testing.aligntrue.yaml",
   "expected_integrity": "FETCH_FROM_REPO"
 }
 ```
@@ -211,10 +211,10 @@ To add new test vectors:
 3. Run `pnpm verify` to ensure it passes
 4. Submit a PR with the new vector
 
-New golden packs:
+New golden aligns:
 
 1. Create a new `.aligntrue.yaml` file in `golden/`
-2. Use the `packs/testkit/*` namespace for IDs
+2. Use the `aligns/testkit/*` namespace for IDs
 3. Add inline comments explaining what it tests
 4. Run `npx tsx scripts/compute-golden-hashes.ts` to stamp the hash
 5. Run `pnpm verify` to ensure it passes
@@ -240,7 +240,7 @@ The testkit covers:
 - **All 3 severity levels**: MUST, SHOULD, MAY
 - **Schema validation**: Required fields, pattern matching, type checking
 - **Integrity verification**: Hash computation and comparison
-- **Dependency chains**: Pack dependencies and resolution
+- **Dependency chains**: Align dependencies and resolution
 
 ## Exit Codes
 
@@ -261,7 +261,7 @@ The testkit covers:
 - Use SHA-256 with hex output (lowercase)
 - Check for trailing newlines or encoding issues
 
-### Golden pack validation fails
+### Golden align validation fails
 
 - Verify you're excluding `integrity.value` when computing the hash
 - Parse YAML to JSON before canonicalization
@@ -282,4 +282,4 @@ MIT
 - [Align Spec v1](../../spec/align-spec-v1.md)
 - [packages/schema](../schema/README.md) - JSON Schema and canonicalization
 - [packages/checks](../checks/README.md) - Check runner implementation
-- [AlignTrue/aligns](https://github.com/AlignTrue/aligns) - Production packs
+- [AlignTrue/aligns](https://github.com/AlignTrue/aligns) - Production aligns

@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aligntrue.ai/schema/align-v1.schema.json",
-  "title": "Align Pack v1",
-  "description": "Schema for AlignTrue Align packs (Spec v1, CLI-first)",
+  "title": "Align Align v1",
+  "description": "Schema for AlignTrue Align aligns (Spec v1, CLI-first)",
   "type": "object",
   "required": ["id", "version", "spec_version", "sections"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Pack identifier. Solo mode: simple names (e.g., 'my-rules'). Team mode: project-scoped (e.g., 'mycompany/backend'). Catalog mode: pack namespacing (e.g., 'packs/mycompany/backend')."
+      "description": "Align identifier. Solo mode: simple names (e.g., 'my-rules'). Team mode: project-scoped (e.g., 'mycompany/backend'). Catalog mode: align namespacing (e.g., 'aligns/mycompany/backend')."
     },
     "version": {
       "type": "string",
@@ -55,7 +55,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Pack dependencies with optional version constraints (catalog mode - removed from roadmap)"
+      "description": "Align dependencies with optional version constraints (catalog mode - removed from roadmap)"
     },
     "scope": {
       "type": "object",
@@ -66,7 +66,7 @@
             "type": "string"
           },
           "minItems": 1,
-          "description": "Contexts where this pack applies"
+          "description": "Contexts where this align applies"
         },
         "includes": {
           "type": "array",
@@ -153,7 +153,7 @@
           "additionalProperties": {
             "$ref": "#/$defs/plug_slot"
           },
-          "description": "Slot declarations (base packs declare configurable values)"
+          "description": "Slot declarations (base aligns declare configurable values)"
         },
         "fills": {
           "type": "object",
@@ -162,7 +162,7 @@
             "minLength": 1,
             "description": "Non-empty single-line value"
           },
-          "description": "Fill values (stack packs and repos provide concrete values)"
+          "description": "Fill values (stack aligns and repos provide concrete values)"
         }
       },
       "description": "Plugs v1.1: Stack-agnostic rule authoring with configurable slots and fills"
@@ -230,7 +230,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "Slot declaration in base packs"
+      "description": "Slot declaration in base aligns"
     }
   }
 }

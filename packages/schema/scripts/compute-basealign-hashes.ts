@@ -52,9 +52,9 @@ function main() {
       // Compute hash
       const hash = computeAlignHash(content);
 
-      // Extract pack ID from content
+      // Extract align ID from content
       const idMatch = content.match(/^id:\s*["']?(.+?)["']?\s*$/m);
-      const packId = idMatch ? idMatch[1] : file;
+      const alignId = idMatch ? idMatch[1] : file;
 
       // Check if hash needs to be updated
       const hasPlaceholder = content.includes('value: "<computed>"');
@@ -70,14 +70,14 @@ function main() {
         writeFileSync(filePath, updatedContent, "utf8");
 
         results.push({
-          id: packId,
+          id: alignId,
           file,
           hash,
           updated: true,
         });
       } else {
         results.push({
-          id: packId,
+          id: alignId,
           file,
           hash,
           updated: false,
@@ -90,7 +90,7 @@ function main() {
 
   // Print summary table
   console.log("┌─────────────────────────────────────────┬──────────┐");
-  console.log("│ Pack ID                                 │ Updated  │");
+  console.log("│ Align ID                                 │ Updated  │");
   console.log("├─────────────────────────────────────────┼──────────┤");
 
   for (const result of results.sort((a, b) => a.id.localeCompare(b.id))) {
@@ -104,14 +104,14 @@ function main() {
 
   // Print first hash as example
   if (results.length > 0) {
-    console.log("Example hash (first pack):");
+    console.log("Example hash (first align):");
     console.log(`  ${results[0].hash}`);
     console.log();
   }
 
   const updatedCount = results.filter((r) => r.updated).length;
-  console.log(`✓ Processed ${results.length} packs`);
-  console.log(`✓ Updated ${updatedCount} packs with computed hashes`);
+  console.log(`✓ Processed ${results.length} aligns`);
+  console.log(`✓ Updated ${updatedCount} aligns with computed hashes`);
 
   if (updatedCount > 0) {
     console.log("\nFiles have been updated with integrity hashes.");

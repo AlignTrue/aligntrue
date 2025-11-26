@@ -4,7 +4,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { computeHash, parseYamlToJson } from "@aligntrue/schema";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import type {
   ScopedExportRequest,
   ResolvedScope,
@@ -70,8 +70,8 @@ export function createRequest(
   scope: ResolvedScope,
   outputPath: string = "test-output",
 ): ScopedExportRequest {
-  const pack: AlignPack = {
-    id: "test-pack",
+  const align: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections,
@@ -79,7 +79,7 @@ export function createRequest(
 
   return {
     scope,
-    pack,
+    align,
     outputPath,
   };
 }

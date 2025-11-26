@@ -179,9 +179,9 @@
   },
   {
     "name": "complex-align-structure",
-    "description": "Verifies canonicalization of a complex Align pack structure",
+    "description": "Verifies canonicalization of a complex Align align structure",
     "input": {
-      "id": "packs/base/base-testing",
+      "id": "aligns/base/base-testing",
       "version": "1.0.0",
       "profile": "align",
       "spec_version": "1",
@@ -207,7 +207,7 @@
         }
       ]
     },
-    "expected_jcs": "{\"deps\":[],\"id\":\"packs/base/base-testing\",\"profile\":\"align\",\"rules\":[{\"check\":{\"evidence\":\"Sleep found in tests\",\"inputs\":{\"allow\":false,\"include\":[\"**/*.test.ts\"],\"pattern\":\"sleep|setTimeout\"},\"type\":\"regex\"},\"id\":\"no-sleeps\",\"severity\":\"MUST\"}],\"scope\":{\"applies_to\":[\"*\"]},\"spec_version\":\"1\",\"summary\":\"Testing baseline\",\"tags\":[\"testing\",\"determinism\"],\"version\":\"1.0.0\"}",
+    "expected_jcs": "{\"deps\":[],\"id\":\"aligns/base/base-testing\",\"profile\":\"align\",\"rules\":[{\"check\":{\"evidence\":\"Sleep found in tests\",\"inputs\":{\"allow\":false,\"include\":[\"**/*.test.ts\"],\"pattern\":\"sleep|setTimeout\"},\"type\":\"regex\"},\"id\":\"no-sleeps\",\"severity\":\"MUST\"}],\"scope\":{\"applies_to\":[\"*\"]},\"spec_version\":\"1\",\"summary\":\"Testing baseline\",\"tags\":[\"testing\",\"determinism\"],\"version\":\"1.0.0\"}",
     "expected_sha256": "d5b3d0e02b000e971f458d7f1c3567a92c9817d30423c2e1683f2a19e34f6edd"
   }
 ]
