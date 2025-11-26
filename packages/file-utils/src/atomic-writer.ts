@@ -11,12 +11,9 @@ import {
   existsSync,
   statSync,
   mkdirSync,
-  mkdtempSync,
   copyFileSync,
-  rmSync,
 } from "fs";
-import { dirname, join } from "path";
-import { tmpdir } from "os";
+import { dirname, join, basename } from "path";
 import { randomBytes } from "crypto";
 import { computeHash } from "@aligntrue/schema";
 
@@ -171,114 +168,89 @@ export class AtomicFileWriter {
       }
     }
 
-    // Create backup if file exists
-    let backupTempDir: string | undefined;
-    if (existsSync(filePath)) {
-      try {
-        const originalContent = readFileSync(filePath, "utf8");
-        // Create backup in secure temp directory with cryptographic randomness
+    // Write to temp file with minimal temp directory creation
+    // Use the file's parent directory as temp location to avoid cross-device issues
+    const dir_name = dirname(filePath);
+    const base_name = basename(filePath);
+    let backupPath: string | undefined;
+    let tempPath: string | undefined;
+
+    try {
+      // Create backup only if file exists (lazy backup creation)
+      if (existsSync(filePath)) {
         const randomSuffix = randomBytes(8).toString("hex");
-        backupTempDir = mkdtempSync(
-          join(tmpdir(), `aligntrue-backup-${randomSuffix}-`),
-        );
-        const backup = join(backupTempDir, "backup.tmp");
-        writeFileSync(backup, originalContent, "utf8");
-        this.backups.set(filePath, backup);
-      } catch (_err) {
-        // Clean up backup temp directory if it was created
-        if (backupTempDir && existsSync(backupTempDir)) {
-          try {
-            rmSync(backupTempDir, { recursive: true, force: true });
-          } catch {
-            // Ignore cleanup errors
-          }
+        backupPath = join(dir_name, `.${base_name}.backup.${randomSuffix}`);
+        try {
+          copyFileSync(filePath, backupPath);
+          this.backups.set(filePath, backupPath);
+        } catch {
+          // If backup creation fails, don't block the write
+          // Just clear backup path and proceed
+          backupPath = undefined;
         }
+      }
+
+      // Write to temp file in same directory as target (avoids EXDEV on Windows)
+      const randomSuffix = randomBytes(8).toString("hex");
+      tempPath = join(dir_name, `.${base_name}.tmp.${randomSuffix}`);
+
+      try {
+        writeFileSync(tempPath, content, "utf8");
+      } catch (_err) {
         throw new Error(
-          `Failed to create backup of ${filePath}\n` +
+          `Failed to write temp file: ${tempPath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
-    }
 
-    // Write to temp file with cryptographic randomness
-    const randomSuffix = randomBytes(8).toString("hex");
-    const tempDir = mkdtempSync(join(tmpdir(), `aligntrue-${randomSuffix}-`));
-    const tempPath = join(tempDir, "tempfile.tmp");
-    try {
-      writeFileSync(tempPath, content, "utf8");
-    } catch (_err) {
-      // Clean up temp directory on failure
+      // Atomic rename (same-directory rename is always atomic on all platforms)
       try {
-        rmSync(tempDir, { recursive: true, force: true });
-      } catch {
-        // Ignore cleanup errors
-      }
-      throw new Error(
-        `Failed to write temp file: ${tempPath}\n` +
-          `  ${_err instanceof Error ? _err.message : String(_err)}`,
-      );
-    }
-
-    // Atomic rename with fallback for cross-device links (Windows CI)
-    try {
-      renameSync(tempPath, filePath);
-    } catch (_err) {
-      // On EXDEV (cross-device link), fall back to copy + delete
-      if (_err instanceof Error && _err.message.includes("EXDEV")) {
-        try {
-          copyFileSync(tempPath, filePath);
-          unlinkSync(tempPath);
-        } catch (_copyErr) {
-          // Clean up temp directory on failure
-          try {
-            rmSync(tempDir, { recursive: true, force: true });
-          } catch {
-            // Ignore cleanup errors
-          }
-          throw new Error(
-            `Failed to copy temp file: ${tempPath} → ${filePath}\n` +
-              `  ${_copyErr instanceof Error ? _copyErr.message : String(_copyErr)}`,
-          );
-        }
-      } else {
-        // Clean up temp directory on failure
-        try {
-          rmSync(tempDir, { recursive: true, force: true });
-        } catch {
-          // Ignore cleanup errors
-        }
-
+        renameSync(tempPath, filePath);
+        tempPath = undefined; // Mark as cleaned up
+      } catch (_err) {
         throw new Error(
           `Failed to rename temp file: ${tempPath} → ${filePath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
         );
       }
-    }
 
-    // Clean up temp directory after successful write
-    try {
-      rmSync(tempDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+      // Track checksum
+      const checksum = computeContentChecksum(content);
+      this.checksums.set(filePath, {
+        filePath,
+        checksum,
+        timestamp: new Date().toISOString(),
+      });
 
-    // Track checksum
-    const checksum = computeContentChecksum(content);
-    this.checksums.set(filePath, {
-      filePath,
-      checksum,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Clean up backup on success
-    const backup = this.backups.get(filePath);
-    if (backup) {
-      try {
-        unlinkSync(backup);
-      } catch {
-        // Ignore cleanup errors
+      // Clean up backup on success
+      if (backupPath && this.backups.has(filePath)) {
+        try {
+          unlinkSync(backupPath);
+        } catch {
+          // Ignore cleanup errors
+        }
+        this.backups.delete(filePath);
       }
-      this.backups.delete(filePath);
+    } finally {
+      // Clean up temp file on any error
+      // Use try/catch instead of existsSync to avoid TOCTOU race condition
+      if (tempPath) {
+        try {
+          unlinkSync(tempPath);
+        } catch {
+          // Ignore cleanup errors (file may not exist or already deleted)
+        }
+      }
+
+      // Clean up backup on error
+      // Use try/catch instead of existsSync to avoid TOCTOU race condition
+      if (backupPath) {
+        try {
+          unlinkSync(backupPath);
+        } catch {
+          // Ignore cleanup errors (file may not exist or already deleted)
+        }
+      }
     }
   }
 
