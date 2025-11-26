@@ -1,17 +1,25 @@
 /**
  * MCPs resource implementation
  *
- * MCP (Model Context Protocol) support - Coming in future release
+ * DEFERRED: MCP server configurations as shareable resources
  *
  * This module provides the foundation for managing MCP configurations
- * across different scopes and storage backends. The implementation is
- * currently a stub that returns empty data.
+ * across different scopes and storage backends. Currently, this is a stub
+ * that returns empty data.
  *
- * When MCP support is added, this will enable:
- * - Managing MCP server configurations
+ * Current approach (v1):
+ * - MCP servers defined centrally in .aligntrue/config.yaml
+ * - Exporters propagate to agent-specific MCP config files
+ * - No sharing/versioning of MCP definitions
+ *
+ * Future extension could enable:
+ * - Managing MCP server configurations as shareable resources
  * - Scope-based MCP organization (team, personal, custom)
  * - Storage backend integration (local, repo, remote)
  * - Merging MCP configs from multiple sources
+ *
+ * Trigger for revisiting: When users request shared MCP server libraries
+ * or team-wide MCP configuration templates.
  */
 
 import { ResourceManager, type ResourceItem } from "./manager.js";
@@ -35,8 +43,8 @@ export class MCPsResourceManager extends ResourceManager<MCPItem> {
     _backend: IStorageBackend,
     _scope: string,
   ): Promise<MCPItem[]> {
-    // MCP support coming in future release
-    // For now, returns empty array
+    // MCP support deferred - returns empty array
+    // Current implementation uses centralized config.mcp.servers
     return [];
   }
 
@@ -45,13 +53,13 @@ export class MCPsResourceManager extends ResourceManager<MCPItem> {
     _items: MCPItem[],
     _scope: string,
   ): Promise<void> {
-    // MCP support coming in future release
-    // For now, no-op
+    // MCP support deferred - no-op
+    // Current implementation uses centralized config.mcp.servers
   }
 
   protected mergeItems(items: Map<string, MCPItem[]>): MCPItem[] {
-    // MCP support coming in future release
-    // For now, simple concatenation
+    // MCP support deferred - simple concatenation
+    // Current implementation uses centralized config.mcp.servers
     const merged: MCPItem[] = [];
     for (const [_scope, scopeItems] of items.entries()) {
       merged.push(...scopeItems);

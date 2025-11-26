@@ -1,8 +1,8 @@
 /**
  * Trae AI MCP exporter
- * Exports AlignTrue rules to trae_config.yaml MCP configuration format
+ * Propagates MCP server configuration to trae_config.yaml format
  *
- * Uses centralized MCP generator with Trae-specific transformer
+ * Reads mcp.servers from AlignTrue config and generates agent-specific MCP files
  */
 
 import { join, dirname } from "path";
@@ -15,6 +15,7 @@ import type {
 import {
   generateCanonicalMcpConfig,
   type CanonicalMcpConfig,
+  type McpServer,
 } from "@aligntrue/core";
 import { BaseMcpTransformer } from "../mcp-transformers/index.js";
 import { ExporterBase } from "../base/index.js";
@@ -41,12 +42,14 @@ export class TraeaiMcpExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { align } = request;
-    const { outputDir, dryRun = false } = options;
+    const { outputDir, dryRun = false, config } = options;
 
-    const sections = align.sections;
+    // Extract MCP servers from config
+    const mcpConfig = config as { mcp?: { servers?: McpServer[] } } | undefined;
+    const servers = mcpConfig?.mcp?.servers || [];
 
-    if (sections.length === 0) {
+    // If no servers configured, return empty result
+    if (servers.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -54,11 +57,8 @@ export class TraeaiMcpExporter extends ExporterBase {
       };
     }
 
-    // Generate canonical MCP config
-    const canonicalConfig = generateCanonicalMcpConfig(
-      sections,
-      options.unresolvedPlugsCount,
-    );
+    // Generate canonical MCP config from servers
+    const canonicalConfig = generateCanonicalMcpConfig(servers);
 
     // Transform to Trae-specific YAML format
     const content = this.transformer.transform(canonicalConfig);
@@ -80,18 +80,11 @@ export class TraeaiMcpExporter extends ExporterBase {
       options,
     );
 
-    // Use content hash from canonical config
-    const fidelityNotes = canonicalConfig.fidelity_notes || [];
-
-    return this.buildResult(
-      filesWritten,
-      canonicalConfig.content_hash,
-      fidelityNotes,
-    );
+    return this.buildResult(filesWritten, canonicalConfig.content_hash, []);
   }
 
   resetState(): void {
-    // Stateless with shared generator
+    // Stateless
   }
 }
 

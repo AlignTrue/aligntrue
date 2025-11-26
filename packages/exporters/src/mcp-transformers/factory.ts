@@ -1,22 +1,54 @@
 /**
- * Factory for creating simple MCP transformers
- * Reduces boilerplate for transformers that just dump JSON to a path
+ * Factory for creating MCP transformers
+ * Handles agent-specific MCP configuration formats
  */
 
 import { join } from "path";
 import type { CanonicalMcpConfig } from "@aligntrue/core";
 import { BaseMcpTransformer } from "./base-transformer.js";
 
+export type McpTransformFormat = "generic" | "vscode" | "cursor" | "windsurf";
+
+interface TransformerConfig {
+  path: string;
+  format?: McpTransformFormat;
+}
+
 /**
  * Create a standard MCP transformer class
  *
- * @param relativePath - Relative path for the output file (e.g. ".vscode/mcp.json")
+ * @param config - Transformer configuration with path and optional format
  * @returns Transformer class constructor
  */
-export function createMcpTransformer(relativePath: string) {
-  return class SimpleMcpTransformer extends BaseMcpTransformer {
+export function createMcpTransformer(config: TransformerConfig | string) {
+  // Support string shorthand for backward compatibility
+  const normalizedConfig: TransformerConfig =
+    typeof config === "string" ? { path: config } : config;
+  const { path: relativePath, format = "generic" } = normalizedConfig;
+
+  return class McpTransformer extends BaseMcpTransformer {
     transform(config: CanonicalMcpConfig): string {
-      return this.formatJson(config);
+      // Format config based on agent type
+      let output: unknown = config;
+
+      if (format === "vscode" && config.mcpServers) {
+        // VS Code expects { "servers": { name: config } }
+        output = {
+          servers: config.mcpServers,
+        };
+      } else if (format === "cursor" && config.mcpServers) {
+        // Cursor expects { "mcpServers": { name: config } }
+        output = {
+          mcpServers: config.mcpServers,
+        };
+      } else if (format === "windsurf" && config.mcpServers) {
+        // Windsurf expects similar to Cursor
+        output = {
+          mcpServers: config.mcpServers,
+        };
+      }
+
+      return this.formatJson(output);
     }
 
     getOutputPath(baseDir: string): string {

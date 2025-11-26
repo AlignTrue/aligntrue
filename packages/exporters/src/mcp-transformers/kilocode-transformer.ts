@@ -5,5 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const KilocodeMcpTransformer =
-  createMcpTransformer(".kilocode/mcp.json");
+export const KilocodeMcpTransformer = createMcpTransformer({
+  path: ".kilocode/mcp.json",
+  format: "generic",
+});

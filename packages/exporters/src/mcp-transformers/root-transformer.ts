@@ -6,4 +6,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const RootMcpTransformer = createMcpTransformer(".mcp.json");
+export const RootMcpTransformer = createMcpTransformer({
+  path: ".mcp.json",
+  format: "generic",
+});

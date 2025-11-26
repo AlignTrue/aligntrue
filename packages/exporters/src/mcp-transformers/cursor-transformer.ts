@@ -5,4 +5,7 @@
 
 import { createMcpTransformer } from "./factory.js";
 
-export const CursorMcpTransformer = createMcpTransformer(".cursor/mcp.json");
+export const CursorMcpTransformer = createMcpTransformer({
+  path: ".cursor/mcp.json",
+  format: "cursor",
+});
