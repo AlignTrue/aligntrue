@@ -18,6 +18,8 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
 - URL-based rule sources with ETag caching and offline fallback
+- Export format options (native multi-file or AGENTS.md per agent)
+- Per-rule targeting with `export_only_to` and `exclude_from` frontmatter
 
 ## CLI (24 commands)
 
@@ -38,7 +40,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 - `adapters` — Manage exporters (list, enable, disable)
 - `plugs` — Manage plugs (audit, resolve, set)
-- `rules` — Manage and export rules (list, inspect)
+- `rules` — List rules and view targeting by agent (`--by-agent`, `--json`)
 - `scopes` — List configured scopes
 - `sources` — Manage multi-file rule organization (list, split)
 

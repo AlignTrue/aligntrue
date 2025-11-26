@@ -55,39 +55,41 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 
 ### Complete feature matrix
 
-| Feature                  | Description                                                                           | Learn more                                                |
-| ------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| **Core Sync**            |                                                                                       |                                                           |
-| Centralized editing      | Edit your configured edit source file; AlignTrue keeps everything aligned             | [Sync Behavior](/docs/03-concepts/sync-behavior)          |
-| Dry-run mode             | Preview changes before applying with `--dry-run`                                      | [Basic Commands](/docs/04-reference/cli-reference/basic)  |
-| Watch mode               | Continuous file watching with auto-sync on changes                                    | [Basic Commands](/docs/04-reference/cli-reference/basic)  |
-| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, and section-level preservation | [Backup & Restore](/docs/04-reference/backup-restore)     |
-| Atomic operations        | Safe file writes prevent corruption during syncs                                      | [Features](/docs/04-reference/features)                   |
-| **Agent Support**        |                                                                                       |                                                           |
-| Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                             |
-| 28+ agents               | Comprehensive coverage through 50 exporters                                           | [Agent Support](/docs/04-reference/agent-support)         |
-| Unidirectional sync      | Edit in `.aligntrue/rules/`, sync to all agents automatically                         | [Getting Started](/docs/00-getting-started/00-quickstart) |
-| Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                      | [Agent Support](/docs/04-reference/agent-support)         |
-| **Team Collaboration**   |                                                                                       |                                                           |
-| Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds                 | [Team Mode](/docs/03-concepts/team-mode)                  |
-| Drift detection          | Compare lockfile vs allowed sources with multiple output formats                      | [Drift Detection](/docs/03-concepts/drift-detection)      |
-| CI validation            | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift`    | [CI/CD Integration](#integration-examples)                |
-| **Customization**        |                                                                                       |                                                           |
-| Plugs                    | Dynamic value slots with validation for flexible rules                                | [Customization](/docs/02-customization)                   |
-| Overlays                 | Surgical modifications to aligns for safe fork-resistant customization                | [Customization](/docs/02-customization)                   |
-| Scopes                   | Hierarchical rules for monorepos and complex projects                                 | [Scopes](/docs/02-customization/scopes)                   |
-| **Developer Experience** |                                                                                       |                                                           |
-| .gitignore automation    | Smart management of generated files                                                   | [Git Workflows](/docs/03-concepts/git-workflows)          |
-| Verbose output           | Detailed execution logs with `--verbose` flag                                         | [CLI Reference](/docs/04-reference/cli-reference)         |
-| Ruler migration          | Auto-detect and convert from Ruler                                                    | [Features](/docs/04-reference/features)                   |
-| Backup & restore         | Selective file restoration with diff preview via `aligntrue revert`                   | [Backup & Restore](/docs/04-reference/backup-restore)     |
-| **Safety & Reliability** |                                                                                       |                                                           |
-| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, section-level preservation     | [Safety Guide](/docs/01-guides/09-safety-best-practices)  |
-| Easy recovery            | Quick rollback with `aligntrue revert` showing preview and diff                       | [Backup & Restore](/docs/04-reference/backup-restore)     |
-| 1800+ tests              | Vitest + Playwright with reproducible, seed-controlled execution                      | [Architecture](/docs/08-development/architecture)         |
-| JSON Schema validation   | All IR and config validated with Ajv strict mode                                      | [Features](/docs/04-reference/features)                   |
-| Deterministic hashing    | JCS-based reproducible hashing for lockfiles and integrity                            | [Features](/docs/04-reference/features)                   |
-| TypeScript strict mode   | Comprehensive type coverage across the entire codebase                                | [Features](/docs/04-reference/features)                   |
+| Feature                  | Description                                                                           | Learn more                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **Core Sync**            |                                                                                       |                                                                 |
+| Centralized editing      | Edit your configured edit source file; AlignTrue keeps everything aligned             | [Sync Behavior](/docs/03-concepts/sync-behavior)                |
+| Dry-run mode             | Preview changes before applying with `--dry-run`                                      | [Basic Commands](/docs/04-reference/cli-reference/basic)        |
+| Watch mode               | Continuous file watching with auto-sync on changes                                    | [Basic Commands](/docs/04-reference/cli-reference/basic)        |
+| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, and section-level preservation | [Backup & Restore](/docs/04-reference/backup-restore)           |
+| Atomic operations        | Safe file writes prevent corruption during syncs                                      | [Features](/docs/04-reference/features)                         |
+| **Agent Support**        |                                                                                       |                                                                 |
+| Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                                   |
+| 28+ agents               | Comprehensive coverage through 50 exporters                                           | [Agent Support](/docs/04-reference/agent-support)               |
+| Unidirectional sync      | Edit in `.aligntrue/rules/`, sync to all agents automatically                         | [Getting Started](/docs/00-getting-started/00-quickstart)       |
+| Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                      | [Agent Support](/docs/04-reference/agent-support)               |
+| **Team Collaboration**   |                                                                                       |                                                                 |
+| Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds                 | [Team Mode](/docs/03-concepts/team-mode)                        |
+| Drift detection          | Compare lockfile vs allowed sources with multiple output formats                      | [Drift Detection](/docs/03-concepts/drift-detection)            |
+| CI validation            | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift`    | [CI/CD Integration](#integration-examples)                      |
+| **Customization**        |                                                                                       |                                                                 |
+| Plugs                    | Dynamic value slots with validation for flexible rules                                | [Customization](/docs/02-customization)                         |
+| Overlays                 | Surgical modifications to aligns for safe fork-resistant customization                | [Customization](/docs/02-customization)                         |
+| Scopes                   | Hierarchical rules for monorepos and complex projects                                 | [Scopes](/docs/02-customization/scopes)                         |
+| Export format options    | Choose native multi-file or AGENTS.md format per agent                                | [Export Formats](/docs/02-customization/export-formats)         |
+| Per-rule targeting       | Control which agents receive specific rules via frontmatter                           | [Per-Rule Targeting](/docs/02-customization/per-rule-targeting) |
+| **Developer Experience** |                                                                                       |                                                                 |
+| .gitignore automation    | Smart management of generated files                                                   | [Git Workflows](/docs/03-concepts/git-workflows)                |
+| Verbose output           | Detailed execution logs with `--verbose` flag                                         | [CLI Reference](/docs/04-reference/cli-reference)               |
+| Ruler migration          | Auto-detect and convert from Ruler                                                    | [Features](/docs/04-reference/features)                         |
+| Backup & restore         | Selective file restoration with diff preview via `aligntrue revert`                   | [Backup & Restore](/docs/04-reference/backup-restore)           |
+| **Safety & Reliability** |                                                                                       |                                                                 |
+| Multi-layer safety       | Mandatory workspace backups, overwritten-rules backup, section-level preservation     | [Safety Guide](/docs/01-guides/09-safety-best-practices)        |
+| Easy recovery            | Quick rollback with `aligntrue revert` showing preview and diff                       | [Backup & Restore](/docs/04-reference/backup-restore)           |
+| 1800+ tests              | Vitest + Playwright with reproducible, seed-controlled execution                      | [Architecture](/docs/08-development/architecture)               |
+| JSON Schema validation   | All IR and config validated with Ajv strict mode                                      | [Features](/docs/04-reference/features)                         |
+| Deterministic hashing    | JCS-based reproducible hashing for lockfiles and integrity                            | [Features](/docs/04-reference/features)                         |
+| TypeScript strict mode   | Comprehensive type coverage across the entire codebase                                | [Features](/docs/04-reference/features)                         |
 
 ## Add to your workflow
 
