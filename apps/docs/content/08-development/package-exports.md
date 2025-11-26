@@ -38,8 +38,8 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 ## @aligntrue/schema
 
-| Export Path | Purpose                     | Example                                                            |
-| ----------- | --------------------------- | ------------------------------------------------------------------ |
+| Export Path | Purpose                     | Example                                                        |
+| ----------- | --------------------------- | -------------------------------------------------------------- |
 | `.`         | Schema types and validation | `import type { Align, AlignSection } from '@aligntrue/schema'` |
 
 ## @aligntrue/plugin-contracts
@@ -68,8 +68,8 @@ This document lists all public exports from AlignTrue packages. All exports must
 
 ## @aligntrue/testkit
 
-| Export Path | Purpose                        | Example                                               |
-| ----------- | ------------------------------ | ----------------------------------------------------- |
+| Export Path | Purpose                        | Example                                                |
+| ----------- | ------------------------------ | ------------------------------------------------------ |
 | `.`         | Testing utilities and fixtures | `import { createTestAlign } from '@aligntrue/testkit'` |
 
 ## @aligntrue/ui
