@@ -113,9 +113,29 @@ export async function runRemoteSetupWizard(
     validate: (value) => {
       if (value === "skip") return;
       if (!value) return "URL is required";
-      if (!value.includes("git@") && !value.includes("https://")) {
-        return "URL must be SSH (git@...) or HTTPS (https://...)";
+
+      // Validate HTTPS URLs using URL constructor
+      if (value.startsWith("https://")) {
+        try {
+          const parsed = new URL(value);
+          if (parsed.protocol !== "https:") {
+            return "HTTPS URL protocol must be https://";
+          }
+          return;
+        } catch {
+          return "Invalid HTTPS URL format";
+        }
       }
+
+      // Validate git@ SSH URLs
+      if (value.startsWith("git@")) {
+        if (!/^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9/_.-]+$/.test(value)) {
+          return "Invalid git@ SSH URL format (expected: git@host:path/to/repo)";
+        }
+        return;
+      }
+
+      return "URL must be SSH (git@...) or HTTPS (https://...)";
     },
   });
 

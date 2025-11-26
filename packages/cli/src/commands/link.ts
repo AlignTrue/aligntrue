@@ -291,11 +291,33 @@ function isValidGitUrl(url: string): boolean {
   if (/^[a-zA-Z]:\\/.test(url) || url.startsWith("/")) {
     return false;
   }
-  return (
-    url.startsWith("https://") ||
-    url.startsWith("git@") ||
-    url.startsWith("ssh://")
-  );
+
+  // For HTTPS and SSH, validate using URL constructor
+  if (url.startsWith("https://")) {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+
+  if (url.startsWith("ssh://")) {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "ssh:";
+    } catch {
+      return false;
+    }
+  }
+
+  // For git@ format, do basic validation (git@ URLs are not valid URL constructor format)
+  if (url.startsWith("git@")) {
+    // Basic git@ URL pattern: git@host:path/to/repo[.git]
+    return /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9/_.-]+$/.test(url);
+  }
+
+  return false;
 }
 
 /**
