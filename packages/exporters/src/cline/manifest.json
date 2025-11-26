@@ -1,13 +1,14 @@
 {
   "name": "cline",
   "version": "1.0.0",
-  "description": "Export AlignTrue rules to Cline .clinerules format",
-  "outputs": [".clinerules"],
+  "description": "Export AlignTrue rules to Cline .clinerules/*.md multi-file format",
+  "outputs": [".clinerules/*.md"],
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
     "Machine-checkable rules (check) not represented in .clinerules format",
-    "Autofix hints not represented in .clinerules format",
-    "Plain text format, no structured metadata"
-  ]
+    "Autofix hints not represented in .clinerules format"
+  ],
+  "supportedFormats": ["native", "agents-md"],
+  "defaultFormat": "native"
 }

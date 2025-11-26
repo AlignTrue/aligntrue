@@ -1,12 +1,14 @@
 {
   "name": "gemini-cli",
   "version": "1.0.0",
-  "description": "Export AlignTrue rules to AGENTS.md format (Gemini CLI compatible)",
-  "outputs": ["AGENTS.md"],
+  "description": "Export AlignTrue rules to Gemini CLI compatible format (AGENTS.md or GEMINI.md)",
+  "outputs": ["AGENTS.md", "GEMINI.md"],
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
-    "Uses universal AGENTS.md format",
-    "Gemini CLI also uses .gemini/settings.json (separate exporter)"
-  ]
+    "Supports both AGENTS.md and GEMINI.md formats",
+    "Gemini CLI also supports .gemini/settings.json (separate exporter)"
+  ],
+  "supportedFormats": ["native", "agents-md"],
+  "defaultFormat": "agents-md"
 }
