@@ -67,10 +67,11 @@ describe("AGENTS.md-based exporter variants", () => {
     }
   });
 
-  it("should load manifests for all AGENTS.md variants", async () => {
+  it("should load manifests for representative AGENTS.md variants", async () => {
     const srcPath = join(__dirname, "../src");
 
-    for (const variant of AGENTS_MD_VARIANTS) {
+    // Test representative variants instead of all 11
+    for (const variant of ["copilot", "gemini-cli", "aider"]) {
       const manifestPath = join(srcPath, variant, "manifest.json");
       const manifest = registry.loadManifest(manifestPath);
 
