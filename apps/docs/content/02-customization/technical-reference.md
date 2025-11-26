@@ -9,7 +9,7 @@ This page provides technical implementation details for working with plugs, over
 
 ## Where to declare features
 
-| Feature     | Pack Files   | Config File | Primary Use               |
+| Feature     | Align Files  | Config File | Primary Use               |
 | ----------- | ------------ | ----------- | ------------------------- |
 | Plugs slots | ✓            | -           | Define template variables |
 | Plugs fills | ✓ (defaults) | ✓ (project) | Fill template variables   |
@@ -18,13 +18,13 @@ This page provides technical implementation details for working with plugs, over
 
 **Plugs slots:**
 
-- Declared in pack files (natural markdown sections or `.aligntrue/rules` IR)
-- Example: `examples/packs/testing.md` with natural markdown sections
+- Declared in align files (natural markdown sections or `.aligntrue/rules` IR)
+- Example: `examples/aligns/testing.md` with natural markdown sections
 
 **Plugs fills:**
 
 - Declared in `.aligntrue/config.yaml` (project-level fills)
-- OR in pack files as stack-level defaults
+- OR in align files as stack-level defaults
 
 **Overlays:**
 
@@ -40,11 +40,11 @@ This page provides technical implementation details for working with plugs, over
 
 AlignTrue supports two authoring formats:
 
-### Natural markdown sections (recommended for packs)
+### Natural markdown sections (recommended for aligns)
 
 ```markdown
 ---
-id: testing-pack
+id: testing-align
 version: 1.0.0
 plugs:
   slots:
@@ -55,7 +55,7 @@ plugs:
       example: "pytest -q"
 ---
 
-# Testing pack
+# Testing align
 
 Use consistent test commands across your project.
 
@@ -68,7 +68,7 @@ Run tests before committing: [[plug:test.cmd]]
 
 ```yaml
 # .aligntrue/rules (generated/maintained by system)
-id: testing-pack
+id: testing-align
 version: 1.0.0
 plugs:
   slots:
@@ -84,10 +84,10 @@ rules:
 ### Data flow
 
 ```
-Pack files (.md) → System parses → Internal IR (.rules.yaml) → Exporters → Agent formats (AGENTS.md, .mdc)
+Align files (.md) → System parses → Internal IR (.rules.yaml) → Exporters → Agent formats (AGENTS.md, .mdc)
 ```
 
-**Note:** `AGENTS.md` is an **export target**, not a primary authoring surface. Edit pack files or `.aligntrue/config.yaml` instead.
+**Note:** `AGENTS.md` is an **export target**, not a primary authoring surface. Edit align files or `.aligntrue/config.yaml` instead.
 
 ## Plugs resolution algorithm
 
@@ -117,7 +117,7 @@ TODO(plug:<key>): Provide a value for this plug.
 
 ### Merge order
 
-Base < stack pack(s) < repo. Last writer wins.
+Base < stack align(s) < repo. Last writer wins.
 
 ## Plugs format types
 
@@ -266,7 +266,7 @@ When using multiple customization features together, they apply in this order:
 - Glob patterns must be syntactically valid
 - Merge order values must be `root`, `path`, or `local`
 - No duplicate values in merge order
-- Rulesets must reference existing rule pack IDs
+- Rulesets must reference existing rule align IDs
 
 ## Best practices
 

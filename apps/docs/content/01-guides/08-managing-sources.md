@@ -53,7 +53,7 @@ https://{host}/{org}/{repo}[@{ref}][/{path}]
 | `host`     | `github.com`    | Git hosting platform                                     |
 | `org/repo` | `company/rules` | Repository location                                      |
 | `@ref`     | `@v2.0.0`       | Optional: branch, tag, or commit (default: `main`)       |
-| `/{path}`  | `/packs`        | Optional: file or directory (default: all `.md` in root) |
+| `/{path}`  | `/aligns`       | Optional: file or directory (default: all `.md` in root) |
 
 ### Examples
 
@@ -66,17 +66,17 @@ sources:
       # All .md files in repo root
       - https://github.com/company/rules
 
-      # All .md files in packs directory
-      - https://github.com/company/rules/packs
+      # All .md files in aligns directory
+      - https://github.com/company/rules/aligns
 
       # Single specific file
-      - https://github.com/company/rules/packs/security.md
+      - https://github.com/company/rules/aligns/security.md
 
       # Specific version (branch or tag)
       - https://github.com/company/rules@v2.0.0
 
       # Specific version + directory
-      - https://github.com/company/rules@v2.0.0/packs
+      - https://github.com/company/rules@v2.0.0/aligns
 
 exporters:
   - cursor
@@ -91,7 +91,7 @@ exporters:
 sources:
   - type: git
     url: https://github.com/company/rules
-    path: packs/security.md
+    path: aligns/security.md
 ```
 
 ### Multiple files from same source (new syntax)
@@ -100,9 +100,9 @@ sources:
 sources:
   - type: git
     include:
-      - https://github.com/company/rules/packs/security.md
-      - https://github.com/company/rules/packs/typescript.md
-      - https://github.com/company/rules/packs/testing.md
+      - https://github.com/company/rules/aligns/security.md
+      - https://github.com/company/rules/aligns/typescript.md
+      - https://github.com/company/rules/aligns/testing.md
 ```
 
 Much cleaner and avoids repetition!
@@ -202,8 +202,8 @@ Your local `.aligntrue/rules/` can add project-specific rules that override both
 sources:
   - type: git
     include:
-      - https://github.com/company/rules@v2.0.0/packs/security.md
-      - https://github.com/company/rules@v2.0.0/packs/testing.md
+      - https://github.com/company/rules@v2.0.0/aligns/security.md
+      - https://github.com/company/rules@v2.0.0/aligns/testing.md
 ```
 
 Pinning versions ensures everyone on your team uses the same rules.
@@ -214,10 +214,10 @@ Pinning versions ensures everyone on your team uses the same rules.
 sources:
   - type: git
     include:
-      - https://github.com/AlignTrue/community-rules/packs
+      - https://github.com/AlignTrue/community-rules/aligns
 # Then in .aligntrue/rules/:
 # - Add local/security.md (overrides community rules on conflict)
-# - Add local/project-specific.md (new rules not in community packs)
+# - Add local/project-specific.md (new rules not in community aligns)
 ```
 
 ## Troubleshooting
@@ -234,11 +234,11 @@ Check:
 Example error:
 
 ```
-Error: File not found: packs/typo.md
-  Available files in packs/:
+Error: File not found: aligns/typo.md
+  Available files in aligns/:
     - security.md
     - testing.md
-  Did you mean: packs/security.md
+  Did you mean: aligns/security.md
 ```
 
 ### "Git ref not found"

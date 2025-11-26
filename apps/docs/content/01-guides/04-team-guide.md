@@ -74,7 +74,7 @@ Add sources to `.aligntrue/config.yaml`:
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/packs/global.yaml
+    path: examples/aligns/global.yaml
   - type: git
     url: https://github.com/org/standards
     path: typescript-standards.yaml
@@ -88,7 +88,7 @@ sources:
 # .aligntrue.allow
 allowed_sources:
   - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 
   - type: git
     value: https://github.com/org/standards/typescript-standards.yaml
@@ -109,11 +109,11 @@ aligntrue sync
   "spec_version": "1",
   "generated_at": "2025-10-31T12:00:00Z",
   "dependencies": {
-    "global-pack": {
+    "global-align": {
       "version": "v1.0.0",
       "source": {
         "type": "git",
-        "url": "https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml"
+        "url": "https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml"
       },
       "base_hash": "sha256:abc123...",
       "overlay_hash": "sha256:def456...",
@@ -199,7 +199,7 @@ mkdir team-standards
 cd team-standards
 git init
 
-# 2. Create rules pack
+# 2. Create rules align
 cat > rules.yaml <<EOF
 id: team-standards
 version: 1.0.0
@@ -251,14 +251,14 @@ git push origin main
 
 ### Scenario 3: Customizing for team needs
 
-**Goal:** Use upstream pack but adjust severity for team preferences.
+**Goal:** Use upstream align but adjust severity for team preferences.
 
 **Setup:**
 
 ```yaml
 # .aligntrue/rules
 sources:
-  - git: https://github.com/community/typescript-pack
+  - git: https://github.com/community/typescript-align
     ref: v1.0.0
 
 # Team prefers stricter enforcement
@@ -298,7 +298,7 @@ git pull
 aligntrue sync
 ```
 
-**Result:** Team uses customized pack without forking.
+**Result:** Team uses customized align without forking.
 
 ### Scenario 4: Monorepo with multiple teams
 
@@ -384,9 +384,9 @@ git push origin main
 
 **Result:** Each team gets appropriate rules while sharing base standards.
 
-### Scenario 5: Updating upstream packs
+### Scenario 5: Updating upstream aligns
 
-**Goal:** Update to new version of upstream pack safely.
+**Goal:** Update to new version of upstream align safely.
 
 **Workflow:**
 
@@ -396,7 +396,7 @@ aligntrue drift
 
 # Output:
 # Upstream drift detected:
-#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+#   git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 #   - Current: sha256:abc123...
 #   - Latest: sha256:def456...
 #   - Changes: 3 new rules, 2 modified rules
@@ -529,11 +529,11 @@ ls .aligntrue/overwritten-rules/
 
 ### 3. Upstream drift
 
-**What it detects:** Upstream pack content changed since lockfile generation.
+**What it detects:** Upstream align content changed since lockfile generation.
 
 **When it happens:**
 
-- Upstream pack repository updated
+- Upstream align repository updated
 - New version published to catalog
 - Git source ref changed
 
@@ -544,8 +544,8 @@ aligntrue drift
 
 # Output:
 # UPSTREAM DRIFT:
-#   git:https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
-#     Upstream pack has been updated (base_hash differs)
+#   git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
+#     Upstream align has been updated (base_hash differs)
 #     Lockfile: sha256:abc123...
 #     Allowed: sha256:def456...
 #     Suggestion: Run: aligntrue update apply
@@ -730,7 +730,7 @@ git commit -m "chore: Set team plug values"
 **Use overlays for:**
 
 - Team-wide severity adjustments
-- Customizing third-party packs to team standards
+- Customizing third-party aligns to team standards
 - Temporary overrides during migrations
 
 **Example:**
@@ -908,7 +908,7 @@ jobs:
 ````markdown
 ## Changes
 
-- Add TypeScript standards pack
+- Add TypeScript standards align
 - Customize severity for team preferences
 - Set team-specific plug values
 
@@ -1030,7 +1030,7 @@ Only approve sources you trust:
 # Good: Minimal allow list
 allowed_sources:
   - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/packs/global.yaml
+    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 
   - type: git
     value: https://github.com/org/team-standards.yaml

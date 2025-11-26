@@ -67,8 +67,8 @@ aligntrue init
 # Interactive prompts:
 # - Project name: my-new-project
 # - Primary agent: cursor
-# - Include base-global pack? yes
-# - Include stack pack? nextjs (or your stack)
+# - Include base-global align? yes
+# - Include stack align? nextjs (or your stack)
 
 # 2. Sync to agents
 aligntrue sync
@@ -81,7 +81,7 @@ cursor .
 
 - Created `.aligntrue/rules` (internal IR, auto-generated)
 - Created or detected your agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
-- Pulled example packs from local examples
+- Pulled example aligns from local examples
 - Exported to all detected agent formats
 - Ready to sync rules to all agents
 
@@ -90,22 +90,22 @@ cursor .
 - Customize test command: `aligntrue plugs set test.cmd "pnpm test"`
 - Adjust severity: `aligntrue override add --selector 'rule[id=...]' --set severity=warn`
 
-### Scenario 2: Using example packs
+### Scenario 2: Using example aligns
 
-**Goal:** Use example packs from the AlignTrue repository and customize for your project.
+**Goal:** Use example aligns from the AlignTrue repository and customize for your project.
 
 **Steps:**
 
 ```bash
 # 1. Browse examples
-# Check examples/packs/ directory or examples/packs.yaml
+# Check examples/aligns/ directory or examples/aligns.yaml
 
-# 2. Import pack via git source
+# 2. Import align via git source
 # Add to .aligntrue/config.yaml:
 # sources:
 #   - type: git
 #     url: https://github.com/AlignTrue/aligntrue
-#     path: examples/packs/testing.yaml
+#     path: examples/aligns/testing.yaml
 
 # 3. Sync rules to all agents
 aligntrue sync
@@ -144,7 +144,7 @@ aligntrue override add \
   --set severity=warn  # Downgrade from error
 ```
 
-**Result:** Example pack customized for your project without forking.
+**Result:** Example align customized for your project without forking.
 
 ### Scenario 3: Sharing rules across personal projects
 
@@ -158,7 +158,7 @@ mkdir my-standards
 cd my-standards
 git init
 
-# 2. Create rules pack
+# 2. Create rules align
 cat > rules.yaml <<EOF
 id: my-standards
 version: 1.0.0
@@ -190,12 +190,12 @@ sources:
 aligntrue sync
 ```
 
-**Option B: Local pack (quick iteration)**
+**Option B: Local align (quick iteration)**
 
 ```bash
-# 1. Create local pack
-mkdir -p ~/.aligntrue/packs
-cat > ~/.aligntrue/packs/my-standards.yaml <<EOF
+# 1. Create local align
+mkdir -p ~/.aligntrue/aligns
+cat > ~/.aligntrue/aligns/my-standards.yaml <<EOF
 id: my-standards
 version: 1.0.0
 spec_version: "1"
@@ -208,7 +208,7 @@ EOF
 
 # 2. Link in projects
 cd ~/projects/project-a
-aligntrue link ~/.aligntrue/packs/my-standards.yaml
+aligntrue link ~/.aligntrue/aligns/my-standards.yaml
 
 # 3. Sync
 aligntrue sync
@@ -216,14 +216,14 @@ aligntrue sync
 
 **Result:** Consistent rules across all personal projects.
 
-### Scenario 4: Customizing third-party packs
+### Scenario 4: Customizing third-party aligns
 
-**Goal:** Use community pack but adjust for personal preferences.
+**Goal:** Use community align but adjust for personal preferences.
 
 **Steps:**
 
 ```bash
-# 1. Pull third-party pack
+# 1. Pull third-party align
 # .aligntrue/rules:
 sources:
   - git: https://github.com/community/typescript-standards
@@ -244,7 +244,7 @@ aligntrue plugs set test.cmd "pnpm test"
 aligntrue sync
 ```
 
-**Result:** Community pack customized without forking.
+**Result:** Community align customized without forking.
 
 ### Scenario 5: Managing multiple stacks (monorepo)
 
@@ -334,7 +334,7 @@ aligntrue plugs set docs.url "https://docs.yourproject.com"
 
 - Adjusting severity for personal preference
 - Temporarily disabling strict rules during refactoring
-- Customizing third-party packs without forking
+- Customizing third-party aligns without forking
 
 **Example:**
 
@@ -481,23 +481,23 @@ aligntrue sync
 
 **Problem:** Maintaining many overlays becomes tedious
 
-**Solution:** Fork the pack or create your own:
+**Solution:** Fork the align or create your own:
 
 ```bash
-# Instead of 20 overlays, create your own pack
-mkdir my-custom-pack
-cat > my-custom-pack/rules.yaml <<EOF
-id: my-custom-pack
+# Instead of 20 overlays, create your own align
+mkdir my-custom-align
+cat > my-custom-align/rules.yaml <<EOF
+id: my-custom-align
 version: 1.0.0
 spec_version: "1"
 rules:
   # Your customized rules here
 EOF
 
-# Use your pack instead
+# Use your align instead
 # .aligntrue/config.yaml:
 sources:
-  - local: ./my-custom-pack/rules.yaml
+  - local: ./my-custom-align/rules.yaml
 ```
 
 ### Pitfall 3: Forgetting to sync after changes
@@ -649,18 +649,18 @@ See [Team Guide](/docs/01-guides/04-team-guide) for team collaboration workflows
 2. **Customize** - Use plugs, overlays, and scopes as needed
 3. **Iterate fast** - No team overhead
 4. **Version control** - Commit rules to git
-5. **Share easily** - Git source or local packs
+5. **Share easily** - Git source or local aligns
 
 **Key principles:**
 
 - Start simple, add complexity only when needed
-- Use example packs as starting point
+- Use example aligns as starting point
 - Customize with plugs, overlays, and scopes
 - Document decisions with comments
 - Version control your rules
 
 **Next steps:**
 
-- Browse [example packs](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) for curated examples
+- Browse [example aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) for curated examples
 - Read [customization guides](/docs/02-customization/) for advanced patterns
-- Join community for pack sharing and support
+- Join community for align sharing and support
