@@ -294,6 +294,15 @@ function generateChecklist(
     });
   }
 
+  // Always add link to managing sources guide
+  checklist.push({
+    status: "info",
+    message: "Add external rules from git sources",
+    details: [
+      "Learn how to combine your rules with team standards or community packs",
+    ],
+  });
+
   return checklist;
 }
 
@@ -414,6 +423,11 @@ function displayChecklist(
 
     if (item.command) {
       console.log(`   → Run: ${item.command}`);
+    }
+
+    // Special handling for sources link
+    if (item.message === "Add external rules from git sources") {
+      console.log(`   → Learn more: aligntrue.ai/sources`);
     }
 
     console.log("");

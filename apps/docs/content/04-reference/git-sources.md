@@ -107,7 +107,20 @@ sources:
 
 Requires SSH key authentication configured for the repository. See [Troubleshooting](#troubleshooting) for SSH setup.
 
-### Multiple git sources with merge order
+### Multiple files with new include syntax (recommended)
+
+```yaml
+sources:
+  - type: git
+    include:
+      - https://github.com/yourorg/base-rules
+      - https://github.com/yourteam/team-rules/packs
+      - https://github.com/security-team/rules@v2.0.0/security.md
+```
+
+Much cleaner! Each URL includes the host, org, repo, optional version (`@ref`), and optional path. No repetition.
+
+### Multiple git sources with merge order (legacy)
 
 ```yaml
 sources:
@@ -121,19 +134,16 @@ sources:
     path: .aligntrue.yaml
   - type: local
     path: .aligntrue/rules
-
-scopes:
-  - path: "."
-    include: ["**/*"]
-    rulesets:
-      - source: 0 # Base rules
-      - source: 1 # Team rules (overrides base)
-      - source: 2 # Local rules (overrides all)
-    merge:
-      order: [root, path, local]
 ```
 
-Sources are indexed from 0. Later sources override earlier ones via [hierarchical scopes](/docs/03-concepts/sync-behavior#hierarchical-scopes).
+**Precedence order (first wins):**
+
+1. Local rules (`.aligntrue/rules/`) - always included, always highest priority
+2. First external source listed
+3. Second external source listed
+4. etc.
+
+When the same rule appears in multiple sources, the first source wins.
 
 ## Local cache behavior
 

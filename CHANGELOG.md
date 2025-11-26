@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Simplified source configuration with `include` syntax** - New `include` array field allows multiple files per git source without repetition. Format: `https://github.com/org/repo[@ref][/path]` with smart defaults (no path = all .md in root, path ending with `/` = directory, `@ref` = version pin)
+- **First-wins merge precedence** - Rules now merge with local rules always highest priority, then external sources in order listed. First source wins on conflict (changed from last-wins for better UX)
+- **Sync summary output** - `aligntrue sync` now displays source precedence list showing all included sources and their priority order
+- **URL parser for git sources** - New `parseSourceURL()` utility for parsing fully-qualified git URLs with embedded refs and paths
+- **Multi-source reliability tests** - Integration tests for first-wins precedence, source ordering, include syntax validation, and add/remove source workflows
+- **Managing rule sources guide** - New comprehensive documentation page with examples, troubleshooting, and best practices for external sources
+- **Onboarding sources link** - Added "Add external rules" checklist item with link to `aligntrue.ai/sources` in onboard command
+- **Source error formatting** - Clear error messages with "did you mean?" suggestions and available files listing for source-related errors
+
+### Changed
+
+- **Bundle merge logic** - Changed from last-wins to first-wins precedence for better predictability and local-first workflow
+- **Git sources documentation** - Updated to show new `include` syntax with examples (backward compatible with old `url`/`path` format)
+- **Architecture documentation** - Updated to explain first-wins precedence and source priority order
+
 ### Fixed
 
 - **Git source sync** - Fixed `Unsupported file format` error when syncing from git sources by using temporary bundle file instead of trying to write to `.aligntrue/rules` directory for non-local sources

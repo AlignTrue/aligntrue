@@ -36,6 +36,11 @@
       "source": "/agent-ignore",
       "destination": "/docs/03-concepts/preventing-duplicate-rules#agent-ignore-files",
       "permanent": true
+    },
+    {
+      "source": "/sources",
+      "destination": "/docs/01-guides/08-managing-sources",
+      "permanent": true
     }
   ],
   "headers": [

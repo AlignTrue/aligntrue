@@ -183,21 +183,24 @@ function mergeSections(
       const existing = sectionMap.get(section.fingerprint);
 
       if (existing) {
-        // Conflict detected
+        // Conflict detected - first source wins (not last)
         conflicts.push({
           fingerprint: section.fingerprint,
           sources: [existing.source, sourceName],
-          resolution: sourceName,
+          resolution: existing.source,
         });
 
         if (warnConflicts) {
           warnings.push(
-            `Section conflict: "${section.heading}" (${section.fingerprint}) defined in both "${existing.source}" and "${sourceName}". Using "${sourceName}".`,
+            `Section conflict: "${section.heading}" (${section.fingerprint}) defined in both "${existing.source}" and "${sourceName}". Using "${existing.source}" (higher priority).`,
           );
         }
+
+        // Skip this section - first source already set it
+        continue;
       }
 
-      // Last source wins
+      // First source wins - only set if not already present
       sectionMap.set(section.fingerprint, {
         section,
         source: sourceName,

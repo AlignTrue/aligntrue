@@ -199,7 +199,7 @@ aligntrue migrate ruler        # Convert Ruler config to AlignTrue
 aligntrue sync                 # Sync to all agents
 ```
 
-See [migration guide](https://aligntrue.ai/docs/01-guides/migrating-from-ruler) for details.
+See [migrate command](https://aligntrue.ai/docs/04-reference/cli-reference/settings#aligntrue-migrate) for details.
 
 ## Who is this for?
 
