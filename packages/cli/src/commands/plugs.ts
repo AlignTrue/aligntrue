@@ -325,10 +325,10 @@ async function resolvePlugs(
         if (!rule) continue;
 
         console.log(`●    ${rule.ruleId}`);
-        if (rule.guidance) {
-          const preview = rule.guidance.substring(0, 60);
+        if (rule.content) {
+          const preview = rule.content.substring(0, 60);
           console.log(
-            `│      Guidance: ${preview}${rule.guidance.length > 60 ? "..." : ""}`,
+            `│      Content: ${preview}${rule.content.length > 60 ? "..." : ""}`,
           );
         }
         if (rule.resolutions.length > 0) {

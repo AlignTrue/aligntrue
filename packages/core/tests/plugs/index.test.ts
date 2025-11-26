@@ -40,12 +40,12 @@ describe("resolvePlugsForPack", () => {
 
     expect(result.success).toBe(true);
     expect(result.rules).toHaveLength(2);
-    expect(result.rules[0].guidance).toContain("npm test");
-    expect(result.rules[1].guidance).toContain("npm test");
+    expect(result.rules[0].content).toContain("npm test");
+    expect(result.rules[1].content).toContain("npm test");
     expect(result.unresolvedRequired).toHaveLength(0);
   });
 
-  it("handles rules without guidance", () => {
+  it("handles rules without content", () => {
     const pack: AlignPack = {
       id: "test/pack",
       version: "1.0.0",
@@ -64,7 +64,7 @@ describe("resolvePlugsForPack", () => {
 
     expect(result.success).toBe(true);
     expect(result.rules).toHaveLength(1);
-    expect(result.rules[0].guidance).toBeUndefined();
+    expect(result.rules[0].content).toBeUndefined();
     expect(result.rules[0].resolutions).toHaveLength(0);
   });
 
@@ -103,8 +103,8 @@ describe("resolvePlugsForPack", () => {
     expect(result.success).toBe(true);
     expect(result.unresolvedRequired).toContain("test.cmd");
     expect(result.unresolvedRequired).toContain("build.cmd");
-    expect(result.rules[0].guidance).toContain("TODO(plug:test.cmd)");
-    expect(result.rules[0].guidance).toContain("TODO(plug:build.cmd)");
+    expect(result.rules[0].content).toContain("TODO(plug:test.cmd)");
+    expect(result.rules[0].content).toContain("TODO(plug:build.cmd)");
   });
 
   it("fails in strict mode with unresolved required plugs", () => {
@@ -172,7 +172,7 @@ describe("resolvePlugsForPack", () => {
     const result = resolvePlugsForPack(pack, additionalFills);
 
     expect(result.success).toBe(true);
-    expect(result.rules[0].guidance).toContain("pnpm test");
+    expect(result.rules[0].content).toContain("pnpm test");
     expect(result.unresolvedRequired).toHaveLength(0);
   });
 
@@ -226,7 +226,7 @@ describe("resolvePlugsForPack", () => {
     const result = resolvePlugsForPack(pack);
 
     expect(result.success).toBe(true);
-    expect(result.rules[0].guidance).toBe("No plugs here\n");
+    expect(result.rules[0].content).toBe("No plugs here\n");
     expect(result.unresolvedRequired).toHaveLength(0);
   });
 

@@ -59,12 +59,12 @@ export function resolvePlugsForPack(
     // Build set of declared slots for validation
     const declaredSlots = new Set(Object.keys(mergedPlugs.slots || {}));
 
-    // Resolve plugs in each rule's guidance
+    // Resolve plugs in each rule's content
     const resolvedRules: ResolvePackResult["rules"] = [];
     const allUnresolvedRequired: string[] = [];
     const errors: string[] = [];
 
-    // Process sections from pack
+    // Process sections from align
     for (const section of pack.sections) {
       if (section.content) {
         // Check for undeclared plugs
@@ -81,7 +81,7 @@ export function resolvePlugsForPack(
 
         resolvedRules.push({
           ruleId: section.fingerprint,
-          guidance: result.text,
+          content: result.text,
           resolutions: result.resolutions,
         });
 

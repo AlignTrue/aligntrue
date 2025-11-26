@@ -1,11 +1,9 @@
-rules:
-  - id: formatting.use-prettier
-    severity: warn
-    applies_to:
-      - "**/*.ts"
-      - "**/*.tsx"
-    guidance: |
+sections:
+  - heading: Formatting with Prettier
+    level: 2
+    content: |
       Use Prettier for consistent code formatting.
+    fingerprint: formatting-use-prettier
     vendor:
       vscode:
         workbench_setting: "editor.formatOnSave"

@@ -22,13 +22,13 @@ export interface ResolveTextResult {
 }
 
 /**
- * Result of resolving plugs for an entire pack
+ * Result of resolving plugs for an entire align
  */
 export interface ResolvePackResult {
   success: boolean;
   rules: Array<{
     ruleId: string;
-    guidance?: string; // Resolved guidance text
+    content?: string; // Resolved content text
     resolutions: PlugResolution[];
   }>;
   unresolvedRequired: string[];
