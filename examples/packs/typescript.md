@@ -3,6 +3,21 @@ id: "packs/base/base-typescript"
 version: "1.0.0"
 summary: "TypeScript strict mode: tight types, comprehensive checks, input validation at boundaries"
 tags: ["typescript", "types", "quality", "paved-road"]
+plugs:
+  slots:
+    tsconfig.file:
+      description: "Path to TypeScript configuration file"
+      format: file
+      required: false
+      example: "tsconfig.json"
+    lint.cmd:
+      description: "Command to run TypeScript type checking"
+      format: command
+      required: false
+      example: "pnpm tsc --noEmit"
+# Overlay hints:
+# - severity: commonly upgraded to "error" for strict type safety enforcement
+# - check.inputs: adjust strictness levels per project needs
 ---
 
 # TypeScript Strict Mode Guide
@@ -215,3 +230,9 @@ function handle(result: Result<T>): void {
 - **Avoid deep unions** - Limit to practical depth
 - **Check compilation time** - `tsc --diagnostics`
 - **Use `skipLibCheck`** - Trust library types
+
+## Type checking
+
+Run type checking with: `[[plug:lint.cmd]]`
+
+Configure TypeScript in: `[[plug:tsconfig.file]]`

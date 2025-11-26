@@ -127,6 +127,29 @@ pnpm --filter @aligntrue/schema compute-hash path/to/your-pack.yaml
 
 Copy the hash from the output and paste it into your pack's `integrity.value` field.
 
+## Using recommended conventions
+
+When creating plugs for your pack, prefer established conventions to maximize interoperability:
+
+- See [Conventions Reference](https://aligntrue.ai/docs/02-customization/conventions) for recommended plug keys
+- Using standard keys like `test.cmd`, `docs.url`, `org.name` improves user experience
+- Users can reuse fills across multiple templates from different authors
+- If your use case has no standard equivalent, document custom plugs clearly in your README
+
+**Example:** Instead of creating a custom `run_tests` key, use the standard `test.cmd` key:
+
+```yaml
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pnpm test"
+```
+
+This allows users to set the fill once and reuse it across any pack that follows conventions.
+
 ## Writing effective guidance
 
 Packs use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
