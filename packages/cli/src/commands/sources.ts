@@ -30,9 +30,9 @@ export async function sources(args: string[]): Promise<void> {
       await splitSources(flags);
       break;
     case "add":
-      // Helpful error for users trying to add packs
+      // Helpful error for users trying to add aligns
       console.error(`Error: 'sources add' is not a valid command\n`);
-      console.error(`To add external packs or rules:\n`);
+      console.error(`To add external aligns or rules:\n`);
       console.error(`  Edit .aligntrue/config.yaml and add to sources:`);
       console.error(`     sources:`);
       console.error(`       - type: git`);
@@ -454,7 +454,7 @@ EXAMPLES
 NOTE
   The 'sources' command is for organizing your own rules into multiple files.
   
-  To add external packs or rules from git repositories:
+  To add external aligns or rules from git repositories:
     - Edit .aligntrue/config.yaml and add to sources array
     - Use type: git with url and optional path fields
   

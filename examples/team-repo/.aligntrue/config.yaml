@@ -7,9 +7,9 @@ lockfile:
 
 # Team-approved rule sources
 sources:
-  # Base pack from catalog (when Phase 4 complete)
+  # Base align from catalog (when Phase 4 complete)
   - type: local
-    path: vendor/shared-pack/rules.md
+    path: vendor/shared-align/rules.md
 
   # Git source example (Phase 3 Session 4)
   # - type: git

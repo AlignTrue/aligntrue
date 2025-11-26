@@ -1,6 +1,6 @@
 /**
  * Overlay functionality tests
- * Tests override/overlay system for customizing packs
+ * Tests override/overlay system for customizing aligns
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

@@ -6,14 +6,14 @@ import { existsSync, statSync } from "fs";
 import { resolve, extname } from "path";
 import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
 import {
-  mergePacks,
+  mergeAligns,
   type BundleResult,
   ensureSectionsArray,
   loadRulesDirectory,
   parseSourceURL,
 } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
-import { parseYamlToJson, type AlignPack } from "@aligntrue/schema";
+import { parseYamlToJson, type Align } from "@aligntrue/schema";
 import type { AlignTrueConfig, ConsentManager } from "@aligntrue/core";
 import type { GitProgressUpdate } from "./git-progress.js";
 
@@ -35,26 +35,26 @@ type GitProviderCtorOptions = {
 };
 
 /**
- * Parse source content into AlignPack based on file extension
+ * Parse source content into Align based on file extension
  * Handles both YAML and markdown with frontmatter
  */
-function parseSourceContent(content: string, sourcePath: string): AlignPack {
+function parseSourceContent(content: string, sourcePath: string): Align {
   const ext = extname(sourcePath).toLowerCase();
 
   if (ext === ".md" || ext === ".markdown") {
     // Parse markdown with optional YAML frontmatter
     const parsed = parseNaturalMarkdown(content);
 
-    // Convert to AlignPack format
+    // Convert to Align format
     return {
-      id: parsed.metadata.id || "imported-pack",
+      id: parsed.metadata.id || "imported-align",
       version: parsed.metadata.version || "1.0.0",
       spec_version: "1",
       sections: parsed.sections,
     };
   } else {
     // Parse as YAML
-    return parseYamlToJson(content) as AlignPack;
+    return parseYamlToJson(content) as Align;
   }
 }
 
@@ -105,7 +105,7 @@ export async function resolveSource(
         recursive: true,
       });
 
-      // Convert rules to AlignPack format
+      // Convert rules to Align format
       const sections = rules.map((rule) => ({
         heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
         content: rule.content,
@@ -116,7 +116,7 @@ export async function resolveSource(
       }));
 
       // Return synthesized YAML content for backward compatibility
-      const pack: AlignPack = {
+      const align: Align = {
         id: "local-rules",
         version: "1.0.0",
         spec_version: "1",
@@ -125,7 +125,7 @@ export async function resolveSource(
 
       // Stringify to YAML for content field (backward compat)
       const { stringify } = await import("yaml");
-      const content = stringify(pack);
+      const content = stringify(align);
 
       return {
         content,
@@ -366,57 +366,57 @@ export async function resolveAndMergeSources(
     if (!firstSource) {
       throw new Error("First resolved source is undefined");
     }
-    const pack = parseSourceContent(
+    const align = parseSourceContent(
       firstSource.content,
       firstSource.sourcePath,
     );
     // Defensive: Initialize sections to empty array ONLY if missing or invalid
     try {
-      ensureSectionsArray(pack, { throwOnInvalid: true });
+      ensureSectionsArray(align, { throwOnInvalid: true });
     } catch {
       throw new Error(
-        `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
+        `Invalid align format: sections must be an array, got ${typeof align.sections}\n` +
           `  Source: ${firstSource.sourcePath}`,
       );
     }
     return {
-      pack,
+      align,
       conflicts: [],
       warnings: [],
       sources: resolved,
     };
   }
 
-  // Parse all sources into AlignPacks
-  const packs: AlignPack[] = [];
+  // Parse all sources into AlignAligns
+  const aligns: Align[] = [];
   for (const source of resolved) {
     try {
-      const pack = parseSourceContent(source.content, source.sourcePath);
+      const align = parseSourceContent(source.content, source.sourcePath);
       // Defensive: Initialize sections to empty array ONLY if missing or invalid
       try {
-        ensureSectionsArray(pack, { throwOnInvalid: true });
+        ensureSectionsArray(align, { throwOnInvalid: true });
       } catch {
         throw new Error(
-          `Invalid pack format: sections must be an array, got ${typeof pack.sections}\n` +
+          `Invalid align format: sections must be an array, got ${typeof align.sections}\n` +
             `  Source: ${source.sourcePath}`,
         );
       }
-      packs.push(pack);
+      aligns.push(align);
     } catch (error) {
       throw new Error(
-        `Failed to parse source as AlignPack\n` +
+        `Failed to parse source as Align\n` +
           `  Source: ${source.sourcePath}\n` +
           `  ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
-  // Merge packs
-  // Always preserve IDs from existing packs, never use generic "merged-bundle"
+  // Merge aligns
+  // Always preserve IDs from existing aligns, never use generic "merged-bundle"
   // This ensures project IDs from init are preserved across sync operations
-  const bundleResult = mergePacks(packs, {
+  const bundleResult = mergeAligns(aligns, {
     warnConflicts: options?.warnConflicts ?? true,
-    bundleId: packs[0]?.id || "bundle",
+    bundleId: aligns[0]?.id || "bundle",
     bundleVersion: "1.0.0",
   });
 

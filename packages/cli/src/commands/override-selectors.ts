@@ -5,7 +5,7 @@
 
 import { existsSync } from "fs";
 import { ensureSectionsArray, loadIR } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -64,18 +64,18 @@ export async function overrideSelectors(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  let pack: AlignPack;
+  let align: Align;
   try {
     // Load IR from rules directory (handles both directory of .md files and legacy .yaml)
-    pack = await loadIR(rulesPath);
-    ensureSectionsArray(pack);
+    align = await loadIR(rulesPath);
+    ensureSectionsArray(align);
   } catch (err) {
     console.error("✗ Failed to read rules");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 
-  const sections = pack.sections || [];
+  const sections = align.sections || [];
   console.log(`Selector inventory (${rulesPath})`);
   console.log(
     `Found ${sections.length} section${
@@ -136,7 +136,7 @@ export async function overrideSelectors(args: string[]): Promise<void> {
     );
   }
 
-  const topLevelKeys = Object.keys(pack)
+  const topLevelKeys = Object.keys(align)
     .filter((key) => key !== "sections" && key !== "rules")
     .sort();
 

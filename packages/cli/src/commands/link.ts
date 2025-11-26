@@ -1,8 +1,8 @@
 /**
- * Link command - Vendor rule packs from git repositories
+ * Link command - Vendor rule aligns from git repositories
  *
  * Enables:
- * - Vendoring packs with git submodule or subtree
+ * - Vendoring aligns with git submodule or subtree
  * - Offline rule access (vendored in your repo)
  * - Version control for rule dependencies
  * - Security auditing of vendored code
@@ -10,7 +10,7 @@
  * Strategy:
  * - Git-only support (no local directory paths)
  * - Detect existing submodule/subtree (inform only, no conversion)
- * - Validate pack integrity (.aligntrue.yaml required)
+ * - Validate align integrity (.aligntrue.yaml required)
  * - Error on duplicate vendoring at same path
  * - User-specified location (default: vendor/<repo-name>)
  *
@@ -88,7 +88,7 @@ export async function link(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "link",
-      description: "Vendor rule packs from git repositories",
+      description: "Vendor rule aligns from git repositories",
       usage: "aligntrue link <git-url> [--path <vendor-path>]",
       args: ARG_DEFINITIONS,
       examples: [
@@ -174,7 +174,7 @@ export async function link(args: string[]): Promise<void> {
       // Inform user about detected vendoring method
       if (isTTY()) {
         clack.note(
-          `Detected ${vendorInfo.type} at ${vendorPath}\n\nAlignTrue will track this vendored pack.\n${getVendorWorkflowGuidance(vendorInfo.type)}`,
+          `Detected ${vendorInfo.type} at ${vendorPath}\n\nAlignTrue will track this vendored align.\n${getVendorWorkflowGuidance(vendorInfo.type)}`,
           `📦 ${vendorInfo.type === "submodule" ? "Submodule" : "Subtree"} Detected`,
         );
       } else {
@@ -182,7 +182,7 @@ export async function link(args: string[]): Promise<void> {
           `\n📦 ${vendorInfo.type === "submodule" ? "Submodule" : "Subtree"} Detected`,
         );
         console.log(`Detected ${vendorInfo.type} at ${vendorPath}`);
-        console.log("\nAlignTrue will track this vendored pack.");
+        console.log("\nAlignTrue will track this vendored align.");
         console.log(getVendorWorkflowGuidance(vendorInfo.type));
       }
     } else {
@@ -194,17 +194,17 @@ export async function link(args: string[]): Promise<void> {
         );
 
         clack.log.warn(
-          "AlignTrue link command registers vendored packs but does not execute git operations.\n" +
-            "Please run the git commands above to vendor the pack first.",
+          "AlignTrue link command registers vendored aligns but does not execute git operations.\n" +
+            "Please run the git commands above to vendor the align first.",
         );
       } else {
         console.log("\n📋 Manual Vendor Setup Required");
         console.log(getManualVendorInstructions(gitUrl, vendorPath));
         console.log(
-          "\n⚠ AlignTrue link command registers vendored packs but does not execute git operations.",
+          "\n⚠ AlignTrue link command registers vendored aligns but does not execute git operations.",
         );
         console.log(
-          "Please run the git commands above to vendor the pack first.",
+          "Please run the git commands above to vendor the align first.",
         );
       }
 
@@ -215,21 +215,21 @@ export async function link(args: string[]): Promise<void> {
       return;
     }
 
-    // Validate pack integrity at vendor path
-    spinner.start("Validating pack integrity...");
-    const packValid = await validateVendoredPack(absoluteVendorPath);
+    // Validate align integrity at vendor path
+    spinner.start("Validating align integrity...");
+    const alignValid = await validateVendoredAlign(absoluteVendorPath);
 
-    if (!packValid.valid) {
-      spinner.stop("Pack validation failed", 1);
+    if (!alignValid.valid) {
+      spinner.stop("Align validation failed", 1);
       exitWithError({
-        title: "Invalid pack",
-        message: packValid.error || "Pack validation failed",
+        title: "Invalid align",
+        message: alignValid.error || "Align validation failed",
         hint: "Ensure the vendored repository has a valid .aligntrue.yaml file at its root with a valid profile.id field.",
         code: "INVALID_PACK",
       });
     }
 
-    spinner.stop("Pack validated");
+    spinner.stop("Align validated");
 
     // Note: Allow list check removed - approval now via git PR review
 
@@ -242,7 +242,7 @@ export async function link(args: string[]): Promise<void> {
       gitUrl,
       vendorPath,
       vendorType,
-      packValid.profileId,
+      alignValid.profileId,
     );
 
     // Success message
@@ -250,7 +250,7 @@ export async function link(args: string[]): Promise<void> {
       `✅ Successfully linked ${gitUrl}\n\n` +
       `Vendor path: ${vendorPath}\n` +
       `Vendor type: ${vendorType}\n` +
-      `Profile: ${packValid.profileId}\n\n` +
+      `Profile: ${alignValid.profileId}\n\n` +
       `Next steps:\n` +
       `1. Commit vendor changes: git add ${vendorPath} .aligntrue/config.yaml\n` +
       `2. Run sync: aligntrue sync\n` +
@@ -307,7 +307,7 @@ function extractRepoName(url: string): string {
 
   // Extract last path component
   const parts = name.split("/");
-  name = parts[parts.length - 1] || "vendored-pack";
+  name = parts[parts.length - 1] || "vendored-align";
 
   // Clean up name (remove special characters)
   name = name.replace(/[^a-zA-Z0-9-_]/g, "-");
@@ -355,7 +355,7 @@ function detectVendorType(path: string): VendorInfo {
  */
 function getVendorWorkflowGuidance(type: "submodule" | "subtree"): string {
   if (type === "submodule") {
-    return `Update workflow:\n  cd <vendor-path>\n  git pull origin main\n  cd ../..\n  git add <vendor-path>\n  git commit -m "chore: Update vendored pack"`;
+    return `Update workflow:\n  cd <vendor-path>\n  git pull origin main\n  cd ../..\n  git add <vendor-path>\n  git commit -m "chore: Update vendored align"`;
   } else {
     return `Update workflow:\n  git subtree pull --prefix <vendor-path> <git-url> main --squash`;
   }
@@ -372,7 +372,7 @@ function getManualVendorInstructions(
     `Manual git operations required:\n\n` +
     `Option 1 - Submodule (space efficient):\n` +
     `  git submodule add ${gitUrl} ${vendorPath}\n` +
-    `  git commit -m "feat: Vendor pack via submodule"\n\n` +
+    `  git commit -m "feat: Vendor align via submodule"\n\n` +
     `Option 2 - Subtree (simpler for team):\n` +
     `  git subtree add --prefix ${vendorPath} ${gitUrl} main --squash\n\n` +
     `After vendoring, run this command again:\n` +
@@ -381,14 +381,14 @@ function getManualVendorInstructions(
 }
 
 /**
- * Validate vendored pack integrity
+ * Validate vendored align integrity
  */
-async function validateVendoredPack(
+async function validateVendoredAlign(
   path: string,
 ): Promise<{ valid: boolean; error?: string; profileId?: string }> {
-  const packPath = join(path, ".aligntrue.yaml");
+  const alignPath = join(path, ".aligntrue.yaml");
 
-  if (!existsSync(packPath)) {
+  if (!existsSync(alignPath)) {
     return {
       valid: false,
       error: `.aligntrue.yaml not found at repository root: ${path}`,
@@ -396,18 +396,18 @@ async function validateVendoredPack(
   }
 
   try {
-    const content = readFileSync(packPath, "utf8");
-    const pack = parseYamlToJson(content);
+    const content = readFileSync(alignPath, "utf8");
+    const align = parseYamlToJson(content);
 
     // Handle edge cases: empty YAML returns undefined, comments-only returns null
-    if (pack === undefined || pack === null) {
+    if (align === undefined || align === null) {
       return {
         valid: false,
-        error: "Empty or invalid pack file",
+        error: "Empty or invalid align file",
       };
     }
 
-    const validation = validateAlignSchema(pack);
+    const validation = validateAlignSchema(align);
 
     if (!validation.valid) {
       const errorMessages = validation.errors
@@ -415,13 +415,13 @@ async function validateVendoredPack(
         .join("\n");
       return {
         valid: false,
-        error: `Invalid pack schema:\n${errorMessages}`,
+        error: `Invalid align schema:\n${errorMessages}`,
       };
     }
 
     // Check for required profile.id
-    const packObj = pack as { profile?: { id?: string } };
-    if (!packObj.profile?.id) {
+    const alignObj = align as { profile?: { id?: string } };
+    if (!alignObj.profile?.id) {
       return {
         valid: false,
         error: "Missing required field: profile.id",
@@ -430,12 +430,12 @@ async function validateVendoredPack(
 
     return {
       valid: true,
-      profileId: packObj.profile.id,
+      profileId: alignObj.profile.id,
     };
   } catch (_error) {
     return {
       valid: false,
-      error: `Failed to parse pack: ${_error instanceof Error ? _error.message : String(_error)}`,
+      error: `Failed to parse align: ${_error instanceof Error ? _error.message : String(_error)}`,
     };
   }
 }

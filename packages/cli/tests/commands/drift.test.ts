@@ -91,7 +91,7 @@ describe("drift command", () => {
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -103,7 +103,7 @@ describe("drift command", () => {
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: different456
 `,
       );
@@ -132,7 +132,7 @@ sources:
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -144,7 +144,7 @@ sources:
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: abc123
 `,
       );
@@ -168,7 +168,7 @@ sources:
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -180,7 +180,7 @@ sources:
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: different456
 `,
       );
@@ -207,7 +207,7 @@ sources:
           mode: "team",
           rules: [
             {
-              rule_id: "vendored-pack",
+              rule_id: "vendored-align",
               content_hash: "abc123",
               vendor_path: "vendor/missing",
               vendor_type: "submodule",
@@ -228,7 +228,7 @@ sources: []
 
       const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
       expect(output).toContain("VENDORIZED DRIFT");
-      expect(output).toContain("vendored-pack");
+      expect(output).toContain("vendored-align");
       expect(output).toContain("vendor/missing");
       expect(output).toContain("submodule");
     });
@@ -242,9 +242,9 @@ sources: []
           mode: "team",
           rules: [
             {
-              rule_id: "vendored-pack",
+              rule_id: "vendored-align",
               content_hash: "abc123",
-              vendor_path: "vendor/pack",
+              vendor_path: "vendor/align",
               vendor_type: "subtree",
             },
           ],
@@ -262,7 +262,7 @@ sources: []
       await drift([]);
 
       const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("vendor/pack");
+      expect(output).toContain("vendor/align");
     });
 
     it("shows correct vendor type in output", async () => {
@@ -274,9 +274,9 @@ sources: []
           mode: "team",
           rules: [
             {
-              rule_id: "vendored-pack",
+              rule_id: "vendored-align",
               content_hash: "abc123",
-              vendor_path: "vendor/pack",
+              vendor_path: "vendor/align",
               vendor_type: "subtree",
             },
           ],
@@ -315,7 +315,7 @@ sources: []
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -327,7 +327,7 @@ sources: []
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: different456
 `,
       );
@@ -347,7 +347,7 @@ sources:
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -359,7 +359,7 @@ sources:
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: different456
 `,
       );
@@ -383,7 +383,7 @@ sources:
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -395,7 +395,7 @@ sources:
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: abc123
 `,
       );
@@ -501,7 +501,7 @@ sources: []
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/pack",
+              source: "git:https://github.com/org/align",
             },
           ],
           bundle_hash: "xyz789",
@@ -513,7 +513,7 @@ sources: []
         `version: 1
 sources:
   - type: id
-    value: git:https://github.com/org/pack
+    value: git:https://github.com/org/align
     resolved_hash: different456
 `,
       );

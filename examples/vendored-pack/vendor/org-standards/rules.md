@@ -1,4 +1,4 @@
-# Organization standards pack
+# Organization standards align
 
 Vendored copy of organization-wide coding standards.
 

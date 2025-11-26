@@ -9,7 +9,7 @@ import { join } from "path";
 import { validateOverlays } from "@aligntrue/core";
 import { parseYamlToJson } from "@aligntrue/schema";
 import type {
-  AlignPack,
+  Align,
   OverlayDefinition,
   AlignTrueConfig,
 } from "@aligntrue/core";
@@ -46,7 +46,7 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -61,7 +61,7 @@ sections:
     const configData: AlignTrueConfig = parseYamlToJson(
       config,
     ) as AlignTrueConfig;
-    const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
+    const rulesData: Align = parseYamlToJson(rules) as Align;
 
     // Validate overlays
     const overlays: OverlayDefinition[] = configData.overlays.overrides;
@@ -86,7 +86,7 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -101,7 +101,7 @@ sections:
     const configData: AlignTrueConfig = parseYamlToJson(
       config,
     ) as AlignTrueConfig;
-    const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
+    const rulesData: Align = parseYamlToJson(rules) as Align;
 
     // Validate overlays
     const overlays: OverlayDefinition[] = configData.overlays.overrides;
@@ -132,7 +132,7 @@ ${overlays}
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -147,7 +147,7 @@ sections:
     const configData: AlignTrueConfig = parseYamlToJson(
       config,
     ) as AlignTrueConfig;
-    const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
+    const rulesData: Align = parseYamlToJson(rules) as Align;
 
     // Validate overlays
     const overlaysArray: OverlayDefinition[] = configData.overlays.overrides;
@@ -172,7 +172,7 @@ overlays:
     writeFileSync(configPath, config, "utf8");
 
     const rules = `
-id: test-pack
+id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -187,7 +187,7 @@ sections:
     const configData: AlignTrueConfig = parseYamlToJson(
       config,
     ) as AlignTrueConfig;
-    const rulesData: AlignPack = parseYamlToJson(rules) as AlignPack;
+    const rulesData: Align = parseYamlToJson(rules) as Align;
 
     // Validate overlays
     const overlays: OverlayDefinition[] = configData.overlays.overrides;

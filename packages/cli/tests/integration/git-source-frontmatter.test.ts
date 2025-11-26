@@ -1,6 +1,6 @@
 /**
  * Integration test for git source loading with YAML frontmatter
- * Verifies that packs from GitHub with frontmatter parse correctly
+ * Verifies that aligns from GitHub with frontmatter parse correctly
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -29,7 +29,7 @@ describe("Git source with YAML frontmatter", () => {
     }
   });
 
-  it("parses pack with YAML frontmatter from git source", async () => {
+  it("parses align with YAML frontmatter from git source", async () => {
     // Create config with git source pointing to examples repo
     mkdirSync(".aligntrue", { recursive: true });
     const config = {
@@ -38,7 +38,7 @@ describe("Git source with YAML frontmatter", () => {
         {
           type: "git",
           url: "https://github.com/AlignTrue/examples",
-          path: "packs/testing.md",
+          path: "aligns/testing.md",
         },
       ],
       exporters: ["agents"],
@@ -46,7 +46,7 @@ describe("Git source with YAML frontmatter", () => {
 
     writeFileSync(".aligntrue/config.yaml", stringifyYaml(config), "utf-8");
 
-    // Run sync - this should fetch and parse the pack with frontmatter
+    // Run sync - this should fetch and parse the align with frontmatter
     try {
       await sync([]);
     } catch (err) {
@@ -68,22 +68,22 @@ describe("Git source with YAML frontmatter", () => {
   it("handles local markdown file with frontmatter", async () => {
     // Create a local markdown file with YAML frontmatter
     const markdownContent = `---
-id: "test-pack"
+id: "test-align"
 version: "1.0.0"
-summary: "Test pack with frontmatter"
+summary: "Test align with frontmatter"
 tags: ["test"]
 ---
 
-# Test Pack
+# Test Align
 
-This is a test pack with YAML frontmatter.
+This is a test align with YAML frontmatter.
 
 ## Test Section
 
 Content here.
 `;
 
-    writeFileSync("test-pack.md", markdownContent, "utf-8");
+    writeFileSync("test-align.md", markdownContent, "utf-8");
 
     // Create config pointing to local file
     mkdirSync(".aligntrue", { recursive: true });
@@ -92,7 +92,7 @@ Content here.
       sources: [
         {
           type: "local",
-          path: "test-pack.md",
+          path: "test-align.md",
         },
       ],
       exporters: ["agents"],

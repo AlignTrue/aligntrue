@@ -318,7 +318,7 @@ export async function buildSyncContext(
       "@aligntrue/core/lockfile"
     );
     const newLockfile = generateLockfile(
-      bundleResult.pack,
+      bundleResult.align,
       config.mode as "team" | "enterprise",
     );
 
@@ -415,7 +415,7 @@ export async function buildSyncContext(
   }
 
   try {
-    const sections = bundleResult.pack.sections || [];
+    const sections = bundleResult.align.sections || [];
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
       if (!section) continue;
@@ -458,7 +458,7 @@ export async function buildSyncContext(
     // Uses EAFP pattern to avoid TOCTOU race condition
     try {
       const yaml = await import("yaml");
-      const bundleYaml = yaml.stringify(bundleResult.pack);
+      const bundleYaml = yaml.stringify(bundleResult.align);
       writeFileSync(targetPath, bundleYaml, "utf-8");
       absoluteSourcePath = targetPath;
     } catch (err) {

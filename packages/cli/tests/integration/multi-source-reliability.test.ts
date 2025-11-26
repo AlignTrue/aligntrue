@@ -133,7 +133,7 @@ mode: solo
 sources:
   - type: git
     include:
-      - https://github.com/AlignTrue/examples/packs/debugging.md
+      - https://github.com/AlignTrue/examples/aligns/debugging.md
 exporters:
   - agents
 `,
@@ -188,7 +188,7 @@ mode: solo
 sources:
   - type: git
     url: https://github.com/AlignTrue/examples
-    path: packs/debugging.md
+    path: aligns/debugging.md
 exporters:
   - agents
 `,

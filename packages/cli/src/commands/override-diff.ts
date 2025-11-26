@@ -10,7 +10,7 @@ import {
   applyOverlays,
   getAlignTruePaths,
 } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import * as clack from "@clack/prompts";
 import { resolve } from "path";
 import { isTTY } from "../utils/tty-helper.js";
@@ -109,9 +109,9 @@ async function runOverrideDiff(
     process.exit(1);
   }
 
-  // Apply overlays (TypeScript: cast to AlignPack after IR load validation)
+  // Apply overlays (TypeScript: cast to Align after IR load validation)
   const result = applyOverlays(
-    originalIR as AlignPack,
+    originalIR as Align,
     config.overlays?.overrides || [],
   );
 

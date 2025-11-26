@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-testing"
+id: "aligns/base/base-testing"
 version: "1.0.0"
 summary: "Testing baseline: fast, deterministic, useful tests with clear strategy"
 tags: ["testing", "quality", "determinism", "paved-road"]
@@ -17,7 +17,7 @@ plugs:
 
 # Testing baseline
 
-This pack establishes testing standards for fast, deterministic, and useful tests. It complements the global baseline and TDD practices while deferring to security requirements.
+This align establishes testing standards for fast, deterministic, and useful tests. It complements the global baseline and TDD practices while deferring to security requirements.
 
 ## 5-Question Test Decision
 

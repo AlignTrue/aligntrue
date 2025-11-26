@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-typescript"
+id: "aligns/base/base-typescript"
 version: "1.0.0"
 summary: "TypeScript strict mode: tight types, comprehensive checks, input validation at boundaries"
 tags: ["typescript", "types", "quality", "paved-road"]
