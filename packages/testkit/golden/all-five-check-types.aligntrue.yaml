@@ -28,4 +28,4 @@ sections:
     fingerprint: command-validation
 integrity:
   algo: jcs-sha256
-  value: "4137801ba8f969812e70c3d8ff9adfd512afdd89264e8790c593cac7b060467b"
+  value: "9c5cd78cb64071f692bc875a953e2d710c92c478e88ed9d06afb2fc07b17f0ec"
