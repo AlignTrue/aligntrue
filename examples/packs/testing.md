@@ -3,6 +3,16 @@ id: "packs/base/base-testing"
 version: "1.0.0"
 summary: "Testing baseline: fast, deterministic, useful tests with clear strategy"
 tags: ["testing", "quality", "determinism", "paved-road"]
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pnpm test"
+# Overlay hints:
+# - severity: commonly changed to "error" to fail CI on test failures
+# - check.inputs: adjust thresholds for coverage or timeout requirements
 ---
 
 # Testing baseline
@@ -92,4 +102,6 @@ Target sub-second per test:
 - **Publish test reports** - For visibility and trends
 - **Fail on coverage threshold miss** - If configured
 
-Run tests with: `pnpm test --coverage`
+Run tests with: `[[plug:test.cmd]]`
+
+For coverage reporting: `[[plug:test.cmd]] --coverage`
