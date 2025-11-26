@@ -87,7 +87,7 @@ For more examples, browse existing aligns in the [`examples/aligns/`](https://gi
 
 You'll need:
 
-- Node.js 22+ and pnpm 9+
+- Node.js 20+ and pnpm 9+
 - The `AlignTrue/aligntrue` repository cloned
 
 ### Validate your align

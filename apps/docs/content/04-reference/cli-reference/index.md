@@ -55,7 +55,6 @@ Quick lookup table for all CLI commands:
 | `aligntrue override diff`   | Show overlay effects                    | [Overlays](./overlays#aligntrue-override-diff)                              |
 | `aligntrue override remove` | Remove overlay                          | [Overlays](./overlays#aligntrue-override-remove)                            |
 | `aligntrue drift`           | Detect drift                            | [Team](./team#aligntrue-drift)                                              |
-| `aligntrue update`          | Apply updates                           | [Team](./team#aligntrue-update)                                             |
 | `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                                            |
 | `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                                        |
 | `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                                             |
