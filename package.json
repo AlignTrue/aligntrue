@@ -28,7 +28,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "node scripts/check-all.mjs",
-    "ci:status": "node scripts/check-ci-status.mjs",
+    "ci:errors": "node scripts/check-ci-errors.mjs",
     "codeql:status": "node scripts/check-codeql-status.mjs",
     "dependabot:status": "node scripts/check-dependabot-status.mjs",
     "pre-ci": "node scripts/pre-ci.mjs",
