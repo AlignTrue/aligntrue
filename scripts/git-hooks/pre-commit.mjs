@@ -155,7 +155,7 @@ async function main() {
           // Count warnings/errors for this file
           const fileRegex = new RegExp(
             file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
-            "[\\s\\S]*?(\\d+):(\\d+)",
+              "[\\s\\S]*?(\\d+):(\\d+)",
             "g",
           );
           const matches = [...output.matchAll(fileRegex)];

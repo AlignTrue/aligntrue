@@ -290,9 +290,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       detectedFormats.has(opt.exporter),
     ).map((opt) => opt.exporter);
 
-    // Show hint before the prompt
+    // Show tips before the prompt
     clack.log.info(
-      "Use space to select formats. You can add or change them later with 'aligntrue adapters'.",
+      "Agent exporter tips:\n  • Use space to select formats\n  • Add or change them later with 'aligntrue adapters'\n  • See full list: https://aligntrue.ai/agents\n  • See how to add new ones: https://aligntrue.ai/extend",
     );
 
     const selected = await clack.multiselect({
@@ -319,11 +319,6 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         "No formats selected. You can add them later with 'aligntrue adapters enable <format>'.",
       );
     }
-
-    // Show hint about full compatibility matrix and extending
-    clack.log.info(
-      "💡 Don't see your agent? View the full compatibility list at https://aligntrue.ai/agents or learn how to add your own at https://aligntrue.ai/extend",
-    );
   } else {
     // Non-interactive mode: use detected or default to agents
     const detectedFormats = detectFormats(cwd);
