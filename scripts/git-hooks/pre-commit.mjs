@@ -38,32 +38,22 @@ async function main() {
     // Non-fatal: continue with commit if this check fails
   }
 
-  // Check for protected files (auto-generated from docs)
-  s.start("Checking for protected file edits...");
+  // Auto-regenerate repo files if docs source changed
+  s.start("Checking for docs updates...");
   try {
-    const protectedFiles = [
-      "README.md",
-      "CONTRIBUTING.md",
-      "DEVELOPMENT.md",
-      "SECURITY.md",
+    const docsSources = [
+      "apps/docs/content/index.mdx",
+      "apps/docs/content/06-contributing/creating-packs.md",
+      "apps/docs/content/07-policies/security.md",
     ];
-    const editedProtected = stagedFiles.filter((f) =>
-      protectedFiles.includes(f),
+    const devDocsPattern = /^apps\/docs\/content\/08-development\/.+\.mdx?$/;
+
+    const sourceDocsChanged = stagedFiles.some(
+      (f) => docsSources.includes(f) || devDocsPattern.test(f),
     );
 
-    if (editedProtected.length > 0) {
-      s.stop("⚠️  Protected files were directly edited.", 0);
-      console.error("");
-      clack.log.warn("Protected files were directly edited");
-      console.error("");
-      console.error("📝 These files are generated from docs content:");
-      editedProtected.forEach((file) => {
-        console.error(`   ${file}`);
-      });
-      console.error("");
-      console.error("🔄 Regenerating from source...");
-      console.error("");
-
+    if (sourceDocsChanged) {
+      s.stop("Regenerating repo files from docs...");
       try {
         execSync("pnpm generate:repo-files", { stdio: "pipe" });
 
@@ -75,19 +65,19 @@ async function main() {
           },
         );
 
-        console.error("✅ Protected files regenerated and staged.");
-        console.error("");
+        s.start("Docs check");
+        s.stop("✅ Repo files regenerated and staged.");
       } catch (genError) {
-        s.stop("❌ Generation failed.", 1);
-        console.error("Run manually to debug: pnpm generate:repo-files");
+        s.stop("❌ Regeneration failed.", 1);
+        console.error("Run manually: pnpm generate:repo-files");
         process.exit(1);
       }
     } else {
-      s.stop("✅ No protected files edited.");
+      s.stop("✅ Docs check complete.");
     }
   } catch (error) {
     // Non-fatal: continue with commit if this check fails
-    s.stop("⚠️  Protected file check skipped.");
+    s.stop("⚠️  Docs check skipped.");
   }
 
   const packageJsonChanged = stagedFiles.some((file) =>
