@@ -70,12 +70,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
  */
 function detectSourceType(url: string): "git" | "url" {
   // Git URLs
-  if (
-    url.startsWith("git@") ||
-    url.includes("github.com") ||
-    url.includes("gitlab.com") ||
-    url.includes("bitbucket.org")
-  ) {
+  if (url.startsWith("git@")) {
     return "git";
   }
 
@@ -87,6 +82,24 @@ function detectSourceType(url: string): "git" | "url" {
   // Check if it ends with .git
   if (url.endsWith(".git")) {
     return "git";
+  }
+
+  // Check for known git hosting URLs with strict host matching
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname;
+    if (
+      hostname === "github.com" ||
+      hostname.endsWith(".github.com") ||
+      hostname === "gitlab.com" ||
+      hostname.endsWith(".gitlab.com") ||
+      hostname === "bitbucket.org" ||
+      hostname.endsWith(".bitbucket.org")
+    ) {
+      return "git";
+    }
+  } catch {
+    // If URL parsing fails, treat as URL source
   }
 
   // Default to URL for plain HTTP/HTTPS

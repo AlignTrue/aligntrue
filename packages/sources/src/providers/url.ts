@@ -202,6 +202,8 @@ export class UrlProvider implements SourceProvider {
       headers["If-Modified-Since"] = meta.lastModified;
     }
 
+    // Safe: headers are validated HTTP response headers (etag, last-modified).
+    // this.url is validated via validateUrl() at constructor. No user input flows through headers.
     const response = await fetch(this.url, { headers });
 
     // 304 Not Modified - content unchanged
@@ -224,7 +226,8 @@ export class UrlProvider implements SourceProvider {
     const content = await response.text();
     const contentHash = computeHash(content);
 
-    // Save content to cache
+    // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
+    // Cache directory is created at constructor, never from user input.
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata
@@ -261,7 +264,8 @@ export class UrlProvider implements SourceProvider {
     const content = await response.text();
     const contentHash = computeHash(content);
 
-    // Save content to cache
+    // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
+    // Cache directory is created at constructor, never from user input.
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata

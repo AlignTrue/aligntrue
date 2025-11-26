@@ -382,9 +382,7 @@ async function teamEnable(
       await runTeamMigrationWizard(config, process.cwd());
     }
 
-    if (spinner) {
-      spinner.stop("Team configuration updated");
-    }
+    spinner.stop("Team configuration updated");
 
     // Show configuration summary
     console.log("\n✓ Team mode enabled\n");
