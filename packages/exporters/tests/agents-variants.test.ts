@@ -112,8 +112,8 @@ describe("AGENTS.md-based exporter variants", () => {
       const result = await exporter!.export(
         {
           scope: { path: ".", isDefault: true, normalizedPath: "." },
-          pack: {
-            id: "test-pack",
+          align: {
+            id: "test-align",
             version: "1.0.0",
             spec_version: "1",
             sections,
@@ -168,8 +168,8 @@ describe("AGENTS.md-based exporter variants", () => {
     const result = await exporter!.export(
       {
         scope: { path: ".", isDefault: true, normalizedPath: "." },
-        pack: {
-          id: "test-pack",
+        align: {
+          id: "test-align",
           version: "1.0.0",
           spec_version: "1",
           sections,

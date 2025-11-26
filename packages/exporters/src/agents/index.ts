@@ -32,7 +32,7 @@ export class AgentsExporter extends ExporterBase {
   ): Promise<ExportResult> {
     const { outputDir, dryRun = false } = options;
 
-    // Get rules from request (handles backward compatibility with pack)
+    // Get rules from request (handles backward compatibility with align)
     const rules = this.getRulesFromRequest(request);
 
     // Filter rules that should be exported to this agent

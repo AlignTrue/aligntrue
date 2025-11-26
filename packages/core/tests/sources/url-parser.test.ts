@@ -35,55 +35,55 @@ describe("URL Parser", () => {
     });
 
     it("should parse URL with directory path", () => {
-      const result = parseSourceURL("https://github.com/company/rules/packs");
+      const result = parseSourceURL("https://github.com/company/rules/aligns");
       expect(result).toEqual({
         host: "github.com",
         org: "company",
         repo: "rules",
         ref: undefined,
-        path: "packs",
+        path: "aligns",
         isFile: false,
       });
     });
 
     it("should parse URL with file path", () => {
       const result = parseSourceURL(
-        "https://github.com/company/rules/packs/security.md",
+        "https://github.com/company/rules/aligns/security.md",
       );
       expect(result).toEqual({
         host: "github.com",
         org: "company",
         repo: "rules",
         ref: undefined,
-        path: "packs/security.md",
+        path: "aligns/security.md",
         isFile: true,
       });
     });
 
     it("should parse URL with version and file path", () => {
       const result = parseSourceURL(
-        "https://github.com/company/rules@v2.0.0/packs/security.md",
+        "https://github.com/company/rules@v2.0.0/aligns/security.md",
       );
       expect(result).toEqual({
         host: "github.com",
         org: "company",
         repo: "rules",
         ref: "v2.0.0",
-        path: "packs/security.md",
+        path: "aligns/security.md",
         isFile: true,
       });
     });
 
     it("should parse URL with commit SHA", () => {
       const result = parseSourceURL(
-        "https://github.com/company/rules@abc123def/packs",
+        "https://github.com/company/rules@abc123def/aligns",
       );
       expect(result).toEqual({
         host: "github.com",
         org: "company",
         repo: "rules",
         ref: "abc123def",
-        path: "packs",
+        path: "aligns",
         isFile: false,
       });
     });
@@ -121,9 +121,9 @@ describe("URL Parser", () => {
 
     it("should handle nested paths", () => {
       const result = parseSourceURL(
-        "https://github.com/company/rules/packs/advanced/security.md",
+        "https://github.com/company/rules/aligns/advanced/security.md",
       );
-      expect(result.path).toBe("packs/advanced/security.md");
+      expect(result.path).toBe("aligns/advanced/security.md");
       expect(result.isFile).toBe(true);
     });
   });
