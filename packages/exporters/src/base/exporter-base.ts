@@ -279,9 +279,14 @@ export abstract class ExporterBase implements ExporterPlugin {
    * ```
    */
   protected stripStarterRuleComment(content: string): string {
-    // Remove the HTML comment block that starts with "STARTER RULE:"
-    // Matches: <!-- followed by newline, whitespace, "STARTER RULE:", any content, --> followed by optional newlines
-    return content.replace(/<!--\s*\n\s*STARTER RULE:[\s\S]*?-->\n*/m, "");
+    // Remove the HTML comment block that starts with "STARTER RULE:" and any trailing newlines.
+    // Avoids ReDoS by not overlapping quantifiers on [\s\S] and \n.
+    // Matches: <!-- optional whitespace newline whitespace STARTER RULE: content -->
+    // Then removes trailing newlines separately.
+    let result = content.replace(/<!--\s*\n\s*STARTER RULE:[\s\S]*?-->/, "");
+    // Remove any trailing newlines after the removed comment (can be 0 or more)
+    result = result.replace(/^\n+/, "");
+    return result;
   }
 
   /**
