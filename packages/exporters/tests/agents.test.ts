@@ -15,7 +15,7 @@ import type {
   ExportOptions,
   ResolvedScope,
 } from "@aligntrue/plugin-contracts";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 
 /**
  * Generate a stable fingerprint for tests
@@ -47,8 +47,8 @@ function createRequest(
   scope: ResolvedScope,
   sections: AlignSection[],
 ): ScopedExportRequest {
-  const pack: AlignPack = {
-    id: "test-pack",
+  const align: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections,
@@ -56,7 +56,7 @@ function createRequest(
 
   return {
     scope,
-    pack,
+    align,
     outputPath: join(TEST_OUTPUT_DIR, "AGENTS.md"),
   };
 }

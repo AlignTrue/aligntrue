@@ -105,7 +105,7 @@ function validateNodeVersion() {
     "apps/docs/content/00-getting-started/03-faq.mdx",
     "apps/docs/content/04-reference/features.md",
     "apps/docs/content/05-troubleshooting/index.mdx",
-    "apps/docs/content/06-contributing/creating-packs.md",
+    "apps/docs/content/06-contributing/creating-aligns.md",
     "apps/docs/content/06-contributing/getting-started.md",
     "apps/docs/content/08-development/setup.mdx",
     ".cursor/rules/global.mdc",

@@ -11,7 +11,7 @@ import type {
   ExportOptions,
   ResolvedScope,
 } from "../src/types.js";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
@@ -76,8 +76,8 @@ function createRequest(
   sections: AlignSection[],
   scope: ResolvedScope,
 ): ScopedExportRequest {
-  const pack: AlignPack = {
-    id: "test-pack",
+  const align: Align = {
+    id: "test-align",
     version: "1.0.0",
     spec_version: "1",
     sections,
@@ -85,7 +85,7 @@ function createRequest(
 
   return {
     scope,
-    pack,
+    align,
     outputPath: join(TEST_OUTPUT_DIR, ".augment", "rules", "rules.md"),
   };
 }

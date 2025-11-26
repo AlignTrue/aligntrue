@@ -21,7 +21,7 @@ import type {
 import { getPromptHandler } from "@aligntrue/plugin-contracts";
 import type {
   AlignSection,
-  AlignPack,
+  Align,
   RuleFile,
   RuleFrontmatter,
 } from "@aligntrue/schema";
@@ -96,10 +96,10 @@ export abstract class ExporterBase implements ExporterPlugin {
   /**
    * Get rules from request
    *
-   * Converts pack.sections to RuleFile[] format for exporters.
+   * Converts align.sections to RuleFile[] format for exporters.
    * If rules are provided directly (future), use them instead.
    *
-   * @param request - Export request with pack
+   * @param request - Export request with align
    * @returns Array of RuleFile objects
    */
   protected getRulesFromRequest(request: ScopedExportRequest): RuleFile[] {
@@ -112,13 +112,13 @@ export abstract class ExporterBase implements ExporterPlugin {
       return request.rules;
     }
 
-    // Convert pack.sections to RuleFile[]
+    // Convert align.sections to RuleFile[]
     if (
-      request.pack !== undefined &&
-      request.pack.sections !== undefined &&
-      Array.isArray(request.pack.sections)
+      request.align !== undefined &&
+      request.align.sections !== undefined &&
+      Array.isArray(request.align.sections)
     ) {
-      return this.convertSectionsToRules(request.pack.sections, request.pack);
+      return this.convertSectionsToRules(request.align.sections, request.align);
     }
 
     return [];
@@ -126,13 +126,13 @@ export abstract class ExporterBase implements ExporterPlugin {
 
   /**
    * Convert AlignSection[] to RuleFile[]
-   * @param sections - Sections from AlignPack
-   * @param pack - Parent AlignPack for metadata
+   * @param sections - Sections from Align
+   * @param align - Parent Align for metadata
    * @returns Array of RuleFile objects
    */
   protected convertSectionsToRules(
     sections: AlignSection[],
-    pack: AlignPack,
+    align: Align,
   ): RuleFile[] {
     return sections.map((section) => {
       // Use source_file if available (preserves original filename from rules directory)
@@ -162,7 +162,7 @@ export abstract class ExporterBase implements ExporterPlugin {
       const frontmatter: RuleFrontmatter = {
         title: section.heading,
         ...(section.scope && { scope: section.scope }),
-        ...(pack.owner && { original_source: pack.owner }),
+        ...(align.owner && { original_source: align.owner }),
         ...sectionFrontmatter, // Merge any frontmatter from the section
         content_hash: hash,
       };

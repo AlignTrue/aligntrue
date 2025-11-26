@@ -108,7 +108,7 @@ exporters:
 
       await engine.loadConfiguration(configPath);
 
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -136,7 +136,7 @@ exporters:
 
       await engine.loadConfiguration(configPath);
 
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -168,7 +168,7 @@ plugs:
       await engine.loadConfiguration(configPath);
 
       // Setup IR with plug slots
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 plugs:
@@ -206,7 +206,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -244,7 +244,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -282,7 +282,7 @@ exporters:
   - exporter1
   - exporter2
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -324,7 +324,7 @@ scopes:
     include:
       - "**/*.ts"
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -360,7 +360,7 @@ exporters:
   - missing-exporter
   - test-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -398,7 +398,7 @@ mode: solo
 exporters:
   - test-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -438,7 +438,7 @@ mode: solo
 exporters:
   - missing-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -472,7 +472,7 @@ mode: solo
 exporters:
   - failing-exporter
 `;
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
@@ -518,7 +518,7 @@ exporters:
 
       await engine.loadConfiguration(configPath);
 
-      const yaml = `id: test-pack
+      const yaml = `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:
