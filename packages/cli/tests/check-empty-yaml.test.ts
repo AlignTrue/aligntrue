@@ -105,7 +105,7 @@ sources:
     // Create valid rules file
     writeFileSync(
       join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-pack
+      `id: test-align
 version: 1.0.0
 spec_version: "1"
 sections:

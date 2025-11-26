@@ -1,5 +1,5 @@
 ---
-id: "packs/stacks/vercel-deployments"
+id: "aligns/stacks/vercel-deployments"
 version: "1.0.0"
 summary: "Vercel deployment best practices: environment management, performance, reliability"
 tags: ["vercel", "deployment", "nextjs", "paved-road"]

@@ -6,7 +6,7 @@
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { type AlignTrueConfig, ensureSectionsArray } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { validateAlignSchema } from "@aligntrue/schema";
 import {
   readLockfile,
@@ -248,7 +248,7 @@ export async function check(args: string[]): Promise<void> {
           console.error("✗ Empty or invalid rules file\n");
           console.error(`  File: ${rulesPath}`);
           console.error(
-            `  The rules file must contain a valid Align pack (id, version, spec_version, rules)\n`,
+            `  The rules file must contain a valid Align align (id, version, spec_version, rules)\n`,
           );
           console.error(
             "  Run 'aligntrue init' to create a valid rules file\n",
@@ -285,11 +285,11 @@ export async function check(args: string[]): Promise<void> {
 
     // Defensive: Ensure sections array exists (for backward compatibility)
     // This must be done BEFORE validation since schema requires sections
-    const pack = alignData as AlignPack;
-    ensureSectionsArray(pack);
+    const align = alignData as Align;
+    ensureSectionsArray(align);
 
     // Validate against schema
-    const schemaResult = validateAlignSchema(pack);
+    const schemaResult = validateAlignSchema(align);
     if (!schemaResult.valid) {
       const details = (schemaResult.errors || []).map(
         (err) => `${err.path}: ${err.message}`,
@@ -336,7 +336,7 @@ export async function check(args: string[]): Promise<void> {
           console.error("  Failed to read lockfile\n");
           process.exit(2);
         }
-        const validation = validateLockfile(lockfile, alignData as AlignPack);
+        const validation = validateLockfile(lockfile, alignData as Align);
 
         if (!validation.valid) {
           spinner.stop("Validation failed");
@@ -400,7 +400,7 @@ export async function check(args: string[]): Promise<void> {
 
       const overlayResult = validateOverlays(
         overlays,
-        alignData as AlignPack,
+        alignData as Align,
         limits,
       );
 

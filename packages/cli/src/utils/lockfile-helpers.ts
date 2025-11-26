@@ -8,7 +8,7 @@ import { generateLockfile, writeLockfile } from "@aligntrue/core/lockfile";
 import { readFileSync, existsSync } from "fs";
 import { parse as parseYaml } from "yaml";
 import type { AlignTrueConfig } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 
 export interface LockfileGenerationOptions {
   cwd: string;
@@ -65,12 +65,12 @@ export async function ensureLockfileExists(
       };
     }
 
-    // Load IR as AlignPack
+    // Load IR as Align
     const irContent = readFileSync(irPath, "utf-8");
-    const pack = parseYaml(irContent) as AlignPack;
+    const align = parseYaml(irContent) as Align;
 
-    // Ensure pack has required fields
-    if (!pack || typeof pack !== "object") {
+    // Ensure align has required fields
+    if (!align || typeof align !== "object") {
       return {
         success: false,
         error: "Invalid IR format",
@@ -79,7 +79,7 @@ export async function ensureLockfileExists(
 
     // Generate lockfile
     const lockfile = generateLockfile(
-      pack,
+      align,
       config.mode as "team" | "enterprise",
     );
 

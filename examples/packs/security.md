@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-security"
+id: "aligns/base/base-security"
 version: "1.0.0"
 summary: "Security and compliance: secrets, dependencies, supply chain, least privilege"
 tags: ["security", "compliance", "secrets", "supply-chain", "paved-road"]

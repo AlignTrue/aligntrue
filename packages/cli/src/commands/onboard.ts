@@ -299,7 +299,7 @@ function generateChecklist(
     status: "info",
     message: "Add external rules from git sources",
     details: [
-      "Learn how to combine your rules with team standards or community packs",
+      "Learn how to combine your rules with team standards or community aligns",
     ],
   });
 
@@ -515,7 +515,7 @@ export async function onboard(args: string[]): Promise<void> {
         details: plugsInfo.unresolvedKeys
           .slice(0, 5)
           .map(
-            (key) => `  - ${key}: Add fill in .aligntrue/rules/ or pack YAML`,
+            (key) => `  - ${key}: Add fill in .aligntrue/rules/ or align YAML`,
           ),
         command: "aligntrue plugs list",
       });

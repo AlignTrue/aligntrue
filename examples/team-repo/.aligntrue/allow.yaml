@@ -5,13 +5,13 @@
 # sources:
 #   - type: id
 #     value: base-global@aligntrue@latest
-#     comment: Official base pack
+#     comment: Official base align
 
 # Format 2: Raw SHA-256 hash (lockfile uses this)
 sources:
   - type: hash
-    value: sha256:abc123def456... # Placeholder for shared-pack hash
-    comment: Vendored shared standards pack
+    value: sha256:abc123def456... # Placeholder for shared-align hash
+    comment: Vendored shared standards align
 
   # Example: Git repo (when Session 4 pull command available)
   # - type: hash

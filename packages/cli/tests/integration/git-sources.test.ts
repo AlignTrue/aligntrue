@@ -1,6 +1,6 @@
 /**
  * Git operations tests
- * Tests git source pulling from GitHub, vendoring, and pack integrity
+ * Tests git source pulling from GitHub, vendoring, and align integrity
  *
  * Uses AlignTrue/examples repo for deterministic remote testing.
  * Fixtures are in examples/remote-test/ directory.
@@ -134,36 +134,36 @@ git:
     );
   });
 
-  describe.skipIf(isCI)("Vendored packs", () => {
-    it("should detect vendored pack structure", () => {
-      // Create a project with vendored pack
+  describe.skipIf(isCI)("Vendored aligns", () => {
+    it("should detect vendored align structure", () => {
+      // Create a project with vendored align
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      mkdirSync(join(TEST_DIR, "vendor/test-pack"), { recursive: true });
+      mkdirSync(join(TEST_DIR, "vendor/test-align"), { recursive: true });
 
-      // Create config pointing to vendored pack
+      // Create config pointing to vendored align
       writeFileSync(
         join(TEST_DIR, ".aligntrue/config.yaml"),
         `exporters:
   - agents
 sources:
   - type: local
-    path: vendor/test-pack/.aligntrue/rules
+    path: vendor/test-align/.aligntrue/rules
 `,
         "utf-8",
       );
 
-      // Create vendored pack
-      mkdirSync(join(TEST_DIR, "vendor/test-pack/.aligntrue"), {
+      // Create vendored align
+      mkdirSync(join(TEST_DIR, "vendor/test-align/.aligntrue"), {
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/test-pack/.aligntrue/rules"),
-        `id: vendored-pack
+        join(TEST_DIR, "vendor/test-align/.aligntrue/rules"),
+        `id: vendored-align
 version: "1.0.0"
 spec_version: "1"
 sections:
   - heading: Vendored Section
-    content: This comes from a vendored pack.
+    content: This comes from a vendored align.
     level: 2
 `,
         "utf-8",
@@ -171,10 +171,10 @@ sections:
 
       // Verify structure exists
       expect(
-        existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/rules")),
+        existsSync(join(TEST_DIR, "vendor/test-align/.aligntrue/rules")),
       ).toBe(true);
 
-      // Try to sync (should use vendored pack)
+      // Try to sync (should use vendored align)
       try {
         execSync(`node "${CLI_PATH}" sync`, {
           cwd: TEST_DIR,
@@ -186,20 +186,20 @@ sections:
         expect(agentsMd).toContain("Vendored Section");
       } catch {
         // If sync fails, it's likely due to missing config or other setup issue
-        // This test is mainly checking vendored pack structure detection
+        // This test is mainly checking vendored align structure detection
         // which happens before sync, so we allow sync failures
         // but we verify the test directory was set up correctly
         expect(
-          existsSync(join(TEST_DIR, "vendor/test-pack/.aligntrue/rules")),
+          existsSync(join(TEST_DIR, "vendor/test-align/.aligntrue/rules")),
         ).toBe(true);
       }
     });
 
-    it("should handle multiple vendored packs", () => {
-      // Create project with multiple vendored packs
+    it("should handle multiple vendored aligns", () => {
+      // Create project with multiple vendored aligns
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-      mkdirSync(join(TEST_DIR, "vendor/pack-a"), { recursive: true });
-      mkdirSync(join(TEST_DIR, "vendor/pack-b"), { recursive: true });
+      mkdirSync(join(TEST_DIR, "vendor/align-a"), { recursive: true });
+      mkdirSync(join(TEST_DIR, "vendor/align-b"), { recursive: true });
 
       // Create config with multiple sources
       writeFileSync(
@@ -208,41 +208,41 @@ sections:
   - agents
 sources:
   - type: local
-    path: vendor/pack-a/.aligntrue/rules
+    path: vendor/align-a/.aligntrue/rules
   - type: local
-    path: vendor/pack-b/.aligntrue/rules
+    path: vendor/align-b/.aligntrue/rules
 `,
         "utf-8",
       );
 
-      // Create pack A
-      mkdirSync(join(TEST_DIR, "vendor/pack-a/.aligntrue"), {
+      // Create align A
+      mkdirSync(join(TEST_DIR, "vendor/align-a/.aligntrue"), {
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/pack-a/.aligntrue/rules"),
-        `id: pack-a
+        join(TEST_DIR, "vendor/align-a/.aligntrue/rules"),
+        `id: align-a
 version: "1.0.0"
 spec_version: "1"
 sections:
-  - heading: Section from Pack A
+  - heading: Section from Align A
     content: Content A.
     level: 2
 `,
         "utf-8",
       );
 
-      // Create pack B
-      mkdirSync(join(TEST_DIR, "vendor/pack-b/.aligntrue"), {
+      // Create align B
+      mkdirSync(join(TEST_DIR, "vendor/align-b/.aligntrue"), {
         recursive: true,
       });
       writeFileSync(
-        join(TEST_DIR, "vendor/pack-b/.aligntrue/rules"),
-        `id: pack-b
+        join(TEST_DIR, "vendor/align-b/.aligntrue/rules"),
+        `id: align-b
 version: "1.0.0"
 spec_version: "1"
 sections:
-  - heading: Section from Pack B
+  - heading: Section from Align B
     content: Content B.
     level: 2
 `,
@@ -250,14 +250,14 @@ sections:
       );
 
       // Verify structure
-      expect(existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/rules"))).toBe(
-        true,
-      );
-      expect(existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/rules"))).toBe(
-        true,
-      );
+      expect(
+        existsSync(join(TEST_DIR, "vendor/align-a/.aligntrue/rules")),
+      ).toBe(true);
+      expect(
+        existsSync(join(TEST_DIR, "vendor/align-b/.aligntrue/rules")),
+      ).toBe(true);
 
-      // Try to sync (should merge both packs)
+      // Try to sync (should merge both aligns)
       try {
         const output = execSync(`node "${CLI_PATH}" sync`, {
           cwd: TEST_DIR,
@@ -265,34 +265,34 @@ sections:
           encoding: "utf-8",
         });
 
-        // Verify both packs were processed
+        // Verify both aligns were processed
         expect(output.includes("merged") || output.includes("sources")).toBe(
           true,
         );
 
-        // Verify AGENTS.md contains content from both packs
+        // Verify AGENTS.md contains content from both aligns
         const agentsMd = readFileSync(join(TEST_DIR, "AGENTS.md"), "utf-8");
         expect(
-          agentsMd.includes("Pack A") || agentsMd.includes("Content A"),
+          agentsMd.includes("Align A") || agentsMd.includes("Content A"),
         ).toBe(true);
         expect(
-          agentsMd.includes("Pack B") || agentsMd.includes("Content B"),
+          agentsMd.includes("Align B") || agentsMd.includes("Content B"),
         ).toBe(true);
       } catch {
         // If sync fails, verify test setup was correct
         expect(
-          existsSync(join(TEST_DIR, "vendor/pack-a/.aligntrue/rules")),
+          existsSync(join(TEST_DIR, "vendor/align-a/.aligntrue/rules")),
         ).toBe(true);
         expect(
-          existsSync(join(TEST_DIR, "vendor/pack-b/.aligntrue/rules")),
+          existsSync(join(TEST_DIR, "vendor/align-b/.aligntrue/rules")),
         ).toBe(true);
       }
     });
   });
 
-  describe.skipIf(isCI)("Pack integrity", () => {
-    it("should validate pack structure", () => {
-      // Create a pack with all required fields
+  describe.skipIf(isCI)("Align integrity", () => {
+    it("should validate align structure", () => {
+      // Create an align with all required fields
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 
       writeFileSync(
@@ -303,7 +303,7 @@ sections:
 
       writeFileSync(
         join(TEST_DIR, ".aligntrue/rules"),
-        `id: valid-pack
+        `id: valid-align
 version: "1.0.0"
 spec_version: "1"
 sections:
@@ -314,7 +314,7 @@ sections:
         "utf-8",
       );
 
-      // Sync should succeed with valid pack
+      // Sync should succeed with valid align
       const output = execSync(`node "${CLI_PATH}" sync`, {
         cwd: TEST_DIR,
         stdio: "pipe",
@@ -325,8 +325,8 @@ sections:
       expect(existsSync(join(TEST_DIR, "AGENTS.md"))).toBe(true);
     });
 
-    it("should reject invalid pack structure", () => {
-      // Create a pack missing required fields
+    it("should reject invalid align structure", () => {
+      // Create an align missing required fields
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 
       writeFileSync(

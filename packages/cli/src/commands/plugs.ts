@@ -6,7 +6,7 @@
  */
 
 import {
-  resolvePlugsForPack,
+  resolvePlugsForAlign,
   validateFill,
   type PlugFormat,
   loadConfig,
@@ -15,7 +15,7 @@ import {
   loadIRAndResolvePlugs,
   // This enables plugs.fills persistence to .aligntrue/config.yaml
 } from "@aligntrue/core";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
@@ -99,7 +99,7 @@ export async function plugsCommand(args: string[]): Promise<void> {
   const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
 
   try {
-    // Handle set/unset commands separately (don't need pack)
+    // Handle set/unset commands separately (don't need align)
     if (subcommand === "set") {
       await setPlugFill(positional.slice(1), configPath);
       return;
@@ -124,7 +124,7 @@ export async function plugsCommand(args: string[]): Promise<void> {
         : resolve(cwd, ".aligntrue/rules");
 
     // Load IR using the same mechanism as sync command
-    let pack: AlignPack;
+    let align: Align;
     try {
       const loadOptions: Parameters<typeof loadIRAndResolvePlugs>[1] = {
         mode: config.mode,
@@ -144,19 +144,19 @@ export async function plugsCommand(args: string[]): Promise<void> {
         );
       }
 
-      pack = result.ir;
+      align = result.ir;
 
-      // Merge config-defined slots into pack.plugs if they exist
+      // Merge config-defined slots into align.plugs if they exist
       // This allows slots to be defined in config for directory-based rules
       if (config.plugs) {
-        if (!pack.plugs) {
-          pack.plugs = {};
+        if (!align.plugs) {
+          align.plugs = {};
         }
         // Config fills are already applied by loadIRAndResolvePlugs
-        // but we need to ensure they're visible in the pack for listing
+        // but we need to ensure they're visible in the align for listing
         if (config.plugs.fills) {
-          pack.plugs.fills = {
-            ...pack.plugs.fills,
+          align.plugs.fills = {
+            ...align.plugs.fills,
             ...config.plugs.fills,
           };
         }
@@ -174,13 +174,13 @@ export async function plugsCommand(args: string[]): Promise<void> {
     // Execute subcommand
     switch (subcommand) {
       case "list":
-        await listPlugs(pack, config);
+        await listPlugs(align, config);
         break;
       case "resolve":
-        await resolvePlugs(pack, config);
+        await resolvePlugs(align, config);
         break;
       case "validate":
-        await validatePlugs(pack, config);
+        await validatePlugs(align, config);
         break;
     }
   } catch (error) {
@@ -195,30 +195,30 @@ export async function plugsCommand(args: string[]): Promise<void> {
 }
 
 /**
- * List all slots and fills in the pack
+ * List all slots and fills in the align
  */
 async function listPlugs(
-  pack: AlignPack,
+  align: Align,
   config: AlignTrueConfig | null | undefined,
 ): Promise<void> {
-  console.log("┌  Plugs in Pack\n│");
+  console.log("┌  Plugs in Align\n│");
 
   const configFills = config?.plugs?.fills || {};
 
   // Show message if no plugs defined AND no config fills
-  if (!pack.plugs && Object.keys(configFills).length === 0) {
+  if (!align.plugs && Object.keys(configFills).length === 0) {
     console.log("│  No plugs defined\n│");
     console.log("└  ✓ Complete\n");
     return;
   }
 
   // List slots
-  if (pack.plugs?.slots && Object.keys(pack.plugs.slots).length > 0) {
+  if (align.plugs?.slots && Object.keys(align.plugs.slots).length > 0) {
     console.log("◆  Slots\n│");
-    for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
+    for (const [slotName, slotDef] of Object.entries(align.plugs.slots)) {
       const required = slotDef.required ? "required" : "optional";
       const configFill = configFills[slotName];
-      const irFill = pack.plugs.fills?.[slotName];
+      const irFill = align.plugs.fills?.[slotName];
       const fill = configFill || irFill;
       const fillSource = configFill
         ? "(from config)"
@@ -243,14 +243,14 @@ async function listPlugs(
   }
 
   // List fills from IR (not shown above)
-  const irOnlyFills = pack.plugs?.fills
-    ? Object.keys(pack.plugs.fills).filter((key) => !pack.plugs?.slots?.[key])
+  const irOnlyFills = align.plugs?.fills
+    ? Object.keys(align.plugs.fills).filter((key) => !align.plugs?.slots?.[key])
     : [];
 
   if (irOnlyFills.length > 0) {
     console.log("◆  Additional IR Fills (no declared slot)\n│");
     for (const slotName of irOnlyFills) {
-      const fillValue = pack.plugs?.fills?.[slotName];
+      const fillValue = align.plugs?.fills?.[slotName];
       console.log(`●    ${slotName} = "${fillValue}"`);
     }
     console.log("│");
@@ -258,7 +258,7 @@ async function listPlugs(
 
   // List config-only fills (not in IR)
   const configOnlyFills = Object.keys(configFills).filter(
-    (key) => !pack.plugs?.fills?.[key],
+    (key) => !align.plugs?.fills?.[key],
   );
 
   if (configOnlyFills.length > 0) {
@@ -277,12 +277,12 @@ async function listPlugs(
  * Resolve plugs and show the output
  */
 async function resolvePlugs(
-  pack: AlignPack,
+  align: Align,
   config: AlignTrueConfig | null | undefined,
 ): Promise<void> {
   console.log("┌  Resolving Plugs\n│");
 
-  if (!pack.plugs) {
+  if (!align.plugs) {
     console.log("│  No plugs to resolve\n│");
     console.log("└  ✓ Complete\n");
     return;
@@ -290,7 +290,7 @@ async function resolvePlugs(
 
   try {
     const configFills = config?.plugs?.fills || {};
-    const resolved = resolvePlugsForPack(pack, configFills);
+    const resolved = resolvePlugsForAlign(align, configFills);
 
     if (!resolved.success) {
       console.log("✗  Resolution failed\n│");
@@ -357,12 +357,12 @@ async function resolvePlugs(
  * Validate plugs (check for undeclared or unresolved)
  */
 async function validatePlugs(
-  pack: AlignPack,
+  align: Align,
   config?: AlignTrueConfig | null,
 ): Promise<void> {
   console.log("┌  Validating Plugs\n│");
 
-  if (!pack.plugs) {
+  if (!align.plugs) {
     console.log("│  No plugs to validate\n│");
     console.log("└  ✓ Complete\n");
     return;
@@ -372,13 +372,13 @@ async function validatePlugs(
   const warnings: string[] = [];
 
   // Check for required slots without fills
-  if (pack.plugs.slots) {
+  if (align.plugs.slots) {
     const configFills = config?.plugs?.fills || {};
 
-    for (const [slotName, slotDef] of Object.entries(pack.plugs.slots)) {
+    for (const [slotName, slotDef] of Object.entries(align.plugs.slots)) {
       if (slotDef.required) {
         const configFill = configFills[slotName];
-        const irFill = pack.plugs.fills?.[slotName];
+        const irFill = align.plugs.fills?.[slotName];
         const hasFill = configFill || irFill;
 
         if (!hasFill) {
@@ -389,9 +389,9 @@ async function validatePlugs(
   }
 
   // Check for fills without declared slots
-  if (pack.plugs.fills) {
-    for (const slotName of Object.keys(pack.plugs.fills)) {
-      const isDeclared = pack.plugs.slots && pack.plugs.slots[slotName];
+  if (align.plugs.fills) {
+    for (const slotName of Object.keys(align.plugs.fills)) {
+      const isDeclared = align.plugs.slots && align.plugs.slots[slotName];
       if (!isDeclared) {
         warnings.push(`Fill "${slotName}" has no declared slot`);
       }
@@ -404,7 +404,7 @@ async function validatePlugs(
 
   // TODO: Extract plugs from section content in sections-only format
   // For now, skip plug extraction since sections-only format uses natural markdown
-  for (const section of pack.sections) {
+  for (const section of align.sections) {
     if (section.content) {
       const matches = Array.from(section.content.matchAll(plugPattern));
       for (const match of matches) {
@@ -418,7 +418,7 @@ async function validatePlugs(
 
   // Check for undeclared plugs used in rules
   for (const plugName of usedPlugs) {
-    const isDeclared = pack.plugs.slots && pack.plugs.slots[plugName];
+    const isDeclared = align.plugs.slots && align.plugs.slots[plugName];
     if (!isDeclared) {
       errors.push(`Plug "{{${plugName}}}" used in rules but not declared`);
     }
@@ -485,7 +485,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         ? resolve(cwd, source.path)
         : resolve(cwd, ".aligntrue/rules");
 
-    let pack: AlignPack;
+    let align: Align;
     try {
       const setLoadOptions: Parameters<typeof loadIRAndResolvePlugs>[1] = {
         mode: config.mode,
@@ -498,19 +498,19 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
       if (!result.success || !result.ir) {
         console.error("Warning: Could not load IR to validate slot format");
         console.error("  Proceeding without format validation\n");
-        pack = {
+        align = {
           id: "empty",
           version: "1.0.0",
           spec_version: "1",
           sections: [],
         };
       } else {
-        pack = result.ir;
+        align = result.ir;
       }
     } catch {
       console.error("Warning: Could not load IR to validate slot format");
       console.error("  Proceeding without format validation\n");
-      pack = {
+      align = {
         id: "empty",
         version: "1.0.0",
         spec_version: "1",
@@ -519,8 +519,8 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     }
 
     // Validate slot format if slot is declared
-    if (pack.plugs?.slots?.[slotName]) {
-      const slotDef = pack.plugs.slots[slotName];
+    if (align.plugs?.slots?.[slotName]) {
+      const slotDef = align.plugs.slots[slotName];
       const format = (slotDef.format || "text") as PlugFormat;
 
       const validation = validateFill(fillValue, format);

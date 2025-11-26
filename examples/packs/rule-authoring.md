@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-rule-authoring"
+id: "aligns/base/base-rule-authoring"
 version: "1.0.0"
 summary: "Rule authoring guideline: clear scope, actionable directives, explicit precedence"
 tags: ["meta", "rule-authoring", "governance", "paved-road"]
@@ -21,7 +21,7 @@ Guidelines for writing clear, actionable, and maintainable rules with explicit s
 
 ### Header
 
-- `id` - Unique identifier (e.g., `packs/base/base-testing`)
+- `id` - Unique identifier (e.g., `aligns/base/base-testing`)
 - `version` - Semantic version
 - `summary` - One-line description
 - `tags` - Searchable tags

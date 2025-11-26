@@ -7,9 +7,9 @@
   "sources": [
     {
       "type": "local",
-      "path": "vendor/shared-pack/rules.md",
+      "path": "vendor/shared-align/rules.md",
       "content_sha": "sha256:abc123def456",
-      "vendor_path": "vendor/shared-pack",
+      "vendor_path": "vendor/shared-align",
       "vendor_type": "manual",
       "resolved_at": "2025-10-30T12:00:00Z",
       "pre_resolution_hash": "sha256:pre123",

@@ -3,7 +3,7 @@
  *
  * Enables:
  * - Team alignment monitoring (upstream changes)
- * - Vendorized pack integrity checking
+ * - Vendorized align integrity checking
  * - Severity remapping policy validation
  * - CI integration with --gates flag
  *
@@ -100,7 +100,7 @@ DRIFT TYPES
   agent_file      Agent files modified after IR (team mode)
   upstream        Rule content changed in allowed sources
   severity_remap  Severity remapping policy violations
-  vendorized      Vendored pack integrity issues
+  vendorized      Vendored align integrity issues
 
 COMPARISON
   Use 'aligntrue check --ci' to validate schema/lockfile consistency.

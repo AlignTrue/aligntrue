@@ -1,5 +1,5 @@
 ---
-id: "packs/base/base-tdd"
+id: "aligns/base/base-tdd"
 version: "1.0.0"
 summary: "Test-driven development: red-green-refactor, small steps, design from tests"
 tags: ["tdd", "testing", "design", "paved-road"]
