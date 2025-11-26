@@ -36,37 +36,37 @@ Individual guidelines that specify how AI agents should behave in your project. 
 
 **Related:** [Align Spec](/docs/04-reference/features), [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections)
 
-### Packs
+### Aligns
 
-Collections of related rules organized around a theme or technology stack. Packs are the shareable unit of rule sets.
+Collections of related rules organized around a theme or technology stack. Aligns are the shareable unit of rule sets.
 
-**Examples of packs:**
+**Examples of aligns:**
 
 - `testing.yaml` - Testing best practices
 - `typescript.yaml` - TypeScript strict mode conventions
 - `nextjs_app_router.yaml` - Next.js App Router patterns
 
-Packs can be:
+Aligns can be:
 
 - Stored locally
 - Shared via GitHub
 - Referenced in your AlignTrue configuration
 
-**Related:** [Creating Packs](/docs/06-contributing/creating-packs)
+**Related:** [Creating Aligns](/docs/06-contributing/creating-aligns)
 
 ### Aligns
 
-**Note:** "Aligns" is the formal specification name. In everyday use, we call these **"packs"** (e.g., "testing pack", "TypeScript pack").
+**Note:** "Aligns" is the formal specification name. In everyday use, we call these **"aligns"** (e.g., "testing align", "TypeScript align").
 
-An Align/pack is a YAML document that combines metadata with a collection of rules:
+An Align/align is a YAML document that combines metadata with a collection of rules:
 
-- **ID** - Unique identifier for the pack
+- **ID** - Unique identifier for the align
 - **Version** - Semantic versioning (e.g., `1.0.0`)
 - **Summary** - Brief description
 - **Rules** - Array of rule objects
 - **Optional metadata** - Owner, source, tags, scope, etc.
 
-**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Packs](/docs/06-contributing/creating-packs)
+**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/06-contributing/creating-aligns)
 
 ---
 
@@ -150,12 +150,12 @@ Each exporter:
 
 ### Bundle
 
-Merging rules from multiple packs/sources into a single coherent rule set (team mode only).
+Merging rules from multiple aligns/sources into a single coherent rule set (team mode only).
 
 **When bundling happens:**
 
 - Specified in `.aligntrue/config.yaml` under `sources`
-- Multiple packs are resolved with precedence rules
+- Multiple aligns are resolved with precedence rules
 - Dependencies are resolved recursively
 - Final bundle is deterministically merged
 
@@ -182,7 +182,7 @@ Comparing your current rule state against a committed lockfile to detect when ru
 
 **Drift scenarios:**
 
-- A pack was updated but lockfile wasn't regenerated
+- A align was updated but lockfile wasn't regenerated
 - Someone manually edited `.aligntrue/rules`
 - A rule source is no longer accessible
 - A team member pushed different rules than the lockfile
@@ -276,7 +276,7 @@ vendor:
 
 ### Overlays
 
-Customizations applied on top of third-party packs without forking them. Allows safe, maintainable modifications to upstream rule sets.
+Customizations applied on top of third-party aligns without forking them. Allows safe, maintainable modifications to upstream rule sets.
 
 **Features:**
 

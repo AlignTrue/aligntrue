@@ -17,7 +17,7 @@ These are the high-leverage ideas that matter most for AI-native teams.
 
 ### Treat agent behavior as code
 
-Store AI rules, packs, and config in git. Review changes through PRs. Validate rules in CI with `aligntrue check --ci`. Use lockfiles and allow lists in [team mode](/docs/03-concepts/team-mode) for reproducible agent behavior.
+Store AI rules, aligns, and config in git. Review changes through PRs. Validate rules in CI with `aligntrue check --ci`. Use lockfiles and allow lists in [team mode](/docs/03-concepts/team-mode) for reproducible agent behavior.
 
 **Workflow:**
 
@@ -36,7 +36,7 @@ See [CI/CD integration](/docs/01-guides/10-ci-cd-integration) for setup details.
 
 ### One source of truth, many agents
 
-Agents should not each have their own "secret" rules. With AlignTrue, you write rules once in markdown or IR (packs / Aligns), and AlignTrue exports native formats for 28+ agents (Cursor `.mdc`, AGENTS.md, MCP configs, vendor files, etc.). Edit source sync keeps them aligned automatically.
+Agents should not each have their own "secret" rules. With AlignTrue, you write rules once in markdown or IR (aligns / Aligns), and AlignTrue exports native formats for 28+ agents (Cursor `.mdc`, AGENTS.md, MCP configs, vendor files, etc.). Edit source sync keeps them aligned automatically.
 
 **How it works:**
 
@@ -56,7 +56,7 @@ Most AI-native guidance boils down to:
 
 AlignTrue makes this explicit through:
 
-- [Packs](/docs/02-customization/plugs) that define what agents may do
+- [Aligns](/docs/02-customization/plugs) that define what agents may do
 - [Overlays](/docs/02-customization/overlays) that tighten or relax behavior per area
 - [Scopes](/docs/02-customization/scopes) that say where rules apply
 
@@ -78,7 +78,7 @@ Coding agents now participate across the entire software development lifecycle. 
 - **Review:** Engineers review the agent's findings to validate accuracy, assess completeness, and ensure estimates reflect real technical constraints. Story point assignment, effort sizing, and identifying non-obvious risks still require human judgment.
 - **Own:** Strategic decisions—prioritization, long-term direction, sequencing, and tradeoffs—remain human-led. Teams may ask agents for options, but final responsibility stays with the organization.
 
-**AlignTrue enables:** Encode planning workflows into rules. Define what agents should analyze (dependencies, edge cases, feasibility), how they should present findings, and what requires human review. Use [packs](/docs/02-customization/plugs) to specify planning conventions and [scopes](/docs/02-customization/scopes) to apply different rules per service or team.
+**AlignTrue enables:** Encode planning workflows into rules. Define what agents should analyze (dependencies, edge cases, feasibility), how they should present findings, and what requires human review. Use [aligns](/docs/02-customization/plugs) to specify planning conventions and [scopes](/docs/02-customization/scopes) to apply different rules per service or team.
 
 ### Design
 
@@ -102,7 +102,7 @@ Coding agents now participate across the entire software development lifecycle. 
 - **Review:** Engineers focus on refining core logic, establishing scalable architectural patterns, and ensuring components meet quality and reliability standards.
 - **Own:** Engineers own architecture, design decisions, and code quality. They validate agent output, ensure it meets standards, and own what ships to production.
 
-**AlignTrue enables:** Encode your coding standards, testing requirements, and architectural patterns directly into rules. Define what "good code" means for your project, how agents should structure features, and what conventions they should follow. Use packs for language-specific or framework-specific patterns.
+**AlignTrue enables:** Encode your coding standards, testing requirements, and architectural patterns directly into rules. Define what "good code" means for your project, how agents should structure features, and what conventions they should follow. Use aligns for language-specific or framework-specific patterns.
 
 ### Review
 
@@ -126,7 +126,7 @@ Coding agents now participate across the entire software development lifecycle. 
 - **Review:** Engineers review and edit important docs drafted by agents like overviews of core services, public API and SDK docs, runbooks, and architecture pages before anything is published.
 - **Own:** Engineers remain responsible for overall documentation strategy and structure, standards and templates agents follow, and all external-facing or safety-critical documentation involving legal, regulatory, or brand risk.
 
-**AlignTrue enables:** Define documentation standards, templates, and conventions in your rules. Specify what agents should document (APIs, architecture, workflows), how they should structure documentation, and what requires human review. Include documentation guidelines in your AGENTS.md or packs.
+**AlignTrue enables:** Define documentation standards, templates, and conventions in your rules. Specify what agents should document (APIs, architecture, workflows), how they should structure documentation, and what requires human review. Include documentation guidelines in your AGENTS.md or aligns.
 
 ### Deploy & maintain
 
@@ -138,7 +138,7 @@ Coding agents now participate across the entire software development lifecycle. 
 - **Review:** Engineers vet and refine AI-generated diagnostics, confirm accuracy, and approve remediation steps. They ensure fixes meet reliability, security, and compliance standards.
 - **Own:** Critical decisions stay with engineers, especially for novel incidents, sensitive production changes, or situations where model confidence is low. Humans remain responsible for judgment and final sign-off.
 
-**AlignTrue enables:** Encode operational workflows and debugging patterns into rules. Define how agents should analyze logs, what metrics to prioritize, and how they should present findings. Use packs for operational conventions and incident response procedures.
+**AlignTrue enables:** Encode operational workflows and debugging patterns into rules. Define how agents should analyze logs, what metrics to prioritize, and how they should present findings. Use aligns for operational conventions and incident response procedures.
 
 **Example:** Teams use AlignTrue to ensure all agents follow the same operational standards when analyzing logs or tracing issues. By defining these patterns once in rules, every agent—whether in IDE, CLI, or CI—applies consistent triage and diagnostic workflows.
 
@@ -158,10 +158,10 @@ end
 %% Middle: Repo with AlignTrue
 %% -------------------------------
 subgraph Repo["Repo with AlignTrue"]
-  ATCfg["AlignTrue packs & rules\n(.aligntrue/*.md,\nconfigs)"]
+  ATCfg["AlignTrue aligns & rules\n(.aligntrue/*.md,\nconfigs)"]
   ATLock["Lockfile & allow list\n(.aligntrue.lock.json,\n.aligntrue.allow)"]
 
-  Dev -->|"Author & refine\nrules / packs"| ATCfg
+  Dev -->|"Author & refine\nrules / aligns"| ATCfg
   ATCfg -->|"aligntrue check --ci\nvalidate & enforce"| ATLock
 end
 
@@ -214,7 +214,7 @@ Copilot --> SDLCHub
 CLIAgents --> SDLCHub
 ReviewBots --> SDLCHub
 
-SDLCBox -->|"Feedback on\nrules & packs"| Dev
+SDLCBox -->|"Feedback on\nrules & aligns"| Dev
 ```
 
 ---

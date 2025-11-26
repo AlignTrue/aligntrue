@@ -7,10 +7,10 @@ description: Fork-safe customization of upstream rules - change severity, adjust
 
 <Callout type="info">
   **Solo developer?** You can skip this page unless you're using external rule
-  packs. Overlays are for advanced customization of third-party rules.
+  aligns. Overlays are for advanced customization of third-party rules.
 </Callout>
 
-Overlays let you customize third-party packs without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
+Overlays let you customize third-party aligns without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.
 
 **Common use cases:**
 
@@ -61,9 +61,9 @@ aligntrue sync
 ### Decision tree
 
 ```
-Need to customize a third-party pack?
+Need to customize a third-party align?
 │
-├─ Change exists in pack definition? (severity, inputs, autofix)
+├─ Change exists in align definition? (severity, inputs, autofix)
 │  ├─ YES → Use overlay (this guide)
 │  └─ NO → Continue...
 │
@@ -72,7 +72,7 @@ Need to customize a third-party pack?
 │  └─ NO → Continue...
 │
 └─ Need to change check logic or add new checks?
-   └─ YES → Fork pack or create custom pack
+   └─ YES → Fork align or create custom align
 ```
 
 ### When to use overlays
@@ -85,7 +85,7 @@ Need to customize a third-party pack?
 ❌ **Don't use overlays for:**
 
 - Changing check logic (fork instead)
-- Adding new checks (create custom pack)
+- Adding new checks (create custom align)
 - Stack-specific values (use plugs)
 
 ### When to use plugs
@@ -366,7 +366,7 @@ aligntrue sync
 
 ```yaml
 sources:
-  - git: https://github.com/org/code-quality-pack
+  - git: https://github.com/org/code-quality-align
     ref: v2.0.0
 
 overlays:
@@ -389,7 +389,7 @@ overlays:
 
 ```yaml
 sources:
-  - git: https://github.com/community/typescript-pack
+  - git: https://github.com/community/typescript-align
     ref: v1.0.0
 
 overlays:
@@ -498,7 +498,7 @@ overlays:
 
 ### Scenario 6: Fork-safe customization
 
-**Goal:** Customize third-party pack without forking, preserve updates.
+**Goal:** Customize third-party align without forking, preserve updates.
 
 **Setup:**
 
@@ -669,7 +669,7 @@ Overlays are deterministic and hashed separately:
 }
 ```
 
-**base_hash:** Upstream pack content  
+**base_hash:** Upstream align content  
 **overlay_hash:** Your overlay modifications  
 **result_hash:** Combined result after overlays applied
 
@@ -790,7 +790,7 @@ overlays:
 ✅ **Good:** Fork and customize:
 
 ```yaml
-# Create your own pack based on upstream
+# Create your own align based on upstream
 # Maintain in your repo, or request changes upstream
 ```
 
@@ -994,9 +994,9 @@ Real-world examples showing how to use overlays for fork-safe customization:
 
 ### Severity upgrade
 
-**Problem:** An upstream pack has a rule with `severity: warning` but your team wants to enforce it as an error. For example, upstream has `no-console-log` as a warning, but your team requires it to be an error in production code. You don't want to fork the pack just to change severity.
+**Problem:** An upstream align has a rule with `severity: warning` but your team wants to enforce it as an error. For example, upstream has `no-console-log` as a warning, but your team requires it to be an error in production code. You don't want to fork the align just to change severity.
 
-**Solution:** Use overlays to upgrade severity without forking the upstream pack.
+**Solution:** Use overlays to upgrade severity without forking the upstream align.
 
 **Configuration:**
 
@@ -1006,7 +1006,7 @@ mode: solo
 
 sources:
   - type: local
-    path: "upstream-pack.yaml"
+    path: "upstream-align.yaml"
 
 overlays:
   overrides:
@@ -1027,7 +1027,7 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Upstream pack unchanged, your exports show `severity: error`, no pack forking required, and easy to revert if needed.
+**Expected outcome:** Upstream align unchanged, your exports show `severity: error`, no align forking required, and easy to revert if needed.
 
 **Keywords:** make warnings errors, upgrade severity, stricter rules, team standards, enforce warnings, error enforcement
 
@@ -1045,7 +1045,7 @@ mode: solo
 
 sources:
   - type: local
-    path: "strict-pack.yaml"
+    path: "strict-align.yaml"
 
 overlays:
   overrides:
@@ -1075,7 +1075,7 @@ exporters:
 
 ### Threshold adjustment
 
-**Problem:** An upstream pack has complexity thresholds that don't fit your project. Upstream has `max-complexity` threshold at 10, but your legacy code needs a threshold of 20 while new code keeps 10. You need different thresholds without forking.
+**Problem:** An upstream align has complexity thresholds that don't fit your project. Upstream has `max-complexity` threshold at 10, but your legacy code needs a threshold of 20 while new code keeps 10. You need different thresholds without forking.
 
 **Solution:** Use overlays to adjust thresholds for your project's needs.
 
@@ -1087,7 +1087,7 @@ mode: solo
 
 sources:
   - type: local
-    path: "quality-pack.yaml"
+    path: "quality-align.yaml"
 
 overlays:
   overrides:
@@ -1112,7 +1112,7 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Complexity threshold adjusted for your project, line length limits customized, other rule parameters tuned, and no pack forking required.
+**Expected outcome:** Complexity threshold adjusted for your project, line length limits customized, other rule parameters tuned, and no align forking required.
 
 **Keywords:** complexity threshold, adjust limits, project-specific thresholds, tune parameters, code quality metrics
 
@@ -1130,7 +1130,7 @@ mode: solo
 
 sources:
   - type: local
-    path: "autofix-pack.yaml"
+    path: "autofix-align.yaml"
 
 overlays:
   overrides:
@@ -1169,7 +1169,7 @@ mode: team
 
 sources:
   - type: local
-    path: "new-standards-pack.yaml"
+    path: "new-standards-align.yaml"
 
 overlays:
   overrides:
@@ -1254,7 +1254,7 @@ exporters:
 
 **When in doubt:**
 
-- Use **overlays** for pack-level customization (severity, inputs)
+- Use **overlays** for align-level customization (severity, inputs)
 - Use **plugs** for stack-specific values (test commands, paths)
 - Use **scopes** for path-based rules (monorepo)
 - **Fork** when you need fundamental changes
