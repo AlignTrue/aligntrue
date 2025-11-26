@@ -5,7 +5,7 @@ import {
   formatLockfileTeamErrors,
 } from "../../src/lockfile/validator.js";
 import { generateLockfile } from "../../src/lockfile/generator.js";
-import type { AlignPack, AlignSection } from "@aligntrue/schema";
+import type { Align, AlignSection } from "@aligntrue/schema";
 
 // Mock filesystem - preserve real readFileSync for schema files
 const _realFs = await import("fs");
@@ -30,11 +30,11 @@ describe("lockfile validator", () => {
     fingerprint: "test-rule-one",
   };
 
-  const mockPack: AlignPack = {
-    id: "test.pack",
+  const mockAlign: Align = {
+    id: "test.align",
     version: "1.0.0",
     spec_version: "1",
-    summary: "Test pack",
+    summary: "Test align",
     owner: "test-org",
     source: "https://github.com/test-org/aligns",
     source_sha: "abc123",
@@ -43,8 +43,8 @@ describe("lockfile validator", () => {
 
   describe("validateLockfile", () => {
     it("validates matching lockfile", () => {
-      const lockfile = generateLockfile(mockPack, "team");
-      const result = validateLockfile(lockfile, mockPack);
+      const lockfile = generateLockfile(mockAlign, "team");
+      const result = validateLockfile(lockfile, mockAlign);
 
       expect(result.valid).toBe(true);
       expect(result.mismatches).toHaveLength(0);
@@ -53,13 +53,13 @@ describe("lockfile validator", () => {
     });
 
     it("detects modified rules", () => {
-      const lockfile = generateLockfile(mockPack, "team");
-      const modifiedPack: AlignPack = {
-        ...mockPack,
+      const lockfile = generateLockfile(mockAlign, "team");
+      const modifiedAlign: Align = {
+        ...mockAlign,
         sections: [{ ...mockRule, content: "Modified guidance" }],
       };
 
-      const result = validateLockfile(lockfile, modifiedPack);
+      const result = validateLockfile(lockfile, modifiedAlign);
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1);
@@ -72,9 +72,9 @@ describe("lockfile validator", () => {
     });
 
     it("detects new rules", () => {
-      const lockfile = generateLockfile(mockPack, "team");
-      const packWithNewRule: AlignPack = {
-        ...mockPack,
+      const lockfile = generateLockfile(mockAlign, "team");
+      const alignWithNewRule: Align = {
+        ...mockAlign,
         sections: [
           mockRule,
           {
@@ -86,7 +86,7 @@ describe("lockfile validator", () => {
         ],
       };
 
-      const result = validateLockfile(lockfile, packWithNewRule);
+      const result = validateLockfile(lockfile, alignWithNewRule);
 
       expect(result.valid).toBe(false);
       expect(result.newRules).toHaveLength(1);
@@ -94,8 +94,8 @@ describe("lockfile validator", () => {
     });
 
     it("detects deleted rules", () => {
-      const packWithTwoRules: AlignPack = {
-        ...mockPack,
+      const alignWithTwoRules: Align = {
+        ...mockAlign,
         sections: [
           mockRule,
           {
@@ -106,9 +106,9 @@ describe("lockfile validator", () => {
           },
         ],
       };
-      const lockfile = generateLockfile(packWithTwoRules, "team");
+      const lockfile = generateLockfile(alignWithTwoRules, "team");
 
-      const result = validateLockfile(lockfile, mockPack);
+      const result = validateLockfile(lockfile, mockAlign);
 
       expect(result.valid).toBe(false);
       expect(result.deletedRules).toHaveLength(1);
@@ -116,8 +116,8 @@ describe("lockfile validator", () => {
     });
 
     it("detects multiple types of changes", () => {
-      const originalPack: AlignPack = {
-        ...mockPack,
+      const originalAlign: Align = {
+        ...mockAlign,
         sections: [
           mockRule,
           {
@@ -128,10 +128,10 @@ describe("lockfile validator", () => {
           },
         ],
       };
-      const lockfile = generateLockfile(originalPack, "team");
+      const lockfile = generateLockfile(originalAlign, "team");
 
-      const modifiedPack: AlignPack = {
-        ...mockPack,
+      const modifiedAlign: Align = {
+        ...mockAlign,
         sections: [
           { ...mockRule, content: "Modified guidance" }, // Modified
           {
@@ -144,7 +144,7 @@ describe("lockfile validator", () => {
         ],
       };
 
-      const result = validateLockfile(lockfile, modifiedPack);
+      const result = validateLockfile(lockfile, modifiedAlign);
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1);
@@ -156,10 +156,10 @@ describe("lockfile validator", () => {
     });
 
     it("handles empty rule arrays", () => {
-      const emptyPack: AlignPack = { ...mockPack, sections: [] };
-      const lockfile = generateLockfile(emptyPack, "team");
+      const emptyAlign: Align = { ...mockAlign, sections: [] };
+      const lockfile = generateLockfile(emptyAlign, "team");
 
-      const result = validateLockfile(lockfile, emptyPack);
+      const result = validateLockfile(lockfile, emptyAlign);
 
       expect(result.valid).toBe(true);
       expect(result.mismatches).toHaveLength(0);
@@ -168,13 +168,13 @@ describe("lockfile validator", () => {
     });
 
     it("includes source in mismatch info", () => {
-      const lockfile = generateLockfile(mockPack, "team");
-      const modifiedPack: AlignPack = {
-        ...mockPack,
+      const lockfile = generateLockfile(mockAlign, "team");
+      const modifiedAlign: Align = {
+        ...mockAlign,
         sections: [{ ...mockRule, guidance: "Modified" }],
       };
 
-      const result = validateLockfile(lockfile, modifiedPack);
+      const result = validateLockfile(lockfile, modifiedAlign);
 
       expect(result.mismatches[0].source).toBe(
         "https://github.com/test-org/aligns",
@@ -313,11 +313,11 @@ describe("lockfile validator", () => {
       fingerprint: "fp:testing-guidelines-abc123",
     };
 
-    const mockSectionPack: AlignPack = {
-      id: "test.section.pack",
+    const mockSectionAlign: Align = {
+      id: "test.section.align",
       version: "1.0.0",
       spec_version: "1",
-      summary: "Test section pack",
+      summary: "Test section align",
       owner: "test-org",
       source: "https://github.com/test-org/aligns",
       source_sha: "def456",
@@ -325,8 +325,8 @@ describe("lockfile validator", () => {
     };
 
     it("validates matching section-based lockfile", () => {
-      const lockfile = generateLockfile(mockSectionPack, "team");
-      const result = validateLockfile(lockfile, mockSectionPack);
+      const lockfile = generateLockfile(mockSectionAlign, "team");
+      const result = validateLockfile(lockfile, mockSectionAlign);
 
       expect(result.valid).toBe(true);
       expect(result.mismatches).toHaveLength(0);
@@ -335,13 +335,13 @@ describe("lockfile validator", () => {
     });
 
     it("detects modified sections", () => {
-      const lockfile = generateLockfile(mockSectionPack, "team");
-      const modifiedPack: AlignPack = {
-        ...mockSectionPack,
+      const lockfile = generateLockfile(mockSectionAlign, "team");
+      const modifiedAlign: Align = {
+        ...mockSectionAlign,
         sections: [{ ...mockSection, content: "Modified content" }],
       };
 
-      const result = validateLockfile(lockfile, modifiedPack);
+      const result = validateLockfile(lockfile, modifiedAlign);
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1);
@@ -349,9 +349,9 @@ describe("lockfile validator", () => {
     });
 
     it("detects new sections", () => {
-      const lockfile = generateLockfile(mockSectionPack, "team");
-      const expandedPack: AlignPack = {
-        ...mockSectionPack,
+      const lockfile = generateLockfile(mockSectionAlign, "team");
+      const expandedAlign: Align = {
+        ...mockSectionAlign,
         sections: [
           mockSection,
           {
@@ -362,7 +362,7 @@ describe("lockfile validator", () => {
         ],
       };
 
-      const result = validateLockfile(lockfile, expandedPack);
+      const result = validateLockfile(lockfile, expandedAlign);
 
       expect(result.valid).toBe(false);
       expect(result.newRules).toHaveLength(1);
@@ -370,8 +370,8 @@ describe("lockfile validator", () => {
     });
 
     it("detects deleted sections", () => {
-      const packWithTwo: AlignPack = {
-        ...mockSectionPack,
+      const alignWithTwo: Align = {
+        ...mockSectionAlign,
         sections: [
           mockSection,
           {
@@ -382,8 +382,8 @@ describe("lockfile validator", () => {
         ],
       };
 
-      const lockfile = generateLockfile(packWithTwo, "team");
-      const result = validateLockfile(lockfile, mockSectionPack);
+      const lockfile = generateLockfile(alignWithTwo, "team");
+      const result = validateLockfile(lockfile, mockSectionAlign);
 
       expect(result.valid).toBe(false);
       expect(result.deletedRules).toHaveLength(1);
@@ -391,25 +391,25 @@ describe("lockfile validator", () => {
     });
 
     it("handles multiple section changes", () => {
-      const originalPack: AlignPack = {
-        ...mockSectionPack,
+      const originalAlign: Align = {
+        ...mockSectionAlign,
         sections: [
           { ...mockSection, fingerprint: "fp:one", content: "Content 1" },
           { ...mockSection, fingerprint: "fp:two", content: "Content 2" },
         ],
       };
 
-      const lockfile = generateLockfile(originalPack, "team");
+      const lockfile = generateLockfile(originalAlign, "team");
 
-      const modifiedPack: AlignPack = {
-        ...mockSectionPack,
+      const modifiedAlign: Align = {
+        ...mockSectionAlign,
         sections: [
           { ...mockSection, fingerprint: "fp:one", content: "Modified 1" },
           { ...mockSection, fingerprint: "fp:three", content: "Content 3" },
         ],
       };
 
-      const result = validateLockfile(lockfile, modifiedPack);
+      const result = validateLockfile(lockfile, modifiedAlign);
 
       expect(result.valid).toBe(false);
       expect(result.mismatches).toHaveLength(1); // fp:one modified

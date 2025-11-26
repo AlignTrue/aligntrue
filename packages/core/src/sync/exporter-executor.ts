@@ -4,7 +4,7 @@
  */
 
 import { posix } from "path";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "../config/index.js";
 import { filterSectionsByScope, type ResolvedScope } from "../scope.js";
 import type { AtomicFileWriter } from "@aligntrue/file-utils";
@@ -29,7 +29,7 @@ export interface ExporterExecutionResult extends OperationResult {
 export async function executeExporters(
   exporters: ExporterPlugin[],
   scopes: ResolvedScope[],
-  ir: AlignPack,
+  ir: Align,
   config: AlignTrueConfig,
   fileWriter: AtomicFileWriter,
   options: {
@@ -54,8 +54,8 @@ export async function executeExporters(
     // Filter sections by scope
     const scopedSections = filterSectionsByScope(ir.sections, scope);
 
-    // Build scoped pack with filtered sections
-    let scopedPack: AlignPack = {
+    // Build scoped align with filtered sections
+    let scopedAlign: Align = {
       id: ir.id,
       version: ir.version,
       spec_version: ir.spec_version,
@@ -78,12 +78,12 @@ export async function executeExporters(
 
     // Resolve plugs if config fills are provided
     if (config.plugs?.fills && Object.keys(config.plugs.fills).length > 0) {
-      const { resolvePlugsForPack } = await import("../plugs/index.js");
-      const resolved = resolvePlugsForPack(scopedPack, config.plugs.fills);
+      const { resolvePlugsForAlign } = await import("../plugs/index.js");
+      const resolved = resolvePlugsForAlign(scopedAlign, config.plugs.fills);
 
       if (resolved.success && resolved.rules.length > 0) {
         // Update sections with resolved content
-        scopedPack.sections = scopedPack.sections.map((section, idx) => {
+        scopedAlign.sections = scopedAlign.sections.map((section, idx) => {
           const resolvedRule = resolved.rules[idx];
           if (resolvedRule?.content) {
             return {
@@ -96,7 +96,7 @@ export async function executeExporters(
       }
     }
 
-    // Call each exporter with scoped pack
+    // Call each exporter with scoped align
     for (const exporter of exporters) {
       const outputPath = `.${exporter.name}/${scope.path === "." ? "root" : scope.path}`;
 
@@ -111,7 +111,7 @@ export async function executeExporters(
       const request: ScopedExportRequest = {
         scope,
         rules: [], // Rules optional for exporters, reserved for future use
-        pack: scopedPack,
+        align: scopedAlign,
         outputPath,
       };
 

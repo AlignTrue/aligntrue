@@ -15,7 +15,7 @@ import {
   type ScopeConfig,
   type ResolvedScope,
 } from "../src/scope.js";
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 
 describe("normalizePath", () => {
   it("converts backslashes to forward slashes", () => {
@@ -418,7 +418,7 @@ describe("applyScopeMerge", () => {
 });
 
 describe("groupRulesByLevel", () => {
-  const createPack = (id: string, sections: AlignSection[]): AlignPack => ({
+  const createAlign = (id: string, sections: AlignSection[]): Align => ({
     id,
     version: "1.0.0",
     spec_version: "1",
@@ -432,23 +432,23 @@ describe("groupRulesByLevel", () => {
     fingerprint: `fp:${heading.replace(/\s+/g, "-").toLowerCase()}`,
   });
 
-  it("groups packs by level", () => {
-    const packs = [
+  it("groups aligns by level", () => {
+    const aligns = [
       {
-        pack: createPack("root.pack", [createSection("Rule One")]),
+        align: createAlign("root.align", [createSection("Rule One")]),
         level: "root" as const,
       },
       {
-        pack: createPack("path.pack", [createSection("Rule Two")]),
+        align: createAlign("path.align", [createSection("Rule Two")]),
         level: "path" as const,
       },
       {
-        pack: createPack("local.pack", [createSection("Rule Three")]),
+        align: createAlign("local.align", [createSection("Rule Three")]),
         level: "local" as const,
       },
     ];
 
-    const grouped = groupRulesByLevel(packs);
+    const grouped = groupRulesByLevel(aligns);
 
     expect(grouped.get("root")).toHaveLength(1);
     expect(grouped.get("path")).toHaveLength(1);
@@ -456,41 +456,41 @@ describe("groupRulesByLevel", () => {
     expect(grouped.get("root")![0].fingerprint).toBe("fp:rule-one");
   });
 
-  it("handles multiple packs at same level", () => {
-    const packs = [
+  it("handles multiple aligns at same level", () => {
+    const aligns = [
       {
-        pack: createPack("root.pack1", [createSection("rule.one")]),
+        align: createAlign("root.align1", [createSection("rule.one")]),
         level: "root" as const,
       },
       {
-        pack: createPack("root.pack2", [createSection("rule.two")]),
+        align: createAlign("root.align2", [createSection("rule.two")]),
         level: "root" as const,
       },
     ];
 
-    const grouped = groupRulesByLevel(packs);
+    const grouped = groupRulesByLevel(aligns);
 
     expect(grouped.get("root")).toHaveLength(2);
   });
 
   it("handles empty levels", () => {
-    const packs = [
+    const aligns = [
       {
-        pack: createPack("root.pack", [createSection("rule.one")]),
+        align: createAlign("root.align", [createSection("rule.one")]),
         level: "root" as const,
       },
     ];
 
-    const grouped = groupRulesByLevel(packs);
+    const grouped = groupRulesByLevel(aligns);
 
     expect(grouped.get("path")).toHaveLength(0);
     expect(grouped.get("local")).toHaveLength(0);
   });
 
-  it("flattens rules from packs", () => {
-    const packs = [
+  it("flattens rules from aligns", () => {
+    const aligns = [
       {
-        pack: createPack("root.pack", [
+        align: createAlign("root.align", [
           createSection("rule.one"),
           createSection("rule.two"),
           createSection("rule.three"),
@@ -499,7 +499,7 @@ describe("groupRulesByLevel", () => {
       },
     ];
 
-    const grouped = groupRulesByLevel(packs);
+    const grouped = groupRulesByLevel(aligns);
 
     expect(grouped.get("root")).toHaveLength(3);
   });

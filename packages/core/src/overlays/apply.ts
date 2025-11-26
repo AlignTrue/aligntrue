@@ -3,7 +3,7 @@
  * Applies overlays to IR in deterministic order
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
 import { compareSelectors } from "./selector-parser.js";
 import {
@@ -15,7 +15,7 @@ import {
 import type { OverlayDefinition, OverlayApplicationResult } from "./types.js";
 
 /**
- * Apply overlays to an AlignPack IR
+ * Apply overlays to an Align IR
  * Applies in deterministic order:
  * 1. File order (order in config)
  * 2. Stable sort by selector
@@ -27,7 +27,7 @@ import type { OverlayDefinition, OverlayApplicationResult } from "./types.js";
  * @returns Result with modified IR or errors
  */
 export function applyOverlays(
-  ir: AlignPack,
+  ir: Align,
   overlays: OverlayDefinition[],
   options?: {
     /** Maximum number of overlays allowed */
@@ -167,7 +167,7 @@ function sortOverlays(overlays: OverlayDefinition[]): OverlayDefinition[] {
 /**
  * Get target object from IR given a path
  *
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @param path - Property path array (e.g., ["rules", "0"])
  * @returns Target object or undefined
  */
@@ -234,10 +234,10 @@ function detectConflicts(
  * Normalize IR line endings before hashing
  * Ensures LF endings with single trailing LF
  *
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Normalized IR (new object)
  */
-export function normalizeLineEndings(ir: AlignPack): AlignPack {
+export function normalizeLineEndings(ir: Align): Align {
   const normalized = deepClone(ir);
 
   // Recursively normalize string properties

@@ -11,9 +11,9 @@ import {
 } from "./section-extractor.js";
 
 /**
- * Pack metadata that can be specified in YAML frontmatter
+ * Align metadata that can be specified in YAML frontmatter
  */
-export interface PackMetadata {
+export interface AlignMetadata {
   id?: string;
   version?: string;
   summary?: string;
@@ -27,7 +27,7 @@ export interface PackMetadata {
  * Result of parsing natural markdown
  */
 export interface ParseResult {
-  metadata: PackMetadata;
+  metadata: AlignMetadata;
   sections: Section[];
   preamble?: string;
   errors: Array<{ line: number; message: string; level: "warn" | "error" }>;
@@ -41,7 +41,7 @@ export interface ParseResult {
  * 2. YAML frontmatter + markdown sections
  *
  * @param markdown - Raw markdown content
- * @param defaultId - Default pack ID if not specified in frontmatter
+ * @param defaultId - Default align ID if not specified in frontmatter
  * @returns Parse result with metadata and sections
  */
 export function parseNaturalMarkdown(
@@ -57,7 +57,7 @@ export function parseNaturalMarkdown(
   // Check for YAML frontmatter
   const frontmatterMatch = markdown.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
 
-  let metadata: PackMetadata = {};
+  let metadata: AlignMetadata = {};
   let contentToExtract: string;
 
   if (frontmatterMatch) {
@@ -68,7 +68,7 @@ export function parseNaturalMarkdown(
     try {
       const parsed = parseYaml(frontmatterYaml);
       if (typeof parsed === "object" && parsed !== null) {
-        metadata = parsed as PackMetadata;
+        metadata = parsed as AlignMetadata;
       }
     } catch (err) {
       errors.push({
@@ -90,7 +90,7 @@ export function parseNaturalMarkdown(
 
   // Apply defaults to metadata
   if (!metadata.id) {
-    metadata.id = defaultId || "unnamed-pack";
+    metadata.id = defaultId || "unnamed-align";
   }
   if (!metadata.version) {
     metadata.version = "1.0.0";
@@ -114,13 +114,13 @@ export function parseNaturalMarkdown(
  * Generate natural markdown from sections and metadata
  * Inverse of parseNaturalMarkdown
  *
- * @param metadata - Pack metadata
+ * @param metadata - Align metadata
  * @param sections - Sections to render
  * @param includeFrontmatter - Whether to include YAML frontmatter (default: only if metadata has non-default values)
  * @returns Markdown string
  */
 export function generateNaturalMarkdown(
-  metadata: PackMetadata,
+  metadata: AlignMetadata,
   sections: Section[],
   options?: {
     includeFrontmatter?: boolean;
@@ -131,7 +131,7 @@ export function generateNaturalMarkdown(
 
   // Determine if frontmatter is needed
   const hasCustomMetadata =
-    metadata.id !== "unnamed-pack" ||
+    metadata.id !== "unnamed-align" ||
     metadata.version !== "1.0.0" ||
     metadata.summary ||
     metadata.tags ||

@@ -5,65 +5,65 @@
  * Post-resolution hash: Used in export for integrity (includes resolved text)
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { computeHash, cloneDeep } from "@aligntrue/schema";
-import { resolvePlugsForPack } from "./index.js";
+import { resolvePlugsForAlign } from "./index.js";
 
 /**
- * Compute pre-resolution hash for an align pack
+ * Compute pre-resolution hash for an align align
  *
  * This hash is deterministic and used for lockfile verification.
  * It's computed BEFORE plug resolution, so it represents the template.
  *
- * @param pack - Align pack to hash
+ * @param align - Align align to hash
  * @returns Hex-encoded SHA-256 hash
  */
-export function computePreResolutionHash(pack: AlignPack): string {
+export function computePreResolutionHash(align: Align): string {
   // Create a copy to avoid modifying original
-  const packCopy = cloneDeep(pack);
+  const alignCopy = cloneDeep(align);
 
   // For pre-resolution hash, we want to hash the template with [[plug:key]] placeholders intact
   // This makes the hash deterministic regardless of fill values
 
   // Remove volatile fields that shouldn't affect hash
-  if (packCopy._markdown_meta) {
-    delete packCopy._markdown_meta;
+  if (alignCopy._markdown_meta) {
+    delete alignCopy._markdown_meta;
   }
 
   // Remove fills from pre-resolution hash (we only want the template)
-  if (packCopy.plugs && packCopy.plugs.fills) {
-    delete packCopy.plugs.fills;
+  if (alignCopy.plugs && alignCopy.plugs.fills) {
+    delete alignCopy.plugs.fills;
   }
 
   // Use stringify without key sorting (the content itself should be deterministic)
-  const canonical = JSON.stringify(packCopy);
+  const canonical = JSON.stringify(alignCopy);
 
   return computeHash(canonical);
 }
 
 /**
- * Compute post-resolution hash for an align pack
+ * Compute post-resolution hash for an align align
  *
  * This hash includes resolved plug values and is used for export integrity.
  * It changes when fill values change.
  *
- * @param pack - Align pack to hash
+ * @param align - Align align to hash
  * @returns Hex-encoded SHA-256 hash, or undefined if resolution failed
  */
-export function computePostResolutionHash(pack: AlignPack): string | undefined {
+export function computePostResolutionHash(align: Align): string | undefined {
   // Resolve plugs first
-  const resolveResult = resolvePlugsForPack(pack);
+  const resolveResult = resolvePlugsForAlign(align);
 
   if (!resolveResult.success) {
     return undefined;
   }
 
   // Create a copy with resolved content
-  const packCopy = cloneDeep(pack) as unknown as Record<string, unknown>;
+  const alignCopy = cloneDeep(align) as unknown as Record<string, unknown>;
 
   // Update sections with resolved content
   for (const resolvedRule of resolveResult.rules) {
-    const sections = packCopy["sections"] as Array<Record<string, unknown>>;
+    const sections = alignCopy["sections"] as Array<Record<string, unknown>>;
     const section = sections?.find?.(
       (s) => s["fingerprint"] === resolvedRule.ruleId,
     );
@@ -73,12 +73,12 @@ export function computePostResolutionHash(pack: AlignPack): string | undefined {
   }
 
   // Remove volatile fields
-  if (packCopy["_markdown_meta"]) {
-    delete packCopy["_markdown_meta"];
+  if (alignCopy["_markdown_meta"]) {
+    delete alignCopy["_markdown_meta"];
   }
 
   // Use stringify without key sorting (the content itself should be deterministic)
-  const canonical = JSON.stringify(packCopy);
+  const canonical = JSON.stringify(alignCopy);
 
   return computeHash(canonical);
 }
@@ -95,15 +95,15 @@ export interface DualHashResult {
 /**
  * Compute both pre and post resolution hashes
  *
- * @param pack - Align pack to hash
+ * @param align - Align align to hash
  * @returns Dual hash result
  */
-export function computeDualHash(pack: AlignPack): DualHashResult {
-  const preResolutionHash = computePreResolutionHash(pack);
-  const postResolutionHash = computePostResolutionHash(pack);
+export function computeDualHash(align: Align): DualHashResult {
+  const preResolutionHash = computePreResolutionHash(align);
+  const postResolutionHash = computePostResolutionHash(align);
 
   // Get unresolved plugs list
-  const resolveResult = resolvePlugsForPack(pack);
+  const resolveResult = resolvePlugsForAlign(align);
   const unresolvedRequired = resolveResult.unresolvedRequired || [];
 
   const result: DualHashResult = {

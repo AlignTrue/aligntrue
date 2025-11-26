@@ -1,26 +1,23 @@
 /**
  * Selector evaluation engine for overlays (Overlays system)
- * Evaluates selectors against AlignPack IR to find targets for overlay application
+ * Evaluates selectors against Align IR to find targets for overlay application
  */
 
-import type { AlignPack } from "@aligntrue/schema";
+import type { Align } from "@aligntrue/schema";
 import { parseSelector } from "./selector-parser.js";
 import { SelectorMatch } from "./types.js";
 import { ensureSectionsArray } from "../validation/sections.js";
 import { isPlainObject } from "./operations.js";
 
 /**
- * Evaluate a selector against an AlignPack IR
+ * Evaluate a selector against an Align IR
  * Selector must match exactly one target for success
  *
  * @param selector - Selector string
- * @param ir - AlignPack IR to search
+ * @param ir - Align IR to search
  * @returns SelectorMatch result with target path and value
  */
-export function evaluateSelector(
-  selector: string,
-  ir: AlignPack,
-): SelectorMatch {
+export function evaluateSelector(selector: string, ir: Align): SelectorMatch {
   const parsed = parseSelector(selector);
   if (!parsed) {
     return {
@@ -54,9 +51,9 @@ export function evaluateSelector(
 
 /**
  * Evaluate rule[id=...] selector
- * Searches for section with matching fingerprint in pack.sections array
+ * Searches for section with matching fingerprint in align.sections array
  */
-function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
+function evaluateRuleSelector(ruleId: string, ir: Align): SelectorMatch {
   // Defensive: ensure sections array exists
   try {
     ensureSectionsArray(ir, { throwOnInvalid: true });
@@ -110,11 +107,11 @@ function evaluateRuleSelector(ruleId: string, ir: AlignPack): SelectorMatch {
 
 /**
  * Evaluate sections[heading=...] selector
- * Searches for section with matching heading in pack.sections array
+ * Searches for section with matching heading in align.sections array
  */
 function evaluateSectionHeadingSelector(
   heading: string,
-  ir: AlignPack,
+  ir: Align,
 ): SelectorMatch {
   // Defensive: ensure sections array exists
   try {
@@ -173,7 +170,7 @@ function evaluateSectionHeadingSelector(
  */
 function evaluatePropertySelector(
   propertyPath: string[],
-  ir: AlignPack,
+  ir: Align,
 ): SelectorMatch {
   if (!propertyPath || propertyPath.length === 0) {
     return {
@@ -253,7 +250,7 @@ function evaluatePropertySelector(
 function evaluateArrayIndexSelector(
   propertyPath: string[],
   arrayIndex: number,
-  ir: AlignPack,
+  ir: Align,
 ): SelectorMatch {
   // First navigate to the property containing the array
   const propertyResult = evaluatePropertySelector(propertyPath, ir);
@@ -291,12 +288,12 @@ function evaluateArrayIndexSelector(
  * Returns results for each selector in order
  *
  * @param selectors - Array of selector strings
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Array of SelectorMatch results (same order as input)
  */
 export function evaluateSelectors(
   selectors: string[],
-  ir: AlignPack,
+  ir: Align,
 ): SelectorMatch[] {
   return selectors.map((selector) => evaluateSelector(selector, ir));
 }
@@ -306,13 +303,10 @@ export function evaluateSelectors(
  * Useful for validation and CI gates
  *
  * @param selectors - Array of selector strings
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Array of stale selector strings
  */
-export function findStaleSelectors(
-  selectors: string[],
-  ir: AlignPack,
-): string[] {
+export function findStaleSelectors(selectors: string[], ir: Align): string[] {
   const stale: string[] = [];
   for (const selector of selectors) {
     const result = evaluateSelector(selector, ir);
@@ -328,12 +322,12 @@ export function findStaleSelectors(
  * Useful for validation and CI gates
  *
  * @param selectors - Array of selector strings
- * @param ir - AlignPack IR
+ * @param ir - Align IR
  * @returns Array of ambiguous selector strings with match counts
  */
 export function findAmbiguousSelectors(
   selectors: string[],
-  ir: AlignPack,
+  ir: Align,
 ): Array<{ selector: string; matchCount: number }> {
   const ambiguous: Array<{ selector: string; matchCount: number }> = [];
   for (const selector of selectors) {

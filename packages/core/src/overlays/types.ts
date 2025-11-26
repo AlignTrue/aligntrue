@@ -140,7 +140,7 @@ export interface OverlayValidationWarning {
  * Triple-hash format for overlays in lockfile
  */
 export interface OverlayHashes {
-  /** Hash of base pack (upstream) */
+  /** Hash of base align (upstream) */
   base_hash: string;
   /** Hash of overlay configuration */
   overlay_hash: string;

@@ -196,15 +196,15 @@
           },
           "id": {
             "type": "string",
-            "description": "Catalog pack ID (required for type: catalog)"
+            "description": "Catalog align ID (required for type: catalog)"
           },
           "version": {
             "type": "string",
-            "description": "Version constraint for catalog packs (e.g., '^1.0.0')"
+            "description": "Version constraint for catalog aligns (e.g., '^1.0.0')"
           },
           "include": {
             "type": "array",
-            "description": "Multiple git source URLs with integrated ref and path (e.g., https://github.com/org/repo@v2.0.0/packs). Each URL is fully qualified and parsed for host, org, repo, ref, and path.",
+            "description": "Multiple git source URLs with integrated ref and path (e.g., https://github.com/org/repo@v2.0.0/aligns). Each URL is fully qualified and parsed for host, org, repo, ref, and path.",
             "items": {
               "type": "string",
               "minLength": 1
@@ -250,7 +250,7 @@
           },
           "rulesets": {
             "type": "array",
-            "description": "Rule IDs or pack references to apply in this scope",
+            "description": "Rule IDs or align references to apply in this scope",
             "items": {
               "type": "string"
             }

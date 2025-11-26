@@ -30,7 +30,7 @@ afterEach(async () => {
 describeSkipWindows("Plugs Resolution Integration", () => {
   it("validates plug slot declaration structure", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -71,7 +71,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
   it("validates plug fills structure", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -111,7 +111,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
   it("validates multiple plug slots", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -164,7 +164,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
     formats.forEach((format) => {
       const ir = {
-        id: "test-pack",
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         sections: [
@@ -204,7 +204,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
   it("validates required vs optional plugs", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -246,7 +246,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
   it("validates plug examples", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -283,7 +283,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
   it("validates plug fills with different formats", () => {
     const ir = {
-      id: "test-pack",
+      id: "test-align",
       version: "1.0.0",
       spec_version: "1",
       sections: [
@@ -353,7 +353,7 @@ describeSkipWindows("Plugs Resolution Integration", () => {
 
     validKeys.forEach((key) => {
       const ir = {
-        id: "test-pack",
+        id: "test-align",
         version: "1.0.0",
         spec_version: "1",
         sections: [
@@ -398,11 +398,11 @@ describeSkipWindows("Plugs Resolution Integration", () => {
       sources: [
         {
           type: "local",
-          path: "base-pack.yaml",
+          path: "base-align.yaml",
         },
         {
           type: "local",
-          path: "stack-pack.yaml",
+          path: "stack-align.yaml",
         },
       ],
       plugs: {
