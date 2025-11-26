@@ -156,11 +156,19 @@ export function validatePlugValue(
       break;
 
     case "url":
-      // Must start with http:// or https://
-      if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      // Must be valid http:// or https:// URL (validate using URL constructor)
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+          return {
+            valid: false,
+            error: `URL protocol must be http:// or https://`,
+          };
+        }
+      } catch {
         return {
           valid: false,
-          error: `URL must start with http:// or https://`,
+          error: `URL must be a valid http:// or https:// URL`,
         };
       }
       break;
