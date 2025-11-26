@@ -375,4 +375,64 @@ describeSkipWindows("Init Command Integration", () => {
       expect(exitCode).toBe(0);
     });
   });
+
+  describe("Starter Template Frontmatter", () => {
+    it("adds description to all starter templates", async () => {
+      await init(["--yes", "--project-id", "test-project"]);
+
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      const { readdirSync } = await import("fs");
+      const files = readdirSync(rulesDir).filter((f: string) =>
+        f.endsWith(".md"),
+      );
+
+      // Verify each starter template has a description
+      for (const file of files) {
+        const content = readFileSync(join(rulesDir, file), "utf-8");
+        // Should have frontmatter with description field
+        expect(content).toMatch(/^---\n[\s\S]*?description:/);
+      }
+    });
+
+    it("sets apply_to: alwaysOn for global rule", async () => {
+      await init(["--yes", "--project-id", "test-project"]);
+
+      const globalRulePath = join(TEST_DIR, ".aligntrue", "rules", "global.md");
+      expect(existsSync(globalRulePath)).toBe(true);
+
+      const content = readFileSync(globalRulePath, "utf-8");
+
+      // Should have apply_to field set to alwaysOn
+      expect(content).toContain("apply_to: alwaysOn");
+    });
+
+    it("does not include STARTER RULE comment in exported rules", async () => {
+      await init([
+        "--yes",
+        "--project-id",
+        "test-project",
+        "--exporters",
+        "cursor",
+      ]);
+
+      // Run sync to export rules
+      const { sync } = await import("../../src/commands/sync/index.js");
+      await sync([]);
+
+      // Check exported cursor rules
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      if (existsSync(cursorDir)) {
+        const { readdirSync } = await import("fs");
+        const files = readdirSync(cursorDir).filter((f: string) =>
+          f.endsWith(".mdc"),
+        );
+
+        for (const file of files) {
+          const content = readFileSync(join(cursorDir, file), "utf-8");
+          // Exported files should not have STARTER RULE comment
+          expect(content).not.toContain("STARTER RULE:");
+        }
+      }
+    });
+  });
 });
