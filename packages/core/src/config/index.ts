@@ -19,6 +19,7 @@ import {
   validateConfigSchema,
   formatConfigValidationErrors,
   applyDefaults as applyDefaultsLogic,
+  expandSourcesWithInclude,
 } from "../validation/config.js";
 
 // Re-export types
@@ -98,6 +99,13 @@ export async function loadConfig(
 
   // Apply defaults
   const configWithDefaults = applyDefaultsLogic(typedConfig);
+
+  // Expand sources with include syntax before validation
+  if (configWithDefaults.sources && configWithDefaults.sources.length > 0) {
+    configWithDefaults.sources = expandSourcesWithInclude(
+      configWithDefaults.sources,
+    );
+  }
 
   // Run enhanced validation (scopes, paths, cross-field checks)
   await validateConfigLogic(configWithDefaults, path);

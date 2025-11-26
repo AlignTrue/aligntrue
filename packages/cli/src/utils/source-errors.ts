@@ -128,7 +128,7 @@ function findSimilarFile(target: string, files: string[]): string | null {
  * Simple edit distance (Levenshtein distance)
  */
 function editDistance(a: string, b: string): number {
-  const matrix: number[][] = [];
+  const matrix: Array<number[]> = [];
 
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
@@ -142,12 +142,15 @@ function editDistance(a: string, b: string): number {
   }
 
   for (let i = 1; i <= b.length; i++) {
-    const row = matrix[i];
-    if (!row) continue;
+    const row: number[] = [];
+    matrix[i] = row;
 
     for (let j = 1; j <= a.length; j++) {
       const prevRow = matrix[i - 1];
-      if (!prevRow) continue;
+      if (!prevRow) {
+        row[j] = 0;
+        continue;
+      }
 
       if (b.charAt(i - 1) === a.charAt(j - 1)) {
         const prev = prevRow[j - 1];

@@ -8,7 +8,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 
-const TEST_DIR = join(__dirname, "../../../temp-test-multi-source");
+const TEST_DIR = join(__dirname, "../../../../.temp-test-multi-source");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 describe("Multi-Source Reliability", () => {
@@ -133,7 +133,7 @@ mode: solo
 sources:
   - type: git
     include:
-      - https://github.com/test/repo
+      - https://github.com/AlignTrue/examples/packs/debugging.md
 exporters:
   - agents
 `,
@@ -180,16 +180,15 @@ exporters:
       });
       expect(result).toContain("base.md");
 
-      // Step 3: Add a source (would need actual repo for full test)
-      // For now, just verify config accepts it
+      // Step 3: Add a source using real examples repo
       writeFileSync(
         join(TEST_DIR, ".aligntrue", "config.yaml"),
         `version: "1"
 mode: solo
 sources:
   - type: git
-    url: https://github.com/test/repo
-    path: test.md
+    url: https://github.com/AlignTrue/examples
+    path: packs/debugging.md
 exporters:
   - agents
 `,

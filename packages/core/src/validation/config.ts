@@ -23,6 +23,7 @@ import {
   validateGlobPatterns,
   validateMergeOrder,
 } from "../scope.js";
+import { parseSourceURL } from "../sources/url-parser.js";
 import type {
   AlignTrueConfig,
   AlignTrueMode,
@@ -327,6 +328,67 @@ export function checkUnknownFields(
 }
 
 /**
+ * Expand sources with include syntax into individual git sources
+ * Converts include URLs into separate git sources, one per URL
+ */
+export function expandSourcesWithInclude(
+  sources: NonNullable<AlignTrueConfig["sources"]>,
+): NonNullable<AlignTrueConfig["sources"]> {
+  const expanded: NonNullable<AlignTrueConfig["sources"]> = [];
+
+  for (const source of sources) {
+    if (!source) continue;
+
+    // If source has include array, expand it
+    const sourceWithInclude = source as {
+      type?: string;
+      include?: string[];
+      url?: string;
+      path?: string;
+      ref?: string;
+    };
+
+    if (sourceWithInclude.type === "git" && sourceWithInclude.include) {
+      // Expand each include URL into a separate source
+      for (const includeUrl of sourceWithInclude.include) {
+        try {
+          const parsed = parseSourceURL(includeUrl);
+          // Create a new git source from the parsed URL
+          const expandedSource: {
+            type: "git" | "local" | "url";
+            url?: string;
+            path?: string;
+            ref?: string;
+          } = {
+            type: "git",
+            url: `https://${parsed.host}/${parsed.org}/${parsed.repo}`,
+          };
+          if (parsed.ref) {
+            expandedSource.ref = parsed.ref;
+          }
+          if (parsed.path) {
+            expandedSource.path = parsed.path;
+          }
+          expanded.push(
+            expandedSource as NonNullable<AlignTrueConfig["sources"]>[0],
+          );
+        } catch (error) {
+          throw new Error(
+            `Failed to parse include URL: ${includeUrl}\n` +
+              `  ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+    } else {
+      // Keep non-include sources as-is
+      expanded.push(source);
+    }
+  }
+
+  return expanded;
+}
+
+/**
  * Validate configuration structure and values
  */
 export async function validateConfig(
@@ -373,6 +435,10 @@ export async function validateConfig(
         throw new Error(
           `Invalid source at index ${i}: "path" is required for type "local"`,
         );
+      } else if (source.type === "git" && source.include) {
+        // Include syntax: skip URL validation (URLs come from include array)
+        // Validation of include URLs happens during expansion in CLI
+        continue;
       } else if (
         (source.type === "git" || source.type === "url") &&
         !source.url
