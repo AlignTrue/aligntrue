@@ -57,7 +57,7 @@ describe("AmazonQExporter", () => {
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.amazonq\/rules\/rules\.md$/,
+        /\.amazonq\/rules\/testing-requirements\.md$/,
       );
     });
   });

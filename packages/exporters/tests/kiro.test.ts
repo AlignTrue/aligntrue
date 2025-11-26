@@ -57,7 +57,7 @@ describe("KiroExporter", () => {
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
       expect(result.filesWritten[0].replace(/\\/g, "/")).toMatch(
-        /\.kiro\/steering\/rules\.md$/,
+        /\.kiro\/steering\/testing-requirements\.md$/,
       );
     });
   });

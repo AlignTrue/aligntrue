@@ -6,7 +6,7 @@
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
-    "Scope-based file organization (one .md per scope)",
+    "One markdown file per rule, preserving original filenames",
     "Machine-checkable rules (check) not represented",
     "Autofix hints not represented"
   ]

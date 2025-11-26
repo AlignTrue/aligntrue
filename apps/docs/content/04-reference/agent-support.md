@@ -110,7 +110,7 @@ See [Multi-file organization](/docs/02-customization/multi-file-organization) fo
 | **Cline**           | cline            | Agent-Specific   | `.clinerules`                    | Cline plain text format                              | Plain text limitations                      |
 | **Goose**           | goose            | Agent-Specific   | `.goosehints`                    | Goose plain text format                              | Plain text limitations                      |
 | **Firebender**      | firebender       | Agent-Specific   | `firebender.json`                | Firebender JSON configuration                        | JSON format limitations                     |
-| **Trae AI**         | trae-ai          | Agent-Specific   | `.trae/rules/project_rules.md`   | Trae AI project rules format                         | Project-specific structure                  |
+| **Trae AI**         | trae-ai          | Agent-Specific   | `.trae/rules/*.md`               | Directory-based markdown files                       | Directory structure preserved               |
 | **Junie**           | junie            | Agent-Specific   | `.junie/guidelines.md`           | Junie guidelines format                              | Guidelines structure                        |
 | **Augment Code**    | augmentcode      | Agent-Specific   | `.augment/rules/*.md`            | Directory-based markdown files                       | Directory structure preserved               |
 | **Kiro**            | kiro             | Agent-Specific   | `.kiro/steering/*.md`            | Directory-based steering files                       | Steering structure                          |
