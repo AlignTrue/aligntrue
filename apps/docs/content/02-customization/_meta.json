@@ -4,5 +4,6 @@
   "plugs": "Plugs",
   "overlays": "Overlays",
   "scopes": "Scopes",
+  "conventions": "Conventions",
   "technical-reference": "Technical reference"
 }

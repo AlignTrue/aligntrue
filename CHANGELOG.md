@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Plugs and overlays conventions reference** - New documentation guide with recommended plug keys (test.cmd, docs.url, org.name, etc.) and overlay patterns to improve ecosystem interoperability
+- **Example packs with plugs** - Updated `testing.md` and `typescript.md` with plug slots and overlay hints to demonstrate best practices
+- **Conventions guidance for pack authors** - New section in creating-packs guide encouraging use of standard plug keys for better user experience
 - **Simplified source configuration with `include` syntax** - New `include` array field allows multiple files per git source without repetition. Format: `https://github.com/org/repo[@ref][/path]` with smart defaults (no path = all .md in root, path ending with `/` = directory, `@ref` = version pin)
 - **First-wins merge precedence** - Rules now merge with local rules always highest priority, then external sources in order listed. First source wins on conflict (changed from last-wins for better UX)
 - **Sync summary output** - `aligntrue sync` now displays source precedence list showing all included sources and their priority order
