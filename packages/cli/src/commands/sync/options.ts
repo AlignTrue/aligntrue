@@ -143,6 +143,8 @@ export function parseSyncOptions(args: string[]): SyncOptions {
       (parsed.flags["non-interactive"] as boolean | undefined) || false,
     noDetect: (parsed.flags["no-detect"] as boolean | undefined) || false,
     autoEnable: (parsed.flags["auto-enable"] as boolean | undefined) || false,
+    skipNotFoundWarning:
+      (parsed.flags["skip-not-found-warning"] as boolean | undefined) || false,
     json: (parsed.flags["json"] as boolean | undefined) || false,
   };
 
