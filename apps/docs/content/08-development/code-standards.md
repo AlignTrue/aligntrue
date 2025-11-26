@@ -77,7 +77,7 @@ const clone = cloneDeep(obj);
 **Locations where JSON utilities are recommended:**
 
 - Object cloning in overlay operations
-- Pack hashing before resolution
+- Align hashing before resolution
 - Type-safe parsing of untrusted JSON
 
 ### Canonicalization

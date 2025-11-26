@@ -1,53 +1,53 @@
 ---
-title: Creating packs
-description: Author and publish high-quality Align packs that pass validation and provide value to the community.
+title: Creating aligns
+description: Author and publish high-quality Align aligns that pass validation and provide value to the community.
 ---
 
-# Creating packs
+# Creating aligns
 
-Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Align packs that pass validation and provide value to the community.
+Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Align aligns that pass validation and provide value to the community.
 
 ## Quick start
 
-Get started creating packs:
+Get started creating aligns:
 
-1. **Review examples** in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory
-2. **Create** your pack following the [template](#minimal-example)
+1. **Review examples** in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory
+2. **Create** your align following the [template](#minimal-example)
 3. **Share** via GitHub URL, local file, or your own repository
 
-No central registry exists - share packs however works best for your team.
+No central registry exists - share aligns however works best for your team.
 
-## Authoring your first pack
+## Authoring your first align
 
 ### Review examples
 
-Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) in this repository.
+Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) in this repository.
 
 Examples include:
 
-- Base packs (global, testing, security, etc.)
-- Stack-specific packs (Next.js, Vercel, etc.)
+- Base aligns (global, testing, security, etc.)
+- Stack-specific aligns (Next.js, Vercel, etc.)
 - Inline comments explaining best practices
-- Proper pack structure and formatting
+- Proper align structure and formatting
 
 ### Choose your namespace
 
-Pick the appropriate namespace for your pack:
+Pick the appropriate namespace for your align:
 
-- **`packs/base/*`** - Rules that apply across all stacks
-  - Example: `packs/base/base-testing`, `packs/base/base-security`
+- **`aligns/base/*`** - Rules that apply across all stacks
+  - Example: `aligns/base/base-testing`, `aligns/base/base-security`
   - Use when: Your rules work for any project type
 
-- **`packs/stacks/*`** - Rules specific to a framework or stack
-  - Example: `packs/stacks/nextjs-app-router`, `packs/stacks/django-backend`
+- **`aligns/stacks/*`** - Rules specific to a framework or stack
+  - Example: `aligns/stacks/nextjs-app-router`, `aligns/stacks/django-backend`
   - Use when: Your rules target a specific tech stack
 
 ### Minimal example
 
-Here's a minimal pack using natural markdown sections:
+Here's a minimal align using natural markdown sections:
 
 ````markdown
-# TypeScript Configuration Pack
+# TypeScript Configuration Align
 
 ## Ensure TypeScript configuration
 
@@ -75,7 +75,7 @@ Enable strict mode for better type safety and fewer runtime errors.
 
 ````
 
-For more examples, browse existing packs in the [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs) directory.
+For more examples, browse existing aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
 
 ## Testing locally
 
@@ -86,7 +86,7 @@ You'll need:
 - Node.js 22+ and pnpm 9+
 - The `AlignTrue/aligntrue` repository cloned
 
-### Validate your pack
+### Validate your align
 
 From the `aligntrue` repository:
 
@@ -94,8 +94,8 @@ From the `aligntrue` repository:
 # Install dependencies
 pnpm install
 
-# Validate your pack
-pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
+# Validate your align
+pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
 ````
 
 ### Verify deterministic hash
@@ -103,29 +103,29 @@ pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
 Run validation twice and confirm the integrity hash is identical both times:
 
 ```bash
-pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
 # Note the integrity hash in output
 
-pnpm --filter @aligntrue/schema validate path/to/your-pack.yaml
+pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
 # Hash should match exactly
 ```
 
-If hashes differ, your pack may have non-deterministic content (timestamps, random values, etc.).
+If hashes differ, your align may have non-deterministic content (timestamps, random values, etc.).
 
 ### Compute integrity hash
 
-If your pack has `<computed>` as the integrity value, compute the real hash:
+If your align has `<computed>` as the integrity value, compute the real hash:
 
 ```bash
 # From the aligntrue repository
-pnpm --filter @aligntrue/schema compute-hash path/to/your-pack.yaml
+pnpm --filter @aligntrue/schema compute-hash path/to/your-align.yaml
 ```
 
-Copy the hash from the output and paste it into your pack's `integrity.value` field.
+Copy the hash from the output and paste it into your align's `integrity.value` field.
 
 ## Using recommended conventions
 
-When creating plugs for your pack, prefer established conventions to maximize interoperability:
+When creating plugs for your align, prefer established conventions to maximize interoperability:
 
 - See [Conventions Reference](/docs/02-customization/conventions) for recommended plug keys
 - Using standard keys like `test.cmd`, `docs.url`, `org.name` improves user experience
@@ -144,11 +144,11 @@ plugs:
       example: "pnpm test"
 ```
 
-This allows users to set the fill once and reuse it across any pack that follows conventions.
+This allows users to set the fill once and reuse it across any align that follows conventions.
 
 ## Writing effective guidance
 
-Packs use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
+Aligns use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
 
 ### Clear and specific
 
@@ -217,7 +217,7 @@ Users should be able to copy-paste your hint and make progress.
   - TODO comments
   - Formatting preferences
 
-## Sharing your pack
+## Sharing your align
 
 ### Via GitHub
 
@@ -227,13 +227,13 @@ Users should be able to copy-paste your hint and make progress.
 sources:
   - type: git
     url: https://github.com/yourorg/rules-repo
-    path: packs/your-pack.yaml
+    path: aligns/your-align.yaml
 ````
 
 2. **Share raw URL** - Users can download directly:
 
 ```bash
-curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/packs/your-pack.yaml
+curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/aligns/your-align.yaml
 ```
 
 ### Via local files
@@ -241,20 +241,20 @@ curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-re
 Share the YAML file directly - users can copy it to their project:
 
 ```bash
-cp your-pack.yaml .aligntrue/rules.yaml
+cp your-align.yaml .aligntrue/rules.yaml
 aligntrue sync
 ```
 
 ### Quality checklist
 
-Before sharing your pack, verify:
+Before sharing your align, verify:
 
 - [ ] Schema validation passes locally
 - [ ] Integrity hash is computed (not `<computed>`)
 - [ ] Evidence messages are specific and actionable
 - [ ] Autofix hints are concrete commands or steps
-- [ ] Pack summary clearly states purpose in one sentence
-- [ ] Namespace follows conventions (packs/base or packs/stacks)
+- [ ] Align summary clearly states purpose in one sentence
+- [ ] Namespace follows conventions (aligns/base or aligns/stacks)
 - [ ] All check types use one of the 5 supported types
 
 ## Code of conduct
@@ -277,10 +277,10 @@ Stuck? Here's how to get help:
   - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and checks
   - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
 
-- **Examples**: Browse example packs in [`examples/packs/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs)
-  - [testing.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/testing.yaml) - Testing rules
-  - [security.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/security.yaml) - Security rules
-  - [nextjs_app_router.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.yaml) - Stack-specific rules
+- **Examples**: Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
+  - [testing.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.yaml) - Testing rules
+  - [security.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.yaml) - Security rules
+  - [nextjs_app_router.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.yaml) - Stack-specific rules
 
 - **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
@@ -288,24 +288,24 @@ Stuck? Here's how to get help:
 
 ## Sharing with the community
 
-Consider sharing your pack with the community:
+Consider sharing your align with the community:
 
-1. **GitHub repository** - Create a public repo with your packs
-2. **Documentation** - Add a README explaining what your packs do
+1. **GitHub repository** - Create a public repo with your aligns
+2. **Documentation** - Add a README explaining what your aligns do
 3. **Examples** - Include usage examples and configuration
 4. **Community** - Share in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-Well-documented packs help others learn and adopt best practices.
+Well-documented aligns help others learn and adopt best practices.
 
 ## Advanced topics
 
-### Dependencies between packs
+### Dependencies between aligns
 
-Packs can depend on other packs using the `deps` field:
+Aligns can depend on other aligns using the `deps` field:
 
 ```yaml
 deps:
-  - id: "packs/base/base-global"
+  - id: "aligns/base/base-global"
     version: "^1.0.0"
 ```
 
@@ -313,25 +313,25 @@ Dependencies are resolved and merged in order. Keep dependencies minimal.
 
 ### Scoping rules
 
-Use `scope.applies_to` to narrow where your pack applies:
+Use `scope.applies_to` to narrow where your align applies:
 
 ```yaml
 scope:
   applies_to: ["backend"] # or ["frontend"], ["cli"], etc.
 ```
 
-This helps users understand when to use your pack.
+This helps users understand when to use your align.
 
-### Testing your pack
+### Testing your align
 
-To test your pack locally:
+To test your align locally:
 
 1. **Add to `.aligntrue/config.yaml`:**
 
 ```yaml
 sources:
   - type: local
-    path: ./your-pack.md
+    path: ./your-align.md
 ```
 
 2. **Sync to agents:**

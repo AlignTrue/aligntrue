@@ -61,7 +61,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 
 ## Network policy
 
-- **Core path is offline** - Core commands (`validate`, `check`, `bundle`, `export`, `pack`, `verify-pack`) make no outbound requests
+- **Core path is offline** - Core commands (`validate`, `check`, `bundle`, `export`, `align`, `verify-align`) make no outbound requests
 - **Localhost-only MCP** - MCP server binds to `127.0.0.1` only
 - **Explicit remote fetches** - Remote git fetches require explicit config or flags and use local cache
 - **Fail-fast on network** - If a network call would occur in core mode, fail fast with clear error
@@ -83,7 +83,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 
 - **No cloud dependency** - Validate, bundle, export, and verify work without cloud
 - **Offline workflows** - All documented workflows function without internet access
-- **Local pack mirroring** - Documented way to mirror or vendor rule packs locally
+- **Local align mirroring** - Documented way to mirror or vendor rule aligns locally
 
 ## Dependency and supply chain
 
@@ -91,7 +91,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Audit in CI** - `pnpm audit` runs in CI, fails on high severity unless explicitly documented exception
 - **SBOM generation** - CycloneDX SBOM generated for tagged releases
 - **Release checksums** - Checksums attached to release artifacts
-- **Data-only packs** - Never execute code from Aligns or packs, treat as data only
+- **Data-only aligns** - Never execute code from Aligns or aligns, treat as data only
 
 ## MCP and IDE integration
 

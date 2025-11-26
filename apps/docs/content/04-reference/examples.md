@@ -1,11 +1,11 @@
 ---
 title: Examples
-description: Working examples and curated rule packs for AlignTrue
+description: Working examples and curated rule aligns for AlignTrue
 ---
 
 # Examples
 
-Learn by example with working demonstrations and 11 curated rule packs.
+Learn by example with working demonstrations and 11 curated rule aligns.
 
 ## Working examples (GitHub)
 
@@ -29,7 +29,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 ### Overlays demo
 
-**Fork-safe customization** without forking upstream packs.
+**Fork-safe customization** without forking upstream aligns.
 
 - Severity remapping (warn → error)
 - Adding check inputs (threshold adjustments)
@@ -39,7 +39,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 [View overlays-demo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo)
 
-**When to use:** Customizing third-party packs, team severity preferences
+**When to use:** Customizing third-party aligns, team severity preferences
 
 **Files:** YAML format with overlays section
 
@@ -91,9 +91,9 @@ Complete, runnable examples in the AlignTrue repository:
 
 ### Team repository example
 
-**Team collaboration** setup with vendored packs.
+**Team collaboration** setup with vendored aligns.
 
-- Vendored pack management
+- Vendored align management
 - Team approval workflows
 - Git submodule integration
 - Lockfile and drift detection
@@ -107,64 +107,64 @@ Complete, runnable examples in the AlignTrue repository:
 
 ---
 
-## Curated rule packs
+## Curated rule aligns
 
-11 production-ready rule packs maintained by AlignTrue. All packs are CC0-licensed (public domain).
+11 production-ready rule aligns maintained by AlignTrue. All aligns are CC0-licensed (public domain).
 
-### Foundation packs
+### Foundation aligns
 
-- **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/global.md)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Natural markdown format.
+- **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/global.md)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Natural markdown format.
 
-- **[Base Documentation](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/docs.md)** - Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates. Natural markdown format.
+- **[Base Documentation](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/docs.md)** - Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates. Natural markdown format.
 
-- **[TypeScript Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/typescript.md)** - TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types. Natural markdown format.
+- **[TypeScript Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/typescript.md)** - TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types. Natural markdown format.
 
-- **[Testing Baseline](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/testing.md)** - Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements. Natural markdown format.
+- **[Testing Baseline](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.md)** - Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements. Natural markdown format.
 
-- **[TDD Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/tdd.md)** - Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation. Natural markdown format.
+- **[TDD Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/tdd.md)** - Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation. Natural markdown format.
 
-- **[Debugging Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/debugging.md)** - Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles. Natural markdown format.
+- **[Debugging Workflow](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/debugging.md)** - Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles. Natural markdown format.
 
-- **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/security.md)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Natural markdown format.
+- **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Natural markdown format.
 
-- **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/rule-authoring.md)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Natural markdown format.
+- **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/rule-authoring.md)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Natural markdown format.
 
-### Framework & stack packs
+### Framework & stack aligns
 
-- **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/nextjs_app_router.md)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Natural markdown format.
+- **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Natural markdown format.
 
-- **[Vercel Deployments](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/vercel_deployments.md)** - Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene. Natural markdown format.
+- **[Vercel Deployments](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/vercel_deployments.md)** - Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene. Natural markdown format.
 
-- **[Web Quality Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/packs/web_quality.md)** - Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance. Natural markdown format.
+- **[Web Quality Standards](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/web_quality.md)** - Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance. Natural markdown format.
 
-## Pack details
+## Align details
 
 <details>
 <summary>View as table</summary>
 
-| Pack                        | ID                               | Description                                                                                                                                        | Categories                         | Compatible Tools                                                     |
-| --------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| **Base Global**             | `packs/base/base-global`         | Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. | foundations, code-quality          | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Base Documentation**      | `packs/base/base-docs`           | Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.                          | foundations, development-workflow  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **TypeScript Standards**    | `packs/base/base-typescript`     | TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.               | code-quality                       | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Testing Baseline**        | `packs/base/base-testing`        | Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.           | code-quality, development-workflow | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **TDD Workflow**            | `packs/base/base-tdd`            | Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.                              | development-workflow, code-quality | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Debugging Workflow**      | `packs/base/base-debugging`      | Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.             | development-workflow               | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Security and Compliance** | `packs/base/base-security`       | Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.                                      | security, code-quality             | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Rule Authoring Guide**    | `packs/base/base-rule-authoring` | Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence.                                         | development-workflow, foundations  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Next.js App Router**      | `packs/frameworks/nextjs-app`    | Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.                           | frameworks, web                    | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Vercel Deployments**      | `packs/platforms/vercel`         | Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.                                               | platforms, web                     | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Web Quality Standards**   | `packs/base/base-web-quality`    | Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.                     | web, code-quality                  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| Align                       | ID                                | Description                                                                                                                                        | Categories                         | Compatible Tools                                                     |
+| --------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
+| **Base Global**             | `aligns/base/base-global`         | Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. | foundations, code-quality          | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Base Documentation**      | `aligns/base/base-docs`           | Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.                          | foundations, development-workflow  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **TypeScript Standards**    | `aligns/base/base-typescript`     | TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.               | code-quality                       | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Testing Baseline**        | `aligns/base/base-testing`        | Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.           | code-quality, development-workflow | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **TDD Workflow**            | `aligns/base/base-tdd`            | Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.                              | development-workflow, code-quality | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Debugging Workflow**      | `aligns/base/base-debugging`      | Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.             | development-workflow               | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Security and Compliance** | `aligns/base/base-security`       | Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.                                      | security, code-quality             | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Rule Authoring Guide**    | `aligns/base/base-rule-authoring` | Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence.                                         | development-workflow, foundations  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Next.js App Router**      | `aligns/frameworks/nextjs-app`    | Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.                           | frameworks, web                    | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Vercel Deployments**      | `aligns/platforms/vercel`         | Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.                                               | platforms, web                     | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Web Quality Standards**   | `aligns/base/base-web-quality`    | Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.                     | web, code-quality                  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
 
 </details>
 
-## Using packs
+## Using aligns
 
 ### Quick install
 
 ```bash
-# Add a pack to your project
-aligntrue add packs/base/base-global
+# Add an align to your project
+aligntrue add aligns/base/base-global
 
 # Sync to your agents
 aligntrue sync
@@ -172,11 +172,11 @@ aligntrue sync
 
 ### Browse on GitHub
 
-All pack YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/packs).
+All align YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns).
 
 ### Customize with overlays
 
-Need to adjust a pack for your project? Use overlays:
+Need to adjust an align for your project? Use overlays:
 
 ```bash
 # Remap severity
@@ -188,10 +188,10 @@ aligntrue override add rule-id --set enabled=false
 
 See [Overlays Guide](/docs/02-customization/overlays) for details.
 
-## Contributing packs
+## Contributing aligns
 
-Want to share your rules with the community? See [Creating Packs](/docs/06-contributing/creating-packs) for guidelines.
+Want to share your rules with the community? See [Creating Aligns](/docs/06-contributing/creating-aligns) for guidelines.
 
 ---
 
-**Note:** All packs are CC0-licensed (public domain) and maintained by AlignTrue. Community contributions welcome!
+**Note:** All aligns are CC0-licensed (public domain) and maintained by AlignTrue. Community contributions welcome!

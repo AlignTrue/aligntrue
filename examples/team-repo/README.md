@@ -5,7 +5,7 @@ This example demonstrates AlignTrue team collaboration workflows with:
 - Team mode configuration
 - Allow list for approved rule sources
 - Severity remapping with rationale
-- Vendored pack with git submodule
+- Vendored align with git submodule
 - Lockfile with provenance tracking
 - Hierarchical scopes for monorepo
 
@@ -84,7 +84,7 @@ git add .
 git commit -m "chore: update rules from upstream"
 ```
 
-### Vendor a pack locally
+### Vendor an align locally
 
 For critical dependencies, vendor rules into your repository:
 
@@ -92,14 +92,14 @@ For critical dependencies, vendor rules into your repository:
 # Add as git submodule
 git submodule add https://github.com/org/standards vendor/org-standards
 
-# Link vendored pack
+# Link vendored align
 aln link git:https://github.com/org/standards vendor/org-standards
 
 # Verify lockfile provenance
 cat .aligntrue.lock.json | grep vendor_path
 ```
 
-See also: `examples/vendored-pack/` for detailed vendoring workflows.
+See also: `examples/vendored-align/` for detailed vendoring workflows.
 
 ### Remap severity temporarily
 
@@ -158,7 +158,7 @@ Severity remapping for team-specific context:
 Lockfile with:
 
 - `team_yaml_hash` - Tracks severity remap changes
-- `vendor_path` / `vendor_type` - Provenance for vendored packs
+- `vendor_path` / `vendor_type` - Provenance for vendored aligns
 - `pre_resolution_hash` / `post_resolution_hash` - Dual hashing for plugs
 - `unresolved_plugs_count` - TODO tracking
 
@@ -175,7 +175,7 @@ Must include:
 - Timeline and revert plan
 - Approval
 
-### `vendor/shared-pack/`
+### `vendor/shared-align/`
 
 Vendored rules directory (could be git submodule or manual copy).
 
@@ -184,8 +184,8 @@ Vendored rules directory (could be git submodule or manual copy).
 ### Scenario 1: Detect drift
 
 ```bash
-# Make a change to shared-pack
-echo "## Rule: New rule" >> vendor/shared-pack/rules.md
+# Make a change to shared-align
+echo "## Rule: New rule" >> vendor/shared-align/rules.md
 
 # Detect drift
 aln drift
@@ -259,7 +259,7 @@ aligntrue-drift:
 - **[Monorepo scopes](../monorepo-scopes/)** - Path-based rules (used in team monorepos)
 - **[Multi-agent](../multi-agent/)** - Same rules, multiple agents
 - **[Golden repo](../golden-repo/)** - Solo developer workflow
-- **[Vendored pack](../vendored-pack/)** - Submodule vs subtree workflows
+- **[Vendored align](../vendored-align/)** - Submodule vs subtree workflows
 
 ## See also
 

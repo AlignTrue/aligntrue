@@ -1,6 +1,6 @@
-# Vendored pack example
+# Vendored align example
 
-This example demonstrates vendoring rule packs with git submodule or subtree for:
+This example demonstrates vendoring rule aligns with git submodule or subtree for:
 
 - Offline access to critical rules
 - Version pinning for stability
@@ -52,12 +52,12 @@ This example demonstrates vendoring rule packs with git submodule or subtree for
 # Add organization standards as submodule
 git submodule add https://github.com/org/standards vendor/org-standards
 
-# Link vendored pack in AlignTrue
+# Link vendored align in AlignTrue
 aln link git:https://github.com/org/standards vendor/org-standards
 
 # Commit submodule
 git add .gitmodules vendor/org-standards .aligntrue/config.yaml
-git commit -m "chore: vendor org standards pack"
+git commit -m "chore: vendor org standards align"
 ```
 
 #### Clone with submodules
@@ -73,7 +73,7 @@ git submodule init
 git submodule update
 ```
 
-#### Update vendored pack
+#### Update vendored align
 
 ```bash
 # Update to latest from upstream
@@ -111,13 +111,13 @@ git commit -m "chore: pin standards to v2.1.0"
 git subtree add --prefix vendor/org-standards \
   https://github.com/org/standards main --squash
 
-# Link vendored pack in AlignTrue
+# Link vendored align in AlignTrue
 aln link git:https://github.com/org/standards vendor/org-standards
 
 # Already committed by git subtree
 ```
 
-#### Update vendored pack
+#### Update vendored align
 
 ```bash
 # Pull latest from upstream
@@ -142,17 +142,17 @@ git subtree pull --prefix vendor/org-standards \
 
 ### Link command
 
-The `aln link` command registers vendored packs and tracks provenance:
+The `aln link` command registers vendored aligns and tracks provenance:
 
 ```bash
-# Link vendored pack
+# Link vendored align
 aln link git:https://github.com/org/standards vendor/org-standards
 
 # What it does:
-# 1. Validates pack integrity
+# 1. Validates align integrity
 # 2. Adds to .aligntrue/config.yaml as local source
 # 3. Updates lockfile with vendor_path and vendor_type
-# 4. Enables drift detection for vendored pack
+# 4. Enables drift detection for vendored align
 ```
 
 ### Lockfile provenance
@@ -176,24 +176,24 @@ After linking, lockfile tracks vendoring details:
 
 This enables:
 
-- **Drift detection:** `aln drift` detects changes to vendored pack
-- **Integrity verification:** Lockfile hash matches pack content
-- **Audit trail:** Track when and how pack was vendored
+- **Drift detection:** `aln drift` detects changes to vendored align
+- **Integrity verification:** Lockfile hash matches align content
+- **Audit trail:** Track when and how align was vendored
 
 ### Drift detection
 
-Vendored packs are checked for drift:
+Vendored aligns are checked for drift:
 
 ```bash
 # Detect vendored drift
 aln drift
 
-# Output if vendored pack changed:
+# Output if vendored align changed:
 # ⚠ Vendorized drift detected
 # Source: vendor/org-standards
 # Lock hash: sha256:abc123
 # Current hash: sha256:def456
-# Fix: Update lockfile or revert pack changes
+# Fix: Update lockfile or revert align changes
 ```
 
 ## Workflows
@@ -203,12 +203,12 @@ aln drift
 Team needs rules available without network access:
 
 ```bash
-# Vendor pack
+# Vendor align
 git submodule add https://github.com/org/standards vendor/org-standards
 aln link git:https://github.com/org/standards vendor/org-standards
 
 # Now rules work offline
-aln sync  # Uses vendored pack, no network needed
+aln sync  # Uses vendored align, no network needed
 ```
 
 ### Scenario 2: Pin version for stability
@@ -232,7 +232,7 @@ git add vendor/org-standards
 git commit -m "chore: update standards to v2.1.0"
 ```
 
-### Scenario 3: Modify vendored pack locally
+### Scenario 3: Modify vendored align locally
 
 Team needs temporary local changes:
 
@@ -252,7 +252,7 @@ aln drift
 
 ### Scenario 4: Contribute changes upstream
 
-Improve vendored pack and share with organization:
+Improve vendored align and share with organization:
 
 ```bash
 # Make improvements locally
@@ -292,7 +292,7 @@ git commit -m "chore: sync with upstream"
 
 ### `.aligntrue/config.yaml`
 
-Configuration with vendored pack as local source:
+Configuration with vendored align as local source:
 
 ```yaml
 sources:
@@ -319,7 +319,7 @@ Lockfile with provenance:
 
 ### `vendor/org-standards/`
 
-Vendored pack directory (git submodule or subtree).
+Vendored align directory (git submodule or subtree).
 
 ## Team mode with vendoring
 
@@ -339,7 +339,7 @@ lockfile:
 
 With team mode:
 
-- Allow list tracks approved vendored pack
+- Allow list tracks approved vendored align
 - Drift detection enforces version consistency
 - Lockfile ensures deterministic builds
 - CI fails on unauthorized changes

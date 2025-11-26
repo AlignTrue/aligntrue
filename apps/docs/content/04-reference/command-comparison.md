@@ -42,7 +42,7 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 
 - Agent files modified after last sync (mtime tracking)
 - Upstream git sources that changed since lockfile creation
-- Vendored pack integrity issues
+- Vendored align integrity issues
 - Severity remap policy violations
 
 **Best for:** Team CI checks, PR gating, scheduled drift monitors.

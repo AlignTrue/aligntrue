@@ -4,7 +4,7 @@ Commands for managing team mode features (hidden until team mode enabled).
 
 ## `aligntrue drift`
 
-Detect drift between lockfile and approved sources. Monitors upstream changes, vendored pack integrity, and policy compliance.
+Detect drift between lockfile and approved sources. Monitors upstream changes, vendored align integrity, and policy compliance.
 
 **Usage:**
 
@@ -35,7 +35,7 @@ aligntrue drift --json
 **Drift categories:**
 
 - **upstream** - Rule content differs from allowed version
-- **vendorized** - Vendored pack differs from source
+- **vendorized** - Vendored align differs from source
 - **severity_remap** - Policy changes
 
 **Exit codes:** `0` (no drift), `2` (drift with --gates)
@@ -304,7 +304,7 @@ Configured scopes (2):
 
 ## `aligntrue link`
 
-Vendor rule packs from git repositories using git submodules or subtrees.
+Vendor rule aligns from git repositories using git submodules or subtrees.
 
 **Usage:**
 
@@ -315,13 +315,13 @@ aligntrue link <git-url> [--path <vendor-path>]
 **What it does:**
 
 1. Detects existing submodule/subtree vendoring at specified path
-2. Validates pack integrity (`.aligntrue.yaml` required at repo root)
+2. Validates align integrity (`.aligntrue.yaml` required at repo root)
 3. Updates config with vendor metadata (path and type)
 4. Provides workflow guidance for updates and collaboration
 
 **Does NOT execute git operations** - You must vendor manually first using git submodule or subtree.
 
-**Key concept:** Link registers vendored packs so AlignTrue can track their provenance for drift detection. Vendoring provides:
+**Key concept:** Link registers vendored aligns so AlignTrue can track their provenance for drift detection. Vendoring provides:
 
 - **Offline access** - Rules available without network
 - **Version control** - Vendored code tracked in your repo
@@ -438,7 +438,7 @@ Use config-based git sources for:
 **Exit codes:**
 
 - `0` - Success
-- `1` - Validation error (invalid URL, duplicate vendor, pack validation failed)
+- `1` - Validation error (invalid URL, duplicate vendor, align validation failed)
 - `2` - System error (git operations, file system errors)
 
 **Troubleshooting:**
@@ -462,15 +462,15 @@ git submodule add https://github.com/org/rules vendor/org-rules
 aligntrue link https://github.com/org/rules --path vendor/org-rules
 ```
 
-**Error: "Pack validation failed"**
+**Error: "Align validation failed"**
 
 Ensure vendored repo has valid `.aligntrue.yaml` at root:
 
 ```bash
-# Check pack file exists
+# Check align file exists
 ls vendor/org-rules/.aligntrue.yaml
 
-# Validate pack manually
+# Validate align manually
 cat vendor/org-rules/.aligntrue.yaml
 ```
 

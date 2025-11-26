@@ -57,7 +57,7 @@ We use `workspace:*` protocol in `package.json` for internal dependencies. This 
 
 We use a two-layer defense:
 
-1. **pnpm Publish**: We strictly use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to the concrete version from `package.json` during the pack process.
+1. **pnpm Publish**: We strictly use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to the concrete version from `package.json` during the align process.
 2. **Post-publish Validation**: `scripts/validate-published-deps.mjs` queries the npm registry immediately after publishing. If it detects `workspace:*` leaks, it alerts you to unpublish.
 
 ### Manual Verification
@@ -72,7 +72,7 @@ You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
 
 ## Testing Package Installation Locally
 
-**IMPORTANT:** `pnpm pack` creates tarballs with `workspace:*` dependencies intact, which npm cannot resolve during global installation.
+**IMPORTANT:** `pnpm align` creates tarballs with `workspace:*` dependencies intact, which npm cannot resolve during global installation.
 
 ### For local testing
 
@@ -115,6 +115,6 @@ Always use `pnpm publish` which automatically rewrites `workspace:*` to concrete
 ### Never use
 
 - `pnpm link --global` for testing (will fail with ERR_PACKAGE_PATH_NOT_EXPORTED)
-- `npm install -g <tarball>` from `pnpm pack` (will fail with workspace protocol errors)
+- `npm install -g <tarball>` from `pnpm align` (will fail with workspace protocol errors)
 
 Use absolute paths or the distribution simulation script instead.

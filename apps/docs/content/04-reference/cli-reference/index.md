@@ -59,7 +59,7 @@ Quick lookup table for all CLI commands:
 | `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                                            |
 | `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                                        |
 | `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                                             |
-| `aligntrue link`            | Vendor packs                            | [Team](./team#aligntrue-link)                                               |
+| `aligntrue link`            | Vendor aligns                           | [Team](./team#aligntrue-link)                                               |
 | `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)                            |
 | `aligntrue migrate`         | Schema migration (pre-1.0)              | [Settings](./settings#aligntrue-migrate)                                    |
 | `aligntrue team`            | Team mode management                    | [Settings](./settings#aligntrue-team-enablestatusapprovelist-allowedremove) |

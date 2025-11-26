@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Plugs and overlays conventions reference** - New documentation guide with recommended plug keys (test.cmd, docs.url, org.name, etc.) and overlay patterns to improve ecosystem interoperability
-- **Example packs with plugs** - Updated `testing.md` and `typescript.md` with plug slots and overlay hints to demonstrate best practices
-- **Conventions guidance for pack authors** - New section in creating-packs guide encouraging use of standard plug keys for better user experience
+- **Example aligns with plugs** - Updated `testing.md` and `typescript.md` with plug slots and overlay hints to demonstrate best practices
+- **Conventions guidance for align authors** - New section in creating-aligns guide encouraging use of standard plug keys for better user experience
 - **Simplified source configuration with `include` syntax** - New `include` array field allows multiple files per git source without repetition. Format: `https://github.com/org/repo[@ref][/path]` with smart defaults (no path = all .md in root, path ending with `/` = directory, `@ref` = version pin)
 - **First-wins merge precedence** - Rules now merge with local rules always highest priority, then external sources in order listed. First source wins on conflict (changed from last-wins for better UX)
 - **Sync summary output** - `aligntrue sync` now displays source precedence list showing all included sources and their priority order
@@ -252,7 +252,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 
 ### Fixed
 
-- Git source configuration now matches the reorganized `AlignTrue/examples` repository (`packs/` subdirectory). Added playbook troubleshooting guidance, updated docs, and verified end-to-end via manual sync to prevent "Rules file not found" errors.
+- Git source configuration now matches the reorganized `AlignTrue/examples` repository (`aligns/` subdirectory). Added playbook troubleshooting guidance, updated docs, and verified end-to-end via manual sync to prevent "Rules file not found" errors.
 - Drift command human-readable output no longer truncates details; summaries now include lockfile path, total findings, and tips for `--json` / `--gates`.
 - `aligntrue plugs --help` now shows the subcommand list instead of failing with a circular error, and subcommands respect the standard `--help` flag.
 - Invalid flags are now rejected with clear error messages instead of being silently accepted
@@ -300,7 +300,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
   - Built-in caching for faster rebuilds
   - Simplified build scripts: `pnpm build`, `pnpm typecheck`, `pnpm test`
 
-- **Git provider integration tests** - Real network tests (gated by `INTEGRATION=1`) that fetch packs from `https://github.com/AlignTrue/examples` to ensure regression coverage for remote sources and caching.
+- **Git provider integration tests** - Real network tests (gated by `INTEGRATION=1`) that fetch aligns from `https://github.com/AlignTrue/examples` to ensure regression coverage for remote sources and caching.
 - **Command comparison guide** - New docs reference (`apps/docs/content/04-reference/command-comparison.md`) and testing playbook updates explaining when to run `check --ci` vs `drift --gates`.
 
 ### Changed
@@ -310,7 +310,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 - Spinners now respect terminal capabilities via a shared helper: TTY environments keep the animated output, while non-TTY (CI/log capture) falls back to plain text without ANSI sequences.
 - CLI TTY detection now lives in `tty-helper.ts`, removing duplicate helpers from `command-utilities.ts`; `team`/`init` commands and `syncFromAgent` have clearer logging and no longer rely on deprecated annotations.
 - `aligntrue check --ci` and `aligntrue drift --gates` help text now cross-reference one another, matching the new command comparison guide.
-- Documentation and testing resources referencing `AlignTrue/examples` now use `packs/<name>.md` paths, matching the reorganized public repository structure.
+- Documentation and testing resources referencing `AlignTrue/examples` now use `aligns/<name>.md` paths, matching the reorganized public repository structure.
 - **Init no longer overwrites existing agent files**
   - Detects all existing supported agent formats and merges them into `.aligntrue/.rules.yaml` during `aligntrue init`
   - Only creates a new `AGENTS.md` starter when no agent files are found (or when the user explicitly asks for one)
@@ -318,11 +318,11 @@ This release introduces a complete architectural refactor. The complex bidirecti
   - Asks the user whether to run `aligntrue sync` immediately after initialization instead of auto-syncing silently
 
 - **Improved CLI user experience** - Enhanced help text and error messages for better discoverability
-  - Suppressed confusing "Invalid IR pack" warnings during normal sync operations (validation still occurs at parse time and before export)
+  - Suppressed confusing "Invalid IR align" warnings during normal sync operations (validation still occurs at parse time and before export)
   - Enhanced `override add` command help with clear examples showing section-based selectors
   - Improved error messages for invalid selectors with concrete examples
   - Added helpful error for `sources add` command directing users to `pull` command
-  - Updated `sources` help text to clarify purpose (multi-file organization vs pack addition)
+  - Updated `sources` help text to clarify purpose (multi-file organization vs align addition)
 
 - **Consolidated validation logic into shared utilities** - Reduced code duplication across packages
   - Created `ensureSectionsArray` utility in `packages/core/src/validation/sections.ts`
@@ -533,11 +533,11 @@ This release introduces a complete architectural refactor. The complex bidirecti
 ### Breaking Changes
 
 - **⚠️ Removed legacy `rules` format** (pre-1.0 schema evolution)
-  - AlignTrue now **only** supports section-based packs (`sections` field required in IR)
+  - AlignTrue now **only** supports section-based aligns (`sections` field required in IR)
   - Removed `rules` field from schema and TypeScript types
-  - Removed conversion helpers: `getSections()`, `getRules()`, `convertRuleToSection()`, `isSectionBasedPack()`, `isRuleBasedPack()`
+  - Removed conversion helpers: `getSections()`, `getRules()`, `convertRuleToSection()`, `isSectionBasedAlign()`, `isRuleBasedAlign()`
   - Removed `AlignRule`, `AlignCheck`, `AlignAutofix` types
-  - All exporters now work directly with `pack.sections`
+  - All exporters now work directly with `align.sections`
   - Simplified codebase: ~500-800 LOC removed, single format path
   - **Rationale:** No users yet (alpha release), so no migration burden. Premature backward compatibility eliminated.
   - **Migration:** If you have any files with the old `rules:` format, they will fail validation. Convert to natural markdown sections format (see documentation).
@@ -588,25 +588,25 @@ This release introduces a complete architectural refactor. The complex bidirecti
   - Validates requested files exist in backup before restoration
 
 - **Team mode enhancements (implemented)**
-  - Lockfile generator now supports section-based packs with fingerprint-based tracking
+  - Lockfile generator now supports section-based aligns with fingerprint-based tracking
   - Lockfile validator detects modified, new, and deleted sections
-  - Bundle merger handles section-based pack merging and conflict resolution
+  - Bundle merger handles section-based align merging and conflict resolution
   - Drift detection works seamlessly with fingerprints and sections
   - Full test coverage for section-based lockfile operations (21 new tests)
 
-- **Example packs migration (implemented)**
-  - Migrated all 11 example packs from YAML to natural markdown format
-  - Updated `packs.yaml` registry to reference markdown files
-  - Example packs now use YAML frontmatter with natural markdown content
+- **Example aligns migration (implemented)**
+  - Migrated all 11 example aligns from YAML to natural markdown format
+  - Updated `aligns.yaml` registry to reference markdown files
+  - Example aligns now use YAML frontmatter with natural markdown content
   - Improved readability and AI-friendliness of example documentation
 
 - **Natural Markdown Support**
   - Natural markdown sections with YAML frontmatter as primary authoring format
   - Section fingerprinting for stable identity without explicit IDs
-  - All 43 exporters support section-based packs
+  - All 43 exporters support section-based aligns
   - Team mode lockfiles track sections via fingerprints
-  - Bundle merging handles section-based pack conflicts
-  - All 11 example packs use natural markdown format
+  - Bundle merging handles section-based align conflicts
+  - All 11 example aligns use natural markdown format
   - Documentation: Natural Markdown Workflow guide and technical reference
 
 ### Fixed
@@ -627,7 +627,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
     sources:
       - type: git
         url: https://github.com/AlignTrue/examples
-        path: packs/global.md
+        path: aligns/global.md
     ```
 
 - **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes
@@ -725,7 +725,7 @@ This is a breaking change. To migrate existing projects:
 - Updated README quickstart to show AGENTS.md workflow
 - Deleted `apps/docs/content/03-concepts/catalog.md`
 - Updated all guides to use git imports for external rules
-- Clarified that `/examples/packs/` contains local example files only
+- Clarified that `/examples/aligns/` contains local example files only
 - Updated Cursor rules to remove catalog references
 
 ## [0.1.0-alpha.2] - 2025-10-31

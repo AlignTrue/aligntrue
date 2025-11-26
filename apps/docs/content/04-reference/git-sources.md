@@ -114,7 +114,7 @@ sources:
   - type: git
     include:
       - https://github.com/yourorg/base-rules
-      - https://github.com/yourteam/team-rules/packs
+      - https://github.com/yourteam/team-rules/aligns
       - https://github.com/security-team/rules@v2.0.0/security.md
 ```
 
