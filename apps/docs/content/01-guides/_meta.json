@@ -7,6 +7,7 @@
   "05-multi-agent-workflows": "Multi-agent workflows",
   "06-rule-structure": "Choosing your rule structure",
   "07-ai-native-engineering": "AI-native engineering",
+  "08-managing-sources": "Managing rule sources",
   "09-safety-best-practices": "Safety best practices",
   "10-ci-cd-integration": "CI/CD integration"
 }
