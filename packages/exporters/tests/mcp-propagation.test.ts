@@ -219,7 +219,7 @@ describe("MCP server configuration propagation", () => {
 
       // Root-level MCP config goes directly in the project directory
       expect(path).toMatch(/\.mcp\.json$/);
-      expect(path).toContain("/project/");
+      expect(path).toMatch(/project[/\\]\.mcp\.json$/);
     });
   });
 
