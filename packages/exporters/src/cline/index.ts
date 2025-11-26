@@ -1,6 +1,6 @@
 /**
  * Cline exporter
- * Exports AlignTrue rules to Cline .clinerules/ directory format
+ * Exports AlignTrue rules to Cline .clinerules/ multi-file format
  */
 
 import { join } from "path";
@@ -8,86 +8,75 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
+  ExporterCapabilities,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 export class ClineExporter extends ExporterBase {
   name = "cline";
   version = "1.0.0";
+  capabilities: ExporterCapabilities = {
+    multiFile: true, // Multi-file format (.md files)
+    scopeAware: true, // Can filter by scope
+    preserveStructure: true, // Maintains file organization
+    nestedDirectories: true, // Supports nested scope directories
+  };
 
   async export(
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = align.sections;
+    // Get rules from request (handles backward compatibility with align)
+    const rules = this.getRulesFromRequest(request);
 
-    if (sections.length === 0) {
-      return {
-        success: true,
-        filesWritten: [],
-        contentHash: "",
-      };
+    const allFilesWritten: string[] = [];
+    const allWarnings: string[] = [];
+    let combinedContentHash = "";
+
+    // Hash of all exported content
+    const contentHashes: string[] = [];
+
+    for (const rule of rules) {
+      if (!this.shouldExportRule(rule, "cline")) {
+        continue;
+      }
+
+      // Determine output path
+      const filename = rule.filename;
+      let outputPath: string;
+      const nestedLoc = rule.frontmatter.nested_location;
+      if (nestedLoc) {
+        outputPath = join(outputDir, nestedLoc, ".clinerules", filename);
+      } else {
+        outputPath = join(outputDir, ".clinerules", filename);
+      }
+
+      // Prepare content
+      const cleanedContent = this.stripStarterRuleComment(rule.content);
+      const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
+      const fullContent = `# ${rule.frontmatter.title || "Rule"}\n\n${readOnlyMarker}\n${cleanedContent}`;
+
+      // Always compute content hash
+      contentHashes.push(rule.hash);
+
+      // Write file
+      const files = await this.writeFile(outputPath, fullContent, dryRun, {
+        ...options,
+        force: true,
+      });
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
     }
 
-    const filename = this.getScopeFilename(scope);
-    const outputPath = join(outputDir, ".clinerules", filename);
-
-    // Generate content from sections
-    const { content, warnings } = this.generateSectionContent(scope, sections);
-    const contentHash = computeContentHash({ scope, sections });
-    const fidelityNotes = this.computeSectionFidelityNotes(sections);
-
-    const filesWritten = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options,
-    );
-
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
-
-    if (warnings.length > 0) {
-      result.warnings = warnings;
+    if (contentHashes.length > 0) {
+      combinedContentHash = this.computeHash(contentHashes.sort().join(""));
     }
 
-    return result;
-  }
-
-  /**
-   * Generate Cline content from sections (natural markdown)
-   */
-  private generateSectionContent(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-  ): { content: string; warnings: string[] } {
-    const lines: string[] = [];
-
-    const scopeDesc = scope.isDefault
-      ? "Cline rules (default scope)"
-      : `Cline rules for ${scope.path}`;
-    lines.push(`# ${scopeDesc}`);
-    lines.push("");
-
-    // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(sections, false);
-    lines.push(sectionsMarkdown);
-
-    return { content: lines.join("\n"), warnings: [] };
-  }
-
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "rules.md";
-    }
-
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.md`;
+    return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
   }
 
   resetState(): void {

@@ -1,13 +1,83 @@
 /**
  * Firebase Studio exporter
- * Generated via markdown-exporter-factory
+ * Exports AlignTrue rules to Firebase IDX's .idx/*.md multi-file format
  */
 
-import { createMarkdownExporter } from "../base/markdown-exporter-factory.js";
+import { join } from "path";
+import type {
+  ScopedExportRequest,
+  ExportOptions,
+  ExportResult,
+  ExporterCapabilities,
+} from "../types.js";
+import { ExporterBase } from "../base/index.js";
 
-export default createMarkdownExporter({
-  name: "firebase-studio",
-  filename: ".idx/airules.md",
-  title: "Firebase Studio Rules",
-  description: "for Firebase Studio",
-});
+export class FirebaseStudioExporter extends ExporterBase {
+  name = "firebase-studio";
+  version = "1.0.0";
+  capabilities: ExporterCapabilities = {
+    multiFile: true, // Multi-file format (.md files)
+    scopeAware: true, // Can filter by scope
+    preserveStructure: true, // Maintains file organization
+    nestedDirectories: true, // Supports nested scope directories
+  };
+
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { outputDir, dryRun = false } = options;
+
+    // Get rules from request (handles backward compatibility with align)
+    const rules = this.getRulesFromRequest(request);
+
+    const allFilesWritten: string[] = [];
+    const allWarnings: string[] = [];
+    let combinedContentHash = "";
+
+    // Hash of all exported content
+    const contentHashes: string[] = [];
+
+    for (const rule of rules) {
+      if (!this.shouldExportRule(rule, "firebase-studio")) {
+        continue;
+      }
+
+      // Determine output path
+      const filename = rule.filename;
+      let outputPath: string;
+      const nestedLoc = rule.frontmatter.nested_location;
+      if (nestedLoc) {
+        outputPath = join(outputDir, nestedLoc, ".idx", filename);
+      } else {
+        outputPath = join(outputDir, ".idx", filename);
+      }
+
+      // Prepare content
+      const cleanedContent = this.stripStarterRuleComment(rule.content);
+      const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
+      const fullContent = `# ${rule.frontmatter.title || "Rule"}\n\n${readOnlyMarker}\n${cleanedContent}`;
+
+      // Always compute content hash
+      contentHashes.push(rule.hash);
+
+      // Write file
+      const files = await this.writeFile(outputPath, fullContent, dryRun, {
+        ...options,
+        force: true,
+      });
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
+    }
+
+    if (contentHashes.length > 0) {
+      combinedContentHash = this.computeHash(contentHashes.sort().join(""));
+    }
+
+    return this.buildResult(allFilesWritten, combinedContentHash, allWarnings);
+  }
+}
+
+export default FirebaseStudioExporter;
