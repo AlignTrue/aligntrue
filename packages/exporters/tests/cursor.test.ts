@@ -314,6 +314,80 @@ describe("CursorExporter", () => {
       expect(content.length).toBeGreaterThan(0);
     });
   });
+
+  describe("Starter Rule Comment Stripping", () => {
+    it("strips STARTER RULE comments from exported content", async () => {
+      // Create a section with starter rule comment in content
+      const sections: AlignSection[] = [
+        {
+          heading: "Test Rule",
+          content: `<!--
+  STARTER RULE: This is a starting point to help you get going.
+  Update, expand, or replace it based on your project's needs.
+-->
+
+# Test Rule Content
+
+Follow this guidance for testing.`,
+          scope: ".",
+        },
+      ];
+
+      const request = createRequest(sections, createDefaultScope());
+      const options: ExportOptions = {
+        outputDir: TEST_OUTPUT_DIR,
+        dryRun: false,
+      };
+
+      const result = await exporter.export(request, options);
+
+      expect(result.success).toBe(true);
+      const content = readFileSync(result.filesWritten[0], "utf-8");
+
+      // Verify STARTER RULE comment is stripped
+      expect(content).not.toContain("STARTER RULE:");
+      expect(content).not.toContain("Update, expand, or replace");
+
+      // Verify actual content is preserved
+      expect(content).toContain("# Test Rule Content");
+      expect(content).toContain("Follow this guidance for testing");
+    });
+
+    it("preserves other HTML comments in content", async () => {
+      const sections: AlignSection[] = [
+        {
+          heading: "Rule with Comments",
+          content: `<!--
+  STARTER RULE: This is a starting point.
+-->
+
+# Main Content
+
+<!-- This is a regular comment -->
+
+Some text here.`,
+          scope: ".",
+        },
+      ];
+
+      const request = createRequest(sections, createDefaultScope());
+      const options: ExportOptions = {
+        outputDir: TEST_OUTPUT_DIR,
+        dryRun: false,
+      };
+
+      const result = await exporter.export(request, options);
+
+      expect(result.success).toBe(true);
+      const content = readFileSync(result.filesWritten[0], "utf-8");
+
+      // Starter rule comment should be stripped
+      expect(content).not.toContain("STARTER RULE:");
+
+      // Regular comments should be preserved
+      expect(content).toContain("<!-- This is a regular comment -->");
+    });
+  });
 });
 
 // Helper functions

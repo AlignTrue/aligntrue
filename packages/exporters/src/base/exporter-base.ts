@@ -263,6 +263,28 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
+   * Strip starter rule comments from content
+   *
+   * Removes HTML comments marking content as starter templates.
+   * Used during export to clean up temporary guidance that's only relevant
+   * in source files, not in read-only exports.
+   *
+   * @param content - Content to clean
+   * @returns Content with starter rule comments removed
+   *
+   * @example
+   * ```typescript
+   * const cleaned = this.stripStarterRuleComment(content);
+   * // "<!--\n  STARTER RULE: ...\n-->\n\n# Title" -> "# Title"
+   * ```
+   */
+  protected stripStarterRuleComment(content: string): string {
+    // Remove the HTML comment block that starts with "STARTER RULE:"
+    // Matches: <!-- followed by newline, whitespace, "STARTER RULE:", any content, --> followed by optional newlines
+    return content.replace(/<!--\s*\n\s*STARTER RULE:[\s\S]*?-->\n*/m, "");
+  }
+
+  /**
    * Render sections as natural markdown
    *
    * Converts AlignSection[] to clean markdown format with proper heading levels.

@@ -61,6 +61,9 @@ export class CursorExporter extends ExporterBase {
       // Generate content
       const cursorFrontmatter = this.translateFrontmatter(rule.frontmatter);
 
+      // Strip starter rule comments from content (only relevant in source files, not exports)
+      const cleanedContent = this.stripStarterRuleComment(rule.content);
+
       // Add read-only marker to content (not frontmatter)
       // We put the read-only marker as an HTML comment after frontmatter
       const readOnlyMarker = this.renderReadOnlyMarker(outputPath);
@@ -70,7 +73,7 @@ export class CursorExporter extends ExporterBase {
       const frontmatterStr = `---\n${yamlContent}---`;
 
       // Construct full file content
-      const fullContent = `${frontmatterStr}\n\n${readOnlyMarker}\n${rule.content}`;
+      const fullContent = `${frontmatterStr}\n\n${readOnlyMarker}\n${cleanedContent}`;
 
       // Always compute content hash (for dry-run to return meaningful hash)
       contentHashes.push(rule.hash);

@@ -74,6 +74,84 @@ const FORMAT_OPTIONS: FormatOption[] = [
     usedBy: "Zed",
     detectPatterns: [".zed/rules.md", ".zed/"],
   },
+  {
+    exporter: "amazonq",
+    format: ".amazonq/rules/",
+    usedBy: "Amazon Q",
+    detectPatterns: [".amazonq/rules/", ".amazonq/"],
+  },
+  {
+    exporter: "augmentcode",
+    format: ".augment/rules/",
+    usedBy: "Augment Code",
+    detectPatterns: [".augment/rules/", ".augment/"],
+  },
+  {
+    exporter: "crush",
+    format: "CRUSH.md",
+    usedBy: "Crush",
+    detectPatterns: ["CRUSH.md"],
+  },
+  {
+    exporter: "firebender",
+    format: "firebender.json",
+    usedBy: "Firebender",
+    detectPatterns: ["firebender.json"],
+  },
+  {
+    exporter: "firebase-studio",
+    format: ".idx/airules.md",
+    usedBy: "Firebase Studio",
+    detectPatterns: [".idx/airules.md", ".idx/"],
+  },
+  {
+    exporter: "gemini",
+    format: "GEMINI.md",
+    usedBy: "Google Gemini",
+    detectPatterns: ["GEMINI.md"],
+  },
+  {
+    exporter: "goose",
+    format: ".goosehints",
+    usedBy: "Goose",
+    detectPatterns: [".goosehints"],
+  },
+  {
+    exporter: "junie",
+    format: ".junie/guidelines.md",
+    usedBy: "Junie",
+    detectPatterns: [".junie/guidelines.md", ".junie/"],
+  },
+  {
+    exporter: "kilocode",
+    format: ".kilocode/rules/",
+    usedBy: "Kilo Code",
+    detectPatterns: [".kilocode/rules/", ".kilocode/"],
+  },
+  {
+    exporter: "kiro",
+    format: ".kiro/steering/",
+    usedBy: "Kiro",
+    detectPatterns: [".kiro/steering/", ".kiro/"],
+  },
+  {
+    exporter: "openhands",
+    format: ".openhands/microagents/repo.md",
+    usedBy: "Open Hands",
+    detectPatterns: [".openhands/microagents/repo.md", ".openhands/"],
+  },
+  {
+    exporter: "trae-ai",
+    format: ".trae/rules/",
+    usedBy: "Trae AI",
+    detectPatterns: [".trae/rules/", ".trae/"],
+  },
+  {
+    exporter: "warp",
+    format: "WARP.md",
+    usedBy: "Warp",
+    detectPatterns: ["WARP.md"],
+  },
 ];
 
 /**
