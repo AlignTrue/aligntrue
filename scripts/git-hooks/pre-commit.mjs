@@ -38,6 +38,23 @@ async function main() {
     // Non-fatal: continue with commit if this check fails
   }
 
+  // Check for temporary debug files (per debugging.mdc: temp-* files must not be committed)
+  const tempFiles = stagedFiles.filter(
+    (f) => f.includes("temp-") || f.match(/\/temp-[^/]+$/),
+  );
+  if (tempFiles.length > 0) {
+    clack.log.error("❌ Temporary debug files staged for commit:");
+    tempFiles.forEach((f) => console.error(`   ${f}`));
+    console.error("");
+    console.error(
+      "💡 Per debugging workflow: temp-* files are for investigation only.",
+    );
+    console.error("   Unstage with: git reset HEAD " + tempFiles.join(" "));
+    console.error("   Or delete with: pnpm clean-temp");
+    console.error("");
+    process.exit(1);
+  }
+
   // Auto-regenerate repo files if docs source changed
   s.start("Checking for docs updates...");
   try {
