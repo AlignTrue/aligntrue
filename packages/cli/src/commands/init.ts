@@ -69,12 +69,6 @@ const FORMAT_OPTIONS: FormatOption[] = [
     detectPatterns: [".clinerules"],
   },
   {
-    exporter: "copilot",
-    format: ".github/copilot-instructions.md",
-    usedBy: "GitHub Copilot",
-    detectPatterns: [".github/copilot-instructions.md"],
-  },
-  {
     exporter: "zed",
     format: ".zed/rules.md",
     usedBy: "Zed",
@@ -325,6 +319,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         "No formats selected. You can add them later with 'aligntrue adapters enable <format>'.",
       );
     }
+
+    // Show hint about full compatibility matrix and extending
+    clack.log.info(
+      "💡 Don't see your agent? View the full compatibility list at https://aligntrue.ai/agents or learn how to add your own at https://aligntrue.ai/extend",
+    );
   } else {
     // Non-interactive mode: use detected or default to agents
     const detectedFormats = detectFormats(cwd);

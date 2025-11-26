@@ -41,6 +41,16 @@
       "source": "/sources",
       "destination": "/docs/01-guides/08-managing-sources",
       "permanent": true
+    },
+    {
+      "source": "/agents",
+      "destination": "/docs/04-reference/agent-support",
+      "permanent": true
+    },
+    {
+      "source": "/extend",
+      "destination": "/docs/06-contributing/adding-exporters",
+      "permanent": true
     }
   ],
   "headers": [
