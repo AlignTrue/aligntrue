@@ -9,6 +9,7 @@ import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
+  detectDuplicateExports,
 } from "@aligntrue/core/sync";
 import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
@@ -309,6 +310,30 @@ export async function handleSyncResult(
     } else {
       clack.log.warn(
         `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
+      );
+    }
+  }
+
+  // Detect and warn about potential duplicate exported files
+  // (e.g., old and renamed rule files with identical content)
+  if (!options.dryRun && !options.quiet) {
+    const activeExporters = registry
+      .list()
+      .map((name) => registry.get(name)!)
+      .filter(Boolean)
+      .map((a) => a.name);
+
+    const duplicates = detectDuplicateExports(cwd, activeExporters);
+
+    if (duplicates.length > 0) {
+      for (const group of duplicates) {
+        const fileList = group.files.join(", ");
+        clack.log.warn(
+          `Potential duplicates in ${group.directory}/: ${fileList}`,
+        );
+      }
+      clack.log.info(
+        "Review and remove old files if they result from renamed rules",
       );
     }
   }
