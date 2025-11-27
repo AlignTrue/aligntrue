@@ -24,6 +24,10 @@ import { createSpinner } from "../utils/spinner.js";
 
 import { scanForExistingRules } from "./init/rule-importer.js";
 import { createStarterTemplates } from "./init/starter-templates.js";
+import {
+  detectRulerProject,
+  promptRulerMigration,
+} from "./init/ruler-detector.js";
 
 /**
  * Format options for exporter selection
@@ -302,6 +306,12 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     process.exit(0);
   }
 
+  // Step 1b: Check for Ruler migration opportunity
+  let rulerConfig: Partial<AlignTrueConfig> | undefined;
+  if (detectRulerProject(cwd)) {
+    rulerConfig = await promptRulerMigration(cwd);
+  }
+
   // Step 2: Scan for existing rules
   const scanner = createSpinner({ disabled: nonInteractive });
   scanner.start("Scanning for existing rules...");
@@ -423,8 +433,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     createdFiles.push(join(".aligntrue/rules", rule.path));
   }
 
-  // Use selected exporters
-  const finalExporters = selectedExporters;
+  // Use selected exporters, preferring ruler config if available
+  const finalExporters =
+    (rulerConfig?.exporters as string[] | undefined) || selectedExporters;
 
   // Generate config
   const config: Partial<AlignTrueConfig> = {
@@ -436,6 +447,16 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     ],
     exporters: finalExporters,
   };
+
+  // Merge ruler config settings if available
+  if (rulerConfig) {
+    if (rulerConfig.git) {
+      config.git = rulerConfig.git;
+    }
+    if (rulerConfig.mode) {
+      config.mode = rulerConfig.mode;
+    }
+  }
 
   if (mode === "team") {
     config.mode = "team";
