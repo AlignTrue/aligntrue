@@ -201,6 +201,7 @@ export class AtomicFileWriter {
         // Safe: Temp file path is constructed from dir_name (parent of target file) and a cryptographically random suffix.
         // The file is inaccessible to other users (hidden via dot prefix, written atomically, immediately renamed).
         // Temp files are cleaned up on error and post-write. No user input in path construction.
+        // CodeQL rule: js/insecure-temporary-file
         writeFileSync(tempPath, content, "utf8");
       } catch (_err) {
         throw new Error(
