@@ -12,6 +12,7 @@ import {
   renameSync,
   statSync,
   readFileSync,
+  unlinkSync,
 } from "fs";
 import { join, dirname, basename } from "path";
 import type { CleanupMode } from "../config/types.js";
@@ -69,7 +70,7 @@ function getFilesMatchingPattern(outputDir: string, pattern: string): string[] {
   // Check if it's a glob pattern
   if (fileName.includes("*")) {
     // Simple glob: *.mdc matches all .mdc files
-    const ext = fileName.replace("*", "");
+    const ext = fileName.replaceAll("*", "");
     try {
       const entries = readdirSync(fullDir);
       for (const entry of entries) {
@@ -372,4 +373,99 @@ export function detectDuplicateExports(
   }
 
   return duplicates;
+}
+
+/**
+ * Result of a prune operation
+ */
+export interface PruneResult {
+  /** Files that were deleted */
+  deleted: string[];
+  /** Total size freed (bytes) */
+  freedBytes: number;
+  /** Files that were kept (matched source rule names) */
+  kept: string[];
+  /** Any warnings during prune */
+  warnings: string[];
+}
+
+/**
+ * Prune orphaned duplicate exported files
+ *
+ * Compares duplicate files against current source rule filenames.
+ * Deletes only files that don't have a matching source rule,
+ * preserving files that correspond to active rules.
+ *
+ * Example: If ai-guidance.md and ai-guidance2.md both export to ai-guidance.mdc
+ * and ai-guidance2.mdc, and only ai-guidance.md exists in source, then ai-guidance2.mdc
+ * will be deleted as an orphan.
+ *
+ * @param outputDir - The output directory (usually workspace root)
+ * @param duplicates - Duplicate groups to prune
+ * @param sourceRuleNames - Base filenames of current source rules (e.g., ['ai-guidance', 'testing'])
+ * @returns Prune result with deleted files and freed space
+ *
+ * @example
+ * ```typescript
+ * const duplicates = detectDuplicateExports(cwd, ['cursor']);
+ * const sourceNames = rules.map(r => r.filename.replace(/\.md$/, ''));
+ * const result = pruneDuplicateExports(cwd, duplicates, sourceNames);
+ * console.log(`Deleted ${result.deleted.length} orphaned files`);
+ * ```
+ */
+export function pruneDuplicateExports(
+  outputDir: string,
+  duplicates: DuplicateGroup[],
+  sourceRuleNames: string[],
+): PruneResult {
+  const result: PruneResult = {
+    deleted: [],
+    freedBytes: 0,
+    kept: [],
+    warnings: [],
+  };
+
+  if (duplicates.length === 0) {
+    return result;
+  }
+
+  // Normalize source rule names to lowercase for case-insensitive matching
+  const sourceNamesLower = sourceRuleNames.map((name) => name.toLowerCase());
+
+  for (const group of duplicates) {
+    const fullDir = join(outputDir, group.directory);
+
+    for (const filename of group.files) {
+      // Extract base name (without extension) from exported filename
+      // Examples: "ai-guidance.mdc" -> "ai-guidance", "style.md" -> "style"
+      const baseNameMatch = filename.match(/^(.+?)\.[^.]+$/);
+      const baseName = baseNameMatch?.[1] || filename;
+      const baseNameLower = baseName.toLowerCase();
+
+      // Check if this file corresponds to a current source rule
+      const hasMatchingSource = sourceNamesLower.includes(baseNameLower);
+
+      if (hasMatchingSource) {
+        // Keep this file - it matches a current source rule
+        result.kept.push(filename);
+      } else {
+        // Delete this file - it's an orphan (no matching source rule)
+        const filePath = join(fullDir, filename);
+        try {
+          const stat = statSync(filePath);
+          result.freedBytes += stat.size;
+
+          // Delete the file
+          unlinkSync(filePath);
+          result.deleted.push(filename);
+        } catch (err) {
+          result.warnings.push(
+            `Failed to delete ${filename}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+    }
+  }
+
+  return result;
 }

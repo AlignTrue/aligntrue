@@ -44,8 +44,10 @@ export {
   getAgentPatterns,
   agentHasExistingFiles,
   detectDuplicateExports,
+  pruneDuplicateExports,
   type CleanupResult,
   type DuplicateGroup,
+  type PruneResult,
 } from "./cleanup.js";
 
 // Global sync engine instance for convenience functions
