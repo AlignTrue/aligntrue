@@ -216,7 +216,7 @@ export async function handleSyncResult(
           }
         }
 
-        // Show consolidated ignore file messages with docs link
+        // Show simplified ignore file message
         if (allIgnoreUpdates.length > 0) {
           const createdFiles = allIgnoreUpdates
             .filter((u) => u.created)
@@ -226,16 +226,7 @@ export async function handleSyncResult(
             .map((u) => basename(u.filePath));
 
           if (createdFiles.length > 0 || modifiedFiles.length > 0) {
-            const parts: string[] = [];
-            if (createdFiles.length > 0) {
-              parts.push(`created ${createdFiles.join(", ")}`);
-            }
-            if (modifiedFiles.length > 0) {
-              parts.push(`updated ${modifiedFiles.join(", ")}`);
-            }
-            clack.log.info(
-              `Agent ignore files ${parts.join(" and ")} for duplicate rule prevention. Read-only agent exports added to .gitignore. Details: https://aligntrue.ai/agent-ignore`,
-            );
+            clack.log.info(`Enabled ignore files updated.`);
           }
         }
 
@@ -345,7 +336,6 @@ export async function handleSyncResult(
         // Add source summary showing precedence
         if (context.config.sources && context.config.sources.length > 0) {
           message += "Sources (highest priority first):\n";
-          message += "  1. .aligntrue/rules/ (local) - Your rules\n";
           for (let i = 0; i < context.config.sources.length; i++) {
             const source = context.config.sources[i];
             if (!source) continue;
@@ -355,19 +345,22 @@ export async function handleSyncResult(
                 : source.type === "local"
                   ? source.path || "(local)"
                   : source.url || "(unknown)";
-            message += `  ${i + 2}. ${sourceDisplay}\n`;
+            message += `  ${i + 1}. ${sourceDisplay}\n`;
           }
           message += "\n";
         }
 
-        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}:\n`;
-        sortedFiles.forEach((file) => {
-          message += `  - ${file}\n`;
+        // Build relative paths for files
+        const relativeFiles = sortedFiles.map((file) => {
+          try {
+            return relative(cwd, file);
+          } catch {
+            return file;
+          }
         });
-        message += "\n";
-        message += "Your agents are now aligned!.\n\n";
-        message +=
-          "Next: Start coding! Your agents will follow the rules automatically.\n\n";
+
+        message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}: ${relativeFiles.slice(0, 5).join(", ")}${relativeFiles.length > 5 ? `, +${relativeFiles.length - 5} more` : ""}\n\n`;
+        message += "Your agents are now aligned!\n\n";
         message +=
           "Tip: Update rules anytime by editing .aligntrue/rules and running: aligntrue sync\n";
         message += "Docs: aligntrue.ai/sources";
