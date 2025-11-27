@@ -16,37 +16,37 @@ This is a comprehensive list of AI agents, their supported rule formats and MCP 
 
 ## AI agent rule format support
 
-| Agent — exporter                    | Supported formats                                                                                        |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Aider — `aider`                     | Rules: `AGENTS.md`, `.aider.conf.yml`<br>MCP: `.mcp.json`                                                |
-| Amazon Q — `amazonq`                | Rules: `.amazonq/rules/*.md` (includes `ruler_q_rules.md` and related files)<br>MCP: `.amazonq/mcp.json` |
-| Amp — `amp`                         | Rules: `AGENTS.md`                                                                                       |
-| Augment Code — `augmentcode`        | Rules: `.augment/rules/*.md` (includes `ruler_augment_instructions.md`)                                  |
-| Claude — `claude`                   | Rules: `CLAUDE.md`<br>MCP: `.mcp.json`                                                                   |
-| Cline — `cline`                     | Rules: `.clinerules`                                                                                     |
-| CrushChat — `crush`                 | Rules: `AGENTS.md`, `CRUSH.md`<br>Config: `.crush.json`                                                  |
-| Cursor — `cursor`                   | Rules: `.cursor/rules/*.mdc`, `AGENTS.md`<br>MCP: `.cursor/mcp.json`                                     |
-| Firebender — `firebender`           | Rules: `firebender.json`<br>Config: `firebender.json`                                                    |
-| Firebase Studio — `firebase-studio` | Rules: `.idx/airules.md`<br>MCP: `.idx/mcp.json`                                                         |
-| Gemini — `gemini`                   | Rules: `AGENTS.md`, `GEMINI.md`<br>Config: `.gemini/settings.json`                                       |
-| Goose — `goose`                     | Rules: `.goosehints`                                                                                     |
-| Junie — `junie`                     | Rules: `.junie/guidelines.md`<br>Config: `.aiignore`                                                     |
-| KiloCode — `kilocode`               | Rules: `.kilocode/rules/*.md` (includes `ruler_kilocode_instructions.md`)<br>MCP: `.kilocode/mcp.json`   |
-| Kiro — `kiro`                       | Rules: `.kiro/steering/*.md` (includes `ruler_kiro_instructions.md`)                                     |
-| OpenAI Codex — `openai-codex`       | Rules: `AGENTS.md`<br>Config: `.codex/config.toml`                                                       |
-| Open Code — `opencode`              | Rules: `AGENTS.md`<br>Config: `opencode.json`                                                            |
-| OpenHands — `openhands`             | Rules: `.openhands/microagents/repo.md`<br>Config: `config.toml`                                         |
-| Qwen Code — `qwen-code`             | Rules: `AGENTS.md`<br>Config: `.qwen/settings.json`                                                      |
-| Roo Code — `roocode`                | Rules: `AGENTS.md`<br>MCP: `.roo/mcp.json`                                                               |
-| Trae AI — `trae-ai`                 | Rules: `.trae/rules/project_rules.md`                                                                    |
-| Warp — `warp`                       | Rules: `WARP.md`                                                                                         |
-| Windsurf — `windsurf`               | Rules: `AGENTS.md`<br>MCP: `.windsurf/mcp_config.json`                                                   |
-| Zed — `zed`                         | Rules: `AGENTS.md`<br>Config: `.zed/settings.json`                                                       |
-| Jules — `jules`                     | Rules: `AGENTS.md`                                                                                       |
-| GitHub Copilot — `copilot`          | Rules: `AGENTS.md`<br>MCP: `.vscode/mcp.json`                                                            |
-| OpenAI Codex CLI — `openai-codex`   | Rules: `AGENTS.md`<br>Config: `.codex/config.toml`                                                       |
-| Amazon Q CLI — `amazonq`            | Rules: `.amazonq/rules/ruler_q_rules.md`<br>MCP: `.amazonq/mcp.json`                                     |
-| AGENTS.md — `agents`                | Rules: `AGENTS.md`                                                                                       |
+| Agent — exporter                    | Supported formats                                                    |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| Aider — `aider`                     | Rules: `AGENTS.md`, `.aider.conf.yml`<br>MCP: `.mcp.json`            |
+| Amazon Q — `amazonq`                | Rules: `.amazonq/rules/*.md` <br>MCP: `.amazonq/mcp.json`            |
+| Amp — `amp`                         | Rules: `AGENTS.md`                                                   |
+| Augment Code — `augmentcode`        | Rules: `.augment/rules/*.md`                                         |
+| Claude — `claude`                   | Rules: `CLAUDE.md`<br>MCP: `.mcp.json`                               |
+| Cline — `cline`                     | Rules: `.clinerules`                                                 |
+| CrushChat — `crush`                 | Rules: `AGENTS.md`, `CRUSH.md`<br>Config: `.crush.json`              |
+| Cursor — `cursor`                   | Rules: `.cursor/rules/*.mdc`, `AGENTS.md`<br>MCP: `.cursor/mcp.json` |
+| Firebender — `firebender`           | Rules: `firebender.json`<br>Config: `firebender.json`                |
+| Firebase Studio — `firebase-studio` | Rules: `.idx/airules.md`<br>MCP: `.idx/mcp.json`                     |
+| Gemini — `gemini`                   | Rules: `AGENTS.md`, `GEMINI.md`<br>Config: `.gemini/settings.json`   |
+| Goose — `goose`                     | Rules: `.goosehints`                                                 |
+| Junie — `junie`                     | Rules: `.junie/guidelines.md`<br>Config: `.aiignore`                 |
+| KiloCode — `kilocode`               | Rules: `.kilocode/rules/*.md`<br>MCP: `.kilocode/mcp.json`           |
+| Kiro — `kiro`                       | Rules: `.kiro/steering/*.md`                                         |
+| OpenAI Codex — `openai-codex`       | Rules: `AGENTS.md`<br>Config: `.codex/config.toml`                   |
+| Open Code — `opencode`              | Rules: `AGENTS.md`<br>Config: `opencode.json`                        |
+| OpenHands — `openhands`             | Rules: `.openhands/microagents/repo.md`<br>Config: `config.toml`     |
+| Qwen Code — `qwen-code`             | Rules: `AGENTS.md`<br>Config: `.qwen/settings.json`                  |
+| Roo Code — `roocode`                | Rules: `AGENTS.md`<br>MCP: `.roo/mcp.json`                           |
+| Trae AI — `trae-ai`                 | Rules: `.trae/rules/project_rules.md`                                |
+| Warp — `warp`                       | Rules: `WARP.md`                                                     |
+| Windsurf — `windsurf`               | Rules: `AGENTS.md`<br>MCP: `.windsurf/mcp_config.json`               |
+| Zed — `zed`                         | Rules: `AGENTS.md`<br>Config: `.zed/settings.json`                   |
+| Jules — `jules`                     | Rules: `AGENTS.md`                                                   |
+| GitHub Copilot — `copilot`          | Rules: `AGENTS.md`<br>MCP: `.vscode/mcp.json`                        |
+| OpenAI Codex CLI — `openai-codex`   | Rules: `AGENTS.md`<br>Config: `.codex/config.toml`                   |
+| Amazon Q CLI — `amazonq`            | Rules: `.amazonq/rules/*.md`<br>MCP: `.amazonq/mcp.json`             |
+| AGENTS.md — `agents`                | Rules: `AGENTS.md`                                                   |
 
 ## Agent ignore file support
 
