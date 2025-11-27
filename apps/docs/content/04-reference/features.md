@@ -130,11 +130,11 @@ See [Team Mode](/docs/03-concepts/team-mode) for complete documentation.
 All exporters support natural markdown sections format with fidelity notes:
 
 - **Cursor** (`.cursor/rules/*.mdc`) - Scope-based files with YAML frontmatter
-- **AGENTS.md** - Universal single-file format
+- **AGENTS.md** - Universal single-file format (used by Claude, Copilot, Aider, Junie, Goose, and others)
+- **OpenHands** (`.openhands/microagents/*.md`) - Multi-file microagent format (one file per rule)
 - **VS Code MCP** (`.vscode/mcp.json`) - MCP server configuration
 - **Windsurf MCP** - MCP configuration for Windsurf
 - **Zed Config** - Zed editor configuration
-- **Junie** - Junie AI assistant
 - **Trae AI** - Trae AI configuration
 - **Amazon Q** - Amazon Q Developer
 - **Kilocode MCP** - Kilocode MCP server
@@ -152,6 +152,8 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 - **Agent detection** - Detect new agents in workspace and prompt to enable
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
 - **Dry-run mode** - Preview changes without writing files
+- **Per-exporter configuration** - Control ignore file generation and export format per agent
+- **.alignignore file support** - Protect specified files from AlignTrue modifications using gitignore-style patterns
 
 See [Sync Behavior](/docs/03-concepts/sync-behavior) for details.
 

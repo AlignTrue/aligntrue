@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **OpenHands multi-file support** - OpenHands exporter now writes one markdown file per rule to `.openhands/microagents/` instead of a single file, enabling better microagent organization
+- **Junie AGENTS.md support** - Junie exporter now delegates to AGENTS.md format for consistency with other link-based agents
+- **Goose AGENTS.md support** - Goose exporter now delegates to AGENTS.md format instead of custom `.goosehints` format
+- **Per-exporter ignore file toggle** - New `ignore_file` option in exporter config allows disabling ignore file generation per agent (e.g., `exporters.cursor: {ignore_file: false}`)
+- **.alignignore file support** - New `.alignignore` file prevents AlignTrue from editing, deleting, or overwriting specified files using gitignore-style patterns
+
 - **MCP server configuration propagation** - MCP exporters now read from centralized `config.mcp.servers` and propagate to agent-specific MCP files (.vscode/mcp.json, .cursor/mcp.json, .mcp.json, etc.) with deterministic hashing
 - **Align manifest system (.align.yaml)** - New manifest format for curated bundles with includes, customizations, and defaults for easy sharing
 - **URL source support (type: url)** - Fetch rules directly from HTTP/HTTPS endpoints with ETag caching and offline fallback

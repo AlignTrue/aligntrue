@@ -24,7 +24,8 @@
     "./team/updates.js": "./dist/team/updates.js",
     "./team/bundle-diff.js": "./dist/team/bundle-diff.js",
     "./plugs": "./dist/plugs/index.js",
-    "./agent-ignore": "./dist/agent-ignore/index.js"
+    "./agent-ignore": "./dist/agent-ignore/index.js",
+    "./alignignore": "./dist/alignignore/index.js"
   },
   "scripts": {
     "build": "tsc && node ../../scripts/copy-core-schema.js",
