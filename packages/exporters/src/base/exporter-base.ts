@@ -343,6 +343,19 @@ export abstract class ExporterBase implements ExporterPlugin {
       return [];
     }
 
+    // Check .alignignore before writing
+    const { resolve, relative } = await import("path");
+    const { isIgnoredByAlignignore } = await import("@aligntrue/core");
+    const cwd = process.cwd();
+    const alignignorePath = resolve(cwd, ".alignignore");
+    const absolutePath = resolve(cwd, path);
+    const relativePath = relative(cwd, absolutePath).replace(/\\/g, "/");
+
+    if (isIgnoredByAlignignore(relativePath, alignignorePath)) {
+      // File is protected by .alignignore - skip writing
+      return [];
+    }
+
     const interactive = options?.interactive ?? false;
     const force = options?.force ?? false;
 

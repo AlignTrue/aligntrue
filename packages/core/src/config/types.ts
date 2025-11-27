@@ -11,6 +11,7 @@ export type CleanupMode = "all" | "managed";
 
 export interface ExporterConfig {
   format?: ExporterFormat;
+  ignore_file?: boolean;
 }
 export type ResourceType = "rules" | "mcps" | "skills";
 export type ScopeType = "team" | "personal" | string; // Allow custom scopes

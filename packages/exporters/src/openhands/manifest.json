@@ -1,8 +1,8 @@
 {
   "name": "openhands",
   "version": "1.0.0",
-  "description": "Export AlignTrue rules to Open Hands .openhands/microagents/repo.md format",
-  "outputs": [".openhands/microagents/repo.md"],
+  "description": "Export AlignTrue rules to OpenHands .openhands/microagents/ format (one file per rule)",
+  "outputs": [".openhands/microagents/*.md"],
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [

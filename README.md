@@ -71,7 +71,9 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | Auto-detection           | Finds Cursor, Copilot, Claude, VS Code, and 25+ others automatically                  | [How it works](#how-it-works)                                                       |
 | 28+ agents               | Comprehensive coverage through 50 exporters                                           | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)               |
 | Unidirectional sync      | Edit in `.aligntrue/rules/`, sync to all agents automatically                         | [Getting Started](https://aligntrue.ai/docs/00-getting-started/00-quickstart)       |
-| Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, and more)                      | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)               |
+| Multi-format support     | Agent-optimized formats (.mdc, AGENTS.md, MCP configs, multi-file exports)            | [Agent Support](https://aligntrue.ai/docs/04-reference/agent-support)               |
+| Per-exporter config      | Control ignore file generation and format options per agent                           | [Export Formats](https://aligntrue.ai/docs/02-customization/export-formats)         |
+| .alignignore protection  | Protect files from modifications using gitignore-style patterns                       | [Features](https://aligntrue.ai/docs/04-reference/features)                         |
 | **Team Collaboration**   |                                                                                       |                                                                                     |
 | Lockfiles                | Pin rule versions with `.aligntrue.lock.json` for reproducible builds                 | [Team Mode](https://aligntrue.ai/docs/03-concepts/team-mode)                        |
 | Drift detection          | Compare lockfile vs allowed sources with multiple output formats                      | [Drift Detection](https://aligntrue.ai/docs/03-concepts/drift-detection)            |

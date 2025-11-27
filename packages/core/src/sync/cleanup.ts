@@ -166,6 +166,29 @@ export async function cleanupOldExports(
     return result;
   }
 
+  // Check .alignignore before cleanup
+  const { isIgnoredByAlignignore } = await import("../alignignore/index.js");
+  const { resolve, relative } = await import("path");
+  const cwd = process.cwd();
+  const alignignorePath = resolve(cwd, ".alignignore");
+
+  // Filter out files protected by .alignignore
+  filesToRemove = filesToRemove.filter((file) => {
+    const absolutePath = resolve(cwd, file);
+    const relativePath = relative(cwd, absolutePath).replace(/\\/g, "/");
+    if (isIgnoredByAlignignore(relativePath, alignignorePath)) {
+      result.warnings.push(
+        `File protected by .alignignore, skipping cleanup: ${file}`,
+      );
+      return false;
+    }
+    return true;
+  });
+
+  if (filesToRemove.length === 0) {
+    return result;
+  }
+
   // Create backup directory
   result.backupDir = createBackupDir(outputDir);
 

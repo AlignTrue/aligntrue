@@ -1,12 +1,12 @@
 {
   "name": "junie",
   "version": "1.0.0",
-  "description": "Export AlignTrue rules to Junie .junie/guidelines.md format",
-  "outputs": [".junie/guidelines.md"],
+  "description": "Export AlignTrue rules to Junie AGENTS.md format",
+  "outputs": ["AGENTS.md"],
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
-    "Machine-checkable rules (check) not represented",
-    "Autofix hints not represented"
+    "Machine-checkable rules (check) not represented in AGENTS.md format",
+    "Autofix hints not represented in AGENTS.md format"
   ]
 }

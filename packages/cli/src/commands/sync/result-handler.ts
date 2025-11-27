@@ -3,7 +3,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { relative, basename } from "path";
+import { relative, basename, join } from "path";
 import * as clack from "@clack/prompts";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
@@ -110,8 +110,24 @@ export async function handleSyncResult(
         formatWarningMessage,
       } = await import("@aligntrue/core/agent-ignore");
 
+      // Get per-exporter config for ignore_file setting
+      const exporterConfigs: Record<string, { ignore_file?: boolean }> = {};
+      if (
+        context.config.exporters &&
+        typeof context.config.exporters === "object" &&
+        !Array.isArray(context.config.exporters)
+      ) {
+        Object.assign(exporterConfigs, context.config.exporters);
+      }
+
+      // Filter exporters to only those with ignore_file enabled (default: true)
+      const exportersWithIgnoreEnabled = exporterNames.filter((name) => {
+        const config = exporterConfigs[name];
+        return config?.ignore_file !== false; // Default to true
+      });
+
       const detection = detectConflicts(
-        exporterNames,
+        exportersWithIgnoreEnabled,
         context.config.sync?.custom_format_priority,
       );
 
@@ -159,6 +175,44 @@ export async function handleSyncResult(
             clack.log.warn(
               `Failed to update ignore file: ${error instanceof Error ? error.message : String(error)}`,
             );
+          }
+        }
+
+        // Handle agents with ignore_file disabled: clean up their ignore files
+        const exportersWithIgnoreDisabled = exporterNames.filter((name) => {
+          const config = exporterConfigs[name];
+          return config?.ignore_file === false;
+        });
+
+        if (exportersWithIgnoreDisabled.length > 0) {
+          const { getAgentIgnoreSpec, removeAlignTruePatterns } = await import(
+            "@aligntrue/core/agent-ignore"
+          );
+          for (const agentName of exportersWithIgnoreDisabled) {
+            const spec = getAgentIgnoreSpec(agentName);
+            if (spec) {
+              try {
+                const ignoreFilePath = join(cwd, spec.ignoreFile);
+                const wasModified = removeAlignTruePatterns(
+                  ignoreFilePath,
+                  false,
+                );
+                if (wasModified) {
+                  allIgnoreUpdates.push({
+                    filePath: ignoreFilePath,
+                    patterns: [],
+                    created: false,
+                    modified: true,
+                  });
+                }
+              } catch (error) {
+                if (options.verbose) {
+                  clack.log.warn(
+                    `Failed to clean up ignore file for ${agentName}: ${error instanceof Error ? error.message : String(error)}`,
+                  );
+                }
+              }
+            }
           }
         }
 
@@ -311,7 +365,7 @@ export async function handleSyncResult(
           message += `  - ${file}\n`;
         });
         message += "\n";
-        message += "Your AI assistants are now aligned with these rules.\n\n";
+        message += "Your agents are now aligned!.\n\n";
         message +=
           "Next: Start coding! Your agents will follow the rules automatically.\n\n";
         message +=
