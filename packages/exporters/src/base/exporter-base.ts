@@ -283,8 +283,6 @@ export abstract class ExporterBase implements ExporterPlugin {
     // Avoids ReDoS by not overlapping quantifiers on [\s\S] and \n.
     // Matches: <!-- optional whitespace newline whitespace STARTER RULE: content -->
     // Then removes trailing newlines separately.
-
-    // Safe: Static regex pattern for parsing HTML comments in markdown (not user input), bounded quantifiers prevent ReDoS
     let result = content.replace(/<!--\s*\n\s*STARTER RULE:[\s\S]*?-->/, "");
     // Remove any trailing newlines after the removed comment (can be 0 or more)
     result = result.replace(/^\n+/, "");

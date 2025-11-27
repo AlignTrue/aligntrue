@@ -17,6 +17,10 @@ class NoopSpinner {
     }
   }
 
+  stopSilent(): void {
+    // No-op in non-interactive mode
+  }
+
   message(text: string): void {
     console.log(text);
   }
@@ -50,6 +54,19 @@ class ManagedSpinner {
   stop(message?: string, code?: number): void {
     if (this.isActive) {
       this.spinner.stop(message, code);
+      this.isActive = false;
+    }
+  }
+
+  /**
+   * Stop the spinner silently without rendering a step indicator
+   * Useful for non-verbose mode to avoid empty visual gaps
+   */
+  stopSilent(): void {
+    if (this.isActive) {
+      // Clear the spinner line without rendering a step indicator
+      // This prevents empty ◇ symbols in the output
+      process.stdout.write("\r\x1b[K");
       this.isActive = false;
     }
   }
@@ -161,6 +178,22 @@ export async function withSpinner(
     } else {
       throw error;
     }
+  }
+}
+
+/**
+ * Stop spinner silently without rendering a step indicator
+ * Safe helper that checks if the spinner supports stopSilent before calling
+ *
+ * @param spinner - Spinner instance
+ */
+export function stopSpinnerSilently(
+  spinner: SpinnerLike | ManagedSpinner,
+): void {
+  // Check if it's a ManagedSpinner (has stopSilent method)
+  if (spinner && typeof spinner === "object" && "stopSilent" in spinner) {
+    // Safe to call stopSilent - either ManagedSpinner or NoopSpinner
+    (spinner as NoopSpinner | ManagedSpinner).stopSilent();
   }
 }
 

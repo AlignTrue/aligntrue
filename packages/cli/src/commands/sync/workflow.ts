@@ -10,6 +10,7 @@ import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import { initializePrompts } from "../../utils/prompts.js";
+import { stopSpinnerSilently } from "../../utils/spinner.js";
 
 /**
  * Sync result from engine
@@ -124,8 +125,8 @@ export async function executeSyncWorkflow(
   result = await engine.syncToAgents(context.absoluteSourcePath, syncOptions);
 
   if (!options.quiet) {
-    // Stop without message, let result handler show outro/success message
-    spinner.stop();
+    // Stop silently without rendering an empty step, let result handler show outro/success message
+    stopSpinnerSilently(spinner);
   }
 
   // Step 3: Remove starter file after first successful sync

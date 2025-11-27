@@ -11,7 +11,7 @@ import { diffLines } from "diff";
 import { isTTY } from "../utils/tty-helper.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { createManagedSpinner } from "../utils/spinner.js";
+import { createManagedSpinner, stopSpinnerSilently } from "../utils/spinner.js";
 
 /**
  * Execute revert command
@@ -255,7 +255,8 @@ export async function revert(args: string[]): Promise<void> {
     BackupManager.restoreBackup(restoreOptions);
 
     if (isTTY()) {
-      spinner.stop(); // Stop cleanly without message, outro follows
+      // Stop silently without rendering an empty step, outro follows
+      stopSpinnerSilently(spinner);
       clack.outro(`✓ Restored from backup ${selectedTimestamp}`);
     } else {
       console.log("✓ Backup restored");
