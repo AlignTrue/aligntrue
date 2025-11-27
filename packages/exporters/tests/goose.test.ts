@@ -5,11 +5,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { rmSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import { GooseExporter } from "../src/goose/index.js";
+import GooseExporter from "../src/goose/index.js";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ResolvedScope,
+  ExporterPlugin,
 } from "../src/types.js";
 import type { Align, AlignSection } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
@@ -18,10 +19,10 @@ const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor"); // Reuse c
 const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-goose-test-output");
 
 describe("GooseExporter", () => {
-  let exporter: GooseExporter;
+  let exporter: ExporterPlugin;
 
   beforeEach(() => {
-    exporter = new GooseExporter();
+    exporter = GooseExporter;
     // Clean up test output directory
     if (existsSync(TEST_OUTPUT_DIR)) {
       rmSync(TEST_OUTPUT_DIR, { recursive: true });
@@ -45,7 +46,7 @@ describe("GooseExporter", () => {
   });
 
   describe("Basic Export", () => {
-    it("exports sections to .goosehints file", async () => {
+    it("exports sections to AGENTS.md file (delegates to AgentsExporter)", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.sections, createDefaultScope());
       const options: ExportOptions = {
@@ -56,7 +57,7 @@ describe("GooseExporter", () => {
 
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
-      expect(result.filesWritten[0]).toMatch(/\.goosehints$/);
+      expect(result.filesWritten[0]).toMatch(/AGENTS\.md$/);
     });
   });
 });
@@ -77,6 +78,6 @@ function createRequest(
   return {
     scope,
     align,
-    outputPath: join(TEST_OUTPUT_DIR, ".goosehints"),
+    outputPath: join(TEST_OUTPUT_DIR, "AGENTS.md"),
   };
 }

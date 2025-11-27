@@ -5,11 +5,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { rmSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import { JunieExporter } from "../src/junie/index.js";
+import JunieExporter from "../src/junie/index.js";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ResolvedScope,
+  ExporterPlugin,
 } from "../src/types.js";
 import type { Align, AlignSection } from "@aligntrue/schema";
 import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
@@ -18,10 +19,10 @@ const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
 const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-junie-test-output");
 
 describe("JunieExporter", () => {
-  let exporter: JunieExporter;
+  let exporter: ExporterPlugin;
 
   beforeEach(() => {
-    exporter = new JunieExporter();
+    exporter = JunieExporter;
     // Clean up test output directory
     if (existsSync(TEST_OUTPUT_DIR)) {
       rmSync(TEST_OUTPUT_DIR, { recursive: true });
@@ -45,7 +46,7 @@ describe("JunieExporter", () => {
   });
 
   describe("Basic Export", () => {
-    it("exports sections to .junie/guidelines.md", async () => {
+    it("exports sections to AGENTS.md file (delegates to AgentsExporter)", async () => {
       const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
       const request = createRequest(fixture.sections, createDefaultScope());
       const options: ExportOptions = {
@@ -56,9 +57,7 @@ describe("JunieExporter", () => {
 
       expect(result.success).toBe(true);
       expect(result.filesWritten).toHaveLength(1);
-      expect(result.filesWritten[0]).toBe(
-        join(TEST_OUTPUT_DIR, ".junie", "guidelines.md"),
-      );
+      expect(result.filesWritten[0]).toMatch(/AGENTS\.md$/);
     });
   });
 });
@@ -79,6 +78,6 @@ function createRequest(
   return {
     scope,
     align,
-    outputPath: join(TEST_OUTPUT_DIR, ".junie", "guidelines.md"),
+    outputPath: join(TEST_OUTPUT_DIR, "AGENTS.md"),
   };
 }
