@@ -43,11 +43,13 @@ export {
   cleanupEmptyDirs,
   getAgentPatterns,
   agentHasExistingFiles,
-  detectDuplicateExports,
-  pruneDuplicateExports,
+  getMultiFileExporterPath,
+  getAllMultiFileExporterPaths,
+  detectStaleExports,
+  cleanStaleExports,
   type CleanupResult,
-  type DuplicateGroup,
-  type PruneResult,
+  type StaleExportGroup,
+  type CleanResult,
 } from "./cleanup.js";
 
 // Global sync engine instance for convenience functions

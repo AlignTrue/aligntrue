@@ -1,13 +1,14 @@
 /**
- * Tests for duplicate export detection
+ * Tests for stale export detection and cleanup
+ * (Replaces old duplicate detection tests with new stale export detection)
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, mkdirSync, rmSync, existsSync, statSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import {
-  detectDuplicateExports,
-  pruneDuplicateExports,
+  detectStaleExports,
+  cleanStaleExports,
 } from "../../src/sync/cleanup.js";
 
 const TEST_DIR = join(
@@ -15,7 +16,7 @@ const TEST_DIR = join(
   "packages/core/tests/sync/temp-duplicates",
 );
 
-describe("detectDuplicateExports", () => {
+describe("detectStaleExports", () => {
   beforeEach(() => {
     if (!existsSync(TEST_DIR)) {
       mkdirSync(TEST_DIR, { recursive: true });
@@ -33,13 +34,17 @@ describe("detectDuplicateExports", () => {
   });
 
   it("returns empty array when no export directories exist", () => {
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor", "amazonq"]);
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["rule1"],
+      ["cursor", "amazonq"],
+    );
 
-    expect(duplicates).toEqual([]);
+    expect(stale).toEqual([]);
   });
 
-  it("returns empty array when no duplicate files exist", () => {
-    // Create export directories with unique files
+  it("returns empty array when all files match source rules", () => {
+    // Create export directories with files matching sources
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
     writeFileSync(
       join(TEST_DIR, ".cursor/rules/rule1.mdc"),
@@ -50,52 +55,57 @@ describe("detectDuplicateExports", () => {
       "# Rule 2\nContent 2",
     );
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
+    const stale = detectStaleExports(TEST_DIR, ["rule1", "rule2"], ["cursor"]);
 
-    expect(duplicates).toEqual([]);
+    expect(stale).toEqual([]);
   });
 
-  it("detects duplicate files with identical content", () => {
-    // Create export directories with duplicate files
+  it("detects stale files with no matching source", () => {
+    // Create export directories
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
-    const content = "# Guidance\nSame content here";
 
-    writeFileSync(join(TEST_DIR, ".cursor/rules/ai-guidance.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/ai-guidance2.mdc"), content);
     writeFileSync(
-      join(TEST_DIR, ".cursor/rules/other.mdc"),
-      "# Other\nDifferent content",
+      join(TEST_DIR, ".cursor/rules/rule1.mdc"),
+      "# Rule 1\nContent",
+    );
+    writeFileSync(
+      join(TEST_DIR, ".cursor/rules/rule2.mdc"),
+      "# Rule 2\nContent",
+    );
+    writeFileSync(
+      join(TEST_DIR, ".cursor/rules/old-rule.mdc"),
+      "# Old\nContent",
     );
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
+    const stale = detectStaleExports(TEST_DIR, ["rule1", "rule2"], ["cursor"]);
 
-    expect(duplicates).toHaveLength(1);
-    expect(duplicates[0]).toEqual({
+    expect(stale).toHaveLength(1);
+    expect(stale[0]).toEqual({
       directory: ".cursor/rules",
       agent: "cursor",
-      files: ["ai-guidance.mdc", "ai-guidance2.mdc"],
+      files: ["old-rule.mdc"],
     });
   });
 
-  it("handles multiple agents with duplicates", () => {
+  it("handles multiple agents with stale files", () => {
     // Create cursor exports
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
-    const content1 = "# Guidance\nContent";
-    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance.mdc"), content1);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance-old.mdc"), content1);
+    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance-old.mdc"), "Content");
 
     // Create amazonq exports
     mkdirSync(join(TEST_DIR, ".amazonq/rules"), { recursive: true });
-    const content2 = "# Style\nContent";
-    writeFileSync(join(TEST_DIR, ".amazonq/rules/style.md"), content2);
-    writeFileSync(join(TEST_DIR, ".amazonq/rules/style-old.md"), content2);
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/style.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/style-old.md"), "Content");
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor", "amazonq"]);
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["guidance", "style"],
+      ["cursor", "amazonq"],
+    );
 
-    expect(duplicates).toHaveLength(2);
-    expect(duplicates.map((d) => d.agent)).toEqual(["cursor", "amazonq"]);
-    expect(duplicates[0].files.length).toBe(2);
-    expect(duplicates[1].files.length).toBe(2);
+    expect(stale).toHaveLength(2);
+    expect(stale.map((s) => s.agent).sort()).toEqual(["amazonq", "cursor"]);
   });
 
   it("skips single-file exporters", () => {
@@ -103,9 +113,9 @@ describe("detectDuplicateExports", () => {
     mkdirSync(join(TEST_DIR), { recursive: true });
     writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agent Rules");
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["agents"]);
+    const stale = detectStaleExports(TEST_DIR, ["rule1"], ["agents"]);
 
-    expect(duplicates).toEqual([]);
+    expect(stale).toEqual([]);
   });
 
   it("skips directories that cannot be read", () => {
@@ -114,69 +124,39 @@ describe("detectDuplicateExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/rule1.mdc"), "# Rule\nContent");
 
     // Should not throw, even with invalid agents
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor", "invalid"]);
-
-    expect(duplicates).toEqual([]);
-  });
-
-  it("groups multiple duplicate pairs in same directory", () => {
-    mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
-
-    // First duplicate pair
-    const content1 = "# Guidance\nFirst set";
-    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance.mdc"), content1);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/guidance-old.mdc"), content1);
-
-    // Second duplicate pair
-    const content2 = "# Style\nSecond set";
-    writeFileSync(join(TEST_DIR, ".cursor/rules/style.mdc"), content2);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/style-old.mdc"), content2);
-
-    // Unique file
-    writeFileSync(
-      join(TEST_DIR, ".cursor/rules/unique.mdc"),
-      "# Unique\nNo duplicates",
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["rule1"],
+      ["cursor", "invalid"],
     );
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
-
-    // Should find 2 duplicate groups for the same directory
-    expect(duplicates).toHaveLength(2);
-    expect(duplicates[0].directory).toBe(".cursor/rules");
-    expect(duplicates[1].directory).toBe(".cursor/rules");
-    expect(duplicates[0].files).toHaveLength(2);
-    expect(duplicates[1].files).toHaveLength(2);
+    expect(stale).toEqual([]);
   });
 
-  it("sorts files within each duplicate group", () => {
+  it("sorts stale files alphabetically", () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
-    const content = "# Rule\nContent";
 
-    writeFileSync(join(TEST_DIR, ".cursor/rules/z-rule.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/a-rule.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/m-rule.mdc"), content);
+    writeFileSync(join(TEST_DIR, ".cursor/rules/z-old.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/a-old.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/m-old.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), "Content");
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
+    const stale = detectStaleExports(TEST_DIR, ["rule"], ["cursor"]);
 
-    expect(duplicates).toHaveLength(1);
-    expect(duplicates[0].files).toEqual([
-      "a-rule.mdc",
-      "m-rule.mdc",
-      "z-rule.mdc",
-    ]);
+    expect(stale).toHaveLength(1);
+    expect(stale[0].files).toEqual(["a-old.mdc", "m-old.mdc", "z-old.mdc"]);
   });
 
   it("ignores subdirectories when scanning for files", () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules/subdir"), { recursive: true });
-    const content = "# Rule\nContent";
 
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/subdir/rule.mdc"), content);
+    writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/subdir/rule.mdc"), "Content");
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
+    const stale = detectStaleExports(TEST_DIR, ["rule"], ["cursor"]);
 
-    // Should only find duplicates at the top level, not in subdirs
-    expect(duplicates).toEqual([]);
+    // Should only find top-level files, not in subdirs
+    expect(stale).toEqual([]);
   });
 
   it("handles various multi-file exporters", () => {
@@ -185,44 +165,88 @@ describe("detectDuplicateExports", () => {
     mkdirSync(join(TEST_DIR, ".kiro/steering"), { recursive: true });
     mkdirSync(join(TEST_DIR, ".cline/rules"), { recursive: true });
 
-    const content = "# Rule\nContent";
+    // Trae-AI - one stale
+    writeFileSync(join(TEST_DIR, ".trae/rules/rule.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".trae/rules/old.md"), "Content");
 
-    // Trae-AI
-    writeFileSync(join(TEST_DIR, ".trae/rules/rule.md"), content);
-    writeFileSync(join(TEST_DIR, ".trae/rules/rule-old.md"), content);
+    // Kiro - one stale
+    writeFileSync(join(TEST_DIR, ".kiro/steering/directive.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".kiro/steering/old.md"), "Content");
 
-    // Kiro
-    writeFileSync(join(TEST_DIR, ".kiro/steering/directive.md"), content);
-    writeFileSync(join(TEST_DIR, ".kiro/steering/directive-old.md"), content);
+    // Cline - one stale
+    writeFileSync(join(TEST_DIR, ".cline/rules/instruction.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".cline/rules/old.md"), "Content");
 
-    // Cline
-    writeFileSync(join(TEST_DIR, ".cline/rules/instruction.md"), content);
-    writeFileSync(join(TEST_DIR, ".cline/rules/instruction-old.md"), content);
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["rule", "directive", "instruction"],
+      ["trae-ai", "kiro", "cline"],
+    );
 
-    const duplicates = detectDuplicateExports(TEST_DIR, [
-      "trae-ai",
-      "kiro",
-      "cline",
-    ]);
-
-    expect(duplicates).toHaveLength(3);
-    expect(duplicates.map((d) => d.agent).sort()).toEqual([
+    expect(stale).toHaveLength(3);
+    expect(stale.map((s) => s.agent).sort()).toEqual([
       "cline",
       "kiro",
       "trae-ai",
     ]);
+    // Each should have one stale file
+    stale.forEach((group) => {
+      expect(group.files).toEqual(["old.md"]);
+    });
   });
 
   it("returns empty array for non-existent output directory", () => {
     const nonExistentDir = join(TEST_DIR, "does-not-exist");
 
-    const duplicates = detectDuplicateExports(nonExistentDir, ["cursor"]);
+    const stale = detectStaleExports(nonExistentDir, ["rule1"], ["cursor"]);
 
-    expect(duplicates).toEqual([]);
+    expect(stale).toEqual([]);
+  });
+
+  it("handles case-insensitive matching of rule names", () => {
+    mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
+
+    writeFileSync(join(TEST_DIR, ".cursor/rules/AI-Guidance.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old-guidance.mdc"), "Content");
+
+    // Source is lowercase
+    const stale = detectStaleExports(TEST_DIR, ["ai-guidance"], ["cursor"]);
+
+    expect(stale).toHaveLength(1);
+    expect(stale[0].files).toEqual(["old-guidance.mdc"]);
+  });
+
+  it("detects all stale files across multiple exporters", () => {
+    mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
+    mkdirSync(join(TEST_DIR, ".amazonq/rules"), { recursive: true });
+
+    // Cursor: 2 files match, 1 stale
+    writeFileSync(join(TEST_DIR, ".cursor/rules/rule1.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/rule2.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/stale1.mdc"), "Content");
+
+    // AmazonQ: 1 file matches, 2 stale
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/rule1.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/stale2.md"), "Content");
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/stale3.md"), "Content");
+
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["rule1", "rule2"],
+      ["cursor", "amazonq"],
+    );
+
+    expect(stale).toHaveLength(2);
+
+    const cursorStale = stale.find((s) => s.agent === "cursor");
+    expect(cursorStale?.files).toEqual(["stale1.mdc"]);
+
+    const amazonqStale = stale.find((s) => s.agent === "amazonq");
+    expect(amazonqStale?.files).toEqual(["stale2.md", "stale3.md"]);
   });
 });
 
-describe("pruneDuplicateExports", () => {
+describe("cleanStaleExports", () => {
   beforeEach(() => {
     if (!existsSync(TEST_DIR)) {
       mkdirSync(TEST_DIR, { recursive: true });
@@ -239,135 +263,127 @@ describe("pruneDuplicateExports", () => {
     }
   });
 
-  it("returns empty result when no duplicates provided", () => {
-    const result = pruneDuplicateExports(TEST_DIR, [], ["rule1", "rule2"]);
+  it("returns empty result when no stale groups provided", async () => {
+    const result = await cleanStaleExports(TEST_DIR, []);
 
     expect(result.deleted).toEqual([]);
-    expect(result.kept).toEqual([]);
     expect(result.freedBytes).toBe(0);
+    expect(result.warnings).toEqual([]);
   });
 
-  it("deletes only orphaned files, keeps files matching source rules", () => {
+  it("deletes stale files from disk", async () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
 
-    // Create three duplicate files
-    writeFileSync(
-      join(TEST_DIR, ".cursor/rules/guidance.mdc"),
-      "# Guidance\nContent",
-    );
-    writeFileSync(
-      join(TEST_DIR, ".cursor/rules/guidance-old.mdc"),
-      "# Guidance\nContent",
-    );
-    writeFileSync(
-      join(TEST_DIR, ".cursor/rules/guidance-backup.mdc"),
-      "# Guidance\nContent",
-    );
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old1.mdc"), "Old content");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old2.mdc"), "Old");
 
-    // Detect duplicates
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
-    expect(duplicates).toHaveLength(1);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/old1.mdc"))).toBe(true);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/old2.mdc"))).toBe(true);
 
-    // Prune with only "guidance" as a source rule
-    const result = pruneDuplicateExports(TEST_DIR, duplicates, ["guidance"]);
+    const staleGroups = [
+      {
+        directory: ".cursor/rules",
+        agent: "cursor",
+        files: ["old1.mdc", "old2.mdc"],
+      },
+    ];
 
-    // Should keep guidance.mdc, delete the other two
-    expect(result.kept).toContain("guidance.mdc");
-    expect(result.deleted).toHaveLength(2);
-    expect(result.deleted).toContain("guidance-old.mdc");
-    expect(result.deleted).toContain("guidance-backup.mdc");
+    const result = await cleanStaleExports(TEST_DIR, staleGroups);
 
-    // Files should be deleted from disk
-    expect(existsSync(join(TEST_DIR, ".cursor/rules/guidance.mdc"))).toBe(true);
-    expect(existsSync(join(TEST_DIR, ".cursor/rules/guidance-old.mdc"))).toBe(
-      false,
-    );
-    expect(
-      existsSync(join(TEST_DIR, ".cursor/rules/guidance-backup.mdc")),
-    ).toBe(false);
+    expect(result.deleted).toEqual(["old1.mdc", "old2.mdc"]);
+    expect(result.warnings).toEqual([]);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/old1.mdc"))).toBe(false);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/old2.mdc"))).toBe(false);
   });
 
-  it("calculates freed bytes correctly", () => {
+  it("calculates freed bytes correctly", async () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
 
-    const content = "# Rule\nContent content content content"; // 36 bytes
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule-old.mdc"), content);
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old.mdc"), "12345"); // 5 bytes
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
-    const result = pruneDuplicateExports(TEST_DIR, duplicates, ["rule"]);
+    const staleGroups = [
+      {
+        directory: ".cursor/rules",
+        agent: "cursor",
+        files: ["old.mdc"],
+      },
+    ];
 
-    // Should free the size of one file (36 bytes)
-    const fileSize = statSync(join(TEST_DIR, ".cursor/rules/rule.mdc")).size;
-    expect(result.freedBytes).toBe(fileSize);
+    const result = await cleanStaleExports(TEST_DIR, staleGroups);
+
+    expect(result.freedBytes).toBe(5);
   });
 
-  it("handles case-insensitive matching of rule names", () => {
-    mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
-
-    const content = "# Rule\nContent";
-    writeFileSync(join(TEST_DIR, ".cursor/rules/AI-Guidance.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/AI-Guidance-Old.mdc"), content);
-
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
-
-    // Match with different case
-    const result = pruneDuplicateExports(TEST_DIR, duplicates, ["ai-guidance"]);
-
-    expect(result.kept).toContain("AI-Guidance.mdc");
-    expect(result.deleted).toContain("AI-Guidance-Old.mdc");
-  });
-
-  it("handles multiple duplicate groups across agents", () => {
+  it("handles multiple stale groups across agents", async () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
     mkdirSync(join(TEST_DIR, ".amazonq/rules"), { recursive: true });
 
-    const content = "# Content\nSame";
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old.mdc"), "Content");
+    writeFileSync(join(TEST_DIR, ".amazonq/rules/old.md"), "Content");
 
-    // Cursor duplicates
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule1.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule1-old.mdc"), content);
+    const staleGroups = [
+      {
+        directory: ".cursor/rules",
+        agent: "cursor",
+        files: ["old.mdc"],
+      },
+      {
+        directory: ".amazonq/rules",
+        agent: "amazonq",
+        files: ["old.md"],
+      },
+    ];
 
-    // AmazonQ duplicates
-    writeFileSync(join(TEST_DIR, ".amazonq/rules/rule2.md"), content);
-    writeFileSync(join(TEST_DIR, ".amazonq/rules/rule2-old.md"), content);
+    const result = await cleanStaleExports(TEST_DIR, staleGroups);
 
-    const duplicates = detectDuplicateExports(TEST_DIR, ["cursor", "amazonq"]);
-    const result = pruneDuplicateExports(TEST_DIR, duplicates, [
-      "rule1",
-      "rule2",
-    ]);
-
-    // Should delete old versions from both
-    expect(result.deleted).toHaveLength(2);
-    expect(result.kept).toHaveLength(2);
-    expect(result.deleted).toContain("rule1-old.mdc");
-    expect(result.deleted).toContain("rule2-old.md");
+    expect(result.deleted).toEqual(["old.mdc", "old.md"]);
+    expect(result.warnings).toEqual([]);
   });
 
-  it("reports warnings when file deletion fails", () => {
+  it("handles missing files gracefully with warnings", async () => {
     mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
 
-    const content = "# Rule\nContent";
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), content);
-    writeFileSync(join(TEST_DIR, ".cursor/rules/rule-old.mdc"), content);
+    const staleGroups = [
+      {
+        directory: ".cursor/rules",
+        agent: "cursor",
+        files: ["nonexistent.mdc"],
+      },
+    ];
 
-    // Make directory read-only to cause deletion failure (skip on Windows)
-    if (process.platform !== "win32") {
-      const duplicates = detectDuplicateExports(TEST_DIR, ["cursor"]);
+    const result = await cleanStaleExports(TEST_DIR, staleGroups);
 
-      // Try to prune with read-only directory
-      try {
-        // Note: This test might not work reliably on all systems
-        // In a real scenario, file permissions would prevent deletion
-        const result = pruneDuplicateExports(TEST_DIR, duplicates, ["rule"]);
+    expect(result.deleted).toEqual([]);
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings[0]).toContain("Failed to delete");
+  });
 
-        if (result.warnings.length > 0) {
-          expect(result.warnings[0]).toContain("Failed to delete");
-        }
-      } catch {
-        // Expected if permissions prevent file operations
-      }
-    }
+  it("integration: detect and clean stale exports", async () => {
+    // Create export directories with mixed files
+    mkdirSync(join(TEST_DIR, ".cursor/rules"), { recursive: true });
+
+    writeFileSync(join(TEST_DIR, ".cursor/rules/security.mdc"), "Security");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/testing.mdc"), "Testing");
+    writeFileSync(join(TEST_DIR, ".cursor/rules/old-rule.mdc"), "Old");
+
+    // Detect stale (source has security and testing, old-rule is stale)
+    const stale = detectStaleExports(
+      TEST_DIR,
+      ["security", "testing"],
+      ["cursor"],
+    );
+
+    expect(stale).toHaveLength(1);
+    expect(stale[0].files).toEqual(["old-rule.mdc"]);
+
+    // Clean the stale exports
+    const result = await cleanStaleExports(TEST_DIR, stale);
+
+    expect(result.deleted).toEqual(["old-rule.mdc"]);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/security.mdc"))).toBe(true);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/testing.mdc"))).toBe(true);
+    expect(existsSync(join(TEST_DIR, ".cursor/rules/old-rule.mdc"))).toBe(
+      false,
+    );
   });
 });

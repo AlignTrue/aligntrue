@@ -98,10 +98,9 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Run without prompts (uses defaults)",
   },
   {
-    flag: "--prune",
+    flag: "--clean",
     hasValue: false,
-    description:
-      "Remove orphaned duplicate exported files (keep current rules only)",
+    description: "Remove exported files that have no matching source rule",
   },
   {
     flag: "--help",
@@ -152,7 +151,7 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     skipNotFoundWarning:
       (parsed.flags["skip-not-found-warning"] as boolean | undefined) || false,
     json: (parsed.flags["json"] as boolean | undefined) || false,
-    prune: (parsed.flags["prune"] as boolean | undefined) || false,
+    clean: (parsed.flags["clean"] as boolean | undefined) || false,
   };
 
   // Conditionally add optional string properties
