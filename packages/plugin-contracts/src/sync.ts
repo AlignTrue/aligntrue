@@ -123,7 +123,7 @@ export interface SyncOptions {
   showConflicts?: boolean;
 
   /**
-   * Remove orphaned duplicate exported files (keep current rules only)
+   * Remove exported files that have no matching source rule
    */
-  prune?: boolean;
+  clean?: boolean;
 }

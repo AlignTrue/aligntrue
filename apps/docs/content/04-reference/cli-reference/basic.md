@@ -80,6 +80,7 @@ aligntrue sync [options]
 | `--force`         | Override performance limits and safety checks | `false`                  |
 | `--no-detect`     | Skip agent detection                          | `false`                  |
 | `--auto-enable`   | Auto-enable detected agents without prompting | `false`                  |
+| `--clean`         | Remove exported files with no matching source | `false`                  |
 | `--config <path>` | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **Non-interactive modes:**
@@ -156,6 +157,9 @@ aligntrue sync --dry-run
 
 # Force sync with safety overrides
 aligntrue sync --force
+
+# Remove stale exported files (no matching source)
+aligntrue sync --clean
 ```
 
 **Exit codes:**

@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Windows test timeouts** - Fixed exporter tests hanging on Windows CI by simplifying atomic file write implementation. Replaced complex temp directory creation with same-directory temp files and hidden backup files, eliminating EXDEV (cross-device link) errors and mkdtempSync delays on Windows
+- **Sync cleanup detection** - Replaced unreliable `--prune` flag with new `--clean` flag that properly detects and removes all stale exported files (files with no matching source rule), not just content-identical duplicates. Dynamically derives multi-file exporter paths instead of hardcoded mapping
 
 ### Added
 
+- **Stale export cleanup (`--clean` flag)** - New `aligntrue sync --clean` flag removes exported files that no longer have a corresponding source rule. Sync automatically warns about stale files when detected and suggests running with `--clean` to remove them
 - **OpenHands multi-file support** - OpenHands exporter now writes one markdown file per rule to `.openhands/microagents/` instead of a single file, enabling better microagent organization
 - **Junie AGENTS.md support** - Junie exporter now delegates to AGENTS.md format for consistency with other link-based agents
 - **Goose AGENTS.md support** - Goose exporter now delegates to AGENTS.md format instead of custom `.goosehints` format
