@@ -11,12 +11,10 @@ import {
   readdirSync,
   renameSync,
   statSync,
-  readFileSync,
   unlinkSync,
 } from "fs";
 import { join, dirname, basename } from "path";
 import type { CleanupMode } from "../config/types.js";
-import { computeHash } from "@aligntrue/schema";
 
 /**
  * Result of a cleanup operation
@@ -241,7 +239,7 @@ export function cleanupEmptyDirs(dir: string): void {
 }
 
 /**
- * Get cleanup patterns for an agent
+ * Get cleanup patterns for an agent (legacy format switching)
  */
 export function getAgentPatterns(agent: string): string[] {
   return AGENT_PATTERNS[agent] || [];
@@ -265,64 +263,97 @@ export function agentHasExistingFiles(
 }
 
 /**
- * Potential duplicate export group (same content hash)
+ * Get all multi-file exporter paths
  */
-export interface DuplicateGroup {
-  /** Directory where duplicates were found (relative to output dir) */
+export function getAllMultiFileExporterPaths(): Record<string, string> {
+  return { ...MULTI_FILE_EXPORTERS };
+}
+
+/**
+ * Multi-file exporter configuration
+ * Maps agent names to their export directory paths
+ */
+const MULTI_FILE_EXPORTERS: Record<string, string> = {
+  cursor: ".cursor/rules",
+  amazonq: ".amazonq/rules",
+  kilocode: ".kilocode/rules",
+  augmentcode: ".augment/rules",
+  kiro: ".kiro/steering",
+  "trae-ai": ".trae/rules",
+  openhands: ".openhands/microagents",
+  "openhands-config": ".openhands/microagents",
+  cline: ".cline/rules",
+  "firebase-studio": ".firebase-studio/rules",
+  windsurf: ".windsurf/rules",
+  roocode: ".roocode/rules",
+  zed: ".zed/rules",
+  goose: ".goose/rules",
+  crush: ".crush/rules",
+  warp: ".warp/rules",
+  junie: ".junie/rules",
+  jules: ".jules/rules",
+  opencode: ".opencode/rules",
+  "qwen-code": ".qwen-code/rules",
+};
+
+/**
+ * Get export directory for a multi-file exporter
+ * @param agent - Agent name
+ * @returns Directory path or undefined if single-file exporter
+ */
+export function getMultiFileExporterPath(agent: string): string | undefined {
+  return MULTI_FILE_EXPORTERS[agent];
+}
+
+/**
+ * Result of stale export detection
+ */
+export interface StaleExportGroup {
+  /** Directory where stale files were found (relative to output dir) */
   directory: string;
   /** Agent name */
   agent: string;
-  /** Files in this group with identical content */
+  /** Stale files (exports with no matching source) */
   files: string[];
 }
 
 /**
- * Detect potential duplicate exported files with identical content
+ * Detect stale exported files (exports with no matching source rule)
  *
- * Scans multi-file export directories (cursor, amazonq, kilocode, etc.)
- * and groups files by content hash. Returns groups with more than one file,
- * indicating potential duplicates that may result from renamed source rules.
+ * Scans multi-file export directories and identifies files that don't
+ * correspond to any current source rule. This includes orphans from renamed
+ * or deleted source files.
  *
- * Skips single-file exporters like AGENTS.md (no duplicates possible).
- * Only checks existing directories; missing directories are silently ignored.
+ * Only checks multi-file exporters (single-file formats are fully rewritten
+ * on each sync, so stale files can't accumulate).
  *
  * @param outputDir - The output directory (usually workspace root)
- * @param activeAgents - List of active agent names to check
- * @returns Array of duplicate groups found
+ * @param sourceRuleNames - Base filenames of current source rules (without extension)
+ * @param activeExporters - List of active exporter names
+ * @returns Array of stale export groups found
  *
  * @example
  * ```typescript
- * const duplicates = detectDuplicateExports('/workspace', ['cursor', 'amazonq']);
+ * const stale = detectStaleExports('/workspace', ['security', 'testing'], ['cursor', 'amazonq']);
  * // Returns: [{
  * //   directory: '.cursor/rules',
  * //   agent: 'cursor',
- * //   files: ['ai-guidance.mdc', 'ai-guidance2.mdc']
+ * //   files: ['old-security.mdc', 'legacy-rule.mdc']
  * // }]
  * ```
  */
-export function detectDuplicateExports(
+export function detectStaleExports(
   outputDir: string,
-  activeAgents: string[],
-): DuplicateGroup[] {
-  const duplicates: DuplicateGroup[] = [];
+  sourceRuleNames: string[],
+  activeExporters: string[],
+): StaleExportGroup[] {
+  const staleGroups: StaleExportGroup[] = [];
 
-  // Multi-file exporters that could have duplicates
-  // (single-file formats like AGENTS.md can't have duplicates)
-  const multiFileAgents = {
-    cursor: ".cursor/rules",
-    amazonq: ".amazonq/rules",
-    kilocode: ".kilocode/rules",
-    augmentcode: ".augment/rules",
-    kiro: ".kiro/steering",
-    "trae-ai": ".trae/rules",
-    openhands: ".openhands/microagents",
-    "openhands-config": ".openhands/microagents",
-    cline: ".cline/rules",
-    "firebase-studio": ".firebase-studio/rules",
-  };
+  // Normalize source rule names to lowercase for case-insensitive matching
+  const sourceNamesLower = sourceRuleNames.map((name) => name.toLowerCase());
 
-  for (const agent of activeAgents) {
-    const dirPath = multiFileAgents[agent as keyof typeof multiFileAgents];
+  for (const agent of activeExporters) {
+    const dirPath = getMultiFileExporterPath(agent);
     if (!dirPath) continue; // Skip single-file exporters
 
     const fullDir = join(outputDir, dirPath);
@@ -332,139 +363,126 @@ export function detectDuplicateExports(
 
     try {
       const entries = readdirSync(fullDir);
-      if (entries.length < 2) continue; // Need at least 2 files to have duplicates
-
-      // Group files by content hash
-      const hashToFiles: Record<string, string[]> = {};
+      const staleFiles: string[] = [];
 
       for (const entry of entries) {
         const filePath = join(fullDir, entry);
 
         try {
-          // File may be deleted/changed between stat and read (TOCTOU) - catch errors
           const stat = statSync(filePath);
 
           // Skip directories
           if (stat.isDirectory()) continue;
 
-          const content = readFileSync(filePath, "utf-8");
-          const hash = computeHash(content);
+          // Extract base name (without extension) from exported filename
+          // Examples: "ai-guidance.mdc" -> "ai-guidance", "style.md" -> "style"
+          const baseNameMatch = entry.match(/^(.+?)\.[^.]+$/);
+          const baseName = baseNameMatch?.[1] || entry;
+          const baseNameLower = baseName.toLowerCase();
 
-          if (!hashToFiles[hash]) {
-            hashToFiles[hash] = [];
+          // Check if this file corresponds to a current source rule
+          const hasMatchingSource = sourceNamesLower.includes(baseNameLower);
+
+          if (!hasMatchingSource) {
+            // This is a stale file - no matching source
+            staleFiles.push(entry);
           }
-          hashToFiles[hash].push(entry);
         } catch {
-          // Skip files that can't be read/hashed (handles TOCTOU race condition)
+          // Skip files that can't be read (TOCTOU race condition)
         }
       }
 
-      // Find groups with more than one file (potential duplicates)
-      for (const [, files] of Object.entries(hashToFiles)) {
-        if (files.length > 1) {
-          duplicates.push({
-            directory: dirPath,
-            agent,
-            files: files.sort(),
-          });
-        }
+      if (staleFiles.length > 0) {
+        staleGroups.push({
+          directory: dirPath,
+          agent,
+          files: staleFiles.sort(),
+        });
       }
     } catch {
       // Skip directories that can't be read
     }
   }
 
-  return duplicates;
+  return staleGroups;
 }
 
 /**
- * Result of a prune operation
+ * Result of cleaning stale exports
  */
-export interface PruneResult {
+export interface CleanResult {
   /** Files that were deleted */
   deleted: string[];
   /** Total size freed (bytes) */
   freedBytes: number;
-  /** Files that were kept (matched source rule names) */
-  kept: string[];
-  /** Any warnings during prune */
+  /** Any warnings during cleanup */
   warnings: string[];
 }
 
 /**
- * Prune orphaned duplicate exported files
+ * Clean stale exported files
  *
- * Compares duplicate files against current source rule filenames.
- * Deletes only files that don't have a matching source rule,
- * preserving files that correspond to active rules.
- *
- * Example: If ai-guidance.md and ai-guidance2.md both export to ai-guidance.mdc
- * and ai-guidance2.mdc, and only ai-guidance.md exists in source, then ai-guidance2.mdc
- * will be deleted as an orphan.
+ * Deletes all exported files that don't have a corresponding source rule.
+ * Respects .alignignore protection.
  *
  * @param outputDir - The output directory (usually workspace root)
- * @param duplicates - Duplicate groups to prune
- * @param sourceRuleNames - Base filenames of current source rules (e.g., ['ai-guidance', 'testing'])
- * @returns Prune result with deleted files and freed space
+ * @param staleGroups - Stale export groups from detectStaleExports()
+ * @returns Clean result with deleted files and freed space
  *
  * @example
  * ```typescript
- * const duplicates = detectDuplicateExports(cwd, ['cursor']);
- * const sourceNames = rules.map(r => r.filename.replace(/\.md$/, ''));
- * const result = pruneDuplicateExports(cwd, duplicates, sourceNames);
- * console.log(`Deleted ${result.deleted.length} orphaned files`);
+ * const stale = detectStaleExports(cwd, sourceNames, ['cursor']);
+ * const result = cleanStaleExports(cwd, stale);
+ * console.log(`Removed ${result.deleted.length} stale files`);
  * ```
  */
-export function pruneDuplicateExports(
+export async function cleanStaleExports(
   outputDir: string,
-  duplicates: DuplicateGroup[],
-  sourceRuleNames: string[],
-): PruneResult {
-  const result: PruneResult = {
+  staleGroups: StaleExportGroup[],
+): Promise<CleanResult> {
+  const result: CleanResult = {
     deleted: [],
     freedBytes: 0,
-    kept: [],
     warnings: [],
   };
 
-  if (duplicates.length === 0) {
+  if (staleGroups.length === 0) {
     return result;
   }
 
-  // Normalize source rule names to lowercase for case-insensitive matching
-  const sourceNamesLower = sourceRuleNames.map((name) => name.toLowerCase());
+  // Check .alignignore protection
+  const { isIgnoredByAlignignore } = await import("../alignignore/index.js");
+  const { resolve, relative } = await import("path");
+  const cwd = process.cwd();
+  const alignignorePath = resolve(cwd, ".alignignore");
 
-  for (const group of duplicates) {
+  for (const group of staleGroups) {
     const fullDir = join(outputDir, group.directory);
 
     for (const filename of group.files) {
-      // Extract base name (without extension) from exported filename
-      // Examples: "ai-guidance.mdc" -> "ai-guidance", "style.md" -> "style"
-      const baseNameMatch = filename.match(/^(.+?)\.[^.]+$/);
-      const baseName = baseNameMatch?.[1] || filename;
-      const baseNameLower = baseName.toLowerCase();
+      const filePath = join(fullDir, filename);
 
-      // Check if this file corresponds to a current source rule
-      const hasMatchingSource = sourceNamesLower.includes(baseNameLower);
-
-      if (hasMatchingSource) {
-        // Keep this file - it matches a current source rule
-        result.kept.push(filename);
-      } else {
-        // Delete this file - it's an orphan (no matching source rule)
-        const filePath = join(fullDir, filename);
-        try {
-          const stat = statSync(filePath);
-          result.freedBytes += stat.size;
-
-          // Delete the file
-          unlinkSync(filePath);
-          result.deleted.push(filename);
-        } catch (err) {
+      try {
+        // Check if file is protected by .alignignore
+        const absolutePath = resolve(cwd, filePath);
+        const relativePath = relative(cwd, absolutePath).replace(/\\/g, "/");
+        if (isIgnoredByAlignignore(relativePath, alignignorePath)) {
           result.warnings.push(
-            `Failed to delete ${filename}: ${err instanceof Error ? err.message : String(err)}`,
+            `File protected by .alignignore, skipping: ${relativePath}`,
           );
+          continue;
         }
+
+        const stat = statSync(filePath);
+        result.freedBytes += stat.size;
+
+        // Delete the file
+        unlinkSync(filePath);
+        result.deleted.push(filename);
+      } catch (err) {
+        result.warnings.push(
+          `Failed to delete ${filename}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }

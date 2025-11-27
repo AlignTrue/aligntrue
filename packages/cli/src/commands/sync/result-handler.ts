@@ -9,8 +9,8 @@ import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
-  detectDuplicateExports,
-  pruneDuplicateExports,
+  detectStaleExports,
+  cleanStaleExports,
 } from "@aligntrue/core/sync";
 import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
@@ -324,52 +324,59 @@ export async function handleSyncResult(
       .filter(Boolean)
       .map((a) => a.name);
 
-    const duplicates = detectDuplicateExports(cwd, activeExporters);
+    // Extract source rule names from bundle result
+    // Use fingerprint as primary ID (user-defined), fall back to heading
+    const sourceRuleNames = context.bundleResult.align.sections
+      .map(
+        (section: { fingerprint?: string; heading?: string }) =>
+          section.fingerprint ||
+          section.heading?.replace(/^#+\s*/, "") ||
+          "unknown",
+      )
+      .filter((name: string) => name !== "unknown");
 
-    if (duplicates.length > 0) {
-      // Extract source rule names from bundle result
-      const sourceRuleNames = context.bundleResult.align.sections
-        .map(
-          (section: { fingerprint?: string; heading?: string }) =>
-            section.fingerprint ||
-            section.heading?.replace(/^#+\s*/, "") ||
-            "unknown",
-        )
-        .filter((name: string) => name !== "unknown");
+    const staleGroups = detectStaleExports(
+      cwd,
+      sourceRuleNames,
+      activeExporters,
+    );
 
-      if (options.prune) {
-        // Prune mode: remove orphaned files automatically
-        const pruneResult = pruneDuplicateExports(
-          cwd,
-          duplicates,
-          sourceRuleNames,
-        );
+    if (staleGroups.length > 0) {
+      if (options.clean) {
+        // Clean mode: remove stale files automatically
+        const cleanResult = await cleanStaleExports(cwd, staleGroups);
 
-        if (pruneResult.deleted.length > 0) {
+        if (cleanResult.deleted.length > 0) {
           clack.log.success(
-            `Removed ${pruneResult.deleted.length} orphaned duplicate file${pruneResult.deleted.length !== 1 ? "s" : ""}`,
+            `Removed ${cleanResult.deleted.length} stale export file${cleanResult.deleted.length !== 1 ? "s" : ""}`,
           );
           if (options.verbose) {
-            pruneResult.deleted.forEach((file: string) => {
+            cleanResult.deleted.forEach((file: string) => {
               clack.log.info(`  Deleted: ${file}`);
             });
           }
         }
 
-        if (pruneResult.warnings.length > 0) {
-          pruneResult.warnings.forEach((warning: string) => {
+        if (cleanResult.warnings.length > 0) {
+          cleanResult.warnings.forEach((warning: string) => {
             clack.log.warn(`  ${warning}`);
           });
         }
       } else {
-        // Warning mode: inform user about duplicates and how to remove them
-        for (const group of duplicates) {
-          const fileList = group.files.join(", ");
-          clack.log.warn(
-            `Potential duplicates in ${group.directory}/: ${fileList}`,
-          );
+        // Warning mode: inform user about stale exports and how to remove them
+        const fileCount = staleGroups.reduce(
+          (sum, g) => sum + g.files.length,
+          0,
+        );
+        clack.log.warn(
+          `Found ${fileCount} stale export file${fileCount !== 1 ? "s" : ""} (no matching source):`,
+        );
+        for (const group of staleGroups) {
+          for (const file of group.files) {
+            clack.log.warn(`  ${group.directory}/${file}`);
+          }
         }
-        clack.log.info("To remove orphaned files, run: aligntrue sync --prune");
+        clack.log.info("To remove stale exports: aligntrue sync --clean");
       }
     }
   }

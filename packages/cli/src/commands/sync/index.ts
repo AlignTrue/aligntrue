@@ -27,7 +27,7 @@ export async function sync(args: string[]): Promise<void> {
 
   try {
     // Early check if sync is needed (unless explicit flags override)
-    if (!options.force && !options.dryRun && !options.prune) {
+    if (!options.force && !options.dryRun && !options.clean) {
       const syncNeeded = await checkIfSyncNeeded(options);
       if (!syncNeeded) {
         if (!options.quiet) {
