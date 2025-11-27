@@ -1,12 +1,13 @@
 {
   "name": "zed",
   "version": "1.0.0",
-  "description": "Export AlignTrue rules to AGENTS.md format (Zed compatible)",
-  "outputs": ["AGENTS.md"],
+  "description": "Export AlignTrue rules to ZED.md format",
+  "outputs": ["ZED.md"],
   "handler": "./index.js",
   "license": "MIT",
   "fidelityNotes": [
-    "Uses universal AGENTS.md format",
+    "Machine-checkable rules (check) not represented in ZED.md format",
+    "Autofix hints not represented in ZED.md format",
     "Zed also uses .zed/settings.json (separate exporter)"
   ]
 }

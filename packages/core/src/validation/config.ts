@@ -476,7 +476,6 @@ export async function validateConfig(
   // Validate exporters (array or object format)
   if (config.exporters) {
     const MAX_EXPORTERS = 20;
-    const WARN_EXPORTERS_THRESHOLD = 10;
 
     // Valid format values
     const VALID_FORMATS = ["native", "agents-md"] as const;
@@ -497,16 +496,6 @@ export async function validateConfig(
         throw new Error(
           `Too many exporters configured (${config.exporters.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
         );
-      }
-
-      if (config.exporters.length > WARN_EXPORTERS_THRESHOLD) {
-        const warningKey = "too-many-exporters";
-        if (!shownWarnings.has(warningKey)) {
-          shownWarnings.add(warningKey);
-          console.warn(
-            `Warning: ${config.exporters.length} exporters configured. This may slow down sync operations.`,
-          );
-        }
       }
 
       // Check for duplicates
@@ -541,16 +530,6 @@ export async function validateConfig(
         throw new Error(
           `Too many exporters configured (${exporterNames.length}). Maximum allowed is ${MAX_EXPORTERS}.`,
         );
-      }
-
-      if (exporterNames.length > WARN_EXPORTERS_THRESHOLD) {
-        const warningKey = "too-many-exporters";
-        if (!shownWarnings.has(warningKey)) {
-          shownWarnings.add(warningKey);
-          console.warn(
-            `Warning: ${exporterNames.length} exporters configured. This may slow down sync operations.`,
-          );
-        }
       }
 
       for (const [name, exporterConfig] of Object.entries(config.exporters)) {

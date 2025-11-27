@@ -44,6 +44,8 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   claude: ["CLAUDE.md"],
   crush: ["CRUSH.md"],
   warp: ["WARP.md"],
+  windsurf: ["WINDSURF.md"],
+  zed: ["ZED.md"],
   gemini: ["GEMINI.md"],
   // Note: agents that share AGENTS.md are intentionally not auto-detected
   // Users must explicitly enable them if needed
@@ -67,9 +69,9 @@ export const AGENT_PATTERNS: Record<string, string[]> = {
   augmentcode: [".augment/rules/"], // Only detect if rules subdirectory exists
   kilocode: [".kilocode/rules/"], // Only detect if rules subdirectory exists
   kiro: [".kiro/steering/"], // Only detect if steering subdirectory exists
-  "firebase-studio": [".idx/airules.md"], // Only detect if specific file exists
+  "firebase-studio": [".idx/"], // Only detect if .idx subdirectory exists
   junie: [".junie/guidelines.md"], // Only detect if specific file exists
-  "trae-ai": [".trae/rules/project_rules.md"], // Only detect if specific file exists
+  "trae-ai": [".trae/rules/"], // Only detect if .trae/rules subdirectory exists
   openhands: [".openhands/microagents/repo.md"], // Only detect if specific file exists
 
   // YAML config exporters
