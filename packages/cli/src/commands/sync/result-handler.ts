@@ -10,6 +10,7 @@ import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
   detectDuplicateExports,
+  pruneDuplicateExports,
 } from "@aligntrue/core/sync";
 import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
@@ -326,15 +327,50 @@ export async function handleSyncResult(
     const duplicates = detectDuplicateExports(cwd, activeExporters);
 
     if (duplicates.length > 0) {
-      for (const group of duplicates) {
-        const fileList = group.files.join(", ");
-        clack.log.warn(
-          `Potential duplicates in ${group.directory}/: ${fileList}`,
+      // Extract source rule names from bundle result
+      const sourceRuleNames = context.bundleResult.align.sections
+        .map(
+          (section: { fingerprint?: string; heading?: string }) =>
+            section.fingerprint ||
+            section.heading?.replace(/^#+\s*/, "") ||
+            "unknown",
+        )
+        .filter((name: string) => name !== "unknown");
+
+      if (options.prune) {
+        // Prune mode: remove orphaned files automatically
+        const pruneResult = pruneDuplicateExports(
+          cwd,
+          duplicates,
+          sourceRuleNames,
         );
+
+        if (pruneResult.deleted.length > 0) {
+          clack.log.success(
+            `Removed ${pruneResult.deleted.length} orphaned duplicate file${pruneResult.deleted.length !== 1 ? "s" : ""}`,
+          );
+          if (options.verbose) {
+            pruneResult.deleted.forEach((file: string) => {
+              clack.log.info(`  Deleted: ${file}`);
+            });
+          }
+        }
+
+        if (pruneResult.warnings.length > 0) {
+          pruneResult.warnings.forEach((warning: string) => {
+            clack.log.warn(`  ${warning}`);
+          });
+        }
+      } else {
+        // Warning mode: inform user about duplicates and how to remove them
+        for (const group of duplicates) {
+          const fileList = group.files.join(", ");
+          clack.log.warn(
+            `Potential duplicates in ${group.directory}/: ${fileList}`,
+          );
+        }
+        clack.log.info("To remove orphaned files, run: aligntrue sync --prune");
       }
-      clack.log.info(
-        "Review and remove old files if they result from renamed rules",
-      );
     }
   }
 
@@ -385,7 +421,6 @@ export async function handleSyncResult(
         });
 
         message += `Synced to ${exporterNames.length} agent${exporterNames.length !== 1 ? "s" : ""}: ${relativeFiles.slice(0, 5).join(", ")}${relativeFiles.length > 5 ? `, +${relativeFiles.length - 5} more` : ""}\n\n`;
-        message += "Your agents are now aligned!\n\n";
         message +=
           "Tip: Update rules anytime by editing .aligntrue/rules and running: aligntrue sync\n";
         message += "Docs: aligntrue.ai/sources";

@@ -121,4 +121,9 @@ export interface SyncOptions {
    * Show detailed conflict information with section content
    */
   showConflicts?: boolean;
+
+  /**
+   * Remove orphaned duplicate exported files (keep current rules only)
+   */
+  prune?: boolean;
 }

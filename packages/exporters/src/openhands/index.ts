@@ -44,7 +44,7 @@ export class OpenHandsExporter extends ExporterBase {
 
     // Write each rule as a separate microagent file
     for (const rule of exportableRules) {
-      const filename = rule.filename.replace(/\.md$/, ".md");
+      const filename = rule.filename;
       const outputPath = join(outputDir, ".openhands", "microagents", filename);
 
       // Generate content from rule

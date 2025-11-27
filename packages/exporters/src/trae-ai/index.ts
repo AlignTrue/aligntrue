@@ -44,7 +44,7 @@ export class TraeAiExporter extends ExporterBase {
       }
 
       // Determine output path
-      const filename = rule.filename.replace(/\.md$/, ".md"); // Already .md, keep it
+      const filename = rule.filename;
       const outputPath = join(outputDir, ".trae", "rules", filename);
 
       // Strip starter rule comments from content (only relevant in source files, not exports)
