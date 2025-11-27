@@ -51,6 +51,11 @@
       "source": "/extend",
       "destination": "/docs/06-contributing/adding-exporters",
       "permanent": true
+    },
+    {
+      "source": "/formats",
+      "destination": "/docs/02-customization/export-formats",
+      "permanent": true
     }
   ],
   "headers": [
