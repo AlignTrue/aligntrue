@@ -240,7 +240,7 @@ export async function buildSyncContext(
       spinner.stop(
         bundleResult.sources.length > 1
           ? `Resolved and merged ${bundleResult.sources.length} sources`
-          : "Source resolved",
+          : undefined,
       );
     }
 
