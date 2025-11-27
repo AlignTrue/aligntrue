@@ -204,7 +204,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: headers are validated HTTP response headers (etag, last-modified).
     // this.url is validated via validateUrl() at constructor. No user input flows through headers.
-    // CodeQL rule: js/file-access-to-http
+    // lgtm[js/file-access-to-http]: URL and headers are validated at construction time
     const response = await fetch(this.url, { headers });
 
     // 304 Not Modified - content unchanged
@@ -229,7 +229,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
     // Cache directory is created at constructor, never from user input.
-    // CodeQL rule: js/http-to-file-access
+    // lgtm[js/http-to-file-access]: Cache file path is constructed from internal directory only, not user input
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata
@@ -268,7 +268,7 @@ export class UrlProvider implements SourceProvider {
 
     // Safe: this.cacheFile is controlled internal path (.aligntrue/.cache/url/<hash>.content).
     // Cache directory is created at constructor, never from user input.
-    // CodeQL rule: js/http-to-file-access
+    // lgtm[js/http-to-file-access]: Cache file path is constructed from internal directory only, not user input
     writeFileSync(this.cacheFile, content, "utf-8");
 
     // Save metadata
