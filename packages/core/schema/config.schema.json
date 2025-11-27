@@ -231,7 +231,7 @@
         },
         {
           "type": "object",
-          "description": "Exporter adapters with optional format configuration",
+          "description": "Exporter adapters with optional format and behavior configuration",
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -240,6 +240,10 @@
                 "type": "string",
                 "enum": ["native", "agents-md"],
                 "description": "Export format: native (multi-file or agent-specific format), agents-md (universal AGENTS.md)"
+              },
+              "ignore_file": {
+                "type": "boolean",
+                "description": "Generate ignore file for this agent to prevent duplicate context (default: true for agents with ignore support)"
               }
             }
           }

@@ -326,3 +326,13 @@ export function removeAlignTruePatterns(
 
   return true;
 }
+
+/**
+ * Check if ignore file is managed by AlignTrue
+ * @param filePath - Path to ignore file
+ * @returns True if file contains AlignTrue managed section
+ */
+export function isAlignTrueManagedIgnoreFile(filePath: string): boolean {
+  const content = readIgnoreFile(filePath);
+  return hasAlignTrueSection(content);
+}

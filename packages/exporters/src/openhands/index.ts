@@ -1,6 +1,7 @@
 /**
  * OpenHands exporter
  * Exports AlignTrue rules to OpenHands .openhands/microagents/ directory format
+ * Each rule becomes a separate microagent file (one .md per rule)
  */
 
 import { join } from "path";
@@ -8,10 +9,8 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  ResolvedScope,
 } from "../types.js";
-import type { AlignSection } from "@aligntrue/schema";
-import { computeContentHash } from "@aligntrue/schema";
+import type { RuleFile } from "@aligntrue/schema";
 import { ExporterBase } from "../base/index.js";
 
 export class OpenHandsExporter extends ExporterBase {
@@ -22,12 +21,17 @@ export class OpenHandsExporter extends ExporterBase {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, align } = request;
     const { outputDir, dryRun = false } = options;
 
-    const sections = align.sections;
+    // Get rules from request (handles backward compatibility with align)
+    const rules = this.getRulesFromRequest(request);
 
-    if (sections.length === 0) {
+    // Filter rules that should be exported to this agent
+    const exportableRules = rules.filter((rule) =>
+      this.shouldExportRule(rule, "openhands"),
+    );
+
+    if (exportableRules.length === 0) {
       return {
         success: true,
         filesWritten: [],
@@ -35,59 +39,64 @@ export class OpenHandsExporter extends ExporterBase {
       };
     }
 
-    const filename = this.getScopeFilename(scope);
-    const outputPath = join(outputDir, ".openhands", "microagents", filename);
+    const allFilesWritten: string[] = [];
+    const contentHashes: string[] = [];
 
-    // Generate content from sections
-    const { content, warnings } = this.generateSectionContent(scope, sections);
-    const contentHash = computeContentHash({ scope, sections });
-    const fidelityNotes = this.computeSectionFidelityNotes(sections);
+    // Write each rule as a separate microagent file
+    for (const rule of exportableRules) {
+      const filename = rule.filename.replace(/\.md$/, ".md");
+      const outputPath = join(outputDir, ".openhands", "microagents", filename);
 
-    const filesWritten = await this.writeFile(
-      outputPath,
-      content,
-      dryRun,
-      options,
-    );
+      // Generate content from rule
+      const { content } = this.generateMicroagentContent(rule);
 
-    const result = this.buildResult(filesWritten, contentHash, fidelityNotes);
+      // Always compute content hash (for dry-run to return meaningful hash)
+      contentHashes.push(rule.hash);
 
-    if (warnings.length > 0) {
-      result.warnings = warnings;
+      // Write file
+      const files = await this.writeFile(outputPath, content, dryRun, options);
+
+      if (files.length > 0) {
+        allFilesWritten.push(...files);
+      }
     }
 
-    return result;
+    const combinedHash =
+      contentHashes.length > 0
+        ? this.computeHash(contentHashes.sort().join(""))
+        : "";
+
+    // Compute fidelity notes from the IR sections
+    const fidelityNotes = this.computeSectionFidelityNotes(
+      request.align.sections,
+    );
+
+    return this.buildResult(allFilesWritten, combinedHash, fidelityNotes);
   }
 
   /**
-   * Generate OpenHands content from sections (natural markdown)
+   * Generate OpenHands microagent content from a single rule
    */
-  private generateSectionContent(
-    scope: ResolvedScope,
-    sections: AlignSection[],
-  ): { content: string; warnings: string[] } {
+  private generateMicroagentContent(rule: RuleFile): {
+    content: string;
+    warnings: string[];
+  } {
     const lines: string[] = [];
 
-    const scopeDesc = scope.isDefault
-      ? "OpenHands repository microagent rules"
-      : `OpenHands rules for ${scope.path}`;
-    lines.push(`# ${scopeDesc}`);
+    const title = rule.frontmatter.title || rule.filename.replace(/\.md$/, "");
+    lines.push(`# ${title}`);
     lines.push("");
 
-    // Render sections as natural markdown
-    const sectionsMarkdown = this.renderSections(sections, false);
-    lines.push(sectionsMarkdown);
-
-    return { content: lines.join("\n"), warnings: [] };
-  }
-
-  private getScopeFilename(scope: ResolvedScope): string {
-    if (scope.isDefault || scope.path === "." || scope.path === "") {
-      return "repo.md";
+    // Add description if present
+    if (rule.frontmatter.description) {
+      lines.push(rule.frontmatter.description);
+      lines.push("");
     }
 
-    const normalized = scope.normalizedPath.replace(/\//g, "-");
-    return `${normalized}.md`;
+    // Render rule content as natural markdown
+    lines.push(rule.content);
+
+    return { content: lines.join("\n"), warnings: [] };
   }
 
   resetState(): void {

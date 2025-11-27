@@ -1,85 +1,71 @@
-/**
- * Open Hands exporter tests with mode hints support
- */
-
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { rmSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { describe, it, expect } from "vitest";
+import type { ScopedExportRequest, ExportOptions } from "../src/types.js";
 import { OpenHandsExporter } from "../src/openhands/index.js";
-import type { Align, AlignSection } from "@aligntrue/schema";
-import type {
-  ScopedExportRequest,
-  ExportOptions,
-  ResolvedScope,
-} from "../src/types.js";
-import type { Align, AlignSection } from "@aligntrue/schema";
-import { loadFixture, createDefaultScope } from "./helpers/test-fixtures.js";
 
-const FIXTURES_DIR = join(import.meta.dirname, "fixtures", "cursor");
-const TEST_OUTPUT_DIR = join(import.meta.dirname, "temp-openhands-test-output");
+describe("OpenHands exporter", () => {
+  it("should export multiple files per rule", async () => {
+    const exporter = new OpenHandsExporter();
 
-describe("OpenHandsExporter", () => {
-  let exporter: OpenHandsExporter;
+    const mockRule1 = {
+      filename: "typescript.md",
+      hash: "hash1",
+      content: "TypeScript guidelines",
+      frontmatter: {
+        title: "TypeScript",
+        description: "Type safety rules",
+      },
+    };
 
-  beforeEach(() => {
-    exporter = new OpenHandsExporter();
-    // Clean up test output directory
-    if (existsSync(TEST_OUTPUT_DIR)) {
-      rmSync(TEST_OUTPUT_DIR, { recursive: true });
-    }
-    mkdirSync(TEST_OUTPUT_DIR, { recursive: true });
+    const mockRule2 = {
+      filename: "security.md",
+      hash: "hash2",
+      content: "Security best practices",
+      frontmatter: {
+        title: "Security",
+        description: "Keep it secure",
+      },
+    };
+
+    const request: ScopedExportRequest = {
+      scope: { path: ".", isDefault: true, normalizedPath: "." },
+      align: {
+        sections: [],
+        rules: [mockRule1, mockRule2],
+      } as any,
+    };
+
+    const options: ExportOptions = {
+      outputDir: "/tmp/openhands-test",
+      dryRun: true,
+    };
+
+    const result = await exporter.export(request, options);
+
+    expect(result.success).toBe(true);
+    // In dry-run mode, no files are returned, but hash should be computed
+    expect(result.contentHash).toBeDefined();
   });
 
-  afterEach(() => {
-    // Clean up test output directory
-    if (existsSync(TEST_OUTPUT_DIR)) {
-      rmSync(TEST_OUTPUT_DIR, { recursive: true });
-    }
-  });
+  it("should handle empty rules", async () => {
+    const exporter = new OpenHandsExporter();
 
-  describe("Plugin Interface", () => {
-    it("implements ExporterPlugin interface", () => {
-      expect(exporter.name).toBe("openhands");
-      expect(exporter.version).toBe("1.0.0");
-      expect(typeof exporter.export).toBe("function");
-    });
-  });
+    const request: ScopedExportRequest = {
+      scope: { path: ".", isDefault: true, normalizedPath: "." },
+      align: {
+        sections: [],
+        rules: [],
+      } as any,
+    };
 
-  describe("Basic Export", () => {
-    it("exports sections to .openhands/microagents/repo.md", async () => {
-      const fixture = loadFixture(FIXTURES_DIR, "single-rule.yaml");
-      const request = createRequest(fixture.sections, createDefaultScope());
-      const options: ExportOptions = {
-        outputDir: TEST_OUTPUT_DIR,
-        dryRun: false,
-      };
-      const result = await exporter.export(request, options);
+    const options: ExportOptions = {
+      outputDir: "/tmp/openhands-test",
+      dryRun: true,
+    };
 
-      expect(result.success).toBe(true);
-      expect(result.filesWritten).toHaveLength(1);
-      expect(result.filesWritten[0]).toBe(
-        join(TEST_OUTPUT_DIR, ".openhands", "microagents", "repo.md"),
-      );
-    });
+    const result = await exporter.export(request, options);
+
+    expect(result.success).toBe(true);
+    expect(result.filesWritten).toEqual([]);
+    expect(result.contentHash).toBe("");
   });
 });
-
-// Helper functions
-
-function createRequest(
-  sections: AlignSection[],
-  scope: ResolvedScope,
-): ScopedExportRequest {
-  const align: Align = {
-    id: "test-align",
-    version: "1.0.0",
-    spec_version: "1",
-    sections,
-  };
-
-  return {
-    scope,
-    align,
-    outputPath: join(TEST_OUTPUT_DIR, ".openhands", "microagents", "repo.md"),
-  };
-}

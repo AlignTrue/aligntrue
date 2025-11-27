@@ -57,6 +57,9 @@ export type { Section } from "./parsing/section-extractor.js";
 // Resource management
 export * from "./resources/index.js";
 
+// AlignTrue file protection
+export * from "./alignignore/index.js";
+
 // Validation
 export * from "./validation/index.js";
 
