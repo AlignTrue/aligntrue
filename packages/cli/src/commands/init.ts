@@ -574,8 +574,8 @@ aligntrue sync
   );
   if (hasMultiFormatAgents) {
     logMessage(
-      "\nSome agents support multiple export formats (native multi-file or AGENTS.md).\n" +
-        "Configure in .aligntrue/config.yaml. See docs at https://aligntrue.ai/docs/02-customization/export-formats",
+      "\nSome agents support multiple export formats (multi-file, AGENTS.md, etc.).\n" +
+        "Configure in .aligntrue/config.yaml. See docs at https://aligntrue.ai/formats",
       "info",
       nonInteractive,
     );
