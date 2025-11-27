@@ -339,12 +339,14 @@ export function detectDuplicateExports(
 
       for (const entry of entries) {
         const filePath = join(fullDir, entry);
-        const stat = statSync(filePath);
-
-        // Skip directories
-        if (stat.isDirectory()) continue;
 
         try {
+          // File may be deleted/changed between stat and read (TOCTOU) - catch errors
+          const stat = statSync(filePath);
+
+          // Skip directories
+          if (stat.isDirectory()) continue;
+
           const content = readFileSync(filePath, "utf-8");
           const hash = computeHash(content);
 
@@ -353,7 +355,7 @@ export function detectDuplicateExports(
           }
           hashToFiles[hash].push(entry);
         } catch {
-          // Skip files that can't be read/hashed
+          // Skip files that can't be read/hashed (handles TOCTOU race condition)
         }
       }
 
