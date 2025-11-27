@@ -5,9 +5,17 @@
  * native and agents-md formats, with backup to overwritten-files folder.
  */
 
-import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  renameSync,
+  statSync,
+  readFileSync,
+} from "fs";
 import { join, dirname, basename } from "path";
 import type { CleanupMode } from "../config/types.js";
+import { computeHash } from "@aligntrue/schema";
 
 /**
  * Result of a cleanup operation
@@ -253,4 +261,115 @@ export function agentHasExistingFiles(
     }
   }
   return false;
+}
+
+/**
+ * Potential duplicate export group (same content hash)
+ */
+export interface DuplicateGroup {
+  /** Directory where duplicates were found (relative to output dir) */
+  directory: string;
+  /** Agent name */
+  agent: string;
+  /** Files in this group with identical content */
+  files: string[];
+}
+
+/**
+ * Detect potential duplicate exported files with identical content
+ *
+ * Scans multi-file export directories (cursor, amazonq, kilocode, etc.)
+ * and groups files by content hash. Returns groups with more than one file,
+ * indicating potential duplicates that may result from renamed source rules.
+ *
+ * Skips single-file exporters like AGENTS.md (no duplicates possible).
+ * Only checks existing directories; missing directories are silently ignored.
+ *
+ * @param outputDir - The output directory (usually workspace root)
+ * @param activeAgents - List of active agent names to check
+ * @returns Array of duplicate groups found
+ *
+ * @example
+ * ```typescript
+ * const duplicates = detectDuplicateExports('/workspace', ['cursor', 'amazonq']);
+ * // Returns: [{
+ * //   directory: '.cursor/rules',
+ * //   agent: 'cursor',
+ * //   files: ['ai-guidance.mdc', 'ai-guidance2.mdc']
+ * // }]
+ * ```
+ */
+export function detectDuplicateExports(
+  outputDir: string,
+  activeAgents: string[],
+): DuplicateGroup[] {
+  const duplicates: DuplicateGroup[] = [];
+
+  // Multi-file exporters that could have duplicates
+  // (single-file formats like AGENTS.md can't have duplicates)
+  const multiFileAgents = {
+    cursor: ".cursor/rules",
+    amazonq: ".amazonq/rules",
+    kilocode: ".kilocode/rules",
+    augmentcode: ".augment/rules",
+    kiro: ".kiro/steering",
+    "trae-ai": ".trae/rules",
+    openhands: ".openhands/microagents",
+    "openhands-config": ".openhands/microagents",
+    cline: ".cline/rules",
+    "firebase-studio": ".firebase-studio/rules",
+  };
+
+  for (const agent of activeAgents) {
+    const dirPath = multiFileAgents[agent as keyof typeof multiFileAgents];
+    if (!dirPath) continue; // Skip single-file exporters
+
+    const fullDir = join(outputDir, dirPath);
+
+    // Skip if directory doesn't exist
+    if (!existsSync(fullDir)) continue;
+
+    try {
+      const entries = readdirSync(fullDir);
+      if (entries.length < 2) continue; // Need at least 2 files to have duplicates
+
+      // Group files by content hash
+      const hashToFiles: Record<string, string[]> = {};
+
+      for (const entry of entries) {
+        const filePath = join(fullDir, entry);
+        const stat = statSync(filePath);
+
+        // Skip directories
+        if (stat.isDirectory()) continue;
+
+        try {
+          const content = readFileSync(filePath, "utf-8");
+          const hash = computeHash(content);
+
+          if (!hashToFiles[hash]) {
+            hashToFiles[hash] = [];
+          }
+          hashToFiles[hash].push(entry);
+        } catch {
+          // Skip files that can't be read/hashed
+        }
+      }
+
+      // Find groups with more than one file (potential duplicates)
+      for (const [, files] of Object.entries(hashToFiles)) {
+        if (files.length > 1) {
+          duplicates.push({
+            directory: dirPath,
+            agent,
+            files: files.sort(),
+          });
+        }
+      }
+    } catch {
+      // Skip directories that can't be read
+    }
+  }
+
+  return duplicates;
 }
