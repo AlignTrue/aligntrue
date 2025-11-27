@@ -1,170 +1,204 @@
 ---
 title: Release process
-description: How to release AlignTrue packages using Changesets for automated version management and npm publishing
+description: How to release AlignTrue packages with manual versioning and validation
 ---
 
 # Release process
 
-AlignTrue uses [Changesets](https://github.com/changesets/changesets) for version management and automated npm publishing.
+AlignTrue uses a manual release process with automated validation, workspace protocol safety checks, and post-publish verification.
 
 ## TL;DR
 
-1. Make changes, push to main
-2. Run `pnpm changeset` to document changes
-3. Changesets bot creates "Version Packages" PR automatically
-4. Merge that PR → packages publish to npm automatically
+1. Ensure all changes are committed and pushed to main
+2. Run `pnpm release` (interactive) or `pnpm release:helper patch|minor|major` (scripted)
+3. Script bumps versions, builds, publishes to npm, validates, and creates git tag
+4. Verify on npm registry
 
 ---
 
-## Day-to-day workflow
+## Release workflow
 
-### 1. Making changes
+### Prerequisites
 
-Work normally:
+Before releasing:
 
 ```bash
-# Make your changes
-git add .
-git commit -m "feat: add new feature"
-git push origin main
+# Ensure clean git status
+git status
+
+# Verify you're logged into npm
+npm login
+
+# Verify you're logged into git (SSH keys or git login)
+git config --global user.email
+git config --global user.name
 ```
 
-### 2. Creating a changeset
-
-For each feature/fix that should be in the changelog:
+### 1. Interactive release (recommended)
 
 ```bash
-pnpm changeset
+pnpm release
 ```
 
 This prompts you for:
 
-- **Which packages changed?** (select with space, usually all `@aligntrue/*`)
-- **Bump type?** Choose:
-  - `patch` - Bug fixes (0.1.0-alpha.2 → 0.1.0-alpha.3)
-  - `minor` - New features (0.1.0 → 0.2.0)
-  - `major` - Breaking changes (0.1.0 → 1.0.0)
-- **Summary** - Brief description for CHANGELOG
+- **Bump type:** `patch` (fixes), `minor` (features), `major` (breaking), or `current` (no bump)
+- **Confirmation:** Review version changes before proceeding
+- **Dry run option:** Test with `--dry-run` flag
 
-This creates a file in `.changeset/` that you commit:
+### 2. Scripted release (CI/automation)
 
 ```bash
-git add .changeset/
-git commit -m "chore: add changeset"
-git push
+# For patch release (0.1.0 -> 0.1.1)
+pnpm release:helper patch
+
+# For minor release (0.1.0 -> 0.2.0)
+pnpm release:helper minor
+
+# For major release (0.1.0 -> 1.0.0)
+pnpm release:helper major
 ```
 
-### 3. Automatic "Version Packages" PR
+### 3. What the script does
 
-The Changesets GitHub Action automatically:
+The release script automatically:
 
-- Creates/updates a PR titled "Version Packages"
-- Bumps versions in all `package.json` files
-- Updates `CHANGELOG.md`
-- Keeps this PR up-to-date as you add more changesets
+1. Bumps versions in all `package.json` files
+2. Builds all packages
+3. Pre-validates: checks for workspace protocol leaks
+4. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*` to concrete versions)
+5. Post-validates: verifies npm registry has correct versions
+6. Commits and tags git
 
-### 4. Release
+### 4. After publish
 
-When ready to publish:
+The script prints next steps:
 
-1. **Review the "Version Packages" PR**
-   - Check version bumps are correct
-   - Review CHANGELOG entries
-   - Verify all packages build
-
-2. **Merge the PR**
-   - GitHub Actions automatically publishes to npm
-   - Creates a GitHub release
-   - Tags the commit
+```bash
+pnpm install
+git add -A
+git commit -m "chore: Release vX.Y.Z"
+git tag vX.Y.Z
+git push origin main --tags
+```
 
 ---
 
-## Alpha releases
+## Workspace protocol safety
 
-For pre-1.0 alpha releases:
+We use `workspace:*` protocol in `package.json` for internal dependencies during development. This ensures local development always uses the live code.
+
+**Critical:** We never publish packages with `workspace:*` dependencies. Users cannot install them.
+
+### Prevention strategy
+
+Two-layer defense:
+
+1. **pnpm Publish:** We use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to concrete versions during publish.
+2. **Post-publish Validation:** `scripts/validate-published-deps.mjs` queries npm registry immediately after publishing. If it detects `workspace:*` leaks, it alerts you.
+
+### Manual verification
+
+To manually check a published package:
 
 ```bash
-# Enter pre-release mode (one time)
-pnpm changeset pre enter alpha
-
-# Create changesets as normal
-pnpm changeset
-
-# Exit pre-release mode when ready for stable
-pnpm changeset pre exit
+npm view aligntrue@latest dependencies
 ```
 
-**Current status:** We're in alpha mode, so versions are `0.1.0-alpha.X`.
+You should see concrete versions (e.g., `^0.2.2`), NOT `workspace:*`.
 
 ---
 
-## Manual release (emergency only)
+## Testing package installation locally
 
-If you need to publish manually:
+**Important:** `pnpm pack` creates tarballs with `workspace:*` dependencies intact.
+
+### For local testing
+
+**Method 1: Use absolute path to CLI binary (RECOMMENDED)**
 
 ```bash
-# Bump versions
-pnpm changeset version
+cd /path/to/workspace
+pnpm build  # Build all packages first
 
-# Build and publish
-pnpm release
+# Use absolute path
+/path/to/workspace/packages/cli/dist/index.js --version
 ```
 
-**Note:** This bypasses CI checks. Only use for emergencies.
+This is the most reliable method.
+
+**Method 2: Use distribution simulation script**
+
+```bash
+cd packages/cli
+bash tests/scripts/test-distribution.sh
+```
+
+This script simulates the real npm distribution by rewriting `workspace:*` to concrete versions.
+
+### Why pnpm link --global doesn't work
+
+`pnpm link --global` creates a symlink, but Node.js ESM loader cannot resolve `workspace:*` protocol through symlinks. Result: `ERR_PACKAGE_PATH_NOT_EXPORTED` errors.
 
 ---
 
-## Setup (one-time)
+## Dry run testing
 
-### 1. Add NPM_TOKEN to GitHub Secrets
+Test the entire release process without publishing:
 
-1. Generate npm token: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Type: **Automation**
-   - Scope: **Read and write**
-2. Add to GitHub: Settings → Secrets → Actions → New repository secret
-   - Name: `NPM_TOKEN`
-   - Value: `npm_xxxxxxxxxxxx`
+```bash
+# Interactive dry run
+pnpm release --dry-run
 
-### 2. Verify Changesets config
-
-Already configured in `.changeset/config.json`:
-
-```json
-{
-  "linked": [["@aligntrue/*"]], // All packages version together
-  "access": "public", // Public npm packages
-  "baseBranch": "main"
-}
+# Scripted dry run
+pnpm release:helper patch  # Then check output
 ```
+
+Dry run shows what would happen but makes no changes.
 
 ---
 
 ## Troubleshooting
 
-### "Version Packages" PR not created
+### "Publish failed" or workspace leak detected
 
-- Check GitHub Actions tab for errors
-- Verify `NPM_TOKEN` secret is set
-- Ensure you've created at least one changeset
+If post-publish validation fails:
 
-### Publish failed
+1. Check if packages were actually published to npm
+2. If yes, you may need to unpublish: `npm unpublish aligntrue@X.Y.Z`
+3. Fix the workspace protocol issue
+4. Try again
 
-- Check npm token hasn't expired
-- Verify package names are available on npm
-- Check CI logs in GitHub Actions
+### Version mismatch
 
-### Wrong version bump
+All packages must have the same version:
 
-Before merging "Version Packages" PR:
+```bash
+# Check versions
+grep '"version"' packages/*/package.json
 
-1. Delete the changeset file that caused it: `.changeset/some-name.md`
-2. Create a new changeset with correct bump type
-3. PR will auto-update
+# If mismatched, fix manually or try releasing again
+```
+
+### Git push fails
+
+If git operations fail after publishing:
+
+1. Verify you have push access to the repository
+2. Check your git SSH keys are configured
+3. Manually complete git operations:
+   ```bash
+   pnpm install
+   git add -A
+   git commit -m "chore: Release vX.Y.Z"
+   git tag vX.Y.Z
+   git push origin main --tags
+   ```
 
 ---
 
 ## Related
 
-- [Changesets documentation](https://github.com/changesets/changesets)
+- [RELEASING.md](/RELEASING.md) - Detailed release strategy and workspace protocol documentation
 - [Semantic Versioning](https://semver.org/)
 - [Keep a Changelog](https://keepachangelog.com/)

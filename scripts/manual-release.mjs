@@ -145,7 +145,9 @@ function publishPackage(pkg, tag) {
     if (tag) {
       args.push("--tag", tag);
     }
-    execFileSync("npm", args, {
+    // Use pnpm publish to automatically rewrite workspace:* to concrete versions
+    // This ensures published packages have no workspace protocol leaks
+    execFileSync("pnpm", args, {
       cwd: dir,
       stdio: "inherit",
       encoding: "utf8",
@@ -300,7 +302,23 @@ async function main() {
   }
   s.stop(`Published ${packages.length} packages to npm`);
 
-  // 8. Commit and tag
+  // 8. Post-publish validation
+  if (!isDryRun) {
+    s.start("Validating published packages...");
+    try {
+      run("node", ["scripts/validate-published-deps.mjs"], {
+        silent: true,
+        alwaysRun: true,
+      });
+      s.stop("Post-publish validation passed");
+    } catch (error) {
+      s.stop("Post-publish validation failed");
+      clack.log.error(`Workspace leak detected: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
+  // 9. Commit and tag
   const firstNewVersion = updates[0].newVersion;
   s.start("Creating git commit and tag...");
   try {
@@ -312,7 +330,7 @@ async function main() {
     process.exit(1);
   }
 
-  // 9. Success
+  // 10. Success
   clack.outro(
     isDryRun
       ? "✅ Dry run complete! No changes made."

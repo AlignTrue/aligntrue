@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Release process workspace protocol safety** - Fixed critical bug in `scripts/manual-release.mjs` where `npm publish` was used instead of `pnpm publish`, risking workspace protocol leaks in published packages. Added post-publish validation and updated documentation to reflect actual manual release workflow
 - **Windows test timeouts** - Fixed exporter tests hanging on Windows CI by simplifying atomic file write implementation. Replaced complex temp directory creation with same-directory temp files and hidden backup files, eliminating EXDEV (cross-device link) errors and mkdtempSync delays on Windows
 - **Sync cleanup detection** - Replaced unreliable `--prune` flag with new `--clean` flag that properly detects and removes all stale exported files (files with no matching source rule), not just content-identical duplicates. Dynamically derives multi-file exporter paths instead of hardcoded mapping
 
