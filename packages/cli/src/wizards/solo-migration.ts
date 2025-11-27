@@ -10,7 +10,7 @@ import * as yaml from "yaml";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
 import { isValidIR } from "../types/ir.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createSpinner, stopSpinnerSilently } from "../utils/spinner.js";
 
 export interface SoloMigrationResult {
   success: boolean;
@@ -107,7 +107,8 @@ export async function runSoloMigrationWizard(
     // Step 5: Apply changes
     spinner.start("Applying changes");
     await applySoloMigration(teamAction, config, cwd);
-    spinner.stop(); // Stop cleanly without message, outro follows
+    // Stop silently without rendering an empty step, outro follows
+    stopSpinnerSilently(spinner);
 
     // Step 6: Show summary
     clack.outro("Solo mode enabled!");

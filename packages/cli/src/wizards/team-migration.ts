@@ -10,7 +10,7 @@ import * as clack from "@clack/prompts";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
 import { isValidIR } from "../types/ir.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createSpinner, stopSpinnerSilently } from "../utils/spinner.js";
 
 export interface MigrationResult {
   success: boolean;
@@ -189,7 +189,8 @@ export async function runTeamMigrationWizard(
     // Migration logic in development
     spinner.start("Applying changes");
     await applyMigrationActions(actions, config, cwd);
-    spinner.stop(); // Stop cleanly without message, outro follows
+    // Stop silently without rendering an empty step, outro follows
+    stopSpinnerSilently(spinner);
 
     // Step 7: Show summary
     clack.outro("Team mode enabled!");

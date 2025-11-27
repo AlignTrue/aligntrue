@@ -68,7 +68,11 @@ async function _prepareEditSourceSwitch(
 }
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
-import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
+import {
+  createSpinner,
+  SpinnerLike,
+  stopSpinnerSilently,
+} from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
@@ -130,7 +134,12 @@ export async function buildSyncContext(
 
   let config: AlignTrueConfig = await loadConfigWithValidation(configPath);
   if (!options.quiet) {
-    spinner.stop(options.verbose ? "Configuration loaded" : undefined);
+    if (options.verbose) {
+      spinner.stop("Configuration loaded");
+    } else {
+      // Stop silently to avoid empty step indicator in non-verbose mode
+      stopSpinnerSilently(spinner);
+    }
   }
 
   const spinnerWithMessage = spinner as SpinnerLike & {
@@ -428,7 +437,12 @@ export async function buildSyncContext(
       // Section validation happens at parse time
     }
     if (!options.quiet) {
-      spinner.stop(options.verbose ? "Rules validated" : undefined);
+      if (options.verbose) {
+        spinner.stop("Rules validated");
+      } else {
+        // Stop silently to avoid empty step indicator in non-verbose mode
+        stopSpinnerSilently(spinner);
+      }
     }
   } catch (_error) {
     if (!options.quiet) {
