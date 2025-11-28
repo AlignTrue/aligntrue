@@ -68,11 +68,7 @@ async function _prepareEditSourceSwitch(
 }
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
-import {
-  createSpinner,
-  SpinnerLike,
-  stopSpinnerSilently,
-} from "../../utils/spinner.js";
+import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
@@ -128,18 +124,13 @@ export async function buildSyncContext(
     spinnerOpts.disabled = options.quiet;
   }
   const spinner = createSpinner(spinnerOpts);
-  if (!options.quiet) {
+  if (options.verbose) {
     spinner.start("Loading configuration");
   }
 
   let config: AlignTrueConfig = await loadConfigWithValidation(configPath);
-  if (!options.quiet) {
-    if (options.verbose) {
-      spinner.stop("Configuration loaded");
-    } else {
-      // Stop silently to avoid empty step indicator in non-verbose mode
-      stopSpinnerSilently(spinner);
-    }
+  if (options.verbose) {
+    spinner.stop("Configuration loaded");
   }
 
   const spinnerWithMessage = spinner as SpinnerLike & {
@@ -203,7 +194,7 @@ export async function buildSyncContext(
   }
 
   // Step 3: Resolve sources (local, git, or bundle merge)
-  if (!options.quiet) {
+  if (options.verbose) {
     spinner.start("Resolving sources");
   }
 
@@ -245,7 +236,7 @@ export async function buildSyncContext(
         ? resolve(cwd, sourcePath)
         : sourcePath;
 
-    if (!options.quiet) {
+    if (options.verbose) {
       spinner.stop(
         bundleResult.sources.length > 1
           ? `Resolved and merged ${bundleResult.sources.length} sources`
@@ -358,7 +349,7 @@ export async function buildSyncContext(
   }
 
   // Step 7: Load exporters
-  if (!options.quiet) {
+  if (options.verbose) {
     spinner.start("Loading exporters");
   }
 
@@ -404,13 +395,11 @@ export async function buildSyncContext(
       }
     }
 
-    if (!options.quiet) {
+    if (options.verbose) {
       spinner.stop(
-        options.verbose
-          ? `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`
-          : undefined,
+        `Loaded ${loadedCount} exporter${loadedCount !== 1 ? "s" : ""}`,
       );
-      if (options.verbose && loadedCount > 0) {
+      if (loadedCount > 0) {
         const names = exporterNamesArray.slice(0, loadedCount).join(", ");
         clack.log.success(`Active: ${names}`);
       }
@@ -425,7 +414,7 @@ export async function buildSyncContext(
   }
 
   // Step 8: Validate rules
-  if (!options.quiet) {
+  if (options.verbose) {
     spinner.start("Validating rules");
   }
 
@@ -436,13 +425,8 @@ export async function buildSyncContext(
       if (!section) continue;
       // Section validation happens at parse time
     }
-    if (!options.quiet) {
-      if (options.verbose) {
-        spinner.stop("Rules validated");
-      } else {
-        // Stop silently to avoid empty step indicator in non-verbose mode
-        stopSpinnerSilently(spinner);
-      }
+    if (options.verbose) {
+      spinner.stop("Rules validated");
     }
   } catch (_error) {
     if (!options.quiet) {
