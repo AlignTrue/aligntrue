@@ -63,20 +63,24 @@ beforeEach(async () => {
   vi.mocked(clack.isCancel).mockReturnValue(false);
   vi.mocked(clack.confirm).mockResolvedValue(true);
   vi.mocked(clack.text).mockResolvedValue(".aligntrue/rules");
-  const mockLog = {
-    info: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-    warn: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-    error: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-    success: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-    step: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-    message: vi.fn((...args) => consoleOutput.push(args.join(" "))),
-  };
-  vi.mocked(clack.log).info = mockLog.info;
-  vi.mocked(clack.log).warn = mockLog.warn;
-  vi.mocked(clack.log).error = mockLog.error;
-  vi.mocked(clack.log).success = mockLog.success;
-  vi.mocked(clack.log).step = mockLog.step;
-  vi.mocked(clack.log).message = mockLog.message;
+  vi.mocked(clack.log).info.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
+  vi.mocked(clack.log).warn.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
+  vi.mocked(clack.log).error.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
+  vi.mocked(clack.log).success.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
+  vi.mocked(clack.log).step.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
+  vi.mocked(clack.log).message.mockImplementation((...args: unknown[]) => {
+    consoleOutput.push((args as string[]).join(" "));
+  });
 });
 
 afterEach(async () => {
