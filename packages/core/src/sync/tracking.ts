@@ -193,3 +193,118 @@ export function getFileModificationTime(filePath: string): number | null {
     return null;
   }
 }
+
+/**
+ * Interface for stored source rule hashes
+ * Used to detect changes in .aligntrue/rules/*.md files
+ * Follows same pattern as agent export hashes for consistency
+ */
+export interface SourceRuleHashes {
+  version: "1";
+  rules: Record<string, string>; // relative path -> SHA-256 hash
+  config_hash: string; // Hash of .aligntrue/config.yaml
+  updated_at: number; // For human debugging only
+}
+
+/**
+ * Get stored source rule hashes
+ * @param cwd - Workspace root directory
+ */
+export function getSourceRuleHashes(cwd: string): SourceRuleHashes | null {
+  const hashFile = join(cwd, ".aligntrue", ".source-rule-hashes.json");
+
+  if (!existsSync(hashFile)) {
+    return null;
+  }
+
+  try {
+    const content = readFileSync(hashFile, "utf-8");
+    return JSON.parse(content) as SourceRuleHashes;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Store source rule hashes
+ * Called after successful sync to save hashes of all source rules
+ * @param cwd - Workspace root directory
+ * @param rules - Map of relative file paths to content hashes
+ * @param configHash - Hash of .aligntrue/config.yaml
+ */
+export function storeSourceRuleHashes(
+  cwd: string,
+  rules: Record<string, string>,
+  configHash: string,
+): void {
+  const hashFile = join(cwd, ".aligntrue", ".source-rule-hashes.json");
+
+  const hashes: SourceRuleHashes = {
+    version: "1",
+    rules,
+    config_hash: configHash,
+    updated_at: Date.now(),
+  };
+
+  try {
+    const dir = dirname(hashFile);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(hashFile, JSON.stringify(hashes, null, 2), "utf-8");
+  } catch (err) {
+    console.warn(`Failed to save source rule hashes: ${err}`);
+  }
+}
+
+/**
+ * Detect changes in source rules by comparing content hashes
+ * Returns true if sync is needed
+ *
+ * Sync needed if:
+ * - No stored hashes (first sync or backward compatibility)
+ * - Config hash changed
+ * - Any rule file hash changed
+ * - New rule files added
+ * - Rule files deleted
+ *
+ * @param cwd - Workspace root directory
+ * @param currentRules - Map of relative file paths to content hashes
+ * @param currentConfigHash - Hash of .aligntrue/config.yaml
+ * @returns true if sync is needed, false if everything is up to date
+ */
+export function detectSourceRuleChanges(
+  cwd: string,
+  currentRules: Record<string, string>,
+  currentConfigHash: string,
+): boolean {
+  const stored = getSourceRuleHashes(cwd);
+
+  // No stored hashes = first sync or backward compatibility (timestamps used before)
+  // In backward compatibility mode, we can't reliably detect changes, so assume sync needed
+  // This ensures users get correct behavior even without prior hash tracking
+  if (!stored) {
+    return true;
+  }
+
+  // Config changed
+  if (stored.config_hash !== currentConfigHash) {
+    return true;
+  }
+
+  // Check for added or modified rules
+  for (const [path, hash] of Object.entries(currentRules)) {
+    const storedHash = stored.rules[path];
+    if (!storedHash || storedHash !== hash) {
+      return true;
+    }
+  }
+
+  // Check for deleted rules
+  for (const path of Object.keys(stored.rules)) {
+    if (!(path in currentRules)) {
+      return true;
+    }
+  }
+
+  // Everything matches
+  return false;
+}

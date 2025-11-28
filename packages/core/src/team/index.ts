@@ -6,7 +6,12 @@
 
 export * from "./types.js";
 export * from "./validation.js";
-export { detectDrift, detectDriftForConfig } from "./drift.js";
+export {
+  detectDrift,
+  detectDriftForConfig,
+  detectAgentFileDrift,
+  detectLockfileDrift,
+} from "./drift.js";
 export {
   parseTeamYaml,
   validateRemaps,
