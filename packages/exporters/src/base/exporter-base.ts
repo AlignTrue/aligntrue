@@ -284,8 +284,7 @@ export abstract class ExporterBase implements ExporterPlugin {
     // Then removes trailing newlines separately.
     // Pattern designed to avoid ReDoS: uses negated character class [^] instead of [\s\S]
     // to prevent nested quantifier backtracking on pathological inputs
-    // lgtm[js/polynomial-redos]: Pattern has bounded quantifiers and uses [^] instead of [\s\S] to prevent backtracking
-    let result = content.replace(/<!--\s*\n\s*STARTER RULE:[^]*?-->/, "");
+    let result = content.replace(/<!--\s*\n\s*STARTER RULE:[^]*?-->/, ""); // lgtm[js/polynomial-redos]: Pattern has bounded quantifiers and uses [^] instead of [\s\S] to prevent backtracking
     // Remove any trailing newlines after the removed comment (can be 0 or more)
     result = result.replace(/^\n+/, "");
     return result;
