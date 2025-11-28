@@ -2,5 +2,6 @@
   "index": "General troubleshooting",
   "sync-issues": "Sync issues",
   "overlays": "Overlays",
-  "conflicts": "Resolving conflicts"
+  "conflicts": "Resolving conflicts",
+  "windows-limitations": "Windows limitations"
 }
