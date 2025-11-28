@@ -5,10 +5,12 @@
 import { existsSync, readFileSync } from "fs";
 import { relative, basename, join } from "path";
 import * as clack from "@clack/prompts";
+import { computeHash } from "@aligntrue/schema";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
+  storeSourceRuleHashes,
   detectStaleExports,
   cleanStaleExports,
 } from "@aligntrue/core/sync";
@@ -287,6 +289,54 @@ export async function handleSyncResult(
           } catch {
             // Ignore read errors
           }
+        }
+      }
+
+      // Store source rule hashes for sync detection (per ADR-002)
+      // This enables reliable change detection in checkIfSyncNeeded()
+      try {
+        const { globSync } = await import("glob");
+        const sourceRulesDir = pathJoin(cwd, ".aligntrue", "rules");
+        if (fsExists(sourceRulesDir)) {
+          const ruleFiles = globSync("**/*.md", {
+            cwd: sourceRulesDir,
+            absolute: true,
+          });
+          const currentRules: Record<string, string> = {};
+
+          // Compute hash for each rule file
+          for (const file of ruleFiles) {
+            try {
+              const content = readFileSync(file, "utf-8");
+              const hash = computeHash(content);
+              const relPath = file.replace(cwd + "/", "");
+              currentRules[relPath] = hash;
+            } catch {
+              // Ignore read errors, hashing will be attempted again on next sync
+            }
+          }
+
+          // Compute config hash
+          const configPath =
+            context.configPath || pathJoin(cwd, ".aligntrue", "config.yaml");
+          let configHash = "";
+          try {
+            const configContent = readFileSync(configPath, "utf-8");
+            configHash = computeHash(configContent);
+          } catch {
+            // Ignore read errors
+          }
+
+          if (configHash) {
+            storeSourceRuleHashes(cwd, currentRules, configHash);
+          }
+        }
+      } catch (err) {
+        // Log warning but don't fail sync
+        if (options.verbose) {
+          clack.log.warn(
+            `Failed to store source rule hashes: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     } catch (err) {

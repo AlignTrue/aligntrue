@@ -25,6 +25,10 @@ export {
   getFileModificationTime,
   storeAgentExportHash,
   getAgentExportHashes,
+  getSourceRuleHashes,
+  storeSourceRuleHashes,
+  detectSourceRuleChanges,
+  type SourceRuleHashes,
 } from "./tracking.js";
 export {
   loadDriftLog,
