@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { sync } from "../../src/commands/sync/index.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
 import * as lastSyncTracker from "@aligntrue/core/sync/tracking";
+import { computeHash } from "@aligntrue/schema";
 
 vi.mock("@clack/prompts");
 
@@ -47,23 +48,46 @@ afterEach(async () => {
 
 describeSkipWindows("Sync UX Improvements", () => {
   it("skips sync when nothing has changed since last sync", async () => {
-    // 1. Setup valid project state
+    // 1. Setup valid project state - use skipFiles to start fresh
+    const testCtx = await setupTestProject({ skipFiles: true });
+    process.chdir(testCtx.projectDir);
+
     const config = { exporters: ["agents"] };
     writeFileSync(
-      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      join(testCtx.projectDir, ".aligntrue", "config.yaml"),
       yaml.stringify(config),
     );
 
     // Create rules directory with markdown file
-    const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+    const rulesDir = join(testCtx.projectDir, ".aligntrue", "rules");
     mkdirSync(rulesDir, { recursive: true });
     writeFileSync(join(rulesDir, "rule-1.md"), "## Rule 1\n\nContent 1\n");
 
     // Ensure timestamp is strictly newer than file creation
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Create .last-sync file with current timestamp
-    lastSyncTracker.updateLastSyncTimestamp(TEST_DIR);
+    // Store source rule hashes to simulate a previous successful sync
+    // Must compute hash for all rule files in the directory
+    const ruleFiles = [join(rulesDir, "rule-1.md")];
+    const ruleHashes: Record<string, string> = {};
+    for (const file of ruleFiles) {
+      const content = readFileSync(file, "utf-8");
+      const relPath = file.replace(testCtx.projectDir + "/", "");
+      ruleHashes[relPath] = computeHash(content);
+    }
+
+    const configContent = readFileSync(
+      join(testCtx.projectDir, ".aligntrue", "config.yaml"),
+      "utf-8",
+    );
+    lastSyncTracker.storeSourceRuleHashes(
+      testCtx.projectDir,
+      ruleHashes,
+      computeHash(configContent),
+    );
+
+    // Update last sync timestamp
+    lastSyncTracker.updateLastSyncTimestamp(testCtx.projectDir);
 
     // 2. Run sync
     await sync([]);
@@ -73,6 +97,9 @@ describeSkipWindows("Sync UX Improvements", () => {
       "Everything already in sync",
     );
     expect(clack.outro).toHaveBeenCalledWith("✓ No changes detected");
+
+    // Cleanup
+    await testCtx.cleanup();
   });
 
   it("runs full sync when .last-sync is missing (first run)", async () => {
