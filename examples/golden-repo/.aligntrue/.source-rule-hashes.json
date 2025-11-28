@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "rules": {
+    ".aligntrue/rules/testing.md": "f2278f034e13bbfdcc58b2243f5a6329cb4245b420e845429e9643903cad13c5",
+    ".aligntrue/rules/security.md": "cfa4b0381c1d2a37cf31f53f331dee6eda60986742a86a5d50f65ac1d928cc2c",
+    ".aligntrue/rules/global.md": "c8ff92e14fe7d8d28fb7e58af40950414f279a9c7a4e6a6abeeffc5b9d1ee60f",
+    ".aligntrue/rules/documentation.md": "e3f3dd4fee29033a84ce0fffc80fdb1deaba8d5d74f45c6c5f0bfa3a4bca1547",
+    ".aligntrue/rules/code-review.md": "41c695495236ea27ce04a783b631325fbb16c5b9bb186901b4745815bbe4cbac",
+    ".aligntrue/rules/ai-guidance.md": "483c16e3f1d9eb2fb0b13c2519340adad60e999033e4cbde170031e1adada3df"
+  },
+  "config_hash": "6bcc79a4b57b1f369df129b049ef5b305d01192bf3f6f5a56318fa6779243314",
+  "updated_at": 1764348483568
+}

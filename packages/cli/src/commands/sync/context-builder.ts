@@ -68,7 +68,7 @@ async function _prepareEditSourceSwitch(
 }
 import { UpdatesAvailableError } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "../../utils/git-progress.js";
-import { createSpinner, SpinnerLike } from "../../utils/spinner.js";
+import { createManagedSpinner, type SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
@@ -123,7 +123,7 @@ export async function buildSyncContext(
   if (options.quiet !== undefined) {
     spinnerOpts.disabled = options.quiet;
   }
-  const spinner = createSpinner(spinnerOpts);
+  const spinner = createManagedSpinner(spinnerOpts);
   if (options.verbose) {
     spinner.start("Loading configuration");
   }

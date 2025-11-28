@@ -183,17 +183,24 @@ export async function withSpinner(
 
 /**
  * Stop spinner silently without rendering a step indicator
- * Safe helper that checks if the spinner supports stopSilent before calling
+ * Safe helper that handles all spinner types:
+ * - ManagedSpinner and NoopSpinner have stopSilent()
+ * - Raw clack spinners need to be cleared and stopped explicitly
  *
  * @param spinner - Spinner instance
  */
 export function stopSpinnerSilently(
   spinner: SpinnerLike | ManagedSpinner,
 ): void {
-  // Check if it's a ManagedSpinner (has stopSilent method)
-  if (spinner && typeof spinner === "object" && "stopSilent" in spinner) {
-    // Safe to call stopSilent - either ManagedSpinner or NoopSpinner
-    (spinner as NoopSpinner | ManagedSpinner).stopSilent();
+  if (spinner && typeof spinner === "object") {
+    if ("stopSilent" in spinner) {
+      // ManagedSpinner or NoopSpinner - safe to call stopSilent
+      (spinner as NoopSpinner | ManagedSpinner).stopSilent();
+    } else if ("stop" in spinner && typeof spinner.stop === "function") {
+      // Raw clack spinner - clear the spinner line and stop silently
+      process.stdout.write("\r\x1b[K"); // Clear spinner line
+      spinner.stop(); // Stop internal animation
+    }
   }
 }
 

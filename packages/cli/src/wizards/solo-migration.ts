@@ -10,7 +10,7 @@ import * as yaml from "yaml";
 import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
 import type { ParsedIR } from "../types/ir.js";
 import { isValidIR } from "../types/ir.js";
-import { createSpinner, stopSpinnerSilently } from "../utils/spinner.js";
+import { createManagedSpinner, stopSpinnerSilently } from "../utils/spinner.js";
 
 export interface SoloMigrationResult {
   success: boolean;
@@ -31,7 +31,7 @@ export async function runSoloMigrationWizard(
   clack.intro("Disabling Team Mode");
 
   // Step 1: Create backup
-  const spinner = createSpinner();
+  const spinner = createManagedSpinner();
   spinner.start("Creating backup");
 
   try {

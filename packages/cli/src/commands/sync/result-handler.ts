@@ -453,19 +453,33 @@ export async function handleSyncResult(
 
         // Add source summary showing precedence
         if (context.config.sources && context.config.sources.length > 0) {
-          message += "Sources (highest priority first):\n";
-          for (let i = 0; i < context.config.sources.length; i++) {
-            const source = context.config.sources[i];
-            if (!source) continue;
-            const sourceDisplay =
-              source.type === "git"
-                ? `${source.url || ""}${source.path ? `/${source.path}` : ""}`
-                : source.type === "local"
-                  ? source.path || "(local)"
-                  : source.url || "(unknown)";
-            message += `  ${i + 1}. ${sourceDisplay}\n`;
+          const sourceCount = context.config.sources.length;
+          if (sourceCount === 1) {
+            const source = context.config.sources[0];
+            if (source) {
+              const sourceDisplay =
+                source.type === "git"
+                  ? `${source.url || ""}${source.path ? `/${source.path}` : ""}`
+                  : source.type === "local"
+                    ? source.path || "(local)"
+                    : source.url || "(unknown)";
+              message += `Source: ${sourceDisplay}\n\n`;
+            }
+          } else {
+            message += "Sources (highest priority first):\n";
+            for (let i = 0; i < context.config.sources.length; i++) {
+              const source = context.config.sources[i];
+              if (!source) continue;
+              const sourceDisplay =
+                source.type === "git"
+                  ? `${source.url || ""}${source.path ? `/${source.path}` : ""}`
+                  : source.type === "local"
+                    ? source.path || "(local)"
+                    : source.url || "(unknown)";
+              message += `  ${i + 1}. ${sourceDisplay}\n`;
+            }
+            message += "\n";
           }
-          message += "\n";
         }
 
         // Build relative paths for files
