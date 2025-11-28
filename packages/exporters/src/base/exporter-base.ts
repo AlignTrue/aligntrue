@@ -282,9 +282,10 @@ export abstract class ExporterBase implements ExporterPlugin {
     // Remove the HTML comment block that starts with "STARTER RULE:" and any trailing newlines.
     // Matches: <!-- optional whitespace newline whitespace STARTER RULE: content -->
     // Then removes trailing newlines separately.
-    // Pattern designed to avoid ReDoS: uses negated character class [^] instead of [\s\S]
-    // to prevent nested quantifier backtracking on pathological inputs
-    let result = content.replace(/<!--\s*\n\s*STARTER RULE:[^]*?-->/, ""); // lgtm[js/polynomial-redos]: Pattern has bounded quantifiers and uses [^] instead of [\s\S] to prevent backtracking
+    // Pattern uses [ \t]* (horizontal whitespace only) to avoid nested quantifier
+    // backtracking: \s* before \n and \s* after \n could both match newlines,
+    // causing exponential backtracking on pathological input
+    let result = content.replace(/<!--[ \t]*\n[ \t]*STARTER RULE:[^]*?-->/, "");
     // Remove any trailing newlines after the removed comment (can be 0 or more)
     result = result.replace(/^\n+/, "");
     return result;
