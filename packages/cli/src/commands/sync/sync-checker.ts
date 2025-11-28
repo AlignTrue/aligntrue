@@ -45,36 +45,39 @@ export async function checkIfSyncNeeded(
 
   // 1. Hash-based source rule change detection (per ADR-002)
   const rulesDir = join(cwd, ".aligntrue", "rules");
-  if (existsSync(rulesDir)) {
-    const ruleFiles = globSync("**/*.md", { cwd: rulesDir, absolute: true });
-    const currentRules: Record<string, string> = {};
+  if (!existsSync(rulesDir)) {
+    // Rules directory missing - sync is needed (will fail with proper error in buildSyncContext)
+    return true;
+  }
 
-    // Compute hash for each rule file
-    for (const file of ruleFiles) {
-      try {
-        const content = readFileSync(file, "utf-8");
-        const hash = computeHash(content);
-        const relPath = file.replace(cwd + "/", "");
-        currentRules[relPath] = hash;
-      } catch {
-        // If we can't read a file, assume sync is needed
-        return true;
-      }
-    }
+  const ruleFiles = globSync("**/*.md", { cwd: rulesDir, absolute: true });
+  const currentRules: Record<string, string> = {};
 
-    // Compute config hash
-    let configHash = "";
+  // Compute hash for each rule file
+  for (const file of ruleFiles) {
     try {
-      const configContent = readFileSync(configPath, "utf-8");
-      configHash = computeHash(configContent);
+      const content = readFileSync(file, "utf-8");
+      const hash = computeHash(content);
+      const relPath = file.replace(cwd + "/", "");
+      currentRules[relPath] = hash;
     } catch {
+      // If we can't read a file, assume sync is needed
       return true;
     }
+  }
 
-    // Detect source rule changes (includes first sync detection)
-    if (detectSourceRuleChanges(cwd, currentRules, configHash)) {
-      return true;
-    }
+  // Compute config hash
+  let configHash = "";
+  try {
+    const configContent = readFileSync(configPath, "utf-8");
+    configHash = computeHash(configContent);
+  } catch {
+    return true;
+  }
+
+  // Detect source rule changes (includes first sync detection)
+  if (detectSourceRuleChanges(cwd, currentRules, configHash)) {
+    return true;
   }
 
   // 2. Hash-based agent file drift detection (per ADR-002)
