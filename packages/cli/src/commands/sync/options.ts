@@ -103,6 +103,12 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Remove exported files that have no matching source rule",
   },
   {
+    flag: "--content-mode",
+    hasValue: true,
+    description:
+      "Export mode for single-file formats (auto, inline, links). auto: inline for 1 rule, links for 2+",
+  },
+  {
     flag: "--help",
     alias: "-h",
     hasValue: false,
@@ -160,6 +166,11 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     opts.configPath = configPath;
   }
 
+  const contentMode = parsed.flags["content-mode"] as string | undefined;
+  if (contentMode !== undefined) {
+    opts.contentMode = contentMode as "auto" | "inline" | "links";
+  }
+
   return opts;
 }
 
@@ -178,6 +189,7 @@ export function showSyncHelp(): void {
       "aligntrue sync --dry-run",
       "aligntrue sync --config custom/config.yaml",
       "aligntrue sync --verbose",
+      "aligntrue sync --content-mode inline",
     ],
     notes: [
       "Description:",

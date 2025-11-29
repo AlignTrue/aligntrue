@@ -381,6 +381,9 @@ export class SyncEngine {
           interactive: options.interactive || false,
           force: options.force || false,
           unresolvedPlugsCount: this.unresolvedPlugsCount,
+          ...(options.contentMode && {
+            contentMode: options.contentMode,
+          }),
         },
       );
 

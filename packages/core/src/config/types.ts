@@ -8,6 +8,7 @@ export type AlignTrueMode = "solo" | "team" | "enterprise";
 export type ModeHints = "off" | "metadata_only" | "hints" | "native";
 export type ExporterFormat = "native" | "agents-md";
 export type CleanupMode = "all" | "managed";
+export type ContentMode = "auto" | "inline" | "links";
 
 export interface ExporterConfig {
   format?: ExporterFormat;
@@ -83,6 +84,8 @@ export interface AlignTrueConfig {
     watch_enabled?: boolean;
     watch_debounce?: number;
     watch_files?: string[];
+    source_markers?: "auto" | "always" | "never";
+    content_mode?: ContentMode;
     auto_manage_ignore_files?: boolean | "prompt";
     ignore_file_priority?: "native" | "custom";
     custom_format_priority?: Record<string, string>;

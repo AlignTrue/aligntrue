@@ -37,6 +37,7 @@ export async function executeExporters(
     interactive: boolean;
     force: boolean;
     unresolvedPlugsCount: number;
+    contentMode?: "auto" | "inline" | "links";
   },
 ): Promise<ExporterExecutionResult> {
   const written: string[] = [];
@@ -126,6 +127,9 @@ export async function executeExporters(
         interactive: options.interactive,
         force: options.force,
         config: config,
+        ...(options.contentMode && {
+          contentMode: options.contentMode,
+        }),
       };
 
       try {

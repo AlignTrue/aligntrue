@@ -395,6 +395,79 @@ Use TypeScript strict mode in all files.
 
 ---
 
+### Content mode for single-file exports
+
+Single-file exporters (AGENTS.md, CLAUDE.md, etc.) support different content modes:
+
+```yaml
+# .aligntrue/config.yaml
+sync:
+  content_mode: auto # auto | inline | links
+```
+
+| Mode     | Behavior                                                    |
+| -------- | ----------------------------------------------------------- |
+| `auto`   | Inline for 1 rule, links for 2+ rules (default)             |
+| `inline` | Always embed full rule content with HTML comment separators |
+| `links`  | Always use markdown links to `.aligntrue/rules/` files      |
+
+**Auto mode (default):**
+
+- **Single rule**: Embeds full content directly in AGENTS.md for simplicity
+- **Multiple rules**: Uses links to keep the file organized and readable
+
+**Inline mode:**
+
+When you want all rule content in a single file:
+
+```markdown
+<!-- aligntrue:rule global.md -->
+
+## Global Rules
+
+Your global rule content here...
+
+<!-- aligntrue:rule typescript.md -->
+
+## TypeScript Guidelines
+
+Your TypeScript rules here...
+```
+
+**Links mode:**
+
+When you prefer references to source files:
+
+```markdown
+## General
+
+- [Global Rules](./.aligntrue/rules/global.md): Project-wide guidelines
+- [TypeScript](./.aligntrue/rules/typescript.md): TypeScript conventions
+```
+
+**CLI override:**
+
+```bash
+# Force inline regardless of rule count
+aligntrue sync --content-mode=inline
+
+# Force links regardless of rule count
+aligntrue sync --content-mode=links
+```
+
+**Size warning:**
+
+When using inline mode with large rule sets (>50KB combined), AlignTrue warns:
+
+```
+Warning: Combined rule content is 78.5KB. Consider using content_mode: links
+for better AI agent reliability with large rule sets.
+```
+
+Large inline content may exceed some agents' context limits. Use links mode for better reliability with extensive rules.
+
+---
+
 ### Scope merge order
 
 When rules overlap across scopes, merge order determines precedence:

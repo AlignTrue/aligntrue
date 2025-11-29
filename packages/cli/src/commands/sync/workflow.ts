@@ -99,6 +99,7 @@ export async function executeSyncWorkflow(
     force: boolean;
     interactive: boolean;
     defaultResolutionStrategy?: string;
+    contentMode?: "auto" | "inline" | "links";
   } = {
     configPath,
     dryRun: options.dryRun || false,
@@ -110,6 +111,11 @@ export async function executeSyncWorkflow(
   // Only set defaultResolutionStrategy if we have a value
   if (options.force || options.yes || options.nonInteractive) {
     syncOptions.defaultResolutionStrategy = "overwrite";
+  }
+
+  // Add contentMode if provided via CLI
+  if (options.contentMode) {
+    syncOptions.contentMode = options.contentMode;
   }
 
   let result: SyncResult;
