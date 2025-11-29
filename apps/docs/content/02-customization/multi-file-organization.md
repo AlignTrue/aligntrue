@@ -219,6 +219,40 @@ sync:
 - `always`: Always show markers, even for single-file sources
 - `never`: Never show markers
 
+---
+
+## Content mode for single-file exports
+
+Control how single-file exporters (AGENTS.md, CLAUDE.md, etc.) include rule content:
+
+```yaml
+sync:
+  content_mode: "auto" # auto (default), inline, or links
+```
+
+**Modes:**
+
+- `auto` (default): Inline for 1 rule, links for 2+ rules
+- `inline`: Always embed full rule content with separators
+- `links`: Always use markdown links to source files
+
+**When to use each mode:**
+
+| Mode     | Best for                                                                     |
+| -------- | ---------------------------------------------------------------------------- |
+| `auto`   | Most users - simple setup with single rule, organized links for multiple     |
+| `inline` | When you want AI agents to see all rules immediately without following links |
+| `links`  | Large rule sets where embedding all content would be unwieldy                |
+
+**CLI override:**
+
+```bash
+aligntrue sync --content-mode=inline  # Force inline
+aligntrue sync --content-mode=links   # Force links
+```
+
+**Size warning:** When inline content exceeds 50KB, AlignTrue warns that links mode may provide better AI agent reliability
+
 **Example output:**
 
 ```markdown

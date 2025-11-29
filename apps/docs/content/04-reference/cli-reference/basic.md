@@ -251,14 +251,15 @@ aligntrue sync [options]
 
 **Flags:**
 
-| Flag              | Description                                   | Default                  |
-| ----------------- | --------------------------------------------- | ------------------------ |
-| `--dry-run`       | Preview changes without writing files         | `false`                  |
-| `--force`         | Override performance limits and safety checks | `false`                  |
-| `--no-detect`     | Skip agent detection                          | `false`                  |
-| `--auto-enable`   | Auto-enable detected agents without prompting | `false`                  |
-| `--clean`         | Remove exported files with no matching source | `false`                  |
-| `--config <path>` | Custom config file path                       | `.aligntrue/config.yaml` |
+| Flag                    | Description                                               | Default                  |
+| ----------------------- | --------------------------------------------------------- | ------------------------ |
+| `--dry-run`             | Preview changes without writing files                     | `false`                  |
+| `--force`               | Override performance limits and safety checks             | `false`                  |
+| `--no-detect`           | Skip agent detection                                      | `false`                  |
+| `--auto-enable`         | Auto-enable detected agents without prompting             | `false`                  |
+| `--clean`               | Remove exported files with no matching source             | `false`                  |
+| `--content-mode <mode>` | Export mode for single-file formats (auto, inline, links) | `auto`                   |
+| `--config <path>`       | Custom config file path                                   | `.aligntrue/config.yaml` |
 
 **Non-interactive modes:**
 
@@ -337,6 +338,12 @@ aligntrue sync --force
 
 # Remove stale exported files (no matching source)
 aligntrue sync --clean
+
+# Force inline content in AGENTS.md (embed full rules)
+aligntrue sync --content-mode=inline
+
+# Force links in AGENTS.md (even with single rule)
+aligntrue sync --content-mode=links
 ```
 
 **Exit codes:**

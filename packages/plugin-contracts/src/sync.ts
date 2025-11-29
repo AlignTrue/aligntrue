@@ -126,4 +126,9 @@ export interface SyncOptions {
    * Remove exported files that have no matching source rule
    */
   clean?: boolean;
+
+  /**
+   * Content export mode for single-file exporters (auto, inline, links)
+   */
+  contentMode?: "auto" | "inline" | "links";
 }
