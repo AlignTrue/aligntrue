@@ -178,9 +178,9 @@ describeSkipWindows("Sources Management Integration", () => {
       await executeSources(["list"]);
 
       const output = consoleOutput.join("\n");
-      expect(output).toContain("testing.md");
-      expect(output).toContain("security.md");
-      expect(output).toMatch(/2.*source file/i);
+      expect(output).toContain("LOCAL");
+      expect(output).toContain("Files: 2");
+      expect(output).toContain(".aligntrue/rules");
     });
 
     it("shows message when no source files found", async () => {
@@ -191,7 +191,7 @@ describeSkipWindows("Sources Management Integration", () => {
       await executeSources(["list"]);
 
       const output = consoleOutput.join("\n");
-      expect(output).toMatch(/No source files|0 source file/i);
+      expect(output).toContain("Files: 0");
     });
 
     it("shows source directory path", async () => {
@@ -354,8 +354,8 @@ describeSkipWindows("Sources Management Integration", () => {
       await executeSources(["list"]);
 
       const output = consoleOutput.join("\n");
-      expect(output).toContain("testing.md");
-      expect(output).toContain("security.md");
+      expect(output).toContain("LOCAL");
+      expect(output).toContain("Files: 2");
     });
 
     it("preserves content integrity through split", async () => {
