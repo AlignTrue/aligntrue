@@ -11,6 +11,7 @@ import {
   getAlignTruePaths,
   type AlignTrueConfig,
   writeRuleFile,
+  type RuleFile,
 } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
@@ -202,6 +203,22 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     hasValue: true,
     description: "Comma-separated list of exporters (default: auto-detect)",
   },
+  {
+    flag: "--source",
+    hasValue: true,
+    description: "Import rules from URL or path (skips auto-detect)",
+  },
+  {
+    flag: "--link",
+    hasValue: false,
+    description:
+      "Keep source connected for ongoing updates (use with --source)",
+  },
+  {
+    flag: "--ref",
+    hasValue: true,
+    description: "Git ref (branch/tag/commit) for git sources",
+  },
 ];
 
 /**
@@ -235,14 +252,16 @@ export async function init(args: string[] = []): Promise<void> {
       examples: [
         "aligntrue init",
         "aligntrue init --yes",
-        "aligntrue init --no-sync",
+        "aligntrue init --source https://github.com/org/rules",
+        "aligntrue init --source https://github.com/org/rules --link",
+        "aligntrue init --source ./path/to/rules",
         "aligntrue init --non-interactive --exporters cursor,agents",
       ],
       notes: [
-        "- Automatically detects existing rules and imports them",
-        "- Creates starter templates if no rules found",
+        "- Without --source: auto-detects existing rules and imports them",
+        "- With --source: imports from URL/path (skips auto-detect)",
+        "- With --link: keeps source connected for ongoing updates",
         "- Creates .aligntrue/rules/ directory as the single source of truth",
-        "- Workflow mode auto-configured based on init choice",
       ],
     });
     return;
@@ -263,10 +282,19 @@ export async function init(args: string[] = []): Promise<void> {
     ? exportersArg.split(",").map((e) => e.trim())
     : undefined;
   const noSync = (parsed.flags["no-sync"] as boolean | undefined) || false;
+  const sourceArg = parsed.flags["source"] as string | undefined;
+  const linkFlag = (parsed.flags["link"] as boolean | undefined) || false;
+  const refArg = parsed.flags["ref"] as string | undefined;
 
   // Validate mode if provided
   if (mode && mode !== "solo" && mode !== "team") {
     console.error(`Error: Invalid mode "${mode}". Must be "solo" or "team".`);
+    process.exit(2);
+  }
+
+  // Validate --link requires --source
+  if (linkFlag && !sourceArg) {
+    console.error("Error: --link requires --source");
     process.exit(2);
   }
 
@@ -300,33 +328,152 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     process.exit(0);
   }
 
-  // Step 1b: Check for Ruler migration opportunity
+  // Step 1b: Check for Ruler migration opportunity (skip if --source provided)
   let rulerConfig: Partial<AlignTrueConfig> | undefined;
-  if (detectRulerProject(cwd)) {
+  if (!sourceArg && detectRulerProject(cwd)) {
     rulerConfig = await promptRulerMigration(cwd);
   }
 
-  // Step 2: Scan for existing rules
+  // Step 2: Get rules - either from --source or by scanning
   const scanner = createSpinner({ disabled: nonInteractive });
-  scanner.start("Scanning for existing rules...");
-
-  const importedRules = await scanForExistingRules(cwd);
-
-  scanner.stop("Scan complete");
-
-  let rulesToWrite = importedRules;
+  let rulesToWrite: RuleFile[] = [];
   let isFreshStart = false;
+  let isFromExternalSource = false;
+  let linkedSource:
+    | { type: "git" | "url"; url: string; ref?: string }
+    | undefined;
 
-  if (rulesToWrite.length > 0) {
-    logMessage(
-      `Found ${rulesToWrite.length} existing rules to import.`,
-      "info",
-      nonInteractive,
-    );
+  if (sourceArg) {
+    // Import from specified source (skip auto-detect)
+    scanner.start(`Importing rules from ${sourceArg}...`);
+
+    const { importRules, resolveConflict } = await import("@aligntrue/core");
+    const rulesDir = join(paths.aligntrueDir, "rules");
+
+    const result = await importRules({
+      source: sourceArg,
+      ref: refArg,
+      cwd,
+      targetDir: rulesDir,
+    });
+
+    if (result.error) {
+      scanner.stop(`Import failed: ${result.error}`);
+      process.exit(1);
+    }
+
+    // Handle conflicts
+    if (result.conflicts.length > 0 && !nonInteractive) {
+      scanner.stop("Import complete (conflicts detected)");
+
+      for (const conflict of result.conflicts) {
+        const choice = await clack.select({
+          message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
+          options: [
+            {
+              value: "replace",
+              label: "Replace - Overwrite existing (backup saved)",
+            },
+            {
+              value: "keep-both",
+              label: "Keep both - Save incoming as new file",
+            },
+            { value: "skip", label: "Skip - Don't import this rule" },
+          ],
+        });
+
+        if (clack.isCancel(choice)) {
+          clack.cancel("Import cancelled");
+          process.exit(0);
+        }
+
+        const resolution = resolveConflict(
+          conflict,
+          choice as "replace" | "keep-both" | "skip",
+          cwd,
+        );
+
+        // Update the rule's filename if needed
+        const rule = result.rules.find((r) => r.filename === conflict.filename);
+        if (rule && resolution.resolution !== "skip") {
+          rule.filename = resolution.finalFilename;
+          rule.path = resolution.finalFilename;
+          if (resolution.backupPath) {
+            logMessage(
+              `Backed up existing rule to ${resolution.backupPath}`,
+              "info",
+              nonInteractive,
+            );
+          }
+        } else if (resolution.resolution === "skip") {
+          // Remove skipped rule from the list
+          const index = result.rules.findIndex(
+            (r) => r.filename === conflict.filename,
+          );
+          if (index !== -1) {
+            result.rules.splice(index, 1);
+          }
+        }
+      }
+    } else if (result.conflicts.length > 0) {
+      // Non-interactive: keep both by default
+      scanner.stop("Import complete");
+      for (const conflict of result.conflicts) {
+        const resolution = resolveConflict(conflict, "keep-both", cwd);
+        const rule = result.rules.find((r) => r.filename === conflict.filename);
+        if (rule) {
+          rule.filename = resolution.finalFilename;
+          rule.path = resolution.finalFilename;
+        }
+      }
+    } else {
+      scanner.stop("Import complete");
+    }
+
+    rulesToWrite = result.rules;
+    isFromExternalSource = true;
+
+    if (rulesToWrite.length > 0) {
+      logMessage(
+        `Imported ${rulesToWrite.length} rules from ${sourceArg}`,
+        "info",
+        nonInteractive,
+      );
+    } else {
+      logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
+      isFreshStart = true;
+      rulesToWrite = createStarterTemplates();
+    }
+
+    // If --link flag, prepare linked source config
+    if (linkFlag) {
+      linkedSource = {
+        type: result.sourceType === "local" ? "git" : result.sourceType,
+        url: sourceArg,
+        ...(refArg && { ref: refArg }),
+      };
+    }
   } else {
-    // No rules found, will use starter templates
-    isFreshStart = true;
-    rulesToWrite = createStarterTemplates();
+    // Auto-detect existing rules
+    scanner.start("Scanning for existing rules...");
+
+    const importedRules = await scanForExistingRules(cwd);
+
+    scanner.stop("Scan complete");
+
+    rulesToWrite = importedRules;
+
+    if (rulesToWrite.length > 0) {
+      logMessage(
+        `Found ${rulesToWrite.length} existing rules to import.`,
+        "info",
+        nonInteractive,
+      );
+    } else {
+      // No rules found, will use starter templates
+      isFreshStart = true;
+      rulesToWrite = createStarterTemplates();
+    }
   }
 
   // Step 3: Confirm (if interactive)
@@ -431,14 +578,26 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   const finalExporters =
     (rulerConfig?.exporters as string[] | undefined) || selectedExporters;
 
+  // Generate config with sources
+  const sources: NonNullable<AlignTrueConfig["sources"]> = [
+    {
+      type: "local",
+      path: ".aligntrue/rules",
+    },
+  ];
+
+  // Add linked source if --link was used
+  if (linkedSource) {
+    sources.push({
+      type: linkedSource.type,
+      url: linkedSource.url,
+      ...(linkedSource.ref && { ref: linkedSource.ref }),
+    });
+  }
+
   // Generate config
   const config: Partial<AlignTrueConfig> = {
-    sources: [
-      {
-        type: "local",
-        path: ".aligntrue/rules",
-      },
-    ],
+    sources,
     exporters: finalExporters,
   };
 
@@ -599,12 +758,15 @@ aligntrue sync
   // Outro with helpful commands
   const outroLines = [
     "",
-    isFreshStart
-      ? "Your starter rules are ready. Add or update them any time in .aligntrue/rules/"
-      : "Initialization complete. Review your rules in .aligntrue/rules/",
+    isFromExternalSource
+      ? `Rules imported from ${sourceArg}. ${linkFlag ? "Source is linked for updates." : "Rules copied locally."}`
+      : isFreshStart
+        ? "Your starter rules are ready. Add or update them any time in .aligntrue/rules/"
+        : "Initialization complete. Review your rules in .aligntrue/rules/",
     "",
     "Helpful commands:",
     "  aligntrue sync        Sync rules to your agents",
+    "  aligntrue add <url>   Add more rules from URL or path",
     "  aligntrue adapters    Manage agent formats",
     "  aligntrue status      Check sync health",
     ...(mode !== "team"
@@ -612,6 +774,14 @@ aligntrue sync
       : []),
     "  aligntrue --help      See all commands",
   ];
+
+  // Show tip about removing imported rules
+  if (isFromExternalSource && !linkFlag) {
+    outroLines.push("");
+    outroLines.push(
+      "To remove imported rules: delete the files from .aligntrue/rules/ and run 'aligntrue sync'",
+    );
+  }
 
   logMessage(outroLines.join("\n"), "info", nonInteractive);
 

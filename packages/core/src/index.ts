@@ -90,6 +90,7 @@ export {
   parseRuleFile,
   writeRuleFile,
   loadRulesDirectory,
+  detectNonMdFiles,
   type RuleFile,
 } from "./rules/file-io.js";
 
@@ -98,3 +99,16 @@ export {
   detectNestedAgentFiles,
   type NestedAgentFile,
 } from "./rules/nested-detector.js";
+
+// Import system
+export {
+  importRules,
+  detectConflicts,
+  resolveConflict,
+  detectSourceType,
+  parseSourceUrl,
+  type ImportOptions,
+  type ImportResult,
+  type ConflictInfo,
+  type ConflictResolution,
+} from "./import/index.js";

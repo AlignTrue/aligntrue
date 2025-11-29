@@ -7,11 +7,26 @@ description: Add, combine, and customize external rules from git repositories an
 
 Configure multiple sources to combine your local rules with external rule sets from git repositories, shared organizations, or community maintainers.
 
-## How sources work
+## Copied vs linked sources
+
+AlignTrue supports two ways to add external rules:
+
+| Method             | Command                      | Behavior                               | When to use                               |
+| ------------------ | ---------------------------- | -------------------------------------- | ----------------------------------------- |
+| **Copy** (default) | `aligntrue add <url>`        | One-time import to `.aligntrue/rules/` | Templates, trials, rules you'll customize |
+| **Link**           | `aligntrue add <url> --link` | Fetched on each sync                   | Team standards, personal rules repo       |
+
+**Copied rules** become yours to edit. They're stored in `.aligntrue/rules/` with `source` metadata in frontmatter.
+
+**Linked sources** stay connected. They're configured in `config.yaml` and refreshed on each `aligntrue sync`.
+
+See [Adding rules](/docs/01-guides/11-adding-rules) for detailed workflows.
+
+## How linked sources work
 
 **Your local rules** (`.aligntrue/rules/`) are always included automatically and have the highest priority.
 
-**External sources** can be added to pull in additional rules:
+**Linked sources** can be added to pull in additional rules:
 
 - Combine rules from multiple repositories
 - Pin specific versions with git tags or branches

@@ -39,7 +39,7 @@ afterEach(async () => {
 describeSkipWindows("Init Command Integration", () => {
   describe("Fresh Start", () => {
     it("creates .aligntrue/config.yaml with correct structure", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
       expect(existsSync(configPath)).toBe(true);
@@ -54,7 +54,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("creates .aligntrue/rules/ directory with starter templates", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
       expect(existsSync(rulesDir)).toBe(true);
@@ -68,7 +68,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("creates .aligntrue/README.md with documentation", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const readmePath = join(TEST_DIR, ".aligntrue", "README.md");
       expect(existsSync(readmePath)).toBe(true);
@@ -81,13 +81,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("does not create cursor starter files automatically", async () => {
-      await init([
-        "--yes",
-        "--project-id",
-        "test-project",
-        "--exporters",
-        "cursor",
-      ]);
+      await init(["--yes", "--exporters", "cursor"]);
 
       const cursorPath = join(
         TEST_DIR,
@@ -101,7 +95,7 @@ describeSkipWindows("Init Command Integration", () => {
     // Skip: Init now uses both agents and cursor by default for new projects
     // This test needs to be updated for new default behavior
     it.skip("uses default exporters when none specified", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
       const configContent = readFileSync(configPath, "utf-8");
@@ -111,13 +105,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("respects --exporters flag", async () => {
-      await init([
-        "--yes",
-        "--project-id",
-        "test-project",
-        "--exporters",
-        "cursor,agents",
-      ]);
+      await init(["--yes", "--exporters", "cursor,agents"]);
 
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
       const configContent = readFileSync(configPath, "utf-8");
@@ -145,7 +133,7 @@ describeSkipWindows("Init Command Integration", () => {
         exitCode = code;
       }) as never;
 
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       // Restore process.exit
       process.exit = originalExit;
@@ -156,7 +144,7 @@ describeSkipWindows("Init Command Integration", () => {
 
   describe("File Creation", () => {
     it("creates all files atomically (no .tmp files left behind)", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       // Check no .tmp files exist
       const files = [
@@ -170,13 +158,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("creates directories recursively as needed", async () => {
-      await init([
-        "--yes",
-        "--project-id",
-        "test-project",
-        "--exporters",
-        "cursor",
-      ]);
+      await init(["--yes", "--exporters", "cursor"]);
 
       expect(existsSync(join(TEST_DIR, ".aligntrue"))).toBe(true);
     });
@@ -185,7 +167,7 @@ describeSkipWindows("Init Command Integration", () => {
   // Skip: sync config is no longer set during init in the new architecture
   describe.skip("Workflow Mode Configuration", () => {
     it("configures ir_source workflow for fresh start", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
       const configContent = readFileSync(configPath, "utf-8");
@@ -378,7 +360,7 @@ describeSkipWindows("Init Command Integration", () => {
 
   describe("Starter Template Frontmatter", () => {
     it("adds description to all starter templates", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
       const { readdirSync } = await import("fs");
@@ -395,7 +377,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("sets apply_to: alwaysOn for global rule", async () => {
-      await init(["--yes", "--project-id", "test-project"]);
+      await init(["--yes"]);
 
       const globalRulePath = join(TEST_DIR, ".aligntrue", "rules", "global.md");
       expect(existsSync(globalRulePath)).toBe(true);
@@ -407,13 +389,7 @@ describeSkipWindows("Init Command Integration", () => {
     });
 
     it("does not include STARTER RULE comment in exported rules", async () => {
-      await init([
-        "--yes",
-        "--project-id",
-        "test-project",
-        "--exporters",
-        "cursor",
-      ]);
+      await init(["--yes", "--exporters", "cursor"]);
 
       // Run sync to export rules
       const { sync } = await import("../../src/commands/sync/index.js");
