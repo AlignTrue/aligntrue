@@ -3,11 +3,12 @@
  * Handles backup of overwritten rule files
  *
  * File-level safety system:
- * - overwritten-rules/ folder for complete file backups with timestamp
- * - Preserves original path structure: AGENTS.md → overwritten-rules/AGENTS.2025-11-21T15-30-00.md
+ * - .aligntrue/.backups/files/ folder for complete file backups with timestamp
+ * - Preserves original path structure: AGENTS.md → .aligntrue/.backups/files/AGENTS.2025-11-21T15-30-00.md.bak
  * - Used when replacing entire files with new content
  *
  * Backups are optional safety features that users can review and delete at any time.
+ * Automatically cleaned up based on retention_days config (default: 30 days).
  */
 
 import { copyFileSync } from "fs";
@@ -30,10 +31,10 @@ export function formatTimestampForFilename(date: Date = new Date()): string {
 
 /**
  * Backup a file that is being completely overwritten
- * Preserves the original path structure with a timestamp
+ * Preserves the original path structure with a timestamp and .bak suffix
  *
- * Example: AGENTS.md → overwritten-rules/AGENTS.2025-11-21T15-30-00.md
- * Example: .cursor/rules/debugging.mdc → overwritten-rules/cursor/rules/debugging.2025-11-21T15-30-00.mdc
+ * Example: AGENTS.md → .aligntrue/.backups/files/AGENTS.2025-11-21T15-30-00.md.bak
+ * Example: .cursor/rules/debugging.mdc → .aligntrue/.backups/files/cursor/rules/debugging.2025-11-21T15-30-00.mdc.bak
  *
  * @param sourcePath - Absolute path to file being overwritten
  * @param cwd - Current working directory
@@ -46,7 +47,7 @@ export function backupOverwrittenFile(
   timestamp?: string,
 ): string {
   const ts = timestamp || formatTimestampForFilename();
-  const overwrittenRulesDir = join(cwd, ".aligntrue", "overwritten-rules");
+  const backupDir = join(cwd, ".aligntrue", ".backups", "files");
 
   // Get relative path from cwd
   let relativePath = sourcePath;
@@ -60,14 +61,13 @@ export function backupOverwrittenFile(
   const ext = filename.includes(".") ? filename.split(".").pop() : "";
   const nameWithoutExt = ext ? filename.slice(0, -(ext.length + 1)) : filename;
 
-  // Build new filename with timestamp
+  // Build new filename with timestamp and .bak suffix
   const newFilename = ext
-    ? `${nameWithoutExt}.${ts}.${ext}`
-    : `${filename}.${ts}`;
+    ? `${nameWithoutExt}.${ts}.${ext}.bak`
+    : `${filename}.${ts}.bak`;
 
   // Build target path preserving directory structure
-  const targetDir =
-    dir && dir !== "." ? join(overwrittenRulesDir, dir) : overwrittenRulesDir;
+  const targetDir = dir && dir !== "." ? join(backupDir, dir) : backupDir;
   const targetPath = join(targetDir, newFilename);
 
   // Ensure target directory exists
@@ -88,7 +88,7 @@ export function backupOverwrittenFile(
  * @returns True if backup exists, false otherwise
  */
 export function checkBackupExists(sourcePath: string, cwd: string): boolean {
-  const overwrittenRulesDir = join(cwd, ".aligntrue", "overwritten-rules");
+  const backupDir = join(cwd, ".aligntrue", ".backups", "files");
 
   // Get relative path
   let relativePath = sourcePath;
@@ -103,8 +103,7 @@ export function checkBackupExists(sourcePath: string, cwd: string): boolean {
 
   // Pattern to match: nameWithoutExt.YYYY-MM-DDTHH-MM-SS.ext
   const _timestampPattern = /\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/;
-  const _targetDir =
-    dir && dir !== "." ? join(overwrittenRulesDir, dir) : overwrittenRulesDir;
+  const _targetDir = dir && dir !== "." ? join(backupDir, dir) : backupDir;
 
   try {
     // Note: In real implementation, would use fs.readdirSync to check

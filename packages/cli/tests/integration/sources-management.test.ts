@@ -376,5 +376,21 @@ describeSkipWindows("Sources Management Integration", () => {
       );
       expect(splitContent).toContain(originalContent);
     });
+
+    it("creates backup in unified backup location", async () => {
+      createConfig();
+      createAgentsMd([{ heading: "Testing", content: "Write tests" }]);
+
+      await executeSources(["split", "--yes"]);
+
+      // Verify backup was created in unified location
+      const backupDir = join(TEST_DIR, ".aligntrue", ".backups", "files");
+      expect(existsSync(backupDir)).toBe(true);
+
+      // Verify backup has .bak suffix
+      const backupFiles = readdirSync(backupDir);
+      expect(backupFiles.length).toBeGreaterThan(0);
+      expect(backupFiles[0]).toMatch(/AGENTS.*\.bak$/);
+    });
   });
 });

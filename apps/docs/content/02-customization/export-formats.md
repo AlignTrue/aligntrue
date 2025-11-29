@@ -66,7 +66,7 @@ Agents like Copilot, Claude, and Aider only support AGENTS.md.
 
 When you change an agent's format, AlignTrue:
 
-1. Backs up old files to `overwritten-files/<timestamp>/`
+1. Backs up old files to `.aligntrue/.backups/files/<timestamp>/`
 2. Removes old format files
 3. Generates new format files
 4. Notifies you of the backup location
@@ -137,7 +137,7 @@ If old format files remain after switching:
 
 1. Check `sync.cleanup` setting
 2. Run sync again with `--force`
-3. Manually remove files if needed (they're in `overwritten-files/` as backup)
+3. Manually remove files if needed (backups are in `.aligntrue/.backups/files/`)
 
 ## Related documentation
 
