@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **ReDoS vulnerability in starter rule comment stripping** - Fixed polynomial regex in `stripStarterRuleComment()` that could cause exponential backtracking on pathological input. Replaced vulnerable `[^]*?` pattern with bounded negative lookahead `(?:(?!-->)[\s\S])*?` to prevent catastrophic backtracking
+
 ### Fixed
 
 - **Release process workspace protocol safety** - Fixed critical bug in `scripts/manual-release.mjs` where `npm publish` was used instead of `pnpm publish`, risking workspace protocol leaks in published packages. Added post-publish validation and updated documentation to reflect actual manual release workflow
