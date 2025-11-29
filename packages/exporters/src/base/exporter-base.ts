@@ -279,14 +279,14 @@ export abstract class ExporterBase implements ExporterPlugin {
    * ```
    */
   protected stripStarterRuleComment(content: string): string {
-    // Remove the HTML comment block that starts with "STARTER RULE:" and any trailing newlines.
-    // Matches: <!-- optional whitespace newline whitespace STARTER RULE: content -->
-    // Then removes trailing newlines separately.
-    // Pattern uses [ \t]* (horizontal whitespace only) to avoid nested quantifier
-    // backtracking: \s* before \n and \s* after \n could both match newlines,
-    // causing exponential backtracking on pathological input
-    let result = content.replace(/<!--[ \t]*\n[ \t]*STARTER RULE:[^]*?-->/, "");
-    // Remove any trailing newlines after the removed comment (can be 0 or more)
+    // Remove the HTML comment block that contains "STARTER RULE:" and any trailing newlines.
+    // Uses negative lookahead (?:(?!-->)[\s\S])* to match any content (including newlines)
+    // up to --> without catastrophic backtracking on pathological input.
+    let result = content.replace(
+      /<!--(?:(?!-->)[\s\S])*?STARTER RULE:(?:(?!-->)[\s\S])*?-->\n*/g,
+      "",
+    );
+    // Remove any leading/trailing newlines that resulted from comment removal
     result = result.replace(/^\n+/, "");
     return result;
   }
