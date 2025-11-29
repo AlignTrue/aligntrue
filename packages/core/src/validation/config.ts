@@ -352,6 +352,10 @@ export function checkUnknownFields(
 /**
  * Expand sources with include syntax into individual git sources
  * Converts include URLs into separate git sources, one per URL
+ *
+ * This is part of the config validation pipeline.
+ * The CLI source-resolver (packages/cli/src/utils/source-resolver.ts)
+ * implements the same logic for sync operations.
  */
 export function expandSourcesWithInclude(
   sources: NonNullable<AlignTrueConfig["sources"]>,

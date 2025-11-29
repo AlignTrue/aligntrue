@@ -1,6 +1,10 @@
 /**
  * Source type detection and URL parsing
  * Determines whether a source is git, URL, or local path
+ *
+ * NOTE: For git URL parsing with full component extraction (host, org, repo, ref, path),
+ * use parseSourceURL from packages/core/src/sources/url-parser.ts instead.
+ * This module handles general source detection and basic parsing.
  */
 
 export type SourceType = "git" | "url" | "local";
@@ -116,6 +120,8 @@ function parseLocalPath(source: string): ParsedSource {
  * - https://github.com/org/repo/path
  * - https://github.com/org/repo@ref/path
  * - git@github.com:org/repo.git
+ *
+ * For full component extraction (host, org, repo, ref, path), use parseSourceURL from url-parser.ts
  */
 function parseGitUrl(source: string): ParsedSource {
   let url = source;
@@ -184,8 +190,8 @@ function parseGitUrl(source: string): ParsedSource {
     // Reconstruct clean URL without ref and path
     url = `${urlObj.protocol}//${urlObj.host}/${orgRepo}`;
 
-    // Determine if it's a directory or file
-    const isDirectory = !path || !path.includes(".");
+    // Determine if it's a directory or file (consistent with parseSourceURL)
+    const isDirectory = !path || !/\.[a-zA-Z0-9]+$/.test(path);
 
     return {
       type: "git",
