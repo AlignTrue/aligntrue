@@ -121,7 +121,7 @@ exporters:
   - agents
 ```
 
-Rules are stored in `.aligntrue/rules/` by default and synced to all agents.
+Rules are stored in `.aligntrue/rules/` by default and synced to all agents. All files with subdirectories are automatically scanned and preserved.
 
 **Single agent (Cursor only):**
 
@@ -130,7 +130,7 @@ exporters:
   - cursor
 ```
 
-Rules are stored in `.aligntrue/rules/` and synced to Cursor.
+Rules are stored in `.aligntrue/rules/` and synced to Cursor. Directory structure is preserved in the export.
 
 ### Creating the structure
 
@@ -195,6 +195,22 @@ AlignTrue automatically loads all `*.md` files from `.aligntrue/rules/` director
 ```
 
 Files are loaded in alphabetical order. Subdirectories are also supported for further organization.
+
+### How structure is exported
+
+When you run `aligntrue sync`, the subdirectory structure in `.aligntrue/rules/` is:
+
+**For multi-file exporters** (Cursor, Amazon Q, KiloCode, etc.):
+
+- Structure is preserved in the output
+- `.aligntrue/rules/backend/security.md` → `.cursor/rules/backend/security.mdc`
+- Subdirectories are created automatically to match the structure
+
+**For single-file exporters** (AGENTS.md, Claude):
+
+- All rules are merged into one file with links
+- Links include the full path for organization
+- `.aligntrue/rules/backend/security.md` → `[Security Guidelines](./.aligntrue/rules/backend/security.md)` in AGENTS.md
 
 ### Example workflow
 

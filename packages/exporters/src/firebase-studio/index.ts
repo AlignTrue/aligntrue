@@ -44,13 +44,15 @@ export class FirebaseStudioExporter extends ExporterBase {
       }
 
       // Determine output path
-      const filename = rule.filename;
+      // Use relativePath to preserve source directory structure
+      // nested_location is for monorepo scopes (different concept)
+      const ruleRelPath = rule.relativePath || rule.filename;
       let outputPath: string;
       const nestedLoc = rule.frontmatter.nested_location;
       if (nestedLoc) {
-        outputPath = join(outputDir, nestedLoc, ".idx", filename);
+        outputPath = join(outputDir, nestedLoc, ".idx", ruleRelPath);
       } else {
-        outputPath = join(outputDir, ".idx", filename);
+        outputPath = join(outputDir, ".idx", ruleRelPath);
       }
 
       // Prepare content

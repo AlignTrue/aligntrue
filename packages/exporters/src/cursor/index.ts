@@ -46,10 +46,11 @@ export class CursorExporter extends ExporterBase {
       }
 
       // Determine output path
-      // If rule has nested_location, put it there.
-      // Else put in root .cursor/rules/
+      // Use relativePath to preserve source directory structure
+      // nested_location is for monorepo scopes (different concept)
       const nestedLoc = rule.frontmatter.nested_location;
-      const filename = rule.filename.replace(/\.md$/, ".mdc");
+      const ruleRelPath = rule.relativePath || rule.filename;
+      const filename = ruleRelPath.replace(/\.md$/, ".mdc");
 
       let outputPath: string;
       if (nestedLoc) {

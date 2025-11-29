@@ -44,8 +44,9 @@ export class KiroExporter extends ExporterBase {
       }
 
       // Determine output path
-      const filename = rule.filename;
-      const outputPath = join(outputDir, ".kiro", "steering", filename);
+      // Use relativePath to preserve source directory structure
+      const ruleRelPath = rule.relativePath || rule.filename;
+      const outputPath = join(outputDir, ".kiro", "steering", ruleRelPath);
 
       // Strip starter rule comments from content (only relevant in source files, not exports)
       const cleanedContent = this.stripStarterRuleComment(rule.content);
