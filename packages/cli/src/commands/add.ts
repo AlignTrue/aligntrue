@@ -471,10 +471,10 @@ async function copyRulesToLocal(options: {
     // Write rules to .aligntrue/rules/
     const createdFiles: string[] = [];
     for (const rule of rulesToWrite) {
-      const fullPath = join(rulesDir, rule.filename);
+      const fullPath = join(rulesDir, rule.relativePath || rule.filename);
       mkdirSync(dirname(fullPath), { recursive: true });
       writeRuleFile(fullPath, rule);
-      createdFiles.push(rule.filename);
+      createdFiles.push(rule.relativePath || rule.filename);
     }
 
     spinner.stop(`Imported ${createdFiles.length} rules`);

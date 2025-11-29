@@ -98,6 +98,42 @@ exporters:
   - agents
 ```
 
+## How remote sources are fetched and imported
+
+When targeting a remote source (git repository or URL):
+
+- **Recursive scanning**: All `.md` and `.mdc` files are found in subdirectories (e.g., `backend/security.md`)
+- **Structure preservation**: Directory structure is maintained when copying to `.aligntrue/rules/`
+- **File name preservation**: Original filenames are preserved (e.g., `backend/security.md` → `.aligntrue/rules/backend/security.md`)
+- **Format conversion**: `.mdc` files are converted to `.md` format during import
+- **Metadata tracking**: Source URL is recorded in rule frontmatter for reference
+
+**Example:**
+
+Remote structure:
+
+```
+https://github.com/company/rules/
+├── security.md
+├── backend/
+│   ├── caching.md
+│   └── performance.md
+└── frontend/
+    └── react.md
+```
+
+After `aligntrue add https://github.com/company/rules`:
+
+```
+.aligntrue/rules/
+├── security.md
+├── backend/
+│   ├── caching.md
+│   └── performance.md
+└── frontend/
+    └── react.md
+```
+
 ## Single vs. multiple files per source
 
 ### One file per git source (backward compatible)

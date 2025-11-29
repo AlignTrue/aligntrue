@@ -20,6 +20,8 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - URL-based rule sources with ETag caching and offline fallback
 - Export format options (native multi-file or AGENTS.md per agent)
 - Per-rule targeting with `export_only_to` and `exclude_from` frontmatter
+- Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
+- Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
 ## CLI (24 commands)
 
