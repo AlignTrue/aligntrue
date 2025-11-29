@@ -1,38 +1,29 @@
 /**
- * Source resolver - handles fetching from local, git, and url sources
+ * Source resolver for CLI sync operations
+ *
+ * Uses the unified SourceResolver from @aligntrue/core to fetch rules,
+ * then converts them to Align format for merging during sync.
  */
 
-import { existsSync, statSync } from "fs";
-import { resolve, extname } from "path";
-import { GitProvider, LocalProvider, detectRefType } from "@aligntrue/sources";
+import { extname } from "path";
 import {
+  resolveSource as coreResolveSource,
   mergeAligns,
   type BundleResult,
   ensureSectionsArray,
-  loadRulesDirectory,
   parseSourceURL,
 } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
-import { parseYamlToJson, type Align } from "@aligntrue/schema";
-import type { AlignTrueConfig, ConsentManager } from "@aligntrue/core";
+import { parseYamlToJson, type Align, type RuleFile } from "@aligntrue/schema";
+import type { AlignTrueConfig } from "@aligntrue/core";
 import type { GitProgressUpdate } from "./git-progress.js";
 
 export interface ResolvedSource {
   content: string;
   sourcePath: string;
   sourceType: "local" | "git" | "url";
-  commitSha?: string; // For git sources
+  commitSha?: string | undefined; // For git sources
 }
-
-type GitProviderCtorOptions = {
-  offlineMode?: boolean;
-  consentManager?: ConsentManager;
-  mode?: "solo" | "team" | "enterprise";
-  maxFileSizeMb?: number;
-  force?: boolean;
-  checkInterval?: number;
-  onProgress?: (update: GitProgressUpdate) => void;
-};
 
 /**
  * Parse source content into Align based on file extension
@@ -60,7 +51,7 @@ function parseSourceContent(content: string, sourcePath: string): Align {
 
 /**
  * Resolve a single source from config
- * Handles local files, git repositories, and URLs
+ * Uses unified SourceResolver to fetch rules, converts to Align format
  */
 export async function resolveSource(
   source: NonNullable<AlignTrueConfig["sources"]>[0],
@@ -75,167 +66,72 @@ export async function resolveSource(
   const cwd = options?.cwd || process.cwd();
   const offlineMode = options?.offlineMode || false;
   const forceRefresh = options?.forceRefresh || false;
-  const config = options?.config;
 
   if (!source) {
     throw new Error("Source configuration is required");
   }
 
-  // Handle local sources
-  if (source.type === "local") {
-    if (!source.path) {
-      throw new Error('Local source requires "path" field');
-    }
-
-    const resolvedPath = resolve(cwd, source.path);
-
-    if (!existsSync(resolvedPath)) {
-      throw new Error(
-        `Source not found: ${source.path}\n` +
-          `  Resolved path: ${resolvedPath}\n` +
-          `  Check that the path exists.`,
-      );
-    }
-
-    // Check if path is a directory (new rule-based format)
-    const stat = statSync(resolvedPath);
-    if (stat.isDirectory()) {
-      // Load all .md rule files from the directory
-      const rules = await loadRulesDirectory(resolvedPath, cwd, {
-        recursive: true,
-      });
-
-      // Convert rules to Align format
-      const sections = rules.map((rule) => ({
-        heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
-        content: rule.content,
-        level: 2, // Schema requires level 2-6 (## through ######)
-        fingerprint: rule.hash,
-        source_file: rule.path,
-        frontmatter: rule.frontmatter,
-      }));
-
-      // Return synthesized YAML content for backward compatibility
-      const align: Align = {
-        id: "local-rules",
-        version: "1.0.0",
-        spec_version: "1",
-        sections,
-      };
-
-      // Stringify to YAML for content field (backward compat)
-      const { stringify } = await import("yaml");
-      const content = stringify(align);
-
-      return {
-        content,
-        sourcePath: source.path,
-        sourceType: "local",
-      };
-    }
-
-    // Handle single file sources (legacy format or specific file)
-    const { dirname, basename } = await import("path");
-    const baseDir = dirname(resolvedPath);
-    const fileName = basename(resolvedPath);
-
-    const provider = new LocalProvider(baseDir);
-    const content = await provider.fetch(fileName);
-
-    return {
-      content,
-      sourcePath: source.path,
-      sourceType: "local",
-    };
-  }
-
-  // Handle git sources
-  if (source.type === "git") {
-    if (!source.url) {
-      throw new Error('Git source requires "url" field');
-    }
-
-    const cacheDir = resolve(cwd, ".aligntrue/.cache/git");
-
-    // Determine check interval based on ref type and config
-    let checkInterval: number | undefined;
-    const sourceWithInterval = source as typeof source & {
-      check_interval?: number;
-    };
-    if (sourceWithInterval.check_interval) {
-      // Per-source override
-      checkInterval = sourceWithInterval.check_interval;
-    } else if (config?.git) {
-      // Use global config based on ref type
-      const gitConfigWithIntervals = config.git as typeof config.git & {
-        branch_check_interval?: number;
-        tag_check_interval?: number;
-      };
-      const refType = source.ref ? detectRefType(source.ref) : "branch";
-      if (refType === "branch") {
-        checkInterval = gitConfigWithIntervals.branch_check_interval ?? 86400;
-      } else if (refType === "tag") {
-        checkInterval = gitConfigWithIntervals.tag_check_interval ?? 604800;
-      }
-      // commits never check, so no interval needed
-    }
-
-    const gitConfig: {
-      type: "git";
-      url: string;
-      ref?: string;
-      path?: string;
-      forceRefresh?: boolean;
-      checkInterval?: number;
-    } = {
-      type: "git",
-      url: source.url,
-      forceRefresh,
-    };
-
-    if (checkInterval !== undefined) {
-      gitConfig.checkInterval = checkInterval;
-    }
-
+  // Build source URL string from config
+  let sourceUrl = "";
+  if (source.type === "local" && source.path) {
+    sourceUrl = source.path;
+  } else if (source.type === "git" && source.url) {
+    sourceUrl = source.url;
     if (source.ref) {
-      gitConfig.ref = source.ref;
+      sourceUrl += `@${source.ref}`;
     }
     if (source.path) {
-      gitConfig.path = source.path;
+      sourceUrl += `/${source.path}`;
     }
-
-    const providerOptions: GitProviderCtorOptions = {
-      offlineMode,
-      mode: config?.mode ?? "solo",
-    };
-
-    if (options?.onGitProgress) {
-      providerOptions.onProgress = options.onGitProgress;
-    }
-
-    const provider = new GitProvider(gitConfig, cacheDir, providerOptions);
-
-    const content = await provider.fetch();
-    const commitSha = await provider.getCommitSha();
-
-    return {
-      content,
-      sourcePath: `${source.url}${source.path ? `/${source.path}` : ""}`,
-      sourceType: "git",
-      commitSha,
-    };
+  } else if (source.type === "url" && source.url) {
+    sourceUrl = source.url;
   }
 
-  // Handle URL sources (future)
-  if (source.type === "url") {
-    throw new Error(
-      "URL sources not yet implemented\n" +
-        `  URL: ${source.url}\n` +
-        `  Use git sources for now: type: git, url: <repo-url>`,
-    );
-  }
+  // Use core resolver to fetch rules
+  const resolved = await coreResolveSource(sourceUrl, {
+    cwd,
+    offlineMode,
+    forceRefresh,
+    onProgress: options?.onGitProgress
+      ? (msg: string) => {
+          // Convert string progress to GitProgressUpdate for compatibility
+          options.onGitProgress?.({
+            phase: "metadata",
+            message: msg,
+            repo: sourceUrl,
+          });
+        }
+      : undefined,
+  });
 
-  throw new Error(`Unknown source type: ${(source as { type?: string }).type}`);
+  // Convert rules to Align format for merging
+  const sections = resolved.rules.map((rule: RuleFile) => ({
+    heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+    content: rule.content,
+    level: 2, // Schema requires level 2-6 (## through ######)
+    fingerprint: rule.hash,
+    source_file: rule.path,
+    frontmatter: rule.frontmatter,
+  }));
+
+  // Return synthesized YAML content for backward compatibility with merge logic
+  const align: Align = {
+    id: source.type === "local" ? "local-rules" : "imported-align",
+    version: "1.0.0",
+    spec_version: "1",
+    sections,
+  };
+
+  // Stringify to YAML for content field (backward compat)
+  const { stringify } = await import("yaml");
+  const content = stringify(align);
+
+  return {
+    content,
+    sourcePath: sourceUrl,
+    sourceType: source.type,
+    commitSha: resolved.commitSha,
+  };
 }
 
 /**
@@ -387,7 +283,7 @@ export async function resolveAndMergeSources(
     };
   }
 
-  // Parse all sources into AlignAligns
+  // Parse all sources into Aligns
   const aligns: Align[] = [];
   for (const source of resolved) {
     try {

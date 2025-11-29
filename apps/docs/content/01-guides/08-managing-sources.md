@@ -100,12 +100,12 @@ exporters:
 
 ## How remote sources are fetched and imported
 
-When targeting a remote source (git repository or URL):
+When targeting a remote source (git repository or URL), both for copied sources (`aligntrue add`) and linked sources (in `config.yaml`):
 
-- **Recursive scanning**: All `.md` and `.mdc` files are found in subdirectories (e.g., `backend/security.md`)
-- **Structure preservation**: Directory structure is maintained when copying to `.aligntrue/rules/`
-- **File name preservation**: Original filenames are preserved (e.g., `backend/security.md` → `.aligntrue/rules/backend/security.md`)
-- **Format conversion**: `.mdc` files are converted to `.md` format during import
+- **Folder support**: Target files OR directories - when a directory is targeted, all `.md` and `.mdc` files are found recursively (e.g., `backend/security.md`)
+- **Recursive scanning**: All `.md` and `.mdc` files in subdirectories are included (e.g., `rules/backend/caching.md`, `rules/frontend/react.md`)
+- **Structure preservation**: Directory structure is maintained (e.g., `backend/security.md` stays `backend/security.md`)
+- **Format conversion**: `.mdc` files are converted to `.md` format automatically during import
 - **Metadata tracking**: Source URL is recorded in rule frontmatter for reference
 
 **Example:**

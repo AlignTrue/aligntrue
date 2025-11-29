@@ -10,6 +10,7 @@ export interface ParsedSourceURL {
   ref?: string; // branch, tag, or commit (optional)
   path?: string; // file or directory path within repo (optional)
   isFile: boolean; // true if path has .md extension or has no extension but looks like file
+  isDirectory: boolean; // true if path points to a directory (or no path specified)
 }
 
 /**
@@ -96,11 +97,13 @@ export function parseSourceURL(url: string): ParsedSourceURL {
   }
 
   // Check if path looks like a file
+  // File: has .md/.markdown extension or other extension (.yaml, .json, etc)
+  // Directory: no extension or multiple levels without file extension
   let isFile = false;
   if (path) {
-    // Path is a file if it has .md extension
-    isFile = path.endsWith(".md") || path.endsWith(".markdown");
+    isFile = /\.[a-zA-Z0-9]+$/.test(path);
   }
+  const isDirectory = !isFile;
 
   return {
     host,
@@ -109,6 +112,7 @@ export function parseSourceURL(url: string): ParsedSourceURL {
     ref: ref || undefined,
     path: path || undefined,
     isFile,
+    isDirectory,
   } as ParsedSourceURL;
 }
 

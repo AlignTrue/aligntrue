@@ -1,12 +1,16 @@
 /**
- * Git source provider - clones rules from any git repository
+ * Git source provider - clones and manages git repositories
  *
- * Strategy:
+ * Focus: Transport and caching layer only
  * - Clones repository to .aligntrue/.cache/git/<repo-hash>/
  * - Uses shallow clone (--depth 1) for speed and space
  * - Smart caching with TTL based on ref type (branches check daily, tags weekly, commits never)
  * - Falls back to cache when network unavailable
  * - Supports https and ssh URLs, branch/tag/commit refs
+ *
+ * Content resolution is handled by @aligntrue/core/sources/resolver.ts
+ * - SourceResolver uses GitProvider to clone, then reads files/directories from cache
+ * - This keeps GitProvider focused on git operations, not content parsing
  *
  * Privacy:
  * - Requires user consent before first git clone
@@ -555,7 +559,12 @@ export class GitProvider implements SourceProvider {
   }
 
   /**
-   * Read rules file from cloned repository
+   * Read a single file from cloned repository (internal use only)
+   *
+   * This method exists for backward compatibility with legacy workflows
+   * that expected GitProvider to return file content directly.
+   * New code should use @aligntrue/core/sources/resolver.ts which
+   * handles content reading and directory scanning.
    *
    * Performance guardrails:
    * - Checks file size against limits before reading
