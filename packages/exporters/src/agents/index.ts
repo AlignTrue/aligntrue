@@ -205,7 +205,9 @@ export class AgentsExporter extends ExporterBase {
         // Compute relative path from AGENTS.md to the rule file
         const rulesDir =
           location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
-        const linkPath = `./${rulesDir}/${rule.filename}`;
+        // Use relativePath if available (preserves nested structure), fallback to filename
+        const ruleFileName = rule.relativePath || rule.filename;
+        const linkPath = `./${rulesDir}/${ruleFileName}`;
 
         // Format: [Title](path): description. conditions.
         if (description && conditions) {
