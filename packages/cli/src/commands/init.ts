@@ -198,12 +198,6 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Operating mode: solo (default) or team",
   },
   {
-    flag: "--project-id",
-    hasValue: true,
-    description:
-      "Project identifier (default: auto-detected from git/directory)",
-  },
-  {
     flag: "--exporters",
     hasValue: true,
     description: "Comma-separated list of exporters (default: auto-detect)",
@@ -242,7 +236,7 @@ export async function init(args: string[] = []): Promise<void> {
         "aligntrue init",
         "aligntrue init --yes",
         "aligntrue init --no-sync",
-        "aligntrue init --non-interactive --project-id my-app --exporters cursor,agents",
+        "aligntrue init --non-interactive --exporters cursor,agents",
       ],
       notes: [
         "- Automatically detects existing rules and imports them",

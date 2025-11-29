@@ -4,11 +4,7 @@
 
 import * as clack from "@clack/prompts";
 import { join } from "path";
-import {
-  BackupManager,
-  type AlignTrueConfig,
-  type RulerConfig,
-} from "@aligntrue/core";
+import { type AlignTrueConfig, type RulerConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
@@ -18,7 +14,6 @@ import {
 } from "../utils/command-utilities.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { createManagedSpinner } from "../utils/spinner.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -48,18 +43,13 @@ export async function migrate(args: string[]): Promise<void> {
       examples: [
         "aligntrue migrate personal",
         "aligntrue migrate team",
-        "aligntrue promote <section>",
-        "aligntrue demote <section>",
+        "aligntrue migrate ruler",
       ],
       notes: [
         "Subcommands:",
         "  personal - Move all personal rules to remote storage",
         "  team - Move all team rules to remote storage",
         "  ruler - Migrate from Ruler to AlignTrue",
-        "",
-        "Direct commands:",
-        "  promote <section> - Promote personal rule to team",
-        "  demote <section> - Demote team rule to personal",
       ],
     });
     return;
@@ -82,224 +72,6 @@ export async function migrate(args: string[]): Promise<void> {
       clack.log.error(`Unknown subcommand: ${subcommand}`);
       clack.log.info("Run 'aligntrue migrate --help' for usage");
       process.exit(1);
-  }
-}
-
-/**
- * Promote command - Promote personal rule to team
- */
-export async function promote(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
-
-  if (parsed.help || parsed.positional.length === 0) {
-    showStandardHelp({
-      name: "promote",
-      description: "Promote personal rule to team scope",
-      usage: "aligntrue promote <section> [options]",
-      args: ARG_DEFINITIONS,
-      examples: [
-        'aligntrue promote "My Coding Preferences"',
-        'aligntrue promote "Security" --yes',
-      ],
-      notes: [
-        "This will:",
-        "  • Change scope: personal → team",
-        "  • Move to main repository",
-        "  • Share with all team members",
-        "  • Require team approval for future changes",
-      ],
-    });
-    return;
-  }
-
-  const sectionHeading = parsed.positional[0]!;
-  const cwd = process.cwd();
-  const dryRun = parsed.flags["dry-run"] as boolean;
-  const yes = parsed.flags["yes"] as boolean;
-
-  if (isTTY()) {
-    clack.intro(`Promote "${sectionHeading}" to team rule`);
-  } else {
-    console.log(`Promote "${sectionHeading}" to team rule`);
-  }
-
-  try {
-    // Create backup
-    const spinner = createManagedSpinner({ disabled: !isTTY() });
-    spinner.start("Creating backup");
-
-    const backup = BackupManager.createBackup({
-      cwd,
-      created_by: "promote",
-      action: `promote-${sectionHeading}`,
-      notes: `Backup before promoting "${sectionHeading}" to team`,
-    });
-
-    spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-
-    // Confirm
-    if (!yes && !dryRun) {
-      if (!isTTY()) {
-        exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
-      }
-
-      const confirm = await clack.confirm({
-        message: `This will share "${sectionHeading}" with all team members. Continue?`,
-        initialValue: false,
-      });
-
-      if (clack.isCancel(confirm) || !confirm) {
-        clack.cancel("Promotion cancelled");
-        return;
-      }
-    }
-
-    // Apply changes
-    if (!dryRun) {
-      // Feature planned for future release
-      throw new Error(
-        "Section promotion not yet implemented. " +
-          "This feature is planned for a future release.",
-      );
-    } else {
-      if (isTTY()) {
-        clack.log.info("Dry run - no changes made");
-      } else {
-        console.log("Dry run - no changes made");
-      }
-    }
-
-    // Success message
-    // Ensure messages are printed BEFORE outro
-    console.log("\n⚠ This will be shared with all team members");
-    console.log("  Commit and push to share:");
-    console.log("  git add .aligntrue/");
-    console.log(`  git commit -m "feat: Promote ${sectionHeading} to team"`);
-    console.log("  git push");
-
-    if (isTTY()) {
-      clack.outro(`✓ Promoted "${sectionHeading}" to team rule`);
-    } else {
-      console.log(`✓ Promoted "${sectionHeading}" to team rule`);
-    }
-
-    recordEvent({ command_name: "promote", align_hashes_used: [] });
-  } catch (error) {
-    if (isTTY()) {
-      clack.log.error("Promotion failed");
-    } else {
-      console.log("Promotion failed");
-    }
-    throw error;
-  }
-}
-
-/**
- * Demote command - Demote team rule to personal
- */
-export async function demote(args: string[]): Promise<void> {
-  const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
-
-  if (parsed.help || parsed.positional.length === 0) {
-    showStandardHelp({
-      name: "demote",
-      description: "Demote team rule to personal scope",
-      usage: "aligntrue demote <section> [options]",
-      args: ARG_DEFINITIONS,
-      examples: [
-        'aligntrue demote "Testing Guidelines"',
-        'aligntrue demote "Code Style" --yes',
-      ],
-      notes: [
-        "This will:",
-        "  • Change scope: team → personal",
-        "  • Remove from main repository",
-        "  • Keep as personal rule",
-        "  • Won't affect other team members",
-      ],
-    });
-    return;
-  }
-
-  const sectionHeading = parsed.positional[0]!;
-  const cwd = process.cwd();
-  const dryRun = parsed.flags["dry-run"] as boolean;
-  const yes = parsed.flags["yes"] as boolean;
-
-  if (isTTY()) {
-    clack.intro(`Demote "${sectionHeading}" to personal rule`);
-  } else {
-    console.log(`Demote "${sectionHeading}" to personal rule`);
-  }
-
-  try {
-    // Create backup
-    const spinner = createManagedSpinner({ disabled: !isTTY() });
-    spinner.start("Creating backup");
-
-    const backup = BackupManager.createBackup({
-      cwd,
-      created_by: "demote",
-      action: `demote-${sectionHeading}`,
-      notes: `Backup before demoting "${sectionHeading}" to personal`,
-    });
-
-    spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-
-    // Confirm
-    if (!yes && !dryRun) {
-      if (!isTTY()) {
-        exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
-      }
-
-      const confirm = await clack.confirm({
-        message: `This will remove "${sectionHeading}" from team rules. Continue?`,
-        initialValue: false,
-      });
-
-      if (clack.isCancel(confirm) || !confirm) {
-        clack.cancel("Demotion cancelled");
-        return;
-      }
-    }
-
-    // Apply changes
-    if (!dryRun) {
-      // Feature planned for future release
-      throw new Error(
-        "Section demotion not yet implemented. " +
-          "This feature is planned for a future release.",
-      );
-    } else {
-      if (isTTY()) {
-        clack.log.info("Dry run - no changes made");
-      } else {
-        console.log("Dry run - no changes made");
-      }
-    }
-
-    // Success message
-    // Ensure messages are printed BEFORE outro
-    console.log("\nThis rule is now personal and won't affect team members.");
-
-    if (isTTY()) {
-      clack.outro(`✓ Demoted "${sectionHeading}" to personal rule`);
-    } else {
-      console.log(`✓ Demoted "${sectionHeading}" to personal rule`);
-    }
-
-    recordEvent({ command_name: "demote", align_hashes_used: [] });
-  } catch (error) {
-    if (isTTY()) {
-      clack.log.error("Demotion failed");
-    } else {
-      console.log("Demotion failed");
-    }
-    throw error;
   }
 }
 
