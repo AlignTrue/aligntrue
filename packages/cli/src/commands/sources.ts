@@ -53,109 +53,99 @@ export async function sources(args: string[]): Promise<void> {
 }
 
 /**
- * List all source files with section counts
+ * List all configured sources (local, catalog, git, url)
  */
 async function listSources(_flags: Record<string, unknown>): Promise<void> {
   const cwd = process.cwd();
 
   try {
-    clack.intro("Source files");
+    clack.intro("Sources");
 
     // Load config
-    await loadConfig(undefined, cwd);
+    const config = await loadConfig(undefined, cwd);
 
-    // In new architecture, sources are in .aligntrue/rules/*.md
-    const rulesDir = join(cwd, ".aligntrue", "rules");
-    const { loadRulesDirectory, orderSourceFiles } = await import(
-      "@aligntrue/core"
-    );
-
-    // Display configuration
-    clack.log.info(`Source directory: .aligntrue/rules/`);
-
-    // Load rule files from the rules directory
-    const ruleFiles = await loadRulesDirectory(rulesDir, cwd, {
-      recursive: true,
-    });
-
-    // Convert to format compatible with orderSourceFiles
-    const discovered = ruleFiles.map((rule) => ({
-      path: rule.path,
-      absolutePath: join(cwd, rule.path),
-      content: rule.content,
-      mtime: new Date(),
-      sections: [
-        {
-          heading: rule.frontmatter.title || rule.filename,
-          content: rule.content,
-          level: 1,
-          fingerprint: rule.hash,
-        },
-      ],
-    }));
-
-    const ordered = orderSourceFiles(discovered);
-
-    if (ordered.length === 0) {
-      clack.log.warn("No source files found");
+    if (!config.sources || config.sources.length === 0) {
+      clack.log.warn("No sources configured");
       clack.outro("Done");
       return;
     }
 
-    // Analyze file sizes
-    const { analyzeFiles, getLargeFiles } = await import(
-      "../utils/file-size-detector.js"
-    );
-
-    const filesToAnalyze = ordered.map((file) => ({
-      path: join(cwd, file.path),
-      relativePath: file.path,
-    }));
-
-    const analyses = analyzeFiles(filesToAnalyze);
-    const largeFiles = getLargeFiles(analyses);
-
-    // Display files with section counts and sizes
     clack.log.success(
-      `Found ${ordered.length} source file${ordered.length !== 1 ? "s" : ""}:\n`,
+      `Found ${config.sources.length} source(s) (priority order):\n`,
     );
 
-    for (let i = 0; i < ordered.length; i++) {
-      const file = ordered[i]!;
-      const analysis = analyses[i]!;
-      const sectionCount = file.sections.length;
-
-      let icon = "  ";
-      if (analysis.severity === "urgent") {
-        icon = "⚠️ ";
-      } else if (analysis.severity === "warning") {
-        icon = "💡";
+    // Group sources by type for display
+    const sourcesByType: Record<string, unknown[]> = {};
+    config.sources.forEach((source: unknown) => {
+      const sourceObj = source as Record<string, unknown>;
+      const type = (sourceObj["type"] as string) || "unknown";
+      if (!sourcesByType[type]) {
+        sourcesByType[type] = [];
       }
+      sourcesByType[type].push(source);
+    });
 
-      console.log(
-        `  ${icon} ${file.path} (${sectionCount} section${sectionCount !== 1 ? "s" : ""}, ${analysis.lineCount} lines)`,
-      );
-    }
+    // Display sources grouped by type with priority numbers
+    let priority = 1;
 
-    // Show recommendations if there are large files
-    if (largeFiles.length > 0) {
-      console.log("");
-      clack.log.info("💡 Recommendations:");
+    // Order types for consistent output
+    const typeOrder = ["local", "catalog", "git", "url"];
+    for (const type of typeOrder) {
+      const sources = sourcesByType[type];
+      if (!sources) continue;
 
-      for (const large of largeFiles) {
-        if (large.severity === "urgent") {
-          console.log(
-            `   ${large.relativePath}: File is very large (${large.lineCount} lines)`,
-          );
-        } else {
-          console.log(
-            `   ${large.relativePath}: File is getting large (${large.lineCount} lines)`,
-          );
+      for (const source of sources) {
+        const sourceObj = source as Record<string, unknown>;
+        const sourceType = sourceObj["type"] as string;
+
+        console.log(`${priority}. ${sourceType.toUpperCase()}`);
+
+        if (sourceType === "local") {
+          const path = sourceObj["path"] as string;
+          console.log(`   Path: ${path}`);
+
+          // Count files in local directory
+          const localRulesDir = join(cwd, path);
+          if (existsSync(localRulesDir)) {
+            const { loadRulesDirectory } = await import("@aligntrue/core");
+            const ruleFiles = await loadRulesDirectory(localRulesDir, cwd, {
+              recursive: true,
+            });
+            let totalLines = 0;
+            ruleFiles.forEach((rule) => {
+              totalLines += rule.content.split("\n").length;
+            });
+            console.log(`   Files: ${ruleFiles.length}, Lines: ${totalLines}`);
+          }
+        } else if (sourceType === "git") {
+          const url = sourceObj["url"] as string;
+          const ref = (sourceObj["ref"] as string) || "main";
+          const path = sourceObj["path"] as string;
+          console.log(`   URL: ${url}`);
+          console.log(`   Ref: ${ref}`);
+          if (path) {
+            console.log(`   Path: ${path}`);
+          }
+
+          // Check cache status
+          const cacheDir = join(cwd, ".aligntrue", ".cache", "git");
+          if (existsSync(cacheDir)) {
+            console.log(`   Cache: available`);
+          } else {
+            console.log(`   Cache: not yet fetched`);
+          }
+        } else if (sourceType === "url") {
+          const url = sourceObj["url"] as string;
+          console.log(`   URL: ${url}`);
+          console.log(`   Cache: check needed`);
+        } else if (sourceType === "catalog") {
+          const id = (sourceObj["id"] as string) || "unknown";
+          console.log(`   Catalog ID: ${id}`);
         }
-      }
 
-      console.log("\n   Consider splitting large files:");
-      console.log("   aligntrue sources split");
+        console.log("");
+        priority++;
+      }
     }
 
     // Record telemetry
