@@ -34,6 +34,10 @@ import { loadConfigWithValidation } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
 import { createManagedSpinner } from "../utils/spinner.js";
+import {
+  selectFilesToImport,
+  type ImportFile,
+} from "../utils/selective-import-ui.js";
 
 /**
  * Argument definitions for add command
@@ -406,8 +410,50 @@ async function copyRulesToLocal(options: {
       return;
     }
 
+    // Selective import UI - let user choose which rules to import
+    // Build file list from rules for selection
+    const filesForSelection: ImportFile[] = [];
+    const ruleToFileMap = new Map<string, number>();
+
+    result.rules.forEach((rule, index) => {
+      const filePath = rule.relativePath || rule.filename;
+      // Avoid duplicates (in case multiple rules come from same file)
+      if (!filesForSelection.find((f) => f.relativePath === filePath)) {
+        filesForSelection.push({
+          path: filePath, // Use relativePath since we don't have absolute in this context
+          relativePath: filePath,
+        });
+      }
+      ruleToFileMap.set(filePath, index);
+    });
+
+    // Show selective import UI if interactive
+    let selectedRules = [...result.rules];
+    if (!nonInteractive && filesForSelection.length > 0) {
+      spinner.stop("Import complete (selection needed)");
+      const selectionResult = await selectFilesToImport(filesForSelection, {
+        nonInteractive: false,
+      });
+
+      if (selectionResult.skipped || selectionResult.selectedFileCount === 0) {
+        clack.cancel("Import cancelled");
+        return;
+      }
+
+      // Filter rules to only those from selected files
+      const selectedFilePaths = new Set(
+        selectionResult.selectedFiles.map((f) => f.relativePath),
+      );
+      selectedRules = result.rules.filter((rule) => {
+        const filePath = rule.relativePath || rule.filename;
+        return selectedFilePaths.has(filePath);
+      });
+
+      spinner.start("Writing selected rules...");
+    }
+
     // Handle conflicts
-    const rulesToWrite = [...result.rules];
+    const rulesToWrite = [...selectedRules];
 
     if (result.conflicts.length > 0) {
       spinner.stop("Import paused (conflicts detected)");
