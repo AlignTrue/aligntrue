@@ -190,42 +190,6 @@ aligntrue sync
 
 ## Configuration options
 
-### Source file patterns
-
-The `source_files` field accepts various patterns:
-
-**All files in directory:**
-
-```yaml
-sync:
-  source_files: ".aligntrue/rules/*.md"
-```
-
-**Recursive (includes subdirectories):**
-
-```yaml
-sync:
-  source_files: ".aligntrue/rules/**/*.md"
-```
-
-**Specific files:**
-
-```yaml
-sync:
-  source_files:
-    - ".aligntrue/rules/architecture.md"
-    - ".aligntrue/rules/security.md"
-```
-
-**Multiple directories:**
-
-```yaml
-sync:
-  source_files:
-    - ".aligntrue/rules/*.md"
-    - "docs/guidelines/*.md"
-```
-
 ### Source order
 
 By default, files merge alphabetically. Use `source_order` to control priority:

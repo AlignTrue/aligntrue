@@ -214,6 +214,30 @@ aligntrue add ./shared/rules
 aligntrue add /Users/me/my-rules
 ```
 
+## How import works
+
+When you use `aligntrue add` or `aligntrue init --source`, the import process:
+
+- **Targets any file or folder**: Local paths (relative or absolute), remote files, or directories
+- **Scans recursively**: Finds all `.md` and `.mdc` files in subdirectories
+- **Preserves filenames**: Uses the original filename instead of generating from the title
+- **Preserves structure**: Maintains subdirectory organization (e.g., `backend/security.md` → `.aligntrue/rules/backend/security.md`)
+- **Converts formats**: Converts `.mdc` files to `.md` format during import
+- **Adds metadata**: Records the source in frontmatter for tracking
+
+**Example import:**
+
+```bash
+# Import from a remote directory (any subdirectory)
+aligntrue add https://github.com/company/rules/backend
+
+# Results in:
+# .aligntrue/rules/
+#   ├── security.md         (from backend/security.md)
+#   └── performance/
+#       └── caching.md      (from backend/performance/caching.md)
+```
+
 ## File format conversion
 
 AlignTrue automatically converts imported files to `.md` format:

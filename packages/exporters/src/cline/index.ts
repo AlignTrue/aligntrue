@@ -44,13 +44,15 @@ export class ClineExporter extends ExporterBase {
       }
 
       // Determine output path
-      const filename = rule.filename;
+      // Use relativePath to preserve source directory structure
+      // nested_location is for monorepo scopes (different concept)
+      const ruleRelPath = rule.relativePath || rule.filename;
       let outputPath: string;
       const nestedLoc = rule.frontmatter.nested_location;
       if (nestedLoc) {
-        outputPath = join(outputDir, nestedLoc, ".clinerules", filename);
+        outputPath = join(outputDir, nestedLoc, ".clinerules", ruleRelPath);
       } else {
-        outputPath = join(outputDir, ".clinerules", filename);
+        outputPath = join(outputDir, ".clinerules", ruleRelPath);
       }
 
       // Prepare content

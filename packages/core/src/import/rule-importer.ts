@@ -10,7 +10,7 @@
  */
 
 import { existsSync, readFileSync, statSync } from "fs";
-import { join, basename, extname, isAbsolute, resolve } from "path";
+import { join, basename, extname, isAbsolute, resolve, relative } from "path";
 import matter from "gray-matter";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { glob } from "glob";
@@ -183,7 +183,7 @@ async function importFromDirectory(
   const rules: RuleFile[] = [];
 
   for (const file of files) {
-    const rule = parseRuleFromFile(file, cwd, originalSource);
+    const rule = parseRuleFromFile(file, cwd, originalSource, dirPath);
     if (rule) {
       rules.push(rule);
     }
@@ -199,6 +199,7 @@ function parseRuleFromFile(
   filePath: string,
   cwd: string,
   originalSource: string,
+  sourceRoot?: string,
 ): RuleFile | null {
   try {
     const content = readFileSync(filePath, "utf-8");
@@ -206,11 +207,11 @@ function parseRuleFromFile(
 
     // Parse based on file type
     if (ext === ".mdc") {
-      return parseMdcFile(content, filePath, cwd, originalSource);
+      return parseMdcFile(content, filePath, cwd, originalSource, sourceRoot);
     }
 
     // Default: parse as markdown with optional frontmatter
-    return parseMdFile(content, filePath, cwd, originalSource);
+    return parseMdFile(content, filePath, cwd, originalSource, sourceRoot);
   } catch (error) {
     console.warn(
       `Warning: Could not parse ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
@@ -227,6 +228,7 @@ function parseMdFile(
   filePath: string,
   cwd: string,
   originalSource: string,
+  sourceRoot?: string,
 ): RuleFile {
   const parsed = matter(content, matterOptions);
   const frontmatter = parsed.data as RuleFrontmatter;
@@ -235,30 +237,41 @@ function parseMdFile(
   let title = frontmatter.title;
   if (!title) {
     const headingMatch = parsed.content.match(/^#\s+(.+)$/m);
-    title = headingMatch
-      ? headingMatch[1]
-      : basename(filePath, extname(filePath));
+    title = headingMatch ? headingMatch[1] : basename(filePath, ".md");
   }
   // Ensure title is defined
   const finalTitle = title || "untitled-rule";
 
-  // Generate filename from title
-  const filename = generateFilename(finalTitle);
+  // Preserve original filename (don't generate from title)
+  const filename = basename(filePath);
+
+  // Compute relative path from source root to preserve directory structure
+  let relativePath: string | undefined;
+  if (sourceRoot) {
+    relativePath = relative(sourceRoot, filePath);
+  }
 
   // Compute hash
   const hash = computeContentHash(content);
 
-  return {
+  const result: RuleFile = {
     content: parsed.content,
     frontmatter: {
       ...frontmatter,
       title: finalTitle,
       source: originalSource,
     },
-    path: filename,
+    path: relativePath || filename,
     filename,
     hash,
   };
+
+  // Only add relativePath if it was computed (preserves optional property semantics)
+  if (relativePath) {
+    result.relativePath = relativePath;
+  }
+
+  return result;
 }
 
 /**
@@ -270,6 +283,7 @@ function parseMdcFile(
   filePath: string,
   cwd: string,
   originalSource: string,
+  sourceRoot?: string,
 ): RuleFile {
   // MDC files use the same frontmatter format as MD
   const parsed = matter(content, matterOptions);
@@ -284,8 +298,21 @@ function parseMdcFile(
   // Ensure title is defined
   const finalTitle = title || "untitled-rule";
 
-  // Generate .md filename (convert from .mdc)
-  const filename = generateFilename(finalTitle);
+  // Preserve original filename but convert .mdc to .md
+  const mdcFilename = basename(filePath);
+  const filename = mdcFilename.endsWith(".mdc")
+    ? mdcFilename.slice(0, -4) + ".md"
+    : mdcFilename;
+
+  // Compute relative path from source root to preserve directory structure
+  let relativePath: string | undefined;
+  if (sourceRoot) {
+    const relPath = relative(sourceRoot, filePath);
+    // Convert .mdc extension to .md in the relative path
+    relativePath = relPath.endsWith(".mdc")
+      ? relPath.slice(0, -4) + ".md"
+      : relPath;
+  }
 
   // Compute hash
   const hash = computeContentHash(content);
@@ -302,13 +329,20 @@ function parseMdcFile(
     convertedFrontmatter.apply_to = frontmatter.cursor.when;
   }
 
-  return {
+  const result: RuleFile = {
     content: parsed.content,
     frontmatter: convertedFrontmatter,
-    path: filename,
+    path: relativePath || filename,
     filename,
     hash,
   };
+
+  // Only add relativePath if it was computed (preserves optional property semantics)
+  if (relativePath) {
+    result.relativePath = relativePath;
+  }
+
+  return result;
 }
 
 /**
