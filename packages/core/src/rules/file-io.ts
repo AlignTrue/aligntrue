@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { relative, basename } from "path";
+import { relative, basename, join } from "path";
 import matter from "gray-matter";
 import { parse, stringify } from "yaml";
 import { glob } from "glob";
@@ -24,7 +24,11 @@ const matterOptions = {
  * @param filePath Absolute path to file
  * @param cwd Workspace root (for relative path calculation)
  */
-export function parseRuleFile(filePath: string, cwd: string): RuleFile {
+export function parseRuleFile(
+  filePath: string,
+  cwd: string,
+  rulesDir?: string,
+): RuleFile {
   if (!existsSync(filePath)) {
     throw new Error(`Rule file not found: ${filePath}`);
   }
@@ -35,6 +39,17 @@ export function parseRuleFile(filePath: string, cwd: string): RuleFile {
   const relativePath = relative(cwd, filePath);
   const filename = basename(relativePath);
 
+  // Compute relative path within rules directory (preserves nested structure)
+  let relativePathInRules: string | undefined;
+  if (rulesDir) {
+    const absoluteRulesDir = rulesDir.startsWith("/")
+      ? rulesDir
+      : join(cwd, rulesDir);
+    if (filePath.startsWith(absoluteRulesDir)) {
+      relativePathInRules = relative(absoluteRulesDir, filePath);
+    }
+  }
+
   // Ensure content hash matches actual content
   const computedHash = computeContentHash(rawContent);
   if (frontmatter.content_hash && frontmatter.content_hash !== computedHash) {
@@ -42,7 +57,7 @@ export function parseRuleFile(filePath: string, cwd: string): RuleFile {
     // Validation/Fix logic happens elsewhere.
   }
 
-  return {
+  const result: RuleFile = {
     content: parsed.content,
     frontmatter: {
       ...frontmatter,
@@ -53,6 +68,13 @@ export function parseRuleFile(filePath: string, cwd: string): RuleFile {
     filename,
     hash: computedHash,
   };
+
+  // Only add relativePath if it was computed (preserves optional property semantics)
+  if (relativePathInRules) {
+    result.relativePath = relativePathInRules;
+  }
+
+  return result;
 }
 
 /**
@@ -99,5 +121,5 @@ export async function loadRulesDirectory(
   const pattern = options.recursive ? "**/*.md" : "*.md";
   const files = await glob(pattern, { cwd: dir, absolute: true });
 
-  return files.map((file) => parseRuleFile(file, cwd));
+  return files.map((file) => parseRuleFile(file, cwd, dir));
 }

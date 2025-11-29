@@ -94,6 +94,13 @@ export interface RuleFile {
   filename: string;
 
   /**
+   * Path relative to .aligntrue/rules/ directory (preserves nested structure)
+   * e.g. "very/deep/rule.md" for .aligntrue/rules/very/deep/rule.md
+   * For flat files in .aligntrue/rules/, same as filename
+   */
+  relativePath?: string;
+
+  /**
    * Computed hash of content + frontmatter
    */
   hash: string;
