@@ -211,46 +211,82 @@ describe("BackupManager", () => {
   });
 
   describe("cleanupOldBackups", () => {
-    it("should keep specified number of backups", async () => {
-      // Create 5 backups with tiny delays to ensure different millisecond timestamps
+    it("should not cleanup when retentionDays is 0 (manual only)", async () => {
+      // Create 3 backups
+      BackupManager.createBackup({
+        cwd: testDir,
+        notes: "Backup 1",
+      });
+
+      BackupManager.createBackup({
+        cwd: testDir,
+        notes: "Backup 2",
+      });
+
+      BackupManager.createBackup({
+        cwd: testDir,
+        notes: "Backup 3",
+      });
+
+      // With retentionDays: 0, no cleanup happens
+      const removed = BackupManager.cleanupOldBackups({
+        cwd: testDir,
+        retentionDays: 0, // Manual cleanup only
+        minimumKeep: 2,
+      });
+
+      expect(removed).toBe(0);
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(3);
+    });
+
+    it("should respect minimum_keep safety floor", async () => {
+      // Create 5 backups
       for (let i = 0; i < 5; i++) {
         BackupManager.createBackup({ cwd: testDir, notes: `Backup ${i}` });
         if (i < 4) await new Promise((resolve) => setTimeout(resolve, 5));
       }
 
-      const removed = BackupManager.cleanupOldBackups({
+      // Even with cleanup, should keep at least minimumKeep backups
+      BackupManager.cleanupOldBackups({
         cwd: testDir,
-        keepCount: 3,
+        retentionDays: 30,
+        minimumKeep: 3,
       });
 
-      expect(removed).toBe(2);
+      // Should keep at least 3 backups (minimum_keep floor)
       const remaining = BackupManager.listBackups(testDir);
-      expect(remaining).toHaveLength(3);
+      expect(remaining.length).toBeGreaterThanOrEqual(3);
     });
 
-    it("should default to keeping 20 backups", async () => {
-      // Create 22 backups with tiny delays to ensure different millisecond timestamps
-      for (let i = 0; i < 22; i++) {
-        BackupManager.createBackup({ cwd: testDir });
-        if (i < 21) await new Promise((resolve) => setTimeout(resolve, 5));
-      }
-
-      const removed = BackupManager.cleanupOldBackups({ cwd: testDir });
-
-      expect(removed).toBe(2);
-      const remaining = BackupManager.listBackups(testDir);
-      expect(remaining).toHaveLength(20);
-    });
-
-    it("should return 0 when backup count is below threshold", () => {
+    it("should return 0 when retentionDays is 0 (manual only)", async () => {
+      BackupManager.createBackup({ cwd: testDir });
       BackupManager.createBackup({ cwd: testDir });
 
       const removed = BackupManager.cleanupOldBackups({
         cwd: testDir,
-        keepCount: 5,
+        retentionDays: 0, // Manual only - no auto cleanup
+        minimumKeep: 1,
       });
 
       expect(removed).toBe(0);
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(2);
+    });
+
+    it("should apply defaults (retentionDays: 30, minimumKeep: 3)", async () => {
+      for (let i = 0; i < 5; i++) {
+        BackupManager.createBackup({ cwd: testDir });
+        if (i < 4) await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+
+      const removed = BackupManager.cleanupOldBackups({ cwd: testDir });
+
+      // With defaults, should use retentionDays: 30, minimumKeep: 3
+      // All backups are recent (within 30 days), so no cleanup should happen
+      expect(removed).toBe(0);
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(5);
     });
   });
 

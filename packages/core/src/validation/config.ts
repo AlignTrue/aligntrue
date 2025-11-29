@@ -270,8 +270,18 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   if (!result.backup) {
     result.backup = {};
   }
+  // New retention_days setting takes precedence
+  // If missing, apply default; keep_count is ignored if retention_days is present
+  result.backup.retention_days = result.backup.retention_days ?? 30;
+  // Enforce retention_days bounds (min 0, no max)
+  if (result.backup.retention_days < 0) result.backup.retention_days = 0;
+  // Apply minimum_keep defaults (safety floor)
+  result.backup.minimum_keep = result.backup.minimum_keep ?? 3;
+  // Enforce minimum_keep bounds (min 1)
+  if (result.backup.minimum_keep < 1) result.backup.minimum_keep = 1;
+  // Deprecate keep_count: still accept for migration but don't use it if retention_days is set
   result.backup.keep_count = result.backup.keep_count ?? 20;
-  // Enforce keep_count bounds (min 10, max 100)
+  // Enforce keep_count bounds for backward compatibility (min 10, max 100)
   if (result.backup.keep_count < 10) result.backup.keep_count = 10;
   if (result.backup.keep_count > 100) result.backup.keep_count = 100;
 

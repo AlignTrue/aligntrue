@@ -407,7 +407,8 @@ export class SyncEngine {
           const { BackupManager } = await import("../backup/manager.js");
           BackupManager.cleanupOldBackups({
             cwd: resolvePath(irPath, "..", ".."),
-            keepCount: this.config.backup?.keep_count || 20,
+            retentionDays: this.config.backup?.retention_days ?? 30,
+            minimumKeep: this.config.backup?.minimum_keep ?? 3,
           });
         } catch {
           // Ignore cleanup errors

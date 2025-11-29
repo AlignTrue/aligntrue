@@ -287,30 +287,52 @@ async function handleCleanup(
     return;
   }
 
-  const keepIndex = argv.indexOf("--keep");
-  const keepValue =
-    keepIndex >= 0 && argv[keepIndex + 1] ? argv[keepIndex + 1] : args.keep;
-  const keepCount = keepValue ? parseInt(keepValue, 10) : 20;
+  const { loadConfig } = await import("@aligntrue/core");
+  const config = await loadConfig(undefined, cwd);
 
-  if (isNaN(keepCount) || keepCount < 10) {
-    throw new Error(`Invalid --keep value: ${keepValue}. Must be at least 10.`);
-  }
+  const retentionDays = config.backup?.retention_days ?? 30;
+  const minimumKeep = config.backup?.minimum_keep ?? 3;
 
   const backups = BackupManager.listBackups(cwd);
 
-  if (backups.length <= keepCount) {
+  if (backups.length <= minimumKeep) {
     clack.log.info(
-      `No cleanup needed (${backups.length} backups, keeping ${keepCount})`,
+      `No cleanup needed (${backups.length} backups, minimum keep: ${minimumKeep})`,
     );
     return;
   }
 
-  const toRemove = backups.length - keepCount;
+  // Calculate which backups would be removed
+  if (retentionDays === 0) {
+    clack.log.info(
+      "Auto-cleanup disabled (retention_days: 0). Use --yes to force cleanup with current config.",
+    );
+    return;
+  }
+
+  const now = Date.now();
+  const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
+  const oldBackups = backups.filter((backup) => {
+    const backupTime = new Date(backup.manifest.timestamp).getTime();
+    return now - backupTime > retentionMs;
+  });
+
+  if (oldBackups.length === 0) {
+    clack.log.info(
+      `No old backups to remove (retention: ${retentionDays} days, minimum keep: ${minimumKeep})`,
+    );
+    return;
+  }
+
+  const toRemove = Math.max(
+    0,
+    oldBackups.length - (backups.length - minimumKeep),
+  );
 
   clack.log.warn(
-    `Will remove ${toRemove} old backup${toRemove === 1 ? "" : "s"}`,
+    `Will remove ${toRemove} backup${toRemove === 1 ? "" : "s"} older than ${retentionDays} days`,
   );
-  clack.log.info(`Keeping ${keepCount} most recent backups`);
+  clack.log.info(`Keeping minimum ${minimumKeep} most recent backups`);
 
   const confirmed = await clack.confirm({
     message: "Continue with cleanup?",
@@ -325,10 +347,14 @@ async function handleCleanup(
   await withSpinner(
     "Cleaning up old backups...",
     async () => {
-      const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
+      const removed = BackupManager.cleanupOldBackups({
+        cwd,
+        retentionDays,
+        minimumKeep,
+      });
 
       clack.log.success(`Removed ${removed} backup${removed === 1 ? "" : "s"}`);
-      clack.log.info(`${keepCount} backups remaining`);
+      clack.log.info(`${backups.length - removed} backups remaining`);
     },
     "Cleanup complete",
     (err) => {
@@ -340,33 +366,69 @@ async function handleCleanup(
 
 async function handleLegacyCleanup(cwd: string): Promise<void> {
   const { globSync } = await import("glob");
-  const { unlinkSync } = await import("fs");
+  const { unlinkSync, rmSync, existsSync } = await import("fs");
   const { join } = await import("path");
 
   const spinner = createManagedSpinner();
 
-  spinner.start("Scanning for legacy .bak files...");
+  spinner.start("Scanning for legacy backup locations...");
 
+  const itemsToDelete: Array<{ path: string; type: "file" | "directory" }> = [];
+
+  // Find .bak files in workspace root and subdirectories (but not node_modules, .git)
   const bakFiles = globSync(["**/*.bak", ".bak"], {
     cwd,
     ignore: ["node_modules/**", ".git/**", ".aligntrue/**"],
   });
 
-  spinner.stop(`Found ${bakFiles.length} legacy file(s)`);
+  bakFiles.forEach((f: string) => {
+    itemsToDelete.push({ path: join(cwd, f), type: "file" });
+  });
 
-  if (bakFiles.length === 0) {
-    clack.log.success("No legacy .bak files found");
+  // Find old backup location: .aligntrue/overwritten-rules/
+  const overwrittenRulesDir = join(cwd, ".aligntrue", "overwritten-rules");
+  if (existsSync(overwrittenRulesDir)) {
+    itemsToDelete.push({ path: overwrittenRulesDir, type: "directory" });
+  }
+
+  // Find agent-specific overwritten-files locations
+  const agentLocations = [
+    ".cursor/overwritten-files",
+    ".amazonq/overwritten-files",
+    ".kilocode/overwritten-files",
+    ".augment/overwritten-files",
+    ".kiro/overwritten-files",
+    ".trae/overwritten-files",
+    ".vscode/overwritten-files",
+  ];
+
+  for (const agentLoc of agentLocations) {
+    const agentOverwrittenDir = join(cwd, agentLoc);
+    if (existsSync(agentOverwrittenDir)) {
+      itemsToDelete.push({ path: agentOverwrittenDir, type: "directory" });
+    }
+  }
+
+  spinner.stop(
+    `Found ${itemsToDelete.length} legacy backup location(s) to remove`,
+  );
+
+  if (itemsToDelete.length === 0) {
+    clack.log.success("No legacy backup locations found");
     return;
   }
 
-  clack.log.warn(`Found ${bakFiles.length} legacy .bak files:`);
-  bakFiles.slice(0, 10).forEach((f: string) => console.log(`  - ${f}`));
-  if (bakFiles.length > 10) {
-    console.log(`  ...and ${bakFiles.length - 10} more`);
+  clack.log.warn(`Found ${itemsToDelete.length} legacy backup location(s):`);
+  itemsToDelete.slice(0, 10).forEach((item) => {
+    const relativePath = item.path.replace(cwd + "/", "").replace(cwd, ".");
+    console.log(`  - ${relativePath} (${item.type})`);
+  });
+  if (itemsToDelete.length > 10) {
+    console.log(`  ...and ${itemsToDelete.length - 10} more`);
   }
 
   const confirmed = await clack.confirm({
-    message: "Delete these files?",
+    message: "Delete these legacy locations?",
     initialValue: false,
   });
 
@@ -376,14 +438,21 @@ async function handleLegacyCleanup(cwd: string): Promise<void> {
   }
 
   let deleted = 0;
-  for (const file of bakFiles) {
+  for (const item of itemsToDelete) {
     try {
-      unlinkSync(join(cwd, file));
+      if (item.type === "file") {
+        unlinkSync(item.path);
+      } else {
+        rmSync(item.path, { recursive: true, force: true });
+      }
       deleted++;
     } catch {
       // Ignore errors
     }
   }
 
-  clack.log.success(`Deleted ${deleted} legacy file(s)`);
+  clack.log.success(
+    `Deleted ${deleted} legacy location${deleted !== 1 ? "s" : ""}`,
+  );
+  clack.log.info("All backups are now in .aligntrue/.backups/");
 }

@@ -145,9 +145,14 @@ export async function executeSyncWorkflow(
 
   // Step 4: Auto-cleanup old backups
   if (!options.dryRun) {
-    const keepCount = config.backup?.keep_count || 20;
+    const retentionDays = config.backup?.retention_days ?? 30;
+    const minimumKeep = config.backup?.minimum_keep ?? 3;
     try {
-      const removed = BackupManager.cleanupOldBackups({ cwd, keepCount });
+      const removed = BackupManager.cleanupOldBackups({
+        cwd,
+        retentionDays,
+        minimumKeep,
+      });
       if (removed > 0 && options.verbose) {
         clack.log.info(
           `Cleaned up ${removed} old backup${removed !== 1 ? "s" : ""}`,

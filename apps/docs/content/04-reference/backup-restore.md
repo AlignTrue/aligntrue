@@ -14,7 +14,7 @@ AlignTrue follows a safety-first approach:
 1. **Always preview first**: Use `--dry-run` to see what will change
 2. **Automatic backups**: Every sync creates a timestamped backup
 3. **Easy restore**: Use `aligntrue revert` to undo changes with preview
-4. **Retention control**: Keep 10-100 backups (default: 20)
+4. **Age-based retention**: Backups older than 30 days are automatically cleaned up
 
 ## Quick start
 
@@ -60,20 +60,33 @@ aligntrue backup restore --to 2025-11-18T14-30-00-000
 
 ## Configuration
 
-Backups are mandatory. You can only control **retention** (how many to keep):
+Backups are mandatory. You can only control **retention** (how old backups can be):
 
 ```yaml
 # .aligntrue/config.yaml
 backup:
-  keep_count: 20 # Min: 10, Default: 20, Max: 100
+  retention_days: 30 # Age-based cleanup: 0 = manual only, default: 30
+  minimum_keep: 3 # Safety floor: always keep N most recent
 ```
 
 **Configuration options:**
 
-- **`keep_count`** (number): How many backups to retain
-  - Default: 20
-  - Range: 10-100 (enforced by validation)
-  - Older backups deleted automatically after successful operations
+- **`retention_days`** (number): How many days to keep backups
+  - Default: 30
+  - Minimum: 0 (manual cleanup only)
+  - No maximum
+  - Backups older than this are automatically deleted after sync
+- **`minimum_keep`** (number): Safety floor for recent backups
+  - Default: 3
+  - Minimum: 1
+  - Even if backup is older than `retention_days`, keep at least this many most recent backups
+  - Protects against accidental over-cleanup if syncing infrequently
+
+**Deprecated (still supported for migration):**
+
+- **`keep_count`** (number): Old count-based retention, now replaced by `retention_days`
+  - No longer used if `retention_days` is set
+  - Kept for backward compatibility with existing configs
 
 **What you cannot configure:**
 
@@ -215,11 +228,11 @@ aligntrue backup restore --to 2025-11-18T14-30-00-000
 
 ### `aligntrue backup cleanup`
 
-Manually clean up old backups:
+Manually trigger cleanup:
 
 ```bash
-# Keep 15 most recent backups
-aligntrue backup cleanup --keep 15
+# Clean up backups older than configured retention_days
+aligntrue backup cleanup
 
 # Clean up legacy .bak files from older AlignTrue versions
 aligntrue backup cleanup --legacy
@@ -227,12 +240,11 @@ aligntrue backup cleanup --legacy
 
 **Options:**
 
-- `--keep <number>` - Number of backups to keep (min: 10)
-- `--legacy` - Scan and remove orphaned `.bak` files
+- `--legacy` - Scan and remove orphaned `.bak` files and old backup locations
 
 **Automatic cleanup:**
 
-After every successful sync, AlignTrue automatically cleans up old backups based on your `keep_count` setting. Manual cleanup is rarely needed.
+After every successful sync, AlignTrue automatically cleans up old backups based on your `retention_days` setting. Manual cleanup is rarely needed.
 
 ## What gets backed up
 
@@ -505,26 +517,26 @@ If restore fails:
 
 Backups are cleaned up automatically after each sync based on `keep_count`.
 
-To clean up immediately:
-
-```bash
-# Keep only 15 most recent
-aligntrue backup cleanup --keep 15
-```
-
-Adjust `keep_count` in config for permanent change:
+To adjust retention permanently:
 
 ```yaml
 backup:
-  keep_count: 15
+  retention_days: 60 # Keep backups for 60 days instead of 30
+  minimum_keep: 5 # Always keep at least 5 most recent backups
 ```
 
-### Legacy .bak files
+### Legacy .bak files and old backup locations
 
-If you upgraded from an older AlignTrue version and have `.bak` files scattered in your workspace:
+If you upgraded from an older AlignTrue version, you may have:
+
+- `.bak` files scattered in your workspace root
+- `overwritten-rules/` directories in `.aligntrue/`
+- `<agent>/overwritten-files/` directories in agent-specific locations
+
+Clean them up:
 
 ```bash
-# Scan for and remove legacy .bak files
+# Scan for and remove all legacy backup files and directories
 aligntrue backup cleanup --legacy
 ```
 

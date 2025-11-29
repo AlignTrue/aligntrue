@@ -114,17 +114,18 @@ Multiple layers ensure you never lose work.
 
 ### Backup retention
 
-Control how many backups to keep:
+Control how long to keep backups:
 
 ```yaml
 # .aligntrue/config.yaml
 backup:
-  keep_count: 20 # Min: 10, Default: 20, Max: 100
+  retention_days: 30 # Age-based: delete backups older than 30 days
+  minimum_keep: 3 # Safety floor: always keep at least 3 most recent
 ```
 
 **Automatic cleanup:**
 
-After each successful sync, AlignTrue automatically removes oldest backups beyond your `keep_count`.
+After each successful sync, AlignTrue automatically removes backups older than `retention_days`, while respecting the `minimum_keep` safety floor.
 
 ### Checking your backups
 
@@ -298,32 +299,39 @@ aligntrue backup restore --to <experiment-checkpoint>
 
 ## Managing backup retention
 
-### Choosing keep_count
+### Choosing retention_days
 
-**10 backups (minimum):**
+**14 days (short):**
 
-- Casual use
-- Infrequent syncs
 - Tight disk space
+- Lightweight projects
+- Daily syncs, quick feedback
 
-**20 backups (default):**
+**30 days (default):**
 
 - Regular development
-- Daily syncs
-- Good balance
+- Good balance between history and storage
+- Covers month-long iterations
 
-**50+ backups:**
+**90 days (extended):**
 
-- Frequent syncs
-- Active experimentation
-- Want long history
+- Long-running experiments
+- Infrequent syncs
+- Want longer safety net
+
+**365 days (archive):**
+
+- Critical projects
+- Regulatory/compliance needs
+- Long-term history
 
 ### Adjusting retention
 
 ```yaml
 # .aligntrue/config.yaml
 backup:
-  keep_count: 30
+  retention_days: 45 # Keep for 45 days instead of default 30
+  minimum_keep: 5 # Always keep at least 5 recent backups
 ```
 
 Then sync to apply:
@@ -337,8 +345,8 @@ aligntrue sync
 Remove old backups immediately:
 
 ```bash
-# Keep only 15 most recent
-aligntrue backup cleanup --keep 15
+# Clean up based on config settings
+aligntrue backup cleanup
 ```
 
 ### Storage considerations
@@ -530,20 +538,21 @@ aligntrue revert --timestamp <latest>
 
 **Not possible:** Backups are mandatory. If you found a way to disable them, that's a bug.
 
-### Too few backups
+### Too short retention
 
 **Problem:**
 
 ```yaml
 backup:
-  keep_count: 5 # Error: minimum is 10
+  retention_days: 1 # Only keeps backups for 1 day
 ```
 
 **Better:**
 
 ```yaml
 backup:
-  keep_count: 20 # Default, good for most users
+  retention_days: 30 # Default: keep for 30 days
+  minimum_keep: 3 # Safety floor: at least 3 recent
 ```
 
 ### Ignoring warnings

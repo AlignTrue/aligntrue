@@ -14,6 +14,7 @@ import {
 import { join, basename } from "path";
 import { loadConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
+import { backupOverwrittenFile } from "@aligntrue/core";
 
 /**
  * Main sources command handler
@@ -372,20 +373,26 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
 
     clack.log.success(`\nSplit ${createdFiles.length} rules to ${targetDir}/`);
 
-    // Ask about backing up AGENTS.md
+    // Backup AGENTS.md to unified backup location
     if (!yes) {
       const backup = await clack.confirm({
-        message: "Move AGENTS.md to AGENTS.md.bak?",
+        message: "Backup AGENTS.md for safety?",
         initialValue: true,
       });
 
       if (!clack.isCancel(backup) && backup) {
-        const backupPath = join(cwd, "AGENTS.md.bak");
-        writeFileSync(backupPath, content, "utf-8");
-        // Don't delete AGENTS.md yet - let user do it manually
-        clack.log.info("Backed up AGENTS.md → AGENTS.md.bak");
+        const backupPath = backupOverwrittenFile(agentsMdPath, cwd);
+        clack.log.info(
+          `Backed up AGENTS.md → ${backupPath.replace(cwd + "/", "")}`,
+        );
         clack.log.info("You can now delete AGENTS.md if desired");
       }
+    } else {
+      // In non-interactive mode, always create backup
+      const backupPath = backupOverwrittenFile(agentsMdPath, cwd);
+      clack.log.info(
+        `Backed up AGENTS.md → ${backupPath.replace(cwd + "/", "")}`,
+      );
     }
 
     // Record telemetry

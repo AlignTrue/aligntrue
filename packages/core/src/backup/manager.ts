@@ -442,23 +442,47 @@ export class BackupManager {
   }
 
   /**
-   * Clean up old backups, keeping the most recent N
+   * Clean up old backups using age-based retention with count safety floor
+   * Age-based: removes backups older than retentionDays
+   * Safety floor: never removes more than (total - minimumKeep) backups
    */
   static cleanupOldBackups(options: CleanupOptions = {}): number {
     const cwd = options.cwd || process.cwd();
-    const keepCount = options.keepCount ?? 20;
+    const retentionDays = options.retentionDays ?? 30;
+    const minimumKeep = options.minimumKeep ?? 3;
 
     const backups = this.listBackups(cwd);
 
-    if (backups.length <= keepCount) {
+    if (backups.length === 0) {
       return 0;
     }
 
-    // Remove oldest backups
-    const toRemove = backups.slice(keepCount);
-    let removed = 0;
+    // If retentionDays is 0, skip cleanup (manual only)
+    if (retentionDays === 0) {
+      return 0;
+    }
 
-    for (const backup of toRemove) {
+    const now = Date.now();
+    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
+
+    // Identify old backups
+    const oldBackups = backups.filter((backup) => {
+      const backupTime = new Date(backup.manifest.timestamp).getTime();
+      return now - backupTime > retentionMs;
+    });
+
+    if (oldBackups.length === 0) {
+      return 0;
+    }
+
+    // Apply safety floor: keep at least minimumKeep most recent backups
+    const backupsToDelete = oldBackups.slice(
+      0,
+      Math.max(0, backups.length - minimumKeep),
+    );
+
+    let removed = 0;
+    for (const backup of backupsToDelete) {
       try {
         rmSync(backup.path, { recursive: true, force: true });
         removed++;
