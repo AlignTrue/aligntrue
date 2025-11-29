@@ -134,6 +134,50 @@ After `aligntrue add https://github.com/company/rules`:
     └── react.md
 ```
 
+## Selective import when adding rules
+
+When importing rules via `aligntrue init`, `aligntrue add`, or `aligntrue sources detect --import`, AlignTrue shows an intelligent selection interface:
+
+### Single file
+
+Auto-imported without prompts:
+
+```
+Importing 1 rule from .cursor/rules/testing.mdc
+```
+
+### Small folder (2-10 files)
+
+Shows the file list with a quick confirm:
+
+```
+Found 4 files in .cursor/rules/:
+  testing.mdc
+  debugging.mdc
+  typescript.mdc
+  security.mdc
+
+Import all? (Y/n) _
+```
+
+Press `Y` to import all, or `n` to select individually.
+
+### Large or multiple folders
+
+Shows a summary, then offers folder-level selection if you say no:
+
+```
+Found 28 files in 3 folders
+
+Import all? (Y/n) _
+```
+
+If you select no, you can toggle which folders to import using the space bar.
+
+### Non-interactive mode
+
+In CI or with `--yes`, all detected files are imported automatically for consistency.
+
 ## Single vs. multiple files per source
 
 ### One file per git source (backward compatible)
