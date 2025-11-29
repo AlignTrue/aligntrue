@@ -14,10 +14,15 @@ aligntrue init [options]
 
 **Flags:**
 
-| Flag                 | Description                          | Default |
-| -------------------- | ------------------------------------ | ------- |
-| `--yes`, `-y`        | Non-interactive mode (uses defaults) | `false` |
-| `--exporters <list>` | Comma-separated list of exporters    | -       |
+| Flag                 | Description                                       | Default |
+| -------------------- | ------------------------------------------------- | ------- |
+| `--yes`, `-y`        | Non-interactive mode (uses defaults)              | `false` |
+| `--exporters <list>` | Comma-separated list of exporters                 | -       |
+| `--source <url>`     | Import rules from URL or path (skips auto-detect) | -       |
+| `--link`             | Keep source connected for ongoing updates         | `false` |
+| `--ref <ref>`        | Git ref (branch/tag/commit) for git sources       | -       |
+| `--mode <mode>`      | Operating mode: solo (default) or team            | `solo`  |
+| `--no-sync`          | Skip automatic sync after initialization          | `false` |
 
 **What it does:**
 
@@ -34,11 +39,20 @@ aligntrue init [options]
 **Examples:**
 
 ```bash
-# Interactive setup
+# Interactive setup (auto-detect existing rules)
 aligntrue init
 
 # Non-interactive with defaults
 aligntrue init --yes
+
+# Import from external source (one-time copy)
+aligntrue init --source https://github.com/org/rules
+
+# Import and stay connected for updates
+aligntrue init --source https://github.com/org/rules --link
+
+# Import from local path
+aligntrue init --source ./path/to/rules
 
 # Specify exporters
 aligntrue init --exporters cursor,agents,windsurf
@@ -53,7 +67,175 @@ aligntrue init --exporters cursor,agents,windsurf
 **See also:**
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) for step-by-step walkthrough
-- [Quickstart](/docs/00-getting-started/00-quickstart) to get started
+- [Adding rules](/docs/01-guides/11-adding-rules) for importing external rules
+
+---
+
+## `aligntrue add`
+
+Add rules from a URL, git repository, or local path. By default, rules are copied to `.aligntrue/rules/` (one-time import).
+
+**Usage:**
+
+```bash
+aligntrue add <url|path> [options]
+```
+
+**Flags:**
+
+| Flag              | Description                                   | Default                  |
+| ----------------- | --------------------------------------------- | ------------------------ |
+| `--link`          | Keep source connected for ongoing updates     | `false`                  |
+| `--ref <ref>`     | Git ref (branch/tag/commit) for git sources   | -                        |
+| `--path <path>`   | Path to rules within repository               | -                        |
+| `--yes`, `-y`     | Non-interactive mode (keep both on conflicts) | `false`                  |
+| `--config <path>` | Custom config file path                       | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Fetches rules from the source (git, URL, or local path)
+2. Converts to `.md` format with proper frontmatter
+3. Adds `source` and `source_added` metadata
+4. Copies to `.aligntrue/rules/`
+
+**With `--link`:**
+
+Instead of copying, adds the source to `config.yaml`. Rules are fetched on each `aligntrue sync`.
+
+**Conflict handling:**
+
+When a rule with the same filename exists:
+
+- **Interactive:** Prompts for Replace (backup saved), Keep both, or Skip
+- **Non-interactive (`--yes`):** Defaults to Keep both
+
+**Examples:**
+
+```bash
+# Copy rules from GitHub (one-time)
+aligntrue add https://github.com/org/rules
+
+# Stay connected for updates
+aligntrue add https://github.com/org/rules --link
+
+# Pin to specific version
+aligntrue add https://github.com/org/rules --ref v1.0.0
+
+# Copy from local path
+aligntrue add ./path/to/rules
+
+# Non-interactive (keep both on conflicts)
+aligntrue add https://github.com/org/rules --yes
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Import failed
+- `2` - System error
+
+**See also:** [Adding rules](/docs/01-guides/11-adding-rules) for detailed workflows.
+
+---
+
+## `aligntrue remove`
+
+Remove a linked source from your configuration.
+
+**Usage:**
+
+```bash
+aligntrue remove <url>
+```
+
+**What it does:**
+
+1. Finds the source in `config.yaml` that matches the URL
+2. Removes it from the sources array
+3. Saves the updated config
+
+**Note:** This only removes linked sources from config. To remove copied rules, delete the files from `.aligntrue/rules/` and run `aligntrue sync`.
+
+**Examples:**
+
+```bash
+# Remove a linked source
+aligntrue remove https://github.com/org/rules
+aligntrue sync  # Sync to update agent files
+```
+
+---
+
+## `aligntrue sources`
+
+Manage rule sources and organization.
+
+**Usage:**
+
+```bash
+aligntrue sources <subcommand> [options]
+```
+
+**Subcommands:**
+
+| Subcommand | Description                             |
+| ---------- | --------------------------------------- |
+| `list`     | List all configured sources             |
+| `detect`   | Find untracked agent files in workspace |
+| `split`    | Split AGENTS.md into multiple files     |
+
+### `aligntrue sources list`
+
+List all configured sources with details.
+
+```bash
+aligntrue sources list
+```
+
+**Output:**
+
+```
+Found 2 source(s) (priority order):
+
+1. LOCAL
+   Path: .aligntrue/rules
+   Files: 5, Lines: 234
+
+2. GIT
+   URL: https://github.com/org/rules
+   Ref: main
+   Cache: available
+```
+
+### `aligntrue sources detect`
+
+Find untracked agent files in your workspace.
+
+```bash
+# List untracked files
+aligntrue sources detect
+
+# Import them to .aligntrue/rules/
+aligntrue sources detect --import
+```
+
+**Flags:**
+
+| Flag       | Description                               | Default |
+| ---------- | ----------------------------------------- | ------- |
+| `--import` | Import detected files to .aligntrue/rules | `false` |
+| `--yes`    | Skip confirmation prompts                 | `false` |
+
+### `aligntrue sources split`
+
+Split a large AGENTS.md file into multiple files in `.aligntrue/rules/`.
+
+```bash
+aligntrue sources split
+aligntrue sources split --yes  # Non-interactive
+```
+
+**See also:** [Adding rules](/docs/01-guides/11-adding-rules) for complete workflows.
 
 ---
 

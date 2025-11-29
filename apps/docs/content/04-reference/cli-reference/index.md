@@ -39,6 +39,9 @@ Quick lookup table for all CLI commands:
 | Command                     | Description                             | Category                                                                    |
 | --------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
 | `aligntrue init`            | Initialize project with agent detection | [Basic](./basic#aligntrue-init)                                             |
+| `aligntrue add`             | Add rules from URL or path              | [Basic](./basic#aligntrue-add)                                              |
+| `aligntrue remove`          | Remove a linked source                  | [Basic](./basic#aligntrue-remove)                                           |
+| `aligntrue sources`         | Manage rule sources                     | [Basic](./basic#aligntrue-sources)                                          |
 | `aligntrue sync`            | Sync rules to agents                    | [Basic](./basic#aligntrue-sync)                                             |
 | `aligntrue watch`           | Watch files and auto-sync on changes    | [Basic](./basic#aligntrue-watch)                                            |
 | `aligntrue check`           | Validate rules                          | [Basic](./basic#aligntrue-check)                                            |

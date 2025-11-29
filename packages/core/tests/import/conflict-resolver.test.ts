@@ -1,0 +1,143 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
+import { randomBytes } from "crypto";
+import {
+  detectConflicts,
+  resolveConflict,
+} from "../../src/import/conflict-resolver.js";
+
+describe("conflict-resolver", () => {
+  let testDir: string;
+  let rulesDir: string;
+
+  beforeEach(() => {
+    // Create temp directory
+    testDir = join(
+      tmpdir(),
+      `aligntrue-conflict-test-${randomBytes(8).toString("hex")}`,
+    );
+    rulesDir = join(testDir, ".aligntrue", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    // Cleanup
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  describe("detectConflicts", () => {
+    it("returns empty array when no conflicts", () => {
+      const conflicts = detectConflicts(
+        [
+          {
+            filename: "new-rule.md",
+            title: "New Rule",
+            source: "https://example.com",
+          },
+        ],
+        rulesDir,
+      );
+      expect(conflicts).toHaveLength(0);
+    });
+
+    it("detects conflicts with existing files", () => {
+      // Create existing file
+      writeFileSync(join(rulesDir, "existing.md"), "# Existing Rule");
+
+      const conflicts = detectConflicts(
+        [
+          {
+            filename: "existing.md",
+            title: "Incoming Rule",
+            source: "https://example.com",
+          },
+          {
+            filename: "new-rule.md",
+            title: "New Rule",
+            source: "https://example.com",
+          },
+        ],
+        rulesDir,
+      );
+
+      expect(conflicts).toHaveLength(1);
+      expect(conflicts[0]!.filename).toBe("existing.md");
+      expect(conflicts[0]!.incomingTitle).toBe("Incoming Rule");
+    });
+  });
+
+  describe("resolveConflict", () => {
+    it("generates unique filename for keep-both", () => {
+      // Create existing file
+      writeFileSync(join(rulesDir, "rule.md"), "# Existing");
+
+      const conflict = {
+        filename: "rule.md",
+        existingPath: join(rulesDir, "rule.md"),
+        incomingTitle: "Incoming Rule",
+        incomingSource: "https://example.com",
+      };
+
+      const result = resolveConflict(conflict, "keep-both", testDir);
+
+      expect(result.resolution).toBe("keep-both");
+      expect(result.finalFilename).toBe("rule-1.md");
+      expect(result.backupPath).toBeUndefined();
+    });
+
+    it("generates incrementing filenames when multiple conflicts", () => {
+      // Create existing files
+      writeFileSync(join(rulesDir, "rule.md"), "# Existing");
+      writeFileSync(join(rulesDir, "rule-1.md"), "# Existing 1");
+
+      const conflict = {
+        filename: "rule.md",
+        existingPath: join(rulesDir, "rule.md"),
+        incomingTitle: "Incoming Rule",
+        incomingSource: "https://example.com",
+      };
+
+      const result = resolveConflict(conflict, "keep-both", testDir);
+
+      expect(result.finalFilename).toBe("rule-2.md");
+    });
+
+    it("creates backup for replace resolution", () => {
+      // Create existing file
+      writeFileSync(join(rulesDir, "rule.md"), "# Existing");
+
+      const conflict = {
+        filename: "rule.md",
+        existingPath: join(rulesDir, "rule.md"),
+        incomingTitle: "Incoming Rule",
+        incomingSource: "https://example.com",
+      };
+
+      const result = resolveConflict(conflict, "replace", testDir);
+
+      expect(result.resolution).toBe("replace");
+      expect(result.finalFilename).toBe("rule.md");
+      expect(result.backupPath).toBeDefined();
+      expect(existsSync(result.backupPath!)).toBe(true);
+    });
+
+    it("returns skip resolution without changes", () => {
+      const conflict = {
+        filename: "rule.md",
+        existingPath: join(rulesDir, "rule.md"),
+        incomingTitle: "Incoming Rule",
+        incomingSource: "https://example.com",
+      };
+
+      const result = resolveConflict(conflict, "skip", testDir);
+
+      expect(result.resolution).toBe("skip");
+      expect(result.finalFilename).toBe("rule.md");
+      expect(result.backupPath).toBeUndefined();
+    });
+  });
+});

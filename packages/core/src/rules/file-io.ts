@@ -123,3 +123,27 @@ export async function loadRulesDirectory(
 
   return files.map((file) => parseRuleFile(file, cwd, dir));
 }
+
+/**
+ * Detect non-.md files in a rules directory
+ * Returns list of relative paths to non-.md files
+ * @param dir Absolute path to directory
+ */
+export async function detectNonMdFiles(dir: string): Promise<string[]> {
+  if (!existsSync(dir)) {
+    return [];
+  }
+
+  // Find all files that are not .md
+  const allFiles = await glob("**/*", {
+    cwd: dir,
+    nodir: true,
+    ignore: ["**/*.md", "**/.*", "**/node_modules/**"],
+  });
+
+  // Filter to only include files with extensions (not hidden files, etc.)
+  return allFiles.filter((file) => {
+    const ext = file.split(".").pop();
+    return ext && ext !== file; // Has an extension
+  });
+}

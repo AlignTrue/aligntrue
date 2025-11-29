@@ -59,8 +59,15 @@ export interface RuleFrontmatter {
   [key: string]: unknown;
 
   // Tracking Metadata (Auto-managed)
-  /** Which agent this rule originated from */
+  /**
+   * Source URL/path where this rule was imported from
+   * @deprecated Use `source` instead
+   */
   original_source?: string;
+  /** Source URL/path where this rule was imported from */
+  source?: string;
+  /** Date when this rule was added (ISO format: YYYY-MM-DD) */
+  source_added?: string;
   /** Original path of the rule file */
   original_path?: string;
   /** Content hash for drift detection */
@@ -123,6 +130,8 @@ export const frontmatterSchema = {
     cursor: { type: "object" },
     agents: { type: "object" },
     original_source: { type: "string" },
+    source: { type: "string" },
+    source_added: { type: "string" },
     original_path: { type: "string" },
     content_hash: { type: "string" },
     nested_location: { type: "string" },

@@ -100,9 +100,11 @@ function createRuleFromSection(
   sourceType: string,
 ): RuleFile {
   // Construct frontmatter
+  const now = new Date().toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
   const frontmatter: RuleFrontmatter = {
     title: section.heading,
-    original_source: sourceType,
+    source: sourceType,
+    source_added: now,
     original_path: sourceFile.relativePath,
     ...(nestedLocation && { nested_location: nestedLocation }),
   };
