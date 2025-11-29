@@ -233,13 +233,17 @@ export interface ParsedAlignUrl {
  *
  * Supports:
  * - ?customizations=false - Disable author customizations
- * - ?ref=v1.0.0 - Specify version/ref
+ * - ?ref=v1.0.0 - Specify version/ref (overrides URL-embedded ref)
+ *
+ * For full component extraction of git URLs (host, org, repo, ref, path),
+ * use parseSourceURL from packages/core/src/sources/url-parser.ts
  */
 export function parseAlignUrl(url: string): ParsedAlignUrl {
   try {
     const parsed = new URL(url);
     const applyCustomizations =
       parsed.searchParams.get("customizations") !== "false";
+    // Query param ref takes precedence
     const ref = parsed.searchParams.get("ref") ?? undefined;
 
     // Remove query params from base URL

@@ -105,6 +105,7 @@ export function writeRuleFile(filePath: string, rule: RuleFile): void {
 
 /**
  * Load all rules from a directory (recursively)
+ * Finds both .md and .mdc files, converts .mdc to .md format
  * @param dir Absolute path to directory
  * @param cwd Workspace root
  * @param options Options
@@ -118,10 +119,37 @@ export async function loadRulesDirectory(
     return [];
   }
 
-  const pattern = options.recursive ? "**/*.md" : "*.md";
-  const files = await glob(pattern, { cwd: dir, absolute: true });
+  const patterns = options.recursive
+    ? ["**/*.md", "**/*.mdc"]
+    : ["*.md", "*.mdc"];
+  const files: string[] = [];
 
-  return files.map((file) => parseRuleFile(file, cwd, dir));
+  for (const pattern of patterns) {
+    const matches = await glob(pattern, { cwd: dir, absolute: true });
+    files.push(...matches);
+  }
+
+  // Remove duplicates (in case a file matches multiple patterns)
+  const uniqueFiles = Array.from(new Set(files));
+
+  return uniqueFiles.map((file) => {
+    const rule = parseRuleFile(file, cwd, dir);
+    // Convert .mdc filename to .md if needed
+    if (file.endsWith(".mdc")) {
+      const mdFilename = rule.filename.endsWith(".mdc")
+        ? rule.filename.slice(0, -4) + ".md"
+        : rule.filename;
+      rule.filename = mdFilename;
+      // Also update path if it has .mdc extension
+      if (rule.path.endsWith(".mdc")) {
+        rule.path = rule.path.slice(0, -4) + ".md";
+      }
+      if (rule.relativePath && rule.relativePath.endsWith(".mdc")) {
+        rule.relativePath = rule.relativePath.slice(0, -4) + ".md";
+      }
+    }
+    return rule;
+  });
 }
 
 /**

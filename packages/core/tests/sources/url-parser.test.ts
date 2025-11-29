@@ -19,6 +19,7 @@ describe("URL Parser", () => {
         ref: undefined,
         path: undefined,
         isFile: false,
+        isDirectory: true,
       });
     });
 
@@ -31,6 +32,7 @@ describe("URL Parser", () => {
         ref: "v2.0.0",
         path: undefined,
         isFile: false,
+        isDirectory: true,
       });
     });
 
@@ -43,6 +45,7 @@ describe("URL Parser", () => {
         ref: undefined,
         path: "aligns",
         isFile: false,
+        isDirectory: true,
       });
     });
 
@@ -57,6 +60,7 @@ describe("URL Parser", () => {
         ref: undefined,
         path: "aligns/security.md",
         isFile: true,
+        isDirectory: false,
       });
     });
 
@@ -71,6 +75,7 @@ describe("URL Parser", () => {
         ref: "v2.0.0",
         path: "aligns/security.md",
         isFile: true,
+        isDirectory: false,
       });
     });
 
@@ -85,6 +90,7 @@ describe("URL Parser", () => {
         ref: "abc123def",
         path: "aligns",
         isFile: false,
+        isDirectory: true,
       });
     });
 
@@ -105,6 +111,7 @@ describe("URL Parser", () => {
         "https://github.com/company/rules/README.markdown",
       );
       expect(result.isFile).toBe(true);
+      expect(result.isDirectory).toBe(false);
     });
 
     it("should throw on invalid format", () => {
@@ -125,6 +132,7 @@ describe("URL Parser", () => {
       );
       expect(result.path).toBe("aligns/advanced/security.md");
       expect(result.isFile).toBe(true);
+      expect(result.isDirectory).toBe(false);
     });
   });
 
