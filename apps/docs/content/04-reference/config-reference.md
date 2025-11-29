@@ -235,43 +235,45 @@ Values:
 
 **Type:** `object`
 
-**Default:** `{ auto_backup: true, keep_count: 20, backup_on: ["sync"] }`
+**Default:** `{ retention_days: 30, minimum_keep: 3 }`
 
-Automatic backup configuration.
+Automatic backup configuration for age-based retention.
 
 ```yaml
 backup:
-  auto_backup: true
-  keep_count: 20
-  backup_on:
-    - sync
+  retention_days: 30 # How many days to keep backups
+  minimum_keep: 3 # Always keep at least this many recent
 ```
 
-#### backup.auto_backup
-
-**Type:** `boolean`
-
-**Default:** `true`
-
-Automatically create backups before destructive operations.
-
-#### backup.keep_count
+#### backup.retention_days
 
 **Type:** `number`
 
-**Default:** `5`
+**Default:** `30`
 
-Number of backups to keep (older backups auto-deleted).
+Age-based retention in days. Backups older than this are automatically deleted after sync.
 
-#### backup.backup_on
+- `0` - Never auto-delete (manual cleanup only)
+- `30` - Default: delete backups older than 30 days
+- `365` - Keep backups for one year
 
-**Type:** `array of strings`
+#### backup.minimum_keep
 
-**Values:** `["sync", "restore", "import"]`
+**Type:** `number`
 
-**Default:** `["sync", "import"]`
+**Default:** `3`
 
-Which commands trigger auto-backup.
+Safety floor: always keep at least this many of the most recent backups, regardless of age.
+
+- Minimum: `1`
+- Typical: `3-5`
+- Protects against over-cleanup when syncing infrequently
+
+#### backup.keep_count (deprecated)
+
+**Type:** `number`
+
+Count-based retention. No longer used if `retention_days` is present. Kept for backward compatibility with existing configs.
 
 ### managed
 

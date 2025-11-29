@@ -641,31 +641,32 @@ Restored 2 files:
 
 ### `aligntrue backup cleanup`
 
-Remove old backups, keeping only the most recent N backups.
+Remove old backups based on age and retention configuration.
 
 **Usage:**
 
 ```bash
-# Use keep_count from config (default: 20)
+# Clean up backups older than retention_days (from config)
 aligntrue backup cleanup
 
-# Keep specific number
-aligntrue backup cleanup --keep 5
+# Clean up legacy .bak files from older versions
+aligntrue backup cleanup --legacy
 ```
 
 **Flags:**
 
-| Flag              | Description               | Default           |
-| ----------------- | ------------------------- | ----------------- |
-| `--keep <number>` | Number of backups to keep | From config or 10 |
+| Flag       | Description                         | Default |
+| ---------- | ----------------------------------- | ------- |
+| `--legacy` | Scan and remove orphaned .bak files | (off)   |
 
 **What it does:**
 
 1. Lists all backups sorted by timestamp
-2. Identifies backups older than keep count
-3. Prompts for confirmation
-4. Removes old backup directories
-5. Displays count removed and kept
+2. Identifies backups older than `retention_days` from config
+3. Applies `minimum_keep` safety floor (never removes more than necessary)
+4. Prompts for confirmation
+5. Removes old backup directories
+6. Displays count removed and kept
 
 **Examples:**
 
@@ -673,49 +674,45 @@ aligntrue backup cleanup --keep 5
 # Keep default number (from config)
 aligntrue backup cleanup
 
-# Keep only most recent 5
-aligntrue backup cleanup --keep 5
+# Remove legacy .bak files
+aligntrue backup cleanup --legacy
 ```
 
 **Example output:**
 
 ```
-Found 12 backups (keeping 5 most recent)
+Will remove 3 backups older than 30 days
 
-Remove 7 old backups? (yes/no): yes
+Keep minimum 3 most recent backups
+
+Continue with cleanup? (yes/no): yes
 
 ✔ Cleanup complete
-  Removed: 7 backups
+  Removed: 3 backups
   Kept: 5 backups
 ```
 
-### Auto-backup configuration
+### Backup configuration
 
-Enable automatic backups before destructive operations in `.aligntrue/config.yaml`:
+Configure backup retention in `.aligntrue/config.yaml`:
 
 ```yaml
 backup:
-  # Enable auto-backup before operations
-  auto_backup: false # Set to true to enable
+  # Age-based retention (days)
+  retention_days: 30 # Delete backups older than 30 days
 
-  # Commands that trigger auto-backup
-  backup_on:
-    - sync
-    - import
-    - restore
-
-  # Number of backups to keep (older ones auto-deleted)
-  keep_count: 20
+  # Safety floor: always keep N most recent regardless of age
+  minimum_keep: 3 # Always keep at least 3 backups
 ```
 
 **Auto-backup workflow:**
 
-When enabled, AlignTrue automatically:
+Backups are created automatically before destructive operations:
 
 1. Creates backup before operation
 2. Displays backup timestamp
 3. Executes operation
-4. Cleans up old backups on success
+4. Cleans up old backups on success (if older than retention_days)
 
 **Example with auto-backup:**
 

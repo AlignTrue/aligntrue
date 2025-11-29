@@ -2,7 +2,7 @@
  * Cleanup utilities for format switching
  *
  * Handles safe removal of old export files when switching between
- * native and agents-md formats, with backup to overwritten-files folder.
+ * native and agents-md formats, with backup to unified .aligntrue/.backups/files/ folder.
  */
 
 import {
@@ -92,16 +92,20 @@ function getFilesMatchingPattern(outputDir: string, pattern: string): string[] {
 
 /**
  * Create backup directory and return its path
+ * Uses unified .aligntrue/.backups/files/ location with timestamp
  */
 function createBackupDir(outputDir: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const backupDir = join(outputDir, "overwritten-files", timestamp);
+  // Use unified backup location under .aligntrue
+  const cwd = outputDir;
+  const backupDir = join(cwd, ".aligntrue", ".backups", "files", timestamp);
   mkdirSync(backupDir, { recursive: true });
   return backupDir;
 }
 
 /**
  * Backup a file to the backup directory, preserving relative path
+ * Adds .bak suffix to make backups clear at a glance
  */
 function backupFile(
   file: string,
@@ -112,7 +116,8 @@ function backupFile(
     ? file.slice(outputDir.length + 1)
     : basename(file);
 
-  const backupPath = join(backupDir, relativePath);
+  // Add .bak suffix to backed-up files
+  const backupPath = join(backupDir, `${relativePath}.bak`);
   mkdirSync(dirname(backupPath), { recursive: true });
 
   try {

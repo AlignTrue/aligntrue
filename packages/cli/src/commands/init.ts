@@ -632,7 +632,9 @@ This directory contains your AlignTrue configuration and rules.
 
 - **\`rules/\`** - THE ONLY DIRECTORY YOU SHOULD EDIT. This is your single source of truth for all agent rules.
 - **\`config.yaml\`** - Configuration file (created during init, can be edited for settings)
-- **\`overwritten-rules/\`** - Automatic backups of files manually edited after export (gitignored, for your reference only)
+- **\`.backups/\`** - Automatic backups of configurations and individual files (gitignored, for your reference only)
+  - \`snapshots/\` - Full directory snapshots before destructive operations
+  - \`files/\` - Individual file backups when files are replaced
 - **\`.cache/\`** - Generated cache for performance (gitignored)
 
 ## Editing rules

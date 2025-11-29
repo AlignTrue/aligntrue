@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Unified backup system with age-based retention** - All backups consolidated under `.aligntrue/.backups/` (snapshots and files). Individual file backups now use `.bak` suffix for clarity and include timestamp
+- **`retention_days` config for age-based backup cleanup** - Replace count-based `keep_count` with intuitive age-based retention (default: 30 days, configurable 0-unlimited)
+- **`minimum_keep` safety floor for backups** - Ensure critical recent backups are never deleted regardless of age (default: 3). Protects infrequent users from over-cleanup
+- **Extended `aligntrue backup cleanup --legacy`** - New command to remove old backup locations (`.aligntrue/overwritten-rules/`, agent-specific `overwritten-files/`) and scattered `.bak` files from pre-unified era
+
+### Changed
+
+- **BREAKING: Backup configuration schema** - `keep_count` deprecated in favor of `retention_days` + `minimum_keep`. Old configs still work (graceful migration); new installs get age-based retention
+- **Individual file backup location** - All overwritten file backups now under `.aligntrue/.backups/files/` instead of scattered `overwritten-rules/` and `overwritten-files/` directories
+- **Backup filename format** - Individual file backups now include `.bak` suffix (e.g., `AGENTS.2025-11-29T12-30-00.md.bak`) for improved clarity at a glance
+- **`sources split` backup mechanism** - Now uses unified backup system instead of inline `AGENTS.md.bak` in project root
+- **Backup cleanup algorithm** - Switched from count-based to age-based with safety floor. Auto-cleanup after sync respects `retention_days` and `minimum_keep` from config
+
+### Fixed
+
+- **Scattered backup locations** - Eliminated fragmented backups across project root (`.bak` files), `.aligntrue/overwritten-rules/`, and agent-specific `overwritten-files/` directories
+
 ### Security
 
 - **ReDoS vulnerability in starter rule comment stripping** - Fixed polynomial regex in `stripStarterRuleComment()` that could cause exponential backtracking on pathological input. Replaced vulnerable `[^]*?` pattern with bounded negative lookahead `(?:(?!-->)[\s\S])*?` to prevent catastrophic backtracking

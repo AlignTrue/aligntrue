@@ -377,9 +377,19 @@
       "properties": {
         "keep_count": {
           "type": "number",
-          "description": "Number of backups to keep (older backups auto-deleted, default: 20)",
+          "description": "DEPRECATED: Use retention_days instead. Number of snapshot backups to keep (minimum: 10, maximum: 100)",
           "minimum": 10,
           "maximum": 100
+        },
+        "retention_days": {
+          "type": "number",
+          "description": "Age-based retention for all backups in days (0 = manual cleanup only, default: 30, minimum: 0)",
+          "minimum": 0
+        },
+        "minimum_keep": {
+          "type": "number",
+          "description": "Safety floor: always keep at least N most recent backups regardless of age (default: 3, minimum: 1)",
+          "minimum": 1
         }
       }
     },
