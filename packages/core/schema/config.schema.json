@@ -124,6 +124,11 @@
           "enum": ["auto", "always", "never"],
           "description": "Control source file markers in concatenated outputs. auto: show only with multiple sources (default), always: always show, never: never show"
         },
+        "content_mode": {
+          "type": "string",
+          "enum": ["auto", "inline", "links"],
+          "description": "Content export mode for single-file exporters. auto: inline for 1 rule, links for 2+ (default), inline: always embed full content, links: always use links to .aligntrue/rules/"
+        },
         "auto_manage_ignore_files": {
           "oneOf": [
             {

@@ -61,6 +61,7 @@ export interface ExportOptions {
   plugFills?: Record<string, string> | undefined; // Plug fills from config (override IR fills)
   interactive?: boolean; // Enable interactive prompts for conflict resolution (default: false)
   force?: boolean; // Force overwrite without prompts (default: false)
+  contentMode?: "auto" | "inline" | "links"; // Content export mode for single-file exporters (CLI override)
 }
 
 /**
