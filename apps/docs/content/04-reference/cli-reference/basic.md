@@ -14,11 +14,10 @@ aligntrue init [options]
 
 **Flags:**
 
-| Flag                 | Description                                 | Default |
-| -------------------- | ------------------------------------------- | ------- |
-| `--yes`, `-y`        | Non-interactive mode (uses defaults)        | `false` |
-| `--project-id <id>`  | Project identifier (default: auto-detected) | -       |
-| `--exporters <list>` | Comma-separated list of exporters           | -       |
+| Flag                 | Description                          | Default |
+| -------------------- | ------------------------------------ | ------- |
+| `--yes`, `-y`        | Non-interactive mode (uses defaults) | `false` |
+| `--exporters <list>` | Comma-separated list of exporters    | -       |
 
 **What it does:**
 
@@ -30,7 +29,6 @@ aligntrue init [options]
 **Interactive prompts:**
 
 - **Agents detected** - Choose which agents to enable (auto-enables if ≤3 detected)
-- **Project ID** - Identifier for your project (used in rule IDs)
 - **Create files?** - Confirm before writing
 
 **Examples:**
@@ -41,9 +39,6 @@ aligntrue init
 
 # Non-interactive with defaults
 aligntrue init --yes
-
-# Specify project ID
-aligntrue init --project-id my-project
 
 # Specify exporters
 aligntrue init --exporters cursor,agents,windsurf
