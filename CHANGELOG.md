@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Selective import UI for init/add/sources detect** - Smart tiered selection interface when importing rules. Single file: auto-import. Small folder: show list + confirm. Large/multiple folders: show summary + folder-level selection
 - **Unified backup system with age-based retention** - All backups consolidated under `.aligntrue/.backups/` (snapshots and files). Individual file backups now use `.bak` suffix for clarity and include timestamp
 - **`retention_days` config for age-based backup cleanup** - Replace count-based `keep_count` with intuitive age-based retention (default: 30 days, configurable 0-unlimited)
 - **`minimum_keep` safety floor for backups** - Ensure critical recent backups are never deleted regardless of age (default: 3). Protects infrequent users from over-cleanup

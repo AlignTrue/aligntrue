@@ -15,6 +15,10 @@ import { join, basename } from "path";
 import { loadConfig } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { backupOverwrittenFile } from "@aligntrue/core";
+import {
+  selectFilesToImport,
+  type ImportFile,
+} from "../utils/selective-import-ui.js";
 
 /**
  * Main sources command handler
@@ -470,16 +474,19 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
 
     // If --import flag, import them
     if (importFlag) {
-      if (!yes) {
-        const confirm = await clack.confirm({
-          message: `Import ${detectedFiles.length} files to .aligntrue/rules/?`,
-          initialValue: true,
-        });
+      // Use selective import UI for interactive selection
+      const filesForSelection: ImportFile[] = detectedFiles.map((f) => ({
+        path: f.path,
+        relativePath: f.relativePath,
+      }));
 
-        if (clack.isCancel(confirm) || !confirm) {
-          clack.cancel("Import cancelled");
-          process.exit(0);
-        }
+      const selectionResult = await selectFilesToImport(filesForSelection, {
+        nonInteractive: (yes as boolean) || false,
+      });
+
+      if (selectionResult.skipped || selectionResult.selectedFileCount === 0) {
+        clack.cancel("Import cancelled");
+        process.exit(0);
       }
 
       // Import using the existing scanner
@@ -506,7 +513,7 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
       }
 
       clack.log.success(
-        `Imported ${createdFiles.length} rules to .aligntrue/rules/`,
+        `Imported ${createdFiles.length} rules (${selectionResult.selectedFileCount} selected files) to .aligntrue/rules/`,
       );
 
       // Show first few files
