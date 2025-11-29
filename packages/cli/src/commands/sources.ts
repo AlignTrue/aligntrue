@@ -29,6 +29,9 @@ export async function sources(args: string[]): Promise<void> {
     case "split":
       await splitSources(flags);
       break;
+    case "detect":
+      await detectSources(flags);
+      break;
     case undefined:
     case "--help":
     case "-h":
@@ -403,6 +406,131 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
 }
 
 /**
+ * Detect untracked agent files in the workspace
+ */
+async function detectSources(flags: Record<string, unknown>): Promise<void> {
+  const cwd = process.cwd();
+  const importFlag = flags["import"] || false;
+  const yes = flags["yes"] || false;
+
+  try {
+    clack.intro("Detect Untracked Rules");
+
+    // Check if AlignTrue is initialized
+    const { getAlignTruePaths, detectNestedAgentFiles, writeRuleFile } =
+      await import("@aligntrue/core");
+    const paths = getAlignTruePaths(cwd);
+
+    if (!existsSync(paths.aligntrueDir)) {
+      clack.log.warn("AlignTrue not initialized. Run 'aligntrue init' first.");
+      clack.outro("Done");
+      return;
+    }
+
+    // Scan for agent files
+    clack.log.info("Scanning for agent files...");
+
+    const detectedFiles = await detectNestedAgentFiles(cwd);
+
+    if (detectedFiles.length === 0) {
+      clack.log.success("No untracked agent files found.");
+      clack.outro("Done");
+      return;
+    }
+
+    // Group by agent type
+    const byType: Record<string, typeof detectedFiles> = {};
+    for (const file of detectedFiles) {
+      if (!byType[file.type]) {
+        byType[file.type] = [];
+      }
+      byType[file.type]!.push(file);
+    }
+
+    // Display found files
+    clack.log.info(`Found ${detectedFiles.length} agent file(s):\n`);
+
+    for (const [type, files] of Object.entries(byType)) {
+      console.log(`  ${type.toUpperCase()} (${files.length} files)`);
+      for (const file of files.slice(0, 5)) {
+        console.log(`    - ${file.relativePath}`);
+      }
+      if (files.length > 5) {
+        console.log(`    ... and ${files.length - 5} more`);
+      }
+      console.log("");
+    }
+
+    // If --import flag, import them
+    if (importFlag) {
+      if (!yes) {
+        const confirm = await clack.confirm({
+          message: `Import ${detectedFiles.length} files to .aligntrue/rules/?`,
+          initialValue: true,
+        });
+
+        if (clack.isCancel(confirm) || !confirm) {
+          clack.cancel("Import cancelled");
+          process.exit(0);
+        }
+      }
+
+      // Import using the existing scanner
+      const { scanForExistingRules } = await import("./init/rule-importer.js");
+      const rules = await scanForExistingRules(cwd);
+
+      if (rules.length === 0) {
+        clack.log.warn("No rules could be parsed from detected files.");
+        clack.outro("Done");
+        return;
+      }
+
+      // Write rules to .aligntrue/rules/
+      const rulesDir = join(paths.aligntrueDir, "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      const createdFiles: string[] = [];
+      for (const rule of rules) {
+        const fullPath = join(rulesDir, rule.path);
+        const { dirname } = await import("path");
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeRuleFile(fullPath, rule);
+        createdFiles.push(rule.path);
+      }
+
+      clack.log.success(
+        `Imported ${createdFiles.length} rules to .aligntrue/rules/`,
+      );
+
+      // Show first few files
+      for (const file of createdFiles.slice(0, 5)) {
+        console.log(`  - ${file}`);
+      }
+      if (createdFiles.length > 5) {
+        console.log(`  ... and ${createdFiles.length - 5} more`);
+      }
+
+      clack.outro("Run 'aligntrue sync' to update agent files.");
+    } else {
+      clack.log.info("To import these files, run:");
+      console.log("  aligntrue sources detect --import\n");
+      clack.outro("Done");
+    }
+
+    // Record telemetry
+    recordEvent({
+      command_name: "sources_detect",
+      align_hashes_used: [],
+    });
+  } catch (error) {
+    clack.log.error(
+      `Failed to detect sources: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
  * Show help text
  */
 function showHelp(): void {
@@ -413,29 +541,32 @@ USAGE
   aligntrue sources <subcommand> [options]
 
 SUBCOMMANDS
-  list              List all source files with section counts
+  list              List all configured sources
   split             Split AGENTS.md into multiple files
+  detect            Find untracked agent files in workspace
 
 OPTIONS
+  --import          Import detected files (with detect subcommand)
   --yes, -y         Skip confirmation prompts
   --help, -h        Show this help
 
 EXAMPLES
-  # List current source files
+  # List current sources
   aligntrue sources list
+
+  # Find untracked agent files
+  aligntrue sources detect
+
+  # Find and import untracked files
+  aligntrue sources detect --import
 
   # Split AGENTS.md into multiple files
   aligntrue sources split
 
-  # Split without prompts
-  aligntrue sources split --yes
-
 NOTE
-  The 'sources' command is for organizing your own rules into multiple files.
-  
-  To add external aligns or rules from git repositories:
-    - Edit .aligntrue/config.yaml and add to sources array
-    - Use type: git with url and optional path fields
+  To add external rules:
+    aligntrue add <url>              # Copy rules locally
+    aligntrue add <url> --link       # Keep connected for updates
   
   For more information: aligntrue sources --help
 `);
@@ -454,6 +585,8 @@ function parseFlags(args: string[]): Record<string, unknown> {
       flags["yes"] = true;
     } else if (arg === "--help" || arg === "-h") {
       flags["help"] = true;
+    } else if (arg === "--import") {
+      flags["import"] = true;
     }
   }
 

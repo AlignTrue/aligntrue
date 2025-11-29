@@ -1,23 +1,26 @@
 /**
- * Add command - Add an align from a URL to your configuration
+ * Add command - Add rules from a URL or path
  *
- * Enables:
- * - Adding remote aligns from git or HTTP URLs
- * - Automatic detection of align manifests (.align.yaml)
- * - Quick setup with `aligntrue add <url>`
+ * Default behavior: Copy rules to .aligntrue/rules/ (one-time import)
+ * With --link: Add as connected source in config (gets updates on sync)
  *
  * Usage:
- *   aligntrue add https://github.com/org/rules
- *   aligntrue add https://example.com/my-align.align.yaml
- *   aligntrue add https://github.com/org/rules?customizations=false
+ *   aligntrue add https://github.com/org/rules              # Copy rules locally
+ *   aligntrue add https://github.com/org/rules --link       # Keep connected for updates
+ *   aligntrue add ./path/to/rules                           # Copy from local path
+ *   aligntrue add https://github.com/org/rules --ref v1.0.0 # Specific version
  */
 
-import { existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
+import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import {
   saveConfig,
   parseAlignUrl,
-  isAlignManifest,
+  getAlignTruePaths,
+  writeRuleFile,
+  importRules,
+  resolveConflict,
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
@@ -37,6 +40,11 @@ import { createManagedSpinner } from "../utils/spinner.js";
  */
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
+    flag: "--link",
+    hasValue: false,
+    description: "Keep source connected for ongoing updates (adds to config)",
+  },
+  {
     flag: "--ref",
     hasValue: true,
     description: "Git ref (branch/tag/commit) for git sources",
@@ -44,12 +52,13 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--path",
     hasValue: true,
-    description: "Path to rules file within repository",
+    description: "Path to rules file/directory within repository",
   },
   {
-    flag: "--no-customizations",
+    flag: "--yes",
+    alias: "-y",
     hasValue: false,
-    description: "Disable author-recommended customizations",
+    description: "Non-interactive mode (keep both on conflicts)",
   },
   {
     flag: "--config",
@@ -68,8 +77,13 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 /**
  * Detect source type from URL
  */
-function detectSourceType(url: string): "git" | "url" {
-  // Git URLs
+function detectSourceType(url: string): "git" | "url" | "local" {
+  // Local paths
+  if (url.startsWith("./") || url.startsWith("../") || url.startsWith("/")) {
+    return "local";
+  }
+
+  // Git SSH URLs
   if (url.startsWith("git@")) {
     return "git";
   }
@@ -99,7 +113,8 @@ function detectSourceType(url: string): "git" | "url" {
       return "git";
     }
   } catch {
-    // If URL parsing fails, treat as URL source
+    // If URL parsing fails, might be a local path
+    return "local";
   }
 
   // Default to URL for plain HTTP/HTTPS
@@ -116,14 +131,20 @@ export async function add(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "add",
-      description: "Add an align from a URL to your configuration",
-      usage: "aligntrue add <url> [options]",
+      description: "Add rules from a URL or path",
+      usage: "aligntrue add <url|path> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue add https://github.com/org/rules  # Add git source",
-        "aligntrue add https://github.com/org/rules --ref v1.0.0  # Pin to version",
-        "aligntrue add https://example.com/align.yaml  # Add URL source",
-        "aligntrue add https://github.com/org/rules --no-customizations  # Skip author customizations",
+        "aligntrue add https://github.com/org/rules           # Copy rules locally",
+        "aligntrue add https://github.com/org/rules --link    # Keep connected for updates",
+        "aligntrue add https://github.com/org/rules --ref v1  # Pin to version",
+        "aligntrue add ./path/to/rules                        # Copy from local path",
+      ],
+      notes: [
+        "- Default: copies rules to .aligntrue/rules/ (one-time import)",
+        "- With --link: adds source to config for ongoing updates",
+        "- To remove copied rules: delete files and run 'aligntrue sync'",
+        "- To remove linked source: use 'aligntrue remove <url>'",
       ],
     });
     return;
@@ -131,24 +152,23 @@ export async function add(args: string[]): Promise<void> {
 
   // Validate URL provided
   if (positional.length === 0) {
-    exitWithError(Errors.missingArgument("url", "aligntrue add <url>"));
+    exitWithError(Errors.missingArgument("url", "aligntrue add <url|path>"));
   }
 
   const rawUrl = positional[0]!;
-  const configPath =
-    (flags["--config"] as string | undefined) || ".aligntrue/config.yaml";
+  const cwd = process.cwd();
+  const paths = getAlignTruePaths(cwd);
+  const configPath = (flags["--config"] as string | undefined) || paths.config;
   const gitRef = flags["--ref"] as string | undefined;
   const gitPath = flags["--path"] as string | undefined;
-  const noCustomizations = flags["--no-customizations"] === true;
+  const linkFlag = (flags["--link"] as boolean | undefined) || false;
+  const nonInteractive = (flags["--yes"] as boolean | undefined) || !isTTY();
 
-  // Parse URL for query parameters
-  const { baseUrl, applyCustomizations: urlCustomizations } =
-    parseAlignUrl(rawUrl);
-  const applyCustomizations = !noCustomizations && urlCustomizations;
+  // Parse URL for any query parameters
+  const { baseUrl } = parseAlignUrl(rawUrl);
 
   // Detect source type
   const sourceType = detectSourceType(baseUrl);
-  const isManifest = isAlignManifest(baseUrl);
 
   // Record telemetry
   await recordEvent({
@@ -158,7 +178,46 @@ export async function add(args: string[]): Promise<void> {
 
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });
-  spinner.start("Adding align source...");
+
+  if (linkFlag) {
+    // --link mode: add to config (existing behavior)
+    await addLinkedSource({
+      baseUrl,
+      sourceType,
+      gitRef,
+      gitPath,
+      configPath,
+      spinner,
+    });
+  } else {
+    // Default mode: copy rules to .aligntrue/rules/
+    await copyRulesToLocal({
+      source: rawUrl,
+      gitRef,
+      gitPath,
+      cwd,
+      paths,
+      configPath,
+      nonInteractive,
+      spinner,
+    });
+  }
+}
+
+/**
+ * Add a linked source to config (gets updates on sync)
+ */
+async function addLinkedSource(options: {
+  baseUrl: string;
+  sourceType: "git" | "url" | "local";
+  gitRef?: string | undefined;
+  gitPath?: string | undefined;
+  configPath: string;
+  spinner: ReturnType<typeof createManagedSpinner>;
+}): Promise<void> {
+  const { baseUrl, sourceType, gitRef, gitPath, configPath, spinner } = options;
+
+  spinner.start("Adding linked source...");
 
   try {
     // Load or create config
@@ -171,8 +230,8 @@ export async function add(args: string[]): Promise<void> {
       config = {
         version: undefined,
         mode: "solo",
-        sources: [],
-        exporters: [],
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["agents"],
       };
     }
 
@@ -189,94 +248,77 @@ export async function add(args: string[]): Promise<void> {
       if (s.type === "url" && sourceType === "url") {
         return s.url === baseUrl;
       }
+      if (s.type === "local" && sourceType === "local") {
+        return s.path === baseUrl;
+      }
       return false;
     });
 
     if (existingSource) {
-      spinner.stop("Source already exists", 1);
+      spinner.stop("Source already linked", 1);
 
       if (isTTY()) {
         clack.log.warn(
-          `This align source is already in your configuration:\n  ${baseUrl}`,
+          `This source is already linked in your configuration:\n  ${baseUrl}`,
         );
         clack.log.info(
           "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
         );
       } else {
-        console.log(
-          `\nWarning: This align source is already in your configuration: ${baseUrl}`,
-        );
-        console.log(
-          "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
-        );
+        console.log(`\nWarning: This source is already linked: ${baseUrl}`);
       }
       return;
     }
 
     // Build source configuration
-    let newSource: Record<string, unknown>;
+    let newSource: { type: string; url?: string; path?: string; ref?: string };
 
     if (sourceType === "git") {
       newSource = {
         type: "git",
         url: baseUrl,
       };
-
       if (gitRef) {
-        newSource["ref"] = gitRef;
+        newSource.ref = gitRef;
       }
-
       if (gitPath) {
-        newSource["path"] = gitPath;
+        newSource.path = gitPath;
       }
-    } else {
+    } else if (sourceType === "url") {
       newSource = {
         type: "url",
         url: baseUrl,
       };
+    } else {
+      newSource = {
+        type: "local",
+        path: baseUrl,
+      };
     }
 
-    // Add customizations flag if disabled
-    if (!applyCustomizations && isManifest) {
-      newSource["customizations"] = false;
-    }
-
-    // Add to sources
-    config.sources.push(
-      newSource as {
-        type: "git" | "url" | "local";
-        url?: string;
-        path?: string;
-      },
-    );
+    // Add to sources (already ensured it exists above)
+    const sources = config.sources!;
+    sources.push(newSource as (typeof sources)[number]);
 
     // Save config
     await saveConfig(config, configPath);
 
-    spinner.stop("Align source added");
+    spinner.stop("Source linked");
 
     // Success message
     const sourceDesc =
       sourceType === "git"
         ? `Git source: ${baseUrl}${gitRef ? ` (${gitRef})` : ""}`
-        : `URL source: ${baseUrl}`;
-
-    const nextSteps = ["Run sync to pull rules: aligntrue sync"];
-
-    if (isManifest) {
-      nextSteps.push(
-        "This is an align manifest - rules will be loaded from the manifest",
-      );
-    }
-
-    if (!applyCustomizations) {
-      nextSteps.push("Author customizations are disabled");
-    }
+        : sourceType === "url"
+          ? `URL source: ${baseUrl}`
+          : `Local source: ${baseUrl}`;
 
     const successMessage =
-      `Added ${sourceDesc}\n\n` +
+      `Linked ${sourceDesc}\n\n` +
+      `This source will be fetched on each 'aligntrue sync'.\n\n` +
       `Next steps:\n` +
-      nextSteps.map((s) => `  - ${s}`).join("\n");
+      `  - Run sync to pull rules: aligntrue sync\n` +
+      `  - To remove: aligntrue remove ${baseUrl}`;
 
     if (isTTY()) {
       clack.outro(successMessage);
@@ -284,17 +326,191 @@ export async function add(args: string[]): Promise<void> {
       console.log("\n" + successMessage);
     }
   } catch (error) {
-    spinner.stop("Add failed", 1);
+    spinner.stop("Link failed", 1);
 
     if (error && typeof error === "object" && "code" in error) {
       throw error;
     }
 
     exitWithError({
-      title: "Add failed",
-      message: `Failed to add align source: ${error instanceof Error ? error.message : String(error)}`,
+      title: "Link failed",
+      message: `Failed to link source: ${error instanceof Error ? error.message : String(error)}`,
       hint: "Check the URL format and try again.",
-      code: "ADD_FAILED",
+      code: "LINK_FAILED",
+    });
+  }
+}
+
+/**
+ * Copy rules to .aligntrue/rules/ (one-time import)
+ */
+async function copyRulesToLocal(options: {
+  source: string;
+  gitRef?: string | undefined;
+  gitPath?: string | undefined;
+  cwd: string;
+  paths: ReturnType<typeof getAlignTruePaths>;
+  configPath: string;
+  nonInteractive: boolean;
+  spinner: ReturnType<typeof createManagedSpinner>;
+}): Promise<void> {
+  const { source, gitRef, cwd, paths, configPath, nonInteractive, spinner } =
+    options;
+
+  spinner.start(`Importing rules from ${source}...`);
+
+  try {
+    // Ensure .aligntrue/rules exists
+    const rulesDir = join(paths.aligntrueDir, "rules");
+    mkdirSync(rulesDir, { recursive: true });
+
+    // Ensure config exists
+    if (!existsSync(configPath)) {
+      // Create minimal config
+      const config: AlignTrueConfig = {
+        version: undefined,
+        mode: "solo",
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["agents"],
+      };
+      mkdirSync(dirname(configPath), { recursive: true });
+      await saveConfig(config, configPath);
+    }
+
+    // Import rules
+    const result = await importRules({
+      source,
+      ref: gitRef,
+      cwd,
+      targetDir: rulesDir,
+    });
+
+    if (result.error) {
+      spinner.stop(`Import failed: ${result.error}`, 1);
+      exitWithError({
+        title: "Import failed",
+        message: result.error,
+        hint: "Check the URL/path and try again.",
+        code: "IMPORT_FAILED",
+      });
+      return;
+    }
+
+    if (result.rules.length === 0) {
+      spinner.stop("No rules found", 1);
+      if (isTTY()) {
+        clack.log.warn(`No markdown rules found at ${source}`);
+      } else {
+        console.log(`\nWarning: No markdown rules found at ${source}`);
+      }
+      return;
+    }
+
+    // Handle conflicts
+    const rulesToWrite = [...result.rules];
+
+    if (result.conflicts.length > 0) {
+      spinner.stop("Import paused (conflicts detected)");
+
+      for (const conflict of result.conflicts) {
+        let resolution: "replace" | "keep-both" | "skip";
+
+        if (nonInteractive) {
+          // Non-interactive: keep both
+          resolution = "keep-both";
+        } else {
+          const choice = await clack.select({
+            message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
+            options: [
+              {
+                value: "replace",
+                label: "Replace - Overwrite existing (backup saved)",
+              },
+              {
+                value: "keep-both",
+                label: "Keep both - Save incoming as new file",
+              },
+              { value: "skip", label: "Skip - Don't import this rule" },
+            ],
+          });
+
+          if (clack.isCancel(choice)) {
+            clack.cancel("Import cancelled");
+            process.exit(0);
+          }
+
+          resolution = choice as "replace" | "keep-both" | "skip";
+        }
+
+        const resolved = resolveConflict(conflict, resolution, cwd);
+
+        // Update the rule's filename if needed
+        const ruleIndex = rulesToWrite.findIndex(
+          (r) => r.filename === conflict.filename,
+        );
+        if (ruleIndex !== -1) {
+          if (resolved.resolution === "skip") {
+            rulesToWrite.splice(ruleIndex, 1);
+          } else {
+            const rule = rulesToWrite[ruleIndex]!;
+            rule.filename = resolved.finalFilename;
+            rule.path = resolved.finalFilename;
+
+            if (resolved.backupPath && isTTY()) {
+              clack.log.info(
+                `Backed up existing rule to ${resolved.backupPath}`,
+              );
+            }
+          }
+        }
+      }
+
+      spinner.start("Writing rules...");
+    }
+
+    // Write rules to .aligntrue/rules/
+    const createdFiles: string[] = [];
+    for (const rule of rulesToWrite) {
+      const fullPath = join(rulesDir, rule.filename);
+      mkdirSync(dirname(fullPath), { recursive: true });
+      writeRuleFile(fullPath, rule);
+      createdFiles.push(rule.filename);
+    }
+
+    spinner.stop(`Imported ${createdFiles.length} rules`);
+
+    // Success message
+    const fileList = createdFiles
+      .slice(0, 5)
+      .map((f) => `  - ${f}`)
+      .join("\n");
+    const moreCount =
+      createdFiles.length > 5
+        ? `\n  ... and ${createdFiles.length - 5} more`
+        : "";
+
+    const successMessage =
+      `Added ${createdFiles.length} rules from ${source}\n\n` +
+      `Files created in .aligntrue/rules/:\n${fileList}${moreCount}\n\n` +
+      `To remove these rules: delete the files and run 'aligntrue sync'`;
+
+    if (isTTY()) {
+      clack.outro(successMessage);
+    } else {
+      console.log("\n" + successMessage);
+    }
+  } catch (error) {
+    spinner.stop("Import failed", 1);
+
+    if (error && typeof error === "object" && "code" in error) {
+      throw error;
+    }
+
+    exitWithError({
+      title: "Import failed",
+      message: `Failed to import rules: ${error instanceof Error ? error.message : String(error)}`,
+      hint: "Check the URL/path format and try again.",
+      code: "IMPORT_FAILED",
     });
   }
 }

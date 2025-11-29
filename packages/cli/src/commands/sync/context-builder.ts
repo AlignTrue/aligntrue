@@ -2,7 +2,7 @@
  * Sync context builder - loads config, sources, exporters, and detects agents
  */
 
-import { existsSync, writeFileSync, statSync } from "fs";
+import { existsSync, writeFileSync, statSync, readdirSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { createHash } from "crypto";
@@ -84,6 +84,38 @@ function _generateFingerprint(heading: string): string {
     .update(heading.toLowerCase().trim())
     .digest("hex")
     .slice(0, 16);
+}
+
+/**
+ * Detect non-.md files in a rules directory (recursive)
+ */
+async function detectNonMdFilesInRulesDir(dir: string): Promise<string[]> {
+  const nonMdFiles: string[] = [];
+
+  function scanDir(currentDir: string, prefix: string = ""): void {
+    try {
+      const entries = readdirSync(currentDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.name.startsWith(".")) continue; // Skip hidden files
+
+        const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+        if (entry.isDirectory()) {
+          scanDir(join(currentDir, entry.name), relativePath);
+        } else if (entry.isFile()) {
+          const ext = entry.name.split(".").pop()?.toLowerCase();
+          if (ext && ext !== "md" && ext !== entry.name) {
+            nonMdFiles.push(relativePath);
+          }
+        }
+      }
+    } catch {
+      // Directory not readable
+    }
+  }
+
+  scanDir(dir);
+  return nonMdFiles;
 }
 
 /**
@@ -242,6 +274,20 @@ export async function buildSyncContext(
           ? `Resolved and merged ${bundleResult.sources.length} sources`
           : undefined,
       );
+    }
+
+    // Check for non-.md files in rules directory
+    if (!options.quiet && existsSync(absoluteSourcePath)) {
+      const nonMdFiles = await detectNonMdFilesInRulesDir(absoluteSourcePath);
+      if (nonMdFiles.length > 0) {
+        const fileList = nonMdFiles.slice(0, 5).join(", ");
+        const moreCount =
+          nonMdFiles.length > 5 ? ` and ${nonMdFiles.length - 5} more` : "";
+        clack.log.warn(
+          `Non-markdown files detected in .aligntrue/rules/:\n  ${fileList}${moreCount}\n\n` +
+            `Only .md files are processed. Rename to .md if you want them included.`,
+        );
+      }
     }
 
     // Show merge info if multiple sources

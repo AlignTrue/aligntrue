@@ -311,16 +311,15 @@ describeSkipWindows("Sources Management Integration", () => {
     });
   });
 
-  describe("sources add", () => {
-    it("shows helpful error message for unsupported add command", async () => {
+  describe("sources add (removed)", () => {
+    it("shows unknown subcommand error for add (use aligntrue add instead)", async () => {
       createConfig();
 
       await executeSources(["add"]);
 
-      expect(exitCode).toBe(2);
+      expect(exitCode).toBe(1);
       const output = consoleOutput.join("\n");
-      expect(output).toContain("not a valid command");
-      expect(output).toContain("config.yaml");
+      expect(output).toContain("Unknown subcommand");
     });
   });
 
