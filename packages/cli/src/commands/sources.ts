@@ -29,17 +29,6 @@ export async function sources(args: string[]): Promise<void> {
     case "split":
       await splitSources(flags);
       break;
-    case "add":
-      // Helpful error for users trying to add aligns
-      console.error(`Error: 'sources add' is not a valid command\n`);
-      console.error(`To add external aligns or rules:\n`);
-      console.error(`  Edit .aligntrue/config.yaml and add to sources:`);
-      console.error(`     sources:`);
-      console.error(`       - type: git`);
-      console.error(`         url: https://github.com/yourorg/rules`);
-      console.error(`         path: rules.yaml\n`);
-      console.error(`For more help: aligntrue sources --help`);
-      process.exit(2);
     case undefined:
     case "--help":
     case "-h":
