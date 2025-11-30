@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Scattered backup locations** - Eliminated fragmented backups across project root (`.bak` files), `.aligntrue/overwritten-rules/`, and agent-specific `overwritten-files/` directories
+- **Lockfile EISDIR error** - Fixed team mode lockfile generation failing with EISDIR error when `.aligntrue/rules` is a directory. Now uses `loadIR()` which correctly handles directory-based rules
+- **Git import path handling** - Fixed `aligntrue add <url> --path .` failing with "path should be a path.relative()d string" error. Repository root imports now work correctly
+- **Plugs UX messaging** - Improved `aligntrue plugs list` output to provide helpful guidance when no slots are defined. Detects `[[plug:key]]` references in rules and suggests how to define corresponding slots
 
 ### Security
 
