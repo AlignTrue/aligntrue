@@ -15,6 +15,7 @@ Git sources enable:
 - **Version control** - Track rule changes with standard git workflows
 - **Distribution** - Publish reusable rule sets for your organization or community
 - **Consistency** - Apply the same rules across multiple projects automatically
+- **Flexibility** - Works with any git host (GitHub, GitLab, Bitbucket, self-hosted, Gitea, etc.)
 
 Instead of copying rules between projects, pull them from a single source of truth.
 
@@ -38,10 +39,14 @@ sources:
 
 - `type: git` - Identifies this as a git source
 - `url` - Repository URL (HTTPS or SSH)
+  - HTTPS: `https://github.com/org/repo` or `https://gitlab.com/org/repo`
+  - SSH: `git@github.com:org/repo.git`
+  - Works with any git host: GitHub, GitLab, Bitbucket, self-hosted, Gitea, etc.
 - `ref` - Branch, tag, or commit SHA (default: `main`)
-- `path` - File path within the repository (default: `.aligntrue.yaml`)
+- `path` - File path within the repository (optional, defaults to auto-scanning for `.md`/`.mdc` files)
   - Supports YAML files: `.aligntrue.yaml`, `rules.yaml`
   - Supports natural markdown: `AGENTS.md`, `RULES.md`, `rules/typescript.md`
+  - Can target directories: `aligns/` (recursively finds all `.md`/`.mdc` files)
 
 ### Branch, tag, and commit support
 
@@ -277,6 +282,90 @@ rm -rf .aligntrue/.cache/git/
 
 Next sync will re-clone all repositories.
 
+## Supported git hosts
+
+AlignTrue works with any git repository accessible via HTTPS or SSH:
+
+- **GitHub** - Both public and private repositories via HTTPS with credentials or SSH
+- **GitLab** - Community, self-hosted, or cloud (gitlab.com)
+- **Bitbucket** - Both Bitbucket Cloud and Bitbucket Server/Data Center
+- **Gitea** - Self-hosted lightweight git service
+- **Gitolite** - Self-hosted git server
+- **Any self-hosted git server** - As long as git clone works with your URL
+
+## Private repository support
+
+### SSH URLs (recommended for private repos)
+
+Use SSH URLs with SSH keys for best security:
+
+```yaml
+sources:
+  - type: git
+    url: git@github.com:yourorg/private-rules.git
+    ref: main
+```
+
+**Setup:**
+
+1. Generate or use existing SSH key:
+
+```bash
+# Generate new key (if needed)
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
+
+# Add key to ssh-agent
+ssh-add ~/.ssh/id_ed25519
+```
+
+2. Add public key to your git host (GitHub, GitLab, Bitbucket, etc.)
+
+3. Test connection:
+
+```bash
+ssh -T git@github.com        # GitHub
+ssh -T git@gitlab.com        # GitLab
+ssh -T git@bitbucket.org     # Bitbucket
+ssh -T git@your-gitea-server # Self-hosted
+```
+
+### HTTPS with git credentials
+
+For HTTPS URLs with private repositories:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/private-rules.git
+    ref: main
+```
+
+**Setup:**
+
+Store credentials globally:
+
+```bash
+# Use credential helper to store credentials securely
+git config --global credential.helper store
+
+# For macOS with Keychain:
+git config --global credential.helper osxkeychain
+
+# For Windows:
+git config --global credential.helper wincred
+
+# For Linux with pass:
+git config --global credential.helper pass
+```
+
+Or use personal access tokens (GitHub, GitLab):
+
+```bash
+git config --global user.name "Your Name"
+git config --global credential.https://github.com.username "your-username"
+git config --global credential.https://github.com.password "ghp_your_token"
+```
+
 ## Troubleshooting
 
 ### Authentication errors (private repositories)
@@ -289,24 +378,20 @@ Next sync will re-clone all repositories.
 
 **Solution:**
 
-For HTTPS URLs with private repositories:
+For SSH URLs, ensure SSH key is configured:
 
 ```bash
-# Configure git credential helper
-git config --global credential.helper store
+# Check loaded SSH keys
+ssh-add -l
 
-# Or use SSH instead
-```
-
-For SSH URLs:
-
-```bash
-# Ensure SSH key is added to ssh-agent
+# Add key to ssh-agent
 ssh-add ~/.ssh/id_ed25519
 
 # Test SSH connection
 ssh -T git@github.com
 ```
+
+For HTTPS URLs, configure git credentials as shown above.
 
 ### Invalid branch or tag
 

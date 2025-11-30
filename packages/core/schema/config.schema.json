@@ -184,7 +184,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["local", "catalog", "git", "url"],
+            "enum": ["local", "catalog", "git"],
             "description": "Source provider type"
           },
           "path": {
@@ -193,7 +193,7 @@
           },
           "url": {
             "type": "string",
-            "description": "Remote URL (required for type: git or url)"
+            "description": "Remote URL (required for type: git)"
           },
           "ref": {
             "type": "string",

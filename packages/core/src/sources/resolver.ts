@@ -83,10 +83,6 @@ export async function resolveSource(
       log?.(`Resolving git source: ${source}`);
       return await resolveGitSource(source, parsed, cwd, options);
 
-    case "url":
-      log?.(`Resolving URL source: ${source}`);
-      return await resolveUrlSource(source, parsed, cwd, options);
-
     default:
       throw new Error(`Unknown source type for: ${source}`);
   }
@@ -216,92 +212,6 @@ async function resolveGitSource(
     rules,
     sourceUrl: source,
     commitSha,
-    fromCache: false,
-  };
-}
-
-/**
- * Resolve a URL source (non-git HTTP/HTTPS URLs)
- *
- * Supports single file URLs only. Directory URLs would require
- * server-side listing capabilities which aren't universally available.
- */
-async function resolveUrlSource(
-  source: string,
-  parsed: ReturnType<typeof parseSourceUrl>,
-  _cwd: string,
-  options?: ResolveSourceOptions,
-): Promise<ResolvedSource> {
-  // Directory URLs are not supported - would require listing capabilities
-  if (parsed.isDirectory) {
-    throw new Error(
-      `URL directory resolution not supported\n` +
-        `  URL: ${source}\n` +
-        `  Use git repositories for directory sources, or specify a direct file URL`,
-    );
-  }
-
-  // Single file URL - fetch and parse
-  if (options?.onProgress) {
-    options.onProgress(`Fetching URL: ${source}`);
-  }
-
-  const response = await fetch(source, {
-    headers: { "User-Agent": "AlignTrue/1.0" },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch URL: ${response.status} ${response.statusText}\n` +
-        `  URL: ${source}`,
-    );
-  }
-
-  const content = await response.text();
-
-  // Parse content directly using gray-matter
-  const matter = await import("gray-matter");
-  const { parse: parseYaml } = await import("yaml");
-  const { computeContentHash } = await import("@aligntrue/schema");
-
-  const matterParsed = matter.default(content, {
-    engines: {
-      yaml: {
-        parse: (str: string) => parseYaml(str) as object,
-        stringify: () => "",
-      },
-    },
-  });
-
-  // Extract filename from URL path
-  const urlPath = new URL(source).pathname;
-  let filename = urlPath.split("/").pop() || "imported-rule.md";
-  // Ensure .md extension
-  if (!filename.endsWith(".md") && !filename.endsWith(".mdc")) {
-    filename = `${filename}.md`;
-  }
-  // Convert .mdc to .md
-  if (filename.endsWith(".mdc")) {
-    filename = filename.slice(0, -4) + ".md";
-  }
-
-  const frontmatterData = matterParsed.data as Record<string, unknown>;
-  const rule: RuleFile = {
-    content: matterParsed.content,
-    frontmatter: {
-      ...frontmatterData,
-      title:
-        (frontmatterData["title"] as string) || filename.replace(/\.md$/, ""),
-      source,
-    },
-    path: filename,
-    filename,
-    hash: computeContentHash(content),
-  };
-
-  return {
-    rules: [rule],
-    sourceUrl: source,
     fromCache: false,
   };
 }

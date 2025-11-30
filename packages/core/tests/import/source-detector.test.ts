@@ -20,9 +20,13 @@ describe("detectSourceType", () => {
     expect(detectSourceType("https://bitbucket.org/org/repo")).toBe("git");
   });
 
-  it("detects HTTP URLs as url type", () => {
-    expect(detectSourceType("https://example.com/rules.yaml")).toBe("url");
-    expect(detectSourceType("http://example.com/rules.md")).toBe("url");
+  it("rejects plain HTTP/HTTPS URLs with helpful error", () => {
+    expect(() => detectSourceType("https://example.com/rules.yaml")).toThrow(
+      /Plain HTTP\/HTTPS URLs are not supported/,
+    );
+    expect(() => detectSourceType("http://example.com/rules.md")).toThrow(
+      /Plain HTTP\/HTTPS URLs are not supported/,
+    );
   });
 
   it("detects local paths", () => {
@@ -88,17 +92,16 @@ describe("parseSourceUrl", () => {
   });
 
   describe("HTTP URLs", () => {
-    it("parses plain HTTP URL", () => {
-      const result = parseSourceUrl("https://example.com/rules");
-      expect(result.type).toBe("url");
-      expect(result.url).toBe("https://example.com/rules");
-      expect(result.isDirectory).toBe(true);
+    it("rejects plain HTTP URLs with helpful error", () => {
+      expect(() => parseSourceUrl("https://example.com/rules")).toThrow(
+        /Plain HTTP\/HTTPS URLs are not supported/,
+      );
     });
 
-    it("detects file by extension", () => {
-      const result = parseSourceUrl("https://example.com/rules.md");
-      expect(result.type).toBe("url");
-      expect(result.isDirectory).toBe(false);
+    it("rejects plain HTTP URLs with file extension", () => {
+      expect(() => parseSourceUrl("https://example.com/rules.md")).toThrow(
+        /Plain HTTP\/HTTPS URLs are not supported/,
+      );
     });
   });
 });

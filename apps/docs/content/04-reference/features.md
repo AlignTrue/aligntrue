@@ -17,7 +17,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Drift detection for CI validation
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
-- URL-based rule sources with ETag caching and offline fallback
+- Git-based rule sources from any git host (GitHub, GitLab, Bitbucket, self-hosted)
 - Export format options (native multi-file or AGENTS.md per agent)
 - Per-rule targeting with `export_only_to` and `exclude_from` frontmatter
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
