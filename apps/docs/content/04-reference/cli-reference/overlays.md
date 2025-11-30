@@ -14,14 +14,23 @@ aligntrue override add [options]
 
 **Options:**
 
-| Flag                  | Description                                             | Required |
-| --------------------- | ------------------------------------------------------- | -------- |
-| `--selector <string>` | Selector string (rule[id=...], property.path, array[0]) | Yes      |
-| `--set <key=value>`   | Set property (repeatable, supports dot notation)        | No\*     |
-| `--remove <key>`      | Remove property (repeatable)                            | No\*     |
-| `--config <path>`     | Custom config file path                                 | No       |
+| Flag                  | Description                                                                    | Required |
+| --------------------- | ------------------------------------------------------------------------------ | -------- |
+| `--selector <string>` | Selector string (rule[id=...], sections[heading=...], property.path, array[0]) | Yes      |
+| `--set <key=value>`   | Set property (repeatable, supports dot notation)                               | No\*     |
+| `--remove <key>`      | Remove property (repeatable)                                                   | No\*     |
+| `--config <path>`     | Custom config file path                                                        | No       |
 
 \*At least one of `--set` or `--remove` is required
+
+**Selector matching:**
+
+- `rule[id=...]` - Match by rule fingerprint (exact match)
+- `sections[heading=...]` - Match by section heading (case-insensitive)
+- `property.path` - Match by property path
+- `array[0]` - Match by array index
+
+Section heading selectors use case-insensitive matching for better UX. For example, `sections[heading=Security]` will match a section with heading "security", "SECURITY", or "Security".
 
 **What it does:**
 

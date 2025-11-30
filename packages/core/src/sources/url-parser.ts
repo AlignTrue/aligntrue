@@ -1,6 +1,7 @@
 /**
  * URL parser for include syntax
  * Parses URLs like: https://github.com/org/repo[@ref][/path]
+ * Also handles GitHub web UI URLs: https://github.com/org/repo/tree/main/path
  */
 
 export interface ParsedSourceURL {
@@ -17,12 +18,18 @@ export interface ParsedSourceURL {
  * Parse a git source URL into components
  * Format: https://github.com/org/repo[@ref][/path]
  *
+ * Also supports GitHub web UI URLs:
+ *   https://github.com/org/repo/tree/main/path (directory)
+ *   https://github.com/org/repo/blob/main/path (file)
+ *
  * Examples:
  *   https://github.com/company/rules
  *   https://github.com/company/rules@v2.0.0
  *   https://github.com/company/rules/aligns
  *   https://github.com/company/rules/aligns/security.md
  *   https://github.com/company/rules@v2.0.0/aligns/security.md
+ *   https://github.com/company/rules/tree/main/aligns
+ *   https://github.com/company/rules/blob/main/aligns/security.md
  */
 export function parseSourceURL(url: string): ParsedSourceURL {
   // Return type explicitly set to avoid type inference issues
@@ -41,7 +48,9 @@ export function parseSourceURL(url: string): ParsedSourceURL {
         `Examples:\n` +
         `  - https://github.com/company/rules\n` +
         `  - https://github.com/company/rules@v2.0.0\n` +
-        `  - https://github.com/company/rules/aligns/security.md`,
+        `  - https://github.com/company/rules/aligns/security.md\n` +
+        `  - https://github.com/company/rules/tree/main/aligns\n` +
+        `  - https://github.com/company/rules/blob/main/file.md`,
     );
   }
 
@@ -89,9 +98,24 @@ export function parseSourceURL(url: string): ParsedSourceURL {
     throw new Error(`Invalid source URL: repo name is empty in ${url}`);
   }
 
-  // Rest is path
-  const pathParts = parts.slice(2);
+  // Rest is path - handle GitHub web UI URLs with /tree/ or /blob/
+  let pathParts = parts.slice(2);
   let path: string | undefined;
+
+  // Check for GitHub web UI format: /tree/{ref}/path or /blob/{ref}/path
+  if (
+    pathParts.length >= 2 &&
+    (pathParts[0] === "tree" || pathParts[0] === "blob")
+  ) {
+    // Extract ref from the URL (second element after tree/blob)
+    const webRef = pathParts[1];
+    if (webRef && !ref) {
+      ref = webRef;
+    }
+    // Path is everything after tree/{ref}/ or blob/{ref}/
+    pathParts = pathParts.slice(2);
+  }
+
   if (pathParts.length > 0) {
     path = pathParts.join("/");
   }

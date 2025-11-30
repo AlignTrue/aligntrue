@@ -108,6 +108,7 @@ function evaluateRuleSelector(ruleId: string, ir: Align): SelectorMatch {
 /**
  * Evaluate sections[heading=...] selector
  * Searches for section with matching heading in align.sections array
+ * Matching is case-insensitive for better UX (headings are user-facing content)
  */
 function evaluateSectionHeadingSelector(
   heading: string,
@@ -124,10 +125,12 @@ function evaluateSectionHeadingSelector(
     };
   }
 
+  // Case-insensitive matching for headings
+  const headingLower = heading.toLowerCase();
   const matches: Array<{ index: number; heading: string }> = [];
   for (let i = 0; i < ir.sections.length; i++) {
     const section = ir.sections[i];
-    if (section && section.heading === heading) {
+    if (section && section.heading.toLowerCase() === headingLower) {
       matches.push({ index: i, heading: section.heading });
     }
   }

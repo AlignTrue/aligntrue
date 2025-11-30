@@ -134,6 +134,109 @@ describe("URL Parser", () => {
       expect(result.isFile).toBe(true);
       expect(result.isDirectory).toBe(false);
     });
+
+    // GitHub web UI URL format tests
+    describe("GitHub web UI URLs", () => {
+      it("should parse /tree/main/ directory URL", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/tree/main/aligns",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "company",
+          repo: "rules",
+          ref: "main",
+          path: "aligns",
+          isFile: false,
+          isDirectory: true,
+        });
+      });
+
+      it("should parse /blob/main/ file URL", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/blob/main/aligns/security.md",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "company",
+          repo: "rules",
+          ref: "main",
+          path: "aligns/security.md",
+          isFile: true,
+          isDirectory: false,
+        });
+      });
+
+      it("should parse /tree/ URL with version tag", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/tree/v1.0.0/aligns",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "company",
+          repo: "rules",
+          ref: "v1.0.0",
+          path: "aligns",
+          isFile: false,
+          isDirectory: true,
+        });
+      });
+
+      it("should parse /blob/ URL with commit SHA", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/blob/abc123def/README.md",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "company",
+          repo: "rules",
+          ref: "abc123def",
+          path: "README.md",
+          isFile: true,
+          isDirectory: false,
+        });
+      });
+
+      it("should parse /tree/ URL with nested path", () => {
+        const result = parseSourceURL(
+          "https://github.com/AlignTrue/examples/tree/main/aligns/testing.md",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "AlignTrue",
+          repo: "examples",
+          ref: "main",
+          path: "aligns/testing.md",
+          isFile: true,
+          isDirectory: false,
+        });
+      });
+
+      it("should parse /tree/ URL at repo root (no path)", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/tree/main",
+        );
+        expect(result).toEqual({
+          host: "github.com",
+          org: "company",
+          repo: "rules",
+          ref: "main",
+          path: undefined,
+          isFile: false,
+          isDirectory: true,
+        });
+      });
+
+      it("should parse /tree/ URL with branch containing slashes", () => {
+        const result = parseSourceURL(
+          "https://github.com/company/rules/tree/feature/my-feature/aligns",
+        );
+        // Note: This is a limitation - branch names with slashes are parsed incorrectly
+        // The first part after tree/ is treated as the ref
+        expect(result.ref).toBe("feature");
+        expect(result.path).toBe("my-feature/aligns");
+      });
+    });
   });
 
   describe("generateGitCloneURL", () => {
