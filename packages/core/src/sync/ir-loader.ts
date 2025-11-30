@@ -5,10 +5,10 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
 import { extname, dirname } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { validateAlignSchema, type Align } from "@aligntrue/schema";
+import { validateAlignSchema, type Align, type Plugs } from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode, AlignTrueConfig } from "../config/index.js";
-import { resolvePlugsForAlign } from "../plugs/index.js";
+import { resolvePlugsForAlign, mergePlugs } from "../plugs/index.js";
 
 /**
  * Result of loading and resolving IR
@@ -151,11 +151,31 @@ export async function loadIR(
         frontmatter: rule.frontmatter,
       }));
 
+      // Extract and merge plugs from all rule files' frontmatter
+      const allPlugsSources: Array<{ plugs?: Plugs; source: string }> = [];
+      for (const rule of rules) {
+        const fm = rule.frontmatter as Record<string, unknown>;
+        const fmPlugs = fm["plugs"];
+        if (fmPlugs && typeof fmPlugs === "object") {
+          allPlugsSources.push({
+            plugs: fmPlugs as Plugs,
+            source: rule.path,
+          });
+        }
+      }
+
+      // Merge plugs if any were found
+      let mergedPlugs: Plugs | undefined;
+      if (allPlugsSources.length > 0) {
+        mergedPlugs = mergePlugs(allPlugsSources);
+      }
+
       return {
         id: "rules-bundle",
         version: "1.0.0",
         spec_version: "1",
         sections,
+        plugs: mergedPlugs,
       } as Align;
     }
   }
