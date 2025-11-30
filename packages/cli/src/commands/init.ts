@@ -351,7 +351,8 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // Import from specified source (skip auto-detect)
     scanner.start(`Importing rules from ${sourceArg}...`);
 
-    const { importRules, resolveConflict } = await import("@aligntrue/core");
+    const { resolveConflict } = await import("@aligntrue/core");
+    const { importRules } = await import("../utils/source-resolver.js");
     const rulesDir = join(paths.aligntrueDir, "rules");
 
     const result = await importRules({
