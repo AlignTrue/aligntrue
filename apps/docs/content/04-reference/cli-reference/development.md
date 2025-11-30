@@ -292,15 +292,3 @@ Prevent prompts for agents you don't use even though their files exist in your w
 
 - `0` - Success
 - `1` - Missing agent name or config error
-
----
-
-## Removed: `aligntrue md` commands
-
-The `aligntrue md lint`, `aligntrue md format`, `aligntrue md compile`, and `aligntrue md generate` commands were removed in favor of natural markdown sections format.
-
-**Migration:**
-
-- Use natural markdown sections (YAML frontmatter + `##` headings)
-- Use `aligntrue check` for validation
-- Use `aligntrue export` for agent-specific exports
