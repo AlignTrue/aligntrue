@@ -24,6 +24,7 @@ import type { SyncOptions } from "./options.js";
  * - Rule files deleted
  * - Agent files manually edited (drift detected)
  * - New agent files detected that aren't configured yet
+ * - CLI flags that override export behavior (e.g., --content-mode)
  *
  * @returns true if sync is needed, false if everything is up to date
  */
@@ -33,6 +34,12 @@ export async function checkIfSyncNeeded(
   const cwd = process.cwd();
   const paths = getAlignTruePaths(cwd);
   const configPath = options.configPath || paths.config;
+
+  // If --content-mode is explicitly provided, always re-export
+  // This ensures the user's intent to change export format is respected
+  if (options.contentMode) {
+    return true;
+  }
 
   // Load config
   let config;
