@@ -339,46 +339,6 @@ async function configGet(configPath: string, key: string): Promise<void> {
 }
 
 /**
- * Valid config keys (dot notation)
- * Keys starting with "vendor." are always allowed for custom vendor data
- * Note: We now use isValidConfigKey from core for validation
- */
-// const VALID_CONFIG_KEYS = [
-//   "mode",
-// ... (removed full list to avoid duplication)
-// ];
-
-/**
- * Check if a config key is valid
- * DEPRECATED: Use isValidConfigKey from core
- */
-/*
-function isValidConfigKey(key: string): boolean {
-  // Allow vendor keys
-  if (key.startsWith("vendor.")) {
-    return true;
-  }
-
-  // Check exact match
-  if (VALID_CONFIG_KEYS.includes(key)) {
-    return true;
-  }
-
-  // Check if it's a nested key under a valid parent
-  // e.g., "sources.0.type" is valid if "sources" is valid
-  const parts = key.split(".");
-  for (let i = parts.length - 1; i > 0; i--) {
-    const parentKey = parts.slice(0, i).join(".");
-    if (VALID_CONFIG_KEYS.includes(parentKey)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-*/
-
-/**
  * Set a config value with validation
  */
 async function configSet(

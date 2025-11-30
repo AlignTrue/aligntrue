@@ -346,6 +346,34 @@ aligntrue sync --content-mode=inline
 aligntrue sync --content-mode=links
 ```
 
+**About `--content-mode`:**
+
+The `--content-mode` flag is a one-time override for the current sync operation only. It does **not** persist to your config file.
+
+- `auto` (default): Inline single rule, links for 2+ rules
+- `inline`: Embed full rule content in AGENTS.md
+- `links`: Use markdown links to `.aligntrue/rules/`
+
+To make a mode persistent across all future syncs, use:
+
+```bash
+# Set persistent content mode in config
+aligntrue config set sync.content_mode inline
+
+# Then run sync (will use the configured mode)
+aligntrue sync
+```
+
+For one-time override:
+
+```bash
+# This sync uses inline mode, but config remains unchanged
+aligntrue sync --content-mode inline
+
+# Next sync reverts to configured mode
+aligntrue sync
+```
+
 **Exit codes:**
 
 - `0` - Success
