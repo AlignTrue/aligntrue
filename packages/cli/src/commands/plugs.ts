@@ -240,8 +240,11 @@ async function listPlugs(
       }
       console.log("│");
       console.log(
-        "│  To use plugs, define slots in .aligntrue/config.yaml:\n│",
+        "│  To use plugs, define slots in rule files (.aligntrue/rules/*.md):\n│",
       );
+      console.log("│  Example YAML frontmatter in a rule file:\n│");
+      console.log("│    ---");
+      console.log("│    title: my-rules");
       console.log("│    plugs:");
       console.log("│      slots:");
       for (const ref of plugReferences.slice(0, 3)) {
@@ -253,12 +256,9 @@ async function listPlugs(
       if (plugReferences.length > 3) {
         console.log(`│        # ... and ${plugReferences.length - 3} more`);
       }
-      console.log("│      fills:");
-      for (const ref of plugReferences.slice(0, 3)) {
-        console.log(`│        ${ref}: "your-value-here"`);
-      }
+      console.log("│    ---");
       console.log("│");
-      console.log("│  Or set fills via CLI:\n│");
+      console.log("│  Then set fill values via CLI (saves to config.yaml):\n│");
       console.log(
         `│    aligntrue plugs set ${plugReferences[0] || "slot.name"} "value"`,
       );
@@ -271,7 +271,7 @@ async function listPlugs(
       console.log("│  To use plugs:\n│");
       console.log("│  1. Add [[plug:key]] placeholders in your rules");
       console.log(
-        "│  2. Define slots in .aligntrue/config.yaml under plugs.slots",
+        "│  2. Define slots in rule files (.aligntrue/rules/*.md) using YAML frontmatter",
       );
       console.log(
         "│  3. Set fill values via 'aligntrue plugs set key value'\n│",
