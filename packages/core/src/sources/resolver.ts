@@ -1,22 +1,23 @@
 /**
- * Unified source resolver for all source types (git, URL, local)
+ * Unified source resolver for local sources
  *
- * Provides consistent behavior across all source types:
+ * Provides consistent behavior for local source types:
  * - Auto-detects source type (git, URL, local)
- * - Handles cloning/fetching/caching transparently
  * - Supports both files and directories
  * - Scans directories recursively for .md and .mdc files
  * - Converts .mdc to .md format
  * - Preserves directory structure
  * - Returns RuleFile[] consistently
+ *
+ * NOTE: Git source resolution is handled by @aligntrue/cli.
+ * This keeps @aligntrue/core as a pure library with no optional peer dependencies.
  */
 
 import { existsSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { resolve } from "path";
 import type { RuleFile } from "@aligntrue/schema";
 import { loadRulesDirectory } from "../rules/file-io.js";
 import { parseSourceUrl } from "../import/source-detector.js";
-import type { ConsentManager } from "../privacy/index.js";
 
 /**
  * Options for resolving a source
@@ -24,12 +25,10 @@ import type { ConsentManager } from "../privacy/index.js";
 export interface ResolveSourceOptions {
   /** Current working directory */
   cwd?: string | undefined;
-  /** Offline mode - use cache only, no network operations */
+  /** Offline mode - use cache only, no network operations (unused for local sources) */
   offlineMode?: boolean | undefined;
-  /** Force refresh - bypass cache and re-fetch */
+  /** Force refresh - bypass cache and re-fetch (unused for local sources) */
   forceRefresh?: boolean | undefined;
-  /** Consent manager for network operations */
-  consentManager?: ConsentManager | undefined;
   /** Progress callback for long operations */
   onProgress?: ((message: string) => void) | undefined;
 }
@@ -80,8 +79,10 @@ export async function resolveSource(
       return await resolveLocalSource(source, cwd, options);
 
     case "git":
-      log?.(`Resolving git source: ${source}`);
-      return await resolveGitSource(source, parsed, cwd, options);
+      throw new Error(
+        `Git source resolution is not available in @aligntrue/core.\n` +
+          `Use @aligntrue/cli for git sources. The CLI package includes full git support.`,
+      );
 
     default:
       throw new Error(`Unknown source type for: ${source}`);
@@ -126,92 +127,4 @@ async function resolveLocalSource(
   }
 
   throw new Error(`Invalid local source: ${fullPath}`);
-}
-
-/**
- * Resolve a git source using GitProvider
- */
-async function resolveGitSource(
-  source: string,
-  parsed: ReturnType<typeof parseSourceUrl>,
-  cwd: string,
-  options?: ResolveSourceOptions,
-): Promise<ResolvedSource> {
-  // Dynamic import to avoid circular dependency
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let GitProvider: any;
-  try {
-    const importDynamic = new Function("specifier", "return import(specifier)");
-    const sourcesModule = await importDynamic("@aligntrue/sources");
-    GitProvider = sourcesModule.GitProvider;
-  } catch {
-    throw new Error(
-      "Git source resolution requires @aligntrue/sources package. Install it with: pnpm add @aligntrue/sources",
-    );
-  }
-
-  const cacheDir = resolve(cwd, ".aligntrue", ".cache", "git");
-  const gitRef = parsed.ref ?? "main";
-  const gitPath = parsed.path ?? "";
-
-  const provider = new GitProvider(
-    {
-      type: "git",
-      url: parsed.url,
-      ref: gitRef,
-      path: gitPath || ".",
-      forceRefresh: options?.forceRefresh,
-    },
-    cacheDir,
-    {
-      offlineMode: options?.offlineMode,
-      consentManager: options?.consentManager,
-    },
-  );
-
-  // Fetch repository (clone or update)
-  options?.onProgress?.(`Fetching git repository: ${parsed.url}@${gitRef}`);
-  await provider.fetch(gitRef);
-  const commitSha = await provider.getCommitSha();
-
-  // Get cached repo directory
-  const { computeHash } = await import("@aligntrue/schema");
-  const repoHash = computeHash(parsed.url).substring(0, 16);
-  const repoDir = join(cacheDir, repoHash);
-
-  if (!existsSync(repoDir)) {
-    throw new Error(`Failed to fetch repository: ${parsed.url}`);
-  }
-
-  // Determine target path within repo
-  const targetPath = gitPath ? join(repoDir, gitPath) : repoDir;
-
-  if (!existsSync(targetPath)) {
-    throw new Error(
-      `Path not found in repository: ${gitPath || "root"}\n` +
-        `  Repository: ${parsed.url}\n` +
-        `  Path: ${targetPath}`,
-    );
-  }
-
-  const stat = statSync(targetPath);
-
-  // Load rules from target
-  let rules: RuleFile[] = [];
-  if (stat.isFile()) {
-    // Single file
-    const { parseRuleFile } = await import("../rules/file-io.js");
-    const rule = parseRuleFile(targetPath, cwd, source);
-    rules = rule ? [rule] : [];
-  } else if (stat.isDirectory()) {
-    // Directory - load all rules recursively
-    rules = await loadRulesDirectory(targetPath, cwd, { recursive: true });
-  }
-
-  return {
-    rules,
-    sourceUrl: source,
-    commitSha,
-    fromCache: false,
-  };
 }

@@ -1,14 +1,13 @@
 /**
- * Rule importer - fetches and converts rules from external sources
+ * Rule importer - fetches and converts rules from local sources
  *
  * Supports:
- * - Git repositories (GitHub, GitLab, etc.)
- * - HTTP/HTTPS URLs
  * - Local file paths (absolute or relative)
  *
- * Uses unified SourceResolver which:
- * - Auto-detects source type
- * - Handles cloning/fetching/caching
+ * NOTE: Git source support is provided by @aligntrue/cli.
+ * Use CLI commands (aligntrue add, aligntrue sync) for git sources.
+ *
+ * Uses SourceResolver which:
  * - Supports files and directories
  * - Scans for .md and .mdc files
  * - Preserves directory structure
@@ -70,11 +69,11 @@ export async function importRules(
 
   try {
     // Use unified resolver to fetch and parse rules
+    // Note: Git sources will throw an error - use CLI's importRules for git support
     const resolved = await resolveSource(source, {
       cwd,
       offlineMode: options.offlineMode ?? undefined,
       forceRefresh: options.forceRefresh ?? undefined,
-      consentManager: options.consentManager,
       onProgress: options.onProgress,
     });
 

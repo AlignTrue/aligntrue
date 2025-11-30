@@ -46,14 +46,10 @@
     "yaml": "^2.6.1"
   },
   "peerDependencies": {
-    "@aligntrue/exporters": "workspace:*",
-    "@aligntrue/sources": "workspace:*"
+    "@aligntrue/exporters": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@aligntrue/exporters": {
-      "optional": true
-    },
-    "@aligntrue/sources": {
       "optional": true
     }
   },

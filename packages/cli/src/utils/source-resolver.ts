@@ -1,22 +1,195 @@
 /**
  * Source resolver for CLI sync operations
  *
- * Uses the unified SourceResolver from @aligntrue/core to fetch rules,
- * then converts them to Align format for merging during sync.
+ * Handles all source types:
+ * - Local sources: delegated to @aligntrue/core
+ * - Git sources: resolved directly using @aligntrue/sources (GitProvider)
+ *
+ * This keeps @aligntrue/core as a pure library without dynamic imports.
  */
 
-import { extname } from "path";
+import { existsSync, statSync } from "fs";
+import { extname, join, resolve } from "path";
 import {
   resolveSource as coreResolveSource,
   mergeAligns,
   type BundleResult,
   ensureSectionsArray,
   parseSourceURL,
+  loadRulesDirectory,
+  parseRuleFile,
+  detectConflicts,
+  type ConflictInfo,
 } from "@aligntrue/core";
 import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
-import { parseYamlToJson, type Align, type RuleFile } from "@aligntrue/schema";
+import {
+  parseYamlToJson,
+  computeHash,
+  type Align,
+  type RuleFile,
+} from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
+import { GitProvider } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "./git-progress.js";
+
+/**
+ * Internal resolved source from git or local resolution
+ * (matches core's ResolvedSource interface)
+ */
+interface InternalResolvedSource {
+  rules: RuleFile[];
+  sourceUrl: string;
+  commitSha?: string;
+  fromCache: boolean;
+}
+
+/**
+ * Resolve a git source using GitProvider
+ * This is the git resolution logic moved from @aligntrue/core to CLI
+ * to eliminate the dynamic import security issue in core.
+ */
+async function resolveGitSourceInternal(
+  source: string,
+  parsed: { type: string; url: string; ref?: string; path?: string },
+  cwd: string,
+  options?: {
+    offlineMode?: boolean;
+    forceRefresh?: boolean;
+    onProgress?: (message: string) => void;
+  },
+): Promise<InternalResolvedSource> {
+  const cacheDir = resolve(cwd, ".aligntrue", ".cache", "git");
+  const gitRef = parsed.ref ?? "main";
+  const gitPath = parsed.path ?? "";
+
+  const gitConfig: {
+    type: "git";
+    url: string;
+    ref: string;
+    path: string;
+    forceRefresh?: boolean;
+  } = {
+    type: "git",
+    url: parsed.url,
+    ref: gitRef,
+    path: gitPath || ".",
+  };
+  if (options?.forceRefresh !== undefined) {
+    gitConfig.forceRefresh = options.forceRefresh;
+  }
+
+  const providerOptions: { offlineMode?: boolean } = {};
+  if (options?.offlineMode !== undefined) {
+    providerOptions.offlineMode = options.offlineMode;
+  }
+
+  const provider = new GitProvider(gitConfig, cacheDir, providerOptions);
+
+  // Fetch repository (clone or update)
+  options?.onProgress?.(`Fetching git repository: ${parsed.url}@${gitRef}`);
+  await provider.fetch(gitRef);
+  const commitSha = await provider.getCommitSha();
+
+  // Get cached repo directory
+  const repoHash = computeHash(parsed.url).substring(0, 16);
+  const repoDir = join(cacheDir, repoHash);
+
+  if (!existsSync(repoDir)) {
+    throw new Error(`Failed to fetch repository: ${parsed.url}`);
+  }
+
+  // Determine target path within repo
+  const targetPath = gitPath ? join(repoDir, gitPath) : repoDir;
+
+  if (!existsSync(targetPath)) {
+    throw new Error(
+      `Path not found in repository: ${gitPath || "root"}\n` +
+        `  Repository: ${parsed.url}\n` +
+        `  Path: ${targetPath}`,
+    );
+  }
+
+  const stat = statSync(targetPath);
+
+  // Load rules from target
+  let rules: RuleFile[] = [];
+  if (stat.isFile()) {
+    // Single file
+    const rule = parseRuleFile(targetPath, cwd, source);
+    rules = rule ? [rule] : [];
+  } else if (stat.isDirectory()) {
+    // Directory - load all rules recursively
+    rules = await loadRulesDirectory(targetPath, cwd, { recursive: true });
+  }
+
+  return {
+    rules,
+    sourceUrl: source,
+    commitSha,
+    fromCache: false,
+  };
+}
+
+/**
+ * Detect if a source URL is a git source
+ */
+function isGitSource(sourceUrl: string): boolean {
+  // Git SSH URLs
+  if (sourceUrl.startsWith("git@")) return true;
+  // SSH URLs
+  if (sourceUrl.startsWith("ssh://")) return true;
+  // Explicit .git suffix
+  if (sourceUrl.endsWith(".git")) return true;
+
+  // Check for known git hosting URLs
+  try {
+    const urlObj = new URL(sourceUrl);
+    const hostname = urlObj.hostname;
+    if (
+      hostname === "github.com" ||
+      hostname.endsWith(".github.com") ||
+      hostname === "gitlab.com" ||
+      hostname.endsWith(".gitlab.com") ||
+      hostname === "bitbucket.org" ||
+      hostname.endsWith(".bitbucket.org")
+    ) {
+      return true;
+    }
+  } catch {
+    // Not a valid URL
+  }
+
+  return false;
+}
+
+/**
+ * Parse a git URL to extract components
+ */
+function parseGitUrlComponents(source: string): {
+  type: "git";
+  url: string;
+  ref?: string;
+  path?: string;
+} {
+  // Use parseSourceURL for full parsing
+  const parsed = parseSourceURL(source);
+  const result: {
+    type: "git";
+    url: string;
+    ref?: string;
+    path?: string;
+  } = {
+    type: "git",
+    url: `https://${parsed.host}/${parsed.org}/${parsed.repo}`,
+  };
+  if (parsed.ref) {
+    result.ref = parsed.ref;
+  }
+  if (parsed.path) {
+    result.path = parsed.path;
+  }
+  return result;
+}
 
 export interface ResolvedSource {
   content: string;
@@ -87,22 +260,52 @@ export async function resolveSource(
     sourceUrl = source.url;
   }
 
-  // Use core resolver to fetch rules
-  const resolved = await coreResolveSource(sourceUrl, {
-    cwd,
-    offlineMode,
-    forceRefresh,
-    onProgress: options?.onGitProgress
-      ? (msg: string) => {
-          // Convert string progress to GitProgressUpdate for compatibility
-          options.onGitProgress?.({
-            phase: "metadata",
-            message: msg,
-            repo: sourceUrl,
-          });
-        }
-      : undefined,
-  });
+  // Progress callback wrapper
+  const onProgress = options?.onGitProgress
+    ? (msg: string) => {
+        options.onGitProgress?.({
+          phase: "metadata",
+          message: msg,
+          repo: sourceUrl,
+        });
+      }
+    : undefined;
+
+  // Resolve source - handle git sources locally, delegate local sources to core
+  let resolved: InternalResolvedSource;
+
+  // Build options object avoiding undefined values for exactOptionalPropertyTypes
+  const resolveOpts: {
+    offlineMode?: boolean;
+    forceRefresh?: boolean;
+    onProgress?: (message: string) => void;
+  } = {};
+  if (offlineMode) {
+    resolveOpts.offlineMode = offlineMode;
+  }
+  if (forceRefresh) {
+    resolveOpts.forceRefresh = forceRefresh;
+  }
+  if (onProgress) {
+    resolveOpts.onProgress = onProgress;
+  }
+
+  if (source.type === "git" || isGitSource(sourceUrl)) {
+    // Git source: resolve directly using GitProvider (CLI has @aligntrue/sources)
+    const parsed = parseGitUrlComponents(sourceUrl);
+    resolved = await resolveGitSourceInternal(
+      sourceUrl,
+      parsed,
+      cwd,
+      resolveOpts,
+    );
+  } else {
+    // Local source: delegate to core resolver
+    resolved = await coreResolveSource(sourceUrl, {
+      cwd,
+      ...resolveOpts,
+    });
+  }
 
   // Convert rules to Align format for merging
   // Use filename-based fingerprint (matching ir-loader.ts) for consistency
@@ -324,4 +527,134 @@ export async function resolveAndMergeSources(
     ...bundleResult,
     sources: resolved,
   };
+}
+
+/**
+ * Options for importing rules (matches core's ImportOptions)
+ */
+export interface ImportOptions {
+  /** Source URL, path, or git URL */
+  source: string;
+  /** Git ref (branch/tag/commit) - only for git sources */
+  ref?: string | undefined;
+  /** Target directory for imported rules (e.g., .aligntrue/rules) */
+  targetDir: string;
+  /** Current working directory */
+  cwd?: string | undefined;
+  /** Offline mode - use cache only, no network operations */
+  offlineMode?: boolean | undefined;
+  /** Force refresh - bypass cache and re-fetch */
+  forceRefresh?: boolean | undefined;
+  /** Progress callback for long operations */
+  onProgress?: ((message: string) => void) | undefined;
+}
+
+/**
+ * Result of importing rules (matches core's ImportResult)
+ */
+export interface ImportResult {
+  /** Successfully parsed rules */
+  rules: RuleFile[];
+  /** Conflicts with existing rules */
+  conflicts: ConflictInfo[];
+  /** Source URL/path */
+  source: string;
+  /** Detected source type */
+  sourceType: "git" | "local";
+  /** Error message if import failed */
+  error?: string;
+}
+
+/**
+ * Import rules from a source (CLI version with git support)
+ *
+ * This is the CLI-level wrapper that handles git sources directly,
+ * keeping @aligntrue/core as a pure library without dynamic imports.
+ *
+ * @param options - Import options
+ * @returns Import result with rules and any conflicts
+ */
+export async function importRules(
+  options: ImportOptions,
+): Promise<ImportResult> {
+  const { source, cwd = process.cwd(), targetDir, ref } = options;
+
+  // Build full source URL with ref if provided
+  let fullSource = source;
+  if (ref && isGitSource(source) && !source.includes("@")) {
+    fullSource = `${source}@${ref}`;
+  }
+
+  // Detect source type
+  const sourceType = isGitSource(fullSource) ? "git" : "local";
+
+  try {
+    // Resolve source using CLI's resolver (handles both git and local)
+    let resolved: InternalResolvedSource;
+
+    // Build options object avoiding undefined values for exactOptionalPropertyTypes
+    const importResolveOpts: {
+      offlineMode?: boolean;
+      forceRefresh?: boolean;
+      onProgress?: (message: string) => void;
+    } = {};
+    if (options.offlineMode !== undefined) {
+      importResolveOpts.offlineMode = options.offlineMode;
+    }
+    if (options.forceRefresh !== undefined) {
+      importResolveOpts.forceRefresh = options.forceRefresh;
+    }
+    if (options.onProgress !== undefined) {
+      importResolveOpts.onProgress = options.onProgress;
+    }
+
+    if (sourceType === "git") {
+      const parsed = parseGitUrlComponents(fullSource);
+      resolved = await resolveGitSourceInternal(
+        fullSource,
+        parsed,
+        cwd,
+        importResolveOpts,
+      );
+    } else {
+      resolved = await coreResolveSource(fullSource, {
+        cwd,
+        ...importResolveOpts,
+      });
+    }
+
+    const rules = resolved.rules;
+
+    // Add source metadata to all rules
+    const now = new Date().toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
+    for (const rule of rules) {
+      rule.frontmatter["source"] = source;
+      rule.frontmatter["source_added"] = now;
+    }
+
+    // Detect conflicts with existing rules
+    const conflicts = detectConflicts(
+      rules.map((r) => ({
+        filename: r.filename,
+        title: r.frontmatter.title || r.filename,
+        source,
+      })),
+      targetDir,
+    );
+
+    return {
+      rules,
+      conflicts,
+      source,
+      sourceType,
+    };
+  } catch (error) {
+    return {
+      rules: [],
+      conflicts: [],
+      source,
+      sourceType,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }

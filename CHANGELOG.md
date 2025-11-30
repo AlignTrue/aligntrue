@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING: `resolveSource()` from `@aligntrue/core` no longer supports git sources** - Git source resolution moved from `@aligntrue/core` to `@aligntrue/cli` to eliminate the `new Function()` dynamic import that triggered security scanner warnings. Use CLI commands (`aligntrue add`, `aligntrue sync`) for git sources. Core now throws a clear error for git sources, directing users to use CLI
 - **Case-insensitive section heading selectors** - Overlay selectors using `sections[heading=...]` now match case-insensitively for better UX. `sections[heading=Security]` matches "security", "SECURITY", or "Security"
 - **Agent files included in backups** - Sync and manual backups now include agent export files (AGENTS.md, .cursor/rules/\*.mdc, etc.) based on configured exporters. Ensures complete restore capability
 - **New file backup before overwrite** - When syncing to a new agent file that already has content, the original file is backed up before overwriting
