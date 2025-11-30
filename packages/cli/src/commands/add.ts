@@ -19,10 +19,10 @@ import {
   parseAlignUrl,
   getAlignTruePaths,
   writeRuleFile,
-  importRules,
   resolveConflict,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import { importRules } from "../utils/source-resolver.js";
 import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { isTTY } from "../utils/tty-helper.js";
 import {
