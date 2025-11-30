@@ -200,9 +200,6 @@ importers:
       '@aligntrue/schema':
         specifier: workspace:*
         version: link:../schema
-      '@aligntrue/sources':
-        specifier: workspace:*
-        version: link:../sources
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
