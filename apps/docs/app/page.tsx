@@ -18,7 +18,7 @@ import {
   Moon,
 } from "lucide-react";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
-import { AlphaBanner } from "./components/AlphaBanner";
+import { BetaBanner } from "./components/BetaBanner";
 import { GitHubIcon } from "./components/GitHubIcon";
 
 function CopyButton({ text }: { text: string }) {
@@ -675,7 +675,7 @@ export default function HomePage() {
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        <AlphaBanner />
+        <BetaBanner />
         <SiteHeader />
 
         <main id="main-content">

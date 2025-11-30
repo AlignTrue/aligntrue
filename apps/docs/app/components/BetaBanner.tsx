@@ -5,21 +5,19 @@ import { X } from "lucide-react";
 import { GitHubIcon } from "./GitHubIcon";
 
 /**
- * AlphaBanner Component
+ * BetaBanner Component
  *
- * Dismissible alpha status banner for the AlignTrue website.
+ * Dismissible beta status banner for the AlignTrue website.
  * Displays on homepage and docs site with link to GitHub for updates.
  * Dismissal is remembered via localStorage.
  */
-export function AlphaBanner() {
+export function BetaBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const isDismissed = localStorage.getItem(
-      "aligntrue-alpha-banner-dismissed",
-    );
+    const isDismissed = localStorage.getItem("aligntrue-beta-banner-dismissed");
     if (isDismissed === "true") {
       setDismissed(true);
     }
@@ -27,7 +25,7 @@ export function AlphaBanner() {
 
   const handleDismiss = () => {
     setDismissed(true);
-    localStorage.setItem("aligntrue-alpha-banner-dismissed", "true");
+    localStorage.setItem("aligntrue-beta-banner-dismissed", "true");
   };
 
   // Set CSS custom property for banner height
@@ -46,11 +44,11 @@ export function AlphaBanner() {
     <>
       <style>{`
         @media (max-width: 768px) {
-          .alpha-banner {
+          .beta-banner {
             flex-direction: column !important;
             align-items: stretch !important;
           }
-          .alpha-banner-content {
+          .beta-banner-content {
             flex: none !important;
             min-width: auto !important;
             width: 100% !important;
@@ -59,7 +57,7 @@ export function AlphaBanner() {
         }
       `}</style>
       <div
-        className="alpha-banner"
+        className="beta-banner"
         style={{
           backgroundColor: "#0d47a1",
           color: "white",
@@ -75,7 +73,7 @@ export function AlphaBanner() {
         }}
       >
         <div
-          className="alpha-banner-content"
+          className="beta-banner-content"
           style={{
             display: "flex",
             alignItems: "center",
@@ -85,7 +83,7 @@ export function AlphaBanner() {
             justifyContent: "center",
           }}
         >
-          <span>🚀 AlignTrue is in alpha. </span>
+          <span>🚀 AlignTrue is in beta. </span>
           <a
             href="https://github.com/AlignTrue/aligntrue"
             target="_blank"
@@ -117,7 +115,7 @@ export function AlphaBanner() {
             padding: "0.25rem",
             flexShrink: 0,
           }}
-          aria-label="Dismiss alpha banner"
+          aria-label="Dismiss beta banner"
         >
           <X size={18} />
         </button>
