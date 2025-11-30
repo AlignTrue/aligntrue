@@ -10,7 +10,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
+import {
+  writeFileSync,
+  readFileSync,
+  mkdirSync,
+  existsSync,
+  readdirSync,
+} from "fs";
 import { join } from "path";
 import { sources } from "../../src/commands/sources.js";
 import * as yaml from "yaml";

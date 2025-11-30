@@ -109,6 +109,15 @@ describe("AGENTS.md-based exporter variants", () => {
             "Test rule for " + variant,
           ),
         },
+        {
+          heading: "test-rule-2",
+          level: 2,
+          content: "Second test rule for " + variant,
+          fingerprint: generateFingerprint(
+            "test-rule-2",
+            "Second test rule for " + variant,
+          ),
+        },
       ];
       const result = await exporter!.export(
         {

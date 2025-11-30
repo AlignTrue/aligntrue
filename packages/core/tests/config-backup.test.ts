@@ -171,10 +171,10 @@ backup:
 `;
     writeFileSync(configPath, yaml, "utf-8");
 
-    const config = await loadConfig(configPath);
-
-    // Should enforce minimum of 1
-    expect(config.backup?.minimum_keep).toBe(1);
+    // Schema validation should reject invalid minimum_keep (must be >= 1)
+    await expect(loadConfig(configPath)).rejects.toThrow(
+      /backup\.minimum_keep: must be >= 1/,
+    );
   });
 
   it("should handle migration from keep_count to retention_days", async () => {

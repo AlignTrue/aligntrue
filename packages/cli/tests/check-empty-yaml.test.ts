@@ -1,6 +1,6 @@
 /**
- * Check command tests for empty/invalid YAML
- * Verifies that empty or comments-only YAML files are handled gracefully
+ * Check command tests for rules directory validation
+ * Verifies that empty or invalid rules directories are handled gracefully
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -15,14 +15,14 @@ const CLI_ROOT = join(__dirname, "..");
 const CLI_BIN = join(CLI_ROOT, "dist/index.js");
 const TEST_DIR = join(__dirname, "temp-check-empty-yaml-test");
 
-describe("Check Command - Empty YAML Handling", () => {
+describe("Check Command - Rules Directory Handling", () => {
   beforeEach(() => {
     // Create test directory
     if (existsSync(TEST_DIR)) {
       rmSync(TEST_DIR, { recursive: true, force: true });
     }
     mkdirSync(TEST_DIR, { recursive: true });
-    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+    mkdirSync(join(TEST_DIR, ".aligntrue/rules"), { recursive: true });
   });
 
   afterEach(() => {
@@ -32,7 +32,7 @@ describe("Check Command - Empty YAML Handling", () => {
     }
   });
 
-  it("handles empty YAML file gracefully", () => {
+  it("handles empty rules directory gracefully", () => {
     // Create config
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
@@ -42,25 +42,19 @@ sources:
     path: .aligntrue/rules`,
     );
 
-    // Create empty rules file
-    writeFileSync(join(TEST_DIR, ".aligntrue/rules"), "");
+    // Rules directory exists but is empty
+    // Run check command - should report no rules found or pass silently
+    const output = execFileSync("node", [CLI_BIN, "check", "--ci"], {
+      cwd: TEST_DIR,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
 
-    // Run check command
-    try {
-      execFileSync("node", [CLI_BIN, "check", "--ci"], {
-        cwd: TEST_DIR,
-        encoding: "utf8",
-        stdio: "pipe",
-      });
-      expect.fail("Should have thrown an error");
-    } catch (error: any) {
-      const output = error.stderr || error.stdout || "";
-      expect(output).toContain("Empty or invalid rules file");
-      expect(error.status).toBe(1);
-    }
+    // Empty rules directory is valid (no rules to check)
+    expect(output).toContain("passed");
   });
 
-  it("handles comments-only YAML file gracefully", () => {
+  it("handles rules directory with non-rule files gracefully", () => {
     // Create config
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
@@ -70,29 +64,24 @@ sources:
     path: .aligntrue/rules`,
     );
 
-    // Create comments-only rules file
+    // Create a non-rule file (e.g., .gitkeep or README)
+    writeFileSync(join(TEST_DIR, ".aligntrue/rules/.gitkeep"), "");
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/rules"),
-      `# Just comments
-# No actual content`,
+      join(TEST_DIR, ".aligntrue/rules/README.txt"),
+      "Not a markdown rule",
     );
 
-    // Run check command
-    try {
-      execFileSync("node", [CLI_BIN, "check", "--ci"], {
-        cwd: TEST_DIR,
-        encoding: "utf8",
-        stdio: "pipe",
-      });
-      expect.fail("Should have thrown an error");
-    } catch (error: any) {
-      const output = error.stderr || error.stdout || "";
-      expect(output).toContain("Empty or invalid rules file");
-      expect(error.status).toBe(1);
-    }
+    // Run check command - should pass (no valid .md rules to check)
+    const output = execFileSync("node", [CLI_BIN, "check", "--ci"], {
+      cwd: TEST_DIR,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+
+    expect(output).toContain("passed");
   });
 
-  it("validates valid YAML file successfully", () => {
+  it("validates valid markdown rule file successfully", () => {
     // Create config
     writeFileSync(
       join(TEST_DIR, ".aligntrue/config.yaml"),
@@ -102,17 +91,17 @@ sources:
     path: .aligntrue/rules`,
     );
 
-    // Create valid rules file
+    // Create valid markdown rule file
     writeFileSync(
-      join(TEST_DIR, ".aligntrue/rules"),
-      `id: test-align
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: TypeScript Quality
-    level: 2
-    content: Use strict TypeScript configuration
-    fingerprint: quality-typescript-strict`,
+      join(TEST_DIR, ".aligntrue/rules/typescript.md"),
+      `---
+title: TypeScript Quality
+description: Use strict TypeScript configuration
+---
+
+# TypeScript Quality
+
+Use strict TypeScript configuration for better type safety.`,
     );
 
     // Run check command - should succeed

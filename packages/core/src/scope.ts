@@ -378,14 +378,13 @@ export function filterSectionsByScope(
       }
     }
 
-    // Default scope: include sections without a specific scope
-    // or sections explicitly targeting the default scope
+    // Default scope: include ALL sections when no explicit scope filtering is configured
+    // This ensures nested directory structure (.aligntrue/rules/backend/api.md) doesn't
+    // filter out rules - subdirectories are for organization, not scope filtering in solo mode
     if (isDefaultScope) {
-      return (
-        normalizedSectionScope === "." ||
-        normalizedSectionScope === "" ||
-        !normalizedSectionScope
-      );
+      // Include all sections - they all belong to the default scope
+      // Subdirectory structure is preserved for export path purposes but doesn't filter
+      return true;
     }
 
     // Named scope: include sections that match the scope path
