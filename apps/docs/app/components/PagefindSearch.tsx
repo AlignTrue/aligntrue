@@ -84,13 +84,13 @@ export function PagefindSearch({
     // Clear any existing content
     containerRef.current.innerHTML = "";
 
-    // Initialize Pagefind UI
+    // Initialize Pagefind UI with native styles
     new window.PagefindUI({
       element: containerRef.current,
       showSubResults: true,
       showImages: false,
-      excerptLength: 20,
-      resetStyles: false,
+      excerptLength: 15,
+      resetStyles: true, // Use Pagefind's native reset styles
       bundlePath: "/_pagefind/",
       translations: {
         placeholder,
@@ -117,15 +117,15 @@ export function PagefindSearch({
           placeholder={placeholder}
           disabled
           style={{
-            height: "32px",
+            height: "2.5rem",
             width: "100%",
             maxWidth: "200px",
-            padding: "0 12px",
+            padding: "0 1rem",
             borderRadius: "8px",
             border: "1px solid var(--nextra-border, #e5e7eb)",
-            background: "var(--nextra-bg, #fff)",
+            background: "transparent",
             color: "var(--nextra-fg, #111)",
-            fontSize: "14px",
+            fontSize: "1rem",
           }}
         />
       </div>
@@ -135,152 +135,35 @@ export function PagefindSearch({
   return (
     <>
       <style>{`
-        /* Pagefind UI Customization - Match Nextra theme */
+        /* Minimal Pagefind theme customization - colors only */
         .pagefind-ui {
-          --pagefind-ui-scale: 0.8;
-          --pagefind-ui-primary: hsl(var(--nextra-primary-hue, 212deg) var(--nextra-primary-saturation, 100%) var(--nextra-primary-lightness, 45%));
-          --pagefind-ui-text: var(--nextra-fg, #111);
-          --pagefind-ui-background: var(--nextra-bg, #fff);
-          --pagefind-ui-border: var(--nextra-border, #e5e7eb);
+          --pagefind-ui-scale: 1;
+          --pagefind-ui-primary: #3b82f6;
+          --pagefind-ui-text: #111;
+          --pagefind-ui-background: #fff;
+          --pagefind-ui-border: #e5e7eb;
+          --pagefind-ui-tag: #f3f4f6;
           --pagefind-ui-border-width: 1px;
           --pagefind-ui-border-radius: 8px;
           --pagefind-ui-font: inherit;
         }
 
         .dark .pagefind-ui {
-          --pagefind-ui-primary: hsl(var(--nextra-primary-hue, 204deg) var(--nextra-primary-saturation, 100%) var(--nextra-primary-lightness, 55%));
-          --pagefind-ui-text: var(--nextra-fg, #fff);
-          --pagefind-ui-background: var(--nextra-bg, #111);
-          --pagefind-ui-border: var(--nextra-border, #333);
+          --pagefind-ui-primary: #60a5fa;
+          --pagefind-ui-text: #f9fafb;
+          --pagefind-ui-background: #111;
+          --pagefind-ui-border: #374151;
+          --pagefind-ui-tag: #1f2937;
         }
 
-        /* Hide the default Pagefind form styling */
+        /* Ensure dropdown appears above page content */
+        .pagefind-ui .pagefind-ui__drawer {
+          z-index: 9999;
+        }
+
+        /* Ensure form is positioned correctly for dropdown */
         .pagefind-ui .pagefind-ui__form {
           position: relative;
-        }
-
-        .pagefind-ui .pagefind-ui__search-input {
-          height: 32px;
-          padding: 0 12px;
-          font-size: 14px;
-          width: 200px;
-          transition: width 0.2s ease;
-        }
-
-        .pagefind-ui .pagefind-ui__search-input:focus {
-          width: 300px;
-          outline: 2px solid var(--pagefind-ui-primary);
-          outline-offset: -1px;
-        }
-
-        .pagefind-ui .pagefind-ui__search-clear {
-          height: 32px;
-          width: 32px;
-          padding: 0;
-          right: 0;
-        }
-
-        /* Results dropdown styling */
-        .pagefind-ui .pagefind-ui__drawer {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          min-width: 400px;
-          max-width: 600px;
-          max-height: 70vh;
-          overflow-y: auto;
-          margin-top: 8px;
-          background: var(--pagefind-ui-background);
-          border: var(--pagefind-ui-border-width) solid var(--pagefind-ui-border);
-          border-radius: var(--pagefind-ui-border-radius);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-          z-index: 100;
-        }
-
-        .dark .pagefind-ui .pagefind-ui__drawer {
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .pagefind-ui .pagefind-ui__results-area {
-          padding: 12px;
-        }
-
-        .pagefind-ui .pagefind-ui__message {
-          font-size: 13px;
-          padding: 8px 0;
-          color: var(--nextra-fg-muted, #6b7280);
-        }
-
-        .pagefind-ui .pagefind-ui__result {
-          padding: 12px;
-          border-radius: 6px;
-          margin-bottom: 4px;
-        }
-
-        .pagefind-ui .pagefind-ui__result:hover {
-          background: var(--nextra-hover, rgba(0, 0, 0, 0.05));
-        }
-
-        .dark .pagefind-ui .pagefind-ui__result:hover {
-          background: var(--nextra-hover, rgba(255, 255, 255, 0.05));
-        }
-
-        .pagefind-ui .pagefind-ui__result-link {
-          color: var(--pagefind-ui-primary);
-          font-weight: 600;
-          font-size: 14px;
-          text-decoration: none;
-        }
-
-        .pagefind-ui .pagefind-ui__result-link:hover {
-          text-decoration: underline;
-        }
-
-        .pagefind-ui .pagefind-ui__result-excerpt {
-          font-size: 13px;
-          line-height: 1.5;
-          color: var(--nextra-fg-muted, #6b7280);
-          margin-top: 4px;
-        }
-
-        .pagefind-ui .pagefind-ui__result-excerpt mark {
-          background: hsla(var(--nextra-primary-hue, 212deg), 80%, 70%, 0.3);
-          color: inherit;
-          padding: 0 2px;
-          border-radius: 2px;
-        }
-
-        .pagefind-ui .pagefind-ui__button {
-          background: var(--pagefind-ui-primary);
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          font-size: 13px;
-          cursor: pointer;
-          margin-top: 8px;
-        }
-
-        .pagefind-ui .pagefind-ui__button:hover {
-          opacity: 0.9;
-        }
-
-        /* Hide filters panel in compact mode */
-        .pagefind-ui .pagefind-ui__filter-panel {
-          display: none;
-        }
-
-        /* Sub-results styling */
-        .pagefind-ui .pagefind-ui__result-nested {
-          margin-left: 16px;
-          padding-left: 12px;
-          border-left: 2px solid var(--pagefind-ui-border);
-        }
-
-        .pagefind-ui .pagefind-ui__result-title {
-          font-size: 12px;
-          color: var(--nextra-fg-muted, #6b7280);
         }
       `}</style>
       <div ref={containerRef} className="pagefind-ui" />

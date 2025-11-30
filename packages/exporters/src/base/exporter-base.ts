@@ -361,9 +361,11 @@ export abstract class ExporterBase implements ExporterPlugin {
     const interactive = options?.interactive ?? false;
     const force = options?.force ?? false;
 
-    // SAFETY: Backup file if it will be overwritten after manual edits
+    // SAFETY: Backup file if it will be overwritten
+    // - New files with content: backup before first write (no checksum record)
+    // - Existing files: backup if manually edited (checksum mismatch)
     if (options) {
-      const { existsSync } = await import("fs");
+      const { existsSync, statSync } = await import("fs");
       const { computeFileChecksum } = await import("@aligntrue/file-utils");
       const { safeBackupFile } = await import("@aligntrue/core");
 
@@ -371,6 +373,7 @@ export abstract class ExporterBase implements ExporterPlugin {
         const lastChecksumRecord = this.writer.getChecksum(path);
 
         if (lastChecksumRecord) {
+          // File was previously written by AlignTrue - check for manual edits
           try {
             const currentChecksum = computeFileChecksum(path);
 
@@ -380,6 +383,18 @@ export abstract class ExporterBase implements ExporterPlugin {
             }
           } catch {
             // If checksum fails, continue (file might not exist anymore)
+          }
+        } else {
+          // No checksum record = file exists but wasn't created by AlignTrue
+          // This is a new agent file with existing content - backup before overwriting
+          try {
+            const stats = statSync(path);
+            if (stats.size > 0) {
+              // File has content - backup before we overwrite it
+              safeBackupFile(path, process.cwd());
+            }
+          } catch {
+            // If stat fails, continue (file might not exist anymore)
           }
         }
       }

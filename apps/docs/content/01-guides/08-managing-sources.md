@@ -59,9 +59,22 @@ External sources use the new `include` syntax with fully-qualified URLs:
 
 ### URL format
 
+AlignTrue supports two URL formats:
+
+**Standard format:**
+
 ```
 https://{host}/{org}/{repo}[@{ref}][/{path}]
 ```
+
+**GitHub web UI format (also supported):**
+
+```
+https://github.com/{org}/{repo}/tree/{ref}/{path}
+https://github.com/{org}/{repo}/blob/{ref}/{path}
+```
+
+This means you can copy URLs directly from GitHub's web interface.
 
 | Part       | Example         | Purpose                                                  |
 | ---------- | --------------- | -------------------------------------------------------- |
@@ -92,6 +105,12 @@ sources:
 
       # Specific version + directory
       - https://github.com/company/rules@v2.0.0/aligns
+
+      # GitHub web UI URL (copied from browser)
+      - https://github.com/company/rules/tree/main/aligns
+
+      # GitHub blob URL (for single files)
+      - https://github.com/company/rules/blob/v2.0.0/aligns/security.md
 
 exporters:
   - cursor
