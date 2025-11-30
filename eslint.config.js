@@ -569,6 +569,7 @@ export default [
     },
     plugins: {
       "unused-imports": unusedImports,
+      security,
     },
     rules: {
       "unused-imports/no-unused-imports": "error",
@@ -583,6 +584,9 @@ export default [
       ],
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "off", // Allow deprecated APIs in tests
+      // Test fixtures use temp dirs with crypto randomness and cleanup. Safe by construction.
+      // See .cursor/rules/security-linting-policy.mdc Section 1 (Safe Internal Paths)
+      "security/detect-non-literal-fs-filename": "off",
     },
   },
   {

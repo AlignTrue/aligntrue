@@ -132,7 +132,7 @@ function parseLocalPath(source: string): ParsedSource {
  * For full component extraction (host, org, repo, ref, path), use parseSourceURL from url-parser.ts
  */
 function parseGitUrl(source: string): ParsedSource {
-  let url = source;
+  let url: string;
   let ref: string | undefined;
   let path: string | undefined;
 
