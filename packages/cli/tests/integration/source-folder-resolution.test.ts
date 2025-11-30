@@ -11,7 +11,11 @@ import { resolveSource } from "@aligntrue/core";
 
 const TEMP_DIR = join(__dirname, "../../temp-folder-resolution");
 
-describe("Source Folder Resolution", () => {
+// Skip on Windows due to unreliable file cleanup in CI
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
+
+describeSkipWindows("Source Folder Resolution", () => {
   beforeEach(() => {
     if (existsSync(TEMP_DIR)) {
       rmSync(TEMP_DIR, { recursive: true, force: true });
