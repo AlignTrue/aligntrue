@@ -11,6 +11,13 @@ import { execSync } from "child_process";
 const TEST_DIR = join(__dirname, "../../../../.temp-test-multi-source");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
+// Skip network-dependent tests in local pre-CI (network not available)
+// In CI, these tests require ALIGNTRUE_NETWORK_CONSENT=1
+const isCI = process.env.CI === "true";
+const hasNetworkConsent = process.env.ALIGNTRUE_NETWORK_CONSENT === "1";
+const runNetworkTests = isCI && hasNetworkConsent;
+const describeNetwork = runNetworkTests ? describe : describe.skip;
+
 describe("Multi-Source Reliability", () => {
   beforeEach(() => {
     if (existsSync(TEST_DIR)) {
@@ -123,7 +130,8 @@ exporters:
       }
     });
 
-    it("should accept valid include array", () => {
+    // Skip in local pre-CI: requires network to validate remote git sources
+    it.skipIf(!runNetworkTests)("should accept valid include array", () => {
       mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
 
       writeFileSync(
@@ -154,7 +162,8 @@ exporters:
     });
   });
 
-  describe("Add and remove sources workflow", () => {
+  // Skip in local pre-CI: requires network to validate remote git sources
+  describeNetwork("Add and remove sources workflow", () => {
     it("should handle adding then removing a source", () => {
       mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
 

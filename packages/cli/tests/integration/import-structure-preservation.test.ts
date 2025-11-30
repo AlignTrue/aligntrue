@@ -252,8 +252,8 @@ exporters:
         "utf-8",
       );
 
-      // Run sync
-      execSync(`node "${CLI_PATH}" sync --yes`, {
+      // Run sync (use --no-detect to skip agent detection in test environment)
+      execSync(`node "${CLI_PATH}" sync --yes --no-detect`, {
         cwd: projectDir,
         stdio: "pipe",
       });
@@ -281,8 +281,11 @@ exporters:
       mkdirSync(join(projectDir, ".aligntrue/rules/backend"), {
         recursive: true,
       });
+      mkdirSync(join(projectDir, ".aligntrue/rules/frontend"), {
+        recursive: true,
+      });
 
-      // Create rule file
+      // Create rule files
       writeFileSync(
         join(projectDir, ".aligntrue/rules/backend/security.md"),
         `---
@@ -293,6 +296,19 @@ description: Backend security guidelines
 # Backend Security
 
 Guidelines here`,
+      );
+
+      // Add a second rule to trigger link-based format (auto mode uses links for 2+ rules)
+      writeFileSync(
+        join(projectDir, ".aligntrue/rules/frontend/performance.md"),
+        `---
+title: Frontend Performance
+description: Frontend performance guidelines
+---
+
+# Frontend Performance
+
+Performance guidelines here`,
       );
 
       // Create config targeting AGENTS.md (single-file exporter)
@@ -309,8 +325,8 @@ exporters:
         "utf-8",
       );
 
-      // Run sync
-      execSync(`node "${CLI_PATH}" sync --yes`, {
+      // Run sync (use --no-detect to skip agent detection in test environment)
+      execSync(`node "${CLI_PATH}" sync --yes --no-detect`, {
         cwd: projectDir,
         stdio: "pipe",
       });

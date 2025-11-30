@@ -31,6 +31,7 @@
     "@pagefind/default-ui": "^1.1.0",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
+    "baseline-browser-mapping": "^1.0.0",
     "fast-xml-parser": "^5.3.1",
     "pagefind": "^1.1.0"
   }

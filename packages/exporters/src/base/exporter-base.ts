@@ -140,12 +140,23 @@ export abstract class ExporterBase implements ExporterPlugin {
       const sourceFile = section.source_file;
       let filename: string;
       let path: string;
+      let relativePath: string | undefined;
 
       if (sourceFile) {
         // Extract filename from path (e.g., ".aligntrue/rules/test-rule.md" -> "test-rule.md")
         // Use basename() which handles both forward and back slashes on all platforms
         filename = basename(sourceFile) || "untitled.md";
         path = sourceFile;
+
+        // Extract relative path within rules directory to preserve nested structure
+        // e.g., ".aligntrue/rules/backend/security.md" -> "backend/security.md"
+        const rulesPrefix = ".aligntrue/rules/";
+        const normalizedPath = sourceFile.replace(/\\/g, "/");
+        if (normalizedPath.includes(rulesPrefix)) {
+          relativePath = normalizedPath.substring(
+            normalizedPath.indexOf(rulesPrefix) + rulesPrefix.length,
+          );
+        }
       } else {
         filename = this.sanitizeFilename(section.heading) + ".md";
         path = filename;
@@ -167,13 +178,20 @@ export abstract class ExporterBase implements ExporterPlugin {
         content_hash: hash,
       };
 
-      return {
+      const result: RuleFile = {
         content,
         frontmatter,
         path,
         filename,
         hash,
       };
+
+      // Only add relativePath if computed (preserves optional property semantics)
+      if (relativePath) {
+        result.relativePath = relativePath;
+      }
+
+      return result;
     });
   }
 

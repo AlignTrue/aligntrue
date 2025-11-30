@@ -69,6 +69,12 @@ describe("GeminiExporter", () => {
         content: "This is a test rule for Gemini",
         fingerprint: "",
       },
+      {
+        heading: "test-rule-2",
+        level: 2,
+        content: "This is a second test rule for Gemini",
+        fingerprint: "",
+      },
     ];
 
     const result = await exporter!.export(
