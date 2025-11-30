@@ -369,34 +369,42 @@ aligntrue revert AGENTS.md
 
 ### 3. Understand backup retention
 
-Keep enough backups for your workflow:
+Keep enough backups for your workflow using age-based retention:
 
 ```yaml
-# Solo developer: 20 backups (default)
+# Default retention (30 days, keep at least 3 recent)
 backup:
-  keep_count: 20
+  retention_days: 30
+  minimum_keep: 3
 
-# Frequent syncs: increase retention
+# Longer retention (90 days for infrequent syncs)
 backup:
-  keep_count: 50
+  retention_days: 90
+  minimum_keep: 5
 
-# Minimal: 10 backups (minimum allowed)
+# Aggressive cleanup (7 days, but always keep last 2)
 backup:
-  keep_count: 10
+  retention_days: 7
+  minimum_keep: 2
 ```
 
-**When to increase `keep_count`:**
+**When to increase `retention_days`:**
 
-- Frequent experimentation
-- Multiple sync operations per day
-- Want longer rollback history
-- Testing new rules or exporters
+- Infrequent syncing (less than weekly)
+- Need longer rollback history
+- Experimentation with major changes
 
-**When to decrease `keep_count`:**
+**When to decrease `retention_days`:**
 
 - Disk space constraints
-- Rarely need to restore old backups
-- Clear rollback needs (keep minimum 10)
+- Frequent syncing (multiple times per day)
+- Minimal rollback needs
+
+**`minimum_keep` safety floor:**
+
+- Always preserves at least this many most recent backups
+- Protects against accidental over-cleanup with old backups
+- Default (3) good for most users, increase if syncing very infrequently
 
 ### 4. Use manual backups for major changes
 
@@ -515,14 +523,14 @@ If restore fails:
 
 ### Too many backups
 
-Backups are cleaned up automatically after each sync based on `keep_count`.
+Backups are cleaned up automatically after each sync based on `retention_days` and `minimum_keep`.
 
 To adjust retention permanently:
 
 ```yaml
 backup:
-  retention_days: 60 # Keep backups for 60 days instead of 30
-  minimum_keep: 5 # Always keep at least 5 most recent backups
+  retention_days: 60 # Keep backups for 60 days instead of 30 (default)
+  minimum_keep: 5 # Always keep at least 5 most recent backups (default: 3)
 ```
 
 ### Legacy .bak files and old backup locations
