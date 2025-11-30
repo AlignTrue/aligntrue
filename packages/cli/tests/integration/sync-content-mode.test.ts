@@ -67,8 +67,10 @@ describeSkipWindows("Sync Command - content_mode", () => {
         "utf-8",
       );
 
-      // Create rules directory
+      // Create rules directory (clear any default files from setupTestProject)
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      const { rmSync } = await import("fs");
+      rmSync(rulesDir, { recursive: true, force: true });
       mkdirSync(rulesDir, { recursive: true });
 
       // Create single rule file
@@ -95,7 +97,8 @@ This is the content of the test rule.
 
         // Should use inline format for single rule
         expect(content).toContain("<!-- aligntrue:rule");
-        expect(content).not.toContain(".aligntrue/rules/");
+        // Check for link format (markdown links to rules) - not the header comment
+        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
       }
     });
 
@@ -145,8 +148,8 @@ Content of rule 2.
       if (existsSync(agentsPath)) {
         const content = readFileSync(agentsPath, "utf-8");
 
-        // Should use links format for multiple rules
-        expect(content).toContain(".aligntrue/rules/");
+        // Should use links format for multiple rules (check for markdown link format)
+        expect(content).toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
         expect(content).not.toContain("<!-- aligntrue:rule");
       }
     });
@@ -201,7 +204,8 @@ Content of rule 2.
 
         // Should use inline format even though we have multiple rules
         expect(content).toContain("<!-- aligntrue:rule");
-        expect(content).not.toContain(".aligntrue/rules/");
+        // Check for link format (markdown links to rules) - not the header comment
+        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
       }
     });
 
@@ -243,8 +247,8 @@ This is the content of the test rule.
       if (existsSync(agentsPath)) {
         const content = readFileSync(agentsPath, "utf-8");
 
-        // Should use links format even though we have single rule
-        expect(content).toContain(".aligntrue/rules/");
+        // Should use links format even though we have single rule (check for markdown link format)
+        expect(content).toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
         expect(content).not.toContain("<!-- aligntrue:rule");
       }
     });
@@ -302,7 +306,8 @@ Content of rule 2.
 
         // Should use inline format from config
         expect(content).toContain("<!-- aligntrue:rule");
-        expect(content).not.toContain(".aligntrue/rules/");
+        // Check for link format (markdown links to rules) - not the header comment
+        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
       }
     });
 
@@ -349,7 +354,8 @@ This is the content of the test rule.
 
         // Should use inline format from CLI flag (overrides config)
         expect(content).toContain("<!-- aligntrue:rule");
-        expect(content).not.toContain(".aligntrue/rules/");
+        // Check for link format (markdown links to rules) - not the header comment
+        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
       }
     });
   });
