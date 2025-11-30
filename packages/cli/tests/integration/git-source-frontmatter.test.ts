@@ -11,7 +11,11 @@ import { stringify as stringifyYaml } from "yaml";
 
 const TEST_DIR = join(process.cwd(), "test-git-frontmatter");
 
-describe("Git source with YAML frontmatter", () => {
+// Skip tests unless in CI (where network is available)
+const isCI = !!process.env.CI;
+const describeNetwork = isCI ? describe : describe.skip;
+
+describeNetwork("Git source with YAML frontmatter", () => {
   beforeEach(() => {
     // Clean up before each test
     if (existsSync(TEST_DIR)) {
