@@ -18,6 +18,27 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 /**
+ * Patterns that match AlignTrue test directories
+ * These are created by various test suites and manual exploratory testing
+ */
+const ALIGNTRUE_TEMP_PATTERNS = [
+  /^aligntrue-/, // All aligntrue-* prefixed dirs (tests, backups, perf, etc.)
+  /^test-/, // Common test- prefix from exploratory testing
+  /^ruler-/, // ruler-* tests
+  /^solo-test/, // Solo workflow tests
+  /^team-/, // Team tests
+  /^exploratory-/, // Exploratory testing
+  /^split-test/, // Split tests
+];
+
+/**
+ * Check if a directory name matches any AlignTrue test pattern
+ */
+function isAlignTrueTestDir(name: string): boolean {
+  return ALIGNTRUE_TEMP_PATTERNS.some((pattern) => pattern.test(name));
+}
+
+/**
  * Clean up old test directories
  * Keeps last 3 test runs or directories newer than 24 hours
  */
@@ -26,9 +47,7 @@ function cleanupOldTestDirs(): void {
     const tmpDir = tmpdir();
     const entries = readdirSync(tmpDir);
     const testDirs = entries
-      .filter(
-        (name) => name.startsWith("aligntrue-test-") && name.endsWith("-"),
-      )
+      .filter((name) => isAlignTrueTestDir(name))
       .map((name) => {
         const path = join(tmpDir, name);
         try {

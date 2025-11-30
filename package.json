@@ -38,6 +38,8 @@
     "debug:workspace": "node scripts/debug/workspace-types.mjs",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist archive/*/node_modules archive/*/.next archive/*/dist",
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
+    "cleanup:temps": "node scripts/cleanup-test-temps.mjs --delete",
+    "cleanup:temps:dry": "node scripts/cleanup-test-temps.mjs --verbose",
     "bootstrap": "pnpm install && pnpm build",
     "prepare": "husky",
     "release": "node scripts/manual-release.mjs",
