@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **GitHub web UI URL support** - URL parser now handles GitHub web URLs with `/tree/` and `/blob/` paths. Copy URLs directly from GitHub's web interface (e.g., `https://github.com/org/repo/tree/main/aligns`)
 - **Selective import UI for init/add/sources detect** - Smart tiered selection interface when importing rules. Single file: auto-import. Small folder: show list + confirm. Large/multiple folders: show summary + folder-level selection
 - **Unified backup system with age-based retention** - All backups consolidated under `.aligntrue/.backups/` (snapshots and files). Individual file backups now use `.bak` suffix for clarity and include timestamp
 - **`retention_days` config for age-based backup cleanup** - Replace count-based `keep_count` with intuitive age-based retention (default: 30 days, configurable 0-unlimited)
@@ -20,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Case-insensitive section heading selectors** - Overlay selectors using `sections[heading=...]` now match case-insensitively for better UX. `sections[heading=Security]` matches "security", "SECURITY", or "Security"
+- **Agent files included in backups** - Sync and manual backups now include agent export files (AGENTS.md, .cursor/rules/\*.mdc, etc.) based on configured exporters. Ensures complete restore capability
+- **New file backup before overwrite** - When syncing to a new agent file that already has content, the original file is backed up before overwriting
 - **BREAKING: Plain HTTP/HTTPS URLs no longer supported for remote rules** - Use git repositories instead (GitHub, GitLab, Bitbucket, SSH, self-hosted). Plain URLs lacked directory listing capabilities. Migrate by changing `https://example.com/rules.yaml` to `https://github.com/org/rules` for full git support
 - **BREAKING: Backup configuration schema** - `keep_count` deprecated in favor of `retention_days` + `minimum_keep`. Old configs still work (graceful migration); new installs get age-based retention
 - **Individual file backup location** - All overwritten file backups now under `.aligntrue/.backups/files/` instead of scattered `overwritten-rules/` and `overwritten-files/` directories

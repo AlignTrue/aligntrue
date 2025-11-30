@@ -257,17 +257,22 @@ After every successful sync, AlignTrue automatically cleans up old backups based
 
 **Agent files (included by default):**
 
-- Source files from `.aligntrue/rules/` directory
-- Only files you can actually edit are backed up
-- Stored in separate `agent-files/` subdirectory within backup
-- Ensures you can recover your edits if something goes wrong
+Backups include agent export files based on your configured exporters:
+
+- `AGENTS.md` - Universal agent format
+- `.cursor/rules/*.mdc` - Cursor rules
+- `CLAUDE.md`, `GEMINI.md`, etc. - Agent-specific formats
+- `.clinerules/*.md`, `.amazonq/rules/*.md`, etc. - Multi-file formats
+- Any other files written by configured exporters
+
+This ensures you can recover your complete agent setup if something goes wrong.
 
 **Not backed up:**
 
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/.backups/` - Backup directory itself
 - `.aligntrue/telemetry-events.json` - Telemetry data
-- Generated files that can be recreated from IR
+- Files not written by configured exporters
 
 ## Backup storage
 

@@ -5,12 +5,30 @@
 import { existsSync, unlinkSync } from "fs";
 import { join } from "path";
 import * as clack from "@clack/prompts";
-import { BackupManager } from "@aligntrue/core";
+import { BackupManager, getExporterNames } from "@aligntrue/core";
 import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import { initializePrompts } from "../../utils/prompts.js";
 import { stopSpinnerSilently } from "../../utils/spinner.js";
+
+/**
+ * Get agent file patterns from configured exporters for backup purposes
+ * Returns patterns like ["AGENTS.md", ".cursor/rules/*.mdc", "CLAUDE.md", etc.]
+ */
+function getAgentFilePatterns(context: SyncContext): string[] {
+  const patterns: string[] = [];
+  const exporterNames = getExporterNames(context.config.exporters);
+
+  for (const exporterName of exporterNames) {
+    const manifest = context.registry.getManifest(exporterName);
+    if (manifest?.outputs) {
+      patterns.push(...manifest.outputs);
+    }
+  }
+
+  return patterns;
+}
 
 /**
  * Sync result from engine
@@ -64,6 +82,9 @@ export async function executeSyncWorkflow(
       spinner.start("Creating safety backup");
     }
     try {
+      // Get agent file patterns from configured exporters
+      const agentFilePatterns = getAgentFilePatterns(context);
+
       const backup = BackupManager.createBackup({
         cwd,
         created_by: "sync",
@@ -71,7 +92,8 @@ export async function executeSyncWorkflow(
         action: "pre-sync",
         mode: config.mode,
         includeAgentFiles: true,
-        agentFilePatterns: null, // No agent file patterns specified
+        agentFilePatterns:
+          agentFilePatterns.length > 0 ? agentFilePatterns : null,
       });
       if (!options.quiet) {
         spinner.stop(`Safety backup created: ${backup.timestamp}`);

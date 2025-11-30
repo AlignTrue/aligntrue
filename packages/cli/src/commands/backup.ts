@@ -5,12 +5,71 @@
  */
 
 import * as clack from "@clack/prompts";
-import { BackupManager, type BackupInfo } from "@aligntrue/core";
+import {
+  BackupManager,
+  type BackupInfo,
+  loadConfig,
+  getAlignTruePaths,
+  getExporterNames,
+} from "@aligntrue/core";
+import { ExporterRegistry } from "@aligntrue/exporters";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { withSpinner, createManagedSpinner } from "../utils/spinner.js";
+
+// Get the exporters package directory for adapter discovery
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+/**
+ * Get agent file patterns from configured exporters for backup purposes
+ */
+async function getAgentFilePatterns(cwd: string): Promise<string[]> {
+  const patterns: string[] = [];
+
+  try {
+    const paths = getAlignTruePaths(cwd);
+    const config = await loadConfig(paths.config);
+    const exporterNames = getExporterNames(config.exporters);
+
+    // Initialize registry and load adapters
+    const registry = new ExporterRegistry();
+    const exportersDir = join(__dirname, "../../../exporters/src");
+
+    try {
+      const manifests = registry.discoverAdapters(exportersDir);
+      for (const manifestPath of manifests) {
+        await registry.registerFromManifest(manifestPath);
+      }
+    } catch {
+      // Fallback: try dist directory
+      const distExportersDir = join(__dirname, "../../../exporters/dist");
+      try {
+        const manifests = registry.discoverAdapters(distExportersDir);
+        for (const manifestPath of manifests) {
+          await registry.registerFromManifest(manifestPath);
+        }
+      } catch {
+        // Registry discovery failed, return empty patterns
+      }
+    }
+
+    for (const exporterName of exporterNames) {
+      const manifest = registry.getManifest(exporterName);
+      if (manifest?.outputs) {
+        patterns.push(...manifest.outputs);
+      }
+    }
+  } catch {
+    // Config load failed, return empty patterns
+  }
+
+  return patterns;
+}
 
 interface BackupArgs {
   // Common
@@ -154,11 +213,22 @@ async function handleCreate(
   await withSpinner(
     "Creating backup...",
     async () => {
-      const backupOptions: { cwd: string; created_by: string; notes?: string } =
-        {
-          cwd,
-          created_by: "manual",
-        };
+      // Get agent file patterns from configured exporters
+      const agentFilePatterns = await getAgentFilePatterns(cwd);
+
+      const backupOptions: {
+        cwd: string;
+        created_by: string;
+        notes?: string;
+        includeAgentFiles?: boolean;
+        agentFilePatterns?: string[] | null;
+      } = {
+        cwd,
+        created_by: "manual",
+        includeAgentFiles: true,
+        agentFilePatterns:
+          agentFilePatterns.length > 0 ? agentFilePatterns : null,
+      };
       if (notes) {
         backupOptions.notes = notes;
       }
@@ -169,6 +239,14 @@ async function handleCreate(
         clack.log.info(`Notes: ${backup.manifest.notes}`);
       }
       clack.log.info(`Files: ${backup.manifest.files.length} backed up`);
+      if (
+        backup.manifest.agent_files &&
+        backup.manifest.agent_files.length > 0
+      ) {
+        clack.log.info(
+          `Agent files: ${backup.manifest.agent_files.length} backed up`,
+        );
+      }
       clack.log.step(`Location: ${backup.path}`);
     },
     "Backup created",

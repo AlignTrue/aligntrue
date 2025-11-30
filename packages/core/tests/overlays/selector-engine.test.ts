@@ -160,6 +160,58 @@ describe("evaluateSelector - array index selectors", () => {
   });
 });
 
+describe("evaluateSelector - section heading selectors", () => {
+  it("matches section by heading (exact case)", () => {
+    const result = evaluateSelector("sections[heading=Rule One]", mockIR);
+    expect(result.success).toBe(true);
+    expect(result.targetPath).toEqual(["sections", "0"]);
+    expect(result.targetValue).toEqual(mockIR.sections[0]);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("matches section by heading (case-insensitive - lowercase query)", () => {
+    const result = evaluateSelector("sections[heading=rule one]", mockIR);
+    expect(result.success).toBe(true);
+    expect(result.targetPath).toEqual(["sections", "0"]);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("matches section by heading (case-insensitive - uppercase query)", () => {
+    const result = evaluateSelector("sections[heading=RULE ONE]", mockIR);
+    expect(result.success).toBe(true);
+    expect(result.targetPath).toEqual(["sections", "0"]);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("matches section by heading (case-insensitive - mixed case query)", () => {
+    const result = evaluateSelector("sections[heading=RuLe TwO]", mockIR);
+    expect(result.success).toBe(true);
+    expect(result.targetPath).toEqual(["sections", "1"]);
+    expect(result.matchCount).toBe(1);
+  });
+
+  it("fails when section heading not found", () => {
+    const result = evaluateSelector("sections[heading=Nonexistent]", mockIR);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("No section found");
+    expect(result.matchCount).toBe(0);
+  });
+
+  it("detects multiple matching sections (ambiguous)", () => {
+    const duplicateIR: Align = {
+      ...mockIR,
+      sections: [
+        { heading: "Duplicate", level: 2, content: "A", fingerprint: "dup-a" },
+        { heading: "duplicate", level: 2, content: "B", fingerprint: "dup-b" },
+      ],
+    };
+    const result = evaluateSelector("sections[heading=Duplicate]", duplicateIR);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("matched 2 sections");
+    expect(result.matchCount).toBe(2);
+  });
+});
+
 describe("evaluateSelector - invalid selectors", () => {
   it("fails for invalid selector syntax", () => {
     const result = evaluateSelector("invalid[*", mockIR);
