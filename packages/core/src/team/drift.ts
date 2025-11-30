@@ -439,18 +439,6 @@ function inferAgentFromPath(path: string): string {
 }
 
 /**
- * Detect local overlay drift (legacy)
- * Deprecated: Use detectOverlayDrift instead
- */
-export function detectLocalOverlayDrift(
-  _lockfile: Lockfile,
-  _basePath: string = ".",
-): DriftFinding[] {
-  // Legacy placeholder - use detectOverlayDrift for Overlays system
-  return [];
-}
-
-/**
  * High-level drift detection for CLI usage
  * Takes config object and handles file paths internally
  */
@@ -628,7 +616,6 @@ export async function detectDrift(
 
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
-  findings.push(...detectLocalOverlayDrift(lockfile, basePath));
 
   // New drift detection types
   // Filter lockfile drift if ignoreLockfileDrift is true
