@@ -463,7 +463,7 @@ export default [
     rules: {
       // These files use paths from getAlignTruePaths() or construct safe internal paths
       // All paths are safe internal paths (e.g., .aligntrue/.local, .aligntrue/.remotes)
-      // See .cursor/rules/security-linting-policy.mdc for details
+      // See .cursor/rules/security_linting_policy.mdc for details
       "security/detect-non-literal-fs-filename": "off",
     },
   },
@@ -585,7 +585,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "off", // Allow deprecated APIs in tests
       // Test fixtures use temp dirs with crypto randomness and cleanup. Safe by construction.
-      // See .cursor/rules/security-linting-policy.mdc Section 1 (Safe Internal Paths)
+      // See .cursor/rules/security_linting_policy.mdc Section 1 (Safe Internal Paths)
       "security/detect-non-literal-fs-filename": "off",
     },
   },
@@ -600,10 +600,10 @@ export default [
     },
     rules: {
       // Scripts use static known commands via execSync, parsed with static patterns
-      // See .cursor/rules/security-linting-policy.mdc Section 5 (Safe Child Process Execution)
+      // See .cursor/rules/security_linting_policy.mdc Section 5 (Safe Child Process Execution)
       "security/detect-child-process": "off",
       // Scripts use safe internal paths from __dirname or package root
-      // See .cursor/rules/security-linting-policy.mdc Section 1 (Safe Internal Paths)
+      // See .cursor/rules/security_linting_policy.mdc Section 1 (Safe Internal Paths)
       "security/detect-non-literal-fs-filename": "off",
     },
   },
