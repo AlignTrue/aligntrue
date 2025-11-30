@@ -4,7 +4,7 @@ import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import type { PageMapItem } from "nextra";
 import themeConfig from "../../theme.config";
-import { AlphaBanner } from "../components/AlphaBanner";
+import { BetaBanner } from "../components/BetaBanner";
 import { PagefindSearch } from "../components/PagefindSearch";
 
 /**
@@ -171,7 +171,7 @@ export default async function DocsLayout({
 
   return (
     <>
-      <AlphaBanner />
+      <BetaBanner />
       <Layout
         pageMap={pageMap}
         navbar={
