@@ -83,7 +83,7 @@ This is the content of the test rule.
 
       // Run sync with auto mode (default)
       try {
-        await sync(TEST_DIR, []);
+        await sync([]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
@@ -135,7 +135,7 @@ Content of rule 2.
 
       // Run sync with auto mode (default)
       try {
-        await sync(TEST_DIR, []);
+        await sync([]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
@@ -189,7 +189,7 @@ Content of rule 2.
 
       // Run sync with --content-mode=inline
       try {
-        await sync(TEST_DIR, ["--content-mode=inline"]);
+        await sync(["--content-mode=inline"]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
@@ -233,7 +233,7 @@ This is the content of the test rule.
 
       // Run sync with --content-mode=links
       try {
-        await sync(TEST_DIR, ["--content-mode=links"]);
+        await sync(["--content-mode=links"]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
@@ -290,7 +290,7 @@ Content of rule 2.
 
       // Run sync without CLI flag
       try {
-        await sync(TEST_DIR, []);
+        await sync([]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
@@ -337,7 +337,7 @@ This is the content of the test rule.
 
       // Run sync with --content-mode=inline (overrides config)
       try {
-        await sync(TEST_DIR, ["--content-mode=inline"]);
+        await sync(["--content-mode=inline"]);
       } catch {
         // Sync may throw due to mocking, ignore
       }
