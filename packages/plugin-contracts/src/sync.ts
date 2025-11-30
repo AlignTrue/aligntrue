@@ -131,4 +131,10 @@ export interface SyncOptions {
    * Content export mode for single-file exporters (auto, inline, links)
    */
   contentMode?: "auto" | "inline" | "links";
+
+  /**
+   * Skip lockfile generation (caller handles it)
+   * Used when CLI has already generated the lockfile with correct fingerprints
+   */
+  skipLockfileGeneration?: boolean;
 }

@@ -87,6 +87,16 @@ export function validateLockfile(
 }
 
 /**
+ * Compute fingerprint from a RuleFile
+ * Matches the logic in ir-loader.ts and source-resolver.ts
+ * Uses frontmatter.id if specified, otherwise filename without .md extension
+ */
+function computeRuleFingerprint(rule: RuleFile): string {
+  const frontmatter = rule.frontmatter as Record<string, unknown>;
+  return (frontmatter["id"] as string) || rule.filename.replace(/\.md$/, "");
+}
+
+/**
  * Validate lockfile against current rules
  * @param lockfile Existing lockfile
  * @param rules Current rule files
@@ -106,17 +116,19 @@ export function validateLockfileFromRules(
   // Filter logic if needed (e.g. ignore personal rules? Global rules?)
   // For now assume all passed rules should be in lockfile (except global, handled by caller)
 
-  const currentRuleIds = new Set(rules.map((r) => r.path));
+  // Use fingerprints (matching ir-loader.ts and source-resolver.ts) for comparison
+  const currentRuleIds = new Set(rules.map((r) => computeRuleFingerprint(r)));
 
   for (const rule of rules) {
-    const lockfileEntry = lockfileMap.get(rule.path);
+    const fingerprint = computeRuleFingerprint(rule);
+    const lockfileEntry = lockfileMap.get(fingerprint);
 
     if (!lockfileEntry) {
-      newRules.push(rule.path);
+      newRules.push(fingerprint);
     } else {
       if (rule.hash !== lockfileEntry.content_hash) {
         mismatches.push({
-          rule_id: rule.path,
+          rule_id: fingerprint,
           expected_hash: lockfileEntry.content_hash,
           actual_hash: rule.hash,
         });

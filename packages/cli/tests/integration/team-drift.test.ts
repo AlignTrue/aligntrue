@@ -592,4 +592,151 @@ Personal guidance.
       // The CLI sync command may or may not exclude personal rules based on implementation
     });
   });
+
+  describe("Fingerprint Consistency", () => {
+    it("drift detection uses same fingerprints as sync", async () => {
+      // Setup team mode with modules.lockfile enabled
+      const config = {
+        mode: "team",
+        profile: { id: "test-org" },
+        modules: { lockfile: true, bundle: false },
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["cursor"],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+
+      // Create test rule
+      writeFileSync(
+        join(rulesDir, "consistency-test.md"),
+        `---
+title: Consistency Test
+---
+
+## Consistency Test
+
+This rule tests fingerprint consistency between sync and drift detection.
+`,
+        "utf-8",
+      );
+
+      // First sync - generates lockfile
+      const { sync } = await import("../../src/commands/sync/index.js");
+      try {
+        await sync([]);
+      } catch {
+        // May throw from process.exit
+      }
+
+      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      expect(existsSync(lockfilePath)).toBe(true);
+
+      const lockfileAfterFirstSync = JSON.parse(
+        readFileSync(lockfilePath, "utf-8"),
+      );
+      const firstBundleHash = lockfileAfterFirstSync.bundle_hash;
+
+      // Second sync without changes - should produce identical hash
+      try {
+        await sync([]);
+      } catch {
+        // May throw from process.exit
+      }
+
+      const lockfileAfterSecondSync = JSON.parse(
+        readFileSync(lockfilePath, "utf-8"),
+      );
+      const secondBundleHash = lockfileAfterSecondSync.bundle_hash;
+
+      // Bundle hash should be identical (fingerprints are consistent)
+      expect(secondBundleHash).toBe(firstBundleHash);
+
+      // Rule IDs should use filename-based fingerprints (not hash-based)
+      // This ensures drift detection will find the same rules
+      const ruleIds = lockfileAfterSecondSync.rules.map(
+        (r: { rule_id: string }) => r.rule_id,
+      );
+
+      // Verify fingerprints are human-readable (filename-based, not hash-based)
+      // Hash-based would be 64 hex chars, filename-based would be short like "consistency-test"
+      for (const ruleId of ruleIds) {
+        // Fingerprint should NOT be a 64-char hex hash
+        expect(ruleId.length).toBeLessThan(64);
+        // Fingerprint should NOT start with .aligntrue/rules/ (that would be path-based)
+        expect(ruleId.startsWith(".aligntrue/rules/")).toBe(false);
+      }
+    });
+
+    it("drift command reports no drift after sync", async () => {
+      // Setup team mode with modules.lockfile enabled
+      const config = {
+        mode: "team",
+        profile: { id: "test-org" },
+        modules: { lockfile: true, bundle: false },
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["cursor"],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+
+      // Create test rule
+      writeFileSync(
+        join(rulesDir, "drift-check.md"),
+        `---
+title: Drift Check
+---
+
+## Drift Check
+
+This rule tests that drift detection passes after sync.
+`,
+        "utf-8",
+      );
+
+      // First sync
+      const { sync } = await import("../../src/commands/sync/index.js");
+      try {
+        await sync([]);
+      } catch {
+        // May throw from process.exit
+      }
+
+      // Second sync to ensure lockfile is stable
+      try {
+        await sync([]);
+      } catch {
+        // May throw from process.exit
+      }
+
+      // Import drift detection
+      const { detectDriftForConfig } = await import(
+        "@aligntrue/core/team/drift.js"
+      );
+
+      // Run drift detection
+      const driftResult = await detectDriftForConfig({
+        mode: "team",
+        rootDir: TEST_DIR,
+        lockfilePath: join(TEST_DIR, ".aligntrue.lock.json"),
+      });
+
+      // Filter out agent_file drift which can be flaky in tests due to timing
+      const nonAgentDrift = driftResult.drift.filter(
+        (d: { category: string }) => d.category !== "agent_file",
+      );
+
+      // Should have no drift after clean sync
+      expect(nonAgentDrift.length).toBe(0);
+    });
+  });
 });
