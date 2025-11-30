@@ -366,7 +366,7 @@ return {
 
 ## Security Linting and Suppression Policy
 
-**Policy:** `.cursor/rules/security-linting-policy.mdc`
+**Policy:** `.cursor/rules/security_linting_policy.mdc`
 
 **Goal:** Make `pnpm check` output show only actionable security warnings by suppressing false positives with proper documentation.
 
@@ -399,7 +399,7 @@ All suppressions must include:
 const content = readFileSync(path, "utf8");
 ```
 
-See `.cursor/rules/security-linting-policy.mdc` for complete guidelines.
+See `.cursor/rules/security_linting_policy.mdc` for complete guidelines.
 
 ---
 
