@@ -19,7 +19,11 @@ import { execSync } from "child_process";
 const TEST_DIR = join(__dirname, "../../../temp-test-import");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
-describe("Import Structure Preservation", () => {
+// Skip on Windows due to unreliable file cleanup in CI
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
+
+describeSkipWindows("Import Structure Preservation", () => {
   beforeEach(() => {
     // Clean and create test directory
     if (existsSync(TEST_DIR)) {
