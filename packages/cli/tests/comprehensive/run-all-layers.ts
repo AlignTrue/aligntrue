@@ -52,6 +52,8 @@ function cleanupOldTestDirs(): void {
         const path = join(tmpDir, name);
         try {
           const stats = statSync(path);
+          // Only include directories, not files that happen to match the pattern
+          if (!stats.isDirectory()) return null;
           return {
             path,
             name,
