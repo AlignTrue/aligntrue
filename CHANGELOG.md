@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING: Plain HTTP/HTTPS URLs no longer supported for remote rules** - Use git repositories instead (GitHub, GitLab, Bitbucket, SSH, self-hosted). Plain URLs lacked directory listing capabilities. Migrate by changing `https://example.com/rules.yaml` to `https://github.com/org/rules` for full git support
 - **BREAKING: Backup configuration schema** - `keep_count` deprecated in favor of `retention_days` + `minimum_keep`. Old configs still work (graceful migration); new installs get age-based retention
 - **Individual file backup location** - All overwritten file backups now under `.aligntrue/.backups/files/` instead of scattered `overwritten-rules/` and `overwritten-files/` directories
 - **Backup filename format** - Individual file backups now include `.bak` suffix (e.g., `AGENTS.2025-11-29T12-30-00.md.bak`) for improved clarity at a glance
