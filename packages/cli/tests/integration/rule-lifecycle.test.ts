@@ -103,10 +103,11 @@ ${content}
 
 /**
  * Helper to execute sync and handle expected exit
+ * Always uses --no-detect to skip agent detection in test environment
  */
 async function executeSync(args: string[] = []) {
   try {
-    await sync(args);
+    await sync(["--no-detect", ...args]);
   } catch {
     // May throw from process.exit - expected behavior
   }
@@ -140,6 +141,8 @@ describeSkipWindows("Rule Editing Lifecycle", () => {
         "Security Guidelines",
         "Always validate user input.",
       );
+      // Add a second rule to trigger link-based format (auto mode uses links for 2+ rules)
+      createRule("testing.md", "Testing Standards", "Write tests before code.");
 
       await executeSync();
 

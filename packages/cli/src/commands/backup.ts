@@ -83,7 +83,6 @@ interface BackupArgs {
   to?: string;
 
   // Cleanup subcommand
-  keep?: string;
   legacy?: boolean;
 }
 
@@ -97,11 +96,6 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--to",
     hasValue: true,
     description: "Restore specific backup by timestamp (restore subcommand)",
-  },
-  {
-    flag: "--keep",
-    hasValue: true,
-    description: "Number of backups to keep (cleanup subcommand)",
   },
   {
     flag: "--legacy",
@@ -124,15 +118,18 @@ Subcommands:
   create              Create a manual backup
   list                List all available backups
   restore             Restore from a backup (most recent by default)
-  cleanup             Remove old backups (keeps 20 most recent by default)
+  cleanup             Remove old backups based on retention policy
 
 Options:
   --notes <text>      Add notes to backup (create subcommand)
   --to <timestamp>    Restore specific backup by timestamp (restore subcommand)
-  --keep <count>      Number of backups to keep (cleanup subcommand, min 10)
   --legacy            Cleanup orphaned .bak files (cleanup subcommand)
   --config <path>     Path to config file
   --help              Show this help message
+
+Cleanup uses time-based retention from config:
+  - retention_days: Remove backups older than N days (default: 30)
+  - minimum_keep: Always keep at least N backups (default: 3)
 
 Examples:
   # Create a manual backup with notes
@@ -147,8 +144,8 @@ Examples:
   # Restore specific backup
   aligntrue backup restore --to 2025-10-29T12-34-56-789
 
-  # Clean up old backups, keep only 15
-  aligntrue backup cleanup --keep 15
+  # Clean up old backups based on retention policy
+  aligntrue backup cleanup
 
   # Clean up legacy .bak files
   aligntrue backup cleanup --legacy
@@ -383,7 +380,7 @@ async function handleCleanup(
   // Calculate which backups would be removed
   if (retentionDays === 0) {
     clack.log.info(
-      "Auto-cleanup disabled (retention_days: 0). Use --yes to force cleanup with current config.",
+      "Auto-cleanup disabled (retention_days: 0). Manual cleanup not yet implemented.",
     );
     return;
   }
@@ -406,6 +403,13 @@ async function handleCleanup(
     0,
     oldBackups.length - (backups.length - minimumKeep),
   );
+
+  if (toRemove === 0) {
+    clack.log.info(
+      `No backups to remove (all within minimum keep: ${minimumKeep})`,
+    );
+    return;
+  }
 
   clack.log.warn(
     `Will remove ${toRemove} backup${toRemove === 1 ? "" : "s"} older than ${retentionDays} days`,
