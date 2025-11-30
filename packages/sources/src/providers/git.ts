@@ -18,7 +18,7 @@
  * - Clear error messages when consent denied
  */
 
-import { readFileSync, existsSync, mkdirSync, rmSync } from "fs";
+import { readFileSync, existsSync, mkdirSync, rmSync, statSync } from "fs";
 import { join } from "path";
 import simpleGit, { SimpleGit, GitError } from "simple-git";
 import type { SourceProvider } from "./index.js";
@@ -572,6 +572,26 @@ export class GitProvider implements SourceProvider {
    */
   private readRulesFile(): string {
     const filePath = join(this.repoDir, this.path);
+
+    // Handle directory paths (e.g., "." or empty path)
+    // When path points to a directory, skip file reading since
+    // the resolver.ts handles directory scanning separately
+    if (this.path === "." || this.path === "" || !this.path) {
+      // Just verify the repo directory exists
+      if (!existsSync(this.repoDir)) {
+        throw new Error(
+          `Repository directory not found\n` +
+            `  URL: ${this.url}\n` +
+            `  Expected: ${this.repoDir}`,
+        );
+      }
+      return ""; // Return empty - resolver will scan directory
+    }
+
+    // Check if path points to a directory
+    if (existsSync(filePath) && statSync(filePath).isDirectory()) {
+      return ""; // Return empty - resolver will scan directory
+    }
 
     if (!existsSync(filePath)) {
       throw new Error(

@@ -5,10 +5,9 @@
 
 import { join } from "path";
 import { generateLockfile, writeLockfile } from "@aligntrue/core/lockfile";
-import { readFileSync, existsSync } from "fs";
-import { parse as parseYaml } from "yaml";
+import { loadIR } from "@aligntrue/core";
+import { existsSync } from "fs";
 import type { AlignTrueConfig } from "@aligntrue/core";
-import type { Align } from "@aligntrue/schema";
 
 export interface LockfileGenerationOptions {
   cwd: string;
@@ -65,9 +64,8 @@ export async function ensureLockfileExists(
       };
     }
 
-    // Load IR as Align
-    const irContent = readFileSync(irPath, "utf-8");
-    const align = parseYaml(irContent) as Align;
+    // Load IR using loadIR which handles both files and directories
+    const align = await loadIR(irPath, { mode: config.mode });
 
     // Ensure align has required fields
     if (!align || typeof align !== "object") {
