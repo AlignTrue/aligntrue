@@ -9,15 +9,15 @@ AlignTrue provides flexible ways to add rules to your project, whether you're st
 
 ## Quick reference
 
-| Scenario                                | Command                                |
-| --------------------------------------- | -------------------------------------- |
-| New project, auto-detect existing rules | `aligntrue init`                       |
-| New project, import from URL            | `aligntrue init --source <url>`        |
-| New project, stay connected for updates | `aligntrue init --source <url> --link` |
-| Existing project, add rules             | `aligntrue add <url>`                  |
-| Existing project, stay connected        | `aligntrue add <url> --link`           |
-| Find untracked agent files              | `aligntrue sources detect`             |
-| Import detected files                   | `aligntrue sources detect --import`    |
+| Scenario                                | Command                                    |
+| --------------------------------------- | ------------------------------------------ |
+| New project, auto-detect existing rules | `aligntrue init`                           |
+| New project, import from git repo       | `aligntrue init --source <git-url>`        |
+| New project, stay connected for updates | `aligntrue init --source <git-url> --link` |
+| Existing project, add rules             | `aligntrue add <git-url>`                  |
+| Existing project, stay connected        | `aligntrue add <git-url> --link`           |
+| Find untracked agent files              | `aligntrue sources detect`                 |
+| Import detected files                   | `aligntrue sources detect --import`        |
 
 ## Auto-detect existing rules (new users)
 
@@ -49,7 +49,7 @@ If no existing rules are found, AlignTrue creates starter templates to help you 
 
 ### One-time import (default)
 
-Import rules from a URL or path. Rules are copied to `.aligntrue/rules/` and become yours to edit:
+Import rules from a git repository or local path. Rules are copied to `.aligntrue/rules/` and become yours to edit:
 
 ```bash
 # During init (new project)
@@ -64,7 +64,7 @@ aligntrue add https://github.com/org/rules
 - GitHub/GitLab repositories: `https://github.com/org/repo`
 - Specific directory in repo: `https://github.com/org/repo/path/to/rules`
 - Specific version: `https://github.com/org/repo@v1.0.0`
-- Raw URLs: `https://example.com/rules.md`
+- SSH URLs: `git@github.com:org/repo.git`
 - Local paths: `./path/to/rules` or `/absolute/path`
 
 **What happens:**

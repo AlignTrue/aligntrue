@@ -28,7 +28,7 @@ See [Adding rules](/docs/01-guides/11-adding-rules) for detailed workflows.
 
 **Linked sources** can be added to pull in additional rules:
 
-- Combine rules from multiple repositories
+- Combine rules from multiple git repositories
 - Pin specific versions with git tags or branches
 - Customize external rules with plugs and overlays
 - Override external rules with your local versions
@@ -100,7 +100,7 @@ exporters:
 
 ## How remote sources are fetched and imported
 
-When targeting a remote source (git repository or URL), both for copied sources (`aligntrue add`) and linked sources (in `config.yaml`):
+When targeting a remote git source, both for copied sources (`aligntrue add`) and linked sources (in `config.yaml`):
 
 - **Folder support**: Target files OR directories - when a directory is targeted, all `.md` and `.mdc` files are found recursively (e.g., `backend/security.md`)
 - **Recursive scanning**: All `.md` and `.mdc` files in subdirectories are included (e.g., `rules/backend/caching.md`, `rules/frontend/react.md`)

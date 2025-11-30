@@ -81,7 +81,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 /**
  * Detect source type from URL
  */
-function detectSourceType(url: string): "git" | "url" | "local" {
+function detectSourceType(url: string): "git" | "local" {
   // Local paths
   if (url.startsWith("./") || url.startsWith("../") || url.startsWith("/")) {
     return "local";
@@ -116,13 +116,23 @@ function detectSourceType(url: string): "git" | "url" | "local" {
     ) {
       return "git";
     }
+
+    // Plain HTTP/HTTPS URLs are not supported
+    if (urlObj.protocol === "https:" || urlObj.protocol === "http:") {
+      exitWithError({
+        title: "Unsupported URL format",
+        message: `Plain HTTP/HTTPS URLs are not supported for remote rules.\n  URL: ${url}`,
+        hint: "Use a git repository instead (GitHub, GitLab, Bitbucket, or self-hosted).\n  Example: https://github.com/org/rules",
+        code: "UNSUPPORTED_URL",
+      });
+    }
   } catch {
     // If URL parsing fails, might be a local path
     return "local";
   }
 
-  // Default to URL for plain HTTP/HTTPS
-  return "url";
+  // Default to local path
+  return "local";
 }
 
 /**

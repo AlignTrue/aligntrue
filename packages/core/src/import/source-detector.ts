@@ -1,13 +1,13 @@
 /**
  * Source type detection and URL parsing
- * Determines whether a source is git, URL, or local path
+ * Determines whether a source is git or local path
  *
  * NOTE: For git URL parsing with full component extraction (host, org, repo, ref, path),
  * use parseSourceURL from packages/core/src/sources/url-parser.ts instead.
  * This module handles general source detection and basic parsing.
  */
 
-export type SourceType = "git" | "url" | "local";
+export type SourceType = "git" | "local";
 
 /**
  * Parsed source URL with extracted components
@@ -56,11 +56,20 @@ export function detectSourceType(source: string): SourceType {
       return "git";
     }
 
-    // HTTP/HTTPS URLs that aren't git hosts
+    // HTTP/HTTPS URLs that aren't git hosts are not supported
     if (urlObj.protocol === "https:" || urlObj.protocol === "http:") {
-      return "url";
+      throw new Error(
+        `Plain HTTP/HTTPS URLs are not supported for remote rules.\n` +
+          `  URL: ${source}\n` +
+          `  Use a git repository instead (GitHub, GitLab, Bitbucket, or self-hosted).\n` +
+          `  Example: https://github.com/org/rules`,
+      );
     }
-  } catch {
+  } catch (error) {
+    // Re-throw our custom error
+    if (error instanceof Error && error.message.includes("not supported")) {
+      throw error;
+    }
     // Not a valid URL, treat as local path
   }
 
@@ -80,7 +89,6 @@ export function detectSourceType(source: string): SourceType {
  * - git@github.com:org/repo.git
  * - /absolute/local/path
  * - ./relative/local/path
- * - https://example.com/rules.yaml
  */
 export function parseSourceUrl(source: string): ParsedSource {
   const type = detectSourceType(source);
@@ -93,8 +101,8 @@ export function parseSourceUrl(source: string): ParsedSource {
     return parseGitUrl(source);
   }
 
-  // URL type
-  return parseHttpUrl(source);
+  // Should never reach here since detectSourceType throws on unsupported URLs
+  throw new Error(`Unsupported source type: ${source}`);
 }
 
 /**
@@ -204,31 +212,6 @@ function parseGitUrl(source: string): ParsedSource {
     // Invalid URL, return as-is
     return {
       type: "git",
-      url: source,
-      isDirectory: true,
-    };
-  }
-}
-
-/**
- * Parse an HTTP/HTTPS URL
- */
-function parseHttpUrl(source: string): ParsedSource {
-  try {
-    const urlObj = new URL(source);
-    const pathname = urlObj.pathname;
-
-    // Check if it looks like a file (has extension) or directory
-    const hasExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
-
-    return {
-      type: "url",
-      url: source,
-      isDirectory: !hasExtension,
-    };
-  } catch {
-    return {
-      type: "url",
       url: source,
       isDirectory: true,
     };

@@ -6,7 +6,6 @@ Multi-source rule pulling with caching for AlignTrue.
 
 - **Local provider** - Read rules from local filesystem
 - **Git provider** - Clone and read from git repos with local caching
-- **URL provider** - Fetch from arbitrary URLs (future enhancement)
 - **Cache management** - Local cache in .aligntrue/.cache/
 
 ## Providers

@@ -1,16 +1,19 @@
 /**
- * URL source provider - fetches rules from HTTP/HTTPS URLs
+ * URL source provider - DEPRECATED
  *
- * Strategy:
- * - Fetches content directly from URL
- * - Uses ETag/Last-Modified for caching
- * - Falls back to cache when network unavailable
- * - Supports raw file URLs (GitHub raw, etc.)
+ * This provider is no longer supported. Plain HTTP/HTTPS URLs are not suitable
+ * for rule sources because they lack directory listing capabilities.
  *
- * Privacy:
- * - Requires user consent before first HTTP fetch
- * - Respects offline mode (uses cache only, no network)
- * - Clear error messages when consent denied
+ * Use git repositories instead (GitHub, GitLab, Bitbucket, or self-hosted).
+ * They provide full directory scanning, versioning, and are more reliable.
+ *
+ * DEPRECATED: This file is kept for backward compatibility only.
+ * It will be removed in a future major version.
+ *
+ * Migration: Update your config to use git URLs instead.
+ * Example:
+ *   Old: https://example.com/rules.yaml
+ *   New: https://github.com/org/rules
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
