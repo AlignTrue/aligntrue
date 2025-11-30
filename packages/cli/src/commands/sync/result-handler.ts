@@ -251,36 +251,34 @@ export async function handleSyncResult(
       updateLastSyncTimestamp(cwd);
 
       // Store agent export hashes for drift detection
-      // Always store hashes for agent files after successful sync, regardless of result.written
-      // (even if no exporter files were written, we still track agent file state)
+      // Track ALL files written by exporters for comprehensive drift detection
       const { readFileSync, existsSync: fsExists } = await import("fs");
-      const { join: pathJoin } = await import("path");
+      const { join: pathJoin, resolve, relative } = await import("path");
 
-      // Files to track for drift
-      const trackedFiles = ["AGENTS.md", ".cursor/rules/aligntrue.mdc"];
-
-      // If result.written has files, also check those
+      // Track all files written by exporters
       if (result.written && result.written.length > 0) {
-        const { resolve, relative } = await import("path");
         for (const file of result.written) {
-          // Normalize path to check if it's one we track
+          // Normalize path to relative path from cwd
           const absPath = resolve(cwd, file);
-          const relPath = relative(cwd, absPath);
+          const relPath = relative(cwd, absPath).replace(/\\/g, "/");
 
-          if (trackedFiles.includes(relPath)) {
-            try {
-              const content = readFileSync(absPath, "utf-8");
-              storeAgentExportHash(cwd, relPath, content);
-            } catch {
-              // Ignore read errors
-            }
+          try {
+            const content = readFileSync(absPath, "utf-8");
+            storeAgentExportHash(cwd, relPath, content);
+          } catch {
+            // Ignore read errors (file may have been deleted or moved)
           }
         }
       }
 
-      // Always store hashes for tracked files that exist, even if not in result.written
-      // This ensures we have a baseline hash for drift detection
-      for (const trackedFile of trackedFiles) {
+      // Also track common agent files that may exist but weren't in result.written
+      // This ensures we have a baseline hash for drift detection on first sync
+      const commonAgentFiles = [
+        "AGENTS.md",
+        "CLAUDE.md",
+        ".cursor/rules/aligntrue.mdc",
+      ];
+      for (const trackedFile of commonAgentFiles) {
         const filePath = pathJoin(cwd, trackedFile);
         if (fsExists(filePath)) {
           try {

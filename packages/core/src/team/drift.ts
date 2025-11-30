@@ -8,7 +8,6 @@ import type { Lockfile, LockfileEntry } from "../lockfile/types.js";
 import { join } from "path";
 import { computeHash } from "@aligntrue/schema";
 import { isPlainObject } from "../overlays/operations.js";
-import { getStoredHash } from "../sync/tracking.js";
 
 /**
  * Drift categories (Overlays system enhanced)
@@ -351,51 +350,92 @@ export function detectLockfileDrift(
 
 /**
  * Detect agent file drift
- * Checks if agent files (AGENTS.md, .cursor/rules/*.mdc) have been modified after last sync
+ * Checks if agent files have been modified after last sync
  * Uses content hash comparison for reliability
+ *
+ * Dynamically discovers all tracked agent files from .aligntrue/.agent-export-hashes.json
+ * This includes all files written by exporters (AGENTS.md, .cursor/rules/*.mdc, etc.)
  */
 export function detectAgentFileDrift(basePath: string = "."): DriftFinding[] {
   const findings: DriftFinding[] = [];
 
-  const agentFiles = [
-    { path: "AGENTS.md", agent: "agents" },
-    { path: ".cursor/rules/aligntrue.mdc", agent: "cursor" },
-  ];
+  // Get all tracked agent export hashes dynamically
+  // Read directly from the JSON file to avoid circular dependency issues
+  const hashFilePath = join(
+    basePath,
+    ".aligntrue",
+    ".agent-export-hashes.json",
+  );
+  let storedHashes: { exports: Record<string, string> } | null = null;
 
-  for (const { path, agent } of agentFiles) {
-    const fullPath = join(basePath, path);
-    if (!existsSync(fullPath)) continue;
+  if (existsSync(hashFilePath)) {
+    try {
+      const content = readFileSync(hashFilePath, "utf-8");
+      storedHashes = JSON.parse(content) as { exports: Record<string, string> };
+    } catch {
+      // If we can't read/parse the file, assume no stored hashes
+      storedHashes = null;
+    }
+  }
+
+  if (!storedHashes || !storedHashes.exports) {
+    // No stored hashes = first sync or legacy state, assume no drift
+    if (process.env["ALIGNTRUE_DEBUG"]) {
+      console.log("[drift] No agent export hashes found, skipping drift check");
+    }
+    return findings;
+  }
+
+  // Check each tracked file for drift
+  for (const [agentPath, storedHash] of Object.entries(storedHashes.exports)) {
+    const fullPath = join(basePath, agentPath);
+    if (!existsSync(fullPath)) {
+      // File was deleted - this is drift
+      findings.push({
+        category: "agent_file",
+        rule_id: `_agent_${inferAgentFromPath(agentPath)}`,
+        message: `${agentPath} was deleted after last sync`,
+        suggestion: `Run 'aligntrue sync' to recreate or remove from exporters`,
+      });
+      continue;
+    }
 
     try {
       const currentContent = readFileSync(fullPath, "utf-8");
       const currentHash = computeHash(currentContent);
-      const storedHash = getStoredHash(basePath, path);
-
-      if (!storedHash) {
-        // No stored hash = first sync or legacy state, assume no drift to avoid false positives
-        if (process.env["ALIGNTRUE_DEBUG"]) {
-          console.log(`[drift] No stored hash for ${path}, skipping check`);
-        }
-        continue;
-      }
 
       if (currentHash !== storedHash) {
         findings.push({
           category: "agent_file",
-          rule_id: `_agent_${agent}`,
-          message: `${path} modified after last sync`,
+          rule_id: `_agent_${inferAgentFromPath(agentPath)}`,
+          message: `${agentPath} modified after last sync`,
           suggestion: `Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/`,
         });
       }
     } catch (err) {
       // File read/hash failed - skip
       if (process.env["ALIGNTRUE_DEBUG"]) {
-        console.log(`[drift] Failed to check ${path}:`, err);
+        console.log(`[drift] Failed to check ${agentPath}:`, err);
       }
     }
   }
 
   return findings;
+}
+
+/**
+ * Infer agent name from file path for drift reporting
+ */
+function inferAgentFromPath(path: string): string {
+  if (path.startsWith(".cursor/")) return "cursor";
+  if (path === "AGENTS.md") return "agents";
+  if (path === "CLAUDE.md") return "claude";
+  if (path.startsWith(".windsurf/")) return "windsurf";
+  if (path.startsWith(".vscode/")) return "vscode";
+  if (path.startsWith(".aider/") || path === ".aider.conf.yml") return "aider";
+  // Default: extract from path
+  const match = path.match(/^\.?([a-z-]+)/i);
+  return match && match[1] ? match[1].toLowerCase() : "unknown";
 }
 
 /**
