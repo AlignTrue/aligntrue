@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`retention_days` config for age-based backup cleanup** - Replace count-based `keep_count` with intuitive age-based retention (default: 30 days, configurable 0-unlimited)
 - **`minimum_keep` safety floor for backups** - Ensure critical recent backups are never deleted regardless of age (default: 3). Protects infrequent users from over-cleanup
 - **Extended `aligntrue backup cleanup --legacy`** - New command to remove old backup locations (`.aligntrue/overwritten-rules/`, agent-specific `overwritten-files/`) and scattered `.bak` files from pre-unified era
+- **Content mode configuration for single-file exports** - New `content_mode` option in sync config to control how single-file exporters (AGENTS.md, CLAUDE.md) handle rule content. Options: `auto` (inline for 1 rule, links for 2+), `inline` (embed all content), `links` (always use markdown links). CLI flag `--content-mode` overrides config. Size warning emitted for inline content exceeding 50KB
+- **Structure preservation for rule imports** - Directory structure preserved when importing rules from remote or local sources. Subdirectories maintained during import (e.g., `backend/security.md` stays `backend/security.md` in `.aligntrue/rules/`)
+- **Unified source resolver** - Consolidated source handling for local, git, and URL sources. Recursive scanning of directories for `.md` and `.mdc` files during import, with automatic `.mdc` to `.md` format conversion
 
 ### Changed
 
