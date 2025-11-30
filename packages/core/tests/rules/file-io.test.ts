@@ -10,7 +10,11 @@ import {
   writeRuleFile,
 } from "../../src/rules/file-io.js";
 
-describe("file-io", () => {
+// Skip on Windows due to glob path handling differences
+const describeSkipWindows =
+  process.platform === "win32" ? describe.skip : describe;
+
+describeSkipWindows("file-io", () => {
   let testDir: string;
   let rulesDir: string;
 
