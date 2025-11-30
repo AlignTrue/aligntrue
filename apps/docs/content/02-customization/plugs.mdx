@@ -870,6 +870,150 @@ exporters:
 - Use descriptive keys for maintainability
 - Validate format constraints early (command, file, url, text)
 
+## Common Issues
+
+### "Plug references without slot definitions" error
+
+**What it means:** The CLI found `[[plug:...]]` syntax in your rules, but the corresponding slot is not declared.
+
+**Why this happens:**
+
+- Slots must be declared in rule frontmatter YAML, not inline
+- Typo in slot key (slot declared as `test.cmd`, referenced as `test_cmd`)
+- Slot was removed but references remain
+- Rule hasn't been properly loaded into the IR
+
+**Fix:**
+
+1. **Check slot declaration** - Verify your rule frontmatter includes the plugs section:
+
+```yaml
+---
+title: Your Rule
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+      example: "pytest -q"
+---
+```
+
+2. **Verify key spelling** - Ensure referenced keys match declared keys exactly:
+
+```yaml
+# Declared as:
+plugs:
+  slots:
+    test.cmd: ...
+
+# Reference must be:
+Run tests: [[plug:test.cmd]]  # ✓ Correct
+
+# NOT:
+Run tests: [[plug:test_cmd]]  # ✗ Wrong - underscore instead of dot
+```
+
+3. **Run sync** - After fixing, sync to resolve the plugs:
+
+```bash
+aligntrue sync
+```
+
+### Plugs don't resolve during `aligntrue plugs list`
+
+**What to expect:** The `aligntrue plugs list` command shows status but does NOT resolve plugs yet. That happens during `aligntrue sync`.
+
+**Why:** There are three separate operations:
+
+1. **`aligntrue plugs list`** - Shows declared slots, fills, and status
+2. **`aligntrue plugs resolve`** - Previews what resolution will look like
+3. **`aligntrue sync`** - Actually applies fills to rules and exports them
+
+**Workflow:**
+
+```bash
+# 1. List to see what needs filling
+aligntrue plugs list
+
+# 2. Set missing fills
+aligntrue plugs set test.cmd "pnpm test"
+
+# 3. Preview resolution
+aligntrue plugs resolve
+
+# 4. Apply to agents
+aligntrue sync
+```
+
+### Fills aren't persisting after `aligntrue plugs set`
+
+**Expected behavior:** Fills persist to `.aligntrue/config.yaml` automatically.
+
+**If fills are missing:**
+
+1. Check that set command succeeded:
+
+```bash
+aligntrue plugs set test.cmd "pnpm test"
+# Should output: ✓ Set plug fill: test.cmd = "pnpm test"
+```
+
+2. Verify config file exists and is writable:
+
+```bash
+ls -la .aligntrue/config.yaml
+```
+
+3. Inspect config to see stored fills:
+
+```bash
+grep -A 5 "plugs:" .aligntrue/config.yaml
+```
+
+4. Run sync to apply:
+
+```bash
+aligntrue sync
+```
+
+### Slots defined in frontmatter but not recognized
+
+**Why this happens:** Slots are defined in rule YAML frontmatter, but the rule file needs to be loaded into the IR for them to be available.
+
+**Workflow:**
+
+1. Define slots in rule file:
+
+```yaml
+# .aligntrue/rules/testing.md
+---
+title: Testing Standards
+plugs:
+  slots:
+    test.cmd:
+      description: "Command to run tests"
+      format: command
+      required: true
+---
+## Run Tests
+
+Run tests with: [[plug:test.cmd]]
+```
+
+2. Run sync to load rules into IR:
+
+```bash
+aligntrue sync
+```
+
+3. Now slots are available:
+
+```bash
+aligntrue plugs list  # Should show test.cmd slot
+```
+
 ## Related documentation
 
 - [Customization Overview](/docs/02-customization) - When to use plugs vs overlays vs scopes
