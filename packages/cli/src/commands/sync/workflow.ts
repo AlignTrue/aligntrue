@@ -100,12 +100,16 @@ export async function executeSyncWorkflow(
     interactive: boolean;
     defaultResolutionStrategy?: string;
     contentMode?: "auto" | "inline" | "links";
+    skipLockfileGeneration?: boolean;
   } = {
     configPath,
     dryRun: options.dryRun || false,
     // --yes flag enables automatic overwriting
     force: options.force || options.yes || false,
     interactive: !options.force && !options.yes && !options.nonInteractive,
+    // Skip lockfile generation in SyncEngine since context-builder.ts already handles it
+    // with correct fingerprints from bundleResult.align
+    skipLockfileGeneration: true,
   };
 
   // Only set defaultResolutionStrategy if we have a value

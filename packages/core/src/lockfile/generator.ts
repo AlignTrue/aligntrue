@@ -137,6 +137,16 @@ export function generateLockfile(
 }
 
 /**
+ * Compute fingerprint from a RuleFile
+ * Matches the logic in ir-loader.ts and source-resolver.ts
+ * Uses frontmatter.id if specified, otherwise filename without .md extension
+ */
+function computeRuleFingerprint(rule: RuleFile): string {
+  const frontmatter = rule.frontmatter as Record<string, unknown>;
+  return (frontmatter["id"] as string) || rule.filename.replace(/\.md$/, "");
+}
+
+/**
  * Generate lockfile from RuleFiles
  * @param rules Array of rule files
  * @param mode Config mode
@@ -150,8 +160,10 @@ export function generateLockfileFromRules(
 
   for (const rule of rules) {
     const hash = rule.hash;
+    // Use fingerprint (matching ir-loader.ts and source-resolver.ts) as ID
+    const fingerprint = computeRuleFingerprint(rule);
     const entry: LockfileEntry = {
-      rule_id: rule.path, // Use relative path as ID
+      rule_id: fingerprint,
       content_hash: hash,
     };
 
@@ -177,9 +189,15 @@ export function generateLockfileFromRules(
 /**
  * Hash a single section using canonical JSON
  * Section hashing for natural markdown support (Team mode enhancements)
+ *
+ * Excludes source_file from hash since it varies based on working directory
+ * and is metadata, not content.
  */
 export function hashSection(section: AlignSection): string {
-  return computeContentHash(section, true);
+  // Create a copy without source_file to ensure consistent hashing
+  // regardless of working directory
+  const { source_file: _sourceFile, ...sectionWithoutPath } = section;
+  return computeContentHash(sectionWithoutPath, true);
 }
 
 /**

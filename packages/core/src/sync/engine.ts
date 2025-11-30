@@ -393,16 +393,19 @@ export class SyncEngine {
       exportResults = executionResult.exportResults;
 
       // Generate/update lockfile (delegated)
-      // Use the same rules loaded for validation
-      const lockfileGeneration = generateAndWriteLockfile(
-        rules,
-        this.config,
-        cwd,
-        options.dryRun || false,
-      );
-      written.push(...lockfileGeneration.written);
-      warnings.push(...lockfileGeneration.warnings);
-      auditTrail.push(...lockfileGeneration.auditTrail);
+      // Skip if caller has already handled lockfile generation (e.g., CLI with bundleResult.align)
+      if (!options.skipLockfileGeneration) {
+        // Use the same rules loaded for validation
+        const lockfileGeneration = generateAndWriteLockfile(
+          rules,
+          this.config,
+          cwd,
+          options.dryRun || false,
+        );
+        written.push(...lockfileGeneration.written);
+        warnings.push(...lockfileGeneration.warnings);
+        auditTrail.push(...lockfileGeneration.auditTrail);
+      }
 
       // Cleanup old backups
       if (!options.dryRun) {

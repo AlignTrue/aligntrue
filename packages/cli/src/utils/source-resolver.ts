@@ -105,11 +105,15 @@ export async function resolveSource(
   });
 
   // Convert rules to Align format for merging
+  // Use filename-based fingerprint (matching ir-loader.ts) for consistency
+  // This ensures drift detection uses the same fingerprints as sync
   const sections = resolved.rules.map((rule: RuleFile) => ({
     heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
     content: rule.content,
     level: 2, // Schema requires level 2-6 (## through ######)
-    fingerprint: rule.hash,
+    fingerprint:
+      ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
+      rule.filename.replace(/\.md$/, ""),
     source_file: rule.path,
     frontmatter: rule.frontmatter,
   }));
