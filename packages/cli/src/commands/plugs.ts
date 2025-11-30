@@ -195,6 +195,28 @@ export async function plugsCommand(args: string[]): Promise<void> {
 }
 
 /**
+ * Detect plug references in rule content
+ * Returns array of plug keys found in [[plug:key]] syntax
+ */
+function detectPlugReferences(align: Align): string[] {
+  const plugPattern = /\[\[plug:([a-z0-9._-]+)\]\]/g;
+  const foundPlugs = new Set<string>();
+
+  for (const section of align.sections) {
+    if (section.content) {
+      const matches = Array.from(section.content.matchAll(plugPattern));
+      for (const match of matches) {
+        if (match[1]) {
+          foundPlugs.add(match[1]);
+        }
+      }
+    }
+  }
+
+  return Array.from(foundPlugs);
+}
+
+/**
  * List all slots and fills in the align
  */
 async function listPlugs(
@@ -205,9 +227,57 @@ async function listPlugs(
 
   const configFills = config?.plugs?.fills || {};
 
+  // Detect plug references in content
+  const plugReferences = detectPlugReferences(align);
+
   // Show message if no plugs defined AND no config fills
   if (!align.plugs && Object.keys(configFills).length === 0) {
-    console.log("│  No plugs defined\n│");
+    // Check if there are plug references without slot definitions
+    if (plugReferences.length > 0) {
+      console.log("│  ⚠ Found plug references without slot definitions:\n│");
+      for (const ref of plugReferences) {
+        console.log(`│    [[plug:${ref}]]`);
+      }
+      console.log("│");
+      console.log(
+        "│  To use plugs, define slots in .aligntrue/config.yaml:\n│",
+      );
+      console.log("│    plugs:");
+      console.log("│      slots:");
+      for (const ref of plugReferences.slice(0, 3)) {
+        console.log(`│        ${ref}:`);
+        console.log(`│          description: "Description for ${ref}"`);
+        console.log(`│          format: text`);
+        console.log(`│          required: true`);
+      }
+      if (plugReferences.length > 3) {
+        console.log(`│        # ... and ${plugReferences.length - 3} more`);
+      }
+      console.log("│      fills:");
+      for (const ref of plugReferences.slice(0, 3)) {
+        console.log(`│        ${ref}: "your-value-here"`);
+      }
+      console.log("│");
+      console.log("│  Or set fills via CLI:\n│");
+      console.log(
+        `│    aligntrue plugs set ${plugReferences[0] || "slot.name"} "value"`,
+      );
+      console.log("│");
+    } else {
+      console.log("│  No plugs defined\n│");
+      console.log(
+        "│  Plugs allow parameterizing rules with configurable values.\n│",
+      );
+      console.log("│  To use plugs:\n│");
+      console.log("│  1. Add [[plug:key]] placeholders in your rules");
+      console.log(
+        "│  2. Define slots in .aligntrue/config.yaml under plugs.slots",
+      );
+      console.log(
+        "│  3. Set fill values via 'aligntrue plugs set key value'\n│",
+      );
+      console.log("│  Learn more: aligntrue.ai/docs/02-customization/plugs\n│");
+    }
     console.log("└  ✓ Complete\n");
     return;
   }
@@ -398,29 +468,16 @@ async function validatePlugs(
     }
   }
 
-  // Check if plugs are used in rules
-  const plugPattern = /\{\{([^}]+)\}\}/g;
-  const usedPlugs = new Set<string>();
-
-  // TODO: Extract plugs from section content in sections-only format
-  // For now, skip plug extraction since sections-only format uses natural markdown
-  for (const section of align.sections) {
-    if (section.content) {
-      const matches = Array.from(section.content.matchAll(plugPattern));
-      for (const match of matches) {
-        const plugName = match[1];
-        if (plugName) {
-          usedPlugs.add(plugName);
-        }
-      }
-    }
-  }
+  // Check if plugs are used in rules using [[plug:key]] syntax
+  const usedPlugs = detectPlugReferences(align);
 
   // Check for undeclared plugs used in rules
   for (const plugName of usedPlugs) {
     const isDeclared = align.plugs.slots && align.plugs.slots[plugName];
     if (!isDeclared) {
-      errors.push(`Plug "{{${plugName}}}" used in rules but not declared`);
+      errors.push(
+        `Plug "[[plug:${plugName}]]" used in rules but not declared as a slot`,
+      );
     }
   }
 
