@@ -1,11 +1,11 @@
 import "nextra-theme-docs/style.css";
 import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";
+import { Search } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import type { PageMapItem } from "nextra";
 import themeConfig from "../../theme.config";
 import { BetaBanner } from "../components/BetaBanner";
-import { PagefindSearch } from "../components/PagefindSearch";
 
 /**
  * DocsFooter Component (Docs-specific)
@@ -180,7 +180,7 @@ export default async function DocsLayout({
             projectLink={themeConfig.project.link}
           />
         }
-        search={<PagefindSearch placeholder="Search documentation..." />}
+        search={<Search placeholder="Search documentation..." />}
         footer={<DocsFooter />}
         sidebar={{
           defaultMenuCollapseLevel: 1,
