@@ -9,7 +9,7 @@ export { telemetry } from "./telemetry.js";
 export { scopes } from "./scopes.js";
 export { check } from "./check.js";
 export { config } from "./config.js";
-export { adapters } from "./adapters.js";
+export { exporters } from "./exporters.js";
 export { privacyCommand as privacy } from "./privacy.js";
 export { backupCommand as backup } from "./backup.js";
 export { revert } from "./revert.js";

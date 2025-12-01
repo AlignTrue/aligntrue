@@ -246,7 +246,9 @@ function renderStatus(summary: StatusSummary): void {
     `\nExporters (${summary.exporters.configured.length} configured):`,
   );
   if (summary.exporters.configured.length === 0) {
-    console.log("  (none configured - run 'aligntrue adapters enable <name>')");
+    console.log(
+      "  (none configured - run 'aligntrue exporters enable <name>')",
+    );
   } else {
     for (const exporter of summary.exporters.configured) {
       const icon = exporter.detected ? "✓" : "⚠";
@@ -262,7 +264,7 @@ function renderStatus(summary: StatusSummary): void {
       .map((e) => e.displayName)
       .join(", ");
     clack.log.info(
-      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue adapters enable <name>'\n  → View all adapters: aligntrue adapters list\n  → Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters`,
+      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue exporters enable <name>'\n  → View all exporters: aligntrue exporters list\n  → Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters`,
     );
   }
 

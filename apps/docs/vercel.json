@@ -18,8 +18,13 @@
       "permanent": true
     },
     {
-      "source": "/adapters",
+      "source": "/agents",
       "destination": "/docs/04-reference/agent-support",
+      "permanent": true
+    },
+    {
+      "source": "/exporters",
+      "destination": "/docs/04-reference/cli-reference/basic#aligntrue-exporters",
       "permanent": true
     },
     {

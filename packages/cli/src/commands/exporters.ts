@@ -1,5 +1,5 @@
 /**
- * Adapter management commands
+ * Exporter management commands
  */
 
 import {
@@ -60,36 +60,38 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--interactive",
     alias: "-i",
     hasValue: false,
-    description: "Choose adapters with multiselect UI (enable only)",
+    description: "Choose exporters with multiselect UI (enable only)",
   },
 ];
 
-export async function adapters(args: string[]): Promise<void> {
+export async function exporters(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
   if (parsed.help || parsed.positional.length === 0) {
     showStandardHelp({
-      name: "adapters",
-      description: "Manage exporter adapters for AI coding agents",
-      usage: "aligntrue adapters <subcommand> [options]",
+      name: "exporters",
+      description: "Manage exporters for AI coding agents",
+      usage: "aligntrue exporters <subcommand> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue adapters list",
-        "aligntrue adapters enable --interactive  # Recommended for new users",
-        "aligntrue adapters enable cursor",
-        "aligntrue adapters enable cursor claude vscode-mcp",
-        "aligntrue adapters disable cursor",
-        "aligntrue adapters detect",
-        "aligntrue adapters ignore windsurf",
+        "aligntrue exporters list",
+        "aligntrue exporters enable --interactive  # Recommended for new users",
+        "aligntrue exporters enable cursor",
+        "aligntrue exporters enable cursor claude vscode-mcp",
+        "aligntrue exporters disable cursor",
+        "aligntrue exporters detect",
+        "aligntrue exporters ignore windsurf",
       ],
       notes: [
-        "Adapter Status:",
+        "Exporter Status:",
         "  ✓ installed   - Enabled in config",
         "  - available   - Discovered but not enabled",
         "  ❌ invalid     - In config but not found",
         "",
-        "Enable supports multiple adapters at once:",
-        "  aligntrue adapters enable adapter1 adapter2 adapter3",
+        "Enable supports multiple exporters at once:",
+        "  aligntrue exporters enable exporter1 exporter2 exporter3",
+        "",
+        "Learn more at https://aligntrue.ai/exporters",
       ],
     });
     return;
@@ -100,16 +102,16 @@ export async function adapters(args: string[]): Promise<void> {
 
   switch (subcommand) {
     case "list":
-      await listAdapters();
+      await listExporters();
       break;
     case "enable":
-      await enableAdapters(
+      await enableExporters(
         subArgs,
         parsed.flags["interactive"] as boolean | undefined,
       );
       break;
     case "disable":
-      await disableAdapter(subArgs);
+      await disableExporter(subArgs);
       break;
     case "detect":
       await detectNewAgentsCommand();
@@ -119,22 +121,22 @@ export async function adapters(args: string[]): Promise<void> {
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
-      console.error("Run: aligntrue adapters --help");
+      console.error("Run: aligntrue exporters --help");
       process.exit(1);
   }
 }
 
-interface AdapterInfo {
+interface ExporterInfo {
   name: string;
   manifest?: AdapterManifest;
   status: "installed" | "available" | "invalid";
 }
 
 /**
- * Discover and categorize adapters
+ * Discover and categorize exporters
  */
 async function discoverAndCategorize(): Promise<{
-  adapters: AdapterInfo[];
+  exporters: ExporterInfo[];
   config: AlignTrueConfig;
 }> {
   // Check if config exists
@@ -147,7 +149,7 @@ async function discoverAndCategorize(): Promise<{
   // Load config (using utility for consistent error handling)
   const config = await tryLoadConfig(CONFIG_PATH);
 
-  // Discover adapters
+  // Discover exporters
   const registry = new ExporterRegistry();
   let manifestPaths: string[] = [];
 
@@ -157,7 +159,7 @@ async function discoverAndCategorize(): Promise<{
     }
     manifestPaths = registry.discoverAdapters(exportersPath);
   } catch (_error) {
-    console.error("✗ Failed to discover adapters");
+    console.error("✗ Failed to discover exporters");
     console.error(
       `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
@@ -176,8 +178,8 @@ async function discoverAndCategorize(): Promise<{
     }
   }
 
-  // Categorize adapters
-  const adapters: AdapterInfo[] = [];
+  // Categorize exporters
+  const exporters: ExporterInfo[] = [];
   const configuredExporters = new Set(getExporterNames(config.exporters));
   const seenNames = new Set<string>();
 
@@ -185,7 +187,7 @@ async function discoverAndCategorize(): Promise<{
   for (const name of configuredExporters) {
     const manifest = manifestMap.get(name);
     if (manifest) {
-      adapters.push({ name, manifest, status: "installed" });
+      exporters.push({ name, manifest, status: "installed" });
       seenNames.add(name);
     }
   }
@@ -193,7 +195,7 @@ async function discoverAndCategorize(): Promise<{
   // Add available (found but not in config)
   for (const [name, manifest] of manifestMap.entries()) {
     if (!seenNames.has(name)) {
-      adapters.push({ name, manifest, status: "available" });
+      exporters.push({ name, manifest, status: "available" });
       seenNames.add(name);
     }
   }
@@ -201,52 +203,52 @@ async function discoverAndCategorize(): Promise<{
   // Add invalid (in config but not found)
   for (const name of configuredExporters) {
     if (!seenNames.has(name)) {
-      adapters.push({ name, status: "invalid" });
+      exporters.push({ name, status: "invalid" });
     }
   }
 
   // Sort: installed first, then available, then invalid, all alphabetically within groups
-  adapters.sort((a, b) => {
+  exporters.sort((a, b) => {
     const statusOrder = { installed: 0, available: 1, invalid: 2 };
     const statusDiff = statusOrder[a.status] - statusOrder[b.status];
     if (statusDiff !== 0) return statusDiff;
     return a.name.localeCompare(b.name);
   });
 
-  return { adapters, config };
+  return { exporters, config };
 }
 
 /**
- * List all adapters with status
+ * List all exporters with status
  */
-async function listAdapters(): Promise<void> {
-  const { adapters } = await discoverAndCategorize();
+async function listExporters(): Promise<void> {
+  const { exporters } = await discoverAndCategorize();
 
-  const installedCount = adapters.filter(
+  const installedCount = exporters.filter(
     (a) => a.status === "installed",
   ).length;
-  const availableCount = adapters.filter(
+  const availableCount = exporters.filter(
     (a) => a.status === "available",
   ).length;
-  const invalidCount = adapters.filter((a) => a.status === "invalid").length;
+  const invalidCount = exporters.filter((a) => a.status === "invalid").length;
 
-  console.log(`\nAvailable Adapters (${adapters.length} total):\n`);
+  console.log(`\nAvailable Exporters (${exporters.length} total):\n`);
 
-  for (const adapter of adapters) {
+  for (const exporter of exporters) {
     const icon =
-      adapter.status === "installed"
+      exporter.status === "installed"
         ? "✓"
-        : adapter.status === "available"
+        : exporter.status === "available"
           ? "-"
           : "❌";
     const nameWidth = 24;
-    const paddedName = adapter.name.padEnd(nameWidth);
+    const paddedName = exporter.name.padEnd(nameWidth);
 
-    if (adapter.status === "invalid") {
-      console.log(`${icon} ${paddedName}(Not found in available adapters)`);
-    } else if (adapter.manifest) {
-      console.log(`${icon} ${paddedName}${adapter.manifest.description}`);
-      const outputs = adapter.manifest.outputs.join(", ");
+    if (exporter.status === "invalid") {
+      console.log(`${icon} ${paddedName}(Not found in available exporters)`);
+    } else if (exporter.manifest) {
+      console.log(`${icon} ${paddedName}${exporter.manifest.description}`);
+      const outputs = exporter.manifest.outputs.join(", ");
       console.log(`  ${" ".repeat(nameWidth)}Outputs: ${outputs}`);
     }
   }
@@ -260,7 +262,7 @@ async function listAdapters(): Promise<void> {
 
   console.log("\nNeed another agent?");
   console.log(
-    "  View all supported adapters: https://aligntrue.ai/docs/04-reference/agent-support",
+    "  View all supported exporters: https://aligntrue.ai/docs/04-reference/agent-support",
   );
   console.log(
     "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
@@ -268,19 +270,19 @@ async function listAdapters(): Promise<void> {
 }
 
 /**
- * Enable adapter(s)
+ * Enable exporter(s)
  */
-async function enableAdapters(
+async function enableExporters(
   args: string[],
   interactive?: boolean,
 ): Promise<void> {
-  const { adapters, config } = await discoverAndCategorize();
+  const { exporters, config } = await discoverAndCategorize();
 
-  let adaptersToEnable: string[] = [];
+  let exportersToEnable: string[] = [];
 
   if (interactive) {
     // Interactive multiselect mode
-    const choices = adapters
+    const choices = exporters
       .filter((a) => a.status !== "invalid")
       .map((a) => ({
         value: a.name,
@@ -291,7 +293,7 @@ async function enableAdapters(
     const currentlyEnabled = new Set(getExporterNames(config.exporters));
 
     const selected = await clack.multiselect({
-      message: "Select adapters to enable:",
+      message: "Select exporters to enable:",
       options: choices,
       initialValues: choices
         .filter((c) => currentlyEnabled.has(c.value))
@@ -300,54 +302,54 @@ async function enableAdapters(
     });
 
     if (clack.isCancel(selected)) {
-      clack.cancel("Adapter selection cancelled");
+      clack.cancel("Exporter selection cancelled");
       return;
     }
 
-    adaptersToEnable = selected as string[];
+    exportersToEnable = selected as string[];
   } else {
-    // Multiple adapter mode (one or more adapter names)
+    // Multiple exporter mode (one or more exporter names)
     if (args.length === 0) {
-      console.error("✗ Missing adapter name");
+      console.error("✗ Missing exporter name");
       console.error(
-        "  Usage: aligntrue adapters enable <adapter> [adapter2 ...]",
+        "  Usage: aligntrue exporters enable <exporter> [exporter2 ...]",
       );
-      console.error("  Or: aligntrue adapters enable --interactive");
+      console.error("  Or: aligntrue exporters enable --interactive");
       process.exit(1);
     }
 
-    const adapterNames = args;
+    const exporterNames = args;
     const notFound: string[] = [];
     const invalid: string[] = [];
     const alreadyEnabled: string[] = [];
     const toEnable: string[] = [];
 
-    // Validate all provided adapter names
-    for (const adapterName of adapterNames) {
-      const adapter = adapters.find((a) => a.name === adapterName);
+    // Validate all provided exporter names
+    for (const exporterName of exporterNames) {
+      const exporter = exporters.find((a) => a.name === exporterName);
 
-      if (!adapter) {
-        notFound.push(adapterName);
+      if (!exporter) {
+        notFound.push(exporterName);
         continue;
       }
 
-      if (adapter.status === "invalid") {
-        invalid.push(adapterName);
+      if (exporter.status === "invalid") {
+        invalid.push(exporterName);
         continue;
       }
 
-      if (adapter.status === "installed") {
-        alreadyEnabled.push(adapterName);
+      if (exporter.status === "installed") {
+        alreadyEnabled.push(exporterName);
         continue;
       }
 
-      toEnable.push(adapterName);
+      toEnable.push(exporterName);
     }
 
-    // Report errors for any problematic adapters
+    // Report errors for any problematic exporters
     if (notFound.length > 0) {
-      console.error(`✗ Adapter(s) not found: ${notFound.join(", ")}`);
-      console.error("  Run: aligntrue adapters list");
+      console.error(`✗ Exporter(s) not found: ${notFound.join(", ")}`);
+      console.error("  Run: aligntrue exporters list");
       console.error(
         "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
       );
@@ -355,9 +357,9 @@ async function enableAdapters(
     }
 
     if (invalid.length > 0) {
-      console.error(`✗ Invalid adapter(s): ${invalid.join(", ")}`);
+      console.error(`✗ Invalid exporter(s): ${invalid.join(", ")}`);
       console.error(
-        "  These adapters are not available in the installed exporters package",
+        "  These exporters are not available in the installed exporters package",
       );
       process.exit(1);
     }
@@ -365,24 +367,24 @@ async function enableAdapters(
     // If all are already enabled, exit early
     if (toEnable.length === 0 && alreadyEnabled.length > 0) {
       if (alreadyEnabled.length === 1) {
-        console.log(`✓ Adapter already enabled: ${alreadyEnabled[0]}`);
+        console.log(`✓ Exporter already enabled: ${alreadyEnabled[0]}`);
       } else {
         console.log(
-          `✓ All adapters already enabled: ${alreadyEnabled.join(", ")}`,
+          `✓ All exporters already enabled: ${alreadyEnabled.join(", ")}`,
         );
       }
       console.log("  View current exporters: aligntrue status");
       return;
     }
 
-    adaptersToEnable = toEnable;
+    exportersToEnable = toEnable;
   }
 
   // Update config
   const currentExporters = new Set(getExporterNames(config.exporters));
   let addedCount = 0;
 
-  for (const name of adaptersToEnable) {
+  for (const name of exportersToEnable) {
     if (!currentExporters.has(name)) {
       currentExporters.add(name);
       addedCount++;
@@ -390,12 +392,12 @@ async function enableAdapters(
   }
 
   if (addedCount === 0) {
-    console.log("✓ No changes needed (all selected adapters already enabled)");
+    console.log("✓ No changes needed (all selected exporters already enabled)");
     console.log("  View current exporters: aligntrue status");
     return;
   }
 
-  // Always use array format for simplicity in adapters command
+  // Always use array format for simplicity in exporters command
   config.exporters = Array.from(currentExporters).sort();
 
   // Save config (use minimal save for solo mode to keep config clean)
@@ -415,18 +417,18 @@ async function enableAdapters(
 
   // Record telemetry
   recordEvent({
-    command_name: "adapters-enable",
+    command_name: "exporters-enable",
     align_hashes_used: [],
-    ...(adaptersToEnable.length > 0 && {
-      export_target: adaptersToEnable.join(","),
+    ...(exportersToEnable.length > 0 && {
+      export_target: exportersToEnable.join(","),
     }),
   });
 
-  if (adaptersToEnable.length === 1) {
-    console.log(`✓ Enabled adapter: ${adaptersToEnable[0]}`);
+  if (exportersToEnable.length === 1) {
+    console.log(`✓ Enabled exporter: ${exportersToEnable[0]}`);
   } else {
     console.log(
-      `✓ Enabled ${addedCount} adapter(s): ${adaptersToEnable.join(", ")}`,
+      `✓ Enabled ${addedCount} exporter(s): ${exportersToEnable.join(", ")}`,
     );
   }
 
@@ -435,17 +437,19 @@ async function enableAdapters(
 
   console.log("\nNext step:");
   console.log("  Run: aligntrue sync");
+
+  console.log("\nLearn more at https://aligntrue.ai/agents");
 }
 
 /**
- * Disable adapter
+ * Disable exporter
  */
-async function disableAdapter(args: string[]): Promise<void> {
-  const adapterName = args[0];
+async function disableExporter(args: string[]): Promise<void> {
+  const exporterName = args[0];
 
-  if (!adapterName) {
-    console.error("✗ Missing adapter name");
-    console.error("  Usage: aligntrue adapters disable <adapter>");
+  if (!exporterName) {
+    console.error("✗ Missing exporter name");
+    console.error("  Usage: aligntrue exporters disable <exporter>");
     process.exit(1);
   }
 
@@ -453,24 +457,24 @@ async function disableAdapter(args: string[]): Promise<void> {
 
   const currentExporters = getExporterNames(config.exporters);
 
-  if (!currentExporters.includes(adapterName)) {
-    console.error(`✗ Adapter not enabled: ${adapterName}`);
-    console.error("  Run: aligntrue adapters list");
+  if (!currentExporters.includes(exporterName)) {
+    console.error(`✗ Exporter not enabled: ${exporterName}`);
+    console.error("  Run: aligntrue exporters list");
     process.exit(1);
   }
 
-  // Prevent disabling last adapter
+  // Prevent disabling last exporter
   if (currentExporters.length === 1) {
-    console.error("✗ Cannot disable last adapter");
+    console.error("✗ Cannot disable last exporter");
     console.error("  At least one exporter must be configured");
     console.error(
-      "  Enable another adapter first: aligntrue adapters enable <adapter>",
+      "  Enable another exporter first: aligntrue exporters enable <exporter>",
     );
     process.exit(1);
   }
 
-  // Remove adapter and always use array format for simplicity
-  config.exporters = currentExporters.filter((e: string) => e !== adapterName);
+  // Remove exporter and always use array format for simplicity
+  config.exporters = currentExporters.filter((e: string) => e !== exporterName);
 
   // Save config (use minimal save for solo mode to keep config clean)
   try {
@@ -489,12 +493,12 @@ async function disableAdapter(args: string[]): Promise<void> {
 
   // Record telemetry
   recordEvent({
-    command_name: "adapters-disable",
+    command_name: "exporters-disable",
     align_hashes_used: [],
-    ...(adapterName && { export_target: adapterName }),
+    ...(exporterName && { export_target: exporterName }),
   });
 
-  console.log(`✓ Disabled adapter: ${adapterName}`);
+  console.log(`✓ Disabled exporter: ${exporterName}`);
 }
 
 /**
@@ -524,9 +528,9 @@ async function detectNewAgentsCommand(): Promise<void> {
   }
 
   console.log("\nTo enable:");
-  console.log("  aligntrue adapters enable <agent-name>");
+  console.log("  aligntrue exporters enable <agent-name>");
   console.log("\nTo ignore:");
-  console.log("  aligntrue adapters ignore <agent-name>");
+  console.log("  aligntrue exporters ignore <agent-name>");
 }
 
 /**
@@ -537,7 +541,7 @@ async function ignoreAgent(args: string[]): Promise<void> {
 
   if (!agentName) {
     console.error("✗ Missing agent name");
-    console.error("  Usage: aligntrue adapters ignore <agent>");
+    console.error("  Usage: aligntrue exporters ignore <agent>");
     process.exit(1);
   }
 
