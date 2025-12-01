@@ -505,11 +505,12 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
 
       const createdFiles: string[] = [];
       for (const rule of rules) {
-        const fullPath = join(rulesDir, rule.path);
+        const rulePath = rule.relativePath || rule.filename;
+        const fullPath = join(rulesDir, rulePath);
         const { dirname } = await import("path");
         mkdirSync(dirname(fullPath), { recursive: true });
         writeRuleFile(fullPath, rule);
-        createdFiles.push(rule.path);
+        createdFiles.push(rulePath);
       }
 
       clack.log.success(
