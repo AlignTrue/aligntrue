@@ -253,12 +253,12 @@ export class GenericMarkdownExporter extends ExporterBase {
     lines.push(`# ${this.title}`);
     lines.push("");
     lines.push(
-      `This file contains links to the canonical rules in \`.aligntrue/rules/\`.`,
+      "This file contains links to the canonical rules in \`.aligntrue/rules/\`.",
     );
-    lines.push(`AI agents should follow these linked guidelines.`);
+    lines.push("AI agents should follow these linked guidelines.");
     lines.push("");
     lines.push(
-      `[Customize export format](https://aligntrue.ai/export-content-mode)`,
+      "How to switch from links to inline rules: https://aligntrue.ai/export-content-mode",
     );
     lines.push("");
 
