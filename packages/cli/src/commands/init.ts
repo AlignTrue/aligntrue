@@ -29,10 +29,6 @@ import {
   detectRulerProject,
   promptRulerMigration,
 } from "./init/ruler-detector.js";
-import {
-  selectFilesToImport,
-  type ImportFile,
-} from "../utils/selective-import-ui.js";
 
 /**
  * Format options for exporter selection
@@ -464,73 +460,29 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // Auto-detect existing rules
     scanner.start("Scanning for existing rules...");
 
-    // First, detect raw agent files
-    const { detectNestedAgentFiles } = await import("@aligntrue/core");
-    const detectedAgentFiles = await detectNestedAgentFiles(cwd);
+    // Scan for agent files and parse them as rules
+    const importedRules = await scanForExistingRules(cwd);
 
     scanner.stop("Scan complete");
 
-    if (detectedAgentFiles.length > 0 && !nonInteractive) {
-      // Interactive: Let user select which files to import
-      const importFilesForSelection: ImportFile[] = detectedAgentFiles.map(
-        (f) => ({
-          path: f.path,
-          relativePath: f.relativePath,
-        }),
-      );
-
-      const selectionResult = await selectFilesToImport(
-        importFilesForSelection,
-        { nonInteractive: false },
-      );
-
-      if (selectionResult.skipped) {
-        // User cancelled selection - create starter templates instead
-        isFreshStart = true;
-        rulesToWrite = createStarterTemplates();
-      } else if (selectionResult.selectedFileCount === 0) {
-        // User deselected all files - create starter templates
-        isFreshStart = true;
-        rulesToWrite = createStarterTemplates();
-      } else {
-        // User selected some files - scan and import only those
-        const allRules = await scanForExistingRules(cwd);
-        rulesToWrite = allRules;
-        if (rulesToWrite.length > 0) {
-          logMessage(
-            `Selected ${selectionResult.selectedFileCount} of ${selectionResult.totalFileCount} files`,
-            "info",
-            nonInteractive,
-          );
-        }
-      }
-    } else {
-      // Non-interactive or no files found - scan all
-      const importedRules = await scanForExistingRules(cwd);
+    if (importedRules.length > 0) {
+      // Show what was found
+      logMessage(`Found ${importedRules.length} files`, "info", nonInteractive);
       rulesToWrite = importedRules;
-
-      if (rulesToWrite.length > 0) {
-        logMessage(
-          `Found ${rulesToWrite.length} existing rules to import.`,
-          "info",
-          nonInteractive,
-        );
-      } else {
-        // No rules found, will use starter templates
-        isFreshStart = true;
-        rulesToWrite = createStarterTemplates();
-      }
+    } else {
+      // No rules found, will use starter templates
+      isFreshStart = true;
+      rulesToWrite = createStarterTemplates();
     }
   }
 
-  // Step 3: Confirm (if interactive)
+  // Step 3: Confirm (if interactive) - single consolidated prompt
   if (!nonInteractive) {
-    // For fresh starts, combine the "no rules found" message with the confirm
     const confirmMessage = isFreshStart
       ? "No existing rules found. Create default starter rules? (you can add your own rules later)"
       : isFromExternalSource
         ? `Create AlignTrue configuration with these ${rulesToWrite.length} rules?`
-        : `Found ${rulesToWrite.length} existing rules. Initialize AlignTrue with them?`;
+        : `Initialize AlignTrue with these ${rulesToWrite.length} rules?`;
 
     const confirm = await clack.confirm({
       message: confirmMessage,
