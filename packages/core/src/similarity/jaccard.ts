@@ -164,7 +164,8 @@ function selectCanonical(
   files: FileWithContent[],
   tokenSets: Map<string, Set<string>>,
 ): FileWithContent {
-  return files.sort((a, b) => {
+  // Use slice() to avoid mutating the input array
+  return files.slice().sort((a, b) => {
     // First by format priority
     const priorityDiff = getFormatPriority(a.type) - getFormatPriority(b.type);
     if (priorityDiff !== 0) return priorityDiff;
