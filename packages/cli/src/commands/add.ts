@@ -404,7 +404,6 @@ async function copyRulesToLocal(options: {
       exitWithError({
         title: "Import failed",
         message: result.error,
-        hint: "Check the URL/path and try again.",
         code: "IMPORT_FAILED",
       });
       return;

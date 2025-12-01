@@ -363,7 +363,15 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     });
 
     if (result.error) {
-      scanner.stop(`Import failed: ${result.error}`);
+      scanner.stop("Import failed");
+
+      const { formatError } = await import("../utils/error-formatter.js");
+      const error: import("../utils/error-formatter.js").CLIError = {
+        title: "Import failed",
+        message: result.error,
+        code: "ERR_IMPORT_FAILED",
+      };
+      formatError(error);
       process.exit(1);
     }
 
