@@ -393,5 +393,25 @@ describe("GitIntegration", () => {
       // Should NOT contain absolute paths
       expect(content).not.toContain(TEST_DIR);
     });
+
+    it("does not incorrectly match paths that share prefix but are outside workspace", async () => {
+      // Simulate a path that shares a prefix with workspace but is in a different tree
+      // e.g., workspace is /tmp/test-xxx and path is /tmp/test-xxxOTHER/file.mdc
+      const outsidePath = TEST_DIR + "OTHER/.cursor/rules/file.mdc";
+
+      await gitIntegration.apply({
+        mode: "ignore",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: [outsidePath],
+      });
+
+      const gitignorePath = join(TEST_DIR, ".gitignore");
+      const content = readFileSync(gitignorePath, "utf-8");
+
+      // Should NOT convert to relative path starting with ../
+      // Should keep the original path as-is (normalized slashes)
+      expect(content).not.toContain("../");
+      expect(content).toContain(outsidePath.replace(/\\/g, "/"));
+    });
   });
 });
