@@ -373,10 +373,14 @@ export function formatCreatedFiles(
     return;
   }
 
+  // Normalize paths to forward slashes for consistent display across platforms
+  // (path.join() uses backslashes on Windows, but forward slashes are universally readable)
+  const normalizedFiles = files.map((f) => f.replace(/\\/g, "/"));
+
   // Group files by parent directory
   const grouped = new Map<string, string[]>();
 
-  for (const file of files) {
+  for (const file of normalizedFiles) {
     // Get parent directory (e.g., '.aligntrue/rules/' from '.aligntrue/rules/typescript.md')
     const lastSlash = file.lastIndexOf("/");
     const dir = lastSlash >= 0 ? file.slice(0, lastSlash + 1) : "./";
