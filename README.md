@@ -32,7 +32,65 @@ Auto-detects agents, imports existing rules, or creates AGENTS.md. Generates and
 
 **Edit rules in `.aligntrue/rules/`.** AlignTrue works seamlessly with Cursor, GitHub Copilot, Claude Code, and 28+ agents, automatically exporting to each in their native format.
 
+<Callout type="info">
+**Start with existing rules?** Import from any git source:
+
+`aligntrue init --source https://github.com/org/rules`
+
+Supports GitHub, GitLab, SSH URLs, version tags, and local paths.
+[See all source options →](https://aligntrue.ai/docs/01-guides/11-adding-rules)
+
+</Callout>
+
 → [Verify it works](https://aligntrue.ai/docs/00-getting-started/00-quickstart#verify-it-works) | [Solo guide](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide)
+
+## Common workflows
+
+**Solo developer (default):**
+
+```bash
+aligntrue init    # One-time setup
+aligntrue sync    # Update agents when rules change
+```
+
+**Solo developer (external source):**
+
+```bash
+aligntrue init --source https://github.com/your/rules
+aligntrue sync
+```
+
+Import rules from GitHub, GitLab, or any git repository. Use `--link` to stay connected for updates. Use it with `aligntrue add` to try new external rules any time. [More examples →](https://aligntrue.ai/docs/01-guides/11-adding-rules#import-rules-from-external-sources)
+
+**Team mode (opt-in):**
+
+```bash
+aligntrue lock    # Pin rule versions
+aligntrue check   # Validate in CI
+```
+
+**Centralized editing:**
+
+- Edit rules in `.aligntrue/rules/` → sync to all agents
+- All agent files are read-only exports
+
+See [guides](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide) for details.
+
+**Optional verification:**
+
+```bash
+aligntrue sync --dry-run       # Preview changes
+aligntrue check                # Validate rules (great for CI)
+```
+
+**Migrating from Ruler:**
+
+```bash
+aligntrue migrate ruler        # Convert Ruler config to AlignTrue
+aligntrue sync                 # Sync to all agents
+```
+
+See [migrate command](https://aligntrue.ai/docs/04-reference/cli-reference/settings#aligntrue-migrate) for details.
 
 ## Why AlignTrue
 
@@ -100,6 +158,37 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 | Deterministic hashing      | JCS-based reproducible hashing for lockfiles and integrity                          | [Features](https://aligntrue.ai/docs/04-reference/features)                         |
 | TypeScript strict mode     | Comprehensive type coverage across the entire codebase                              | [Features](https://aligntrue.ai/docs/04-reference/features)                         |
 
+## Broad agent support
+
+AlignTrue supports **28+ AI coding agents** through **50 exporters**:
+
+**Popular agents:**
+
+- Cursor (.mdc files)
+- GitHub Copilot (AGENTS.md)
+- Claude (AGENTS.md + CLAUDE.md)
+- Aider (AGENTS.md + .aider.conf.yml)
+- Windsurf (AGENTS.md + MCP config)
+- VS Code MCP agents
+- Amazon Q, Firebase Studio, OpenHands, Zed, and 20+ more
+
+**Coverage:**
+
+- 50 total exporters supporting 28+ agents
+- 14 MCP configurations for protocol-based agents
+- 15 unique format exporters for agent-specific formats
+- 11 universal format agents using AGENTS.md
+- 9 dual-output agents with both universal + specific formats
+
+[View full agent compatibility matrix →](https://aligntrue.ai/docs/04-reference/agent-support)
+
+## How it works
+
+1. **AlignTrue detects your agents** - Finds Cursor, Copilot, Claude Code, and 28+ others automatically
+2. **Edit in `.aligntrue/rules/`** - Create and edit markdown files with your rules
+3. **Run sync** - AlignTrue exports to all agents in their native formats
+4. **Stay aligned** - All agents receive identical rules automatically
+
 ## Add to your workflow
 
 Integrate AlignTrue into your development and CI/CD pipelines in seconds. Use validation gates, precommit hooks, and automated checks.
@@ -137,82 +226,6 @@ jobs:
 ```
 
 [View solo developer guide →](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide)
-
-## Broad agent support
-
-AlignTrue supports **28+ AI coding agents** through **50 exporters**:
-
-**Popular agents:**
-
-- Cursor (.mdc files)
-- GitHub Copilot (AGENTS.md)
-- Claude (AGENTS.md + CLAUDE.md)
-- Aider (AGENTS.md + .aider.conf.yml)
-- Windsurf (AGENTS.md + MCP config)
-- VS Code MCP agents
-- Amazon Q, Firebase Studio, OpenHands, Zed, and 20+ more
-
-**Coverage:**
-
-- 50 total exporters supporting 28+ agents
-- 14 MCP configurations for protocol-based agents
-- 15 unique format exporters for agent-specific formats
-- 11 universal format agents using AGENTS.md
-- 9 dual-output agents with both universal + specific formats
-
-[View full agent compatibility matrix →](https://aligntrue.ai/docs/04-reference/agent-support)
-
-## How it works
-
-1. **AlignTrue detects your agents** - Finds Cursor, Copilot, Claude Code, and 28+ others automatically
-2. **Edit in `.aligntrue/rules/`** - Create and edit markdown files with your rules
-3. **Run sync** - AlignTrue exports to all agents in their native formats
-4. **Stay aligned** - All agents receive identical rules automatically
-
-## Common workflows
-
-**Solo developer (default):**
-
-```bash
-aligntrue init    # One-time setup
-aligntrue sync    # Update agents when rules change
-```
-
-**Team mode (opt-in):**
-
-```bash
-aligntrue lock    # Pin rule versions
-aligntrue check   # Validate in CI
-```
-
-**Centralized editing:**
-
-- Edit rules in `.aligntrue/rules/` → sync to all agents
-- All agent files are read-only exports
-
-See [guides](https://aligntrue.ai/docs/01-guides/02-solo-developer-guide) for details.
-
-**Optional verification:**
-
-```bash
-aligntrue sync --dry-run       # Preview changes
-aligntrue check                # Validate rules (great for CI)
-```
-
-**Migrating from Ruler:**
-
-```bash
-aligntrue migrate ruler        # Convert Ruler config to AlignTrue
-aligntrue sync                 # Sync to all agents
-```
-
-See [migrate command](https://aligntrue.ai/docs/04-reference/cli-reference/settings#aligntrue-migrate) for details.
-
-## Who is this for?
-
-**Solo developers:** Keep your personal AI rules consistent across projects and machines
-
-**Teams:** Shared rule sets with version control, CI validation, and drift detection
 
 ## Key concepts
 
