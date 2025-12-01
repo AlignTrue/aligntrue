@@ -263,17 +263,15 @@ export class AgentsExporter extends ExporterBase {
         const ruleFileName = rule.relativePath || rule.filename;
         const linkPath = `./${rulesDir}/${ruleFileName}`;
 
-        // Format: [Title](path): description. conditions.
+        // Format: Title (path): description. conditions.
         if (description && conditions) {
-          lines.push(
-            `- [${title}](${linkPath}): ${description}. ${conditions}`,
-          );
+          lines.push(`- ${title} (${linkPath}): ${description}. ${conditions}`);
         } else if (description) {
-          lines.push(`- [${title}](${linkPath}): ${description}`);
+          lines.push(`- ${title} (${linkPath}): ${description}`);
         } else if (conditions) {
-          lines.push(`- [${title}](${linkPath}): ${conditions}`);
+          lines.push(`- ${title} (${linkPath}): ${conditions}`);
         } else {
-          lines.push(`- [${title}](${linkPath})`);
+          lines.push(`- ${title} (${linkPath})`);
         }
       }
 

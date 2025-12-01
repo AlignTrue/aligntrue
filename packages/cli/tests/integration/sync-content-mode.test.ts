@@ -97,8 +97,8 @@ This is the content of the test rule.
 
         // Should use inline format for single rule
         expect(content).toContain("<!-- aligntrue:rule");
-        // Check for link format (markdown links to rules) - not the header comment
-        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Check for link format (Title (./path)) - not the header comment
+        expect(content).not.toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
       }
     });
 
@@ -148,8 +148,8 @@ Content of rule 2.
       if (existsSync(agentsPath)) {
         const content = readFileSync(agentsPath, "utf-8");
 
-        // Should use links format for multiple rules (check for markdown link format)
-        expect(content).toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Should use links format for multiple rules (check for Title (./path) format)
+        expect(content).toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
         expect(content).not.toContain("<!-- aligntrue:rule");
       }
     });
@@ -204,8 +204,8 @@ Content of rule 2.
 
         // Should use inline format even though we have multiple rules
         expect(content).toContain("<!-- aligntrue:rule");
-        // Check for link format (markdown links to rules) - not the header comment
-        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Check for link format (Title (./path)) - not the header comment
+        expect(content).not.toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
       }
     });
 
@@ -247,8 +247,8 @@ This is the content of the test rule.
       if (existsSync(agentsPath)) {
         const content = readFileSync(agentsPath, "utf-8");
 
-        // Should use links format even though we have single rule (check for markdown link format)
-        expect(content).toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Should use links format even though we have single rule (check for Title (./path) format)
+        expect(content).toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
         expect(content).not.toContain("<!-- aligntrue:rule");
       }
     });
@@ -306,8 +306,8 @@ Content of rule 2.
 
         // Should use inline format from config
         expect(content).toContain("<!-- aligntrue:rule");
-        // Check for link format (markdown links to rules) - not the header comment
-        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Check for link format (Title (./path)) - not the header comment
+        expect(content).not.toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
       }
     });
 
@@ -354,8 +354,8 @@ This is the content of the test rule.
 
         // Should use inline format from CLI flag (overrides config)
         expect(content).toContain("<!-- aligntrue:rule");
-        // Check for link format (markdown links to rules) - not the header comment
-        expect(content).not.toMatch(/\[.*\]\(\.\/\.aligntrue\/rules\//);
+        // Check for link format (Title (./path)) - not the header comment
+        expect(content).not.toMatch(/^- .+ \(\.\/\.aligntrue\/rules\//m);
       }
     });
   });

@@ -291,8 +291,8 @@ describe("Exporter Format Validation Contracts", () => {
 
       const content = readFileSync(join(TEST_OUTPUT_DIR, "AGENTS.md"), "utf-8");
 
-      // Link format: [Title](path)
-      expect(content).toMatch(/\[.+\]\(.+\.md\)/);
+      // Link format: Title (./path)
+      expect(content).toMatch(/^- [^\s]+\s\(.+\.md\)/m);
     });
 
     it("produces AGENTS.md filename", async () => {
