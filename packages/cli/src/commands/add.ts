@@ -400,7 +400,7 @@ async function copyRulesToLocal(options: {
     });
 
     if (result.error) {
-      spinner.stop(`Import failed: ${result.error}`, 1);
+      spinner.stop("Import failed", 1);
       exitWithError({
         title: "Import failed",
         message: result.error,
@@ -439,7 +439,7 @@ async function copyRulesToLocal(options: {
     // Show selective import UI if interactive
     let selectedRules = [...result.rules];
     if (!nonInteractive && filesForSelection.length > 0) {
-      spinner.stop("Import complete (selection needed)");
+      spinner.stop(`Found ${result.rules.length} rules from ${source}`);
       const selectionResult = await selectFilesToImport(filesForSelection, {
         nonInteractive: false,
       });
@@ -465,7 +465,7 @@ async function copyRulesToLocal(options: {
     const rulesToWrite = [...selectedRules];
 
     if (result.conflicts.length > 0) {
-      spinner.stop("Import paused (conflicts detected)");
+      spinner.stop(`Found ${selectedRules.length} rules (conflicts detected)`);
 
       for (const conflict of result.conflicts) {
         let resolution: "replace" | "keep-both" | "skip";
