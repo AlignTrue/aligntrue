@@ -320,6 +320,7 @@ export function checkUnknownFields(
     "detection",
     "overlays",
     "plugs",
+    "mcp",
     // "approval", // DEPRECATED: removed
   ]);
 
