@@ -45,6 +45,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No lockfile changes needed"
           else
-            git commit -m "chore: regenerate pnpm-lock.yaml"
+            git commit -m "chore: Regenerate pnpm-lock.yaml"
             git push origin ${{ github.event.pull_request.head.ref }}
           fi
