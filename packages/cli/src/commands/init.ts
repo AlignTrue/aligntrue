@@ -733,6 +733,26 @@ aligntrue sync
   );
   createdFiles.push(".aligntrue/README.md");
 
+  // Add .gitignore to .aligntrue directory to ignore local state files
+  const aligntrueGitignoreContent = `# Generated state files (local state, not part of source control)
+.source-rule-hashes.json
+.agent-export-hashes.json
+.rules.yaml
+.last-sync
+
+# Backup directory (created during sync operations)
+.backups/
+
+# Cache directory
+.cache/
+`;
+  writeFileSync(
+    join(aligntrueDir, ".gitignore"),
+    aligntrueGitignoreContent,
+    "utf-8",
+  );
+  createdFiles.push(".aligntrue/.gitignore");
+
   // Report creation
   if (nonInteractive) {
     console.log("\nCreated files:");
