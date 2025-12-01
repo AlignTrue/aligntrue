@@ -53,7 +53,7 @@ export async function runTeamMigrationWizard(
 
     // Step 2: Detect personal rules in repo
     // Feature in development
-    const personalRulesInRepo = detectPersonalRulesInRepo(config, cwd);
+    const personalRulesInRepo = await detectPersonalRulesInRepo(config, cwd);
 
     if (personalRulesInRepo.length === 0) {
       clack.outro("No personal rules found in repository. Team mode ready!");
@@ -214,10 +214,10 @@ export async function runTeamMigrationWizard(
 /**
  * Detect personal rules currently in repo
  */
-function detectPersonalRulesInRepo(
+async function detectPersonalRulesInRepo(
   config: AlignTrueConfig,
   cwd: string,
-): Array<{ heading: string; scope: string; storage: string }> {
+): Promise<Array<{ heading: string; scope: string; storage: string }>> {
   const results: Array<{ heading: string; scope: string; storage: string }> =
     [];
   const irPath = join(cwd, ".aligntrue", "rules");
@@ -225,7 +225,7 @@ function detectPersonalRulesInRepo(
   try {
     // Check rules directory - load all markdown files
     const { loadRulesDirectory } = require("@aligntrue/core");
-    const rules = loadRulesDirectory(irPath, cwd, { recursive: true });
+    const rules = await loadRulesDirectory(irPath, cwd, { recursive: true });
 
     // Convert to sections format
     const sections = rules.map(
