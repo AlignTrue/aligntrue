@@ -134,14 +134,20 @@ export class GitIntegration {
   ): Promise<GitModeResult> {
     const gitignorePath = join(workspaceRoot, ".gitignore");
 
-    for (const file of files) {
+    // Normalize paths to relative (exporters may return absolute paths)
+    const normalizedFiles = this.normalizePathsForGitignore(
+      workspaceRoot,
+      files,
+    );
+
+    for (const file of normalizedFiles) {
       await this.ensureGitignoreEntry(gitignorePath, file);
     }
 
     return {
       mode: "ignore",
       action: "added to .gitignore",
-      filesAffected: files,
+      filesAffected: normalizedFiles,
     };
   }
 
@@ -259,15 +265,7 @@ export class GitIntegration {
     }
 
     // Normalize paths to relative (exporters may return absolute paths)
-    const { relative } = await import("path");
-    const relativePaths = files.map((f) => {
-      // If path is absolute, make it relative to workspace root
-      if (f.startsWith(workspaceRoot)) {
-        return relative(workspaceRoot, f).replace(/\\/g, "/");
-      }
-      // Already relative, just normalize slashes
-      return f.replace(/\\/g, "/");
-    });
+    const relativePaths = this.normalizePathsForGitignore(workspaceRoot, files);
 
     // Always include unified backups directory in the patterns
     const allPatterns = [".aligntrue/.backups/", ...relativePaths];
@@ -350,6 +348,34 @@ export class GitIntegration {
       `${prefix}# AlignTrue generated\n${normalizedPattern}\n`,
       "utf-8",
     );
+  }
+
+  /**
+   * Normalize file paths for .gitignore entries
+   * - Converts absolute paths within workspace to relative
+   * - Normalizes backslashes to forward slashes
+   * - Handles edge case where absolute path shares prefix but is outside workspace
+   */
+  private normalizePathsForGitignore(
+    workspaceRoot: string,
+    files: string[],
+  ): string[] {
+    const { relative, isAbsolute } = require("path");
+    return files.map((f) => {
+      // Only convert absolute paths; relative paths just need slash normalization
+      if (isAbsolute(f)) {
+        const rel = relative(workspaceRoot, f);
+        // If relative path doesn't escape workspace (no leading ..) and isn't absolute,
+        // it's truly within workspace - use the relative version
+        if (!rel.startsWith("..") && !isAbsolute(rel)) {
+          return rel.replace(/\\/g, "/");
+        }
+        // Absolute path outside workspace - keep as-is but normalize slashes
+        return f.replace(/\\/g, "/");
+      }
+      // Already relative, just normalize slashes
+      return f.replace(/\\/g, "/");
+    });
   }
 
   /**
