@@ -19,6 +19,7 @@ import {
   selectFilesToImport,
   type ImportFile,
 } from "../utils/selective-import-ui.js";
+import { formatCreatedFiles } from "../utils/command-utilities.js";
 
 /**
  * Main sources command handler
@@ -363,19 +364,10 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       const fileContent = `# ${section.heading}\n\n${section.content}`;
       writeFileSync(filePath, fileContent, "utf-8");
       createdFiles.push(`${targetDir}/${basename(filePath)}`);
-
-      if (!yes) {
-        clack.log.success(`Created ${targetDir}/${basename(filePath)}`);
-      }
     }
 
-    if (yes) {
-      clack.log.success(
-        `Created ${createdFiles.length} files in ${targetDir}/`,
-      );
-    }
-
-    clack.log.success(`\nSplit ${createdFiles.length} rules to ${targetDir}/`);
+    // Show grouped file list
+    formatCreatedFiles(createdFiles, { nonInteractive: yes as boolean });
 
     // Backup AGENTS.md to unified backup location
     if (!yes) {
@@ -510,20 +502,15 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
         const { dirname } = await import("path");
         mkdirSync(dirname(fullPath), { recursive: true });
         writeRuleFile(fullPath, rule);
-        createdFiles.push(rulePath);
+        createdFiles.push(`.aligntrue/rules/${rulePath}`);
       }
 
       clack.log.success(
-        `Imported ${createdFiles.length} rules (${selectionResult.selectedFileCount} selected files) to .aligntrue/rules/`,
+        `Imported ${selectionResult.selectedFileCount} selected files`,
       );
 
-      // Show first few files
-      for (const file of createdFiles.slice(0, 5)) {
-        console.log(`  - ${file}`);
-      }
-      if (createdFiles.length > 5) {
-        console.log(`  ... and ${createdFiles.length - 5} more`);
-      }
+      // Show grouped file list
+      formatCreatedFiles(createdFiles, { nonInteractive: yes as boolean });
 
       clack.outro("Run 'aligntrue sync' to update agent files.");
     } else {
