@@ -363,4 +363,88 @@ Third rule guidance
       expect(secondRuleContent).toContain("Second rule guidance");
     });
   });
+
+  describe("Nested ignore files", () => {
+    it("creates ignore files in nested directories with nested_location frontmatter", async () => {
+      // Setup: Config with cursor and agents exporters to trigger ignore file creation
+      const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["cursor", "agents"],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create a rule with nested_location set to a subdirectory
+      const ruleContent = `---
+title: Nested location rule
+description: A rule that exports to nested directory
+nested_location: apps/docs
+---
+
+# Nested location rule
+
+This rule will be exported to apps/docs/.cursor/rules/
+`;
+      writeFileSync(join(rulesDir, "nested-rule.md"), ruleContent, "utf-8");
+
+      // Run sync
+      await sync([]);
+
+      // Verify the nested directory ignore file was created
+      const nestedIgnorePath = join(TEST_DIR, "apps", "docs", ".cursorignore");
+      expect(existsSync(nestedIgnorePath)).toBe(true);
+
+      const nestedIgnoreContent = readFileSync(nestedIgnorePath, "utf-8");
+      // Should ignore AGENTS.md since cursor and agents exporters conflict
+      expect(nestedIgnoreContent).toContain("AGENTS.md");
+    });
+
+    it("creates multiple nested ignore files for multiple nested_locations", async () => {
+      const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["cursor", "agents"],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      mkdirSync(rulesDir, { recursive: true });
+
+      // Create rules with different nested locations
+      const rule1 = `---
+title: First nested
+nested_location: apps/docs
+---
+
+# First`;
+      writeFileSync(join(rulesDir, "rule1.md"), rule1, "utf-8");
+
+      const rule2 = `---
+title: Second nested
+nested_location: packages/cli
+---
+
+# Second`;
+      writeFileSync(join(rulesDir, "rule2.md"), rule2, "utf-8");
+
+      // Run sync
+      await sync([]);
+
+      // Verify both nested ignore files were created
+      const docsIgnorePath = join(TEST_DIR, "apps", "docs", ".cursorignore");
+      const cliIgnorePath = join(TEST_DIR, "packages", "cli", ".cursorignore");
+
+      expect(existsSync(docsIgnorePath)).toBe(true);
+      expect(existsSync(cliIgnorePath)).toBe(true);
+    });
+  });
 });

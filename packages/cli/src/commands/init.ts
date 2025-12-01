@@ -742,6 +742,7 @@ aligntrue sync
       : []),
     "Your rules are in .aligntrue/rules/ - edit them any time.",
     "Customize config in .aligntrue/config.yaml",
+    "Agent files are gitignored by default (change with git.mode in config).",
     "",
     "Helpful commands:",
     "  aligntrue sync        Sync rules to your agents",

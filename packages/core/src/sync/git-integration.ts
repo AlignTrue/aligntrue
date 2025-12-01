@@ -258,8 +258,19 @@ export class GitIntegration {
       // File doesn't exist, content remains ""
     }
 
+    // Normalize paths to relative (exporters may return absolute paths)
+    const { relative } = await import("path");
+    const relativePaths = files.map((f) => {
+      // If path is absolute, make it relative to workspace root
+      if (f.startsWith(workspaceRoot)) {
+        return relative(workspaceRoot, f).replace(/\\/g, "/");
+      }
+      // Already relative, just normalize slashes
+      return f.replace(/\\/g, "/");
+    });
+
     // Always include unified backups directory in the patterns
-    const allPatterns = [".aligntrue/.backups/", ...files];
+    const allPatterns = [".aligntrue/.backups/", ...relativePaths];
     content = this.addManagedSection(content, marker, endMarker, allPatterns);
     writeFileSync(gitignorePath, content, "utf-8");
   }
