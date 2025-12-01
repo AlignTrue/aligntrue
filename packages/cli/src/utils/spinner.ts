@@ -64,8 +64,9 @@ class ManagedSpinner {
    */
   stopSilent(): void {
     if (this.isActive) {
-      // Clear the spinner line without rendering a step indicator
-      // This prevents empty ◇ symbols in the output
+      // Stop the underlying spinner animation first (clears the internal interval timer)
+      this.spinner.stop();
+      // Then clear the line to remove any step indicator it rendered
       process.stdout.write("\r\x1b[K");
       this.isActive = false;
     }
@@ -185,7 +186,7 @@ export async function withSpinner(
  * Stop spinner silently without rendering a step indicator
  * Safe helper that handles all spinner types:
  * - ManagedSpinner and NoopSpinner have stopSilent()
- * - Raw clack spinners need to be cleared and stopped explicitly
+ * - Raw clack spinners need to be stopped, then have their output cleared
  *
  * @param spinner - Spinner instance
  */
@@ -197,9 +198,9 @@ export function stopSpinnerSilently(
       // ManagedSpinner or NoopSpinner - safe to call stopSilent
       (spinner as NoopSpinner | ManagedSpinner).stopSilent();
     } else if ("stop" in spinner && typeof spinner.stop === "function") {
-      // Raw clack spinner - clear the spinner line and stop silently
-      process.stdout.write("\r\x1b[K"); // Clear spinner line
-      spinner.stop(); // Stop internal animation
+      // Raw clack spinner - stop animation first, then clear the rendered output
+      spinner.stop();
+      process.stdout.write("\r\x1b[K");
     }
   }
 }
