@@ -54,7 +54,10 @@ export function extractNestedLocation(
   // Try to strip agent-specific suffixes from the directory path
   for (const suffix of typeSuffixes) {
     if (suffix && dir.endsWith(suffix)) {
-      const location = dir.slice(0, -suffix.length).replace(/\/$/, "");
+      const location = dir
+        .slice(0, -suffix.length)
+        .replace(/\/$/, "")
+        .replace(/\.$/, "");
       if (location && location !== ".") {
         return location;
       }
