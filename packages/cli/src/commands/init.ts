@@ -377,7 +377,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
 
     // Handle conflicts
     if (result.conflicts.length > 0 && !nonInteractive) {
-      scanner.stop("Import complete (conflicts detected)");
+      scanner.stop(`Found ${result.rules.length} rules (conflicts detected)`);
 
       for (const conflict of result.conflicts) {
         const choice = await clack.select({
@@ -430,7 +430,7 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
       }
     } else if (result.conflicts.length > 0) {
       // Non-interactive: keep both by default
-      scanner.stop("Import complete");
+      scanner.stop(`Found ${result.rules.length} rules`);
       for (const conflict of result.conflicts) {
         const resolution = resolveConflict(conflict, "keep-both", cwd);
         const rule = result.rules.find((r) => r.filename === conflict.filename);
@@ -440,19 +440,13 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
         }
       }
     } else {
-      scanner.stop("Import complete");
+      scanner.stop(`Found ${result.rules.length} rules`);
     }
 
     rulesToWrite = result.rules;
     isFromExternalSource = true;
 
-    if (rulesToWrite.length > 0) {
-      logMessage(
-        `Imported ${rulesToWrite.length} rules from ${sourceArg}`,
-        "info",
-        nonInteractive,
-      );
-    } else {
+    if (rulesToWrite.length === 0) {
       logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
       isFreshStart = true;
       rulesToWrite = createStarterTemplates();
@@ -534,7 +528,9 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
     // For fresh starts, combine the "no rules found" message with the confirm
     const confirmMessage = isFreshStart
       ? "No existing rules found. Create default starter rules? (you can add your own rules later)"
-      : `Initialize AlignTrue with ${rulesToWrite.length} rules?`;
+      : isFromExternalSource
+        ? `Create AlignTrue configuration with these ${rulesToWrite.length} rules?`
+        : `Found ${rulesToWrite.length} existing rules. Initialize AlignTrue with them?`;
 
     const confirm = await clack.confirm({
       message: confirmMessage,
