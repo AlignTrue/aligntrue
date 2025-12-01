@@ -238,6 +238,10 @@ export class AgentsExporter extends ExporterBase {
     );
     lines.push("AI agents should follow these linked guidelines.");
     lines.push("");
+    lines.push(
+      "[Customize export format](https://aligntrue.ai/export-content-mode)",
+    );
+    lines.push("");
 
     // Group rules by category (using scope or a default "General" category)
     const rulesByCategory = this.groupRulesByCategory(rules);
