@@ -3,13 +3,23 @@
  *
  * Scans for existing agent files and imports them as AlignTrue rules.
  * Uses parseRuleFile() from core to treat each file as a single rule.
+ *
+ * Includes overlap detection to identify when multiple agent files contain
+ * similar content, allowing us to import only the preferred format and
+ * backup the rest.
  */
 
+import { readFileSync } from "fs";
 import { dirname } from "path";
 import {
   detectNestedAgentFiles,
   parseRuleFile,
+  findSimilarContent,
+  DEFAULT_SIMILARITY_THRESHOLD,
   type RuleFile,
+  type NestedAgentFile,
+  type FileWithContent,
+  type SimilarityGroup,
 } from "@aligntrue/core";
 
 /**
@@ -77,6 +87,79 @@ export function extractNestedLocation(
 }
 
 /**
+ * A duplicate file that was detected as similar to the canonical source
+ */
+export interface DuplicateFile {
+  /** Original file info */
+  file: NestedAgentFile;
+  /** Similarity score to canonical (0-1) */
+  similarity: number;
+  /** Path of the canonical file this is a duplicate of */
+  canonicalPath: string;
+}
+
+/**
+ * Result of scanning for existing rules with overlap detection
+ */
+export interface ScanResult {
+  /** Rules to import (canonical sources only) */
+  rules: RuleFile[];
+  /** Duplicate files that should be backed up */
+  duplicates: DuplicateFile[];
+  /** Similarity groups for display purposes */
+  similarityGroups: SimilarityGroup[];
+  /** Whether any overlap was detected */
+  hasOverlap: boolean;
+}
+
+/**
+ * Options for scanning rules
+ */
+export interface ScanOptions {
+  /** Similarity threshold for detecting duplicates (0-1), default 0.75 */
+  similarityThreshold?: number;
+  /** Whether to detect and deduplicate overlapping files, default true */
+  detectOverlap?: boolean;
+}
+
+/**
+ * Convert a NestedAgentFile to a RuleFile with source metadata
+ */
+function convertToRule(
+  file: NestedAgentFile,
+  cwd: string,
+  now: string,
+): RuleFile {
+  // Use parseRuleFile from core - treats entire file as one rule
+  const rule = parseRuleFile(file.path, cwd);
+
+  // Add source metadata
+  rule.frontmatter.source = file.type;
+  rule.frontmatter.source_added = now;
+  rule.frontmatter.original_path = file.relativePath;
+
+  // Extract nested location from source path so exports go to the correct nested directory
+  // e.g., "apps/docs/.cursor/rules/web_stack.mdc" -> nested_location: "apps/docs"
+  const nestedLocation = extractNestedLocation(file.relativePath, file.type);
+  if (nestedLocation) {
+    rule.frontmatter.nested_location = nestedLocation;
+  }
+
+  // Convert .mdc extension to .md for AlignTrue rules directory
+  if (rule.filename.endsWith(".mdc")) {
+    rule.filename = rule.filename.slice(0, -4) + ".md";
+  }
+  if (rule.path.endsWith(".mdc")) {
+    rule.path = rule.path.slice(0, -4) + ".md";
+  }
+  if (rule.relativePath?.endsWith(".mdc")) {
+    rule.relativePath = rule.relativePath.slice(0, -4) + ".md";
+  }
+
+  return rule;
+}
+
+/**
  * Scan for existing agent files in the workspace and import them as rules
  *
  * Each detected file becomes one rule (not split by sections).
@@ -84,42 +167,102 @@ export function extractNestedLocation(
  * use `aligntrue sources split` after init.
  *
  * @param cwd Workspace root
+ * @deprecated Use scanForExistingRulesWithOverlap for overlap detection
  */
 export async function scanForExistingRules(cwd: string): Promise<RuleFile[]> {
-  const detectedFiles = await detectNestedAgentFiles(cwd);
-  const importedRules: RuleFile[] = [];
+  const result = await scanForExistingRulesWithOverlap(cwd, {
+    detectOverlap: false,
+  });
+  return result.rules;
+}
 
+/**
+ * Scan for existing agent files with overlap detection
+ *
+ * Detects when multiple agent files (Cursor, AGENTS.md, CLAUDE.md) contain
+ * similar content. Returns the canonical sources to import and duplicates
+ * to backup.
+ *
+ * @param cwd Workspace root
+ * @param options Scan options
+ * @returns Scan result with rules to import and duplicates to backup
+ */
+export async function scanForExistingRulesWithOverlap(
+  cwd: string,
+  options: ScanOptions = {},
+): Promise<ScanResult> {
+  const {
+    similarityThreshold = DEFAULT_SIMILARITY_THRESHOLD,
+    detectOverlap = true,
+  } = options;
+
+  const detectedFiles = await detectNestedAgentFiles(cwd);
   const now = new Date().toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
 
-  for (const file of detectedFiles) {
-    // Use parseRuleFile from core - treats entire file as one rule
-    const rule = parseRuleFile(file.path, cwd);
-
-    // Add source metadata
-    rule.frontmatter.source = file.type;
-    rule.frontmatter.source_added = now;
-    rule.frontmatter.original_path = file.relativePath;
-
-    // Extract nested location from source path so exports go to the correct nested directory
-    // e.g., "apps/docs/.cursor/rules/web_stack.mdc" -> nested_location: "apps/docs"
-    const nestedLocation = extractNestedLocation(file.relativePath, file.type);
-    if (nestedLocation) {
-      rule.frontmatter.nested_location = nestedLocation;
-    }
-
-    // Convert .mdc extension to .md for AlignTrue rules directory
-    if (rule.filename.endsWith(".mdc")) {
-      rule.filename = rule.filename.slice(0, -4) + ".md";
-    }
-    if (rule.path.endsWith(".mdc")) {
-      rule.path = rule.path.slice(0, -4) + ".md";
-    }
-    if (rule.relativePath?.endsWith(".mdc")) {
-      rule.relativePath = rule.relativePath.slice(0, -4) + ".md";
-    }
-
-    importedRules.push(rule);
+  // If overlap detection is disabled or only one file, skip similarity analysis
+  if (!detectOverlap || detectedFiles.length <= 1) {
+    const rules = detectedFiles.map((file) => convertToRule(file, cwd, now));
+    return {
+      rules,
+      duplicates: [],
+      similarityGroups: [],
+      hasOverlap: false,
+    };
   }
 
-  return importedRules;
+  // Build file content map for similarity analysis
+  const filesWithContent: FileWithContent[] = detectedFiles.map((file) => ({
+    path: file.relativePath,
+    content: readFileSync(file.path, "utf-8"),
+    type: file.type,
+  }));
+
+  // Find similar content groups
+  const { groups, unique } = findSimilarContent(
+    filesWithContent,
+    similarityThreshold,
+  );
+
+  // Build result
+  const rules: RuleFile[] = [];
+  const duplicates: DuplicateFile[] = [];
+
+  // Add unique files as rules
+  for (const fileContent of unique) {
+    const file = detectedFiles.find((f) => f.relativePath === fileContent.path);
+    if (file) {
+      rules.push(convertToRule(file, cwd, now));
+    }
+  }
+
+  // For each similarity group, add canonical as rule and others as duplicates
+  for (const group of groups) {
+    const canonicalFile = detectedFiles.find(
+      (f) => f.relativePath === group.canonical.path,
+    );
+    if (canonicalFile) {
+      rules.push(convertToRule(canonicalFile, cwd, now));
+    }
+
+    // Add duplicates
+    for (const dup of group.duplicates) {
+      const dupFile = detectedFiles.find(
+        (f) => f.relativePath === dup.file.path,
+      );
+      if (dupFile) {
+        duplicates.push({
+          file: dupFile,
+          similarity: dup.similarity,
+          canonicalPath: group.canonical.path,
+        });
+      }
+    }
+  }
+
+  return {
+    rules,
+    duplicates,
+    similarityGroups: groups,
+    hasOverlap: groups.length > 0,
+  };
 }
