@@ -74,7 +74,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 **Multi-layer safety system:**
 
 - **Mandatory workspace backups** - Full `.aligntrue/` directory and agent files backed up before every sync (cannot be disabled)
-- **Overwritten-rules backup** - Individual files backed up to `.aligntrue/overwritten-rules/` with timestamps before overwriting
+- **Individual file backup** - Files backed up to `.aligntrue/.backups/files/` with timestamps before overwriting
 - **Section-level backup** - Conflicting sections preserved during merge operations
 - **Atomic file operations** - Temp file + rename pattern prevents corruption during writes
 - **Easy recovery** - `aligntrue revert` for quick rollback with preview and diff

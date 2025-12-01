@@ -275,7 +275,7 @@ aligntrue sync
 # ⚠ Checksum mismatch: AGENTS.md
 #
 # This file was manually edited since last sync.
-# Backing up to .aligntrue/overwritten-rules/AGENTS.2025-01-15T10-30-45.md
+# Backing up to .aligntrue/.backups/files/AGENTS.2025-01-15T10-30-45.md.bak
 # Overwriting with current rules from IR.
 ```
 
@@ -310,7 +310,7 @@ Choice:
 
 Agent files are automatically overwritten during sync if manually edited:
 
-1. **Before overwriting**: Original content is backed up to `.aligntrue/overwritten-rules/` with a timestamp
+1. **Before overwriting**: Original content is backed up to `.aligntrue/.backups/files/` with a timestamp
 2. **During sync**: File is overwritten with clean IR content (no merge, no user edits preserved)
 3. **No --force needed**: This happens automatically for agent files
 
@@ -323,7 +323,7 @@ nano .aligntrue/rules/global.md
 # Sync overwrites agent files with new content
 aligntrue sync
 # Result:
-# 1. Backup created: .aligntrue/overwritten-rules/AGENTS.2025-01-15T14-30-00.md
+# 1. Backup created: .aligntrue/.backups/files/AGENTS.2025-01-15T14-30-00.md.bak
 # 2. Files overwritten with IR content
 ```
 
