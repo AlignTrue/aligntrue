@@ -179,8 +179,8 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
       yaml:
-        specifier: ^2.6.1
-        version: 2.8.1
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@types/diff':
         specifier: ^8.0.0
@@ -338,7 +338,7 @@ importers:
         version: 19.2.3(@types/react@19.2.6)
       '@vitest/coverage-v8':
         specifier: ^4.0.8
-        version: 4.0.10(vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.0.10(vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.2))
       jsdom:
         specifier: ^27.2.0
         version: 27.2.0
@@ -347,7 +347,7 @@ importers:
         version: 4.1.17
       vitest:
         specifier: ^4.0.8
-        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.2)
 
 packages:
 
@@ -3993,8 +3993,8 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
-  web-features@3.9.3:
-    resolution: {integrity: sha512-XriA6MImG3hyEcFhLScs+IlPzUPqd+IYg1lSN9utuxwmWOaQexXVSmpNRU56LIACRr6bEMkxmaPGQ+fh80/8bA==}
+  web-features@3.10.0:
+    resolution: {integrity: sha512-ySfH0WgGGUuJgMOQLaDOEV7IDEA9NIjzEIO0bgyUPaFvMsBA28oTamqVYggQ8ecSM835T7m5KMf2wZsLjEyNVA==}
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
@@ -4065,6 +4065,11 @@ packages:
 
   yaml@2.8.1:
     resolution: {integrity: sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+  yaml@2.8.2:
+    resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -5357,6 +5362,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@vitest/coverage-v8@4.0.10(vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.2))':
+    dependencies:
+      '@bcoe/v8-coverage': 1.0.2
+      '@vitest/utils': 4.0.10
+      ast-v8-to-istanbul: 0.3.8
+      debug: 4.4.3
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.2.0
+      magicast: 0.5.1
+      std-env: 3.10.0
+      tinyrainbow: 3.0.3
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - supports-color
+
   '@vitest/expect@4.0.10':
     dependencies:
       '@standard-schema/spec': 1.0.0
@@ -5476,7 +5498,7 @@ snapshots:
   baseline-browser-mapping@1.0.0:
     dependencies:
       '@mdn/browser-compat-data': 7.1.23
-      web-features: 3.9.3
+      web-features: 3.10.0
 
   better-react-mathjax@2.3.0(react@19.2.0):
     dependencies:
@@ -8200,6 +8222,21 @@ snapshots:
       tsx: 4.20.6
       yaml: 2.8.1
 
+  vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.2):
+    dependencies:
+      esbuild: 0.27.0
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.53.2
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 24.10.1
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      tsx: 4.20.6
+      yaml: 2.8.2
+
   vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.10
@@ -8240,6 +8277,46 @@ snapshots:
       - tsx
       - yaml
 
+  vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(jsdom@27.2.0)(tsx@4.20.6)(yaml@2.8.2):
+    dependencies:
+      '@vitest/expect': 4.0.10
+      '@vitest/mocker': 4.0.10(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/pretty-format': 4.0.10
+      '@vitest/runner': 4.0.10
+      '@vitest/snapshot': 4.0.10
+      '@vitest/spy': 4.0.10
+      '@vitest/utils': 4.0.10
+      debug: 4.4.3
+      es-module-lexer: 1.7.0
+      expect-type: 1.2.2
+      magic-string: 0.30.21
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.2)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 24.10.1
+      jsdom: 27.2.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
   vscode-jsonrpc@8.2.0: {}
 
   vscode-languageserver-protocol@3.17.5:
@@ -8261,7 +8338,7 @@ snapshots:
     dependencies:
       xml-name-validator: 5.0.0
 
-  web-features@3.9.3: {}
+  web-features@3.10.0: {}
 
   web-namespaces@2.0.1: {}
 
@@ -8312,6 +8389,8 @@ snapshots:
   y18n@5.0.8: {}
 
   yaml@2.8.1: {}
+
+  yaml@2.8.2: {}
 
   yargs-parser@21.1.1: {}
 
