@@ -617,10 +617,11 @@ Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
   const createdFiles: string[] = [];
 
   for (const rule of rulesToWrite) {
-    const fullPath = join(rulesDir, rule.path);
+    const rulePath = rule.relativePath || rule.filename;
+    const fullPath = join(rulesDir, rulePath);
     mkdirSync(dirname(fullPath), { recursive: true });
     writeRuleFile(fullPath, rule);
-    createdFiles.push(join(".aligntrue/rules", rule.path));
+    createdFiles.push(join(".aligntrue/rules", rulePath));
   }
 
   // Use selected exporters, preferring ruler config if available
