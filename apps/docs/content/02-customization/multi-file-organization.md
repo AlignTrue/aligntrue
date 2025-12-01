@@ -1,23 +1,29 @@
 ---
-title: Multi-file rule organization
-description: Organize rules across multiple files for better maintainability in large projects and teams
+title: Rule organization
+description: Organize rules across files and control how they appear in agent exports (inline or linked)
 ---
 
-# Multi-file rule organization
+# Rule organization
 
-As your rule set grows, organizing rules across multiple files makes them easier to manage, navigate, and collaborate on. This guide explains when and how to use multi-file organization.
+This guide covers how AlignTrue organizes your rules and how they appear in exported files. You can organize rules across multiple source files, embed them inline in exports, or link to them—giving you flexibility to match your team's workflow and agent capabilities. Whether you have one rule or dozens, these options help you manage rules effectively.
 
-## Why use multiple files?
+## Rule storage and export
 
-**Multi-file organization is a user organizational feature.** It helps you manage large or complex rule sets by splitting them into logical categories.
+AlignTrue uses `.aligntrue/rules/` as your canonical source, which you organize however you want. When exporting to agents, you control how rules appear: embedded inline for simplicity, or linked for large rule sets.
 
-**Benefits:**
+**Multi-file organization benefits:**
 
 - **Better organization**: Group related rules together (security, architecture, testing)
 - **Easier navigation**: Jump directly to the file you need instead of scrolling through one large file
 - **Reduced merge conflicts**: Multiple people can edit different files simultaneously
 - **Clear ownership**: Assign different files to different team members via CODEOWNERS
 - **Logical separation**: Keep concerns separate and focused
+
+**Export format benefits:**
+
+- **Inline mode**: Full rule content embedded in exports for immediate access
+- **Links mode**: Markdown links to source files, keeping exports lean and modular
+- **Auto mode**: AlignTrue picks the best approach based on your setup
 
 ## When to use multiple files
 

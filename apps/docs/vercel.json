@@ -61,6 +61,11 @@
       "source": "/add-rules",
       "destination": "/docs/01-guides/11-adding-rules",
       "permanent": true
+    },
+    {
+      "source": "/export-content-mode",
+      "destination": "/docs/02-customization/multi-file-organization#content-mode-for-single-file-exports",
+      "permanent": true
     }
   ],
   "headers": [
