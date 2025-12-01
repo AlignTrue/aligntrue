@@ -561,6 +561,43 @@ aligntrue sync
 - Priority settings respected during sync
 - No duplicate rules across formats
 
+#### Nested ignore file workflow
+
+Test that ignore files are created in nested directories when rules have `nested_location`:
+
+```bash
+cd /tmp/test-nested-ignore
+aligntrue init --mode solo --yes --exporters cursor,agents
+
+# Create a rule with nested_location
+mkdir -p .aligntrue/rules
+cat > .aligntrue/rules/docs-rule.md <<'EOF'
+---
+title: Docs rule
+nested_location: apps/docs
+---
+
+# Docs rule
+
+Content for docs.
+EOF
+
+# Sync to trigger nested ignore file creation
+aligntrue sync
+
+# Verify nested ignore file was created
+test -f apps/docs/.cursorignore && echo "PASS: nested ignore file created" || echo "FAIL: nested ignore file missing"
+
+# Verify it ignores AGENTS.md (conflict between cursor and agents exporters)
+grep "AGENTS.md" apps/docs/.cursorignore || echo "FAIL: AGENTS.md not ignored"
+```
+
+**Expected:**
+
+- Nested ignore files created in directories specified by `nested_location`
+- Ignore files follow same format conflict rules as root ignore files
+- Multiple nested locations each get their own ignore file
+
 #### Backup testing workflow
 
 Test mandatory backup system and BackupManager behavior:
@@ -1111,6 +1148,47 @@ grep "Backend Rule" .cursor/rules/backend.mdc || echo "FAIL: backend rule not sy
 - New edit source content replaces IR without merging
 - Cursor files now reflect the current rule set
 - No merge-strategy prompts or keep-both behavior
+
+#### Nested location import and export workflow
+
+Test that rules from nested directories are imported with `nested_location` frontmatter and exported back to the correct location:
+
+```bash
+cd /tmp/test-nested-locations
+aligntrue init --mode solo --yes
+
+# Create a nested cursor rule at apps/docs/.cursor/rules/
+mkdir -p apps/docs/.cursor/rules
+cat > apps/docs/.cursor/rules/web_stack.mdc <<'EOF'
+---
+description: Web stack guide for docs site
+title: web_stack.mdc
+---
+
+# Web stack guide
+
+This rule is specific to the docs app.
+EOF
+
+# Run init to import the nested rule
+aligntrue init --yes --exporters cursor
+
+# Verify the imported rule has nested_location in frontmatter
+cat .aligntrue/rules/web_stack.md | grep "nested_location: apps/docs" || echo "FAIL: nested_location missing"
+
+# Sync to export back
+aligntrue sync
+
+# Verify the rule was exported to the nested location (not root)
+test -f apps/docs/.cursor/rules/web_stack.mdc && echo "PASS: exported to nested location" || echo "FAIL: not exported to nested location"
+```
+
+**Expected:**
+
+- Rules from nested directories get `nested_location` frontmatter during import
+- `original_path` frontmatter preserves the source location
+- Sync exports rules back to their nested locations
+- Root-level rules do NOT get `nested_location` frontmatter
 
 ### 3. Golden Paths (Team)
 
