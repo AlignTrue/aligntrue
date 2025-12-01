@@ -112,3 +112,14 @@ export {
   type ConflictInfo,
   type ConflictResolution,
 } from "./import/index.js";
+
+// Similarity detection
+export {
+  normalizeTokens,
+  jaccardSimilarity,
+  findSimilarContent,
+  DEFAULT_SIMILARITY_THRESHOLD,
+  type FileWithContent,
+  type SimilarityGroup,
+  type SimilarityResult,
+} from "./similarity/index.js";

@@ -467,9 +467,14 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
         process.exit(0);
       }
 
-      // Import using the existing scanner
-      const { scanForExistingRules } = await import("./init/rule-importer.js");
-      const allRules = await scanForExistingRules(cwd);
+      // Import using the existing scanner (disable overlap detection for explicit import)
+      const { scanForExistingRulesWithOverlap } = await import(
+        "./init/rule-importer.js"
+      );
+      const scanResult = await scanForExistingRulesWithOverlap(cwd, {
+        detectOverlap: false,
+      });
+      const allRules = scanResult.rules;
 
       // Filter to only selected files
       const selectedPaths = new Set(
