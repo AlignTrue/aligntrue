@@ -1,11 +1,11 @@
 /**
- * Tests for adapters command
+ * Tests for exporters command
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { adapters } from "../../src/commands/adapters.js";
+import { exporters } from "../../src/commands/exporters.js";
 import { mockCommandArgs } from "../utils/command-test-helpers.js";
 import * as clack from "@clack/prompts";
 
@@ -28,7 +28,7 @@ vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
   recordEvent: vi.fn(),
 }));
 
-describe("adapters command", () => {
+describe("exporters command", () => {
   let tempDir: string;
   let originalCwd: string;
   let originalExit: typeof process.exit;
@@ -36,7 +36,7 @@ describe("adapters command", () => {
 
   beforeEach(() => {
     // Create temp directory
-    tempDir = join(process.cwd(), ".test-adapters-" + Date.now());
+    tempDir = join(process.cwd(), ".test-exporters-" + Date.now());
     mkdirSync(tempDir, { recursive: true });
 
     // Save original cwd
@@ -69,23 +69,23 @@ describe("adapters command", () => {
     vi.clearAllMocks();
   });
 
-  const createConfig = (exporters: string[] = ["cursor", "agents"]) => {
+  const createConfig = (exportersList: string[] = ["cursor", "agents"]) => {
     mkdirSync(".aligntrue", { recursive: true });
     const _config = {
       version: "1",
       mode: "solo",
-      exporters,
+      exporters: exportersList,
     };
     writeFileSync(
       ".aligntrue/config.yaml",
-      `version: '1'\nmode: solo\nexporters:\n${exporters.map((e) => `  - ${e}`).join("\n")}\n`,
+      `version: '1'\nmode: solo\nexporters:\n${exportersList.map((e) => `  - ${e}`).join("\n")}\n`,
     );
   };
 
   describe("help", () => {
     it("shows help with no args", async () => {
       try {
-        await adapters([]);
+        await exporters([]);
       } catch {
         // Expected
       }
@@ -96,7 +96,7 @@ describe("adapters command", () => {
     it("shows help with --help", async () => {
       const args = mockCommandArgs({ help: true });
       try {
-        await adapters(args);
+        await exporters(args);
       } catch {
         // Expected
       }
@@ -106,11 +106,11 @@ describe("adapters command", () => {
   });
 
   describe("list subcommand", () => {
-    it("lists adapters with status", async () => {
-      createConfig(["cursor", "agents", "invalid-adapter"]);
+    it("lists exporters with status", async () => {
+      createConfig(["cursor", "agents", "invalid-exporter"]);
 
       try {
-        await adapters(["list"]);
+        await exporters(["list"]);
       } catch {
         // Expected
       }
@@ -119,15 +119,15 @@ describe("adapters command", () => {
     });
 
     it("shows error if config missing", async () => {
-      await expect(adapters(["list"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["list"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
 
-    it("categorizes adapters correctly", async () => {
+    it("categorizes exporters correctly", async () => {
       createConfig(["cursor"]);
 
       try {
-        await adapters(["list"]);
+        await exporters(["list"]);
       } catch {
         // Expected
       }
@@ -135,11 +135,11 @@ describe("adapters command", () => {
       expect(console.log).toHaveBeenCalled();
     });
 
-    it("shows invalid adapters", async () => {
-      createConfig(["cursor", "nonexistent-adapter"]);
+    it("shows invalid exporters", async () => {
+      createConfig(["cursor", "nonexistent-exporter"]);
 
       try {
-        await adapters(["list"]);
+        await exporters(["list"]);
       } catch {
         // Expected
       }
@@ -149,10 +149,10 @@ describe("adapters command", () => {
   });
 
   describe("enable subcommand", () => {
-    it("enables a single adapter", async () => {
+    it("enables a single exporter", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "agents"]);
+      await exporters(["enable", "agents"]);
 
       // Verify config updated
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
@@ -162,36 +162,36 @@ describe("adapters command", () => {
     it("shows friendly message if already enabled", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "cursor"]);
+      await exporters(["enable", "cursor"]);
 
-      // Verify output indicates adapter already enabled
+      // Verify output indicates exporter already enabled
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining("already enabled"),
       );
     });
 
-    it("shows error for invalid adapter", async () => {
+    it("shows error for invalid exporter", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["enable", "nonexistent"])).rejects.toThrow(
+      await expect(exporters(["enable", "nonexistent"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
     });
 
-    it("shows error with no adapter name", async () => {
+    it("shows error with no exporter name", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["enable"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["enable"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
 
-    it("enables multiple adapters with multiple arguments", async () => {
+    it("enables multiple exporters with multiple arguments", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "agents", "claude", "vscode-mcp"]);
+      await exporters(["enable", "agents", "claude", "vscode-mcp"]);
 
-      // Verify all three adapters were added to config
+      // Verify all three exporters were added to config
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
       expect(config).toContain("agents");
       expect(config).toContain("claude");
@@ -199,12 +199,12 @@ describe("adapters command", () => {
       expect(config).toContain("cursor"); // original should still be there
     });
 
-    it("handles mix of enabled and new adapters in multiple args", async () => {
+    it("handles mix of enabled and new exporters in multiple args", async () => {
       createConfig(["cursor", "agents"]);
 
-      await adapters(["enable", "agents", "claude"]);
+      await exporters(["enable", "agents", "claude"]);
 
-      // Verify new adapter added, existing preserved
+      // Verify new exporter added, existing preserved
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
       expect(config).toContain("agents");
       expect(config).toContain("claude");
@@ -213,7 +213,7 @@ describe("adapters command", () => {
     it("shows all already enabled message for multiple args", async () => {
       createConfig(["cursor", "agents", "claude"]);
 
-      await adapters(["enable", "cursor", "agents"]);
+      await exporters(["enable", "cursor", "agents"]);
 
       // Should show message about all being enabled
       expect(console.log).toHaveBeenCalledWith(
@@ -221,15 +221,15 @@ describe("adapters command", () => {
       );
     });
 
-    it("shows error for invalid adapters in multiple args", async () => {
+    it("shows error for invalid exporters in multiple args", async () => {
       createConfig(["cursor"]);
 
       await expect(
-        adapters(["enable", "agents", "nonexistent", "claude"]),
+        exporters(["enable", "agents", "nonexistent", "claude"]),
       ).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
 
-      // Should show error about nonexistent adapter
+      // Should show error about nonexistent exporter
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("not found"),
       );
@@ -238,7 +238,7 @@ describe("adapters command", () => {
       );
     });
 
-    it("enables multiple adapters in interactive mode", async () => {
+    it("enables multiple exporters in interactive mode", async () => {
       createConfig(["cursor"]);
 
       // Mock multiselect to return multiple selections
@@ -248,7 +248,7 @@ describe("adapters command", () => {
         "claude",
       ]);
 
-      await adapters(["enable", "--interactive"]);
+      await exporters(["enable", "--interactive"]);
 
       // Verify config updated
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
@@ -263,7 +263,7 @@ describe("adapters command", () => {
       vi.mocked(clack.multiselect).mockResolvedValue(Symbol.for("cancel"));
 
       try {
-        await adapters(["enable", "--interactive"]);
+        await exporters(["enable", "--interactive"]);
       } catch {
         // Expected
       }
@@ -275,7 +275,7 @@ describe("adapters command", () => {
       // Mock multiselect to return same selections
       vi.mocked(clack.multiselect).mockResolvedValue(["cursor", "agents"]);
 
-      await adapters(["enable", "--interactive"]);
+      await exporters(["enable", "--interactive"]);
 
       // Verify no changes message
       expect(console.log).toHaveBeenCalledWith(
@@ -286,8 +286,8 @@ describe("adapters command", () => {
     it("sorts exporters alphabetically", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["enable", "zed-config"]);
-      await adapters(["enable", "agents"]);
+      await exporters(["enable", "zed-config"]);
+      await exporters(["enable", "agents"]);
 
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
       const lines = config.split("\n");
@@ -303,10 +303,10 @@ describe("adapters command", () => {
   });
 
   describe("disable subcommand", () => {
-    it("disables an adapter", async () => {
+    it("disables an exporter", async () => {
       createConfig(["cursor", "agents"]);
 
-      await adapters(["disable", "cursor"]);
+      await exporters(["disable", "cursor"]);
 
       // Verify config updated - check exporters list specifically
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
@@ -316,28 +316,28 @@ describe("adapters command", () => {
       expect(exportersSection).not.toContain("cursor");
     });
 
-    it("shows error if adapter not enabled", async () => {
+    it("shows error if exporter not enabled", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["disable", "agents"])).rejects.toThrow(
+      await expect(exporters(["disable", "agents"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
     });
 
-    it("prevents disabling last adapter", async () => {
+    it("prevents disabling last exporter", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["disable", "cursor"])).rejects.toThrow(
+      await expect(exporters(["disable", "cursor"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
     });
 
-    it("shows error with no adapter name", async () => {
+    it("shows error with no exporter name", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["disable"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["disable"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
   });
@@ -357,7 +357,7 @@ describe("adapters command", () => {
       };
 
       try {
-        await adapters(["detect"]);
+        await exporters(["detect"]);
       } finally {
         console.log = originalLog;
       }
@@ -381,7 +381,7 @@ describe("adapters command", () => {
       };
 
       try {
-        await adapters(["detect"]);
+        await exporters(["detect"]);
       } finally {
         console.log = originalLog;
       }
@@ -390,7 +390,7 @@ describe("adapters command", () => {
     });
 
     it("handles missing config", async () => {
-      await expect(adapters(["detect"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["detect"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
   });
@@ -399,7 +399,7 @@ describe("adapters command", () => {
     it("adds agent to ignored list", async () => {
       createConfig(["cursor"]);
 
-      await adapters(["ignore", "windsurf"]);
+      await exporters(["ignore", "windsurf"]);
 
       // Verify config updated
       const config = readFileSync(".aligntrue/config.yaml", "utf-8");
@@ -422,7 +422,7 @@ describe("adapters command", () => {
       };
 
       try {
-        await adapters(["ignore", "windsurf"]);
+        await exporters(["ignore", "windsurf"]);
       } finally {
         console.log = originalLog;
       }
@@ -433,12 +433,12 @@ describe("adapters command", () => {
     it("fails with helpful error when agent name missing", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["ignore"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["ignore"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
 
     it("handles missing config", async () => {
-      await expect(adapters(["ignore", "windsurf"])).rejects.toThrow(
+      await expect(exporters(["ignore", "windsurf"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
@@ -447,14 +447,14 @@ describe("adapters command", () => {
 
   describe("error handling", () => {
     it("handles missing config for enable", async () => {
-      await expect(adapters(["enable", "cursor"])).rejects.toThrow(
+      await expect(exporters(["enable", "cursor"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
     });
 
     it("handles missing config for disable", async () => {
-      await expect(adapters(["disable", "cursor"])).rejects.toThrow(
+      await expect(exporters(["disable", "cursor"])).rejects.toThrow(
         "process.exit: 1",
       );
       expect(exitCode).toBe(1);
@@ -463,7 +463,7 @@ describe("adapters command", () => {
     it("handles unknown subcommand", async () => {
       createConfig(["cursor"]);
 
-      await expect(adapters(["unknown"])).rejects.toThrow("process.exit: 1");
+      await expect(exporters(["unknown"])).rejects.toThrow("process.exit: 1");
       expect(exitCode).toBe(1);
     });
   });

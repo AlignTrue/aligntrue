@@ -212,7 +212,7 @@ export async function buildSyncContext(
         )
         .join("; ");
       throw ErrorFactory.invalidConfig(
-        `${message}. Run 'aligntrue adapters list' to see available adapters.`,
+        `${message}. Run 'aligntrue exporters list' to see available exporters.`,
       );
     }
   } catch (error) {

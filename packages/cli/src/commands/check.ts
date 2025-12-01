@@ -173,7 +173,7 @@ export async function check(args: string[]): Promise<void> {
       exitWithError(
         {
           ...Errors.configValidationFailed(configPath, details),
-          hint: "Run 'aligntrue adapters list' to view available exporters, then update .aligntrue/config.yaml",
+          hint: "Run 'aligntrue exporters list' to view available exporters, then update .aligntrue/config.yaml",
         },
         1,
       );
