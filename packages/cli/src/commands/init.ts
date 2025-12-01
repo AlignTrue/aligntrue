@@ -735,9 +735,11 @@ aligntrue sync
   const outroLines = [
     completionStatus,
     "",
-    isFromExternalSource
-      ? `Rules imported from ${sourceArg}${linkFlag ? " (linked for updates)" : ""}.`
-      : "",
+    ...(isFromExternalSource
+      ? [
+          `Rules imported from ${sourceArg}${linkFlag ? " (linked for updates)" : ""}.`,
+        ]
+      : []),
     "Your rules are in .aligntrue/rules/ - edit them any time.",
     "Customize config in .aligntrue/config.yaml",
     "",
@@ -752,7 +754,7 @@ aligntrue sync
     "  aligntrue --help      See all commands",
     "",
     "Learn more: https://aligntrue.ai/docs",
-  ].filter(Boolean);
+  ];
 
   if (!nonInteractive) {
     clack.outro(outroLines.join("\n"));
