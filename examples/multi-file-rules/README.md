@@ -39,7 +39,7 @@ sync:
 1. **Source Files**: AlignTrue reads all `.md` files in the `rules/` directory
 2. **Ordering**: Files are merged in the order specified by `source_order` (or alphabetically if not specified)
 3. **Provenance**: Each section tracks which source file it came from
-4. **Two-Way Sync**: You can edit any source file, and changes sync to all agents
+4. **Unidirectional Sync**: Edit rules in `.aligntrue/rules/`, sync flows to all agents
 
 ## Usage
 
