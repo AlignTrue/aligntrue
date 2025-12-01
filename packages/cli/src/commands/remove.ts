@@ -153,17 +153,13 @@ export async function remove(args: string[]): Promise<void> {
 
     spinner.stop("Align source removed");
 
-    // Success message
-    const successMessage =
-      `Removed source: ${urlToRemove}\n\n` +
-      `Next steps:\n` +
-      `  - Run sync to update rules: aligntrue sync\n` +
-      `  - Exported agent files will be updated on next sync`;
+    // Consolidated outro
+    const outroMessage = `Removed source: ${urlToRemove}\nRun 'aligntrue sync' to update agent files.`;
 
     if (isTTY()) {
-      clack.outro(successMessage);
+      clack.outro(outroMessage);
     } else {
-      console.log("\n" + successMessage);
+      console.log("\n" + outroMessage);
     }
   } catch (error) {
     spinner.stop("Remove failed", 1);

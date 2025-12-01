@@ -322,25 +322,18 @@ async function addLinkedSource(options: {
 
     spinner.stop("Source linked");
 
-    // Success message
+    // Consolidated outro
     const sourceDesc =
       sourceType === "git"
-        ? `Git source: ${baseUrl}${gitRef ? ` (${gitRef})` : ""}`
-        : sourceType === "url"
-          ? `URL source: ${baseUrl}`
-          : `Local source: ${baseUrl}`;
+        ? `${baseUrl}${gitRef ? ` (${gitRef})` : ""}`
+        : baseUrl;
 
-    const successMessage =
-      `Linked ${sourceDesc}\n\n` +
-      `This source will be fetched on each 'aligntrue sync'.\n\n` +
-      `Next steps:\n` +
-      `  - Run sync to pull rules: aligntrue sync\n` +
-      `  - To remove: aligntrue remove ${baseUrl}`;
+    const outroMessage = `Linked ${sourceDesc}\nRun 'aligntrue sync' to pull rules.`;
 
     if (isTTY()) {
-      clack.outro(successMessage);
+      clack.outro(outroMessage);
     } else {
-      console.log("\n" + successMessage);
+      console.log("\n" + outroMessage);
     }
   } catch (error) {
     spinner.stop("Link failed", 1);

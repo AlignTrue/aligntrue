@@ -313,13 +313,9 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Handle already-initialized case
   if (contextResult.context === "already-initialized") {
-    const message = `✗ AlignTrue already initialized in this project
-    
-Next steps:
-  1. Review rules in .aligntrue/rules/
-  2. Run sync: aligntrue sync
-
-Want to reinitialize? Remove .aligntrue/ first (warning: destructive)`;
+    const message =
+      "AlignTrue already initialized in this project.\n" +
+      "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.";
 
     if (nonInteractive) {
       console.log(message);
@@ -711,18 +707,11 @@ aligntrue sync
   formatCreatedFiles(createdFiles, { nonInteractive });
 
   // Step 5: Sync
-  console.log("\n✓ AlignTrue initialized\n");
-
   const shouldSync = !noSync && finalExporters.length > 0;
   let autoSyncPerformed = false;
 
   if (finalExporters.length === 0) {
-    // No exporters configured - skip sync and inform user
-    logMessage(
-      "No exporters configured. Add one with 'aligntrue adapters enable <format>'",
-      "info",
-      nonInteractive,
-    );
+    // No exporters configured - skip sync
   } else if (shouldSync) {
     // For fresh starts, auto-sync without prompting (we know exactly what will be synced)
     if (isFreshStart) {
@@ -747,61 +736,38 @@ aligntrue sync
     }
   }
 
-  if (autoSyncPerformed) {
-    const msg = "\n✓ Initial sync complete! Your agents are now aligned.";
-    logMessage(msg, "success", nonInteractive);
-  }
+  // Build consolidated outro message
+  const completionStatus = autoSyncPerformed
+    ? "AlignTrue initialized and synced"
+    : "AlignTrue initialized";
 
-  // Show multi-format message if any selected exporters support multiple formats
-  const multiFormatAgents = [
-    "cursor",
-    "amazonq",
-    "kilocode",
-    "augmentcode",
-    "kiro",
-    "trae-ai",
-  ];
-  const hasMultiFormatAgents = finalExporters.some((e: string) =>
-    multiFormatAgents.includes(e),
-  );
-  if (hasMultiFormatAgents) {
-    logMessage(
-      "\nSome agents support multiple export formats (multi-file, AGENTS.md, etc.).\n" +
-        "Configure in .aligntrue/config.yaml. See docs at https://aligntrue.ai/formats",
-      "info",
-      nonInteractive,
-    );
-  }
-
-  // Outro with helpful commands
   const outroLines = [
+    completionStatus,
     "",
     isFromExternalSource
-      ? `Rules imported from ${sourceArg}. ${linkFlag ? "Source is linked for updates." : "Rules copied locally."}`
-      : isFreshStart
-        ? "Your starter rules are ready. Add or update them any time in .aligntrue/rules/"
-        : "Initialization complete. Review your rules in .aligntrue/rules/",
+      ? `Rules imported from ${sourceArg}${linkFlag ? " (linked for updates)" : ""}.`
+      : "",
+    "Your rules are in .aligntrue/rules/ - edit them any time.",
+    "Customize config in .aligntrue/config.yaml",
     "",
     "Helpful commands:",
     "  aligntrue sync        Sync rules to your agents",
-    "  aligntrue add <git-url>  Add rules from git repo or path",
+    "  aligntrue add <url>   Add rules from git repo or path",
     "  aligntrue adapters    Manage agent formats",
     "  aligntrue status      Check sync health",
     ...(mode !== "team"
       ? ["  aligntrue team enable Enable team mode for collaboration"]
       : []),
     "  aligntrue --help      See all commands",
-  ];
+    "",
+    "Learn more: https://aligntrue.ai/docs",
+  ].filter(Boolean);
 
-  // Show tip about removing imported rules
-  if (isFromExternalSource && !linkFlag) {
-    outroLines.push("");
-    outroLines.push(
-      "To remove imported rules: delete the files from .aligntrue/rules/ and run 'aligntrue sync'",
-    );
+  if (!nonInteractive) {
+    clack.outro(outroLines.join("\n"));
+  } else {
+    console.log("\n" + outroLines.join("\n"));
   }
-
-  logMessage(outroLines.join("\n"), "info", nonInteractive);
 
   recordEvent({ command_name: "init", align_hashes_used: [] });
 }

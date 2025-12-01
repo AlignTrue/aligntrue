@@ -16,7 +16,6 @@ import {
 import { isTTY } from "../utils/tty-helper.js";
 import { applyDefaults, getExporterNames } from "@aligntrue/core";
 import { createManagedSpinner, type SpinnerLike } from "../utils/spinner.js";
-import { buildNextStepsMessage } from "../utils/next-steps.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -385,44 +384,25 @@ async function teamEnable(
 
     spinner.stop("Team configuration updated");
 
-    // Show configuration summary
-    console.log("\n✓ Team mode enabled\n");
-    console.log("Current configuration:");
-    console.log(`  Mode: team`);
-    console.log(
-      `  Lockfile: enabled (${config.lockfile?.mode || "soft"} mode)`,
-    );
-    console.log(`  Bundle: enabled`);
-
-    console.log("\nNext steps:");
-    console.log("  1. Run first sync: aligntrue sync");
-    console.log("  2. Review generated lockfile: .aligntrue.lock.json");
-    console.log("  3. Commit changes:");
-    console.log("     git add .aligntrue/");
-    console.log("     git commit -m 'feat: Enable AlignTrue team mode'");
-    console.log(
-      "  4. Team members run: aligntrue init (will detect team mode)",
-    );
-
-    console.log("\n💡 First Sync Note:");
-    console.log(
-      "  When you run your first sync, you'll see lockfile drift warnings.",
-    );
-    console.log(
-      "  This is expected - AlignTrue is creating your team's baseline lockfile.",
-    );
-    console.log(
-      "  Future syncs will only show actual changes from this baseline.\n",
-    );
-
-    const teamNextSteps = buildNextStepsMessage({
-      mode: "team",
-      syncGuidance: "standard",
-    });
-    console.log(`\n${teamNextSteps}`);
+    // Consolidated outro
+    const outroLines = [
+      "Team mode enabled",
+      "",
+      "Config updated: .aligntrue/config.yaml",
+      `Lockfile: .aligntrue.lock.json (${config.lockfile?.mode || "soft"} mode, created on first sync)`,
+      "",
+      "Helpful commands:",
+      "  aligntrue sync   Sync rules and update lockfile",
+      "  aligntrue team   Manage team settings",
+      "  aligntrue --help See all commands",
+      "",
+      "Learn more: https://aligntrue.ai/docs/team",
+    ];
 
     if (!nonInteractive) {
-      clack.outro("Team mode ready! Run 'aligntrue sync' to get started.");
+      clack.outro(outroLines.join("\n"));
+    } else {
+      console.log("\n" + outroLines.join("\n"));
     }
   } catch (err) {
     if (spinner) {
@@ -568,31 +548,25 @@ async function teamDisable(
     // Record telemetry event
     recordEvent({ command_name: "team-disable", align_hashes_used: [] });
 
-    // Show configuration summary
-    console.log("\n✓ Team mode disabled\n");
-    console.log("Current configuration:");
-    console.log(`  Mode: solo`);
-    console.log(`  Edit rules in: .aligntrue/rules/`);
-
-    console.log("\nWhat happened:");
-    console.log("  ✓ Team rules are now solo public rules");
-    console.log("  ✓ You can make them private by editing AGENTS.md");
-    console.log(
-      "  ✓ Lockfile deleted (regenerated if you re-enable team mode)",
-    );
-    console.log(
-      `  ✓ Backup available: aligntrue backup restore --to ${backup.timestamp}`,
-    );
-
-    console.log("\nNext steps:");
-    console.log("  1. Run sync: aligntrue sync");
-    console.log("  2. Review your rules in AGENTS.md");
-    console.log("  3. Commit changes:");
-    console.log("     git add .aligntrue/");
-    console.log("     git commit -m 'chore: Disable AlignTrue team mode'");
+    // Consolidated outro
+    const outroLines = [
+      "Solo mode enabled",
+      "",
+      "Your rules are in .aligntrue/rules/ - edit them any time.",
+      `Backup available: aligntrue backup restore --to ${backup.timestamp}`,
+      "",
+      "Helpful commands:",
+      "  aligntrue sync        Sync rules to your agents",
+      "  aligntrue team enable Re-enable team mode",
+      "  aligntrue --help      See all commands",
+      "",
+      "Learn more: https://aligntrue.ai/docs",
+    ];
 
     if (!nonInteractive) {
-      clack.outro("Solo mode enabled! Run 'aligntrue sync' to continue.");
+      clack.outro(outroLines.join("\n"));
+    } else {
+      console.log("\n" + outroLines.join("\n"));
     }
   } catch (err) {
     // Re-throw process.exit errors (for testing)

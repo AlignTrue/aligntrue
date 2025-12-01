@@ -193,11 +193,9 @@ export async function runTeamMigrationWizard(
     stopSpinnerSilently(spinner);
 
     // Step 7: Show summary
-    clack.outro("Team mode enabled!");
-    console.log("\nNext steps:");
-    console.log("  1. Define team rules (edit .aligntrue/config.yaml)");
-    console.log("  2. Run: aligntrue sync");
-    console.log("  3. Commit team configuration");
+    clack.outro(
+      "Team mode enabled! Run 'aligntrue sync' to generate team files.",
+    );
 
     return {
       success: true,
