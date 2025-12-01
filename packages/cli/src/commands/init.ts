@@ -713,27 +713,9 @@ aligntrue sync
   if (finalExporters.length === 0) {
     // No exporters configured - skip sync
   } else if (shouldSync) {
-    // For fresh starts, auto-sync without prompting (we know exactly what will be synced)
-    if (isFreshStart) {
-      await runSync();
-      autoSyncPerformed = true;
-    } else if (!nonInteractive) {
-      // For imported rules, ask user if they want to sync now
-      const syncNow = await clack.confirm({
-        message: "Run initial sync now?",
-        initialValue: true,
-      });
-      if (clack.isCancel(syncNow) || !syncNow) {
-        clack.log.info("Skipping sync. Run 'aligntrue sync' when ready.");
-      } else {
-        await runSync();
-        autoSyncPerformed = true;
-      }
-    } else {
-      // Non-interactive mode always syncs
-      await runSync();
-      autoSyncPerformed = true;
-    }
+    // Auto-sync after init - user already selected exporters, so sync is expected
+    await runSync();
+    autoSyncPerformed = true;
   }
 
   // Build consolidated outro message
