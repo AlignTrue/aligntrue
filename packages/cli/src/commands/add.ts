@@ -28,6 +28,7 @@ import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  formatCreatedFiles,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadConfigWithValidation } from "../utils/config-loader.js";
@@ -534,27 +535,19 @@ async function copyRulesToLocal(options: {
       createdFiles.push(rule.relativePath || rule.filename);
     }
 
-    spinner.stop(`Imported ${createdFiles.length} rules`);
+    spinner.stop(`Imported ${createdFiles.length} rules from ${source}`);
 
-    // Success message
-    const fileList = createdFiles
-      .slice(0, 5)
-      .map((f) => `  - ${f}`)
-      .join("\n");
-    const moreCount =
-      createdFiles.length > 5
-        ? `\n  ... and ${createdFiles.length - 5} more`
-        : "";
+    // Show grouped file list
+    const fullPaths = createdFiles.map((f) => `.aligntrue/rules/${f}`);
+    formatCreatedFiles(fullPaths, { nonInteractive: !isTTY() });
 
-    const successMessage =
-      `Added ${createdFiles.length} rules from ${source}\n\n` +
-      `Files created in .aligntrue/rules/:\n${fileList}${moreCount}\n\n` +
-      `To remove these rules: delete the files and run 'aligntrue sync'`;
-
+    // Show removal hint
+    const removalHint =
+      "To remove these rules: delete the files and run 'aligntrue sync'";
     if (isTTY()) {
-      clack.outro(successMessage);
+      clack.outro(removalHint);
     } else {
-      console.log("\n" + successMessage);
+      console.log("\n" + removalHint);
     }
   } catch (error) {
     spinner.stop("Import failed", 1);

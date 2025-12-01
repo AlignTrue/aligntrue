@@ -322,3 +322,106 @@ export async function executeWithLifecycle(
     process.exit(1);
   }
 }
+
+/**
+ * Options for formatting created files output
+ */
+export interface FormatCreatedFilesOptions {
+  /** Max files to show per folder before truncating (default: 3) */
+  maxPerFolder?: number;
+  /** Whether to use console.log instead of clack.log (default: false) */
+  nonInteractive?: boolean;
+}
+
+/**
+ * Format and display a list of created files, grouped by directory
+ *
+ * Groups files by their parent directory and shows a truncated list
+ * with counts for each folder. Provides a clean, consolidated view
+ * instead of listing each file on a separate line.
+ *
+ * @param files - Array of file paths (e.g., ['.aligntrue/rules/typescript.md', '.aligntrue/config.yaml'])
+ * @param options - Formatting options
+ *
+ * @example
+ * ```typescript
+ * formatCreatedFiles([
+ *   '.aligntrue/rules/typescript.md',
+ *   '.aligntrue/rules/testing.md',
+ *   '.aligntrue/rules/global.md',
+ *   '.aligntrue/config.yaml',
+ *   '.aligntrue/README.md'
+ * ])
+ * // Output:
+ * // Created 5 files:
+ * //   .aligntrue/rules/ (3 files):
+ * //     - typescript.md
+ * //     - testing.md
+ * //     - global.md
+ * //   .aligntrue/ (2 files):
+ * //     - config.yaml
+ * //     - README.md
+ * ```
+ */
+export function formatCreatedFiles(
+  files: string[],
+  options: FormatCreatedFilesOptions = {},
+): void {
+  const { maxPerFolder = 3, nonInteractive = false } = options;
+
+  if (files.length === 0) {
+    return;
+  }
+
+  // Group files by parent directory
+  const grouped = new Map<string, string[]>();
+
+  for (const file of files) {
+    // Get parent directory (e.g., '.aligntrue/rules/' from '.aligntrue/rules/typescript.md')
+    const lastSlash = file.lastIndexOf("/");
+    const dir = lastSlash >= 0 ? file.slice(0, lastSlash + 1) : "./";
+    const filename = lastSlash >= 0 ? file.slice(lastSlash + 1) : file;
+
+    if (!grouped.has(dir)) {
+      grouped.set(dir, []);
+    }
+    grouped.get(dir)!.push(filename);
+  }
+
+  // Sort directories so deeper paths come first (e.g., .aligntrue/rules/ before .aligntrue/)
+  const sortedDirs = Array.from(grouped.keys()).sort(
+    (a, b) => b.length - a.length,
+  );
+
+  // Build output lines
+  const lines: string[] = [];
+  lines.push(`Created ${files.length} files:`);
+
+  for (const dir of sortedDirs) {
+    const dirFiles = grouped.get(dir)!;
+    const fileCount = dirFiles.length;
+    const showFiles = dirFiles.slice(0, maxPerFolder);
+    const remaining = fileCount - showFiles.length;
+
+    lines.push(
+      `  ${dir} (${fileCount} ${fileCount === 1 ? "file" : "files"}):`,
+    );
+
+    for (const f of showFiles) {
+      lines.push(`    - ${f}`);
+    }
+
+    if (remaining > 0) {
+      lines.push(`    ... and ${remaining} more`);
+    }
+  }
+
+  // Output the formatted message
+  const message = lines.join("\n");
+
+  if (nonInteractive) {
+    console.log(message);
+  } else {
+    clack.log.success(message);
+  }
+}
