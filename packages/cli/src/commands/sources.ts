@@ -469,7 +469,15 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
 
       // Import using the existing scanner
       const { scanForExistingRules } = await import("./init/rule-importer.js");
-      const rules = await scanForExistingRules(cwd);
+      const allRules = await scanForExistingRules(cwd);
+
+      // Filter to only selected files
+      const selectedPaths = new Set(
+        selectionResult.selectedFiles.map((f) => f.relativePath),
+      );
+      const rules = allRules.filter((rule) =>
+        selectedPaths.has(rule.frontmatter.original_path as string),
+      );
 
       if (rules.length === 0) {
         clack.log.warn("No rules could be parsed from detected files.");
