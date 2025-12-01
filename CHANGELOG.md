@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Import error messages** - Improved error messages when source not found or import fails. Now includes supported source formats with examples (GitHub/GitLab URLs, SSH URLs, git refs, local paths) and points to short URL https://aligntrue.ai/add-rules
 - **Scattered backup locations** - Eliminated fragmented backups across project root (`.bak` files), `.aligntrue/overwritten-rules/`, and agent-specific `overwritten-files/` directories
 - **Lockfile EISDIR error** - Fixed team mode lockfile generation failing with EISDIR error when `.aligntrue/rules` is a directory. Now uses `loadIR()` which correctly handles directory-based rules
 - **Git import path handling** - Fixed `aligntrue add <url> --path .` failing with "path should be a path.relative()d string" error. Repository root imports now work correctly

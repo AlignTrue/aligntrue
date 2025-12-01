@@ -100,7 +100,11 @@ async function resolveLocalSource(
   const fullPath = resolve(cwd, source);
 
   if (!existsSync(fullPath)) {
-    throw new Error(`Local source not found: ${fullPath}`);
+    throw new Error(
+      `Local source not found at ${fullPath}. Verify the path exists or try a URL source. ` +
+        `Supported formats: GitHub/GitLab URLs (https://github.com/org/repo), SSH URLs (git@github.com:org/repo.git), git refs (@v1.0.0), and local paths (./rules or /absolute/path). ` +
+        `See 'aligntrue init --help' or https://aligntrue.ai/add-rules`,
+    );
   }
 
   const stat = statSync(fullPath);
