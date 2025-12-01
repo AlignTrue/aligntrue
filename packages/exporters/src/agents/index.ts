@@ -168,9 +168,19 @@ export class AgentsExporter extends ExporterBase {
     }
 
     // Globs - just show the actual glob patterns
-    if (frontmatter.globs?.length) {
-      const globList = frontmatter.globs.map((g) => `\`${g}\``).join(", ");
-      parts.push(`For files: ${globList}.`);
+    // Handle both array and string formats (YAML may parse as either)
+    if (frontmatter.globs) {
+      const rawGlobs = frontmatter.globs as string | string[];
+      const globs: string[] = Array.isArray(rawGlobs)
+        ? rawGlobs
+        : (rawGlobs as string)
+            .split(/[,\s]+/)
+            .map((g: string) => g.trim())
+            .filter(Boolean);
+      if (globs.length > 0) {
+        const globList = globs.map((g: string) => `\`${g}\``).join(", ");
+        parts.push(`For files: ${globList}.`);
+      }
     }
 
     // Scope - just show the path

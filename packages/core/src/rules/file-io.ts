@@ -125,7 +125,12 @@ export async function loadRulesDirectory(
   const files: string[] = [];
 
   for (const pattern of patterns) {
-    const matches = await glob(pattern, { cwd: dir, absolute: true });
+    // dot: true enables matching files in directories starting with a dot (e.g., .cursor/)
+    const matches = await glob(pattern, {
+      cwd: dir,
+      absolute: true,
+      dot: true,
+    });
     files.push(...matches);
   }
 
