@@ -165,12 +165,33 @@ export async function handleSyncResult(
             // Apply root ignore file updates
             const updates = applyConflictResolution(conflict, cwd, false);
 
-            // Apply nested scope ignore files if scopes are configured
+            // Apply nested scope ignore files for both configured scopes and rules with nested_location
             const scopePaths = context.config.scopes?.map((s) => s.path) || [];
+
+            // Also include nested locations from rules (e.g., apps/docs, packages/cli)
+            const nestedLocations = new Set<string>();
+            for (const section of context.bundleResult.align.sections || []) {
+              // Cast through unknown first, then use bracket notation for index signature
+              const sectionAny = section as unknown as Record<string, unknown>;
+              const frontmatter = sectionAny["frontmatter"] as
+                | Record<string, unknown>
+                | undefined;
+              const loc = frontmatter?.["nested_location"];
+              if (typeof loc === "string" && loc) {
+                nestedLocations.add(loc);
+              }
+            }
+
+            // Combine both scope paths and nested locations
+            const allNestedPaths = [
+              ...scopePaths,
+              ...Array.from(nestedLocations),
+            ];
+
             const nestedUpdates = applyNestedConflictResolution(
               conflict,
               cwd,
-              scopePaths,
+              allNestedPaths,
               false,
             );
 
