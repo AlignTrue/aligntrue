@@ -48,6 +48,7 @@ yarn-error.log*
 next-env.d.ts
 
 # AI agents
+.cursor/plans/
 AGENTS.md
 CLAUDE.md
 
