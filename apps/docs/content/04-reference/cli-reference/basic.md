@@ -684,15 +684,7 @@ Remove old backups based on age and retention configuration.
 # Clean up backups older than retention_days (from config)
 aligntrue backup cleanup
 
-# Clean up legacy .bak files from older versions
-aligntrue backup cleanup --legacy
 ```
-
-**Flags:**
-
-| Flag       | Description                         | Default |
-| ---------- | ----------------------------------- | ------- |
-| `--legacy` | Scan and remove orphaned .bak files | (off)   |
 
 **What it does:**
 
@@ -708,9 +700,6 @@ aligntrue backup cleanup --legacy
 ```bash
 # Keep default number (from config)
 aligntrue backup cleanup
-
-# Remove legacy .bak files
-aligntrue backup cleanup --legacy
 ```
 
 **Example output:**

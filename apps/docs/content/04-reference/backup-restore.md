@@ -234,14 +234,6 @@ Manually trigger cleanup:
 # Clean up backups older than configured retention_days
 aligntrue backup cleanup
 
-# Clean up legacy .bak files from older AlignTrue versions
-aligntrue backup cleanup --legacy
-```
-
-**Options:**
-
-- `--legacy` - Scan and remove orphaned `.bak` files and old backup locations
-
 **Automatic cleanup:**
 
 After every successful sync, AlignTrue automatically cleans up old backups based on your `retention_days` setting. Manual cleanup is rarely needed.
@@ -279,21 +271,23 @@ This ensures you can recover your complete agent setup if something goes wrong.
 Backups are stored locally in `.aligntrue/.backups/`:
 
 ```
+
 .aligntrue/
-  .backups/
-    2025-11-18T14-30-00-000/
-      manifest.json
-      config.yaml
-      .rules.yaml
-      agent-files/
-        AGENTS.md
-        .cursor/rules/rule1.mdc
-        .cursor/rules/rule2.mdc
-    2025-11-18T12-15-45-123/
-      manifest.json
-      config.yaml
-      .rules.yaml
-```
+.backups/
+2025-11-18T14-30-00-000/
+manifest.json
+config.yaml
+.rules.yaml
+agent-files/
+AGENTS.md
+.cursor/rules/rule1.mdc
+.cursor/rules/rule2.mdc
+2025-11-18T12-15-45-123/
+manifest.json
+config.yaml
+.rules.yaml
+
+````
 
 ### Manifest format
 
@@ -313,7 +307,7 @@ Each backup includes a `manifest.json`:
   "action": "pre-sync",
   "mode": "solo"
 }
-```
+````
 
 ### Timestamp format
 
@@ -537,23 +531,6 @@ backup:
   retention_days: 60 # Keep backups for 60 days instead of 30 (default)
   minimum_keep: 5 # Always keep at least 5 most recent backups (default: 3)
 ```
-
-### Legacy .bak files and old backup locations
-
-If you upgraded from an older AlignTrue version, you may have:
-
-- `.bak` files scattered in your workspace root
-- `overwritten-rules/` directories in `.aligntrue/`
-- `<agent>/overwritten-files/` directories in agent-specific locations
-
-Clean them up:
-
-```bash
-# Scan for and remove all legacy backup files and directories
-aligntrue backup cleanup --legacy
-```
-
-This is safe - all new backups are in `.aligntrue/.backups/`.
 
 ## Integration with other features
 

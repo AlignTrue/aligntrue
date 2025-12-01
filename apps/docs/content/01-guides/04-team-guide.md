@@ -496,8 +496,8 @@ aligntrue drift
 # Sync IR to agents (overwrites manual edits with clean IR content)
 aligntrue sync
 
-# Backups of manually edited content saved to .aligntrue/overwritten-rules/
-ls .aligntrue/overwritten-rules/
+# Backups of manually edited content saved to .aligntrue/.backups/files/
+ls .aligntrue/.backups/files/
 ```
 
 **Best practice:** Always edit rules in `.aligntrue/rules/`, never directly edit agent files in team mode. Agent files are always generated exports.

@@ -137,7 +137,7 @@ Choose [1/2/3]:
 Defaults to "keep both" to avoid data loss.
 
 **Backups:**
-When you choose "Replace", the existing rule is backed up to `.aligntrue/overwritten-rules/` with a timestamp.
+When you choose "Replace", the existing rule is backed up to `.aligntrue/.backups/files/` with a timestamp.
 
 ## Find untracked agent files
 
