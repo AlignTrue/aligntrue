@@ -20,7 +20,7 @@ const ALL_COMMANDS = [
   "sync",
   "watch",
   "check",
-  "adapters",
+  "exporters",
   "sources",
   "scopes",
   "team",
@@ -35,6 +35,11 @@ const ALL_COMMANDS = [
   "telemetry",
   "privacy",
   "migrate",
+  "status",
+  "doctor",
+  "add",
+  "remove",
+  "rules",
 ];
 
 describe("Command Coverage", () => {
