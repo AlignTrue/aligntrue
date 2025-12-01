@@ -28,7 +28,7 @@ export const AGENT_IGNORE_REGISTRY: AgentIgnoreSpec[] = [
   {
     agent: "cursor",
     ignoreFile: ".cursorignore",
-    consumableFormats: ["cursor", "agents"],
+    consumableFormats: ["cursor", "agents", "claude"],
     nativeFormat: "cursor",
     supportsNested: true,
     indexingIgnoreFile: ".cursorindexingignore",

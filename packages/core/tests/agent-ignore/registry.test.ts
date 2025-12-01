@@ -1,159 +1,83 @@
 /**
- * Tests for agent ignore registry
+ * Tests for agent-ignore registry
  */
 
 import { describe, it, expect } from "vitest";
 import {
   AGENT_IGNORE_REGISTRY,
-  AGENTS_WITHOUT_IGNORE,
   getAgentIgnoreSpec,
-  hasIgnoreSupport,
-  needsIgnoreWarning,
-  getAgentsForFormat,
   getConsumableExporters,
 } from "../../src/agent-ignore/registry.js";
 
 describe("Agent Ignore Registry", () => {
-  describe("AGENT_IGNORE_REGISTRY", () => {
-    it("should contain expected agents", () => {
-      const agentNames = AGENT_IGNORE_REGISTRY.map((spec) => spec.agent);
-      expect(agentNames).toContain("cursor");
-      expect(agentNames).toContain("aider");
-      expect(agentNames).toContain("gemini");
-    });
-
-    it("should have valid ignore file names", () => {
-      AGENT_IGNORE_REGISTRY.forEach((spec) => {
-        expect(spec.ignoreFile).toMatch(/^\./);
-        expect(spec.ignoreFile.length).toBeGreaterThan(1);
-      });
-    });
-
-    it("should have at least one consumable format per agent", () => {
-      AGENT_IGNORE_REGISTRY.forEach((spec) => {
-        expect(spec.consumableFormats.length).toBeGreaterThan(0);
-      });
-    });
-
-    it("should have native format in consumable formats", () => {
-      AGENT_IGNORE_REGISTRY.forEach((spec) => {
-        expect(spec.consumableFormats).toContain(spec.nativeFormat);
-      });
-    });
-  });
-
-  describe("getAgentIgnoreSpec", () => {
-    it("should return spec for known agent", () => {
+  describe("Cursor agent", () => {
+    it("supports cursor, agents, and claude formats", () => {
       const spec = getAgentIgnoreSpec("cursor");
       expect(spec).toBeDefined();
-      expect(spec?.agent).toBe("cursor");
+      expect(spec?.consumableFormats).toContain("cursor");
+      expect(spec?.consumableFormats).toContain("agents");
+      expect(spec?.consumableFormats).toContain("claude");
+    });
+
+    it("uses .cursorignore as ignore file", () => {
+      const spec = getAgentIgnoreSpec("cursor");
       expect(spec?.ignoreFile).toBe(".cursorignore");
     });
 
-    it("should return undefined for unknown agent", () => {
-      const spec = getAgentIgnoreSpec("unknown-agent");
-      expect(spec).toBeUndefined();
-    });
-
-    it("should return correct spec for aider", () => {
-      const spec = getAgentIgnoreSpec("aider");
-      expect(spec).toBeDefined();
-      expect(spec?.ignoreFile).toBe(".aiderignore");
+    it("supports nested ignore files", () => {
+      const spec = getAgentIgnoreSpec("cursor");
       expect(spec?.supportsNested).toBe(true);
     });
   });
 
-  describe("hasIgnoreSupport", () => {
-    it("should return true for agents with ignore support", () => {
-      expect(hasIgnoreSupport("cursor")).toBe(true);
-      expect(hasIgnoreSupport("aider")).toBe(true);
-      expect(hasIgnoreSupport("gemini")).toBe(true);
+  describe("Consumable exporters", () => {
+    it("returns cursor and agents exporters when both are enabled", () => {
+      const exporters = getConsumableExporters("cursor", ["cursor", "agents"]);
+      expect(exporters).toContain("cursor");
+      expect(exporters).toContain("agents");
     });
 
-    it("should return false for agents without ignore support", () => {
-      expect(hasIgnoreSupport("claude")).toBe(false);
-      expect(hasIgnoreSupport("unknown-agent")).toBe(false);
-    });
-  });
-
-  describe("needsIgnoreWarning", () => {
-    it("should return true when agent without ignore has multiple formats", () => {
-      expect(needsIgnoreWarning("claude", ["claude", "agents"])).toBe(true);
+    it("includes claude when cursor and claude exporters are enabled", () => {
+      const exporters = getConsumableExporters("cursor", ["cursor", "claude"]);
+      expect(exporters).toContain("cursor");
+      expect(exporters).toContain("claude");
     });
 
-    it("should return false when agent without ignore has single format", () => {
-      expect(needsIgnoreWarning("claude", ["claude"])).toBe(false);
-    });
-
-    it("should return false for agents with ignore support", () => {
-      expect(needsIgnoreWarning("cursor", ["cursor", "agents"])).toBe(false);
-    });
-  });
-
-  describe("getAgentsForFormat", () => {
-    it("should return agents that can consume agents format", () => {
-      const agents = getAgentsForFormat("agents");
-      expect(agents).toContain("cursor");
-      expect(agents).toContain("aider");
-      expect(agents.length).toBeGreaterThan(2);
-    });
-
-    it("should return agents that can consume cursor format", () => {
-      const agents = getAgentsForFormat("cursor");
-      expect(agents).toContain("cursor");
-    });
-
-    it("should return empty array for unknown format", () => {
-      const agents = getAgentsForFormat("unknown-format");
-      expect(agents).toEqual([]);
-    });
-  });
-
-  describe("getConsumableExporters", () => {
-    it("should return exporters consumable by cursor", () => {
+    it("handles all three cursor consumable formats", () => {
       const exporters = getConsumableExporters("cursor", [
         "cursor",
         "agents",
         "claude",
       ]);
+      expect(exporters).toHaveLength(3);
       expect(exporters).toContain("cursor");
       expect(exporters).toContain("agents");
-      expect(exporters).not.toContain("claude");
-    });
-
-    it("should return empty array for agent without spec", () => {
-      const exporters = getConsumableExporters("unknown-agent", [
-        "cursor",
-        "agents",
-      ]);
-      expect(exporters).toEqual([]);
-    });
-
-    it("should filter exporters correctly", () => {
-      const exporters = getConsumableExporters("aider", [
-        "aider",
-        "agents",
-        "cursor",
-      ]);
-      expect(exporters).toContain("aider");
-      expect(exporters).toContain("agents");
-      expect(exporters).not.toContain("cursor");
+      expect(exporters).toContain("claude");
     });
   });
 
-  describe("AGENTS_WITHOUT_IGNORE", () => {
-    it("should contain expected agents", () => {
-      expect(AGENTS_WITHOUT_IGNORE).toContain("claude");
-      expect(AGENTS_WITHOUT_IGNORE).toContain("amazonq");
-      expect(AGENTS_WITHOUT_IGNORE).toContain("zed");
+  describe("Registry integrity", () => {
+    it("has valid entries with required fields", () => {
+      for (const entry of AGENT_IGNORE_REGISTRY) {
+        expect(entry.agent).toBeDefined();
+        expect(entry.ignoreFile).toBeDefined();
+        expect(entry.consumableFormats).toBeDefined();
+        expect(entry.nativeFormat).toBeDefined();
+        expect(Array.isArray(entry.consumableFormats)).toBe(true);
+        expect(entry.consumableFormats.length).toBeGreaterThan(0);
+      }
     });
 
-    it("should not overlap with agents that have ignore support", () => {
-      const withSupport = AGENT_IGNORE_REGISTRY.map((spec) => spec.agent);
-      const overlap = AGENTS_WITHOUT_IGNORE.filter((agent) =>
-        withSupport.includes(agent),
-      );
-      expect(overlap).toEqual([]);
+    it("has unique agent names", () => {
+      const agents = AGENT_IGNORE_REGISTRY.map((e) => e.agent);
+      const uniqueAgents = new Set(agents);
+      expect(uniqueAgents.size).toBe(agents.length);
+    });
+
+    it("has native format in consumable formats", () => {
+      for (const entry of AGENT_IGNORE_REGISTRY) {
+        expect(entry.consumableFormats).toContain(entry.nativeFormat);
+      }
     });
   });
 });

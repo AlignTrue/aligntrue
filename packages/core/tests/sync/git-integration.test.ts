@@ -329,5 +329,69 @@ describe("GitIntegration", () => {
       const content = readFileSync(gitignorePath, "utf-8");
       expect(content).toContain("a/b/c/d/e/f/deep.mdc");
     });
+
+    it("normalizes absolute paths to relative paths", async () => {
+      const absolutePaths = [
+        join(TEST_DIR, ".cursor/rules/aligntrue.mdc"),
+        join(TEST_DIR, "AGENTS.md"),
+      ];
+
+      await gitIntegration.apply({
+        mode: "ignore",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: absolutePaths,
+      });
+
+      const gitignorePath = join(TEST_DIR, ".gitignore");
+      const content = readFileSync(gitignorePath, "utf-8");
+
+      // Should contain relative paths, not absolute
+      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain("AGENTS.md");
+      // Should NOT contain absolute paths
+      expect(content).not.toContain(TEST_DIR);
+    });
+
+    it("normalizes windows-style backslashes to forward slashes", async () => {
+      // Simulate windows paths (which exporters might return)
+      const windowsPaths = [".cursor\\rules\\aligntrue.mdc", "AGENTS.md"];
+
+      await gitIntegration.apply({
+        mode: "ignore",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: windowsPaths,
+      });
+
+      const gitignorePath = join(TEST_DIR, ".gitignore");
+      const content = readFileSync(gitignorePath, "utf-8");
+
+      // Should normalize to forward slashes
+      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).not.toContain("\\");
+    });
+
+    it("handles mixed absolute and relative paths", async () => {
+      const mixedPaths = [
+        join(TEST_DIR, ".cursor/rules/aligntrue.mdc"), // absolute
+        "AGENTS.md", // relative
+        join(TEST_DIR, "apps/docs/.cursor/rules/web.mdc"), // absolute nested
+      ];
+
+      await gitIntegration.apply({
+        mode: "ignore",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: mixedPaths,
+      });
+
+      const gitignorePath = join(TEST_DIR, ".gitignore");
+      const content = readFileSync(gitignorePath, "utf-8");
+
+      // All should be normalized to relative paths
+      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain("AGENTS.md");
+      expect(content).toContain("apps/docs/.cursor/rules/web.mdc");
+      // Should NOT contain absolute paths
+      expect(content).not.toContain(TEST_DIR);
+    });
   });
 });
