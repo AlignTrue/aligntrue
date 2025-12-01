@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
 import { GitHubIcon } from "./GitHubIcon";
 
 /**
@@ -12,33 +11,15 @@ import { GitHubIcon } from "./GitHubIcon";
  * Dismissal is remembered via localStorage.
  */
 export function BetaBanner() {
-  const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const isDismissed = localStorage.getItem("aligntrue-beta-banner-dismissed");
-    if (isDismissed === "true") {
-      setDismissed(true);
-    }
+    // Set CSS custom property for banner height
+    document.documentElement.style.setProperty("--banner-height", "48px");
   }, []);
 
-  const handleDismiss = () => {
-    setDismissed(true);
-    localStorage.setItem("aligntrue-beta-banner-dismissed", "true");
-  };
-
-  // Set CSS custom property for banner height
-  useEffect(() => {
-    if (mounted) {
-      document.documentElement.style.setProperty(
-        "--banner-height",
-        dismissed ? "0px" : "48px",
-      );
-    }
-  }, [mounted, dismissed]);
-
-  if (!mounted || dismissed) return null;
+  if (!mounted) return null;
 
   return (
     <>
@@ -102,23 +83,6 @@ export function BetaBanner() {
             <GitHubIcon size={16} style={{ display: "inline" }} />
           </a>
         </div>
-        <button
-          onClick={handleDismiss}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0.25rem",
-            flexShrink: 0,
-          }}
-          aria-label="Dismiss beta banner"
-        >
-          <X size={18} />
-        </button>
       </div>
     </>
   );
