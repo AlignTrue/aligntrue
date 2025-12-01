@@ -3,7 +3,7 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync, cpSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -25,7 +25,11 @@ import {
 import { shouldUseInteractive } from "../utils/tty-helper.js";
 import { createSpinner } from "../utils/spinner.js";
 
-import { scanForExistingRules } from "./init/rule-importer.js";
+import {
+  scanForExistingRulesWithOverlap,
+  type DuplicateFile,
+  type ScanResult,
+} from "./init/rule-importer.js";
 import { createStarterTemplates } from "./init/starter-templates.js";
 import {
   detectRulerProject,
@@ -175,6 +179,155 @@ function detectFormats(cwd: string): Set<string> {
     }
   }
   return detected;
+}
+
+/**
+ * Result of handling overlap detection
+ */
+interface OverlapHandlingResult {
+  /** Rules to import */
+  rules: RuleFile[];
+  /** Whether user chose to import all files separately */
+  importAll: boolean;
+}
+
+/**
+ * Handle overlap detection during init
+ *
+ * Shows the user what was detected, explains the recommendation,
+ * and in interactive mode lets them choose how to proceed.
+ */
+async function handleOverlapDetection(
+  scanResult: ScanResult,
+  cwd: string,
+  nonInteractive: boolean,
+): Promise<OverlapHandlingResult> {
+  const { rules, duplicates, similarityGroups } = scanResult;
+
+  // Format the similarity message
+  const dupMessages: string[] = [];
+  for (const group of similarityGroups) {
+    const canonicalType = group.canonical.type;
+    for (const dup of group.duplicates) {
+      const percent = Math.round(dup.similarity * 100);
+      dupMessages.push(
+        `  ${dup.file.path} is ~${percent}% similar to ${canonicalType} rules`,
+      );
+    }
+  }
+
+  const overlapMessage =
+    `Overlap detected:\n` +
+    dupMessages.join("\n") +
+    `\n\nRecommendation: Use ${similarityGroups[0]?.canonical.type || "multi-file"} format as your source (most structured).` +
+    `\nSimilar files will be backed up to .aligntrue/.backups/init-duplicates/`;
+
+  if (nonInteractive) {
+    // In non-interactive mode, use smart default and explain
+    console.log(overlapMessage);
+    console.log(
+      `\nUsing recommended import strategy (multi-file format preferred).`,
+    );
+
+    // Backup duplicates
+    await backupDuplicateFiles(duplicates, cwd);
+
+    return { rules, importAll: false };
+  }
+
+  // Interactive mode: let user choose
+  clack.log.info(overlapMessage);
+
+  const choice = await clack.select({
+    message: "How would you like to import these?",
+    options: [
+      {
+        value: "recommended",
+        label: "Use recommended format as source",
+        hint: "Multi-file format preferred, similar files backed up",
+      },
+      {
+        value: "all",
+        label: "Import all files separately",
+        hint: "Keep all files as individual rules (may have duplicates)",
+      },
+    ],
+  });
+
+  if (clack.isCancel(choice)) {
+    clack.cancel("Run 'aligntrue init' when you're ready to start.");
+    process.exit(0);
+  }
+
+  if (choice === "all") {
+    // User wants all files - combine rules with duplicates converted to rules
+    const { scanForExistingRulesWithOverlap: rescan } = await import(
+      "./init/rule-importer.js"
+    );
+    const allResult = await rescan(cwd, { detectOverlap: false });
+    clack.log.info("Importing all files as separate rules.");
+    return { rules: allResult.rules, importAll: true };
+  }
+
+  // Use recommended approach - backup duplicates
+  await backupDuplicateFiles(duplicates, cwd);
+  clack.log.success(
+    `Backed up ${duplicates.length} similar file${duplicates.length !== 1 ? "s" : ""} to .aligntrue/.backups/init-duplicates/`,
+  );
+
+  return { rules, importAll: false };
+}
+
+/**
+ * Backup duplicate files to .aligntrue/.backups/init-duplicates/
+ */
+async function backupDuplicateFiles(
+  duplicates: DuplicateFile[],
+  cwd: string,
+): Promise<void> {
+  if (duplicates.length === 0) return;
+
+  const paths = getAlignTruePaths(cwd);
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/:/g, "-")
+    .replace(/\./g, "-")
+    .replace(/Z$/, "");
+  const backupDir = join(
+    paths.aligntrueDir,
+    ".backups",
+    "init-duplicates",
+    timestamp,
+  );
+
+  mkdirSync(backupDir, { recursive: true });
+
+  // Copy each duplicate file
+  for (const dup of duplicates) {
+    const srcPath = dup.file.path;
+    const destPath = join(backupDir, dup.file.relativePath);
+    mkdirSync(dirname(destPath), { recursive: true });
+    cpSync(srcPath, destPath);
+  }
+
+  // Write manifest
+  const manifest = {
+    version: "1",
+    timestamp: new Date().toISOString(),
+    reason: "init-overlap-detection",
+    duplicates: duplicates.map((d) => ({
+      path: d.file.relativePath,
+      type: d.file.type,
+      similarity: d.similarity,
+      canonicalPath: d.canonicalPath,
+    })),
+  };
+
+  writeFileSync(
+    join(backupDir, "manifest.json"),
+    JSON.stringify(manifest, null, 2),
+    "utf-8",
+  );
 }
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -455,17 +608,17 @@ export async function init(args: string[] = []): Promise<void> {
       };
     }
   } else {
-    // Auto-detect existing rules
+    // Auto-detect existing rules with overlap detection
     scanner.start("Scanning for existing rules...");
 
     // Scan for agent files and parse them as rules
-    const importedRules = await scanForExistingRules(cwd);
+    const scanResult = await scanForExistingRulesWithOverlap(cwd);
 
     scanner.stop("Scan complete");
 
-    if (importedRules.length > 0) {
+    if (scanResult.rules.length > 0) {
       // Show what was found with folder context
-      const discoveryFiles = importedRules.map((r) => ({
+      const discoveryFiles = scanResult.rules.map((r) => ({
         path: r.path,
         relativePath: r.frontmatter.original_path as string | undefined,
         type: r.frontmatter.source as string | undefined,
@@ -474,7 +627,20 @@ export async function init(args: string[] = []): Promise<void> {
         groupBy: "type",
       });
       logMessage(discoveryMsg, "info", nonInteractive);
-      rulesToWrite = importedRules;
+
+      // Handle overlap detection result
+      if (scanResult.hasOverlap && scanResult.duplicates.length > 0) {
+        // Show overlap detection result
+        const overlapResult = await handleOverlapDetection(
+          scanResult,
+          cwd,
+          nonInteractive,
+        );
+        rulesToWrite = overlapResult.rules;
+        // Duplicates will be backed up after directory creation
+      } else {
+        rulesToWrite = scanResult.rules;
+      }
     } else {
       // No rules found, will use starter templates
       isFreshStart = true;
