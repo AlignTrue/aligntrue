@@ -18,6 +18,7 @@ import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  formatCreatedFiles,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { shouldUseInteractive } from "../utils/tty-helper.js";
@@ -707,14 +708,7 @@ aligntrue sync
   createdFiles.push(".aligntrue/.gitignore");
 
   // Report creation
-  if (nonInteractive) {
-    console.log("\nCreated files:");
-    createdFiles.forEach((f) => console.log(`  ✓ ${f}`));
-  } else {
-    createdFiles.forEach((f) =>
-      logMessage(`Created ${f}`, "success", nonInteractive),
-    );
-  }
+  formatCreatedFiles(createdFiles, { nonInteractive });
 
   // Step 5: Sync
   console.log("\n✓ AlignTrue initialized\n");
