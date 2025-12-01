@@ -143,9 +143,9 @@ describe("AGENTS.md-based exporter variants", () => {
       // Verify file content - now link-based, not content-based
       const content = readFileSync(result.filesWritten[0], "utf-8");
       expect(content.length).toBeGreaterThan(0);
-      // New link-based format contains links to rules, not rule content directly
+      // New link-based format contains rule names and paths, not rule content directly
       expect(content).toContain(".aligntrue/rules/");
-      expect(content).toContain("[test-rule]");
+      expect(content).toContain("- test-rule (");
       expect(content).toContain("# Agent Rules");
     }
   });
