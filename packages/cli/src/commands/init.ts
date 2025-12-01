@@ -838,7 +838,7 @@ aligntrue sync
     "",
     "Helpful commands:",
     "  aligntrue sync        Sync rules to your agents",
-    "  aligntrue add <url>   Add more rules from URL or path",
+    "  aligntrue add <git-url>  Add rules from git repo or path",
     "  aligntrue adapters    Manage agent formats",
     "  aligntrue status      Check sync health",
     ...(mode !== "team"

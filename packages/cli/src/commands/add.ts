@@ -145,8 +145,8 @@ export async function add(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "add",
-      description: "Add rules from a URL or path",
-      usage: "aligntrue add <url|path> [options]",
+      description: "Add rules from a git repo or path",
+      usage: "aligntrue add <git-url|path> [options]",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue add https://github.com/org/rules           # Copy rules locally",
@@ -166,7 +166,9 @@ export async function add(args: string[]): Promise<void> {
 
   // Validate URL provided
   if (positional.length === 0) {
-    exitWithError(Errors.missingArgument("url", "aligntrue add <url|path>"));
+    exitWithError(
+      Errors.missingArgument("url", "aligntrue add <git-url|path>"),
+    );
   }
 
   const rawUrl = positional[0]!;
