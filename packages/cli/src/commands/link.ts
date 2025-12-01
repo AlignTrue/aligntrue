@@ -245,21 +245,18 @@ export async function link(args: string[]): Promise<void> {
       alignValid.profileId,
     );
 
-    // Success message
-    const successMessage =
-      `✅ Successfully linked ${gitUrl}\n\n` +
-      `Vendor path: ${vendorPath}\n` +
-      `Vendor type: ${vendorType}\n` +
-      `Profile: ${alignValid.profileId}\n\n` +
-      `Next steps:\n` +
-      `1. Commit vendor changes: git add ${vendorPath} .aligntrue/config.yaml\n` +
-      `2. Run sync: aligntrue sync\n` +
-      `3. Update lockfile (if team mode): git add .aligntrue.lock.json`;
+    // Consolidated outro
+    const outroLines = [
+      `Linked ${gitUrl}`,
+      "",
+      `Vendor path: ${vendorPath}`,
+      "Run 'aligntrue sync' to pull rules.",
+    ];
 
     if (isTTY()) {
-      clack.outro(successMessage);
+      clack.outro(outroLines.join("\n"));
     } else {
-      console.log("\n" + successMessage);
+      console.log("\n" + outroLines.join("\n"));
     }
 
     await recordEvent({
