@@ -5,6 +5,10 @@ export const dynamic = "force-static";
 export async function GET() {
   const body = [
     "User-agent: *",
+    "Disallow: /_next/",
+    "Disallow: /_pagefind/",
+    "Disallow: /_not-found/",
+    "Disallow: /*.txt$",
     "Allow: /",
     "",
     `Sitemap: ${BASE_URL}/sitemap.xml`,
