@@ -279,7 +279,11 @@ export class GenericMarkdownExporter extends ExporterBase {
         const rulesDir =
           location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
         // Use relativePath if available (preserves nested structure), fallback to filename
-        const ruleFileName = rule.relativePath || rule.filename;
+        // Normalize backslashes to forward slashes for cross-platform compatibility
+        const ruleFileName = (rule.relativePath || rule.filename).replace(
+          /\\/g,
+          "/",
+        );
         const linkPath = `./${rulesDir}/${ruleFileName}`;
 
         // Format: Title (path): description. conditions.
