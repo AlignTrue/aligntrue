@@ -88,8 +88,8 @@ describe("GeminiExporter", () => {
     expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/);
 
     const content = readFileSync(result.filesWritten[0], "utf-8");
-    // New link-based format - contains links to rules, not section content
-    expect(content).toContain("[test-rule]");
+    // New link-based format - contains rule names and paths, not section content
+    expect(content).toContain("- test-rule (");
     expect(content).toContain(".aligntrue/rules/");
   });
 

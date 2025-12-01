@@ -438,8 +438,8 @@ This rule tests the link-based format.
       // 2. Has header
       expect(agentsContent).toContain("# Agent Rules");
 
-      // 3. Contains links to rule files
-      expect(agentsContent).toContain("[Link Test Rule]");
+      // 3. Contains rule names and paths
+      expect(agentsContent).toContain("- Link Test Rule (");
       expect(agentsContent).toContain(".aligntrue/rules/link-test.md");
     });
   });

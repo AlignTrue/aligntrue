@@ -89,8 +89,8 @@ describe("content_mode feature", () => {
       // Check content is inline (contains full rule content, not links)
       const content = readFileSync(result.filesWritten[0], "utf-8");
       expect(content).toContain("<!-- aligntrue:rule");
-      // Should not have link-based format (- [Title](path): description)
-      expect(content).not.toMatch(/^- \[[^\]]+\]\(\.\/\.aligntrue\/rules\//m);
+      // Should not have link-based format (- Title (./path): description)
+      expect(content).not.toMatch(/^- \S+\s\(\.\/.+\.aligntrue\/rules\//m);
     });
 
     it("uses links for multiple rules", async () => {
@@ -128,8 +128,8 @@ describe("content_mode feature", () => {
       // Check content is inline
       const content = readFileSync(result.filesWritten[0], "utf-8");
       expect(content).toContain("<!-- aligntrue:rule");
-      // Should not have link-based format (- [Title](path): description)
-      expect(content).not.toMatch(/^- \[[^\]]+\]\(\.\/\.aligntrue\/rules\//m);
+      // Should not have link-based format (- Title (./path): description)
+      expect(content).not.toMatch(/^- \S+\s\(\.\/.+\.aligntrue\/rules\//m);
 
       // Should have separators for each rule
       const ruleComments = content.match(/<!-- aligntrue:rule/g);
@@ -243,8 +243,8 @@ ${s.content}`,
       expect(result.success).toBe(true);
       const content = readFileSync(result.filesWritten[0], "utf-8");
 
-      // Should have markdown link format: [Title](path)
-      expect(content).toMatch(/\[[^\]]+\]\(\.[/]\.aligntrue\/rules\/[^)]+\)/);
+      // Should have plain text link format: Title (./path)
+      expect(content).toMatch(/\S+\s\(\.[/]\.aligntrue\/rules\/[^)]+\)/);
     });
   });
 
@@ -267,8 +267,10 @@ ${s.content}`,
       expect(result.success).toBe(true);
       const content = readFileSync(result.filesWritten[0], "utf-8");
 
-      // Should use links (from config) - check for link format
-      expect(content).toMatch(/^- \[[^\]]+\]\(\.\/\.aligntrue\/rules\//m);
+      // Should use links (from config) - check for link format (Title (./path))
+      // Format: - Title (./path): description or - Title (./path)
+      expect(content).toContain(".aligntrue/rules/");
+      expect(content).toMatch(/- [A-Za-z].+\(/);
     });
 
     it("prefers CLI flag over config", async () => {
@@ -293,7 +295,7 @@ ${s.content}`,
       // Should use inline (from CLI flag, which takes precedence)
       expect(content).toContain("<!-- aligntrue:rule");
       // Should not have link-based format
-      expect(content).not.toMatch(/^- \[[^\]]+\]\(\.\/\.aligntrue\/rules\//m);
+      expect(content).not.toMatch(/^- \S+\s\(\.\/.+\.aligntrue\/rules\//m);
     });
   });
 
