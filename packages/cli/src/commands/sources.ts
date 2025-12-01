@@ -19,7 +19,10 @@ import {
   selectFilesToImport,
   type ImportFile,
 } from "../utils/selective-import-ui.js";
-import { formatCreatedFiles } from "../utils/command-utilities.js";
+import {
+  formatCreatedFiles,
+  formatDiscoveredFiles,
+} from "../utils/command-utilities.js";
 
 /**
  * Main sources command handler
@@ -441,28 +444,11 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
       return;
     }
 
-    // Group by agent type
-    const byType: Record<string, typeof detectedFiles> = {};
-    for (const file of detectedFiles) {
-      if (!byType[file.type]) {
-        byType[file.type] = [];
-      }
-      byType[file.type]!.push(file);
-    }
-
-    // Display found files
-    clack.log.info(`Found ${detectedFiles.length} agent file(s):\n`);
-
-    for (const [type, files] of Object.entries(byType)) {
-      console.log(`  ${type.toUpperCase()} (${files.length} files)`);
-      for (const file of files.slice(0, 5)) {
-        console.log(`    - ${file.relativePath}`);
-      }
-      if (files.length > 5) {
-        console.log(`    ... and ${files.length - 5} more`);
-      }
-      console.log("");
-    }
+    // Display found files grouped by agent type
+    const discoveryMsg = formatDiscoveredFiles(detectedFiles, {
+      groupBy: "type",
+    });
+    clack.log.info(discoveryMsg);
 
     // If --import flag, import them
     if (importFlag) {

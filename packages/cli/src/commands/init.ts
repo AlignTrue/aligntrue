@@ -19,6 +19,7 @@ import {
   parseCommonArgs,
   showStandardHelp,
   formatCreatedFiles,
+  formatDiscoveredFiles,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { shouldUseInteractive } from "../utils/tty-helper.js";
@@ -463,8 +464,16 @@ export async function init(args: string[] = []): Promise<void> {
     scanner.stop("Scan complete");
 
     if (importedRules.length > 0) {
-      // Show what was found
-      logMessage(`Found ${importedRules.length} files`, "info", nonInteractive);
+      // Show what was found with folder context
+      const discoveryFiles = importedRules.map((r) => ({
+        path: r.path,
+        relativePath: r.frontmatter.original_path as string | undefined,
+        type: r.frontmatter.source as string | undefined,
+      }));
+      const discoveryMsg = formatDiscoveredFiles(discoveryFiles, {
+        groupBy: "type",
+      });
+      logMessage(discoveryMsg, "info", nonInteractive);
       rulesToWrite = importedRules;
     } else {
       // No rules found, will use starter templates
