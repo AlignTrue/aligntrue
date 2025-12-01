@@ -635,7 +635,9 @@ async function checkAgentsWithCache(
 
   if (shouldWarnAboutDetection(detection, cache)) {
     if (detection.missing.length > 0) {
-      clack.log.warn(`New agents detected: ${detection.missing.join(", ")}`);
+      clack.log.warn(
+        `Unconfigured agent files detected: ${detection.missing.join(", ")}`,
+      );
 
       let shouldAdd = false;
 
