@@ -258,8 +258,8 @@ export class GitIntegration {
       // File doesn't exist, content remains ""
     }
 
-    // Always include overwritten-rules in the patterns
-    const allPatterns = [".aligntrue/overwritten-rules/", ...files];
+    // Always include unified backups directory in the patterns
+    const allPatterns = [".aligntrue/.backups/", ...files];
     content = this.addManagedSection(content, marker, endMarker, allPatterns);
     writeFileSync(gitignorePath, content, "utf-8");
   }

@@ -19,7 +19,7 @@ import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { withSpinner, createManagedSpinner } from "../utils/spinner.js";
+import { withSpinner } from "../utils/spinner.js";
 
 // Get the exporters package directory for adapter discovery
 const __filename = fileURLToPath(import.meta.url);
@@ -98,11 +98,6 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Restore specific backup by timestamp (restore subcommand)",
   },
   {
-    flag: "--legacy",
-    hasValue: false,
-    description: "Cleanup orphaned .bak files (cleanup subcommand)",
-  },
-  {
     flag: "--config",
     hasValue: true,
     description: "Path to config file",
@@ -123,7 +118,6 @@ Subcommands:
 Options:
   --notes <text>      Add notes to backup (create subcommand)
   --to <timestamp>    Restore specific backup by timestamp (restore subcommand)
-  --legacy            Cleanup orphaned .bak files (cleanup subcommand)
   --config <path>     Path to config file
   --help              Show this help message
 
@@ -146,9 +140,6 @@ Examples:
 
   # Clean up old backups based on retention policy
   aligntrue backup cleanup
-
-  # Clean up legacy .bak files
-  aligntrue backup cleanup --legacy
 `;
 
 export async function backupCommand(argv: string[]): Promise<void> {
@@ -353,15 +344,9 @@ async function handleRestore(
 
 async function handleCleanup(
   cwd: string,
-  args: BackupArgs,
-  argv: string[],
+  _args: BackupArgs,
+  _argv: string[],
 ): Promise<void> {
-  // Handle legacy cleanup
-  if (args.legacy || argv.includes("--legacy")) {
-    await handleLegacyCleanup(cwd);
-    return;
-  }
-
   const { loadConfig } = await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
 
@@ -444,97 +429,4 @@ async function handleCleanup(
       throw err;
     },
   );
-}
-
-async function handleLegacyCleanup(cwd: string): Promise<void> {
-  const { globSync } = await import("glob");
-  const { unlinkSync, rmSync, existsSync } = await import("fs");
-  const { join } = await import("path");
-
-  const spinner = createManagedSpinner();
-
-  spinner.start("Scanning for legacy backup locations...");
-
-  const itemsToDelete: Array<{ path: string; type: "file" | "directory" }> = [];
-
-  // Find .bak files in workspace root and subdirectories (but not node_modules, .git)
-  const bakFiles = globSync(["**/*.bak", ".bak"], {
-    cwd,
-    ignore: ["node_modules/**", ".git/**", ".aligntrue/**"],
-  });
-
-  bakFiles.forEach((f: string) => {
-    itemsToDelete.push({ path: join(cwd, f), type: "file" });
-  });
-
-  // Find old backup location: .aligntrue/overwritten-rules/
-  const overwrittenRulesDir = join(cwd, ".aligntrue", "overwritten-rules");
-  if (existsSync(overwrittenRulesDir)) {
-    itemsToDelete.push({ path: overwrittenRulesDir, type: "directory" });
-  }
-
-  // Find agent-specific overwritten-files locations
-  const agentLocations = [
-    ".cursor/overwritten-files",
-    ".amazonq/overwritten-files",
-    ".kilocode/overwritten-files",
-    ".augment/overwritten-files",
-    ".kiro/overwritten-files",
-    ".trae/overwritten-files",
-    ".vscode/overwritten-files",
-  ];
-
-  for (const agentLoc of agentLocations) {
-    const agentOverwrittenDir = join(cwd, agentLoc);
-    if (existsSync(agentOverwrittenDir)) {
-      itemsToDelete.push({ path: agentOverwrittenDir, type: "directory" });
-    }
-  }
-
-  spinner.stop(
-    `Found ${itemsToDelete.length} legacy backup location(s) to remove`,
-  );
-
-  if (itemsToDelete.length === 0) {
-    clack.log.success("No legacy backup locations found");
-    return;
-  }
-
-  clack.log.warn(`Found ${itemsToDelete.length} legacy backup location(s):`);
-  itemsToDelete.slice(0, 10).forEach((item) => {
-    const relativePath = item.path.replace(cwd + "/", "").replace(cwd, ".");
-    console.log(`  - ${relativePath} (${item.type})`);
-  });
-  if (itemsToDelete.length > 10) {
-    console.log(`  ...and ${itemsToDelete.length - 10} more`);
-  }
-
-  const confirmed = await clack.confirm({
-    message: "Delete these legacy locations?",
-    initialValue: false,
-  });
-
-  if (clack.isCancel(confirmed) || !confirmed) {
-    clack.log.step("Cleanup cancelled");
-    return;
-  }
-
-  let deleted = 0;
-  for (const item of itemsToDelete) {
-    try {
-      if (item.type === "file") {
-        unlinkSync(item.path);
-      } else {
-        rmSync(item.path, { recursive: true, force: true });
-      }
-      deleted++;
-    } catch {
-      // Ignore errors
-    }
-  }
-
-  clack.log.success(
-    `Deleted ${deleted} legacy location${deleted !== 1 ? "s" : ""}`,
-  );
-  clack.log.info("All backups are now in .aligntrue/.backups/");
 }

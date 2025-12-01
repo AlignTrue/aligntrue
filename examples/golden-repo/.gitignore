@@ -4,12 +4,11 @@
 .aligntrue/.agent-export-hashes.json
 
 # START AlignTrue Generated Files
-.aligntrue/overwritten-rules/
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/ai-guidance.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/code-review.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/documentation.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/global.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/security.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/.cursor/rules/testing.mdc
-/Users/gabe/Sites/aligntrue/examples/golden-repo/AGENTS.md
+/examples/golden-repo/.cursor/rules/ai-guidance.mdc
+/examples/golden-repo/.cursor/rules/code-review.mdc
+/examples/golden-repo/.cursor/rules/documentation.mdc
+/examples/golden-repo/.cursor/rules/global.mdc
+/examples/golden-repo/.cursor/rules/security.mdc
+/examples/golden-repo/.cursor/rules/testing.mdc
+/examples/golden-repo/AGENTS.md
 # END AlignTrue Generated Files
