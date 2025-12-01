@@ -40,33 +40,15 @@ AlignTrue uses Nextra `nextra-theme-docs` with Next.js App Router.
 
 ```tsx
 // apps/docs/theme.config.tsx
-import type { DocsThemeConfig } from "nextra-theme-docs";
 import { AlignTrueLogo } from "@aligntrue/ui";
 
-const config: DocsThemeConfig = {
+const config = {
   logo: <AlignTrueLogo size="md" />,
   project: {
     link: "https://github.com/AlignTrue/aligntrue",
   },
   docsRepositoryBase:
     "https://github.com/AlignTrue/aligntrue/tree/main/apps/docs",
-  darkMode: true,
-  navigation: true,
-  search: {
-    placeholder: "Search documentation...",
-  },
-  gitTimestamp: ({ timestamp }) => (
-    <>Last updated on {timestamp.toLocaleDateString()}</>
-  ),
-  feedback: {
-    content: "Question? Give us feedback →",
-    labels: "feedback",
-  },
-  sidebar: {
-    defaultMenuCollapseLevel: 2,
-    autoCollapse: false,
-    toggleButton: true,
-  },
   toc: {
     backToTop: true,
   },
@@ -74,6 +56,8 @@ const config: DocsThemeConfig = {
 
 export default config;
 ```
+
+Keep theme config minimal. Complex behavior is handled in the docs layout instead.
 
 ### Next.js config
 
@@ -100,23 +84,48 @@ export default withNextra({
 
 ### App Router layout
 
-Nextra wires most behavior automatically. Use App Router layouts and import Nextra styles once.
+Nextra wires most behavior automatically. Use App Router layouts and import Nextra styles in the docs layout only.
+
+**Root layout** (`app/layout.tsx`): Setup SEO, analytics, theming providers. Do NOT import Nextra styles here.
 
 ```tsx
-// apps/docs/app/layout.tsx (root layout does NOT import styles)
+// apps/docs/app/layout.tsx (root layout does NOT import Nextra styles)
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import { Head } from "nextra/components";
+import { ThemeProvider } from "next-themes";
+import { Analytics } from "@vercel/analytics/react";
+
+export const metadata: Metadata = {
+  title: { default: "AlignTrue", template: "%s – AlignTrue" },
+  description:
+    "Instantly sync rules across agents, people, projects and teams.",
+  // ... additional metadata for SEO, OpenGraph, Twitter
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <Head>{/* Analytics and global scripts here */}</Head>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+          <Analytics />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
+```
 
+**Docs layout** (`app/docs/layout.tsx`): Import Nextra styles and wire theme components.
+
+```tsx
 // apps/docs/app/docs/layout.tsx (docs layout imports Nextra styles)
 import "nextra-theme-docs/style.css";
+import type { ReactNode } from "react";
 import { Layout, Navbar } from "nextra-theme-docs";
+import { Search } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import themeConfig from "../../theme.config";
 
@@ -127,7 +136,18 @@ export default async function DocsLayout({
 }) {
   const pageMap = await getPageMap();
   return (
-    <Layout pageMap={pageMap} navbar={<Navbar {...themeConfig} />}>
+    <Layout
+      pageMap={pageMap}
+      navbar={
+        <Navbar
+          logo={themeConfig.logo}
+          projectLink={themeConfig.project.link}
+        />
+      }
+      search={<Search placeholder="Search documentation..." />}
+      footer={<DocsFooter />}
+      sidebar={{ defaultMenuCollapseLevel: 1, autoCollapse: true }}
+    >
       {children}
     </Layout>
   );
@@ -153,26 +173,37 @@ If a feature is not in Nextra docs, prefer upgrading Nextra or opening an upstre
 ```
 apps/docs/
   app/
-    layout.tsx          # Root layout
-    page.tsx            # Home page
+    layout.tsx                  # Root layout (SEO, analytics, theme provider)
+    page.tsx                    # Home page
+    docs/
+      layout.tsx                # Docs layout (Nextra Layout, styles)
+      [[...mdxPath]]/page.tsx   # Dynamic route for all docs pages
   content/
-    index.mdx           # Docs landing
-    getting-started/
-    concepts/
-    reference/
-    guides/
-  mdx-components.tsx    # Shared MDX components (thin wrappers)
-  theme.config.tsx      # Nextra theme config
+    _meta.js                    # Navigation config
+    index.mdx                   # Docs landing
+    about.md                    # About page
+    00-getting-started/
+    01-guides/
+    02-customization/
+    03-concepts/
+    04-reference/
+    05-troubleshooting/
+    06-contributing/
+    07-policies/
+    08-development/
+  mdx-components.tsx            # Shared MDX components
+  theme.config.tsx              # Nextra theme config
   next.config.mjs
   vercel.json
 ```
 
 ### Rules
 
-- Use `index.mdx` for section roots.
-- Keep nesting shallow (max 2 to 3 levels).
-- Order via folder naming when needed (e.g. `01-getting-started`).
-- Navigation comes from structure and `_meta.json` files.
+- Use numeric prefixes for content folders: `00-*`, `01-*`, etc.
+- Use `index.mdx` or `index.md` for section roots.
+- Keep nesting shallow (max 2 levels within a section).
+- Navigation comes from `_meta.json` files in each folder.
+- Add `about.md` at content root for landing info.
 
 ---
 
@@ -193,10 +224,11 @@ description: Quick intro to AlignTrue
 
 ### Components
 
-Prefer Nextra components:
+Prefer Nextra components. Re-export them in `mdx-components.tsx` for consistency:
 
 ```jsx
-import { Callout, Cards } from "nextra/components"
+import { Callout, Cards, Tabs, Steps } from "nextra/components"
+import { Mermaid } from "@theguild/remark-mermaid/mermaid";
 
 <Callout type="info">This is informational.</Callout>
 
@@ -204,6 +236,22 @@ import { Callout, Cards } from "nextra/components"
   <Cards.Card title="Core" href="/concepts/architecture" />
   <Cards.Card title="CLI" href="/reference/cli" />
 </Cards>
+
+<Tabs items={["Option 1", "Option 2"]}>
+  <Tabs.Tab>Content for option 1</Tabs.Tab>
+  <Tabs.Tab>Content for option 2</Tabs.Tab>
+</Tabs>
+
+<Steps>
+  ### Step 1
+  Do this first
+  ### Step 2
+  Do this second
+</Steps>
+
+<Mermaid>{`graph LR
+  A --> B
+`}</Mermaid>
 ```
 
 ### Guidelines
@@ -267,13 +315,41 @@ Single docs app deployed to `aligntrue.ai`.
 
 ### Minimal vercel.json
 
+Include security headers and redirects for old URLs. Actual config also includes:
+
+- `buildCommand`, `devCommand`, `installCommand` (explicit commands for reproducibility)
+- `framework: "nextjs"` (explicit Next.js framework)
+- `regions: ["iad1"]` (specific region for latency)
+- Permanent redirects (`301`) for renamed docs pages
+- Security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`
+
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm build",
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/docs/00-getting-started/00-quickstart",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
-      "headers": [{ "key": "X-Frame-Options", "value": "DENY" }]
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        }
+      ]
     }
   ]
 }
@@ -318,19 +394,7 @@ pnpm --filter docs build
 ### Optional
 
 ```bash
-pnpm exec lhci autorun --config=apps/docs/lighthouserc.json
 pnpm --filter docs exec playwright test
 ```
 
 If checks fail on performance or a11y, note it in the PR with a plan.
-
----
-
-## Related rules
-
-- `architecture.mdc`
-- `documentation.mdc`
-- `typescript.mdc`
-- `security.mdc`
-- `testing.mdc`
-- `pull_request_standards.mdc`
