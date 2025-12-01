@@ -1,0 +1,331 @@
+---
+description: Global rules
+globs:
+  - "**/*"
+alwaysApply: true
+title: global.mdc
+source: .cursor/rules
+source_added: 2025-12-01
+content_hash: d03ddfb2fe12015498b6e5c1ec8ba2e9970dfc6b77cf1e85610be109aa2eda00
+---
+
+# Global rules
+
+## Vision
+
+AlignTrue is an AI-native alignment platform to manage AI directives (rules, skills, MCP configs, etc.) across agents, projects & teams. It's starting as an open source CLI tool to sync rules and MCP configs, then continue to evolve as AI does in order to help users close the gap between AI hype and real output. Read more at https://aligntrue.ai/docs/about.
+
+- Repo boundaries: see `guardrails.mdc`
+- Architecture and determinism: see `/docs/08-development/architecture` on the docs site
+- Current capabilities: see https://aligntrue.ai/docs/04-reference/features
+
+---
+
+## Audience
+
+### Solo developers
+
+- Want repeatable, explainable agent behavior across repos and machines
+- Expect setup under 60 seconds to first export
+- Default: lockfile off, bundle off, local rules only
+- Validation: `aligntrue check` validates internal consistency (schemas, lockfiles, etc.)
+- Export to multiple agents (Cursor, `AGENTS.md`, VS Code MCP)
+
+### Teams (opt in)
+
+- Need versioned, reviewed rule sets enforced in CI
+- Enable team mode (`mode: team`) for lockfile, bundle, drift detection
+- CI validation via `aligntrue drift --gates`
+- Use git-native workflows (PR approval) without requiring cloud
+- Separate team and personal rules with flexible storage (local, repo, remote)
+- Use hierarchical scopes for monorepos
+- Migration wizards for smooth solo→team transitions
+
+---
+
+## Priorities
+
+1. Determinism first: identical inputs produce identical bundles, hashes, and exports
+2. Local first: all core workflows work offline and in CI; cloud is optional
+3. Agent parity: preserve semantics across exporters; where not possible, emit clear fidelity notes
+4. Simplicity over cleverness: explicit dispatch, shallow trees, consolidated modules
+5. 80/20: prioritize changes with clear impact on trust, reliability, or adoption
+6. One way doors: format and protocol changes require an ADR style note
+7. User impact over effort: optimize for end user value, not token burn
+8. Avoid premature optimization; small refactors that prevent debt are allowed
+9. Optimize for DX: minimal configuration, clear errors, fast feedback, no unnecessary complexity
+10. With user facing features always ask: Does this give us the best possible user experience?
+
+---
+
+## Technical approach
+
+- IR first: `.aligntrue/rules/*.md` compiles to a canonical IR (in-memory representation, no file output)
+- Natural markdown authoring:
+  - `.aligntrue/rules/*.md` as the primary user-editable files
+  - YAML frontmatter optional
+  - Use headings and sections; no custom syntax required
+- Vendor bags:
+  - Use `vendor.<agent>` for agent specific data
+  - Exclude `vendor.*.volatile` from hashing
+- Unidirectional sync:
+  - Edit `.aligntrue/rules/*.md` as the single source of truth
+  - Sync flows from rules → IR → agent exports
+  - Agent files (including `AGENTS.md`) are read-only exports
+- Hierarchical scopes: path based rules for monorepos
+- Bundles and lockfiles:
+  - Team mode writes `.aligntrue.lock.json` with pinned hashes (`.aligntrue.bundle.yaml` is forward-compatible but not yet written)
+- Examples:
+  - Small, deterministic
+  - No network dependencies
+
+Detailed specifications: `implementation_specs.mdc`.
+
+---
+
+## AI maintainability doctrine
+
+All code is assumed AI edited. Design for safe, cheap future changes.
+
+- Prefer small modules with explicit contracts
+- Keep functions short and names predictable
+- Minimize side effects
+- Add targeted fixtures and tests near complex logic
+- Remove dead code and unnecessary indirection
+- Opt for the best long-term solution and best user experience, not effort
+- Only create an abstraction if it's actually needed
+
+---
+
+## AI assistance in Cursor
+
+When acting in this repo:
+
+- When making decisions and recommendations: Always optimize for the best long-term solution and best user experience. We should do the best thing for our users, always, no matter what.
+- Define minimal interfaces and contracts first
+- Add tests second
+- Update docs only when behavior changes
+- If rules conflict, raise it and propose a resolution
+- Tighten tests when behavior is ambiguous before heavy edits
+- If stuck or looping, pause and request reassessment
+- Always check if the server is running before trying to start it
+- The `gh` CLI is installed; use it for GitHub operations when requested, but **DO NOT make any GitHub API calls unless explicitly requested**. GitHub API has strict rate limits (5000/hr auth, 60/hr unauth). Even testing scripts counts. Always ask before running commands that hit GitHub API.
+- Never revert anything unless I explicitly approve.
+
+---
+
+## Decisions and tradeoffs
+
+Before large or irreversible changes:
+
+- Ask clarifying questions if requirements are unclear
+- When asking questions propose at least two concrete options with:
+  - Pros and cons
+  - Risks
+  - Why we'd choose it
+- Recommend one option with rationale based on:
+  - Maintainability
+  - Testability
+  - Operability
+  - User Experience
+  - Best Long Term Solution
+- Flag one way door decisions explicitly
+
+Template:
+
+- Option A: pros, cons, effort, risks
+- Option B: pros, cons, effort, risks
+- Recommended: A or B
+- Why: short rationale
+
+---
+
+## Deferring features
+
+When deferring:
+
+- Add entry to `potential_future_features.mdc`
+- Include:
+  - What is deferred
+  - Why
+  - Current approach
+  - Objective triggers to revisit
+
+Review when triggers are met or during phase planning.
+
+---
+
+## Usability
+
+**Defaults must work. Failures must teach.**
+
+### Error messages
+
+Each error must state:
+
+1. What failed (file, field, or operation)
+2. Why it failed
+3. How to fix it, with exact keys or commands
+
+**Bad**
+
+`Validation failed`
+
+**Good**
+
+`Error: missing 'profile.id' in .aligntrue/config.yaml. Add 'profile.id: "<org-or-user>"' or run 'aligntrue init'.`
+
+### Defaults
+
+- Provide safe defaults for common setups
+- Document defaults in `--help` and schema docs
+- Tests must prove defaults yield deterministic outputs
+- NEVER user hostile
+
+### CLI UX
+
+- `--help` must be fast
+- Exit codes:
+  - 0 success
+  - 1 validation error
+  - 2 user error
+  - 3 system error
+- Show progress only for long operations
+- Output should be professional and consistent
+
+### Trust
+
+- Do not claim unsupported parity
+- Emit fidelity notes when exports are lossy
+- Document assumptions and limitations clearly
+
+---
+
+## Success metrics
+
+- Byte identical lockfiles and exports for identical inputs
+- Under 60 seconds from `aligntrue init` to first export
+- No required network calls in core OSS workflows
+
+---
+
+## Code policies
+
+- No full repo or large file rewrites
+- One configuration source of truth
+- Prefer clear module boundaries over cross module state
+
+---
+
+## Code style and quality
+
+- TypeScript 5 or newer, Node 20 or newer
+- Strict `tsconfig`
+- ESLint with typescript-eslint, Prettier, EditorConfig
+- Tests with Vitest or Jest
+- Test layout mirrors source layout
+
+See:
+
+- `typescript.mdc` for language rules
+- `testing.mdc` for test strategy
+
+---
+
+## Security and privacy
+
+- Assume on prem and offline by default
+- No outbound calls in core paths
+- Telemetry is opt in via `ALIGNTRUE_TELEMETRY=on` and documented
+- Do not log secrets or PII
+- Do not commit real keys or tokens
+  See `security_linting_policy.mdc` for details.
+
+---
+
+## Docs and exports
+
+- Each major feature should have:
+  - Example in `examples/` showing config to IR to export
+- Exporters:
+  - Include footer with content hash
+  - Include fidelity notes when behavior is partial or lossy
+
+See `documentation.mdc` for documentation rules.
+
+---
+
+## Communication style
+
+- Be direct and honest about limits, risks, and edge cases
+- Provide actionable details: exact flags, files, and snippets
+- State assumptions explicitly
+- Use sentence case for all titles
+- Use AlignTrue as a single word
+- Keep docs concise
+- No emojis
+
+---
+
+## File creation guardian
+
+Before creating a file:
+
+1. Decide if it is:
+   - Test artifact
+   - Config
+   - Output
+   - Temporary
+2. For temporary artifacts:
+   - Prefix with `temp-`
+3. For permanent files:
+   - Use correct locations:
+     - `packages/cli/src/` for CLI
+     - `packages/*/src/` for core, schema, exporters, etc.
+     - `packages/*/tests/` for tests
+     - `examples/` for examples
+     - `apps/docs/content/` for docs
+     - `artifacts/` if configured
+
+Do not create:
+
+- `test_*.md`, `export_*.md` in root
+- Random `*_config.yaml` in root
+
+Use `temp-` variants instead and clean them up.
+
+Before declaring completion:
+
+- Check for stray test or export files without `temp-`
+- Run cleanup targets where available
+
+---
+
+## Stub Commands and Documentation
+
+Never create stub commands or "coming soon" documentation for unimplemented features:
+
+- Stubs confuse AI assistants who report them as missing functionality
+- "Coming soon" documentation creates false expectations
+- If a feature isn't ready, don't document it or expose it in CLI
+
+Instead:
+
+- Implement fully or don't expose at all
+- If deferring, document in internal planning docs only (`.internal_docs/`)
+- Remove any existing stubs that create confusion
+
+**Why this matters:** AI-driven development relies on accurate documentation. Stubs and "coming soon" notes cause AI to incorrectly report working features as broken or missing, wasting time on false issues.
+
+---
+
+## Feature completion workflow
+
+For any user facing feature:
+
+- Update `apps/docs/content/reference/` or `apps/docs/content/concepts/` if needed
+- Add or update examples in `examples/` if applicable
+- Add determinism tests for artifact writers if applicable
+- Update `CHANGELOG.md`
+- Delete temporary files if applicable
+- Ensure global rules here are still accurate

@@ -1,0 +1,458 @@
+---
+description: Implementation specifications
+alwaysApply: false
+title: implementation_specs.mdc
+source: .cursor/rules
+source_added: 2025-12-01
+content_hash: 513e70c3ac63be0e27ac5498e7a8d6630385c819092f331b2eabe529c770892d
+---
+
+# Implementation specifications
+
+**When to apply:** When implementing or updating features that must be deterministic, reproducible, or compliance grade (IR, lockfiles, bundles, exports, hashing, canonicalization).
+
+These define **what** to build. The **how** is flexible as long as acceptance criteria are met.
+
+---
+
+## Applicability
+
+### Solo mode (default)
+
+- Lockfile off, bundle off
+- IR is the single source of truth: `.aligntrue/rules`
+- Validation via `aligntrue check` (config and schema validation)
+
+### Team mode (opt in)
+
+- `mode: team` in config
+- Enables lockfile, bundle, and drift detection
+- CI validation via `aligntrue drift --gates`
+
+---
+
+## 1) Canonical JSON (determinism foundation)
+
+### Why
+
+Lockfiles and manifests must hash identically across machines.
+
+### Requirements
+
+- Canonicalization uses JSON Canonicalization Scheme JCS (RFC 8785)
+- Floats rounded to 6 decimal places before JCS
+- Reject `NaN` and `Infinity`
+- UTF-8 without BOM
+- No trailing spaces, exactly one trailing newline
+
+### API
+
+File: `packages/schema/src/canonicalize.ts`
+
+- `canonicalizeJson(value: unknown, excludeVolatile?: boolean): string`
+- `computeHash(data: string): string` uses SHA-256
+- `computeAlignHash(alignInput: string | unknown): string` combines both for aligns
+
+### Used by
+
+- `.aligntrue.lock.json`
+- `.aligntrue.bundle.yaml` normalized JSON views in tests
+- `manifest.json`
+- `versions.json`
+
+### Acceptance
+
+- Same input yields identical `canonicalJson` on Linux, macOS, Windows
+- Non finite numbers throw with a clear field path
+- `0.123456789` canonicalizes as `0.123457`
+
+---
+
+## 2) Align merge, precedence, and conflicts (team mode)
+
+### Why
+
+Teams need deterministic align composition.
+
+### Requirements
+
+- Merging happens in memory; `.aligntrue.bundle.yaml` is not yet written to disk
+- Dependency order from a topological sort of the align DAG
+- **Precedence (first-wins):**
+  - Local project rules (`.aligntrue/rules/`) ALWAYS FIRST, ALWAYS WINS
+  - First external source listed in config
+  - Second external source listed in config
+  - ... (in order)
+- `priority` field:
+  - Higher numeric `priority` wins over default precedence
+- Tie break order:
+  - `(priority desc, alignId asc, ruleId asc, sourcePath asc, lineNumber asc)`
+
+### Merge semantics
+
+- Scalars: first wins (when source conflict)
+- Set like arrays: union, then stable sort by value
+- Maps: deep merge using the same precedence rules
+
+### Outputs
+
+- `.aligntrue.bundle.yaml` merged rules
+- `.aligntrue.lock.json` pins:
+  - align hashes
+  - bundle hash
+  - relevant tool versions
+
+### Acceptance
+
+- Identical inputs produce identical bundle and lockfile bytes
+- Source rule order does not matter unless it changes defined precedence
+- No nondeterministic iteration in merges
+
+---
+
+## 3) Scope matching and glob semantics
+
+### Why
+
+Stable file targeting across OS and tools.
+
+### Requirements
+
+- Normalize paths to forward slashes
+- Base directory is repo root
+- POSIX style globs, case sensitive
+- Default excludes:
+  - `node_modules/**`
+  - `.git/**`
+- Most specific match wins
+- On equal specificity, apply Section 2 precedence
+
+### Acceptance
+
+- Same repo yields identical scope resolution on Linux, macOS, Windows
+- Most specific scopes applied correctly for monorepo rule assignment
+
+---
+
+## 4) Telemetry privacy (opt in only)
+
+### Why
+
+Collect coarse usage signals without leaking data.
+
+### Rules
+
+- Off by default
+- Enable only with `aligntrue telemetry on` (written to `.aligntrue/telemetry.json`)
+- Collected fields:
+  - `telemetry_id` random UUID at `~/.aligntrue/telemetry_id`
+  - `event` in `validate|bundle|export|align|verify`
+  - `version`, `duration_s`, `success`
+  - `node_version`
+- Never collect:
+  - hostnames, IPs, usernames, emails
+  - file paths, repo names, rule content, config values, hashes, seeds
+
+### Behavior
+
+- 1 second timeout
+- Silent on failure
+- One line notice on first enable with docs link
+
+### Acceptance
+
+- CLI works identically with telemetry off
+- No PII or sensitive values in payloads
+
+---
+
+## 5) Export formatting invariants
+
+### Why
+
+Agent exports must be deterministic and readable.
+
+### Markdown style exports
+
+Includes: `.mdc`, `AGENTS.md`, and other markdown based agent formats.
+
+**Requirements:**
+
+- Fixed, documented section order
+- `\n` line endings
+- Exactly one trailing newline
+- No timestamps or UUIDs
+- Required footer:
+
+```
+Content-Hash: <sha256-of-IR>
+Fidelity: <notes or "OK">
+```
+
+### AGENTS.md exporter
+
+- Follows the `AGENTS.md` spec
+- Includes provenance section
+- Includes content hash footer
+
+### Content mode for single-file exports
+
+Single-file exporters (AGENTS.md, CLAUDE.md, etc.) support content mode control:
+
+**Options:**
+
+- `auto` (default): Inline for 1 rule, links for 2+ rules
+- `inline`: Embed full rule content with HTML comment separators
+- `links`: Always use markdown links to `.aligntrue/rules/` files
+
+**Requirements:**
+
+- Size warning when inline content exceeds 50KB
+- Deterministic output regardless of mode
+- Links mode preserves relative paths to source files
+
+### MCP and config exporters
+
+- Write deterministic JSON or YAML
+- Stable key ordering
+- No volatile fields that change per run
+
+### Acceptance
+
+- Same IR yields identical bytes across runs and OSes
+- When mapping is partial, emit stable fidelity notes
+
+---
+
+## 6) Schema validation
+
+### Why
+
+Catch errors early.
+
+### Requirements
+
+- Single JSON Schema: `packages/schema/schema/align.schema.json`
+- Ajv in strict mode with `allErrors: true`
+- Error shaping:
+  - Includes JSON path
+  - Includes expected vs actual types
+
+### CLI
+
+- `aligntrue check` validates config and rules
+
+### Acceptance
+
+- Invalid configs exit with code 1 and clear messages
+- Valid configs pass quietly or with structured output under `--json`
+
+---
+
+## 7) CLI exit codes and error shape
+
+### Exit codes
+
+- `0` success
+- `1` validation error
+- `2` user error (missing files, bad flags)
+- `3` system error
+
+### Error format
+
+Each error must state:
+
+1. What failed
+2. Why it failed
+3. How to fix it, with a concrete action
+
+### Acceptance
+
+- Contract tests cover `validate`, `bundle`, `export`, `align` exit codes and messages
+
+---
+
+## 8) IR and vendor bags
+
+### Why
+
+IR is canonical. Vendor bags enable lossless multi agent support.
+
+### Requirements
+
+- Canonical source:
+  - `aligntrue.yaml` or `.aligntrue/rules` for IR
+- Vendor bags:
+  - Use `vendor.<agent>` namespaces
+- Volatile fields:
+  - `vendor.*.volatile` excluded from hashing
+- Round trip:
+  - IR → agent → IR keeps semantics
+
+### Hashing
+
+- Compute hash on IR with volatile fields removed
+- Use `canonicalJson` then `stableHash`
+
+### Acceptance
+
+- IR → Cursor → IR preserves semantic and vendor data, except declared volatile fields
+- IR → AGENTS.md → IR preserves semantics and reports any loss
+- Volatile changes do not change hash
+- Semantic changes do
+
+---
+
+## 9) Unidirectional sync: rules → agents
+
+### Why
+
+Single source of truth prevents conflicts and ensures predictable behavior.
+
+### Requirements
+
+**Sync direction (only direction):**
+
+- `.aligntrue/rules/*.md` is the single source of truth
+- `aligntrue sync` reads from `.aligntrue/rules/`, writes to agent-specific exports
+- Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.) are read-only exports
+- Never sync agent files back to IR
+
+**Edit workflow:**
+
+1. User edits `.aligntrue/rules/*.md`
+2. User runs `aligntrue sync`
+3. Changes flow: `.aligntrue/rules/` → IR → agent exports
+4. Agent files updated atomically
+5. No user interaction or prompts
+
+**Manual edits to agent files:**
+
+- Detected via SHA-256 checksum comparison
+- Backed up to `.aligntrue/overwritten-rules/` with timestamp
+- Overwritten without prompting on next sync
+- User should edit `.aligntrue/rules/` instead
+
+**Team mode governance:**
+
+- Use lockfile validation (`aligntrue drift --gates`) for approval workflows
+- Team lead manages via `aligntrue team approve`
+- CI validates against approved hashes
+- Lockfile pins IR hashes, not agent file hashes
+
+### Atomicity
+
+- All or nothing writes
+- Use temp files and atomic rename
+- On failure, leave previous state untouched
+
+### Dry run
+
+- `--dry-run` prints planned changes
+- Shows which files would be written
+- No files actually modified
+
+### Acceptance
+
+- Plain `aligntrue sync` is deterministic and requires no user interaction
+- Same `.aligntrue/rules/` input produces identical agent exports across runs and machines
+- Manual edits to agent files are backed up and overwritten
+- Team governance via lockfile, not per-file conflicts
+- Agent files never contain unsaved user edits
+
+---
+
+## 10) Hierarchical scopes
+
+### Why
+
+Monorepos need path aware rules.
+
+### Requirements
+
+- Scope entries:
+  - `path`
+  - `include` / `exclude` globs
+  - `rulesets`
+- Merge order:
+  - `[root, path, local]`
+- Most specific scope wins
+- Ties resolved by merge order
+- Exporters support per scope outputs where relevant
+
+### Acceptance
+
+- Scope resolution is deterministic across machines
+- Per scope exports match resolved rules
+- Conflicts produce actionable errors
+
+---
+
+## 11) Supply chain and releases
+
+### Requirements
+
+- No floating ranges for release builds
+- Generate CycloneDX SBOM for tagged releases
+- Attach checksums
+- CI audits dependencies
+- High severity requires explicit waiver
+
+### Acceptance
+
+- Release artifacts verifiable from SBOM and checksums
+
+---
+
+## 12) @aligntrue/ui constraints
+
+### Why
+
+Zero build ESM package must work across apps without special loaders.
+
+### Forbidden
+
+- Importing asset files (`.svg`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, etc.)
+- Using `require()` for assets
+- Relying on Next.js loaders or bundler specific behavior
+
+### Required
+
+- Inline SVGs as JSX
+- Images as data URIs if needed
+- Theming driven by CSS variables
+- TypeScript and React only
+
+### Acceptance
+
+- No asset imports in `packages/ui/src/**`
+- Custom lint rule catches violations
+- Consumer apps build without extra config
+- Snapshot tests cover rendering
+
+---
+
+## Implementation guidelines
+
+- Read the relevant sections before coding
+- For JSON outputs, always use `canonicalJson` and `stableHash` where determinism is required
+- Write acceptance style tests linked to the specs above
+- Document discretionary choices inline
+- For UI changes, keep to the zero build and no asset import constraints
+
+---
+
+## Review checklist
+
+Before merging a feature that touches determinism, sync, or exports:
+
+- Uses `canonicalJson` and `stableHash` where required (Section 1)
+- IR first: IR remains the canonical source (Section 10)
+- Vendor bags used and volatile fields excluded correctly (Section 10)
+- Unidirectional sync follows precedence and atomicity rules (Section 11)
+- Merge order and precedence follow Section 2 in team mode
+- Scope behavior matches Sections 3 and 12
+- Export bytes are stable and include required footer (Section 7)
+- CLI exit codes and messages follow Section 9
+- Telemetry is opt in and PII free (Section 4)
+- `@aligntrue/ui` obeys zero build rules if touched (Section 12)
