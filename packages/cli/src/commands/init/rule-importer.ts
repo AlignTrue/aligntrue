@@ -37,7 +37,9 @@ export function extractNestedLocation(
   relativePath: string,
   type: string,
 ): string | undefined {
-  const dir = dirname(relativePath);
+  // Normalize to forward slashes for cross-platform compatibility
+  // (dirname returns backslashes on Windows, but suffixes use forward slashes)
+  const dir = dirname(relativePath).replace(/\\/g, "/");
 
   // Agent-specific directory suffixes to strip
   const suffixes: Record<string, string[]> = {

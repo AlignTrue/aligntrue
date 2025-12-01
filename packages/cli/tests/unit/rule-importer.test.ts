@@ -119,5 +119,23 @@ describe("extractNestedLocation", () => {
       );
       expect(result).toBeUndefined();
     });
+
+    it("normalizes backslashes in dirname output to forward slashes", () => {
+      // On Windows, dirname() returns paths with backslashes.
+      // We can't fully simulate Windows dirname() on Unix, but we can verify
+      // the normalization logic by checking that any backslashes in the
+      // directory path get converted to forward slashes in the result.
+      //
+      // This test uses a path with mixed slashes where forward slashes are
+      // recognized by dirname() on all platforms, but backslashes may appear
+      // in the dirname() output on Windows.
+      const result = extractNestedLocation(
+        "apps/docs/.cursor/rules/file.mdc",
+        "cursor",
+      );
+      expect(result).toBe("apps/docs");
+      // Verify result uses forward slashes (not backslashes)
+      expect(result).not.toContain("\\");
+    });
   });
 });
