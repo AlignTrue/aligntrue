@@ -228,7 +228,7 @@ async function runDoctor(
           id: `exporter.${exporterName}`,
           label: `Exporter: ${exporterName}`,
           status: "warn",
-          hint: "Unknown exporter. Run 'aligntrue adapters list' to verify name",
+          hint: "Unknown exporter. Run 'aligntrue exporters list' to verify name",
         });
         continue;
       }
@@ -239,7 +239,7 @@ async function runDoctor(
       id: "exporters.none",
       label: "Exporters configured",
       status: "warn",
-      hint: "No exporters enabled. Run 'aligntrue adapters enable <adapter>'",
+      hint: "No exporters enabled. Run 'aligntrue exporters enable <exporter>'",
     });
   }
 
@@ -255,7 +255,7 @@ async function runDoctor(
         label: "Detected agent files not configured",
         status: "warn",
         details: [names],
-        hint: "Run 'aligntrue adapters enable <name>' to add them",
+        hint: "Run 'aligntrue exporters enable <name>' to add them",
       });
     }
     if (detection.notFound.length > 0) {

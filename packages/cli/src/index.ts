@@ -16,7 +16,7 @@ import {
   scopes,
   check,
   config,
-  adapters,
+  exporters,
   privacy,
   backup,
   revert,
@@ -76,8 +76,8 @@ async function main() {
     );
     console.log("  doctor         Run health checks and verification tests\n");
 
-    console.log("Development Commands:");
-    console.log("  adapters       Manage exporters (list, enable, disable)\n");
+    console.log("Basic Commands:");
+    console.log("  exporters      Manage exporters (list, enable, disable)\n");
 
     console.log("Source Management:");
     console.log("  add            Add an align from a URL");
@@ -135,7 +135,7 @@ async function main() {
     ["scopes", scopes],
     ["check", check],
     ["config", config],
-    ["adapters", adapters],
+    ["exporters", exporters],
     ["privacy", privacy],
     ["backup", backup],
     ["revert", revert],

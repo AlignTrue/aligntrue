@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Init exporter selection streamlined** - Init now shows 5 most common exporters (AGENTS.md, Cursor, Claude, Windsurf, Cline) plus any detected ones, with message to add 14+ more via `aligntrue exporters`. Fixes multiselect rendering with large exporter list
 - **GitHub web UI URL support** - URL parser now handles GitHub web URLs with `/tree/` and `/blob/` paths. Copy URLs directly from GitHub's web interface (e.g., `https://github.com/org/repo/tree/main/aligns`)
 - **Selective import UI for init/add/sources detect** - Smart tiered selection interface when importing rules. Single file: auto-import. Small folder: show list + confirm. Large/multiple folders: show summary + folder-level selection
 - **Unified backup system with age-based retention** - All backups consolidated under `.aligntrue/.backups/` (snapshots and files). Individual file backups now use `.bak` suffix for clarity and include timestamp
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Renamed CLI command `adapters` → `exporters`** - Better aligns with user mental model ("exporters" = formats that export to agents). Config field `exporters:` remains unchanged. CLI help moved from "Development commands" to "Basic commands". Old `/adapters` URL redirects to `/exporters`
 - **BREAKING: `resolveSource()` from `@aligntrue/core` no longer supports git sources** - Git source resolution moved from `@aligntrue/core` to `@aligntrue/cli` to eliminate the `new Function()` dynamic import that triggered security scanner warnings. Use CLI commands (`aligntrue add`, `aligntrue sync`) for git sources. Core now throws a clear error for git sources, directing users to use CLI
 - **Case-insensitive section heading selectors** - Overlay selectors using `sections[heading=...]` now match case-insensitively for better UX. `sections[heading=Security]` matches "security", "SECURITY", or "Security"
 - **Agent files included in backups** - Sync and manual backups now include agent export files (AGENTS.md, .cursor/rules/\*.mdc, etc.) based on configured exporters. Ensures complete restore capability

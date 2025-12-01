@@ -166,6 +166,12 @@ const FORMAT_OPTIONS: FormatOption[] = [
 ];
 
 /**
+ * Most common exporters shown in init
+ * Users can add 14+ more with 'aligntrue exporters'
+ */
+const COMMON_EXPORTERS = ["agents", "cursor", "claude", "windsurf", "cline"];
+
+/**
  * Detect which formats are present in the workspace
  */
 function detectFormats(cwd: string): Set<string> {
@@ -677,8 +683,14 @@ export async function init(args: string[] = []): Promise<void> {
     // Interactive mode: show format selection
     const detectedFormats = detectFormats(cwd);
 
+    // Show only common exporters + any detected ones not in common list
+    const commonSet = new Set(COMMON_EXPORTERS);
+    const optionsToShow = FORMAT_OPTIONS.filter(
+      (opt) => commonSet.has(opt.exporter) || detectedFormats.has(opt.exporter),
+    );
+
     // Build options for multi-select
-    const formatChoices = FORMAT_OPTIONS.map((opt) => {
+    const formatChoices = optionsToShow.map((opt) => {
       const isDetected = detectedFormats.has(opt.exporter);
       return {
         value: opt.exporter,
@@ -688,13 +700,18 @@ export async function init(args: string[] = []): Promise<void> {
     });
 
     // Pre-select detected formats only (no default selection)
-    const initialValues = FORMAT_OPTIONS.filter((opt) =>
-      detectedFormats.has(opt.exporter),
-    ).map((opt) => opt.exporter);
+    const initialValues = optionsToShow
+      .filter((opt) => detectedFormats.has(opt.exporter))
+      .map((opt) => opt.exporter);
+
+    // Calculate how many more exporters are available
+    const totalExporters = FORMAT_OPTIONS.length;
+    const shownExporters = optionsToShow.length;
+    const moreCount = totalExporters - shownExporters;
 
     // Show tips before the prompt
     clack.log.info(
-      "Agent exporter tips:\n  • Use space to select formats\n  • Add or change them later with 'aligntrue adapters'\n  • See full list: https://aligntrue.ai/agents\n  • See how to add new ones: https://aligntrue.ai/extend",
+      `Select formats to start with${moreCount > 0 ? ` (add ${moreCount}+ more with 'aligntrue exporters')` : ""}\n  • Use space to select formats\n  • See full list: https://aligntrue.ai/agents\n  • See how to add new ones: https://aligntrue.ai/extend`,
     );
 
     const selected = await clack.multiselect({
@@ -702,6 +719,7 @@ export async function init(args: string[] = []): Promise<void> {
       options: formatChoices,
       initialValues: initialValues,
       required: false,
+      maxItems: 10,
     });
 
     if (clack.isCancel(selected)) {
@@ -718,7 +736,7 @@ export async function init(args: string[] = []): Promise<void> {
       );
     } else {
       clack.log.info(
-        "No formats selected. You can add them later with 'aligntrue adapters enable <format>'.",
+        "No formats selected. You can add them later with 'aligntrue exporters enable <format>'.",
       );
     }
   } else {
@@ -913,7 +931,7 @@ aligntrue sync
     "Helpful commands:",
     "  aligntrue sync        Sync rules to your agents",
     "  aligntrue add <url>   Add rules from git repo or path",
-    "  aligntrue adapters    Manage agent formats",
+    "  aligntrue exporters    Manage agent formats",
     "  aligntrue status      Check sync health",
     ...(mode !== "team"
       ? ["  aligntrue team enable Enable team mode for collaboration"]
