@@ -226,7 +226,7 @@ function validateExporterCount() {
       pattern: /(\d+)\s+exporters/i,
     },
     {
-      path: "apps/docs/content/04-reference/agent-support.md",
+      path: "apps/docs/content/04-reference/agent-support.mdx",
       pattern: /\*\*(\d+)\s+total\s+exporters\*\*/i,
     },
   ];
