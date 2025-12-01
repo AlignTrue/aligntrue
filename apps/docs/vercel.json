@@ -56,6 +56,11 @@
       "source": "/formats",
       "destination": "/docs/02-customization/export-formats",
       "permanent": true
+    },
+    {
+      "source": "/add-rules",
+      "destination": "/docs/01-guides/11-adding-rules",
+      "permanent": true
     }
   ],
   "headers": [
