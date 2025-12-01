@@ -14,12 +14,17 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
 
     steps:
-      - name: Checkout PR branch
+      # For pull_request_target, we must use refs/pull/N/head to get the PR content
+      # Using head.ref alone checks out the base branch (main), not the PR
+      - name: Checkout PR HEAD
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create branch for push
+        run: git checkout -B ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,10 +37,14 @@ jobs:
       - name: Regenerate lockfile
         run: pnpm install --no-frozen-lockfile
 
-      - name: Commit updated lockfile
+      - name: Commit and push updated lockfile
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add pnpm-lock.yaml
-          git diff --staged --quiet || git commit -m "chore: regenerate pnpm-lock.yaml"
-          git push
+          if git diff --staged --quiet; then
+            echo "No lockfile changes needed"
+          else
+            git commit -m "chore: regenerate pnpm-lock.yaml"
+            git push origin ${{ github.event.pull_request.head.ref }}
+          fi
