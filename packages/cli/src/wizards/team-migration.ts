@@ -311,7 +311,7 @@ async function applyMigrationActions(
 
   try {
     const { loadRulesDirectory } = require("@aligntrue/core");
-    const rules = loadRulesDirectory(irPath, cwd, { recursive: true });
+    const rules = await loadRulesDirectory(irPath, cwd, { recursive: true });
 
     // Convert to ParsedIR format
     ir = {
