@@ -359,6 +359,67 @@ aligntrue revert --timestamp <TIMESTAMP> <FILE>
 
 **Verification:** Run `aligntrue revert --help` to see actual flags (`--timestamp`, `--yes`, `--help`).
 
+### Empty Rule Files Rejected
+
+**False alarm:** Empty rule files cause validation errors
+
+**Reality:** This is expected behavior. Empty rule files serve no purpose and are intentionally rejected. Rule files must contain content to be processed.
+
+**Verification:** Ensure test rule files have actual markdown content, not just empty files or files with only whitespace.
+
+### Test Isolation and Directory Reuse
+
+**False alarm:** Filenames with dashes or underscores are rejected
+
+**Reality:** Dashes and underscores ARE allowed in rule filenames. If filename tests fail, check that the config is valid first. Test failures are often caused by corrupted config from a previous test, not the filename itself.
+
+**Verification:** Each exploratory test scenario should start with a clean state:
+
+- Create a fresh test directory for each scenario
+- Do not reuse directories from failed tests
+- If a previous test corrupted config, start fresh: `rm -rf /tmp/aligntrue-*`
+
+### Invalid YAML Frontmatter Detection
+
+**False alarm:** Invalid YAML frontmatter not detected by the CLI
+
+**Reality:** YAML parsing errors ARE detected and reported. Common test mistakes:
+
+- `invalid: yaml: :` is actually valid YAML (nested mapping syntax)
+- To test invalid YAML, use actually broken syntax like `title: [unclosed bracket` or `title: "unclosed quote`
+
+**Verification:** Use genuine YAML syntax errors:
+
+```bash
+# WRONG - this is actually valid YAML (nested mapping)
+echo 'invalid: yaml: :' > frontmatter.md
+
+# CORRECT - these are actually invalid YAML
+echo '---' > bad-frontmatter.md
+echo 'title: [unclosed bracket' >> bad-frontmatter.md
+echo '---' >> bad-frontmatter.md
+```
+
+### Large File Testing Methodology
+
+**False alarm:** Large files (>200 lines) cause sync failures
+
+**Reality:** Large markdown files work fine. Test failures are often caused by invalid test data, not file size. Using `base64` output from `/dev/urandom` creates content with characters that fail fingerprint validation (`^[a-z0-9-]+$`).
+
+**Verification:** Use valid markdown content for large file tests:
+
+```bash
+# WRONG - binary data causes fingerprint validation errors
+for i in {1..100}; do echo "$(head -c 1000 /dev/urandom | base64)" >> large.md; done
+
+# CORRECT - valid markdown content
+for i in {1..200}; do
+  echo "## Section $i" >> large.md
+  echo "This is valid markdown content for section $i." >> large.md
+  echo "" >> large.md
+done
+```
+
 ---
 
 ## Critical testing principle: Understand centralized rule management
