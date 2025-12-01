@@ -429,3 +429,120 @@ export function formatCreatedFiles(
     clack.log.success(message);
   }
 }
+
+/**
+ * Options for formatting discovered files output
+ */
+export interface FormatDiscoveredFilesOptions {
+  /** Max groups to show before truncating (default: 5) */
+  maxGroups?: number;
+  /** How to group files: by directory path or by type property */
+  groupBy?: "directory" | "type";
+}
+
+/**
+ * Discovered file with optional type for grouping
+ */
+export interface DiscoveredFile {
+  /** Relative path to the file */
+  relativePath?: string | undefined;
+  /** Full path to the file */
+  path: string;
+  /** Optional type for grouping (e.g., 'cursor', 'agents', 'claude') */
+  type?: string | undefined;
+}
+
+/**
+ * Format a consolidated discovery summary for scanned files
+ *
+ * Returns a formatted string showing file counts grouped by directory or type.
+ * Use this for scan/detect operations before user confirmation.
+ *
+ * @param files - Array of discovered files
+ * @param options - Formatting options
+ * @returns Formatted discovery message string
+ *
+ * @example
+ * ```typescript
+ * // Group by directory (default)
+ * const msg = formatDiscoveredFiles([
+ *   { relativePath: '.cursor/rules/global.mdc', path: '/abs/.cursor/rules/global.mdc' },
+ *   { relativePath: 'apps/docs/.cursor/rules/web.mdc', path: '/abs/apps/docs/.cursor/rules/web.mdc' },
+ * ])
+ * // Returns: "Found 2 files in 2 folders"
+ *
+ * // Group by type
+ * const msg = formatDiscoveredFiles(files, { groupBy: "type" })
+ * // Returns: "Found 16 agent files:\n  CURSOR (10 files)\n  AGENTS (6 files)"
+ * ```
+ */
+export function formatDiscoveredFiles(
+  files: DiscoveredFile[],
+  options: FormatDiscoveredFilesOptions = {},
+): string {
+  const { maxGroups = 5, groupBy = "directory" } = options;
+
+  if (files.length === 0) {
+    return "No files found";
+  }
+
+  // Group files
+  const grouped = new Map<string, DiscoveredFile[]>();
+
+  for (const file of files) {
+    let groupKey: string;
+
+    if (groupBy === "type" && file.type) {
+      groupKey = file.type.toUpperCase();
+    } else {
+      // Group by directory
+      const relativePath = (file.relativePath || file.path).replace(/\\/g, "/");
+      const lastSlash = relativePath.lastIndexOf("/");
+      groupKey = lastSlash >= 0 ? relativePath.slice(0, lastSlash + 1) : "./";
+    }
+
+    if (!grouped.has(groupKey)) {
+      grouped.set(groupKey, []);
+    }
+    grouped.get(groupKey)!.push(file);
+  }
+
+  const groupCount = grouped.size;
+
+  // Build the message
+  if (groupBy === "type") {
+    // Type grouping: "Found 16 agent files:"
+    const lines: string[] = [];
+    lines.push(
+      `Found ${files.length} agent file${files.length !== 1 ? "s" : ""}:`,
+    );
+
+    // Sort by count descending
+    const sortedGroups = Array.from(grouped.entries()).sort(
+      (a, b) => b[1].length - a[1].length,
+    );
+
+    const showGroups = sortedGroups.slice(0, maxGroups);
+    for (const [type, typeFiles] of showGroups) {
+      lines.push(
+        `  ${type} (${typeFiles.length} file${typeFiles.length !== 1 ? "s" : ""})`,
+      );
+    }
+
+    if (sortedGroups.length > maxGroups) {
+      lines.push(`  ... and ${sortedGroups.length - maxGroups} more types`);
+    }
+
+    return lines.join("\n");
+  } else {
+    // Directory grouping
+    if (groupCount === 1) {
+      // Single folder: "Found 16 files in .cursor/rules/"
+      const folderName = Array.from(grouped.keys())[0]!;
+      return `Found ${files.length} file${files.length !== 1 ? "s" : ""} in ${folderName}`;
+    } else {
+      // Multiple folders: "Found 16 files in 4 folders"
+      return `Found ${files.length} file${files.length !== 1 ? "s" : ""} in ${groupCount} folder${groupCount !== 1 ? "s" : ""}`;
+    }
+  }
+}
