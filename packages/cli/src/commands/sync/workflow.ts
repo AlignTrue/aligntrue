@@ -304,8 +304,13 @@ export async function executeSyncWorkflow(
             spinner.stop(
               `Backed up ${backupResult.totalFiles} files to ${destinations || "remote"}`,
             );
-          } else if (backupResult.results.every((r) => r.skipped)) {
+          } else if (
+            backupResult.results.length > 0 &&
+            backupResult.results.every((r) => r.skipped)
+          ) {
             spinner.stop("Remote backup skipped (no changes)");
+          } else if (backupResult.results.length === 0) {
+            spinner.stop("Remote backup: no files to back up");
           } else {
             spinner.stop("Remote backup completed");
           }
