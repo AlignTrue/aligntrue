@@ -1,6 +1,7 @@
 {
   "index": "Overview",
   "basic": "Basic commands",
+  "backup": "Backup",
   "development": "Development",
   "plugs": "Plugs",
   "overlays": "Overlays",

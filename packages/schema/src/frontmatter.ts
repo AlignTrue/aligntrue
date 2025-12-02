@@ -60,9 +60,13 @@ export interface RuleFrontmatter {
 
   // Privacy Controls
   /**
-   * Mark rule as private (not committed to git)
+   * Mark rule as gitignored (not committed to git)
    * When true, both source file and exported versions are auto-gitignored
-   * Overrides source-level `private` setting
+   * Overrides source-level `gitignore` setting
+   */
+  gitignore?: boolean;
+  /**
+   * @deprecated Use `gitignore` instead. Will be removed in next major version.
    */
   private?: boolean;
 
@@ -147,7 +151,8 @@ export const frontmatterSchema = {
     apply_to: { type: "string" },
     exclude_from: { type: "array", items: { type: "string" } },
     export_only_to: { type: "array", items: { type: "string" } },
-    private: { type: "boolean" },
+    gitignore: { type: "boolean" },
+    private: { type: "boolean" }, // Deprecated, use gitignore
     cursor: { type: "object" },
     agents: { type: "object" },
     original_source: { type: "string" },

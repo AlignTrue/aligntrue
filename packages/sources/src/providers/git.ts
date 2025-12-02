@@ -45,6 +45,11 @@ export interface GitSourceConfig {
   path?: string; // path to rules file in repo (default: '.aligntrue.yaml')
   forceRefresh?: boolean; // bypass cache
   checkInterval?: number; // override default check interval (seconds)
+  /**
+   * Mark source as personal (skip team approval in team mode)
+   * When true, updates from this source don't require team approval
+   */
+  personal?: boolean;
 }
 
 /**
@@ -94,6 +99,7 @@ export class GitProvider implements SourceProvider {
   private offlineMode: boolean;
   private consentManager?: ConsentManager;
   private mode: "solo" | "team" | "enterprise";
+  private personal: boolean;
   private maxFileSizeMb: number;
   private force: boolean;
   private progressCallback: ((update: GitProgressUpdate) => void) | undefined;
@@ -120,6 +126,7 @@ export class GitProvider implements SourceProvider {
       config.checkInterval ?? options?.checkInterval ?? 86400; // Default 24 hours
     this.offlineMode = options?.offlineMode ?? false;
     this.mode = options?.mode ?? "solo";
+    this.personal = config.personal ?? false;
     this.maxFileSizeMb = options?.maxFileSizeMb ?? 10;
     this.force = options?.force ?? false;
     this.progressCallback = options?.onProgress;
@@ -238,8 +245,8 @@ export class GitProvider implements SourceProvider {
       const updateInfo = await this.checkRemoteUpdates(targetRef);
 
       if (updateInfo.hasUpdates) {
-        // Team mode: block and require approval
-        if (this.mode === "team") {
+        // Team mode: block and require approval (unless personal source)
+        if (this.mode === "team" && !this.personal) {
           throw new UpdatesAvailableError({
             url: this.url,
             ref: targetRef,
@@ -249,7 +256,7 @@ export class GitProvider implements SourceProvider {
           });
         }
 
-        // Solo mode: auto-pull updates
+        // Solo mode or personal source: auto-pull updates
         await this.pullUpdates(targetRef);
       } else {
         // No updates, just update last checked timestamp

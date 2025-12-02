@@ -220,6 +220,18 @@
               "minLength": 1
             },
             "minItems": 1
+          },
+          "personal": {
+            "type": "boolean",
+            "description": "Mark source as personal (skip team approval in team mode). Auto-implies gitignore: true unless explicitly set to false."
+          },
+          "gitignore": {
+            "type": "boolean",
+            "description": "Mark source as gitignored (rules not committed to git). Auto-set to true for SSH URLs or when personal: true."
+          },
+          "private": {
+            "type": "boolean",
+            "description": "DEPRECATED: Use 'gitignore' instead. Will be removed in next major version."
           }
         }
       }
@@ -377,7 +389,7 @@
     },
     "backup": {
       "type": "object",
-      "description": "Backup and restore configuration. Backups are mandatory before destructive operations.",
+      "description": "Local backup and restore configuration. Backups are mandatory before destructive operations.",
       "additionalProperties": false,
       "properties": {
         "keep_count": {
@@ -395,6 +407,80 @@
           "type": "number",
           "description": "Safety floor: always keep at least N most recent backups regardless of age (default: 3, minimum: 1)",
           "minimum": 1
+        }
+      }
+    },
+    "remote_backup": {
+      "type": "object",
+      "description": "Remote backup configuration for pushing rules to git repositories. Unidirectional: local .aligntrue/rules/ -> remote repos.",
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "object",
+          "description": "Default backup destination - gets all files not assigned to additional backups",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Git repository URL (HTTPS or SSH)",
+              "minLength": 1
+            },
+            "branch": {
+              "type": "string",
+              "description": "Branch to push to (default: main)"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path prefix in backup repo (default: preserves structure from .aligntrue/rules/)"
+            },
+            "auto": {
+              "type": "boolean",
+              "description": "Automatically push on sync (default: true)"
+            }
+          },
+          "required": ["url"]
+        },
+        "additional": {
+          "type": "array",
+          "description": "Additional backup destinations with explicit file assignments",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier for this backup",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string",
+                "description": "Git repository URL (HTTPS or SSH)",
+                "minLength": 1
+              },
+              "branch": {
+                "type": "string",
+                "description": "Branch to push to (default: main)"
+              },
+              "path": {
+                "type": "string",
+                "description": "Path prefix in backup repo (default: preserves structure)"
+              },
+              "auto": {
+                "type": "boolean",
+                "description": "Automatically push on sync (default: true)"
+              },
+              "include": {
+                "type": "array",
+                "description": "Glob patterns for files to include in this backup",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": ["id", "url", "include"]
+          }
         }
       }
     },
