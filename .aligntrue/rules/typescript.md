@@ -147,7 +147,7 @@ All indexed access is `T | undefined`. Narrow before use.
 ```typescript
 const mapping: Record<string, string> = {
   "import-cursor": "cursor",
-  "import-agents": "agents-md",
+  "import-agents": "agents",
 };
 
 const agent = mapping[context];
