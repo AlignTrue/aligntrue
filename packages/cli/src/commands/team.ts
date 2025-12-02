@@ -371,6 +371,28 @@ async function teamEnable(
     // Atomic rename (OS-level guarantee)
     renameSync(tempPath, configPath);
 
+    // Create empty lockfile immediately
+    const { createEmptyLockfile } = await import(
+      "../utils/lockfile-helpers.js"
+    );
+    const lockfileResult = await createEmptyLockfile(
+      process.cwd(),
+      configWithDefaults.mode as "team" | "enterprise",
+    );
+
+    if (!lockfileResult.success && lockfileResult.error) {
+      // Log warning but don't fail - lockfile will be created on first sync
+      if (!nonInteractive) {
+        clack.log.warn(
+          `Could not create lockfile: ${lockfileResult.error}. It will be created on first sync.`,
+        );
+      } else {
+        console.warn(
+          `Could not create lockfile: ${lockfileResult.error}. It will be created on first sync.`,
+        );
+      }
+    }
+
     // Record telemetry event
     recordEvent({ command_name: "team-enable", align_hashes_used: [] });
 
@@ -389,7 +411,7 @@ async function teamEnable(
       "Team mode enabled",
       "",
       "Config updated: .aligntrue/config.yaml",
-      `Lockfile: .aligntrue.lock.json (${config.lockfile?.mode || "soft"} mode, created on first sync)`,
+      `Lockfile: .aligntrue.lock.json (${config.lockfile?.mode || "soft"} mode, ready)`,
       "",
       "Helpful commands:",
       "  aligntrue sync   Sync rules and update lockfile",
@@ -497,7 +519,7 @@ async function teamDisable(
     if (!nonInteractive) {
       clack.log.success(`Backup created: ${backup.timestamp}`);
       clack.log.info(
-        `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+        `Restore with: aligntrue backup restore --timestamp ${backup.timestamp}`,
       );
     } else {
       console.log(`Backup created: ${backup.timestamp}`);
@@ -553,7 +575,7 @@ async function teamDisable(
       "Solo mode enabled",
       "",
       "Your rules are in .aligntrue/rules/ - edit them any time.",
-      `Backup available: aligntrue backup restore --to ${backup.timestamp}`,
+      `Backup available: aligntrue backup restore --timestamp ${backup.timestamp}`,
       "",
       "Helpful commands:",
       "  aligntrue sync        Sync rules to your agents",

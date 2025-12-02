@@ -172,7 +172,9 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
   const yes = flags["yes"] || false;
 
   try {
-    clack.intro("Split AGENTS.md into multiple files");
+    if (!yes) {
+      clack.intro("Split AGENTS.md into multiple files");
+    }
 
     // Check if AGENTS.md exists
     const agentsMdPath = join(cwd, "AGENTS.md");
@@ -400,9 +402,15 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       align_hashes_used: [],
     });
 
-    clack.outro(
-      "Split complete! Run 'aligntrue sync' to regenerate agent files.",
-    );
+    if (!yes) {
+      clack.outro(
+        "Split complete! Run 'aligntrue sync' to regenerate agent files.",
+      );
+    } else {
+      console.log(
+        "Split complete! Run 'aligntrue sync' to regenerate agent files.",
+      );
+    }
   } catch (error) {
     clack.log.error(
       `Failed to split sources: ${error instanceof Error ? error.message : String(error)}`,

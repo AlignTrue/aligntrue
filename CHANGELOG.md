@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
+
+### Fixed
+
+- **Lockfile creation timing in team mode** - Lockfile is now created immediately when team mode is enabled, rather than waiting for first sync. Provides immediate feedback and allows git tracking from the start
+- **Sources split non-interactive mode** - `aligntrue sources split --yes` now fully suppresses intro/outro messages for better CI/automation support
+
 ## [0.5.2] - 2025-12-01
 
 ### Changed

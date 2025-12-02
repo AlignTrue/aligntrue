@@ -80,7 +80,7 @@ interface BackupArgs {
   notes?: string;
 
   // Restore subcommand
-  to?: string;
+  timestamp?: string;
 
   // Cleanup subcommand
   legacy?: boolean;
@@ -93,7 +93,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Add notes to backup (create subcommand)",
   },
   {
-    flag: "--to",
+    flag: "--timestamp",
     hasValue: true,
     description: "Restore specific backup by timestamp (restore subcommand)",
   },
@@ -116,10 +116,10 @@ Subcommands:
   cleanup             Remove old backups based on retention policy
 
 Options:
-  --notes <text>      Add notes to backup (create subcommand)
-  --to <timestamp>    Restore specific backup by timestamp (restore subcommand)
-  --config <path>     Path to config file
-  --help              Show this help message
+  --notes <text>         Add notes to backup (create subcommand)
+  --timestamp <id>       Restore specific backup by timestamp (restore subcommand)
+  --config <path>        Path to config file
+  --help                 Show this help message
 
 Cleanup uses time-based retention from config:
   - retention_days: Remove backups older than N days (default: 30)
@@ -136,7 +136,7 @@ Examples:
   aligntrue backup restore
 
   # Restore specific backup
-  aligntrue backup restore --to 2025-10-29T12-34-56-789
+  aligntrue backup restore --timestamp 2025-10-29T12-34-56-789
 
   # Clean up old backups based on retention policy
   aligntrue backup cleanup
@@ -283,10 +283,12 @@ async function handleRestore(
     throw new Error("No backups found");
   }
 
-  // Parse --to from argv manually if needed
-  const toIndex = argv.indexOf("--to");
+  // Parse --timestamp from argv manually if needed
+  const timestampIndex = argv.indexOf("--timestamp");
   const toTimestamp =
-    toIndex >= 0 && argv[toIndex + 1] ? argv[toIndex + 1] : args.to;
+    timestampIndex >= 0 && argv[timestampIndex + 1]
+      ? argv[timestampIndex + 1]
+      : args.timestamp;
 
   let targetBackup: BackupInfo | undefined;
 
