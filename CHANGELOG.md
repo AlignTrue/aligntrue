@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-12-01
+
+### Changed
+
+- Updated dependencies in `@aligntrue/schema`: `yaml` from 2.8.1 to 2.8.2, `tsx` from 4.20.6 to 4.21.0
+
+## [Unreleased]
+
 ### Added
 
 - **Init exporter selection streamlined** - Init now shows 5 most common exporters (AGENTS.md, Cursor, Claude, Windsurf, Cline) plus any detected ones, with message to add 14+ more via `aligntrue exporters`. Fixes multiselect rendering with large exporter list
