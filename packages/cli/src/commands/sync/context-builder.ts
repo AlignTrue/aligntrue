@@ -72,7 +72,7 @@ import { createManagedSpinner, type SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
 
-// Get the exporters package directory for adapter discovery
+// Get the exporters package directory for exporter discovery
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -403,7 +403,7 @@ export async function buildSyncContext(
   const registry = new ExporterRegistry();
 
   try {
-    // Discover adapters from exporters package
+    // Discover exporters from exporters package
     let exportersDistPath: string;
     try {
       const exportersPackagePath = await import.meta.resolve(
@@ -414,7 +414,7 @@ export async function buildSyncContext(
     } catch {
       exportersDistPath = resolve(__dirname, "../../../../exporters/dist");
     }
-    const manifestPaths = registry.discoverAdapters(exportersDistPath);
+    const manifestPaths = registry.discoverExporters(exportersDistPath);
 
     // Load manifests and handlers for configured exporters
     const exporterNamesArray = getExporterNames(config.exporters) || [

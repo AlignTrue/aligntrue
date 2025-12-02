@@ -12,6 +12,7 @@ import {
   getMultiFileExporterPath,
   getAllMultiFileExporterPaths,
   StaleExportGroup,
+  SourceRuleInfo,
 } from "../../src/sync/cleanup.js";
 
 describe("Cleanup Functions", () => {
@@ -75,10 +76,13 @@ describe("Cleanup Functions", () => {
       writeFileSync(join(amazonqRulesDir, "testing.md"), "testing content");
       writeFileSync(join(amazonqRulesDir, "legacy.md"), "legacy content");
 
-      // Source has 'security' and 'testing' rules
-      const sourceNames = ["security", "testing"];
+      // Source has 'security' and 'testing' rules (no nested_location = root)
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "security" },
+        { name: "testing" },
+      ];
 
-      const staleGroups = detectStaleExports(tempDir, sourceNames, [
+      const staleGroups = detectStaleExports(tempDir, sourceRules, [
         "cursor",
         "amazonq",
       ]);
@@ -106,25 +110,28 @@ describe("Cleanup Functions", () => {
       writeFileSync(join(cursorRulesDir, "TESTING.mdc"), "content");
       writeFileSync(join(cursorRulesDir, "old.mdc"), "content");
 
-      const sourceNames = ["security", "testing"]; // lowercase
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "security" },
+        { name: "testing" },
+      ];
 
-      const staleGroups = detectStaleExports(tempDir, sourceNames, ["cursor"]);
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
 
       expect(staleGroups).toHaveLength(1);
       expect(staleGroups[0].files).toEqual(["old.mdc"]);
     });
 
     it("should skip non-existent directories", () => {
-      const sourceNames = ["security"];
-      const staleGroups = detectStaleExports(tempDir, sourceNames, ["cursor"]);
+      const sourceRules: SourceRuleInfo[] = [{ name: "security" }];
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
 
       expect(staleGroups).toHaveLength(0);
     });
 
     it("should skip single-file exporters", () => {
-      const sourceNames = ["security"];
+      const sourceRules: SourceRuleInfo[] = [{ name: "security" }];
       // agents is single-file, should be skipped
-      const staleGroups = detectStaleExports(tempDir, sourceNames, ["agents"]);
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["agents"]);
 
       expect(staleGroups).toHaveLength(0);
     });
@@ -138,11 +145,104 @@ describe("Cleanup Functions", () => {
       mkdirSync(subDir, { recursive: true });
       writeFileSync(join(subDir, "nested.mdc"), "content");
 
-      const sourceNames = ["security"];
-      const staleGroups = detectStaleExports(tempDir, sourceNames, ["cursor"]);
+      const sourceRules: SourceRuleInfo[] = [{ name: "security" }];
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
 
       // Only the file in root should be checked, not nested files
       expect(staleGroups).toHaveLength(0);
+    });
+
+    it("should flag root export as stale when rule has nested_location", () => {
+      // This tests the key scenario: a rule with nested_location should NOT have a root export
+      const cursorRulesDir = join(tempDir, ".cursor", "rules");
+      mkdirSync(cursorRulesDir, { recursive: true });
+
+      // Create an export at root level
+      writeFileSync(join(cursorRulesDir, "web_stack.mdc"), "web stack content");
+
+      // But the source rule has nested_location: apps/docs
+      // So the root export is stale (should be at apps/docs/.cursor/rules/)
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "web_stack", nestedLocation: "apps/docs" },
+      ];
+
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
+
+      expect(staleGroups).toHaveLength(1);
+      expect(staleGroups[0].directory).toBe(".cursor/rules");
+      expect(staleGroups[0].files).toContain("web_stack.mdc");
+    });
+
+    it("should NOT flag nested export as stale when rule has matching nested_location", () => {
+      // Create export at the correct nested location
+      const nestedCursorDir = join(tempDir, "apps", "docs", ".cursor", "rules");
+      mkdirSync(nestedCursorDir, { recursive: true });
+      writeFileSync(
+        join(nestedCursorDir, "web_stack.mdc"),
+        "web stack content",
+      );
+
+      // Source rule has nested_location matching the export location
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "web_stack", nestedLocation: "apps/docs" },
+      ];
+
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
+
+      // No stale exports - the nested export is at the correct location
+      expect(staleGroups).toHaveLength(0);
+    });
+
+    it("should flag nested export as stale when no rule has that nested_location", () => {
+      // Create export at a nested location
+      const nestedCursorDir = join(tempDir, "apps", "docs", ".cursor", "rules");
+      mkdirSync(nestedCursorDir, { recursive: true });
+      writeFileSync(join(nestedCursorDir, "orphan.mdc"), "orphan content");
+
+      // But we have a rule for apps/docs so the nested directory will be scanned
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "web_stack", nestedLocation: "apps/docs" },
+      ];
+
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
+
+      // orphan.mdc is stale - no matching source
+      expect(staleGroups).toHaveLength(1);
+      expect(staleGroups[0].directory).toBe("apps/docs/.cursor/rules");
+      expect(staleGroups[0].files).toContain("orphan.mdc");
+    });
+
+    it("should handle multiple rules with different nested_locations", () => {
+      // Create root and nested exports
+      const rootCursorDir = join(tempDir, ".cursor", "rules");
+      const docsCursorDir = join(tempDir, "apps", "docs", ".cursor", "rules");
+      const cliCursorDir = join(tempDir, "packages", "cli", ".cursor", "rules");
+
+      mkdirSync(rootCursorDir, { recursive: true });
+      mkdirSync(docsCursorDir, { recursive: true });
+      mkdirSync(cliCursorDir, { recursive: true });
+
+      // Root exports (should be valid for global rule, stale for nested rules)
+      writeFileSync(join(rootCursorDir, "global.mdc"), "global content");
+      writeFileSync(join(rootCursorDir, "web_stack.mdc"), "stale at root");
+
+      // Nested exports (correct locations)
+      writeFileSync(join(docsCursorDir, "web_stack.mdc"), "correct location");
+      writeFileSync(join(cliCursorDir, "cli_rules.mdc"), "cli rules");
+
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "global" }, // No nested_location = root
+        { name: "web_stack", nestedLocation: "apps/docs" },
+        { name: "cli_rules", nestedLocation: "packages/cli" },
+      ];
+
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
+
+      // Only root web_stack.mdc should be stale
+      expect(staleGroups).toHaveLength(1);
+      expect(staleGroups[0].directory).toBe(".cursor/rules");
+      expect(staleGroups[0].files).toContain("web_stack.mdc");
+      expect(staleGroups[0].files).not.toContain("global.mdc");
     });
   });
 
@@ -256,8 +356,11 @@ describe("Cleanup Functions", () => {
       writeFileSync(join(cursorRulesDir, "old-rule.mdc"), "old");
 
       // Detect stale
-      const sourceNames = ["security", "testing"];
-      const staleGroups = detectStaleExports(tempDir, sourceNames, ["cursor"]);
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "security" },
+        { name: "testing" },
+      ];
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
 
       expect(staleGroups).toHaveLength(1);
       expect(staleGroups[0].files).toEqual(["old-rule.mdc"]);
@@ -269,6 +372,36 @@ describe("Cleanup Functions", () => {
       expect(existsSync(join(cursorRulesDir, "security.mdc"))).toBe(true);
       expect(existsSync(join(cursorRulesDir, "testing.mdc"))).toBe(true);
       expect(existsSync(join(cursorRulesDir, "old-rule.mdc"))).toBe(false);
+    });
+
+    it("should clean stale root exports when rule has nested_location", async () => {
+      // Setup: Create export at both root AND nested location
+      const rootCursorDir = join(tempDir, ".cursor", "rules");
+      const nestedCursorDir = join(tempDir, "apps", "docs", ".cursor", "rules");
+
+      mkdirSync(rootCursorDir, { recursive: true });
+      mkdirSync(nestedCursorDir, { recursive: true });
+
+      writeFileSync(join(rootCursorDir, "web_stack.mdc"), "stale at root");
+      writeFileSync(join(nestedCursorDir, "web_stack.mdc"), "correct location");
+
+      // Rule has nested_location, so root export is stale
+      const sourceRules: SourceRuleInfo[] = [
+        { name: "web_stack", nestedLocation: "apps/docs" },
+      ];
+      const staleGroups = detectStaleExports(tempDir, sourceRules, ["cursor"]);
+
+      expect(staleGroups).toHaveLength(1);
+      expect(staleGroups[0].directory).toBe(".cursor/rules");
+
+      // Clean stale
+      const result = await cleanStaleExports(tempDir, staleGroups);
+
+      expect(result.deleted).toContain("web_stack.mdc");
+      // Root export should be gone
+      expect(existsSync(join(rootCursorDir, "web_stack.mdc"))).toBe(false);
+      // Nested export should remain
+      expect(existsSync(join(nestedCursorDir, "web_stack.mdc"))).toBe(true);
     });
   });
 });

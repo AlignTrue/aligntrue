@@ -257,7 +257,7 @@ modules:
   mcp: false
 git:
   mode: commit
-  per_adapter:
+  per_exporter:
     cursor: ignore
 exporters:
   - cursor

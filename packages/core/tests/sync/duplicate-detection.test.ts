@@ -9,6 +9,7 @@ import { join } from "path";
 import {
   detectStaleExports,
   cleanStaleExports,
+  type SourceRuleInfo,
 } from "../../src/sync/cleanup.js";
 
 const TEST_DIR = join(
@@ -34,11 +35,11 @@ describe("detectStaleExports", () => {
   });
 
   it("returns empty array when no export directories exist", () => {
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["rule1"],
-      ["cursor", "amazonq"],
-    );
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule1" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, [
+      "cursor",
+      "amazonq",
+    ]);
 
     expect(stale).toEqual([]);
   });
@@ -55,7 +56,11 @@ describe("detectStaleExports", () => {
       "# Rule 2\nContent 2",
     );
 
-    const stale = detectStaleExports(TEST_DIR, ["rule1", "rule2"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "rule1" },
+      { name: "rule2" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     expect(stale).toEqual([]);
   });
@@ -77,7 +82,11 @@ describe("detectStaleExports", () => {
       "# Old\nContent",
     );
 
-    const stale = detectStaleExports(TEST_DIR, ["rule1", "rule2"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "rule1" },
+      { name: "rule2" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     expect(stale).toHaveLength(1);
     expect(stale[0]).toEqual({
@@ -98,11 +107,14 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".amazonq/rules/style.md"), "Content");
     writeFileSync(join(TEST_DIR, ".amazonq/rules/style-old.md"), "Content");
 
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["guidance", "style"],
-      ["cursor", "amazonq"],
-    );
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "guidance" },
+      { name: "style" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, [
+      "cursor",
+      "amazonq",
+    ]);
 
     expect(stale).toHaveLength(2);
     expect(stale.map((s) => s.agent).sort()).toEqual(["amazonq", "cursor"]);
@@ -113,7 +125,8 @@ describe("detectStaleExports", () => {
     mkdirSync(join(TEST_DIR), { recursive: true });
     writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agent Rules");
 
-    const stale = detectStaleExports(TEST_DIR, ["rule1"], ["agents"]);
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule1" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["agents"]);
 
     expect(stale).toEqual([]);
   });
@@ -124,11 +137,11 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/rule1.mdc"), "# Rule\nContent");
 
     // Should not throw, even with invalid agents
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["rule1"],
-      ["cursor", "invalid"],
-    );
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule1" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, [
+      "cursor",
+      "invalid",
+    ]);
 
     expect(stale).toEqual([]);
   });
@@ -141,7 +154,8 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/m-old.mdc"), "Content");
     writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), "Content");
 
-    const stale = detectStaleExports(TEST_DIR, ["rule"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     expect(stale).toHaveLength(1);
     expect(stale[0].files).toEqual(["a-old.mdc", "m-old.mdc", "z-old.mdc"]);
@@ -153,7 +167,8 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/rule.mdc"), "Content");
     writeFileSync(join(TEST_DIR, ".cursor/rules/subdir/rule.mdc"), "Content");
 
-    const stale = detectStaleExports(TEST_DIR, ["rule"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     // Should only find top-level files, not in subdirs
     expect(stale).toEqual([]);
@@ -177,11 +192,16 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cline/rules/instruction.md"), "Content");
     writeFileSync(join(TEST_DIR, ".cline/rules/old.md"), "Content");
 
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["rule", "directive", "instruction"],
-      ["trae-ai", "kiro", "cline"],
-    );
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "rule" },
+      { name: "directive" },
+      { name: "instruction" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, [
+      "trae-ai",
+      "kiro",
+      "cline",
+    ]);
 
     expect(stale).toHaveLength(3);
     expect(stale.map((s) => s.agent).sort()).toEqual([
@@ -198,7 +218,8 @@ describe("detectStaleExports", () => {
   it("returns empty array for non-existent output directory", () => {
     const nonExistentDir = join(TEST_DIR, "does-not-exist");
 
-    const stale = detectStaleExports(nonExistentDir, ["rule1"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [{ name: "rule1" }];
+    const stale = detectStaleExports(nonExistentDir, sourceRules, ["cursor"]);
 
     expect(stale).toEqual([]);
   });
@@ -210,7 +231,8 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/old-guidance.mdc"), "Content");
 
     // Source is lowercase
-    const stale = detectStaleExports(TEST_DIR, ["ai-guidance"], ["cursor"]);
+    const sourceRules: SourceRuleInfo[] = [{ name: "ai-guidance" }];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     expect(stale).toHaveLength(1);
     expect(stale[0].files).toEqual(["old-guidance.mdc"]);
@@ -230,11 +252,14 @@ describe("detectStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".amazonq/rules/stale2.md"), "Content");
     writeFileSync(join(TEST_DIR, ".amazonq/rules/stale3.md"), "Content");
 
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["rule1", "rule2"],
-      ["cursor", "amazonq"],
-    );
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "rule1" },
+      { name: "rule2" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, [
+      "cursor",
+      "amazonq",
+    ]);
 
     expect(stale).toHaveLength(2);
 
@@ -367,11 +392,11 @@ describe("cleanStaleExports", () => {
     writeFileSync(join(TEST_DIR, ".cursor/rules/old-rule.mdc"), "Old");
 
     // Detect stale (source has security and testing, old-rule is stale)
-    const stale = detectStaleExports(
-      TEST_DIR,
-      ["security", "testing"],
-      ["cursor"],
-    );
+    const sourceRules: SourceRuleInfo[] = [
+      { name: "security" },
+      { name: "testing" },
+    ];
+    const stale = detectStaleExports(TEST_DIR, sourceRules, ["cursor"]);
 
     expect(stale).toHaveLength(1);
     expect(stale[0].files).toEqual(["old-rule.mdc"]);

@@ -74,7 +74,7 @@ export interface AlignTrueConfig {
   };
   git?: {
     mode?: "ignore" | "commit" | "branch";
-    per_adapter?: Record<string, "ignore" | "commit" | "branch">;
+    per_exporter?: Record<string, "ignore" | "commit" | "branch">;
     branch_check_interval?: number;
     tag_check_interval?: number;
     offline_fallback?: boolean;
@@ -100,6 +100,12 @@ export interface AlignTrueConfig {
     id?: string;
     version?: string;
     include?: string[];
+    /**
+     * Mark source as private (rules not committed to git)
+     * When true, both source files and exported versions are auto-gitignored
+     * Auto-set to true for SSH URLs (git@, ssh://)
+     */
+    private?: boolean;
   }>;
   exporters?: string[] | Record<string, ExporterConfig>;
   scopes?: Array<{

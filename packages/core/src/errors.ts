@@ -142,11 +142,35 @@ export const ErrorFactory = {
   fileNotFound: (path: string): FileSystemError =>
     new FileSystemError("read file", path, "file not found"),
 
-  fileWriteFailed: (path: string, cause?: string): FileSystemError =>
-    new FileSystemError("write file", path, cause).withNextSteps([
+  fileWriteFailed: (path: string, cause?: string): FileSystemError => {
+    // Check if this is a permission error
+    const isPermissionErr =
+      cause &&
+      (cause.toLowerCase().includes("permission denied") ||
+        cause.toLowerCase().includes("eacces") ||
+        cause.toLowerCase().includes("eperm") ||
+        cause.includes("EACCES") ||
+        cause.includes("EPERM"));
+
+    if (isPermissionErr) {
+      return new FileSystemError(
+        "write file",
+        path,
+        cause,
+        "Permission denied: Cannot write to file",
+      ).withNextSteps([
+        "Check file permissions (chmod) or remove read-only flags",
+        "Ensure the directory is writable",
+        "Run with appropriate permissions or use sudo if needed",
+        `Verify the path exists: ${path}`,
+      ]);
+    }
+
+    return new FileSystemError("write file", path, cause).withNextSteps([
       "Check file permissions or remove read-only flags",
       `Verify the path exists: ${path}`,
-    ]),
+    ]);
+  },
 
   notImplemented: (feature: string, hint?: string): NotImplementedError =>
     new NotImplementedError(feature, hint),

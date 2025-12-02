@@ -116,21 +116,21 @@ export interface ExporterPlugin {
 }
 
 /**
- * Adapter manifest metadata
+ * Exporter manifest metadata
  *
- * Declarative manifest.json file that describes an adapter's capabilities,
+ * Declarative manifest.json file that describes an exporter's capabilities,
  * outputs, and optional handler for community-scalable contributions.
  */
 export type ExporterFormat = "native" | "agents-md";
 
-export interface AdapterManifest {
-  name: string; // Adapter name (lowercase alphanumeric with hyphens)
+export interface ExporterManifest {
+  name: string; // Exporter name (lowercase alphanumeric with hyphens)
   version: string; // Semantic version (e.g., 1.0.0)
   description: string; // Human-readable description
   outputs: string[]; // File patterns produced (e.g., [".cursor/rules/*.mdc"])
   handler?: string; // Optional: relative path to TypeScript handler
   license?: string; // License identifier (default: MIT)
   fidelityNotes?: string[]; // Optional: semantic mapping limitations
-  supportedFormats?: ExporterFormat[]; // Optional: export formats this adapter supports (default: ['native'])
+  supportedFormats?: ExporterFormat[]; // Optional: export formats this exporter supports (default: ['native'])
   defaultFormat?: ExporterFormat; // Optional: default export format (default: 'native')
 }

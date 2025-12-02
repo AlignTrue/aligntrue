@@ -54,6 +54,7 @@ export {
   type CleanupResult,
   type StaleExportGroup,
   type CleanResult,
+  type SourceRuleInfo,
 } from "./cleanup.js";
 
 // Global sync engine instance for convenience functions

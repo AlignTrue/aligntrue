@@ -14,7 +14,7 @@
  */
 
 import { existsSync, statSync } from "fs";
-import { resolve } from "path";
+import { join, resolve } from "path";
 import type { RuleFile } from "@aligntrue/schema";
 import { loadRulesDirectory } from "../rules/file-io.js";
 import { parseSourceUrl } from "../import/source-detector.js";
@@ -97,7 +97,17 @@ async function resolveLocalSource(
   cwd: string,
   _options?: ResolveSourceOptions,
 ): Promise<ResolvedSource> {
-  const fullPath = resolve(cwd, source);
+  let fullPath = resolve(cwd, source);
+
+  // Smart path resolution: if path starts with "/" and doesn't exist as absolute,
+  // try treating it as workspace-relative (common user expectation)
+  // e.g., "/apps/docs" in workspace "/Users/me/project" -> "/Users/me/project/apps/docs"
+  if (source.startsWith("/") && !existsSync(fullPath)) {
+    const workspaceRelative = join(cwd, source);
+    if (existsSync(workspaceRelative)) {
+      fullPath = workspaceRelative;
+    }
+  }
 
   if (!existsSync(fullPath)) {
     throw new Error(

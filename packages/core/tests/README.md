@@ -224,7 +224,7 @@ it("detects severity conflicts", () => {
 
 ## Future Tests (Steps 10+)
 
-- **Step 10:** Adapter registry tests
+- **Step 10:** Exporter registry tests
 - **Steps 11-13:** Real exporter integration tests
 - **Step 14:** Full sync engine tests
 

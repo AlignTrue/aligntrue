@@ -15,6 +15,7 @@ import {
   detectNestedAgentFiles,
   parseRuleFile,
   findSimilarContent,
+  logImport,
   DEFAULT_SIMILARITY_THRESHOLD,
   type RuleFile,
   type NestedAgentFile,
@@ -123,24 +124,43 @@ export interface ScanOptions {
 }
 
 /**
- * Convert a NestedAgentFile to a RuleFile with source metadata
+ * Convert a NestedAgentFile to a RuleFile
+ *
+ * Note: Source metadata is no longer stored in frontmatter.
+ * Import events are logged to .aligntrue/.history via logImport().
  */
 function convertToRule(
   file: NestedAgentFile,
   cwd: string,
-  now: string,
+  _now: string,
 ): RuleFile {
   // Use parseRuleFile from core - treats entire file as one rule
   const rule = parseRuleFile(file.path, cwd);
 
-  // Add source metadata
-  rule.frontmatter.source = file.type;
-  rule.frontmatter.source_added = now;
-  rule.frontmatter.original_path = file.relativePath;
+  // Log import event to audit log (instead of storing in frontmatter)
+  // The target filename will be computed after extension conversion
+  let targetFilename = rule.filename;
+  if (targetFilename.endsWith(".mdc")) {
+    targetFilename = targetFilename.slice(0, -4) + ".md";
+  }
+  logImport(cwd, targetFilename, file.relativePath);
 
   // Extract nested location from source path so exports go to the correct nested directory
   // e.g., "apps/docs/.cursor/rules/web_stack.mdc" -> nested_location: "apps/docs"
-  const nestedLocation = extractNestedLocation(file.relativePath, file.type);
+  let nestedLocation = extractNestedLocation(file.relativePath, file.type);
+
+  // If we didn't find nested_location from path but rule has a scope field that looks like a path,
+  // infer nested_location from scope. This handles cases where a scoped rule is at root level.
+  // e.g., .cursor/rules/web_stack.mdc with scope: "apps/docs" -> nested_location: "apps/docs"
+  if (!nestedLocation && rule.frontmatter.scope) {
+    const scope = rule.frontmatter.scope;
+    // Only treat scope as a path if it contains "/" (like "apps/docs" or "packages/cli")
+    // Generic scope values like "reference", "guide", "General" are NOT paths
+    if (typeof scope === "string" && scope.includes("/")) {
+      nestedLocation = scope;
+    }
+  }
+
   if (nestedLocation) {
     rule.frontmatter.nested_location = nestedLocation;
   }

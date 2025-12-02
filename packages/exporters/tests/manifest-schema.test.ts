@@ -47,7 +47,7 @@ describe("Manifest Schema Validation", () => {
       const path = writeManifest("minimal.json", {
         name: "test",
         version: "1.0.0",
-        description: "Test adapter minimal",
+        description: "Test exporter minimal",
         outputs: [".test/*.txt"],
       });
 
@@ -59,7 +59,7 @@ describe("Manifest Schema Validation", () => {
       const path = writeManifest("full.json", {
         name: "test-full",
         version: "2.3.4",
-        description: "Test adapter with all fields",
+        description: "Test exporter with all fields",
         outputs: [".test/*.txt", ".test/*.md"],
         handler: "./handler.ts",
         license: "Apache-2.0",
@@ -73,20 +73,20 @@ describe("Manifest Schema Validation", () => {
       expect(manifest.fidelityNotes).toHaveLength(2);
     });
 
-    it("accepts valid adapter names (lowercase alphanumeric with hyphens)", () => {
+    it("accepts valid exporter names (lowercase alphanumeric with hyphens)", () => {
       const validNames = [
         "cursor",
         "agents",
         "vscode-mcp",
         "test123",
-        "my-adapter-v2",
+        "my-exporter-v2",
       ];
 
       for (const name of validNames) {
         const path = writeManifest(`${name}.json`, {
           name,
           version: "1.0.0",
-          description: "Test adapter",
+          description: "Test exporter",
           outputs: [".test/*.txt"],
         });
 
@@ -107,7 +107,7 @@ describe("Manifest Schema Validation", () => {
         const path = writeManifest(`v-${version}.json`, {
           name: "test",
           version,
-          description: "Test adapter",
+          description: "Test exporter",
           outputs: [".test/*.txt"],
         });
 
@@ -163,9 +163,9 @@ describe("Manifest Schema Validation", () => {
   });
 
   describe("invalid field formats", () => {
-    it("rejects invalid adapter name (uppercase)", () => {
+    it("rejects invalid exporter name (uppercase)", () => {
       const path = writeManifest("bad-name-upper.json", {
-        name: "TestAdapter",
+        name: "TestExporter",
         version: "1.0.0",
         description: "Invalid name",
         outputs: [".test/*.txt"],
@@ -174,9 +174,9 @@ describe("Manifest Schema Validation", () => {
       expect(() => registry.loadManifest(path)).toThrow("Invalid manifest");
     });
 
-    it("rejects invalid adapter name (special chars)", () => {
+    it("rejects invalid exporter name (special chars)", () => {
       const path = writeManifest("bad-name-special.json", {
-        name: "test_adapter",
+        name: "test_exporter",
         version: "1.0.0",
         description: "Invalid name",
         outputs: [".test/*.txt"],
