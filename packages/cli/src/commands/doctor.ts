@@ -23,7 +23,7 @@ import {
   getAgentDisplayName,
 } from "../utils/detect-agents.js";
 import { loadExporterManifests } from "../utils/exporter-validation.js";
-import type { AdapterManifest } from "@aligntrue/plugin-contracts";
+import type { ExporterManifest } from "@aligntrue/plugin-contracts";
 
 type CheckStatus = "ok" | "warn" | "error";
 
@@ -207,7 +207,7 @@ async function runDoctor(
   // Exporter outputs
   const exporterNames = config ? getExporterNames(config.exporters) : [];
   if (exporterNames.length > 0) {
-    let manifestMap: Map<string, AdapterManifest> | null = null;
+    let manifestMap: Map<string, ExporterManifest> | null = null;
     try {
       manifestMap = await loadExporterManifests();
     } catch (error) {
@@ -318,7 +318,7 @@ function renderDoctor(report: DoctorReport): void {
  */
 function evaluateExporter(
   name: string,
-  manifest: AdapterManifest,
+  manifest: ExporterManifest,
   cwd: string,
 ): DoctorCheck {
   const outputs = manifest.outputs || [];

@@ -1,0 +1,7 @@
+sources:
+  - type: local
+    path: .aligntrue/rules
+exporters:
+  - cursor
+  - agents
+  - claude

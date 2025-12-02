@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Renamed CLI command `adapters` → `exporters`** - Better aligns with user mental model ("exporters" = formats that export to agents). Config field `exporters:` remains unchanged. CLI help moved from "Development commands" to "Basic commands". Old `/adapters` URL redirects to `/exporters`
+- **Bulk search and replace `adapter(s)` → `exporter(s)`** to reduce confusio and increase consistency.
 - **BREAKING: `resolveSource()` from `@aligntrue/core` no longer supports git sources** - Git source resolution moved from `@aligntrue/core` to `@aligntrue/cli` to eliminate the `new Function()` dynamic import that triggered security scanner warnings. Use CLI commands (`aligntrue add`, `aligntrue sync`) for git sources. Core now throws a clear error for git sources, directing users to use CLI
 - **Case-insensitive section heading selectors** - Overlay selectors using `sections[heading=...]` now match case-insensitively for better UX. `sections[heading=Security]` matches "security", "SECURITY", or "Security"
 - **Agent files included in backups** - Sync and manual backups now include agent export files (AGENTS.md, .cursor/rules/\*.mdc, etc.) based on configured exporters. Ensures complete restore capability
@@ -377,7 +378,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 ### Changed
 
 - Simplified exporter names by removing the `-md` suffix: `claude-md`, `agents-md`, `aider-md`, `crush-md`, `gemini-md`, `opencode-md`, `roocode-md`, `warp-md`, `windsurf-md`, and `zed-md` are now `claude`, `agents`, `aider`, `crush`, `gemini`, `opencode`, `roocode`, `warp`, `windsurf`, and `zed`. Update `.aligntrue/config.yaml` exporter lists accordingly.
-- Adapter UX improvements: `aligntrue adapters` and `aligntrue status` now link to the full supported agent list and the adapter extension guide whenever they suggest enabling new adapters.
+- Exporter UX improvements: `aligntrue adapters` and `aligntrue status` now link to the full supported agent list and the adapter extension guide whenever they suggest enabling new adapters.
 - Spinners now respect terminal capabilities via a shared helper: TTY environments keep the animated output, while non-TTY (CI/log capture) falls back to plain text without ANSI sequences.
 - CLI TTY detection now lives in `tty-helper.ts`, removing duplicate helpers from `command-utilities.ts`; `team`/`init` commands and `syncFromAgent` have clearer logging and no longer rely on deprecated annotations.
 - `aligntrue check --ci` and `aligntrue drift --gates` help text now cross-reference one another, matching the new command comparison guide.

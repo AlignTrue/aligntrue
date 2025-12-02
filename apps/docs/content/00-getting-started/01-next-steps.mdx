@@ -86,7 +86,16 @@ nodemon --watch AGENTS.md --exec "aligntrue sync"
 
 Pull rules from any git repository to share across projects or teams.
 
-Add to `.aligntrue/config.yaml`:
+**Recommended:** Link the source to keep it connected for ongoing updates:
+
+```bash
+aligntrue add https://github.com/yourorg/rules --link
+aligntrue sync
+```
+
+The `--link` flag automatically adds the source to your `.aligntrue/config.yaml` and keeps it connected. First sync will prompt for privacy consent.
+
+**Alternative:** Manually edit `.aligntrue/config.yaml` if you prefer:
 
 ```yaml
 sources:
@@ -95,8 +104,6 @@ sources:
     ref: main
     path: .aligntrue.yaml
 ```
-
-Then run `aligntrue sync` to fetch and apply the rules. First sync will prompt for privacy consent.
 
 **Full documentation:** [Git Sources Guide](/docs/04-reference/git-sources)
 
@@ -142,15 +149,28 @@ Team mode provides:
 
 AlignTrue supports 28+ AI coding agents out of the box.
 
-### List available adapters
+### List available exporters
 
 ```bash
-aligntrue adapters list
+aligntrue exporters list
 ```
 
 ### Enable additional agents
 
-Edit `.aligntrue/config.yaml`:
+**Recommended:** Use the exporters command to enable agents interactively:
+
+```bash
+aligntrue exporters list          # See all available agents
+aligntrue exporters enable --interactive  # Choose which ones to enable
+```
+
+Or enable specific agents directly:
+
+```bash
+aligntrue exporters enable windsurf claude cline
+```
+
+**Alternative:** Manually edit `.aligntrue/config.yaml`:
 
 ```yaml
 exporters:
@@ -263,13 +283,9 @@ aligntrue init
 # Add rules that apply to all projects
 git add . && git commit -m "Add shared rules"
 
-# Use in projects - add git source to config
+# Use in projects - link the shared source
 cd project-1
-# Edit .aligntrue/config.yaml to add:
-# sources:
-#   - type: git
-#     url: ../shared-rules
-#     ref: main
+aligntrue add ../shared-rules --link
 aligntrue sync
 ```
 

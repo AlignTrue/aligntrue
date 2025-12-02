@@ -37,6 +37,23 @@ import {
 } from "./init/ruler-detector.js";
 
 /**
+ * Infer agent type from file path
+ * Used for display purposes after scanning
+ */
+function inferAgentTypeFromPath(path: string): string {
+  if (path.includes(".cursor/rules") || path.endsWith(".mdc")) {
+    return "cursor";
+  }
+  if (path.includes("AGENTS.md") || path.endsWith("AGENTS.md")) {
+    return "agents";
+  }
+  if (path.includes("CLAUDE.md") || path.endsWith("CLAUDE.md")) {
+    return "claude";
+  }
+  return "other";
+}
+
+/**
  * Format options for exporter selection
  * Shows formats (not individual agents) with "used by" descriptions
  */
@@ -624,10 +641,11 @@ export async function init(args: string[] = []): Promise<void> {
 
     if (scanResult.rules.length > 0) {
       // Show what was found with folder context
+      // Infer type from path since we no longer store it in frontmatter
       const discoveryFiles = scanResult.rules.map((r) => ({
         path: r.path,
-        relativePath: r.frontmatter.original_path as string | undefined,
-        type: r.frontmatter.source as string | undefined,
+        relativePath: r.path,
+        type: inferAgentTypeFromPath(r.path),
       }));
       const discoveryMsg = formatDiscoveredFiles(discoveryFiles, {
         groupBy: "type",

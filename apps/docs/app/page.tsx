@@ -1197,7 +1197,7 @@ export default function HomePage() {
                   <Shuffle size={24} stroke="white" aria-hidden="true" />
                 </div>
                 <h3 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-                  Agent adapters
+                  Agent exporters
                 </h3>
                 <p style={{ fontSize: "0.875rem", color: "var(--fg-muted)" }}>
                   Generates each agent's native formats & keeps existing

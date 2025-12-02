@@ -12,6 +12,10 @@ import {
   statSync,
   mkdirSync,
   copyFileSync,
+  openSync,
+  writeSync,
+  closeSync,
+  constants,
 } from "fs";
 import { dirname, join, basename } from "path";
 import { randomBytes } from "crypto";
@@ -34,6 +38,25 @@ export function computeFileChecksum(filePath: string): string {
  */
 export function computeContentChecksum(content: string): string {
   return computeHash(content);
+}
+
+/**
+ * Check if an error is a permission error (EACCES or EPERM)
+ */
+function isPermissionError(err: unknown): boolean {
+  if (err instanceof Error && "code" in err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    return code === "EACCES" || code === "EPERM";
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    return (
+      msg.includes("permission denied") ||
+      msg.includes("eacces") ||
+      msg.includes("eperm")
+    );
+  }
+  return false;
 }
 
 /**
@@ -199,10 +222,28 @@ export class AtomicFileWriter {
 
       try {
         // Safe: Temp file path is constructed from dir_name (parent of target file) and a cryptographically random suffix.
+        // Uses O_EXCL flag to ensure exclusive creation (prevents race conditions).
         // The file is inaccessible to other users (hidden via dot prefix, written atomically, immediately renamed).
         // Temp files are cleaned up on error and post-write. No user input in path construction.
-        writeFileSync(tempPath, content, "utf8");
+        const fd = openSync(
+          tempPath,
+          constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+          0o600, // Read/write for owner only (secure permissions)
+        );
+        try {
+          const buffer = Buffer.from(content, "utf8");
+          writeSync(fd, buffer, 0, buffer.length);
+        } finally {
+          closeSync(fd);
+        }
       } catch (_err) {
+        if (isPermissionError(_err)) {
+          throw new Error(
+            `Permission denied: Cannot write to ${tempPath}\n` +
+              `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
+              `  Check directory permissions or run with appropriate permissions`,
+          );
+        }
         throw new Error(
           `Failed to write temp file: ${tempPath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
@@ -214,6 +255,13 @@ export class AtomicFileWriter {
         renameSync(tempPath, filePath);
         tempPath = undefined; // Mark as cleaned up
       } catch (_err) {
+        if (isPermissionError(_err)) {
+          throw new Error(
+            `Permission denied: Cannot rename temp file to ${filePath}\n` +
+              `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
+              `  Check file permissions (chmod) or run with appropriate permissions`,
+          );
+        }
         throw new Error(
           `Failed to rename temp file: ${tempPath} → ${filePath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,

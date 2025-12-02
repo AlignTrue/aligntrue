@@ -85,7 +85,7 @@ node dist/index.js --help
 
 ### packages/exporters
 
-Agent-specific export adapters (50 exporters for 28+ agents).
+Agent-specific export exporters (50 exporters for 28+ agents).
 
 **Responsibilities:**
 
@@ -143,7 +143,7 @@ Plugin interface definitions.
 **Responsibilities:**
 
 - ExporterPlugin interface
-- AdapterManifest types
+- ExporterManifest types
 - No implementations (just contracts)
 
 ### packages/testkit

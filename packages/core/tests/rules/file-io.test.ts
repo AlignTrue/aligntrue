@@ -5,6 +5,7 @@ import { tmpdir } from "os";
 import { randomBytes } from "crypto";
 import {
   detectNonMdFiles,
+  formatTitleFromFilename,
   loadRulesDirectory,
   parseRuleFile,
   writeRuleFile,
@@ -13,6 +14,44 @@ import {
 // Skip on Windows due to glob path handling differences
 const describeSkipWindows =
   process.platform === "win32" ? describe.skip : describe;
+
+describe("formatTitleFromFilename", () => {
+  it("converts snake_case to Title Case", () => {
+    expect(formatTitleFromFilename("test_rule.md")).toBe("Test Rule");
+    expect(formatTitleFromFilename("my_long_rule_name.md")).toBe(
+      "My Long Rule Name",
+    );
+  });
+
+  it("converts kebab-case to Title Case", () => {
+    expect(formatTitleFromFilename("test-rule.md")).toBe("Test Rule");
+    expect(formatTitleFromFilename("my-long-rule.md")).toBe("My Long Rule");
+  });
+
+  it("handles mixed separators", () => {
+    expect(formatTitleFromFilename("test_rule-name.md")).toBe("Test Rule Name");
+  });
+
+  it("uppercases common acronyms", () => {
+    expect(formatTitleFromFilename("ci_troubleshooting.md")).toBe(
+      "CI Troubleshooting",
+    );
+    expect(formatTitleFromFilename("cli_testing_playbook.md")).toBe(
+      "CLI Testing Playbook",
+    );
+    expect(formatTitleFromFilename("api_reference.md")).toBe("API Reference");
+    expect(formatTitleFromFilename("pr_standards.md")).toBe("PR Standards");
+  });
+
+  it("handles single word filenames", () => {
+    expect(formatTitleFromFilename("typescript.md")).toBe("Typescript");
+    expect(formatTitleFromFilename("testing.md")).toBe("Testing");
+  });
+
+  it("handles files without .md extension", () => {
+    expect(formatTitleFromFilename("test_rule")).toBe("Test Rule");
+  });
+});
 
 describeSkipWindows("file-io", () => {
   let testDir: string;

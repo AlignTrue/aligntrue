@@ -9,6 +9,7 @@ overrides:
   prismjs: '>=1.30.0'
   js-yaml: '>=4.1.1'
   read-yaml-file: '>=2.0.0'
+  mdast-util-to-hast: '>=13.2.1'
 
 importers:
 
@@ -110,7 +111,7 @@ importers:
         version: 4.6.0(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       nextra-theme-docs:
         specifier: 4.6.0
-        version: 4.6.0(@types/react@19.2.6)(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(nextra@4.6.0(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
+        version: 4.6.0(@types/react@19.2.7)(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(nextra@4.6.0(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -118,21 +119,21 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
       simple-icons:
-        specifier: ^15.22.0
-        version: 15.22.0
+        specifier: ^16.0.0
+        version: 16.0.0
     devDependencies:
       '@pagefind/default-ui':
         specifier: ^1.1.0
         version: 1.4.0
       '@types/react':
-        specifier: ^19.2.3
-        version: 19.2.6
+        specifier: ^19.2.7
+        version: 19.2.7
       '@types/react-dom':
         specifier: ^19.2.3
-        version: 19.2.3(@types/react@19.2.6)
+        version: 19.2.3(@types/react@19.2.7)
       baseline-browser-mapping:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^2.8.32
+        version: 2.8.32
       fast-xml-parser:
         specifier: ^5.3.1
         version: 5.3.2
@@ -170,8 +171,8 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0
       chokidar:
-        specifier: ^4.0.3
-        version: 4.0.3
+        specifier: ^5.0.0
+        version: 5.0.0
       diff:
         specifier: ^8.0.2
         version: 8.0.2
@@ -179,8 +180,8 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
       yaml:
-        specifier: ^2.6.1
-        version: 2.8.1
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@types/diff':
         specifier: ^8.0.0
@@ -934,9 +935,6 @@ packages:
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
 
-  '@mdn/browser-compat-data@7.1.23':
-    resolution: {integrity: sha512-P+fB5bjkq0RaJ6QtuUPUD2MMNgjYuox48SO5+nBMxbFlEvXyKYSw26le10wSkUw59CJB/BA98gU8IOyKo8urSQ==}
-
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
 
@@ -1573,6 +1571,9 @@ packages:
   '@types/react@19.2.6':
     resolution: {integrity: sha512-p/jUvulfgU7oKtj6Xpk8cA2Y1xKTtICGpJYeJXz2YVO2UcvjQgeRMLDGfDeqeRW2Ta+0QNFwcc8X3GH8SxZz6w==}
 
+  '@types/react@19.2.7':
+    resolution: {integrity: sha512-MWtvHrGZLFttgeEj28VXHxpmwYbor/ATPYbBfSFZEIRK0ecCFLl2Qo55z52Hss+UV9CRN7trSeq1zbgx7YDWWg==}
+
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
@@ -1808,8 +1809,9 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  baseline-browser-mapping@1.0.0:
-    resolution: {integrity: sha512-vLDBi7uXQlXG3NTMCWGHUJFwUAMFgbs7aHANu6u2b3tf0PB1j7btkHwDDukr0EBx5R3//9FObo47KBsimsNJ4w==}
+  baseline-browser-mapping@2.8.32:
+    resolution: {integrity: sha512-OPz5aBThlyLFgxyhdwf/s2+8ab3OvT7AdTNvKHBwpXomIYeXqpUUuT8LrdtxZSsWJ4R4CU1un4XGh5Ez3nlTpw==}
+    hasBin: true
 
   better-react-mathjax@2.3.0:
     resolution: {integrity: sha512-K0ceQC+jQmB+NLDogO5HCpqmYf18AU2FxDbLdduYgkHYWZApFggkHE4dIaXCV1NqeoscESYXXo1GSkY6fA295w==}
@@ -1875,9 +1877,9 @@ packages:
   chevrotain@11.0.3:
     resolution: {integrity: sha512-ci2iJH6LeIkvP9eJW6gpueU8cnZhv85ELY8w8WiFtNjMHA5ad6pQLaJo9mEly/9qUyCpvqX8/POVUTf18/HFdw==}
 
-  chokidar@4.0.3:
-    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
-    engines: {node: '>= 14.16.0'}
+  chokidar@5.0.0:
+    resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
+    engines: {node: '>= 20.19.0'}
 
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
@@ -2929,8 +2931,8 @@ packages:
   mdast-util-phrasing@4.1.0:
     resolution: {integrity: sha512-TqICwyvJJpBwvGAMZjj4J2n0X8QWp21b9l0o7eXyVJ25YNWYbJDVIyD1bZXE6WtV6RmKJVYmQAKWa0zWOABz2w==}
 
-  mdast-util-to-hast@13.2.0:
-    resolution: {integrity: sha512-QGYKEuUsYT9ykKBCMOEDLsU5JRObWQusAolFMeko/tYPufNkRffBAQjIE+99jbA87xv6FgmjLtwjh9wBWajwAA==}
+  mdast-util-to-hast@13.2.1:
+    resolution: {integrity: sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA==}
 
   mdast-util-to-markdown@2.1.2:
     resolution: {integrity: sha512-xj68wMTvGXVOKonmog6LwyJKrYXZPvlwabaryTjLh9LuvovB/KAH+kvi8Gjj+7rJjsFi23nkUxRQv1KqSroMqA==}
@@ -3380,9 +3382,9 @@ packages:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
     engines: {node: '>=0.10.0'}
 
-  readdirp@4.1.2:
-    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
-    engines: {node: '>= 14.18.0'}
+  readdirp@5.0.0:
+    resolution: {integrity: sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==}
+    engines: {node: '>= 20.19.0'}
 
   reading-time@1.5.0:
     resolution: {integrity: sha512-onYyVhBNr4CmAxFsKS7bz+uTLRakypIe4R+5A824vBSkQy/hB3fZepoVEf8OVAxzLvK+H/jm9TzpI3ETSm64Kg==}
@@ -3572,8 +3574,8 @@ packages:
   simple-git@3.30.0:
     resolution: {integrity: sha512-q6lxyDsCmEal/MEGhP1aVyQ3oxnagGlBDOVSIB4XUVLl1iZh0Pah6ebC9V4xBap/RfgP2WlI8EKs0WS0rMEJHg==}
 
-  simple-icons@15.22.0:
-    resolution: {integrity: sha512-i/w5Ie4tENfGYbdCo2iJ+oies0vOFd8QXWHopKOUzudfLCvnmeheF2PpHp89Z2azpc+c2su3lMiWO/SpP+429A==}
+  simple-icons@16.0.0:
+    resolution: {integrity: sha512-FPA/dxEy0dfXplKhPhqFI6KoPKAhe7t75emZ5i1T1vmqCYwboCqVNezRWaMmPkBazpHKmMAnaUYxoYsfRoDnZQ==}
     engines: {node: '>=0.12.18'}
 
   sisteransi@1.0.5:
@@ -4646,8 +4648,6 @@ snapshots:
 
   '@kwsites/promise-deferred@1.1.1': {}
 
-  '@mdn/browser-compat-data@7.1.23': {}
-
   '@mdx-js/mdx@3.1.1':
     dependencies:
       '@types/estree': 1.0.8
@@ -5232,7 +5232,15 @@ snapshots:
     dependencies:
       '@types/react': 19.2.6
 
+  '@types/react-dom@19.2.3(@types/react@19.2.7)':
+    dependencies:
+      '@types/react': 19.2.7
+
   '@types/react@19.2.6':
+    dependencies:
+      csstype: 3.2.3
+
+  '@types/react@19.2.7':
     dependencies:
       csstype: 3.2.3
 
@@ -5566,9 +5574,9 @@ snapshots:
       '@chevrotain/utils': 11.0.3
       lodash-es: 4.17.21
 
-  chokidar@4.0.3:
+  chokidar@5.0.0:
     dependencies:
-      readdirp: 4.1.2
+      readdirp: 5.0.0
 
   cli-cursor@5.0.0:
     dependencies:
@@ -6299,7 +6307,7 @@ snapshots:
       hast-util-from-parse5: 8.0.3
       hast-util-to-parse5: 8.0.0
       html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       parse5: 7.3.0
       unist-util-position: 5.0.0
       unist-util-visit: 5.0.0
@@ -6336,7 +6344,7 @@ snapshots:
       comma-separated-tokens: 2.0.3
       hast-util-whitespace: 3.0.0
       html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       property-information: 7.1.0
       space-separated-tokens: 2.0.2
       stringify-entities: 4.0.4
@@ -6866,7 +6874,7 @@ snapshots:
       '@types/mdast': 4.0.4
       unist-util-is: 6.0.1
 
-  mdast-util-to-hast@13.2.0:
+  mdast-util-to-hast@13.2.1:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
@@ -7305,7 +7313,7 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  nextra-theme-docs@4.6.0(@types/react@19.2.6)(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(nextra@4.6.0(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
+  nextra-theme-docs@4.6.0(@types/react@19.2.7)(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(nextra@4.6.0(next@16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
     dependencies:
       '@headlessui/react': 2.2.9(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       clsx: 2.1.1
@@ -7317,7 +7325,7 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
       scroll-into-view-if-needed: 3.1.0
       zod: 4.0.0-beta.20250424T163858
-      zustand: 5.0.8(@types/react@19.2.6)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
+      zustand: 5.0.8(@types/react@19.2.7)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -7342,7 +7350,7 @@ snapshots:
       katex: 0.16.25
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.1.0
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       negotiator: 1.0.0
       next: 16.0.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
@@ -7569,7 +7577,7 @@ snapshots:
 
   react@19.2.0: {}
 
-  readdirp@4.1.2: {}
+  readdirp@5.0.0: {}
 
   reading-time@1.5.0: {}
 
@@ -7710,7 +7718,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      mdast-util-to-hast: 13.2.0
+      mdast-util-to-hast: 13.2.1
       unified: 11.0.5
       vfile: 6.0.3
 
@@ -7900,7 +7908,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  simple-icons@15.22.0: {}
+  simple-icons@16.0.0: {}
 
   sisteransi@1.0.5: {}
 
@@ -8424,9 +8432,9 @@ snapshots:
     dependencies:
       '@zod/core': 0.9.0
 
-  zustand@5.0.8(@types/react@19.2.6)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
+  zustand@5.0.8(@types/react@19.2.7)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
     optionalDependencies:
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       react: 19.2.0
       use-sync-external-store: 1.6.0(react@19.2.0)
 

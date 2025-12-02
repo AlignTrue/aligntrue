@@ -270,7 +270,7 @@ aligntrue/
 
 - Max depth 3: packages at `packages/*/src/` with minimal nesting
 - Stable deterministic logic consolidated in `schema/` and `core/`
-- Agent adapters thin and isolated in `exporters/`
+- Agent exporters thin and isolated in `exporters/`
 - CLI is the top-level surface in Phase 1
 
 ## Security considerations
@@ -291,7 +291,7 @@ All packages are published under the `@aligntrue` scope:
 - `@aligntrue/file-utils` - Shared utilities
 - `@aligntrue/core` - Config and sync engine
 - `@aligntrue/sources` - Multi-source pulling
-- `@aligntrue/exporters` - Agent adapters
+- `@aligntrue/exporters` - Agent exporters
 - `@aligntrue/cli` - Command-line tool
 - `@aligntrue/testkit` - Test utilities
 
@@ -314,7 +314,7 @@ Update schema + CLI + exporters in the same PR:
 
 1. Extend shared package types (e.g., `packages/schema/src/types.ts`)
 2. Update CLI command handlers
-3. Update exporter adapters
+3. Update exporters
 4. Add contract tests in `schema/tests/`
 5. Add integration tests in `cli/tests/`
 6. Update docs and CHANGELOG
