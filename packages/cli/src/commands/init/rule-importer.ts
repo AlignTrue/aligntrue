@@ -15,6 +15,7 @@ import {
   detectNestedAgentFiles,
   parseRuleFile,
   findSimilarContent,
+  logImport,
   DEFAULT_SIMILARITY_THRESHOLD,
   type RuleFile,
   type NestedAgentFile,
@@ -123,20 +124,26 @@ export interface ScanOptions {
 }
 
 /**
- * Convert a NestedAgentFile to a RuleFile with source metadata
+ * Convert a NestedAgentFile to a RuleFile
+ *
+ * Note: Source metadata is no longer stored in frontmatter.
+ * Import events are logged to .aligntrue/.history via logImport().
  */
 function convertToRule(
   file: NestedAgentFile,
   cwd: string,
-  now: string,
+  _now: string,
 ): RuleFile {
   // Use parseRuleFile from core - treats entire file as one rule
   const rule = parseRuleFile(file.path, cwd);
 
-  // Add source metadata
-  rule.frontmatter.source = file.type;
-  rule.frontmatter.source_added = now;
-  rule.frontmatter.original_path = file.relativePath;
+  // Log import event to audit log (instead of storing in frontmatter)
+  // The target filename will be computed after extension conversion
+  let targetFilename = rule.filename;
+  if (targetFilename.endsWith(".mdc")) {
+    targetFilename = targetFilename.slice(0, -4) + ".md";
+  }
+  logImport(cwd, targetFilename, file.relativePath);
 
   // Extract nested location from source path so exports go to the correct nested directory
   // e.g., "apps/docs/.cursor/rules/web_stack.mdc" -> nested_location: "apps/docs"

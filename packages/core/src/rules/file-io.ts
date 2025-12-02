@@ -9,6 +9,75 @@ import { computeContentHash } from "@aligntrue/schema";
 // Re-export RuleFile from schema
 export type { RuleFile } from "@aligntrue/schema";
 
+/**
+ * Common acronyms that should be uppercase in titles
+ */
+const UPPERCASE_ACRONYMS = new Set([
+  "ai",
+  "api",
+  "app",
+  "cd",
+  "ci",
+  "cli",
+  "cpu",
+  "css",
+  "db",
+  "gpu",
+  "html",
+  "http",
+  "https",
+  "ip",
+  "id",
+  "ir",
+  "js",
+  "jsx",
+  "json",
+  "llm",
+  "mcp",
+  "md",
+  "mdc",
+  "mdx",
+  "ml",
+  "nlp",
+  "npm",
+  "os",
+  "pr",
+  "qa",
+  "sdk",
+  "sql",
+  "ssh",
+  "tdd",
+  "ts",
+  "tsx",
+  "ui",
+  "url",
+  "ux",
+  "yaml",
+]);
+
+/**
+ * Format a filename into a human-readable title
+ *
+ * Converts snake_case and kebab-case to Title Case,
+ * with special handling for common acronyms.
+ *
+ * @example
+ * formatTitleFromFilename("ci_troubleshooting.md") // "CI Troubleshooting"
+ * formatTitleFromFilename("cli_testing_playbook.md") // "CLI Testing Playbook"
+ * formatTitleFromFilename("typescript.md") // "Typescript"
+ */
+export function formatTitleFromFilename(filename: string): string {
+  const base = filename.replace(/\.md$/, "");
+  return base
+    .split(/[-_]+/)
+    .map((word) =>
+      UPPERCASE_ACRONYMS.has(word.toLowerCase())
+        ? word.toUpperCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join(" ");
+}
+
 // Configure gray-matter to use yaml library
 const matterOptions = {
   engines: {
@@ -61,8 +130,8 @@ export function parseRuleFile(
     content: parsed.content,
     frontmatter: {
       ...frontmatter,
-      // Ensure title exists (fallback to filename)
-      title: frontmatter.title || filename.replace(/\.md$/, ""),
+      // Ensure title exists (fallback to formatted filename)
+      title: frontmatter.title || formatTitleFromFilename(filename),
     },
     path: relativePath,
     filename,

@@ -1,10 +1,6 @@
 ---
 description: Testing decision framework and quality guidelines
-alwaysApply: false
-title: testing.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 4cedb560faa0549c2d3068579c7766a8e741d8e46c0dd036c9e56b1af9aa81d8
+content_hash: 731e477609804ea24d7d02d56edf7491bca3e7d0220e3d9a5fc25e98abd60d05
 ---
 
 # Testing decision framework

@@ -477,12 +477,11 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
       const allRules = scanResult.rules;
 
       // Filter to only selected files
+      // Match by rule path (relative to workspace root) since original_path is no longer in frontmatter
       const selectedPaths = new Set(
         selectionResult.selectedFiles.map((f) => f.relativePath),
       );
-      const rules = allRules.filter((rule) =>
-        selectedPaths.has(rule.frontmatter.original_path as string),
-      );
+      const rules = allRules.filter((rule) => selectedPaths.has(rule.path));
 
       if (rules.length === 0) {
         clack.log.warn("No rules could be parsed from detected files.");

@@ -1,10 +1,7 @@
 ---
 description: Debugging workflow
-alwaysApply: true
-title: debugging.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 32141a1c907ef2c4b7c66c99d06f2b742f8723c4b965032af8aa5134fb3d7d13
+apply_to: alwaysOn
+content_hash: 481ce43a84eda84495d3b1096bcd14c264783a424a9838e1f6fd94f9985cfba5
 ---
 
 # Debugging workflow

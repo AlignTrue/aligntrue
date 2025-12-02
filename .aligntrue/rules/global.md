@@ -2,11 +2,8 @@
 description: Global rules
 globs:
   - "**/*"
-alwaysApply: true
-title: global.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: d03ddfb2fe12015498b6e5c1ec8ba2e9970dfc6b77cf1e85610be109aa2eda00
+apply_to: alwaysOn
+content_hash: 0f8b5db6d57a2033323324105843e99835475a26f9e9b1625df1d5c96714f4a5
 ---
 
 # Global rules

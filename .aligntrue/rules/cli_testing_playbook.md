@@ -1,10 +1,6 @@
 ---
 description: Systematic CLI testing playbook for AI agents
-alwaysApply: false
-title: cli_testing_playbook.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 7e1cb1ba895f55e8a1498d729a02793ae535810a55cfde56e2d792823f0ab6ba
+content_hash: abe35f9c42f24e1375def23fb68d390d0ddd49bbc35aeab795876a15e3a4fb2e
 ---
 
 # CLI Testing Playbook
@@ -638,7 +634,6 @@ aligntrue init --mode solo --yes --exporters cursor,agents
 mkdir -p .aligntrue/rules
 cat > .aligntrue/rules/docs-rule.md <<'EOF'
 ---
-title: Docs rule
 nested_location: apps/docs
 ---
 
@@ -1285,7 +1280,6 @@ mkdir -p apps/docs/.cursor/rules
 cat > apps/docs/.cursor/rules/web_stack.mdc <<'EOF'
 ---
 description: Web stack guide for docs site
-title: web_stack.mdc
 ---
 
 # Web stack guide
@@ -1627,7 +1621,6 @@ aligntrue init --mode solo --yes
 # Create a rule file with plug slots in YAML frontmatter
 cat > .aligntrue/rules/testing.md <<'EOF'
 ---
-title: testing
 description: Testing guidelines with configurable commands
 plugs:
   slots:
@@ -1728,7 +1721,6 @@ aligntrue init --mode solo --yes
 # Create a rule file with plug slots in YAML frontmatter
 cat > .aligntrue/rules/testing.md <<'EOF'
 ---
-title: testing
 description: Testing guidelines with configurable values
 plugs:
   slots:

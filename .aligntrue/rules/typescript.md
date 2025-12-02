@@ -6,11 +6,7 @@ globs:
   - .eslintrc*
   - eslint.config.*
   - biome.*
-alwaysApply: false
-title: typescript.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 9530ab18b241d927a8a385fca89850fed83ab26d861cb4e4d94f9cf9a71973ea
+content_hash: 6a9bf8db68a93de7e0d7c6a6365978bc4b45b0b2ec0ed63c0b9b056e85ab822e
 ---
 
 # TypeScript development guide

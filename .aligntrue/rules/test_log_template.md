@@ -1,10 +1,6 @@
 ---
 description: Use this template for documenting test runs.
-alwaysApply: false
-title: test_log_template.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 7c0945e8b32025f45e023864926e2bf53f8d6199af05882f95b802db3fbc8267
+content_hash: 4baf2c1d5f7be283a09f4390fe2a15f0978441fa60272d9115fe8c907f4d7394
 ---
 
 # Test Run Template
