@@ -12,6 +12,10 @@ import {
   statSync,
   mkdirSync,
   copyFileSync,
+  openSync,
+  writeSync,
+  closeSync,
+  constants,
 } from "fs";
 import { dirname, join, basename } from "path";
 import { randomBytes } from "crypto";
@@ -218,9 +222,20 @@ export class AtomicFileWriter {
 
       try {
         // Safe: Temp file path is constructed from dir_name (parent of target file) and a cryptographically random suffix.
+        // Uses O_EXCL flag to ensure exclusive creation (prevents race conditions).
         // The file is inaccessible to other users (hidden via dot prefix, written atomically, immediately renamed).
         // Temp files are cleaned up on error and post-write. No user input in path construction.
-        writeFileSync(tempPath, content, "utf8");
+        const fd = openSync(
+          tempPath,
+          constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+          0o600, // Read/write for owner only (secure permissions)
+        );
+        try {
+          const buffer = Buffer.from(content, "utf8");
+          writeSync(fd, buffer, 0, buffer.length);
+        } finally {
+          closeSync(fd);
+        }
       } catch (_err) {
         if (isPermissionError(_err)) {
           throw new Error(
