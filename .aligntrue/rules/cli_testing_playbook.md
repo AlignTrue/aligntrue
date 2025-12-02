@@ -1433,9 +1433,11 @@ aligntrue drift --gates  # Should still pass (content unchanged)
 
 ### Team Testing Patterns
 
-**Simulating multi-user scenarios:**
+**Two approaches for testing team workflows:**
 
-When testing team workflows locally, use separate directories to represent different developers:
+#### Quick Testing Pattern (File Copying)
+
+Use for fast, isolated tests that don't require git operations:
 
 ```bash
 # User A: Initialize team
@@ -1452,6 +1454,76 @@ aligntrue init --yes  # Detects existing team setup
 aligntrue sync
 ```
 
+**When to use:**
+
+- Quick validation of basic team mode features
+- Testing lockfile generation and drift detection
+- Isolated tests that don't need git operations
+- Fast feedback during development
+
+**Limitations:**
+
+- Doesn't test actual git workflows
+- No merge conflict scenarios
+- No PR workflow validation
+- Git integration modes not tested
+
+#### Git-Based Testing Pattern (Recommended for Comprehensive Testing)
+
+Use for realistic team collaboration scenarios with actual git operations:
+
+```bash
+# Setup bare repository (shared team repo)
+cd /tmp
+git init --bare team-repo.git
+
+# Configure git user for test isolation
+export GIT_AUTHOR_NAME="Test User A"
+export GIT_AUTHOR_EMAIL="test-a@example.com"
+export GIT_COMMITTER_NAME="Test User A"
+export GIT_COMMITTER_EMAIL="test-a@example.com"
+
+# User A: Initialize team
+mkdir /tmp/team-user-a && cd /tmp/team-user-a
+git init
+git remote add origin /tmp/team-repo.git
+aligntrue init --yes --mode team
+aligntrue sync  # Generates lockfile
+git add .aligntrue/ .aligntrue.lock.json
+git commit -m "Enable team mode"
+git branch -M main
+git push -u origin main
+
+# User B: Clone and join team
+cd /tmp
+export GIT_AUTHOR_NAME="Test User B"
+export GIT_AUTHOR_EMAIL="test-b@example.com"
+export GIT_COMMITTER_NAME="Test User B"
+export GIT_COMMITTER_EMAIL="test-b@example.com"
+
+git clone /tmp/team-repo.git team-user-b
+cd team-user-b
+aligntrue init --yes  # Detects existing team setup
+aligntrue sync
+```
+
+**When to use:**
+
+- Comprehensive team mode validation
+- Testing git integration modes (ignore, commit, branch)
+- Merge conflict scenarios
+- PR workflow testing
+- Git source update workflows
+- Personal remote repository testing
+
+**Benefits:**
+
+- Tests real collaboration workflows teams actually use
+- Validates git integration features
+- Catches merge conflict and PR workflow issues
+- More realistic than file copying
+- Still fast and deterministic (local git operations only)
+
 **Testing drift detection:**
 
 ```bash
@@ -1465,7 +1537,7 @@ aligntrue sync
 aligntrue drift --gates  # Should pass after approval
 ```
 
-This pattern exercises collaboration workflows without relying on git remotes and keeps tests deterministic.
+**Note:** For comprehensive testing, prefer the git-based pattern. The file-copy pattern is useful for quick validation but doesn't test actual git workflows. See section 3.1 for detailed git-based testing scenarios.
 
 #### Team backup and ignore file management
 
@@ -1521,6 +1593,327 @@ aligntrue sync
 - Ignore files properly configured in team mode
 - Backups inherited when cloning team repository
 - All sync operations create timestamped backups
+
+#### 3.1. Git-Based Team Collaboration
+
+Test actual git operations for realistic team collaboration workflows. This section uses bare git repositories in `/tmp/` to simulate real team scenarios without network dependencies.
+
+**A. Git Repository Setup and Team Initialization:**
+
+```bash
+# Setup bare repository (shared team repo)
+cd /tmp
+git init --bare team-repo.git
+
+# Configure git user for test isolation
+export GIT_AUTHOR_NAME="Test User A"
+export GIT_AUTHOR_EMAIL="test-a@example.com"
+export GIT_COMMITTER_NAME="Test User A"
+export GIT_COMMITTER_EMAIL="test-a@example.com"
+
+# User A: Initialize team
+mkdir /tmp/team-user-a && cd /tmp/team-user-a
+git init
+git remote add origin /tmp/team-repo.git
+aligntrue init --yes --mode team
+aligntrue sync  # Generates lockfile
+
+# Commit and push team configuration
+git add .aligntrue/ .aligntrue.lock.json
+git commit -m "Enable team mode"
+git branch -M main
+git push -u origin main
+
+# User B: Clone and join team
+cd /tmp
+export GIT_AUTHOR_NAME="Test User B"
+export GIT_AUTHOR_EMAIL="test-b@example.com"
+export GIT_COMMITTER_NAME="Test User B"
+export GIT_COMMITTER_EMAIL="test-b@example.com"
+
+git clone /tmp/team-repo.git team-user-b
+cd team-user-b
+aligntrue init --yes  # Detects existing team setup
+aligntrue sync
+
+# Verify lockfile and config are shared correctly
+test -f .aligntrue.lock.json || echo "FAIL: lockfile missing"
+test -f .aligntrue/config.yaml || echo "FAIL: config missing"
+grep "mode: team" .aligntrue/config.yaml || echo "FAIL: team mode not detected"
+```
+
+**Expected:**
+
+- Bare repository created successfully
+- User A can initialize team mode and push
+- User B can clone and detect team mode automatically
+- Lockfile and config are shared via git
+- Both users have identical team configuration
+
+**B. Git Integration Modes Testing:**
+
+Test the three git integration modes (ignore, commit, branch) and per-exporter overrides:
+
+```bash
+# Setup test environment
+cd /tmp/test-git-modes
+git init
+aligntrue init --yes --mode team
+
+# Test ignore mode (default for personal rules)
+aligntrue config set git.mode ignore
+aligntrue sync
+grep "AGENTS.md" .gitignore || echo "FAIL: AGENTS.md not ignored"
+grep ".cursor/rules" .gitignore || echo "FAIL: .cursor/rules not ignored"
+
+# Test commit mode (for team shared rules)
+aligntrue config set git.mode commit
+aligntrue sync
+git status --porcelain | grep "AGENTS.md" || echo "FAIL: AGENTS.md not staged for commit"
+# Note: commit mode ensures files are NOT in .gitignore
+
+# Test branch mode (for PR workflows)
+aligntrue config set git.mode branch
+aligntrue sync
+git branch | grep "aligntrue/sync" || echo "FAIL: feature branch not created"
+BRANCH_NAME=$(git branch | grep "aligntrue/sync" | sed 's/^..//')
+test -n "$BRANCH_NAME" || echo "FAIL: branch name empty"
+git checkout "$BRANCH_NAME"
+git status --porcelain | grep "AGENTS.md" || echo "FAIL: files not staged on branch"
+
+# Test per-exporter override
+aligntrue config set git.mode ignore
+aligntrue config set git.per_exporter.cursor branch
+aligntrue sync
+# Cursor files should be on branch, AGENTS.md should be ignored
+grep "AGENTS.md" .gitignore || echo "FAIL: AGENTS.md not ignored"
+git branch | grep "aligntrue/sync" || echo "FAIL: cursor branch not created"
+```
+
+**Expected:**
+
+- Ignore mode adds files to `.gitignore`
+- Commit mode stages files for commit (not in `.gitignore`)
+- Branch mode creates feature branch and stages files
+- Per-exporter overrides work correctly
+- Multiple modes can coexist for different exporters
+
+**C. Merge Conflict Scenarios:**
+
+Test git merge conflicts and resolution workflows:
+
+```bash
+# Setup shared repository
+cd /tmp
+git init --bare team-repo.git
+
+# User A: Make initial commit
+cd /tmp
+mkdir team-user-a && cd team-user-a
+git init
+git remote add origin /tmp/team-repo.git
+aligntrue init --yes --mode team
+echo "## Team Rule A" >> AGENTS.md
+aligntrue sync
+git add . && git commit -m "Initial team rules"
+git push -u origin main
+
+# User B: Clone and make conflicting change
+cd /tmp
+git clone /tmp/team-repo.git team-user-b
+cd team-user-b
+echo "## Team Rule B" >> AGENTS.md
+aligntrue sync
+git add . && git commit -m "Add rule B"
+git push origin main  # Should succeed if no conflict
+
+# User A: Make conflicting change and push
+cd /tmp/team-user-a
+git pull  # Get user B's changes
+echo "## Team Rule C" >> AGENTS.md
+aligntrue sync
+git add . && git commit -m "Add rule C"
+git push origin main  # Should succeed or show conflict
+
+# Test lockfile conflict handling
+cd /tmp/team-user-b
+git pull  # Should merge cleanly or show conflict
+test -f .aligntrue.lock.json || echo "FAIL: lockfile missing after merge"
+aligntrue drift --gates  # Should validate lockfile integrity
+```
+
+**Expected:**
+
+- Git merge conflicts are detected and reported
+- Lockfile conflicts are handled gracefully
+- `aligntrue drift --gates` validates lockfile after merge
+- Both users can resolve conflicts and continue working
+
+**D. PR Workflow Testing:**
+
+Test feature branch creation and PR simulation:
+
+```bash
+# Setup with branch mode
+cd /tmp/test-pr-workflow
+git init
+aligntrue init --yes --mode team
+aligntrue config set git.mode branch
+
+# Make changes and sync (creates feature branch)
+echo "## New Feature Rule" >> AGENTS.md
+aligntrue sync
+
+# Verify branch created
+BRANCH_NAME=$(git branch | grep "aligntrue/sync" | sed 's/^..//')
+test -n "$BRANCH_NAME" || echo "FAIL: branch not created"
+git checkout "$BRANCH_NAME"
+
+# Verify changes are on branch
+grep "New Feature Rule" AGENTS.md || echo "FAIL: changes not on branch"
+
+# Simulate PR review: check drift before merge
+aligntrue drift --gates
+# Expected: Should pass if changes are approved
+
+# Simulate merge to main
+git checkout main
+git merge "$BRANCH_NAME" --no-ff -m "Merge feature branch"
+aligntrue sync  # Should sync after merge
+
+# Test CI integration
+aligntrue drift --gates  # Should pass in CI after merge
+```
+
+**Expected:**
+
+- Branch mode creates feature branches automatically
+- Changes are isolated on feature branches
+- Drift detection works on feature branches
+- Merge workflows complete successfully
+- CI integration validates after merge
+
+**E. Git Source Update Workflows:**
+
+Test git source update checking and approval workflows:
+
+```bash
+# Setup team mode with git source
+cd /tmp/test-git-updates
+aligntrue init --yes --mode team
+
+# Add git source (using local bare repo as remote)
+cd /tmp
+git init --bare upstream-rules.git
+mkdir upstream-rules && cd upstream-rules
+git init
+echo "## Upstream Rule v1" > rule.md
+git add rule.md
+git commit -m "Initial rule"
+git remote add origin /tmp/upstream-rules.git
+git push -u origin main
+
+# Configure team to use this source
+cd /tmp/test-git-updates
+aligntrue add file:///tmp/upstream-rules.git/rule.md --link
+aligntrue sync
+
+# Test update detection (branch reference checks daily)
+# Force update check
+aligntrue sync --force-refresh
+
+# Make upstream change
+cd /tmp/upstream-rules
+echo "## Upstream Rule v2" > rule.md
+git add rule.md
+git commit -m "Update rule"
+git push origin main
+
+# In team mode, update should be blocked
+cd /tmp/test-git-updates
+aligntrue sync 2>&1 | grep -i "approval\|blocked" || echo "INFO: Update may require approval"
+
+# Approve update
+aligntrue team approve file:///tmp/upstream-rules.git/rule.md
+aligntrue sync  # Should now pull updates
+
+# Verify update applied
+grep "v2" .aligntrue/rules/rule.md || echo "FAIL: update not applied"
+```
+
+**Expected:**
+
+- Git source updates are detected in team mode
+- Updates are blocked until approval
+- `aligntrue team approve` allows updates
+- Approved updates are pulled and applied
+- Lockfile reflects updated source hashes
+
+**F. Personal Remote Repository Testing:**
+
+Test personal remote git repository workflows:
+
+```bash
+# Setup personal remote repository
+cd /tmp
+git init --bare personal-rules.git
+
+# User A: Configure personal remote
+cd /tmp/team-user-a
+aligntrue init --yes --mode team
+
+# Configure personal remote in config
+cat >> .aligntrue/config.yaml <<EOF
+personal:
+  remote: file:///tmp/personal-rules.git
+  branch: main
+EOF
+
+# Create personal rules
+mkdir -p .aligntrue/.local/personal
+echo "## Personal Rule" > .aligntrue/.local/personal/my-rule.md
+aligntrue sync
+
+# Test push to personal remote (if implemented)
+# aligntrue sync --push-personal
+
+# User B: Pull personal rules from remote
+cd /tmp/team-user-b
+git clone /tmp/team-repo.git .
+aligntrue init --yes
+
+# Configure same personal remote
+cat >> .aligntrue/config.yaml <<EOF
+personal:
+  remote: file:///tmp/personal-rules.git
+  branch: main
+EOF
+
+# Pull personal rules
+aligntrue sync
+# Should merge personal rules with team rules
+
+# Verify personal rules are isolated from team
+grep "Personal Rule" AGENTS.md || echo "INFO: Personal rules may be in separate file"
+test -f .aligntrue/.local/personal/my-rule.md || echo "FAIL: personal rule not pulled"
+```
+
+**Expected:**
+
+- Personal remote repository can be configured
+- Personal rules can be pushed to remote (if feature exists)
+- Personal rules can be pulled from remote
+- Personal rules merge correctly with team rules
+- Personal rules remain isolated from team lockfile
+
+**Git Testing Best Practices:**
+
+- Always use bare repositories (`git init --bare`) for shared repos
+- Set git user config per test to avoid conflicts
+- Use file:// URLs for local repositories (no network needed)
+- Clean up test repositories after each test run
+- Verify git operations with `git status`, `git log`, `git branch`
+- Test both successful and conflict scenarios
 
 ### 3.5. Advanced Customization (Scopes, Plugs, Overlays)
 
@@ -2993,31 +3386,43 @@ OUTPUT: Structured report with workflow results and issues found.
 Execute Layer 3 (Team Golden Paths) from .cursor/rules/cli_testing_playbook.mdc.
 
 EXECUTION PROTOCOL:
-1. Set up two hermetic test environments: user-a and user-b in /tmp
+1. Set up git-based test environment:
+   - Create bare git repository in /tmp/team-repo.git
+   - Configure git user for test isolation (GIT_AUTHOR_NAME, GIT_AUTHOR_EMAIL)
+   - Set up two hermetic test environments: user-a and user-b in /tmp
 2. Execute team workflows:
    - Solo → team migration (user-a)
+   - Git repository setup and team initialization (user-a pushes, user-b clones)
    - Personal remote setup (user-a)
-   - Joining existing team (user-b)
-   - Team rule changes with PR workflow
+   - Joining existing team via git clone (user-b)
+   - Team rule changes with PR workflow (using git branch mode)
    - Personal rule changes (no approval)
    - Drift detection and resolution
    - Multi-file agent editing
    - Read-only file edit detection
-3. Execute team-specific new features:
+3. Execute git integration testing:
+   - Git integration modes (ignore, commit, branch)
+   - Per-exporter git mode overrides
+   - Merge conflict scenarios (user-a and user-b make conflicting changes)
+   - PR workflow simulation (feature branches, merge workflows)
+   - Git source update workflows (branch/tag checking, approval)
+   - Personal remote repository testing (push/pull operations)
+4. Execute team-specific new features:
    - Backup creation and restoration in team mode
    - Ignore file management in team transitions
    - Backup inheritance when cloning team repository
-4. For each workflow:
+5. For each workflow:
    - Run exact commands in sequence
    - Capture all outputs
-   - Verify lockfile generation
-   - Test conflict detection
-   - Validate git operations
+   - Verify lockfile generation and git commit
+   - Test conflict detection (both git and lockfile conflicts)
+   - Validate git operations (clone, pull, push, merge, branch)
+   - Verify git integration modes work correctly
    - Verify backup directory structure and restore functionality
-5. Report findings with severity
-6. Clean up both test environments
+6. Report findings with severity
+7. Clean up both test environments and bare repository
 
-OUTPUT: Structured report with team workflow results and collaboration issues.
+OUTPUT: Structured report with team workflow results, git operation validation, and collaboration issues.
 ```
 
 ### Layer 4: Command Coverage
