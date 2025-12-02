@@ -21,13 +21,6 @@ import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
 
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 
-// Helper functions (replaced edit-source utilities)
-function _getExporterFromEditSource(
-  _source: string | string[] | undefined,
-): string | undefined {
-  return undefined; // No longer used with unidirectional sync
-}
-
 function getAgentDisplayName(agent: string): string {
   const displayNames: Record<string, string> = {
     cursor: "Cursor",
@@ -39,14 +32,6 @@ function getAgentDisplayName(agent: string): string {
     "gemini-cli": "Gemini CLI",
   };
   return displayNames[agent] || agent;
-}
-
-function _categorizeDetectedAgents(
-  _detected: Array<{ agent: string; detected: boolean }>,
-  _currentAgent: string | undefined,
-  _exporters: string[],
-): { upgradeCandidates: string[]; exportTargets: string[] } {
-  return { upgradeCandidates: [], exportTargets: [] };
 }
 
 async function _prepareEditSourceSwitch(
