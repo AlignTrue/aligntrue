@@ -628,5 +628,43 @@ This is a generic scoped rule.
       expect(importedContent).not.toContain("nested_location:");
       expect(importedContent).toContain("scope: General");
     });
+
+    it("does not infer nested_location from lowercase generic scope values", async () => {
+      // Create a root-level cursor rule with scope: "reference" (lowercase generic, not a path)
+      // This tests the fix for the regex /^[a-z][\w-]*$/ that incorrectly matched any lowercase word
+      const rootCursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(rootCursorDir, { recursive: true });
+      writeFileSync(
+        join(rootCursorDir, "style_guide.mdc"),
+        `---
+description: Style guide rule
+title: style_guide
+scope: reference
+---
+
+# Style Guide
+
+This rule has a lowercase generic scope that should not be treated as a path.
+`,
+        "utf-8",
+      );
+
+      // Run init with cursor exporter
+      await init(["--yes", "--exporters", "cursor"]);
+
+      // Verify the imported rule does NOT have nested_location
+      // (scope: reference should not be treated as a path like "apps/docs")
+      const importedRulePath = join(
+        TEST_DIR,
+        ".aligntrue",
+        "rules",
+        "style_guide.md",
+      );
+      expect(existsSync(importedRulePath)).toBe(true);
+
+      const importedContent = readFileSync(importedRulePath, "utf-8");
+      expect(importedContent).not.toContain("nested_location:");
+      expect(importedContent).toContain("scope: reference");
+    });
   });
 });
