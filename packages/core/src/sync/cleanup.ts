@@ -524,8 +524,12 @@ function scanDirectoryForStaleExports(
     }
 
     if (staleFiles.length > 0) {
+      // Normalize directory path: use forward slashes and remove leading ./ for consistency
+      let normalizedDir = dirPath.replace(/\\/g, "/");
+      // Remove leading ./ or .\ (but preserve leading . for hidden directories like .cursor)
+      normalizedDir = normalizedDir.replace(/^\.\//, "").replace(/^\.\\/, "");
       return {
-        directory: dirPath,
+        directory: normalizedDir,
         agent,
         files: staleFiles.sort(),
       };
