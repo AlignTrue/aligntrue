@@ -773,7 +773,7 @@ aligntrue config get sync.edit_source
 # Expected: "AGENTS.md" (unchanged - NOT updated to include new files)
 
 aligntrue config get exporters
-# Expected: ["agents-md", "claude", "cursor"] (new agents added)
+# Expected: ["agents", "claude", "cursor"] (new agents added)
 
 # Verify extracted content format
 grep -A 5 "Extracted from: CLAUDE.md" .aligntrue/extracted-rules.md
@@ -867,7 +867,7 @@ aligntrue config get sync.edit_source
 
 # Verify exporters updated
 aligntrue config get exporters
-# Expected: ["agents-md", "claude"] (claude added)
+# Expected: ["agents", "claude"] (claude added)
 ```
 
 **Expected:**
@@ -1461,7 +1461,7 @@ echo "### Unapproved Rule" >> AGENTS.md
 aligntrue drift --gates  # Should exit non-zero
 
 # Approve and sync
-aligntrue sync --accept-agent agents-md
+aligntrue sync --accept-agent agents
 aligntrue drift --gates  # Should pass after approval
 ```
 
@@ -1486,7 +1486,7 @@ test -f .cursor/.aligntrue.ignore || echo "FAIL: ignore file missing in team mod
 
 # Test that all sync operations create backups
 echo "### Team Rule" >> AGENTS.md
-aligntrue sync --accept-agent agents-md
+aligntrue sync --accept-agent agents
 
 # Verify backup was created
 BACKUP_COUNT=$(ls -1 .aligntrue/.backups/ | wc -l)
@@ -1554,7 +1554,6 @@ mkdir -p apps/web/src packages/api/src services/worker
 
 # Create scope configuration
 cat > .aligntrue/config.yaml <<EOF
-version: "1"
 mode: solo
 scopes:
   - path: "apps/web"
@@ -1572,7 +1571,7 @@ merge:
   strategy: "deep"
   order: ["root", "path", "local"]
 exporters:
-  - agents-md
+  - agents
   - cursor
 EOF
 
@@ -1819,7 +1818,6 @@ EOF
 
 # Configure with overlay
 cat > .aligntrue/config.yaml <<EOF
-version: "1"
 mode: solo
 sources:
   - type: local
@@ -1830,7 +1828,7 @@ overlays:
       set:
         severity: "error"
 exporters:
-  - agents-md
+  - agents
 EOF
 
 # Sync and verify overlay applied
@@ -1885,7 +1883,6 @@ aligntrue init --mode solo --yes
 
 # Configure all three features
 cat > .aligntrue/config.yaml <<EOF
-version: "1"
 mode: solo
 scopes:
   - path: "apps/web"
@@ -1902,7 +1899,7 @@ overlays:
       set:
         severity: "error"
 exporters:
-  - agents-md
+  - agents
   - cursor
 EOF
 
@@ -1959,7 +1956,6 @@ EOF
 
 # Config with external source (would normally override in old system)
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 exporters:
   - agents
@@ -1981,7 +1977,6 @@ cd /tmp/test-multi-source
 
 # Config with multiple sources
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 sources:
   - type: git
@@ -2008,7 +2003,6 @@ cd /tmp/test-multi-source
 
 # Valid include array
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 sources:
   - type: git
@@ -2033,7 +2027,6 @@ cd /tmp/test-multi-source
 
 # Config with full URL format
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 sources:
   - type: git
@@ -2061,7 +2054,6 @@ cd /tmp/test-add-remove
 
 # Initial config
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 exporters:
   - agents
@@ -2074,7 +2066,6 @@ aligntrue status | grep "base.md" || echo "FAIL: base rule not found"
 
 # Add external source
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 sources:
   - type: git
@@ -2089,7 +2080,6 @@ aligntrue check || echo "FAIL: config with source is invalid"
 
 # Remove the source
 cat > .aligntrue/config.yaml <<'EOF'
-version: "1"
 mode: solo
 exporters:
   - agents
@@ -2805,7 +2795,6 @@ cp -r examples/remote-test/large-rules /tmp/test-project/rules
 
 # Configure all files as sources
 cat > .aligntrue/config.yaml <<EOF
-version: "1"
 mode: solo
 sources:
   - type: local
@@ -2829,7 +2818,7 @@ sources:
   - type: local
     path: rules/accessibility.md
 exporters:
-  - agents-md
+  - agents
   - cursor
 EOF
 

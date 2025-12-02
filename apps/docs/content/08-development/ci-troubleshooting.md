@@ -51,7 +51,7 @@ Versions must match across all workspace packages.
 **Symptom**
 
 ```
-TS2322: Type '"agents"' is not assignable to type '"agents-md"'.
+TS2322: Type '"agents-md"' is not assignable to type '"agents"'.
 ```
 
 **Fix**
