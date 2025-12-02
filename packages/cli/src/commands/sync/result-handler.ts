@@ -13,6 +13,7 @@ import {
   storeSourceRuleHashes,
   detectStaleExports,
   cleanStaleExports,
+  type SourceRuleInfo,
 } from "@aligntrue/core/sync";
 import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
@@ -387,8 +388,8 @@ export async function handleSyncResult(
     }
   }
 
-  // Detect and warn about potential duplicate exported files
-  // (e.g., old and renamed rule files with identical content)
+  // Detect stale exported files (exports at wrong location or orphaned)
+  // This runs even when no source changes, as exports may need cleanup
   if (!options.dryRun && !options.quiet) {
     const activeExporters = registry
       .list()
@@ -396,22 +397,50 @@ export async function handleSyncResult(
       .filter(Boolean)
       .map((a) => a.name);
 
-    // Extract source rule names from bundle result
-    // Use fingerprint as primary ID (user-defined), fall back to heading
-    const sourceRuleNames = context.bundleResult.align.sections
-      .map(
-        (section: { fingerprint?: string; heading?: string }) =>
-          section.fingerprint ||
-          section.heading?.replace(/^#+\s*/, "") ||
-          "unknown",
-      )
-      .filter((name: string) => name !== "unknown");
+    // Build source rule info with nested_location for proper stale detection
+    // This ensures exports at wrong locations (e.g., root when rule has nested_location) are flagged
+    const sourceRules: SourceRuleInfo[] = [];
 
-    const staleGroups = detectStaleExports(
-      cwd,
-      sourceRuleNames,
-      activeExporters,
-    );
+    // Load rule files to get frontmatter with nested_location
+    const rulesDir = join(cwd, ".aligntrue", "rules");
+    if (existsSync(rulesDir)) {
+      try {
+        const { loadRulesDirectory } = await import("@aligntrue/core");
+        const ruleFiles = await loadRulesDirectory(rulesDir, cwd, {
+          recursive: true,
+        });
+        for (const rule of ruleFiles) {
+          // Use filename without extension as the rule name
+          const name = rule.filename.replace(/\.md$/, "");
+          const nestedLocation = rule.frontmatter.nested_location;
+          sourceRules.push({
+            name,
+            nestedLocation:
+              typeof nestedLocation === "string" ? nestedLocation : undefined,
+          });
+        }
+      } catch (err) {
+        // Fall back to bundle result if rule files can't be loaded
+        if (options.verbose) {
+          clack.log.warn(`Failed to load rules for stale detection: ${err}`);
+        }
+        for (const section of context.bundleResult.align.sections) {
+          const typedSection = section as {
+            fingerprint?: string;
+            heading?: string;
+          };
+          const name =
+            typedSection.fingerprint ||
+            typedSection.heading?.replace(/^#+\s*/, "") ||
+            "unknown";
+          if (name !== "unknown") {
+            sourceRules.push({ name });
+          }
+        }
+      }
+    }
+
+    const staleGroups = detectStaleExports(cwd, sourceRules, activeExporters);
 
     if (staleGroups.length > 0) {
       if (options.clean) {

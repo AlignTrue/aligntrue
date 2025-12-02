@@ -323,93 +323,195 @@ export interface StaleExportGroup {
 }
 
 /**
- * Detect stale exported files (exports with no matching source rule)
+ * Source rule information for stale export detection
+ */
+export interface SourceRuleInfo {
+  /** Base filename of the rule (without extension) */
+  name: string;
+  /** Nested location where this rule should export (e.g., "apps/docs") */
+  nestedLocation?: string | undefined;
+}
+
+/**
+ * Check if an export at a given location is valid for a source rule
  *
- * Scans multi-file export directories and identifies files that don't
- * correspond to any current source rule. This includes orphans from renamed
- * or deleted source files.
+ * @param rule - Source rule info
+ * @param exportLocation - Where the export was found (undefined = root, string = nested path)
+ * @returns true if the export is at the correct location for this rule
+ */
+function isExportAtCorrectLocation(
+  rule: SourceRuleInfo,
+  exportLocation: string | undefined,
+): boolean {
+  // If rule has no nested_location, it should export to root
+  if (!rule.nestedLocation) {
+    return exportLocation === undefined;
+  }
+  // If rule has nested_location, export should be in that nested directory
+  return exportLocation === rule.nestedLocation;
+}
+
+/**
+ * Detect stale exported files (exports with no matching source rule OR at wrong location)
+ *
+ * Scans multi-file export directories and identifies files that:
+ * 1. Don't correspond to any current source rule (orphans from renamed/deleted sources)
+ * 2. Are at the wrong location (e.g., root when rule has nested_location set)
  *
  * Only checks multi-file exporters (single-file formats are fully rewritten
  * on each sync, so stale files can't accumulate).
  *
  * @param outputDir - The output directory (usually workspace root)
- * @param sourceRuleNames - Base filenames of current source rules (without extension)
+ * @param sourceRules - Source rule info including names and nested locations
  * @param activeExporters - List of active exporter names
  * @returns Array of stale export groups found
  *
  * @example
  * ```typescript
- * const stale = detectStaleExports('/workspace', ['security', 'testing'], ['cursor', 'amazonq']);
- * // Returns: [{
- * //   directory: '.cursor/rules',
- * //   agent: 'cursor',
- * //   files: ['old-security.mdc', 'legacy-rule.mdc']
- * // }]
+ * const rules = [
+ *   { name: 'security', nestedLocation: undefined },      // exports to root
+ *   { name: 'web_stack', nestedLocation: 'apps/docs' }    // exports to apps/docs/
+ * ];
+ * const stale = detectStaleExports('/workspace', rules, ['cursor']);
+ * // If web_stack.mdc exists at root .cursor/rules/, it's flagged as stale
+ * // because it should be at apps/docs/.cursor/rules/
  * ```
  */
 export function detectStaleExports(
   outputDir: string,
-  sourceRuleNames: string[],
+  sourceRules: SourceRuleInfo[],
   activeExporters: string[],
 ): StaleExportGroup[] {
   const staleGroups: StaleExportGroup[] = [];
 
-  // Normalize source rule names to lowercase for case-insensitive matching
-  const sourceNamesLower = sourceRuleNames.map((name) => name.toLowerCase());
+  // Build lookup maps for efficient checking
+  // Map of lowercase name -> array of rules with that name (could have multiple with different locations)
+  const rulesByName = new Map<string, SourceRuleInfo[]>();
+  for (const rule of sourceRules) {
+    const nameLower = rule.name.toLowerCase();
+    const existing = rulesByName.get(nameLower) || [];
+    existing.push(rule);
+    rulesByName.set(nameLower, existing);
+  }
+
+  // Collect all unique nested locations from rules
+  const nestedLocations = new Set<string>();
+  for (const rule of sourceRules) {
+    if (rule.nestedLocation) {
+      nestedLocations.add(rule.nestedLocation);
+    }
+  }
 
   for (const agent of activeExporters) {
     const dirPath = getMultiFileExporterPath(agent);
     if (!dirPath) continue; // Skip single-file exporters
 
-    const fullDir = join(outputDir, dirPath);
+    // Check root-level exports
+    const rootStale = scanDirectoryForStaleExports(
+      outputDir,
+      dirPath,
+      undefined, // root location
+      rulesByName,
+      agent,
+    );
+    if (rootStale) {
+      staleGroups.push(rootStale);
+    }
 
-    // Skip if directory doesn't exist
-    if (!existsSync(fullDir)) continue;
-
-    try {
-      const entries = readdirSync(fullDir);
-      const staleFiles: string[] = [];
-
-      for (const entry of entries) {
-        const filePath = join(fullDir, entry);
-
-        try {
-          const stat = statSync(filePath);
-
-          // Skip directories
-          if (stat.isDirectory()) continue;
-
-          // Extract base name (without extension) from exported filename
-          // Examples: "ai-guidance.mdc" -> "ai-guidance", "style.md" -> "style"
-          const baseNameMatch = entry.match(/^(.+?)\.[^.]+$/);
-          const baseName = baseNameMatch?.[1] || entry;
-          const baseNameLower = baseName.toLowerCase();
-
-          // Check if this file corresponds to a current source rule
-          const hasMatchingSource = sourceNamesLower.includes(baseNameLower);
-
-          if (!hasMatchingSource) {
-            // This is a stale file - no matching source
-            staleFiles.push(entry);
-          }
-        } catch {
-          // Skip files that can't be read (TOCTOU race condition)
-        }
+    // Check nested directories (based on rules' nested_location values)
+    for (const nestedLoc of nestedLocations) {
+      const nestedDirPath = join(nestedLoc, dirPath);
+      const nestedStale = scanDirectoryForStaleExports(
+        outputDir,
+        nestedDirPath,
+        nestedLoc,
+        rulesByName,
+        agent,
+      );
+      if (nestedStale) {
+        staleGroups.push(nestedStale);
       }
-
-      if (staleFiles.length > 0) {
-        staleGroups.push({
-          directory: dirPath,
-          agent,
-          files: staleFiles.sort(),
-        });
-      }
-    } catch {
-      // Skip directories that can't be read
     }
   }
 
   return staleGroups;
+}
+
+/**
+ * Scan a directory for stale exports
+ *
+ * @param outputDir - Workspace root
+ * @param dirPath - Relative path to the export directory
+ * @param exportLocation - The nested location this directory represents (undefined for root)
+ * @param rulesByName - Map of lowercase rule names to their info
+ * @param agent - Agent name for the result
+ * @returns StaleExportGroup if stale files found, undefined otherwise
+ */
+function scanDirectoryForStaleExports(
+  outputDir: string,
+  dirPath: string,
+  exportLocation: string | undefined,
+  rulesByName: Map<string, SourceRuleInfo[]>,
+  agent: string,
+): StaleExportGroup | undefined {
+  const fullDir = join(outputDir, dirPath);
+
+  // Skip if directory doesn't exist
+  if (!existsSync(fullDir)) return undefined;
+
+  try {
+    const entries = readdirSync(fullDir);
+    const staleFiles: string[] = [];
+
+    for (const entry of entries) {
+      const filePath = join(fullDir, entry);
+
+      try {
+        const stat = statSync(filePath);
+
+        // Skip directories
+        if (stat.isDirectory()) continue;
+
+        // Extract base name (without extension) from exported filename
+        // Examples: "ai-guidance.mdc" -> "ai-guidance", "style.md" -> "style"
+        const baseNameMatch = entry.match(/^(.+?)\.[^.]+$/);
+        const baseName = baseNameMatch?.[1] || entry;
+        const baseNameLower = baseName.toLowerCase();
+
+        // Find rules with this name
+        const matchingRules = rulesByName.get(baseNameLower);
+
+        if (!matchingRules || matchingRules.length === 0) {
+          // No source rule with this name - definitely stale
+          staleFiles.push(entry);
+        } else {
+          // Source rule(s) exist - check if any should export to this location
+          const hasValidExport = matchingRules.some((rule) =>
+            isExportAtCorrectLocation(rule, exportLocation),
+          );
+
+          if (!hasValidExport) {
+            // Rule exists but should export elsewhere - this export is stale
+            staleFiles.push(entry);
+          }
+        }
+      } catch {
+        // Skip files that can't be read (TOCTOU race condition)
+      }
+    }
+
+    if (staleFiles.length > 0) {
+      return {
+        directory: dirPath,
+        agent,
+        files: staleFiles.sort(),
+      };
+    }
+  } catch {
+    // Skip directories that can't be read
+  }
+
+  return undefined;
 }
 
 /**
