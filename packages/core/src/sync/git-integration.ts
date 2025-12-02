@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
-import { join, relative, isAbsolute } from "path";
+import { join } from "path";
 import { execFileSync } from "child_process";
 
 export type GitMode = "ignore" | "commit" | "branch";
@@ -165,20 +165,22 @@ export class GitIntegration {
       );
     }
 
+    // Normalize paths (absolute to relative, backslashes to forward slashes)
+    const normalizedFiles = this.normalizePathsForGitignore(
+      workspaceRoot,
+      files,
+    );
+
     // Stage the generated files
     const stagedFiles: string[] = [];
-    for (const file of files) {
-      // Convert absolute paths to relative paths for git
-      const relativePath = isAbsolute(file)
-        ? relative(workspaceRoot, file)
-        : file;
-      const fullPath = join(workspaceRoot, relativePath);
+    for (const file of normalizedFiles) {
+      const fullPath = join(workspaceRoot, file);
       if (existsSync(fullPath)) {
-        execFileSync("git", ["add", relativePath], {
+        execFileSync("git", ["add", file], {
           cwd: workspaceRoot,
           stdio: "pipe",
         });
-        stagedFiles.push(relativePath);
+        stagedFiles.push(file);
       }
     }
 
@@ -204,6 +206,12 @@ export class GitIntegration {
       );
     }
 
+    // Normalize paths (absolute to relative, backslashes to forward slashes)
+    const normalizedFiles = this.normalizePathsForGitignore(
+      workspaceRoot,
+      files,
+    );
+
     // Generate branch name if not provided
     const timestamp = new Date()
       .toISOString()
@@ -220,18 +228,14 @@ export class GitIntegration {
 
       // Stage the generated files using execFileSync to avoid shell injection
       const stagedFiles: string[] = [];
-      for (const file of files) {
-        // Convert absolute paths to relative paths for git
-        const relativePath = isAbsolute(file)
-          ? relative(workspaceRoot, file)
-          : file;
-        const fullPath = join(workspaceRoot, relativePath);
+      for (const file of normalizedFiles) {
+        const fullPath = join(workspaceRoot, file);
         if (existsSync(fullPath)) {
-          execFileSync("git", ["add", relativePath], {
+          execFileSync("git", ["add", file], {
             cwd: workspaceRoot,
             stdio: "pipe",
           });
-          stagedFiles.push(relativePath);
+          stagedFiles.push(file);
         }
       }
 
