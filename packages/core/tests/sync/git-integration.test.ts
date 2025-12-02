@@ -112,7 +112,26 @@ describe("GitIntegration", () => {
   });
 
   describe("commit mode", () => {
-    it("prepares files for commit", async () => {
+    beforeEach(() => {
+      // Initialize git repo for commit mode tests
+      execSync("git init", { cwd: TEST_DIR, stdio: "pipe" });
+      execSync('git config user.email "test@example.com"', {
+        cwd: TEST_DIR,
+        stdio: "pipe",
+      });
+      execSync('git config user.name "Test User"', {
+        cwd: TEST_DIR,
+        stdio: "pipe",
+      });
+    });
+
+    it("stages files for commit", async () => {
+      // Create files to stage
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+      writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Test Agents\n", "utf-8");
+
       const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
 
       const result = await gitIntegration.apply({
@@ -122,14 +141,30 @@ describe("GitIntegration", () => {
       });
 
       expect(result.mode).toBe("commit");
-      expect(result.action).toBe("ready to commit");
+      expect(result.action).toBe("staged files for commit");
       expect(result.filesAffected).toEqual(files);
+
+      // Verify files are staged
+      const stagedFiles = execSync("git diff --cached --name-only", {
+        cwd: TEST_DIR,
+        encoding: "utf-8",
+      }).trim();
+      expect(stagedFiles).toContain("AGENTS.md");
+      expect(stagedFiles).toContain(".cursor/rules/aligntrue.mdc");
     });
 
     it("does not modify .gitignore", async () => {
       const gitignorePath = join(TEST_DIR, ".gitignore");
       const initialContent = "node_modules/\n";
       writeFileSync(gitignorePath, initialContent, "utf-8");
+
+      // Create directory and file to stage
+      mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
+      writeFileSync(
+        join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc"),
+        "# Test\n",
+        "utf-8",
+      );
 
       await gitIntegration.apply({
         mode: "commit",
@@ -139,6 +174,19 @@ describe("GitIntegration", () => {
 
       const content = readFileSync(gitignorePath, "utf-8");
       expect(content).toBe(initialContent);
+    });
+
+    it("throws error for non-git workspace", async () => {
+      const nonGitDir = join(TEST_DIR, "non-git");
+      mkdirSync(nonGitDir, { recursive: true });
+
+      await expect(
+        gitIntegration.apply({
+          mode: "commit",
+          workspaceRoot: nonGitDir,
+          generatedFiles: ["AGENTS.md"],
+        }),
+      ).rejects.toThrow(/git repository/);
     });
   });
 
@@ -229,6 +277,19 @@ describe("GitIntegration", () => {
   });
 
   describe("per-exporter overrides", () => {
+    beforeEach(() => {
+      // Initialize git repo for per-exporter override tests (needed for commit mode)
+      execSync("git init", { cwd: TEST_DIR, stdio: "pipe" });
+      execSync('git config user.email "test@example.com"', {
+        cwd: TEST_DIR,
+        stdio: "pipe",
+      });
+      execSync('git config user.name "Test User"', {
+        cwd: TEST_DIR,
+        stdio: "pipe",
+      });
+    });
+
     it("applies different modes per exporter", async () => {
       // Create files
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
@@ -253,9 +314,31 @@ describe("GitIntegration", () => {
       expect(content).toContain(".cursor/rules/aligntrue.mdc");
       // AGENTS.md should NOT be in .gitignore (commit mode)
       expect(content).not.toContain("AGENTS.md");
+
+      // AGENTS.md should be staged
+      const stagedFiles = execSync("git diff --cached --name-only", {
+        cwd: TEST_DIR,
+        encoding: "utf-8",
+      }).trim();
+      expect(stagedFiles).toContain("AGENTS.md");
     });
 
     it("infers exporter from file path", async () => {
+      // Create files
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      const vscodeDir = join(TEST_DIR, ".vscode");
+      const amazonqDir = join(TEST_DIR, ".amazonq", "rules");
+      const windsurfDir = join(TEST_DIR, ".windsurf");
+      mkdirSync(cursorDir, { recursive: true });
+      mkdirSync(vscodeDir, { recursive: true });
+      mkdirSync(amazonqDir, { recursive: true });
+      mkdirSync(windsurfDir, { recursive: true });
+      writeFileSync(join(cursorDir, "global.mdc"), "# Cursor\n", "utf-8");
+      writeFileSync(join(vscodeDir, "mcp.json"), "{}\n", "utf-8");
+      writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agents\n", "utf-8");
+      writeFileSync(join(amazonqDir, "test.md"), "# Amazon Q\n", "utf-8");
+      writeFileSync(join(windsurfDir, "mcp_config.json"), "{}\n", "utf-8");
+
       const files = [
         ".cursor/rules/global.mdc",
         ".vscode/mcp.json",
@@ -287,6 +370,14 @@ describe("GitIntegration", () => {
         expect(content).toContain(".amazonq/");
         expect(content).toContain(".windsurf/");
       }
+
+      // Cursor and VS Code files should be staged
+      const stagedFiles = execSync("git diff --cached --name-only", {
+        cwd: TEST_DIR,
+        encoding: "utf-8",
+      }).trim();
+      expect(stagedFiles).toContain(".cursor/rules/global.mdc");
+      expect(stagedFiles).toContain(".vscode/mcp.json");
     });
   });
 
