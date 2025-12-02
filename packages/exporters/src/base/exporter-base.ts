@@ -636,7 +636,7 @@ export abstract class ExporterBase implements ExporterPlugin {
   1. Edit the source file in .aligntrue/rules/
   2. Run 'aligntrue sync' to regenerate exports
 
-  Learn more: https://aligntrue.ai/docs/concepts/sync
+  Learn more: https://aligntrue.ai/sync
 -->
 `;
   }

@@ -63,8 +63,8 @@
       "permanent": true
     },
     {
-      "source": "/export-content-mode",
-      "destination": "/docs/02-customization/multi-file-organization",
+      "source": "/sync",
+      "destination": "/docs/03-concepts/sync-behavior",
       "permanent": true
     }
   ],
