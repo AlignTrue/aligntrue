@@ -154,14 +154,9 @@ function convertToRule(
   // e.g., .cursor/rules/web_stack.mdc with scope: "apps/docs" -> nested_location: "apps/docs"
   if (!nestedLocation && rule.frontmatter.scope) {
     const scope = rule.frontmatter.scope;
-    // Check if scope looks like a path (contains "/" or matches monorepo patterns)
-    // Skip generic scopes like "General" or "." which are just categories
-    if (
-      typeof scope === "string" &&
-      scope !== "." &&
-      scope !== "General" &&
-      (scope.includes("/") || /^[a-z][\w-]*$/.test(scope))
-    ) {
+    // Only treat scope as a path if it contains "/" (like "apps/docs" or "packages/cli")
+    // Generic scope values like "reference", "guide", "General" are NOT paths
+    if (typeof scope === "string" && scope.includes("/")) {
       nestedLocation = scope;
     }
   }
