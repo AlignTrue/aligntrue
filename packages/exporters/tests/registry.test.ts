@@ -95,9 +95,9 @@ describe("ExporterRegistry", () => {
       const manifestPath = join(fixturesDir, "valid-manifest.json");
       const manifest = registry.loadManifest(manifestPath);
 
-      expect(manifest.name).toBe("test-adapter");
+      expect(manifest.name).toBe("test-exporter");
       expect(manifest.version).toBe("1.0.0");
-      expect(manifest.description).toBe("Test adapter for unit tests");
+      expect(manifest.description).toBe("Test exporter for unit tests");
       expect(manifest.outputs).toEqual([".test/*.txt"]);
       expect(manifest.handler).toBe("./mock-handler.ts");
       expect(manifest.license).toBe("MIT");
@@ -134,7 +134,7 @@ describe("ExporterRegistry", () => {
     });
 
     it("throws on invalid JSON", () => {
-      const manifestPath = join(fixturesDir, "mock-adapter/index.ts"); // Not JSON
+      const manifestPath = join(fixturesDir, "mock-exporter/index.ts"); // Not JSON
       expect(() => registry.loadManifest(manifestPath)).toThrow("Invalid JSON");
     });
 
@@ -146,10 +146,10 @@ describe("ExporterRegistry", () => {
 
   describe("handler loading", () => {
     it("loads handler with default export", async () => {
-      const handlerPath = join(fixturesDir, "mock-adapter/index.ts");
+      const handlerPath = join(fixturesDir, "mock-exporter/index.ts");
       const exporter = await registry.loadHandler(handlerPath);
 
-      expect(exporter.name).toBe("mock-adapter");
+      expect(exporter.name).toBe("mock-exporter");
       expect(exporter.version).toBe("2.0.0");
       expect(exporter.export).toBeDefined();
       expect(typeof exporter.export).toBe("function");
@@ -171,7 +171,7 @@ describe("ExporterRegistry", () => {
   });
 
   describe("manifest-based registration", () => {
-    it("registers adapter from manifest without handler", async () => {
+    it("registers exporter from manifest without handler", async () => {
       // Create a manifest without handler field
       const manifestPath = join(fixturesDir, "no-handler-manifest.json");
       const fs = await import("node:fs");
@@ -180,7 +180,7 @@ describe("ExporterRegistry", () => {
         JSON.stringify({
           name: "no-handler-test",
           version: "1.0.0",
-          description: "Test adapter without handler",
+          description: "Test exporter without handler",
           outputs: [".test/*.txt"],
         }),
       );
@@ -205,17 +205,17 @@ describe("ExporterRegistry", () => {
       }
     });
 
-    it("registers adapter from manifest with handler", async () => {
-      const manifestPath = join(fixturesDir, "mock-adapter/manifest.json");
+    it("registers exporter from manifest with handler", async () => {
+      const manifestPath = join(fixturesDir, "mock-exporter/manifest.json");
 
       await registry.registerFromManifest(manifestPath);
 
       // Both manifest and exporter registered
-      expect(registry.getManifest("mock-adapter")).toBeDefined();
-      expect(registry.has("mock-adapter")).toBe(true);
+      expect(registry.getManifest("mock-exporter")).toBeDefined();
+      expect(registry.has("mock-exporter")).toBe(true);
 
-      const exporter = registry.get("mock-adapter");
-      expect(exporter?.name).toBe("mock-adapter");
+      const exporter = registry.get("mock-exporter");
+      expect(exporter?.name).toBe("mock-exporter");
       expect(exporter?.version).toBe("2.0.0");
     });
 
@@ -226,23 +226,23 @@ describe("ExporterRegistry", () => {
     });
   });
 
-  describe("adapter discovery", () => {
+  describe("exporter discovery", () => {
     it("discovers manifests in subdirectories", () => {
-      const manifests = registry.discoverAdapters(fixturesDir);
+      const manifests = registry.discoverExporters(fixturesDir);
 
       expect(manifests.length).toBeGreaterThan(0);
       // Normalize paths for cross-platform compatibility (Windows uses backslashes)
       const normalizedManifests = manifests.map((m) => m.replace(/\\/g, "/"));
       expect(
         normalizedManifests.some((m) =>
-          m.includes("mock-adapter/manifest.json"),
+          m.includes("mock-exporter/manifest.json"),
         ),
       ).toBe(true);
     });
 
     it("finds manifest in search path itself", () => {
-      const mockAdapterDir = join(fixturesDir, "mock-adapter");
-      const manifests = registry.discoverAdapters(mockAdapterDir);
+      const mockExporterDir = join(fixturesDir, "mock-exporter");
+      const manifests = registry.discoverExporters(mockExporterDir);
 
       expect(manifests).toHaveLength(1);
       expect(manifests[0]).toContain("manifest.json");
@@ -250,7 +250,7 @@ describe("ExporterRegistry", () => {
 
     it("throws on nonexistent search path", () => {
       const badPath = join(fixturesDir, "nonexistent");
-      expect(() => registry.discoverAdapters(badPath)).toThrow(
+      expect(() => registry.discoverExporters(badPath)).toThrow(
         "Search path not found",
       );
     });
@@ -260,7 +260,7 @@ describe("ExporterRegistry", () => {
       const emptyDir = join(tmpdir(), "empty-manifest-test");
       mkdirSync(emptyDir, { recursive: true });
       try {
-        const manifests = registry.discoverAdapters(emptyDir);
+        const manifests = registry.discoverExporters(emptyDir);
         // Should return empty array
         expect(manifests).toEqual([]);
       } finally {
@@ -287,12 +287,12 @@ describe("ExporterRegistry", () => {
     });
 
     it("lists all manifests", async () => {
-      const manifestPath = join(fixturesDir, "mock-adapter/manifest.json");
+      const manifestPath = join(fixturesDir, "mock-exporter/manifest.json");
       await registry.registerFromManifest(manifestPath);
 
       const manifests = registry.listManifests();
       expect(manifests.length).toBe(1);
-      expect(manifests[0].name).toBe("mock-adapter");
+      expect(manifests[0].name).toBe("mock-exporter");
     });
 
     it("returns empty array when no manifests registered", () => {
@@ -306,7 +306,7 @@ describe("ExporterRegistry", () => {
       const exporter = new TestExporter();
       registry.register(exporter);
 
-      const manifestPath = join(fixturesDir, "mock-adapter/manifest.json");
+      const manifestPath = join(fixturesDir, "mock-exporter/manifest.json");
       await registry.registerFromManifest(manifestPath);
 
       expect(registry.list()).toHaveLength(2);

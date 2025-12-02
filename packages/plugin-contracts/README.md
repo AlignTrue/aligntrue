@@ -63,7 +63,7 @@ export class MyExporter implements ExporterPlugin {
 - `ScopedExportRequest` - Rules + scope information
 - `ExportOptions` - Output directory and flags
 - `ExportResult` - Files written, hash, fidelity notes
-- `AdapterManifest` - Declarative manifest.json metadata
+- `ExporterManifest` - Declarative manifest.json metadata
 
 ### Future Plugin Types
 

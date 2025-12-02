@@ -1461,7 +1461,7 @@ echo "### Unapproved Rule" >> AGENTS.md
 aligntrue drift --gates  # Should exit non-zero
 
 # Approve and sync
-aligntrue sync --accept-agent agents
+aligntrue sync
 aligntrue drift --gates  # Should pass after approval
 ```
 
@@ -1486,7 +1486,7 @@ test -f .cursor/.aligntrue.ignore || echo "FAIL: ignore file missing in team mod
 
 # Test that all sync operations create backups
 echo "### Team Rule" >> AGENTS.md
-aligntrue sync --accept-agent agents
+aligntrue sync
 
 # Verify backup was created
 BACKUP_COUNT=$(ls -1 .aligntrue/.backups/ | wc -l)
@@ -2133,8 +2133,9 @@ Verify conflicts are reported showing which source wins:
 **Onboarding & migration:**
 
 - `onboard` - Generate developer onboarding checklist
-- `migrate preview` - Preview schema migration changes
-- `migrate apply` - Apply schema migrations
+- `migrate personal` - Migrate to personal mode
+- `migrate team` - Migrate to team mode
+- `migrate ruler` - Migrate from Ruler format
 
 **Backup & recovery:**
 
@@ -2151,16 +2152,16 @@ Verify conflicts are reported showing which source wins:
 - `config list` - List all key-value pairs
 - `config unset <key>` - Remove optional config value
 
-**Adapter management:**
+**Exporter management:**
 
-- `adapters detect` - Detect new agents in workspace
-- `adapters ignore <name>` - Ignore detected agent
+- `exporters detect` - Detect new agents in workspace
+- `exporters ignore <name>` - Ignore detected agent
 
 **Flag usage reference:**
 
 Common flags and supported commands:
 
-- `--force`, `--force-invalid-ir`, `--force-refresh`, `--dry-run`, `--accept-agent <agent>` — `sync` only
+- `--force`, `--force-invalid-ir`, `--force-refresh`, `--dry-run` — `sync` only
 - `--yes`, `-y`, `--non-interactive` — `init`, `migrate`, `revert`
 - `--ci` — `check` only
 - `--gates` — `drift` only
@@ -2182,8 +2183,8 @@ Note: The `ExporterPlugin` interface in `@aligntrue/plugin-contracts` includes a
 
 - `backup cleanup` - Would delete actual backups
 - `plugs set/unset/resolve` - Requires plug definitions in rules
-- `adapters detect/enable/disable` - Requires specific agent files present
-- `migrate preview/apply` - Requires schema changes to exist
+- `exporters detect/enable/disable` - Requires specific agent files present
+- `migrate personal/team/ruler` - Requires schema changes to exist
 - `link` - Requires git remote setup
 - `sources split` - Requires large AGENTS.md file
 - `telemetry on/off` - Changes telemetry state
@@ -2440,7 +2441,7 @@ Run `aligntrue --help` and scan `packages/cli/src/commands/*.ts` to build comple
 ```
 Core commands:
 - aligntrue init [--mode solo|team] [--force] [--source <url>] [--link] [--exporters <list>] [--yes]
-- aligntrue sync [--dry-run] [--accept-agent <agent>] [--force] [--verbose] [--no-auto-pull]
+- aligntrue sync [--dry-run] [--force] [--verbose]
 - aligntrue watch [--debounce <ms>]
 - aligntrue check [--ci]
 
@@ -2464,7 +2465,7 @@ Organization:
 
 Configuration:
 - aligntrue config <show|edit|summary|get|set|list|unset> [options]
-- aligntrue adapters <list|enable|disable|detect|ignore> [options]
+- aligntrue exporters <list|enable|disable|detect|ignore> [options]
 
 Backup & Recovery:
 - aligntrue backup <create|list|restore|cleanup> [options]

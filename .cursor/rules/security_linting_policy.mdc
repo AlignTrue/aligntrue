@@ -1,5 +1,12 @@
 ---
-globs: scripts/**/*.js,scripts/**/*.mjs,packages/**/*.ts,packages/**/*.tsx,apps/**/*.ts,apps/**/*.tsx
+description: Security linting policy for scripts and packages
+globs:
+  - scripts/**/*.js
+  - scripts/**/*.mjs
+  - packages/**/*.ts
+  - packages/**/*.tsx
+  - apps/**/*.ts
+  - apps/**/*.tsx
 ---
 
 <!--

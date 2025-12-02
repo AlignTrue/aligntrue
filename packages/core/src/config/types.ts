@@ -74,7 +74,7 @@ export interface AlignTrueConfig {
   };
   git?: {
     mode?: "ignore" | "commit" | "branch";
-    per_adapter?: Record<string, "ignore" | "commit" | "branch">;
+    per_exporter?: Record<string, "ignore" | "commit" | "branch">;
     branch_check_interval?: number;
     tag_check_interval?: number;
     offline_fallback?: boolean;

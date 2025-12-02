@@ -54,11 +54,11 @@ export async function handleSyncResult(
 
   // Record telemetry event on success
   try {
-    const loadedAdapters = registry
+    const loadedExporters = registry
       .list()
       .map((name) => registry.get(name)!)
       .filter(Boolean);
-    const exportTargets = loadedAdapters.map((a) => a.name).join(",");
+    const exportTargets = loadedExporters.map((a) => a.name).join(",");
 
     recordEvent({
       command_name: "sync",
@@ -458,11 +458,11 @@ export async function handleSyncResult(
     if (options.dryRun) {
       clack.log.info("Dry-run mode: no files written");
     } else {
-      const loadedAdapters = registry
+      const loadedExporters = registry
         .list()
         .map((name) => registry.get(name)!)
         .filter(Boolean);
-      const exporterNames = loadedAdapters.map((a) => a.name);
+      const exporterNames = loadedExporters.map((a) => a.name);
       const writtenFiles = result.written || [];
       const uniqueWrittenFiles = Array.from(new Set(writtenFiles));
       const hasChanges = uniqueWrittenFiles.length > 0;

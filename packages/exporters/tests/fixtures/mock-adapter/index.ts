@@ -1,5 +1,5 @@
 /**
- * Mock adapter handler for testing dynamic loading
+ * Mock exporter handler for testing dynamic loading
  */
 
 import type {
@@ -9,8 +9,8 @@ import type {
   ExportResult,
 } from "../../src/types.js";
 
-export class MockAdapterExporter implements ExporterPlugin {
-  name = "mock-adapter";
+export class MockExporterExporter implements ExporterPlugin {
+  name = "mock-exporter";
   version = "2.0.0";
 
   async export(
@@ -21,10 +21,10 @@ export class MockAdapterExporter implements ExporterPlugin {
       success: true,
       filesWritten: [".mock/test.txt"],
       contentHash: "mock-hash",
-      fidelityNotes: ["Mock adapter loaded successfully"],
+      fidelityNotes: ["Mock exporter loaded successfully"],
     };
   }
 }
 
 // Export as default for registry loading
-export default MockAdapterExporter;
+export default MockExporterExporter;

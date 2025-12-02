@@ -1,10 +1,10 @@
-# Contributing adapters to AlignTrue
+# Contributing exporters to AlignTrue
 
-Thank you for contributing to AlignTrue! This guide covers how to create and submit new exporter adapters.
+Thank you for contributing to AlignTrue! This guide covers how to create and submit new exporters.
 
 ## Requirements
 
-All adapter contributions must meet these requirements:
+All exporter contributions must meet these requirements:
 
 ### 1. License
 
@@ -29,16 +29,16 @@ All adapter contributions must meet these requirements:
 
 ### 4. Documentation
 
-- Update README.md with adapter description
+- Update README.md with exporter description
 - Document any fidelity limitations
 - Provide usage examples
 - Include troubleshooting section if needed
 
-## Adapter Structure
+## Exporter Structure
 
 ```
-packages/exporters/src/my-adapter/
-├── manifest.json          # Required: adapter metadata
+packages/exporters/src/my-exporter/
+├── manifest.json          # Required: exporter metadata
 ├── index.ts               # Required: ExporterPlugin implementation
 ├── templates/             # Optional: output templates
 └── tests/
@@ -55,7 +55,7 @@ Create `manifest.json` with required fields:
 
 ```json
 {
-  "name": "my-adapter",
+  "name": "my-exporter",
   "version": "1.0.0",
   "description": "Export AlignTrue rules to My Tool format",
   "outputs": [".mytool/*.txt"],
@@ -87,8 +87,8 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { createHash } from "node:crypto";
 
-export class MyAdapterExporter implements ExporterPlugin {
-  name = "my-adapter";
+export class MyExporterExporter implements ExporterPlugin {
+  name = "my-exporter";
   version = "1.0.0";
 
   async export(
@@ -157,7 +157,7 @@ export class MyAdapterExporter implements ExporterPlugin {
 }
 
 // Export as default for registry loading
-export default MyAdapterExporter;
+export default MyExporterExporter;
 ```
 
 ### 3. Write Tests
@@ -166,17 +166,17 @@ Create comprehensive tests with snapshots:
 
 ```typescript
 import { describe, it, expect, beforeEach } from "vitest";
-import { MyAdapterExporter } from "./index.js";
+import { MyExporterExporter } from "./index.js";
 import type { ScopedExportRequest, ExportOptions } from "../types.js";
 import { mkdirSync, rmSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-describe("MyAdapterExporter", () => {
+describe("MyExporterExporter", () => {
   const tempDir = join(__dirname, "temp");
-  let exporter: MyAdapterExporter;
+  let exporter: MyExporterExporter;
 
   beforeEach(() => {
-    exporter = new MyAdapterExporter();
+    exporter = new MyExporterExporter();
 
     // Clean and create temp directory
     try {
@@ -192,7 +192,7 @@ describe("MyAdapterExporter", () => {
   });
 
   it("has correct name and version", () => {
-    expect(exporter.name).toBe("my-adapter");
+    expect(exporter.name).toBe("my-exporter");
     expect(exporter.version).toBe("1.0.0");
   });
 
@@ -322,10 +322,10 @@ Before submitting your PR:
 
 - [ ] Manifest validates against schema
 - [ ] ExporterPlugin interface implemented correctly
-- [ ] All tests pass (46+ tests across all adapters)
+- [ ] All tests pass (46+ tests across all exporters)
 - [ ] Snapshot tests included
 - [ ] Code coverage ≥80%
-- [ ] README.md updated with adapter description
+- [ ] README.md updated with exporter description
 - [ ] CONTRIBUTING.md reviewed
 - [ ] License is MIT
 - [ ] No TypeScript errors
@@ -345,7 +345,7 @@ Before submitting your PR:
 
 - Schema may change without migration framework
 - Breaking changes allowed with notice
-- Adapters should be flexible
+- Exporters should be flexible
 
 **Post-1.0**
 

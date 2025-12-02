@@ -61,9 +61,9 @@
           "enum": ["ignore", "commit", "branch"],
           "description": "Git integration mode: ignore (no tracking), commit (auto-commit), branch (dedicated branch)"
         },
-        "per_adapter": {
+        "per_exporter": {
           "type": "object",
-          "description": "Override git mode per exporter adapter",
+          "description": "Override git mode per exporter",
           "additionalProperties": {
             "type": "string",
             "enum": ["ignore", "commit", "branch"]
@@ -228,7 +228,7 @@
       "oneOf": [
         {
           "type": "array",
-          "description": "List of exporter adapters to generate (e.g., 'cursor', 'agents')",
+          "description": "List of exporters to generate (e.g., 'cursor', 'agents')",
           "items": {
             "type": "string",
             "minLength": 1
@@ -236,7 +236,7 @@
         },
         {
           "type": "object",
-          "description": "Exporter adapters with optional format and behavior configuration",
+          "description": "Exporters with optional format and behavior configuration",
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
