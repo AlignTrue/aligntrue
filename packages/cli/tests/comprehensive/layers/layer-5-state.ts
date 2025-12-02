@@ -58,7 +58,9 @@ const scenarios: StateScenario[] = [
     },
     command: "aligntrue check",
     validation: (_, output, exitCode) => ({
-      passed: exitCode !== 0 && output.includes("parse"),
+      passed:
+        exitCode !== 0 &&
+        (output.includes("Invalid YAML") || output.includes("syntax")),
       error: exitCode === 0 ? "Should fail with corrupted config" : undefined,
     }),
   },
@@ -102,8 +104,9 @@ function runScenario(
     });
   } catch (err) {
     const execErr = err as ExecException;
-    exitCode = execErr.code || 1;
-    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    exitCode = execErr.status ?? 1;
+    output =
+      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
   }
 
   console.log(`  Exit code: ${exitCode}`);
