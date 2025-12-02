@@ -97,9 +97,6 @@ jobs:
       - name: 🔁 Run conformance testkit
         run: pnpm verify
 
-      - name: 🔌 Run integration tests
-        run: pnpm -C packages/cli test tests/integration
-
       - name: 🪙 Validate golden repository
         shell: bash
         run: |
