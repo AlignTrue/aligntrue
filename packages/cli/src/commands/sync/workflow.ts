@@ -264,6 +264,84 @@ export async function executeSyncWorkflow(
     }
   }
 
+  // Step 7: Push to remote backup if configured and auto-enabled
+  if (!options.dryRun && result.success && config.remote_backup) {
+    try {
+      const { RemoteBackupManager } = await import("@aligntrue/core");
+      const rulesDir = join(cwd, ".aligntrue", "rules");
+      const backupManager = new RemoteBackupManager(config.remote_backup, {
+        cwd,
+        rulesDir,
+      });
+
+      // Only push if auto is enabled
+      if (backupManager.isAutoEnabled()) {
+        // Get source URLs for conflict detection
+        const sourceUrls =
+          config.sources
+            ?.filter((s) => s.type === "git" && s.url)
+            .map((s) => s.url!)
+            .filter(Boolean) ?? [];
+
+        if (!options.quiet) {
+          spinner.start("Pushing to remote backup");
+        }
+
+        const backupResult = await backupManager.autoPush({
+          cwd,
+          sourceUrls,
+          ...(options.verbose && {
+            onProgress: (msg: string) => clack.log.info(msg),
+          }),
+        });
+
+        if (!options.quiet) {
+          if (backupResult.success && backupResult.totalFiles > 0) {
+            const destinations = backupResult.results
+              .filter((r) => r.success && !r.skipped)
+              .map((r) => r.backupId)
+              .join(", ");
+            spinner.stop(
+              `Backed up ${backupResult.totalFiles} files to ${destinations || "remote"}`,
+            );
+          } else if (backupResult.results.every((r) => r.skipped)) {
+            spinner.stop("Remote backup skipped (no changes)");
+          } else {
+            spinner.stop("Remote backup completed");
+          }
+        }
+
+        // Show warnings
+        for (const warning of backupResult.warnings) {
+          if (!options.quiet) {
+            clack.log.warn(warning.message);
+          }
+        }
+
+        // Show errors
+        for (const pushResult of backupResult.results) {
+          if (!pushResult.success && pushResult.error) {
+            if (!options.quiet) {
+              clack.log.error(
+                `Failed to push to ${pushResult.backupId}: ${pushResult.error}`,
+              );
+            }
+          }
+        }
+      }
+    } catch (_error) {
+      // Silent failure on remote backup - not critical for sync success
+      if (!options.quiet) {
+        stopSpinnerSilently(spinner);
+      }
+      if (options.verbose) {
+        clack.log.warn(
+          `Remote backup failed: ${_error instanceof Error ? _error.message : String(_error)}`,
+        );
+      }
+    }
+  }
+
   // Cleanup: Clear prompt handler after sync completes
   clearPromptHandler();
 

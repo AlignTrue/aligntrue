@@ -57,6 +57,8 @@ async function resolveGitSourceInternal(
     offlineMode?: boolean;
     forceRefresh?: boolean;
     onProgress?: (message: string) => void;
+    mode?: "solo" | "team" | "enterprise";
+    personal?: boolean;
   },
 ): Promise<InternalResolvedSource> {
   const cacheDir = resolve(cwd, ".aligntrue", ".cache", "git");
@@ -69,6 +71,7 @@ async function resolveGitSourceInternal(
     ref: string;
     path: string;
     forceRefresh?: boolean;
+    personal?: boolean;
   } = {
     type: "git",
     url: parsed.url,
@@ -78,10 +81,19 @@ async function resolveGitSourceInternal(
   if (options?.forceRefresh !== undefined) {
     gitConfig.forceRefresh = options.forceRefresh;
   }
+  if (options?.personal !== undefined) {
+    gitConfig.personal = options.personal;
+  }
 
-  const providerOptions: { offlineMode?: boolean } = {};
+  const providerOptions: {
+    offlineMode?: boolean;
+    mode?: "solo" | "team" | "enterprise";
+  } = {};
   if (options?.offlineMode !== undefined) {
     providerOptions.offlineMode = options.offlineMode;
+  }
+  if (options?.mode !== undefined) {
+    providerOptions.mode = options.mode;
   }
 
   const provider = new GitProvider(gitConfig, cacheDir, providerOptions);
@@ -240,6 +252,7 @@ export async function resolveSource(
   const cwd = options?.cwd || process.cwd();
   const offlineMode = options?.offlineMode || false;
   const forceRefresh = options?.forceRefresh || false;
+  const mode = options?.config?.mode || "solo";
 
   if (!source) {
     throw new Error("Source configuration is required");
@@ -278,6 +291,8 @@ export async function resolveSource(
     offlineMode?: boolean;
     forceRefresh?: boolean;
     onProgress?: (message: string) => void;
+    mode?: "solo" | "team" | "enterprise";
+    personal?: boolean;
   } = {};
   if (offlineMode) {
     resolveOpts.offlineMode = offlineMode;
@@ -287,6 +302,13 @@ export async function resolveSource(
   }
   if (onProgress) {
     resolveOpts.onProgress = onProgress;
+  }
+  if (mode) {
+    resolveOpts.mode = mode;
+  }
+  // Pass personal flag from source config
+  if (source.personal !== undefined) {
+    resolveOpts.personal = source.personal;
   }
 
   if (source.type === "git" || isGitSource(sourceUrl)) {

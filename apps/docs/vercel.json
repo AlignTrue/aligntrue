@@ -71,6 +71,16 @@
       "source": "/sync",
       "destination": "/docs/03-concepts/sync-behavior",
       "permanent": true
+    },
+    {
+      "source": "/backup",
+      "destination": "/docs/03-concepts/backup",
+      "permanent": true
+    },
+    {
+      "source": "/sharing",
+      "destination": "/docs/01-guides/sharing-rules",
+      "permanent": true
     }
   ],
   "headers": [

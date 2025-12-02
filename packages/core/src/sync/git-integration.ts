@@ -300,18 +300,21 @@ export class GitIntegration {
   }
 
   /**
-   * Add private rules to .gitignore with separate managed section
+   * Add gitignored rules to .gitignore with separate managed section
    *
    * @param workspaceRoot - Workspace root directory
    * @param files - Rule files to add (source paths in .aligntrue/rules/)
    */
-  async addPrivateRulesToGitignore(
+  async addGitignoreRulesToGitignore(
     workspaceRoot: string,
     files: string[],
   ): Promise<void> {
     const gitignorePath = join(workspaceRoot, ".gitignore");
-    const marker = "# START AlignTrue Private Rules";
-    const endMarker = "# END AlignTrue Private Rules";
+    const marker = "# START AlignTrue Gitignored Rules";
+    const endMarker = "# END AlignTrue Gitignored Rules";
+    // Legacy markers for backward compatibility
+    const legacyMarker = "# START AlignTrue Private Rules";
+    const legacyEndMarker = "# END AlignTrue Private Rules";
 
     let content = "";
     try {
@@ -327,11 +330,41 @@ export class GitIntegration {
       // File doesn't exist, content remains ""
     }
 
+    // Remove legacy section if present (migrate to new naming)
+    content = this.removeManagedSection(content, legacyMarker, legacyEndMarker);
+
     // Normalize paths to relative
     const relativePaths = this.normalizePathsForGitignore(workspaceRoot, files);
 
     content = this.addManagedSection(content, marker, endMarker, relativePaths);
     writeFileSync(gitignorePath, content, "utf-8");
+  }
+
+  /**
+   * @deprecated Use addGitignoreRulesToGitignore instead
+   */
+  async addPrivateRulesToGitignore(
+    workspaceRoot: string,
+    files: string[],
+  ): Promise<void> {
+    return this.addGitignoreRulesToGitignore(workspaceRoot, files);
+  }
+
+  /**
+   * Remove a managed section from content
+   */
+  private removeManagedSection(
+    content: string,
+    marker: string,
+    endMarker: string,
+  ): string {
+    const escapedMarker = marker.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+    const escapedEndMarker = endMarker.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+    const regex = new RegExp(
+      `${escapedMarker}[\\s\\S]*?${escapedEndMarker}\\n?`,
+      "g",
+    );
+    return content.replace(regex, "");
   }
 
   /**

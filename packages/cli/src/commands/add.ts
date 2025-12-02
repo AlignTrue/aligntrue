@@ -591,22 +591,22 @@ async function copyRulesToLocal(options: {
     const fullPaths = createdFiles.map((f) => `.aligntrue/rules/${f}`);
     formatCreatedFiles(fullPaths, { nonInteractive: !isTTY() });
 
-    // Handle private source: auto-gitignore the source files
+    // Handle gitignored source: auto-gitignore the source files
     if (privateSource) {
       if (isTTY()) {
         clack.log.warn(
-          "Private source detected (SSH authentication)\n" +
+          "Gitignored source detected (SSH authentication)\n" +
             "  Rules added to .gitignore automatically.",
         );
       } else {
-        console.log("\nPrivate source detected - rules added to .gitignore");
+        console.log("\nGitignored source detected - rules added to .gitignore");
       }
 
       // Add source files to gitignore
       try {
         const { GitIntegration } = await import("@aligntrue/core");
         const gitIntegration = new GitIntegration();
-        await gitIntegration.addPrivateRulesToGitignore(cwd, fullPaths);
+        await gitIntegration.addGitignoreRulesToGitignore(cwd, fullPaths);
       } catch {
         // Silent failure on gitignore update - not critical
         if (isTTY()) {
