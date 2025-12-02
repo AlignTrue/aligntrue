@@ -110,7 +110,7 @@ describe("backup command", () => {
       writeFileSync(join(aligntrueDir, "config.yaml"), "mode: team", "utf-8");
       BackupManager.createBackup({ cwd: testDir });
 
-      await backupCommand(["restore", "--to", backup1.timestamp]);
+      await backupCommand(["restore", "--timestamp", backup1.timestamp]);
 
       const content = readFileSync(join(aligntrueDir, "config.yaml"), "utf-8");
       expect(content).toBe("mode: solo");
