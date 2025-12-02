@@ -99,7 +99,7 @@ export async function executeSyncWorkflow(
         spinner.stop(`Safety backup created: ${backup.timestamp}`);
         if (options.verbose) {
           clack.log.info(
-            `Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+            `Restore with: aligntrue backup restore --timestamp ${backup.timestamp}`,
           );
         }
       }

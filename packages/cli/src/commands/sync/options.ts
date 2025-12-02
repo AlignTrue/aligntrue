@@ -218,7 +218,7 @@ export function showSyncHelp(): void {
       "",
       "Safety:",
       "  A backup is created before each sync operation.",
-      "  Restore with: aligntrue backup restore --to <timestamp>",
+      "  Restore with: aligntrue backup restore --timestamp <timestamp>",
     ],
   });
 }

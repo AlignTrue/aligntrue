@@ -128,3 +128,42 @@ export function getLockfileStatusMessage(
 
   return "⚠ Team mode requires a lockfile. Run 'aligntrue sync' to generate it.";
 }
+
+/**
+ * Create an empty lockfile for team mode
+ * Used when team mode is first enabled, before any rules exist
+ */
+export async function createEmptyLockfile(
+  cwd: string,
+  mode: "team" | "enterprise",
+): Promise<{ success: boolean; lockfilePath?: string; error?: string }> {
+  const { join } = await import("path");
+  const { writeLockfile } = await import("@aligntrue/core/lockfile");
+  const { computeHash } = await import("@aligntrue/schema");
+  const lockfilePath = join(cwd, ".aligntrue.lock.json");
+
+  try {
+    // Compute empty bundle hash (hash of empty string)
+    const emptyBundleHash = computeHash("");
+
+    const emptyLockfile = {
+      version: "1" as const,
+      generated_at: new Date().toISOString(),
+      mode,
+      rules: [],
+      bundle_hash: emptyBundleHash,
+    };
+
+    writeLockfile(lockfilePath, emptyLockfile, { silent: true });
+
+    return {
+      success: true,
+      lockfilePath,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
