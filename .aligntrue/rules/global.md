@@ -109,6 +109,31 @@ When acting in this repo:
 - The `gh` CLI is installed; use it for GitHub operations when requested, but **DO NOT make any GitHub API calls unless explicitly requested**. GitHub API has strict rate limits (5000/hr auth, 60/hr unauth). Even testing scripts counts. Always ask before running commands that hit GitHub API.
 - Never revert anything unless I explicitly approve.
 
+### Read-only export enforcement (critical for dogfooding)
+
+**NEVER edit files with READ-ONLY markers in HTML comments.** These are auto-generated exports:
+
+Affected files (do not edit directly):
+
+- `.cursor/rules/*.mdc` - Cursor exporter output
+- `.cursor/*.mdc` files in nested directories (e.g., `apps/docs/.cursor/rules/*.mdc`)
+- `AGENTS.md` at any level
+- `.clinerules/**` files
+- `.augment/rules/**` files
+
+**Workflow:**
+
+1. Identify which rule needs changing
+2. Edit the corresponding source file in `.aligntrue/rules/`
+   - Find the rule by title/scope/globs match
+   - Make your edits to the `.md` file
+3. Run `aligntrue sync` from the repo root
+4. The exported files will auto-update with your changes
+
+**Why this matters:** We dogfood our own product. If AI tools edit exports directly instead of sources, it breaks the entire sync system and teaches wrong patterns to users who copy this workflow.
+
+**Exception:** ONLY edit `.aligntrue/rules/*.md` files and nothing else in the `.cursor/`, `.augment/`, or `.clinerules/` directories.
+
 ---
 
 ## Decisions and tradeoffs
