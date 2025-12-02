@@ -336,12 +336,24 @@ export interface SourceRuleInfo {
  * Normalize a path for comparison by removing leading/trailing slashes and dots,
  * normalizing path separators, and converting to lowercase for case-insensitive comparison.
  *
+ * Uses specific patterns to avoid ReDoS vulnerabilities from ambiguous regex patterns.
+ * Paths in this context (nested locations) are expected to be short (e.g., "apps/docs").
+ *
  * @param path - Path to normalize
  * @returns Normalized path string
  */
 function normalizePathForComparison(path: string): string {
-  // Remove leading ./ or .\ and trailing slashes
-  let normalized = path.replace(/^[./\\]+|[./\\]+$/g, "");
+  // Defense-in-depth: limit input length to prevent ReDoS (paths should be short)
+  if (path.length > 1000) {
+    throw new Error("Path too long for normalization");
+  }
+
+  let normalized = path;
+  // Remove leading ./ or .\ (specific anchored patterns to avoid ReDoS)
+  // Using ^ anchor ensures no backtracking ambiguity
+  normalized = normalized.replace(/^\.\//, "").replace(/^\.\\/, "");
+  // Remove trailing slashes (anchored pattern avoids ReDoS)
+  normalized = normalized.replace(/\/+$/, "").replace(/\\+$/, "");
   // Normalize path separators to forward slashes (consistent across platforms)
   normalized = normalized.replace(/\\/g, "/");
   // Convert to lowercase for case-insensitive comparison
