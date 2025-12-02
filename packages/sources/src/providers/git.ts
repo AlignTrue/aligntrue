@@ -833,12 +833,17 @@ export class GitProvider implements SourceProvider {
   private getGitErrorHint(error: GitError): string {
     const message = error.message.toLowerCase();
 
-    if (message.includes("authentication") || message.includes("permission")) {
+    if (
+      message.includes("authentication") ||
+      message.includes("permission") ||
+      message.includes("publickey")
+    ) {
       return (
-        `  Hint: Authentication failed. For private repositories:\n` +
-        `    - Use SSH URLs (git@github.com:org/repo.git) with SSH keys\n` +
-        `    - Or use HTTPS URLs with credentials (not recommended)\n` +
-        `    - Check that your SSH keys are configured: ssh -T git@github.com`
+        `  Hint: Authentication failed. For SSH URLs:\n` +
+        `    1. Check loaded keys: ssh-add -l\n` +
+        `    2. Test connection: ssh -T git@github.com\n` +
+        `    3. Add key to agent: ssh-add ~/.ssh/id_ed25519\n\n` +
+        `  See: https://aligntrue.ai/docs/04-reference/troubleshooting/remote-access`
       );
     }
 

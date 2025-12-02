@@ -226,6 +226,44 @@ export async function executeSyncWorkflow(
     }
   }
 
+  // Step 6: Apply git integration mode (commit/branch)
+  if (
+    !options.dryRun &&
+    result.success &&
+    result.written &&
+    result.written.length > 0
+  ) {
+    const gitMode = config.git?.mode || "ignore";
+
+    if (gitMode === "commit" || gitMode === "branch") {
+      try {
+        const { GitIntegration } = await import("@aligntrue/core");
+        const gitIntegration = new GitIntegration();
+        const perExporterOverrides = config.git?.per_exporter;
+        const gitResult = await gitIntegration.apply({
+          mode: gitMode,
+          workspaceRoot: cwd,
+          generatedFiles: result.written,
+          ...(perExporterOverrides && { perExporterOverrides }),
+        });
+
+        if (options.verbose && gitResult.branchCreated) {
+          clack.log.info(`Created branch: ${gitResult.branchCreated}`);
+        }
+        if (options.verbose && gitResult.action) {
+          clack.log.info(`Git: ${gitResult.action}`);
+        }
+      } catch (_error) {
+        // Silent failure on git integration - not critical for sync success
+        if (options.verbose) {
+          clack.log.warn(
+            `Git integration failed: ${_error instanceof Error ? _error.message : String(_error)}`,
+          );
+        }
+      }
+    }
+  }
+
   // Cleanup: Clear prompt handler after sync completes
   clearPromptHandler();
 
