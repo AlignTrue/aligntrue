@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
-import { join } from "path";
+import { join, relative, isAbsolute } from "path";
 import { execFileSync } from "child_process";
 
 export type GitMode = "ignore" | "commit" | "branch";
@@ -152,24 +152,40 @@ export class GitIntegration {
   }
 
   /**
-   * Apply commit mode: do nothing special (files will be tracked)
+   * Apply commit mode: stage files for commit
    */
   private async applyCommitMode(
     workspaceRoot: string,
     files: string[],
   ): Promise<GitModeResult> {
-    // Ensure files are NOT in .gitignore
-    const gitignorePath = join(workspaceRoot, ".gitignore");
+    // Check if workspace is a git repo
+    if (!this.isGitRepo(workspaceRoot)) {
+      throw new Error(
+        "Git commit mode requires a git repository. Initialize git first: git init",
+      );
+    }
 
-    if (existsSync(gitignorePath)) {
-      // Note: We don't automatically remove from .gitignore in commit mode
-      // to avoid conflicts. User should manage .gitignore manually or use migrate command.
+    // Stage the generated files
+    const stagedFiles: string[] = [];
+    for (const file of files) {
+      // Convert absolute paths to relative paths for git
+      const relativePath = isAbsolute(file)
+        ? relative(workspaceRoot, file)
+        : file;
+      const fullPath = join(workspaceRoot, relativePath);
+      if (existsSync(fullPath)) {
+        execFileSync("git", ["add", relativePath], {
+          cwd: workspaceRoot,
+          stdio: "pipe",
+        });
+        stagedFiles.push(relativePath);
+      }
     }
 
     return {
       mode: "commit",
-      action: "ready to commit",
-      filesAffected: files,
+      action: "staged files for commit",
+      filesAffected: stagedFiles,
     };
   }
 
@@ -203,20 +219,26 @@ export class GitIntegration {
       });
 
       // Stage the generated files using execFileSync to avoid shell injection
+      const stagedFiles: string[] = [];
       for (const file of files) {
-        const fullPath = join(workspaceRoot, file);
+        // Convert absolute paths to relative paths for git
+        const relativePath = isAbsolute(file)
+          ? relative(workspaceRoot, file)
+          : file;
+        const fullPath = join(workspaceRoot, relativePath);
         if (existsSync(fullPath)) {
-          execFileSync("git", ["add", file], {
+          execFileSync("git", ["add", relativePath], {
             cwd: workspaceRoot,
             stdio: "pipe",
           });
+          stagedFiles.push(relativePath);
         }
       }
 
       return {
         mode: "branch",
         action: "created branch and staged files",
-        filesAffected: files,
+        filesAffected: stagedFiles,
         branchCreated: branch,
       };
     } catch (_error) {
