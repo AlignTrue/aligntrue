@@ -252,7 +252,7 @@ export async function add(args: string[]): Promise<void> {
  */
 async function addLinkedSource(options: {
   baseUrl: string;
-  sourceType: "git" | "url" | "local";
+  sourceType: "git" | "local";
   gitRef?: string | undefined;
   gitPath?: string | undefined;
   configPath: string;
@@ -295,9 +295,6 @@ async function addLinkedSource(options: {
     // Check if source already exists
     const existingSource = config.sources.find((s) => {
       if (s.type === "git" && sourceType === "git") {
-        return s.url === baseUrl;
-      }
-      if (s.type === "url" && sourceType === "url") {
         return s.url === baseUrl;
       }
       if (s.type === "local" && sourceType === "local") {
@@ -346,11 +343,6 @@ async function addLinkedSource(options: {
       if (privateSource) {
         newSource.private = true;
       }
-    } else if (sourceType === "url") {
-      newSource = {
-        type: "url",
-        url: baseUrl,
-      };
     } else {
       newSource = {
         type: "local",

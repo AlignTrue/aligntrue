@@ -513,9 +513,7 @@ export async function init(args: string[] = []): Promise<void> {
   let rulesToWrite: RuleFile[] = [];
   let isFreshStart = false;
   let isFromExternalSource = false;
-  let linkedSource:
-    | { type: "git" | "url"; url: string; ref?: string }
-    | undefined;
+  let linkedSource: { type: "git"; url: string; ref?: string } | undefined;
 
   if (sourceArg) {
     // Import from specified source (skip auto-detect)
