@@ -147,7 +147,25 @@ function convertToRule(
 
   // Extract nested location from source path so exports go to the correct nested directory
   // e.g., "apps/docs/.cursor/rules/web_stack.mdc" -> nested_location: "apps/docs"
-  const nestedLocation = extractNestedLocation(file.relativePath, file.type);
+  let nestedLocation = extractNestedLocation(file.relativePath, file.type);
+
+  // If we didn't find nested_location from path but rule has a scope field that looks like a path,
+  // infer nested_location from scope. This handles cases where a scoped rule is at root level.
+  // e.g., .cursor/rules/web_stack.mdc with scope: "apps/docs" -> nested_location: "apps/docs"
+  if (!nestedLocation && rule.frontmatter.scope) {
+    const scope = rule.frontmatter.scope;
+    // Check if scope looks like a path (contains "/" or matches monorepo patterns)
+    // Skip generic scopes like "General" or "." which are just categories
+    if (
+      typeof scope === "string" &&
+      scope !== "." &&
+      scope !== "General" &&
+      (scope.includes("/") || /^[a-z][\w-]*$/.test(scope))
+    ) {
+      nestedLocation = scope;
+    }
+  }
+
   if (nestedLocation) {
     rule.frontmatter.nested_location = nestedLocation;
   }
