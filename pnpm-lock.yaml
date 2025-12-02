@@ -118,8 +118,8 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
       simple-icons:
-        specifier: ^15.22.0
-        version: 15.22.0
+        specifier: ^16.0.0
+        version: 16.0.0
     devDependencies:
       '@pagefind/default-ui':
         specifier: ^1.1.0
@@ -3575,8 +3575,8 @@ packages:
   simple-git@3.30.0:
     resolution: {integrity: sha512-q6lxyDsCmEal/MEGhP1aVyQ3oxnagGlBDOVSIB4XUVLl1iZh0Pah6ebC9V4xBap/RfgP2WlI8EKs0WS0rMEJHg==}
 
-  simple-icons@15.22.0:
-    resolution: {integrity: sha512-i/w5Ie4tENfGYbdCo2iJ+oies0vOFd8QXWHopKOUzudfLCvnmeheF2PpHp89Z2azpc+c2su3lMiWO/SpP+429A==}
+  simple-icons@16.0.0:
+    resolution: {integrity: sha512-FPA/dxEy0dfXplKhPhqFI6KoPKAhe7t75emZ5i1T1vmqCYwboCqVNezRWaMmPkBazpHKmMAnaUYxoYsfRoDnZQ==}
     engines: {node: '>=0.12.18'}
 
   sisteransi@1.0.5:
@@ -7884,7 +7884,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  simple-icons@15.22.0: {}
+  simple-icons@16.0.0: {}
 
   sisteransi@1.0.5: {}
 
