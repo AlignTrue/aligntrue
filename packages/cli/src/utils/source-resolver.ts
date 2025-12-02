@@ -195,7 +195,7 @@ function parseGitUrlComponents(source: string): {
 export interface ResolvedSource {
   content: string;
   sourcePath: string;
-  sourceType: "local" | "git" | "url";
+  sourceType: "local" | "git";
   commitSha?: string | undefined; // For git sources
 }
 
@@ -257,8 +257,6 @@ export async function resolveSource(
     if (source.path) {
       sourceUrl += `/${source.path}`;
     }
-  } else if (source.type === "url" && source.url) {
-    sourceUrl = source.url;
   }
 
   // Progress callback wrapper
@@ -370,7 +368,7 @@ function expandSourcesWithInclude(
           const parsed = parseSourceURL(includeUrl);
           // Create a new git source from the parsed URL
           const expandedSource: {
-            type: "git" | "local" | "url";
+            type: "git" | "local";
             url?: string;
             path?: string;
             ref?: string;

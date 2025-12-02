@@ -2,7 +2,7 @@
  * Source providers for pulling rules from multiple locations
  */
 
-export type SourceType = "local" | "git" | "url";
+export type SourceType = "local" | "git";
 
 /**
  * Git-specific configuration
@@ -14,11 +14,6 @@ export interface GitSourceConfig extends SourceConfig {
   path?: string; // path to .aligntrue.yaml in repo (default: '.aligntrue.yaml')
   forceRefresh?: boolean; // bypass cache
 }
-
-/**
- * URL-specific configuration (re-exported from url.ts)
- */
-export { UrlSourceConfig } from "./url.js";
 
 export interface SourceProvider {
   type: SourceType;
@@ -39,8 +34,6 @@ export type {
   GitProgressPhase,
 } from "./git.js";
 export { LocalProvider } from "./local.js";
-export { UrlProvider } from "./url.js";
-export type { UrlProviderOptions } from "./url.js";
 
 // Re-export error types
 export { UpdatesAvailableError } from "./errors.js";

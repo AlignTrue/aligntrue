@@ -90,7 +90,7 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
     let priority = 1;
 
     // Order types for consistent output
-    const typeOrder = ["local", "catalog", "git", "url"];
+    const typeOrder = ["local", "catalog", "git"];
     for (const type of typeOrder) {
       const sources = sourcesByType[type];
       if (!sources) continue;
@@ -135,10 +135,6 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
           } else {
             console.log(`   Cache: not yet fetched`);
           }
-        } else if (sourceType === "url") {
-          const url = sourceObj["url"] as string;
-          console.log(`   URL: ${url}`);
-          console.log(`   Cache: check needed`);
         } else if (sourceType === "catalog") {
           const id = (sourceObj["id"] as string) || "unknown";
           console.log(`   Catalog ID: ${id}`);

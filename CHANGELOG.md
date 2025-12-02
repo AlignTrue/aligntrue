@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **URL source provider** - Removed deprecated `type: "url"` source provider. The JSON schema already rejected this type, and the provider was never instantiated. Use git repositories instead for remote rule sources
+
 ### Changed
 
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
