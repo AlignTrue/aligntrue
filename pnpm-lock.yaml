@@ -4000,9 +4000,6 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
-  web-features@3.10.0:
-    resolution: {integrity: sha512-ySfH0WgGGUuJgMOQLaDOEV7IDEA9NIjzEIO0bgyUPaFvMsBA28oTamqVYggQ8ecSM835T7m5KMf2wZsLjEyNVA==}
-
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
@@ -5508,10 +5505,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  baseline-browser-mapping@1.0.0:
-    dependencies:
-      '@mdn/browser-compat-data': 7.1.23
-      web-features: 3.10.0
+  baseline-browser-mapping@2.8.32: {}
 
   better-react-mathjax@2.3.0(react@19.2.0):
     dependencies:
@@ -8357,8 +8351,6 @@ snapshots:
   w3c-xmlserializer@5.0.0:
     dependencies:
       xml-name-validator: 5.0.0
-
-  web-features@3.10.0: {}
 
   web-namespaces@2.0.1: {}
 
