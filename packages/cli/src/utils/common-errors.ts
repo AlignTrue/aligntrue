@@ -99,13 +99,33 @@ export const CommonErrors = {
    * @param reason - Reason for failure
    * @returns Formatted error with permissions hint
    */
-  fileWriteFailed: (path: string, reason: string): CLIError => ({
-    title: "File write failed",
-    message: `Could not write to: ${path}`,
-    details: [reason],
-    hint: "Check file permissions and disk space",
-    code: "ERR_FILE_WRITE_FAILED",
-  }),
+  fileWriteFailed: (path: string, reason: string): CLIError => {
+    // Check if this is a permission error
+    const isPermissionErr =
+      reason.toLowerCase().includes("permission denied") ||
+      reason.toLowerCase().includes("eacces") ||
+      reason.toLowerCase().includes("eperm") ||
+      reason.includes("EACCES") ||
+      reason.includes("EPERM");
+
+    if (isPermissionErr) {
+      return {
+        title: "Permission denied",
+        message: `Cannot write to: ${path}`,
+        details: [reason],
+        hint: "Check file permissions (chmod), ensure directory is writable, or run with appropriate permissions",
+        code: "ERR_FILE_WRITE_FAILED",
+      };
+    }
+
+    return {
+      title: "File write failed",
+      message: `Could not write to: ${path}`,
+      details: [reason],
+      hint: "Check file permissions and disk space",
+      code: "ERR_FILE_WRITE_FAILED",
+    };
+  },
 
   /**
    * Import failed error
