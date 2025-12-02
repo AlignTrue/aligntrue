@@ -333,6 +333,22 @@ export interface SourceRuleInfo {
 }
 
 /**
+ * Normalize a path for comparison by removing leading/trailing slashes and dots,
+ * normalizing path separators, and converting to lowercase for case-insensitive comparison.
+ *
+ * @param path - Path to normalize
+ * @returns Normalized path string
+ */
+function normalizePathForComparison(path: string): string {
+  // Remove leading ./ or .\ and trailing slashes
+  let normalized = path.replace(/^[./\\]+|[./\\]+$/g, "");
+  // Normalize path separators to forward slashes (consistent across platforms)
+  normalized = normalized.replace(/\\/g, "/");
+  // Convert to lowercase for case-insensitive comparison
+  return normalized.toLowerCase();
+}
+
+/**
  * Check if an export at a given location is valid for a source rule
  *
  * @param rule - Source rule info
@@ -348,7 +364,14 @@ function isExportAtCorrectLocation(
     return exportLocation === undefined;
   }
   // If rule has nested_location, export should be in that nested directory
-  return exportLocation === rule.nestedLocation;
+  // Normalize both paths for comparison to handle format differences
+  if (!exportLocation) {
+    return false;
+  }
+  return (
+    normalizePathForComparison(exportLocation) ===
+    normalizePathForComparison(rule.nestedLocation)
+  );
 }
 
 /**
