@@ -53,6 +53,10 @@ const currentDir = new URL(import.meta.url).pathname;
 const cliDir = resolve(currentDir, "../../../");
 const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");
+const tsxLoaderPath = resolve(
+  workspaceRoot,
+  "node_modules/tsx/dist/esm/index.mjs",
+);
 
 console.log(`\n${"=".repeat(60)}`);
 console.log("AlignTrue Comprehensive Testing (Local Workspace)");
@@ -121,7 +125,7 @@ async function runLayer(layer: number): Promise<LayerResult> {
   };
 
   try {
-    const output = execSync(`node --import tsx ${layerFile}`, {
+    const output = execSync(`node --import ${tsxLoaderPath} ${layerFile}`, {
       cwd: workspace,
       encoding: "utf-8",
       env,
