@@ -744,6 +744,212 @@ echo "First backup: $BACKUP1"
 - Cleanup removes backups older than `retention_days` while respecting `minimum_keep`
 - Backups are mandatory for all destructive operations
 
+#### Remote backup workflow
+
+Test pushing rules to remote git repositories for backup:
+
+```bash
+cd /tmp/test-remote-backup
+aligntrue init --mode solo --yes
+
+# Create some rules
+cat > .aligntrue/rules/typescript.md <<'EOF'
+---
+description: TypeScript coding standards
+---
+# TypeScript rules
+Use strict mode always.
+EOF
+
+cat > .aligntrue/rules/testing.md <<'EOF'
+---
+description: Testing guidelines
+---
+# Testing rules
+Write tests for all features.
+EOF
+
+mkdir -p .aligntrue/rules/guides
+cat > .aligntrue/rules/guides/react.md <<'EOF'
+---
+description: React best practices
+---
+# React guides
+Use functional components.
+EOF
+
+# Test backup status with no config
+aligntrue backup status
+# Expected: "No backup configured"
+
+# Test backup push with no config
+aligntrue backup push
+# Expected: error about no backup configured
+
+# Configure a default remote backup (use local git repo for testing)
+git init --bare /tmp/test-backup-remote.git
+cat >> .aligntrue/config.yaml <<'EOF'
+backup:
+  default:
+    url: /tmp/test-backup-remote.git
+    branch: main
+    auto: true
+EOF
+
+# Test backup status with config
+aligntrue backup status
+# Expected: shows default backup with file count
+
+# Test manual backup push
+aligntrue backup push
+# Expected: success message with file count
+
+# Verify files were pushed
+git clone /tmp/test-backup-remote.git /tmp/verify-backup
+ls /tmp/verify-backup/.aligntrue/rules/
+# Expected: typescript.md, testing.md, guides/react.md (preserves structure)
+
+# Test auto backup during sync
+echo "New content" >> .aligntrue/rules/typescript.md
+aligntrue sync
+# Expected: sync completes AND backup push happens automatically
+
+# Test backup with multiple destinations
+git init --bare /tmp/test-backup-oss.git
+cat > .aligntrue/config.yaml <<'EOF'
+backup:
+  default:
+    url: /tmp/test-backup-remote.git
+    branch: main
+    auto: true
+  additional:
+    - id: public-oss
+      url: /tmp/test-backup-oss.git
+      include:
+        - typescript.md
+        - "guides/*.md"
+EOF
+
+aligntrue backup push
+# Expected: files assigned to appropriate backups
+
+aligntrue backup status
+# Expected: shows both backups with their file assignments
+```
+
+**Expected:**
+
+- `backup status` shows configured backups and file assignments
+- `backup push` manually pushes to all configured backups
+- Files are pushed preserving directory structure
+- `auto: true` triggers backup during `aligntrue sync`
+- Multiple backups supported with glob-based file assignment
+- Default backup catches unassigned files
+- Files matching multiple backups go to first match with warning
+
+#### Source/backup conflict detection
+
+Test warning when same URL is both source and backup:
+
+```bash
+cd /tmp/test-source-backup-conflict
+aligntrue init --mode solo --yes
+
+git init --bare /tmp/conflicting-repo.git
+
+# Configure same URL as both source AND backup
+cat > .aligntrue/config.yaml <<'EOF'
+sources:
+  - type: git
+    url: /tmp/conflicting-repo.git
+
+backup:
+  default:
+    url: /tmp/conflicting-repo.git
+    auto: true
+EOF
+
+# Test sync - should warn about conflict
+aligntrue sync
+# Expected: warning about URL being both source and backup, backup skipped
+
+# Test backup push - should also warn
+aligntrue backup push
+# Expected: same warning, backup skipped for conflicting URL
+```
+
+**Expected:**
+
+- Warning emitted when same URL is source and backup
+- Backup operation skipped for conflicting URLs
+- Warning includes link to documentation (aligntrue.ai/backup)
+
+#### Personal source in team mode
+
+Test that personal sources skip team approval:
+
+```bash
+cd /tmp/test-personal-source
+aligntrue init --mode team --yes
+
+# Configure a personal git source
+git init --bare /tmp/personal-rules.git
+cat > .aligntrue/config.yaml <<'EOF'
+mode: team
+sources:
+  - type: git
+    url: /tmp/personal-rules.git
+    personal: true
+EOF
+
+# Personal sources should auto-pull without approval
+aligntrue sync
+# Expected: no UpdatesAvailableError, rules pulled automatically
+
+# Personal source rules should be gitignored
+cat .gitignore | grep -q ".aligntrue/rules/" && echo "PASS: personal rules gitignored" || echo "FAIL: personal rules not gitignored"
+```
+
+**Expected:**
+
+- `personal: true` sources skip team approval workflow
+- Personal source rules are automatically gitignored
+- Team rules still require approval as before
+
+#### Gitignore flag for rules
+
+Test the gitignore flag (renamed from private):
+
+```bash
+cd /tmp/test-gitignore-flag
+aligntrue init --mode solo --yes
+
+# Create a rule with gitignore flag
+cat > .aligntrue/rules/secret-prompts.md <<'EOF'
+---
+description: My secret prompts
+gitignore: true
+---
+# Secret prompts
+These should not be committed.
+EOF
+
+# Sync should add to gitignore
+aligntrue sync
+
+# Check gitignore was updated
+cat .gitignore | grep -q "secret-prompts.md" && echo "PASS: rule gitignored" || echo "FAIL: rule not gitignored"
+
+# Verify the managed section markers
+grep -q "# START AlignTrue Gitignore Rules" .gitignore && echo "PASS: section marker found" || echo "FAIL: section marker missing"
+```
+
+**Expected:**
+
+- Rules with `gitignore: true` are added to `.gitignore`
+- Managed section uses "AlignTrue Gitignore Rules" markers
+- Works for both frontmatter and source-level gitignore settings
+
 #### New file detection workflow
 
 Test automatic detection and extraction of new agent files with content:
@@ -959,7 +1165,7 @@ aligntrue add git@github.com:user/private-rules
 # - Auto-sync happens after import
 
 # Verify gitignore was updated
-grep "AlignTrue Private Rules" .gitignore || echo "FAIL: private rules section missing"
+grep "AlignTrue Gitignore Rules" .gitignore || echo "FAIL: gitignore rules section missing"
 grep ".aligntrue/rules" .gitignore || echo "FAIL: source rules not in gitignore"
 grep ".cursor/rules" .gitignore || echo "FAIL: exported rules not in gitignore"
 
@@ -974,31 +1180,31 @@ cd /tmp/test-private-linked
 aligntrue init --mode solo --yes
 aligntrue add git@github.com:user/private-rules --link
 # Expected:
-# - Source added to config with private: true
+# - Source added to config with gitignore: true
 # - "Run 'aligntrue sync' to pull rules" message
 
-# Verify config has private flag
-grep "private: true" .aligntrue/config.yaml || echo "FAIL: private flag not set"
+# Verify config has gitignore flag
+grep "gitignore: true" .aligntrue/config.yaml || echo "FAIL: gitignore flag not set"
 
-# Test per-rule privacy override (frontmatter)
-cd /tmp/test-rule-privacy-override
+# Test per-rule gitignore override (frontmatter)
+cd /tmp/test-rule-gitignore-override
 aligntrue init --mode solo --yes
 echo '---
-private: true
+gitignore: true
 ---
-# Private Rule' > .aligntrue/rules/secret.md
+# Gitignored Rule' > .aligntrue/rules/secret.md
 aligntrue sync
 # Expected: Rule synced but marked for gitignore
 ```
 
 **Expected:**
 
-- SSH URLs (`git@`, `ssh://`) auto-detected as private sources
-- Private source rules are auto-gitignored (both source and exports)
+- SSH URLs (`git@`, `ssh://`) auto-detected as gitignore sources
+- Gitignore source rules are auto-added to .gitignore (both source and exports)
 - Auto-sync happens after import (unless `--no-sync`)
-- `--link` with SSH source sets `private: true` in config
-- Frontmatter `private: true` overrides source settings
-- Enhanced tips section shows privacy-aware guidance
+- `--link` with SSH source sets `gitignore: true` in config
+- Frontmatter `gitignore: true` overrides source settings
+- Enhanced tips section shows gitignore-aware guidance
 
 #### File size validation workflow
 
@@ -1365,12 +1571,12 @@ test -f apps/docs/.cursor/rules/web_stack.mdc && echo "PASS: exported to nested 
    - Choose personal rules option (none/local/remote)
    - `aligntrue sync`
 
-3. **Personal remote setup:**
-   - Create private git repository or use existing (e.g., AlignTrue/examples)
-   - Configure remote URL in config.yaml
-   - Sync personal rules from remote
-   - Verify git operations (pull, merge with team rules)
-   - Test with fixtures from `examples/remote-test/personal-rules.md`
+3. **Personal remote backup setup:**
+   - Create private git repository for backup
+   - Configure backup URL in config.yaml under `backup.default`
+   - Push personal rules to backup with `aligntrue backup push`
+   - Verify git operations (push to remote)
+   - Auto-backup during sync when `auto: true`
 
 4. **Team rule changes:**
    - Edit AGENTS.md (team sections)
@@ -1380,10 +1586,10 @@ test -f apps/docs/.cursor/rules/web_stack.mdc && echo "PASS: exported to nested 
    - Other team members pull and sync
 
 5. **Personal rule changes:**
-   - Edit AGENTS.md (personal sections)
+   - Edit `.aligntrue/rules/` (personal rules)
    - `aligntrue sync`
-   - Changes stay local or sync to personal remote
-   - No team approval needed
+   - Changes stay local or backup to remote if configured
+   - No team approval needed for personal sources
 
 6. **Drift detection:**
    - Make unapproved changes
@@ -1449,10 +1655,10 @@ aligntrue drift --gates  # Should still pass (content unchanged)
    - Make edits to Cursor files, sync successfully
    - Verify both file types maintain their content correctly
 
-9. **Personal rules in remote storage:**
-   - Configure personal remote git repository
-   - Modify personal sections and sync
-   - Verify git operations (commit, push, pull)
+9. **Personal rules with remote backup:**
+   - Configure backup in config.yaml
+   - Modify personal rules and sync
+   - Verify backup push operations
 
 ### Team Testing Patterns
 
@@ -1537,7 +1743,7 @@ aligntrue sync
 - Merge conflict scenarios
 - PR workflow testing
 - Git source update workflows
-- Personal remote repository testing
+- Remote backup testing
 
 **Benefits:**
 
@@ -1853,41 +2059,103 @@ aligntrue sync  # Should now pull updates
 
 **Note:** For testing update detection, you need an actual remote repository that changes over time. The AlignTrue/examples repo is stable, so update detection won't trigger unless the upstream repo is modified.
 
-**F. Personal Remote Repository Testing:**
+**F. Remote Backup Testing:**
 
-**STATUS: PENDING DECISION - Test Deferred**
+**STATUS: IMPLEMENTED**
 
-This scenario tests a "personal remote storage" feature that allows team members to store personal rules in a separate private git repository that syncs bidirectionally. This feature is partially stubbed but not fully implemented.
+This scenario tests the remote backup feature that allows users to push their local rules to remote git repositories for backup. This is a unidirectional push (local → remote), distinct from git sources which are pull-only.
 
-**What exists:**
+**Key concepts:**
 
-- Private git sources work (using `aligntrue add git@github.com:user/private-rules`)
-- Rules from SSH URLs are automatically marked as private and gitignored
-- The `aligntrue migrate personal` command exists but the config schema doesn't have the `personal` section
+- **Source** = Pull (consume rules from remote)
+- **Backup** = Push (store your rules to remote)
+- Same URL cannot be both source AND backup (warning emitted)
+- `personal: true` on source = skip team approval + auto-gitignore
+- `gitignore: true` = don't commit rules (renamed from `private`)
 
-**What doesn't exist yet:**
-
-- The `personal.remote` config section for bidirectional sync
-- The `--with-personal-remote` init flag
-- Automatic push/pull of personal rules to/from a remote
-
-**For testing private rules (which IS implemented):**
+**For testing remote backups:**
 
 ```bash
-# Add rules from a private SSH repository (requires SSH authentication)
-aligntrue add git@github.com:your-username/private-rules
+# Create a test directory
+cd /tmp/test-remote-backup
+aligntrue init --mode solo --yes
 
-# This automatically:
-# - Detects SSH URL as private source
-# - Marks source as private: true in config
-# - Adds rules to .gitignore
-# - Syncs rules to agents
+# Create some rules
+mkdir -p .aligntrue/rules/guides
+echo "# TypeScript" > .aligntrue/rules/typescript.md
+echo "# React" > .aligntrue/rules/guides/react.md
 
-# Verify private rules are gitignored
-grep ".aligntrue/rules" .gitignore
+# Set up a local bare repo as backup target
+git init --bare /tmp/backup-repo.git
+
+# Configure backup in config.yaml
+cat >> .aligntrue/config.yaml <<'EOF'
+backup:
+  default:
+    url: /tmp/backup-repo.git
+    branch: main
+    auto: true
+EOF
+
+# Test backup status
+aligntrue backup status
+# Shows: default backup with file assignments
+
+# Test manual push
+aligntrue backup push
+# Pushes all rules to backup repo
+
+# Verify files preserved structure
+git clone /tmp/backup-repo.git /tmp/verify
+ls /tmp/verify/.aligntrue/rules/
+# Should show: typescript.md, guides/react.md
+
+# Test auto-backup during sync
+echo "Updated" >> .aligntrue/rules/typescript.md
+aligntrue sync
+# Should sync to agents AND push to backup
 ```
 
-See [Rule Privacy documentation](https://aligntrue.ai/docs/01-guides/12-rule-privacy) for details on private rules.
+**For testing multiple backup destinations:**
+
+```bash
+# Configure additional backup with include patterns
+cat > .aligntrue/config.yaml <<'EOF'
+backup:
+  default:
+    url: /tmp/all-rules.git
+    auto: true
+  additional:
+    - id: oss-only
+      url: /tmp/oss-rules.git
+      include:
+        - typescript.md
+        - "guides/*.md"
+EOF
+
+aligntrue backup push
+# Files matching include go to oss-only
+# Remaining files go to default
+```
+
+**For testing source/backup conflict:**
+
+```bash
+# Configure same URL as source AND backup
+cat > .aligntrue/config.yaml <<'EOF'
+sources:
+  - type: git
+    url: /tmp/shared-repo.git
+backup:
+  default:
+    url: /tmp/shared-repo.git
+EOF
+
+aligntrue sync
+# Warning: URL configured as both source and backup. Skipping backup.
+```
+
+See [Backup documentation](https://aligntrue.ai/backup) for details.
 
 **Git Testing Best Practices:**
 
@@ -2844,7 +3112,7 @@ Configuration:
 - aligntrue exporters <list|enable|disable|detect|ignore> [options]
 
 Backup & Recovery:
-- aligntrue backup <create|list|restore|cleanup> [options]
+- aligntrue backup <create|list|restore|cleanup|push|status|setup> [options]
 - aligntrue revert [--timestamp <timestamp>] [--yes]
 
 Utilities:
@@ -3396,7 +3664,7 @@ EXECUTION PROTOCOL:
 2. Execute team workflows:
    - Solo → team migration (user-a)
    - Git repository setup and team initialization (user-a pushes, user-b clones)
-   - Personal remote setup (user-a)
+   - Remote backup setup (user-a)
    - Joining existing team via git clone (user-b)
    - Team rule changes with PR workflow (using git branch mode)
    - Personal rule changes (no approval)
@@ -3409,7 +3677,7 @@ EXECUTION PROTOCOL:
    - **C. Merge Conflict Scenarios** - REQUIRED (git merge conflicts and lockfile handling)
    - **D. PR Workflow Testing** - REQUIRED (feature branches, PR simulation, CI integration)
    - **E. Git Source Update Workflows** - REQUIRED (branch/tag checking, approval workflows)
-   - **F. Personal Remote Repository Testing** - REQUIRED (push/pull operations)
+   - **F. Remote Backup Testing** - REQUIRED (push operations, multi-backup, source/backup conflicts)
 4. Execute team-specific new features:
    - Backup creation and restoration in team mode
    - Ignore file management in team transitions
@@ -3449,6 +3717,8 @@ EXECUTION PROTOCOL:
    - aligntrue onboard: Generate checklist, test --ci flag with SARIF input
    - aligntrue plugs set/unset: Test format validation and fill management
    - aligntrue backup cleanup: Test cleanup command and keep_count enforcement
+   - aligntrue backup push: Test remote backup push to configured destinations
+   - aligntrue backup status: Test backup status display with file assignments
 5. Capture all outputs and error messages
 6. Validate error messages include what/why/how
 7. Report findings with severity

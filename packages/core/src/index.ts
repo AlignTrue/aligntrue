@@ -22,7 +22,7 @@ export * from "./privacy/index.js";
 // File system utilities
 export * from "./paths.js";
 
-// Backup and restore
+// Backup and restore (local)
 export { BackupManager } from "./backup/index.js";
 export type {
   BackupMetadata,
@@ -32,6 +32,30 @@ export type {
   RestoreOptions,
   CleanupOptions,
 } from "./backup/index.js";
+
+// Remote backup (push to git repositories)
+export {
+  RemoteBackupManager,
+  createRemoteBackupManager,
+  resolveFileAssignments,
+  getBackupStatus as getRemoteBackupStatus,
+  pushToBackup,
+  getLastBackupInfo,
+  cleanBackupCache,
+  cleanAllBackupCaches,
+} from "./remote-backup/index.js";
+export type {
+  RemoteBackupConfig,
+  RemoteBackupDestination,
+  AdditionalBackupDestination,
+  FileAssignment,
+  ResolutionWarning,
+  FileResolutionResult,
+  BackupPushResult,
+  RemoteBackupResult,
+  RemoteBackupOptions,
+  RemoteBackupStatus,
+} from "./remote-backup/index.js";
 
 // Team mode features
 export * from "./team/index.js";

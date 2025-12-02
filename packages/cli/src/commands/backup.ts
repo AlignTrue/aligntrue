@@ -84,6 +84,10 @@ interface BackupArgs {
 
   // Cleanup subcommand
   legacy?: boolean;
+
+  // Push subcommand
+  dryRun?: boolean;
+  force?: boolean;
 }
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -98,6 +102,16 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Restore specific backup by timestamp (restore subcommand)",
   },
   {
+    flag: "--dry-run",
+    hasValue: false,
+    description: "Preview changes without pushing (push subcommand)",
+  },
+  {
+    flag: "--force",
+    hasValue: false,
+    description: "Force push even if no changes detected (push subcommand)",
+  },
+  {
     flag: "--config",
     hasValue: true,
     description: "Path to config file",
@@ -107,39 +121,53 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 const HELP_TEXT = `
 Usage: aligntrue backup <subcommand> [options]
 
-Manage backups of your .aligntrue/ directory
+Manage local and remote backups of your .aligntrue/ directory
 
-Subcommands:
-  create              Create a manual backup
-  list                List all available backups
-  restore             Restore from a backup (most recent by default)
-  cleanup             Remove old backups based on retention policy
+Local Backup Subcommands:
+  create              Create a manual local backup
+  list                List all available local backups
+  restore             Restore from a local backup (most recent by default)
+  cleanup             Remove old local backups based on retention policy
+
+Remote Backup Subcommands:
+  push                Push rules to remote backup repositories
+  status              Show remote backup configuration and status
+  setup               Interactive setup for remote backup
 
 Options:
   --notes <text>         Add notes to backup (create subcommand)
   --timestamp <id>       Restore specific backup by timestamp (restore subcommand)
+  --dry-run              Preview changes without pushing (push subcommand)
+  --force                Force push even if no changes detected (push subcommand)
   --config <path>        Path to config file
   --help                 Show this help message
 
-Cleanup uses time-based retention from config:
+Local cleanup uses time-based retention from config:
   - retention_days: Remove backups older than N days (default: 30)
   - minimum_keep: Always keep at least N backups (default: 3)
 
+Remote backup pushes rules to git repositories (unidirectional):
+  - .aligntrue/rules/ is the source of truth
+  - Push to one default + multiple additional destinations
+  - Each file can only belong to one backup destination
+
 Examples:
-  # Create a manual backup with notes
+  # Create a manual local backup with notes
   aligntrue backup create --notes "Before major refactor"
 
-  # List all backups
-  aligntrue backup list
+  # Push rules to all configured remote backups
+  aligntrue backup push
 
-  # Restore most recent backup (restores .aligntrue/ and agent files)
-  aligntrue backup restore
+  # Preview remote backup push without changes
+  aligntrue backup push --dry-run
 
-  # Restore specific backup
-  aligntrue backup restore --timestamp 2025-10-29T12-34-56-789
+  # Show remote backup status
+  aligntrue backup status
 
-  # Clean up old backups based on retention policy
-  aligntrue backup cleanup
+  # Set up remote backup interactively
+  aligntrue backup setup
+
+Learn more: https://aligntrue.ai/backup
 `;
 
 export async function backupCommand(argv: string[]): Promise<void> {
@@ -175,6 +203,18 @@ export async function backupCommand(argv: string[]): Promise<void> {
 
       case "cleanup":
         await handleCleanup(cwd, args, argv);
+        break;
+
+      case "push":
+        await handleRemotePush(cwd, args, argv);
+        break;
+
+      case "status":
+        await handleRemoteStatus(cwd);
+        break;
+
+      case "setup":
+        await handleRemoteSetup(cwd);
         break;
 
       default:
@@ -431,4 +471,212 @@ async function handleCleanup(
       throw err;
     },
   );
+}
+
+// ==========================================
+// Remote Backup Subcommands
+// ==========================================
+
+async function handleRemotePush(
+  cwd: string,
+  _args: BackupArgs,
+  argv: string[],
+): Promise<void> {
+  const { loadConfig, RemoteBackupManager } = await import("@aligntrue/core");
+  const config = await loadConfig(undefined, cwd);
+
+  // Parse flags
+  const dryRun = argv.includes("--dry-run");
+  const force = argv.includes("--force");
+
+  if (!config.remote_backup) {
+    clack.log.warn("No remote backup configured");
+    clack.log.info("Run 'aligntrue backup setup' to configure remote backup");
+    clack.log.info("Or add remote_backup section to .aligntrue/config.yaml");
+    return;
+  }
+
+  const rulesDir = join(cwd, ".aligntrue", "rules");
+  const backupManager = new RemoteBackupManager(config.remote_backup, {
+    cwd,
+    rulesDir,
+  });
+
+  // Get source URLs for conflict detection
+  const sourceUrls =
+    config.sources
+      ?.filter((s) => s.type === "git" && s.url)
+      .map((s) => s.url!)
+      .filter(Boolean) ?? [];
+
+  if (dryRun) {
+    clack.log.info("[DRY RUN] Would push to remote backup");
+  }
+
+  await withSpinner(
+    dryRun ? "Previewing remote backup..." : "Pushing to remote backup...",
+    async () => {
+      const result = await backupManager.push({
+        cwd,
+        sourceUrls,
+        dryRun,
+        force,
+        onProgress: (msg) => clack.log.step(msg),
+      });
+
+      // Show results
+      for (const pushResult of result.results) {
+        if (pushResult.skipped) {
+          clack.log.info(
+            `${pushResult.backupId}: Skipped (${pushResult.skipReason})`,
+          );
+        } else if (pushResult.success) {
+          clack.log.success(
+            `${pushResult.backupId}: Pushed ${pushResult.filesCount} files${pushResult.commitSha ? ` (${pushResult.commitSha.slice(0, 7)})` : ""}`,
+          );
+        } else {
+          clack.log.error(
+            `${pushResult.backupId}: Failed - ${pushResult.error}`,
+          );
+        }
+      }
+
+      // Show warnings
+      for (const warning of result.warnings) {
+        clack.log.warn(warning.message);
+      }
+
+      if (result.success && result.totalFiles > 0) {
+        clack.log.success(`Total: ${result.totalFiles} files backed up`);
+      }
+    },
+    dryRun ? "Preview complete" : "Push complete",
+    (err) => {
+      clack.log.error(`Push failed: ${err.message}`);
+      throw err;
+    },
+  );
+}
+
+async function handleRemoteStatus(cwd: string): Promise<void> {
+  const { loadConfig, RemoteBackupManager } = await import("@aligntrue/core");
+  const config = await loadConfig(undefined, cwd);
+
+  if (!config.remote_backup) {
+    clack.log.warn("No remote backup configured");
+    clack.log.info("Run 'aligntrue backup setup' to configure remote backup");
+    return;
+  }
+
+  const rulesDir = join(cwd, ".aligntrue", "rules");
+  const backupManager = new RemoteBackupManager(config.remote_backup, {
+    cwd,
+    rulesDir,
+  });
+
+  // Get source URLs for conflict detection
+  const sourceUrls =
+    config.sources
+      ?.filter((s) => s.type === "git" && s.url)
+      .map((s) => s.url!)
+      .filter(Boolean) ?? [];
+
+  const summary = await backupManager.formatStatusSummary(sourceUrls);
+  console.log(summary);
+}
+
+async function handleRemoteSetup(cwd: string): Promise<void> {
+  const { loadConfig, saveMinimalConfig, getAlignTruePaths } = await import(
+    "@aligntrue/core"
+  );
+  const paths = getAlignTruePaths(cwd);
+  const config = await loadConfig(paths.config);
+
+  clack.intro("Remote Backup Setup");
+
+  if (config.remote_backup?.default) {
+    const current = config.remote_backup.default.url;
+    clack.log.info(`Current remote backup: ${current}`);
+
+    const change = await clack.confirm({
+      message: "Do you want to change the remote backup configuration?",
+      initialValue: false,
+    });
+
+    if (clack.isCancel(change) || !change) {
+      clack.outro("Setup cancelled");
+      return;
+    }
+  }
+
+  // Get repository URL
+  const url = await clack.text({
+    message: "Enter remote repository URL:",
+    placeholder: "git@github.com:username/rules-backup.git",
+    validate: (value) => {
+      if (!value) return "URL is required";
+      if (!value.startsWith("https://") && !value.startsWith("git@")) {
+        return "URL must start with https:// or git@";
+      }
+      return undefined;
+    },
+  });
+
+  if (clack.isCancel(url)) {
+    clack.outro("Setup cancelled");
+    return;
+  }
+
+  // Get branch
+  const branch = await clack.text({
+    message: "Branch name:",
+    placeholder: "main",
+    initialValue: "main",
+  });
+
+  if (clack.isCancel(branch)) {
+    clack.outro("Setup cancelled");
+    return;
+  }
+
+  // Get auto setting
+  const auto = await clack.confirm({
+    message: "Push automatically on sync?",
+    initialValue: true,
+  });
+
+  if (clack.isCancel(auto)) {
+    clack.outro("Setup cancelled");
+    return;
+  }
+
+  // Update config
+  config.remote_backup = {
+    default: {
+      url: url as string,
+      branch: (branch as string) || "main",
+      auto: auto as boolean,
+    },
+  };
+
+  await saveMinimalConfig(config, paths.config);
+
+  clack.log.success("Remote backup configured");
+  clack.log.info(`Repository: ${url}`);
+  clack.log.info(`Branch: ${branch || "main"}`);
+  clack.log.info(`Auto-push: ${auto ? "enabled" : "disabled"}`);
+
+  const pushNow = await clack.confirm({
+    message: "Push to remote backup now?",
+    initialValue: true,
+  });
+
+  if (clack.isCancel(pushNow) || !pushNow) {
+    clack.outro("Setup complete. Run 'aligntrue backup push' to push.");
+    return;
+  }
+
+  // Push immediately
+  await handleRemotePush(cwd, {}, []);
+  clack.outro("Setup and push complete");
 }

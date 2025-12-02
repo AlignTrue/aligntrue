@@ -33,10 +33,45 @@ export interface ExportConfig {
   max_hint_tokens?: number;
 }
 
-export interface BackupConfig {
+/**
+ * Local backup configuration (for snapshot backups)
+ */
+export interface LocalBackupConfig {
   keep_count?: number; // Deprecated: use retention_days instead
   retention_days?: number; // Age-based retention (0 = manual only, default: 30)
   minimum_keep?: number; // Safety floor: always keep N most recent (default: 3)
+}
+
+/**
+ * Remote backup destination configuration
+ */
+export interface RemoteBackupDestination {
+  url: string; // Git repository URL
+  branch?: string; // Branch to push to (default: main)
+  path?: string; // Path prefix in backup repo (default: preserves structure)
+  auto?: boolean; // Push on sync (default: true)
+}
+
+/**
+ * Additional backup destination with explicit file includes
+ */
+export interface AdditionalBackupDestination extends RemoteBackupDestination {
+  id: string; // Unique identifier for this backup
+  include: string[]; // Glob patterns for files to include
+}
+
+/**
+ * Remote backup configuration for pushing rules to git repositories
+ */
+export interface RemoteBackupConfig {
+  /**
+   * Default backup destination - gets all files not assigned to additional backups
+   */
+  default?: RemoteBackupDestination;
+  /**
+   * Additional backup destinations with explicit file assignments
+   */
+  additional?: AdditionalBackupDestination[];
 }
 
 export interface DetectionConfig {
@@ -101,9 +136,19 @@ export interface AlignTrueConfig {
     version?: string;
     include?: string[];
     /**
-     * Mark source as private (rules not committed to git)
+     * Mark source as personal (skip team approval in team mode)
+     * When true, updates from this source don't require team approval
+     * Auto-implies gitignore: true unless explicitly set to false
+     */
+    personal?: boolean;
+    /**
+     * Mark source as gitignored (rules not committed to git)
      * When true, both source files and exported versions are auto-gitignored
-     * Auto-set to true for SSH URLs (git@, ssh://)
+     * Auto-set to true for SSH URLs (git@, ssh://) or when personal: true
+     */
+    gitignore?: boolean;
+    /**
+     * @deprecated Use `gitignore` instead. Will be removed in next major version.
      */
     private?: boolean;
   }>;
@@ -121,7 +166,12 @@ export interface AlignTrueConfig {
   };
   performance?: PerformanceConfig;
   export?: ExportConfig;
-  backup?: BackupConfig;
+  backup?: LocalBackupConfig;
+  /**
+   * Remote backup configuration for pushing rules to git repositories
+   * Unidirectional: local .aligntrue/rules/ -> remote repos
+   */
+  remote_backup?: RemoteBackupConfig;
   detection?: DetectionConfig;
   overlays?: import("../overlays/types.js").OverlayConfig;
   plugs?: {
