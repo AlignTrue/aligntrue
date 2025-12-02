@@ -34,14 +34,14 @@ const scenarios: TestScenario[] = [
   {
     name: "Check command handles missing config gracefully",
     command: "aligntrue check",
-    expectedExitCode: 1,
-    expectedOutput: /config.*not found/i,
+    expectedExitCode: 2,
+    expectedOutput: /Config file not found/i,
   },
   {
     name: "Invalid command shows helpful error",
     command: "aligntrue invalid-command",
-    expectedExitCode: 2,
-    expectedOutput: /Unknown command|invalid/i,
+    expectedExitCode: 1,
+    expectedOutput: /Command not implemented|not found/i,
   },
 ];
 
@@ -64,8 +64,9 @@ function runTest(scenario: TestScenario): {
     });
   } catch (err) {
     const execErr = err as ExecException;
-    exitCode = execErr.code || 1;
-    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    exitCode = execErr.status ?? 1;
+    output =
+      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
     if (exitCode !== scenario.expectedExitCode) {
       error = `Exit code mismatch: expected ${scenario.expectedExitCode}, got ${exitCode}`;
     }

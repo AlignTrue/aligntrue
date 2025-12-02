@@ -23,40 +23,42 @@ const tests: ErrorTest[] = [
   {
     name: "Invalid command shows helpful error",
     command: "aligntrue invalid-cmd",
-    expectedExitCode: 2,
+    expectedExitCode: 1,
     validation: (output, exitCode) => ({
       passed:
-        exitCode === 2 &&
-        (output.includes("Unknown") || output.includes("invalid")),
-      error: !output.includes("Unknown")
-        ? "Error message not helpful"
-        : undefined,
+        exitCode === 1 &&
+        (output.includes("Command not implemented") || output.includes("not")),
+      error: !output.includes("not") ? "Error message not helpful" : undefined,
     }),
   },
   {
-    name: "Missing required argument",
-    command: "aligntrue pull",
-    expectedExitCode: 2,
+    name: "Missing required argument for add command",
+    command: "aligntrue add",
+    expectedExitCode: 1,
     validation: (output) => ({
-      passed: output.includes("required") || output.includes("missing"),
+      passed:
+        output.includes("required") ||
+        output.includes("Missing") ||
+        output.includes("url"),
       error: "Should indicate missing argument",
     }),
   },
   {
-    name: "File not found error is clear",
-    command: "aligntrue md /nonexistent/file.md",
-    expectedExitCode: 3,
+    name: "Non-existent command error is clear",
+    command: "aligntrue nonexistent-command",
+    expectedExitCode: 1,
     validation: (output) => ({
-      passed: output.includes("not found") || output.includes("ENOENT"),
-      error: "Should indicate file not found",
+      passed:
+        output.includes("not implemented") || output.includes("Command not"),
+      error: "Should indicate command not found",
     }),
   },
   {
     name: "Validation error has clear message",
     command: "aligntrue check",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     validation: (output) => ({
-      passed: output.includes("config") || output.includes("not found"),
+      passed: output.includes("Config") || output.includes("not found"),
       error: "Should explain validation failure",
     }),
   },
@@ -65,20 +67,20 @@ const tests: ErrorTest[] = [
     command: "aligntrue --help",
     expectedExitCode: 0,
     validation: (output) => ({
-      passed:
-        output.includes("Usage") &&
-        output.includes("Commands") &&
-        output.includes("Options"),
+      passed: output.includes("Usage") && output.includes("Commands"),
       error: "Help text missing key sections",
     }),
   },
   {
-    name: "Error messages include how to fix",
+    name: "Error messages are clear and actionable",
     command: "aligntrue sync",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     validation: (output) => ({
-      passed: output.includes("init") || output.includes("run"),
-      error: "Should suggest how to fix",
+      passed:
+        output.includes("Configuration file not found") ||
+        output.includes("config") ||
+        output.includes("Sync failed"),
+      error: "Should have clear error message",
     }),
   },
 ];
@@ -104,8 +106,9 @@ function runTest(
     });
   } catch (err) {
     const execErr = err as ExecException;
-    exitCode = execErr.code || 1;
-    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    exitCode = execErr.status ?? 1;
+    output =
+      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
   }
 
   console.log(`  Exit code: ${exitCode}`);

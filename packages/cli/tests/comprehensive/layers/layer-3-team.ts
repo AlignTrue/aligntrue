@@ -75,7 +75,7 @@ function runScenario(
       console.log(`  Exit code: 0`);
     } catch (err) {
       const execErr = err as ExecException;
-      const exitCode = execErr.code || 1;
+      const exitCode = execErr.status ?? 1;
       console.log(`  Exit code: ${exitCode}`);
       // Some commands expected to fail (like drift detection)
       if (!command.includes("drift")) {

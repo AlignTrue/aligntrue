@@ -61,7 +61,7 @@ const workflows: Workflow[] = [
     },
   },
   {
-    name: "Edit AGENTS.md and sync",
+    name: "Edit rules and sync to agents",
     steps: [
       {
         description: "Initialize AlignTrue",
@@ -69,25 +69,27 @@ const workflows: Workflow[] = [
         expectedExitCode: 0,
       },
       {
-        description: "Edit AGENTS.md",
-        command: 'echo "# Test Rule\\n\\nThis is a test." >> AGENTS.md',
+        description: "Add a new rule file",
+        command:
+          'echo "# Test Rule\\n\\nThis is a test rule content." > .aligntrue/rules/test-rule.md',
         expectedExitCode: 0,
       },
       {
-        description: "Sync changes",
+        description: "Sync changes to agents",
         command: "aligntrue sync",
         expectedExitCode: 0,
       },
     ],
     validation: (workspace) => {
-      const rulesPath = join(workspace, ".aligntrue", "rules");
-      if (!existsSync(rulesPath)) {
-        return { passed: false, error: "rules directory not updated" };
+      const agentsPath = join(workspace, "AGENTS.md");
+      if (!existsSync(agentsPath)) {
+        return { passed: false, error: "AGENTS.md not found" };
       }
 
-      const content = readFileSync(rulesPath, "utf-8");
-      if (!content.includes("Test Rule")) {
-        return { passed: false, error: "Changes not synced to IR" };
+      // Verify the new rule appears in AGENTS.md
+      const content = readFileSync(agentsPath, "utf-8");
+      if (!content.includes("Test Rule") && !content.includes("test rule")) {
+        return { passed: false, error: "New rule not synced to AGENTS.md" };
       }
 
       return { passed: true };
@@ -219,8 +221,9 @@ function runWorkflow(
       });
     } catch (err) {
       const execErr = err as ExecException;
-      exitCode = execErr.code || 1;
-      output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+      exitCode = execErr.status ?? 1;
+      output =
+        (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
     }
 
     const passed = exitCode === step.expectedExitCode;

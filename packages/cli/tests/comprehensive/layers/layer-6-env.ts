@@ -68,7 +68,8 @@ function runTest(
     });
   } catch (err) {
     const execErr = err as ExecException;
-    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    output =
+      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
   }
 
   const validation = test.validation(output);

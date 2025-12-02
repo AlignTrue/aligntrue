@@ -55,7 +55,7 @@ const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");
 const tsxLoaderPath = resolve(
   workspaceRoot,
-  "node_modules/tsx/dist/esm/index.mjs",
+  "node_modules/tsx/dist/loader.mjs",
 );
 
 console.log(`\n${"=".repeat(60)}`);
@@ -158,7 +158,7 @@ async function runLayer(layer: number): Promise<LayerResult> {
       name: layerName,
       passed: false,
       duration,
-      error: `Exit code: ${execErr.status || 1}`,
+      error: `Exit code: ${execErr.code || 1}`,
       output: errorOutput,
     };
   }
