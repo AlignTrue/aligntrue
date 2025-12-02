@@ -127,7 +127,8 @@ try {
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(`✗ Layer ${layer} failed (${Math.round(duration / 1000)}s)`);
-  console.log(`Exit code: ${execErr.code || 1}`);
+  const exitCode = (execErr as ExecException & { status?: number }).status ?? 1;
+  console.log(`Exit code: ${exitCode}`);
   console.log("=".repeat(60));
   console.log(`\nTest directory: ${workspace}`);
   console.log(`(Kept for debugging. Delete with: rm -rf ${testBaseDir})\n`);

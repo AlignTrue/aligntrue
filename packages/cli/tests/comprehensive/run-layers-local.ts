@@ -148,17 +148,17 @@ async function runLayer(layer: number): Promise<LayerResult> {
     const errorOutput =
       execErr.stdout?.toString() || execErr.stderr?.toString() || "";
 
+    const exitCode =
+      (execErr as ExecException & { status?: number }).status ?? 1;
     console.error(`✗ Layer ${layer} failed (${duration}ms)`);
-    console.error(
-      `Exit code: ${execErr.code || 1}\n${errorOutput.slice(0, 500)}\n`,
-    );
+    console.error(`Exit code: ${exitCode}\n${errorOutput.slice(0, 500)}\n`);
 
     return {
       layer,
       name: layerName,
       passed: false,
       duration,
-      error: `Exit code: ${execErr.code || 1}`,
+      error: `Exit code: ${exitCode}`,
       output: errorOutput,
     };
   }
