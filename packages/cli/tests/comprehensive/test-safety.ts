@@ -70,10 +70,12 @@ export function validateTestEnvironment(): TestEnvironment {
     );
   }
 
-  // Verify test workspace is in /tmp/
-  if (!testWorkspace.includes("/tmp/")) {
+  // Verify test workspace is in a temporary directory (handles /tmp/ on Linux and /var/folders/ on macOS)
+  const isInTempDir =
+    testWorkspace.includes("/tmp/") || testWorkspace.includes("/var/folders/");
+  if (!isInTempDir) {
     throw new Error(
-      `CRITICAL: Test workspace must be in /tmp/, got: ${testWorkspace}`,
+      `CRITICAL: Test workspace must be in a temporary directory (/tmp/ or /var/folders/), got: ${testWorkspace}`,
     );
   }
 

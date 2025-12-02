@@ -46,6 +46,10 @@ const currentDir = new URL(import.meta.url).pathname;
 const cliDir = resolve(currentDir, "../../../");
 const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");
+const tsxLoaderPath = resolve(
+  workspaceRoot,
+  "node_modules/tsx/dist/esm/index.mjs",
+);
 
 // Verify CLI is built
 if (!existsSync(cliPath)) {
@@ -99,12 +103,12 @@ const env = {
   LOG_FILE: logFile,
 };
 
-console.log(`Executing: node --import tsx ${layerFile}\n`);
+console.log(`Executing: node --import ${tsxLoaderPath} ${layerFile}\n`);
 
 const startTime = Date.now();
 
 try {
-  execSync(`node --import tsx ${layerFile}`, {
+  execSync(`node --import ${tsxLoaderPath} ${layerFile}`, {
     cwd: workspace,
     env,
     stdio: "inherit",
