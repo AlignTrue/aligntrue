@@ -219,13 +219,14 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
   /**
    * Git mode defaults differ by mode
    *
-   * Solo mode: "ignore" (don't commit .aligntrue files by default)
-   * - Rationale: Solo devs often experiment locally, don't need version control
-   * - Can manually commit if desired
+   * Solo/Team mode: "ignore" (exported agent files added to .gitignore by default)
+   * - Rationale: Exported files are generated artifacts; source files in
+   *   .aligntrue/rules/ are the source of truth and should be committed
+   * - Agent files can be regenerated with `aligntrue sync`
    *
-   * Team/enterprise mode: "commit" (commit .aligntrue files automatically)
-   * - Rationale: Teams need shared rules in version control
-   * - Enables collaboration and drift detection
+   * Enterprise mode: "commit" (exported agent files committed automatically)
+   * - Rationale: Some enterprises require all generated files in version control
+   * - Enables audit trails and compliance requirements
    *
    * To override: Set git.mode in config
    */

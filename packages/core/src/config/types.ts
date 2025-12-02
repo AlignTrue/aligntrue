@@ -100,6 +100,12 @@ export interface AlignTrueConfig {
     id?: string;
     version?: string;
     include?: string[];
+    /**
+     * Mark source as private (rules not committed to git)
+     * When true, both source files and exported versions are auto-gitignored
+     * Auto-set to true for SSH URLs (git@, ssh://)
+     */
+    private?: boolean;
   }>;
   exporters?: string[] | Record<string, ExporterConfig>;
   scopes?: Array<{

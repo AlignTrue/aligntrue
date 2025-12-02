@@ -66,6 +66,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Non-interactive mode (keep both on conflicts)",
   },
   {
+    flag: "--no-sync",
+    hasValue: false,
+    description: "Skip auto-sync after import (default: sync automatically)",
+  },
+  {
     flag: "--config",
     alias: "-c",
     hasValue: true,
@@ -78,6 +83,22 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Show this help message",
   },
 ];
+
+/**
+ * Detect if a URL requires SSH authentication (private source)
+ * SSH URLs indicate authenticated/private access
+ */
+function isPrivateSource(url: string): boolean {
+  // Git SSH URLs (git@github.com:user/repo)
+  if (url.startsWith("git@")) {
+    return true;
+  }
+  // SSH protocol URLs (ssh://git@github.com/user/repo)
+  if (url.startsWith("ssh://")) {
+    return true;
+  }
+  return false;
+}
 
 /**
  * Detect source type from URL
@@ -180,12 +201,14 @@ export async function add(args: string[]): Promise<void> {
   const gitPath = flags["--path"] as string | undefined;
   const linkFlag = (flags["--link"] as boolean | undefined) || false;
   const nonInteractive = (flags["--yes"] as boolean | undefined) || !isTTY();
+  const noSync = (flags["--no-sync"] as boolean | undefined) || false;
 
   // Parse URL for any query parameters
   const { baseUrl } = parseAlignUrl(rawUrl);
 
-  // Detect source type
+  // Detect source type and privacy
   const sourceType = detectSourceType(baseUrl);
+  const privateSource = isPrivateSource(baseUrl);
 
   // Record telemetry
   await recordEvent({
@@ -204,6 +227,7 @@ export async function add(args: string[]): Promise<void> {
       gitRef,
       gitPath,
       configPath,
+      privateSource,
       spinner,
     });
   } else {
@@ -216,6 +240,8 @@ export async function add(args: string[]): Promise<void> {
       paths,
       configPath,
       nonInteractive,
+      noSync,
+      privateSource,
       spinner,
     });
   }
@@ -230,9 +256,18 @@ async function addLinkedSource(options: {
   gitRef?: string | undefined;
   gitPath?: string | undefined;
   configPath: string;
+  privateSource: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
-  const { baseUrl, sourceType, gitRef, gitPath, configPath, spinner } = options;
+  const {
+    baseUrl,
+    sourceType,
+    gitRef,
+    gitPath,
+    configPath,
+    privateSource,
+    spinner,
+  } = options;
 
   spinner.start("Adding linked source...");
 
@@ -288,7 +323,13 @@ async function addLinkedSource(options: {
     }
 
     // Build source configuration
-    let newSource: { type: string; url?: string; path?: string; ref?: string };
+    let newSource: {
+      type: string;
+      url?: string;
+      path?: string;
+      ref?: string;
+      private?: boolean;
+    };
 
     if (sourceType === "git") {
       newSource = {
@@ -300,6 +341,10 @@ async function addLinkedSource(options: {
       }
       if (gitPath) {
         newSource.path = gitPath;
+      }
+      // Auto-set private for SSH sources
+      if (privateSource) {
+        newSource.private = true;
       }
     } else if (sourceType === "url") {
       newSource = {
@@ -321,6 +366,15 @@ async function addLinkedSource(options: {
     await saveConfig(config, configPath);
 
     spinner.stop("Source linked");
+
+    // Show private source notice
+    if (privateSource && isTTY()) {
+      clack.log.warn(
+        "Private source detected (SSH authentication)\n" +
+          "  Source marked as private in config.\n" +
+          "  Rules will be auto-gitignored on sync.",
+      );
+    }
 
     // Consolidated outro
     const sourceDesc =
@@ -362,10 +416,21 @@ async function copyRulesToLocal(options: {
   paths: ReturnType<typeof getAlignTruePaths>;
   configPath: string;
   nonInteractive: boolean;
+  noSync: boolean;
+  privateSource: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
-  const { source, gitRef, cwd, paths, configPath, nonInteractive, spinner } =
-    options;
+  const {
+    source,
+    gitRef,
+    cwd,
+    paths,
+    configPath,
+    nonInteractive,
+    noSync,
+    privateSource,
+    spinner,
+  } = options;
 
   spinner.start(`Importing rules from ${source}...`);
 
@@ -534,13 +599,75 @@ async function copyRulesToLocal(options: {
     const fullPaths = createdFiles.map((f) => `.aligntrue/rules/${f}`);
     formatCreatedFiles(fullPaths, { nonInteractive: !isTTY() });
 
-    // Show removal hint
-    const removalHint =
-      "To remove these rules: delete the files and run 'aligntrue sync'";
-    if (isTTY()) {
-      clack.outro(removalHint);
+    // Handle private source: auto-gitignore the source files
+    if (privateSource) {
+      if (isTTY()) {
+        clack.log.warn(
+          "Private source detected (SSH authentication)\n" +
+            "  Rules added to .gitignore automatically.",
+        );
+      } else {
+        console.log("\nPrivate source detected - rules added to .gitignore");
+      }
+
+      // Add source files to gitignore
+      try {
+        const { GitIntegration } = await import("@aligntrue/core");
+        const gitIntegration = new GitIntegration();
+        await gitIntegration.addPrivateRulesToGitignore(cwd, fullPaths);
+      } catch {
+        // Silent failure on gitignore update - not critical
+        if (isTTY()) {
+          clack.log.warn(
+            "Failed to auto-update .gitignore. Update manually if needed.",
+          );
+        }
+      }
+    }
+
+    // Auto-sync to export rules to agents (unless --no-sync)
+    let syncPerformed = false;
+    if (!noSync) {
+      try {
+        if (isTTY()) {
+          clack.log.step("Syncing rules to agents...");
+        }
+        const { sync } = await import("./sync/index.js");
+        await sync(["--quiet"]);
+        syncPerformed = true;
+        if (isTTY()) {
+          clack.log.success("Synced to agents");
+        }
+      } catch {
+        // Sync failure is not critical - rules are still imported
+        if (isTTY()) {
+          clack.log.warn("Auto-sync failed. Run 'aligntrue sync' manually.");
+        }
+      }
+    }
+
+    // Build consolidated tips section
+    const tips: string[] = [];
+
+    if (privateSource) {
+      tips.push("To commit these rules: remove from .gitignore");
     } else {
-      console.log("\n" + removalHint);
+      tips.push("To keep private: add '.aligntrue/rules/' to .gitignore");
+    }
+
+    tips.push("To remove: delete the files and run 'aligntrue sync'");
+
+    if (!syncPerformed) {
+      tips.push("To apply to agents: run 'aligntrue sync'");
+    }
+
+    // Show tips
+    if (isTTY()) {
+      clack.note(tips.map((t) => `• ${t}`).join("\n"), "Tips");
+      clack.outro("Done");
+    } else {
+      console.log("\nTips:");
+      tips.forEach((t) => console.log(`  • ${t}`));
     }
   } catch (error) {
     spinner.stop("Import failed", 1);

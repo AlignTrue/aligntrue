@@ -10,5 +10,6 @@
   "08-managing-sources": "Managing rule sources",
   "09-safety-best-practices": "Safety best practices",
   "10-ci-cd-integration": "CI/CD integration",
-  "11-adding-rules": "Adding rules"
+  "11-adding-rules": "Adding rules",
+  "12-rule-privacy": "Rule privacy"
 }

@@ -274,6 +274,41 @@ export class GitIntegration {
   }
 
   /**
+   * Add private rules to .gitignore with separate managed section
+   *
+   * @param workspaceRoot - Workspace root directory
+   * @param files - Rule files to add (source paths in .aligntrue/rules/)
+   */
+  async addPrivateRulesToGitignore(
+    workspaceRoot: string,
+    files: string[],
+  ): Promise<void> {
+    const gitignorePath = join(workspaceRoot, ".gitignore");
+    const marker = "# START AlignTrue Private Rules";
+    const endMarker = "# END AlignTrue Private Rules";
+
+    let content = "";
+    try {
+      content = readFileSync(gitignorePath, "utf-8");
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code !== "ENOENT"
+      ) {
+        throw error;
+      }
+      // File doesn't exist, content remains ""
+    }
+
+    // Normalize paths to relative
+    const relativePaths = this.normalizePathsForGitignore(workspaceRoot, files);
+
+    content = this.addManagedSection(content, marker, endMarker, relativePaths);
+    writeFileSync(gitignorePath, content, "utf-8");
+  }
+
+  /**
    * Add or update managed section in .gitignore
    */
   private addManagedSection(
@@ -355,6 +390,7 @@ export class GitIntegration {
    * - Converts absolute paths within workspace to relative
    * - Normalizes backslashes to forward slashes
    * - Handles edge case where absolute path shares prefix but is outside workspace
+   * - Removes duplicate path segments (e.g., .cursor/rules/.cursor/rules -> .cursor/rules)
    */
   private normalizePathsForGitignore(
     workspaceRoot: string,
@@ -362,19 +398,47 @@ export class GitIntegration {
   ): string[] {
     const { relative, isAbsolute } = require("path");
     return files.map((f) => {
+      let result: string;
+
       // Only convert absolute paths; relative paths just need slash normalization
       if (isAbsolute(f)) {
         const rel = relative(workspaceRoot, f);
         // If relative path doesn't escape workspace (no leading ..) and isn't absolute,
         // it's truly within workspace - use the relative version
         if (!rel.startsWith("..") && !isAbsolute(rel)) {
-          return rel.replace(/\\/g, "/");
+          result = rel.replace(/\\/g, "/");
+        } else {
+          // Absolute path outside workspace - keep as-is but normalize slashes
+          result = f.replace(/\\/g, "/");
         }
-        // Absolute path outside workspace - keep as-is but normalize slashes
-        return f.replace(/\\/g, "/");
+      } else {
+        // Already relative, just normalize slashes
+        result = f.replace(/\\/g, "/");
       }
-      // Already relative, just normalize slashes
-      return f.replace(/\\/g, "/");
+
+      // Fix duplicate path segments (e.g., .cursor/rules/.cursor/rules/file.mdc)
+      // This can happen due to path construction bugs
+      const segments = result.split("/");
+      const deduped: string[] = [];
+      for (let i = 0; i < segments.length; i++) {
+        // Check if this segment and the next few segments duplicate earlier ones
+        const segment = segments[i];
+        if (segment === undefined) continue;
+
+        // Skip if this creates a duplicate path like ".cursor/rules/.cursor"
+        if (
+          i > 0 &&
+          deduped.length >= 2 &&
+          segment === deduped[deduped.length - 2] &&
+          segments[i + 1] === deduped[deduped.length - 1]
+        ) {
+          // Skip this segment - it's starting a duplicate sequence
+          continue;
+        }
+        deduped.push(segment);
+      }
+
+      return deduped.join("/");
     });
   }
 
