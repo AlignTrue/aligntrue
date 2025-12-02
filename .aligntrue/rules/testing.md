@@ -140,17 +140,17 @@ If removing the test would not increase real bug risk, remove it.
 ### Authoritative flow
 
 ```
-User files (AGENTS.md, .cursor/*.mdc, etc)
-  → IR: .aligntrue/rules (internal, generated)
-  → Agent exports: .cursor/*.mdc and others
+Source: .aligntrue/rules/*.md (user-editable, canonical)
+  → IR: in-memory representation (internal, never written to disk)
+  → Agent exports: .cursor/*.mdc, AGENTS.md, etc (read-only, generated)
 ```
 
 ### Rules
 
 - Test through public surfaces and exports
 - Do not assert internal IR layout unless it is a documented contract
-- Accept that agent files are exports, not primary sources
-- Sync overwriting agent files is expected unless `--accept-agent` is involved
+- Agent files are read-only exports; `.aligntrue/rules/*.md` is the source of truth
+- Sync overwriting agent files is expected behavior
 
 ---
 
