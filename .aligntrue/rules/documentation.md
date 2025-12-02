@@ -1,10 +1,7 @@
 ---
 description: Documentation standards
-alwaysApply: true
-title: documentation.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 4d360a53ac1bda23c5fb8e36d202bb78fc309eccb8905c07412f45501154b479
+apply_to: alwaysOn
+content_hash: 21c5b2c0ab3214028f60e779abfccd4c52734bcd7b2664cd80df4fc20f961884
 ---
 
 # Documentation standards
@@ -275,7 +272,6 @@ Each page must have:
 
 ```yaml
 ---
-title: Page title
 description: One line description
 ---
 ```

@@ -1,9 +1,7 @@
 ---
 description: Web stack guide for Nextra documentation site (auto-applies in apps/docs/)
-title: web_stack.mdc
-source: apps/docs/.cursor/rules
-source_added: 2025-12-02
-content_hash: a353fd15bac9cca1083f958d2937d0d25e649bb3009053a0e4235fb837307f18
+scope: apps/docs
+content_hash: ee9820763d93577738484fa5ae3df06e24e45bc9b6ebea607ff8e78043789e23
 ---
 
 # Web stack guide
@@ -219,7 +217,6 @@ Every page:
 
 ```markdown
 ---
-title: Getting started
 description: Quick intro to AlignTrue
 ---
 

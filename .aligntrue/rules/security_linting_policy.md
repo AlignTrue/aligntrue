@@ -1,10 +1,13 @@
 ---
-globs: scripts/**/*.js,scripts/**/*.mjs,packages/**/*.ts,packages/**/*.tsx,apps/**/*.ts,apps/**/*.tsx
-alwaysApply: false
-title: security_linting_policy.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 922d04c626760eb83b228ff7deb567e6f5b70db66ca368b87d1581711a2717ce
+description: Security linting policy for scripts and packages
+globs:
+  - scripts/**/*.js
+  - scripts/**/*.mjs
+  - packages/**/*.ts
+  - packages/**/*.tsx
+  - apps/**/*.ts
+  - apps/**/*.tsx
+content_hash: 92c4cfe00c8c351067b76178d6547e4cd14d60c5c79aa44cc22f4820a33f7b7b
 ---
 
 # Security Linting Policy

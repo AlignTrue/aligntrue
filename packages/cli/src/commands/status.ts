@@ -10,6 +10,7 @@ import {
   loadConfig,
   type AlignTrueConfig,
   getExporterNames,
+  getImportHistory,
 } from "@aligntrue/core";
 import { resolveConfigPath } from "../utils/path-resolvers.js";
 import { getLastSyncTimestamp } from "@aligntrue/core/sync/tracking";
@@ -49,6 +50,12 @@ interface ExporterStatus {
   detected: boolean;
 }
 
+interface RuleInfo {
+  filename: string;
+  importedFrom: string | undefined;
+  importedAt: string | undefined;
+}
+
 interface StatusSummary {
   mode: AlignTrueConfig["mode"];
   configPath: string;
@@ -68,7 +75,7 @@ interface StatusSummary {
   rules: {
     directory: string;
     count: number;
-    files: string[];
+    files: RuleInfo[];
   };
   lockfile: {
     enabled: boolean;
@@ -202,11 +209,20 @@ function buildStatusSummary(
   // Count rule files in .aligntrue/rules/ (recursively)
   const rulesDir = resolve(cwd, ".aligntrue/rules");
   let rulesCount = 0;
-  let ruleFiles: string[] = [];
+  let ruleFiles: RuleInfo[] = [];
   if (existsSync(rulesDir)) {
     try {
-      ruleFiles = listMarkdownFilesRecursively(rulesDir);
-      rulesCount = ruleFiles.length;
+      const filenames = listMarkdownFilesRecursively(rulesDir);
+      rulesCount = filenames.length;
+      // Enrich with import history
+      ruleFiles = filenames.map((filename) => {
+        const importEvent = getImportHistory(cwd, filename);
+        return {
+          filename,
+          importedFrom: importEvent?.from,
+          importedAt: importEvent?.ts,
+        };
+      });
     } catch {
       // Ignore errors, just show 0
     }
@@ -279,13 +295,12 @@ function renderStatus(summary: StatusSummary): void {
 
   console.log("\nRules:");
   console.log(`  Directory: ${summary.rules.directory}`);
+  console.log(`  Files: ${summary.rules.count} .md file(s)`);
   if (summary.rules.files.length > 0) {
-    console.log(`  Files: ${summary.rules.count} .md file(s)`);
-    for (const file of summary.rules.files) {
-      console.log(`    - ${file}`);
+    for (const rule of summary.rules.files) {
+      const importInfo = formatImportInfo(rule);
+      console.log(`    - ${rule.filename}${importInfo}`);
     }
-  } else {
-    console.log(`  Files: ${summary.rules.count} .md file(s)`);
   }
 
   console.log("\nLockfile:");
@@ -308,6 +323,25 @@ function renderStatus(summary: StatusSummary): void {
   }
 
   clack.outro("Status displayed");
+}
+
+/**
+ * Format import info for a rule
+ */
+function formatImportInfo(rule: RuleInfo): string {
+  if (!rule.importedFrom) {
+    return "";
+  }
+
+  // Show source, optionally with relative time
+  let info = ` (from: ${rule.importedFrom}`;
+  if (rule.importedAt) {
+    const ts = new Date(rule.importedAt).getTime();
+    const relative = formatRelativeTimestamp(ts);
+    info += `, ${relative}`;
+  }
+  info += ")";
+  return info;
 }
 
 /**
