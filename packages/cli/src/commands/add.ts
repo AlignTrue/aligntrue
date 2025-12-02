@@ -326,6 +326,7 @@ async function addLinkedSource(options: {
       path?: string;
       ref?: string;
       private?: boolean;
+      gitignore?: boolean;
     };
 
     if (sourceType === "git") {
@@ -339,9 +340,9 @@ async function addLinkedSource(options: {
       if (gitPath) {
         newSource.path = gitPath;
       }
-      // Auto-set private for SSH sources
+      // Auto-set gitignore for SSH sources
       if (privateSource) {
-        newSource.private = true;
+        newSource.gitignore = true;
       }
     } else {
       newSource = {
