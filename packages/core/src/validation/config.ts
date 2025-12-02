@@ -383,7 +383,7 @@ export function expandSourcesWithInclude(
           const parsed = parseSourceURL(includeUrl);
           // Create a new git source from the parsed URL
           const expandedSource: {
-            type: "git" | "local" | "url";
+            type: "git" | "local";
             url?: string;
             path?: string;
             ref?: string;
@@ -467,12 +467,9 @@ export async function validateConfig(
         // Include syntax: skip URL validation (URLs come from include array)
         // Validation of include URLs happens during expansion in CLI
         continue;
-      } else if (
-        (source.type === "git" || source.type === "url") &&
-        !source.url
-      ) {
+      } else if (source.type === "git" && !source.url) {
         throw new Error(
-          `Invalid source at index ${i}: "url" is required for type "${source.type}"`,
+          `Invalid source at index ${i}: "url" is required for type "git"`,
         );
       }
 

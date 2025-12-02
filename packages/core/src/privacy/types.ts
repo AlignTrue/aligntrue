@@ -5,7 +5,7 @@
 /**
  * Network operations that require user consent
  */
-export type ConsentOperation = "git" | "url";
+export type ConsentOperation = "git";
 
 /**
  * Individual consent record

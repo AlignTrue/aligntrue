@@ -112,8 +112,8 @@ export async function remove(args: string[]): Promise<void> {
     // Find matching source
     const originalLength = config.sources.length;
     config.sources = config.sources.filter((source) => {
-      // Match by URL for git and url sources
-      if (source.type === "git" || source.type === "url") {
+      // Match by URL for git sources
+      if (source.type === "git") {
         return source.url !== urlToRemove;
       }
       // Keep local sources (they don't match URL pattern)
@@ -128,7 +128,7 @@ export async function remove(args: string[]): Promise<void> {
         clack.log.warn(`No source found matching: ${urlToRemove}`);
         clack.log.info("Current sources:");
         for (const source of config.sources) {
-          if (source.type === "git" || source.type === "url") {
+          if (source.type === "git") {
             clack.log.info(`  - ${source.type}: ${source.url}`);
           } else if (source.type === "local") {
             clack.log.info(`  - local: ${source.path}`);
@@ -138,7 +138,7 @@ export async function remove(args: string[]): Promise<void> {
         console.log(`\nWarning: No source found matching: ${urlToRemove}`);
         console.log("Current sources:");
         for (const source of config.sources) {
-          if (source.type === "git" || source.type === "url") {
+          if (source.type === "git") {
             console.log(`  - ${source.type}: ${source.url}`);
           } else if (source.type === "local") {
             console.log(`  - local: ${source.path}`);

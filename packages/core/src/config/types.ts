@@ -92,7 +92,7 @@ export interface AlignTrueConfig {
     cleanup?: CleanupMode;
   };
   sources?: Array<{
-    type: "local" | "git" | "url";
+    type: "local" | "git";
     path?: string;
     url?: string;
     ref?: string;
