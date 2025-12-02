@@ -49,23 +49,6 @@ export function saveValidationState(
 }
 
 /**
- * Detect changed files since last validation
- *
- * TODO: Full git integration deferred until performance data shows need
- * For now, returns empty array (triggers full validation)
- *
- * Future implementation:
- * - Run `git diff --name-only <lastCommit>` to get changed files
- * - Filter by include/exclude patterns from config
- * - Return list of files needing revalidation
- */
-export function detectChangedFiles(_since: string): string[] {
-  // TODO: Implement git diff detection
-  // For now, return empty (will trigger full validation)
-  return [];
-}
-
-/**
  * Check if incremental validation should be used
  *
  * Incremental validation is skipped if:

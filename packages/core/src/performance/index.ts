@@ -93,7 +93,6 @@ export function createIgnoreFilter(
 export {
   loadValidationState,
   saveValidationState,
-  detectChangedFiles,
   shouldUseIncremental,
 } from "./incremental.js";
 
