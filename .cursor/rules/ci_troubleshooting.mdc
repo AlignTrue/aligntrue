@@ -1,7 +1,9 @@
 ---
 description: Guidance for troubleshooting CI/CD failures and checking GitHub Actions status
-globs: .github/workflows/*.yml, scripts/check-ci-errors.mjs,
-  scripts/check-codeql-status.mjs
+globs:
+  - .github/workflows/*.yml
+  - scripts/check-ci-errors.mjs
+  - scripts/check-codeql-status.mjs
 ---
 
 <!--

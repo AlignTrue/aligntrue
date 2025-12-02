@@ -629,7 +629,7 @@ aligntrue sync
 
 ---
 
-### Per-adapter override
+### Per-exporter override
 
 Override git mode for specific exporters:
 

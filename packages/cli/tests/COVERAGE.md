@@ -51,7 +51,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 | drift     | ✅         | ⚠️          | ✅         | ✅        | ✅                |
 | backup    | ✅         | ⚠️          | ✅         | ✅        | ✅                |
 | revert    | ✅         | ⚠️          | ✅         | ✅        | ✅                |
-| adapters  | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
+| exporters | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
 | config    | ✅         | ⚠️          | ✅         | ✅        | ⚠️                |
 | plugs     | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
 | scopes    | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |

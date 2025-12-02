@@ -15,12 +15,14 @@ Use this template for documenting test runs.
 ## Test Run {YYYY-MM-DD HH:MM}
 
 **Environment:**
+
 - Commit: {git commit hash}
 - Node: {node --version}
 - Platform: {darwin|linux|win32}
 - Test Type: {local|ci|manual}
 
 **Test Execution:**
+
 - Code Source: {local workspace|remote commit}
 - Environment: {hermetic|workspace}
 - Test Directory: {path to test dir}
@@ -38,6 +40,7 @@ Use this template for documenting test runs.
 **Root cause:** {Why it's broken}
 
 **Reproduction:**
+
 ```bash
 # Steps to reproduce
 ```
@@ -45,6 +48,7 @@ Use this template for documenting test runs.
 **Fix:** {How to fix it}
 
 **Files affected:**
+
 - `{file path}`
 - `{file path}`
 
@@ -91,11 +95,11 @@ Use this template for documenting test runs.
 **Release readiness:** {Ready|Blocked|Needs work}
 
 **Blockers:**
+
 - {List any P0 bugs blocking release}
 
 **Next steps:**
+
 1. {Action item}
 2. {Action item}
 3. {Action item}
-
-

@@ -80,16 +80,16 @@ export const CommonErrors = {
   }),
 
   /**
-   * Adapter not found error
+   * Exporter not found error
    *
-   * @param adapterName - Name of adapter that was not found
+   * @param exporterName - Name of exporter that was not found
    * @returns Formatted error with list hint
    */
-  adapterNotFound: (adapterName: string): CLIError => ({
-    title: "Adapter not found",
-    message: `Adapter '${adapterName}' is not available`,
+  exporterNotFound: (exporterName: string): CLIError => ({
+    title: "Exporter not found",
+    message: `Exporter '${exporterName}' is not available`,
     hint: "Run 'aligntrue exporters list' to see available exporters, or visit https://aligntrue.ai/docs/06-contributing/adding-exporters to add support",
-    code: "ERR_ADAPTER_NOT_FOUND",
+    code: "ERR_EXPORTER_NOT_FOUND",
   }),
 
   /**

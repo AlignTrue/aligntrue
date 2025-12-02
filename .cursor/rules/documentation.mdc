@@ -1,5 +1,6 @@
 ---
 description: Documentation standards
+alwaysApply: true
 ---
 
 <!--
@@ -276,7 +277,6 @@ Each page must have:
 
 ```yaml
 ---
-title: Page title
 description: One line description
 ---
 ```

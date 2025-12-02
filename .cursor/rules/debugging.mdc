@@ -1,5 +1,6 @@
 ---
 description: Debugging workflow
+alwaysApply: true
 ---
 
 <!--

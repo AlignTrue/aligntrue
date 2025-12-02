@@ -57,7 +57,7 @@ Basic Commands:
   check          Validate rules and configuration
 
 Development Commands:
-  adapters       Manage exporters (list, enable, disable)
+  exporters       Manage exporters (list, enable, disable)
   md             Markdown validation and formatting
 
 Team Commands:
@@ -555,29 +555,29 @@ scopes:
 See: docs/guides/scopes.md (when available)
 ```
 
-### `aligntrue adapters`
+### `aligntrue exporters`
 
-Manage exporters (adapters) in your configuration. View available adapters, enable/disable them, and discover all 43 supported AI coding agents.
+Manage exporters (exporters) in your configuration. View available exporters, enable/disable them, and discover all 43 supported AI coding agents.
 
 **Features:**
 
-- List all 43 available adapters with descriptions
+- List all 43 available exporters with descriptions
 - Show install status (✓ installed, - available, ❌ invalid)
-- Enable/disable adapters interactively or by name
-- Prevents disabling the last adapter
+- Enable/disable exporters interactively or by name
+- Prevents disabling the last exporter
 
-#### `aligntrue adapters list`
+#### `aligntrue exporters list`
 
-Show all discovered adapters with their current status:
+Show all discovered exporters with their current status:
 
 ```bash
-aligntrue adapters list
+aligntrue exporters list
 ```
 
 **Example output:**
 
 ```
-Available Adapters (44 total):
+Available Exporters (44 total):
 
 ✓ cursor                  Export AlignTrue rules to Cursor .mdc format
                           Outputs: .cursor/rules/*.mdc
@@ -591,7 +591,7 @@ Available Adapters (44 total):
 - vscode-mcp              Export AlignTrue rules to VS Code MCP configuration
                           Outputs: .vscode/mcp.json
 
-❌ invalid-adapter         (Not found in available adapters)
+❌ invalid-exporter         (Not found in available exporters)
 
 Summary:
   ✓ Installed: 2
@@ -605,18 +605,18 @@ Summary:
 - `-` - Available (discovered but not enabled)
 - `❌` - Invalid (in config but not found)
 
-#### `aligntrue adapters enable <adapter>`
+#### `aligntrue exporters enable <exporter>`
 
-Enable an adapter by adding it to your config:
+Enable an exporter by adding it to your config:
 
 ```bash
-aligntrue adapters enable claude
+aligntrue exporters enable claude
 ```
 
 **Example output:**
 
 ```
-✓ Enabled adapter: claude
+✓ Enabled exporter: claude
 
 Next step:
   Run: aligntrue sync
@@ -624,33 +624,33 @@ Next step:
 
 **Interactive mode:**
 
-Choose multiple adapters with a visual multiselect interface:
+Choose multiple exporters with a visual multiselect interface:
 
 ```bash
-aligntrue adapters enable --interactive
+aligntrue exporters enable --interactive
 # or
-aligntrue adapters enable -i
+aligntrue exporters enable -i
 ```
 
-The interactive prompt pre-selects currently enabled adapters and lets you toggle any available adapters.
+The interactive prompt pre-selects currently enabled exporters and lets you toggle any available exporters.
 
-#### `aligntrue adapters disable <adapter>`
+#### `aligntrue exporters disable <exporter>`
 
-Disable an adapter by removing it from your config:
+Disable an exporter by removing it from your config:
 
 ```bash
-aligntrue adapters disable claude
+aligntrue exporters disable claude
 ```
 
 **Safety:**
 
-- Cannot disable the last adapter (at least one must be configured)
-- Shows clear error if adapter isn't currently enabled
+- Cannot disable the last exporter (at least one must be configured)
+- Shows clear error if exporter isn't currently enabled
 
 **Example output:**
 
 ```
-✓ Disabled adapter: claude
+✓ Disabled exporter: claude
 ```
 
 ### Telemetry commands

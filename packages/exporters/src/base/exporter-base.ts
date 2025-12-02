@@ -16,7 +16,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-  AdapterManifest,
+  ExporterManifest,
 } from "@aligntrue/plugin-contracts";
 import { getPromptHandler } from "@aligntrue/plugin-contracts";
 import type {
@@ -518,7 +518,7 @@ export abstract class ExporterBase implements ExporterPlugin {
    * // { name: "cursor", version: "1.0.0", format: "mdc", ... }
    * ```
    */
-  protected validateManifest(): AdapterManifest {
+  protected validateManifest(): ExporterManifest {
     try {
       // Construct path to manifest.json relative to this exporter
       const exporterDir = dirname(fileURLToPath(import.meta.url));
@@ -544,7 +544,7 @@ export abstract class ExporterBase implements ExporterPlugin {
         );
       }
 
-      return manifest as AdapterManifest;
+      return manifest as ExporterManifest;
     } catch (_error) {
       if (_error instanceof Error) {
         throw new Error(`Manifest validation failed: ${_error.message}`);
