@@ -461,7 +461,7 @@ async function copyRulesToLocal(options: {
     });
 
     if (result.error) {
-      spinner.stop("Import failed", 1);
+      spinner.stopSilent(); // Silent stop - exitWithError will show the error
       exitWithError({
         title: "Import failed",
         message: result.error,
@@ -670,7 +670,7 @@ async function copyRulesToLocal(options: {
       tips.forEach((t) => console.log(`  • ${t}`));
     }
   } catch (error) {
-    spinner.stop("Import failed", 1);
+    spinner.stopSilent(); // Silent stop - exitWithError will show the error
 
     if (error && typeof error === "object" && "code" in error) {
       throw error;
