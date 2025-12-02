@@ -102,7 +102,7 @@ const tests: ExploratoryTest[] = [
     probe: "Does sync work with all exporters disabled?",
     commands: [
       "aligntrue init --mode solo --exporters none || aligntrue init --mode solo",
-      "aligntrue adapters disable cursor || true",
+      "aligntrue exporters disable cursor || true",
       "aligntrue sync",
     ],
     expectedBehavior: "Should complete or warn about no exporters",

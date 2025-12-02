@@ -20,7 +20,7 @@ The CLI command framework provides reusable utilities for:
 - `config` - Config display and editing
 - `privacy` - Consent management
 - `backup` - Backup and restore operations
-- `adapters` - Exporter management
+- `exporters` - Exporter management
 - `team` - Team mode enablement
 - `telemetry` - Telemetry controls
 - `md` - Markdown operations
@@ -379,14 +379,14 @@ export async function scopes(args: string[]): Promise<void> {
 
 ### Subcommand Pattern
 
-`team`, `adapters`, `telemetry` - Multiple operations
+`team`, `exporters`, `telemetry` - Multiple operations
 
 ```typescript
 const ARG_DEFINITIONS: ArgDefinition[] = [
   { flag: "--interactive", alias: "-i", hasValue: false, description: "..." },
 ];
 
-export async function adapters(args: string[]): Promise<void> {
+export async function exporters(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
   if (parsed.help || parsed.positional.length === 0) {
@@ -401,10 +401,10 @@ export async function adapters(args: string[]): Promise<void> {
 
   switch (subcommand) {
     case "list":
-      await listAdapters();
+      await listExporters();
       break;
     case "enable":
-      await enableAdapters(subArgs, parsed.flags["interactive"] as boolean);
+      await enableExporters(subArgs, parsed.flags["interactive"] as boolean);
       break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
@@ -465,7 +465,7 @@ All 13 commands demonstrate different patterns:
 - **Simple, no subcommands:** `config`, `privacy`, `scopes`, `migrate`
 - **Simple with flags:** `check`, `import`, `md`
 - **Subcommands, simple:** `team`, `telemetry`
-- **Subcommands, interactive:** `adapters`
+- **Subcommands, interactive:** `exporters`
 - **Subcommands, complex:** `backup`, `sync`
 - **Complex interactive:** `init`
 

@@ -36,7 +36,7 @@ describe("GeminiExporter", () => {
 
   it("should discover gemini manifest", () => {
     const srcPath = join(__dirname, "../src");
-    const manifests = registry.discoverAdapters(srcPath);
+    const manifests = registry.discoverExporters(srcPath);
 
     const hasGemini = manifests.some((p) => p.includes("gemini"));
     expect(hasGemini).toBe(true);

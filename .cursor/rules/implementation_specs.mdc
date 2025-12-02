@@ -30,7 +30,6 @@ These define **what** to build. The **how** is flexible as long as acceptance cr
 - Enables lockfile, bundle, and drift detection
 - CI validation via `aligntrue drift --gates`
 
-
 ---
 
 ## 1) Canonical JSON (determinism foundation)

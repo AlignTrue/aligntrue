@@ -21,7 +21,7 @@ import {
 } from "../utils/command-utilities.js";
 import { withSpinner } from "../utils/spinner.js";
 
-// Get the exporters package directory for adapter discovery
+// Get the exporters package directory for exporter discovery
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -36,12 +36,12 @@ async function getAgentFilePatterns(cwd: string): Promise<string[]> {
     const config = await loadConfig(paths.config);
     const exporterNames = getExporterNames(config.exporters);
 
-    // Initialize registry and load adapters
+    // Initialize registry and load exporters
     const registry = new ExporterRegistry();
     const exportersDir = join(__dirname, "../../../exporters/src");
 
     try {
-      const manifests = registry.discoverAdapters(exportersDir);
+      const manifests = registry.discoverExporters(exportersDir);
       for (const manifestPath of manifests) {
         await registry.registerFromManifest(manifestPath);
       }
@@ -49,7 +49,7 @@ async function getAgentFilePatterns(cwd: string): Promise<string[]> {
       // Fallback: try dist directory
       const distExportersDir = join(__dirname, "../../../exporters/dist");
       try {
-        const manifests = registry.discoverAdapters(distExportersDir);
+        const manifests = registry.discoverExporters(distExportersDir);
         for (const manifestPath of manifests) {
           await registry.registerFromManifest(manifestPath);
         }

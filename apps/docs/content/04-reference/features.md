@@ -40,7 +40,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 **Development:**
 
-- `adapters` — Manage exporters (list, enable, disable)
+- `exporters` — Manage exporters (list, enable, disable)
 - `plugs` — Manage plugs (audit, resolve, set)
 - `rules` — List rules and view targeting by agent (`--by-agent`, `--json`)
 - `scopes` — List configured scopes

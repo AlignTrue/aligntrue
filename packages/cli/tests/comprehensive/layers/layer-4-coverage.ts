@@ -68,8 +68,8 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
-    command: "aligntrue adapters --help",
-    description: "Adapters help",
+    command: "aligntrue exporters --help",
+    description: "Exporters help",
     expectedExitCode: 0,
   },
   {

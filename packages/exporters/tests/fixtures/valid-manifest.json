@@ -1,7 +1,7 @@
 {
-  "name": "test-adapter",
+  "name": "test-exporter",
   "version": "1.0.0",
-  "description": "Test adapter for unit tests",
+  "description": "Test exporter for unit tests",
   "outputs": [".test/*.txt"],
   "handler": "./mock-handler.ts",
   "license": "MIT",

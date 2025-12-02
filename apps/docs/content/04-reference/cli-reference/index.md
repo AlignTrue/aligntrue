@@ -24,7 +24,7 @@ Most users only need these commands:
 Browse commands by category:
 
 - [Basic commands](./basic) - Daily development (init, import, sync, check, backup)
-- [Development commands](./development) - Markdown authoring and adapter management
+- [Development commands](./development) - Markdown authoring and exporter management
 - [Plugs commands](./plugs) - Stack-agnostic variable management
 - [Overlay commands](./overlays) - Selective rule modifications
 - [Team mode commands](./team) - Collaboration and drift detection
@@ -49,7 +49,7 @@ Quick lookup table for all CLI commands:
 | `aligntrue doctor`          | Run health checks and verification      | [Basic](./basic#aligntrue-doctor)                                           |
 | `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
 | `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
-| `aligntrue adapters`        | Manage exporters                        | [Development](./development#aligntrue-adapters)                             |
+| `aligntrue exporters`       | Manage exporters                        | [Development](./development#aligntrue-exporters)                            |
 | `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                                       |
 | `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)                                    |
 | `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                                        |

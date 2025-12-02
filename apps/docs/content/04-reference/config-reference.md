@@ -41,7 +41,7 @@ mode: solo # or team, enterprise
 
 **Required:** Yes (at least one)
 
-List of exporter adapters to generate. Determines which agent files are created during sync.
+List of exporters to generate. Determines which agent files are created during sync.
 
 ```yaml
 exporters:
@@ -186,10 +186,10 @@ detection:
 
 ```bash
 # Add to ignored list
-aligntrue adapters ignore windsurf
+aligntrue exporters ignore windsurf
 
 # Manually detect new agents (respects ignored list)
-aligntrue adapters detect
+aligntrue exporters detect
 ```
 
 ## Modules and features
@@ -376,7 +376,7 @@ Git integration settings.
 ```yaml
 git:
   mode: ignore # ignore | commit | branch
-  per_adapter:
+  per_exporter:
     cursor: commit
     agents: ignore
 ```

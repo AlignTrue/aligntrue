@@ -5,7 +5,7 @@ sources:
   - type: local
     path: ".aligntrue/rules"
 
-adapters:
+exporters:
   - type: cursor
   - type: agents
   - type: vscode-mcp

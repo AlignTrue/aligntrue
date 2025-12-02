@@ -51,7 +51,7 @@ describe("AGENTS.md-based exporter variants", () => {
 
   it("should discover all AGENTS.md variant manifests", () => {
     const srcPath = join(__dirname, "../src");
-    const manifests = registry.discoverAdapters(srcPath);
+    const manifests = registry.discoverExporters(srcPath);
 
     // Check that all variants are discovered
     // Use path.basename() to get directory name (works cross-platform)
