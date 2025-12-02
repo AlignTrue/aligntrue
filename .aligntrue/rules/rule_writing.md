@@ -1,10 +1,6 @@
 ---
 description: Use this when drafting or updating any Cursor rules.
-alwaysApply: false
-title: rule_writing.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 1da88bb286041611dd5f2a1e909b249ece10cccc9273587fb65a6184b0c25338
+content_hash: a8d2faeca5803ee22d01e2c6eaa58c65952a9b83d351ced0357a73138bb2b0cd
 ---
 
 # Cursor rules authoring guide

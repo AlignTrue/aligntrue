@@ -4,6 +4,10 @@
 .rules.yaml
 .last-sync
 
+# Audit log (import/rename/delete events)
+# Enterprise users can remove this line to commit audit trail
+.history
+
 # Backup directory (created during sync operations)
 .backups/
 

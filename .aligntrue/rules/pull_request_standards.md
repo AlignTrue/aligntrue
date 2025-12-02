@@ -1,10 +1,6 @@
 ---
 description: Pull request (PR) acceptance criteria and self-check gate
-alwaysApply: false
-title: pull_request_standards.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 3785d4f5bb06ad7266f5f1603c75322f2132561aa5e0c94bcd5a8973def2c8b9
+content_hash: 0d08ae447c812bffc1630057a80e84bd0774da70d85ab2e824107dfa22726117
 ---
 
 # Pull request standards

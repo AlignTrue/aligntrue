@@ -1,11 +1,10 @@
 ---
 description: Guidance for troubleshooting CI/CD failures and checking GitHub Actions status
-globs: .github/workflows/*.yml, scripts/check-ci-errors.mjs,
-  scripts/check-codeql-status.mjs
-title: ci_troubleshooting.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 673c5f5bdcabfb9b5f79f863ad6e87bce121fd2c7acce04dc194a7b66b80b7ce
+globs:
+  - .github/workflows/*.yml
+  - scripts/check-ci-errors.mjs
+  - scripts/check-codeql-status.mjs
+content_hash: 2a57260e7f9653ae3fc792b8f023867a1a084bf5f21c2c8830931eca8e89b02a
 ---
 
 # CI Troubleshooting and Status Checking

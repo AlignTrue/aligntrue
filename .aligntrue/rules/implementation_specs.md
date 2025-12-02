@@ -1,10 +1,6 @@
 ---
 description: Implementation specifications
-alwaysApply: false
-title: implementation_specs.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: 513e70c3ac63be0e27ac5498e7a8d6630385c819092f331b2eabe529c770892d
+content_hash: dc41679516aef0e7c281dfaea2354106ab935595b531e621e406a948d4cd8983
 ---
 
 # Implementation specifications

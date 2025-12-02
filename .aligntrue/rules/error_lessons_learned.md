@@ -1,9 +1,6 @@
 ---
-alwaysApply: false
-title: error_lessons_learned.mdc
-source: .cursor/rules
-source_added: 2025-12-01
-content_hash: c85ddb47b88763bc8707b2c751c83fc95ab4866c7ebae97db54ba44c67b2c363
+description: Lessons learned from resolving errors and issues
+content_hash: 4038c034f6eccd2e092bf58075c4d81f90f2f54a00e89b25093185c932a0715b
 ---
 
 # Error resolution lessons learned

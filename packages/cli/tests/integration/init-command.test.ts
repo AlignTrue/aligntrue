@@ -451,9 +451,7 @@ This is a test rule for the docs app.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).toContain("nested_location: apps/docs");
-      expect(importedContent).toContain(
-        "original_path: apps/docs/.cursor/rules/web_stack.mdc",
-      );
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
 
       // Run sync to export the rule
       const { sync } = await import("../../src/commands/sync/index.js");
@@ -502,9 +500,7 @@ This is the CLI package agents file.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).toContain("nested_location: packages/cli");
-      expect(importedContent).toContain(
-        "original_path: packages/cli/AGENTS.md",
-      );
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
     });
 
     it("does not set nested_location for root-level cursor rules", async () => {
@@ -539,9 +535,7 @@ Root level rule content.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).not.toContain("nested_location:");
-      expect(importedContent).toContain(
-        "original_path: .cursor/rules/global.mdc",
-      );
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
     });
   });
 });

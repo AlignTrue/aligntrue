@@ -21,6 +21,7 @@ import {
 } from "../sources/resolver.js";
 import { detectConflicts, type ConflictInfo } from "./conflict-resolver.js";
 import { parseSourceUrl, type SourceType } from "./source-detector.js";
+import { logImport } from "../audit/history.js";
 
 /**
  * Options for importing rules
@@ -79,11 +80,9 @@ export async function importRules(
 
     const rules = resolved.rules;
 
-    // Add source metadata to all rules
-    const now = new Date().toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
+    // Log import events to audit log (instead of storing in frontmatter)
     for (const rule of rules) {
-      rule.frontmatter["source"] = source;
-      rule.frontmatter["source_added"] = now;
+      logImport(cwd, rule.filename, source);
     }
 
     // Detect conflicts with existing rules
