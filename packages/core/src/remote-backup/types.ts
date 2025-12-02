@@ -98,7 +98,7 @@ export interface RemoteBackupOptions {
   /** Source URLs to check for conflicts */
   sourceUrls?: string[];
   /** Progress callback */
-  onProgress?: (message: string) => void;
+  onProgress?: ((message: string) => void) | undefined;
 }
 
 /**
