@@ -58,6 +58,14 @@ export interface RuleFrontmatter {
   // Allow other agent blocks (claude, windsurf, etc)
   [key: string]: unknown;
 
+  // Privacy Controls
+  /**
+   * Mark rule as private (not committed to git)
+   * When true, both source file and exported versions are auto-gitignored
+   * Overrides source-level `private` setting
+   */
+  private?: boolean;
+
   // Tracking Metadata (Auto-managed)
   /**
    * Source URL/path where this rule was imported from
@@ -127,6 +135,7 @@ export const frontmatterSchema = {
     apply_to: { type: "string" },
     exclude_from: { type: "array", items: { type: "string" } },
     export_only_to: { type: "array", items: { type: "string" } },
+    private: { type: "boolean" },
     cursor: { type: "object" },
     agents: { type: "object" },
     original_source: { type: "string" },
