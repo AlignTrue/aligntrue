@@ -48,7 +48,7 @@ const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");
 const tsxLoaderPath = resolve(
   workspaceRoot,
-  "node_modules/tsx/dist/esm/index.mjs",
+  "node_modules/tsx/dist/loader.mjs",
 );
 
 // Verify CLI is built

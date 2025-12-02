@@ -135,9 +135,9 @@ function runTest(
       actualBehavior += output + "\n";
     } catch (err) {
       const execErr = err as ExecException;
-      const exitCode = execErr.code || 1;
+      const exitCode = execErr.status ?? 1;
       const output =
-        execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+        (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
       actualBehavior += `Exit ${exitCode}: ${output}\n`;
 
       // Check for unexpected crashes

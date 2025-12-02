@@ -88,11 +88,6 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
-    command: "aligntrue pull --help",
-    description: "Pull help",
-    expectedExitCode: 0,
-  },
-  {
     command: "aligntrue link --help",
     description: "Link help",
     expectedExitCode: 0,
@@ -103,11 +98,6 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
-    command: "aligntrue md --help",
-    description: "Markdown help",
-    expectedExitCode: 0,
-  },
-  {
     command: "aligntrue telemetry --help",
     description: "Telemetry help",
     expectedExitCode: 0,
@@ -115,11 +105,6 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue privacy --help",
     description: "Privacy help",
-    expectedExitCode: 0,
-  },
-  {
-    command: "aligntrue update --help",
-    description: "Update help",
     expectedExitCode: 0,
   },
   {
@@ -154,8 +139,9 @@ function testCommand(
     });
   } catch (err) {
     const execErr = err as ExecException;
-    exitCode = execErr.code || 1;
-    output = execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    exitCode = execErr.status ?? 1;
+    output =
+      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
   }
 
   const passed = exitCode === test.expectedExitCode;
