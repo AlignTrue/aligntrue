@@ -24,8 +24,8 @@ import { detectNewAgents } from "../utils/detect-agents.js";
 
 const CONFIG_PATH = ".aligntrue/config.yaml";
 
-// Import AdapterManifest type from exporters package
-type AdapterManifest = {
+// Import ExporterManifest type from exporters package
+type ExporterManifest = {
   name: string;
   version: string;
   description: string;
@@ -128,7 +128,7 @@ export async function exporters(args: string[]): Promise<void> {
 
 interface ExporterInfo {
   name: string;
-  manifest?: AdapterManifest;
+  manifest?: ExporterManifest;
   status: "installed" | "available" | "invalid";
 }
 
@@ -157,7 +157,7 @@ async function discoverAndCategorize(): Promise<{
     if (!existsSync(exportersPath)) {
       throw new Error(`Search path not found: ${exportersPath}`);
     }
-    manifestPaths = registry.discoverAdapters(exportersPath);
+    manifestPaths = registry.discoverExporters(exportersPath);
   } catch (_error) {
     console.error("✗ Failed to discover exporters");
     console.error(
@@ -167,7 +167,7 @@ async function discoverAndCategorize(): Promise<{
   }
 
   // Load all manifests
-  const manifestMap = new Map<string, AdapterManifest>();
+  const manifestMap = new Map<string, ExporterManifest>();
   for (const manifestPath of manifestPaths) {
     try {
       const manifest = registry.loadManifest(manifestPath);

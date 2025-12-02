@@ -58,17 +58,37 @@ export interface RuleFrontmatter {
   // Allow other agent blocks (claude, windsurf, etc)
   [key: string]: unknown;
 
+  // Privacy Controls
+  /**
+   * Mark rule as private (not committed to git)
+   * When true, both source file and exported versions are auto-gitignored
+   * Overrides source-level `private` setting
+   */
+  private?: boolean;
+
   // Tracking Metadata (Auto-managed)
   /**
    * Source URL/path where this rule was imported from
-   * @deprecated Use `source` instead
+   * @deprecated Removed in favor of audit log (.aligntrue/.history)
    */
   original_source?: string;
-  /** Source URL/path where this rule was imported from */
+  /**
+   * Source URL/path where this rule was imported from
+   * @deprecated Removed in favor of audit log (.aligntrue/.history).
+   * Import events are now logged to .aligntrue/.history instead of frontmatter.
+   */
   source?: string;
-  /** Date when this rule was added (ISO format: YYYY-MM-DD) */
+  /**
+   * Date when this rule was added (ISO format: YYYY-MM-DD)
+   * @deprecated Removed in favor of audit log (.aligntrue/.history).
+   * Import timestamps are now logged to .aligntrue/.history instead of frontmatter.
+   */
   source_added?: string;
-  /** Original path of the rule file */
+  /**
+   * Original path of the rule file
+   * @deprecated Removed in favor of audit log (.aligntrue/.history).
+   * Original paths are now logged to .aligntrue/.history instead of frontmatter.
+   */
   original_path?: string;
   /** Content hash for drift detection */
   content_hash?: string;
@@ -127,6 +147,7 @@ export const frontmatterSchema = {
     apply_to: { type: "string" },
     exclude_from: { type: "array", items: { type: "string" } },
     export_only_to: { type: "array", items: { type: "string" } },
+    private: { type: "boolean" },
     cursor: { type: "object" },
     agents: { type: "object" },
     original_source: { type: "string" },

@@ -20,7 +20,7 @@ Resources for contributing to AlignTrue and understanding the codebase.
 
 - [Getting started guide](../06-contributing/getting-started) - How to contribute
 - [Testing workflow](../06-contributing/testing-workflow) - Running and writing tests
-- [Adding exporters](../06-contributing/adding-exporters) - Creating new agent adapters
+- [Adding exporters](../06-contributing/adding-exporters) - Creating new agent exporters
 
 ### Documentation
 

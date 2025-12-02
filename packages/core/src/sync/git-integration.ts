@@ -10,7 +10,7 @@
  *
  * Configuration:
  * - Controlled by `git.mode` and `git.auto_gitignore` in .aligntrue/config.yaml
- * - Can be overridden per-adapter using `git.overrides`
+ * - Can be overridden per-exporter using `git.overrides`
  */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
@@ -23,7 +23,7 @@ export interface GitIntegrationOptions {
   mode: GitMode;
   workspaceRoot: string;
   generatedFiles: string[];
-  perAdapterOverrides?: Record<string, GitMode>;
+  perExporterOverrides?: Record<string, GitMode>;
   branchName?: string;
 }
 
@@ -39,13 +39,13 @@ export class GitIntegration {
    * Apply git integration based on mode
    */
   async apply(options: GitIntegrationOptions): Promise<GitModeResult> {
-    const { mode, generatedFiles, perAdapterOverrides } = options;
+    const { mode, generatedFiles, perExporterOverrides } = options;
 
-    // Group files by effective mode (considering per-adapter overrides)
+    // Group files by effective mode (considering per-exporter overrides)
     const filesByMode = this.groupFilesByMode(
       generatedFiles,
       mode,
-      perAdapterOverrides,
+      perExporterOverrides,
     );
 
     const results: GitModeResult[] = [];
@@ -88,7 +88,7 @@ export class GitIntegration {
   }
 
   /**
-   * Group files by effective mode considering per-adapter overrides
+   * Group files by effective mode considering per-exporter overrides
    */
   private groupFilesByMode(
     files: string[],
@@ -102,10 +102,10 @@ export class GitIntegration {
     };
 
     for (const file of files) {
-      // Determine adapter from file path
-      const adapter = this.inferAdapterFromPath(file);
+      // Determine exporter from file path
+      const exporter = this.inferExporterFromPath(file);
       const effectiveMode =
-        (overrides && adapter && overrides[adapter]) || defaultMode;
+        (overrides && exporter && overrides[exporter]) || defaultMode;
       grouped[effectiveMode].push(file);
     }
 
@@ -113,9 +113,9 @@ export class GitIntegration {
   }
 
   /**
-   * Infer adapter name from file path
+   * Infer exporter name from file path
    */
-  private inferAdapterFromPath(filePath: string): string | null {
+  private inferExporterFromPath(filePath: string): string | null {
     if (filePath.includes(".cursor/")) return "cursor";
     if (filePath === "AGENTS.md") return "agents";
     if (filePath.includes(".vscode/mcp.json")) return "vscode-mcp";
@@ -270,6 +270,41 @@ export class GitIntegration {
     // Always include unified backups directory in the patterns
     const allPatterns = [".aligntrue/.backups/", ...relativePaths];
     content = this.addManagedSection(content, marker, endMarker, allPatterns);
+    writeFileSync(gitignorePath, content, "utf-8");
+  }
+
+  /**
+   * Add private rules to .gitignore with separate managed section
+   *
+   * @param workspaceRoot - Workspace root directory
+   * @param files - Rule files to add (source paths in .aligntrue/rules/)
+   */
+  async addPrivateRulesToGitignore(
+    workspaceRoot: string,
+    files: string[],
+  ): Promise<void> {
+    const gitignorePath = join(workspaceRoot, ".gitignore");
+    const marker = "# START AlignTrue Private Rules";
+    const endMarker = "# END AlignTrue Private Rules";
+
+    let content = "";
+    try {
+      content = readFileSync(gitignorePath, "utf-8");
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code !== "ENOENT"
+      ) {
+        throw error;
+      }
+      // File doesn't exist, content remains ""
+    }
+
+    // Normalize paths to relative
+    const relativePaths = this.normalizePathsForGitignore(workspaceRoot, files);
+
+    content = this.addManagedSection(content, marker, endMarker, relativePaths);
     writeFileSync(gitignorePath, content, "utf-8");
   }
 

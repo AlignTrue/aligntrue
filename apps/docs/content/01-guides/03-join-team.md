@@ -278,11 +278,11 @@ aligntrue init --with-personal-local
 
 ```bash
 # Check enabled exporters
-aligntrue adapters list
+aligntrue exporters list
 
 # Enable missing exporters
-aligntrue adapters enable cursor
-aligntrue adapters enable agents
+aligntrue exporters enable cursor
+aligntrue exporters enable agents
 
 # Sync again
 aligntrue sync

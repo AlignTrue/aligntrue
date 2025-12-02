@@ -228,8 +228,8 @@ describe("GitIntegration", () => {
     });
   });
 
-  describe("per-adapter overrides", () => {
-    it("applies different modes per adapter", async () => {
+  describe("per-exporter overrides", () => {
+    it("applies different modes per exporter", async () => {
       // Create files
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
@@ -240,7 +240,7 @@ describe("GitIntegration", () => {
         mode: "ignore", // default
         workspaceRoot: TEST_DIR,
         generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
-        perAdapterOverrides: {
+        perExporterOverrides: {
           agents: "commit", // AGENTS.md should be committed
         },
       });
@@ -255,7 +255,7 @@ describe("GitIntegration", () => {
       expect(content).not.toContain("AGENTS.md");
     });
 
-    it("infers adapter from file path", async () => {
+    it("infers exporter from file path", async () => {
       const files = [
         ".cursor/rules/global.mdc",
         ".vscode/mcp.json",
@@ -268,7 +268,7 @@ describe("GitIntegration", () => {
         mode: "ignore",
         workspaceRoot: TEST_DIR,
         generatedFiles: files,
-        perAdapterOverrides: {
+        perExporterOverrides: {
           cursor: "commit",
           "vscode-mcp": "commit",
         },

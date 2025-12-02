@@ -89,7 +89,8 @@
       "esbuild": ">=0.25.0",
       "prismjs": ">=1.30.0",
       "js-yaml": ">=4.1.1",
-      "read-yaml-file": ">=2.0.0"
+      "read-yaml-file": ">=2.0.0",
+      "mdast-util-to-hast": ">=13.2.1"
     }
   }
 }

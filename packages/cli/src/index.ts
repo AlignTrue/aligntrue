@@ -170,6 +170,9 @@ async function main() {
   }
 
   console.error(`Command not implemented: ${command || "(none)"}`);
+  console.error(
+    `\nRun 'aligntrue --help' to see available commands and options`,
+  );
   process.exit(1);
 }
 

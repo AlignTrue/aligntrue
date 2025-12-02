@@ -1,7 +1,7 @@
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import type { AdapterManifest } from "@aligntrue/plugin-contracts";
+import type { ExporterManifest } from "@aligntrue/plugin-contracts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,11 +52,11 @@ export async function getInvalidExporters(
  * Load manifests for all available exporters
  */
 export async function loadExporterManifests(): Promise<
-  Map<string, AdapterManifest>
+  Map<string, ExporterManifest>
 > {
   const registry = new ExporterRegistry();
   const manifestPaths = await discoverExporterManifests(registry);
-  const manifests = new Map<string, AdapterManifest>();
+  const manifests = new Map<string, ExporterManifest>();
 
   for (const manifestPath of manifestPaths) {
     try {
@@ -103,7 +103,7 @@ async function discoverExporterManifests(
   let lastError: unknown;
   for (const path of searchPaths) {
     try {
-      return registry.discoverAdapters(path);
+      return registry.discoverExporters(path);
     } catch (error) {
       lastError = error;
       continue;

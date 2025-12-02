@@ -1,36 +1,36 @@
 # Development commands
 
-Tools for managing adapters and validating syntax.
+Tools for managing exporters and validating syntax.
 
-## `aligntrue adapters`
+## `aligntrue exporters`
 
-Manage exporters (adapters) in your configuration. View, enable, and disable adapters for 43 supported AI coding agents.
+Manage exporters (exporters) in your configuration. View, enable, and disable exporters for 43 supported AI coding agents.
 
 **Usage:**
 
 ```bash
-aligntrue adapters <subcommand>
+aligntrue exporters <subcommand>
 ```
 
 **Subcommands:**
 
-- `list` - Show all available adapters with install status
-- `enable <adapter>` - Enable an adapter in config
-- `enable --interactive` - Choose adapters with multiselect UI
-- `disable <adapter>` - Disable an adapter in config
+- `list` - Show all available exporters with install status
+- `enable <exporter>` - Enable an exporter in config
+- `enable --interactive` - Choose exporters with multiselect UI
+- `disable <exporter>` - Disable an exporter in config
 - `detect` - Manually detect new agents in workspace
-- `ignore <adapter>` - Add agent to ignored list (no detection prompts)
+- `ignore <exporter>` - Add agent to ignored list (no detection prompts)
 
 ---
 
-### `aligntrue adapters list`
+### `aligntrue exporters list`
 
-Show all 43 discovered adapters with their current install status.
+Show all 43 discovered exporters with their current install status.
 
 **Usage:**
 
 ```bash
-aligntrue adapters list
+aligntrue exporters list
 ```
 
 **Status indicators:**
@@ -42,7 +42,7 @@ aligntrue adapters list
 **Example output:**
 
 ```
-Available Adapters (44 total):
+Available exporters (44 total):
 
 ✓ cursor                  Export AlignTrue rules to Cursor .mdc format
                           Outputs: .cursor/rules/*.mdc
@@ -59,7 +59,7 @@ Available Adapters (44 total):
 - windsurf-mcp            Export AlignTrue rules to Windsurf MCP configuration
                           Outputs: .windsurf/mcp_config.json
 
-❌ nonexistent-adapter     (Not found in available adapters)
+❌ nonexistent-exporter     (Not found in available exporters)
 
 Summary:
   ✓ Installed: 2
@@ -74,27 +74,27 @@ Summary:
 
 ---
 
-### `aligntrue adapters enable`
+### `aligntrue exporters enable`
 
-Enable one or more adapters by adding them to your config.
+Enable one or more exporters by adding them to your config.
 
-**Single adapter:**
+**Single exporter:**
 
 ```bash
-aligntrue adapters enable <adapter>
+aligntrue exporters enable <exporter>
 ```
 
 **Interactive mode:**
 
 ```bash
-aligntrue adapters enable --interactive
+aligntrue exporters enable --interactive
 # or
-aligntrue adapters enable -i
+aligntrue exporters enable -i
 ```
 
 **What it does:**
 
-1. Validates adapter exists in discovered manifests
+1. Validates exporter exists in discovered manifests
 2. Checks if already enabled (shows friendly message, exits 0)
 3. Adds to `config.exporters` array (sorted alphabetically)
 4. Saves config atomically (temp + rename)
@@ -103,29 +103,29 @@ aligntrue adapters enable -i
 **Interactive mode features:**
 
 - Visual multiselect UI powered by @clack/prompts
-- Pre-selects currently enabled adapters
-- Toggle any available adapter
-- Shows adapter descriptions and output paths
+- Pre-selects currently enabled exporters
+- Toggle any available exporter
+- Shows exporter descriptions and output paths
 - Cancel-safe (Ctrl+C exits cleanly)
 
 **Examples:**
 
 ```bash
-# Enable a single adapter
-aligntrue adapters enable claude
+# Enable a single exporter
+aligntrue exporters enable claude
 
-# Enable multiple adapters interactively
-aligntrue adapters enable --interactive
+# Enable multiple exporters interactively
+aligntrue exporters enable --interactive
 
 # Already enabled (idempotent)
-aligntrue adapters enable cursor
-# Output: ✓ Adapter already enabled: cursor
+aligntrue exporters enable cursor
+# Output: ✓ Exporter already enabled: cursor
 ```
 
 **Example output:**
 
 ```
-✓ Enabled adapter: claude
+✓ Enabled exporter: claude
 
 Next step:
   Run: aligntrue sync
@@ -134,65 +134,65 @@ Next step:
 **Exit codes:**
 
 - `0` - Success (or already enabled)
-- `1` - Adapter not found, config error, or invalid adapter
+- `1` - Exporter not found, config error, or invalid exporter
 
 ---
 
-### `aligntrue adapters disable`
+### `aligntrue exporters disable`
 
-Disable an adapter by removing it from your config.
+Disable an exporter by removing it from your config.
 
 **Usage:**
 
 ```bash
-aligntrue adapters disable <adapter>
+aligntrue exporters disable <exporter>
 ```
 
 **Safety features:**
 
-- Cannot disable last adapter (at least one must be configured)
-- Validates adapter is currently enabled
+- Cannot disable last exporter (at least one must be configured)
+- Validates exporter is currently enabled
 - Shows clear error messages with actionable fixes
 
 **Examples:**
 
 ```bash
-# Disable an adapter
-aligntrue adapters disable claude
+# Disable an exporter
+aligntrue exporters disable claude
 
-# Cannot disable last adapter
-aligntrue adapters disable cursor
-# Error: Cannot disable last adapter
+# Cannot disable last exporter
+aligntrue exporters disable cursor
+# Error: Cannot disable last exporter
 #   At least one exporter must be configured
-#   Enable another adapter first: aligntrue adapters enable <adapter>
+#   Enable another exporter first: aligntrue exporters enable <exporter>
 
 # Not enabled
-aligntrue adapters disable nonexistent
-# Error: Adapter not enabled: nonexistent
-#   Run: aligntrue adapters list
+aligntrue exporters disable nonexistent
+# Error: Exporter not enabled: nonexistent
+#   Run: aligntrue exporters list
 ```
 
 **Example output:**
 
 ```
-✓ Disabled adapter: claude
+✓ Disabled exporter: claude
 ```
 
 **Exit codes:**
 
 - `0` - Success
-- `1` - Adapter not enabled, last adapter, or config error
+- `1` - Exporter not enabled, last exporter, or config error
 
 ---
 
-### `aligntrue adapters detect`
+### `aligntrue exporters detect`
 
 Manually detect new agents in your workspace. Shows agents that have files present but are not yet in config and not on the ignored list.
 
 **Usage:**
 
 ```bash
-aligntrue adapters detect
+aligntrue exporters detect
 ```
 
 **What it does:**
@@ -214,10 +214,10 @@ Detected 2 new agent(s):
     File: AGENTS.md
 
 To enable:
-  aligntrue adapters enable <agent-name>
+  aligntrue exporters enable <agent-name>
 
 To ignore:
-  aligntrue adapters ignore <agent-name>
+  aligntrue exporters ignore <agent-name>
 ```
 
 **No new agents:**
@@ -239,14 +239,14 @@ Run after installing a new AI coding agent to see if AlignTrue can export to it 
 
 ---
 
-### `aligntrue adapters ignore`
+### `aligntrue exporters ignore`
 
 Add an agent to the ignored list so it never triggers detection prompts during sync.
 
 **Usage:**
 
 ```bash
-aligntrue adapters ignore <agent>
+aligntrue exporters ignore <agent>
 ```
 
 **What it does:**
@@ -261,10 +261,10 @@ aligntrue adapters ignore <agent>
 
 ```bash
 # Ignore an agent
-aligntrue adapters ignore windsurf
+aligntrue exporters ignore windsurf
 
 # Already ignored
-aligntrue adapters ignore windsurf
+aligntrue exporters ignore windsurf
 # Output: ✓ Agent already ignored: windsurf
 ```
 

@@ -294,7 +294,7 @@ aligntrue/
 
 - Max depth 3: packages at `packages/*/src/` with minimal nesting
 - Stable deterministic logic consolidated in `schema/` and `core/`
-- Agent adapters thin and isolated in `exporters/`
+- Agent exporters thin and isolated in `exporters/`
 - CLI is the top-level surface in Phase 1
 
 ## Security considerations
@@ -315,7 +315,7 @@ All packages are published under the `@aligntrue` scope:
 - `@aligntrue/file-utils` - Shared utilities
 - `@aligntrue/core` - Config and sync engine
 - `@aligntrue/sources` - Multi-source pulling
-- `@aligntrue/exporters` - Agent adapters
+- `@aligntrue/exporters` - Agent exporters
 - `@aligntrue/cli` - Command-line tool
 - `@aligntrue/testkit` - Test utilities
 
@@ -338,7 +338,7 @@ Update schema + CLI + exporters in the same PR:
 
 1. Extend shared package types (e.g., `packages/schema/src/types.ts`)
 2. Update CLI command handlers
-3. Update exporter adapters
+3. Update exporters
 4. Add contract tests in `schema/tests/`
 5. Add integration tests in `cli/tests/`
 6. Update docs and CHANGELOG
@@ -1006,7 +1006,7 @@ Versions must match across all workspace packages.
 **Symptom**
 
 ```
-TS2322: Type '"agents"' is not assignable to type '"agents-md"'.
+TS2322: Type '"agents-md"' is not assignable to type '"agents"'.
 ```
 
 **Fix**
@@ -2576,7 +2576,7 @@ node dist/index.js --help
 
 ### packages/exporters
 
-Agent-specific export adapters (50 exporters for 28+ agents).
+Agent-specific export exporters (50 exporters for 28+ agents).
 
 **Responsibilities:**
 
@@ -2634,7 +2634,7 @@ Plugin interface definitions.
 **Responsibilities:**
 
 - ExporterPlugin interface
-- AdapterManifest types
+- ExporterManifest types
 - No implementations (just contracts)
 
 ### packages/testkit

@@ -131,13 +131,13 @@ Generates `.vscode/mcp.json` configuration for Model Context Protocol support.
 **Vendor.vscode extraction:**
 Fields in `vendor.vscode` are flattened to the top level of each rule object. This makes the JSON cleaner for VS Code to consume while preserving VS Code-specific metadata.
 
-## Adapter Registry
+## Exporter Registry
 
 The hybrid manifest system allows community contributions without modifying core code.
 
 ### Manifest Structure
 
-Each adapter directory contains a `manifest.json`:
+Each exporter directory contains a `manifest.json`:
 
 ```json
 {
@@ -167,8 +167,8 @@ registry.register(exporter);
 // Manifest-based registration (production)
 await registry.registerFromManifest("./path/to/manifest.json");
 
-// Discover all adapters in directory
-const manifests = registry.discoverAdapters("./src");
+// Discover all exporters in directory
+const manifests = registry.discoverExporters("./src");
 
 // Get exporter by name
 const exporter = registry.get("cursor");
@@ -180,15 +180,15 @@ const names = registry.list();
 const manifest = registry.getManifest("cursor");
 ```
 
-## Creating Adapters
+## Creating Exporters
 
 ### 1. Create Manifest
 
-Create `manifest.json` in your adapter directory:
+Create `manifest.json` in your exporter directory:
 
 ```json
 {
-  "name": "my-adapter",
+  "name": "my-exporter",
   "version": "1.0.0",
   "description": "Export AlignTrue rules to My Tool format (min 10 chars)",
   "outputs": [".mytool/*.txt"],
@@ -200,7 +200,7 @@ Create `manifest.json` in your adapter directory:
 
 **Required fields:**
 
-- `name` - Lowercase alphanumeric with hyphens (e.g., `my-adapter`)
+- `name` - Lowercase alphanumeric with hyphens (e.g., `my-exporter`)
 - `version` - Semantic version (e.g., `1.0.0`)
 - `description` - Human-readable description (min 10 characters)
 - `outputs` - Array of file patterns produced (min 1 item)
@@ -225,8 +225,8 @@ import type {
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { canonicalizeJson, computeHash } from "@aligntrue/schema";
 
-export class MyAdapterExporter implements ExporterPlugin {
-  name = "my-adapter";
+export class MyExporterExporter implements ExporterPlugin {
+  name = "my-exporter";
   version = "1.0.0";
 
   async export(
@@ -256,20 +256,20 @@ export class MyAdapterExporter implements ExporterPlugin {
 }
 
 // Export as default for registry loading
-export default MyAdapterExporter;
+export default MyExporterExporter;
 ```
 
 ### 3. Write Tests
 
-Create snapshot tests for your adapter:
+Create snapshot tests for your exporter:
 
 ```typescript
 import { describe, it, expect } from "vitest";
-import { MyAdapterExporter } from "./index.js";
+import { MyExporterExporter } from "./index.js";
 
-describe("MyAdapterExporter", () => {
+describe("MyExporterExporter", () => {
   it("exports rules correctly", async () => {
-    const exporter = new MyAdapterExporter();
+    const exporter = new MyExporterExporter();
     const result = await exporter.export(request, options);
 
     expect(result.success).toBe(true);
@@ -294,7 +294,7 @@ The registry includes comprehensive test coverage:
 - Programmatic registration
 - Manifest loading and validation
 - Handler loading with dynamic imports
-- Adapter discovery in directories
+- Exporter discovery in directories
 - Query methods (get, has, list)
 
 **Schema Tests (20 tests)**
@@ -351,11 +351,11 @@ interface ExportResult {
 }
 ```
 
-### AdapterManifest
+### ExporterManifest
 
 ```typescript
-interface AdapterManifest {
-  name: string; // Adapter name (lowercase alphanumeric with hyphens)
+interface ExporterManifest {
+  name: string; // Exporter name (lowercase alphanumeric with hyphens)
   version: string; // Semantic version (e.g., 1.0.0)
   description: string; // Human-readable description
   outputs: string[]; // File patterns produced
@@ -390,7 +390,7 @@ Fidelity notes document semantic mapping limitations when converting AlignTrue I
 
 ## Package Status
 
-✅ **Step 10 Complete** - Adapter registry with hybrid manifests implemented  
+✅ **Step 10 Complete** - Exporter registry with hybrid manifests implemented  
 ✅ **Step 11 Complete** - Cursor exporter with snapshot tests  
 ✅ **Step 12 Complete** - AGENTS.md formatter with v1 format  
 ✅ **Step 13 Complete** - VS Code MCP config exporter
@@ -600,7 +600,7 @@ When contributing an exporter:
 
 ## Contributing
 
-See `CONTRIBUTING.md` for adapter contribution guidelines.
+See `CONTRIBUTING.md` for exporter contribution guidelines.
 
 ## License
 

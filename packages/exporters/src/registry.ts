@@ -1,6 +1,6 @@
 /**
- * Hybrid adapter registry (manifest.json + optional handler)
- * Supports community-scalable adapter contributions with declarative manifests
+ * Hybrid exporter registry (manifest.json + optional handler)
+ * Supports community-scalable exporter contributions with declarative manifests
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -11,7 +11,7 @@ import type { AnySchemaObject } from "ajv";
 import addFormats from "ajv-formats";
 import type {
   ExporterPlugin,
-  AdapterManifest,
+  ExporterManifest,
 } from "@aligntrue/plugin-contracts";
 
 // Determine schema path
@@ -24,11 +24,11 @@ const schemaPath = join(__dirname, "../schema/manifest.schema.json");
  *
  * Supports two registration modes:
  * 1. Programmatic: register(exporter) for tests and mocks
- * 2. Manifest-based: registerFromManifest(path) for production adapters
+ * 2. Manifest-based: registerFromManifest(path) for production exporters
  */
 export class ExporterRegistry {
   private exporters = new Map<string, ExporterPlugin>();
-  private manifests = new Map<string, AdapterManifest>();
+  private manifests = new Map<string, ExporterManifest>();
   private ajv: Ajv;
 
   constructor() {
@@ -55,10 +55,10 @@ export class ExporterRegistry {
   /**
    * Load and validate manifest from file
    */
-  loadManifest(manifestPath: string): AdapterManifest {
+  loadManifest(manifestPath: string): ExporterManifest {
     try {
       const content = readFileSync(manifestPath, "utf-8");
-      const manifest = JSON.parse(content) as AdapterManifest;
+      const manifest = JSON.parse(content) as ExporterManifest;
 
       // Validate against schema
       const validate = this.ajv.getSchema("manifest");
@@ -178,7 +178,7 @@ export class ExporterRegistry {
   }
 
   /**
-   * Register adapter from manifest + optional handler
+   * Register exporter from manifest + optional handler
    */
   async registerFromManifest(manifestPath: string): Promise<void> {
     const manifest = this.loadManifest(manifestPath);
@@ -204,7 +204,7 @@ export class ExporterRegistry {
   /**
    * Discover all manifest.json files in directory
    */
-  discoverAdapters(searchPath: string): string[] {
+  discoverExporters(searchPath: string): string[] {
     const manifests: string[] = [];
 
     try {
@@ -252,7 +252,7 @@ export class ExporterRegistry {
   /**
    * Get manifest by name
    */
-  getManifest(name: string): AdapterManifest | undefined {
+  getManifest(name: string): ExporterManifest | undefined {
     return this.manifests.get(name);
   }
 
@@ -266,7 +266,7 @@ export class ExporterRegistry {
   /**
    * List all registered manifests
    */
-  listManifests(): AdapterManifest[] {
+  listManifests(): ExporterManifest[] {
     return Array.from(this.manifests.values());
   }
 

@@ -37,6 +37,25 @@ export function computeContentChecksum(content: string): string {
 }
 
 /**
+ * Check if an error is a permission error (EACCES or EPERM)
+ */
+function isPermissionError(err: unknown): boolean {
+  if (err instanceof Error && "code" in err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    return code === "EACCES" || code === "EPERM";
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    return (
+      msg.includes("permission denied") ||
+      msg.includes("eacces") ||
+      msg.includes("eperm")
+    );
+  }
+  return false;
+}
+
+/**
  * Ensure directory exists, creating it if necessary
  */
 export function ensureDirectoryExists(dirPath: string): void {
@@ -203,6 +222,13 @@ export class AtomicFileWriter {
         // Temp files are cleaned up on error and post-write. No user input in path construction.
         writeFileSync(tempPath, content, "utf8");
       } catch (_err) {
+        if (isPermissionError(_err)) {
+          throw new Error(
+            `Permission denied: Cannot write to ${tempPath}\n` +
+              `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
+              `  Check directory permissions or run with appropriate permissions`,
+          );
+        }
         throw new Error(
           `Failed to write temp file: ${tempPath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,
@@ -214,6 +240,13 @@ export class AtomicFileWriter {
         renameSync(tempPath, filePath);
         tempPath = undefined; // Mark as cleaned up
       } catch (_err) {
+        if (isPermissionError(_err)) {
+          throw new Error(
+            `Permission denied: Cannot rename temp file to ${filePath}\n` +
+              `  ${_err instanceof Error ? _err.message : String(_err)}\n` +
+              `  Check file permissions (chmod) or run with appropriate permissions`,
+          );
+        }
         throw new Error(
           `Failed to rename temp file: ${tempPath} → ${filePath}\n` +
             `  ${_err instanceof Error ? _err.message : String(_err)}`,

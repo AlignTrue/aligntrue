@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Cancel in-progress runs when a new commit is pushed
+# This ensures the lockfile fix commit cancels the initial failing run
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

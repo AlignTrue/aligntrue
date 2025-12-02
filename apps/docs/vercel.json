@@ -19,7 +19,7 @@
     },
     {
       "source": "/exporters",
-      "destination": "/docs/04-reference/cli-reference/basic#aligntrue-exporters",
+      "destination": "/docs/04-reference/cli-reference/basic",
       "permanent": true
     },
     {
@@ -34,7 +34,7 @@
     },
     {
       "source": "/agent-ignore",
-      "destination": "/docs/03-concepts/preventing-duplicate-rules#agent-ignore-files",
+      "destination": "/docs/03-concepts/preventing-duplicate-rules",
       "permanent": true
     },
     {
@@ -64,7 +64,7 @@
     },
     {
       "source": "/export-content-mode",
-      "destination": "/docs/02-customization/multi-file-organization#content-mode-for-single-file-exports",
+      "destination": "/docs/02-customization/multi-file-organization",
       "permanent": true
     }
   ],

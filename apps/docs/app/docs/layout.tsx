@@ -76,7 +76,7 @@ function DocsFooter() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://img.shields.io/npm/v/aligntrue?color=CB3837&logo=npm"
+              src="https://img.shields.io/npm/v/aligntrue.svg"
               alt="npm version"
               style={{ height: "20px", display: "block" }}
             />

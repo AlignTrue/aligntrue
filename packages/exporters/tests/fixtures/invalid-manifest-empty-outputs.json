@@ -1,5 +1,5 @@
 {
-  "name": "test-adapter",
+  "name": "test-exporter",
   "version": "1.0.0",
   "description": "Empty outputs array",
   "outputs": []

@@ -50,6 +50,7 @@ next-env.d.ts
 # AI agents
 .cursor/plans/
 
+
 # aligntrue local data (user-specific, never commit)
 .aligntrue/telemetry.json
 .aligntrue/telemetry-events.json
@@ -92,19 +93,29 @@ apps/docs/public/_pagefind
 
 # START AlignTrue Generated Files
 .aligntrue/.backups/
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/ci_troubleshooting.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/cli_testing_playbook.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/debugging.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/documentation.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/error_lessons_learned.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/global.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/implementation_specs.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/pull_request_standards.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/rule_writing.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/security_linting_policy.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/test_log_template.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/testing.mdc
-/Users/gabe/Sites/aligntrue/.cursor/rules/.cursor/rules/typescript.mdc
-/Users/gabe/Sites/aligntrue/AGENTS.md
-/Users/gabe/Sites/aligntrue/CLAUDE.md
+AGENTS.md
+CLAUDE.md
+.cursor/rules/ci_troubleshooting.mdc
+.cursor/rules/cli_testing_playbook.mdc
+.cursor/rules/debugging.mdc
+.cursor/rules/documentation.mdc
+.cursor/rules/error_lessons_learned.mdc
+.cursor/rules/global.mdc
+.cursor/rules/implementation_specs.mdc
+.cursor/rules/pull_request_standards.mdc
+.cursor/rules/rule_writing.mdc
+.cursor/rules/security_linting_policy.mdc
+.cursor/rules/test_log_template.mdc
+.cursor/rules/testing.mdc
+.cursor/rules/typescript.mdc
 # END AlignTrue Generated Files
+
+# START AlignTrue Private Rules
+# Source: git@github.com:gmays/aligntrue-private-rules (private: true)
+.aligntrue/rules/guardrails.md
+.aligntrue/rules/potential_future_features.md
+.aligntrue/rules/vision_strategy_roadmap.md
+.cursor/rules/guardrails.mdc
+.cursor/rules/potential_future_features.mdc
+.cursor/rules/vision_strategy_roadmap.mdc
+# END AlignTrue Private Rules

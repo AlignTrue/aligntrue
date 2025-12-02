@@ -1,15 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://aligntrue.ai/schemas/adapter-manifest.json",
-  "title": "AlignTrue Adapter Manifest",
-  "description": "Describes an AlignTrue exporter adapter.",
+  "$id": "https://aligntrue.ai/schemas/exporter-manifest.json",
+  "title": "AlignTrue Exporter Manifest",
+  "description": "Describes an AlignTrue exporter.",
   "type": "object",
   "required": ["name", "version", "description", "outputs"],
   "properties": {
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
-      "description": "Adapter name (lowercase alphanumeric with hyphens)"
+      "description": "Exporter name (lowercase alphanumeric with hyphens)"
     },
     "version": {
       "type": "string",
@@ -19,7 +19,7 @@
     "description": {
       "type": "string",
       "minLength": 10,
-      "description": "Human-readable description of the adapter"
+      "description": "Human-readable description of the exporter"
     },
     "outputs": {
       "type": "array",
@@ -27,7 +27,7 @@
         "type": "string"
       },
       "minItems": 1,
-      "description": "File patterns produced by this adapter (e.g., .cursor/rules/*.mdc)"
+      "description": "File patterns produced by this exporter (e.g., .cursor/rules/*.mdc)"
     },
     "handler": {
       "type": "string",
@@ -55,12 +55,12 @@
         "type": "string",
         "enum": ["native", "agents-md"]
       },
-      "description": "Optional: export formats this adapter supports (default: ['native'])"
+      "description": "Optional: export formats this exporter supports (default: ['native'])"
     },
     "defaultFormat": {
       "type": "string",
       "enum": ["native", "agents-md"],
-      "description": "Optional: default export format for this adapter (default: 'native')"
+      "description": "Optional: default export format for this exporter (default: 'native')"
     }
   },
   "additionalProperties": false

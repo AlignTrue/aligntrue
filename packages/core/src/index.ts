@@ -123,3 +123,20 @@ export {
   type SimilarityGroup,
   type SimilarityResult,
 } from "./similarity/index.js";
+
+// Audit logging
+export {
+  type AuditAction,
+  type AuditEvent,
+  type ImportEvent,
+  type RenameEvent,
+  type DeleteEvent,
+  type AuditLogEvent,
+  getHistoryPath,
+  appendAuditEvent,
+  logImport,
+  logRename,
+  logDelete,
+  readAuditLog,
+  getImportHistory,
+} from "./audit/index.js";

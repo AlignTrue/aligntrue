@@ -1,5 +1,5 @@
 {
-  "name": "test-adapter",
+  "name": "test-exporter",
   "version": "v1.0",
   "description": "Invalid semver format",
   "outputs": [".test/*.txt"]

@@ -530,7 +530,7 @@ pnpm build
 
 ## Next Steps
 
-**Step 10:** Implement adapter registry with hybrid manifests ✅  
+**Step 10:** Implement exporter registry with hybrid manifests ✅  
 **Steps 11-13:** Implement actual exporters (Cursor, AGENTS.md, MCP) ✅  
 **Step 14:** Complete sync engine ✅  
 **Step 23:** Full CLI integration ✅  

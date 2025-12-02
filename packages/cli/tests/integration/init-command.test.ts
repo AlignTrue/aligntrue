@@ -451,9 +451,7 @@ This is a test rule for the docs app.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).toContain("nested_location: apps/docs");
-      expect(importedContent).toContain(
-        "original_path: apps/docs/.cursor/rules/web_stack.mdc",
-      );
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
 
       // Run sync to export the rule
       const { sync } = await import("../../src/commands/sync/index.js");
@@ -502,9 +500,7 @@ This is the CLI package agents file.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).toContain("nested_location: packages/cli");
-      expect(importedContent).toContain(
-        "original_path: packages/cli/AGENTS.md",
-      );
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
     });
 
     it("does not set nested_location for root-level cursor rules", async () => {
@@ -539,9 +535,136 @@ Root level rule content.
 
       const importedContent = readFileSync(importedRulePath, "utf-8");
       expect(importedContent).not.toContain("nested_location:");
-      expect(importedContent).toContain(
-        "original_path: .cursor/rules/global.mdc",
+      // Note: original_path is no longer written to frontmatter (moved to audit log)
+    });
+
+    it("infers nested_location from scope when rule has scope but no physical nesting", async () => {
+      // Create a root-level cursor rule at .cursor/rules/web_stack.mdc
+      // with scope: apps/docs in frontmatter (representing a scoped rule at root)
+      const rootCursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(rootCursorDir, { recursive: true });
+      writeFileSync(
+        join(rootCursorDir, "web_stack.mdc"),
+        `---
+description: Web stack guide for docs site
+title: web_stack
+scope: apps/docs
+---
+
+# Web stack guide
+
+This is a scoped rule at root level.
+`,
+        "utf-8",
       );
+
+      // Run init with cursor exporter
+      await init(["--yes", "--exporters", "cursor"]);
+
+      // Verify the imported rule has nested_location inferred from scope
+      const importedRulePath = join(
+        TEST_DIR,
+        ".aligntrue",
+        "rules",
+        "web_stack.md",
+      );
+      expect(existsSync(importedRulePath)).toBe(true);
+
+      const importedContent = readFileSync(importedRulePath, "utf-8");
+      // Should have nested_location inferred from scope
+      expect(importedContent).toContain("nested_location: apps/docs");
+      // Should preserve the original scope
+      expect(importedContent).toContain("scope: apps/docs");
+
+      // Run sync to verify the rule exports to the nested location
+      const { sync } = await import("../../src/commands/sync/index.js");
+      await sync([]);
+
+      // Verify the rule was exported to the nested location
+      const nestedCursorDir = join(
+        TEST_DIR,
+        "apps",
+        "docs",
+        ".cursor",
+        "rules",
+      );
+      const exportedRulePath = join(nestedCursorDir, "web_stack.mdc");
+      expect(existsSync(exportedRulePath)).toBe(true);
+    });
+
+    it("does not infer nested_location from generic scope values", async () => {
+      // Create a root-level cursor rule with scope: "General" (generic, not a path)
+      const rootCursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(rootCursorDir, { recursive: true });
+      writeFileSync(
+        join(rootCursorDir, "generic.mdc"),
+        `---
+description: Generic rule
+title: generic
+scope: General
+---
+
+# Generic Rule
+
+This is a generic scoped rule.
+`,
+        "utf-8",
+      );
+
+      // Run init with cursor exporter
+      await init(["--yes", "--exporters", "cursor"]);
+
+      // Verify the imported rule does NOT have nested_location
+      // (scope: General should not be treated as a path)
+      const importedRulePath = join(
+        TEST_DIR,
+        ".aligntrue",
+        "rules",
+        "generic.md",
+      );
+      expect(existsSync(importedRulePath)).toBe(true);
+
+      const importedContent = readFileSync(importedRulePath, "utf-8");
+      expect(importedContent).not.toContain("nested_location:");
+      expect(importedContent).toContain("scope: General");
+    });
+
+    it("does not infer nested_location from lowercase generic scope values", async () => {
+      // Create a root-level cursor rule with scope: "reference" (lowercase generic, not a path)
+      // This tests the fix for the regex /^[a-z][\w-]*$/ that incorrectly matched any lowercase word
+      const rootCursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(rootCursorDir, { recursive: true });
+      writeFileSync(
+        join(rootCursorDir, "style_guide.mdc"),
+        `---
+description: Style guide rule
+title: style_guide
+scope: reference
+---
+
+# Style Guide
+
+This rule has a lowercase generic scope that should not be treated as a path.
+`,
+        "utf-8",
+      );
+
+      // Run init with cursor exporter
+      await init(["--yes", "--exporters", "cursor"]);
+
+      // Verify the imported rule does NOT have nested_location
+      // (scope: reference should not be treated as a path like "apps/docs")
+      const importedRulePath = join(
+        TEST_DIR,
+        ".aligntrue",
+        "rules",
+        "style_guide.md",
+      );
+      expect(existsSync(importedRulePath)).toBe(true);
+
+      const importedContent = readFileSync(importedRulePath, "utf-8");
+      expect(importedContent).not.toContain("nested_location:");
+      expect(importedContent).toContain("scope: reference");
     });
   });
 });

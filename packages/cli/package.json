@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/cli",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "bin": {
     "aligntrue": "./dist/index.js",
@@ -32,10 +32,10 @@
     "@aligntrue/schema": "workspace:*",
     "@aligntrue/sources": "workspace:*",
     "@clack/prompts": "^0.11.0",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "diff": "^8.0.2",
     "glob": "^13.0.0",
-    "yaml": "^2.6.1"
+    "yaml": "^2.8.2"
   },
   "engines": {
     "node": ">=20"
