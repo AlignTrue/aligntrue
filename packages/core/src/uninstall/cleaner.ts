@@ -241,11 +241,17 @@ export async function executeUninstall(
  * Convert an exported file to editable by removing the READ-ONLY marker
  */
 function convertToEditable(filePath: string): void {
-  if (!existsSync(filePath)) {
-    return;
+  // Read and write atomically - no separate existence check to avoid TOCTOU race
+  let content: string;
+  try {
+    content = readFileSync(filePath, "utf-8");
+  } catch (err) {
+    // File doesn't exist or can't be read - nothing to convert
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return;
+    }
+    throw err;
   }
-
-  const content = readFileSync(filePath, "utf-8");
   const converted = content.replace(READ_ONLY_MARKER_PATTERN, "").trimStart();
   writeFileSync(filePath, converted, "utf-8");
 }
@@ -255,11 +261,18 @@ function convertToEditable(filePath: string): void {
  */
 function removeGitignoreEntries(cwd: string): string[] {
   const gitignorePath = join(cwd, ".gitignore");
-  if (!existsSync(gitignorePath)) {
-    return [];
-  }
 
-  let content = readFileSync(gitignorePath, "utf-8");
+  // Read atomically - no separate existence check to avoid TOCTOU race
+  let content: string;
+  try {
+    content = readFileSync(gitignorePath, "utf-8");
+  } catch (err) {
+    // File doesn't exist or can't be read - nothing to remove
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw err;
+  }
   const removedEntries: string[] = [];
 
   // Remove each marker section
