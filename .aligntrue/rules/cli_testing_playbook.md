@@ -1,5 +1,6 @@
 ---
 description: Systematic CLI testing playbook for AI agents
+enabled: false
 content_hash: abe35f9c42f24e1375def23fb68d390d0ddd49bbc35aeab795876a15e3a4fb2e
 ---
 
@@ -1820,6 +1821,20 @@ aligntrue sync
 
 #### 3.1. Git-Based Team Collaboration
 
+**Implementation Status:** These scenarios should be implemented in `packages/cli/tests/comprehensive/layers/layer-3-team.ts`. Currently only basic team mode tests are implemented. The scenarios below define what the automated tests should cover.
+
+**Current coverage in layer-3-team.ts:**
+
+- [x] Enable team mode and generate lockfile
+- [x] Drift detection catches unapproved changes
+- [x] Personal rules stay local
+- [ ] A. Git Repository Setup and Team Initialization
+- [ ] B. Git Integration Modes Testing
+- [ ] C. Merge Conflict Scenarios
+- [ ] D. PR Workflow Testing
+- [ ] E. Git Source Update Workflows
+- [ ] F. Remote Backup Testing
+
 Test actual git operations for realistic team collaboration workflows. This section uses bare git repositories in `/tmp/` to simulate real team scenarios without network dependencies.
 
 **A. Git Repository Setup and Team Initialization:**
@@ -1874,6 +1889,8 @@ grep "mode: team" .aligntrue/config.yaml || echo "FAIL: team mode not detected"
 - Lockfile and config are shared via git
 - Both users have identical team configuration
 
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface with git commands executed via `execSync`. Create bare repo, set git users, and verify team initialization across two simulated users.
+
 **B. Git Integration Modes Testing:**
 
 Test the three git integration modes (ignore, commit, branch) and per-exporter overrides:
@@ -1921,6 +1938,8 @@ git branch | grep "aligntrue/sync" || echo "FAIL: cursor branch not created"
 - Branch mode creates feature branch and stages files
 - Per-exporter overrides work correctly
 - Multiple modes can coexist for different exporters
+
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test all three git modes and per-exporter overrides by modifying config and verifying git state changes.
 
 **C. Merge Conflict Scenarios:**
 
@@ -1973,6 +1992,8 @@ aligntrue drift --gates  # Should validate lockfile integrity
 - `aligntrue drift --gates` validates lockfile after merge
 - Both users can resolve conflicts and continue working
 
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Create conflicting commits from two users and verify both git merge conflicts and lockfile conflict handling.
+
 **D. PR Workflow Testing:**
 
 Test feature branch creation and PR simulation:
@@ -2017,6 +2038,8 @@ aligntrue drift --gates  # Should pass in CI after merge
 - Merge workflows complete successfully
 - CI integration validates after merge
 
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test feature branch creation, drift validation on branches, and merge workflows with post-merge sync.
+
 **E. Git Source Update Workflows:**
 
 Test git source update checking and approval workflows:
@@ -2053,6 +2076,8 @@ aligntrue sync  # Should now pull updates
 - Lockfile reflects updated source hashes
 
 **Note:** For testing update detection, you need an actual remote repository that changes over time. The AlignTrue/examples repo is stable, so update detection won't trigger unless the upstream repo is modified.
+
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Configure a git source, test update detection with `--force-refresh`, and verify approval workflows.
 
 **F. Remote Backup Testing:**
 
@@ -2151,6 +2176,8 @@ aligntrue sync
 ```
 
 See [Backup documentation](https://aligntrue.ai/backup) for details.
+
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test backup status, manual push, auto-backup during sync, multiple destinations with file assignments, and source/backup conflict detection.
 
 **Git Testing Best Practices:**
 
@@ -3651,6 +3678,9 @@ OUTPUT: Structured report with workflow results and issues found.
 ```
 Execute Layer 3 (Team Golden Paths) from .cursor/rules/cli_testing_playbook.mdc.
 
+**CURRENT IMPLEMENTATION STATUS:**
+The automated test file `packages/cli/tests/comprehensive/layers/layer-3-team.ts` currently implements basic team mode scenarios. The scenarios below (especially A-F) are documented as manual testing procedures in Section 3.1. To complete full Layer 3 testing, the automated test file should be expanded to implement all six git-based scenarios (A-F) using the `TeamScenario` interface and `execSync` for git commands.
+
 EXECUTION PROTOCOL:
 1. Set up git-based test environment:
    - Create bare git repository in /tmp/team-repo.git
@@ -3667,12 +3697,12 @@ EXECUTION PROTOCOL:
    - Multi-file agent editing
    - Read-only file edit detection
 3. Execute git integration testing (REQUIRED - ALL scenarios):
-   - **A. Git Repository Setup and Team Initialization** - REQUIRED
-   - **B. Git Integration Modes Testing** - REQUIRED (ignore, commit, branch + per-exporter overrides)
-   - **C. Merge Conflict Scenarios** - REQUIRED (git merge conflicts and lockfile handling)
-   - **D. PR Workflow Testing** - REQUIRED (feature branches, PR simulation, CI integration)
-   - **E. Git Source Update Workflows** - REQUIRED (branch/tag checking, approval workflows)
-   - **F. Remote Backup Testing** - REQUIRED (push operations, multi-backup, source/backup conflicts)
+   - **A. Git Repository Setup and Team Initialization** - REQUIRED (See implementation status in section 3.1)
+   - **B. Git Integration Modes Testing** - REQUIRED (See implementation status in section 3.1)
+   - **C. Merge Conflict Scenarios** - REQUIRED (See implementation status in section 3.1)
+   - **D. PR Workflow Testing** - REQUIRED (See implementation status in section 3.1)
+   - **E. Git Source Update Workflows** - REQUIRED (See implementation status in section 3.1)
+   - **F. Remote Backup Testing** - REQUIRED (See implementation status in section 3.1)
 4. Execute team-specific new features:
    - Backup creation and restoration in team mode
    - Ignore file management in team transitions

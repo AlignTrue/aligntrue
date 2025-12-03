@@ -77,10 +77,15 @@ export abstract class ExporterBase implements ExporterPlugin {
   }
 
   /**
-   * Check if a rule should be exported based on exclude_from/export_only_to
+   * Check if a rule should be exported based on enabled/exclude_from/export_only_to
    */
   protected shouldExportRule(rule: RuleFile, exporterName: string): boolean {
-    const { exclude_from, export_only_to } = rule.frontmatter;
+    const { enabled, exclude_from, export_only_to } = rule.frontmatter;
+
+    // Check if rule is disabled (enabled defaults to true if not specified)
+    if (enabled === false) {
+      return false;
+    }
 
     if (exclude_from && exclude_from.includes(exporterName)) {
       return false;

@@ -208,6 +208,111 @@ describe("ExporterBase", () => {
     });
   });
 
+  describe("shouldExportRule", () => {
+    it("returns true by default (no targeting)", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule" },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(true);
+    });
+
+    it("returns false when enabled is false", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule", enabled: false },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(false);
+    });
+
+    it("returns true when enabled is true", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule", enabled: true },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(true);
+    });
+
+    it("returns true when enabled is undefined (default)", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule" },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(true);
+    });
+
+    it("returns false when exporter is in exclude_from", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule", exclude_from: ["test", "cursor"] },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(false);
+    });
+
+    it("returns true when exporter is in export_only_to", () => {
+      const rule = {
+        content: "test",
+        frontmatter: { title: "Test Rule", export_only_to: ["test", "cursor"] },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(true);
+    });
+
+    it("returns false when exporter is not in export_only_to", () => {
+      const rule = {
+        content: "test",
+        frontmatter: {
+          title: "Test Rule",
+          export_only_to: ["cursor", "claude"],
+        },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(false);
+    });
+
+    it("enabled: false takes precedence over export_only_to", () => {
+      const rule = {
+        content: "test",
+        frontmatter: {
+          title: "Test Rule",
+          enabled: false,
+          export_only_to: ["test"],
+        },
+        path: ".aligntrue/rules/test.md",
+        filename: "test.md",
+        hash: "abc123",
+      };
+      const result = exporter["shouldExportRule"](rule, "test");
+      expect(result).toBe(false);
+    });
+  });
+
   describe("integration", () => {
     it("test exporter can export with all base methods", async () => {
       const request: ScopedExportRequest = {
