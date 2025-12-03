@@ -271,45 +271,11 @@ aligntrue sync
 | **Sync speed**    | Validation overhead      | Fast                  |
 | **Git workflow**  | Lockfile required        | Optional              |
 
-## Public vs private rules in solo mode
+## Rule visibility
 
-Solo mode can store rule sections in two places:
+In solo mode, you can configure where rules are stored and whether they're committed to git.
 
-- **Public rules (repo-backed)** live in `.aligntrue/rules` and are committed alongside the rest of your project. Everyone who clones the repo gets the same rules. When you enable team mode, these sections become the shared team rules that require approval to change.
-- **Private/personal rules (remote)** live in a separate private git repo and sync only with machines where you configure that remote. They remain personal even when collaborators clone the main repo.
-
-### How to mark public rules as private
-
-1. Configure a personal remote inside `.aligntrue/config.yaml`:
-
-```yaml
-mode: solo
-storage:
-  personal:
-    type: remote
-    url: git@github.com:you/private-rules.git
-    branch: main
-```
-
-2. Run `aligntrue migrate personal` (or `aligntrue migrate personal --dry-run` to preview). The CLI launches the remote setup wizard and moves your personal sections into the private repo.
-3. Run `aligntrue sync` to write the updated IR and push changes to the remote. From now on, the sections that lived in your private repo are only synced with your personal storage.
-
-### How to bring private rules back into the repo
-
-1. Modify `storage.personal` in `.aligntrue/config.yaml`:
-   - Set `type: local` to keep sections machine-local (`.aligntrue/.local/personal/rules.md`)
-   - Remove the entire `storage.personal` block to move sections back into the main repo (`.aligntrue/rules`)
-
-2. Copy any sections you still need from:
-   - `.aligntrue/.remotes/personal/rules.md` (if remote storage)
-   - `.aligntrue/.local/personal/rules.md` (if local storage)
-   - Or your private repo directly
-
-   Back into `.aligntrue/rules`.
-
-3. Run `aligntrue sync` and commit `.aligntrue/rules` to publish the now-public sections with the rest of your repo.
-
-You can repeat these steps anytime: flip storage between repo/local/remote or rerun `aligntrue migrate personal` when you want to reclassify sections without touching the rest of your config.
+For detailed information on git visibility, approval scopes, and storage options, see [Rule Visibility Concepts](/docs/03-concepts/rule-visibility).
 
 ## Frequently asked questions
 

@@ -20,12 +20,12 @@ Team mode enables collaborative rule management with:
 
 ## Team mode vs solo mode
 
-|| Feature | Solo mode | Team mode |
-|| --------------------- | --------- | --------- |
-|| Lockfile generation | ❌ | ✅ |
-|| Bundle generation | ❌ | ✅ |
-|| Allow list validation | ❌ | ✅ |
-|| Drift detection | ❌ | ✅ |
+||| Feature | Solo mode | Team mode |
+||| --------------------- | --------- | --------- |
+||| Lockfile generation | ❌ | ✅ |
+||| Bundle generation | ❌ | ✅ |
+||| Allow list validation | ❌ | ✅ |
+||| Drift detection | ❌ | ✅ |
 
 <Callout type="warning" title=".aligntrue.bundle.yaml status">
   `modules.bundle` enables multi-source merging in memory, but the CLI does
@@ -616,22 +616,9 @@ Personal notes - not managed.
 
 ## Personal rules
 
-Personal rules allow team members to add individual preferences without triggering lockfile drift detection.
+In team mode, rules can be marked as "personal" (using `scope: personal`) to exclude them from lockfile validation and team approval workflows.
 
-### Overview
-
-In team mode, sections can be marked as "personal" to exclude them from lockfile validation. This enables developers to customize their local workflow without requiring team approval for every change.
-
-**Use cases:**
-
-- Personal coding shortcuts and reminders
-- Individual workflow preferences
-- Local development notes
-- Experimental rules for personal projects
-
-### Marking sections as personal
-
-Add `scope: personal` to section frontmatter in `.aligntrue/rules`:
+**What it does:**
 
 ```yaml
 sections:
@@ -644,94 +631,21 @@ sections:
     scope: team # Default: included in lockfile
 ```
 
-### Lockfile behavior
-
 Personal sections are excluded from lockfile generation and validation:
 
-**Lockfile metadata:**
+- **Team sections**: Validated against lockfile (triggers drift on changes)
+- **Personal sections**: Not validated (can change freely)
 
-```json
-{
-  "version": "1",
-  "rules": [
-    // Only team-scoped sections included
-  ],
-  "personal_rules_count": 3 // Informational only
-}
-```
+**Use cases:**
 
-**Drift detection:**
+- Personal coding shortcuts and reminders
+- Individual workflow preferences
+- Local development notes
+- Experimental rules for personal projects
 
-- Team sections: validated against lockfile (triggers drift on changes)
-- Personal sections: not validated (can change freely)
+For practical workflows and detailed examples, see [Rule Visibility Guide](/docs/01-guides/09-rule-visibility).
 
-**Example drift report:**
-
-```
-LOCKFILE DRIFT:
-  fp:team-standards-a1b2c3
-    Team rule changed since last lockfile generation
-
-PERSONAL RULES (not validated):
-  3 personal sections
-  Personal rules do not require team approval
-```
-
-### Workflow
-
-**Adding personal rules:**
-
-1. Edit `AGENTS.md` or `.cursor/rules/*.mdc` with personal sections
-2. Run `aligntrue sync --accept-agent cursor` to pull changes to IR
-3. Mark sections as personal in `.aligntrue/rules`
-4. Sync exports: `aligntrue sync`
-
-**Team member workflow:**
-
-```bash
-# Pull latest team rules
-aligntrue sync
-
-# Add personal section to AGENTS.md
-echo "## My Shortcuts\n\nPersonal notes" >> AGENTS.md
-
-# Pull personal changes to IR
-aligntrue sync --accept-agent agents
-
-# Mark as personal in .aligntrue/rules
-# (manually edit or use future migration command)
-
-# Sync exports
-aligntrue sync
-
-# Commit only team changes (personal sections excluded from lockfile)
-git add .aligntrue.lock.json
-git commit -m "chore: Update lockfile"
-```
-
-### Best practices
-
-**Do:**
-
-- Use personal scope for individual preferences
-- Keep personal sections separate from team sections
-- Document personal scope in section headings (e.g., "My Shortcuts")
-
-**Don't:**
-
-- Mark critical team rules as personal
-- Use personal scope to bypass team review for shared rules
-- Commit personal sections to shared repositories (unless intentional)
-
-### Comparison with managed sections
-
-|| Feature | Managed sections | Personal rules |
-|| --------------- | ----------------------------- | ------------------------------ |
-|| Purpose | Protect team rules from edits | Allow individual customization |
-|| Lockfile | Included, validated | Excluded, not validated |
-|| Drift detection | Triggers on changes | Ignored |
-|| Team approval | Required | Not required |
-|| Use case | Security, compliance | Shortcuts, preferences |
+For conceptual background on approval scopes and storage options, see [Rule Visibility Concepts](/docs/03-concepts/rule-visibility).
 
 ## See also
 
