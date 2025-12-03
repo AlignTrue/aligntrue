@@ -23,7 +23,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
 - Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
-## CLI (24 commands)
+## CLI (23 commands)
 
 **Diagnostics:**
 
@@ -64,7 +64,6 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - `revert` — Restore files from backup with preview
 - `override` — Manage overlays (add, remove, diff, status)
 - `privacy` — Privacy settings and consent management
-- `telemetry` — Telemetry opt-in/opt-out
 - `migrate` — Schema migration (preview mode)
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.

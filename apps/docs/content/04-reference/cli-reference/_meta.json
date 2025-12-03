@@ -6,5 +6,6 @@
   "plugs": "Plugs",
   "overlays": "Overlays",
   "team": "Team mode",
+  "migrate": "Migrate",
   "settings": "Settings"
 }
