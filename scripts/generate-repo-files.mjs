@@ -9,7 +9,7 @@
  *
  * Mappings:
  * - apps/docs/content/index.mdx → README.md
- * - apps/docs/content/07-contributing/creating-aligns.md → CONTRIBUTING.md
+ * - apps/docs/content/07-contributing/index.md → CONTRIBUTING.md
  * - apps/docs/content/06-development/*.md → DEVELOPMENT.md (concatenated)
  * - apps/docs/content/security.md → SECURITY.md
  */
@@ -109,12 +109,12 @@ function generateReadme() {
 }
 
 /**
- * Generate CONTRIBUTING.md from creating-aligns.md
+ * Generate CONTRIBUTING.md from index.md
  */
 function generateContributing() {
   console.log("Generating CONTRIBUTING.md...");
 
-  const sourcePath = join(docsContentDir, "07-contributing/creating-aligns.md");
+  const sourcePath = join(docsContentDir, "07-contributing/index.md");
   let content = readFileSync(sourcePath, "utf-8");
 
   // Strip frontmatter
@@ -124,8 +124,7 @@ function generateContributing() {
   content = transformLinks(content);
 
   // Add header and footer
-  content =
-    addHeader("07-contributing/creating-aligns.md") + content + addFooter();
+  content = addHeader("07-contributing/index.md") + content + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "CONTRIBUTING.md");
