@@ -7,6 +7,8 @@ description: Import rules from URLs, git repositories, local paths, and auto-det
 
 AlignTrue provides flexible ways to add rules to your project, whether you're starting fresh, importing from external sources, or discovering existing agent files.
 
+> **Want to dive deeper?** After you've added sources, see [Managing rule sources](/docs/01-guides/08-managing-sources) for advanced configuration, merging rules from multiple sources, and customization options.
+
 ## Quick reference
 
 | Scenario                                | Command                                    |
