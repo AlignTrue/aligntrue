@@ -36,35 +36,33 @@ Individual guidelines that specify how AI agents should behave in your project. 
 
 **Related:** [Align Spec](/docs/04-reference/features), [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections)
 
-### Aligns
+### Align (noun)
 
-Collections of related rules organized around a theme or technology stack. Aligns are the shareable unit of rule sets.
+An **Align** is the shareable unit in AlignTrue. It replaces the earlier concept of a "pack" from prior terminology.
 
-**Examples of aligns:**
+An Align can be:
 
-- `testing.yaml` - Testing best practices
-- `typescript.yaml` - TypeScript strict mode conventions
-- `nextjs_app_router.yaml` - Next.js App Router patterns
+- A collection of rules (e.g., `typescript.md`, `testing.md`)
+- An MCP server configuration
+- A skill definition
+- Other shareable elements (future)
 
-Aligns can be:
+**Key points:**
 
-- Stored locally
-- Shared via GitHub
-- Referenced in your AlignTrue configuration
+- Capitalize **Align** (singular) and **Aligns** (plural) as proper nouns when referring to the shareable unit
+- Distinguish from the verb "align" (lowercase) meaning to synchronize or keep in sync
+- Can be stored locally, shared via git, or referenced remotely
+- Combines metadata (ID, version, summary) with rules or other configuration
 
-**Related:** [Creating Aligns](/docs/06-contributing/creating-aligns)
+**Examples of Aligns:**
 
-### Aligns
+- "The TypeScript Align includes strict mode rules"
+- "Import community Aligns from GitHub"
+- "Create your own Align for project standards"
+- `testing.yaml` - Testing best practices Align
+- `nextjs_app_router.yaml` - Next.js App Router patterns Align
 
-**Note:** "Aligns" is the formal specification name. In everyday use, we call these **"aligns"** (e.g., "testing align", "TypeScript align").
-
-An Align/align is a YAML document that combines metadata with a collection of rules:
-
-- **ID** - Unique identifier for the align
-- **Version** - Semantic versioning (e.g., `1.0.0`)
-- **Summary** - Brief description
-- **Rules** - Array of rule objects
-- **Optional metadata** - Owner, source, tags, scope, etc.
+**File formats:** `.md` files in `.aligntrue/rules/` or `.yaml` for structured definitions
 
 **Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/06-contributing/creating-aligns)
 

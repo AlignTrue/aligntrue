@@ -1,6 +1,4 @@
 {
-  "00-edit-source": "Choosing your edit source",
-  "01-workflows": "Workflows and scenarios",
   "02-solo-developer-guide": "Solo developer guide",
   "03-join-team": "Joining a team",
   "04-team-guide": "Team guide",
@@ -11,5 +9,6 @@
   "09-safety-best-practices": "Safety best practices",
   "10-ci-cd-integration": "CI/CD integration",
   "11-adding-rules": "Adding rules",
-  "12-rule-privacy": "Rule privacy"
+  "12-rule-privacy": "Rule privacy",
+  "sharing-rules": "Sharing rules"
 }
