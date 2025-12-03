@@ -52,9 +52,6 @@ next-env.d.ts
 
 
 # aligntrue local data (user-specific, never commit)
-.aligntrue/telemetry.json
-.aligntrue/telemetry-events.json
-.aligntrue/privacy-consent.json
 .aligntrue/.cache/
 
 # temp items (AI-generated artifacts, prefixed with temp-)
@@ -112,6 +109,7 @@ CLAUDE.md
 
 # START AlignTrue Private Rules
 # Source: git@github.com:gmays/aligntrue-private-rules (private: true)
+.aligntrue/rules/error_lessons_learned.md
 .aligntrue/rules/guardrails.md
 .aligntrue/rules/potential_future_features.md
 .aligntrue/rules/vision_strategy_roadmap.md
