@@ -102,8 +102,8 @@ Each section gets a stable fingerprint based on:
 
 **Example fingerprints:**
 
-- `fp:testing-requirements-5d8e` - "Testing Requirements" section
-- `fp:performance-standards-7a2c` - "Performance Standards" section
+- `testing-requirements-5d8e` - "Testing Requirements" section
+- `performance-standards-7a2c` - "Performance Standards" section
 
 Fingerprints remain stable when:
 
@@ -148,7 +148,7 @@ In team mode, lockfile entries use section fingerprints:
 {
   "rules": [
     {
-      "rule_id": "fp:testing-requirements-5d8e",
+      "rule_id": "testing-requirements-5d8e",
       "content_hash": "sha256:abc123...",
       "source": "https://github.com/org/repo"
     }

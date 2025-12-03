@@ -2,7 +2,7 @@
 description: CLI reference for the aligntrue backup command
 ---
 
-# backup
+# Backups
 
 Manage local and remote backups of your `.aligntrue/` directory.
 
