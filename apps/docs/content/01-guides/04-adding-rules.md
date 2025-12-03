@@ -16,8 +16,9 @@ AlignTrue provides flexible ways to add rules to your project, whether you're st
 | New project, auto-detect existing rules | `aligntrue init`                           |
 | New project, import from git repo       | `aligntrue init --source <git-url>`        |
 | New project, stay connected for updates | `aligntrue init --source <git-url> --link` |
-| Existing project, add rules             | `aligntrue add <git-url>`                  |
-| Existing project, stay connected        | `aligntrue add <git-url> --link`           |
+| Existing project, one-time import       | `aligntrue add <git-url>`                  |
+| Existing project, add as source         | `aligntrue add source <git-url>`           |
+| Add push destination (remote)           | `aligntrue add remote <git-url>`           |
 | Find untracked agent files              | `aligntrue sources detect`                 |
 | Import detected files                   | `aligntrue sources detect --import`        |
 
@@ -88,17 +89,17 @@ source_added: 2025-11-29
 
 ### Connected sources (updates on sync)
 
-Use `--link` to keep the source connected. Rules will be fetched on each `aligntrue sync`:
+Use `aligntrue add source` to add a connected source. Rules will be fetched on each `aligntrue sync`:
 
 ```bash
-# During init
+# During init (one command)
 aligntrue init --source https://github.com/org/rules --link
 
-# After init
-aligntrue add https://github.com/org/rules --link
+# After init (explicit subcommand)
+aligntrue add source https://github.com/org/rules
 ```
 
-**When to use `--link`:**
+**When to use connected sources:**
 
 - Team standards that evolve over time
 - Your personal rules stored in a separate repo
@@ -114,6 +115,34 @@ sources:
     url: https://github.com/org/rules
     ref: main
 ```
+
+### Adding remotes (push destinations)
+
+Use `aligntrue add remote` to configure where rules are pushed on sync:
+
+```bash
+# Add a personal remote (for scope: personal rules)
+aligntrue add remote https://github.com/me/personal-rules --personal
+
+# Add a shared remote (for scope: shared rules)
+aligntrue add remote https://github.com/me/shared-rules --shared
+```
+
+**When to use remotes:**
+
+- Backup personal rules across machines
+- Publish curated rule packs for others
+- Sync rules to a separate repository
+
+**Config result:**
+
+```yaml
+remotes:
+  personal: https://github.com/me/personal-rules
+  shared: https://github.com/me/shared-rules
+```
+
+See [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) for complete remote workflow documentation.
 
 ## Conflict handling
 
@@ -180,7 +209,7 @@ rm .aligntrue/rules/unwanted-rule.md
 aligntrue sync
 ```
 
-### Linked sources
+### Connected sources
 
 Use the remove command:
 
@@ -194,8 +223,11 @@ aligntrue sync
 For git sources, pin to a specific version:
 
 ```bash
-# Tag
+# One-time import with version
 aligntrue add https://github.com/org/rules --ref v1.0.0
+
+# Add as connected source with version
+aligntrue add source https://github.com/org/rules --ref v1.0.0
 
 # Branch
 aligntrue add https://github.com/org/rules --ref develop
@@ -277,8 +309,8 @@ aligntrue sync
 Keep your rules in a repo and use them everywhere:
 
 ```bash
-# In each project
-aligntrue add https://github.com/me/my-rules --link
+# In each project, add as a connected source
+aligntrue add source https://github.com/me/my-rules
 
 # Update rules in your repo, then in any project:
 aligntrue sync  # Pulls latest
@@ -287,8 +319,8 @@ aligntrue sync  # Pulls latest
 ### Team standards with local overrides
 
 ```bash
-# Link team standards
-aligntrue add https://github.com/company/standards --link
+# Add team standards as a connected source
+aligntrue add source https://github.com/company/standards
 
 # Add local overrides in .aligntrue/rules/
 # Local rules take precedence over linked sources

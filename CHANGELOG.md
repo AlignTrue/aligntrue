@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`aligntrue add source` subcommand** - Add sources via CLI with `aligntrue add source <url>`. Replaces `--link` flag for the `add` command. Use `--personal` to mark source as personal scope
+- **`aligntrue add remote` subcommand** - Add push destinations via CLI with `aligntrue add remote <url>`. Use `--personal` or `--shared` to configure scope routing
+
 ### Changed
 
+- **BREAKING: Removed `--link` flag from `aligntrue add`** - Use `aligntrue add source <url>` instead of `aligntrue add <url> --link`. The `--link` flag is still supported for `aligntrue init --source <url> --link`
 - **BREAKING: GitProvider default path changed** - Git source provider now defaults to `"."` (directory scan) instead of `.aligntrue.yaml`. Remote rule repos should contain markdown rules in directories, not single YAML files
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
 - **Internal: ResolvedSource returns Align directly** - Source resolver no longer serializes to YAML and re-parses. Simpler data flow, fewer allocations
