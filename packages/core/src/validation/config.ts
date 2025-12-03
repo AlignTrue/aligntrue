@@ -760,11 +760,6 @@ export function isValidConfigKey(key: string): boolean {
     "plugs.fills",
     "mcp",
     "mcp.servers",
-    "resources",
-    "resources.rules",
-    "resources.mcps",
-    "resources.skills",
-    "storage",
   ]);
 
   // Allow vendor keys

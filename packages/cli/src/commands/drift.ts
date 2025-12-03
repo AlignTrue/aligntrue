@@ -287,6 +287,7 @@ function outputJson(results: DriftDetectionResult): void {
           agent_file: 0,
           upstream: 0,
           overlay: 0,
+          result: 0,
           severity_remap: 0,
           vendorized: 0,
         } as Record<string, number>,
