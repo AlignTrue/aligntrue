@@ -411,6 +411,7 @@ Cache is git-ignored by default. Run `aligntrue sync --offline` to use cached so
 
 ## See also
 
+- [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) - Consumer vs maintainer roles, scope-based routing
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Technical details of merging and precedence
 - [Plugs](/docs/02-customization/plugs) - Fill template slots in rules
 - [Overlays](/docs/02-customization/overlays) - Customize rule properties

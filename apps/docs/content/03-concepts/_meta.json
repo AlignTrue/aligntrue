@@ -3,7 +3,6 @@
   "sync-behavior": "How sync works",
   "backup": "Backup",
   "preventing-duplicate-rules": "Preventing duplicate rules",
-  "rule-visibility": "Rule visibility",
   "team-mode": "Team mode",
   "drift-detection": "Drift detection",
   "git-workflows": "Git workflows"
