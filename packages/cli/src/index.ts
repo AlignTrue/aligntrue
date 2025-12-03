@@ -31,6 +31,7 @@ import {
   add,
   remove,
   rules,
+  uninstall,
 } from "./commands/index.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
@@ -112,7 +113,8 @@ async function main() {
     console.log(
       "  privacy        Privacy and consent management (audit, revoke)",
     );
-    console.log("  migrate        Schema migration (run --help for policy)\n");
+    console.log("  migrate        Schema migration (run --help for policy)");
+    console.log("  uninstall      Remove AlignTrue from this project\n");
 
     console.log("Run aligntrue <command> --help for command-specific options");
     console.log("Run aligntrue --version for version information");
@@ -147,6 +149,7 @@ async function main() {
     ["add", add],
     ["remove", remove],
     ["rules", rules],
+    ["uninstall", uninstall],
   ]);
 
   // Check if user provided a flag-like argument as command

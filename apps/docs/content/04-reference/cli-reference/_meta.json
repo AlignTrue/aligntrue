@@ -9,5 +9,6 @@
   "team": "Team mode",
   "backup": "Backups",
   "settings": "Settings",
-  "migrate": "Migration"
+  "migrate": "Migration",
+  "uninstall": "Uninstall"
 }

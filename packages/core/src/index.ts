@@ -118,6 +118,22 @@ export * from "./migration/ruler-merger.js";
 // Scope discovery
 export * from "./scope-discovery.js";
 
+// Uninstall
+export {
+  detectAlignTrueFiles,
+  previewUninstall,
+  executeUninstall,
+} from "./uninstall/index.js";
+export type {
+  UninstallOptions,
+  UninstallResult,
+  UninstallPreview,
+  DetectedFile,
+  DetectionResult,
+  ExportHandling,
+  SourceHandling,
+} from "./uninstall/index.js";
+
 // Overwritten rules management
 export {
   backupOverwrittenFile,

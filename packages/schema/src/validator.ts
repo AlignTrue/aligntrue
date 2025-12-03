@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parseYamlToJson, computeAlignHash } from "./canonicalize.js";
+import type { RuleFrontmatter } from "./frontmatter.js";
 
 // Load the JSON Schema
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -287,6 +288,7 @@ export interface AlignTrueVendorMetadata {
   source_scope?: string; // Scope this section originated from (e.g., "backend", "frontend", "default")
   source_file?: string; // Original file path (e.g., ".cursor/rules/backend.mdc")
   ruleset?: string; // Ruleset ID this section belongs to
+  frontmatter?: RuleFrontmatter; // Original rule frontmatter for export fidelity
 }
 
 /**

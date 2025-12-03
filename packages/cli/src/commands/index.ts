@@ -24,3 +24,4 @@ export { doctor } from "./doctor.js";
 export { add } from "./add.js";
 export { remove } from "./remove.js";
 export { rules } from "./rules.js";
+export { uninstallCommand as uninstall } from "./uninstall.js";
