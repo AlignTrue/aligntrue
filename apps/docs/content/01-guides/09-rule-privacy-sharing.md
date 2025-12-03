@@ -243,7 +243,16 @@ scope: personal
 
 ### Pulling rules from a remote source
 
-To pull rules from a git repository (e.g., personal rules from another machine):
+Add a git source using the CLI or config:
+
+**CLI:**
+
+```bash
+# Add as a connected source (pulls on sync)
+aligntrue add source git@github.com:yourusername/personal-rules.git --personal
+```
+
+**Config:**
 
 ```yaml
 # .aligntrue/config.yaml
@@ -263,7 +272,19 @@ The `personal: true` flag on a source:
 
 ### Pushing rules to remote repositories
 
-Use `remotes` config to sync rules based on their scope:
+Configure remotes using the CLI or config:
+
+**CLI:**
+
+```bash
+# Add personal remote (for scope: personal rules)
+aligntrue add remote git@github.com:yourusername/personal-rules.git --personal
+
+# Add shared remote (for scope: shared rules)
+aligntrue add remote git@github.com:yourusername/shared-rules.git --shared
+```
+
+**Config:**
 
 ```yaml
 # .aligntrue/config.yaml
@@ -321,6 +342,21 @@ Setting up personal rules that sync across machines:
 ```
 
 **Step 2: Configure AlignTrue**
+
+Using CLI commands:
+
+```bash
+# Import existing rules from your personal repo (one-time copy)
+aligntrue add git@github.com:yourusername/aligntrue-personal-rules.git
+
+# OR add as connected source (pulls updates on sync)
+aligntrue add source git@github.com:yourusername/aligntrue-personal-rules.git --personal
+
+# Add as push destination
+aligntrue add remote git@github.com:yourusername/aligntrue-personal-rules.git --personal
+```
+
+Or configure directly in YAML:
 
 ```yaml
 # .aligntrue/config.yaml

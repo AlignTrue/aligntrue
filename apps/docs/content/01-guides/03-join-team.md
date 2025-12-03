@@ -28,51 +28,45 @@ Run the init command:
 aligntrue init
 ```
 
-AlignTrue will detect the existing team configuration and show you a summary:
+AlignTrue will detect the existing team configuration and set you up with the team rules.
 
+### Adding personal rules (optional)
+
+After initialization, you can optionally add personal rules. There are three approaches:
+
+**Option 1: Team rules only (default)**
+
+If you don't need personal rules, you're done. Just run `aligntrue init` and `aligntrue sync`.
+
+**Option 2: Personal rules (local only)**
+
+Create rules in `.aligntrue/rules/` with `scope: personal` in the frontmatter:
+
+```yaml
+---
+title: My Preferences
+scope: personal
+gitignore: true
+---
 ```
-✓ Detected team mode configuration
 
-Team Configuration:
-  Mode: team
-  Approval: pr_approval (relaxed)
-  Team sections: Security, Compliance, Architecture
+These rules will be gitignored and won't require team approval.
 
-Your Options:
-  1. Use team rules only (no personal rules)
-  2. Add personal rules (local only)
-  3. Add personal rules (with remote backup)
-```
+**Option 3: Personal rules (with remote backup)**
 
-### Option 1: Team Rules Only
-
-Select this if you don't need any personal rules:
+For personal rules that sync across your machines:
 
 ```bash
-aligntrue init --team-only
+# 1. Import rules from your personal repo (one-time copy)
+aligntrue add https://github.com/yourusername/personal-rules
+
+# 2. Configure it as a push destination
+aligntrue add remote https://github.com/yourusername/personal-rules --personal
 ```
 
-This is the simplest setup. All rules come from the team repository.
+Now rules with `scope: personal` will push to your personal repo on sync.
 
-### Option 2: Personal Rules (Local)
-
-Select this if you want personal rules but don't need version control:
-
-```bash
-aligntrue init --with-personal-local
-```
-
-Your personal rules will be stored in `.aligntrue/.local/personal/` and git-ignored.
-
-### Option 3: Personal Rules (Remote)
-
-Select this if you want personal rules with version control and backup:
-
-```bash
-aligntrue init --with-personal-remote
-```
-
-You'll be prompted to set up a remote repository. See [Personal Repository Setup](/reference/personal-repo-setup) for details.
+See [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) for complete details on personal rule workflows.
 
 ## Step 3: Initial Sync
 
@@ -215,9 +209,9 @@ aligntrue sync
 
 ### Update personal rules
 
-1. Edit your personal sections in `AGENTS.md`
+1. Edit your personal rules in `.aligntrue/rules/` (files with `scope: personal`)
 2. Run `aligntrue sync`
-3. Changes stay local (no PR needed)
+3. Changes stay local or sync to your personal remote (no PR needed)
 
 ### Resolve drift
 
@@ -256,19 +250,23 @@ aligntrue sync
 git status
 ```
 
-### Personal rules Not Showing
+### Personal rules not showing
 
 **Cause:** Personal rules might not be configured correctly.
 
 **Fix:**
 
-```bash
-# Check configuration
-aligntrue config get storage.personal
+1. Ensure your rules have `scope: personal` in frontmatter
+2. If using a remote, verify it's configured:
 
-# Reconfigure if needed
-aligntrue init --with-personal-local
+```bash
+# Check your config
+cat .aligntrue/config.yaml
+
+# Look for remotes.personal section
 ```
+
+See [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) for setup instructions.
 
 ### Agent files Not Generated
 
@@ -308,9 +306,9 @@ See [Personal Repository Setup](/reference/personal-repo-setup) for detailed tro
 
 ### DON'T
 
-- ❌ Commit agent files to the repository
-- ❌ Edit `.aligntrue/rules` directly
-- ❌ Put personal rules in the main repository
+- ❌ Commit agent files to the repository (they're generated)
+- ❌ Edit agent files directly (edit `.aligntrue/rules/` instead)
+- ❌ Skip `scope: personal` on personal rules (they'll be tracked in lockfile)
 - ❌ Skip sync after pulling changes
 - ❌ Force push lockfile changes
 

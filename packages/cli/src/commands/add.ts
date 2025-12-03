@@ -1,14 +1,13 @@
 /**
- * Add command - Add rules from a URL or path
- *
- * Default behavior: Copy rules to .aligntrue/rules/ (one-time import)
- * With --link: Add as connected source in config (gets updates on sync)
+ * Add command - Add rules, sources, or remotes
  *
  * Usage:
- *   aligntrue add https://github.com/org/rules              # Copy rules locally
- *   aligntrue add https://github.com/org/rules --link       # Keep connected for updates
- *   aligntrue add ./path/to/rules                           # Copy from local path
- *   aligntrue add https://github.com/org/rules --ref v1.0.0 # Specific version
+ *   aligntrue add <url>                     # One-time copy to .aligntrue/rules/
+ *   aligntrue add source <url>              # Add as connected source (gets updates on sync)
+ *   aligntrue add source <url> --personal   # Mark source as personal
+ *   aligntrue add remote <url>              # Add as push destination
+ *   aligntrue add remote <url> --personal   # Set as remotes.personal
+ *   aligntrue add remote <url> --shared     # Set as remotes.shared
  */
 
 import { existsSync, mkdirSync } from "fs";
@@ -44,11 +43,6 @@ import {
  */
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
-    flag: "--link",
-    hasValue: false,
-    description: "Keep source connected for ongoing updates (adds to config)",
-  },
-  {
     flag: "--ref",
     hasValue: true,
     description: "Git ref (branch/tag/commit) for git sources",
@@ -57,6 +51,17 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--path",
     hasValue: true,
     description: "Path to rules file/directory within repository",
+  },
+  {
+    flag: "--personal",
+    hasValue: false,
+    description:
+      "Mark as personal (for source: personal rules; for remote: set as remotes.personal)",
+  },
+  {
+    flag: "--shared",
+    hasValue: false,
+    description: "Set remote as remotes.shared (only for 'add remote')",
   },
   {
     flag: "--yes",
@@ -166,44 +171,61 @@ export async function add(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "add",
-      description: "Add rules from a git repo or path",
-      usage: "aligntrue add <git-url|path> [options]",
+      description: "Add rules, sources, or remotes",
+      usage: "aligntrue add [source|remote] <url> [options]",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue add https://github.com/org/rules           # Copy rules locally",
-        "aligntrue add https://github.com/org/rules --link    # Keep connected for updates",
-        "aligntrue add https://github.com/org/rules --ref v1  # Pin to version",
-        "aligntrue add ./path/to/rules                        # Copy from local path",
+        "aligntrue add https://github.com/org/rules           # One-time copy",
+        "aligntrue add source https://github.com/org/rules    # Add as source (updates on sync)",
+        "aligntrue add source <url> --personal                # Personal source",
+        "aligntrue add remote https://github.com/me/backup    # Add as push destination",
+        "aligntrue add remote <url> --personal                # Set as remotes.personal",
+        "aligntrue add remote <url> --shared                  # Set as remotes.shared",
       ],
       notes: [
-        "- Default: copies rules to .aligntrue/rules/ (one-time import)",
-        "- With --link: adds source to config for ongoing updates",
-        "- To remove copied rules: delete files and run 'aligntrue sync'",
-        "- To remove linked source: use 'aligntrue remove <url>'",
+        "- Default (no subcommand): copies rules to .aligntrue/rules/ (one-time import)",
+        "- 'add source': adds to config sources (gets updates on sync)",
+        "- 'add remote': adds to config remotes (pushes rules on sync)",
+        "- To remove: 'aligntrue remove <url>'",
       ],
     });
     return;
   }
 
+  // Check for subcommand (source or remote)
+  const firstArg = positional[0];
+  const subcommand =
+    firstArg === "source" || firstArg === "remote" ? firstArg : null;
+  const urlArg = subcommand ? positional[1] : positional[0];
+
   // Validate URL provided
-  if (positional.length === 0) {
-    exitWithError(
-      Errors.missingArgument("url", "aligntrue add <git-url|path>"),
-    );
+  if (!urlArg) {
+    if (subcommand) {
+      exitWithError(
+        Errors.missingArgument("url", `aligntrue add ${subcommand} <url>`),
+      );
+    } else {
+      exitWithError(
+        Errors.missingArgument(
+          "url",
+          "aligntrue add <url> or aligntrue add source/remote <url>",
+        ),
+      );
+    }
   }
 
-  const rawUrl = positional[0]!;
   const cwd = process.cwd();
   const paths = getAlignTruePaths(cwd);
-  const configPath = (flags["--config"] as string | undefined) || paths.config;
-  const gitRef = flags["--ref"] as string | undefined;
-  const gitPath = flags["--path"] as string | undefined;
-  const linkFlag = (flags["--link"] as boolean | undefined) || false;
-  const nonInteractive = (flags["--yes"] as boolean | undefined) || !isTTY();
-  const noSync = (flags["--no-sync"] as boolean | undefined) || false;
+  const configPath = (flags["config"] as string | undefined) || paths.config;
+  const gitRef = flags["ref"] as string | undefined;
+  const gitPath = flags["path"] as string | undefined;
+  const personalFlag = (flags["personal"] as boolean | undefined) || false;
+  const sharedFlag = (flags["shared"] as boolean | undefined) || false;
+  const nonInteractive = (flags["yes"] as boolean | undefined) || !isTTY();
+  const noSync = (flags["no-sync"] as boolean | undefined) || false;
 
   // Parse URL for any query parameters
-  const { baseUrl } = parseAlignUrl(rawUrl);
+  const { baseUrl } = parseAlignUrl(urlArg);
 
   // Detect source type and privacy
   const sourceType = detectSourceType(baseUrl);
@@ -212,21 +234,41 @@ export async function add(args: string[]): Promise<void> {
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });
 
-  if (linkFlag) {
-    // --link mode: add to config (existing behavior)
-    await addLinkedSource({
+  if (subcommand === "source") {
+    // Add as connected source
+    await addSource({
       baseUrl,
       sourceType,
       gitRef,
       gitPath,
       configPath,
       privateSource,
+      personal: personalFlag,
+      spinner,
+    });
+  } else if (subcommand === "remote") {
+    // Validate --shared and --personal are not both set
+    if (sharedFlag && personalFlag) {
+      exitWithError({
+        title: "Invalid options",
+        message: "Cannot use both --personal and --shared flags together",
+        hint: "Choose one: --personal (for remotes.personal) or --shared (for remotes.shared)",
+        code: "INVALID_OPTIONS",
+      });
+    }
+
+    // Add as remote destination
+    await addRemote({
+      baseUrl,
+      gitRef,
+      configPath,
+      scope: sharedFlag ? "shared" : personalFlag ? "personal" : undefined,
       spinner,
     });
   } else {
-    // Default mode: copy rules to .aligntrue/rules/
+    // Default mode: copy rules to .aligntrue/rules/ (one-time import)
     await copyRulesToLocal({
-      source: rawUrl,
+      source: urlArg,
       gitRef,
       gitPath,
       cwd,
@@ -241,15 +283,16 @@ export async function add(args: string[]): Promise<void> {
 }
 
 /**
- * Add a linked source to config (gets updates on sync)
+ * Add a source to config (gets updates on sync)
  */
-async function addLinkedSource(options: {
+async function addSource(options: {
   baseUrl: string;
   sourceType: "git" | "local";
   gitRef?: string | undefined;
   gitPath?: string | undefined;
   configPath: string;
   privateSource: boolean;
+  personal: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
   const {
@@ -259,10 +302,11 @@ async function addLinkedSource(options: {
     gitPath,
     configPath,
     privateSource,
+    personal,
     spinner,
   } = options;
 
-  spinner.start("Adding linked source...");
+  spinner.start("Adding source...");
 
   try {
     // Load or create config
@@ -297,17 +341,17 @@ async function addLinkedSource(options: {
     });
 
     if (existingSource) {
-      spinner.stop("Source already linked", 1);
+      spinner.stop("Source already exists", 1);
 
       if (isTTY()) {
         clack.log.warn(
-          `This source is already linked in your configuration:\n  ${baseUrl}`,
+          `This source is already in your configuration:\n  ${baseUrl}`,
         );
         clack.log.info(
           "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
         );
       } else {
-        console.log(`\nWarning: This source is already linked: ${baseUrl}`);
+        console.log(`\nWarning: This source already exists: ${baseUrl}`);
       }
       return;
     }
@@ -318,7 +362,7 @@ async function addLinkedSource(options: {
       url?: string;
       path?: string;
       ref?: string;
-      private?: boolean;
+      personal?: boolean;
       gitignore?: boolean;
     };
 
@@ -333,6 +377,10 @@ async function addLinkedSource(options: {
       if (gitPath) {
         newSource.path = gitPath;
       }
+      // Mark as personal if flag or SSH source
+      if (personal || privateSource) {
+        newSource.personal = true;
+      }
       // Auto-set gitignore for SSH sources
       if (privateSource) {
         newSource.gitignore = true;
@@ -342,23 +390,29 @@ async function addLinkedSource(options: {
         type: "local",
         path: baseUrl,
       };
+      if (personal) {
+        newSource.personal = true;
+      }
     }
 
-    // Add to sources (already ensured it exists above)
+    // Add to sources
     const sources = config.sources!;
     sources.push(newSource as (typeof sources)[number]);
 
     // Save config
     await saveConfig(config, configPath);
 
-    spinner.stop("Source linked");
+    spinner.stop("Source added");
 
-    // Show private source notice
+    // Show notes
     if (privateSource && isTTY()) {
-      clack.log.warn(
+      clack.log.info(
         "Private source detected (SSH authentication)\n" +
-          "  Source marked as private in config.\n" +
-          "  Rules will be auto-gitignored on sync.",
+          "  Source marked as personal. Rules will be auto-gitignored on sync.",
+      );
+    } else if (personal && isTTY()) {
+      clack.log.info(
+        "Source marked as personal (scope: personal for all rules from this source)",
       );
     }
 
@@ -368,7 +422,7 @@ async function addLinkedSource(options: {
         ? `${baseUrl}${gitRef ? ` (${gitRef})` : ""}`
         : baseUrl;
 
-    const outroMessage = `Linked ${sourceDesc}\nRun 'aligntrue sync' to pull rules.`;
+    const outroMessage = `Added source: ${sourceDesc}\nRun 'aligntrue sync' to pull rules.`;
 
     if (isTTY()) {
       clack.outro(outroMessage);
@@ -376,17 +430,162 @@ async function addLinkedSource(options: {
       console.log("\n" + outroMessage);
     }
   } catch (error) {
-    spinner.stop("Link failed", 1);
+    spinner.stop("Failed to add source", 1);
 
     if (error && typeof error === "object" && "code" in error) {
       throw error;
     }
 
     exitWithError({
-      title: "Link failed",
-      message: `Failed to link source: ${error instanceof Error ? error.message : String(error)}`,
+      title: "Add source failed",
+      message: `Failed to add source: ${error instanceof Error ? error.message : String(error)}`,
       hint: "Check the URL format and try again.",
-      code: "LINK_FAILED",
+      code: "ADD_SOURCE_FAILED",
+    });
+  }
+}
+
+/**
+ * Add a remote to config (pushes rules on sync)
+ */
+async function addRemote(options: {
+  baseUrl: string;
+  gitRef?: string | undefined;
+  configPath: string;
+  scope?: "personal" | "shared" | undefined;
+  spinner: ReturnType<typeof createManagedSpinner>;
+}): Promise<void> {
+  const { baseUrl, gitRef, configPath, scope, spinner } = options;
+
+  spinner.start("Adding remote...");
+
+  try {
+    // Load or create config
+    let config: AlignTrueConfig;
+
+    if (existsSync(configPath)) {
+      config = await loadConfigWithValidation(configPath);
+    } else {
+      // Create minimal config
+      config = {
+        version: undefined,
+        mode: "solo",
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["agents"],
+      };
+    }
+
+    // Initialize remotes if not exists
+    if (!config.remotes) {
+      config.remotes = {};
+    }
+
+    // Determine which remote slot to use
+    const remoteKey = scope || "personal"; // Default to personal if no scope specified
+
+    // Build remote URL with optional branch
+    const remoteUrl = gitRef ? `${baseUrl}#${gitRef}` : baseUrl;
+
+    // Check if this remote slot is already configured
+    // Only personal and shared slots are valid for this command (not custom)
+    const existingRemote = config.remotes[remoteKey as "personal" | "shared"];
+    if (existingRemote && !Array.isArray(existingRemote)) {
+      const existingUrl =
+        typeof existingRemote === "string"
+          ? existingRemote
+          : existingRemote.url;
+
+      if (existingUrl === remoteUrl || existingUrl === baseUrl) {
+        spinner.stop("Remote already configured", 1);
+
+        if (isTTY()) {
+          clack.log.warn(
+            `remotes.${remoteKey} is already configured:\n  ${existingUrl}`,
+          );
+          clack.log.info(
+            "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
+          );
+        } else {
+          console.log(
+            `\nWarning: remotes.${remoteKey} already configured: ${existingUrl}`,
+          );
+        }
+        return;
+      }
+
+      // Different URL - warn about overwrite
+      spinner.stop("Remote slot in use");
+
+      if (isTTY()) {
+        clack.log.warn(
+          `remotes.${remoteKey} is already configured with a different URL:\n` +
+            `  Current: ${existingUrl}\n` +
+            `  New: ${baseUrl}`,
+        );
+
+        const confirm = await clack.confirm({
+          message: `Replace existing remotes.${remoteKey}?`,
+          initialValue: false,
+        });
+
+        if (clack.isCancel(confirm) || !confirm) {
+          clack.cancel("Remote not added");
+          return;
+        }
+
+        spinner.start("Updating remote...");
+      } else {
+        console.log(
+          `\nWarning: Replacing existing remotes.${remoteKey}: ${existingUrl}`,
+        );
+      }
+    }
+
+    // Set the remote
+    if (gitRef) {
+      // Use object format for branch specification
+      (config.remotes as Record<string, unknown>)[remoteKey] = {
+        url: baseUrl,
+        branch: gitRef,
+      };
+    } else {
+      // Simple string format
+      (config.remotes as Record<string, unknown>)[remoteKey] = baseUrl;
+    }
+
+    // Save config
+    await saveConfig(config, configPath);
+
+    spinner.stop("Remote added");
+
+    // Show explanation of how it works
+    if (isTTY()) {
+      clack.log.info(
+        `Rules with scope: ${remoteKey} will be pushed to this remote on sync.\n` +
+          `Add 'scope: ${remoteKey}' to rule frontmatter to route rules here.`,
+      );
+    }
+
+    // Consolidated outro
+    const outroMessage = `Added remotes.${remoteKey}: ${baseUrl}${gitRef ? ` (branch: ${gitRef})` : ""}\nRun 'aligntrue sync' to push rules.`;
+
+    if (isTTY()) {
+      clack.outro(outroMessage);
+    } else {
+      console.log("\n" + outroMessage);
+    }
+  } catch (error) {
+    spinner.stop("Failed to add remote", 1);
+
+    if (error && typeof error === "object" && "code" in error) {
+      throw error;
+    }
+
+    exitWithError({
+      title: "Add remote failed",
+      message: `Failed to add remote: ${error instanceof Error ? error.message : String(error)}`,
+      hint: "Check the URL format and try again.",
+      code: "ADD_REMOTE_FAILED",
     });
   }
 }
@@ -642,6 +841,7 @@ async function copyRulesToLocal(options: {
     }
 
     tips.push("To remove: delete the files and run 'aligntrue sync'");
+    tips.push("To add as connected source: use 'aligntrue add source <url>'");
 
     if (!syncPerformed) {
       tips.push("To apply to agents: run 'aligntrue sync'");
