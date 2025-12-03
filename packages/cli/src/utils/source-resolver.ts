@@ -305,12 +305,20 @@ export async function resolveSource(
     // Extract scope from frontmatter if it's a valid approval scope
     // Valid scopes: "team" (default), "personal" (excluded from lockfile), "shared"
     const frontmatterScope = rule.frontmatter.scope;
-    const approvalScope =
+    let approvalScope: "team" | "personal" | "shared" | undefined;
+
+    if (
       frontmatterScope === "personal" ||
       frontmatterScope === "team" ||
       frontmatterScope === "shared"
-        ? (frontmatterScope as "team" | "personal" | "shared")
-        : undefined;
+    ) {
+      // Explicit scope in frontmatter takes precedence
+      approvalScope = frontmatterScope as "team" | "personal" | "shared";
+    } else if (source.personal === true) {
+      // Bug fix: Use source.personal as fallback default
+      // Per docs: "personal: true on a source marks all rules from that source as scope: personal"
+      approvalScope = "personal";
+    }
 
     return {
       heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
@@ -320,7 +328,12 @@ export async function resolveSource(
         ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
         rule.filename.replace(/\.md$/, ""),
       source_file: rule.path,
-      frontmatter: rule.frontmatter,
+      // Store frontmatter in vendor.aligntrue for export fidelity (not directly on section)
+      vendor: {
+        aligntrue: {
+          frontmatter: rule.frontmatter,
+        },
+      },
       // Only include scope if it's a valid approval scope (exactOptionalPropertyTypes requires this)
       ...(approvalScope && { scope: approvalScope }),
     };
