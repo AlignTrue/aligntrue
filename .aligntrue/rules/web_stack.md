@@ -228,7 +228,7 @@ description: Quick intro to AlignTrue
 
 Prefer Nextra components. Re-export them in `mdx-components.tsx` for consistency:
 
-```jsx
+````jsx
 import { Callout, Cards, Tabs, Steps } from "nextra/components"
 import { Mermaid } from "@theguild/remark-mermaid/mermaid";
 
@@ -251,10 +251,12 @@ import { Mermaid } from "@theguild/remark-mermaid/mermaid";
   Do this second
 </Steps>
 
-<Mermaid>{`graph LR
+```mermaid
+graph LR
   A --> B
-`}</Mermaid>
 ```
+
+````
 
 ### Guidelines
 

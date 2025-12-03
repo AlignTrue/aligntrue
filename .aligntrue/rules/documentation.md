@@ -17,7 +17,11 @@ Anything else is temporary. Delete it before merge.
 The user docs should reflect and describe the codebase to users, the code is the authoritative source.
 
 **Optimize for user experience and understandability**
-Keep docs usable and easy to navigate. Don't unecessary duplicate things, instead link to the areas needed. For complex things use guides or concepts, with other areas linking to them as needed.
+
+- Keep docs usable and easy to navigate.
+- Don't unecessary duplicate things, instead link to the areas needed.
+- Use mermaid diagrams to help explain complex things
+- WHen it makes sense, organize things into guides or concepts, with other areas linking to them as needed.
 
 ---
 

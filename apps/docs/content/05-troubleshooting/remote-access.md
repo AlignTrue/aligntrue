@@ -5,7 +5,9 @@ description: Solutions for common remote repository access issues
 
 # Remote access issues
 
-This guide helps you resolve common issues when using remote repositories for personal rules in AlignTrue.
+This guide helps you resolve common issues when using remote repositories for sources and remotes in AlignTrue.
+
+For conceptual guidance, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
 
 ## SSH issues
 
