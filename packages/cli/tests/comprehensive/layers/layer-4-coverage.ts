@@ -98,11 +98,6 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
-    command: "aligntrue telemetry --help",
-    description: "Telemetry help",
-    expectedExitCode: 0,
-  },
-  {
     command: "aligntrue privacy --help",
     description: "Privacy help",
     expectedExitCode: 0,

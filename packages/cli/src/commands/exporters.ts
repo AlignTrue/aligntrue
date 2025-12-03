@@ -13,7 +13,6 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { existsSync } from "fs";
 import * as clack from "@clack/prompts";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import {
   parseCommonArgs,
@@ -415,15 +414,6 @@ async function enableExporters(
     process.exit(1);
   }
 
-  // Record telemetry
-  recordEvent({
-    command_name: "exporters-enable",
-    align_hashes_used: [],
-    ...(exportersToEnable.length > 0 && {
-      export_target: exportersToEnable.join(","),
-    }),
-  });
-
   if (exportersToEnable.length === 1) {
     console.log(`✓ Enabled exporter: ${exportersToEnable[0]}`);
   } else {
@@ -490,13 +480,6 @@ async function disableExporter(args: string[]): Promise<void> {
     );
     process.exit(1);
   }
-
-  // Record telemetry
-  recordEvent({
-    command_name: "exporters-disable",
-    align_hashes_used: [],
-    ...(exporterName && { export_target: exporterName }),
-  });
 
   console.log(`✓ Disabled exporter: ${exporterName}`);
 }

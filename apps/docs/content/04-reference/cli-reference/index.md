@@ -65,7 +65,6 @@ Quick lookup table for all CLI commands:
 | `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)                            |
 | `aligntrue migrate`         | Schema migration (pre-1.0)              | [Settings](./settings#aligntrue-migrate)                                    |
 | `aligntrue team`            | Team mode management                    | [Settings](./settings#aligntrue-team-enablestatusapprovelist-allowedremove) |
-| `aligntrue telemetry`       | Telemetry control                       | [Settings](./settings#aligntrue-telemetry-onoffstatus)                      |
 | `aligntrue privacy`         | Privacy consents                        | [Settings](./settings#aligntrue-privacy-auditrevoke)                        |
 
 ---

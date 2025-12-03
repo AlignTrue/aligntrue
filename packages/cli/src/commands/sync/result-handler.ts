@@ -6,7 +6,6 @@ import { existsSync, readFileSync } from "fs";
 import { relative, basename, join } from "path";
 import * as clack from "@clack/prompts";
 import { computeHash } from "@aligntrue/schema";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   updateLastSyncTimestamp,
   storeAgentExportHash,
@@ -51,23 +50,6 @@ export async function handleSyncResult(
     uniqueFiles.forEach((file) => {
       clack.log.info(`  ${file}`);
     });
-  }
-
-  // Record telemetry event on success
-  try {
-    const loadedExporters = registry
-      .list()
-      .map((name) => registry.get(name)!)
-      .filter(Boolean);
-    const exportTargets = loadedExporters.map((a) => a.name).join(",");
-
-    recordEvent({
-      command_name: "sync",
-      export_target: exportTargets,
-      align_hashes_used: [],
-    });
-  } catch {
-    // Telemetry errors should not fail the sync command
   }
 
   // Show audit trail in dry-run

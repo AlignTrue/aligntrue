@@ -452,7 +452,6 @@ export default [
   {
     files: [
       "packages/core/src/privacy/consent.ts",
-      "packages/core/src/telemetry/collector.ts",
       "packages/core/src/cache/agent-detection.ts",
       "packages/core/src/performance/incremental.ts",
       "packages/core/src/performance/index.ts",

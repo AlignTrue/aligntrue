@@ -477,7 +477,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 **Goal:** Test unusual scenarios, error handling, privacy.
 
-**Commands:** `privacy`, `telemetry`, `migrate`
+**Commands:** `privacy`, `migrate`
 
 **What to try:**
 
@@ -497,15 +497,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
    - Updates consent state?
 
-3. Telemetry status:
-
-   ```bash
-   $CLI telemetry
-   ```
-
-   - Shows current status?
-
-4. Edge cases:
+3. Edge cases:
    - Empty rule file:
 
      ```bash
@@ -539,7 +531,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 **Report findings:**
 
-- [ ] Privacy/telemetry commands work
+- [ ] Privacy commands work
 - [ ] Edge cases handled gracefully
 - [ ] Error messages clear
 - [ ] No crashes on invalid input
@@ -599,7 +591,6 @@ Mark each command as tested:
 | doctor    | [ ]    |       |
 | onboard   | [ ]    |       |
 | privacy   | [ ]    |       |
-| telemetry | [ ]    |       |
 | migrate   | [ ]    |       |
 
 ---
@@ -608,7 +599,7 @@ Mark each command as tested:
 
 After completing all areas:
 
-1. **Commands tested:** X / 24
+1. **Commands tested:** X / 23
 2. **Issues found:** X critical, X medium, X low
 3. **Tests that failed:** (List any)
 4. **Doc mismatches:** (List any)

@@ -6,7 +6,6 @@ import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
 import { dirname } from "path";
 import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import {
   parseCommonArgs,
@@ -197,9 +196,6 @@ async function teamStatus(): Promise<void> {
         console.log(`  - ${exporter}`);
       });
     }
-
-    // Record telemetry
-    recordEvent({ command_name: "team-status", align_hashes_used: [] });
   } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
@@ -393,9 +389,6 @@ async function teamEnable(
       }
     }
 
-    // Record telemetry event
-    recordEvent({ command_name: "team-enable", align_hashes_used: [] });
-
     // Run migration wizard for personal rules (interactive only)
     if (!nonInteractive) {
       const { runTeamMigrationWizard } = await import(
@@ -566,9 +559,6 @@ async function teamDisable(
     } catch {
       // File may not exist, that's fine
     }
-
-    // Record telemetry event
-    recordEvent({ command_name: "team-disable", align_hashes_used: [] });
 
     // Consolidated outro
     const outroLines = [

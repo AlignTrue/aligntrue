@@ -15,8 +15,7 @@ export * from "./lockfile/index.js";
 // Performance monitoring and optimization
 export * from "./performance/index.js";
 
-// Telemetry and privacy
-export * from "./telemetry/collector.js";
+// Privacy
 export * from "./privacy/index.js";
 
 // File system utilities

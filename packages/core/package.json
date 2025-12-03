@@ -17,7 +17,6 @@
     "./performance": "./dist/performance/index.js",
     "./cache": "./dist/cache/index.js",
     "./parsing/natural-markdown": "./dist/parsing/natural-markdown.js",
-    "./telemetry/collector.js": "./dist/telemetry/collector.js",
     "./team": "./dist/team/index.js",
     "./team/allow.js": "./dist/team/allow.js",
     "./team/drift.js": "./dist/team/drift.js",

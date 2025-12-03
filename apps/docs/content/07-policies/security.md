@@ -51,7 +51,6 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Sensitive key redaction** - Known sensitive keys are redacted if environment details are logged
 - **Appropriate file permissions** - Configs and outputs use appropriate file permissions
 - **Air-gapped support** - Air-gapped environments work without configuration changes
-- **Explicit telemetry flag** - All analytics or telemetry behind `ALIGNTRUE_TELEMETRY=on` (supports `1` as alias)
 - **Atomic writes** - All artifacts written to temp file in same directory, then renamed
 - **Path validation** - Paths normalized and validated to prevent directory traversal
 

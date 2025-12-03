@@ -85,10 +85,6 @@ export function getAlignTruePaths(cwd: string = process.cwd()) {
     privacyConsent: (): string =>
       join(cwd, ".aligntrue", "privacy-consent.json"),
 
-    /** Path to telemetry events storage */
-    telemetryEvents: (): string =>
-      join(cwd, ".aligntrue", "telemetry-events.json"),
-
     /** Path to .aligntrue directory */
     aligntrueDir: join(cwd, ".aligntrue"),
 

@@ -128,8 +128,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 ### Low Priority
 
 9. **Edge cases** - Unusual configurations and inputs
-10. **Telemetry** - Opt-in/opt-out flows
-11. **Update checks** - Version comparison logic
+10. **Update checks** - Version comparison logic
 
 ## Running Tests
 
