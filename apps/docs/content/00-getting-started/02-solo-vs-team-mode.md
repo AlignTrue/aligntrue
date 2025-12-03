@@ -275,7 +275,7 @@ aligntrue sync
 
 In solo mode, you can configure where rules are stored and whether they're committed to git.
 
-For detailed information on git visibility, approval scopes, and storage options, see [Rule Visibility Concepts](/docs/03-concepts/rule-visibility).
+For detailed information on git visibility, approval scopes, and storage options, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
 
 ## Frequently asked questions
 
