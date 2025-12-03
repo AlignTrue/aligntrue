@@ -1,4 +1,4 @@
-# Rule Privacy
+# Rule privacy
 
 Keep sensitive rules out of version control while still using them with AI agents.
 
@@ -10,9 +10,9 @@ AlignTrue supports **private rules** - rules that are used locally but not commi
 - **Proprietary guidelines** from a private repository
 - **Sensitive configurations** that contain internal details
 
-## How It Works
+## How it works
 
-### Automatic Detection (SSH Sources)
+### Automatic detection (SSH Sources)
 
 When you add rules from an SSH URL (which requires authentication), AlignTrue automatically treats them as private:
 
@@ -36,7 +36,7 @@ Output:
 │    • To remove: delete the files and run 'aligntrue sync'
 ```
 
-### Source-Level Privacy
+### Source-level privacy
 
 Mark an entire source as private in your config:
 
@@ -50,7 +50,7 @@ sources:
     private: true # All rules from this source are private
 ```
 
-### Per-Rule Privacy
+### Per-rule privacy
 
 Override source-level settings in individual rule frontmatter:
 
@@ -76,7 +76,7 @@ private: false
 This rule will be committed even though the source is private.
 ```
 
-## What Gets Gitignored
+## What gets gitignored
 
 When a rule is marked as private, AlignTrue automatically adds to `.gitignore`:
 
@@ -95,7 +95,7 @@ The gitignore entries are managed in a dedicated section:
 # END AlignTrue Private Rules
 ```
 
-## Privacy Resolution Order
+## Privacy Resolution order
 
 When determining if a rule is private:
 
@@ -120,9 +120,9 @@ Example:
 - Source B: `private: true` → rules gitignored
 - Rule with `private: true` frontmatter → gitignored regardless of source
 
-## Best Practices
+## Best practices
 
-### Organize Private Rules
+### Organize private rules
 
 Keep private rules in their own source for easier management:
 
@@ -135,7 +135,7 @@ sources:
     private: true # Personal rules
 ```
 
-### Review Before Committing
+### Review before committing
 
 After adding new rules, check your git status:
 
@@ -144,7 +144,7 @@ git status
 # Should NOT show private rule files
 ```
 
-### Team Coordination
+### Team coordination
 
 For team projects with mixed public/private rules:
 
@@ -152,7 +152,7 @@ For team projects with mixed public/private rules:
 2. Import personal rules from a private source with `private: true`
 3. Each team member can have their own private rules
 
-## Removing Private Rules
+## Removing private rules
 
 To make a private rule public:
 
