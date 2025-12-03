@@ -1,6 +1,10 @@
 sources:
   - type: local
     path: .aligntrue/rules
+storage:
+  personal:
+    type: remote
+    url: git@github.com:gmays/aligntrue-private-rules.git
 exporters:
   - cursor
   - agents
