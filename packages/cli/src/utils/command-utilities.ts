@@ -6,7 +6,6 @@
  */
 
 import * as clack from "@clack/prompts";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 
 /**
  * Common argument definitions for CLI commands
@@ -58,7 +57,7 @@ export interface HelpConfig {
  * Lifecycle execution options
  */
 export interface LifecycleOptions {
-  /** Command name for telemetry */
+  /** Command name */
   commandName: string;
   /** Whether to show intro/outro */
   showIntro?: boolean;
@@ -66,8 +65,6 @@ export interface LifecycleOptions {
   introMessage?: string;
   /** Success outro message */
   successMessage?: string;
-  /** Skip telemetry recording */
-  skipTelemetry?: boolean;
 }
 
 /**
@@ -252,8 +249,8 @@ export function showStandardHelp(config: HelpConfig): void {
 /**
  * Execute a command with standardized lifecycle management
  *
- * Wraps command execution with intro/outro, telemetry recording, and
- * error handling. Ensures consistent UX across all commands.
+ * Wraps command execution with intro/outro and error handling.
+ * Ensures consistent UX across all commands.
  *
  * @param fn - Async function to execute
  * @param options - Lifecycle configuration
@@ -284,7 +281,6 @@ export async function executeWithLifecycle(
     showIntro = false,
     introMessage,
     successMessage,
-    skipTelemetry = false,
   } = options;
 
   try {
@@ -295,11 +291,6 @@ export async function executeWithLifecycle(
 
     // Execute command logic
     await fn();
-
-    // Record telemetry event (unless skipped)
-    if (!skipTelemetry) {
-      recordEvent({ command_name: commandName, align_hashes_used: [] });
-    }
 
     // Show success outro if message provided
     if (successMessage) {

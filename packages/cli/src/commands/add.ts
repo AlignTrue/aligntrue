@@ -23,7 +23,6 @@ import {
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { importRules } from "../utils/source-resolver.js";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -209,12 +208,6 @@ export async function add(args: string[]): Promise<void> {
   // Detect source type and privacy
   const sourceType = detectSourceType(baseUrl);
   const privateSource = isPrivateSource(baseUrl);
-
-  // Record telemetry
-  await recordEvent({
-    command_name: "add",
-    align_hashes_used: [],
-  });
 
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });

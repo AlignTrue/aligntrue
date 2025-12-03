@@ -14,7 +14,6 @@ import {
   type RuleFile,
 } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -962,8 +961,6 @@ aligntrue sync
   } else {
     console.log("\n" + outroLines.join("\n"));
   }
-
-  recordEvent({ command_name: "init", align_hashes_used: [] });
 }
 
 async function runSync() {

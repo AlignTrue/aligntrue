@@ -13,7 +13,6 @@
 import { existsSync } from "fs";
 import * as clack from "@clack/prompts";
 import { saveConfig, type AlignTrueConfig } from "@aligntrue/core";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -72,12 +71,6 @@ export async function remove(args: string[]): Promise<void> {
   const urlToRemove = positional[0]!;
   const configPath =
     (flags["--config"] as string | undefined) || ".aligntrue/config.yaml";
-
-  // Record telemetry
-  await recordEvent({
-    command_name: "remove",
-    align_hashes_used: [],
-  });
 
   // Check if config exists
   if (!existsSync(configPath)) {

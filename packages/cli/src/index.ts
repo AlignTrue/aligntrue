@@ -12,7 +12,6 @@ import {
   migrate,
   sync,
   team,
-  telemetry,
   scopes,
   check,
   config,
@@ -110,7 +109,6 @@ async function main() {
       "  backup         Manage backups (create, list, restore, cleanup)",
     );
     console.log("  revert         Restore files from backup with preview");
-    console.log("  telemetry      Telemetry settings (on, off, status)");
     console.log(
       "  privacy        Privacy and consent management (audit, revoke)",
     );
@@ -131,7 +129,6 @@ async function main() {
     ["sync", sync],
     ["watch", watch],
     ["team", team],
-    ["telemetry", telemetry],
     ["scopes", scopes],
     ["check", check],
     ["config", config],

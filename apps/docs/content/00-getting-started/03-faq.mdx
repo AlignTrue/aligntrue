@@ -296,31 +296,9 @@ See [Troubleshooting guide](/docs/05-troubleshooting) for comprehensive solution
 
 ## Privacy & security
 
-### Does AlignTrue collect telemetry?
-
-Only if you opt in. Telemetry is disabled by default:
-
-```bash
-aligntrue telemetry status  # Check status
-aligntrue telemetry on      # Enable (optional)
-```
-
-### What data is collected (if enabled)?
-
-- Command names (init, sync, check)
-- Export targets (cursor, agents)
-- Rule hashes (SHA-256, no content)
-- Anonymous UUID
-
-**Never collected:**
-
-- File paths or repo names
-- Code or rule content
-- Personal information
-
 ### Can I use AlignTrue with private rules?
 
-Yes! AlignTrue works completely offline. Your rules never leave your machine unless you explicitly push to git or enable telemetry.
+Yes! AlignTrue works completely offline. Your rules never leave your machine unless you explicitly push to git.
 
 ### Is AlignTrue secure for enterprise use?
 

@@ -32,7 +32,6 @@ const ALL_COMMANDS = [
   "config",
   "backup",
   "revert",
-  "telemetry",
   "privacy",
   "migrate",
   "status",

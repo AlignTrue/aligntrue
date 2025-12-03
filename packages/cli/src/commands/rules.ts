@@ -11,7 +11,6 @@ import {
   getExporterNames,
 } from "@aligntrue/core";
 import type { RuleFile } from "@aligntrue/schema";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 
 /**
  * Main rules command handler
@@ -230,8 +229,6 @@ async function listRules(flags: RulesFlags): Promise<void> {
         clack.outro("Done");
       }
     }
-
-    recordEvent({ command_name: "rules", align_hashes_used: [] });
   } catch (error) {
     if (jsonOutput) {
       console.log(

@@ -23,11 +23,6 @@ vi.mock("@clack/prompts", () => ({
   },
 }));
 
-// Mock telemetry
-vi.mock("@aligntrue/core/telemetry/collector.js", () => ({
-  recordEvent: vi.fn(),
-}));
-
 describe("exporters command", () => {
   let tempDir: string;
   let originalCwd: string;

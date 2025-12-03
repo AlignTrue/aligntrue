@@ -194,17 +194,6 @@ describe("executeWithLifecycle", () => {
     mockExit.mockRestore();
   });
 
-  it("should skip telemetry if requested", async () => {
-    let executed = false;
-    await executeWithLifecycle(
-      async () => {
-        executed = true;
-      },
-      { commandName: "test", skipTelemetry: true },
-    );
-    expect(executed).toBe(true);
-  });
-
   it("should handle intro/outro if requested", async () => {
     let executed = false;
     await executeWithLifecycle(

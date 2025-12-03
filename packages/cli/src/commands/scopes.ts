@@ -9,7 +9,6 @@ import {
   convertDiscoveredToScopes,
 } from "@aligntrue/core";
 import { existsSync } from "fs";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import * as clack from "@clack/prompts";
 import {
   parseCommonArgs,
@@ -126,9 +125,6 @@ async function listScopes(): Promise<void> {
     console.log(
       `Total: ${config.scopes.length} scope${config.scopes.length === 1 ? "" : "s"}`,
     );
-
-    // Record telemetry event
-    recordEvent({ command_name: "scopes", align_hashes_used: [] });
   } catch (err) {
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
@@ -196,12 +192,6 @@ async function discoverSubcommand(
 
   await saveConfig(config, configPath, cwd);
   clack.log.success("Updated config with discovered scopes");
-
-  // Record telemetry
-  recordEvent({
-    command_name: "scopes-discover",
-    align_hashes_used: [],
-  });
 
   clack.outro("Discovery complete");
 }
