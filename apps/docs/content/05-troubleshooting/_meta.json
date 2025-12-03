@@ -1,7 +1,8 @@
 {
   "index": "General troubleshooting",
   "sync-issues": "Sync issues",
+  "ci-validation": "CI validation",
   "overlays": "Overlays",
-  "conflicts": "Resolving conflicts",
+  "remote-access": "Remote access",
   "windows-limitations": "Windows limitations"
 }

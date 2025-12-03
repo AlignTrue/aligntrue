@@ -1,0 +1,296 @@
+---
+title: Setup
+description: Prerequisites and installation instructions for AlignTrue development.
+---
+
+# Development setup
+
+## Prerequisites
+
+- **Node.js** 20 or later (`.node-version` file included for Volta/asdf/nvm)
+- **pnpm** 9 or later
+
+**Install pnpm:**
+
+<Tabs items={["npm", "yarn", "Homebrew (macOS)", "Direct"]}>
+
+<Tabs.Tab>```bash npm install -g pnpm@9 ```</Tabs.Tab>
+
+<Tabs.Tab>```bash yarn global add pnpm@9 ```</Tabs.Tab>
+
+<Tabs.Tab>
+  ```bash brew install pnpm pnpm env use --global 9 # Set version to 9+ ```
+</Tabs.Tab>
+
+<Tabs.Tab>
+  Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
+  installers.
+</Tabs.Tab>
+
+</Tabs>
+
+## Quick start
+
+Bootstrap the entire project with one command:
+
+```bash
+pnpm bootstrap
+```
+
+This installs dependencies and builds all packages. You're ready to develop!
+
+**Note:** First-time setup takes ~2-3 minutes depending on your machine.
+
+## Install CLI from GitHub
+
+Need to test the latest CLI changes straight from `main`? Because `@aligntrue/cli` imports other workspace packages, build the entire repo before running the binary:
+
+```bash
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue
+pnpm install          # install all workspace dependencies
+pnpm build            # compile every package (core/schema/exporters/cli)
+cd packages/cli
+pnpm link --global    # exposes the aligntrue/aln commands locally
+aligntrue --version
+```
+
+Re-run `pnpm build` after dependency changes, or `pnpm --filter @aligntrue/cli build` after CLI-only edits to refresh `dist/`.
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+pnpm install
+```
+
+This will install dependencies for all workspace packages and set up Git hooks automatically.
+
+### 2. Verify installation
+
+After installation completes, verify everything works:
+
+```bash
+pnpm typecheck   # Type-check all packages
+pnpm test:fast   # Run tests with fast reporter
+```
+
+If all checks pass, you're ready to develop!
+
+## Git hooks
+
+Hooks are installed automatically when you run `pnpm install`.
+
+### Pre-commit hook
+
+Runs automatically before each commit:
+
+1. **Format staged files** (~1-2s) - Prettier auto-formats code
+2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
+3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+
+**Total time:**
+
+- Without package changes: ~3-5 seconds
+- With package changes: ~4-8 seconds
+
+### Commit message hook
+
+Validates commit messages follow Conventional Commits format:
+
+```bash
+# Good commit messages
+feat: Add drift detection command
+fix: Resolve lockfile sync issue
+docs: Update setup guide
+
+# Bad commit messages (will be rejected)
+updated stuff
+WIP
+fixes bug
+```
+
+Format: `type: Subject in sentence case`
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+### Pre-push hook
+
+Runs automatically before pushing (takes ~30-60 seconds):
+
+- Full typecheck across all packages
+- Full test suite (all packages)
+- Full build to catch build errors
+- Mirrors CI validation
+
+This ensures you never push code that will fail CI.
+
+### Bypassing hooks (emergency only)
+
+If hooks are genuinely broken (not just failing validation):
+
+```bash
+git commit --no-verify   # Skip pre-commit
+git push --no-verify     # Skip pre-push
+```
+
+**Only use when hooks are broken, not to skip validation.**
+
+### Hooks not running
+
+If Git hooks aren't running after `pnpm install`:
+
+```bash
+pnpm prepare
+```
+
+This manually runs the Husky setup.
+
+## Troubleshooting
+
+### "Command not found: pnpm"
+
+**Cause:** pnpm is not installed globally.
+
+**Fix:** See Prerequisites section above for installation instructions.
+
+Verify installation:
+
+```bash
+pnpm --version
+```
+
+### "Module not found" errors
+
+Reinstall dependencies:
+
+```bash
+pnpm clean
+pnpm install
+```
+
+### Type errors after changes
+
+Run type-check to see all errors:
+
+```bash
+pnpm typecheck
+```
+
+### Next.js dev server fails with "Cannot find module" errors
+
+**Symptom:** Dev server crashes with errors like:
+
+```
+Error: Cannot find module './vendor-chunks/nextra@4.6.0...'
+Cannot find module '@aligntrue/ui'
+```
+
+**Cause:** Next.js doesn't transpile workspace packages by default. The `@aligntrue/ui` package exports TypeScript source directly (no build step), so Next.js needs to be configured to transpile it.
+
+**Fix:**
+
+1. Check your Next.js config has `transpilePackages`:
+
+```typescript
+// apps/web/next.config.ts
+const nextConfig: NextConfig = {
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+};
+```
+
+```javascript
+// apps/docs/next.config.mjs
+export default withNextra({
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+});
+```
+
+2. Clean stale build caches:
+
+```bash
+rm -rf apps/web/.next apps/docs/.next
+```
+
+3. Restart dev servers:
+
+```bash
+pnpm dev:web   # or pnpm dev:docs
+```
+
+**Prevention:**
+
+- CI validates `transpilePackages` config: `pnpm validate:transpile-packages`
+- Pre-commit hook automatically cleans `.next` directories before each commit
+- If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs
+
+**Workflow after editing docs:**
+
+```bash
+# 1. Edit source files in apps/docs/content/
+pnpm dev:docs  # View changes at localhost:3001
+
+# 2. When done, generate root files
+pnpm generate:repo-files
+
+# 3. Commit (pre-commit hook handles cache cleanup)
+git add -A
+git commit -m "docs: Update documentation"
+```
+
+**Important:** Never manually edit `README.md`, `DEVELOPMENT.md`, or `CONTRIBUTING.md` - they're auto-generated from docs sources.
+
+### Missing DOM types in UI packages
+
+**Symptom:** TypeScript errors like `Cannot find name 'window'`, `Cannot find name 'document'`
+
+**Cause:** UI packages with React need DOM library types in `tsconfig.json`.
+
+**Fix:**
+
+Add to `tsconfig.json` compilerOptions:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+**Prevention:** CI validates UI packages with `pnpm validate:ui-tsconfig`.
+
+### Missing type exports
+
+**Symptom:** `Property 'X' does not exist on type 'Y'` in apps consuming schema types.
+
+**Cause:** Type defined in schema package but not exported in `packages/schema/src/index.ts`.
+
+**Fix:**
+
+1. Check the type exists in source file (e.g., `packages/schema/src/catalog-entry.ts`)
+2. Add export to `packages/schema/src/index.ts`:
+
+```typescript
+export {
+  // ... existing exports
+  type YourMissingType,
+} from "./catalog-entry.js";
+```
+
+3. Rebuild schema package:
+
+```bash
+pnpm --filter @aligntrue/schema build
+```
+
+**Prevention:** CI runs full typecheck across all packages to catch missing exports.
+
+## Next steps
+
+- Learn about the [workspace structure](/docs/06-development/workspace)
+- Explore [development commands](/docs/06-development/commands)
+- Understand [CI validation and troubleshooting](/docs/06-development/ci)

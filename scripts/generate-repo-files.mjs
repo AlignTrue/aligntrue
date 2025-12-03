@@ -9,9 +9,9 @@
  *
  * Mappings:
  * - apps/docs/content/index.mdx → README.md
- * - apps/docs/content/06-contributing/creating-aligns.md → CONTRIBUTING.md
- * - apps/docs/content/08-development/*.md → DEVELOPMENT.md (concatenated)
- * - apps/docs/content/07-policies/security.md → SECURITY.md
+ * - apps/docs/content/07-contributing/creating-aligns.md → CONTRIBUTING.md
+ * - apps/docs/content/06-development/*.md → DEVELOPMENT.md (concatenated)
+ * - apps/docs/content/security.md → SECURITY.md
  */
 
 import { readFileSync, writeFileSync, readdirSync } from "fs";
@@ -114,7 +114,7 @@ function generateReadme() {
 function generateContributing() {
   console.log("Generating CONTRIBUTING.md...");
 
-  const sourcePath = join(docsContentDir, "06-contributing/creating-aligns.md");
+  const sourcePath = join(docsContentDir, "07-contributing/creating-aligns.md");
   let content = readFileSync(sourcePath, "utf-8");
 
   // Strip frontmatter
@@ -125,7 +125,7 @@ function generateContributing() {
 
   // Add header and footer
   content =
-    addHeader("06-contributing/creating-aligns.md") + content + addFooter();
+    addHeader("07-contributing/creating-aligns.md") + content + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "CONTRIBUTING.md");
@@ -140,7 +140,7 @@ function generateContributing() {
 function generateDevelopment() {
   console.log("Generating DEVELOPMENT.md...");
 
-  const devDir = join(docsContentDir, "08-development");
+  const devDir = join(docsContentDir, "06-development");
   const files = readdirSync(devDir)
     .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"))
     .filter((f) => f !== "index.md" && f !== "index.mdx")
@@ -181,7 +181,7 @@ function generateDevelopment() {
   }
 
   // Add header and footer
-  content = addHeader("08-development/*.md") + content + addFooter();
+  content = addHeader("06-development/*.md") + content + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "DEVELOPMENT.md");
@@ -196,7 +196,7 @@ function generateDevelopment() {
 function generateSecurity() {
   console.log("Generating SECURITY.md...");
 
-  const sourcePath = join(docsContentDir, "07-policies/security.md");
+  const sourcePath = join(docsContentDir, "security.md");
   let content = readFileSync(sourcePath, "utf-8");
 
   // Strip frontmatter
@@ -206,7 +206,7 @@ function generateSecurity() {
   content = transformLinks(content);
 
   // Add header and footer
-  content = addHeader("07-policies/security.md") + content + addFooter();
+  content = addHeader("security.md") + content + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "SECURITY.md");

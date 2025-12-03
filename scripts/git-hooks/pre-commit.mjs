@@ -60,10 +60,10 @@ async function main() {
   try {
     const docsSources = [
       "apps/docs/content/index.mdx",
-      "apps/docs/content/06-contributing/creating-aligns.md",
+      "apps/docs/content/07-contributing/creating-aligns.md",
       "apps/docs/content/07-policies/security.md",
     ];
-    const devDocsPattern = /^apps\/docs\/content\/08-development\/.+\.mdx?$/;
+    const devDocsPattern = /^apps\/docs\/content\/06-development\/.+\.mdx?$/;
 
     const sourceDocsChanged = stagedFiles.some(
       (f) => docsSources.includes(f) || devDocsPattern.test(f),

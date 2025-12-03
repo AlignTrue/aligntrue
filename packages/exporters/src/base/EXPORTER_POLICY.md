@@ -207,6 +207,6 @@ Exporters should have tests verifying:
 
 ## Related Documentation
 
-- [Architecture](../../../apps/docs/content/08-development/architecture.md)
+- [Architecture](../../../apps/docs/content/06-development/architecture.md)
 - [Sync Behavior](../../../apps/docs/content/03-concepts/sync-behavior.md)
 - [Vendor Bags](../../../apps/docs/content/04-reference/vendor-bags.mdx)

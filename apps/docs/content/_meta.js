@@ -12,10 +12,10 @@ export default {
   "05-troubleshooting": "Troubleshooting",
   "--contributing": {
     type: "separator",
-    title: "Contributing",
+    title: "Contributing & Policies",
   },
-  "06-contributing": "Contributing",
-  "07-policies": "Policies",
-  "08-development": "Development",
+  "07-contributing": "Contributing",
+  security: "Security",
+  "06-development": "Development",
   about: "About",
 };

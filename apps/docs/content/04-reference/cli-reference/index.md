@@ -5,17 +5,15 @@ description: "Complete reference for AlignTrue CLI commands with usage, flags, a
 
 # CLI reference
 
-Complete reference for all AlignTrue CLI commands.
+Complete reference for all AlignTrue CLI commands organized by user workflow.
 
-## Common commands
+## Getting started
 
-Most users only need these commands:
+New to AlignTrue? Start here:
 
-- `aligntrue init` - Initialize project
-- `aligntrue sync` - Sync rules to agents
-- `aligntrue check` - Validate rules
-
-**Advanced users** may use team commands (`team enable`, `drift`) or overlays/plugs for customization.
+1. **[Init](./core#aligntrue-init)** - Set up your project (`aligntrue init`)
+2. **[Sync](./core#aligntrue-sync)** - Export rules to agents (`aligntrue sync`)
+3. **[Check](./core#aligntrue-check)** - Validate your rules (`aligntrue check`)
 
 ---
 
@@ -23,49 +21,49 @@ Most users only need these commands:
 
 Browse commands by category:
 
-- [Basic commands](./basic) - Daily development (init, import, sync, check, backup)
-- [Development commands](./development) - Markdown authoring and exporter management
-- [Plugs commands](./plugs) - Stack-agnostic variable management
-- [Overlay commands](./overlays) - Selective rule modifications
-- [Team mode commands](./team) - Collaboration and drift detection
-- [Settings commands](./settings) - Configuration and privacy
+- **[Core commands](./core)** - Essential daily workflow (init, sync, check, status, watch, doctor)
+- **[Sources](./sources)** - Manage rule imports and git sources (add, remove, sources)
+- **[Exporters](./exporters)** - Manage agents (list, enable, disable, detect, ignore)
+- **[Plugs](./plugs)** - Stack-agnostic variable management (list, resolve, set)
+- **[Overlays](./overlays)** - Customize rules without forking (add, status, diff, remove)
+- **[Team mode](./team)** - Collaboration and governance (drift, onboard, team, scopes, link)
+- **[Backups](./backup)** - Backup and recovery (create, list, restore, cleanup, revert)
+- **[Settings](./settings)** - Configuration and privacy (config, privacy)
+- **[Migration](./migrate)** - Schema migration and imports (migrate)
 
 ---
 
-## All commands
+## All commands quick reference
 
-Quick lookup table for all CLI commands:
-
-| Command                     | Description                             | Category                                                                    |
-| --------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
-| `aligntrue init`            | Initialize project with agent detection | [Basic](./basic#aligntrue-init)                                             |
-| `aligntrue add`             | Add rules from URL or path              | [Basic](./basic#aligntrue-add)                                              |
-| `aligntrue remove`          | Remove a linked source                  | [Basic](./basic#aligntrue-remove)                                           |
-| `aligntrue sources`         | Manage rule sources                     | [Basic](./basic#aligntrue-sources)                                          |
-| `aligntrue sync`            | Sync rules to agents                    | [Basic](./basic#aligntrue-sync)                                             |
-| `aligntrue watch`           | Watch files and auto-sync on changes    | [Basic](./basic#aligntrue-watch)                                            |
-| `aligntrue check`           | Validate rules                          | [Basic](./basic#aligntrue-check)                                            |
-| `aligntrue status`          | Show current status and exporters       | [Basic](./basic#aligntrue-status)                                           |
-| `aligntrue doctor`          | Run health checks and verification      | [Basic](./basic#aligntrue-doctor)                                           |
-| `aligntrue backup`          | Backup management                       | [Basic](./basic#aligntrue-backup)                                           |
-| `aligntrue revert`          | Restore files from backup with preview  | [Basic](./basic#aligntrue-revert)                                           |
-| `aligntrue exporters`       | Manage exporters                        | [Development](./development#aligntrue-exporters)                            |
-| `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                                       |
-| `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)                                    |
-| `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                                        |
-| `aligntrue override add`    | Create overlay                          | [Overlays](./overlays#aligntrue-override-add)                               |
-| `aligntrue override status` | View overlays                           | [Overlays](./overlays#aligntrue-override-status)                            |
-| `aligntrue override diff`   | Show overlay effects                    | [Overlays](./overlays#aligntrue-override-diff)                              |
-| `aligntrue override remove` | Remove overlay                          | [Overlays](./overlays#aligntrue-override-remove)                            |
-| `aligntrue drift`           | Detect drift                            | [Team](./team#aligntrue-drift)                                              |
-| `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                                            |
-| `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                                        |
-| `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                                             |
-| `aligntrue link`            | Vendor aligns                           | [Team](./team#aligntrue-link)                                               |
-| `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)                            |
-| `aligntrue migrate`         | Schema migration (pre-1.0)              | [Settings](./settings#aligntrue-migrate)                                    |
-| `aligntrue team`            | Team mode management                    | [Settings](./settings#aligntrue-team-enablestatusapprovelist-allowedremove) |
-| `aligntrue privacy`         | Privacy consents                        | [Settings](./settings#aligntrue-privacy-auditrevoke)                        |
+| Command                     | Description                             | Category                                             |
+| --------------------------- | --------------------------------------- | ---------------------------------------------------- |
+| `aligntrue init`            | Initialize project with agent detection | [Core](./core#aligntrue-init)                        |
+| `aligntrue sync`            | Sync rules to agents                    | [Core](./core#aligntrue-sync)                        |
+| `aligntrue check`           | Validate rules                          | [Core](./core#aligntrue-check)                       |
+| `aligntrue status`          | Show current status and exporters       | [Core](./core#aligntrue-status)                      |
+| `aligntrue watch`           | Watch files and auto-sync on changes    | [Core](./core#aligntrue-watch)                       |
+| `aligntrue doctor`          | Run health checks and verification      | [Core](./core#aligntrue-doctor)                      |
+| `aligntrue add`             | Add rules from URL or path              | [Sources](./sources#aligntrue-add)                   |
+| `aligntrue remove`          | Remove a linked source                  | [Sources](./sources#aligntrue-remove)                |
+| `aligntrue sources`         | Manage rule sources                     | [Sources](./sources#aligntrue-sources)               |
+| `aligntrue exporters`       | Manage exporters                        | [Exporters](./exporters#aligntrue-exporters)         |
+| `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                |
+| `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)             |
+| `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                 |
+| `aligntrue override add`    | Create overlay                          | [Overlays](./overlays#aligntrue-override-add)        |
+| `aligntrue override status` | View overlays                           | [Overlays](./overlays#aligntrue-override-status)     |
+| `aligntrue override diff`   | Show overlay effects                    | [Overlays](./overlays#aligntrue-override-diff)       |
+| `aligntrue override remove` | Remove overlay                          | [Overlays](./overlays#aligntrue-override-remove)     |
+| `aligntrue drift`           | Detect drift                            | [Team](./team#aligntrue-drift)                       |
+| `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                     |
+| `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                 |
+| `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                      |
+| `aligntrue link`            | Vendor rules                            | [Team](./team#aligntrue-link)                        |
+| `aligntrue backup`          | Backup management                       | [Backups](./backup#aligntrue-backup)                 |
+| `aligntrue revert`          | Restore files from backup               | [Backups](./backup#aligntrue-revert)                 |
+| `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)     |
+| `aligntrue privacy`         | Privacy consents                        | [Settings](./settings#aligntrue-privacy-auditrevoke) |
+| `aligntrue migrate`         | Schema migration                        | [Migration](./migrate)                               |
 
 ---
 

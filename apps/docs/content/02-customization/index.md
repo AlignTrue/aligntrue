@@ -321,32 +321,16 @@ overlays:
         severity: "error"
 ```
 
-## Vendor bags (passive)
-
-**Note:** Vendor bags are a passive feature that preserves agent-specific metadata during sync. You don't need to configure or manage them - they work automatically.
-
-**What they do:**
-
-- Preserve Cursor-specific fields when importing from `.mdc` files
-- Store agent metadata in `vendor.<agent>.*` namespace
-- Exclude volatile fields (like session IDs) from hashing
-- Enable lossless round-trips between IR and agent formats
-
-**When they matter:**
-
-- Preserving agent-specific fields when importing from agent formats
-- Importing from agent-specific formats
-- Preserving agent hints and metadata
-
-You don't need to understand vendor bags to use AlignTrue effectively - they're an implementation detail.
-
 ## Next steps
 
-- [Plugs guide](/docs/02-customization/plugs) - Detailed plug usage with examples
-- [Overlays guide](/docs/02-customization/overlays) - Fork-safe customization patterns
-- [Scopes guide](/docs/02-customization/scopes) - Monorepo rule organization
-- [Solo developer guide](/docs/01-guides/02-solo-developer-guide) - Complete solo workflow
-- [Team guide](/docs/01-guides/04-team-guide) - Team collaboration patterns
+- [Plugs guide](/docs/02-customization/plugs) - Fill template slots with project-specific values
+- [Overlays guide](/docs/02-customization/overlays) - Override rule properties without forking
+- [Scopes guide](/docs/02-customization/scopes) - Apply different rules per directory
+- [Rule organization](/docs/02-customization/multi-file-organization) - Organize rules across files
+- [Export formats](/docs/02-customization/export-formats) - Choose native or AGENTS.md format
+- [Per-rule targeting](/docs/02-customization/per-rule-targeting) - Control which agents receive rules
+- [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Complete solo workflow
+- [Team guide](/docs/01-guides/02-team-guide) - Team collaboration patterns
 
 ## CLI commands
 

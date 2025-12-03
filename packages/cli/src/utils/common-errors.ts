@@ -88,7 +88,7 @@ export const CommonErrors = {
   exporterNotFound: (exporterName: string): CLIError => ({
     title: "Exporter not found",
     message: `Exporter '${exporterName}' is not available`,
-    hint: "Run 'aligntrue exporters list' to see available exporters, or visit https://aligntrue.ai/docs/06-contributing/adding-exporters to add support",
+    hint: "Run 'aligntrue exporters list' to see available exporters, or visit https://aligntrue.ai/docs/07-contributing/adding-exporters to add support",
     code: "ERR_EXPORTER_NOT_FOUND",
   }),
 

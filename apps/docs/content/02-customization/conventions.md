@@ -164,4 +164,4 @@ Document these in your README so users understand.
 
 - [Plugs guide](/docs/02-customization/plugs) - Complete plugs documentation
 - [Overlays guide](/docs/02-customization/overlays) - Complete overlays documentation
-- [Creating aligns](/docs/06-contributing/creating-aligns) - How to author aligns
+- [Creating aligns](/docs/07-contributing/creating-aligns) - How to author aligns

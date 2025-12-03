@@ -526,8 +526,8 @@ cat .aligntrue/rules | grep source_scope
 - [Multi-file organization](/docs/02-customization/multi-file-organization) - Detailed guide on source files
 - [Scopes](/docs/02-customization/scopes) - Advanced scope configuration
 - [Solo vs team mode](/docs/00-getting-started/02-solo-vs-team-mode) - Choosing your mode
-- [Solo developer guide](/docs/01-guides/02-solo-developer-guide) - Workflows for solo devs
-- [Team guide](/docs/01-guides/04-team-guide) - Workflows for teams
+- [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Workflows for solo devs
+- [Team guide](/docs/01-guides/02-team-guide) - Workflows for teams
 
 ---
 

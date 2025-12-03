@@ -62,41 +62,6 @@ Config file: .aligntrue/config.yaml
 
 ---
 
-## `aligntrue migrate`
-
-Migrate rules between storage types and from other tools like Ruler.
-
-**Usage:**
-
-```bash
-aligntrue migrate <subcommand> [options]
-```
-
-**Subcommands:**
-
-| Subcommand | Description                           |
-| ---------- | ------------------------------------- |
-| `personal` | Move personal rules to remote storage |
-| `team`     | Move team rules to remote storage     |
-| `ruler`    | Migrate from Ruler to AlignTrue       |
-
-**Flags:**
-
-| Flag          | Description                      | Default |
-| ------------- | -------------------------------- | ------- |
-| `--yes`, `-y` | Skip confirmation prompts        | `false` |
-| `--dry-run`   | Preview changes without applying | `false` |
-
-**See also:** [Full migrate documentation](/docs/04-reference/cli-reference/migrate) for wizard flow, configuration examples, and troubleshooting.
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Validation error
-- `2` - System error
-
----
-
 ## `aligntrue privacy audit|revoke`
 
 Manage privacy consents for network operations.
