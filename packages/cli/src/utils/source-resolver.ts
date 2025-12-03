@@ -9,7 +9,7 @@
  */
 
 import { existsSync, statSync } from "fs";
-import { extname, join, resolve } from "path";
+import { join, resolve } from "path";
 import {
   resolveSource as coreResolveSource,
   mergeAligns,
@@ -22,13 +22,7 @@ import {
   logImport,
   type ConflictInfo,
 } from "@aligntrue/core";
-import { parseNaturalMarkdown } from "@aligntrue/core/parsing/natural-markdown";
-import {
-  parseYamlToJson,
-  computeHash,
-  type Align,
-  type RuleFile,
-} from "@aligntrue/schema";
+import { computeHash, type Align, type RuleFile } from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
 import { GitProvider } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "./git-progress.js";
@@ -205,34 +199,10 @@ function parseGitUrlComponents(source: string): {
 }
 
 export interface ResolvedSource {
-  content: string;
+  align: Align;
   sourcePath: string;
   sourceType: "local" | "git";
   commitSha?: string | undefined; // For git sources
-}
-
-/**
- * Parse source content into Align based on file extension
- * Handles both YAML and markdown with frontmatter
- */
-function parseSourceContent(content: string, sourcePath: string): Align {
-  const ext = extname(sourcePath).toLowerCase();
-
-  if (ext === ".md" || ext === ".markdown") {
-    // Parse markdown with optional YAML frontmatter
-    const parsed = parseNaturalMarkdown(content);
-
-    // Convert to Align format
-    return {
-      id: parsed.metadata.id || "imported-align",
-      version: parsed.metadata.version || "1.0.0",
-      spec_version: "1",
-      sections: parsed.sections,
-    };
-  } else {
-    // Parse as YAML
-    return parseYamlToJson(content) as Align;
-  }
 }
 
 /**
@@ -342,7 +312,7 @@ export async function resolveSource(
     frontmatter: rule.frontmatter,
   }));
 
-  // Return synthesized YAML content for backward compatibility with merge logic
+  // Return Align directly - no YAML serialization needed
   const align: Align = {
     id: source.type === "local" ? "local-rules" : "imported-align",
     version: "1.0.0",
@@ -350,12 +320,8 @@ export async function resolveSource(
     sections,
   };
 
-  // Stringify to YAML for content field (backward compat)
-  const { stringify } = await import("yaml");
-  const content = stringify(align);
-
   return {
-    content,
+    align,
     sourcePath: sourceUrl,
     sourceType: source.type,
     commitSha: resolved.commitSha,
@@ -490,10 +456,8 @@ export async function resolveAndMergeSources(
     if (!firstSource) {
       throw new Error("First resolved source is undefined");
     }
-    const align = parseSourceContent(
-      firstSource.content,
-      firstSource.sourcePath,
-    );
+    // Use align directly - no parsing needed
+    const align = firstSource.align;
     // Defensive: Initialize sections to empty array ONLY if missing or invalid
     try {
       ensureSectionsArray(align, { throwOnInvalid: true });
@@ -511,28 +475,20 @@ export async function resolveAndMergeSources(
     };
   }
 
-  // Parse all sources into Aligns
+  // Use aligns directly from resolved sources - no parsing needed
   const aligns: Align[] = [];
   for (const source of resolved) {
+    const align = source.align;
+    // Defensive: Initialize sections to empty array ONLY if missing or invalid
     try {
-      const align = parseSourceContent(source.content, source.sourcePath);
-      // Defensive: Initialize sections to empty array ONLY if missing or invalid
-      try {
-        ensureSectionsArray(align, { throwOnInvalid: true });
-      } catch {
-        throw new Error(
-          `Invalid align format: sections must be an array, got ${typeof align.sections}\n` +
-            `  Source: ${source.sourcePath}`,
-        );
-      }
-      aligns.push(align);
-    } catch (error) {
+      ensureSectionsArray(align, { throwOnInvalid: true });
+    } catch {
       throw new Error(
-        `Failed to parse source as Align\n` +
-          `  Source: ${source.sourcePath}\n` +
-          `  ${error instanceof Error ? error.message : String(error)}`,
+        `Invalid align format: sections must be an array, got ${typeof align.sections}\n` +
+          `  Source: ${source.sourcePath}`,
       );
     }
+    aligns.push(align);
   }
 
   // Merge aligns

@@ -32,7 +32,6 @@ sources:
   - type: git
     url: https://github.com/yourorg/aligntrue-rules
     ref: main
-    path: .aligntrue.yaml
 ```
 
 **Configuration fields:**
@@ -43,10 +42,10 @@ sources:
   - SSH: `git@github.com:org/repo.git`
   - Works with any git host: GitHub, GitLab, Bitbucket, self-hosted, Gitea, etc.
 - `ref` - Branch, tag, or commit SHA (default: `main`)
-- `path` - File path within the repository (optional, defaults to auto-scanning for `.md`/`.mdc` files)
-  - Supports YAML files: `.aligntrue.yaml`, `rules.yaml`
-  - Supports natural markdown: `AGENTS.md`, `RULES.md`, `rules/typescript.md`
-  - Can target directories: `aligns/` (recursively finds all `.md`/`.mdc` files)
+- `path` - Path within the repository (optional, defaults to `"."` for directory scan)
+  - Defaults to scanning the entire repository for `.md`/`.mdc` files
+  - Can target a subdirectory: `rules/` or `.aligntrue/rules/`
+  - Can target a single file: `rules/typescript.md`
 
 ### Branch, tag, and commit support
 
@@ -76,17 +75,17 @@ sources:
 
 ## Examples
 
-### Public GitHub repository (YAML format)
+### Public GitHub repository
 
 ```yaml
 sources:
   - type: git
     url: https://github.com/AlignTrue/community-rules
     ref: main
-    path: rules/typescript.yaml
+    path: rules
 ```
 
-First sync will prompt for privacy consent. AlignTrue clones the repository and extracts the specified file. Run `aligntrue privacy grant git` to enable network access.
+First sync will prompt for privacy consent. AlignTrue clones the repository and scans for markdown rules. Run `aligntrue privacy grant git` to enable network access.
 
 ### Public GitHub repository (natural markdown)
 
