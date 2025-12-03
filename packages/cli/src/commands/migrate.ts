@@ -1,9 +1,8 @@
 /**
- * Migrate command - Move rules between scopes and storage types
+ * Migrate command - Migrate from other tools like Ruler
  */
 
 import * as clack from "@clack/prompts";
-import { join } from "path";
 import { type AlignTrueConfig, type RulerConfig } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
@@ -11,8 +10,6 @@ import {
   showStandardHelp,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { CommonErrors } from "../utils/common-errors.js";
-import { exitWithError } from "../utils/error-formatter.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -36,19 +33,15 @@ export async function migrate(args: string[]): Promise<void> {
   if (parsed.help || parsed.positional.length === 0) {
     showStandardHelp({
       name: "migrate",
-      description: "Move rules between scopes and storage types",
+      description: "Migrate from other tools like Ruler",
       usage: "aligntrue migrate <subcommand> [options]",
       args: ARG_DEFINITIONS,
-      examples: [
-        "aligntrue migrate personal",
-        "aligntrue migrate team",
-        "aligntrue migrate ruler",
-      ],
+      examples: ["aligntrue migrate ruler"],
       notes: [
         "Subcommands:",
-        "  personal - Move all personal rules to remote storage",
-        "  team - Move all team rules to remote storage",
         "  ruler - Migrate from Ruler to AlignTrue",
+        "",
+        "For remote backup setup, configure remote_backup in .aligntrue/config.yaml",
       ],
     });
     return;
@@ -58,12 +51,6 @@ export async function migrate(args: string[]): Promise<void> {
   const cwd = process.cwd();
 
   switch (subcommand) {
-    case "personal":
-      await migratePersonal(cwd, parsed.flags);
-      break;
-    case "team":
-      await migrateTeam(cwd, parsed.flags);
-      break;
     case "ruler":
       await migrateRuler(cwd, parsed.flags);
       break;
@@ -71,175 +58,6 @@ export async function migrate(args: string[]): Promise<void> {
       clack.log.error(`Unknown subcommand: ${subcommand}`);
       clack.log.info("Run 'aligntrue migrate --help' for usage");
       process.exit(1);
-  }
-}
-
-/**
- * Migrate personal rules to remote storage
- */
-async function migratePersonal(
-  cwd: string,
-  flags: MigrationFlags,
-): Promise<void> {
-  const dryRun = flags["dry-run"] as boolean;
-  const yes = flags["yes"] as boolean;
-
-  if (isTTY()) {
-    clack.intro("Migrate personal rules to remote storage");
-  } else {
-    console.log("Migrate personal rules to remote storage");
-  }
-
-  const { loadConfig } = await import("@aligntrue/core");
-  const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const config = await loadConfig(configPath);
-
-  // Check if personal storage is already remote
-  const typedConfig = config as unknown as AlignTrueConfig;
-  const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
-  if (storage?.["personal"]?.type === "remote") {
-    if (isTTY()) {
-      clack.log.success("Personal rules are already using remote storage");
-    } else {
-      console.log("✓ Personal rules are already using remote storage");
-    }
-    return;
-  }
-
-  if (isTTY()) {
-    clack.log.info(
-      "This will move all personal rules to your personal remote repository.",
-    );
-  } else {
-    console.log(
-      "This will move all personal rules to your personal remote repository.",
-    );
-  }
-
-  if (!yes && !dryRun) {
-    if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
-    }
-
-    const confirm = await clack.confirm({
-      message: "Continue with migration?",
-      initialValue: true,
-    });
-
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Migration cancelled");
-      return;
-    }
-  }
-
-  if (dryRun) {
-    if (isTTY()) {
-      clack.log.info("[DRY RUN] Would update personal storage to remote");
-    } else {
-      console.log("[DRY RUN] Would update personal storage to remote");
-    }
-    return;
-  }
-
-  // Run remote setup wizard
-  const { runRemoteSetupWizard } = await import("../wizards/remote-setup.js");
-  const result = await runRemoteSetupWizard("personal", cwd);
-
-  if (!result.success || result.skipped) {
-    if (isTTY()) {
-      clack.cancel("Migration cancelled or skipped");
-    } else {
-      console.log("Migration cancelled or skipped");
-    }
-    return;
-  }
-
-  if (isTTY()) {
-    clack.outro("Personal rules migrated to remote storage");
-  } else {
-    console.log("✓ Personal rules migrated to remote storage");
-  }
-}
-
-/**
- * Migrate team rules to remote storage
- */
-async function migrateTeam(cwd: string, flags: MigrationFlags): Promise<void> {
-  const dryRun = flags["dry-run"] as boolean;
-  const yes = flags["yes"] as boolean;
-
-  if (isTTY()) {
-    clack.intro("Migrate team rules to remote storage");
-  } else {
-    console.log("Migrate team rules to remote storage");
-  }
-
-  const { loadConfig } = await import("@aligntrue/core");
-  const configPath = join(cwd, ".aligntrue", "config.yaml");
-  const config = await loadConfig(configPath);
-
-  // Check if team storage is already remote
-  const typedConfig = config as unknown as AlignTrueConfig;
-  const storage = typedConfig.storage || typedConfig.resources?.rules?.storage;
-  if (storage?.["team"]?.type === "remote") {
-    if (isTTY()) {
-      clack.log.success("Team rules are already using remote storage");
-    } else {
-      console.log("✓ Team rules are already using remote storage");
-    }
-    return;
-  }
-
-  if (isTTY()) {
-    clack.log.info(
-      "This will move all team rules to a team remote repository.",
-    );
-  } else {
-    console.log("This will move all team rules to a team remote repository.");
-  }
-
-  if (!yes && !dryRun) {
-    if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--yes"), 1);
-    }
-
-    const confirm = await clack.confirm({
-      message: "Continue with migration?",
-      initialValue: true,
-    });
-
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Migration cancelled");
-      return;
-    }
-  }
-
-  if (dryRun) {
-    if (isTTY()) {
-      clack.log.info("[DRY RUN] Would update team storage to remote");
-    } else {
-      console.log("[DRY RUN] Would update team storage to remote");
-    }
-    return;
-  }
-
-  // Run remote setup wizard
-  const { runRemoteSetupWizard } = await import("../wizards/remote-setup.js");
-  const result = await runRemoteSetupWizard("team", cwd);
-
-  if (!result.success || result.skipped) {
-    if (isTTY()) {
-      clack.cancel("Migration cancelled or skipped");
-    } else {
-      console.log("Migration cancelled or skipped");
-    }
-    return;
-  }
-
-  if (isTTY()) {
-    clack.outro("Team rules migrated to remote storage");
-  } else {
-    console.log("✓ Team rules migrated to remote storage");
   }
 }
 

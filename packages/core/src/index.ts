@@ -1,7 +1,5 @@
 // Core configuration and validation
 export * from "./config/index.js";
-// Explicit re-export to avoid ambiguity with lockfile
-export type { ScopeConfig } from "./config/index.js";
 
 // Sync engine
 export * from "./sync/index.js";
@@ -68,17 +66,11 @@ export * from "./overlays/index.js";
 // Source caching
 export * from "./cache/index.js";
 
-// Storage system
-export * from "./storage/index.js";
-
 // Source management
 export * from "./sources/index.js";
 
 // Parsing utilities
 export type { Section } from "./parsing/section-extractor.js";
-
-// Resource management
-export * from "./resources/index.js";
 
 // AlignTrue file protection
 export * from "./alignignore/index.js";
