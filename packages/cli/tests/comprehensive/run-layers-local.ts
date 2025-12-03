@@ -16,7 +16,7 @@
  * - Detailed reporting
  */
 
-import { execSync, type ExecException } from "node:child_process";
+import { spawnSync, type ExecException } from "node:child_process";
 import {
   mkdirSync,
   writeFileSync,
@@ -125,12 +125,27 @@ async function runLayer(layer: number): Promise<LayerResult> {
   };
 
   try {
-    const output = execSync(`node --import ${tsxLoaderPath} ${layerFile}`, {
+    // Use spawnSync with array args to avoid shell injection
+    const result = spawnSync("node", ["--import", tsxLoaderPath, layerFile], {
       cwd: workspace,
       encoding: "utf-8",
       env,
       stdio: "pipe",
     });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      const error = new Error(result.stderr || "Command failed");
+      (error as ExecException).status = result.status ?? 1;
+      (error as ExecException).stdout = result.stdout;
+      (error as ExecException).stderr = result.stderr;
+      throw error;
+    }
+
+    const output = result.stdout;
 
     const duration = Date.now() - layerStart;
     console.log(`✓ Layer ${layer} passed (${duration}ms)\n`);
@@ -145,8 +160,9 @@ async function runLayer(layer: number): Promise<LayerResult> {
   } catch (err) {
     const execErr = err as ExecException;
     const duration = Date.now() - layerStart;
-    const errorOutput =
-      execErr.stdout?.toString() || execErr.stderr?.toString() || "";
+    const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
+    const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
+    const errorOutput = stdout || stderr || "";
 
     const exitCode =
       (execErr as ExecException & { status?: number }).status ?? 1;
