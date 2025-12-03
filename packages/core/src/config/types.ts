@@ -14,10 +14,6 @@ export interface ExporterConfig {
   format?: ExporterFormat;
   ignore_file?: boolean;
 }
-export type ResourceType = "rules" | "mcps" | "skills";
-export type ScopeType = "team" | "personal" | string; // Allow custom scopes
-export type StorageType = "repo" | "local" | "remote";
-
 export interface PerformanceConfig {
   max_file_size_mb?: number;
   max_directory_depth?: number;
@@ -77,22 +73,6 @@ export interface RemoteBackupConfig {
 export interface DetectionConfig {
   auto_enable?: boolean;
   ignored_agents?: string[];
-}
-
-export interface ScopeConfig {
-  sections: string[] | "*";
-}
-
-export interface StorageConfig {
-  type: StorageType;
-  url?: string; // For remote storage
-  branch?: string; // For remote storage
-  path?: string; // Subdirectory in remote
-}
-
-export interface ResourceConfig {
-  scopes: Record<string, ScopeConfig>;
-  storage: Record<string, StorageConfig>;
 }
 
 export interface AlignTrueConfig {
@@ -186,6 +166,4 @@ export interface AlignTrueConfig {
       disabled?: boolean;
     }>;
   };
-  resources?: Record<ResourceType, ResourceConfig>;
-  storage?: Record<string, StorageConfig>;
 }
