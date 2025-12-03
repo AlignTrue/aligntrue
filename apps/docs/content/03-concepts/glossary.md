@@ -59,10 +59,10 @@ An Align can be:
 - "The TypeScript Align includes strict mode rules"
 - "Import community Aligns from GitHub"
 - "Create your own Align for project standards"
-- `testing.yaml` - Testing best practices Align
-- `nextjs_app_router.yaml` - Next.js App Router patterns Align
+- `testing.md` - Testing best practices Align
+- `nextjs_app_router.md` - Next.js App Router patterns Align
 
-**File formats:** `.md` files in `.aligntrue/rules/` or `.yaml` for structured definitions
+**File formats:** `.md` files in `.aligntrue/rules/`
 
 **Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/06-contributing/creating-aligns)
 

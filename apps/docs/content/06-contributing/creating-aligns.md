@@ -280,9 +280,9 @@ Stuck? Here's how to get help:
   - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
 
 - **Examples**: Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
-  - [testing.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.yaml) - Testing rules
-  - [security.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.yaml) - Security rules
-  - [nextjs_app_router.yaml](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.yaml) - Stack-specific rules
+  - [testing.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.md) - Testing rules
+  - [security.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md) - Security rules
+  - [nextjs_app_router.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md) - Stack-specific rules
 
 - **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
