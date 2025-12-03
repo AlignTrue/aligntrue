@@ -436,7 +436,7 @@ async export(request, options) {
 ```typescript
 async export(request, options) {
   // Only work with local data
-  const output = generateOutput(request.rules)
+  const output = generateOutput(request.align.sections)
   return { success: true, filesWritten: [...] }
 }
 ```

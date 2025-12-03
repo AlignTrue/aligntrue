@@ -78,7 +78,6 @@ describeSkipWindows("Sync Command Integration", () => {
       const ruleContent = `---
 title: Test rule example
 description: A test rule
-original_source: test-template
 ---
 
 # Test rule example
@@ -131,7 +130,6 @@ Test guidance
       // Create a rule file in the new format
       const ruleContent = `---
 title: Test rule example
-original_source: test-template
 ---
 
 # Test rule example
@@ -173,7 +171,6 @@ Test guidance
       // Create a rule file in the new format
       const ruleContent = `---
 title: Test rule example
-original_source: test-template
 ---
 
 # Test rule example
@@ -223,7 +220,6 @@ Test guidance
       // Create a rule file in the new format
       const ruleContent = `---
 title: Test rule example
-original_source: test-template
 ---
 
 # Test rule example
@@ -300,7 +296,6 @@ Test guidance
       // Create multiple rule files
       const rule1 = `---
 title: First rule
-original_source: test-template
 ---
 
 # First rule
@@ -309,7 +304,6 @@ First rule guidance
 `;
       const rule2 = `---
 title: Second rule
-original_source: test-template
 ---
 
 # Second rule
@@ -318,7 +312,6 @@ Second rule guidance
 `;
       const rule3 = `---
 title: Third rule
-original_source: test-template
 ---
 
 # Third rule

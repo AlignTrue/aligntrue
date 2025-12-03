@@ -2432,7 +2432,7 @@ Config management and sync engine.
 
 **Responsibilities:**
 
-- Parse and validate `.aligntrue.yaml` config
+- Parse and validate `.aligntrue/config.yaml` configuration
 - Sync engine (rules → IR → agents)
 - Bundle resolution (team mode)
 - Lockfile management (team mode)

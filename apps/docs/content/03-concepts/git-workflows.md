@@ -97,7 +97,7 @@ sources:
 **What happens:**
 
 1. Repository cloned to `.aligntrue/.cache/git/` on first sync
-2. Rules extracted from `.aligntrue.yaml` (default path)
+2. Rules extracted from directory scan (default: `.` scans for `.md`/`.mdc` files)
 3. Rules merged with your local rules
 4. Future syncs automatically check for updates based on ref type
 
@@ -342,9 +342,9 @@ ssh-add ~/.ssh/id_rsa
 
 ### Missing rules file
 
-**Symptom:** `File not found: .aligntrue.yaml`
+**Symptom:** No markdown rules found in repository
 
-**Cause:** Repository doesn't have rules at default path
+**Cause:** Repository doesn't have `.md` or `.mdc` files at the specified path
 
 **Solution:** Specify custom path in config:
 

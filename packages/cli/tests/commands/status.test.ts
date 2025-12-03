@@ -61,7 +61,7 @@ describe("status command", () => {
     // Create a simple rule file
     writeFileSync(
       ".aligntrue/rules/sample.md",
-      "---\ntitle: Sample Rule\noriginal_source: test\n---\n\n## Sample\n\nSample content\n",
+      "---\ntitle: Sample Rule\n---\n\n## Sample\n\nSample content\n",
       "utf-8",
     );
     mkdirSync(".cursor/rules", { recursive: true });

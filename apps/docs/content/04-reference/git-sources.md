@@ -106,7 +106,7 @@ sources:
   - type: git
     url: git@github.com:yourorg/private-rules.git
     ref: main
-    path: .aligntrue.yaml
+    path: . # Scans directory for .md/.mdc files
 ```
 
 Requires SSH key authentication configured for the repository. See [Troubleshooting](#troubleshooting) for SSH setup.
@@ -131,11 +131,11 @@ sources:
   - type: git
     url: https://github.com/yourorg/base-rules
     ref: main
-    path: .aligntrue.yaml
+    path: . # Scans directory for .md/.mdc files
   - type: git
     url: https://github.com/yourteam/team-rules
     ref: main
-    path: .aligntrue.yaml
+    path: . # Scans directory for .md/.mdc files
   - type: local
     path: .aligntrue/rules
 ```
@@ -167,7 +167,7 @@ Git sources are cached locally in `.aligntrue/.cache/git/` for performance and o
     git/
       <repo-hash>/     # SHA-256 hash of repository URL
         .git/          # Git repository data
-        .aligntrue.yaml  # Extracted file
+        rules/         # Extracted markdown files
 ```
 
 Cache is git-ignored by default (`.aligntrue/.cache/` in `.gitignore`).

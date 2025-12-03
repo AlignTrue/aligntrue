@@ -66,8 +66,6 @@ export interface RestoreOptions {
 export interface CleanupOptions {
   /** Current working directory (defaults to process.cwd()) */
   cwd?: string;
-  /** DEPRECATED: Use retentionDays instead. Number of backups to keep (default: 20) */
-  keepCount?: number;
   /** Age-based retention in days (0 = manual only, default: 30) */
   retentionDays?: number;
   /** Safety floor: always keep at least N most recent backups (default: 3) */

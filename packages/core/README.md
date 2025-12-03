@@ -444,7 +444,7 @@ Mock exporters available in `tests/mocks/`:
 
 ### Default Direction: IR → Agents
 
-By default, sync reads from IR (`.aligntrue/rules` or `.aligntrue.yaml`) and writes to agent-specific formats:
+By default, sync reads from `.aligntrue/rules/` (markdown rules directory) and writes to agent-specific formats:
 
 ```typescript
 await engine.syncToAgents(".aligntrue/rules");

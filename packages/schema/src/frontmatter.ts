@@ -65,35 +65,8 @@ export interface RuleFrontmatter {
    * Overrides source-level `gitignore` setting
    */
   gitignore?: boolean;
-  /**
-   * @deprecated Use `gitignore` instead. Will be removed in next major version.
-   */
-  private?: boolean;
 
   // Tracking Metadata (Auto-managed)
-  /**
-   * Source URL/path where this rule was imported from
-   * @deprecated Removed in favor of audit log (.aligntrue/.history)
-   */
-  original_source?: string;
-  /**
-   * Source URL/path where this rule was imported from
-   * @deprecated Removed in favor of audit log (.aligntrue/.history).
-   * Import events are now logged to .aligntrue/.history instead of frontmatter.
-   */
-  source?: string;
-  /**
-   * Date when this rule was added (ISO format: YYYY-MM-DD)
-   * @deprecated Removed in favor of audit log (.aligntrue/.history).
-   * Import timestamps are now logged to .aligntrue/.history instead of frontmatter.
-   */
-  source_added?: string;
-  /**
-   * Original path of the rule file
-   * @deprecated Removed in favor of audit log (.aligntrue/.history).
-   * Original paths are now logged to .aligntrue/.history instead of frontmatter.
-   */
-  original_path?: string;
   /** Content hash for drift detection */
   content_hash?: string;
   /** Nested directory location (if applicable) */
@@ -152,13 +125,8 @@ export const frontmatterSchema = {
     exclude_from: { type: "array", items: { type: "string" } },
     export_only_to: { type: "array", items: { type: "string" } },
     gitignore: { type: "boolean" },
-    private: { type: "boolean" }, // Deprecated, use gitignore
     cursor: { type: "object" },
     agents: { type: "object" },
-    original_source: { type: "string" },
-    source: { type: "string" },
-    source_added: { type: "string" },
-    original_path: { type: "string" },
     content_hash: { type: "string" },
     nested_location: { type: "string" },
   },

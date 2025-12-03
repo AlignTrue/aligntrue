@@ -18,7 +18,6 @@ export type DriftCategory =
   | "result" // result_hash differs: unexpected application result
   | "severity_remap" // Severity remapping rules changed (Session 7)
   | "vendorized" // Vendored align differs from source
-  | "local_overlay" // Legacy: use "overlay" instead
   | "lockfile" // Lockfile bundle hash differs from current rules
   | "agent_file"; // Agent files modified after IR
 
@@ -59,7 +58,6 @@ export interface DriftResult {
       result: number;
       severity_remap: number;
       vendorized: number;
-      local_overlay: number;
       lockfile: number;
       agent_file: number;
     };
@@ -570,7 +568,6 @@ export async function detectDrift(
           result: 0,
           severity_remap: 0,
           vendorized: 0,
-          local_overlay: 0,
           lockfile: 0,
           agent_file: 0,
         },
@@ -634,8 +631,6 @@ export async function detectDrift(
     severity_remap: findings.filter((f) => f.category === "severity_remap")
       .length,
     vendorized: findings.filter((f) => f.category === "vendorized").length,
-    local_overlay: findings.filter((f) => f.category === "local_overlay")
-      .length,
     lockfile: findings.filter((f) => f.category === "lockfile").length,
     agent_file: findings.filter((f) => f.category === "agent_file").length,
   };
