@@ -447,11 +447,90 @@ AlignTrue uses shallow clones (depth 1) for speed and space efficiency. This mea
 
 For full history, manually clone to a local directory and use `type: local` source instead.
 
+## Managing sources
+
+After adding sources, you can view their status, update them, and remove them as needed.
+
+### View configured sources
+
+List all configured sources:
+
+```bash
+aligntrue sources list
+```
+
+Shows all sources (local and git) with their types and paths.
+
+Get detailed status including cached SHA and last fetch time:
+
+```bash
+aligntrue sources status
+```
+
+### Update sources
+
+Force a refresh of git sources, bypassing cache:
+
+```bash
+# Update specific source
+aligntrue sources update https://github.com/company/rules
+
+# Update all git sources
+aligntrue sources update --all
+```
+
+This clears the local cache and fetches a fresh copy from git.
+
+### Pin to specific version
+
+Lock a source to a specific commit, tag, or branch:
+
+```bash
+aligntrue sources pin https://github.com/company/rules v1.3.0
+```
+
+This updates `.aligntrue/config.yaml` with the pinned ref. Useful for teams that want to control when to upgrade external sources.
+
+### Remove a source
+
+Remove a linked source from your configuration:
+
+```bash
+aligntrue remove https://github.com/org/rules
+aligntrue sync
+```
+
+Or edit `.aligntrue/config.yaml` directly and remove the source from the `sources` array, then run `aligntrue sync`.
+
+**Note:** Removing a source from config does not delete its cache in `.aligntrue/.cache/git/`. To clear cached data, see [Cache management](#cache-management).
+
+**Backups:** Removing a source does not affect existing backups. Old backups are cleaned up based on retention policy. See [Backup & restore](/docs/04-reference/backup-restore) for details.
+
+### Team mode: approve or remove sources
+
+In team mode, use `aligntrue team` commands to manage approved sources:
+
+```bash
+# Approve a new source version
+aligntrue team approve https://github.com/company/rules
+
+# Remove source from allow list
+aligntrue team remove https://github.com/company/rules
+```
+
+See [Team mode](/docs/03-concepts/team-mode) for approval workflows.
+
+---
+
 ## See also
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Command Reference](/docs/04-reference/cli-reference) - All CLI commands including `sync`
+- [CLI: aligntrue sources](/docs/04-reference/cli-reference/basic#aligntrue-sources) - Complete command reference
+- [CLI: aligntrue remove](/docs/04-reference/cli-reference/basic#aligntrue-remove) - Remove command reference
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules merge and override
+- [Backup & restore](/docs/04-reference/backup-restore) - Backup retention and cleanup
+- [Team mode](/docs/03-concepts/team-mode) - Team workflows and approval gates
 
 ---
 
