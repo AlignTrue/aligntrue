@@ -136,9 +136,11 @@ function main() {
 }
 
 // Run main if this is the entry point
-void main().catch((error) => {
+try {
+  main();
+} catch (error) {
   console.error("Fatal error:", error);
   process.exit(1);
-});
+}
 
 export { tests, runTest };
