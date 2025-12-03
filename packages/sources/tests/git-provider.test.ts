@@ -211,14 +211,10 @@ describe("GitProvider - Clone Operations", () => {
 
     const git = simpleGit();
 
-    // Mock clone to create the file after cloning
+    // Mock clone to create the directory (default path is "." for directory scan)
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.md"), "# Test Rule\n", "utf-8");
       return undefined as any;
     });
 
@@ -242,14 +238,10 @@ describe("GitProvider - Clone Operations", () => {
 
     const git = simpleGit();
 
-    // Mock clone to create the file after cloning
+    // Mock clone to create the directory (default path is "." for directory scan)
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.md"), "# Test Rule\n", "utf-8");
       return undefined as any;
     });
 
@@ -274,14 +266,10 @@ describe("GitProvider - Clone Operations", () => {
 
     const git = simpleGit();
 
-    // Mock clone to create the file after cloning
+    // Mock clone to create the directory (default path is "." for directory scan)
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.md"), "# Test Rule\n", "utf-8");
       return undefined as any;
     });
 
@@ -305,14 +293,10 @@ describe("GitProvider - Clone Operations", () => {
 
     const git = simpleGit();
 
-    // Mock clone to create the file after cloning
+    // Mock clone to create the directory (default path is "." for directory scan)
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.md"), "# Test Rule\n", "utf-8");
       return undefined as any;
     });
 
@@ -514,6 +498,7 @@ describe("GitProvider - Cache Behavior", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -523,11 +508,7 @@ describe("GitProvider - Cache Behavior", () => {
     // Mock clone for first fetch
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.yaml"), mockRulesYaml, "utf-8");
       return undefined as any;
     });
 
@@ -549,6 +530,7 @@ describe("GitProvider - Cache Behavior", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -556,17 +538,14 @@ describe("GitProvider - Cache Behavior", () => {
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(
-      join(repoDir, ".aligntrue.yaml"),
-      "old cached content",
-      "utf-8",
-    );
+    writeFileSync(join(repoDir, "rules.yaml"), "old cached content", "utf-8");
 
     // Force refresh provider
     const refreshProvider = new GitProvider(
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
         forceRefresh: true,
       },
       TEST_CACHE_DIR,
@@ -581,11 +560,7 @@ describe("GitProvider - Cache Behavior", () => {
     // Mock clone to create new content
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.yaml"), mockRulesYaml, "utf-8");
       return undefined as any;
     });
 
@@ -600,6 +575,7 @@ describe("GitProvider - Cache Behavior", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -608,11 +584,7 @@ describe("GitProvider - Cache Behavior", () => {
     const git = simpleGit();
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.yaml"), mockRulesYaml, "utf-8");
       return undefined as any;
     });
 
@@ -623,6 +595,7 @@ describe("GitProvider - Cache Behavior", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
         forceRefresh: true,
       },
       TEST_CACHE_DIR,
@@ -659,6 +632,7 @@ describe("GitProvider - Cache Behavior", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -667,18 +641,14 @@ describe("GitProvider - Cache Behavior", () => {
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    // No .aligntrue.yaml file - corrupted cache
+    // No rules.yaml file - corrupted cache
 
     const git = simpleGit();
 
     // Mock clone to create the file
     vi.mocked(git.clone).mockImplementation(async (url, dir) => {
       mkdirSync(dir as string, { recursive: true });
-      writeFileSync(
-        join(dir as string, ".aligntrue.yaml"),
-        mockRulesYaml,
-        "utf-8",
-      );
+      writeFileSync(join(dir as string, "rules.yaml"), mockRulesYaml, "utf-8");
       return undefined as any;
     });
 
@@ -706,7 +676,7 @@ describe("GitProvider - File Extraction", () => {
     }
   });
 
-  it("reads default path (.aligntrue.yaml)", async () => {
+  it("reads default path (directory scan mode)", async () => {
     const provider = new GitProvider(
       {
         type: "git",
@@ -715,15 +685,18 @@ describe("GitProvider - File Extraction", () => {
       TEST_CACHE_DIR,
     );
 
-    // Create mock cache with rules file at default path
+    // Create mock cache with repo directory
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    // Add a file so directory exists
+    writeFileSync(join(repoDir, "rules.md"), "# Test Rule\n", "utf-8");
 
+    // Default path is "." which triggers directory mode - returns empty string
+    // Resolver handles directory scanning separately
     const result = await provider.fetch();
 
-    expect(result).toBe(mockRulesYaml);
+    expect(result).toBe("");
   });
 
   it("reads custom path when specified", async () => {
@@ -752,6 +725,7 @@ describe("GitProvider - File Extraction", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path - should throw when missing
       },
       TEST_CACHE_DIR,
     );
@@ -770,6 +744,7 @@ describe("GitProvider - File Extraction", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -778,7 +753,7 @@ describe("GitProvider - File Extraction", () => {
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), "", "utf-8");
+    writeFileSync(join(repoDir, "rules.yaml"), "", "utf-8");
 
     // Empty file - will error
     await expect(provider.fetch()).rejects.toThrow();
@@ -798,7 +773,7 @@ describe("GitProvider - File Extraction", () => {
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.yaml"), mockRulesYaml, "utf-8");
 
     // Custom path doesn't exist - will error
     await expect(provider.fetch()).rejects.toThrow();
@@ -828,6 +803,7 @@ describe("GitProvider - Edge Cases", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path so empty repo throws
       },
       TEST_CACHE_DIR,
     );
@@ -840,7 +816,7 @@ describe("GitProvider - Edge Cases", () => {
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
 
-    // Empty repo - will error
+    // Empty repo with explicit path - will error
     await expect(provider.fetch()).rejects.toThrow();
   });
 
@@ -849,6 +825,7 @@ describe("GitProvider - Edge Cases", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -857,6 +834,7 @@ describe("GitProvider - Edge Cases", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -868,7 +846,7 @@ describe("GitProvider - Edge Cases", () => {
     const repoHash = provider1["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.yaml"), mockRulesYaml, "utf-8");
 
     // Both fetches should succeed
     const [result1, result2] = await Promise.all([
@@ -904,6 +882,7 @@ describe("GitProvider - Edge Cases", () => {
       {
         type: "git",
         url: TEST_REPO_URL,
+        path: "rules.yaml", // Explicit path for file reading test
       },
       TEST_CACHE_DIR,
     );
@@ -915,7 +894,7 @@ describe("GitProvider - Edge Cases", () => {
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.yaml"), mockRulesYaml, "utf-8");
 
     const result = await provider.fetch();
     expect(result).toBe(mockRulesYaml);
@@ -951,11 +930,11 @@ describe("GitProvider - Commit SHA Capture", () => {
     vi.mocked(git.clone).mockResolvedValueOnce(undefined as any);
     vi.mocked(git.revparse).mockResolvedValue("abc123def456789");
 
-    // Create mock cache
+    // Create mock cache (directory mode returns empty string)
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.md"), "# Test Rule\n", "utf-8");
 
     await provider.fetch();
     const sha = await provider.getCommitSha();
@@ -977,11 +956,11 @@ describe("GitProvider - Commit SHA Capture", () => {
     vi.mocked(git.clone).mockResolvedValueOnce(undefined as any);
     vi.mocked(git.revparse).mockResolvedValue("  abc123def  \n");
 
-    // Create mock cache
+    // Create mock cache (directory mode returns empty string)
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.md"), "# Test Rule\n", "utf-8");
 
     await provider.fetch();
     const sha = await provider.getCommitSha();
@@ -1019,11 +998,11 @@ describe("GitProvider - Commit SHA Capture", () => {
       .mockResolvedValueOnce("success-sha")
       .mockRejectedValueOnce(new Error("fatal: not a git repository"));
 
-    // Create mock cache
+    // Create mock cache (directory mode returns empty string)
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.md"), "# Test Rule\n", "utf-8");
 
     await provider.fetch();
 
@@ -1044,11 +1023,11 @@ describe("GitProvider - Commit SHA Capture", () => {
     const git = simpleGit();
     vi.mocked(git.revparse).mockResolvedValue("cached123");
 
-    // Create mock cache (simulate previous fetch)
+    // Create mock cache (directory mode returns empty string)
     const repoHash = provider["repoHash"];
     const repoDir = join(TEST_CACHE_DIR, repoHash);
     mkdirSync(repoDir, { recursive: true });
-    writeFileSync(join(repoDir, ".aligntrue.yaml"), mockRulesYaml, "utf-8");
+    writeFileSync(join(repoDir, "rules.md"), "# Test Rule\n", "utf-8");
 
     // Fetch uses cache
     await provider.fetch();

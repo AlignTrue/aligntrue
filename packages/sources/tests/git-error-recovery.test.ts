@@ -178,7 +178,7 @@ describe("Git Source Error Recovery", () => {
         ref: "main",
       };
 
-      // Provider should accept this and default to '.aligntrue.yaml'
+      // Provider should accept this and default to "." (directory scan)
       expect(() => {
         new GitProvider(config, cacheDir);
       }).not.toThrow();

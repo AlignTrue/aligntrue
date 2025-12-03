@@ -19,7 +19,6 @@ import {
   formatOverlayValidationResult,
   type OverlayDefinition,
 } from "@aligntrue/core";
-import { parseYamlToJson } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
@@ -185,12 +184,12 @@ export async function check(args: string[]): Promise<void> {
       path: ".aligntrue/rules",
     };
 
-    let rulesContent: string;
+    let align: Align;
     let rulesPath: string;
 
     try {
       const resolved = await resolveSource(source);
-      rulesContent = resolved.content;
+      align = resolved.align;
       rulesPath = resolved.sourcePath;
     } catch (err) {
       spinner.stop("Validation failed");
@@ -205,93 +204,8 @@ export async function check(args: string[]): Promise<void> {
       );
     }
 
-    // Detect file format and parse
-    const ext =
-      rulesPath.endsWith(".md") || rulesPath.endsWith(".markdown")
-        ? ".md"
-        : ".yaml";
-    let alignData: unknown;
-
-    if (ext === ".md") {
-      // Parse as natural markdown
-      const { parseNaturalMarkdown } = await import(
-        "@aligntrue/core/parsing/natural-markdown"
-      );
-      const parseResult = parseNaturalMarkdown(rulesContent);
-
-      if (parseResult.errors.length > 0) {
-        spinner.stop("Validation failed");
-        const errorList = parseResult.errors
-          .map((err) => `  Line ${err.line}: ${err.message}`)
-          .join("\n");
-        console.error("✗ Markdown validation errors\n");
-        console.error(errorList + "\n");
-        process.exit(1);
-      }
-
-      if (parseResult.sections.length === 0) {
-        spinner.stop("Validation failed");
-        console.error("✗ No sections found in markdown\n");
-        console.error(`  File: ${rulesPath}\n`);
-        process.exit(1);
-      }
-
-      alignData = {
-        id: parseResult.metadata.id || "unnamed",
-        version: parseResult.metadata.version || "1.0.0",
-        spec_version: "1",
-        sections: parseResult.sections,
-        ...parseResult.metadata,
-      };
-    } else {
-      // Parse as YAML
-      try {
-        alignData = parseYamlToJson(rulesContent);
-
-        // Handle edge cases: empty YAML returns undefined, comments-only returns null
-        if (alignData === undefined || alignData === null) {
-          spinner.stop("Validation failed");
-          console.error("✗ Empty or invalid rules file\n");
-          console.error(`  File: ${rulesPath}`);
-          console.error(
-            `  The rules file must contain a valid Align align (id, version, spec_version, rules)\n`,
-          );
-          console.error(
-            "  Run 'aligntrue init' to create a valid rules file\n",
-          );
-          process.exit(1);
-        }
-
-        // Verify it's actually an object (not a string, array, or primitive)
-        if (typeof alignData !== "object" || Array.isArray(alignData)) {
-          spinner.stop("Validation failed");
-          console.error("✗ Invalid rules file structure\n");
-          console.error(`  File: ${rulesPath}`);
-          console.error(
-            `  Expected: YAML object with id, version, spec_version, rules or sections`,
-          );
-          console.error(
-            `  Got: ${typeof alignData}${Array.isArray(alignData) ? " (array)" : ""}\n`,
-          );
-          console.error(
-            "  Run 'aligntrue init' to create a valid rules file\n",
-          );
-          process.exit(1);
-        }
-      } catch (_err) {
-        spinner.stop("Validation failed");
-        console.error("✗ Invalid YAML in rules file\n");
-        console.error(
-          `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
-        );
-        console.error(`  Check for syntax errors in ${rulesPath}\n`);
-        process.exit(1);
-      }
-    }
-
     // Defensive: Ensure sections array exists (for backward compatibility)
     // This must be done BEFORE validation since schema requires sections
-    const align = alignData as Align;
     ensureSectionsArray(align);
 
     // Validate against schema
@@ -342,7 +256,7 @@ export async function check(args: string[]): Promise<void> {
           console.error("  Failed to read lockfile\n");
           process.exit(2);
         }
-        const validation = validateLockfile(lockfile, alignData as Align);
+        const validation = validateLockfile(lockfile, align);
 
         if (!validation.valid) {
           spinner.stop("Validation failed");
@@ -404,11 +318,7 @@ export async function check(args: string[]): Promise<void> {
           config.overlays.limits.max_operations_per_override;
       }
 
-      const overlayResult = validateOverlays(
-        overlays,
-        alignData as Align,
-        limits,
-      );
+      const overlayResult = validateOverlays(overlays, align, limits);
 
       if (!overlayResult.valid) {
         if (jsonOutput) {

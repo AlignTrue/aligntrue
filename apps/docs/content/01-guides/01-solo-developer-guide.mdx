@@ -158,21 +158,26 @@ mkdir my-standards
 cd my-standards
 git init
 
-# 2. Create rules align
-cat > rules.yaml <<EOF
-id: my-standards
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: my-custom-rule
-    summary: My personal coding standard
-    guidance: |
-      Always do X because Y
-    applies_to: ["**/*.ts"]
+# 2. Create rules as markdown files
+mkdir -p rules
+cat > rules/coding-standards.md <<EOF
+---
+title: My Custom Coding Standard
+---
+
+# My Custom Coding Standard
+
+Always do X because Y. This rule applies to all TypeScript files.
+
+## Guidelines
+
+- Prefer explicit types over any
+- Use meaningful variable names
+- Add comments for complex logic
 EOF
 
 # 3. Commit and push
-git add rules.yaml
+git add rules/
 git commit -m "Initial standards"
 git remote add origin https://github.com/you/my-standards
 git push -u origin main
@@ -181,11 +186,12 @@ git push -u origin main
 cd ~/projects/project-a
 aligntrue init
 
-# Add to .aligntrue/rules:
+# Add to .aligntrue/config.yaml:
 sources:
-  - git: https://github.com/you/my-standards
+  - type: git
+    url: https://github.com/you/my-standards
     ref: main
-    path: rules.yaml
+    path: rules
 
 aligntrue sync
 ```
@@ -193,24 +199,24 @@ aligntrue sync
 **Option B: Local align (quick iteration)**
 
 ```bash
-# 1. Create local align
-mkdir -p ~/.aligntrue/aligns
-cat > ~/.aligntrue/aligns/my-standards.yaml <<EOF
-id: my-standards
-version: 1.0.0
-spec_version: "1"
-rules:
-  - id: my-custom-rule
-    summary: My personal coding standard
-    guidance: Always do X
-    applies_to: ["**/*.ts"]
+# 1. Create local rules directory
+mkdir -p ~/.aligntrue/rules
+
+cat > ~/.aligntrue/rules/my-standards.md <<EOF
+---
+title: My Custom Coding Standard
+---
+
+# My Custom Coding Standard
+
+Always do X because Y.
 EOF
 
-# 2. Link in projects
-cd ~/projects/project-a
-aligntrue link ~/.aligntrue/aligns/my-standards.yaml
+# 2. Copy to projects
+cp ~/.aligntrue/rules/my-standards.md ~/projects/project-a/.aligntrue/rules/
 
 # 3. Sync
+cd ~/projects/project-a
 aligntrue sync
 ```
 
@@ -484,20 +490,21 @@ aligntrue sync
 **Solution:** Fork the align or create your own:
 
 ```bash
-# Instead of 20 overlays, create your own align
-mkdir my-custom-align
-cat > my-custom-align/rules.yaml <<EOF
-id: my-custom-align
-version: 1.0.0
-spec_version: "1"
-rules:
-  # Your customized rules here
+# Instead of 20 overlays, create your own rules
+mkdir -p .aligntrue/rules
+
+cat > .aligntrue/rules/my-custom.md <<EOF
+---
+title: My Custom Rules
+---
+
+# My Custom Rules
+
+Your customized rules here.
 EOF
 
-# Use your align instead
-# .aligntrue/config.yaml:
-sources:
-  - local: ./my-custom-align/rules.yaml
+# Rules in .aligntrue/rules/ are automatically used
+aligntrue sync
 ```
 
 ### Pitfall 3: Forgetting to sync after changes
