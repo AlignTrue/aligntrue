@@ -4,363 +4,145 @@
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
 
-  Source: apps/docs/content/07-contributing/creating-aligns.md
+  Source: apps/docs/content/07-contributing/index.md
 -->
 
-# Creating Aligns
+# Contributing to AlignTrue
 
-Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Aligns that pass validation and provide value to the community.
+Thank you for your interest in contributing to AlignTrue! We welcome contributions from everyone: whether you're creating aligns, improving documentation, adding exporters, or fixing bugs in the core codebase.
 
-## Quick start
+## Contribution types
 
-Get started creating aligns:
+AlignTrue has many ways to get involved:
 
-1. **Review examples** in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory
-2. **Create** your align following the [template](#minimal-example)
-3. **Share** via GitHub URL, local file, or your own repository
+### Content contributions
 
-No central registry exists - share aligns however works best for your team.
+Create and maintain rule sets (aligns) that help others align their AI agents.
 
-## Authoring your first align
+**[Create aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns)** — Write rules that solve real problems for your domain or stack.
 
-### Review examples
+**[Edit documentation](https://aligntrue.ai/docs/07-contributing/editing-docs)** — Improve docs on the site or contribute to our docs-first architecture.
 
-Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) in this repository.
+### Code contributions
 
-Examples include:
+Extend AlignTrue's core platform and integrations.
 
-- Base aligns (global, testing, security, etc.)
-- Stack-specific aligns (Next.js, Vercel, etc.)
-- Inline comments explaining best practices
-- Proper align structure and formatting
+**[Add exporters](https://aligntrue.ai/docs/07-contributing/adding-exporters)** — Support new AI agents and platforms.
 
-### Choose your namespace
+**[Development setup](https://aligntrue.ai/docs/06-development/setup)** — Local environment, build, and test workflow.
 
-Pick the appropriate namespace for your align:
+## Getting started
 
-- **`aligns/base/*`** - Rules that apply across all stacks
-  - Example: `aligns/base/base-testing`, `aligns/base/base-security`
-  - Use when: Your rules work for any project type
+1. **New to contributing?** Start with [How to contribute](https://aligntrue.ai/docs/07-contributing/getting-started).
+2. **Unsure what to work on?** Check [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) for `good-first-issue` labels.
+3. **Want to discuss first?** Join [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions).
 
-- **`aligns/stacks/*`** - Rules specific to a framework or stack
-  - Example: `aligns/stacks/nextjs-app-router`, `aligns/stacks/django-backend`
-  - Use when: Your rules target a specific tech stack
+## Key workflows
 
-### Minimal example
+### Before you start
 
-Here's a minimal align using natural markdown sections:
+- Review the [Code of Conduct](#code-of-conduct) below
+- Check [Development setup](https://aligntrue.ai/docs/06-development/setup) to get your environment ready
+- Read [Testing workflow](https://aligntrue.ai/docs/07-contributing/testing-workflow) — all contributions need tests
 
-````markdown
-# TypeScript Configuration Align
+### While working
 
-## Ensure TypeScript configuration
+- Create a feature branch
+- Write tests alongside your changes
+- Follow the relevant guide ([aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns), [docs](https://aligntrue.ai/docs/07-contributing/editing-docs), [exporters](https://aligntrue.ai/docs/07-contributing/adding-exporters))
+- Run `pnpm lint && pnpm test` to validate
 
-All TypeScript projects should have a properly configured `tsconfig.json` file.
+### Before submitting a PR
 
-### Setup
-
-Run `npx tsc --init` to create a tsconfig.json if missing.
-
-### Recommended configuration
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
-}
-```
-````
-
-Enable strict mode for better type safety and fewer runtime errors.
-
-`````
-
-For more examples, browse existing aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
-
-## Testing locally
-
-### Prerequisites
-
-You'll need:
-
-- Node.js 20+ and pnpm 9+
-- The `AlignTrue/aligntrue` repository cloned
-
-### Validate your align
-
-From the `aligntrue` repository:
-
-```bash
-# Install dependencies
-pnpm install
-
-# Validate your rules
-aligntrue check
-```
-
-### Verify deterministic hash
-
-Run validation twice and confirm the integrity hash is identical both times:
-
-```bash
-aligntrue check
-# Note the integrity hash in output
-
-aligntrue check
-# Hash should match exactly
-```
-
-If hashes differ, your rules may have non-deterministic content (timestamps, random values, etc.).
-
-### Compute integrity hash
-
-If your align has `<computed>` as the integrity value, compute the real hash:
-
-```bash
-# From the aligntrue repository
-pnpm --filter @aligntrue/schema compute-hash path/to/your-align.yaml
-```
-
-Copy the hash from the output and paste it into your align's `integrity.value` field.
-
-## Using recommended conventions
-
-When creating plugs for your align, prefer established conventions to maximize interoperability:
-
-- See [Conventions Reference](https://aligntrue.ai/docs/02-customization/conventions) for recommended plug keys
-- Using standard keys like `test.cmd`, `docs.url`, `org.name` improves user experience
-- Users can reuse fills across multiple templates from different authors
-- If your use case has no standard equivalent, document custom plugs clearly in your README
-
-**Example:** Instead of creating a custom `run_tests` key, use the standard `test.cmd` key:
-
-```yaml
-plugs:
-  slots:
-    test.cmd:
-      description: "Command to run tests"
-      format: command
-      required: true
-      example: "pnpm test"
-```
-
-This allows users to set the fill once and reuse it across any align that follows conventions.
-
-## Writing effective guidance
-
-Aligns use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
-
-An Align's guidance is what AI agents and developers will read to understand the rule.
-
-### Clear and specific
-
-Write guidance that answers:
-
-- **What** should be done
-- **Why** it matters
-- **How** to do it (with examples)
-
-**Good example:**
-
-````markdown
-## Use TypeScript strict mode
-
-Enable strict mode in all TypeScript projects for better type safety.
-
-### Why
-
-Strict mode catches more errors at compile time and prevents common runtime issues.
-
-### How
-
-Add to `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "strict": true
-  }
-}
-```
-`````
-
-Run `npx tsc --init` to create a new config if needed.
-
-````
-
-### Actionable instructions
-
-Make it easy for developers to follow your guidance:
-
-- **Bad**: "Fix your tests"
-- **Good**: "Run `pnpm test` before committing to catch errors early"
-
-- **Bad**: "Use better logging"
-- **Good**: "Replace `console.log()` with `logger.info()` for structured logging"
-
-Include specific commands, file names, and code examples.
-
-Users should be able to copy-paste your hint and make progress.
-
-### Choose the right severity
-
-- **MUST**: Blocking issues that break builds or cause errors
-  - Uninstalled imports
-  - Missing required configuration
-  - Security vulnerabilities
-
-- **SHOULD**: Warnings about problems that don't block
-  - Missing tests
-  - Incomplete documentation
-  - Deprecated patterns
-
-- **MAY**: Suggestions and style preferences
-  - console.log statements
-  - TODO comments
-  - Formatting preferences
-
-## Sharing your align
-
-### Via GitHub
-
-1. **Publish to GitHub** - Users can import via git URLs:
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/yourorg/rules-repo
-    path: aligns/your-align.yaml
-````
-
-2. **Share raw URL** - Users can download directly:
-
-```bash
-curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/aligns/your-align.yaml
-```
-
-### Via local files
-
-Share the YAML file directly - users can copy it to their project:
-
-```bash
-cp your-align.yaml .aligntrue/rules.yaml
-aligntrue sync
-```
-
-### Quality checklist
-
-Before sharing your align, verify:
-
-- [ ] Schema validation passes locally
-- [ ] Integrity hash is computed (not `<computed>`)
-- [ ] Evidence messages are specific and actionable
-- [ ] Autofix hints are concrete commands or steps
-- [ ] Align summary clearly states purpose in one sentence
-- [ ] Namespace follows conventions (aligns/base or aligns/stacks)
-- [ ] All check types use one of the 5 supported types
+1. Verify tests pass: `pnpm test`
+2. Check formatting: `pnpm lint`
+3. Update `CHANGELOG.md` if needed
+4. Write a clear PR description explaining what you changed and why
 
 ## Code of conduct
 
 We aim to build a welcoming, constructive community:
 
-- **Be respectful**: Treat all contributors with respect and consideration
-- **Be constructive**: Focus on improving the quality of rules, not criticizing authors
-- **Be objective**: Ground discussions in concrete examples and data
-- **Be clear**: Explain your reasoning when proposing or reviewing changes
+- **Be respectful** — Treat all contributors with respect and consideration
+- **Be constructive** — Focus on improving the quality of work, not criticizing people
+- **Be objective** — Ground discussions in concrete examples and data
+- **Be clear** — Explain your reasoning when proposing or reviewing changes
 
 We have zero tolerance for harassment, discrimination, or hostile behavior.
 
+## Common questions
+
+### I want to contribute but don't know what to work on
+
+- Browse [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) and filter by `good-first-issue`
+- Check [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues?q=is%3Aissue+is%3Aopen+label%3Aaccepted) for accepted ideas
+- Ask in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+
+### What if my work is incomplete?
+
+- Prefix draft PRs with `[WIP]` (work in progress) in the title
+- Push your branch and open a draft PR
+- Describe what's done and what's left
+- We're happy to provide feedback before completion
+
+### How long does review take?
+
+- Small PRs (< 200 lines): 1-3 days
+- Medium PRs: 3-5 days
+- Large changes: We may request phased submission to keep reviews manageable
+
+### Can I work on this issue?
+
+- Comment on the issue to let maintainers know you're interested
+- If no one has claimed it in 2 weeks, it's fair game
+- Some issues are reserved for maintainers — they'll be labeled
+
+## Learning resources
+
+### Documentation
+
+- [Getting started](https://aligntrue.ai/docs/00-getting-started/00-quickstart)
+- [How AlignTrue works](/docs) — Core concepts and architecture
+- [Development guide](https://aligntrue.ai/docs/06-development/)
+- [Architecture](https://aligntrue.ai/docs/06-development/architecture)
+
+### Code references
+
+- [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema)
+- [CLI commands](https://github.com/AlignTrue/aligntrue/tree/main/packages/cli)
+- [Core library](https://github.com/AlignTrue/aligntrue/tree/main/packages/core)
+- [Exporters](https://github.com/AlignTrue/aligntrue/tree/main/packages/exporters)
+
+### Examples
+
+- [Example aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
+- [Example exporters](https://github.com/AlignTrue/aligntrue/tree/main/packages/exporters/src)
+
 ## Getting help
 
-Stuck? Here's how to get help:
+Stuck or need guidance?
 
-- **Documentation**: Read the full docs at [aligntrue.ai/docs](/docs)
-  - [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md) - Complete specification
-  - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and checks
-  - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
+- **Issues**: [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) — Report bugs or ask for features
+- **Discussions**: [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions) — Ask questions, share ideas
+- **Documentation**: [Full docs](/docs) — Search for concepts or commands
+- **Development guide**: [Setup and workflow](https://aligntrue.ai/docs/06-development/setup)
 
-- **Examples**: Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
-  - [testing.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.md) - Testing rules
-  - [security.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md) - Security rules
-  - [nextjs_app_router.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md) - Stack-specific rules
+## Contribution checklist
 
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+Before submitting:
 
-- **Issues**: Report bugs or problems in [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
-
-## Sharing with the community
-
-Consider sharing your align with the community:
-
-1. **GitHub repository** - Create a public repo with your aligns
-2. **Documentation** - Add a README explaining what your aligns do
-3. **Examples** - Include usage examples and configuration
-4. **Community** - Share in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
-
-Well-documented aligns help others learn and adopt best practices.
-
-## Advanced topics
-
-### Dependencies between aligns
-
-Aligns can depend on other aligns using the `deps` field:
-
-```yaml
-deps:
-  - id: "aligns/base/base-global"
-    version: "^1.0.0"
-```
-
-Dependencies are resolved and merged in order. Keep dependencies minimal.
-
-### Scoping rules
-
-Use `scope.applies_to` to narrow where your align applies:
-
-```yaml
-scope:
-  applies_to: ["backend"] # or ["frontend"], ["cli"], etc.
-```
-
-This helps users understand when to use your align.
-
-### Testing your align
-
-To test your align locally:
-
-1. **Add to `.aligntrue/config.yaml`:**
-
-```yaml
-sources:
-  - type: local
-    path: ./your-align.md
-```
-
-2. **Sync to agents:**
-
-```bash
-aligntrue sync
-```
-
-3. **Verify the output** in your agent files to ensure guidance displays correctly.
-
-## Questions?
-
-If this guide doesn't answer your question:
-
-- Check the [documentation](/docs)
-- Search [existing discussions](https://github.com/AlignTrue/aligntrue/discussions)
-- Open a [new discussion](https://github.com/AlignTrue/aligntrue/discussions/new)
-
-We're here to help!
+- [ ] I have read the Code of Conduct
+- [ ] I have reviewed the relevant contribution guide
+- [ ] I have tested my changes locally
+- [ ] I have added tests for new functionality
+- [ ] I have updated documentation (if needed)
+- [ ] I have updated `CHANGELOG.md` (for user-facing changes)
+- [ ] All checks pass: `pnpm check`
+- [ ] All pre-CI checks pass: `pnpm pre-ci`
 
 ---
 
-**Thank you** for contributing to AlignTrue and helping make AI-human alignment better for everyone.
+**Thank you** for helping make AlignTrue better for everyone!
 
 ---
 

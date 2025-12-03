@@ -132,8 +132,8 @@ Before submitting:
 - [ ] I have added tests for new functionality
 - [ ] I have updated documentation (if needed)
 - [ ] I have updated `CHANGELOG.md` (for user-facing changes)
-- [ ] All tests pass: `pnpm test`
-- [ ] Linting passes: `pnpm lint`
+- [ ] All checks pass: `pnpm check`
+- [ ] All pre-CI checks pass: `pnpm pre-ci`
 
 ---
 
