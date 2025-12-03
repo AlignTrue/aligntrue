@@ -76,6 +76,7 @@ Create `packages/exporters/src/<agent-name>/index.ts`:
 import {
   ExporterPlugin,
   ScopedExportRequest,
+  ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
@@ -85,11 +86,15 @@ export class MyAgentExporter implements ExporterPlugin {
   name = "my-agent";
   version = "1.0.0";
 
-  async export(request: ScopedExportRequest): Promise<ExportResult> {
-    const { scope, align, dryRun } = request;
+  async export(
+    request: ScopedExportRequest,
+    options: ExportOptions,
+  ): Promise<ExportResult> {
+    const { scope, align } = request;
+    const { dryRun } = options;
 
     // Generate output content
-    const content = this.formatRules(rules);
+    const content = this.formatSections(align.sections);
 
     // Compute content hash
     const hash = computeHash(content);
