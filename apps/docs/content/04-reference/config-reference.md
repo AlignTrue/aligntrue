@@ -269,9 +269,9 @@ Safety floor: always keep at least this many of the most recent backups, regardl
 - Typical: `3-5`
 - Protects against over-cleanup when syncing infrequently
 
-#### backup.keep_count (deprecated)
+#### backup.keep_count (removed)
 
-**Type:** `number`
+**Type:** `number` (deprecated and removed)
 
 Count-based retention. No longer used if `retention_days` is present. Kept for backward compatibility with existing configs.
 

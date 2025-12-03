@@ -33,7 +33,6 @@ export interface ExportConfig {
  * Local backup configuration (for snapshot backups)
  */
 export interface LocalBackupConfig {
-  keep_count?: number; // Deprecated: use retention_days instead
   retention_days?: number; // Age-based retention (0 = manual only, default: 30)
   minimum_keep?: number; // Safety floor: always keep N most recent (default: 3)
 }

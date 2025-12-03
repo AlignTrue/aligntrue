@@ -615,7 +615,7 @@ git clone https://github.com/acme/standards my-standards
 
 # Customize freely
 cd my-standards
-# Edit .aligntrue.yaml with your changes
+# Edit .aligntrue/config.yaml or .aligntrue/rules/*.md with your changes
 
 # Vendor in your project
 cd /path/to/your/project
@@ -869,7 +869,7 @@ overlays:
 
 If none of these resolve the issue, file a bug report with:
 
-- Output of `aln override status`
-- Contents of `.aligntrue.yaml` (overlays section)
+- Output of `aligntrue status`
+- Contents of `.aligntrue/config.yaml` (overlays section)
 - Lockfile excerpt (if team mode)
 - Expected vs actual behavior

@@ -71,7 +71,7 @@ aln onboard [options]
 ### Options
 
 - `--ci <path>` — Path to SARIF file with CI check results
-- `--config <path>` — Custom config file path (default: `.aligntrue.yaml`)
+- `--config <path>` — Custom config file path (default: `.aligntrue/config.yaml`)
 - `--help` — Show help message
 
 ### Examples
@@ -137,7 +137,7 @@ Actionable next steps:
 In team mode, `aln onboard` automatically checks for drift from approved sources:
 
 ```yaml
-# .aligntrue.yaml
+# .aligntrue/config.yaml
 mode: team
 ```
 
@@ -176,7 +176,7 @@ Checklist includes check failures:
 Automatically detects unresolved required plugs:
 
 ```yaml
-# .aligntrue.yaml
+# .aligntrue/config.yaml
 plugs:
   slots:
     db.url:
@@ -315,16 +315,16 @@ cat checks.sarif | jq .
 
 **Symptom:** Error when detecting unresolved plugs
 
-**Cause:** `.aligntrue.yaml` not found or has invalid plugs syntax
+**Cause:** `.aligntrue/config.yaml` not found or has invalid plugs syntax
 
 **Solution:** Verify config file exists and has valid plugs schema
 
 ```bash
 # Check config exists
-cat .aligntrue.yaml
+cat .aligntrue/config.yaml
 
 # Validate config
-aln check
+aligntrue check
 ```
 
 ### Drift detection not working

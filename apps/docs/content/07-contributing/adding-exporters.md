@@ -86,7 +86,7 @@ export class MyAgentExporter implements ExporterPlugin {
   version = "1.0.0";
 
   async export(request: ScopedExportRequest): Promise<ExportResult> {
-    const { scope, rules, dryRun } = request;
+    const { scope, align, dryRun } = request;
 
     // Generate output content
     const content = this.formatRules(rules);

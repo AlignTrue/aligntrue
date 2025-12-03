@@ -41,7 +41,7 @@ const provider = createProvider({
   type: "git",
   url: "https://github.com/org/rules-repo",
   ref: "main", // Optional: branch/tag/commit (default: 'main')
-  path: ".aligntrue.yaml", // Optional: path to rules file (default: '.aligntrue.yaml')
+  path: ".", // Optional: path to scan for rules (default: '.' scans root for .md/.mdc files)
   forceRefresh: false, // Optional: bypass cache
 });
 
