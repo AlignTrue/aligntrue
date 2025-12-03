@@ -7,9 +7,9 @@
   Source: apps/docs/content/06-contributing/creating-aligns.md
 -->
 
-# Creating aligns
+# Creating Aligns
 
-Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Align aligns that pass validation and provide value to the community.
+Thank you for your interest in contributing to AlignTrue! This guide will help you create high-quality Aligns that pass validation and provide value to the community.
 
 ## Quick start
 
@@ -153,6 +153,8 @@ This allows users to set the fill once and reuse it across any align that follow
 ## Writing effective guidance
 
 Aligns use natural markdown to provide clear, actionable guidance. Focus on helping developers understand what to do and why.
+
+An Align's guidance is what AI agents and developers will read to understand the rule.
 
 ### Clear and specific
 

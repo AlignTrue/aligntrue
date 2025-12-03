@@ -7,6 +7,8 @@ description: Add, combine, and customize external rules from git repositories an
 
 Configure multiple sources to combine your local rules with external rule sets from git repositories, shared organizations, or community maintainers.
 
+> **What's the difference?** [Adding rules](/docs/01-guides/11-adding-rules) shows you the commands to run. This guide shows you how to configure and customize those sources in detail. Start with Adding rules if you're new to external sources.
+
 ## Copied vs linked sources
 
 AlignTrue supports two ways to add external rules:
