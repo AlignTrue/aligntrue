@@ -22,9 +22,25 @@ aligntrue migrate <subcommand> [options]
 
 Migrate personal rules from local-only storage to a remote git repository. This gives you version control and backup for your personal rules.
 
+**Before you begin:**
+
+Rules must be marked as personal before migration. Add `scope: personal` to the frontmatter of any rule file you want to be personal:
+
+```yaml
+---
+title: My Personal Shortcuts
+scope: personal
+---
+# My Personal Shortcuts
+
+Personal coding preferences...
+```
+
+The migrate command changes where personal-scoped rules are stored, not which rules are personal.
+
 **What it does:**
 
-1. Checks if personal rules are already using remote storage
+1. Checks if personal storage is already configured as remote
 2. Launches an interactive wizard to set up a remote repository
 3. Validates the repository URL (tests SSH/HTTPS access)
 4. Updates `.aligntrue/config.yaml` to use remote storage
@@ -121,7 +137,10 @@ aligntrue migrate personal --yes
 aligntrue migrate personal --dry-run
 ```
 
-**Related documentation:** [Personal Repository Setup](/docs/04-reference/personal-repo-setup)
+**Related documentation:**
+
+- [Personal Repository Setup](/docs/04-reference/personal-repo-setup)
+- [Personal rules in team mode](/docs/03-concepts/team-mode#marking-sections-as-personal) - Details on marking rules as personal with `scope: personal`
 
 ---
 
