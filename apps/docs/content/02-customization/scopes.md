@@ -5,6 +5,10 @@ description: Path-based rule application for monorepos with hierarchical merge o
 
 # Scopes guide
 
+<Callout type="info">
+  **Solo developer?** You can skip this page unless you're working in a monorepo with different rules per directory. Most solo projects don't need scopes.
+</Callout>
+
 Scopes enable path-based rule application for monorepos. Apply different rules to frontend vs backend, new code vs legacy, or team-specific directories while maintaining a shared base.
 
 > **See it in action:** Check out the [monorepo scopes example](https://github.com/AlignTrue/aligntrue/tree/main/examples/monorepo-scopes) for a working demonstration.
@@ -1107,9 +1111,8 @@ exporters:
 - [Overlays Guide](/docs/02-customization/overlays) - Rule property overrides
 - [Team Mode Guide](/docs/03-concepts/team-mode) - Team collaboration with scopes
 - [CLI Reference](/docs/04-reference/cli-reference/team#aligntrue-scopes) - Complete command docs
-- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide) - Solo workflow with scopes
-- [Team Guide](/docs/01-guides/04-team-guide) - Team collaboration with scopes
-- [Complete Scenario Index](../../examples/SCENARIOS.md) - 13+ real-world examples
+- [Solo Developer Guide](/docs/01-guides/01-solo-developer-guide) - Solo workflow with scopes
+- [Team Guide](/docs/01-guides/02-team-guide) - Team collaboration with scopes
 
 ## Summary
 

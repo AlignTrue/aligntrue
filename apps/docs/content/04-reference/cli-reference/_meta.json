@@ -1,11 +1,13 @@
 {
   "index": "Overview",
-  "basic": "Basic commands",
-  "backup": "Backups",
-  "development": "Development",
+  "core": "Core commands",
+  "sources": "Sources",
+  "exporters": "Exporters",
   "plugs": "Plugs",
   "overlays": "Overlays",
+  "onboard": "Onboard",
   "team": "Team mode",
-  "migrate": "Migrate",
-  "settings": "Settings"
+  "backup": "Backups",
+  "settings": "Settings",
+  "migrate": "Migration"
 }

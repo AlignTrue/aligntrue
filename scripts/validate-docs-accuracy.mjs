@@ -105,9 +105,9 @@ function validateNodeVersion() {
     "apps/docs/content/00-getting-started/03-faq.mdx",
     "apps/docs/content/04-reference/features.md",
     "apps/docs/content/05-troubleshooting/index.mdx",
-    "apps/docs/content/06-contributing/creating-aligns.md",
-    "apps/docs/content/06-contributing/getting-started.md",
-    "apps/docs/content/08-development/setup.mdx",
+    "apps/docs/content/07-contributing/creating-aligns.md",
+    "apps/docs/content/07-contributing/getting-started.md",
+    "apps/docs/content/06-development/setup.mdx",
     ".cursor/rules/global.mdc",
   ];
 
@@ -312,18 +312,18 @@ function validatePlatformCoverage() {
 
   // Read CI workflow to extract actual platform matrix
   const ciWorkflowPath = join(rootDir, ".github/workflows/ci.yml");
-  const ciContent = readFileSync(ciWorkflowPath, "utf8");
+  const ciWorkflowContent = readFileSync(ciWorkflowPath, "utf8");
 
   console.log(`Source of truth: .github/workflows/ci.yml\n`);
 
   // Extract platforms from matrix.include
-  const platformMatches = ciContent.match(/- os: ([\w-]+)/g);
+  const platformMatches = ciWorkflowContent.match(/- os: ([\w-]+)/g);
   const platforms = platformMatches
     ? [...new Set(platformMatches.map((m) => m.replace("- os: ", "")))]
     : [];
 
   // Extract Node versions from matrix.include
-  const nodeMatches = ciContent.match(/node: ["'](\d+)["']/g);
+  const nodeMatches = ciWorkflowContent.match(/node: ["'](\d+)["']/g);
   const nodeVersions = nodeMatches
     ? [...new Set(nodeMatches.map((m) => m.match(/\d+/)[0]))]
     : [];
@@ -331,12 +331,9 @@ function validatePlatformCoverage() {
   console.log(`Platforms found: ${platforms.join(", ")}`);
   console.log(`Node versions found: ${nodeVersions.join(", ")}\n`);
 
-  // Check ci-failures.md documents all platforms
-  const ciFailuresPath = join(
-    rootDir,
-    "apps/docs/content/08-development/ci-failures.md",
-  );
-  const ciFailuresContent = readFileSync(ciFailuresPath, "utf8");
+  // Check ci.md documents all platforms
+  const ciPath = join(rootDir, "apps/docs/content/06-development/ci.md");
+  const ciContent = readFileSync(ciPath, "utf8");
 
   const wrongFiles = [];
 
@@ -349,13 +346,11 @@ function validatePlatformCoverage() {
 
   for (const platform of platforms) {
     const aliases = expectedPlatforms[platform] || [platform];
-    const hasMention = aliases.some((alias) =>
-      ciFailuresContent.includes(alias),
-    );
+    const hasMention = aliases.some((alias) => ciContent.includes(alias));
 
     if (!hasMention) {
       wrongFiles.push({
-        file: "apps/docs/content/08-development/ci-failures.md",
+        file: "apps/docs/content/06-development/ci.md",
         issue: `Missing documentation for platform: ${platform}`,
       });
     }
@@ -363,19 +358,19 @@ function validatePlatformCoverage() {
 
   // Check for Node version mentions in platform coverage section
   for (const version of nodeVersions) {
-    const hasNodeMention = ciFailuresContent.includes(`Node ${version}`);
+    const hasNodeMention = ciContent.includes(`Node ${version}`);
     if (!hasNodeMention) {
       wrongFiles.push({
-        file: "apps/docs/content/08-development/ci-failures.md",
+        file: "apps/docs/content/06-development/ci.md",
         issue: `Missing documentation for Node version: ${version}`,
       });
     }
   }
 
   // Check that platform coverage section exists
-  if (!ciFailuresContent.includes("### Platform coverage")) {
+  if (!ciContent.includes("### Platform coverage")) {
     wrongFiles.push({
-      file: "apps/docs/content/08-development/ci-failures.md",
+      file: "apps/docs/content/06-development/ci.md",
       issue: "Missing '### Platform coverage' section",
     });
   }

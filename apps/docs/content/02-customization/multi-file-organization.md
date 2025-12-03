@@ -482,7 +482,7 @@ aligntrue sources split
 - [Per-rule targeting](/docs/02-customization/per-rule-targeting) - Control which agents receive specific rules
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How rules sync to agents
 - [Scopes](/docs/02-customization/scopes) - Path-based rule application for monorepos
-- [Team mode](/docs/01-guides/04-team-guide) - Lockfile validation and drift detection
+- [Team mode](/docs/01-guides/02-team-guide) - Lockfile validation and drift detection
 
 ## Example
 

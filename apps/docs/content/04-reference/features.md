@@ -210,6 +210,6 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 
 ## Related documentation
 
-- [Architecture](/docs/08-development/architecture)
-- [Security](/docs/07-policies/security)
+- [Architecture](/docs/06-development/architecture)
+- [Security](/docs/security)
 - [Customization](/docs/02-customization)

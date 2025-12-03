@@ -49,7 +49,7 @@
     },
     {
       "source": "/extend",
-      "destination": "/docs/06-contributing/adding-exporters",
+      "destination": "/docs/07-contributing/adding-exporters",
       "permanent": true
     },
     {
@@ -80,6 +80,11 @@
     {
       "source": "/sharing",
       "destination": "/docs/01-guides/sharing-rules",
+      "permanent": true
+    },
+    {
+      "source": "/docs/04-reference/troubleshooting/remote-access",
+      "destination": "/docs/05-troubleshooting/remote-access",
       "permanent": true
     }
   ],

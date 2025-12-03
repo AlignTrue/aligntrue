@@ -64,7 +64,7 @@ An Align can be:
 
 **File formats:** `.md` files in `.aligntrue/rules/`
 
-**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/06-contributing/creating-aligns)
+**Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/07-contributing/creating-aligns)
 
 ---
 
@@ -206,7 +206,7 @@ Default mode for individual developers. Optimized for fast iteration with minima
 
 **Use case:** Single developer, single project, local rules only
 
-**Related:** [Solo developer guide](/docs/01-guides/02-solo-developer-guide)
+**Related:** [Solo developer guide](/docs/01-guides/01-solo-developer-guide)
 
 ### Team mode
 
@@ -221,7 +221,7 @@ Collaborative mode with reproducibility guarantees and approval workflows.
 
 **Enable with:** `aligntrue team enable`
 
-**Related:** [Team mode](/docs/03-concepts/team-mode), [Team guide](/docs/01-guides/04-team-guide)
+**Related:** [Team mode](/docs/03-concepts/team-mode), [Team guide](/docs/01-guides/02-team-guide)
 
 ### Allow list
 
@@ -315,5 +315,5 @@ Parameterized rule templates that accept configuration inputs. (Plugs system)
 
 - **Getting started:** [Quickstart guide](/docs/00-getting-started/00-quickstart)
 - **Concepts:** [Sync behavior](/docs/03-concepts/sync-behavior), [Team mode](/docs/03-concepts/team-mode), [Drift detection](/docs/03-concepts/drift-detection)
-- **How-to guides:** [Solo developer guide](/docs/01-guides/02-solo-developer-guide), [Team guide](/docs/01-guides/04-team-guide)
+- **How-to guides:** [Solo developer guide](/docs/01-guides/01-solo-developer-guide), [Team guide](/docs/01-guides/02-team-guide)
 - **Reference:** [CLI reference](/docs/04-reference/cli-reference), [Config reference](/docs/04-reference/config-reference), [Agent support](/docs/04-reference/agent-support)

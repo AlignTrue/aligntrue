@@ -280,7 +280,7 @@ function renderStatus(summary: StatusSummary): void {
       .map((e) => e.displayName)
       .join(", ");
     clack.log.info(
-      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue exporters enable <name>'\n  → View all exporters: aligntrue exporters list\n  → Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters`,
+      `Detected agent files not yet enabled: ${names}\n  → Run 'aligntrue exporters enable <name>'\n  → View all exporters: aligntrue exporters list\n  → Don't see yours? https://aligntrue.ai/docs/07-contributing/adding-exporters`,
     );
   }
 

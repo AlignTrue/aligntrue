@@ -110,7 +110,7 @@ Actionable next steps:
 
 **Exit codes:** `0` (success)
 
-**See:** [Onboarding guide](/docs/06-contributing/team-onboarding)
+**See:** [Onboarding guide](/docs/04-reference/cli-reference/onboard)
 
 ---
 

@@ -1,14 +1,15 @@
 {
-  "02-solo-developer-guide": "Solo developer guide",
-  "03-join-team": "Joining a team",
-  "04-team-guide": "Team guide",
+  "index": "Guides",
+  "01-solo-developer-guide": "Solo developer guide",
+  "02-team-guide": "Team guide",
+  "03-join-team": "Joining an existing team",
+  "04-adding-rules": "Adding rules",
   "05-multi-agent-workflows": "Multi-agent workflows",
   "06-rule-structure": "Choosing your rule structure",
-  "07-ai-native-engineering": "AI-native engineering",
-  "08-managing-sources": "Managing rule sources",
-  "09-safety-best-practices": "Safety best practices",
+  "07-managing-sources": "Managing rule sources",
+  "08-sharing-rules": "Sharing rules",
+  "09-rule-privacy": "Rule privacy",
   "10-ci-cd-integration": "CI/CD integration",
-  "11-adding-rules": "Adding rules",
-  "12-rule-privacy": "Rule privacy",
-  "sharing-rules": "Sharing rules"
+  "11-safety-best-practices": "Safety best practices",
+  "12-ai-native-engineering": "AI-native engineering"
 }

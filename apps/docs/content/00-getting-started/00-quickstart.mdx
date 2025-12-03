@@ -58,7 +58,7 @@ If no files are found, you'll get a fresh `AGENTS.md` starter. After import, it 
 
 > **Tip:** At the end of `aligntrue init`, you'll be prompted to run `aligntrue sync`. Confirm to export immediately or decline and run it later when you're ready.
 
-**Want to start with external rules?** Use `aligntrue init --source <git-url>` to import from GitHub, GitLab, SSH URLs, or local paths. See [Adding rules](/docs/01-guides/11-adding-rules) for all supported source formats.
+**Want to start with external rules?** Use `aligntrue init --source <git-url>` to import from GitHub, GitLab, SSH URLs, or local paths. See [Adding rules](/docs/01-guides/04-adding-rules) for all supported source formats.
 
 ### 2. Sync to your agents
 
@@ -111,7 +111,7 @@ All agent files (read-only, auto-generated)
 
 **Important:** Agent files are under AlignTrue's control. Edits to agent files will be backed up and overwritten on the next sync. Always edit `.aligntrue/rules/` instead.
 
-**Want continuous auto-sync?** Run `aligntrue watch` to automatically sync on file changes. See [File Watcher Setup](/docs/04-reference/file-watcher-setup).
+**Want continuous auto-sync?** Run `aligntrue watch` to automatically sync on file changes. See the [CLI reference](/docs/04-reference/cli-reference).
 
 </Callout>
 {/* prettier-ignore-end */}
@@ -236,7 +236,7 @@ This enables:
 - Optional team-managed sections
 - CI drift detection
 
-See [Team mode guide](/docs/01-guides/04-team-guide) for details.
+See [Team mode guide](/docs/01-guides/02-team-guide) for details.
 
 **Need help?**
 
