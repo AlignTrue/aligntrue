@@ -301,10 +301,11 @@ export interface AlignSection {
   // Optional explicit metadata
   explicitId?: string; // User-specified ID via HTML comment
 
-  // Section scope for team vs personal rules
-  // "team" (default): tracked in lockfile, requires team approval
-  // "personal": excluded from lockfile, can change freely
-  scope?: "team" | "personal";
+  // Section scope for approval and routing
+  // "team" (default): tracked in lockfile, stays in main repo
+  // "personal": excluded from lockfile, routes to personal remote
+  // "shared": tracked in lockfile, routes to shared remote for publishing
+  scope?: "team" | "personal" | "shared";
 
   // Source file path (relative to workspace root)
   // Used to track where this section originally came from

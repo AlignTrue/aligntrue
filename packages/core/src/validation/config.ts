@@ -312,11 +312,12 @@ export function checkUnknownFields(
     "performance",
     "export",
     "backup",
+    "remote_backup", // DEPRECATED: use remotes instead
+    "remotes",
     "detection",
     "overlays",
     "plugs",
     "mcp",
-    // "approval", // DEPRECATED: removed
   ]);
 
   for (const key of Object.keys(config)) {
@@ -752,6 +753,17 @@ export function isValidConfigKey(key: string): boolean {
     "backup",
     "backup.retention_days",
     "backup.minimum_keep",
+    "remote_backup",
+    "remote_backup.default",
+    "remote_backup.default.url",
+    "remote_backup.default.branch",
+    "remote_backup.default.path",
+    "remote_backup.default.auto",
+    "remote_backup.additional",
+    "remotes",
+    "remotes.personal",
+    "remotes.shared",
+    "remotes.custom",
     "detection",
     "detection.auto_enable",
     "detection.ignored_agents",
