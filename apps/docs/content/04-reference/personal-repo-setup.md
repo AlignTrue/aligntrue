@@ -7,6 +7,8 @@ description: Guide for setting up remote sources and backup for personal rules
 
 Set up remote git repositories to pull and backup personal rules across machines.
 
+> **Conceptual overview:** For detailed information about rule privacy, sharing, and remote routing, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
+
 ## Overview
 
 There are two ways to use remote repositories with AlignTrue:
@@ -201,6 +203,6 @@ git config --global credential.helper store
 
 ## Related
 
-- [Rule Visibility](/docs/01-guides/09-rule-visibility) - Understanding visibility options
-- [Managing Sources](/docs/01-guides/07-managing-sources) - Adding and removing sources
-- [Troubleshooting Remote Access](/docs/05-troubleshooting/remote-access)
+- [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) - Complete guide to rule privacy, scoping, and remote synchronization
+- [Managing Sources](/docs/01-guides/07-managing-sources) - Adding and customizing external rules
+- [Troubleshooting Remote Access](/docs/05-troubleshooting/remote-access) - Solutions for SSH and connection issues

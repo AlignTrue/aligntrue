@@ -30,7 +30,7 @@ Learn how to use AlignTrue for your specific workflow. Choose your path based on
 | ------------------------- | -------------------------------------------------------------------------------------------------------- |
 | **External rule sources** | [Managing rule sources](/docs/01-guides/07-managing-sources) - Combine, customize, and version rules     |
 | **Share with others**     | [Sharing rules](/docs/01-guides/08-sharing-rules) - Publish rules for teams or public use                |
-| **Keep rules private**    | [Rule visibility](/docs/01-guides/09-rule-visibility) - Private sources and per-rule privacy             |
+| **Keep rules private**    | [Rule visibility](/docs/01-guides/09-rule-privacy-sharing) - Private sources and per-rule privacy        |
 | **Deploy in CI/CD**       | [CI/CD integration](/docs/01-guides/10-ci-cd-integration) - Validate, detect drift, enforce standards    |
 | **Backup & recover**      | [Safety best practices](/docs/01-guides/11-safety-best-practices) - Dry-run, automatic backups, recovery |
 
@@ -62,7 +62,7 @@ Want to understand how AlignTrue works? Start here:
 
 1. [Adding rules](/docs/01-guides/04-adding-rules) - Understand sources
 2. [Sharing rules](/docs/01-guides/08-sharing-rules) - Publish for others
-3. [Rule privacy](/docs/01-guides/09-rule-visibility) - Control what's shared
+3. [Rule privacy](/docs/01-guides/09-rule-privacy-sharing) - Control what's shared
 
 ## All guides
 
