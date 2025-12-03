@@ -301,16 +301,30 @@ export async function resolveSource(
   // Convert rules to Align format for merging
   // Use filename-based fingerprint (matching ir-loader.ts) for consistency
   // This ensures drift detection uses the same fingerprints as sync
-  const sections = resolved.rules.map((rule: RuleFile) => ({
-    heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
-    content: rule.content,
-    level: 2, // Schema requires level 2-6 (## through ######)
-    fingerprint:
-      ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
-      rule.filename.replace(/\.md$/, ""),
-    source_file: rule.path,
-    frontmatter: rule.frontmatter,
-  }));
+  const sections = resolved.rules.map((rule: RuleFile) => {
+    // Extract scope from frontmatter if it's a valid approval scope
+    // Valid scopes: "team" (default), "personal" (excluded from lockfile), "shared"
+    const frontmatterScope = rule.frontmatter.scope;
+    const approvalScope =
+      frontmatterScope === "personal" ||
+      frontmatterScope === "team" ||
+      frontmatterScope === "shared"
+        ? (frontmatterScope as "team" | "personal" | "shared")
+        : undefined;
+
+    return {
+      heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+      content: rule.content,
+      level: 2, // Schema requires level 2-6 (## through ######)
+      fingerprint:
+        ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
+        rule.filename.replace(/\.md$/, ""),
+      source_file: rule.path,
+      frontmatter: rule.frontmatter,
+      // Only include scope if it's a valid approval scope (exactOptionalPropertyTypes requires this)
+      ...(approvalScope && { scope: approvalScope }),
+    };
+  });
 
   // Return Align directly - no YAML serialization needed
   const align: Align = {
