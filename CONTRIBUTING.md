@@ -77,7 +77,7 @@ Run `npx tsc --init` to create a tsconfig.json if missing.
 
 Enable strict mode for better type safety and fewer runtime errors.
 
-````
+`````
 
 For more examples, browse existing aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
 
@@ -100,7 +100,7 @@ pnpm install
 
 # Validate your rules
 aligntrue check
-````
+```
 
 ### Verify deterministic hash
 
@@ -186,7 +186,7 @@ Add to `tsconfig.json`:
   }
 }
 ```
-````
+`````
 
 Run `npx tsc --init` to create a new config if needed.
 

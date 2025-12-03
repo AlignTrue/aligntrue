@@ -107,14 +107,11 @@ export class MyAgentExporter implements ExporterPlugin {
     }
 
     return {
+      success: true,
       filesWritten: dryRun ? [] : [outputPath],
       warnings: [],
       fidelityNotes: this.computeFidelityNotes(align.sections),
-      metadata: {
-        scope: scope.name,
-        sectionCount: align.sections.length,
-        contentHash: hash,
-      },
+      contentHash: hash,
     };
   }
 
