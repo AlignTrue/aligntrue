@@ -4,7 +4,7 @@
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
 
-  Source: apps/docs/content/08-development/*.md
+  Source: apps/docs/content/06-development/*.md
 -->
 
 # Development Guide
@@ -15,7 +15,7 @@
 
 - [Architecture](#architecture)
 - [Archiving components checklist](#archiving-components-checklist)
-- [Preventing CI failures](#preventing-ci-failures)
+- [CI guide](#ci-guide)
 - [Code standards](#code-standards)
 - [Development commands](#development-commands)
 - [Dependabot auto-merge strategy](#dependabot-auto-merge-strategy)
@@ -385,9 +385,9 @@ This ensures determinism matches CI exactly.
 
 ## Next steps
 
-- Review [workspace structure](https://aligntrue.ai/docs/08-development/workspace)
-- Explore [development commands](https://aligntrue.ai/docs/08-development/commands)
-- See [setup guide](https://aligntrue.ai/docs/08-development/setup) for installation
+- Review [workspace structure](https://aligntrue.ai/docs/06-development/workspace)
+- Explore [development commands](https://aligntrue.ai/docs/06-development/commands)
+- Learn [code standards](https://aligntrue.ai/docs/06-development/code-standards)
 
 ---
 
@@ -606,15 +606,15 @@ This real example shows the process:
 
 ## Related documentation
 
-- [CI failure prevention](https://aligntrue.ai/docs/08-development/ci-failures)
-- [Development setup](https://aligntrue.ai/docs/08-development/setup)
+- [CI guide](https://aligntrue.ai/docs/06-development/ci)
+- [Development setup](https://aligntrue.ai/docs/06-development/setup)
 - [CHANGELOG](/CHANGELOG.md)
 
 ---
 
-# Preventing CI failures
+# CI guide
 
-This guide explains the validation workflow and tools designed to catch errors early and prevent CI failures.
+This guide explains AlignTrue's multi-layered validation approach to catch errors early and provides quick fixes for common CI failures.
 
 ## Overview
 
@@ -777,6 +777,63 @@ Additionally, CI tests multiple Node.js versions:
 - Add Windows-specific smoke tests that DO run in CI
 - Consider marking Windows as "community supported" if issues persist
 
+## Troubleshooting quick fixes
+
+### Workspace protocol validation failed
+
+**Symptom**
+
+```
+Workspace protocol validation failed: @aligntrue/core version is "^0.2.0".
+```
+
+**Fix**
+
+1. Run `pnpm validate:workspace` locally.
+2. Update the dependency to `workspace:*` in the referenced `package.json`.
+3. Re-run `pnpm install && pnpm build:packages`.
+
+### Workspace link verification failed
+
+**Symptom**
+
+```
+Workspace link verification failed: @aligntrue/cli → /node_modules/.pnpm/...
+```
+
+**Fix**
+
+1. Ensure you ran `pnpm install` after switching branches.
+2. If links still resolve to `.pnpm`, run `pnpm clean && pnpm install`.
+3. Re-run `pnpm verify:workspace-links`.
+
+### Version mismatch during prepublish
+
+**Symptom**
+
+```
+Versions must match across all workspace packages.
+```
+
+**Fix**
+
+1. Run `pnpm prepublish:check` locally; it prints every mismatched package.
+2. Bump all packages to the same version (for example, 0.2.0) before releasing.
+
+### Type mismatch after renaming formats
+
+**Symptom**
+
+```
+TS2322: Type '"agents-md"' is not assignable to type '"agents"'.
+```
+
+**Fix**
+
+1. Ensure packages were rebuilt: `pnpm build:packages`.
+2. Run `pnpm validate:workspace` and `pnpm verify:workspace-links`.
+3. If CI still fails, run `pnpm clean && pnpm install` to refresh workspace links.
+
 ## Common type error patterns
 
 ### 1. Import path errors
@@ -854,11 +911,10 @@ Common type locations:
   - `DriftResult`, `DriftFinding`, `DriftCategory`
 - **Exporter types:** `@aligntrue/exporters`
   - `ExporterRegistry`, `ExportResult`
-
 - **Source types:** `@aligntrue/sources`
   - `GitSourceConfig`, `CatalogSourceConfig`
 
-## Troubleshooting
+## Common issues and fixes
 
 ### Next.js dev server fails with "Cannot find module" errors
 
@@ -873,45 +929,7 @@ Cannot find module '@aligntrue/ui'
 
 **Fix:**
 
-1. Check your Next.js config has `transpilePackages`:
-
-```typescript
-// apps/web/next.config.ts
-const nextConfig: NextConfig = {
-  transpilePackages: ["@aligntrue/ui"],
-  // ... rest of config
-};
-```
-
-```javascript
-// apps/docs/next.config.mjs
-export default withNextra({
-  transpilePackages: ["@aligntrue/ui"],
-  // ... rest of config
-});
-```
-
-2. Clean stale build caches:
-
-```bash
-rm -rf apps/web/.next apps/docs/.next
-```
-
-3. Restart dev servers:
-
-```bash
-pnpm dev:web   # or pnpm dev:docs
-```
-
-**Prevention:**
-
-The CI now validates `transpilePackages` config matches workspace dependencies:
-
-```bash
-pnpm validate:transpile-packages
-```
-
-This runs automatically in CI to catch config drift. If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs.
+See [Setup - Next.js dev server fails](https://aligntrue.ai/docs/06-development/setup#nextjs-dev-server-fails-with-cannot-find-module-errors) for detailed troubleshooting steps.
 
 ### Pre-commit hook is slow
 
@@ -956,64 +974,10 @@ pnpm typecheck
 4. **Use the right import paths** - Check source files for canonical exports
 5. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
 
----
+## Next steps
 
-CI now runs a series of fail-fast checks. When one of them fails, look for the matching error message below.
-
-## Workspace protocol validation failed
-
-**Symptom**
-
-```
-Workspace protocol validation failed: @aligntrue/core version is "^0.2.0".
-```
-
-**Fix**
-
-1. Run `pnpm validate:workspace` locally.
-2. Update the dependency to `workspace:*` in the referenced `package.json`.
-3. Re-run `pnpm install && pnpm build:packages`.
-
-## Workspace link verification failed
-
-**Symptom**
-
-```
-Workspace link verification failed: @aligntrue/cli → /node_modules/.pnpm/...
-```
-
-**Fix**
-
-1. Ensure you ran `pnpm install` after switching branches.
-2. If links still resolve to `.pnpm`, run `pnpm clean && pnpm install`.
-3. Re-run `pnpm verify:workspace-links`.
-
-## Version mismatch during prepublish
-
-**Symptom**
-
-```
-Versions must match across all workspace packages.
-```
-
-**Fix**
-
-1. Run `pnpm prepublish:check` locally; it prints every mismatched package.
-2. Bump all packages to the same version (for example, 0.2.0) before releasing.
-
-## Type mismatch after renaming formats
-
-**Symptom**
-
-```
-TS2322: Type '"agents-md"' is not assignable to type '"agents"'.
-```
-
-**Fix**
-
-1. Ensure packages were rebuilt: `pnpm build:packages`.
-2. Run `pnpm validate:workspace` and `pnpm verify:workspace-links`.
-3. If CI still fails, run `pnpm clean && pnpm install` to refresh workspace links.
+- Review [setup guide](https://aligntrue.ai/docs/06-development/setup)
+- Learn [test maintenance](https://aligntrue.ai/docs/06-development/test-maintenance) for handling test failures
 
 ---
 
@@ -1259,11 +1223,11 @@ Use the `validation/docs` check to ensure:
 pnpm validate:docs
 ```
 
-## Related rules
+## Related documentation
 
-- See [Debugging workflow](https://aligntrue.ai/docs/08-development/workspace#debugging-workflow) for investigation patterns
-- See [Documentation standards](https://aligntrue.ai/docs/08-development/architecture#documentation) for docs authoring
-- See [Testing decision framework](https://aligntrue.ai/docs/08-development/test-maintenance) for test strategy
+- [Debugging workflow](https://aligntrue.ai/docs/06-development/ci) for investigation patterns
+- [Architecture](https://aligntrue.ai/docs/06-development/architecture) for design principles
+- [Test maintenance](https://aligntrue.ai/docs/06-development/test-maintenance) for test strategy
 
 ---
 
@@ -1442,78 +1406,6 @@ Use the fast reporter for quicker output:
 pnpm test:fast
 ```
 
-## Design system and theming
-
-AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent branding across all web properties.
-
-### Key components
-
-- **AlignTrueLogo** - SVG logo with theme-aware colors and orange colon (#F5A623)
-- **Primer-based colors** - Semantic tokens that adapt to light/dark modes
-
-### Using the design system
-
-Import components and styles in your Next.js app:
-
-```tsx
-import { AlignTrueLogo } from "@aligntrue/ui";
-import "@aligntrue/ui/styles/tokens.css";
-```
-
-### Color tokens
-
-Use semantic color tokens instead of hardcoded colors:
-
-```tsx
-// Good - adapts to theme
-<div style={{ color: "var(--fgColor-default)" }}>Text</div>
-
-// Bad - hardcoded, breaks in dark mode
-<div style={{ color: "#171717" }}>Text</div>
-```
-
-Available token categories:
-
-- `--fgColor-*` - Foreground/text colors
-- `--bgColor-*` - Background colors
-- `--borderColor-*` - Border colors
-- `--color-neutral-*` - Neutral scale (50-950)
-
-See [workspace structure](https://aligntrue.ai/docs/08-development/workspace) for complete documentation.
-
-### Testing themes
-
-Test both light and dark modes during development:
-
-1. Use the theme toggle in the UI
-2. Check browser DevTools → Application → Local Storage for `aligntrue-theme`
-3. Toggle system preference in OS settings to test "system" mode
-4. Verify no FOUC (flash of unstyled content) on page load
-
-### Nextra documentation sites
-
-For Nextra-based docs, import Nextra's base styles and configure your `apps/docs/theme.config.tsx` directly:
-
-```tsx
-import "nextra-theme-docs/style.css";
-import type { DocsThemeConfig } from "nextra-theme-docs";
-import { AlignTrueLogo } from "@aligntrue/ui";
-
-const themeConfig: DocsThemeConfig = {
-  logo: <AlignTrueLogo size="md" />,
-  docsRepositoryBase: "https://github.com/org/repo/tree/main/apps/docs",
-  navigation: true,
-};
-
-export default themeConfig;
-```
-
-This provides:
-
-- Branded logo via the shared `AlignTrueLogo` component
-- Consistent sidebar and TOC configuration
-- Nextra's built-in theme system for colors
-
 ## Code quality
 
 ### TypeScript
@@ -1637,9 +1529,9 @@ Example: `feat: Add new command` or `fix: Resolve memory leak`
 
 ## Next steps
 
-- Review [workspace structure](https://aligntrue.ai/docs/08-development/workspace)
-- Understand [architecture concepts](https://aligntrue.ai/docs/08-development/architecture)
-- See [setup guide](https://aligntrue.ai/docs/08-development/setup) for installation
+- Review [workspace structure](https://aligntrue.ai/docs/06-development/workspace)
+- Understand [architecture concepts](https://aligntrue.ai/docs/06-development/architecture)
+- Learn [CI validation](https://aligntrue.ai/docs/06-development/ci) to prevent failures
 
 ---
 
@@ -1764,7 +1656,7 @@ To verify security patch auto-merge works:
 
 - [GitHub Dependabot docs](https://docs.github.com/en/code-security/dependabot)
 - [GitHub auto-merge API](https://docs.github.com/en/rest/pulls/merges?apiVersion=2022-11-28#enable-auto-merge-for-a-pull-request)
-- [CI failure prevention](https://aligntrue.ai/docs/08-development/ci-failures)
+- [CI guide](https://aligntrue.ai/docs/06-development/ci)
 
 ---
 
@@ -2385,9 +2277,9 @@ pnpm --filter @aligntrue/schema build
 
 ## Next steps
 
-- Learn about the [workspace structure](https://aligntrue.ai/docs/08-development/workspace)
-- Explore [development commands](https://aligntrue.ai/docs/08-development/commands)
-- Understand [architectural concepts](https://aligntrue.ai/docs/08-development/architecture)
+- Learn about the [workspace structure](https://aligntrue.ai/docs/06-development/workspace)
+- Explore [development commands](https://aligntrue.ai/docs/06-development/commands)
+- Understand [CI validation and troubleshooting](https://aligntrue.ai/docs/06-development/ci)
 
 ---
 
@@ -2489,7 +2381,7 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 ## Related documentation
 
-- [Development setup](https://aligntrue.ai/docs/08-development/setup)
+- [Development setup](https://aligntrue.ai/docs/06-development/setup)
 
 ---
 
@@ -2497,7 +2389,7 @@ The pre-push hook catches these failures before they hit `main`, but:
 
 AlignTrue is a pnpm monorepo with apps and packages organized for clarity and maintainability.
 
-**See [Architecture](https://aligntrue.ai/docs/08-development/architecture#workspace-organization) for the full workspace tree and design principles.**
+**See [Architecture](https://aligntrue.ai/docs/06-development/architecture#workspace-organization) for the full workspace tree and design principles.**
 
 ## Apps
 
@@ -2665,24 +2557,73 @@ pnpm test:watch    # Watch mode
 pnpm typecheck     # Type checking
 ```
 
-## Example aligns
+### Using the design system
 
-Local examples with 11 curated aligns:
+AlignTrue uses a centralized design system (`@aligntrue/ui`) for consistent branding across all web properties.
 
-- **Base Aligns** (8): global, docs, typescript, testing, tdd, debugging, security, rule-authoring
-- **Stack Aligns** (3): nextjs-app-router, vercel-deployments, web-quality
+**Key components:**
 
-**Structure:**
+- **AlignTrueLogo** - SVG logo with theme-aware colors and orange colon (#F5A623)
+- **Primer-based colors** - Semantic tokens that adapt to light/dark modes
 
+**Import components and styles in your Next.js app:**
+
+```tsx
+import { AlignTrueLogo } from "@aligntrue/ui";
+import "@aligntrue/ui/styles/tokens.css";
 ```
-examples/aligns/
-├── global.md           # Universal baseline rules
-├── typescript.md       # TypeScript standards
-├── testing.md          # Testing best practices
-└── ...                 # Other example aligns
+
+**Color tokens:**
+
+Use semantic color tokens instead of hardcoded colors:
+
+```tsx
+// Good - adapts to theme
+<div style={{ color: "var(--fgColor-default)" }}>Text</div>
+
+// Bad - hardcoded, breaks in dark mode
+<div style={{ color: "#171717" }}>Text</div>
 ```
 
-Each align is a self-contained `.md` file with YAML frontmatter containing metadata (id, version, tags, etc.) and markdown content for rules.
+Available token categories:
+
+- `--fgColor-*` - Foreground/text colors
+- `--bgColor-*` - Background colors
+- `--borderColor-*` - Border colors
+- `--color-neutral-*` - Neutral scale (50-950)
+
+**Testing themes:**
+
+Test both light and dark modes during development:
+
+1. Use the theme toggle in the UI
+2. Check browser DevTools → Application → Local Storage for `aligntrue-theme`
+3. Toggle system preference in OS settings to test "system" mode
+4. Verify no FOUC (flash of unstyled content) on page load
+
+**Nextra documentation sites:**
+
+For Nextra-based docs, import Nextra's base styles and configure your `apps/docs/theme.config.tsx` directly:
+
+```tsx
+import "nextra-theme-docs/style.css";
+import type { DocsThemeConfig } from "nextra-theme-docs";
+import { AlignTrueLogo } from "@aligntrue/ui";
+
+const themeConfig: DocsThemeConfig = {
+  logo: <AlignTrueLogo size="md" />,
+  docsRepositoryBase: "https://github.com/org/repo/tree/main/apps/docs",
+  navigation: true,
+};
+
+export default themeConfig;
+```
+
+This provides:
+
+- Branded logo via the shared `AlignTrueLogo` component
+- Consistent sidebar and TOC configuration
+- Nextra's built-in theme system for colors
 
 ## Package dependencies
 
@@ -2702,12 +2643,13 @@ Apps depend on multiple packages as needed.
 
 ## Working across packages
 
-See [development commands](https://aligntrue.ai/docs/08-development/commands) for package build workflows and watch mode.
+See [development commands](https://aligntrue.ai/docs/06-development/commands) for package build workflows and watch mode.
 
 ## Next steps
 
-- Learn [development commands](https://aligntrue.ai/docs/08-development/commands)
-- Understand [architecture concepts](https://aligntrue.ai/docs/08-development/architecture)
+- Learn [development commands](https://aligntrue.ai/docs/06-development/commands)
+- Understand [architecture concepts](https://aligntrue.ai/docs/06-development/architecture)
+- Review [CI guide](https://aligntrue.ai/docs/06-development/ci) for validation workflows
 
 ---
 

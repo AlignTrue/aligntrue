@@ -64,6 +64,57 @@ aligntrue backup restore
 aligntrue backup restore --timestamp 2025-10-29T12-34-56-789
 ```
 
+---
+
+## `aligntrue revert`
+
+Restore specific files from backup with preview before applying.
+
+**Usage:**
+
+```bash
+aligntrue revert [options]
+```
+
+**Options:**
+
+| Flag          | Alias | Description                                         | Default                  |
+| ------------- | ----- | --------------------------------------------------- | ------------------------ |
+| `--timestamp` |       | Restore from specific backup (default: most recent) | Most recent              |
+| `--file`      |       | Restore specific file (shows preview first)         | All files                |
+| `--force`     |       | Skip confirmation prompt                            | `false`                  |
+| `--config`    | `-c`  | Custom config file path                             | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Shows preview of files that will be restored
+2. Optionally filters to specific file
+3. Prompts for confirmation (unless `--force`)
+4. Restores selected files from backup
+5. Updates working directory
+
+**Examples:**
+
+```bash
+# Preview and restore from most recent backup
+aligntrue revert
+
+# Preview before restoring specific file
+aligntrue revert --file .cursor/rules/typescript.md
+
+# Restore from specific backup with preview
+aligntrue revert --timestamp 2025-10-29T12-34-56-789
+
+# Restore without confirmation (use carefully)
+aligntrue revert --force
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - No backup found, file not in backup
+- `2` - System error (permissions, restore failed)
+
 ### cleanup
 
 Remove old local backups based on retention policy.

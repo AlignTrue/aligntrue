@@ -596,7 +596,7 @@ Backup considerations:
 
 ## See also
 
-- [Safety Best Practices](/docs/01-guides/09-safety-best-practices) - Comprehensive safety guide
+- [Safety Best Practices](/docs/01-guides/11-safety-best-practices) - Comprehensive safety guide
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync operations work
 - [Commands reference](/docs/04-reference/cli-reference) - All CLI commands
 - [Configuration](/docs/00-getting-started/00-quickstart#configuration) - Config file format

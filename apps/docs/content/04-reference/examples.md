@@ -190,7 +190,7 @@ See [Overlays Guide](/docs/02-customization/overlays) for details.
 
 ## Contributing aligns
 
-Want to share your rules with the community? See [Creating Aligns](/docs/06-contributing/creating-aligns) for guidelines.
+Want to share your rules with the community? See [Creating Aligns](/docs/07-contributing/creating-aligns) for guidelines.
 
 ---
 

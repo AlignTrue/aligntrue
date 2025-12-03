@@ -1,8 +1,9 @@
 {
-  "sync-behavior": "Sync behavior",
+  "glossary": "Glossary",
+  "sync-behavior": "How sync works",
+  "backup": "Backup",
+  "preventing-duplicate-rules": "Preventing duplicate rules",
   "team-mode": "Team mode",
   "drift-detection": "Drift detection",
-  "git-workflows": "Git workflows",
-  "preventing-duplicate-rules": "Preventing duplicate rules",
-  "glossary": "Glossary"
+  "git-workflows": "Git workflows"
 }

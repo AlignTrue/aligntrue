@@ -526,8 +526,8 @@ See [Team mode](/docs/03-concepts/team-mode) for approval workflows.
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Command Reference](/docs/04-reference/cli-reference) - All CLI commands including `sync`
-- [CLI: aligntrue sources](/docs/04-reference/cli-reference/basic#aligntrue-sources) - Complete command reference
-- [CLI: aligntrue remove](/docs/04-reference/cli-reference/basic#aligntrue-remove) - Remove command reference
+- [CLI: aligntrue sources](/docs/04-reference/cli-reference/core#aligntrue-sources) - Complete command reference
+- [CLI: aligntrue remove](/docs/04-reference/cli-reference/core#aligntrue-remove) - Remove command reference
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How rules merge and override
 - [Backup & restore](/docs/04-reference/backup-restore) - Backup retention and cleanup
 - [Team mode](/docs/03-concepts/team-mode) - Team workflows and approval gates

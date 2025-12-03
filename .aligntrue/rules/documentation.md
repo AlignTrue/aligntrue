@@ -43,8 +43,8 @@ Internal working notes belong in `.internal_docs/` while work is active. They mu
 **Protected files (auto-generated, do not edit directly):**
 
 - `README.md` (from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (from `apps/docs/content/06-contributing/creating-packs.md`)
-- `DEVELOPMENT.md` (from `apps/docs/content/08-development/*.md`)
+- `CONTRIBUTING.md` (from `apps/docs/content/07-contributing/creating-packs.md`)
+- `DEVELOPMENT.md` (from `apps/docs/content/06-development/*.md`)
 - `SECURITY.md` (from `apps/docs/content/07-policies/security.md`)
 
 ---
@@ -232,9 +232,9 @@ Nextra docs live in `apps/docs/content/`.
 - `03-concepts/` - Core concepts (sync, drift, team mode)
 - `04-reference/` - CLI reference, agent support, features
 - `05-troubleshooting/` - Common issues and solutions
-- `06-contributing/` - Contribution guides
+- `07-contributing/` - Contribution guides
 - `07-policies/` - Security and other policies
-- `08-development/` - Development setup and guides
+- `06-development/` - Development setup and guides
 
 ### Documentation architecture
 
@@ -253,8 +253,8 @@ README.md, CONTRIBUTING.md, DEVELOPMENT.md, SECURITY.md (generated - don't edit)
 **File mappings:**
 
 - `apps/docs/content/index.mdx` → `README.md`
-- `apps/docs/content/06-contributing/creating-packs.md` → `CONTRIBUTING.md`
-- `apps/docs/content/08-development/*.md` → `DEVELOPMENT.md` (concatenated)
+- `apps/docs/content/07-contributing/creating-packs.md` → `CONTRIBUTING.md`
+- `apps/docs/content/06-development/*.md` → `DEVELOPMENT.md` (concatenated)
 - `apps/docs/content/07-policies/security.md` → `SECURITY.md`
 
 **Workflow:**
@@ -424,7 +424,7 @@ When asked where to look:
 
 ### Documentation location
 
-`apps/docs/content/08-development/package-exports.md`
+`apps/docs/content/06-development/package-exports.md`
 
 ### Required information
 

@@ -264,7 +264,7 @@ async function listExporters(): Promise<void> {
     "  View all supported exporters: https://aligntrue.ai/docs/04-reference/agent-support",
   );
   console.log(
-    "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
+    "  Don't see yours? https://aligntrue.ai/docs/07-contributing/adding-exporters",
   );
 }
 
@@ -350,7 +350,7 @@ async function enableExporters(
       console.error(`✗ Exporter(s) not found: ${notFound.join(", ")}`);
       console.error("  Run: aligntrue exporters list");
       console.error(
-        "  Don't see yours? https://aligntrue.ai/docs/06-contributing/adding-exporters",
+        "  Don't see yours? https://aligntrue.ai/docs/07-contributing/adding-exporters",
       );
       process.exit(1);
     }

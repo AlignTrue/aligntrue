@@ -1,0 +1,140 @@
+---
+description: Contribute to AlignTrue as a content creator, code contributor, or community member.
+---
+
+# Contributing to AlignTrue
+
+Thank you for your interest in contributing to AlignTrue! We welcome contributions from everyone: whether you're creating aligns, improving documentation, adding exporters, or fixing bugs in the core codebase.
+
+## Contribution types
+
+AlignTrue has many ways to get involved:
+
+### Content contributions
+
+Create and maintain rule sets (aligns) that help others align their AI agents.
+
+**[Create aligns](/docs/07-contributing/creating-aligns)** — Write rules that solve real problems for your domain or stack.
+
+**[Edit documentation](/docs/07-contributing/editing-docs)** — Improve docs on the site or contribute to our docs-first architecture.
+
+### Code contributions
+
+Extend AlignTrue's core platform and integrations.
+
+**[Add exporters](/docs/07-contributing/adding-exporters)** — Support new AI agents and platforms.
+
+**[Development setup](/docs/06-development/setup)** — Local environment, build, and test workflow.
+
+## Getting started
+
+1. **New to contributing?** Start with [How to contribute](/docs/07-contributing/getting-started).
+2. **Unsure what to work on?** Check [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) for `good-first-issue` labels.
+3. **Want to discuss first?** Join [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions).
+
+## Key workflows
+
+### Before you start
+
+- Review the [Code of Conduct](#code-of-conduct) below
+- Check [Development setup](/docs/06-development/setup) to get your environment ready
+- Read [Testing workflow](/docs/07-contributing/testing-workflow) — all contributions need tests
+
+### While working
+
+- Create a feature branch
+- Write tests alongside your changes
+- Follow the relevant guide ([aligns](/docs/07-contributing/creating-aligns), [docs](/docs/07-contributing/editing-docs), [exporters](/docs/07-contributing/adding-exporters))
+- Run `pnpm lint && pnpm test` to validate
+
+### Before submitting a PR
+
+1. Verify tests pass: `pnpm test`
+2. Check formatting: `pnpm lint`
+3. Update `CHANGELOG.md` if needed
+4. Write a clear PR description explaining what you changed and why
+
+## Code of conduct
+
+We aim to build a welcoming, constructive community:
+
+- **Be respectful** — Treat all contributors with respect and consideration
+- **Be constructive** — Focus on improving the quality of work, not criticizing people
+- **Be objective** — Ground discussions in concrete examples and data
+- **Be clear** — Explain your reasoning when proposing or reviewing changes
+
+We have zero tolerance for harassment, discrimination, or hostile behavior.
+
+## Common questions
+
+### I want to contribute but don't know what to work on
+
+- Browse [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) and filter by `good-first-issue`
+- Check [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues?q=is%3Aissue+is%3Aopen+label%3Aaccepted) for accepted ideas
+- Ask in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+
+### What if my work is incomplete?
+
+- Prefix draft PRs with `[WIP]` (work in progress) in the title
+- Push your branch and open a draft PR
+- Describe what's done and what's left
+- We're happy to provide feedback before completion
+
+### How long does review take?
+
+- Small PRs (< 200 lines): 1-3 days
+- Medium PRs: 3-5 days
+- Large changes: We may request phased submission to keep reviews manageable
+
+### Can I work on this issue?
+
+- Comment on the issue to let maintainers know you're interested
+- If no one has claimed it in 2 weeks, it's fair game
+- Some issues are reserved for maintainers — they'll be labeled
+
+## Learning resources
+
+### Documentation
+
+- [Getting started](/docs/00-getting-started/00-quickstart)
+- [How AlignTrue works](/docs) — Core concepts and architecture
+- [Development guide](/docs/06-development/)
+- [Architecture](/docs/06-development/architecture)
+
+### Code references
+
+- [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema)
+- [CLI commands](https://github.com/AlignTrue/aligntrue/tree/main/packages/cli)
+- [Core library](https://github.com/AlignTrue/aligntrue/tree/main/packages/core)
+- [Exporters](https://github.com/AlignTrue/aligntrue/tree/main/packages/exporters)
+
+### Examples
+
+- [Example aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
+- [Example exporters](https://github.com/AlignTrue/aligntrue/tree/main/packages/exporters/src)
+
+## Getting help
+
+Stuck or need guidance?
+
+- **Issues**: [GitHub Issues](https://github.com/AlignTrue/aligntrue/issues) — Report bugs or ask for features
+- **Discussions**: [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions) — Ask questions, share ideas
+- **Documentation**: [Full docs](/docs) — Search for concepts or commands
+- **Development guide**: [Setup and workflow](/docs/06-development/setup)
+
+## Contribution checklist
+
+Before submitting:
+
+- [ ] I have read the Code of Conduct
+- [ ] I have reviewed the relevant contribution guide
+- [ ] I have tested my changes locally
+- [ ] I have added tests for new functionality
+- [ ] I have updated documentation (if needed)
+- [ ] I have updated `CHANGELOG.md` (for user-facing changes)
+- [ ] All tests pass: `pnpm test`
+- [ ] Linting passes: `pnpm lint`
+
+---
+
+**Thank you** for helping make AlignTrue better for everyone!

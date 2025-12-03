@@ -294,6 +294,25 @@ When using multiple customization features together, they apply in this order:
 4. Exclude test files if rules differ
 5. Document scope ownership with comments
 
+## Vendor bags (passive)
+
+Vendor bags are an implementation detail that preserves agent-specific metadata during sync. You don't need to configure or manage them - they work automatically.
+
+**What they do:**
+
+- Preserve Cursor-specific fields when importing from `.mdc` files
+- Store agent metadata in `vendor.<agent>.*` namespace
+- Exclude volatile fields (like session IDs) from hashing
+- Enable lossless round-trips between IR and agent formats
+
+**When they matter:**
+
+- Preserving agent-specific fields when importing from agent formats
+- Importing from agent-specific formats
+- Preserving agent hints and metadata
+
+You don't need to understand vendor bags to use AlignTrue effectively - they're implementation details for the system.
+
 ## CLI Workflows
 
 ### Plugs workflow
@@ -349,5 +368,5 @@ aligntrue sync
 - [Overlays Guide](/docs/02-customization/overlays)
 - [Scopes Guide](/docs/02-customization/scopes)
 - [CLI Reference](/docs/04-reference/cli-reference)
-- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide)
-- [Team Guide](/docs/01-guides/04-team-guide)
+- [Solo Developer Guide](/docs/01-guides/01-solo-developer-guide)
+- [Team Guide](/docs/01-guides/02-team-guide)

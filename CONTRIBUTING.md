@@ -4,7 +4,7 @@
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
 
-  Source: apps/docs/content/06-contributing/creating-aligns.md
+  Source: apps/docs/content/07-contributing/creating-aligns.md
 -->
 
 # Creating Aligns

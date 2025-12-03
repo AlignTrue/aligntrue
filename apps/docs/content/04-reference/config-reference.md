@@ -307,7 +307,7 @@ List of section headings that are treated as team-managed. Each managed section 
 
 URL to the canonical repository or documentation for team-managed sections. Displayed to developers so they can find the source of truth.
 
-**See also:** [Team guide](/docs/01-guides/04-team-guide)
+**See also:** [Team guide](/docs/01-guides/02-team-guide)
 
 ## Advanced configuration
 
@@ -439,4 +439,4 @@ At least one exporter must be configured
 - [CLI Reference](/docs/04-reference/cli-reference) - Command-line options
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Understanding sync flow
 - [Team Mode](/docs/03-concepts/team-mode) - Team-specific config
-- [Solo Developer Guide](/docs/01-guides/02-solo-developer-guide) - Solo setup
+- [Solo Developer Guide](/docs/01-guides/01-solo-developer-guide) - Solo setup
