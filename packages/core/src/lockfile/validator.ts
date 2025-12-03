@@ -32,16 +32,16 @@ export function validateLockfile(
     lockfile.rules.map((entry) => [entry.rule_id, entry]),
   );
 
-  // Filter to only team-scoped sections (skip personal sections in validation)
-  const teamSections = currentAlign.sections.filter(
+  // Filter to tracked sections (team and shared are validated, personal is skipped)
+  const trackedSections = currentAlign.sections.filter(
     (section) => section.scope !== "personal",
   );
 
   // Validate section-based align using fingerprints
-  const currentSectionIds = new Set(teamSections.map((s) => s.fingerprint));
+  const currentSectionIds = new Set(trackedSections.map((s) => s.fingerprint));
 
-  // Check for mismatches and new sections (only for team sections)
-  for (const section of teamSections) {
+  // Check for mismatches and new sections (only for tracked sections)
+  for (const section of trackedSections) {
     const lockfileEntry = lockfileMap.get(section.fingerprint);
 
     if (!lockfileEntry) {

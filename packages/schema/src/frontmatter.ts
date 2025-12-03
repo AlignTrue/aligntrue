@@ -38,8 +38,12 @@ export interface RuleFrontmatter {
   /** Whether this rule is enabled (default: true) */
   enabled?: boolean;
 
-  // Selection (Where rule applies)
-  /** Hierarchical scope path (relative to repo root) */
+  // Scope
+  /**
+   * Rule scope - can be used for:
+   * - Approval/routing: "team" | "personal" | "shared" (controls lockfile inclusion and remote routing)
+   * - Path-based: any string path for monorepo scoping
+   */
   scope?: string;
   /** Glob patterns (additive with scope) */
   globs?: string[];

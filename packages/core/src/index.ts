@@ -30,24 +30,51 @@ export type {
   CleanupOptions,
 } from "./backup/index.js";
 
-// Remote backup (push to git repositories)
+// Remotes (push to git repositories with scope-based routing)
 export {
+  RemotesManager,
+  createRemotesManager,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  createRemotesManagerFromLegacy,
+  resolveFileAssignments,
+  getRemotesStatus,
+  convertLegacyConfig,
+  pushToRemote,
+  getLastRemoteInfo,
+  cleanRemoteCache,
+  cleanAllRemoteCaches,
+  // Legacy aliases for backward compatibility
   RemoteBackupManager,
   createRemoteBackupManager,
-  resolveFileAssignments,
-  getBackupStatus as getRemoteBackupStatus,
   pushToBackup,
   getLastBackupInfo,
   cleanBackupCache,
   cleanAllBackupCaches,
-} from "./remote-backup/index.js";
+} from "./remotes/index.js";
 export type {
+  // New types
+  RemotesConfig,
+  RemoteDestination,
+  CustomRemoteDestination,
+  RuleScope,
+  ScopedFile,
+  RemotePushResult,
+  RemotesSyncResult,
+  RemotesOptions,
+  RemoteStatus,
+  // Legacy types
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   RemoteBackupConfig,
   RemoteBackupDestination,
   AdditionalBackupDestination,
   FileAssignment,
   ResolutionWarning,
   FileResolutionResult,
+} from "./remotes/index.js";
+
+// Remote backup (deprecated - use remotes instead)
+export { getBackupStatus as getRemoteBackupStatus } from "./remote-backup/index.js";
+export type {
   BackupPushResult,
   RemoteBackupResult,
   RemoteBackupOptions,

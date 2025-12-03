@@ -264,18 +264,29 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 7: Push to remote backup if configured and auto-enabled
-  if (!options.dryRun && result.success && config.remote_backup) {
+  // Step 7: Push to remotes if configured and auto-enabled
+  if (
+    !options.dryRun &&
+    result.success &&
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    (config.remotes || config.remote_backup)
+  ) {
     try {
-      const { RemoteBackupManager } = await import("@aligntrue/core");
+      const { createRemotesManager, createRemotesManagerFromLegacy } =
+        await import("@aligntrue/core");
       const rulesDir = join(cwd, ".aligntrue", "rules");
-      const backupManager = new RemoteBackupManager(config.remote_backup, {
-        cwd,
-        rulesDir,
-      });
+
+      // Use new config if available, otherwise convert legacy
+      const remotesManager = config.remotes
+        ? createRemotesManager(config.remotes, { cwd, rulesDir })
+        : // eslint-disable-next-line @typescript-eslint/no-deprecated
+          createRemotesManagerFromLegacy(config.remote_backup!, {
+            cwd,
+            rulesDir,
+          });
 
       // Only push if auto is enabled
-      if (backupManager.isAutoEnabled()) {
+      if (remotesManager.isAutoEnabled()) {
         // Get source URLs for conflict detection
         const sourceUrls =
           config.sources
@@ -284,10 +295,10 @@ export async function executeSyncWorkflow(
             .filter(Boolean) ?? [];
 
         if (!options.quiet) {
-          spinner.start("Pushing to remote backup");
+          spinner.start("Syncing to remotes");
         }
 
-        const backupResult = await backupManager.autoPush({
+        const syncResult = await remotesManager.autoSync({
           cwd,
           sourceUrls,
           ...(options.verbose && {
@@ -296,39 +307,42 @@ export async function executeSyncWorkflow(
         });
 
         if (!options.quiet) {
-          if (backupResult.success && backupResult.totalFiles > 0) {
-            const destinations = backupResult.results
-              .filter((r) => r.success && !r.skipped)
-              .map((r) => r.backupId)
+          if (syncResult.success && syncResult.totalFiles > 0) {
+            const destinations = syncResult.results
+              .filter(
+                (r: { success: boolean; skipped?: boolean }) =>
+                  r.success && !r.skipped,
+              )
+              .map((r: { remoteId: string }) => r.remoteId)
               .join(", ");
             spinner.stop(
-              `Backed up ${backupResult.totalFiles} files to ${destinations || "remote"}`,
+              `Synced ${syncResult.totalFiles} files to ${destinations || "remotes"}`,
             );
           } else if (
-            backupResult.results.length > 0 &&
-            backupResult.results.every((r) => r.skipped)
+            syncResult.results.length > 0 &&
+            syncResult.results.every((r: { skipped?: boolean }) => r.skipped)
           ) {
-            spinner.stop("Remote backup skipped (no changes)");
-          } else if (backupResult.results.length === 0) {
-            spinner.stop("Remote backup: no files to back up");
+            spinner.stop("Remote sync skipped (no changes)");
+          } else if (syncResult.results.length === 0) {
+            spinner.stop("Remote sync: no files to sync");
           } else {
-            spinner.stop("Remote backup completed");
+            spinner.stop("Remote sync completed");
           }
         }
 
         // Show warnings
-        for (const warning of backupResult.warnings) {
+        for (const warning of syncResult.warnings) {
           if (!options.quiet) {
             clack.log.warn(warning.message);
           }
         }
 
         // Show errors
-        for (const pushResult of backupResult.results) {
+        for (const pushResult of syncResult.results) {
           if (!pushResult.success && pushResult.error) {
             if (!options.quiet) {
               clack.log.error(
-                `Failed to push to ${pushResult.backupId}: ${pushResult.error}`,
+                `Failed to sync to ${pushResult.remoteId}: ${pushResult.error}`,
               );
             }
           }
