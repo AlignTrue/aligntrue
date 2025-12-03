@@ -5,21 +5,21 @@ description: Guide for setting up a remote repository for personal rules
 
 # Personal repository setup
 
-When using AlignTrue in team mode, you may want to keep some rules private while still version controlling them. This guide shows you how to set up a remote repository for your personal rules.
+Set up a remote git repository to version control and sync personal-scope rules across machines.
 
-## Why use a personal remote?
+## Overview
 
-In team mode, personal rules cannot be stored in the main repository (to prevent leaking private information). You have two options:
+For conceptual background on personal rules and storage options, see [Rule Visibility](/docs/03-concepts/rule-visibility).
 
-1. **Local only** - Rules stay on your machine (not version controlled)
-2. **Remote** - Rules sync to a private git repository (version controlled)
+In team mode, you can store personal-scope rules in three ways:
 
-Using a remote gives you:
+| Storage    | Version controlled    | Syncs across machines  |
+| ---------- | --------------------- | ---------------------- |
+| **Local**  | No                    | No                     |
+| **Remote** | Yes                   | Yes                    |
+| **Repo**   | Yes (with team rules) | Yes (shared with team) |
 
-- Version history for your personal rules
-- Backup in case of machine failure
-- Ability to sync across multiple machines
-- Same git workflow you're used to
+This guide covers setting up **remote storage** for personal rules.
 
 ## Prerequisites
 
@@ -285,6 +285,8 @@ Select a backup with `scope: personal` to restore only personal rules.
 
 ## Next steps
 
+- [Rule Visibility Workflows](/docs/01-guides/09-rule-visibility) - Step-by-step workflows
+- [Team Mode Concepts](/docs/03-concepts/team-mode) - Understanding team mode
+- [Rule Visibility Concepts](/docs/03-concepts/rule-visibility) - Understanding the three dimensions
 - [Join an Existing Team](/docs/01-guides/03-join-team)
-- [Team Mode Concepts](/concepts/team-mode)
-- [Troubleshooting Remote Access](/reference/troubleshooting/remote-access)
+- [Troubleshooting Remote Access](/docs/05-troubleshooting/remote-access)
