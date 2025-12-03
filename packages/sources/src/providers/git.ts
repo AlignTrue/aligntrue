@@ -120,7 +120,7 @@ export class GitProvider implements SourceProvider {
   ) {
     this.url = config.url;
     this.ref = config.ref ?? "main";
-    this.path = config.path ?? ".aligntrue.yaml";
+    this.path = config.path ?? ".";
     this.forceRefresh = config.forceRefresh ?? false;
     this.checkInterval =
       config.checkInterval ?? options?.checkInterval ?? 86400; // Default 24 hours

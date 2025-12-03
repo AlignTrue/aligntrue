@@ -94,8 +94,8 @@ From the `aligntrue` repository:
 # Install dependencies
 pnpm install
 
-# Validate your align
-pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
+# Validate your rules
+aligntrue check
 ````
 
 ### Verify deterministic hash
@@ -103,14 +103,14 @@ pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
 Run validation twice and confirm the integrity hash is identical both times:
 
 ```bash
-pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
+aligntrue check
 # Note the integrity hash in output
 
-pnpm --filter @aligntrue/schema validate path/to/your-align.yaml
+aligntrue check
 # Hash should match exactly
 ```
 
-If hashes differ, your align may have non-deterministic content (timestamps, random values, etc.).
+If hashes differ, your rules may have non-deterministic content (timestamps, random values, etc.).
 
 ### Compute integrity hash
 
