@@ -89,7 +89,6 @@ function createRuleFile(rulesDir: string, rule: RuleFileSpec): void {
     `title: "${rule.title}"`,
     rule.description ? `description: "${rule.description}"` : null,
     rule.scope ? `scope: "${rule.scope}"` : null,
-    "original_source: test-template",
     "---",
   ]
     .filter(Boolean)

@@ -392,12 +392,6 @@
       "description": "Local backup and restore configuration. Backups are mandatory before destructive operations.",
       "additionalProperties": false,
       "properties": {
-        "keep_count": {
-          "type": "number",
-          "description": "DEPRECATED: Use retention_days instead. Number of snapshot backups to keep (minimum: 10, maximum: 100)",
-          "minimum": 10,
-          "maximum": 100
-        },
         "retention_days": {
           "type": "number",
           "description": "Age-based retention for all backups in days (0 = manual cleanup only, default: 30, minimum: 0)",

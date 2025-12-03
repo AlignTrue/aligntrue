@@ -111,7 +111,6 @@ export async function executeExporters(
 
       const request: ScopedExportRequest = {
         scope,
-        rules: [], // Rules optional for exporters, reserved for future use
         align: scopedAlign,
         outputPath,
       };

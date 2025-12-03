@@ -185,15 +185,17 @@ describeSkipWindows("file-io", () => {
       expect(reparsed.content).toContain("Test Content");
     });
 
-    it("preserves source metadata in frontmatter", () => {
+    it("preserves unknown metadata in frontmatter (additionalProperties)", () => {
+      // Test that unknown frontmatter fields are preserved (additionalProperties: true)
       const content =
-        "---\ntitle: Imported Rule\nsource: https://github.com/org/rules\nsource_added: 2025-11-29\n---\n\n# Content";
+        "---\ntitle: Imported Rule\ncustom_field: custom_value\n---\n\n# Content";
       const filePath = join(rulesDir, "imported.md");
       writeFileSync(filePath, content);
 
       const parsed = parseRuleFile(filePath, testDir);
-      expect(parsed.frontmatter.source).toBe("https://github.com/org/rules");
-      expect(parsed.frontmatter.source_added).toBe("2025-11-29");
+      expect(
+        (parsed.frontmatter as Record<string, unknown>)["custom_field"],
+      ).toBe("custom_value");
     });
   });
 });

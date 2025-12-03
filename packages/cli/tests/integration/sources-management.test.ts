@@ -120,7 +120,6 @@ function createRule(filename: string, title: string, content: string) {
 
   const ruleContent = `---
 title: "${title}"
-original_source: test-template
 ---
 
 # ${title}

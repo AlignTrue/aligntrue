@@ -100,11 +100,13 @@ export class MockExporter implements ExporterPlugin {
   }
 
   /**
-   * Check if export was called with specific rule ID
+   * Check if export was called with specific section fingerprint
    */
-  wasCalledWithRule(ruleId: string): boolean {
+  wasCalledWithSection(fingerprint: string): boolean {
     return this.calls.some((call) =>
-      call.request.rules.some((rule) => rule.id === ruleId),
+      call.request.align.sections.some(
+        (section) => section.fingerprint === fingerprint,
+      ),
     );
   }
 

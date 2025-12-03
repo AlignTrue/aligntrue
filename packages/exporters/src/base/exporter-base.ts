@@ -102,28 +102,18 @@ export abstract class ExporterBase implements ExporterPlugin {
    * Get rules from request
    *
    * Converts align.sections to RuleFile[] format for exporters.
-   * If rules are provided directly (future), use them instead.
    *
    * @param request - Export request with align
    * @returns Array of RuleFile objects
    */
   protected getRulesFromRequest(request: ScopedExportRequest): RuleFile[] {
-    // Use rules directly if provided
-    if (
-      request.rules !== undefined &&
-      Array.isArray(request.rules) &&
-      request.rules.length > 0
-    ) {
-      return request.rules;
-    }
-
     // Convert align.sections to RuleFile[]
     if (
       request.align !== undefined &&
       request.align.sections !== undefined &&
       Array.isArray(request.align.sections)
     ) {
-      return this.convertSectionsToRules(request.align.sections, request.align);
+      return this.convertSectionsToRules(request.align.sections);
     }
 
     return [];
@@ -132,13 +122,9 @@ export abstract class ExporterBase implements ExporterPlugin {
   /**
    * Convert AlignSection[] to RuleFile[]
    * @param sections - Sections from Align
-   * @param align - Parent Align for metadata
    * @returns Array of RuleFile objects
    */
-  protected convertSectionsToRules(
-    sections: AlignSection[],
-    align: Align,
-  ): RuleFile[] {
+  protected convertSectionsToRules(sections: AlignSection[]): RuleFile[] {
     return sections.map((section) => {
       // Use source_file if available (preserves original filename from rules directory)
       // Otherwise fall back to sanitizing heading
@@ -178,7 +164,6 @@ export abstract class ExporterBase implements ExporterPlugin {
       const frontmatter: RuleFrontmatter = {
         title: section.heading,
         ...(section.scope && { scope: section.scope }),
-        ...(align.owner && { original_source: align.owner }),
         ...sectionFrontmatter, // Merge any frontmatter from the section
         content_hash: hash,
       };

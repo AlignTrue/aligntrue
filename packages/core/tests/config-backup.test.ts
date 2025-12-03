@@ -27,81 +27,8 @@ describe("Config - Backup Configuration", () => {
     const config = await loadConfig(configPath);
 
     expect(config.backup).toBeDefined();
-    expect(config.backup?.retention_days).toBe(30); // New default
-    expect(config.backup?.minimum_keep).toBe(3); // New default
-    expect(config.backup?.keep_count).toBe(20); // Old default still applied for migration
-  });
-
-  it("should accept custom keep_count", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 30
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    const config = await loadConfig(configPath);
-
-    expect(config.backup?.keep_count).toBe(30);
-  });
-
-  it("should reject keep_count below minimum of 10", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 5
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    // Schema validation should reject invalid keep_count
-    await expect(loadConfig(configPath)).rejects.toThrow(
-      /backup\.keep_count: must be >= 10/,
-    );
-  });
-
-  it("should reject keep_count above maximum of 100", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 150
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    // Schema validation should reject invalid keep_count
-    await expect(loadConfig(configPath)).rejects.toThrow(
-      /backup\.keep_count: must be <= 100/,
-    );
-  });
-
-  it("should accept keep_count at minimum boundary (10)", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 10
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    const config = await loadConfig(configPath);
-
-    expect(config.backup?.keep_count).toBe(10);
-  });
-
-  it("should accept keep_count at maximum boundary (100)", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 100
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    const config = await loadConfig(configPath);
-
-    expect(config.backup?.keep_count).toBe(100);
+    expect(config.backup?.retention_days).toBe(30);
+    expect(config.backup?.minimum_keep).toBe(3);
   });
 
   it("should apply new retention_days default", async () => {
@@ -175,37 +102,5 @@ backup:
     await expect(loadConfig(configPath)).rejects.toThrow(
       /backup\.minimum_keep: must be >= 1/,
     );
-  });
-
-  it("should handle migration from keep_count to retention_days", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 50
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    const config = await loadConfig(configPath);
-
-    // New retention_days should apply even when old keep_count is set
-    expect(config.backup?.retention_days).toBe(30);
-    expect(config.backup?.keep_count).toBe(50); // Old value kept for compatibility
-  });
-
-  it("should prefer retention_days over keep_count if both specified", async () => {
-    const yaml = `
-mode: solo
-exporters: [cursor]
-backup:
-  keep_count: 50
-  retention_days: 45
-`;
-    writeFileSync(configPath, yaml, "utf-8");
-
-    const config = await loadConfig(configPath);
-
-    expect(config.backup?.retention_days).toBe(45);
-    expect(config.backup?.keep_count).toBe(50);
   });
 });

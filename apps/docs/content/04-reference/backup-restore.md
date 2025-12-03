@@ -82,11 +82,9 @@ backup:
   - Even if backup is older than `retention_days`, keep at least this many most recent backups
   - Protects against accidental over-cleanup if syncing infrequently
 
-**Deprecated (still supported for migration):**
+**Removed:**
 
-- **`keep_count`** (number): Old count-based retention, now replaced by `retention_days`
-  - No longer used if `retention_days` is set
-  - Kept for backward compatibility with existing configs
+- **`keep_count`** - Old count-based retention field has been removed. Use `retention_days` instead.
 
 **What you cannot configure:**
 

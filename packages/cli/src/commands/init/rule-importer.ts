@@ -180,23 +180,6 @@ function convertToRule(
 }
 
 /**
- * Scan for existing agent files in the workspace and import them as rules
- *
- * Each detected file becomes one rule (not split by sections).
- * For users who want to split AGENTS.md into multiple files,
- * use `aligntrue sources split` after init.
- *
- * @param cwd Workspace root
- * @deprecated Use scanForExistingRulesWithOverlap for overlap detection
- */
-export async function scanForExistingRules(cwd: string): Promise<RuleFile[]> {
-  const result = await scanForExistingRulesWithOverlap(cwd, {
-    detectOverlap: false,
-  });
-  return result.rules;
-}
-
-/**
  * Scan for existing agent files with overlap detection
  *
  * Detects when multiple agent files (Cursor, AGENTS.md, CLAUDE.md) contain

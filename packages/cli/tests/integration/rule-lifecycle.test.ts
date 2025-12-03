@@ -91,7 +91,6 @@ function createRule(filename: string, title: string, content: string) {
 
   const ruleContent = `---
 title: "${title}"
-original_source: test-template
 ---
 
 # ${title}
@@ -189,7 +188,6 @@ describeSkipWindows("Rule Editing Lifecycle", () => {
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
       const updatedContent = `---
 title: "Code Style"
-original_source: test-template
 ---
 
 # Code Style
@@ -220,7 +218,6 @@ Updated content with new guidelines.
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
       const updatedContent = `---
 title: "Documentation Updated"
-original_source: test-template
 ---
 
 # Documentation Updated
@@ -247,7 +244,6 @@ Always document all functions, not just public APIs.
       const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
       const updatedContent = `---
 title: "Variable Naming Conventions"
-original_source: test-template
 ---
 
 # Variable Naming Conventions
@@ -370,7 +366,6 @@ Use camelCase for variables, PascalCase for classes.
       // Create a top-level rule first to ensure export dir exists
       const topLevelRule = `---
 title: "Top Level Rule"
-original_source: test-template
 ---
 
 # Top Level Rule
@@ -385,7 +380,6 @@ This is at the top level.
 
       const backendRule = `---
 title: "Backend API Rules"
-original_source: test-template
 ---
 
 # Backend API Rules
@@ -452,7 +446,6 @@ Always validate input parameters.
 
       const complexContent = `---
 title: "Complex Formatting"
-original_source: test-template
 ---
 
 # Complex Formatting
@@ -496,7 +489,6 @@ See [documentation](https://example.com) for more.
 
       const contentWithSpecialChars = `---
 title: "Special Characters"
-original_source: test-template
 ---
 
 # Special Characters

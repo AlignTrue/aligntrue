@@ -45,7 +45,7 @@ export class MyExporter implements ExporterPlugin {
   version = "1.0.0";
 
   async export(request: ScopedExportRequest, options: ExportOptions) {
-    // Convert request.rules to agent format
+    // Convert request.align.sections to agent format
     // Write to options.outputDir
     return {
       success: true,

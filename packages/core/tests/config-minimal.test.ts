@@ -60,7 +60,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -114,7 +113,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -156,7 +154,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -215,7 +212,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -269,7 +265,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -317,7 +312,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };
@@ -373,7 +367,6 @@ describe("saveMinimalConfig", () => {
       },
       backup: {
         auto_backup: false,
-        keep_count: 20,
         backup_on: ["sync"],
       },
     };

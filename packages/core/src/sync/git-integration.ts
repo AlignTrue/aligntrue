@@ -341,16 +341,6 @@ export class GitIntegration {
   }
 
   /**
-   * @deprecated Use addGitignoreRulesToGitignore instead
-   */
-  async addPrivateRulesToGitignore(
-    workspaceRoot: string,
-    files: string[],
-  ): Promise<void> {
-    return this.addGitignoreRulesToGitignore(workspaceRoot, files);
-  }
-
-  /**
    * Remove a managed section from content
    */
   private removeManagedSection(

@@ -260,7 +260,7 @@ aligntrue link <git-url> [--path <vendor-path>]
 **What it does:**
 
 1. Detects existing submodule/subtree vendoring at specified path
-2. Validates align integrity (`.aligntrue.yaml` required at repo root)
+2. Validates align integrity (markdown rules found at repo path)
 3. Updates config with vendor metadata (path and type)
 4. Provides workflow guidance for updates and collaboration
 
@@ -409,14 +409,14 @@ aligntrue link https://github.com/org/rules --path vendor/org-rules
 
 **Error: "Align validation failed"**
 
-Ensure vendored repo has valid `.aligntrue.yaml` at root:
+Ensure vendored repo has valid markdown rules:
 
 ```bash
-# Check align file exists
-ls vendor/org-rules/.aligntrue.yaml
+# Check markdown files exist
+find vendor/org-rules -name "*.md" -o -name "*.mdc"
 
-# Validate align manually
-cat vendor/org-rules/.aligntrue.yaml
+# Validate rules manually
+cat vendor/org-rules/*.md
 ```
 
 Required fields: `id`, `version`, `spec_version`, `profile.id`

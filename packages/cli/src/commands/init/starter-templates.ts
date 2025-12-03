@@ -163,7 +163,6 @@ Never log secrets, tokens, passwords, or personal data.
     const frontmatterDefaults: Record<string, unknown> = {
       title: t.title,
       content_hash: hash,
-      original_source: "starter-template",
     };
 
     // Add description for all templates
