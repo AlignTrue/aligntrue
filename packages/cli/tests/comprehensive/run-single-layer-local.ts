@@ -8,7 +8,7 @@
  * Example: tsx run-single-layer-local.ts 2
  */
 
-import { execSync, type ExecException } from "node:child_process";
+import { spawnSync, type ExecException } from "node:child_process";
 import { mkdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
@@ -108,11 +108,22 @@ console.log(`Executing: node --import ${tsxLoaderPath} ${layerFile}\n`);
 const startTime = Date.now();
 
 try {
-  execSync(`node --import ${tsxLoaderPath} ${layerFile}`, {
+  // Use spawnSync with array args to avoid shell injection
+  const result = spawnSync("node", ["--import", tsxLoaderPath, layerFile], {
     cwd: workspace,
     env,
     stdio: "inherit",
   });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (result.status !== 0) {
+    const error = new Error("Command failed");
+    (error as ExecException).status = result.status ?? 1;
+    throw error;
+  }
 
   const duration = Date.now() - startTime;
   console.log(`\n${"=".repeat(60)}`);

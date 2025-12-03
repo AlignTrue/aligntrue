@@ -107,8 +107,9 @@ function runTest(
   } catch (err) {
     const execErr = err as ExecException;
     exitCode = execErr.status ?? 1;
-    output =
-      (execErr.stdout?.toString() || "") + (execErr.stderr?.toString() || "");
+    const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
+    const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
+    output = stdout + stderr;
   }
 
   console.log(`  Exit code: ${exitCode}`);

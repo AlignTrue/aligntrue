@@ -79,6 +79,9 @@ function runScenario(
       console.log(`  Exit code: ${exitCode}`);
       // Some commands expected to fail (like drift detection)
       if (!command.includes("drift")) {
+        const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
+        const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
+        console.log(`  Output: ${(stdout + stderr).slice(0, 200)}`);
         return { passed: false, error: `Command failed: ${command}` };
       }
     }
