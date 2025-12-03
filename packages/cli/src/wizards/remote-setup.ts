@@ -1,10 +1,10 @@
 /**
  * Remote repository setup wizard
- * Guides users through setting up a personal/team remote repository
+ * Guides users through setting up a remote repository for backup
  */
 
+import { execFileSync } from "child_process";
 import * as clack from "@clack/prompts";
-import { StorageManager } from "@aligntrue/core";
 import { DOCS_REMOTE_SETUP } from "../constants.js";
 import { createSpinner } from "../utils/spinner.js";
 
@@ -16,11 +16,77 @@ export interface RemoteSetupResult {
 }
 
 /**
+ * Test if a git remote URL is accessible
+ */
+async function testRemoteAccess(
+  url: string,
+): Promise<{ accessible: boolean; error?: string }> {
+  try {
+    // Validate URL format
+    if (url.startsWith("https://")) {
+      try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "https:") {
+          return { accessible: false, error: "Invalid HTTPS URL" };
+        }
+      } catch {
+        return { accessible: false, error: "Invalid HTTPS URL format" };
+      }
+
+      // Test HTTPS with git ls-remote
+      try {
+        execFileSync("git", ["ls-remote", url, "HEAD"], {
+          timeout: 10000,
+          stdio: "pipe",
+        });
+        return { accessible: true };
+      } catch (err) {
+        return {
+          accessible: false,
+          error: `HTTPS connection failed: ${err instanceof Error ? err.message : String(err)}`,
+        };
+      }
+    }
+
+    // Validate git@ SSH URLs
+    if (url.startsWith("git@")) {
+      if (!/^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9/_.-]+$/.test(url)) {
+        return { accessible: false, error: "Invalid git@ SSH URL format" };
+      }
+
+      // Test SSH with git ls-remote
+      try {
+        execFileSync("git", ["ls-remote", url, "HEAD"], {
+          timeout: 10000,
+          stdio: "pipe",
+        });
+        return { accessible: true };
+      } catch (err) {
+        return {
+          accessible: false,
+          error: `SSH connection failed: ${err instanceof Error ? err.message : String(err)}`,
+        };
+      }
+    }
+
+    return {
+      accessible: false,
+      error: "URL must be SSH (git@...) or HTTPS (https://...)",
+    };
+  } catch (err) {
+    return {
+      accessible: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
  * Run remote setup wizard
  */
 export async function runRemoteSetupWizard(
   scope: "personal" | "team",
-  cwd: string = process.cwd(),
+  _cwd: string = process.cwd(),
 ): Promise<RemoteSetupResult> {
   clack.intro(`${scope === "personal" ? "Personal" : "Team"} Repository Setup`);
 
@@ -55,9 +121,9 @@ export async function runRemoteSetupWizard(
     clack.outro(
       `${scope === "personal" ? "Personal" : "Team"} rules will stay local.`,
     );
-    console.log("\nConfigure remote URL anytime:");
-    console.log(`  aligntrue config set storage.${scope}.type remote`);
-    console.log(`  aligntrue config set storage.${scope}.url <url>`);
+    console.log(
+      "\nTo add a remote backup later, configure remote_backup in .aligntrue/config.yaml",
+    );
     return { success: true, skipped: true };
   }
 
@@ -155,10 +221,9 @@ export async function runRemoteSetupWizard(
   const spinner = createSpinner();
   spinner.start("Testing connection");
 
-  const storageManager = new StorageManager(cwd, {});
-  const accessible = await storageManager.testRemoteAccess(url);
+  const result = await testRemoteAccess(url);
 
-  if (!accessible) {
+  if (!result.accessible) {
     spinner.stop("Connection failed");
     clack.log.error("✗ Repository not accessible");
     console.log("\nPossible causes:");
@@ -171,8 +236,6 @@ export async function runRemoteSetupWizard(
     console.log(
       "  3. Create repository: gh repo create aligntrue-rules --private",
     );
-    console.log("\nOr switch to local only:");
-    console.log(`  aligntrue config set storage.${scope}.type local`);
 
     return { success: false };
   }
@@ -191,30 +254,13 @@ export async function runRemoteSetupWizard(
     return { success: false };
   }
 
-  // Step 5: Clone repository
-  spinner.start("Cloning repository");
+  clack.outro(
+    `Repository verified!\n\nAdd to your .aligntrue/config.yaml:\n\nremote_backup:\n  default:\n    url: ${url}\n    branch: ${branch || "main"}`,
+  );
 
-  try {
-    // Remote clone in development - use manual git clone for now
-    // await storageManager.cloneRemote(scope, url, branch || "main");
-    spinner.stop("✓ Repository configured (clone pending)");
-
-    clack.outro(
-      `${scope === "personal" ? "Personal" : "Team"} repository configured!`,
-    );
-    console.log(`\nYour ${scope} rules will now sync to:`);
-    console.log(`  ${url}`);
-
-    return {
-      success: true,
-      url,
-      branch: branch || "main",
-    };
-  } catch (error) {
-    spinner.stop("Clone failed");
-    clack.log.error(
-      `✗ Failed to clone repository: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    return { success: false };
-  }
+  return {
+    success: true,
+    url,
+    branch: branch || "main",
+  };
 }

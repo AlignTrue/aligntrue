@@ -150,11 +150,7 @@ fatal: repository 'https://github.com/user/repo.git' not found
 
 1. Verify the repository exists on your git host
 
-2. Check the URL in your config:
-
-   ```bash
-   aligntrue config get storage.personal.url
-   ```
+2. Check the URL in your config (sources or remote_backup)
 
 3. For private repos, use SSH instead of HTTPS:
 
@@ -325,11 +321,16 @@ fatal: Authentication failed for 'https://github.com/user/repo.git'
 **Option 1: Use SSH (Recommended)**
 
 ```yaml
-# In .aligntrue/config.yaml
-storage:
-  personal:
-    type: remote
-    url: git@github.com:user/repo.git # Changed to SSH
+# In .aligntrue/config.yaml - for sources
+sources:
+  - type: git
+    url: git@github.com:user/repo.git # SSH URL
+    personal: true
+
+# Or for remote_backup
+remote_backup:
+  default:
+    url: git@github.com:user/repo.git # SSH URL
 ```
 
 **Option 2: Use Personal Access Token**
@@ -464,12 +465,18 @@ fatal: couldn't find remote ref main
 
 1. Check the default branch on your git host
 
-2. Update your config:
+2. Update the branch in your config:
 
    ```yaml
-   storage:
-     personal:
-       type: remote
+   # For sources
+   sources:
+     - type: git
+       url: git@github.com:user/repo.git
+       ref: master # Changed from main
+
+   # Or for remote_backup
+   remote_backup:
+     default:
        url: git@github.com:user/repo.git
        branch: master # Changed from main
    ```
@@ -574,7 +581,7 @@ url: https://github.com/user/repo.git
 **Error:**
 
 ```
-Error: Remote storage 'personal' requires a 'url'
+Error: Remote backup requires a 'url'
 ```
 
 **Solution:**
@@ -582,9 +589,8 @@ Error: Remote storage 'personal' requires a 'url'
 Add URL to your config:
 
 ```yaml
-storage:
-  personal:
-    type: remote
+remote_backup:
+  default:
     url: git@github.com:yourusername/aligntrue-personal-rules.git
     branch: main
 ```
