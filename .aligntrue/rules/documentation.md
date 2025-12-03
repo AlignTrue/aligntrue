@@ -13,6 +13,12 @@ content_hash: 21c5b2c0ab3214028f60e779abfccd4c52734bcd7b2664cd80df4fc20f961884
 **CHANGELOG + user docs are enough.**  
 Anything else is temporary. Delete it before merge.
 
+**Self-documenting.**
+The user docs should reflect and describe the codebase to users, the code is the authoritative source.
+
+**Optimize for user experience and understandability**
+Keep docs usable and easy to navigate. Don't unecessary duplicate things, instead link to the areas needed. For complex things use guides or concepts, with other areas linking to them as needed.
+
 ---
 
 ## Strict rules
@@ -36,16 +42,9 @@ If it reads like a status, recap, or phase log, it is temporary.
 1. **`CHANGELOG.md` entries**
 2. **User docs in `apps/docs/content/`**  
    Only when users need to understand how to use a feature.
-3. **Auto-generated repo files** - `README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, `SECURITY.md` are generated from docs site via `pnpm generate:repo-files`
+3. **Auto-generated repo files** - `README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, `SECURITY.md` are generated from docs site via `pnpm generate:repo-files` (see "Documentation architecture" for details).
 
 Internal working notes belong in `.internal_docs/` while work is active. They must not appear in public docs.
-
-**Protected files (auto-generated, do not edit directly):**
-
-- `README.md` (from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (from `apps/docs/content/07-contributing/creating-packs.md`)
-- `DEVELOPMENT.md` (from `apps/docs/content/06-development/*.md`)
-- `SECURITY.md` (from `apps/docs/content/07-policies/security.md`)
 
 ---
 
@@ -222,19 +221,7 @@ Use documentation for real user workflows only.
 
 ## Documentation site layout
 
-Nextra docs live in `apps/docs/content/`.
-
-### Current structure
-
-- `00-getting-started/` - Quickstart, next steps, FAQ
-- `01-guides/` - Workflow guides (solo, team, multi-agent)
-- `02-customization/` - Plugs, overlays, scopes
-- `03-concepts/` - Core concepts (sync, drift, team mode)
-- `04-reference/` - CLI reference, agent support, features
-- `05-troubleshooting/` - Common issues and solutions
-- `07-contributing/` - Contribution guides
-- `07-policies/` - Security and other policies
-- `06-development/` - Development setup and guides
+Nextra docs live in `apps/docs/content/`. Browse the directory to see current sections and structure.
 
 ### Documentation architecture
 
@@ -314,29 +301,6 @@ The `pnpm generate:repo-files` script handles both `.md` and `.mdx` files equall
 
 ---
 
-## Temporary files
-
-Temporary means: delete before merge.
-
-### Delete
-
-- `*_STATUS.md`
-- `*_CHECKLIST.md`
-- `*_SUMMARY.md`
-- `*_PHASE*.md`
-- `*_IMPLEMENTATION.md`
-- `*_COMPLETE.md`
-- `*_FILES_CREATED.txt`
-- Any `*.md` with `UPPERCASE_UNDERSCORES` used as a working note
-
-### Keep
-
-- `CHANGELOG.md`
-- `apps/docs/content/**/*.md`
-- `.internal_docs/*.md` (internal only, never linked from public docs)
-
----
-
 ## Small vs big changes
 
 ### Small feature or fix
@@ -370,51 +334,34 @@ Temporary means: delete before merge.
 
 ---
 
-## Agent workflow
+## Cleanup and completion
 
-### While working
+### Temporary files to delete
 
-- You may create temporary notes under `dev/` or `.internal_docs/`
-- Do not present them as permanent
-- Do not suggest roadmap or handoff docs by default
+Delete before merge:
 
-### On completion
+- `*_STATUS.md`, `*_CHECKLIST.md`, `*_SUMMARY.md`
+- `*_PHASE*.md`, `*_IMPLEMENTATION.md`, `*_COMPLETE.md`, `*_FILES_CREATED.txt`
+- Any `*.md` with `UPPERCASE_UNDERSCORES` used as working notes
+- Notes under `dev/` (keep `.internal_docs/*.md` for internal planning only)
+
+### Permanent files to keep
+
+- `CHANGELOG.md`
+- `apps/docs/content/**/*.md`
+- `.internal_docs/*.md` (internal only, never linked from public docs)
+
+### Before merge checklist
 
 1. Update `CHANGELOG.md`
-2. Create or update user docs if needed
-3. Delete temporary files
-4. Confirm git is clean
+2. Create or update user docs if feature is user facing
+3. Delete all temporary files listed above
+4. Confirm git is clean (`git status`)
 
-### Do not claim completion if:
+### Do not claim completion if
 
 - Temporary `*_*.md` files remain
 - Docs are missing for new user facing behavior
-
----
-
-## Cleanup checklist
-
-Before merge:
-
-- `CHANGELOG.md` updated
-- User doc added or updated if feature is user facing
-- No `*_STATUS.md`
-- No `*_CHECKLIST.md`
-- No `*_SUMMARY.md`
-- No `*_PHASE*.md`
-- No `*_IMPLEMENTATION.md`
-- No `UPPERCASE_UNDERSCORES` temp docs in root or `dev/`
-
----
-
-## Answering documentation questions
-
-When asked where to look:
-
-1. Point to `CHANGELOG.md`
-2. Point to relevant `apps/docs/content/...` pages
-3. Do not suggest adding permanent status or roadmap files
-4. Treat any working file as disposable
 
 ---
 
@@ -523,24 +470,3 @@ Validation only covers quantifiable claims. These still require manual updates:
 - Qualitative performance claims
 
 For these, follow the existing rules: update docs when behavior changes.
-
----
-
-## Common mistakes
-
-### Avoid
-
-- Keeping `FEATURE_STATUS.md` after merge
-- Duplicating explanations across multiple docs
-- Writing guides for internal refactors
-- Leaving temp files in the repo
-- Adding package exports without documentation
-- Updating code without updating validated documentation
-
-### Do
-
-- Keep a single, clean changelog
-- Add focused docs only where users need them
-- Document all package exports before adding them
-- Run `pnpm validate:docs` before committing doc changes
-- Let validation catch drift automatically

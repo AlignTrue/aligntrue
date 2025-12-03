@@ -48,16 +48,19 @@ export function generateLockfile(
   // Defensive: ensure sections exists
   ensureSectionsArray(align, { throwOnInvalid: true });
 
-  // Filter to only team-scoped sections (exclude personal sections from lockfile)
-  const teamSections = align.sections.filter(
+  // Filter to tracked sections (team and shared are in lockfile, personal is excluded)
+  // team (default): tracked in lockfile, stays in main repo
+  // shared: tracked in lockfile, routes to shared remote for publishing
+  // personal: excluded from lockfile, routes to personal remote
+  const trackedSections = align.sections.filter(
     (section) => section.scope !== "personal",
   );
 
   // Track personal sections count for metadata
-  const personalSectionsCount = align.sections.length - teamSections.length;
+  const personalSectionsCount = align.sections.length - trackedSections.length;
 
-  // Generate entries from team sections using fingerprints
-  for (const section of teamSections) {
+  // Generate entries from tracked sections using fingerprints
+  for (const section of trackedSections) {
     const resultHash = hashSection(section);
 
     // Compute base hash if base align provided (Overlays system)

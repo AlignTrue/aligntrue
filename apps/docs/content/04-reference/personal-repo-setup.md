@@ -14,7 +14,7 @@ There are two ways to use remote repositories with AlignTrue:
 | Purpose                    | Config                     | Direction      |
 | -------------------------- | -------------------------- | -------------- |
 | **Pull rules from remote** | `sources` with `type: git` | Remote → Local |
-| **Backup rules to remote** | `remote_backup`            | Local → Remote |
+| **Sync rules to remote**   | `remotes`                  | Local → Remote |
 
 ## Prerequisites
 
@@ -99,26 +99,40 @@ The `personal: true` flag:
 - Auto-applies `gitignore: true` (not committed to main repo)
 - SSH URLs automatically get these flags
 
-### To backup local rules to a remote
+### To sync local rules to a remote
 
-Add a remote backup destination:
-
-```yaml
-remote_backup:
-  default:
-    url: git@github.com:yourusername/rules-backup.git
-    branch: main
-```
-
-Or for selective backup:
+Configure remotes based on rule scopes:
 
 ```yaml
-remote_backup:
-  additional:
-    - id: personal
-      url: git@github.com:yourusername/personal-rules.git
-      include: ["personal-*.md"] # Only backup files matching pattern
+remotes:
+  # Personal-scope rules sync here
+  personal: git@github.com:yourusername/personal-rules.git
+
+  # Shared-scope rules sync here (for publishing)
+  shared: git@github.com:yourusername/shared-rules.git
 ```
+
+Then mark your rules with the appropriate scope:
+
+```yaml
+---
+title: My Preference
+scope: personal
+---
+```
+
+For custom pattern-based routing (additive):
+
+```yaml
+remotes:
+  personal: git@github.com:yourusername/personal-rules.git
+  custom:
+    - id: typescript
+      url: git@github.com:yourusername/typescript-rules.git
+      include: ["typescript*.md", "eslint*.md"]
+```
+
+Custom remotes are additive - files can go to multiple destinations.
 
 ## Step 4: Sync
 
@@ -129,7 +143,7 @@ aligntrue sync
 This will:
 
 - Pull rules from configured git sources
-- Push rules to configured backup destinations (if `auto: true`, the default)
+- Push rules to configured remotes based on their scope (if `auto: true`, the default)
 
 ## Troubleshooting
 
@@ -154,14 +168,14 @@ This will:
 2. Ensure the repository exists
 3. Check you have access
 
-### Push fails (remote_backup)
+### Push fails (remotes)
 
 **Error:** `failed to push some refs`
 
 **Fix:**
 
-1. The backup repo may have diverged
-2. Check `.aligntrue/.cache/` for the local clone
+1. The remote repo may have diverged
+2. Check `.aligntrue/.cache/remotes/` for the local clone
 3. Manually resolve conflicts if needed
 
 ## Using HTTPS instead of SSH

@@ -57,6 +57,7 @@ export interface AdditionalBackupDestination extends RemoteBackupDestination {
 
 /**
  * Remote backup configuration for pushing rules to git repositories
+ * @deprecated Use `remotes` instead. Will be removed in next major version.
  */
 export interface RemoteBackupConfig {
   /**
@@ -67,6 +68,48 @@ export interface RemoteBackupConfig {
    * Additional backup destinations with explicit file assignments
    */
   additional?: AdditionalBackupDestination[];
+}
+
+/**
+ * Remote destination configuration
+ */
+export interface RemoteDestination {
+  url: string; // Git repository URL
+  branch?: string; // Branch to push to (default: main)
+  path?: string; // Path prefix in remote repo
+  auto?: boolean; // Push on sync (default: true)
+}
+
+/**
+ * Custom remote destination with pattern-based file selection
+ * These are ADDITIVE - files can go to multiple custom destinations
+ */
+export interface CustomRemoteDestination extends RemoteDestination {
+  id: string; // Unique identifier for this remote
+  include: string[]; // Glob patterns for files to include
+  scope?: "team" | "personal" | "shared"; // Optional: only apply to rules with this scope
+}
+
+/**
+ * Remotes configuration for scope-based and pattern-based rule routing
+ * Replaces the deprecated remote_backup config
+ */
+export interface RemotesConfig {
+  /**
+   * Remote for personal-scope rules (scope: personal in frontmatter)
+   * Can be a URL string or full RemoteDestination object
+   */
+  personal?: string | RemoteDestination;
+  /**
+   * Remote for shared-scope rules (scope: shared in frontmatter)
+   * Can be a URL string or full RemoteDestination object
+   */
+  shared?: string | RemoteDestination;
+  /**
+   * Custom remotes with pattern-based routing (ADDITIVE)
+   * Files matching patterns are pushed to these remotes IN ADDITION to scope-based routing
+   */
+  custom?: CustomRemoteDestination[];
 }
 
 export interface DetectionConfig {
@@ -148,9 +191,15 @@ export interface AlignTrueConfig {
   backup?: LocalBackupConfig;
   /**
    * Remote backup configuration for pushing rules to git repositories
-   * Unidirectional: local .aligntrue/rules/ -> remote repos
+   * @deprecated Use `remotes` instead
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   remote_backup?: RemoteBackupConfig;
+  /**
+   * Remotes configuration for scope-based and pattern-based rule routing
+   * Routes rules to remote git repositories based on their scope and/or file patterns
+   */
+  remotes?: RemotesConfig;
   detection?: DetectionConfig;
   overlays?: import("../overlays/types.js").OverlayConfig;
   plugs?: {

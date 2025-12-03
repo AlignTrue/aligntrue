@@ -80,7 +80,7 @@ import {
   ExportResult,
 } from "@aligntrue/plugin-contracts";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { computeHash } from "@aligntrue/schema";
+import { computeHash, type AlignSection } from "@aligntrue/schema";
 
 export class MyAgentExporter implements ExporterPlugin {
   name = "my-agent";
@@ -109,42 +109,32 @@ export class MyAgentExporter implements ExporterPlugin {
     return {
       filesWritten: dryRun ? [] : [outputPath],
       warnings: [],
-      fidelityNotes: this.computeFidelityNotes(rules),
+      fidelityNotes: this.computeFidelityNotes(align.sections),
       metadata: {
         scope: scope.name,
-        ruleCount: rules.length,
+        sectionCount: align.sections.length,
         contentHash: hash,
       },
     };
   }
 
-  private formatRules(rules: AlignRule[]): string {
-    // Convert rules to agent format
+  private formatSections(sections: AlignSection[]): string {
+    // Convert sections to agent format
     let output = "# My Agent Rules\n\n";
 
-    for (const rule of rules) {
-      output += `## ${rule.summary}\n\n`;
-      output += `**Severity:** ${rule.severity}\n\n`;
-      if (rule.guidance) {
-        output += `${rule.guidance}\n\n`;
-      }
+    for (const section of sections) {
+      output += `## ${section.heading}\n\n`;
+      output += `${section.content}\n\n`;
     }
 
     return output;
   }
 
-  private computeFidelityNotes(rules: AlignRule[]): string[] {
+  private computeFidelityNotes(sections: AlignSection[]): string[] {
     const notes: string[] = [];
 
-    // Check for unsupported fields
-    for (const rule of rules) {
-      if (rule.check) {
-        notes.push(`Rule '${rule.id}': machine checks not supported`);
-      }
-      if (rule.autofix) {
-        notes.push(`Rule '${rule.id}': autofix not supported`);
-      }
-    }
+    // Example: check for unsupported features
+    // Real exporters would check for agent-specific limitations
 
     return notes;
   }
