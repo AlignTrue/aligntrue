@@ -283,10 +283,10 @@ function removeGitignoreEntries(cwd: string): string[] {
     // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`${escapedStart}[\\s\\S]*?${escapedEnd}\\n?`, "g");
 
-    // Extract entries before removing
-    const sectionMatch = regex.exec(content);
-    if (sectionMatch) {
-      const sectionContent = sectionMatch[0];
+    // Extract entries from ALL matching sections before removing
+    // Using matchAll() instead of exec() to find all matches, not just the first
+    for (const match of content.matchAll(regex)) {
+      const sectionContent = match[0];
       const entries = sectionContent
         .split("\n")
         .map((line) => line.trim())
@@ -300,14 +300,8 @@ function removeGitignoreEntries(cwd: string): string[] {
       removedEntries.push(...entries);
     }
 
-    // Reset regex and remove the section
-    // Safe: marker.start and marker.end are hardcoded constants, not user input
-    // eslint-disable-next-line security/detect-non-literal-regexp
-    const removeRegex = new RegExp(
-      `${escapedStart}[\\s\\S]*?${escapedEnd}\\n?`,
-      "g",
-    );
-    content = content.replace(removeRegex, "");
+    // Remove all matching sections
+    content = content.replace(regex, "");
   }
 
   // Also remove any "# AlignTrue generated" single-line comments with their entries
