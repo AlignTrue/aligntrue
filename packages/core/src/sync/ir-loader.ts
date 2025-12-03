@@ -139,17 +139,34 @@ export async function loadIR(
       // Convert RuleFile[] to Align format
       // Use frontmatter.id if specified, otherwise use filename (without .md extension)
       // This makes rule IDs intuitive and stable - typescript-strict.md becomes rule[id=typescript-strict]
-      const sections = rules.map((rule) => ({
-        heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
-        content: rule.content,
-        level: 2, // Schema requires level 2-6 (## through ######)
-        fingerprint:
-          ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
-          rule.filename.replace(/\.md$/, ""),
-        scope: rule.frontmatter.scope,
-        source_file: rule.path,
-        frontmatter: rule.frontmatter,
-      }));
+      const sections = rules.map((rule) => {
+        // Extract scope from frontmatter if it's a valid approval scope
+        const frontmatterScope = rule.frontmatter.scope;
+        const approvalScope =
+          frontmatterScope === "personal" ||
+          frontmatterScope === "team" ||
+          frontmatterScope === "shared"
+            ? (frontmatterScope as "team" | "personal" | "shared")
+            : undefined;
+
+        return {
+          heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
+          content: rule.content,
+          level: 2, // Schema requires level 2-6 (## through ######)
+          fingerprint:
+            ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
+            rule.filename.replace(/\.md$/, ""),
+          source_file: rule.path,
+          // Store frontmatter in vendor.aligntrue for export fidelity (not directly on section)
+          vendor: {
+            aligntrue: {
+              frontmatter: rule.frontmatter,
+            },
+          },
+          // Only include scope if it's a valid approval scope (exactOptionalPropertyTypes requires this)
+          ...(approvalScope && { scope: approvalScope }),
+        };
+      });
 
       // Extract and merge plugs from all rule files' frontmatter
       const allPlugsSources: Array<{ plugs?: Plugs; source: string }> = [];

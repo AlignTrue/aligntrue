@@ -63,6 +63,7 @@ function normalizeUrl(url: string): string {
  * 4. If a URL is both a source and backup, skip that backup and warn
  */
 export function resolveFileAssignments(
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   config: RemoteBackupConfig,
   rulesDir: string,
   sourceUrls: string[] = [],
@@ -179,6 +180,7 @@ export function resolveFileAssignments(
  * Get status of all configured backups
  */
 export function getBackupStatus(
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   config: RemoteBackupConfig,
   rulesDir: string,
   sourceUrls: string[] = [],

@@ -20,11 +20,13 @@ import { pushToBackup, getLastBackupInfo } from "./git-pusher.js";
  * Remote backup manager
  */
 export class RemoteBackupManager {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private config: RemoteBackupConfig;
   private cwd: string;
   private rulesDir: string;
 
   constructor(
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     config: RemoteBackupConfig,
     options: { cwd?: string; rulesDir?: string } = {},
   ) {
@@ -309,6 +311,7 @@ function formatTimeAgo(date: Date): string {
  * Create a remote backup manager from config
  */
 export function createRemoteBackupManager(
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   config: RemoteBackupConfig,
   options: { cwd?: string; rulesDir?: string } = {},
 ): RemoteBackupManager {

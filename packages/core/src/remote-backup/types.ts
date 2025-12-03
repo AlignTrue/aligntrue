@@ -12,6 +12,7 @@ import type {
 } from "../config/types.js";
 
 export type {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   RemoteBackupConfig,
   RemoteBackupDestination,
   AdditionalBackupDestination,

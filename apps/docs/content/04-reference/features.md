@@ -23,7 +23,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
 - Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
-## CLI (23 commands)
+## CLI (24 commands)
 
 **Diagnostics:**
 

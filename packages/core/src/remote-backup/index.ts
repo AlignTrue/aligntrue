@@ -14,6 +14,7 @@ export {
   cleanAllBackupCaches,
 } from "./git-pusher.js";
 export type {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   RemoteBackupConfig,
   RemoteBackupDestination,
   AdditionalBackupDestination,
