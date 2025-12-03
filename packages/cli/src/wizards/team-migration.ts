@@ -40,7 +40,7 @@ export async function runTeamMigrationWizard(
     });
 
     spinner.stop(
-      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --to ${backup.timestamp}`,
+      `Backup created: ${backup.timestamp}\n  Restore with: aligntrue backup restore --timestamp ${backup.timestamp}`,
     );
 
     // Step 2: Confirm mode change
