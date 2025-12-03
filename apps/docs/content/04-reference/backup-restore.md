@@ -263,7 +263,6 @@ This ensures you can recover your complete agent setup if something goes wrong.
 
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/.backups/` - Backup directory itself
-- `.aligntrue/telemetry-events.json` - Telemetry data
 - Files not written by configured exporters
 
 ## Backup storage
@@ -592,7 +591,6 @@ Backup considerations:
 ```gitignore
 .aligntrue/.backups/
 .aligntrue/.cache/
-.aligntrue/telemetry-events.json
 .aligntrue/privacy-consent.json
 ```
 

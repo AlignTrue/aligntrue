@@ -285,7 +285,6 @@ pnpm --filter @aligntrue/schema vitest run packages/schema/tests/context.contrac
 | Pass local, fail CI              | TZ/Node drift          | Env mismatch        | Vitest setup, CI config                           |
 | Scope mismatch on Windows        | Path normalization     | Slash handling      | packages/core/src/scope.ts                        |
 | Ajv errors unreadable            | Error shaping          | Missing formatter   | packages/core/src/validation/\*.ts                |
-| Telemetry on when disabled       | Config check           | State mismatch      | packages/core/src/telemetry/collector.ts          |
 
 ---
 

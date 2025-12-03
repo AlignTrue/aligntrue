@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Telemetry feature** - Removed local-only telemetry system that collected data with no transmission mechanism. Feature was not delivering value without collection infrastructure
 - **URL source provider** - Removed deprecated `type: "url"` source provider. The JSON schema already rejected this type, and the provider was never instantiated. Use git repositories instead for remote rule sources
 
 ### Changed

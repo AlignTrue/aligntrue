@@ -16,7 +16,6 @@ import { existsSync, readFileSync } from "fs";
 import { execSync } from "child_process";
 import * as clack from "@clack/prompts";
 import { loadConfig, detectDriftForConfig } from "@aligntrue/core";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   showStandardHelp,
@@ -459,12 +458,6 @@ export async function onboard(args: string[]): Promise<void> {
     });
     return;
   }
-
-  // Record telemetry
-  recordEvent({
-    command_name: "onboard",
-    align_hashes_used: [],
-  });
 
   clack.intro("AlignTrue Onboard");
   console.log("");

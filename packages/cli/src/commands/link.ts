@@ -28,7 +28,6 @@ import {
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { parseYamlToJson, validateAlignSchema } from "@aligntrue/schema";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -126,12 +125,6 @@ export async function link(args: string[]): Promise<void> {
   const vendorPath = customPath || `vendor/${repoName}`;
   const absoluteVendorPath = resolve(process.cwd(), vendorPath);
 
-  // Record telemetry
-  await recordEvent({
-    command_name: "link",
-    align_hashes_used: [],
-  });
-
   // Check if vendor path already exists
   if (existsSync(absoluteVendorPath)) {
     const vendorInfo = detectVendorType(absoluteVendorPath);
@@ -208,10 +201,6 @@ export async function link(args: string[]): Promise<void> {
         );
       }
 
-      await recordEvent({
-        command_name: "link",
-        align_hashes_used: [],
-      });
       return;
     }
 
@@ -258,11 +247,6 @@ export async function link(args: string[]): Promise<void> {
     } else {
       console.log("\n" + outroLines.join("\n"));
     }
-
-    await recordEvent({
-      command_name: "link",
-      align_hashes_used: [],
-    });
   } catch (_error) {
     spinner.stop("Link failed", 1);
 

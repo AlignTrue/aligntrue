@@ -13,7 +13,6 @@ import {
 } from "fs";
 import { join, basename } from "path";
 import { loadConfig } from "@aligntrue/core";
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import { backupOverwrittenFile } from "@aligntrue/core";
 import {
   selectFilesToImport,
@@ -144,12 +143,6 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
         priority++;
       }
     }
-
-    // Record telemetry
-    recordEvent({
-      command_name: "sources_list",
-      align_hashes_used: [],
-    });
 
     clack.outro("Done");
   } catch (error) {
@@ -392,12 +385,6 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       );
     }
 
-    // Record telemetry
-    recordEvent({
-      command_name: "sources_split",
-      align_hashes_used: [],
-    });
-
     if (!yes) {
       clack.outro(
         "Split complete! Run 'aligntrue sync' to regenerate agent files.",
@@ -520,12 +507,6 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
       console.log("  aligntrue sources detect --import\n");
       clack.outro("Done");
     }
-
-    // Record telemetry
-    recordEvent({
-      command_name: "sources_detect",
-      align_hashes_used: [],
-    });
   } catch (error) {
     clack.log.error(
       `Failed to detect sources: ${error instanceof Error ? error.message : String(error)}`,

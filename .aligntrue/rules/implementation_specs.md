@@ -136,30 +136,6 @@ Stable file targeting across OS and tools.
 
 Collect coarse usage signals without leaking data.
 
-### Rules
-
-- Off by default
-- Enable only with `aligntrue telemetry on` (written to `.aligntrue/telemetry.json`)
-- Collected fields:
-  - `telemetry_id` random UUID at `~/.aligntrue/telemetry_id`
-  - `event` in `validate|bundle|export|align|verify`
-  - `version`, `duration_s`, `success`
-  - `node_version`
-- Never collect:
-  - hostnames, IPs, usernames, emails
-  - file paths, repo names, rule content, config values, hashes, seeds
-
-### Behavior
-
-- 1 second timeout
-- Silent on failure
-- One line notice on first enable with docs link
-
-### Acceptance
-
-- CLI works identically with telemetry off
-- No PII or sensitive values in payloads
-
 ---
 
 ## 5) Export formatting invariants

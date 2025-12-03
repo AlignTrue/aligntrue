@@ -14,7 +14,6 @@
  * - Multiple output formats: human, JSON, SARIF
  */
 
-import { recordEvent } from "@aligntrue/core/telemetry/collector.js";
 import {
   parseCommonArgs,
   type ArgDefinition,
@@ -161,12 +160,6 @@ export async function drift(args: string[]): Promise<void> {
     configWithPaths,
     ignoreLockfileDrift,
   );
-
-  // Record telemetry
-  await recordEvent({
-    command_name: "drift",
-    align_hashes_used: [], // No specific hashes for drift command
-  });
 
   // Output results based on format
   const gatesEnabled = Boolean(parsedArgs.flags["gates"]);

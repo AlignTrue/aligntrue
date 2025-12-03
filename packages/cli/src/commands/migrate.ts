@@ -5,7 +5,6 @@
 import * as clack from "@clack/prompts";
 import { join } from "path";
 import { type AlignTrueConfig, type RulerConfig } from "@aligntrue/core";
-import { recordEvent } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -160,8 +159,6 @@ async function migratePersonal(
   } else {
     console.log("✓ Personal rules migrated to remote storage");
   }
-
-  recordEvent({ command_name: "migrate-personal", align_hashes_used: [] });
 }
 
 /**
@@ -244,8 +241,6 @@ async function migrateTeam(cwd: string, flags: MigrationFlags): Promise<void> {
   } else {
     console.log("✓ Team rules migrated to remote storage");
   }
-
-  recordEvent({ command_name: "migrate-team", align_hashes_used: [] });
 }
 
 /**
@@ -418,12 +413,6 @@ async function migrateRuler(cwd: string, flags: MigrationFlags): Promise<void> {
       clack.log.info(`Moved .ruler/ → .ruler.backup/`);
     }
   }
-
-  // Record telemetry
-  recordEvent({
-    command_name: "migrate-ruler",
-    align_hashes_used: [],
-  });
 
   clack.outro(
     'Migration complete! Run "aligntrue sync" to export your rules to configured agents.',
