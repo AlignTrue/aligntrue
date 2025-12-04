@@ -106,7 +106,7 @@ aligntrue sync
 Use scopes to apply different rules to different directories:
 
 ```yaml
-# .aligntrue/config.yaml
+# .aligntrue/config.team.yaml
 sources:
   - type: local
     path: .aligntrue/rules
@@ -164,7 +164,7 @@ aligntrue team enable
 
 ### Step 2: Configure sources
 
-Add sources to `.aligntrue/config.yaml`:
+Add sources to `.aligntrue/config.team.yaml`:
 
 ```yaml
 sources:
@@ -216,10 +216,14 @@ git push
 **What to commit:**
 
 - `.aligntrue/rules` - Internal IR (auto-generated)
-- `.aligntrue/config.yaml` - Team configuration
+- `.aligntrue/config.team.yaml` - Team configuration
 - `.aligntrue/lock.json` - Lockfile with pinned hashes
 - `.cursor/rules/` - Exported Cursor rules (optional)
 - `AGENTS.md` - Universal agent format (optional)
+
+**What NOT to commit:**
+
+- `.aligntrue/config.yaml` - Personal overrides (gitignored)
 
 **What NOT to commit:**
 
@@ -548,7 +552,7 @@ In **strict mode**:
 - **CI/non-interactive** - Exits with code 1, requires manual approval
 
 ```yaml
-# .aligntrue/config.yaml
+# .aligntrue/config.team.yaml
 lockfile:
   mode: strict # Block unapproved changes
 ```
@@ -718,7 +722,7 @@ git commit -m "fix: Resolve lockfile drift
 **4. Use strict mode in production:**
 
 ```yaml
-# .aligntrue/config.yaml
+# .aligntrue/config.team.yaml
 lockfile:
   mode: strict # Block unapproved changes
 ```
@@ -776,7 +780,7 @@ aligntrue plugs set org.name "Acme Corp"
 aligntrue plugs set test.cmd "pnpm test"
 
 # Commit
-git add .aligntrue/config.yaml
+git add .aligntrue/config.team.yaml
 git commit -m "chore: Set team plug values"
 ```
 
@@ -818,7 +822,7 @@ aligntrue override add \
 
 # Review and commit
 aligntrue override status
-git add .aligntrue/config.yaml
+git add .aligntrue/config.team.yaml
 git commit -m "chore: Enforce no-console-log as error
 
 Approved by: @team-lead
@@ -993,10 +997,10 @@ Tested by: @dev1, @dev2
 # 1. Pull latest
 git pull origin main
 
-# Conflict in AGENTS.md or .aligntrue/config.yaml
+# Conflict in AGENTS.md or .aligntrue/config.team.yaml
 
 # 2. Resolve conflict manually
-# (edit AGENTS.md or .aligntrue/config.yaml)
+# (edit AGENTS.md or .aligntrue/config.team.yaml)
 
 # 3. Regenerate lockfile
 aligntrue sync
@@ -1120,7 +1124,7 @@ Tested by: @dev1, @dev2, @dev3"
 **Team collaboration workflow:**
 
 1. **Enable team mode** - `aligntrue team enable`
-2. **Configure sources** - Add to `.aligntrue/config.yaml`
+2. **Configure sources** - Add to `.aligntrue/config.team.yaml`
 3. **Generate lockfile** - `aligntrue sync`
 4. **Commit to git** - Share with team (approval via PR)
 5. **Onboard members** - `git clone && aligntrue sync`

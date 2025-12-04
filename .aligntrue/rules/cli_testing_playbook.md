@@ -210,6 +210,11 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 **Goal:** Test team mode, lockfiles, and drift detection.
 
+**Note:** Team mode uses two config files:
+
+- `config.team.yaml` - Team settings (committed)
+- `config.yaml` - Personal settings (gitignored)
+
 **Commands:** `team`, `drift`
 
 **What to try:**
@@ -220,9 +225,10 @@ Complete each area sequentially. After finishing each area, record findings befo
    $CLI team enable --yes
    ```
 
+   - Does `.aligntrue/config.team.yaml` get created?
    - Does `.aligntrue/lock.json` get created?
-   - Is mode set to `team` in config?
-   - Lockfile has content hashes?
+   - Is `.aligntrue/config.yaml` added to `.gitignore`?
+   - Team settings (mode, lockfile) in `config.team.yaml`?
 
 2. Team status:
 
