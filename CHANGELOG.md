@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Config bloat in solo mode** - CLI commands that update config no longer write all default values. Commands now use `saveConfigAuto` which auto-selects minimal save for solo mode, keeping config files clean and readable. Also fixes `saveMinimalConfig` to preserve user-configured `remotes`, `plugs`, `mcp`, `merge`, `export`, and `git.per_exporter` fields
 - **`enabled: false` frontmatter now prevents rule export** - Rules with `enabled: false` in frontmatter are now correctly excluded from all agent exports. Previously the field existed in schema but was not enforced
 - **Lockfile creation timing in team mode** - Lockfile is now created immediately when team mode is enabled, rather than waiting for first sync. Provides immediate feedback and allows git tracking from the start
 - **Sources split non-interactive mode** - `aligntrue sources split --yes` now fully suppresses intro/outro messages for better CI/automation support

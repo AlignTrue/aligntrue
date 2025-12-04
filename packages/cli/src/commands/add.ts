@@ -14,7 +14,7 @@ import { existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import {
-  saveConfig,
+  saveConfigAuto,
   parseAlignUrl,
   getAlignTruePaths,
   writeRuleFile,
@@ -400,7 +400,7 @@ async function addSource(options: {
     sources.push(newSource as (typeof sources)[number]);
 
     // Save config
-    await saveConfig(config, configPath);
+    await saveConfigAuto(config, configPath);
 
     spinner.stop("Source added");
 
@@ -554,7 +554,7 @@ async function addRemote(options: {
     }
 
     // Save config
-    await saveConfig(config, configPath);
+    await saveConfigAuto(config, configPath);
 
     spinner.stop("Remote added");
 
@@ -634,7 +634,7 @@ async function copyRulesToLocal(options: {
         exporters: ["agents"],
       };
       mkdirSync(dirname(configPath), { recursive: true });
-      await saveConfig(config, configPath);
+      await saveConfigAuto(config, configPath);
     }
 
     // Import rules

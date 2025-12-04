@@ -350,10 +350,101 @@ export async function saveMinimalConfig(
     minimalConfig.detection = detectionSection;
   }
 
+  // Remotes: always preserve if present (user-configured, no defaults)
+  if (config.remotes) {
+    const hasRemotes =
+      config.remotes.personal !== undefined ||
+      config.remotes.shared !== undefined ||
+      (config.remotes.custom && config.remotes.custom.length > 0);
+    if (hasRemotes) {
+      minimalConfig.remotes = config.remotes;
+    }
+  }
+
+  // Plugs: always preserve if present (user-configured fills)
+  if (config.plugs?.fills && Object.keys(config.plugs.fills).length > 0) {
+    minimalConfig.plugs = config.plugs;
+  }
+
+  // MCP: always preserve if present (user-configured servers)
+  if (config.mcp?.servers && config.mcp.servers.length > 0) {
+    minimalConfig.mcp = config.mcp;
+  }
+
+  // Merge: always preserve if present (user-configured)
+  if (config.merge) {
+    const hasMergeConfig =
+      config.merge.strategy !== undefined || config.merge.order !== undefined;
+    if (hasMergeConfig) {
+      minimalConfig.merge = config.merge;
+    }
+  }
+
+  // Export: always preserve if present (user-configured mode hints)
+  if (config.export) {
+    const hasExportConfig =
+      config.export.mode_hints !== undefined ||
+      config.export.max_hint_blocks !== undefined ||
+      config.export.max_hint_tokens !== undefined;
+    if (hasExportConfig) {
+      minimalConfig.export = config.export;
+    }
+  }
+
+  // Git: preserve non-default values
+  const gitSection: Partial<NonNullable<typeof config.git>> = {};
+  let hasGitChanges = false;
+
+  if (config.git?.mode && config.git.mode !== defaults.git?.mode) {
+    gitSection.mode = config.git.mode;
+    hasGitChanges = true;
+  }
+  if (
+    config.git?.per_exporter &&
+    Object.keys(config.git.per_exporter).length > 0
+  ) {
+    gitSection.per_exporter = config.git.per_exporter;
+    hasGitChanges = true;
+  }
+  if (config.git?.auto_gitignore && config.git.auto_gitignore !== "auto") {
+    gitSection.auto_gitignore = config.git.auto_gitignore;
+    hasGitChanges = true;
+  }
+
+  if (hasGitChanges) {
+    minimalConfig.git = gitSection;
+  }
+
+  // Remote backup (deprecated): preserve if present for backwards compat
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (config.remote_backup) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    minimalConfig.remote_backup = config.remote_backup;
+  }
+
   const yamlContent = stringifyYaml(minimalConfig);
   const tempPath = `${path}.tmp`;
 
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(tempPath, yamlContent, "utf-8");
   renameSync(tempPath, path);
+}
+
+/**
+ * Auto-select save mode based on config mode
+ *
+ * - Solo mode: Use minimal save to keep config clean and readable
+ * - Team/Enterprise mode: Use full save for explicit configuration
+ *
+ * Use this in CLI commands to ensure correct save behavior.
+ */
+export async function saveConfigAuto(
+  config: AlignTrueConfig,
+  configPath?: string,
+  cwd?: string,
+): Promise<void> {
+  if (config.mode === "solo") {
+    return saveMinimalConfig(config, configPath, cwd);
+  }
+  return saveConfig(config, configPath, cwd);
 }
