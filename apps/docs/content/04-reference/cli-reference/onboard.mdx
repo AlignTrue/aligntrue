@@ -1,15 +1,15 @@
 ---
 title: "Onboard command"
-description: "Generate personalized onboarding checklists with `aln onboard`: setup, usage, and customization."
+description: "Generate personalized onboarding checklists with `aligntrue onboard`: setup, usage, and customization."
 ---
 
 # Onboard command
 
-The `aln onboard` command generates personalized onboarding checklists for developers based on recent work, check results, and project state.
+The `aligntrue onboard` command generates personalized onboarding checklists for developers based on recent work, check results, and project state.
 
 ## Overview
 
-`aln onboard` analyzes your development context and creates an actionable checklist with:
+`aligntrue onboard` analyzes your development context and creates an actionable checklist with:
 
 - Recent commit history and file changes
 - Failed or warnings from checks
@@ -26,7 +26,7 @@ This helps developers quickly identify next steps and reduces onboarding frictio
 When joining a project:
 
 ```bash
-aln onboard
+aligntrue onboard
 ```
 
 Shows essential setup steps based on project configuration.
@@ -36,7 +36,7 @@ Shows essential setup steps based on project configuration.
 Address review feedback systematically:
 
 ```bash
-aln onboard --ci sarif.json
+aligntrue onboard --ci sarif.json
 ```
 
 Integrates CI check results to highlight failures that need attention.
@@ -47,7 +47,7 @@ Get oriented after syncing with main:
 
 ```bash
 git pull origin main
-aln onboard
+aligntrue onboard
 ```
 
 Highlights changes that might affect your work.
@@ -57,7 +57,7 @@ Highlights changes that might affect your work.
 Pre-flight check before pushing:
 
 ```bash
-aln onboard
+aligntrue onboard
 ```
 
 Catch common issues (missing tests, uncommitted files) before CI runs.
@@ -65,7 +65,7 @@ Catch common issues (missing tests, uncommitted files) before CI runs.
 ## Command reference
 
 ```bash
-aln onboard [options]
+aligntrue onboard [options]
 ```
 
 ### Options
@@ -78,13 +78,13 @@ aln onboard [options]
 
 ```bash
 # Basic onboarding checklist
-aln onboard
+aligntrue onboard
 
 # Include CI check results
-aln onboard --ci .aligntrue/.cache/checks.sarif
+aligntrue onboard --ci .aligntrue/.cache/checks.sarif
 
 # Use custom config
-aln onboard --config custom-config.yaml
+aligntrue onboard --config custom-config.yaml
 ```
 
 ## Checklist format
@@ -134,7 +134,7 @@ Actionable next steps:
 
 ### Drift detection (team mode)
 
-In team mode, `aln onboard` automatically checks for drift from approved sources:
+In team mode, `aligntrue onboard` automatically checks for drift from approved sources:
 
 ```yaml
 # .aligntrue/config.yaml
@@ -158,7 +158,7 @@ Pass SARIF output from CI to show failed checks:
 
 ```bash
 # After CI run
-aln onboard --ci .github/workflows/sarif-output.json
+aligntrue onboard --ci .github/workflows/sarif-output.json
 ```
 
 Checklist includes check failures:
@@ -193,7 +193,7 @@ When slots need values:
    → Run: aligntrue plugs list
 ```
 
-See [plugs documentation](https://github.com/AlignTrue/aligntrue/blob/main/.cursor/rules/plugs.mdc) for details.
+See [plugs documentation](/docs/02-customization/plugs) for details.
 
 ## CI workflow integration
 
@@ -224,11 +224,11 @@ jobs:
         run: npm install -g @aligntrue/cli
 
       - name: Run checks (generate SARIF)
-        run: aln drift --sarif > checks.sarif
+        run: aligntrue drift --sarif > checks.sarif
         continue-on-error: true
 
       - name: Generate onboarding checklist
-        run: aln onboard --ci checks.sarif
+        run: aligntrue onboard --ci checks.sarif
 
       - name: Post checklist as comment
         uses: actions/github-script@v7
@@ -253,8 +253,8 @@ onboard:
   stage: test
   script:
     - npm install -g @aligntrue/cli
-    - aln drift --sarif > checks.sarif || true
-    - aln onboard --ci checks.sarif
+    - aligntrue drift --sarif > checks.sarif || true
+    - aligntrue onboard --ci checks.sarif
   artifacts:
     reports:
       junit: checks.sarif
@@ -274,8 +274,8 @@ Any CI system with SARIF support:
 
 ```bash
 # Example CI script
-aln drift --sarif > checks.sarif
-aln onboard --ci checks.sarif > onboard-checklist.txt
+aligntrue drift --sarif > checks.sarif
+aligntrue onboard --ci checks.sarif > onboard-checklist.txt
 ```
 
 ## Troubleshooting
@@ -292,7 +292,7 @@ aln onboard --ci checks.sarif > onboard-checklist.txt
 git init
 git add .
 git commit -m "Initial commit"
-aln onboard
+aligntrue onboard
 ```
 
 ### CI artifacts not found
@@ -337,13 +337,13 @@ aligntrue check
 
 ```bash
 # Enable team mode
-aln team enable
+aligntrue team enable
 
 # Generate lockfile
-aln sync
+aligntrue sync
 
 # Verify drift detection works
-aln drift
+aligntrue drift
 ```
 
 ## See also

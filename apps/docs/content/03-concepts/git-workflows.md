@@ -6,7 +6,7 @@ Ad-hoc rule discovery and team sharing with git sources.
 
 AlignTrue supports intelligent git source management with automatic update checking:
 
-- **Smart caching** - Checks for updates on a TTL (default 24 hours), commits never
+- **Smart caching** - Branches and tags check every 24 hours; commits never check
 - **Solo mode** - Auto-updates on sync (stay current automatically)
 - **Team mode** - Approval required for updates (controlled governance)
 - **Offline support** - Works without network, falls back to cache
@@ -21,7 +21,7 @@ Git sources automatically check for updates based on ref type:
 sources:
   - type: git
     url: https://github.com/company/rules
-    ref: main # Checks for updates based on TTL (default 24 hours)
+    ref: main # Checks every 24 hours
 ```
 
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
@@ -33,10 +33,10 @@ sources:
 sources:
   - type: git
     url: https://github.com/company/rules
-    ref: v1.2.0 # Checks for updates based on same TTL (default 24 hours)
+    ref: v1.2.0 # Checks for updates on the same 24h TTL
 ```
 
-Tags use the same check interval as branches to detect force-pushes.
+Tags currently share the same 24h interval as branches.
 
 ### Commit SHAs (pinned)
 
@@ -51,22 +51,12 @@ Commit SHAs are immutable and never check for updates.
 
 ## Configuration
 
-### Global defaults
+### Defaults and overrides
 
-```yaml
-git:
-  offline_fallback: true # Use cache if network fails (default: true)
-```
-
-### Per-source override
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/company/rules
-    ref: main
-    check_interval: 3600 # Check hourly instead of daily
-```
+- Branches and tags: 24h check interval (current behavior).
+- Commits: Never check for updates.
+- `check_interval` (per-source) is currently ignored; all git sources use the 24h interval.
+- Cache fallback happens automatically when the network is unavailable (`git.offline_fallback` is not used today).
 
 ### Command flags
 
@@ -74,12 +64,15 @@ sources:
 # Force check now (bypass TTL)
 aligntrue sync --force-refresh
 
-# Skip all checks, use cache only
+# Skip all checks, use cache only (requires existing cache)
 aligntrue sync --skip-update-check
 
-# Offline mode (no network)
+# Offline mode (no network, requires existing cache)
 aligntrue sync --offline
 ```
+
+- `--skip-update-check` and `--offline` fail if no cache exists for the source.
+- `--force-refresh` bypasses the 24h TTL and pulls immediately.
 
 ## Using git sources
 
@@ -97,12 +90,12 @@ sources:
 1. Repository cloned to `.aligntrue/.cache/git/` on first sync
 2. Rules extracted from directory scan (default: `.` scans for `.md`/`.mdc` files)
 3. Rules merged with your local rules
-4. Future syncs automatically check for updates based on ref type
+4. Future syncs automatically check for updates: branches/tags every 24 hours; commits never
 
 **Ref types:**
 
-- **Branches** (`ref: main`) - Auto-updates based on TTL (default 24 hours)
-- **Tags** (`ref: v1.2.0`) - Stable, checks based on same TTL (default 24 hours)
+- **Branches** (`ref: main`) - Checks every 24 hours
+- **Tags** (`ref: v1.2.0`) - Checks every 24 hours
 - **Commits** (`ref: abc1234`) - Pinned, never checks for updates
 
 See [Git Sources Reference](/docs/04-reference/git-sources) for complete documentation.
@@ -275,6 +268,9 @@ sources:
 3. Commit lockfile changes via PR for team review
 4. Updates pulled and approved after PR merge
 5. Team members sync to get new version
+
+**Personal sources in team mode**  
+Add `personal: true` on a git source to auto-update without team approval (treated like solo for that source).
 
 ### Team with version pinning
 

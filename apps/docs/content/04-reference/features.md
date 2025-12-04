@@ -11,9 +11,9 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 - Natural markdown authoring in `.aligntrue/rules/` directory with optional enabled/disabled field in frontmatter
 - Unidirectional sync engine (rules → IR → agents) with first-wins merge precedence
-- 50 exporters supporting 28+ AI coding agents with auto-detection
+- 50 exporter formats across 28+ AI coding agents (see compatibility matrix)
 - MCP server configuration propagation from centralized `config.mcp.servers`
-- Lockfiles and bundles for team mode (reproducible builds)
+- Lockfiles for team mode (`.aligntrue/lock.json`) to keep builds reproducible
 - Drift detection for CI validation
 - Hierarchical scopes for monorepos
 - Plugs and overlays for safe customization
@@ -23,47 +23,44 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
 - Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
-## CLI (20+ commands)
+## CLI (22 commands)
 
-**Diagnostics:**
-
-- `status` — Show current status, exporters, and sync health
-- `doctor` — Run health checks and verification tests
-
-**Basic:**
+**Getting started & sync:**
 
 - `init` — 60-second setup with agent auto-detection
-- `sync` — Export rules to agents with dry-run
-- `check` — Rule and config validation
-- `config` — View/edit configuration
+- `sync` — Export rules to agents (always backs up first)
+- `status` — Show current status, exporters, and sync health
 
-**Development:**
+**Validation & diagnostics:**
 
+- `check` — Validate rules and configuration
+- `doctor` — Run health checks and verification tests
+
+**Configuration & management:**
+
+- `config` — View or edit configuration
 - `exporters` — Manage exporters (list, enable, disable)
-- `plugs` — Manage plugs (audit, resolve, set)
-- `rules` — List rules and view targeting by agent (`--by-agent`, `--json`)
+- `rules` — List rules and view agent targeting (`--by-agent`, `--json`)
 - `scopes` — List configured scopes
 - `sources` — Manage multi-file rule organization (list, split)
-
-**Source Management:**
-
-- `add` — Add an align from a URL to configuration
+- `plugs` — Manage plug slots and fills (list, resolve, validate)
+- `add` — Add an align source from a URL
 - `remove` — Remove an align source from configuration
 
-**Team:**
+**Team mode:**
 
 - `team` — Team mode management (enable, disable, status)
 - `drift` — Detect drift between lockfile and allowed sources
-- `link` — Vendor rule aligns from git repositories
-- `onboard` — Interactive onboarding wizard
+- `onboard` — Generate developer onboarding checklist
 
-**Utilities:**
+**Safety & customization:**
 
-- `backup` — Manage backups (create, list, restore, cleanup)
+- `backup` — Create, list, restore, or clean backups
 - `revert` — Restore files from backup with preview
-- `override` — Manage overlays (add, remove, diff, status)
-- `privacy` — Privacy settings and consent management
+- `override` — Manage overlays for fork-safe customization (add, status, diff, remove)
+- `privacy` — Privacy and consent management (audit, revoke)
 - `migrate` — Schema migration (preview mode)
+- `uninstall` — Remove AlignTrue from this project
 
 See [CLI Reference](/docs/04-reference/cli-reference) for complete command documentation.
 
@@ -115,7 +112,6 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - **Lockfile generation** (`.aligntrue/lock.json`) - SHA-256 content hashes, reproducible builds
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
 - **Drift detection** - Compare lockfile vs allowed sources, multiple output formats (human, JSON, SARIF)
-- **Bundle merging** - Combine multiple sources with conflict resolution
 - **Team commands** - `team enable`, `team disable`, `team status`
 - **Scope & Storage Model** - Semantic scopes (team, personal, custom) with storage backends (local, repo, remote)
 - **Git-native approval** - Uses PR approval for reviewing rule changes
@@ -125,7 +121,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 See [Team Mode](/docs/03-concepts/team-mode) for complete documentation.
 
-## Exporters (50 exporter formats supporting 28+ agents)
+## Exporters (50 formats across 28+ agents)
 
 All exporters support natural markdown sections format with fidelity notes:
 
@@ -140,7 +136,7 @@ All exporters support natural markdown sections format with fidelity notes:
 - **Kilocode MCP** - Kilocode MCP server
 - **OpenCode Config** - OpenCode configuration
 - **Root MCP** - Root-level MCP configuration
-- Plus 32 more exporters in `packages/exporters/src/`
+- Plus 39 more exporters in `packages/exporters/src/`
 
 See [Agent Support](/docs/04-reference/agent-support) for complete compatibility matrix.
 

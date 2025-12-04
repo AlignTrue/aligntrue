@@ -18,6 +18,35 @@ There are two ways to use remote repositories with AlignTrue:
 | **Pull rules from remote** | `sources` with `type: git` | Remote → Local |
 | **Sync rules to remote**   | `remotes`                  | Local → Remote |
 
+Use git sources to pull rules; use remotes to push rules. Personal sources are auto-scoped to `personal` and gitignored.
+
+## Quick start (SSH + personal remote)
+
+1. Run `aligntrue init` if `.aligntrue/config.yaml` does not exist.
+2. Add one SSH source and one personal remote:
+
+```yaml
+sources:
+  - type: local
+    path: .aligntrue/rules
+  - type: git
+    url: git@github.com:yourusername/aligntrue-personal-rules.git
+    personal: true # auto scope + gitignore
+
+remotes:
+  personal:
+    url: git@github.com:yourusername/personal-rules.git
+    auto: true # default; set false to require manual push
+```
+
+3. Sync:
+
+```bash
+aligntrue sync
+```
+
+During sync, remotes push automatically unless `auto: false` is set for that destination.
+
 ## Prerequisites
 
 - A git hosting account (GitHub, GitLab, Bitbucket, etc.)
@@ -103,12 +132,17 @@ The `personal: true` flag:
 
 ### To sync local rules to a remote
 
+`auto` defaults to true for every remote; set `auto: false` to require an explicit push step later.
+
 Configure remotes based on rule scopes:
 
 ```yaml
 remotes:
   # Personal-scope rules sync here
-  personal: git@github.com:yourusername/personal-rules.git
+  personal:
+    url: git@github.com:yourusername/personal-rules.git
+    branch: main # default is main; override if needed
+    auto: true # push on sync; set false to skip auto-push
 
   # Shared-scope rules sync here (for publishing)
   shared: git@github.com:yourusername/shared-rules.git
@@ -147,6 +181,8 @@ This will:
 - Pull rules from configured git sources
 - Push rules to configured remotes based on their scope (if `auto: true`, the default)
 
+Set `auto: false` on a remote to skip pushing during sync; re-enable and rerun `aligntrue sync` when ready to publish.
+
 ## Troubleshooting
 
 ### SSH connection fails
@@ -177,7 +213,7 @@ This will:
 **Fix:**
 
 1. The remote repo may have diverged
-2. Check `.aligntrue/.cache/remotes/` for the local clone
+2. Check `.aligntrue/.cache/remotes/` for the local clone (safe to delete; it will re-clone on next sync)
 3. Manually resolve conflicts if needed
 
 ## Using HTTPS instead of SSH
@@ -192,7 +228,9 @@ sources:
 Configure git credentials:
 
 ```bash
-git config --global credential.helper store
+git config --global credential.helper osxkeychain   # macOS
+# or
+git config --global credential.helper manager-core   # Linux/Windows
 ```
 
 ## Security notes
@@ -201,7 +239,7 @@ git config --global credential.helper store
 - Use SSH keys instead of passwords
 - Review repository access permissions regularly
 
-## Related
+## See also
 
 - [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Complete guide to rule privacy, scoping, and remote synchronization
 - [Working with external sources](/docs/01-guides/04-external-sources) - Adding and customizing external rules

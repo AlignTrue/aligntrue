@@ -10,92 +10,67 @@ description: "Detect and report drift between the lockfile and approved sources,
   lockfiles and team mode.
 </Callout>
 
-Drift detection helps teams monitor alignment between their lockfile and approved rule sources. It identifies when rules have changed upstream, when vendored aligns differ from their sources, or when severity remapping policies have been modified.
+Drift detection helps teams keep `.aligntrue/lock.json` and exported agent files in sync with the rules they represent. It reports when rules changed after the lockfile was written, when agent exports were edited manually, or when severity remapping policies were modified.
 
 ## Overview
 
-Drift detection compares your lockfile's rule hashes against:
+Drift detection checks:
 
-- **Vendored aligns** - Integrity of git submodule/subtree vendored rules
-- **Severity remapping** - Policy changes in `.aligntrue.team.yaml`
+- **Lockfile drift** - Rules changed since the lockfile bundle hash was written
+- **Agent file drift** - Agent exports (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`) edited after `aligntrue sync`
+- **Severity remap drift** - `.aligntrue.team.yaml` changed or removed
 
 **Key benefits:**
 
-- Catch upstream rule changes before they cause issues
-- Verify vendored align integrity
-- Monitor policy compliance
+- Catch rule changes before they silently diverge from the lockfile
+- Detect manual edits to exported agent files
+- Monitor severity policy compliance
 - CI/CD integration with `--gates` flag
 
 ## Drift categories
 
-### Upstream drift
+### Lockfile drift
 
-**What it detects:** Rule content changed since last lockfile generation.
+**What it detects:** Rules changed since the lockfile bundle hash was generated.
 
 **Common causes:**
 
-- Upstream align updated to new version
-- Local modifications to rules
+- `.aligntrue/rules` changed without regenerating the lockfile
+- Another branch or machine synced different rules
 
 **How to fix:**
 
 ```bash
-# Review the changes
-aligntrue drift
-
-# Accept current state
-aligntrue sync --force
-```
-
-### Vendorized drift
-
-**What it detects:** Vendored align (git submodule/subtree) differs from source or is missing.
-
-**Common causes:**
-
-- Vendored align deleted or moved
-- Align updated without re-linking
-- Missing markdown rules in vendored path
-
-**How to fix:**
-
-```bash
-# Update vendored align
-cd vendor/align-name
-git pull
-cd ../..
-
-# Re-sync
+# Regenerate the lockfile
 aligntrue sync
 ```
 
 ### Agent file drift
 
-**What it detects:** Manual edits to agent files (`AGENTS.md`, `.cursor/rules/*.mdc`) that haven't been synced back to the IR.
+**What it detects:** Manual edits to agent files (`AGENTS.md`, `.cursor/rules/*.mdc`, etc.) after the last sync. Uses hashes from `.aligntrue/.agent-export-hashes.json` written by `aligntrue sync`; the first run after enabling team mode populates it.
 
 **Common causes:**
 
 - Developer edited agent files directly
-- Copy/pasting new rules into agent files
+- Copy/paste changes into agent exports instead of `.aligntrue/rules`
 
 **How to fix:**
 
 ```bash
-# Overwrite with current IR state:
+# Overwrite agent files from the IR
 aligntrue sync
 ```
 
-**Mechanism:**
-Uses content hashing (SHA-256) to detect changes reliably across all platforms. Timestamps are not used.
+**Mechanism:** Uses content hashing (SHA-256); timestamps are not used.
 
 ### Severity remap drift
 
-**What it will detect:** Changes to `.aligntrue.team.yaml` severity remapping rules.
+**What it detects:** Changes to `.aligntrue.team.yaml` severity remapping rules, or the file missing since the lockfile was written.
 
 **Common causes:**
 
-- Policy downgrade without rationale
-- Remapping rules modified
+- Policy downgraded without approval
+- Severity remap rules modified or deleted
 
 ## Usage
 
@@ -106,12 +81,22 @@ Uses content hashing (SHA-256) to detect changes reliably across all platforms. 
 aligntrue drift
 
 # Output:
-# Drift detection report
+# Drift Detection Report
 # ======================
+# Mode: team
 #
-# Upstream drift (1 items):
-#   • base-global: Lockfile hash differs from allowed version
-#     Suggestion: Review and approve via git PR
+# LOCKFILE DRIFT:
+#   _bundle
+#     Rules have changed since last lockfile generation
+#     Suggestion: Run: aligntrue sync (to regenerate lockfile)
+#
+# AGENT FILE DRIFT:
+#   _agent_cursor
+#     .cursor/rules/base.mdc modified after last sync
+#     Suggestion: Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/
+#
+# Lockfile: .aligntrue/lock.json
+# Findings: 2
 ```
 
 ### CI integration
@@ -121,8 +106,9 @@ aligntrue drift
 aligntrue drift --gates
 
 # Exit codes:
-# 0 = No drift detected
-# 2 = Drift detected (only with --gates)
+# 0 = Success (no drift, or drift without --gates)
+# 1 = Not in team mode
+# 2 = Drift detected when --gates is set (or config load error)
 ```
 
 ### JSON output
@@ -133,13 +119,35 @@ aligntrue drift --json
 
 # Output:
 # {
-#   "driftDetected": true,
 #   "mode": "team",
-#   "lockfilePath": ".aligntrue/lock.json",
-#   "summary": "2 drift findings across 2 categories",
-#   "driftByCategory": {
-#     "lockfile": [...],
-#     "agent_file": [...]
+#   "has_drift": true,
+#   "lockfile_path": ".aligntrue/lock.json",
+#   "findings": [
+#     {
+#       "category": "lockfile",
+#       "ruleId": "_bundle",
+#       "description": "Rules have changed since last lockfile generation",
+#       "suggestion": "Run: aligntrue sync (to regenerate lockfile)",
+#       "lockfile_hash": "sha256:...",
+#       "expected_hash": "sha256:..."
+#     },
+#     {
+#       "category": "agent_file",
+#       "ruleId": "_agent_cursor",
+#       "description": ".cursor/rules/base.mdc modified after last sync",
+#       "suggestion": "Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/"
+#     }
+#   ],
+#   "summary": {
+#     "total": 2,
+#     "by_category": {
+#       "lockfile": 1,
+#       "agent_file": 1,
+#       "upstream": 0,
+#       "overlay": 0,
+#       "result": 0,
+#       "severity_remap": 0
+#     }
 #   }
 # }
 ```
@@ -253,7 +261,7 @@ echo "mode: team" >> .aligntrue/config.yaml
 aligntrue sync
 ```
 
-### Resolving drift
+### Resolving lockfile drift
 
 **Scenario:** Rules were updated and need approval.
 
@@ -266,21 +274,25 @@ git commit -m "chore: Update rules (team approval via PR)"
 git push
 ```
 
-### False positives
+### Noisy lockfile drift right after sync
 
-**Scenario:** Drift reported but you know rules haven't changed.
+**Scenario:** You just ran `aligntrue sync` and want to skip the expected lockfile difference.
 
-**Debugging:**
+**Solution:** Use `--post-sync` to suppress the lockfile drift check for that run:
 
-1. Check lockfile generation date
-2. Check for stray edits in `.aligntrue/rules/`
-3. Re-sync to update lockfile
+```bash
+aligntrue drift --post-sync
+```
+
+### Agent file drift keeps appearing
+
+**Scenario:** Agent files were edited manually or hashes were never recorded.
 
 **Solution:**
 
 ```bash
-# Regenerate lockfile
-aligntrue sync --force
+# Recreate agent files and refresh export hashes
+aligntrue sync
 ```
 
 ## Configuration
@@ -328,19 +340,23 @@ performance:
 
 ### Handling drift findings
 
-**Upstream drift:**
+**Lockfile drift:**
 
-1. Review changelog for upstream align
-2. Test changes in dev environment
-3. Approve new version or pin current
-4. Update documentation
+1. Review rule changes in `.aligntrue/rules`
+2. Run `aligntrue sync` to regenerate the lockfile
+3. Commit `.aligntrue/lock.json` for review
 
-**Vendorized drift:**
+**Agent file drift:**
 
-1. Check git submodule/subtree status
-2. Update vendored align if appropriate
-3. Re-link and re-sync
-4. Commit vendored changes
+1. Avoid editing exported agent files directly
+2. Move changes into `.aligntrue/rules`
+3. Run `aligntrue sync` to rewrite exports
+
+**Severity remap drift:**
+
+1. Review `.aligntrue.team.yaml` changes
+2. Restore or update as intended
+3. Run `aligntrue sync` if rules also changed
 
 ## Related documentation
 

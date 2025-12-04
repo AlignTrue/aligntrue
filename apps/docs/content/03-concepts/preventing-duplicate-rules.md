@@ -37,20 +37,21 @@ During `aligntrue init` and `aligntrue sync`, AlignTrue:
 
 AlignTrue manages ignore files for agents that support them:
 
-| Agent           | Ignore file           | Supports nested |
-| --------------- | --------------------- | --------------- |
-| Cursor          | `.cursorignore`       | Yes             |
-| Aider           | `.aiderignore`        | Yes             |
-| Firebase Studio | `.aiexclude`          | No              |
-| KiloCode        | `.kilocodeignore`     | No              |
-| Gemini CLI      | `.geminiignore`       | No              |
-| Crush           | `.crushignore`        | Yes             |
-| Warp            | `.warpindexingignore` | No              |
-| Cline           | `.clineignore`        | No              |
-| Goose           | `.gooseignore`        | No              |
-| Junie           | `.aiignore`           | No              |
-| Augment Code    | `.augmentignore`      | No              |
-| Kiro            | `.kiroignore`         | No              |
+| Agent           | Ignore file                | Supports nested | Notes                                               |
+| --------------- | -------------------------- | --------------- | --------------------------------------------------- |
+| Cursor          | `.cursorignore`            | Yes             | Also supports `.cursorindexingignore` (index-only). |
+| Aider           | `.aiderignore`             | Yes             |                                                     |
+| Firebase Studio | `.aiexclude`               | No              |                                                     |
+| KiloCode        | `.kilocodeignore`          | No              |                                                     |
+| Gemini CLI      | `.geminiignore`            | No              |                                                     |
+| Crush           | `.crushignore`             | Yes             |                                                     |
+| Warp            | `.warpindexingignore`      | No              |                                                     |
+| Cline           | `.clineignore`             | No              |                                                     |
+| Goose           | `.gooseignore`             | No              |                                                     |
+| Junie           | `.aiignore`                | No              |                                                     |
+| Augment Code    | `.augmentignore`           | No              |                                                     |
+| Kiro            | `.kiroignore`              | No              |                                                     |
+| Firebender      | `firebender.json` (config) | No              | Ignore patterns live in config, not a dotfile.      |
 
 ### Example: Cursor + AGENTS.md
 
@@ -76,6 +77,35 @@ AGENTS.md
 
 Now Cursor only reads `.cursor/rules/*.mdc` files, while other agents read `AGENTS.md`.
 
+## Quick start
+
+1. Enable two overlapping exporters and turn on automatic ignore management:
+
+```yaml
+# .aligntrue/config.yaml
+exporters:
+  - cursor
+  - agents
+sync:
+  auto_manage_ignore_files: true
+```
+
+2. Run `aligntrue sync`.
+
+Resulting files (root + scoped):
+
+```
+# Root
+.cursorignore
+AGENTS.md
+
+# apps/web scope
+apps/web/.cursorignore
+apps/web/AGENTS.md
+```
+
+If you add `nested_location` in a rule frontmatter (for example `nested_location: apps/docs`), AlignTrue also writes ignore files at that nested path when the agent supports nested ignores.
+
 ## Configuration
 
 ### Auto-manage ignore files
@@ -90,9 +120,19 @@ sync:
 
 Options:
 
-- `prompt` (default): Ask user during init and sync
-- `true`: Always manage ignore files automatically
-- `false`: Never manage ignore files
+- `prompt` (default): Ask user during init and sync. In `--yes` or non-interactive mode, prompts are skipped and nothing is written unless you set `auto_manage_ignore_files: true`.
+- `true`: Always manage ignore files automatically (works in `--yes` and CI).
+- `false`: Never manage ignore files (AlignTrue leaves existing managed blocks untouched).
+
+Per-exporter override: set `exporters.<agent>.ignore_file: false` to skip managing that agent’s ignore file. AlignTrue will remove its managed block from that ignore file on the next sync.
+
+Mode summary:
+
+| Mode   | Writes ignore files?                   | Prompts?                 | Works in `--yes`/CI?      |
+| ------ | -------------------------------------- | ------------------------ | ------------------------- |
+| prompt | Yes, but only after interactive accept | Yes (skipped in `--yes`) | No (unless set to `true`) |
+| true   | Yes                                    | No                       | Yes                       |
+| false  | No                                     | No                       | N/A                       |
 
 ### Format priority
 
@@ -106,7 +146,7 @@ sync:
     cursor: agents # Use AGENTS.md instead of .mdc for Cursor
 ```
 
-This would add `.cursor/rules/*.mdc` to `.cursorignore` instead of `AGENTS.md`.
+This adds `.cursor/rules/*.mdc` to `.cursorignore` instead of `AGENTS.md`, so Cursor consumes `AGENTS.md` only.
 
 ## Nested scopes
 
@@ -145,8 +185,17 @@ Some agents can read multiple formats but don't have dedicated ignore files:
 - Claude (uses `.gitignore` only)
 - Amazon Q (uses `.gitignore` only)
 - Zed (uses `.gitignore` only)
+- Qwen Code (uses `.gitignore` only)
+- OpenCode (uses `.gitignore` only)
 - Windsurf (no documented ignore mechanism)
 - GitHub Copilot (no documented ignore mechanism)
+- Jules (no documented ignore mechanism)
+- Amp (no documented ignore mechanism)
+- RooCode (no documented ignore mechanism)
+- OpenHands (no dedicated ignore file yet)
+- Trae AI (no documented ignore mechanism)
+
+For these, prefer enabling a single exporter or use `.gitignore` if you must exclude a format globally.
 
 For these agents, AlignTrue shows an informational warning:
 
@@ -160,9 +209,9 @@ For these agents, AlignTrue shows an informational warning:
 
 ### Workarounds
 
-1. **Disable one exporter**: Choose the format you prefer and disable the other
-2. **Use .gitignore**: Add unwanted formats to `.gitignore` (affects all tools)
-3. **Accept duplication**: If context window size isn't a concern
+1. **Disable one exporter**: Choose the format you prefer and disable the other.
+2. **Use .gitignore**: Add unwanted formats to `.gitignore` (affects all tools).
+3. **Accept duplication**: If context window size isn't a concern.
 
 ## Manual management
 
@@ -188,7 +237,7 @@ AlignTrue will respect your manual configuration and won't modify these files.
 
 To remove AlignTrue-managed patterns from ignore files:
 
-1. Set `auto_manage_ignore_files: false` in config
+1. Set `auto_manage_ignore_files: false` in config.
 2. Edit the ignore file and remove the AlignTrue section:
 
 ```
@@ -198,27 +247,27 @@ To remove AlignTrue-managed patterns from ignore files:
 # AlignTrue: End duplicate prevention
 ```
 
-3. Run `aligntrue sync` to verify
+3. Run `aligntrue sync` to verify.
 
 ## Best practices
 
 ### For solo developers
 
-- Use default `prompt` mode during init
-- Let AlignTrue manage ignore files automatically
-- Focus on your preferred agent's native format
+- Use default `prompt` mode during init.
+- For non-interactive runs (`--yes`), set `auto_manage_ignore_files: true` if you want AlignTrue to write ignore files.
+- Focus on your preferred agent's native format.
 
 ### For teams
 
-- Set `auto_manage_ignore_files: true` in team config
-- Commit ignore files to version control
-- Document format priorities in team README
+- Set `auto_manage_ignore_files: true` in team config.
+- Commit ignore files to version control.
+- Document format priorities in the team README.
 
 ### For monorepos
 
-- Enable nested ignore file support for agents that support it
-- Use scoped exports to minimize context per scope
-- Test that each scope's agent only loads relevant rules
+- Enable nested ignore file support for agents that support it.
+- Use scoped exports to minimize context per scope.
+- Test that each scope's agent only loads relevant rules; also check nested paths from `nested_location`.
 
 ## Troubleshooting
 
@@ -230,11 +279,13 @@ To remove AlignTrue-managed patterns from ignore files:
    cat .cursorignore
    ```
 
-2. Check ignore file syntax (should match `.gitignore` syntax)
+2. Check ignore file syntax (should match `.gitignore` syntax).
 
-3. Restart your agent/IDE to reload ignore rules
+3. If using scopes or `nested_location`, also check ignore files in those directories.
 
-4. Check agent-specific settings (e.g., Cursor's "Hierarchical Cursor Ignore")
+4. Restart your agent/IDE to reload ignore rules.
+
+5. Check agent-specific settings (e.g., Cursor's "Hierarchical Cursor Ignore").
 
 ### Ignore file not being created
 
@@ -277,7 +328,7 @@ AlignTrue will update ignore files to match the new priority.
 
 ## Related documentation
 
-- [Sync behavior](/docs/03-concepts/sync-behavior)
-- [Scopes](/docs/02-customization/scopes)
-- [Agent support](/docs/04-reference/agent-support)
-- [Configuration reference](/docs/04-reference/config-reference)
+- [Sync behavior](./sync-behavior)
+- [Scopes](../02-customization/scopes)
+- [Agent support](../04-reference/agent-support)
+- [Configuration reference](../04-reference/config-reference)

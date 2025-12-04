@@ -83,7 +83,7 @@ In team mode, mode is determined by the presence of `config.team.yaml`, not by a
 
 **Type:** `array of strings`
 
-**Default:** `["cursor", "agents"]`
+**Default:** `["cursor", "agents"]` (auto-filled if omitted)
 
 **Required:** Yes (at least one)
 
@@ -96,7 +96,7 @@ exporters:
   - vscode-mcp
 ```
 
-See [Agent Support](/docs/04-reference/agent-support) for all 43 available exporters.
+See [Agent Support](/docs/04-reference/agent-support) for all 50 available exporters.
 
 ### sources
 
@@ -118,43 +118,36 @@ sources:
 
 **Type:** `object`
 
-**Default:** Mode-specific (see below)
-
 Controls sync behavior and optional features.
 
 ```yaml
 sync:
-  scope_prefixing: "auto" # Scope prefixes in exports (off/auto/always)
-  auto_manage_ignore_files: "prompt" # Auto-manage .gitignore and ignore files
-  ignore_file_priority: "native" # How to prioritize ignore files
-  custom_format_priority: {} # Custom format priorities for conflict resolution
+  source_order: [] # Optional rule order by basename
+  source_markers: auto # auto | always | never
+  content_mode: auto # auto | inline | links
+  auto_manage_ignore_files: prompt # prompt | true | false (defaults effectively to true)
+  cleanup: all # all | managed
 ```
+
+#### sync.source_order
+
+Custom ordering of rule files by basename. When unset, rules are processed alphabetically.
+
+#### sync.source_markers
+
+`auto` (default) shows source markers only when multiple sources are merged; `always` forces markers; `never` omits them.
+
+#### sync.content_mode
+
+`auto` (default) inlines a single rule and uses links when there are multiple; `inline` always embeds; `links` always links.
 
 #### sync.auto_manage_ignore_files
 
-**Type:** `boolean` | `"prompt"`
+`prompt` asks interactively before writing ignore files; `true` always writes; `false` never writes. If unset, CLI behavior defaults to `true` (no prompt).
 
-**Default:** `"prompt"`
+#### sync.cleanup
 
-Automatically manage `.gitignore` and agent-specific ignore files to prevent duplicate rules across formats.
-
-#### sync.ignore_file_priority
-
-**Type:** `string`
-
-**Values:** `"native"` | `"custom"`
-
-**Default:** `"native"`
-
-How to handle conflicting ignore file settings when multiple exporters have different formats.
-
-#### sync.custom_format_priority
-
-**Type:** `object`
-
-**Default:** `{}`
-
-Custom priority order for formats when conflicts occur. Example: `{ "agents-md": "cursor" }` makes Cursor format preferred over AGENTS.md.
+`all` (default) removes all files matching agent patterns when formats change; `managed` removes only files previously created by AlignTrue.
 
 ## Agent detection
 
@@ -220,6 +213,10 @@ aligntrue exporters detect
 **Default:** Mode-specific
 
 Feature flags for optional modules.
+
+- Solo: lockfile `false`, bundle `false`, checks `true`, mcp `false`
+- Team: lockfile `true`, bundle `true`, checks `true`, mcp `false`
+- Enterprise: lockfile `true`, bundle `true`, checks `true`, mcp `true`
 
 ```yaml
 modules:
@@ -306,11 +303,17 @@ Controls which sections are protected as managed content and how they are docume
 
 ```yaml
 managed:
+  files:
+    - AGENTS.md
   sections:
     - "Security Standards"
     - "Code Review Checklist"
   source_url: "https://github.com/company/rules"
 ```
+
+#### managed.files
+
+List of full file paths to protect from direct edits (e.g., `AGENTS.md`).
 
 #### managed.sections
 
@@ -388,7 +391,13 @@ performance:
 
 **Type:** `object`
 
-**Default:** `{ mode: "ignore" }`
+**Defaults:**
+
+- `mode`: `ignore` (solo/team), `commit` (enterprise)
+- `branch_check_interval`: `86400` seconds
+- `tag_check_interval`: `604800` seconds
+- `offline_fallback`: `true`
+- `auto_gitignore`: `auto`
 
 Git integration settings.
 
@@ -398,6 +407,102 @@ git:
   per_exporter:
     cursor: commit
     agents: ignore
+  branch_check_interval: 86400
+  tag_check_interval: 604800
+  offline_fallback: true
+  auto_gitignore: auto # auto | always | never
+```
+
+### export
+
+**Type:** `object`
+
+Controls mode hints in non-Cursor formats and token limits.
+
+```yaml
+export:
+  mode_hints:
+    default: metadata_only # off | metadata_only | hints | native
+    overrides:
+      agents: off
+  max_hint_blocks: 20
+  max_hint_tokens: 1600
+```
+
+### remotes / remote_backup
+
+**Type:** `object`
+
+Configure remote backups of `.aligntrue/rules/` to git repositories.
+
+```yaml
+remote_backup:
+  default:
+    url: git@github.com:org/rules-backup.git
+    branch: main
+    path: rules/
+    auto: true
+  additional:
+    - id: security
+      url: git@github.com:org/security-rules.git
+      include:
+        - security/**
+```
+
+### overlays
+
+**Type:** `object`
+
+Declarative modifications to upstream rules.
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=authn]"
+      set:
+        severity: MUST
+```
+
+### plugs
+
+**Type:** `object`
+
+Template slot fills for rules.
+
+```yaml
+plugs:
+  fills:
+    service_name: checkout
+```
+
+### approval
+
+**Type:** `object`
+
+Approval workflow for team mode.
+
+```yaml
+approval:
+  internal: pr_approval
+  external: pr_approval
+```
+
+### mcp
+
+**Type:** `object`
+
+Model Context Protocol server definitions.
+
+```yaml
+mcp:
+  servers:
+    - name: aligntrue
+      command: npx
+      args:
+        - "@aligntrue/mcp-server"
+      env:
+        NODE_ENV: production
+      disabled: false
 ```
 
 ## Example configurations

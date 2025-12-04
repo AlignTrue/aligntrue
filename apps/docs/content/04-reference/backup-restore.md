@@ -1,20 +1,20 @@
 ---
 title: "Backup & restore"
-description: "Mandatory automatic backup functionality protects configuration and rules. Backups are created before every destructive operation and cannot be disabled."
+description: "Safety backups protect configuration and rules. Sync attempts a safety backup (skipped on dry-run); restores make a temporary rollback point. Auto-cleanup is age-based."
 ---
 
 # Backup & restore
 
-AlignTrue creates automatic backups before every destructive operation to protect your configuration and rules. **Backups are mandatory and cannot be disabled** - this ensures you can always recover from mistakes.
+AlignTrue protects your rules with local safety backups. Sync attempts to create a backup before writing agent files (skipped on `--dry-run`), and restore operations create a temporary rollback backup. Backup creation can fail (for example, if permissions block `.aligntrue/.backups/`); sync will continue but warn you.
 
 ## Safety first
 
 AlignTrue follows a safety-first approach:
 
-1. **Always preview first**: Use `--dry-run` to see what will change
-2. **Automatic backups**: Every sync creates a timestamped backup
-3. **Easy restore**: Use `aligntrue revert` to undo changes with preview
-4. **Age-based retention**: Backups older than 30 days are automatically cleaned up
+1. **Always preview first**: Use `--dry-run` to see what will change (no backup is created)
+2. **Safety backups**: Sync attempts a timestamped backup before writing agent files (continues with a warning if backup fails)
+3. **Easy restore**: Use `aligntrue revert` to undo changes with preview; restore creates its own temporary rollback backup
+4. **Age-based retention**: Backups older than 30 days are cleaned up after sync (unless you set `retention_days: 0`)
 
 ## Quick start
 
@@ -60,7 +60,7 @@ aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 
 ## Configuration
 
-Backups are mandatory. You can only control **retention** (how old backups can be):
+Backups are always attempted. You can only control **retention** (how old backups can be):
 
 ```yaml
 # .aligntrue/config.yaml
@@ -73,9 +73,9 @@ backup:
 
 - **`retention_days`** (number): How many days to keep backups
   - Default: 30
-  - Minimum: 0 (manual cleanup only)
+  - Minimum: 0 (disables auto-cleanup)
   - No maximum
-  - Backups older than this are automatically deleted after sync
+  - Backups older than this are automatically deleted after sync when `retention_days > 0`
 - **`minimum_keep`** (number): Safety floor for recent backups
   - Default: 3
   - Minimum: 1
@@ -88,15 +88,15 @@ backup:
 
 **What you cannot configure:**
 
-- Backups cannot be disabled (safety requirement)
-- All destructive operations create backups automatically
-- No way to skip backup creation
+- Safety backups are always attempted before sync; there is no flag to opt out (sync continues if backup fails)
+- Restore always creates a temporary rollback backup
+- Agent-file inclusion depends on exporter discovery; see below
 
 ## CLI commands
 
 ### `aligntrue sync`
 
-Every sync creates a backup automatically:
+Every sync attempts a safety backup automatically (skipped on `--dry-run`):
 
 ```bash
 $ aligntrue sync
@@ -106,6 +106,8 @@ $ aligntrue sync
 ✔ Syncing to agents
 ✔ Wrote 3 files
 ```
+
+If backup creation fails (for example, permission errors), sync continues with a warning.
 
 To restore:
 
@@ -228,13 +230,34 @@ aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 
 Manually trigger cleanup:
 
-```bash
+````bash
 # Clean up backups older than configured retention_days
 aligntrue backup cleanup
 
 **Automatic cleanup:**
 
-After every successful sync, AlignTrue automatically cleans up old backups based on your `retention_days` setting. Manual cleanup is rarely needed.
+After every successful sync, AlignTrue automatically cleans up old backups based on your `retention_days` setting when `retention_days > 0`. If you set `retention_days: 0`, auto-cleanup is disabled and `aligntrue backup cleanup` will exit with a message; delete old backups manually if needed.
+
+### Remote backup (git)
+
+Use git remotes to mirror `.aligntrue/rules`:
+
+```bash
+# Configure a remote backup repo
+aligntrue backup setup
+
+# Push rules to all configured remotes
+aligntrue backup push
+
+# See configured remotes and status
+aligntrue backup status
+````
+
+Notes:
+
+- Remote backup pushes the `.aligntrue/rules/` source of truth (agent exports are not pushed).
+- Supports `remotes` or legacy `remote_backup` config blocks.
+- `--dry-run` shows what would be pushed; `--force` pushes even when no changes are detected.
 
 ## What gets backed up
 
@@ -245,9 +268,9 @@ After every successful sync, AlignTrue automatically cleans up old backups based
 - `.aligntrue/privacy-consent.json` - Privacy settings (if exists)
 - Any other files in `.aligntrue/` directory
 
-**Agent files (included by default):**
+**Agent files (included when discovered):**
 
-Backups include agent export files based on your configured exporters:
+Backups include agent export files when exporter outputs are discovered:
 
 - `AGENTS.md` - Universal agent format
 - `.cursor/rules/*.mdc` - Cursor rules
@@ -255,7 +278,7 @@ Backups include agent export files based on your configured exporters:
 - `.clinerules/*.md`, `.amazonq/rules/*.md`, etc. - Multi-file formats
 - Any other files written by configured exporters
 
-This ensures you can recover your complete agent setup if something goes wrong.
+If exporter manifests cannot be discovered (e.g., missing build artifacts), agent files may be skipped. Check backup output to confirm what was captured.
 
 **Not backed up:**
 
@@ -284,7 +307,7 @@ manifest.json
 config.yaml
 .rules.yaml
 
-````
+```
 
 ### Manifest format
 
@@ -304,7 +327,7 @@ Each backup includes a `manifest.json`:
   "action": "pre-sync",
   "mode": "solo"
 }
-````
+```
 
 ### Timestamp format
 
@@ -561,18 +584,7 @@ Backups are local (not in lockfile):
 
 ## Performance
 
-Backup operations are fast:
-
-- **Create:** ~10-50ms for typical configs
-- **Restore:** ~20-100ms with atomic operation
-- **List:** ~5-20ms directory scan
-- **Cleanup:** ~5-10ms per backup removed
-
-Storage footprint:
-
-- ~2-10KB per backup (config + rules + agent files)
-- 20 backups (default): ~40-200KB
-- Negligible compared to `.cache/` or node_modules
+Backups are local file copies of `.aligntrue/` (plus agent exports when discovered) and are typically fast and small for common rule sets. Cleanup removes old backups based on your retention settings.
 
 ## Security
 

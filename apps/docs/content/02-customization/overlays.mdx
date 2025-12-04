@@ -54,6 +54,8 @@ aligntrue sync
 
 **Result:** `no-console-log` now fails CI instead of warning, with your customization preserved when upstream changes.
 
+Overlays apply during sync: they adjust the in-memory IR and the generated exports/lock hashes. The `.aligntrue/rules/*.md` files you author stay untouched by overlays.
+
 **On this page:** [When to Use](#when-to-use-overlays-vs-plugs-vs-forks) · [Overlay Anatomy](#overlay-anatomy) · [Selectors](#selector-strategies) · [Scenarios](#scenarios) · [Performance](#performance-characteristics)
 
 ## When to use overlays vs plugs vs forks
@@ -908,12 +910,12 @@ See [Troubleshooting Overlays](/docs/05-troubleshooting/overlays) for comprehens
 
 ### Understanding what overlays affect
 
-Overlays modify the canonical IR (`.aligntrue/rules`) and affect **behavior** of checks and linting, even if the changes aren't visible in markdown exports.
+Overlays modify the IR during sync (in memory) and affect **behavior** of checks and linting, even if the changes aren't visible in markdown exports. The source files you author in `.aligntrue/rules/*.md` remain unchanged.
 
 **Example:**
 
 - Overlay changes `severity: "warning"` → `severity: "error"`
-- IR file `.aligntrue/rules` now has `severity: error`
+- In-memory IR at sync time now uses `severity: error` (source file stays the same)
 - Check behavior changes (errors fail CI instead of warnings)
 - Exported AGENTS.md still shows `## Rule Name` (no severity indicator)
 
@@ -934,11 +936,7 @@ aligntrue override status
 aligntrue override diff
 # Shows: Original → Modified with overlay applied
 
-# 3. Inspect the canonical IR directly
-cat .aligntrue/rules | grep -A 5 "your-rule-id"
-# Shows: severity: "error" (modified by overlay)
-
-# 4. Check CLI output during sync
+# 3. Check CLI output during sync
 aligntrue sync
 # Output shows: ✓ Applied 1 overlay to rules
 ```
@@ -947,10 +945,10 @@ aligntrue sync
 
 If you don't see severity changes in AGENTS.md or other exports, this is **expected**. Here's why:
 
-- **IR is canonical:** `.aligntrue/rules` contains overlay-modified content
-- **Exports are simplified:** Markdown formats prioritize readability
-- **Behavior is affected:** Checks use the modified IR behavior
-- **Verification:** Use `aligntrue override diff` and `aligntrue override status` to confirm
+- **Source stays unchanged:** `.aligntrue/rules/*.md` remains the authored source; overlays do not rewrite these files.
+- **IR is in memory:** Overlays apply during sync to the in-memory IR and exports/lock hashes.
+- **Exports are simplified:** Markdown formats prioritize readability.
+- **Verification:** Use `aligntrue override diff/status` to confirm, and use inline content mode if you need metadata in exports.
 
 **To verify overlays are affecting checks:**
 
@@ -975,12 +973,12 @@ Overlays are working correctly if:
 
 - ✅ `aligntrue override status` shows "Healthy: yes"
 - ✅ `aligntrue override diff` shows the change applied
-- ✅ `.aligntrue/rules` contains the modified value
+- ✅ Exports/lock hashes reflect the overlay (or inline content mode shows metadata)
 - ✅ Check behavior changes as expected
 
 ## Overlay metadata visibility
 
-Overlays modify the IR (intermediate representation) metadata, but this metadata is not visible in all export formats. Understanding where overlay changes appear helps avoid confusion.
+Overlays modify the IR (intermediate representation) metadata during sync, but this metadata is not visible in all export formats. Understanding where overlay changes appear helps avoid confusion.
 
 ### Where overlay changes are visible
 
@@ -989,7 +987,6 @@ Overlays modify the IR (intermediate representation) metadata, but this metadata
 | Lockfiles (team mode)       | Always visible              | `overlay_hash` and modified values stored    |
 | `aligntrue override status` | Always visible              | Shows active overlays and their effects      |
 | `aligntrue override diff`   | Always visible              | Shows before/after comparison                |
-| `.aligntrue/rules` (IR)     | Always visible              | Contains modified metadata                   |
 | Inline content mode exports | Visible in rendered content | Full rule content includes metadata          |
 | JSON/structured exports     | Visible in metadata fields  | Machine-readable format preserves all fields |
 
@@ -1013,7 +1010,7 @@ When using the default `content_mode: auto` or `content_mode: links`, AGENTS.md 
 
 These links point to the canonical rules but don't embed metadata like `severity`. The overlay still affects:
 
-1. **Check behavior** - The IR has the modified severity
+1. **Check behavior** - The in-memory IR has the modified severity (even if exports omit metadata)
 2. **Lockfile hashes** - Team mode tracks the overlay
 3. **CLI commands** - `aligntrue override status` shows the change
 
@@ -1030,9 +1027,8 @@ aligntrue override status
 aligntrue override diff 'rule[id=security]'
 # Shows: severity: "warning" → severity: "error"
 
-# 3. Check the IR directly
-grep -A 5 "fingerprint: security" .aligntrue/rules/*.md
-# Shows: severity: error (modified by overlay)
+# 3. If you need metadata in exports, use inline mode
+aligntrue sync --content-mode inline
 ```
 
 ### Using inline mode to see metadata

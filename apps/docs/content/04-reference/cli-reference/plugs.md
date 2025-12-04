@@ -14,9 +14,9 @@ aligntrue plugs list [--config <path>]
 
 **Options:**
 
-| Flag              | Description            | Default     |
-| ----------------- | ---------------------- | ----------- |
-| `--config <path>` | Custom rules file path | `AGENTS.md` |
+| Flag              | Description             | Default                  |
+| ----------------- | ----------------------- | ------------------------ |
+| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 
 **What it shows:**
 
@@ -74,19 +74,18 @@ Preview plug resolution with current fills (dry-run mode).
 **Usage:**
 
 ```bash
-aligntrue plugs resolve [--config <path>] [--dry-run]
+aligntrue plugs resolve [--config <path>]
 ```
 
 **Options:**
 
-| Flag              | Description                       | Default     |
-| ----------------- | --------------------------------- | ----------- |
-| `--config <path>` | Custom rules file path            | `AGENTS.md` |
-| `--dry-run`       | Preview without writing (default) | `true`      |
+| Flag              | Description             | Default                  |
+| ----------------- | ----------------------- | ------------------------ |
+| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 
 **What it does:**
 
-1. Loads rules from config file
+1. Loads rules from `.aligntrue/rules/` using the provided config
 2. Resolves all `[[plug:key]]` references with current fills
 3. Inserts TODO blocks for unresolved required plugs
 4. Displays resolved text and unresolved plug list
@@ -130,8 +129,38 @@ Examples: John Doe
 
 ---
 
+## `aligntrue plugs validate`
+
+Validate plugs: required slots without fills, undeclared slots, and unresolved references.
+
+**Usage:**
+
+```bash
+aligntrue plugs validate [--config <path>]
+```
+
+**Options:**
+
+| Flag              | Description             | Default                  |
+| ----------------- | ----------------------- | ------------------------ |
+| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+- Fails if required slots lack fills
+- Warns when fills have no declared slots
+- Fails on `[[plug:key]]` references without declared slots
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Validation failed or config load error
+
+---
+
 ## `aligntrue plugs set`
 
+Set a repo-local fill value with format validation.
 Set a repo-local fill value with format validation.
 
 **Usage:**
@@ -147,15 +176,15 @@ aligntrue plugs set <key> <value> [--config <path>]
 
 **Options:**
 
-| Flag              | Description            | Default     |
-| ----------------- | ---------------------- | ----------- |
-| `--config <path>` | Custom rules file path | `AGENTS.md` |
+| Flag              | Description             | Default                  |
+| ----------------- | ----------------------- | ------------------------ |
+| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 
 **What it does:**
 
 1. Validates key exists as declared slot
 2. Validates value matches slot format (command, text, file, url)
-3. Writes fill to `plugs.fills` section in rules file
+3. Writes fill to `plugs.fills` in `.aligntrue/config.yaml`
 4. Preserves existing file structure and formatting
 
 **Format validation:**
@@ -186,7 +215,7 @@ aligntrue plugs set config.file "config/settings.json"
 ```
 ✓ Set plug fill: test.cmd = "pnpm test"
 
-Updated: AGENTS.md
+Updated: .aligntrue/config.yaml
 
 Next step:
   Run: aligntrue sync
@@ -196,6 +225,7 @@ Next step:
 
 - `0` - Success
 - `1` - Validation error (invalid key, format mismatch, file not found)
+- `2` - Usage error (missing arguments)
 
 **Common errors:**
 
@@ -212,3 +242,33 @@ Next step:
 ```
 
 **See also:** [Plugs Guide](/docs/02-customization/plugs) for format requirements
+
+---
+
+## `aligntrue plugs unset`
+
+Remove a configured plug fill from `.aligntrue/config.yaml`.
+
+**Usage:**
+
+```bash
+aligntrue plugs unset <key> [--config <path>]
+```
+
+**Options:**
+
+| Flag              | Description             | Default                  |
+| ----------------- | ----------------------- | ------------------------ |
+| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Validates the fill exists
+2. Removes the fill (or the entire plugs section if it was the last fill)
+3. Preserves other configuration
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - No fill found for the slot
+- `2` - Usage error (missing slot name)

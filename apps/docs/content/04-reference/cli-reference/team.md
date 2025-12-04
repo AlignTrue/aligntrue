@@ -64,13 +64,13 @@ aligntrue onboard [options]
 
 ```bash
 # Basic onboarding checklist
-aln onboard
+aligntrue onboard
 
 # Include CI check results
-aln onboard --ci checks.sarif
+aligntrue onboard --ci checks.sarif
 
 # Use custom config
-aln onboard --config custom-config.yaml
+aligntrue onboard --config custom-config.yaml
 ```
 
 **Checklist includes:**
@@ -109,7 +109,7 @@ Actionable next steps:
    → Run: aligntrue check
 ```
 
-**Exit codes:** `0` (success)
+**Exit codes:** `0` (success), `1` (error)
 
 **See:** [Onboarding guide](/docs/04-reference/cli-reference/onboard)
 

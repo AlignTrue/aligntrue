@@ -17,8 +17,8 @@ AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run s
 2. **Check for team mode** - if enabled, validate lockfile
 3. **Load rules** from `.aligntrue/rules/*.md` (your source of truth)
 4. **Detect edits** by checking modification times (mtime)
-5. **Create backup** (if enabled) - backs up both internal state and agent files
-6. **Merge to IR** - your rules are loaded into `.aligntrue/rules`
+5. **Create safety backup** (always, unless `--dry-run`) - backs up rules and agent files
+6. **Merge to IR** - rules load into an in-memory IR (no separate IR file on disk)
 7. **Export to all agents** - IR syncs to Cursor, AGENTS.md, VS Code, etc. (read-only exports)
 8. **Done** - no interaction required
 
@@ -43,7 +43,7 @@ AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run s
 **One-way flow:**
 
 ```
-.aligntrue/rules/*.md → IR (.aligntrue/rules) → all configured agents (read-only)
+.aligntrue/rules/*.md → in-memory IR → all configured agents (read-only)
 ```
 
 **Why unidirectional?**
@@ -163,8 +163,8 @@ When you have multiple files in `.aligntrue/rules/` (e.g., `global.md`, `backend
 AlignTrue synchronizes rules between three locations:
 
 1. **Rules Directory** - `.aligntrue/rules/*.md` (your editable source, natural markdown with YAML frontmatter)
-2. **Intermediate Representation (IR)** - `.aligntrue/rules` (internal, auto-generated, pure YAML format with section fingerprints)
-3. **Team Lockfile** - `.aligntrue/lock.json` (team mode only, tracks section fingerprints for approval)
+2. **Intermediate Representation (IR)** - in-memory during sync (merged rules, section fingerprints; not written to disk)
+3. **Team artifacts** - `.aligntrue/lock.json` and `.aligntrue/bundle.yaml` (team mode only, track approved fingerprints and bundle metadata)
 
 The sync engine maintains consistency with one-way flow from rules directory to all exports.
 
@@ -187,7 +187,7 @@ sequenceDiagram
     participant User
     participant CLI as aligntrue sync
     participant Rules as .aligntrue/rules/*.md
-    participant IR as .aligntrue/rules
+    participant IR as In-memory IR
     participant Cursor as .cursor/rules/*.mdc
     participant AGENTS as AGENTS.md
     participant MCP as .vscode/mcp.json
@@ -208,7 +208,7 @@ sequenceDiagram
 2. Read all `*.md` files from `.aligntrue/rules/`
 3. Parse sections from rule files
 4. Validate against JSON Schema
-5. Merge into IR (`.aligntrue/rules`)
+5. Merge into in-memory IR
 6. Resolve scopes and merge rules
 7. Export to each enabled agent (Cursor, AGENTS.md, etc.)
 8. Write agent files atomically (temp+rename)
@@ -255,7 +255,7 @@ Your rules in `.aligntrue/rules/` define what IR contains. Agent files are expor
 
 If you edit both rules and agent files:
 
-- `aligntrue sync` → Rules overwrite agent files (no prompt)
+- `aligntrue sync` → Rules overwrite agent files (after conflict handling)
 
 **Recommended workflow:**
 
@@ -275,7 +275,7 @@ aligntrue sync
 #
 # This file was manually edited since last sync.
 # Backing up to .aligntrue/.backups/files/AGENTS.2025-01-15T10-30-45.md.bak
-# Overwriting with current rules from IR.
+# Prompt: overwrite / keep / abort (or auto-overwrite if --force/--yes)
 ```
 
 **Why**: Agent files are under AlignTrue's control. Manual edits are overwritten to maintain consistency.
@@ -301,17 +301,23 @@ Choice:
 
 **Checksum tracking:**
 
-- AlignTrue computes SHA-256 hash of each generated file
-- Stores hash in `.aligntrue/.checksums.json`
-- Compares before overwriting
+- AlignTrue computes a SHA-256 hash of each generated file per sync
+- Hashes live in memory during the run to detect manual edits
+- On mismatch, conflict handling decides whether to overwrite, keep, or abort
 
-### Automatic overwriting of agent files
+**Conflict handling:**
 
-Agent files are automatically overwritten during sync if manually edited:
+- Interactive (default): prompt with options to view, overwrite, keep, or abort
+- `--yes` / `--force`: overwrite without prompting
+- `--non-interactive` without force: aborts on conflict to avoid clobbering edits
+
+### Overwriting and backups for agent files
+
+Agent files are overwritten only after conflict handling (prompt or `--force/--yes`):
 
 1. **Before overwriting**: Original content is backed up to `.aligntrue/.backups/files/` with a timestamp
 2. **During sync**: File is overwritten with clean IR content (no merge, no user edits preserved)
-3. **No --force needed**: This happens automatically for agent files
+3. **Restoring**: Use `aligntrue backup restore --timestamp <ts>` to restore a backup; backups are cleaned up by retention policy (`retention_days`, `minimum_keep`)
 
 **Example:**
 

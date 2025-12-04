@@ -1,6 +1,6 @@
 ---
 title: MCP support
-description: Complete guide to AlignTrue's Model Context Protocol (MCP) implementation across 14+ AI coding agents
+description: Complete guide to AlignTrue's Model Context Protocol (MCP) implementation across 14 AI coding agents
 ---
 
 import { Callout } from "nextra/components";
@@ -15,7 +15,7 @@ import { Callout } from "nextra/components";
 
 # MCP support
 
-AlignTrue supports **Model Context Protocol (MCP)** configuration across **14+ AI coding agents**. MCP enables AI agents to connect to external tools, data sources, and services through a standardized protocol.
+AlignTrue supports **Model Context Protocol (MCP)** configuration for **15 AI coding agents** via **14 MCP exporters**. MCP enables AI agents to connect to external tools, data sources, and services through a standardized protocol.
 
 ## What is MCP?
 
@@ -30,24 +30,28 @@ AlignTrue automatically generates agent-specific MCP configuration files from yo
 
 ## Supported MCP agents
 
-AlignTrue exports MCP configuration for 14 agents across 6 format types:
+AlignTrue exports MCP configuration via 14 MCP exporters covering 15 agents across three format families:
+
+- **JSON (11 exporters)**: Most agents, including VS Code, Cursor, Amazon Q, and Roo Code
+- **YAML (2 exporters)**: Goose and Trae AI
+- **Directory-structured (1 exporter)**: Junie uses a nested MCP layout
 
 ### JSON-based MCP configurations
 
-| Agent           | Exporter          | Config File                 | Notes                    |
-| --------------- | ----------------- | --------------------------- | ------------------------ |
-| GitHub Copilot  | `vscode-mcp`      | `.vscode/mcp.json`          | VS Code integration      |
-| Cursor          | `cursor-mcp`      | `.cursor/mcp.json`          | Cursor-specific setup    |
-| Claude Code     | `root-mcp`        | `.mcp.json`                 | Root-level config        |
-| Aider           | `root-mcp`        | `.mcp.json`                 | Shared with Claude Code  |
-| Windsurf        | `windsurf-mcp`    | `.windsurf/mcp_config.json` | Windsurf-specific format |
-| Amazon Q        | `amazonq-mcp`     | `.amazonq/mcp.json`         | AWS integration          |
-| Firebase Studio | `firebase-mcp`    | `.idx/mcp.json`             | Firebase IDX platform    |
-| KiloCode        | `kilocode-mcp`    | `.kilocode/mcp.json`        | KiloCode-specific        |
-| Roo Code        | `roocode-mcp`     | `.roo/mcp.json`             | Roo Code format          |
-| Amp             | `amp-mcp`         | `.amp/settings.json`        | Project-level settings   |
-| AugmentCode     | `augmentcode-mcp` | `.augment/settings.json`    | Augment platform         |
-| Kiro            | `kiro-mcp`        | `.kiro/settings/mcp.json`   | Kiro settings directory  |
+| Agent           | Exporter          | Config File                 | Notes                                    |
+| --------------- | ----------------- | --------------------------- | ---------------------------------------- |
+| GitHub Copilot  | `vscode-mcp`      | `.vscode/mcp.json`          | VS Code integration                      |
+| Cursor          | `cursor-mcp`      | `.cursor/mcp.json`          | Cursor-specific setup                    |
+| Claude Code     | `root-mcp`        | `.mcp.json`                 | Shared root format (also used by Aider)  |
+| Aider           | `root-mcp`        | `.mcp.json`                 | Shared root format (also used by Claude) |
+| Windsurf        | `windsurf-mcp`    | `.windsurf/mcp_config.json` | Windsurf-specific format                 |
+| Amazon Q        | `amazonq-mcp`     | `.amazonq/mcp.json`         | AWS integration                          |
+| Firebase Studio | `firebase-mcp`    | `.idx/mcp.json`             | Firebase IDX platform                    |
+| KiloCode        | `kilocode-mcp`    | `.kilocode/mcp.json`        | KiloCode-specific                        |
+| Roo Code        | `roocode-mcp`     | `.roo/mcp.json`             | Roo Code format                          |
+| Amp             | `amp-mcp`         | `.amp/settings.json`        | Project-level settings                   |
+| AugmentCode     | `augmentcode-mcp` | `.augment/settings.json`    | Augment platform                         |
+| Kiro            | `kiro-mcp`        | `.kiro/settings/mcp.json`   | Kiro settings directory                  |
 
 ### YAML-based MCP configurations
 
@@ -80,6 +84,17 @@ mcp:
 ```
 
 This central definition is propagated to agent-specific MCP configuration files automatically during sync.
+
+## Quick start: generate MCP configs
+
+1. **Define servers once** in `.aligntrue/config.yaml` under `mcp.servers` (see example above).
+2. **Run** `aligntrue sync` from the repo root to generate all agent configs deterministically.
+3. **Open outputs** in agent locations:
+   - `.vscode/mcp.json` (GitHub Copilot)
+   - `.cursor/mcp.json` (Cursor)
+   - `.mcp.json` (root format for Claude Code/Aider)
+   - Agent-specific paths like `.windsurf/mcp_config.json`, `.amazonq/mcp.json`, `.roo/mcp.json`, `.kiro/settings/mcp.json`
+   - For Trae AI, `trae_config.yaml` lives at the repo root—add it to `.gitignore` if it should remain local-only.
 
 ## Exporter capabilities
 
