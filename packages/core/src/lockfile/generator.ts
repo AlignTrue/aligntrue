@@ -84,9 +84,6 @@ export function generateLockfile(
       ...(baseHash && { base_hash: baseHash }),
       ...(overlayHash && { overlay_hash: overlayHash }),
       ...(overlayHash && { result_hash: resultHash }),
-      // Team mode: Capture vendoring provenance
-      ...(align.vendor_path && { vendor_path: align.vendor_path }),
-      ...(align.vendor_type && { vendor_type: align.vendor_type }),
     };
 
     // Add plugs hashes if align has plugs (Plugs system)

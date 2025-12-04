@@ -8,7 +8,7 @@ Commands for adding and managing rule sources from git repositories, local paths
 
 ## `aligntrue add`
 
-Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. With `--link`: keep source connected for ongoing updates.
+Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. Use `add source` subcommand to keep sources connected for ongoing updates.
 
 **Usage:**
 
@@ -22,14 +22,13 @@ aligntrue add <git-url|path> [options]
 
 **Options:**
 
-| Flag        | Alias | Description                                                | Default                  |
-| ----------- | ----- | ---------------------------------------------------------- | ------------------------ |
-| `--link`    |       | Keep source connected for ongoing updates (adds to config) | `false`                  |
-| `--ref`     |       | Git ref: branch, tag, or commit SHA                        | `main`                   |
-| `--path`    |       | Path to rules within repository                            | Root                     |
-| `--yes`     | `-y`  | Non-interactive mode (keep both on conflicts)              | `false`                  |
-| `--no-sync` |       | Skip auto-sync after import                                | `false`                  |
-| `--config`  | `-c`  | Custom config file path                                    | `.aligntrue/config.yaml` |
+| Flag        | Alias | Description                                   | Default                  |
+| ----------- | ----- | --------------------------------------------- | ------------------------ |
+| `--ref`     |       | Git ref: branch, tag, or commit SHA           | `main`                   |
+| `--path`    |       | Path to rules within repository               | Root                     |
+| `--yes`     | `-y`  | Non-interactive mode (keep both on conflicts) | `false`                  |
+| `--no-sync` |       | Skip auto-sync after import                   | `false`                  |
+| `--config`  | `-c`  | Custom config file path                       | `.aligntrue/config.yaml` |
 
 **Modes:**
 
@@ -39,11 +38,11 @@ aligntrue add <git-url|path> [options]
 - Rules become your local copy
 - Source is not tracked
 
-**With `--link` mode (track source):**
+**With `source` subcommand (track source):**
 
+- Use `aligntrue add source <url>` instead
 - Adds source to config for ongoing updates
 - Rules sync with source on each `aligntrue sync`
-- Automatically detects drift
 
 **Examples:**
 
@@ -54,10 +53,10 @@ aligntrue add https://github.com/org/rules
 # Copy from local path
 aligntrue add ./path/to/rules
 
-# Keep source connected for updates
-aligntrue add https://github.com/org/rules --link
+# Keep source connected for updates (use add source)
+aligntrue add source https://github.com/org/rules
 
-# Pin to specific version
+# Pin to specific version (one-time copy)
 aligntrue add https://github.com/org/rules --ref v2.0.0
 
 # From subdirectory in repo
@@ -412,14 +411,11 @@ aligntrue sync
 ### Keep source connected
 
 ```bash
-# Add with --link to stay connected
-aligntrue add https://github.com/org/rules --link
+# Add as connected source
+aligntrue add source https://github.com/org/rules
 
 # Later, see what changed
 aligntrue sources status
-
-# Force check for updates
-aligntrue sources update https://github.com/org/rules
 
 # Sync (pulls updated rules)
 aligntrue sync

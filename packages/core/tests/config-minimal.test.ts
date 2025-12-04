@@ -380,4 +380,59 @@ describe("saveMinimalConfig", () => {
     // Empty sync object should be omitted
     expect(parsed.sync).toBeUndefined();
   });
+
+  it("preserves non-default sync settings", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {},
+      sync: {
+        source_markers: "always",
+        content_mode: "inline",
+        auto_manage_ignore_files: true,
+        ignore_file_priority: "custom",
+        custom_format_priority: { cursor: "mdc" },
+        cleanup: "auto",
+      },
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        auto_backup: false,
+        backup_on: ["sync"],
+      },
+    };
+
+    await saveMinimalConfig(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    expect(parsed.exporters).toEqual(["cursor"]);
+    // Sync section should preserve all non-default values
+    expect(parsed.sync).toEqual({
+      source_markers: "always",
+      content_mode: "inline",
+      auto_manage_ignore_files: true,
+      ignore_file_priority: "custom",
+      custom_format_priority: { cursor: "mdc" },
+      cleanup: "auto",
+    });
+  });
 });

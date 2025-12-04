@@ -17,7 +17,6 @@ export type DriftCategory =
   | "overlay" // overlay_hash differs: local overlay config changed
   | "result" // result_hash differs: unexpected application result
   | "severity_remap" // Severity remapping rules changed (Session 7)
-  | "vendorized" // Vendored align differs from source
   | "lockfile" // Lockfile bundle hash differs from current rules
   | "agent_file"; // Agent files modified after IR
 
@@ -33,8 +32,6 @@ export interface DriftFinding {
   lockfile_hash?: string;
   expected_hash?: string;
   source?: string;
-  vendor_path?: string;
-  vendor_type?: "submodule" | "subtree" | "manual";
   // Overlays system: Triple-hash details for granular drift
   base_hash?: string;
   overlay_hash?: string;
@@ -57,72 +54,10 @@ export interface DriftResult {
       overlay: number;
       result: number;
       severity_remap: number;
-      vendorized: number;
       lockfile: number;
       agent_file: number;
     };
   };
-}
-
-/**
- * Detect vendorized drift
- * Compares vendored align hash with source hash
- */
-export function detectVendorizedDrift(
-  lockfile: Lockfile,
-  basePath: string = ".",
-): DriftFinding[] {
-  const findings: DriftFinding[] = [];
-
-  for (const entry of lockfile.rules) {
-    // Skip entries without vendor info
-    if (!entry.vendor_path) {
-      continue;
-    }
-
-    // Check if vendored path exists
-    const vendorPath = join(basePath, entry.vendor_path);
-    if (!existsSync(vendorPath)) {
-      const finding: DriftFinding = {
-        category: "vendorized",
-        rule_id: entry.rule_id,
-        message: `Vendored align not found at ${entry.vendor_path}`,
-        suggestion: `Restore vendored align or run: aligntrue sync`,
-        lockfile_hash: entry.content_hash,
-        vendor_path: entry.vendor_path,
-      };
-      if (entry.vendor_type) {
-        finding.vendor_type = entry.vendor_type;
-      }
-      findings.push(finding);
-      continue;
-    }
-
-    // Check if .aligntrue.yaml exists in vendored path
-    const vendorConfigPath = join(vendorPath, ".aligntrue.yaml");
-    if (!existsSync(vendorConfigPath)) {
-      const finding: DriftFinding = {
-        category: "vendorized",
-        rule_id: entry.rule_id,
-        message: `Vendored align missing .aligntrue.yaml at ${entry.vendor_path}`,
-        suggestion: `Ensure vendor path contains valid AlignTrue align`,
-        lockfile_hash: entry.content_hash,
-        vendor_path: entry.vendor_path,
-      };
-      if (entry.vendor_type) {
-        finding.vendor_type = entry.vendor_type;
-      }
-      findings.push(finding);
-      continue;
-    }
-
-    // For now, we can't easily compute the hash of the vendored align
-    // without running the full align loader. This would be a more complex
-    // Current approach is sufficient for drift detection
-    // Detailed vendored hash comparison can be added if needed
-  }
-
-  return findings;
 }
 
 /**
@@ -391,8 +326,6 @@ export async function detectDriftForConfig(
     suggestion?: string | undefined;
     lockfile_hash?: string;
     expected_hash?: string;
-    vendor_path?: string;
-    vendor_type?: string;
   }>;
 }> {
   const configRecord = isPlainObject(config) ? config : {};
@@ -453,8 +386,6 @@ export async function detectDriftForConfig(
           suggestion?: string;
           lockfile_hash?: string;
           expected_hash?: string;
-          vendor_path?: string;
-          vendor_type?: string;
         } = {
           category: f.category,
           ruleId: f.rule_id,
@@ -464,8 +395,6 @@ export async function detectDriftForConfig(
         if (f.suggestion) entry.suggestion = f.suggestion;
         if (f.lockfile_hash) entry.lockfile_hash = f.lockfile_hash;
         if (f.expected_hash) entry.expected_hash = f.expected_hash;
-        if (f.vendor_path) entry.vendor_path = f.vendor_path;
-        if (f.vendor_type) entry.vendor_type = f.vendor_type;
         return entry;
       }),
     });
@@ -502,7 +431,6 @@ export async function detectDrift(
           overlay: 0,
           result: 0,
           severity_remap: 0,
-          vendorized: 0,
           lockfile: 0,
           agent_file: 0,
         },
@@ -524,7 +452,6 @@ export async function detectDrift(
   // Run drift detection checks
   const findings: DriftFinding[] = [];
 
-  findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));
 
   // New drift detection types
@@ -543,7 +470,6 @@ export async function detectDrift(
     result: findings.filter((f) => f.category === "result").length,
     severity_remap: findings.filter((f) => f.category === "severity_remap")
       .length,
-    vendorized: findings.filter((f) => f.category === "vendorized").length,
     lockfile: findings.filter((f) => f.category === "lockfile").length,
     agent_file: findings.filter((f) => f.category === "agent_file").length,
   };

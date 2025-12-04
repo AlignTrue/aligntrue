@@ -1,9 +1,9 @@
 ---
-title: Working with external sources
+title: External sources
 description: Add, combine, and customize rules from git repositories and other sources. One-time imports or live-connected sources.
 ---
 
-# Working with external sources
+# External sources
 
 Configure rules from external git repositories and sources. Add them as one-time imports or keep them connected to get automatic updates on every sync.
 
@@ -36,10 +36,7 @@ aligntrue add https://github.com/org/rules
 Use `aligntrue add source` to add a connected source. Rules will be fetched on each `aligntrue sync`:
 
 ```bash
-# During init (one command)
-aligntrue init --source https://github.com/org/rules --link
-
-# After init (explicit subcommand)
+# Add as connected source (updates on sync)
 aligntrue add source https://github.com/org/rules
 ```
 
@@ -51,16 +48,15 @@ aligntrue add source https://github.com/org/rules
 
 ### Quick reference
 
-| Scenario                                | Command                                    |
-| --------------------------------------- | ------------------------------------------ |
-| New project, auto-detect existing rules | `aligntrue init`                           |
-| New project, import from git repo       | `aligntrue init --source <git-url>`        |
-| New project, stay connected for updates | `aligntrue init --source <git-url> --link` |
-| Existing project, one-time import       | `aligntrue add <git-url>`                  |
-| Existing project, add as source         | `aligntrue add source <git-url>`           |
-| Add push destination (remote)           | `aligntrue add remote <git-url>`           |
-| Find untracked agent files              | `aligntrue sources detect`                 |
-| Import detected files                   | `aligntrue sources detect --import`        |
+| Scenario                                | Command                             |
+| --------------------------------------- | ----------------------------------- |
+| New project, auto-detect existing rules | `aligntrue init`                    |
+| New project, import from git repo       | `aligntrue init --source <git-url>` |
+| Existing project, one-time import       | `aligntrue add <git-url>`           |
+| Existing project, add as source         | `aligntrue add source <git-url>`    |
+| Add push destination (remote)           | `aligntrue add remote <git-url>`    |
+| Find untracked agent files              | `aligntrue sources detect`          |
+| Import detected files                   | `aligntrue sources detect --import` |
 
 ## Auto-detect existing rules
 

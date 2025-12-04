@@ -249,10 +249,6 @@ export interface Align {
   source?: string;
   source_sha?: string;
 
-  // Vendored align metadata (Team mode)
-  vendor_path?: string;
-  vendor_type?: "submodule" | "subtree" | "manual";
-
   // Catalog mode (removed from roadmap)
   tags?: string[];
   deps?: string[];

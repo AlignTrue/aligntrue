@@ -25,7 +25,7 @@ sources:
 ```
 
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
-**Team mode**: Sources are vendored and documented in lockfile; approval via git PR
+**Team mode**: Source changes documented in lockfile; approval via git PR
 
 ### Tag references (stable)
 
@@ -136,159 +136,33 @@ aligntrue privacy revoke git
 aligntrue privacy grant git
 ```
 
-## Vendoring workflows
+## Local source directories
 
-Vendor rule aligns with git submodules or subtrees for offline use and version control.
+If you want to use rules from a local directory (e.g., a git submodule or monorepo path), use `type: local` sources:
 
-### Why vendor?
+```yaml
+sources:
+  - type: local
+    path: vendor/shared-rules
+```
 
-- **Offline development** - Work without network access
-- **Version control** - Lock rules to specific commits
-- **Team review** - Rules changes appear in diffs
-- **Security** - Audit vendored code in your repo
+This works well with git submodules or subtrees if you want to manage external rules as part of your repository. AlignTrue will read rules from the local path on each sync.
 
-### Git submodule workflow
-
-**Setup:**
+**Example with git submodule:**
 
 ```bash
 # Add submodule
-git submodule add https://github.com/org/rules vendor/aligntrue-rules
+git submodule add https://github.com/org/rules vendor/shared-rules
 
-# Link with AlignTrue
-aligntrue link https://github.com/org/rules --path vendor/aligntrue-rules
+# Add to AlignTrue config
+# .aligntrue/config.yaml
+sources:
+  - type: local
+    path: vendor/shared-rules
 
-# Commit changes
-git add .gitmodules vendor/aligntrue-rules .aligntrue.lock.json
-git commit -m "feat: Vendor org rules"
+# Sync to use the rules
+aligntrue sync
 ```
-
-**Team members:**
-
-```bash
-# After git pull
-git submodule init
-git submodule update
-```
-
-**Update vendored rules:**
-
-```bash
-cd vendor/aligntrue-rules
-git pull origin main
-cd ../..
-git add vendor/aligntrue-rules
-git commit -m "chore: Update org rules to latest"
-```
-
-### Git subtree workflow
-
-**Setup:**
-
-```bash
-# Add subtree
-git subtree add --prefix vendor/aligntrue-rules https://github.com/org/rules main --squash
-
-# Link with AlignTrue
-aligntrue link https://github.com/org/rules --path vendor/aligntrue-rules
-
-# Commit changes
-git add vendor/aligntrue-rules .aligntrue.lock.json
-git commit -m "feat: Vendor org rules via subtree"
-```
-
-**Update vendored rules:**
-
-```bash
-git subtree pull --prefix vendor/aligntrue-rules https://github.com/org/rules main --squash
-```
-
-### Submodule vs Subtree
-
-| Aspect     | Submodule                         | Subtree               |
-| ---------- | --------------------------------- | --------------------- |
-| Complexity | Requires `git submodule` commands | Just `git pull`       |
-| History    | Separate history                  | Merged into main repo |
-| Team setup | `git submodule init && update`    | No extra steps        |
-| Disk space | Efficient (pointer)               | Full copy in repo     |
-| Updates    | `git submodule update`            | `git subtree pull`    |
-
-**Recommendation:** Subtrees for simplicity, submodules for space efficiency.
-
-### When to vendor vs config
-
-**Use vendoring (`aligntrue link`)** for:
-
-- Production dependencies requiring version control
-- Offline development workflows
-- Team review of rule changes in PRs
-- Security-sensitive environments needing code audits
-
-**Use config-based git sources** for:
-
-- Quick setup and adoption
-- Automatic updates on sync
-- Simpler workflow without git submodules/subtrees
-- Most common use cases
-
-### Team vendoring workflow
-
-**Initial setup (team lead):**
-
-```bash
-# 1. Add submodule
-git submodule add https://github.com/yourorg/team-rules vendor/team-rules
-
-# 2. Link with AlignTrue
-aligntrue link https://github.com/yourorg/team-rules --path vendor/team-rules
-
-# 3. Commit
-git add .gitmodules vendor/team-rules .aligntrue.lock.json
-git commit -m "feat: Vendor team rules"
-git push
-```
-
-**Team member setup:**
-
-```bash
-# 1. Pull changes
-git pull
-
-# 2. Initialize submodule
-git submodule init
-git submodule update
-
-# 3. Verify
-aligntrue sync --dry-run
-```
-
-**Update workflow (any team member):**
-
-```bash
-# 1. Update submodule
-cd vendor/team-rules
-git pull origin main
-cd ../..
-
-# 2. Test locally
-aligntrue sync --dry-run
-
-# 3. Commit and PR
-git add vendor/team-rules
-git commit -m "chore: Update team rules to latest"
-git push
-# Create PR for team review
-```
-
-### Team mode behavior
-
-In team mode, `aligntrue link` vendors the source and adds it to the lockfile:
-
-- Vendoring is an explicit manual action
-- Team reviews PR containing vendor changes
-- Lockfile documents all vendored sources
-
-No additional approval step is needed - the lockfile serves as the record.
 
 ## Troubleshooting
 
@@ -308,9 +182,10 @@ No additional approval step is needed - the lockfile serves as the record.
 # Check URL
 curl -I https://github.com/yourorg/rules
 
-# Use SSH for private repos
-git clone git@github.com:yourorg/private-rules.git vendor/rules
-aligntrue link git@github.com:yourorg/private-rules.git --path vendor/rules
+# Use SSH for private repos in config
+# sources:
+#   - type: git
+#     url: git@github.com:yourorg/private-rules.git
 ```
 
 ### Authentication failures

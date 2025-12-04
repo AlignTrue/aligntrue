@@ -8,22 +8,9 @@ import type {
   RemotesConfig,
   RemoteDestination,
   CustomRemoteDestination,
-  // Legacy types for backward compatibility
-  RemoteBackupConfig,
-  RemoteBackupDestination,
-  AdditionalBackupDestination,
 } from "../config/types.js";
 
-export type {
-  RemotesConfig,
-  RemoteDestination,
-  CustomRemoteDestination,
-  // Legacy re-exports
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  RemoteBackupConfig,
-  RemoteBackupDestination,
-  AdditionalBackupDestination,
-};
+export type { RemotesConfig, RemoteDestination, CustomRemoteDestination };
 
 /**
  * Rule scope type

@@ -65,8 +65,6 @@ export async function executeExporters(
       ...(ir.owner && { owner: ir.owner }),
       ...(ir.source && { source: ir.source }),
       ...(ir.source_sha && { source_sha: ir.source_sha }),
-      ...(ir.vendor_path && { vendor_path: ir.vendor_path }),
-      ...(ir.vendor_type && { vendor_type: ir.vendor_type }),
       ...(ir.tags && { tags: ir.tags }),
       ...(ir.deps && { deps: ir.deps }),
       ...(ir.scope && { scope: ir.scope }),

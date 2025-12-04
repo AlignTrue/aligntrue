@@ -392,7 +392,7 @@ remotes:
 Add the repository as a source to get ongoing updates:
 
 ```bash
-aligntrue add --link https://github.com/username/shared-rules.git
+aligntrue add source https://github.com/username/shared-rules.git
 ```
 
 Or manually add to config:

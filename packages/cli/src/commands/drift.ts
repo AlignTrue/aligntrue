@@ -3,13 +3,12 @@
  *
  * Enables:
  * - Team alignment monitoring (upstream changes)
- * - Vendorized align integrity checking
  * - Severity remapping policy validation
  * - CI integration with --gates flag
  *
  * Strategy:
  * - Compare lockfile hashes against allowed sources
- * - Categorize drift types: upstream, severity_remap, vendorized
+ * - Categorize drift types: upstream, severity_remap, lockfile, agent_file
  * - Non-zero exit only with --gates flag (CI-friendly)
  * - Multiple output formats: human, JSON, SARIF
  */
@@ -38,8 +37,6 @@ type DriftDetectionResult = {
     suggestion?: string | undefined;
     lockfile_hash?: string | undefined;
     expected_hash?: string | undefined;
-    vendor_path?: string | undefined;
-    vendor_type?: string | undefined;
   }>;
 };
 
@@ -99,7 +96,6 @@ DRIFT TYPES
   agent_file      Agent files modified after IR (team mode)
   upstream        Rule content changed in allowed sources
   severity_remap  Severity remapping policy violations
-  vendorized      Vendored align integrity issues
 
 COMPARISON
   Use 'aligntrue check --ci' to validate schema/lockfile consistency.
@@ -225,16 +221,6 @@ function outputHuman(results: DriftDetectionResult): void {
         }
       }
 
-      // For vendorized drift, show vendor info
-      if (category === "vendorized" && (item.vendor_path || item.vendor_type)) {
-        if (item.vendor_path) {
-          console.log(`    Vendor path: ${item.vendor_path}`);
-        }
-        if (item.vendor_type) {
-          console.log(`    Vendor type: ${item.vendor_type}`);
-        }
-      }
-
       console.log(`    ${item.description}`);
       if (item.suggestion) {
         console.log(`    Suggestion: ${item.suggestion}`);
@@ -288,7 +274,6 @@ function outputJson(results: DriftDetectionResult): void {
           overlay: 0,
           result: 0,
           severity_remap: 0,
-          vendorized: 0,
         } as Record<string, number>,
       ),
     },

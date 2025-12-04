@@ -57,7 +57,7 @@ aligntrue init --source https://github.com/your/rules
 aligntrue sync
 ```
 
-Import rules from GitHub, GitLab, or any git repository. Use `--link` to stay connected for updates. Use it with `aligntrue add` to try new external rules any time. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
+Import rules from GitHub, GitLab, or any git repository. Use `aligntrue add source` to stay connected for updates. Use it with `aligntrue add` to try new external rules any time. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
 
 **Team mode (opt-in):**
 

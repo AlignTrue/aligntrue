@@ -75,6 +75,7 @@ interface BackupArgs {
   // Common
   help?: boolean;
   config?: string;
+  yes?: boolean; // Non-interactive mode - skip confirmation prompts
 
   // Create subcommand
   notes?: string;
@@ -116,6 +117,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     hasValue: true,
     description: "Path to config file",
   },
+  {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Skip confirmation prompts (for CI/scripts)",
+  },
 ];
 
 const HELP_TEXT = `
@@ -140,6 +147,7 @@ Options:
   --dry-run              Preview changes without pushing (push subcommand)
   --force                Force push even if no changes detected (push subcommand)
   --config <path>        Path to config file
+  --yes, -y              Skip confirmation prompts (for CI/scripts)
   --help                 Show this help message
 
 Local cleanup uses time-based retention from config:
@@ -354,14 +362,18 @@ async function handleRestore(
   clack.log.info(`Restoring backup from ${formattedDate}`);
   clack.log.info(`Files: ${targetBackup.manifest.files.length}`);
 
-  const confirmed = await clack.confirm({
-    message: "Continue with restore?",
-    initialValue: false,
-  });
+  // Check for --yes flag to skip confirmation
+  const yesFlag = argv.includes("--yes") || argv.includes("-y");
+  if (!yesFlag) {
+    const confirmed = await clack.confirm({
+      message: "Continue with restore?",
+      initialValue: false,
+    });
 
-  if (clack.isCancel(confirmed) || !confirmed) {
-    clack.log.step("Restore cancelled");
-    return;
+    if (clack.isCancel(confirmed) || !confirmed) {
+      clack.log.step("Restore cancelled");
+      return;
+    }
   }
 
   await withSpinner(
@@ -387,7 +399,7 @@ async function handleRestore(
 async function handleCleanup(
   cwd: string,
   _args: BackupArgs,
-  _argv: string[],
+  argv: string[],
 ): Promise<void> {
   const { loadConfig } = await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
@@ -443,14 +455,18 @@ async function handleCleanup(
   );
   clack.log.info(`Keeping minimum ${minimumKeep} most recent backups`);
 
-  const confirmed = await clack.confirm({
-    message: "Continue with cleanup?",
-    initialValue: true,
-  });
+  // Check for --yes flag to skip confirmation
+  const yesFlag = argv.includes("--yes") || argv.includes("-y");
+  if (!yesFlag) {
+    const confirmed = await clack.confirm({
+      message: "Continue with cleanup?",
+      initialValue: true,
+    });
 
-  if (clack.isCancel(confirmed) || !confirmed) {
-    clack.log.step("Cleanup cancelled");
-    return;
+    if (clack.isCancel(confirmed) || !confirmed) {
+      clack.log.step("Cleanup cancelled");
+      return;
+    }
   }
 
   await withSpinner(
@@ -482,7 +498,7 @@ async function handleRemotePush(
   _args: BackupArgs,
   argv: string[],
 ): Promise<void> {
-  const { loadConfig, createRemotesManager, createRemotesManagerFromLegacy } =
+  const { loadConfig, createRemotesManager, convertLegacyConfig } =
     await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
 
@@ -501,10 +517,10 @@ async function handleRemotePush(
   const rulesDir = join(cwd, ".aligntrue", "rules");
 
   // Use new config if available, otherwise convert legacy
-  const remotesManager = config.remotes
-    ? createRemotesManager(config.remotes, { cwd, rulesDir })
-    : // eslint-disable-next-line @typescript-eslint/no-deprecated
-      createRemotesManagerFromLegacy(config.remote_backup!, { cwd, rulesDir });
+  const remotesConfig =
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    config.remotes || convertLegacyConfig(config.remote_backup!);
+  const remotesManager = createRemotesManager(remotesConfig, { cwd, rulesDir });
 
   // Get source URLs for conflict detection
   const sourceUrls =
@@ -563,7 +579,7 @@ async function handleRemotePush(
 }
 
 async function handleRemoteStatus(cwd: string): Promise<void> {
-  const { loadConfig, createRemotesManager, createRemotesManagerFromLegacy } =
+  const { loadConfig, createRemotesManager, convertLegacyConfig } =
     await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
 
@@ -578,10 +594,10 @@ async function handleRemoteStatus(cwd: string): Promise<void> {
   const rulesDir = join(cwd, ".aligntrue", "rules");
 
   // Use new config if available, otherwise convert legacy
-  const remotesManager = config.remotes
-    ? createRemotesManager(config.remotes, { cwd, rulesDir })
-    : // eslint-disable-next-line @typescript-eslint/no-deprecated
-      createRemotesManagerFromLegacy(config.remote_backup!, { cwd, rulesDir });
+  const remotesConfig =
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    config.remotes || convertLegacyConfig(config.remote_backup!);
+  const remotesManager = createRemotesManager(remotesConfig, { cwd, rulesDir });
 
   // Get source URLs for conflict detection
   const sourceUrls =
