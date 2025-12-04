@@ -1,12 +1,12 @@
 /**
- * Drift log for tracking new file detections
- * Used by watch mode to persist pending imports across sessions
+ * Drift log for tracking file detection status
+ * Stores detection history and status transitions for team mode drift detection
  *
  * PERSISTENCE:
  * - Stored at .aligntrue/.drift-log.json
- * - Created when watch mode detects NEW untracked files with content
- * - Persists state (pending_review, imported, ignored) between sessions
- * - Used by sync command to prompt for import of previously detected files
+ * - Persists detection state (pending_review, imported, ignored) between sessions
+ * - Used by drift command to categorize and track file changes
+ * - Provides history for drift analysis and compliance verification
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";

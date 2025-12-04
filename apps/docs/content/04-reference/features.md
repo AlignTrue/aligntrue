@@ -177,7 +177,6 @@ See [Scopes](/docs/02-customization/scopes) for details.
 ## Git sources
 
 - **Git provider** - Pull rules from remote repositories with caching
-- **Vendoring** - Git submodule/subtree support via `aligntrue link`
 - **Source validation** - Align integrity checks for external sources
 - **Privacy consent** - Respects user consent for network operations
 
