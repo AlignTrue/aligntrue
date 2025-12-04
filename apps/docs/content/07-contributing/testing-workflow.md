@@ -397,8 +397,8 @@ pnpm test --coverage
 
 See the codebase for real examples:
 
-- Unit tests: `packages/core/tests/validation.test.ts`
-- Integration tests: `packages/cli/tests/sync.test.ts`
+- Unit tests: `packages/core/tests/overlays/validation.test.ts` or `packages/core/tests/team/validation.test.ts`
+- Integration tests: `packages/cli/tests/commands/sync.test.ts`
 - Fixtures: `packages/exporters/tests/fixtures/`
 - Snapshots: `packages/exporters/tests/__snapshots__/`
 

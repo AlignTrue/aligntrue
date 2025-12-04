@@ -14,9 +14,8 @@ Comprehensive reference for team mode concepts and configuration.
 Team mode enables collaborative rule management with:
 
 - **Lockfiles** for reproducible rule deployment
-- **Allow lists** for approved rule sources
 - **Drift detection** for alignment monitoring
-- **Git-based workflows** for rule sharing
+- **Git-based workflows** for rule sharing and approval
 
 ## Team mode vs solo mode
 
@@ -24,7 +23,6 @@ Team mode enables collaborative rule management with:
 ||| --------------------- | --------- | --------- |
 ||| Lockfile generation | ❌ | ✅ |
 ||| Bundle generation | ❌ | ✅ |
-||| Allow list validation | ❌ | ✅ |
 ||| Drift detection | ❌ | ✅ |
 
 <Callout type="warning" title=".aligntrue.bundle.yaml status">
@@ -99,111 +97,6 @@ Approval happens via standard git PR review workflow.
 aligntrue sync
 ```
 
-Team mode validates bundle hash against the allow list before syncing.
-
-## Allow list
-
-### What is an allow list?
-
-The allow list (`.aligntrue.allow`) specifies which rule sources your team has approved. In team mode, sync operations validate sources against this list.
-
-### File format
-
-`.aligntrue.allow`:
-
-```yaml
-version: 1
-sources:
-  - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
-    resolved_hash: sha256:abc123...
-    comment: Official base rules
-  - type: hash
-    value: sha256:def456...
-    comment: Vendored custom align
-```
-
-### Source formats
-
-#### Git URL format
-
-Format: `git:URL`
-
-Example: `git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml`
-
-**Pros:**
-
-- Semantic and readable
-- Direct URL reference
-- Works with any git repository
-
-**Cons:**
-
-- Requires resolution (git clone)
-- Network dependency
-
-**Best for:** External sources, example aligns, shared repositories
-
-#### Hash format
-
-Format: `sha256:...`
-
-Example: `sha256:abc123def456...`
-
-**Pros:**
-
-- Immutable and deterministic
-- No resolution needed
-- Works offline
-
-**Cons:**
-
-- Hard to audit (what is this hash?)
-- Can't update without changing hash
-
-**Best for:** Vendored aligns, local sources, submodules
-
-### Recommendation
-
-- **External sources:** Use `id@version` format for clarity and semantic updates
-- **Vendored aligns:** Use `sha256:hash` format for immutability
-
-## Allow list management
-
-### Quick approve current bundle
-
-```bash
-# After sync, commit the lockfile
-git add .aligntrue.lock.json
-git commit -m "chore: Update lockfile"
-```
-
-Approval happens via git PR review workflow.
-
-### Manual approve by hash
-
-```bash
-# Commit lockfile with specific hash
-git add .aligntrue.lock.json
-git commit -m "chore: Approve bundle sha256:abc123..."
-```
-
-### Enforcement
-
-In team mode with an allow list:
-
-- Sync validates bundle hash against allow list
-- Unapproved bundles are rejected
-- Use `--force` to bypass (not recommended)
-
-### First-time setup
-
-When you first enable team mode:
-
-1. Run `aligntrue sync` to generate lockfile
-2. Commit lockfile to git (approval via PR)
-3. Team members clone and sync normally
-
 ## CLI commands
 
 ### `aligntrue team enable`
@@ -254,52 +147,6 @@ When switching between solo and team modes, AlignTrue preserves your sync workfl
 
 This ensures your personal workflow preferences survive round-trip transitions (solo→team→solo).
 
-### `aligntrue team list-allowed`
-
-Show approved sources.
-
-```bash
-aligntrue team list-allowed
-```
-
-**Output:**
-
-```
-Approved rule sources:
-
-1.  git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
-    → sha256:abc123...
-
-2.  sha256:def456...
-    # Vendored align
-
-Total: 2 sources
-```
-
-### `aligntrue team remove`
-
-Remove source(s) from allow list.
-
-```bash
-# Remove by git URL
-aligntrue team remove git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
-
-# Remove by hash
-aligntrue team remove sha256:abc123...
-```
-
-**Interactive confirmation:** Prompts before removing each source (default: no).
-
-### `aligntrue sync --force`
-
-Bypass allow list validation.
-
-```bash
-aligntrue sync --force
-```
-
-**Use with caution:** Only for emergencies or testing. Logs warning.
-
 ## Workflows
 
 ### Initial team setup
@@ -316,10 +163,6 @@ aligntrue sync
 # 3. Commit (approval via PR)
 git add .aligntrue.lock.json
 git commit -m "chore: Enable team mode"
-
-# 4. Commit team files
-git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
-git commit -m "Enable AlignTrue team mode"
 git push
 ```
 
@@ -330,7 +173,7 @@ git push
 git clone <repo>
 cd <repo>
 
-# 2. Sync (validated against allow list)
+# 2. Sync
 aligntrue sync
 ```
 
@@ -350,8 +193,8 @@ git commit -m "chore: Add new align"
 # 3. Sync
 aligntrue sync
 
-# 4. Commit allow list and lockfile
-git add .aligntrue.allow .aligntrue.lock.json
+# 4. Commit lockfile
+git add .aligntrue.lock.json
 git commit -m "Add new rule source: new-align"
 git push
 ```
@@ -359,9 +202,6 @@ git push
 ### Reviewing approved sources
 
 ```bash
-# List all approved sources
-aligntrue team list-allowed
-
 # Check lockfile for actual sources in use
 cat .aligntrue.lock.json | jq '.sources'
 ```
@@ -375,11 +215,8 @@ cat .aligntrue.lock.json | jq '.sources'
 # 2. Sync to update lockfile
 aligntrue sync
 
-# 3. Remove from allow list
-aligntrue team remove old-align@vendor/rules@v1.0.0
-
-# 4. Commit
-git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
+# 3. Update config and commit
+git add .aligntrue/config.yaml .aligntrue.lock.json
 git commit -m "Remove old rule source"
 git push
 ```
@@ -420,9 +257,9 @@ Or bypass this check (not recommended):
 
 ## Troubleshooting
 
-### "Source not in allow list" errors
+### Source not found errors
 
-**Cause:** Config references source not approved.
+**Cause:** Config references a source that's inaccessible.
 
 **Fix:**
 
@@ -430,59 +267,11 @@ Or bypass this check (not recommended):
 # List current sources
 cat .aligntrue/config.yaml
 
-# Add missing source to config and commit via PR
+# Verify git access
+git clone <repo-url>
+
+# Update config if URL changed
 ```
-
-### Network failures during resolution
-
-**Cause:** ID@version resolution requires git clone.
-
-**Fix:**
-
-1. Add source to config with explicit hash:
-
-   ```yaml
-   sources:
-     - type: git
-       url: https://github.com/org/rules
-       hash: sha256:abc123...
-   ```
-
-2. Or ensure git access:
-   ```bash
-   git clone <repo-url>  # Test access
-   ```
-
-### Allow list conflicts in git
-
-**Cause:** Multiple team members approving different sources.
-
-**Fix:**
-
-1. Pull latest changes
-2. Review both sets of approvals
-3. Keep necessary sources, remove duplicates
-4. Commit merged allow list
-
-### Invalid YAML in allow list
-
-**Cause:** Manual edit broke YAML structure.
-
-**Fix:**
-
-1. Check YAML syntax:
-
-   ```bash
-   cat .aligntrue.allow
-   ```
-
-2. Fix syntax or restore from git:
-
-   ```bash
-   git checkout .aligntrue.allow
-   ```
-
-3. Re-approve sources via CLI (safer than manual edits)
 
 ## ID@version vs hash tradeoffs
 
@@ -532,88 +321,6 @@ sources:
     hash: sha256:abc123def456...
 ```
 
-## Managed sections
-
-Team mode can designate specific sections as centrally managed, preventing local edits and ensuring team alignment.
-
-### Overview
-
-Managed sections protect critical rules from accidental modifications while allowing developers to add personal sections to the same file.
-
-**Use cases:**
-
-- Security policies that must stay consistent
-- Compliance requirements
-- Critical coding standards
-- Shared team workflows
-
-### Configuration
-
-Define managed sections in `.aligntrue/config.yaml`:
-
-```yaml
-managed:
-  sections:
-    - "Security"
-    - "Compliance"
-    - "Critical Standards"
-  source_url: "https://github.com/company/rules" # Optional
-```
-
-### Team-managed markers
-
-Managed sections are marked in exported files:
-
-**AGENTS.md:**
-
-```markdown
-<!-- 🔒 Team-managed section: Changes will be overwritten -->
-
-## Security 🔒
-
-All input must be validated.
-```
-
-**Cursor .mdc:**
-
-```markdown
-<!-- 🔒 Team-managed: Security -->
-
-## Security 🔒
-
-All input must be validated.
-```
-
-**Visual indicators:**
-
-- 🔒 emoji in section heading
-- HTML comment warning before section
-- Clear attribution to team source
-
-### Workflow
-
-**Team members:**
-
-1. Sync to get latest team rules: `aligntrue sync`
-2. Add personal sections with different headings
-3. Do not edit team-managed sections
-
-**Example:**
-
-```markdown
-# AGENTS.md
-
-<!-- 🔒 Team-managed section -->
-
-## Security 🔒
-
-Team security rules here.
-
-## My workflow notes
-
-Personal notes - not managed.
-```
-
 ## Personal rules
 
 In team mode, rules can be marked as "personal" (using `scope: personal`) to exclude them from lockfile validation and team approval workflows.
@@ -643,7 +350,7 @@ Personal sections are excluded from lockfile generation and validation:
 - Local development notes
 - Experimental rules for personal projects
 
-For practical workflows, examples, and conceptual background, see [Rule Privacy and Sharing Guide](/docs/01-guides/09-rule-privacy-sharing).
+For practical workflows, examples, and conceptual background, see [Rule sharing & privacy guide](/docs/01-guides/06-rule-sharing-privacy).
 
 ## See also
 

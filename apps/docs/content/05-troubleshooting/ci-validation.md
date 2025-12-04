@@ -67,10 +67,10 @@ id: acme.security.no-secrets
 
 ```bash
 # Validate locally before committing
-aligntrue md lint
-
-# Or full check
 aligntrue check
+
+# For verbose output
+aligntrue check --json
 ```
 
 ---

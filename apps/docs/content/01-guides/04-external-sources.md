@@ -1,30 +1,96 @@
 ---
-title: Managing rule sources
-description: Add, combine, and customize external rules from git repositories and other sources
+title: Working with external sources
+description: Add, combine, and customize rules from git repositories and other sources. One-time imports or live-connected sources.
 ---
 
-# Managing rule sources
+# Working with external sources
 
-Configure multiple sources to combine your local rules with external rule sets from git repositories, shared organizations, or community maintainers.
+Configure rules from external git repositories and sources. Add them as one-time imports or keep them connected to get automatic updates on every sync.
 
-> **What's the difference?** [Adding rules](/docs/01-guides/04-adding-rules) shows you the commands to run. This guide shows you how to configure and customize those sources in detail. Start with Adding rules if you're new to external sources.
+> **Getting started?** Start with [Adding rules](/docs/01-guides/04-external-sources#quick-start) below. Then read [Managing sources](/docs/01-guides/04-external-sources#managing-sources) for detailed configuration options.
 
-## Copied vs linked sources
+## Quick start
 
-AlignTrue supports two ways to add external rules:
+### One-time import
 
-| Method             | Command                      | Behavior                               | When to use                               |
-| ------------------ | ---------------------------- | -------------------------------------- | ----------------------------------------- |
-| **Copy** (default) | `aligntrue add <url>`        | One-time import to `.aligntrue/rules/` | Templates, trials, rules you'll customize |
-| **Link**           | `aligntrue add <url> --link` | Fetched on each sync                   | Team standards, personal rules repo       |
+Import rules from a git repository or local path. Rules are copied to `.aligntrue/rules/` and become yours to edit:
 
-**Copied rules** become yours to edit. They're stored in `.aligntrue/rules/` with `source` metadata in frontmatter.
+```bash
+# During init (new project)
+aligntrue init --source https://github.com/org/rules
 
-**Linked sources** stay connected. They're configured in `config.yaml` and refreshed on each `aligntrue sync`.
+# After init (existing project)
+aligntrue add https://github.com/org/rules
+```
 
-See [Adding rules](/docs/01-guides/04-adding-rules) for detailed workflows.
+**Supported sources:**
 
-## How linked sources work
+- GitHub/GitLab repositories: `https://github.com/org/repo`
+- Specific directory in repo: `https://github.com/org/repo/path/to/rules`
+- Specific version: `https://github.com/org/repo@v1.0.0`
+- SSH URLs: `git@github.com:org/repo.git`
+- Local paths: `./path/to/rules` or `/absolute/path`
+
+### Connected sources (live updates)
+
+Use `aligntrue add source` to add a connected source. Rules will be fetched on each `aligntrue sync`:
+
+```bash
+# During init (one command)
+aligntrue init --source https://github.com/org/rules --link
+
+# After init (explicit subcommand)
+aligntrue add source https://github.com/org/rules
+```
+
+**When to use connected sources:**
+
+- Team standards that evolve over time
+- Your personal rules stored in a separate repo
+- Community rule packs you want to track
+
+### Quick reference
+
+| Scenario                                | Command                                    |
+| --------------------------------------- | ------------------------------------------ |
+| New project, auto-detect existing rules | `aligntrue init`                           |
+| New project, import from git repo       | `aligntrue init --source <git-url>`        |
+| New project, stay connected for updates | `aligntrue init --source <git-url> --link` |
+| Existing project, one-time import       | `aligntrue add <git-url>`                  |
+| Existing project, add as source         | `aligntrue add source <git-url>`           |
+| Add push destination (remote)           | `aligntrue add remote <git-url>`           |
+| Find untracked agent files              | `aligntrue sources detect`                 |
+| Import detected files                   | `aligntrue sources detect --import`        |
+
+## Auto-detect existing rules
+
+When you run `aligntrue init` without options, it automatically scans your project for existing agent files:
+
+```bash
+cd your-project
+aligntrue init
+```
+
+**What it detects:**
+
+- `.cursor/rules/*.mdc` - Cursor rules
+- `AGENTS.md` - GitHub Copilot, Aider, Claude Code
+- `CLAUDE.md` - Claude Code
+- `.windsurf/rules/` - Windsurf
+- And many more agent formats
+
+**What happens:**
+
+1. Scans for existing agent files
+2. Parses and converts them to `.aligntrue/rules/*.md` format
+3. Creates `.aligntrue/config.yaml` with detected exporters
+4. Runs initial sync to export back to all agents
+
+If no existing rules are found, AlignTrue creates starter templates to help you get started.
+
+## Managing sources
+
+### How linked sources work
 
 **Your local rules** (`.aligntrue/rules/`) are always included automatically and have the highest priority.
 
@@ -42,7 +108,7 @@ See [Adding rules](/docs/01-guides/04-adding-rules) for detailed workflows.
 | `git`   | GitHub, GitLab, Gitea | Versioned rule sets, team standards |
 | `local` | Sibling directories   | Monorepo shared rules (rare)        |
 
-## Priority order
+### Priority order
 
 Rules merge in this order (highest to lowest priority):
 
@@ -55,11 +121,11 @@ Rules merge in this order (highest to lowest priority):
 
 When the same rule appears in multiple sources, the first source wins. Your local rules always override external sources on conflict.
 
-## Adding external sources
+### Adding external sources
 
 External sources use the new `include` syntax with fully-qualified URLs:
 
-### URL format
+#### URL format
 
 AlignTrue supports two URL formats:
 
@@ -85,7 +151,7 @@ This means you can copy URLs directly from GitHub's web interface.
 | `@ref`     | `@v2.0.0`       | Optional: branch, tag, or commit (default: `main`)       |
 | `/{path}`  | `/aligns`       | Optional: file or directory (default: all `.md` in root) |
 
-### Examples
+#### Configuration examples
 
 ```yaml
 version: "1"
@@ -119,7 +185,7 @@ exporters:
   - agents
 ```
 
-## How remote sources are fetched and imported
+### How remote sources are fetched and imported
 
 When targeting a remote git source, both for copied sources (`aligntrue add`) and linked sources (in `config.yaml`):
 
@@ -155,11 +221,11 @@ After `aligntrue add https://github.com/company/rules`:
     └── react.md
 ```
 
-## Selective import when adding rules
+### Selective import when adding rules
 
 When importing rules via `aligntrue init`, `aligntrue add`, or `aligntrue sources detect --import`, AlignTrue shows an intelligent selection interface:
 
-### Single file
+**Single file**
 
 Auto-imported without prompts:
 
@@ -167,7 +233,7 @@ Auto-imported without prompts:
 Importing 1 rule from .cursor/rules/testing.mdc
 ```
 
-### Small folder (2-10 files)
+**Small folder (2-10 files)**
 
 Shows the file list with a quick confirm:
 
@@ -183,7 +249,7 @@ Import all? (Y/n) _
 
 Press `Y` to import all, or `n` to select individually.
 
-### Large or multiple folders
+**Large or multiple folders**
 
 Shows a summary, then offers folder-level selection if you say no:
 
@@ -195,13 +261,13 @@ Import all? (Y/n) _
 
 If you select no, you can toggle which folders to import using the space bar.
 
-### Non-interactive mode
+**Non-interactive mode**
 
 In CI or with `--yes`, all detected files are imported automatically for consistency.
 
-## Single vs. multiple files per source
+### Single vs. multiple files per source
 
-### One file per git source (backward compatible)
+**One file per git source (backward compatible):**
 
 ```yaml
 sources:
@@ -210,7 +276,7 @@ sources:
     path: aligns/security.md
 ```
 
-### Multiple files from same source (new syntax)
+**Multiple files from same source (new syntax):**
 
 ```yaml
 sources:
@@ -223,7 +289,7 @@ sources:
 
 Much cleaner and avoids repetition!
 
-## Understanding sync precedence
+### Understanding sync precedence
 
 When `aligntrue sync` runs, you'll see a summary of your sources:
 
@@ -278,27 +344,167 @@ overlays:
 
 Both plugs and overlays work on external rules just like local rules.
 
-## Removing sources
+## Handling imports
 
-To stop using a source, simply remove it from your config and sync:
+### File format conversion
 
-```yaml
-# Before
-sources:
-  - type: git
-    include:
-      - https://github.com/company/old-rules
+AlignTrue automatically converts imported files to `.md` format:
 
-# After (removed)
-sources: []
+- `.mdc` (Cursor) → `.md`
+- `.yaml` rule manifests → `.md`
+- Multi-section files → split into individual `.md` files
 
-# Run sync
+**Note:** Only `.md` files are processed in `.aligntrue/rules/`. If you manually copy other file types, you'll see a warning during sync:
+
+```
+⚠ Warning: Non-markdown files detected in .aligntrue/rules/
+  - old-rule.mdc, config.yaml
+
+Only .md files are processed. Rename to .md if you want them included.
+```
+
+### Conflict handling
+
+When importing rules that have the same filename as existing rules:
+
+**Interactive mode:**
+
+```
+⚠ Rule conflict: typescript.md already exists
+
+  Existing: .aligntrue/rules/typescript.md (local, modified 2 days ago)
+  Incoming: typescript.md from https://github.com/org/rules
+
+Options:
+  1. Replace - Overwrite existing (backup saved)
+  2. Keep both - Save incoming as typescript-1.md
+  3. Skip - Don't import this rule
+
+Choose [1/2/3]:
+```
+
+**Non-interactive mode (`--yes`):**
+Defaults to "keep both" to avoid data loss.
+
+**Backups:**
+When you choose "Replace", the existing rule is backed up to `.aligntrue/.backups/files/` with a timestamp.
+
+### Removing imported rules
+
+#### Copied rules (default import)
+
+Simply delete the files and sync:
+
+```bash
+rm .aligntrue/rules/unwanted-rule.md
+aligntrue sync
+```
+
+#### Connected sources
+
+Use the remove command:
+
+```bash
+aligntrue remove https://github.com/org/rules
 aligntrue sync
 ```
 
 Your rules will update automatically. The removed source's rules are no longer included.
 
-## Practical examples
+## Version pinning
+
+For git sources, pin to a specific version:
+
+```bash
+# One-time import with version
+aligntrue add https://github.com/org/rules --ref v1.0.0
+
+# Add as connected source with version
+aligntrue add source https://github.com/org/rules --ref v1.0.0
+
+# Branch
+aligntrue add https://github.com/org/rules --ref develop
+
+# Commit
+aligntrue add https://github.com/org/rules --ref abc123
+```
+
+## Local paths
+
+Import from local directories (useful for monorepos or shared rule sets):
+
+```bash
+# Relative path
+aligntrue add ./shared/rules
+
+# Absolute path
+aligntrue add /Users/me/my-rules
+```
+
+## Detecting untracked agent files
+
+After initial setup, you may add new agent files manually or have team members who added rules without AlignTrue. Use `sources detect` to find them:
+
+```bash
+# List untracked agent files
+aligntrue sources detect
+
+# Import them to .aligntrue/rules/
+aligntrue sources detect --import
+```
+
+**Output:**
+
+```
+Found 3 agent file(s):
+
+  CURSOR (2 files)
+    - .cursor/rules/new-rule.mdc
+    - .cursor/rules/another.mdc
+
+  AGENTS (1 file)
+    - AGENTS.md
+
+To import these files, run:
+  aligntrue sources detect --import
+```
+
+## Workflow examples
+
+### Try rules from social media
+
+Someone shared cool rules on X/Twitter:
+
+```bash
+# Add them to try
+aligntrue add https://github.com/someone/cool-rules
+
+# After testing, if you don't like them
+rm .aligntrue/rules/cool-*.md
+aligntrue sync
+```
+
+### Personal rules across projects
+
+Keep your rules in a repo and use them everywhere:
+
+```bash
+# In each project, add as a connected source
+aligntrue add source https://github.com/me/my-rules
+
+# Update rules in your repo, then in any project:
+aligntrue sync  # Pulls latest
+```
+
+### Team standards with local overrides
+
+```bash
+# Add team standards as a connected source
+aligntrue add source https://github.com/company/standards
+
+# Add local overrides in .aligntrue/rules/
+# Local rules take precedence over linked sources
+```
 
 ### Combine base standards with team-specific rules
 
@@ -334,6 +540,30 @@ sources:
 # Then in .aligntrue/rules/:
 # - Add local/security.md (overrides community rules on conflict)
 # - Add local/project-specific.md (new rules not in community aligns)
+```
+
+## How import works
+
+When you use `aligntrue add` or `aligntrue init --source`, the import process:
+
+- **Targets any file or folder**: Local paths (relative or absolute), remote files, or directories
+- **Scans recursively**: Finds all `.md` and `.mdc` files in subdirectories
+- **Preserves filenames**: Uses the original filename instead of generating from the title
+- **Preserves structure**: Maintains subdirectory organization (e.g., `backend/security.md` → `.aligntrue/rules/backend/security.md`)
+- **Converts formats**: Converts `.mdc` files to `.md` format during import
+- **Adds metadata**: Records the source in frontmatter for tracking
+
+**Example import:**
+
+```bash
+# Import from a remote directory (any subdirectory)
+aligntrue add https://github.com/company/rules/backend
+
+# Results in:
+# .aligntrue/rules/
+#   ├── security.md         (from backend/security.md)
+#   └── performance/
+#       └── caching.md      (from backend/performance/caching.md)
 ```
 
 ## Troubleshooting
@@ -411,7 +641,7 @@ Cache is git-ignored by default. Run `aligntrue sync --offline` to use cached so
 
 ## See also
 
-- [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) - Consumer vs maintainer roles, scope-based routing
+- [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Publishing rules, controlling visibility, scope-based routing
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Technical details of merging and precedence
 - [Plugs](/docs/02-customization/plugs) - Fill template slots in rules
 - [Overlays](/docs/02-customization/overlays) - Customize rule properties

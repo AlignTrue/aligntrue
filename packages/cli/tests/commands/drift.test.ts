@@ -74,124 +74,6 @@ describe("drift command", () => {
     });
   });
 
-  describe("upstream drift detection", () => {
-    beforeEach(() => {
-      mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(".aligntrue/config.yaml", "mode: team");
-    });
-
-    it("detects upstream drift and shows human output", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "base-global",
-              content_hash: "abc123",
-              source: "git:https://github.com/org/align",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: different456
-`,
-      );
-
-      await drift([]);
-
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("Drift Detection Report");
-      expect(output).toContain("UPSTREAM DRIFT");
-      expect(output).toContain("base-global");
-      expect(output).toContain("abc123".slice(0, 12));
-      expect(output).toContain("different456".slice(0, 12));
-      expect(output).toContain("PR for team");
-      expect(exitSpy).not.toHaveBeenCalled();
-    });
-
-    it("exits 0 when no drift detected", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "base-global",
-              content_hash: "abc123",
-              source: "git:https://github.com/org/align",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: abc123
-`,
-      );
-
-      await drift([]);
-
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const output = consoleLogSpy.mock.calls[0][0];
-      expect(output).toContain("No drift detected");
-      expect(exitSpy).not.toHaveBeenCalled();
-    });
-
-    it("shows suggestion to accept current version", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "base-global",
-              content_hash: "abc123",
-              source: "git:https://github.com/org/align",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: different456
-`,
-      );
-
-      await drift([]);
-
-      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("aligntrue update apply");
-    });
-  });
-
   describe("vendorized drift detection", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
@@ -215,13 +97,6 @@ sources:
           ],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources: []
-`,
       );
 
       await drift([]);
@@ -252,13 +127,6 @@ sources: []
         }),
       );
 
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources: []
-`,
-      );
-
       await drift([]);
 
       const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
@@ -282,13 +150,6 @@ sources: []
           ],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources: []
-`,
       );
 
       await drift([]);
@@ -315,21 +176,12 @@ sources: []
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/align",
+              vendor_path: "vendor/missing",
+              vendor_type: "submodule",
             },
           ],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: different456
-`,
       );
 
       await drift([]);
@@ -347,21 +199,12 @@ sources:
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              source: "git:https://github.com/org/align",
+              vendor_path: "vendor/missing",
+              vendor_type: "submodule",
             },
           ],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: different456
-`,
       );
 
       try {
@@ -379,32 +222,16 @@ sources:
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
           mode: "team",
-          rules: [
-            {
-              rule_id: "base-global",
-              content_hash: "abc123",
-              source: "git:https://github.com/org/align",
-            },
-          ],
+          rules: [],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: abc123
-`,
       );
 
       try {
         await drift(["--gates"]);
       } catch {
         // Only expect error when there's drift
-        throw e;
+        throw new Error("Unexpected error");
       }
       expect(exitSpy).not.toHaveBeenCalled();
     });
@@ -447,13 +274,6 @@ sources:
         }),
       );
 
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources: []
-`,
-      );
-
       await drift([]);
 
       const output = consoleLogSpy.mock.calls[0][0];
@@ -470,13 +290,6 @@ sources: []
           rules: [],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources: []
-`,
       );
 
       await drift([]);
@@ -499,23 +312,14 @@ sources: []
           mode: "team",
           rules: [
             {
-              rule_id: "base-global",
+              rule_id: "vendored-align",
               content_hash: "abc123",
-              source: "git:https://github.com/org/align",
+              vendor_path: "vendor/missing",
+              vendor_type: "submodule",
             },
           ],
           bundle_hash: "xyz789",
         }),
-      );
-
-      writeFileSync(
-        ".aligntrue/allow.yaml",
-        `version: 1
-sources:
-  - type: id
-    value: git:https://github.com/org/align
-    resolved_hash: different456
-`,
       );
     });
 
@@ -527,7 +331,7 @@ sources:
       expect(parsed.mode).toBe("team");
       expect(parsed.has_drift).toBe(true);
       expect(parsed.findings).toHaveLength(1);
-      expect(parsed.findings[0].category).toBe("upstream");
+      expect(parsed.findings[0].category).toBe("vendorized");
       expect(parsed.summary.total).toBe(1);
     });
 
@@ -544,8 +348,8 @@ sources:
 
       const output = consoleLogSpy.mock.calls[0][0];
       const parsed = JSON.parse(output);
-      expect(parsed.summary.by_category.upstream).toBe(1);
-      expect(parsed.summary.by_category.vendorized).toBe(0);
+      expect(parsed.summary.by_category.vendorized).toBe(1);
+      expect(parsed.summary.by_category.upstream).toBe(0);
     });
 
     it("outputs SARIF format with --sarif", async () => {
@@ -567,7 +371,7 @@ sources:
       const parsed = JSON.parse(output);
       expect(parsed.runs[0].tool.driver.rules).toHaveLength(1);
       expect(parsed.runs[0].tool.driver.rules[0].id).toBe(
-        "aligntrue/upstream-drift",
+        "aligntrue/vendorized-drift",
       );
     });
 

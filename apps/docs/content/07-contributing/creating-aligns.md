@@ -30,17 +30,17 @@ Examples include:
 - Inline comments explaining best practices
 - Proper align structure and formatting
 
-### Choose your namespace
+### Naming conventions
 
-Pick the appropriate namespace for your align:
+Choose a clear, descriptive filename for your align that indicates its purpose:
 
-- **`aligns/base/*`** - Rules that apply across all stacks
-  - Example: `aligns/base/base-testing`, `aligns/base/base-security`
+- **Global/base aligns** - `global.md`, `typescript.md`, `testing.md`
   - Use when: Your rules work for any project type
 
-- **`aligns/stacks/*`** - Rules specific to a framework or stack
-  - Example: `aligns/stacks/nextjs-app-router`, `aligns/stacks/django-backend`
-  - Use when: Your rules target a specific tech stack
+- **Stack-specific aligns** - `nextjs-app-router.md`, `django-backend.md`
+  - Use when: Your rules target a specific tech stack or framework
+
+Examples are stored flat in `examples/aligns/` without namespace directories. Create descriptive filenames that make the purpose immediately clear.
 
 ### Minimal example
 
@@ -100,28 +100,17 @@ aligntrue check
 
 ### Verify deterministic hash
 
-Run validation twice and confirm the integrity hash is identical both times:
+Run validation twice and confirm the hashes are identical both times:
 
 ```bash
 aligntrue check
-# Note the integrity hash in output
+# Note the output
 
 aligntrue check
-# Hash should match exactly
+# Output should match exactly
 ```
 
-If hashes differ, your rules may have non-deterministic content (timestamps, random values, etc.).
-
-### Compute integrity hash
-
-If your align has `<computed>` as the integrity value, compute the real hash:
-
-```bash
-# From the aligntrue repository
-pnpm --filter @aligntrue/schema compute-hash path/to/your-align.yaml
-```
-
-Copy the hash from the output and paste it into your align's `integrity.value` field.
+If outputs differ, your rules may have non-deterministic content (timestamps, random values, etc.).
 
 ## Using recommended conventions
 
@@ -275,9 +264,8 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 Stuck? Here's how to get help:
 
 - **Documentation**: Read the full docs at [aligntrue.ai/docs](/docs)
-  - [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md) - Complete specification
-  - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and checks
-  - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema#canonicalization) - How hashing works
+  - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and type definitions
+  - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema/src/canonicalize.ts) - Deterministic hashing
 
 - **Examples**: Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
   - [testing.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.md) - Testing rules

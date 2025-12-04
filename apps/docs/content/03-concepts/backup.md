@@ -51,10 +51,10 @@ Remote backups push your local rules to git repositories. This is unidirectional
 
 ### Configuration
 
-Add a `remote_backup` section to your config:
+Add a `remotes` section to your config:
 
 ```yaml
-remote_backup:
+remotes:
   default:
     url: git@github.com:username/rules-backup.git
     branch: main
@@ -66,12 +66,12 @@ remote_backup:
 You can push different files to different repositories:
 
 ```yaml
-remote_backup:
+remotes:
   default:
     url: git@github.com:username/all-rules.git
     # Gets all files NOT assigned to additional backups
 
-  additional:
+  custom:
     - id: public-oss
       url: git@github.com:username/public-rules.git
       include:
@@ -97,7 +97,7 @@ A URL cannot be both a source and a backup in the same project:
 | Source | Pull      | Consumer (receive updates from remote) |
 | Backup | Push      | Maintainer (send updates to remote)    |
 
-If the same URL appears in both `sources` and `remote_backup`, the backup for that URL is skipped with a warning.
+If the same URL appears in both `sources` and `remotes`, the backup for that URL is skipped with a warning.
 
 ### Pushing manually
 
@@ -132,7 +132,7 @@ aligntrue sync
 Disable auto-push for specific backups:
 
 ```yaml
-remote_backup:
+remotes:
   default:
     url: git@github.com:username/rules.git
     auto: false # Only push with explicit `aligntrue backup push`

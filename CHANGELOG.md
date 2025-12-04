@@ -716,7 +716,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 
 - **Team mode critical fixes:**
   - Fixed `--accept-agent` crash when value is missing (now throws clear error)
-  - Fixed error messages referencing non-existent `aligntrue lock` command (now suggests `aligntrue team approve`)
+  - Fixed error messages referencing non-existent `aligntrue lock` command (now suggests `aligntrue sync`)
   - Removed "Session 6" debug artifact from team status output
   - Allow list now enforced in both soft and strict modes (soft warns, strict blocks)
 

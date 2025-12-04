@@ -1,8 +1,9 @@
 ---
-description: Control rule privacy, sharing, and synchronization across machines and teams
+title: Rule sharing & privacy
+description: Publish rules for others, control visibility with privacy settings, and manage where rules sync across machines and teams
 ---
 
-# Rule privacy & sharing
+# Rule sharing & privacy
 
 This guide helps you control three independent aspects of your rules: who sees them, whether they need approval, and where they sync.
 
@@ -17,9 +18,79 @@ Not sure how to configure your rules? Find your use case below:
 | Share team standards normally (approval required)  | [Scenario 3](#scenario-3-share-team-rules-normally)              |
 | Publish rules for others to use as a pack          | [Scenario 4](#scenario-4-publish-rules-for-others-to-use)        |
 
-## The three dimensions
+## Publishing rules (for maintainers)
 
-Rules have three independent settings you can control:
+### Setting up a shared rules repository
+
+Create a repository to publish your rules:
+
+1. **Create a repository** on GitHub, GitLab, or your preferred git host:
+   - For public sharing: Create a public repository
+   - For team/private sharing: Create a private repository with appropriate access
+
+2. **Configure remote backup** in `.aligntrue/config.yaml`:
+
+```yaml
+remotes:
+  shared: git@github.com:username/shared-rules.git
+```
+
+3. **Push your rules**:
+
+```bash
+aligntrue sync  # Exports to agents and pushes to backup
+# Or just push:
+aligntrue backup push
+```
+
+4. **Share the repository URL** with others. They can consume your rules as a source:
+
+```yaml
+# Their config
+sources:
+  - type: git
+    url: https://github.com/username/shared-rules.git
+    ref: main
+```
+
+### Your rules repository structure
+
+As a rules maintainer:
+
+1. **Edit rules locally** - Make changes in `.aligntrue/rules/`
+2. **Test changes** - Run `aligntrue sync` to verify exports
+3. **Push to remote** - Your backup auto-pushes on sync
+
+Your rules repository structure:
+
+```
+your-rules-repo/
+  typescript.md
+  testing.md
+  guides/
+    react.md
+    vue.md
+```
+
+Consumers receive these files when they sync from your repository.
+
+### Separating public and private rules
+
+You may want to share some rules publicly while keeping others private. Use multiple backup destinations:
+
+```yaml
+remotes:
+  shared:
+    url: git@github.com:username/public-rules.git
+  personal:
+    url: git@github.com:username/private-rules.git
+```
+
+Then use `scope` in rule frontmatter to control routing.
+
+## Privacy controls
+
+The three dimensions of rule privacy:
 
 | Dimension          | Setting                       | What it controls                                | Values                                                                                                |
 | ------------------ | ----------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -34,7 +105,7 @@ These dimensions are **largely independent**. A rule can be:
 - Gitignored and personal-scope (fully private)
 - Shared-scope for publishing
 
-## How data flows: Sources vs Remotes
+### How data flows: Sources vs Remotes
 
 Understanding the difference between sources and remotes is key to setting up your workflow:
 
@@ -314,9 +385,111 @@ remotes:
    - A rule can go to multiple destinations
    - Useful for creating thematic bundles (e.g., all TypeScript rules)
 
+## Using shared rules (for consumers)
+
+### Option 1: Link as a source (get updates)
+
+Add the repository as a source to get ongoing updates:
+
+```bash
+aligntrue add --link https://github.com/username/shared-rules.git
+```
+
+Or manually add to config:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/username/shared-rules.git
+    ref: main # Or a specific tag/commit for stability
+```
+
+Run `aligntrue sync` to pull updates.
+
+### Option 2: One-time import (copy)
+
+Copy rules to your local `.aligntrue/rules/`:
+
+```bash
+aligntrue add https://github.com/username/shared-rules.git
+```
+
+This copies the rules locally. You won't get updates unless you run `add` again.
+
+## Version pinning
+
+For stability, consumers can pin to a specific version:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/username/shared-rules.git
+    ref: v1.2.0 # Pin to tag
+```
+
+Or a specific commit:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/username/shared-rules.git
+    ref: abc123def # Pin to commit SHA
+```
+
+## Personal rules across machines
+
+Use remote backup to sync your personal rules across multiple machines:
+
+### Machine A (primary)
+
+```yaml
+remotes:
+  personal:
+    url: git@github.com:username/my-rules.git
+```
+
+### Machine B (secondary)
+
+Option 1: Use as source (pull only):
+
+```yaml
+sources:
+  - type: git
+    url: git@github.com:username/my-rules.git
+    personal: true # Skip team approval
+```
+
+Option 2: Also backup from Machine B:
+
+```yaml
+sources:
+  - type: git
+    url: git@github.com:username/my-rules.git
+    personal: true
+
+remotes:
+  personal:
+    url: git@github.com:username/my-rules.git
+```
+
+With Option 2, edits on either machine will push to the remote. Be careful of conflicts.
+
 ## Best practices
 
-### Do
+### For maintainers
+
+- Use semantic versioning tags for releases
+- Document breaking changes in your repository
+- Keep rules focused and well-documented
+- Consider separating stable rules from experimental ones
+
+### For consumers
+
+- Pin to tags or commits for production use
+- Review updates before merging in team mode
+- Fork repositories for critical dependencies
+
+### General do's
 
 - Use `gitignore: true` for rules with sensitive content
 - Use `scope: personal` for individual preferences in team mode
@@ -325,7 +498,7 @@ remotes:
 - Configure `remotes.personal` to sync personal rules across machines
 - Use `remotes.shared` to publish curated rule packs
 
-### Don't
+### General don'ts
 
 - Use `scope: personal` to bypass team review for shared standards
 - Assume gitignored rules are backed up (configure `remotes.personal` for that)
@@ -457,6 +630,6 @@ aligntrue sync --verbose
 ## Related
 
 - [Team Mode](/docs/03-concepts/team-mode) - How approval scopes work in team workflows
-- [Managing Sources](/docs/01-guides/07-managing-sources) - Adding and customizing external rules
+- [Working with external sources](/docs/01-guides/04-external-sources) - Adding and customizing external rules
 - [Personal Repository Setup](/docs/04-reference/personal-repo-setup) - SSH and HTTPS configuration
 - [Remote Access Troubleshooting](/docs/05-troubleshooting/remote-access) - Resolving connection issues

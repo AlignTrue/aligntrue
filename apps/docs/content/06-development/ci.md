@@ -15,27 +15,6 @@ AlignTrue uses a multi-layered validation approach:
 2. **Pre-commit hook** - Incremental checks on every commit (fast, focused)
 3. **CI validation** - Full workspace validation on push (comprehensive)
 
-## Pre-refactor validation
-
-Use before large refactors, type changes, or cross-package edits.
-
-```bash
-pnpm pre-refactor
-```
-
-**What it does:**
-
-- Type checks entire workspace (~30-60s)
-- Lints entire workspace
-- Ensures clean baseline before starting work
-
-**When to use:**
-
-- Before refactoring 3+ files
-- Before changing shared types or interfaces
-- Before cross-package changes
-- When you see repeated CI failures
-
 ## Pre-commit hook (automatic)
 
 Runs automatically on every `git commit`. Optimized for speed with incremental checks.
@@ -55,7 +34,6 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 - Catches type errors BEFORE build (saves time)
 - Only checks/builds changed packages (faster)
 - Shows clear error messages with fix suggestions
-- Suggests `pnpm pre-refactor` for large changes
 - **Prevents direct edits to auto-generated files** (new)
 
 ### Protected repository files
@@ -329,8 +307,7 @@ See [Setup - Next.js dev server fails](/docs/06-development/setup#nextjs-dev-ser
 **Fix:** The optimized hook only checks changed packages. If still slow:
 
 1. Check if you have uncommitted changes in many packages
-2. Run `pnpm pre-refactor` first to catch issues early
-3. Commit packages separately if working on multiple
+2. Commit packages separately if working on multiple
 
 ### Type errors only appear in CI
 
@@ -359,11 +336,10 @@ pnpm typecheck
 
 ## Best practices
 
-1. **Run `pnpm pre-refactor` before large changes** - Catches issues before you start
-2. **Commit frequently** - Smaller commits = faster pre-commit checks
-3. **Fix type errors immediately** - Don't let them accumulate
-4. **Use the right import paths** - Check source files for canonical exports
-5. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
+1. **Commit frequently** - Smaller commits = faster pre-commit checks
+2. **Fix type errors immediately** - Don't let them accumulate
+3. **Use the right import paths** - Check source files for canonical exports
+4. **Test locally before pushing** - Run `pnpm typecheck && pnpm test`
 
 ## Next steps
 

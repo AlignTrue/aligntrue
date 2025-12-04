@@ -196,7 +196,7 @@ aligntrue drift --gates
 ### Drift categories
 
 ```bash
-aligntrue drift --format json
+aligntrue drift --json
 ```
 
 Output:
@@ -289,7 +289,9 @@ jobs:
 
 ### Monorepo with scopes
 
-**Goal:** Validate all scopes
+**Goal:** Validate each scope's configuration
+
+Each scope in a monorepo has its own `.aligntrue/config.yaml` and rules. Validate from each scope directory:
 
 ```yaml
 # .github/workflows/aligntrue.yml
@@ -312,7 +314,8 @@ jobs:
         with:
           node-version: "20"
       - run: npm install -g @aligntrue/cli
-      - run: aligntrue check --ci --scope ${{ matrix.scope }}
+      - working-directory: ${{ matrix.scope }}
+        run: aligntrue check --ci
 ```
 
 ## Advanced CI patterns
@@ -396,7 +399,7 @@ jobs:
         run: npm install -g @aligntrue/cli
 
       - name: Regenerate lockfile
-        run: aligntrue lock
+        run: aligntrue sync
 
       - name: Commit if changed
         run: |
@@ -411,7 +414,7 @@ jobs:
 
 ### SARIF output for GitHub
 
-Generate SARIF for GitHub Code Scanning:
+Generate SARIF for GitHub Code Scanning using drift detection (reports compliance issues):
 
 ```yaml
 # .github/workflows/aligntrue-sarif.yml
@@ -434,8 +437,8 @@ jobs:
       - name: Install AlignTrue
         run: npm install -g @aligntrue/cli
 
-      - name: Run checks
-        run: aligntrue check --format sarif > aligntrue.sarif
+      - name: Detect drift (SARIF)
+        run: aligntrue drift --sarif > aligntrue.sarif
         continue-on-error: true
 
       - name: Upload SARIF
@@ -545,16 +548,17 @@ git commit -m "Update lockfile"
 **Fix:**
 
 ```yaml
-# Use --offline flag
-- name: Validate (offline)
-  run: aligntrue check --ci --offline
-
-# Or cache git sources
+# Cache git sources during sync to avoid network calls in check
 - name: Cache git sources
   uses: actions/cache@v3
   with:
     path: .aligntrue/.cache
     key: aligntrue-cache-${{ hashFiles('.aligntrue.lock.json') }}
+    restore-keys: |
+      aligntrue-cache-
+
+- name: Validate (uses cached sources)
+  run: aligntrue check --ci
 ```
 
 ### Drift always detected

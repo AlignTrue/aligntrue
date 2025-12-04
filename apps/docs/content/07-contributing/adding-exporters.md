@@ -4,7 +4,7 @@ Guide for contributing new exporters and extending AlignTrue to support addition
 
 ## Overview
 
-AlignTrue supports 28+ AI coding agents through a hybrid manifest system. Adding support for a new agent typically takes 1-2 hours and requires:
+AlignTrue supports 50+ AI coding agents through a hybrid manifest system. Adding support for a new agent typically takes 1-2 hours and requires:
 
 1. A JSON manifest describing the exporter
 2. (Optional) A TypeScript handler for custom export logic
@@ -169,53 +169,78 @@ describe("MyAgentExporter", () => {
   });
 
   it("exports single rule", async () => {
-    const result = await exporter.export({
-      scope: { name: "default", path: "." },
-      rules: [
-        {
-          id: "test.rule",
-          summary: "Test rule",
-          severity: "error",
-          guidance: "Do the thing",
+    const result = await exporter.export(
+      {
+        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        align: {
+          sections: [
+            {
+              heading: "Test rule",
+              content: "Do the thing",
+              fingerprint: "test-rule",
+            },
+          ],
         },
-      ],
-      config: {},
-      dryRun: false,
-    });
+        outputPath: ".myagent/rules.md",
+      },
+      {
+        outputDir: "/tmp",
+        dryRun: false,
+      },
+    );
 
     expect(result.filesWritten).toEqual([outputPath]);
     expect(existsSync(outputPath)).toBe(true);
   });
 
   it("respects dry-run", async () => {
-    const result = await exporter.export({
-      scope: { name: "default", path: "." },
-      rules: [{ id: "test.rule", summary: "Test", severity: "error" }],
-      config: {},
-      dryRun: true,
-    });
+    const result = await exporter.export(
+      {
+        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        align: {
+          sections: [
+            {
+              heading: "Test",
+              content: "Test content",
+              fingerprint: "test",
+            },
+          ],
+        },
+        outputPath: ".myagent/rules.md",
+      },
+      {
+        outputDir: "/tmp",
+        dryRun: true,
+      },
+    );
 
     expect(result.filesWritten).toEqual([]);
     expect(existsSync(outputPath)).toBe(false);
   });
 
   it("reports fidelity notes for unsupported fields", async () => {
-    const result = await exporter.export({
-      scope: { name: "default", path: "." },
-      rules: [
-        {
-          id: "test.rule",
-          summary: "Test",
-          severity: "error",
-          guidance: "Ensure README.md exists in the project root.",
+    const result = await exporter.export(
+      {
+        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        align: {
+          sections: [
+            {
+              heading: "Test",
+              content: "Ensure README.md exists in the project root.",
+              fingerprint: "test",
+            },
+          ],
         },
-      ],
-      config: {},
-      dryRun: true,
-    });
+        outputPath: ".myagent/rules.md",
+      },
+      {
+        outputDir: "/tmp",
+        dryRun: true,
+      },
+    );
 
     // Check that export handles sections correctly
-    expect(result.files).toHaveLength(1);
+    expect(result.fidelityNotes).toBeDefined();
   });
 });
 ```
@@ -352,7 +377,7 @@ return {
 };
 ```
 
-**See:** `packages/exporters/docs/DUAL_OUTPUT_CONFIGURATION.md`
+Multiple files in `filesWritten` are automatically synchronized when both are written in the same export operation.
 
 ## Vendor metadata
 
@@ -533,6 +558,7 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 - [Command Reference](/docs/04-reference/cli-reference) - CLI usage
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How exports are triggered
+- [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and type definitions
 - [Technical CONTRIBUTING.md](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/CONTRIBUTING.md) - Detailed requirements
 
 ### Community

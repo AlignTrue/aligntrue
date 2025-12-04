@@ -176,20 +176,3 @@ export function exporterFailedError(name: string, details: string[]): CLIError {
     code: "ERR_EXPORTER_FAILED",
   };
 }
-
-/**
- * Common error: Source not trusted
- * Standardized error pattern (Code consolidation)
- */
-export function sourceUntrustedError(source: string, hint: string): CLIError {
-  return {
-    title: "Source not trusted",
-    message: `Source "${source}" is not in your allow list`,
-    details: [
-      "Team mode requires all sources to be explicitly approved",
-      "Add to .aligntrue.allow or use --trust flag (with caution)",
-    ],
-    hint,
-    code: "ERR_SOURCE_UNTRUSTED",
-  };
-}

@@ -118,7 +118,6 @@ Enable team mode for shared rules with lockfiles and drift detection.
 aligntrue team enable
 
 # 2. Approve rule sources
-aligntrue team approve sha256:abc123...
 
 # 3. Sync to generate lockfile
 aligntrue sync
@@ -131,7 +130,7 @@ git commit -m "Enable AlignTrue team mode"
 ### For team members
 
 ```bash
-# Clone and sync (validated against allow list)
+# Clone and sync
 git clone <repo> && cd <repo>
 aligntrue sync
 ```

@@ -573,12 +573,12 @@
       "properties": {
         "internal": {
           "type": "string",
-          "enum": ["pr_approval", "allowlist"],
+          "enum": ["pr_approval"],
           "description": "Approval mode for internal team repository changes"
         },
         "external": {
           "type": "string",
-          "enum": ["pr_approval", "allowlist"],
+          "enum": ["pr_approval"],
           "description": "Approval mode for external dependency sources"
         }
       }

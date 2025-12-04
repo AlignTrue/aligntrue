@@ -3,6 +3,6 @@
   "sync-issues": "Sync issues",
   "ci-validation": "CI validation",
   "overlays": "Overlays",
-  "remote-access": "Remote access",
+  "source-remote-issues": "Source and remote issues",
   "windows-limitations": "Windows limitations"
 }

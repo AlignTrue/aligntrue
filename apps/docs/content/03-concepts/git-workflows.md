@@ -25,7 +25,7 @@ sources:
 ```
 
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
-**Team mode**: Blocks sync and requires approval with `aligntrue team approve`
+**Team mode**: Sources are vendored and documented in lockfile; approval via git PR
 
 ### Tag references (stable)
 
@@ -282,25 +282,13 @@ git push
 
 ### Team mode behavior
 
-When team mode is enabled, `aligntrue link` warns if source not in allow list (but doesn't block):
-
-```
-⚠️  Team mode warning: Source not in allow list
-  Repository: https://github.com/org/rules
-  Add with: aligntrue team approve https://github.com/org/rules
-```
-
-This is non-blocking because:
+In team mode, `aligntrue link` vendors the source and adds it to the lockfile:
 
 - Vendoring is an explicit manual action
 - Team reviews PR containing vendor changes
-- More flexible than strict allow list enforcement
+- Lockfile documents all vendored sources
 
-To add source to allow list after vendoring:
-
-```bash
-aligntrue team approve https://github.com/org/rules
-```
+No additional approval step is needed - the lockfile serves as the record.
 
 ## Troubleshooting
 
@@ -383,51 +371,6 @@ aligntrue privacy grant git
 aligntrue sync
 ```
 
-## Sources command
-
-Manage git sources with the `aligntrue sources` command:
-
-### List sources
-
-```bash
-aligntrue sources list
-```
-
-Shows all configured sources (local and git).
-
-### Status
-
-```bash
-aligntrue sources status
-```
-
-Detailed status of all sources including:
-
-- Current cached SHA
-- Last checked/fetched timestamps
-- Whether check is overdue
-- Cache status
-
-### Update sources
-
-```bash
-# Update specific source
-aligntrue sources update https://github.com/company/rules
-
-# Update all git sources
-aligntrue sources update --all
-```
-
-Forces a refresh of git sources, bypassing TTL.
-
-### Pin to Commit
-
-```bash
-aligntrue sources pin https://github.com/company/rules abc1234
-```
-
-Pins a git source to a specific commit SHA in config.
-
 ## Team mode workflows
 
 ### Solo developer tracking latest
@@ -456,9 +399,9 @@ sources:
 
 1. Developer runs `aligntrue sync`
 2. Update detected, sync blocked
-3. Team lead runs `aligntrue team approve <url>`
-4. Updates pulled and approved
-5. Team syncs with new version
+3. Commit lockfile changes via PR for team review
+4. Updates pulled and approved after PR merge
+5. Team members sync to get new version
 
 ### Team with version pinning
 
@@ -473,8 +416,8 @@ sources:
 **Upgrade workflow**:
 
 ```bash
-# 1. Test new version locally
-aligntrue sources pin https://github.com/company/rules v1.3.0
+# 1. Edit config to new version
+# Edit .aligntrue/config.yaml and update the ref
 
 # 2. Test
 aligntrue sync --force-refresh --dry-run

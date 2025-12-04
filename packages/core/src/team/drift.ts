@@ -65,71 +65,6 @@ export interface DriftResult {
 }
 
 /**
- * Detect upstream drift
- * Compares content_hash with resolved_hash from allow list
- */
-export function detectUpstreamDrift(
-  lockfile: Lockfile,
-  allowList: {
-    sources?: Array<{ value: string; resolved_hash?: string }>;
-  },
-): DriftFinding[] {
-  const findings: DriftFinding[] = [];
-
-  if (!allowList.sources) {
-    return findings;
-  }
-
-  for (const entry of lockfile.rules) {
-    // Skip entries without source (local rules)
-    if (!entry.source) {
-      continue;
-    }
-
-    // Find matching allow list entry
-    const allowedSource = allowList.sources.find(
-      (s: { value: string; resolved_hash?: string }) =>
-        s.value === entry.source ||
-        s.value.includes(entry.source || "") ||
-        (entry.source || "").includes(s.value),
-    );
-
-    if (!allowedSource) {
-      // Source not in allow list
-      findings.push({
-        category: "upstream",
-        rule_id: entry.rule_id,
-        message: `Source not in allow list: ${entry.source}`,
-        suggestion: `Review changes, commit to git, and create PR for team approval`,
-        lockfile_hash: entry.content_hash,
-        source: entry.source,
-      });
-      continue;
-    }
-
-    // Check if resolved hash exists and differs
-    const hashToCompare = entry.content_hash;
-    if (allowedSource.resolved_hash) {
-      if (hashToCompare !== allowedSource.resolved_hash) {
-        const finding: DriftFinding = {
-          category: "upstream",
-          rule_id: entry.rule_id,
-          message: "Upstream content hash differs from allowed version",
-          suggestion: `Run: aligntrue update apply\nOr review changes, commit to git, and create PR for team approval`,
-          lockfile_hash: hashToCompare,
-          expected_hash: allowedSource.resolved_hash,
-          source: entry.source,
-        };
-
-        findings.push(finding);
-      }
-    }
-  }
-
-  return findings;
-}
-
-/**
  * Detect vendorized drift
  * Compares vendored align hash with source hash
  */
@@ -588,28 +523,6 @@ export async function detectDrift(
 
   // Run drift detection checks
   const findings: DriftFinding[] = [];
-
-  // Load allow list for upstream drift detection
-  const allowListPath = join(basePath, ".aligntrue/allow.yaml");
-  if (existsSync(allowListPath)) {
-    try {
-      const { readFileSync } = await import("fs");
-      const { parse } = await import("yaml");
-      const allowListContent = readFileSync(allowListPath, "utf-8");
-      const allowList = parse(allowListContent) as {
-        sources?: Array<{ value: string; resolved_hash?: string }>;
-      };
-      findings.push(...detectUpstreamDrift(lockfile, allowList));
-    } catch (err) {
-      // Allow list is optional - skip upstream drift if unavailable
-      // Log in debug mode to help troubleshooting
-      if (process.env["DEBUG"] || process.env["ALIGNTRUE_DEBUG"]) {
-        console.warn(
-          `Failed to parse allow list at ${allowListPath}: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    }
-  }
 
   findings.push(...detectVendorizedDrift(lockfile, basePath));
   findings.push(...detectSeverityRemapDrift(lockfile, basePath));

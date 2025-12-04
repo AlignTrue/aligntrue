@@ -242,15 +242,15 @@ Complete each area sequentially. After finishing each area, record findings befo
    - Does it detect the change?
    - Does exit code indicate drift?
 
-4. Approve changes:
+4. Update lockfile (approve changes via sync):
 
    ```bash
-   $CLI team approve --current --yes
+   $CLI sync
    ```
 
    - Does lockfile get updated?
 
-5. Verify no drift after approval:
+5. Verify no drift after sync:
 
    ```bash
    $CLI drift --gates
@@ -262,7 +262,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 - [ ] Lockfile created and valid
 - [ ] Drift detection works
-- [ ] Approval updates lockfile
+- [ ] Sync updates lockfile
 - [ ] Git modes work (if testing git)
 - [ ] Any errors?
 

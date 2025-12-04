@@ -1,49 +1,11 @@
 ---
-title: "Overlay issues"
-description: "Fix overlay issues: not applied, stale selectors, ambiguous matches, or size limits."
+title: Overlay issues
+description: Fix overlay issues - not applied, stale selectors, conflicts, or validation problems
 ---
 
 # Overlay issues
 
 Common issues when working with overlays and their solutions.
-
----
-
-## "Could not load rules" error
-
-**Symptom:** When running `aligntrue override add`, you get: "Could not load rules. The internal rules file (.aligntrue/rules) is missing or invalid."
-
-**Root cause:** The override command requires a properly generated internal rules file (IR) to validate selectors. This file is created during `aligntrue sync`.
-
-**Fix:**
-
-1. **Run sync first:**
-
-   ```bash
-   aligntrue sync
-   ```
-
-2. **Then add your overlay:**
-
-   ```bash
-   aligntrue override add --selector 'sections[0]' --set severity=error
-   ```
-
-**Why this happens:**
-
-- The override command needs to validate that your selector matches actual rules in the IR
-- Without sync, there's no IR to validate against
-- This prevents you from creating invalid overlays that would fail later
-
-**Prevention:**
-
-Always run `aligntrue sync` after:
-
-- Initial project setup
-- Adding new aligns or sources
-- Making significant rule changes
-
----
 
 ## Overlay not applied
 
@@ -53,10 +15,10 @@ Always run `aligntrue sync` after:
 
 ```bash
 # Check overlay health
-aln override status
+aligntrue override status
 
 # Look for issues
-aln override status --stale
+aligntrue override status --json
 ```
 
 ### Common causes
@@ -76,17 +38,17 @@ overlays:
 **Solution:**
 
 ```bash
-# Find correct rule ID (inspect IR)
-cat .aligntrue/ir.json | jq '.rules[].id'
+# Find correct rule ID
+aligntrue override selectors
 
 # Fix overlay
-aln override remove 'rule[id=no-console-logs]'
-aln override add \
+aligntrue override remove 'rule[id=no-console-logs]'
+aligntrue override add \
   --selector 'rule[id=no-console-log]' \
   --set severity=error
 ```
 
-#### 2. Selector Doesn't Match
+#### 2. Selector doesn't match
 
 **Problem:** Selector doesn't match any rules in the IR.
 
@@ -103,51 +65,24 @@ Hint: Check rule ID spelling and ensure rule exists in IR
 **Solution:**
 
 ```bash
-# List available rules (feature not implemented yet)
-# For now, inspect IR directly:
-cat .aligntrue/ir.json | jq '.rules[].id'
+# List available selectors
+aligntrue override selectors
 
 # Fix selector
-aln override remove 'rule[id=nonexistent-rule]'
-aln override add \
+aligntrue override remove 'rule[id=nonexistent-rule]'
+aligntrue override add \
   --selector 'rule[id=correct-rule-id]' \
   --set severity=error
 ```
 
-#### 3. Property Path Invalid
-
-**Problem:**
-
-```yaml
-overlays:
-  overrides:
-    - selector: "nonexistent.property.path"
-      set:
-        value: "test"
-```
-
-**Result:** Selector doesn't match any property in IR.
-
-**Solution:**
-
-Inspect IR structure and use correct path:
-
-```bash
-# View IR structure
-cat .aligntrue/ir.json | jq 'keys'
-
-# Use correct property path
-aln override add --selector 'profile.version' --set value="2.0.0"
-```
-
-#### 4. Check Removed from Upstream
+#### 3. Check removed from upstream
 
 **Problem:** Upstream align removed or renamed the check.
 
 **Diagnosis:**
 
 ```bash
-aln override status
+aligntrue override status
 
 # Output:
 # ❌ rule[id=old-rule-name]
@@ -159,22 +94,20 @@ aln override status
 
 ```bash
 # Remove stale overlay
-aln override remove 'rule[id=old-rule-name]'
+aligntrue override remove 'rule[id=old-rule-name]'
 
-# Find new rule ID (inspect IR)
-cat .aligntrue/ir.json | jq '.rules[].id'
+# Find new rule ID
+aligntrue override selectors
 
 # Add overlay with new rule ID
-aln override add \
+aligntrue override add \
   --selector 'rule[id=new-rule-name]' \
   --set severity=error
 ```
 
----
-
 ## Overlay conflicts
 
-**Symptom:** Multiple overlays target the same check or upstream changes conflict with overlay.
+**Symptom:** Multiple overlays target the same check.
 
 ### Multiple overlays for same check
 
@@ -198,586 +131,120 @@ overlays:
 
 ```bash
 # Remove duplicate overlay
-aln override remove 'rule[id=no-console-log]'
-# Choose which one to keep and re-add it
-aln override add \
+aligntrue override remove 'rule[id=no-console-log]'
+
+# Choose which one to keep and re-add
+aligntrue override add \
   --selector 'rule[id=no-console-log]' \
   --set severity=error
 ```
 
-**Solution (if intended):**
+## Overlay status
 
-Consolidate into single overlay:
+**Symptom:** Overlays don't seem to be taking effect.
 
-```yaml
-overlays:
-  overrides:
-    # Single overlay with desired severity
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "error"
-```
-
-### Upstream changed same field
-
-**Problem:** Upstream changed severity from `warning` to `error`, your overlay also sets `error`.
-
-**Diagnosis:**
+### Verify overlays are active
 
 ```bash
-aln override diff 'rule[id=no-console-log]'
+# 1. Check that overlay is active and healthy
+aligntrue override status
+# Shows: ✓ rule[id=your-rule-id]
+#        Set: severity="error"
+#        Healthy: yes
 
-# Output shows:
-# Original: severity=warning
-# With overlay: severity=error
-# (If upstream also changed to error, overlay is now redundant)
+# 2. View the effect of the overlay
+aligntrue override diff
+# Shows: Original → Modified with overlay applied
+
+# 3. Check `.aligntrue/rules` contains the modified value
+grep -r "rule\[id=your-rule-id\]" .aligntrue/rules/
+# Should show: severity: error (modified by overlay)
+
+# 4. Check CLI output during sync
+aligntrue sync
+# Output shows: ✓ Applied N overlays
 ```
 
-**Solution:**
+### Overlay effects not visible in exports
 
-Remove redundant overlay:
+If you don't see severity changes in AGENTS.md or other exports, this is **expected**. Here's why:
+
+- **IR is canonical:** `.aligntrue/rules/` contains overlay-modified content
+- **Exports are simplified:** Markdown formats prioritize readability
+- **Behavior is affected:** Checks use the modified IR behavior
+- **Verification:** Use `aligntrue override diff` and `aligntrue override status` to confirm
+
+## Quick commands
+
+### Add overlay
 
 ```bash
-aln override remove 'rule[id=no-console-log]'
+# Change severity
+aligntrue override add \
+  --selector 'rule[id=no-console-log]' \
+  --set severity=error
 
-# Overlay no longer needed (upstream matches your preference)
-```
-
-### Three-Way Merge Conflict
-
-**Problem:** Upstream changed field you didn't override, but your overlay now conflicts.
-
-**Example:**
-
-```yaml
-# Original upstream
-check:
-  id: max-complexity
-  severity: warning
-  inputs:
-    threshold: 10
-
-# Your overlay (before upstream update)
-overlays:
-  overrides:
-    - selector: "rule[id=max-complexity]"
-      set:
-        "check.inputs.threshold": 15
-
-# Upstream update
-check:
-  id: max-complexity
-  severity: error        # Changed
-  inputs:
-    threshold: 12        # Changed
-    excludeComments: true # Added
-```
-
-**Result:** Your overlay still sets `threshold: 15`, but upstream changed to `12` and added `excludeComments`.
-
-**Diagnosis:**
-
-```bash
-aln override diff 'rule[id=max-complexity]'
-
-# Shows original vs overlayed result
-```
-
-**Solution options:**
-
-**Option A:** Keep your overlay (ignore upstream input change):
-
-```bash
-# No action needed, overlay applies as-is
-aln sync
-```
-
-**Option B:** Merge manually:
-
-```bash
-# Remove old overlay
-aln override remove 'rule[id=max-complexity]'
-
-# Add new overlay with merged inputs
-aln override add \
+# Modify nested property (dot notation)
+aligntrue override add \
   --selector 'rule[id=max-complexity]' \
-  --set check.inputs.threshold=15 \
-  --set check.inputs.excludeComments=true
+  --set check.inputs.threshold=15
+
+# Remove property
+aligntrue override add \
+  --selector 'rule[id=prefer-const]' \
+  --remove autofix
+
+# Combined set and remove
+aligntrue override add \
+  --selector 'rule[id=line-length]' \
+  --set severity=warning \
+  --set check.inputs.max=120 \
+  --remove autofix
 ```
 
-**Option C:** Accept upstream (remove overlay):
+### View overlays
 
 ```bash
-aln override remove 'rule[id=max-complexity]'
+# Dashboard of all overlays
+aligntrue override status
+
+# JSON output for CI
+aligntrue override status --json
+
+# List available selectors
+aligntrue override selectors
 ```
 
----
+### Diff overlays
 
-## Ambiguous selector
+```bash
+# Show effect of specific overlay
+aligntrue override diff 'rule[id=no-console-log]'
 
-**Symptom:** Overlay matches multiple rules unintentionally.
+# Show all overlay effects
+aligntrue override diff
+```
 
-### Selector matches multiple rules
+### Remove overlay
 
-**Problem:** Selector is ambiguous and matches more than one rule.
+```bash
+# Interactive removal (select from list)
+aligntrue override remove
 
-**Example:**
+# Direct removal by selector
+aligntrue override remove 'rule[id=no-console-log]'
+
+# Skip confirmation
+aligntrue override remove 'rule[id=no-console-log]' --force
+```
+
+## Best practices
+
+### Document reasons
+
+Always explain why using YAML comments in config:
 
 ```yaml
-overlays:
-  overrides:
-    # If multiple rules have same ID (from different sources)
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "error"
-```
-
-**Result:** Overlay applies to all matching rules (may be unintended).
-
-**Diagnosis:**
-
-```bash
-aln override status
-
-# Output shows if overlay matches multiple rules
-```
-
-**Solution:**
-
-Make selector more specific or accept that it applies to all matches. Currently, selectors apply to all matching rules. For more granular control, use property paths or array indices to target specific instances.
-
----
-
-## Expired overlays
-
-**Symptom:** Overlay has passed expiration date but still applies.
-
-### How expiration works
-
-**Key point:** Expiration is **advisory only**. Overlays continue to apply after expiration but show warnings.
-
-**Diagnosis:**
-
-```bash
-aln override status
-
-# Output:
-# ⚠ rule[id=no-deprecated-api]
-#   Set: severity=warning
-#   Healthy: yes
-#   Note: Check YAML comments for expiration tracking
-```
-
-**Solution:**
-
-Review YAML comments and decide:
-
-**Option A:** Extend expiration (update YAML comment):
-
-```yaml
-overlays:
-  overrides:
-    # TEMPORARY: Migration extended
-    # Expires: 2025-12-31 (was 2025-10-15)
-    - selector: "rule[id=no-deprecated-api]"
-      set:
-        severity: "warning"
-```
-
-**Option B:** Remove overlay:
-
-```bash
-# Migration complete, remove override
-aln override remove 'rule[id=no-deprecated-api]'
-```
-
-**Option C:** Make permanent (update YAML comment):
-
-```yaml
-overlays:
-  overrides:
-    # PERMANENT: Legacy code exception
-    # Owner: platform-team
-    - selector: "rule[id=no-deprecated-api]"
-      set:
-        severity: "warning"
-```
-
-### Automated expiration audits
-
-Add to CI:
-
-```bash
-# .github/workflows/validate.yml
-- name: Check for expired overlays
-  run: |
-    aln override status --stale --json > stale-overlays.json
-    if [ $(jq '.expired | length' stale-overlays.json) -gt 0 ]; then
-      echo "⚠️  Expired overlays detected"
-      jq '.expired' stale-overlays.json
-      exit 1  # Fail CI
-    fi
-```
-
----
-
-## Plug slot overlap
-
-**Symptom:** Overlay and plug both try to customize same field.
-
-### Problem example
-
-**Overlay:**
-
-```yaml
-overlays:
-  overrides:
-    - selector: "rule[id=ai-prompt-template]"
-      set:
-        "check.inputs.context": "production code"
-```
-
-**Plug:**
-
-```yaml
-plugs:
-  - id: "cursor-context"
-    agent: cursor
-    slots:
-      context: "local development" # Conflicts with overlay
-```
-
-**Result:** Undefined behavior (plug or overlay may win depending on merge order).
-
-### Diagnosis
-
-```bash
-# Check overlay status
-aln override status
-
-# Check plug status
-aln plugs status
-
-# Look for overlapping fields
-```
-
-### Solution
-
-**Rule:** Overlays handle align-level customization, plugs handle agent-specific config.
-
-**Option A:** Use overlay for align changes:
-
-```yaml
-# Remove plug slot
-plugs:
-  - id: "cursor-context"
-    agent: cursor
-    # Removed: slots.context
-
-# Keep overlay (applies to all agents)
-overlays:
-  overrides:
-    - selector: "rule[id=ai-prompt-template]"
-      set:
-        "check.inputs.context": "production code"
-```
-
-**Option B:** Use plug for agent-specific override:
-
-```yaml
-# Remove overlay
-overlays:
-  overrides: []
-
-# Keep plug (Cursor-specific)
-plugs:
-  - id: "cursor-context"
-    agent: cursor
-    slots:
-      context: "local development"
-```
-
-**Decision tree:**
-
-- **Same value for all agents?** Use overlay
-- **Agent-specific value?** Use plug
-- **Both needed?** Pick one or redesign (avoid overlap)
-
----
-
-## Overlay not validated in CI
-
-**Symptom:** Overlay passes locally but fails in CI.
-
-### Common causes
-
-#### 1. Lockfile Drift
-
-**Problem:** Local overlay applied but lockfile not committed.
-
-**CI error:**
-
-```
-✗ Lockfile validation failed
-
-Lockfile out of sync with rules
-  - Overlay hash mismatch for @acme/standards
-
-Hint: Run 'aln sync' locally and commit lockfile
-```
-
-**Solution:**
-
-```bash
-# Regenerate lockfile locally
-aln sync
-
-# Commit lockfile
-git add .aligntrue.lock.json
-git commit -m "chore: Update lockfile with overlay"
-git push
-```
-
-#### 2. Team Mode Not Enabled in CI
-
-**Problem:** Local has team mode, CI uses solo mode.
-
-**Solution:**
-
-Ensure CI config matches local:
-
-```yaml
-# .aligntrue/config.yaml (must be committed)
-mode: team
-modules:
-  lockfile: true
-  bundle: true
-```
-
-#### 3. Missing Source in CI
-
-**Problem:** Overlay targets git source not pulled in CI.
-
-**CI error:**
-
-```
-✗ Overlay validation failed
-
-Align not found: @acme/standards
-
-Hint: Ensure git sources are pulled in CI
-```
-
-**Solution:**
-
-Add source pull to CI:
-
-```yaml
-# .github/workflows/validate.yml
-- name: Pull sources
-  run: aln pull https://github.com/acme/standards --offline # Use cache
-
-- name: Validate
-  run: aln check --ci
-```
-
-Or vendor align:
-
-```bash
-# Vendor align (commit to repo)
-git submodule add https://github.com/acme/standards vendor/acme-standards
-aln link https://github.com/acme/standards --path vendor/acme-standards
-
-# CI will have align without network call
-```
-
----
-
-## When to fork instead
-
-**Symptom:** You have many overlays or complex customizations.
-
-### Indicators you should fork
-
-❌ **Don't overlay if:**
-
-- You have >5 overlays for same align
-- You're changing check logic (not just severity/inputs)
-- You need to add new checks
-- Upstream updates are irrelevant to you
-- Your requirements diverge fundamentally
-
-✅ **Fork instead:**
-
-```bash
-# Clone upstream align
-git clone https://github.com/acme/standards my-standards
-
-# Customize freely
-cd my-standards
-# Edit .aligntrue/config.yaml or .aligntrue/rules/*.md with your changes
-
-# Vendor in your project
-cd /path/to/your/project
-git submodule add https://github.com/yourorg/my-standards vendor/my-standards
-aln link https://github.com/yourorg/my-standards --path vendor/my-standards
-```
-
-### Hybrid approach
-
-Fork for major changes, overlay for minor tweaks:
-
-```yaml
-# Use your fork as base
-sources:
-  - git: https://github.com/yourorg/my-standards
-    path: vendor/my-standards
-
-# Overlay minor adjustments
-overlays:
-  overrides:
-    # TEMPORARY: Migration strictness
-    # Expires: 2025-12-31
-    - selector: "rule[id=specific-check]"
-      set:
-        severity: "error"
-```
-
----
-
-## Debug commands
-
-### Inspect overlay application
-
-```bash
-# Show all overlays
-aln override status
-
-# Show overlay for specific rule
-aln override diff 'rule[id=no-console-log]'
-
-# JSON output for scripting
-aln override status --json | jq '.overlays[] | select(.healthy == false)'
-```
-
-### Validate overlays
-
-```bash
-# Validate overlay application
-aln override status
-
-# Dry-run sync to see effects
-aln sync --dry-run
-
-# Check drift (includes overlay drift)
-aln drift
-```
-
-### Inspect lockfile
-
-```bash
-# View overlay hashes in lockfile
-cat .aligntrue.lock.json | jq '.dependencies[] | {align: .id, overlay_hash: .overlay_hash}'
-
-# Compare overlay hash between runs
-git diff .aligntrue.lock.json
-```
-
----
-
-## Common error messages
-
-### "Overlay validation failed: Selector matches no rules"
-
-**Cause:** Selector doesn't match any rules in IR.
-
-**Fix:**
-
-```bash
-# List available rules (inspect IR)
-cat .aligntrue/ir.json | jq '.rules[].id'
-
-# Update overlay with correct selector
-aln override remove 'rule[id=wrong-id]'
-aln override add \
-  --selector 'rule[id=correct-id]' \
-  --set severity=error
-```
-
-### "Overlay validation failed: Invalid selector syntax"
-
-**Cause:** Selector syntax is incorrect.
-
-**Fix:**
-
-```bash
-# Check selector format
-# Valid formats:
-# - 'rule[id=value]' (quotes required)
-# - property.path
-# - array[0]
-
-# Update overlay with correct syntax
-aln override add \
-  --selector 'rule[id=correct-format]' \
-  --set severity=error
-```
-
-### "Overlay conflict: Duplicate selector"
-
-**Cause:** Multiple overlays have identical selectors.
-
-**Fix:**
-
-```bash
-# View all overlays
-aln override status
-
-# Remove duplicate (interactive)
-aln override remove
-```
-
-### "Lockfile drift detected: Overlay hash mismatch"
-
-**Cause:** Overlay changed but lockfile not updated.
-
-**Fix:**
-
-```bash
-# Regenerate lockfile
-aln sync
-
-# Commit lockfile
-git add .aligntrue.lock.json
-git commit -m "chore: Update lockfile"
-```
-
----
-
-## Best practices to avoid issues
-
-### 1. Use Specific Selectors
-
-```yaml
-# ✅ Good: Specific rule ID
-overlays:
-  overrides:
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "error"
-
-# ❌ Bad: Too vague (if property path is ambiguous)
-overlays:
-  overrides:
-    - selector: "severity"  # Might match multiple properties
-      set:
-        value: "warning"
-```
-
-### 2. Document Reasons
-
-```yaml
-# ✅ Good: Clear reason with YAML comments
 overlays:
   overrides:
     # CLI tool requires console output for user feedback
@@ -785,91 +252,51 @@ overlays:
     - selector: "rule[id=no-console-log]"
       set:
         severity: "off"
-
-# ❌ Bad: No context
-overlays:
-  overrides:
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "off"
 ```
 
-### 3. Set Expiration for Temporary Overrides
+### Track temporary overlays
+
+For temporary overrides, use YAML comments:
 
 ```yaml
-# ✅ Good: Expires after migration
 overlays:
   overrides:
     # TEMPORARY: Gradual rollout
     # Expires: 2025-12-31
-    - selector: "rule[id=new-security-rule]"
-      set:
-        severity: "warning"
-
-# ❌ Bad: No expiration (forgotten override)
-overlays:
-  overrides:
-    - selector: "rule[id=new-security-rule]"
+    - selector: "rule[id=new-rule]"
       set:
         severity: "warning"
 ```
 
-### 4. Audit Regularly
+Use `aligntrue override status` to review active overlays regularly.
+
+### Review regularly
+
+Audit overlays monthly:
 
 ```bash
-# Monthly audit
-aln override status
+# Check all overlays health
+aligntrue override status
 
-# Check for redundant overlays
-aln override diff
+# View overlay effects
+aligntrue override diff
 
-# Validate in CI
-aln drift
+# Detect drift
+aligntrue drift
 ```
-
-### 5. Use Dot Notation for Nested Properties
-
-```yaml
-# ✅ Good: Dot notation for nested properties
-overlays:
-  overrides:
-    - selector: "rule[id=max-complexity]"
-      set:
-        "check.inputs.threshold": 15
-        "check.inputs.excludeComments": true
-
-# ❌ Bad: Won't work (overlays don't support nested objects in set)
-overlays:
-  overrides:
-    - selector: "rule[id=max-complexity]"
-      set:
-        check:
-          inputs:
-            threshold: 15
-```
-
----
 
 ## Related documentation
 
-- **Overlays Guide:** `docs/overlays.md` - Complete overlay documentation
-- **Commands:** `docs/commands.md` - CLI reference for overlay commands
-- **Drift Detection:** `docs/drift-detection.md` - Automated staleness checks
-- **Team Mode:** `docs/team-mode.md` - Team approval workflows
-- **Git Sources:** `docs/git-sources.md` - Working with upstream aligns
-
----
+- [Overlays Guide](/docs/02-customization/overlays) - Complete overlay documentation
+- [CLI Reference](/docs/04-reference/cli-reference) - Command details
+- [Team Mode Guide](/docs/03-concepts/team-mode) - Team workflows with overlays
+- [Drift Detection](/docs/03-concepts/drift-detection) - Detect overlay staleness
 
 ## Still having issues?
 
-1. **Check lockfile:** `cat .aligntrue.lock.json | jq '.dependencies[] | select(.overlay_hash != null)'`
-2. **Validate overlays:** `aln check --validate-overlays`
-3. **Review drift:** `aln drift --json | jq '.categories.overlay_staleness'`
-4. **Inspect health:** `aln override status --stale`
+1. Run `aligntrue override status` to check health
+2. Run `aligntrue override diff` to see current effects
+3. Review drift with `aligntrue drift`
+4. Check the [Overlays Guide](/docs/02-customization/overlays) for complete documentation
 
-If none of these resolve the issue, file a bug report with:
-
-- Output of `aligntrue status`
-- Contents of `.aligntrue/config.yaml` (overlays section)
-- Lockfile excerpt (if team mode)
-- Expected vs actual behavior
+If none of these resolve your issue, check the main [Troubleshooting guide](/docs/05-troubleshooting) or open an issue on [GitHub](https://github.com/AlignTrue/aligntrue/issues).
