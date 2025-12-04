@@ -185,7 +185,7 @@ When adding a new rule source:
 
 ```bash
 # 1. Update config to use new source
-# Edit .aligntrue/config.yaml, add to sources array
+# Edit .aligntrue/config.team.yaml, add to sources array
 
 # 2. Sync and commit (approval via PR)
 aligntrue sync
@@ -212,13 +212,13 @@ cat .aligntrue/lock.json | jq '.sources'
 
 ```bash
 # 1. Remove from config first
-# Edit .aligntrue/config.yaml, remove from sources array
+# Edit .aligntrue/config.team.yaml, remove from sources array
 
 # 2. Sync to update lockfile
 aligntrue sync
 
 # 3. Update config and commit
-git add .aligntrue/config.yaml .aligntrue/lock.json
+git add .aligntrue/config.team.yaml .aligntrue/lock.json
 git commit -m "Remove old rule source"
 git push
 ```
@@ -232,7 +232,7 @@ git push
   - custom-align@example/org@v1.0.0
 
 To approve sources:
-  Add to .aligntrue/config.yaml and commit via PR
+  Add to .aligntrue/config.team.yaml and commit via PR
 
 Or bypass this check (not recommended):
   aligntrue sync --force
@@ -243,7 +243,7 @@ Or bypass this check (not recommended):
 1. **Intended source:** Add to config and commit via PR
 
    ```bash
-   # Edit .aligntrue/config.yaml to add source
+   # Edit .aligntrue/config.team.yaml to add source
    aligntrue sync
    git add .aligntrue/lock.json
    git commit -m "chore: Add approved source"

@@ -1134,14 +1134,15 @@ test -f apps/docs/.aligntrue/rules/web_stack.mdc && echo "PASS: exported to nest
 
 1. **Solo → Team migration:**
    - `aligntrue team enable`
-   - Migration wizard for personal rules
+   - Creates `config.team.yaml` (team settings, committed)
+   - Updates `config.yaml` (personal settings, gitignored)
    - Lockfile generation
-   - Commit and push
+   - Commit `config.team.yaml` (and lockfile) and push
 
 2. **Joining existing team:**
-   - Clone team repository
-   - `aligntrue init` (detects team mode)
-   - Choose personal rules option (none/local/remote)
+   - Clone team repository (has `config.team.yaml`)
+   - `aligntrue init` (detects team mode from `config.team.yaml`)
+   - Personal `config.yaml` created for local overrides
    - `aligntrue sync`
 
 3. **Personal remote backup setup:**
@@ -1232,7 +1233,7 @@ aligntrue sync  # Generates lockfile
 # User B: Join team (copy shared files)
 mkdir /tmp/team-user-b && cd /tmp/team-user-b
 cp -r /tmp/team-user-a/.aligntrue .
-cp /tmp/team-user-a/AGENTS.md .
+cp /tmp/team-user-a/.aligntrue/config.team.yaml .aligntrue/
 cp /tmp/team-user-a/.aligntrue/lock.json .
 aligntrue init --yes  # Detects existing team setup
 aligntrue sync
@@ -1380,8 +1381,8 @@ aligntrue sync
 
 # Verify lockfile and config are shared correctly
 test -f .aligntrue/lock.json || echo "FAIL: lockfile missing"
-test -f .aligntrue/config.yaml || echo "FAIL: config missing"
-grep "mode: team" .aligntrue/config.yaml || echo "FAIL: team mode not detected"
+test -f .aligntrue/config.team.yaml || echo "FAIL: team config missing"
+grep "mode: team" .aligntrue/config.team.yaml || echo "FAIL: team mode not detected"
 ```
 
 **Expected:**
@@ -2317,6 +2318,7 @@ Some commands require special setup or are destructive and may have lower covera
 - `backup cleanup` - Would delete actual backups
 - `plugs set/unset/resolve` - Requires plug definitions in rules
 - `exporters detect/enable/disable` - Requires specific agent files present
+- `migrate config` - Splits legacy single-file team configs into two-file system
 - `migrate personal/team/ruler` - Requires schema changes to exist
 - `sources split` - Requires large AGENTS.md file
 - `uninstall` - Destructive operation
