@@ -80,9 +80,7 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 | Allow lists         | ✅         | ✅                | ⚠️        | Validation works            |
 | Backup/restore      | ✅         | ✅                | ❌        | Basic workflows tested      |
 | Git sources         | ⚠️         | ✅                | ❌        | Local repos tested          |
-| Vendored aligns     | ⚠️         | ✅                | ❌        | Structure detection works   |
 | Overlays            | ✅         | ✅                | ✅        | Configuration validated     |
-| Watch mode          | ⚠️         | ✅                | ❌        | Auto-sync tested            |
 | Exporters (51)      | ⚠️         | ⚠️                | ❌        | Core exporters tested       |
 | Idempotency         | ✅         | ⚠️                | ❌        | Determinism ensured by core |
 | Scopes              | ✅         | ✅                | ✅        | Monorepo scenarios tested   |

@@ -80,9 +80,7 @@
     "node": ">=20",
     "pnpm": ">=9"
   },
-  "dependencies": {
-    "yaml": "^2.8.1"
-  },
+  "dependencies": {},
   "pnpm": {
     "overrides": {
       "esbuild": ">=0.25.0",

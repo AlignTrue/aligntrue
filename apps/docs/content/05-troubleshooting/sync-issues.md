@@ -250,7 +250,6 @@ See the [agent verification guide](/docs/04-reference/agent-verification) for ag
 
 1. **Files not in `.aligntrue/rules/` directory** (most common)
 2. **Files have no content or sections**
-3. **Watch mode not picking up changes**
 
 **Fix:**
 
