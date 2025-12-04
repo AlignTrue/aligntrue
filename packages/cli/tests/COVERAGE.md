@@ -39,13 +39,12 @@ pnpm test:local
 
 Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_testing_playbook.mdc` for details.
 
-## Commands (27 total)
+## Commands (26 total)
 
 | Command   | Happy Path | Error Cases | Exit Codes | Help Text | Integration Tests |
 | --------- | ---------- | ----------- | ---------- | --------- | ----------------- |
 | init      | ✅         | ✅          | ✅         | ✅        | ✅                |
 | sync      | ✅         | ⚠️          | ✅         | ✅        | ✅                |
-| watch     | ⚠️         | ⚠️          | ✅         | ✅        | ✅                |
 | check     | ✅         | ✅          | ✅         | ✅        | ✅                |
 | team      | ✅         | ⚠️          | ✅         | ✅        | ✅                |
 | drift     | ✅         | ⚠️          | ✅         | ✅        | ✅                |
@@ -107,7 +106,6 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 - `packages/cli/tests/integration/scopes-monorepo.test.ts` - Scopes for monorepos
 - `packages/cli/tests/integration/plugs-resolution.test.ts` - Plugs slot/fill system
 - `packages/cli/tests/integration/customization-combined.test.ts` - All features together
-- `packages/cli/tests/integration/watch.test.ts` - Watch mode
 - `packages/cli/tests/integration/check-command.test.ts` - Check command
 - `packages/cli/tests/integration/init-command.test.ts` - Init command
 

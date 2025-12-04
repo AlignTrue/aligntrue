@@ -41,7 +41,6 @@ Browse commands by category:
 | `aligntrue sync`            | Sync rules to agents                    | [Core](./core#aligntrue-sync)                        |
 | `aligntrue check`           | Validate rules                          | [Core](./core#aligntrue-check)                       |
 | `aligntrue status`          | Show current status and exporters       | [Core](./core#aligntrue-status)                      |
-| `aligntrue watch`           | Watch files and auto-sync on changes    | [Core](./core#aligntrue-watch)                       |
 | `aligntrue doctor`          | Run health checks and verification      | [Core](./core#aligntrue-doctor)                      |
 | `aligntrue add`             | Add rules from URL or path              | [Sources](./sources#aligntrue-add)                   |
 | `aligntrue remove`          | Remove a linked source                  | [Sources](./sources#aligntrue-remove)                |

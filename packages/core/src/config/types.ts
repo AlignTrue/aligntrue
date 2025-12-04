@@ -138,9 +138,6 @@ export interface AlignTrueConfig {
     auto_gitignore?: "auto" | "always" | "never";
   };
   sync?: {
-    watch_enabled?: boolean;
-    watch_debounce?: number;
-    watch_files?: string[];
     source_markers?: "auto" | "always" | "never";
     content_mode?: ContentMode;
     auto_manage_ignore_files?: boolean | "prompt";

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **BREAKING: Watch mode command (`aligntrue watch`)** - Removed vestigial feature from bidirectional sync era. Rules change infrequently, making continuous file watching unnecessary. Replaced with pre-commit hook guidance and editor integration patterns in [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration). Schema fields `watch_enabled`, `watch_debounce`, `watch_files` removed from config
 - **BREAKING: `keep_count` backup config** - Removed deprecated count-based backup retention. Use `retention_days` (default: 30) and `minimum_keep` (default: 3) instead
 - **Deprecated frontmatter fields** - Removed `private` (use `gitignore`), `source`, `source_added`, `original_path`, and `original_source` from RuleFrontmatter. Provenance tracking moved to audit log (`.aligntrue/.history`)
 - **Legacy drift category `local_overlay`** - Use `overlay` instead. The category was never produced by any code path

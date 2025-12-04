@@ -33,7 +33,6 @@ export {
 export {
   loadDriftLog,
   saveDriftLog,
-  addDriftDetection,
   updateDriftStatus,
   getPendingDetections,
   clearDetectionsByStatus,

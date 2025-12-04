@@ -170,7 +170,7 @@ Syncing rules to 3 agents
 - `1` - Validation error (schema, lockfile drift)
 - `2` - System error (missing files, permissions)
 
-**See also:** [Watch command](#aligntrue-watch) for automatic syncing
+**See also:** [Automating sync](/docs/01-guides/07-ci-cd-integration#automating-sync) for pre-commit hooks and editor integration
 
 ---
 
@@ -304,64 +304,6 @@ Bundle:
 
 ---
 
-## `aligntrue watch`
-
-Watch for changes in `.aligntrue/rules/` and auto-sync when files change.
-
-**Usage:**
-
-```bash
-aligntrue watch [options]
-```
-
-**Options:**
-
-| Flag         | Description                    | Default |
-| ------------ | ------------------------------ | ------- |
-| `--debounce` | Debounce delay in milliseconds | `500`   |
-
-**What it does:**
-
-1. Starts file watcher on `.aligntrue/rules/**/*.md`
-2. Debounces rapid file changes
-3. Triggers sync on each file change
-4. Detects new untracked agent files
-5. Runs until Ctrl+C
-
-**Examples:**
-
-```bash
-# Watch with default debounce
-aligntrue watch
-
-# Watch with longer debounce (prevent rapid syncs)
-aligntrue watch --debounce 1000
-
-# Alternative sync command
-aligntrue sync --watch
-```
-
-**Example output:**
-
-```
-AlignTrue Watch Mode
-Watching for changes (debounce: 500ms)...
-  - .aligntrue/rules/**/*.md
-
-✓ Watching for changes (Ctrl+C to stop)
-File changed: .aligntrue/rules/typescript.md
-✓ Synced at 2:45:23 PM
-
-File changed: .aligntrue/rules/global.md
-✓ Synced at 2:45:28 PM
-```
-
-**Exit codes:**
-
-- `0` - Graceful shutdown (Ctrl+C)
-- `1` - Config not found
-- `2` - System error
-
 ---
 
 ## `aligntrue doctor`
@@ -439,5 +381,4 @@ Checks: 6 ok, 0 warnings, 0 errors
 | `sync`   | Export rules to agents | After editing rules    |
 | `check`  | Validate rules         | Before committing      |
 | `status` | View workspace health  | Troubleshooting        |
-| `watch`  | Auto-sync on changes   | Development workflow   |
 | `doctor` | Run diagnostics        | Troubleshooting issues |

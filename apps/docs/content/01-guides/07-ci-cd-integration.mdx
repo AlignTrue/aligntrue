@@ -498,6 +498,75 @@ AlignTrue uses standard exit codes:
   # Fails on exit code 2
 ```
 
+## Automating sync
+
+AlignTrue can be automated to sync rules whenever they change. Since rules change infrequently (unlike source code), a few approaches work well:
+
+### Pre-commit hook
+
+Automatically run `aligntrue sync` before commits to ensure exports are always up-to-date:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+aligntrue sync || exit 1
+git add .cursor/rules/ AGENTS.md
+```
+
+Enable with:
+
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+### Manual sync
+
+For most workflows, simply running `aligntrue sync` manually is sufficient:
+
+```bash
+# Edit rules
+nano .aligntrue/rules/typescript.md
+
+# Export changes
+aligntrue sync
+
+# Review and commit
+git add .aligntrue/rules/ .cursor/rules/ AGENTS.md
+git commit -m "Update TypeScript rules"
+```
+
+### CI validation
+
+Use CI/CD as the enforcement point. Rules are validated on every PR:
+
+```yaml
+- name: Validate rules
+  run: aligntrue check --ci
+
+- name: Verify exports up-to-date
+  run: git diff --exit-code .cursor/rules/ AGENTS.md
+```
+
+This catches cases where someone forgot to sync before committing.
+
+### Editor integration
+
+For continuous development workflows, configure your editor to run sync on save. Example for VS Code:
+
+```json
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.aligntrue/rules/.*\\.md$",
+        "cmd": "aligntrue sync"
+      }
+    ]
+  }
+}
+```
+
 ## Troubleshooting CI
 
 ### "Command not found: aligntrue"
