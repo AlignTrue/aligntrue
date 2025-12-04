@@ -21,7 +21,7 @@ aligntrue team enable
 aligntrue sync
 
 # 3. Commit to git (approval via PR review)
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "chore: Enable AlignTrue team mode"
 git push origin main
 ```
@@ -133,7 +133,7 @@ aligntrue team enable
 
 **What it does:**
 
-- Creates `.aligntrue.lock.json` (lockfile)
+- Creates `.aligntrue/lock.json` (lockfile)
 - Sets mode to `team` in config
 - Enables lockfile validation (soft by default)
 - Source approval happens via git PR workflow
@@ -190,7 +190,7 @@ aligntrue sync
 ### Step 4: Commit to git
 
 ```bash
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "chore: Enable AlignTrue team mode"
 git push
 ```
@@ -199,7 +199,7 @@ git push
 
 - `.aligntrue/rules` - Internal IR (auto-generated)
 - `.aligntrue/config.yaml` - Team configuration
-- `.aligntrue.lock.json` - Lockfile with pinned hashes
+- `.aligntrue/lock.json` - Lockfile with pinned hashes
 - `.cursor/rules/` - Exported Cursor rules (optional)
 - `AGENTS.md` - Universal agent format (optional)
 
@@ -305,7 +305,7 @@ sources:
 
 # 5. Sync and commit (approval via PR)
 aligntrue sync
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "Add team standards"
 git push origin main
 ```
@@ -440,7 +440,7 @@ aligntrue sync
 aligntrue scopes
 
 # 3. Commit (approval via PR)
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "chore: Configure team scopes and standards"
 git push origin main
 ```
@@ -469,7 +469,7 @@ aligntrue check
 aligntrue sync
 
 # 3. Commit changes
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update approved rule sources"
 git push
 ```
@@ -511,7 +511,7 @@ aligntrue drift
 aligntrue sync
 
 # Commit the updated lockfile (approval via PR)
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update lockfile after rule changes"
 git push origin main
 ```
@@ -599,7 +599,7 @@ git pull
 aligntrue sync
 
 # Commit changes (approval via PR)
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update lockfile after upstream changes"
 git push origin main
 ```
@@ -631,7 +631,7 @@ aligntrue drift --json
 {
   "mode": "team",
   "has_drift": true,
-  "lockfile_path": ".aligntrue.lock.json",
+  "lockfile_path": ".aligntrue/lock.json",
   "findings": [
     {
       "category": "lockfile",
@@ -987,7 +987,7 @@ aligntrue sync
 aligntrue check
 
 # 5. Commit resolution
-git add AGENTS.md .aligntrue/ .aligntrue.lock.json
+git add AGENTS.md .aligntrue/ .aligntrue/lock.json
 git commit -m "chore: Resolve AlignTrue conflict"
 ````
 
@@ -1009,7 +1009,7 @@ aligntrue sync --force
 
 # 3. Fix properly afterward
 aligntrue sync
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update lockfile"
 git push origin main
 
@@ -1063,7 +1063,7 @@ Only add sources you trust. Changes to `sources:` in config go through standard 
 Commit all team configuration:
 
 ```bash
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "chore: Update AlignTrue configuration"
 ```
 

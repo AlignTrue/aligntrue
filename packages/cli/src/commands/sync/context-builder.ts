@@ -346,7 +346,7 @@ export async function buildSyncContext(
 
   // Step 5: Write lockfile in team mode
   if (config.mode === "team" && config.modules?.lockfile) {
-    lockfilePath = resolve(cwd, ".aligntrue.lock.json");
+    lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
 
     const { generateLockfile, writeLockfile } = await import(
       "@aligntrue/core/lockfile"
@@ -361,14 +361,14 @@ export async function buildSyncContext(
       lockfileWritten = true;
     } catch (err) {
       throw ErrorFactory.fileWriteFailed(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         err instanceof Error ? err.message : String(err),
       );
     }
 
     if (!existsSync(lockfilePath)) {
       throw ErrorFactory.fileWriteFailed(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         "Lockfile missing after write attempt",
       );
     }

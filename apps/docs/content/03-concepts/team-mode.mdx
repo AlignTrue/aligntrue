@@ -25,11 +25,11 @@ Team mode enables collaborative rule management with:
 ||| Bundle generation | ❌ | ✅ |
 ||| Drift detection | ❌ | ✅ |
 
-<Callout type="warning" title=".aligntrue.bundle.yaml status">
+<Callout type="warning" title=".aligntrue/bundle.yaml status">
   `modules.bundle` enables multi-source merging in memory, but the CLI does
-  **not** write `.aligntrue.bundle.yaml` yet. Keep the flag enabled for forward
+  **not** write `.aligntrue/bundle.yaml` yet. Keep the flag enabled for forward
   compatibility; expect to continue committing `.aligntrue/rules` and
-  `.aligntrue.lock.json` until the bundle writer ships.
+  `.aligntrue/lock.json` until the bundle writer ships.
 </Callout>
 
 ## Quick start
@@ -51,7 +51,7 @@ This updates `.aligntrue/config.yaml`:
 aligntrue sync
 ```
 
-This generates `.aligntrue.lock.json` with deterministic bundle hash.
+This generates `.aligntrue/lock.json` with deterministic bundle hash.
 
 ### Lockfile with sections
 
@@ -85,7 +85,7 @@ If you need to preview the impact of a change, run `aligntrue sync --dry-run` fi
 ### 3. Commit lockfile
 
 ```bash
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Enable team mode"
 ```
 
@@ -121,7 +121,7 @@ aligntrue team disable
 
 1. Creates automatic backup before migration
 2. Updates config: removes team mode settings
-3. Deletes `.aligntrue.lock.json` (no purpose in solo mode)
+3. Deletes `.aligntrue/lock.json` (no purpose in solo mode)
 4. Preserves `.aligntrue/rules` (team rules become solo public rules)
 5. Shows confirmation message with backup timestamp
 
@@ -161,7 +161,7 @@ aligntrue team enable
 aligntrue sync
 
 # 3. Commit (approval via PR)
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Enable team mode"
 git push
 ```
@@ -187,14 +187,14 @@ When adding a new rule source:
 
 # 2. Sync and commit (approval via PR)
 aligntrue sync
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Add new align"
 
 # 3. Sync
 aligntrue sync
 
 # 4. Commit lockfile
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "Add new rule source: new-align"
 git push
 ```
@@ -203,7 +203,7 @@ git push
 
 ```bash
 # Check lockfile for actual sources in use
-cat .aligntrue.lock.json | jq '.sources'
+cat .aligntrue/lock.json | jq '.sources'
 ```
 
 ### Removing sources
@@ -216,7 +216,7 @@ cat .aligntrue.lock.json | jq '.sources'
 aligntrue sync
 
 # 3. Update config and commit
-git add .aligntrue/config.yaml .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue/lock.json
 git commit -m "Remove old rule source"
 git push
 ```
@@ -243,7 +243,7 @@ Or bypass this check (not recommended):
    ```bash
    # Edit .aligntrue/config.yaml to add source
    aligntrue sync
-   git add .aligntrue.lock.json
+   git add .aligntrue/lock.json
    git commit -m "chore: Add approved source"
    ```
 

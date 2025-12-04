@@ -138,10 +138,10 @@ import {
 
 // Generate lockfile from IR
 const lockfile = generateLockfile(alignAlign, "team");
-writeLockfile(".aligntrue.lock.json", lockfile);
+writeLockfile(".aligntrue/lock.json", lockfile);
 
 // Validate on subsequent syncs
-const existingLockfile = readLockfile(".aligntrue.lock.json");
+const existingLockfile = readLockfile(".aligntrue/lock.json");
 if (existingLockfile) {
   const validation = validateLockfile(existingLockfile, currentAlign);
   const enforcement = enforceLockfile("soft", validation);
@@ -198,9 +198,9 @@ lockfile:
 
 ### Bundle file generation
 
-`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `Align`. The merge happens in memory today—the CLI does **not** persist `.aligntrue.bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
+`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `Align`. The merge happens in memory today—the CLI does **not** persist `.aligntrue/bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
 
-- Continue committing `.aligntrue/rules` (IR) and `.aligntrue.lock.json`.
+- Continue committing `.aligntrue/rules` (IR) and `.aligntrue/lock.json`.
 - Leave `modules.bundle: true` enabled so your repo stays compatible when disk bundles arrive.
 - If you need a bundle artifact today, call the merge helpers directly from `@aligntrue/core/src/bundle.ts` in your own tooling.
 

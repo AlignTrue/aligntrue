@@ -292,17 +292,17 @@ AGENTS.md
 
       // Create lockfile
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({ version: "1.0", rules: [] }),
         "utf-8",
       );
 
-      expect(existsSync(".aligntrue.lock.json")).toBe(true);
+      expect(existsSync(".aligntrue/lock.json")).toBe(true);
 
       await uninstall(["-y", "--keep-exports", "--keep-source"]);
 
       // Lockfile should be deleted
-      expect(existsSync(".aligntrue.lock.json")).toBe(false);
+      expect(existsSync(".aligntrue/lock.json")).toBe(false);
     });
   });
 });

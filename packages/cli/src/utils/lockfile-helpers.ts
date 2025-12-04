@@ -41,7 +41,7 @@ export async function ensureLockfileExists(
     };
   }
 
-  const lockfilePath = join(cwd, ".aligntrue.lock.json");
+  const lockfilePath = join(cwd, ".aligntrue", "lock.json");
 
   // Skip if lockfile already exists
   if (existsSync(lockfilePath)) {
@@ -111,7 +111,7 @@ export function isLockfileNeeded(
     return false;
   }
 
-  const lockfilePath = join(cwd, ".aligntrue.lock.json");
+  const lockfilePath = join(cwd, ".aligntrue", "lock.json");
   return !existsSync(lockfilePath);
 }
 
@@ -140,7 +140,7 @@ export async function createEmptyLockfile(
   const { join } = await import("path");
   const { writeLockfile } = await import("@aligntrue/core/lockfile");
   const { computeHash } = await import("@aligntrue/schema");
-  const lockfilePath = join(cwd, ".aligntrue.lock.json");
+  const lockfilePath = join(cwd, ".aligntrue", "lock.json");
 
   try {
     // Compute empty bundle hash (hash of empty string)

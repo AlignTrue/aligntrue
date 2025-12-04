@@ -49,7 +49,7 @@ graph TD
 ```mermaid
 graph TD
     T1[AGENTS.md] --> T2[.aligntrue/rules]
-    T2 --> T3[.aligntrue.lock.json]
+    T2 --> T3[.aligntrue/lock.json]
     T3 --> T4[Agent exports]
     T5[CI validation] -.-> T3
     T6[Drift detection] -.-> T3
@@ -103,7 +103,7 @@ git commit -m "Add AlignTrue rules"
 # Enable team mode for reproducibility
 aligntrue team enable
 aligntrue sync
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "Enable AlignTrue team mode"
 ```
 
@@ -123,7 +123,7 @@ git commit -m "Enable AlignTrue team mode"
 # Repository owner
 aligntrue team enable
 aligntrue sync
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "Enable team mode (soft)"
 
 # Team members
@@ -149,7 +149,7 @@ aligntrue sync
 aligntrue team enable
 # Edit config: lockfile.mode: strict
 aligntrue sync
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "Enable team mode (strict)"
 
 # Team members
@@ -196,7 +196,7 @@ aligntrue team enable
 aligntrue sync
 
 # Commit team files
-git add .aligntrue/config.yaml .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue/lock.json
 git commit -m "Switch to team mode"
 ```
 
@@ -221,7 +221,7 @@ Switch to solo mode when:
 # Change: mode: team → mode: solo
 
 # Remove team files (optional)
-rm .aligntrue.lock.json
+rm .aligntrue/lock.json
 
 # Sync
 aligntrue sync
@@ -234,7 +234,7 @@ aligntrue sync
 | What changes     | Before (solo) | After (team)                  |
 | ---------------- | ------------- | ----------------------------- |
 | **Config**       | `mode: solo`  | `mode: team`                  |
-| **New files**    | None          | `.aligntrue.lock.json`        |
+| **New files**    | None          | `.aligntrue/lock.json`        |
 | **Validation**   | Basic schema  | Schema + lockfile             |
 | **Sync speed**   | Fast          | Slightly slower (validation)  |
 | **Git workflow** | Optional      | Recommended (commit lockfile) |

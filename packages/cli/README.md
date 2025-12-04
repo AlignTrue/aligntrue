@@ -430,7 +430,7 @@ aligntrue team enable
 Next steps:
   1. Run: aligntrue sync
   2. Lockfile will be generated automatically
-  3. Commit both config.yaml and .aligntrue.lock.json
+  3. Commit both config.yaml and .aligntrue/lock.json
 
 Team members can now:
   - Clone the repo and run aligntrue sync
@@ -732,7 +732,7 @@ aligntrue check --ci
 **What it validates:**
 
 - IR schema (loads and validates `.aligntrue/rules.md` against JSON Schema)
-- Lockfile drift (team mode only, validates `.aligntrue.lock.json` matches current rules)
+- Lockfile drift (team mode only, validates `.aligntrue/lock.json` matches current rules)
 
 **Exit codes:**
 
@@ -751,7 +751,7 @@ aligntrue check --ci
 ✓ Validation passed
 
   Schema: .aligntrue/rules.md is valid
-  Lockfile: .aligntrue.lock.json matches current rules
+  Lockfile: .aligntrue/lock.json matches current rules
 ```
 
 **Example output (failure):**
@@ -901,7 +901,7 @@ Lockfile doesn't match current rules. Run `aligntrue sync` locally to regenerate
 
 ```bash
 pnpm aligntrue sync
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: update lockfile"
 ```
 

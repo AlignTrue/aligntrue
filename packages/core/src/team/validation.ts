@@ -66,7 +66,7 @@ export function validateTeamConfig(
  */
 export function validateTeamLockfile(
   config: AlignTrueConfig,
-  lockfilePath: string = ".aligntrue.lock.json",
+  lockfilePath: string = ".aligntrue/lock.json",
 ): TeamValidationError[] {
   const errors: TeamValidationError[] = [];
 
@@ -134,7 +134,7 @@ export function validateTeamSources(
  */
 export function getTeamValidationErrors(
   config: AlignTrueConfig,
-  lockfilePath: string = ".aligntrue.lock.json",
+  lockfilePath: string = ".aligntrue/lock.json",
 ): TeamValidationResult {
   // Only validate in team mode
   if (config.mode !== "team") {

@@ -216,7 +216,7 @@ aligntrue check --config ./config.yaml
 ✓ Validation passed
 
   Schema: .aligntrue/rules/ is valid
-  Lockfile: .aligntrue.lock.json matches current rules
+  Lockfile: .aligntrue/lock.json matches current rules
   Overlays: 2 overlay(s) validated
 ```
 

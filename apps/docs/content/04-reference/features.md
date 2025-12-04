@@ -112,7 +112,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 ## Team mode
 
-- **Lockfile generation** (`.aligntrue.lock.json`) - SHA-256 content hashes, reproducible builds
+- **Lockfile generation** (`.aligntrue/lock.json`) - SHA-256 content hashes, reproducible builds
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
 - **Drift detection** - Compare lockfile vs allowed sources, multiple output formats (human, JSON, SARIF)
 - **Bundle merging** - Combine multiple sources with conflict resolution
@@ -194,7 +194,7 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 ## Schema evolution & versioning
 
 - **Spec version** — Governs IR format. Pre-1.0 schema may evolve freely. Post-1.0 follows SemVer.
-- **Lock schema** — `.aligntrue.lock.json` versioned independently for team mode.
+- **Lock schema** — `.aligntrue/lock.json` versioned independently for team mode.
 - **Exporter contracts** — Each exporter pins its output version. Breaking changes → exporter major version bump.
 - **Migrations** — `aligntrue migrate` prints safe transforms and diffs. Requires `--write` to modify.
 

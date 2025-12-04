@@ -95,7 +95,7 @@ Files created by AlignTrue exporters, which may include:
 
 ### Lockfile
 
-- `.aligntrue.lock.json` - Always deleted if present
+- `.aligntrue/lock.json` - Always deleted if present
 
 ### Gitignore entries
 

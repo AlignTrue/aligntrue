@@ -159,7 +159,7 @@ end
 %% -------------------------------
 subgraph Repo["Repo with AlignTrue"]
   ATCfg["AlignTrue aligns & rules\n(.aligntrue/*.md,\nconfigs)"]
-  ATLock["Lockfile\n(.aligntrue.lock.json)"]
+  ATLock["Lockfile\n(.aligntrue/lock.json)"]
 
   Dev -->|"Author & refine\nrules / aligns"| ATCfg
   ATCfg -->|"aligntrue check --ci\nvalidate & enforce"| ATLock

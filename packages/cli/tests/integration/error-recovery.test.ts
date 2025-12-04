@@ -204,7 +204,7 @@ Content.
 
       // Write corrupted lockfile
       writeFileSync(
-        join(TEST_DIR, ".aligntrue.lock.json"),
+        join(TEST_DIR, ".aligntrue/lock.json"),
         "{ this is not valid json ]",
         "utf-8",
       );
@@ -253,7 +253,7 @@ Content.
 
       // Write lockfile with wrong version
       writeFileSync(
-        join(TEST_DIR, ".aligntrue.lock.json"),
+        join(TEST_DIR, ".aligntrue/lock.json"),
         JSON.stringify({
           version: "999", // Future version
           mode: "team",

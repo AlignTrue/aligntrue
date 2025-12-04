@@ -24,7 +24,7 @@ const scenarios: TeamScenario[] = [
       "aligntrue sync",
     ],
     validation: (workspace) => {
-      const lockPath = join(workspace, ".aligntrue.lock.json");
+      const lockPath = join(workspace, ".aligntrue/lock.json");
       if (!existsSync(lockPath)) {
         return { passed: false, error: "Lockfile not generated" };
       }

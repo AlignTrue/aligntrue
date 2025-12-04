@@ -3,7 +3,7 @@
  */
 
 import { existsSync, statSync } from "fs";
-import { resolve, relative as relativePath } from "path";
+import { resolve, relative as relativePath, join } from "path";
 import * as clack from "@clack/prompts";
 import { globSync } from "glob";
 import {
@@ -179,9 +179,15 @@ async function runDoctor(
   // Lockfile
   if (config?.modules?.lockfile) {
     const lockfileExists = existsSync(paths.lockfile);
+    const oldLockfileExists = existsSync(join(cwd, ".aligntrue.lock.json"));
+    if (oldLockfileExists && !lockfileExists) {
+      console.warn(
+        "  Note: Old lockfile location (.aligntrue.lock.json) found. Run 'aligntrue sync' to migrate it.",
+      );
+    }
     checks.push({
       id: "lockfile.exists",
-      label: `Lockfile (.aligntrue.lock.json)`,
+      label: `Lockfile (.aligntrue/lock.json)`,
       status: lockfileExists ? "ok" : "error",
       ...(lockfileExists
         ? {}

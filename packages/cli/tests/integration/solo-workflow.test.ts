@@ -194,7 +194,7 @@ Rule guidance here
 
     it("team mode has lockfile and mode explicit", () => {
       const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-      const _lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const _lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
 
       mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
 

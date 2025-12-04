@@ -143,7 +143,7 @@ aligntrue team enable
 aligntrue team enable
 
 # Then generate lockfile
-aligntrue sync  # Auto-generates .aligntrue.lock.json
+aligntrue sync  # Auto-generates .aligntrue/lock.json
 ```
 
 **Exit codes:**

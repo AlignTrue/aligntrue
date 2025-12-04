@@ -66,12 +66,21 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
   // Fallback: treat standalone lockfile or bundle as initialized
   const standaloneArtifacts = [
     {
+      path: join(cwd, ".aligntrue", "lock.json"),
+      label: ".aligntrue/lock.json",
+    },
+    {
+      path: join(cwd, ".aligntrue", "bundle.yaml"),
+      label: ".aligntrue/bundle.yaml",
+    },
+    // Legacy locations (for migration)
+    {
       path: join(cwd, ".aligntrue.lock.json"),
-      label: ".aligntrue.lock.json",
+      label: ".aligntrue.lock.json (legacy)",
     },
     {
       path: join(cwd, ".aligntrue.bundle.yaml"),
-      label: ".aligntrue.bundle.yaml",
+      label: ".aligntrue.bundle.yaml (legacy)",
     },
   ].filter(({ path }) => existsSync(path));
 

@@ -41,11 +41,11 @@ export function getAlignTruePaths(cwd: string = process.cwd()) {
     /** Path to rules directory (internal): .aligntrue/rules */
     rules: join(cwd, ".aligntrue", "rules"),
 
-    /** Path to lockfile: .aligntrue.lock.json */
-    lockfile: join(cwd, ".aligntrue.lock.json"),
+    /** Path to lockfile: .aligntrue/lock.json */
+    lockfile: join(cwd, ".aligntrue", "lock.json"),
 
-    /** Path to bundle file: .aligntrue.bundle.yaml */
-    bundle: join(cwd, ".aligntrue.bundle.yaml"),
+    /** Path to bundle file: .aligntrue/bundle.yaml */
+    bundle: join(cwd, ".aligntrue", "bundle.yaml"),
 
     /** Path to Cursor rule file for given scope */
     cursorRules: (scope: string): string => {

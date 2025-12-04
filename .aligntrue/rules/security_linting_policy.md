@@ -30,7 +30,7 @@ This document defines when to suppress vs fix security warnings from `eslint-plu
 
 - Schema files resolved from `__dirname` at build time
 - Paths from `getAlignTruePaths()` helper (all are safe internal paths)
-- Lockfile, bundle, and IR file paths (`.aligntrue/rules`, `.aligntrue.lock.json`, etc.)
+- Lockfile, bundle, and IR file paths (`.aligntrue/rules`, `.aligntrue/lock.json`, etc.)
 - Test fixtures and temporary files
 
 **Pattern**:

@@ -14,16 +14,43 @@ import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import type { Lockfile } from "./types.js";
 
 const HASH_MIGRATION_MARKER_FILE = "lockfile-hash-migration.json";
+const LOCATION_MIGRATION_MARKER_FILE = "lockfile-location-migration.json";
 
 /**
  * Read lockfile from disk
  *
- * @param path - Path to lockfile (typically .aligntrue.lock.json)
+ * Supports migration from old location (.aligntrue.lock.json) to new location (.aligntrue/lock.json)
+ *
+ * @param path - Path to lockfile (typically .aligntrue/lock.json)
  * @returns Lockfile object or null if not found
  */
 export function readLockfile(path: string): Lockfile | null {
   // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
   if (!existsSync(path)) {
+    // Check if old location exists and migrate
+    const oldPath = getOldLockfilePath(path);
+    if (existsSync(oldPath) && !hasLocationMigrationMarker(path)) {
+      try {
+        // Safe: Old path is derived from new path (safe internal path)
+        const content = readFileSync(oldPath, "utf8");
+        const lockfile = JSON.parse(content) as Lockfile;
+
+        // Migrate: write to new location and delete old
+        writeLockfile(path, lockfile, { silent: true });
+        // Safe: Old path is derived from new path (safe internal path)
+        unlinkSync(oldPath);
+
+        // Mark migration as complete
+        writeLocationMigrationMarker(path);
+
+        // Log migration once per workspace
+        console.log("✓ Migrated lockfile to .aligntrue/lock.json");
+
+        return lockfile;
+      } catch {
+        // Fall through to return null if migration fails
+      }
+    }
     return null;
   }
 
@@ -52,7 +79,7 @@ export function readLockfile(path: string): Lockfile | null {
  * Uses temp+rename pattern to prevent partial writes
  * JSON formatted with 2-space indent and sorted keys
  *
- * @param path - Path to lockfile (typically .aligntrue.lock.json)
+ * @param path - Path to lockfile (typically .aligntrue/lock.json)
  * @param lockfile - Lockfile object to write
  * @param options - Optional write options
  */
@@ -160,8 +187,9 @@ function sortKeys(key: string, value: unknown): unknown {
 }
 
 function getMigrationMarkerPath(lockfilePath: string): string {
-  const workspaceDir = dirname(lockfilePath);
-  return join(workspaceDir, ".aligntrue", ".cache", HASH_MIGRATION_MARKER_FILE);
+  // lockfilePath is .aligntrue/lock.json, so dirname gives us .aligntrue
+  const aligntrueDir = dirname(lockfilePath);
+  return join(aligntrueDir, ".cache", HASH_MIGRATION_MARKER_FILE);
 }
 
 function hasHashMigrationMarker(lockfilePath: string): boolean {
@@ -192,6 +220,66 @@ function writeHashMigrationMarker(lockfilePath: string): void {
     writeFileSync(
       markerPath,
       JSON.stringify({ hash_migration_completed: true }, null, 2),
+      "utf-8",
+    );
+  } catch {
+    // Ignore marker write failures (non-critical)
+  }
+}
+
+/**
+ * Get the old lockfile path (before migration to .aligntrue directory)
+ * @param newPath - Current lockfile path (.aligntrue/lock.json)
+ * @returns Old lockfile path (.aligntrue.lock.json in workspace root)
+ */
+function getOldLockfilePath(newPath: string): string {
+  const workspaceDir = dirname(dirname(newPath)); // Go up from .aligntrue/
+  return join(workspaceDir, ".aligntrue.lock.json");
+}
+
+/**
+ * Get marker file path for location migration
+ */
+function getLocationMigrationMarkerPath(lockfilePath: string): string {
+  // lockfilePath is .aligntrue/lock.json, so dirname gives us .aligntrue
+  const aligntrueDir = dirname(lockfilePath);
+  return join(aligntrueDir, ".cache", LOCATION_MIGRATION_MARKER_FILE);
+}
+
+/**
+ * Check if location migration has already been done
+ */
+function hasLocationMigrationMarker(lockfilePath: string): boolean {
+  const markerPath = getLocationMigrationMarkerPath(lockfilePath);
+
+  // Safe: Marker path derived from lockfile path (safe internal path)
+  if (!existsSync(markerPath)) {
+    return false;
+  }
+  try {
+    // Safe: Marker path derived from lockfile path (safe internal path)
+    const data = JSON.parse(readFileSync(markerPath, "utf-8")) as {
+      location_migration_completed?: boolean;
+    };
+    return Boolean(data?.location_migration_completed);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Write marker indicating location migration is complete
+ */
+function writeLocationMigrationMarker(lockfilePath: string): void {
+  try {
+    const markerPath = getLocationMigrationMarkerPath(lockfilePath);
+    const markerDir = dirname(markerPath);
+    ensureDirectoryExists(markerDir);
+
+    // Safe: Marker path derived from lockfile path (safe internal path)
+    writeFileSync(
+      markerPath,
+      JSON.stringify({ location_migration_completed: true }, null, 2),
       "utf-8",
     );
   } catch {

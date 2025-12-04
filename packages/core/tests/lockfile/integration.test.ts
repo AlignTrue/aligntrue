@@ -15,7 +15,7 @@ describe("lockfile integration", () => {
     process.cwd(),
     "packages/core/tests/lockfile/temp-integration",
   );
-  const lockfilePath = join(testDir, ".aligntrue.lock.json");
+  const lockfilePath = join(testDir, ".aligntrue/lock.json");
 
   const mockAlign: Align = {
     id: "test.align",

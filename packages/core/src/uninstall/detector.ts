@@ -5,7 +5,7 @@
  * - Exported agent files (.cursor/rules/*.mdc, AGENTS.md, etc.)
  * - Source files (.aligntrue/rules/*.md)
  * - Configuration (.aligntrue/config.yaml)
- * - Lockfile (.aligntrue.lock.json)
+ * - Lockfile (.aligntrue/lock.json or .aligntrue.lock.json for legacy)
  * - Cache (.aligntrue/.cache/)
  * - Backups (.aligntrue/.backups/)
  */
@@ -284,12 +284,24 @@ function detectConfigFiles(cwd: string): DetectedFile[] {
 }
 
 /**
- * Detect lockfile
+ * Detect lockfile (checks both new and old locations)
  */
 function detectLockfile(cwd: string): DetectedFile | null {
-  const lockfilePath = join(cwd, ".aligntrue.lock.json");
-  if (existsSync(lockfilePath)) {
-    const stat = statSync(lockfilePath);
+  // Check new location first
+  const newLockfilePath = join(cwd, ".aligntrue", "lock.json");
+  if (existsSync(newLockfilePath)) {
+    const stat = statSync(newLockfilePath);
+    return {
+      path: ".aligntrue/lock.json",
+      type: "lockfile",
+      size: stat.size,
+    };
+  }
+
+  // Check legacy location
+  const oldLockfilePath = join(cwd, ".aligntrue.lock.json");
+  if (existsSync(oldLockfilePath)) {
+    const stat = statSync(oldLockfilePath);
     return {
       path: ".aligntrue.lock.json",
       type: "lockfile",

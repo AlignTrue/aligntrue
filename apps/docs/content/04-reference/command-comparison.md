@@ -23,7 +23,7 @@ AlignTrue exposes multiple validation commands. Use this page to pick the right 
 **Validates:**
 
 - `.aligntrue/rules` matches the Align schema
-- `.aligntrue.lock.json` hashes match the current IR
+- `.aligntrue/lock.json` hashes match the current IR
 - Overlay definitions (if configured)
 
 **Best for:** Solo workflows, pre-commit hooks, CI validation prior to syncing.

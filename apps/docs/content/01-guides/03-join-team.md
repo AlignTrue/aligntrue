@@ -223,7 +223,7 @@ If CI reports drift:
 aligntrue drift
 
 # If you made the change, create PR for team lead to review:
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update lockfile"
 git push origin feature-branch
 
