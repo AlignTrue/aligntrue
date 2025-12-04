@@ -7,28 +7,51 @@ description: Guide for team members joining a project with AlignTrue team mode
 
 This guide walks you through joining a project that already uses AlignTrue in team mode.
 
-## Prerequisites
+## What is AlignTrue doing in your project?
 
-- AlignTrue CLI installed (`npm install -g @aligntrue/cli`)
-- Access to the team's repository
-- Git configured with your credentials
+Your team uses AlignTrue to manage AI assistant rules. Here's what you need to know:
 
-## Step 1: Clone the repository
+- **Your team has shared rules** stored in `.aligntrue/rules/` that define how AI assistants (Cursor, Copilot, Claude, etc.) should behave in this codebase
+- **Rules sync to agent files** like `.cursor/rules/*.mdc` and `AGENTS.md` - these are auto-generated, don't edit them directly
+- **It just works** - after cloning, run `aligntrue sync` and you'll have the team's rules applied
+
+**The important thing:** You don't need to configure anything. Just sync and the team rules work automatically.
+
+## Quick start
 
 ```bash
+# Clone the repo
 git clone git@github.com:yourteam/project.git
 cd project
+
+# Sync rules to your AI assistants
+aligntrue sync
+
+# Done! Open Cursor or your AI assistant and the rules are active
 ```
 
-## Step 2: Initialize AlignTrue
+That's it for most team members. The sections below cover optional personal configuration.
 
-Run the init command:
+---
 
-```bash
-aligntrue init
-```
+## Understanding the two-file config system
 
-AlignTrue will detect the existing team configuration and set you up with the team rules.
+Your project has two configuration files:
+
+| File               | Purpose                                    | Git status |
+| ------------------ | ------------------------------------------ | ---------- |
+| `config.team.yaml` | Team settings (rules, exporters, lockfile) | Committed  |
+| `config.yaml`      | Your personal settings (optional)          | Gitignored |
+
+When you first sync, AlignTrue creates an empty `config.yaml` for your personal settings. You can ignore it or use it to:
+
+- Add personal rule sources
+- Override team settings locally (e.g., for testing)
+- Configure personal remote backup
+
+---
+
+## Personal settings (optional, for power users)
 
 ### Adding personal rules (optional)
 

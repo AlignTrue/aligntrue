@@ -20,6 +20,7 @@ import {
   getAlignTruePaths,
   writeRuleFile,
   resolveConflict,
+  isTeamModeActive,
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { importRules } from "../utils/source-resolver.js";
@@ -284,6 +285,75 @@ export async function add(args: string[]): Promise<void> {
 }
 
 /**
+ * Determine which config file to write to based on team mode and flags
+ */
+async function determineTargetConfig(options: {
+  cwd: string;
+  configPath: string;
+  personal: boolean;
+  shared: boolean;
+  operationType: "source" | "remote";
+}): Promise<{ targetPath: string; isPersonalConfig: boolean }> {
+  const { cwd, configPath, personal, shared, operationType } = options;
+  const paths = getAlignTruePaths(cwd);
+
+  // If not in team mode, always use the main config
+  if (!isTeamModeActive(cwd)) {
+    return { targetPath: configPath, isPersonalConfig: true };
+  }
+
+  // In team mode with explicit flags
+  if (personal) {
+    return { targetPath: paths.config, isPersonalConfig: true };
+  }
+  if (shared) {
+    return { targetPath: paths.teamConfig, isPersonalConfig: false };
+  }
+
+  // In team mode with no flag: prompt user
+  if (isTTY()) {
+    const choice = await clack.select({
+      message: `Add ${operationType} to which config?`,
+      options: [
+        {
+          value: "personal",
+          label: "Personal config (gitignored, for your use only)",
+          hint: "config.yaml",
+        },
+        {
+          value: "team",
+          label: "Team config (committed, shared with team)",
+          hint: "config.team.yaml",
+        },
+      ],
+      initialValue: operationType === "remote" ? "personal" : "team",
+    });
+
+    if (clack.isCancel(choice)) {
+      clack.cancel("Operation cancelled");
+      process.exit(0);
+    }
+
+    if (choice === "personal") {
+      return { targetPath: paths.config, isPersonalConfig: true };
+    } else {
+      return { targetPath: paths.teamConfig, isPersonalConfig: false };
+    }
+  }
+
+  // Non-interactive team mode without flags: error
+  exitWithError({
+    title: "Ambiguous target config",
+    message: `In team mode, specify --personal or --shared flag for add ${operationType}`,
+    hint: `Use: aligntrue add ${operationType} <url> --personal (or --shared)`,
+    code: "AMBIGUOUS_CONFIG_TARGET",
+  });
+
+  // This line is unreachable but TypeScript needs it
+  return { targetPath: configPath, isPersonalConfig: true };
+}
+
+/**
  * Add a source to config (gets updates on sync)
  */
 async function addSource(options: {
@@ -307,14 +377,25 @@ async function addSource(options: {
     spinner,
   } = options;
 
+  const cwd = process.cwd();
+
+  // Determine target config file
+  const { targetPath, isPersonalConfig } = await determineTargetConfig({
+    cwd,
+    configPath,
+    personal: personal || privateSource, // Private sources default to personal
+    shared: false,
+    operationType: "source",
+  });
+
   spinner.start("Adding source...");
 
   try {
     // Load or create config
     let config: AlignTrueConfig;
 
-    if (existsSync(configPath)) {
-      config = await loadConfigWithValidation(configPath);
+    if (existsSync(targetPath)) {
+      config = await loadConfigWithValidation(targetPath);
     } else {
       // Create minimal config
       config = {
@@ -349,7 +430,7 @@ async function addSource(options: {
           `This source is already in your configuration:\n  ${baseUrl}`,
         );
         clack.log.info(
-          "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
+          `To update it, edit ${targetPath} directly or remove and re-add.`,
         );
       } else {
         console.log(`\nWarning: This source already exists: ${baseUrl}`);
@@ -378,8 +459,8 @@ async function addSource(options: {
       if (gitPath) {
         newSource.path = gitPath;
       }
-      // Mark as personal if flag or SSH source
-      if (personal || privateSource) {
+      // Mark as personal if flag or SSH source (only in personal config)
+      if ((personal || privateSource) && isPersonalConfig) {
         newSource.personal = true;
       }
       // Auto-set gitignore for SSH sources
@@ -391,7 +472,7 @@ async function addSource(options: {
         type: "local",
         path: baseUrl,
       };
-      if (personal) {
+      if (personal && isPersonalConfig) {
         newSource.personal = true;
       }
     }
@@ -403,9 +484,15 @@ async function addSource(options: {
     );
 
     // Patch config - only update sources, preserve everything else
-    await patchConfig({ sources: updatedSources }, configPath);
+    await patchConfig({ sources: updatedSources }, targetPath);
 
     spinner.stop("Source added");
+
+    // Show which config was updated
+    const configType = isPersonalConfig ? "personal" : "team";
+    if (isTTY()) {
+      clack.log.success(`Added to ${configType} config: ${targetPath}`);
+    }
 
     // Show notes
     if (privateSource && isTTY()) {
@@ -460,14 +547,30 @@ async function addRemote(options: {
 }): Promise<void> {
   const { baseUrl, gitRef, configPath, scope, spinner } = options;
 
+  const cwd = process.cwd();
+
+  // Determine target config file based on scope
+  // - personal remotes go to personal config
+  // - shared remotes go to team config
+  const { targetPath } = await determineTargetConfig({
+    cwd,
+    configPath,
+    personal: scope === "personal" || scope === undefined, // Default to personal for remotes
+    shared: scope === "shared",
+    operationType: "remote",
+  });
+
+  // Determine which remote slot to use
+  const remoteKey = scope || "personal"; // Default to personal if no scope specified
+
   spinner.start("Adding remote...");
 
   try {
     // Load or create config
     let config: AlignTrueConfig;
 
-    if (existsSync(configPath)) {
-      config = await loadConfigWithValidation(configPath);
+    if (existsSync(targetPath)) {
+      config = await loadConfigWithValidation(targetPath);
     } else {
       // Create minimal config
       config = {
@@ -482,9 +585,6 @@ async function addRemote(options: {
     if (!config.remotes) {
       config.remotes = {};
     }
-
-    // Determine which remote slot to use
-    const remoteKey = scope || "personal"; // Default to personal if no scope specified
 
     // Build remote URL with optional branch
     const remoteUrl = gitRef ? `${baseUrl}#${gitRef}` : baseUrl;
@@ -506,7 +606,7 @@ async function addRemote(options: {
             `remotes.${remoteKey} is already configured:\n  ${existingUrl}`,
           );
           clack.log.info(
-            "To update it, edit .aligntrue/config.yaml directly or remove and re-add.",
+            `To update it, edit ${targetPath} directly or remove and re-add.`,
           );
         } else {
           console.log(
@@ -555,10 +655,16 @@ async function addRemote(options: {
           [remoteKey]: remoteValue,
         },
       },
-      configPath,
+      targetPath,
     );
 
     spinner.stop("Remote added");
+
+    // Show which config was updated
+    const configType = remoteKey === "personal" ? "personal" : "team";
+    if (isTTY()) {
+      clack.log.success(`Added to ${configType} config: ${targetPath}`);
+    }
 
     // Show explanation of how it works
     if (isTTY()) {

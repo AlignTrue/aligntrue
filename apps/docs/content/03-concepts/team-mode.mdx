@@ -40,10 +40,10 @@ Team mode enables collaborative rule management with:
 aligntrue team enable
 ```
 
-This updates `.aligntrue/config.yaml`:
+This creates two configuration files:
 
-- `mode: solo` → `mode: team`
-- Enables `modules.lockfile` and `modules.bundle`
+- **`.aligntrue/config.team.yaml`** (new, committed) - Team settings: `mode: team`, lockfile, bundle, shared sources and exporters
+- **`.aligntrue/config.yaml`** (updated, gitignored) - Personal settings: personal remotes, local overrides
 
 ### 2. Generate lockfile
 
@@ -119,33 +119,35 @@ aligntrue team disable
 
 **What it does:**
 
-1. Creates automatic backup before migration
-2. Updates config: removes team mode settings
-3. Deletes `.aligntrue/lock.json` (no purpose in solo mode)
-4. Preserves `.aligntrue/rules` (team rules become solo public rules)
-5. Shows confirmation message with backup timestamp
+1. Adds a `# TEAM MODE OFF` marker to `.aligntrue/config.team.yaml` (non-destructive)
+2. Personal settings in `.aligntrue/config.yaml` remain unchanged
+3. The marker prevents team settings from being loaded
+4. Can be re-enabled later by removing the marker (via `aligntrue team enable`)
 
-**Note:** Team rules become regular solo rules. You can make them private by editing AGENTS.md.
+**Note:** Your personal configuration is preserved, so you can re-enable team mode without losing local overrides.
 
-### Mode switching preserves workflow settings
+### File ownership in team mode
 
-When switching between solo and team modes, AlignTrue preserves your sync workflow preferences:
+Settings are split between two configuration files:
 
-**Settings preserved during mode transitions:**
+**Team-only settings** (`.aligntrue/config.team.yaml`, committed):
 
-- Exporter configuration
-- Detection settings
-- Backup configuration
-- `sync.on_conflict` - Conflict resolution strategy
+- `mode: team`
+- `modules.lockfile`, `modules.bundle`
+- `lockfile.*` configuration
+- Shared `sources` and `exporters`
 
-**What changes:**
+**Personal-only settings** (`.aligntrue/config.yaml`, gitignored):
 
-- `mode` - solo ↔ team
-- `modules.lockfile` - enabled/disabled
-- `modules.bundle` - enabled/disabled
-- `lockfile.mode` - added/removed (team only)
+- `remotes.personal` - Your personal rule backups
+- Local overrides of shared settings
 
-This ensures your personal workflow preferences survive round-trip transitions (solo→team→solo).
+**Shared settings** (merged additively):
+
+- `sources`, `exporters` - Both files contribute to the final list
+- `git`, `overlays`, `export`, etc. - Personal config overrides team config
+
+When loading configuration, personal settings are merged on top of team settings, allowing local overrides while maintaining team standards.
 
 ## Workflows
 

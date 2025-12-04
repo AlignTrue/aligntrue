@@ -2,9 +2,15 @@
  * Team mode management commands
  */
 
-import { existsSync, writeFileSync, mkdirSync, renameSync } from "fs";
+import {
+  existsSync,
+  writeFileSync,
+  mkdirSync,
+  renameSync,
+  readFileSync,
+} from "fs";
 import { dirname } from "path";
-import { stringify as stringifyYaml } from "yaml";
+import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
 import * as clack from "@clack/prompts";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import {
@@ -13,7 +19,15 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { isTTY } from "../utils/tty-helper.js";
-import { applyDefaults, getExporterNames, patchConfig } from "@aligntrue/core";
+import {
+  getExporterNames,
+  getAlignTruePaths,
+  isTeamModeActive,
+  hasTeamModeOffMarker,
+  TEAM_MODE_OFF_MARKER,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
+import { addToGitignore } from "../utils/gitignore-helpers.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -98,34 +112,56 @@ export async function team(args: string[]): Promise<void> {
  * Show team mode status dashboard
  */
 async function teamStatus(): Promise<void> {
-  const configPath = ".aligntrue/config.yaml";
+  const paths = getAlignTruePaths(process.cwd());
+  const configPath = paths.config;
+  const teamConfigPath = paths.teamConfig;
 
   // Check if config exists
-  if (!existsSync(configPath)) {
+  if (!existsSync(configPath) && !existsSync(teamConfigPath)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
     process.exit(1);
   }
 
   try {
-    // Load config
-    const config = await tryLoadConfig(configPath);
+    const teamModeActive = isTeamModeActive(process.cwd());
+    const hasOffMarker = hasTeamModeOffMarker(process.cwd());
 
     // Check if in team mode
-    if (config.mode !== "team") {
+    if (!teamModeActive) {
       console.log("Mode: solo");
-      console.log("\n💡 This project is in solo mode");
-      console.log("   To enable team features, run:");
-      console.log("   aligntrue team enable");
+      if (hasOffMarker) {
+        console.log("\n💡 Team config exists but is disabled");
+        console.log("   config.team.yaml has OFF marker");
+        console.log("   To re-enable team features, run:");
+        console.log("   aligntrue team enable");
+      } else {
+        console.log("\n💡 This project is in solo mode");
+        console.log("   To enable team features, run:");
+        console.log("   aligntrue team enable");
+      }
       return;
     }
+
+    // Load merged config for team mode
+    const { loadMergedConfig } = await import("@aligntrue/core");
+    const { config, sources: configSources } = await loadMergedConfig(
+      process.cwd(),
+    );
 
     // Team mode - show full status
     console.log("Team Mode Status");
     console.log("================\n");
 
-    // Mode
-    console.log(`Mode: ${config.mode}`);
+    // Mode and config files
+    console.log(`Mode: team`);
+    console.log("\nConfig Files:");
+    console.log(`  Team: ${teamConfigPath} (committed)`);
+    if (configSources.personal) {
+      console.log(`  Personal: ${configPath} (gitignored)`);
+    } else {
+      console.log(`  Personal: ${configPath} (not created yet)`);
+    }
 
     // Lockfile status
     const lockfileEnabled = config.modules?.lockfile ?? false;
@@ -133,16 +169,16 @@ async function teamStatus(): Promise<void> {
     if (lockfileEnabled) {
       const lockfileFriendly = formatLockfileMode(lockfileMode);
       console.log(
-        `Lockfile validation: ${lockfileFriendly}${
+        `\nLockfile validation: ${lockfileFriendly}${
           lockfileMode !== "off" ? ` (${lockfileMode})` : ""
         }`,
       );
-      const lockfilePath = ".aligntrue/lock.json";
+      const lockfilePath = paths.lockfile;
       const lockfileExists = existsSync(lockfilePath);
       if (lockfileExists) {
-        console.log(`  File: ${lockfilePath} (exists)`);
+        console.log(`  File: .aligntrue/lock.json (exists)`);
       } else {
-        console.log(`  File: ${lockfilePath} (not generated yet)`);
+        console.log(`  File: .aligntrue/lock.json (not generated yet)`);
         console.log("  💡 Run 'aligntrue sync' to generate");
       }
       console.log("  ℹ️  Lockfile Modes:");
@@ -152,24 +188,12 @@ async function teamStatus(): Promise<void> {
       console.log("    warn on drift    - Warn about drift, but allow sync");
       console.log("    block on drift   - Block sync until lockfile approved");
     } else {
-      console.log("Lockfile: disabled");
-      console.log("  💡 Enable in config: modules.lockfile: true");
+      console.log("\nLockfile: disabled");
+      console.log("  💡 Enable in team config: modules.lockfile: true");
     }
 
     // Drift status
-    console.log("Drift Status: Run 'aligntrue drift' to check");
-
-    // Team members (placeholder - no git detection)
-    console.log("Team Members: (configure in .aligntrue/config.yaml)");
-
-    // Configuration section
-    console.log("\nConfiguration");
-    console.log("=============\n");
-    console.log(`Config: ${configPath}`);
-
-    if (lockfileEnabled) {
-      console.log("Lockfile: .aligntrue/lock.json");
-    }
+    console.log("\nDrift Status: Run 'aligntrue drift' to check");
 
     // Sources
     if (config.sources && config.sources.length > 0) {
@@ -183,7 +207,8 @@ async function teamStatus(): Promise<void> {
         } else {
           sourceStr = source.type;
         }
-        console.log(`  ${idx + 1}. ${sourceStr}`);
+        const personalTag = source.personal ? " (personal)" : "";
+        console.log(`  ${idx + 1}. ${sourceStr}${personalTag}`);
       });
     }
 
@@ -194,6 +219,25 @@ async function teamStatus(): Promise<void> {
       exporterNames.forEach((exporter: string) => {
         console.log(`  - ${exporter}`);
       });
+    }
+
+    // Remotes
+    if (config.remotes) {
+      console.log("\nRemotes:");
+      if (config.remotes.personal) {
+        const url =
+          typeof config.remotes.personal === "string"
+            ? config.remotes.personal
+            : config.remotes.personal.url;
+        console.log(`  Personal: ${url}`);
+      }
+      if (config.remotes.shared) {
+        const url =
+          typeof config.remotes.shared === "string"
+            ? config.remotes.shared
+            : config.remotes.shared.url;
+        console.log(`  Shared: ${url}`);
+      }
     }
   } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
@@ -208,7 +252,9 @@ async function teamStatus(): Promise<void> {
 async function teamEnable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
-  const configPath = ".aligntrue/config.yaml";
+  const paths = getAlignTruePaths(process.cwd());
+  const configPath = paths.config;
+  const teamConfigPath = paths.teamConfig;
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -226,11 +272,9 @@ async function teamEnable(
   }
 
   try {
-    // Load current config (with standardized error handling)
-    const config = await tryLoadConfig(configPath);
-
-    // Check if already in team mode
-    if (config.mode === "team") {
+    // Check if team mode is already active
+    if (isTeamModeActive(process.cwd())) {
+      const config = await tryLoadConfig(configPath);
       console.log("✓ Already in team mode");
       console.log("\nTeam mode features active:");
       console.log(
@@ -242,26 +286,32 @@ async function teamEnable(
       return;
     }
 
+    // Check if team config exists but has OFF marker (re-enabling)
+    const isReEnabling = hasTeamModeOffMarker(process.cwd());
+
     // Show what will change
     if (!nonInteractive) {
       clack.intro("Team Mode Enable");
     }
 
-    const changes = [
-      "mode: solo → team",
-      "modules.lockfile: false → true",
-      "modules.bundle: false → true",
-    ];
+    const changes = isReEnabling
+      ? [
+          "Re-enable team config (remove OFF marker from config.team.yaml)",
+          "Lockfile and bundle generation will resume",
+        ]
+      : [
+          "Create config.team.yaml with team settings",
+          "Add config.yaml to .gitignore (personal settings)",
+          "Generate lockfile for reproducibility",
+        ];
 
     if (nonInteractive) {
       console.log("Team Mode Enable (non-interactive mode)");
-      console.log("\nChanges to .aligntrue/config.yaml:");
+      console.log("\nChanges:");
       changes.forEach((c) => console.log(`  - ${c}`));
       console.log("\nProceeding automatically...\n");
     } else {
-      clack.log.info(
-        `Changes to .aligntrue/config.yaml:\n${changes.map((c) => `  - ${c}`).join("\n")}`,
-      );
+      clack.log.info(`Changes:\n${changes.map((c) => `  - ${c}`).join("\n")}`);
 
       const shouldProceed = await clack.confirm({
         message: "Enable team mode?",
@@ -287,9 +337,9 @@ async function teamEnable(
       clack.log.success(`Backup created: ${backup.timestamp}`);
     }
 
-    // Prompt for lockfile mode (interactive only)
+    // Prompt for lockfile mode (interactive only, new setup only)
     let lockfileMode: "soft" | "strict" = "soft";
-    if (!nonInteractive) {
+    if (!nonInteractive && !isReEnabling) {
       // Explain team mode benefits first
       clack.log.info(`Team Mode Benefits:
   ✓ Reproducible builds with lockfiles
@@ -323,9 +373,27 @@ async function teamEnable(
       lockfileMode = lockfileModeResponse as "soft" | "strict";
     }
 
-    // Use patchConfig to only update the specific fields (keeps config clean)
-    await patchConfig(
-      {
+    if (isReEnabling) {
+      // Re-enabling: just remove the OFF marker from config.team.yaml
+      const content = readFileSync(teamConfigPath, "utf-8");
+      const markerEnd = content.indexOf("\n");
+      const configContent =
+        markerEnd !== -1 ? content.slice(markerEnd + 1) : "";
+      writeFileSync(teamConfigPath, configContent, "utf-8");
+
+      if (!nonInteractive) {
+        clack.log.success("Team mode re-enabled (removed OFF marker)");
+      }
+    } else {
+      // New setup: create config.team.yaml and update config.yaml
+
+      // Load current personal config to extract team-only fields
+      const personalRaw = parseYaml(
+        readFileSync(configPath, "utf-8"),
+      ) as Record<string, unknown>;
+
+      // Extract team-only fields for team config
+      const teamConfig: Partial<AlignTrueConfig> = {
         mode: "team",
         modules: {
           lockfile: true,
@@ -334,12 +402,68 @@ async function teamEnable(
         lockfile: {
           mode: lockfileMode,
         },
-      },
-      configPath,
-      process.cwd(),
-    );
+      };
 
-    // Create empty lockfile immediately
+      // Move sources and exporters to team config (they're shared but default to team)
+      const rawSources = personalRaw["sources"];
+      if (rawSources !== undefined && rawSources !== null) {
+        teamConfig.sources = rawSources as NonNullable<
+          AlignTrueConfig["sources"]
+        >;
+      }
+      const rawExporters = personalRaw["exporters"];
+      if (rawExporters !== undefined && rawExporters !== null) {
+        teamConfig.exporters = rawExporters as NonNullable<
+          AlignTrueConfig["exporters"]
+        >;
+      }
+
+      // Write team config
+      const teamYaml = stringifyYaml(teamConfig);
+      mkdirSync(dirname(teamConfigPath), { recursive: true });
+      writeFileSync(teamConfigPath, teamYaml, "utf-8");
+
+      // Clean personal config: remove team-only fields
+      const cleanedPersonal: Record<string, unknown> = {};
+      const teamOnlyFields = [
+        "mode",
+        "modules",
+        "lockfile",
+        "sources",
+        "exporters",
+      ];
+      for (const [key, value] of Object.entries(personalRaw)) {
+        if (!teamOnlyFields.includes(key) && value !== undefined) {
+          cleanedPersonal[key] = value;
+        }
+      }
+
+      // Keep version in personal for reference
+      if (personalRaw["version"]) {
+        cleanedPersonal["version"] = personalRaw["version"];
+      }
+
+      // Write cleaned personal config
+      const personalYaml = stringifyYaml(cleanedPersonal);
+      const tempPath = `${configPath}.tmp`;
+      writeFileSync(tempPath, personalYaml, "utf-8");
+      renameSync(tempPath, configPath);
+
+      // Add config.yaml to .gitignore
+      await addToGitignore(
+        "config.yaml",
+        "AlignTrue personal config",
+        process.cwd(),
+      );
+
+      if (!nonInteractive) {
+        clack.log.success("Created config.team.yaml with team settings");
+        clack.log.success("Updated config.yaml (personal settings only)");
+        clack.log.success("Added config.yaml to .gitignore");
+      }
+    }
+
+    // Create empty lockfile immediately (for new setup or re-enable)
     const { createEmptyLockfile } = await import(
       "../utils/lockfile-helpers.js"
     );
@@ -358,15 +482,12 @@ async function teamEnable(
       }
     }
 
-    if (!nonInteractive) {
-      clack.log.success("Team configuration updated");
-    }
-
     // Consolidated outro
     const outroLines = [
       "Team mode enabled",
       "",
-      "Config updated: .aligntrue/config.yaml",
+      "Team config: .aligntrue/config.team.yaml (commit this)",
+      "Personal config: .aligntrue/config.yaml (gitignored)",
       `Lockfile: .aligntrue/lock.json (${lockfileMode} mode, ready)`,
       "",
       "Helpful commands:",
@@ -394,13 +515,13 @@ async function teamEnable(
 }
 
 /**
- * Disable team mode and migrate back to solo mode
+ * Disable team mode (non-destructive: adds OFF marker to config.team.yaml)
  */
 async function teamDisable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
-  const configPath = ".aligntrue/config.yaml";
-  const lockfilePath = ".aligntrue/lock.json";
+  const paths = getAlignTruePaths(process.cwd());
+  const teamConfigPath = paths.teamConfig;
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -410,34 +531,25 @@ async function teamDisable(
     !isTTY() ||
     false;
 
-  // Check if config exists
-  if (!existsSync(configPath)) {
-    console.error("✗ Config file not found: .aligntrue/config.yaml");
-    console.error("  Run: aligntrue init");
-    process.exit(1);
+  // Check if team mode is active
+  if (!isTeamModeActive(process.cwd())) {
+    console.log("✓ Already in solo mode");
+    if (hasTeamModeOffMarker(process.cwd())) {
+      console.log("  (config.team.yaml exists but is marked OFF)");
+    }
+    return;
   }
 
   try {
-    // Load current config
-    const config = await tryLoadConfig(configPath);
-
-    // Check if already in solo mode
-    if (config.mode !== "team") {
-      console.log("✓ Already in solo mode");
-      return;
-    }
-
     // Show what will change
     if (!nonInteractive) {
       clack.intro("Team Mode Disable");
     }
 
     const changes = [
-      "mode: team → solo",
-      "modules.lockfile: true → false",
-      "modules.bundle: true → false",
-      "Delete .aligntrue/lock.json (no purpose in solo mode)",
-      "Preserve .aligntrue/rules/ (team rules become solo public rules)",
+      "Add OFF marker to config.team.yaml (preserves all settings)",
+      "Team config will be ignored until re-enabled",
+      "Your team settings are preserved for easy re-enable",
     ];
 
     if (nonInteractive) {
@@ -449,7 +561,7 @@ async function teamDisable(
       clack.log.info(`Changes:\n${changes.map((c) => `  - ${c}`).join("\n")}`);
 
       const shouldProceed = await clack.confirm({
-        message: "Disable team mode and migrate to solo?",
+        message: "Disable team mode?",
         initialValue: false,
       });
 
@@ -471,68 +583,30 @@ async function teamDisable(
 
     if (!nonInteractive) {
       clack.log.success(`Backup created: ${backup.timestamp}`);
-      clack.log.info(
-        `Restore with: aligntrue backup restore --timestamp ${backup.timestamp}`,
-      );
     } else {
       console.log(`Backup created: ${backup.timestamp}`);
     }
 
-    // Update config
-    config.mode = "solo";
-    config.modules = {
-      ...config.modules,
-      lockfile: false,
-      bundle: false,
-    };
+    // Add OFF marker to the top of config.team.yaml (non-destructive)
+    const existingContent = readFileSync(teamConfigPath, "utf-8");
+    const newContent = `${TEAM_MODE_OFF_MARKER}\n${existingContent}`;
+    writeFileSync(teamConfigPath, newContent, "utf-8");
 
-    // Remove lockfile config
-    if (config.lockfile) {
-      delete config.lockfile;
-    }
-
-    // Apply defaults to fill in other missing fields
-    const configWithDefaults = applyDefaults(config);
-
-    // Write config back atomically
-    const yamlContent = stringifyYaml(configWithDefaults);
-    const tempPath = `${configPath}.tmp`;
-
-    // Ensure directory exists
-    mkdirSync(dirname(configPath), { recursive: true });
-
-    // Write to temp file first
-    writeFileSync(tempPath, yamlContent, "utf-8");
-
-    // Atomic rename (OS-level guarantee)
-    renameSync(tempPath, configPath);
-
-    // Delete lockfile if it exists
-    try {
-      const { unlinkSync } = await import("fs");
-      unlinkSync(lockfilePath);
-      if (!nonInteractive) {
-        clack.log.info("Deleted .aligntrue/lock.json");
-      } else {
-        console.log("Deleted .aligntrue/lock.json");
-      }
-    } catch {
-      // File may not exist, that's fine
+    if (!nonInteractive) {
+      clack.log.success("Added OFF marker to config.team.yaml");
     }
 
     // Consolidated outro
     const outroLines = [
-      "Solo mode enabled",
+      "Team mode disabled",
       "",
-      "Your rules are in .aligntrue/rules/ - edit them any time.",
-      `Backup available: aligntrue backup restore --timestamp ${backup.timestamp}`,
+      "config.team.yaml is now ignored (settings preserved)",
+      "Personal config.yaml is still active",
       "",
-      "Helpful commands:",
-      "  aligntrue sync        Sync rules to your agents",
-      "  aligntrue team enable Re-enable team mode",
-      "  aligntrue --help      See all commands",
+      "To re-enable team mode:",
+      "  aligntrue team enable",
       "",
-      "Learn more: https://aligntrue.ai/docs",
+      "Your team settings are preserved and can be restored instantly.",
     ];
 
     if (!nonInteractive) {

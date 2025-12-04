@@ -83,11 +83,14 @@ describeSkipWindows("Team Mode Workflow", () => {
       await init(["--yes"]);
       await team(["enable", "--yes"]);
 
-      // Check config has soft lockfile mode
-      const config = parseYaml(
-        readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
+      // Check team config has soft lockfile mode
+      const teamConfig = parseYaml(
+        readFileSync(join(env1, ".aligntrue/config.team.yaml"), "utf-8"),
       );
-      expect(config.lockfile.mode).toBe("soft");
+      expect(teamConfig.lockfile.mode).toBe("soft");
+
+      // Check personal config was created
+      expect(existsSync(join(env1, ".aligntrue/config.yaml"))).toBe(true);
     });
 
     it("generates lockfile after sync in team mode", async () => {
@@ -452,21 +455,19 @@ Version 2 - MODIFIED team rule.
       process.chdir(env1);
       await init(["--yes"]);
 
-      // Verify starts in default mode (not team)
-      let config = parseYaml(
-        readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
-      );
-      expect(config.mode).not.toBe("team");
+      // Verify starts in default mode (no team config)
+      expect(existsSync(join(env1, ".aligntrue/config.team.yaml"))).toBe(false);
       expect(existsSync(join(env1, ".aligntrue/lock.json"))).toBe(false);
 
       // Enable team mode
       await team(["enable", "--yes"]);
 
-      // Verify team mode
-      config = parseYaml(
-        readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
+      // Verify team mode - team settings are now in config.team.yaml
+      expect(existsSync(join(env1, ".aligntrue/config.team.yaml"))).toBe(true);
+      const teamConfig = parseYaml(
+        readFileSync(join(env1, ".aligntrue/config.team.yaml"), "utf-8"),
       );
-      expect(config.mode).toBe("team");
+      expect(teamConfig.mode).toBe("team");
     });
 
     it("can switch from team back to solo mode", async () => {
@@ -474,20 +475,23 @@ Version 2 - MODIFIED team rule.
       await init(["--yes"]);
       await team(["enable", "--yes"]);
 
-      // Verify in team mode
-      let config = parseYaml(
-        readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
+      // Verify in team mode - settings are in config.team.yaml
+      expect(existsSync(join(env1, ".aligntrue/config.team.yaml"))).toBe(true);
+      let teamConfig = parseYaml(
+        readFileSync(join(env1, ".aligntrue/config.team.yaml"), "utf-8"),
       );
-      expect(config.mode).toBe("team");
+      expect(teamConfig.mode).toBe("team");
 
       // Disable team mode
       await team(["disable", "--yes"]);
 
-      // Verify solo mode
-      config = parseYaml(
-        readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
+      // Verify team mode disabled via OFF marker (non-destructive)
+      // Team config file still exists but has the OFF marker
+      const teamConfigContent = readFileSync(
+        join(env1, ".aligntrue/config.team.yaml"),
+        "utf-8",
       );
-      expect(config.mode).toBe("solo");
+      expect(teamConfigContent).toContain("# TEAM MODE OFF");
     });
 
     it("lockfile hash is stable when re-enabling team mode", async () => {

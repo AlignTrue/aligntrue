@@ -20,13 +20,31 @@ aligntrue team enable
 # 2. Generate lockfile
 aligntrue sync
 
-# 3. Commit to git (approval via PR review)
-git add .aligntrue/ .aligntrue/lock.json
+# 3. Commit team config and lockfile (approval via PR review)
+git add .aligntrue/config.team.yaml .aligntrue/lock.json
 git commit -m "chore: Enable AlignTrue team mode"
 git push origin main
 ```
 
 **Result:** Team gets reproducible builds with drift detection.
+
+### Two-file config system
+
+When you enable team mode, AlignTrue creates two config files:
+
+| File               | Purpose                                              | Git status |
+| ------------------ | ---------------------------------------------------- | ---------- |
+| `config.team.yaml` | Team settings (exporters, sources, lockfile mode)    | Committed  |
+| `config.yaml`      | Personal settings (personal remote, local overrides) | Gitignored |
+
+This separation means:
+
+- **No merge conflicts** on personal settings like `remotes.personal`
+- **Easy local overrides** (e.g., set `git.mode: ignore` for testing)
+- **Personal rules** route to personal remote automatically
+- **Team settings** are shared and reviewed via PR
+
+Team members joining will have `config.yaml` auto-created on first sync.
 
 ## Team mode features
 

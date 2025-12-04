@@ -189,22 +189,31 @@ Switch to team mode when:
 **How to switch:**
 
 ```bash
-# Enable team mode
+# Enable team mode (creates two-file config system)
 aligntrue team enable
 
 # Generate lockfile
 aligntrue sync
 
 # Commit team files
-git add .aligntrue/config.yaml .aligntrue/lock.json
+git add .aligntrue/config.team.yaml .aligntrue/lock.json
 git commit -m "Switch to team mode"
+
+# Personal config (.aligntrue/config.yaml) is automatically gitignored
 ```
+
+**Configuration after switching:**
+
+- `.aligntrue/config.team.yaml` (committed) - Team settings, lockfile, bundle
+- `.aligntrue/config.yaml` (gitignored) - Your personal settings and overrides
+- `.aligntrue/lock.json` (committed) - Lockfile for reproducibility
 
 **Why use team mode:**
 
 - Determinism: Lockfiles pin exact versions
 - Compliance: Audit trail of approved changes
 - Collaboration: Team lead approves, members sync
+- Personal flexibility: Keep personal settings in gitignored config
 
 ### Team → Solo: When forking for personal use
 
@@ -217,37 +226,37 @@ Switch to solo mode when:
 **How to switch:**
 
 ```bash
-# Edit .aligntrue/config.yaml
-# Change: mode: team → mode: solo
+# Disable team mode (non-destructive, adds marker comment)
+aligntrue team disable
 
-# Remove team files (optional)
-rm .aligntrue/lock.json
-
-# Sync
+# Your personal config is preserved
+# Sync with solo mode behavior
 aligntrue sync
 ```
+
+**Note:** Team mode can be re-enabled later by running `aligntrue team enable` again. Your personal configuration settings are preserved.
 
 ## What changes when you switch
 
 ### Solo → Team changes
 
-| What changes     | Before (solo) | After (team)                  |
-| ---------------- | ------------- | ----------------------------- |
-| **Config**       | `mode: solo`  | `mode: team`                  |
-| **New files**    | None          | `.aligntrue/lock.json`        |
-| **Validation**   | Basic schema  | Schema + lockfile             |
-| **Sync speed**   | Fast          | Slightly slower (validation)  |
-| **Git workflow** | Optional      | Recommended (commit lockfile) |
+| What changes     | Before (solo)         | After (team)                                       |
+| ---------------- | --------------------- | -------------------------------------------------- |
+| **Config files** | 1 file (config.yaml)  | 2 files (config.team.yaml + config.yaml)           |
+| **New files**    | None                  | `.aligntrue/lock.json`                             |
+| **Git status**   | config.yaml committed | config.team.yaml committed, config.yaml gitignored |
+| **Validation**   | Basic schema          | Schema + lockfile                                  |
+| **Sync speed**   | Fast                  | Slightly slower (validation)                       |
 
 ### Team → Solo changes
 
-| What changes      | Before (team)       | After (solo)          |
-| ----------------- | ------------------- | --------------------- |
-| **Config**        | `mode: team`        | `mode: solo`          |
-| **Files removed** | Keep lockfile       | Can delete (optional) |
-| **Validation**    | Full validation     | Basic schema only     |
-| **Sync speed**    | Validation overhead | Fast                  |
-| **Git workflow**  | Lockfile required   | Optional              |
+| What changes          | Before (team)                            | After (solo)                                |
+| --------------------- | ---------------------------------------- | ------------------------------------------- |
+| **Config files**      | 2 files (config.team.yaml + config.yaml) | 1 effective file (config.yaml)              |
+| **Team config**       | Loaded and enforced                      | Ignored (marker comment added)              |
+| **Personal settings** | Merged with team settings                | Used directly                               |
+| **Lockfile**          | Enforced validation                      | No validation (can keep file for reference) |
+| **Git workflow**      | Lockfile required                        | Optional                                    |
 
 ## Rule visibility
 

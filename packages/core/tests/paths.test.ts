@@ -18,6 +18,13 @@ describe("getAlignTruePaths", () => {
     expect(paths.config).toBe(join(testCwd, ".aligntrue", "config.yaml"));
   });
 
+  it("should generate team config path", () => {
+    const paths = getAlignTruePaths(testCwd);
+    expect(paths.teamConfig).toBe(
+      join(testCwd, ".aligntrue", "config.team.yaml"),
+    );
+  });
+
   it("should generate Cursor rules path for custom scope", () => {
     const paths = getAlignTruePaths(testCwd);
     expect(paths.cursorRules("backend")).toBe(

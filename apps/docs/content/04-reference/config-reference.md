@@ -9,13 +9,51 @@ Complete reference for `.aligntrue/config.yaml` configuration options.
 
 ## Overview
 
-AlignTrue uses `.aligntrue/config.yaml` for all configuration. The file is created during `aligntrue init` and uses YAML format for readability.
-
-**Location:** `.aligntrue/config.yaml` (project root)
+AlignTrue uses YAML configuration files in the `.aligntrue/` directory.
 
 **Format:** YAML (validated against JSON Schema on load)
 
-**Mode-specific defaults:** Many fields have different defaults based on `mode` (solo vs team vs enterprise).
+**Mode-specific defaults:** Many fields have different defaults based on mode (solo vs team).
+
+### Solo mode (single file)
+
+In solo mode, all configuration is in one file:
+
+- **`config.yaml`** - All settings (committed to git)
+
+### Team mode (two files)
+
+In team mode, configuration is split into two files:
+
+| File               | Purpose           | Git status |
+| ------------------ | ----------------- | ---------- |
+| `config.team.yaml` | Team settings     | Committed  |
+| `config.yaml`      | Personal settings | Gitignored |
+
+**Why two files?**
+
+- Personal settings (like `remotes.personal`) don't cause merge conflicts
+- Local overrides (like `git.mode`) don't affect team behavior
+- Team settings are reviewed via PR
+- Easy to toggle team mode on/off without losing settings
+
+**Field ownership:**
+
+| Field                   | Config file   | Notes                   |
+| ----------------------- | ------------- | ----------------------- |
+| `mode`                  | Team only     | Determines mode         |
+| `modules.lockfile`      | Team only     | Team-controlled         |
+| `modules.bundle`        | Team only     | Team-controlled         |
+| `lockfile.*`            | Team only     | Team-controlled         |
+| `remotes.personal`      | Personal only | Individual setting      |
+| `sources`, `exporters`  | Shared        | Merged additively       |
+| `git`, `overlays`, etc. | Shared        | Personal overrides team |
+
+**Merging behavior:**
+
+- **Arrays (sources, exporters):** Team + personal combined
+- **Scalars (git.mode, etc.):** Personal overrides team locally
+- **Lockfile:** Generated from team config only
 
 ## Core fields
 
@@ -27,11 +65,19 @@ AlignTrue uses `.aligntrue/config.yaml` for all configuration. The file is creat
 
 **Default:** `"solo"`
 
+**Location:** `config.team.yaml` in team mode, `config.yaml` in solo mode
+
 Operating mode that determines default behavior for lockfiles and bundles.
 
 ```yaml
-mode: solo # or team, enterprise
+# Solo mode (config.yaml)
+mode: solo
+
+# Team mode (config.team.yaml)
+mode: team
 ```
+
+In team mode, mode is determined by the presence of `config.team.yaml`, not by a field in `config.yaml`.
 
 ### exporters
 

@@ -127,14 +127,24 @@ aligntrue team enable
 
 **What it does:**
 
-1. Updates `.aligntrue/config.yaml` to set `mode: team`
+1. Creates `.aligntrue/config.team.yaml` with team settings
 2. Enables lockfile and bundle modules automatically
-3. Shows next steps for lockfile generation
+3. Moves team-only settings from `config.yaml` to `config.team.yaml`
+4. Creates an empty personal `config.yaml` for individual settings (added to `.gitignore`)
+5. Shows next steps for lockfile generation
 
 **Interactive prompts:**
 
 - **Confirm team mode** - Explains lockfile and bundle features
-- **Idempotent** - Safe to run multiple times
+- **Idempotent** - Safe to run multiple times (can be re-enabled after `team disable`)
+
+**Configuration files after enable:**
+
+| File                   | Purpose                                | Git status |
+| ---------------------- | -------------------------------------- | ---------- |
+| `config.team.yaml`     | Team settings (mode, lockfile, bundle) | Committed  |
+| `config.yaml`          | Personal settings (overrides)          | Gitignored |
+| `.aligntrue/lock.json` | Lockfile (generated after sync)        | Committed  |
 
 **Examples:**
 
@@ -156,24 +166,44 @@ aligntrue sync  # Auto-generates .aligntrue/lock.json
 Before (solo mode):
 
 ```yaml
+# .aligntrue/config.yaml
 mode: solo
 modules:
   lockfile: false
   bundle: false
+sources:
+  - type: local
+    path: rules
+exporters:
+  - cursor
 ```
 
 After (team mode):
 
 ```yaml
+# .aligntrue/config.team.yaml (committed)
 mode: team
 modules:
   lockfile: true
   bundle: true
 lockfile:
   mode: soft # Warn on drift, don't block
+sources:
+  - type: local
+    path: rules
+exporters:
+  - cursor
+# .aligntrue/config.yaml (gitignored, created for personal settings)
+# Add your personal settings here
+# Examples: personal remotes, local overrides
 ```
 
-**See also:** [Sync Behavior](/docs/03-concepts/sync-behavior#lockfile-behavior-team-mode) for lockfile modes.
+**Personal vs team settings:**
+
+- **Team settings** (in `config.team.yaml`): `mode`, `lockfile`, `bundle`, shared `sources`, shared `exporters`
+- **Personal settings** (in `config.yaml`): Personal remotes, local overrides of shared settings
+
+**See also:** [Team Mode Guide](/docs/01-guides/02-team-guide), [Sync Behavior](/docs/03-concepts/sync-behavior#lockfile-behavior-team-mode)
 
 ---
 

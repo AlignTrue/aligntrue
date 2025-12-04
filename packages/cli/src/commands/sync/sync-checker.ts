@@ -5,9 +5,10 @@ import { computeHash } from "@aligntrue/schema";
 import { detectSourceRuleChanges } from "@aligntrue/core/sync";
 import {
   getAlignTruePaths,
-  loadConfig,
+  loadMergedConfig,
   getExporterNames,
   detectAgentFileDrift,
+  isTeamModeActive,
 } from "@aligntrue/core";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import type { SyncOptions } from "./options.js";
@@ -33,7 +34,6 @@ export async function checkIfSyncNeeded(
 ): Promise<boolean> {
   const cwd = process.cwd();
   const paths = getAlignTruePaths(cwd);
-  const configPath = options.configPath || paths.config;
 
   // If --content-mode is explicitly provided, always re-export
   // This ensures the user's intent to change export format is respected
@@ -41,10 +41,11 @@ export async function checkIfSyncNeeded(
     return true;
   }
 
-  // Load config
+  // Load merged config (handles both solo and team modes)
   let config;
   try {
-    config = await loadConfig(configPath);
+    const mergeResult = await loadMergedConfig(cwd);
+    config = mergeResult.config;
   } catch {
     // If we can't load config, assume sync is needed
     return true;
@@ -73,10 +74,18 @@ export async function checkIfSyncNeeded(
     }
   }
 
-  // Compute config hash
+  // Compute config hash (include both config files in team mode)
   let configHash = "";
   try {
-    const configContent = readFileSync(configPath, "utf-8");
+    let configContent = existsSync(paths.config)
+      ? readFileSync(paths.config, "utf-8")
+      : "";
+
+    // In team mode, also include team config in hash
+    if (isTeamModeActive(cwd) && existsSync(paths.teamConfig)) {
+      configContent += readFileSync(paths.teamConfig, "utf-8");
+    }
+
     configHash = computeHash(configContent);
   } catch {
     return true;
