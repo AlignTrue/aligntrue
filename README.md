@@ -7,6 +7,8 @@
   Source: apps/docs/content/index.mdx
 -->
 
+> ⚠️ **Alpha Status:** This project is in active development. Most core features work well, but expect API changes before 1.0. Use for development/internal projects first. If you find issues [create an issue](https://github.com/AlignTrue/aligntrue/issues/new/choose) or PR.
+
 # Introduction
 
 Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.

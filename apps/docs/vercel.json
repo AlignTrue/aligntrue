@@ -19,12 +19,12 @@
     },
     {
       "source": "/exporters",
-      "destination": "/docs/04-reference/cli-reference/basic",
+      "destination": "/docs/04-reference/cli-reference/exporters",
       "permanent": true
     },
     {
       "source": "/remote-setup",
-      "destination": "/docs/01-guides/team-workflows",
+      "destination": "/docs/01-guides/06-rule-sharing-privacy",
       "permanent": true
     },
     {
@@ -39,7 +39,7 @@
     },
     {
       "source": "/sources",
-      "destination": "/docs/01-guides/08-managing-sources",
+      "destination": "/docs/01-guides/04-external-sources",
       "permanent": true
     },
     {
@@ -55,11 +55,6 @@
     {
       "source": "/formats",
       "destination": "/docs/02-customization/export-formats",
-      "permanent": true
-    },
-    {
-      "source": "/add-rules",
-      "destination": "/docs/01-guides/11-adding-rules",
       "permanent": true
     },
     {
@@ -79,12 +74,12 @@
     },
     {
       "source": "/sharing",
-      "destination": "/docs/01-guides/sharing-rules",
+      "destination": "/docs/01-guides/06-rule-sharing-privacy",
       "permanent": true
     },
     {
-      "source": "/docs/04-reference/troubleshooting/remote-access",
-      "destination": "/docs/05-troubleshooting/remote-access",
+      "source": "/remote-issues",
+      "destination": "/docs/05-troubleshooting/source-remote-issues",
       "permanent": true
     }
   ],

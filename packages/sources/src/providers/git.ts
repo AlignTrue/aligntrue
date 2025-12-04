@@ -850,7 +850,7 @@ export class GitProvider implements SourceProvider {
         `    1. Check loaded keys: ssh-add -l\n` +
         `    2. Test connection: ssh -T git@github.com\n` +
         `    3. Add key to agent: ssh-add ~/.ssh/id_ed25519\n\n` +
-        `  See: https://aligntrue.ai/docs/04-reference/troubleshooting/remote-access`
+        `  See: https://aligntrue.ai/remote-issues`
       );
     }
 
