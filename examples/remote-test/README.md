@@ -27,7 +27,7 @@ Used for testing:
 
 ### Large Rule Sets
 
-`large-rules/` - A collection of 10 rule files totaling 100+ sections:
+`large-rules/` - A collection of 9 rule files totaling 99 sections:
 
 | File                     | Sections | Topic                                     |
 | ------------------------ | -------- | ----------------------------------------- |
@@ -35,16 +35,15 @@ Used for testing:
 | `frontend-react.md`      | 14       | Component patterns, state, hooks          |
 | `database.md`            | 10       | Migrations, queries, indexing             |
 | `testing-integration.md` | 9        | Test patterns, fixtures, mocking          |
-| `security-auth.md`       | 13       | Authentication, authorization, secrets    |
 | `devops-ci.md`           | 11       | CI/CD, deployment, monitoring             |
 | `code-review.md`         | 10       | Review standards, PR templates            |
 | `documentation.md`       | 10       | API docs, README, architecture            |
 | `performance.md`         | 10       | Profiling, optimization, caching          |
 | `accessibility.md`       | 11       | WCAG, ARIA, keyboard navigation           |
 
-**Total: 112 sections across 10 files**
+**Total: 99 sections across 9 files**
 
-This represents the upper end of what AI agents can effectively use given context limits, while simulating real-world scenarios where rules are conditionally applied based on context.
+This represents a comprehensive rule set that covers common development scenarios while remaining manageable for AI agents given context limits.
 
 ## Usage in Tests
 

@@ -253,6 +253,6 @@ This checks:
 
 ## See also
 
-- [Scopes guide](../../apps/docs/content/02-customization/scopes.md) - Complete scopes documentation
+- [Scopes guide](https://aligntrue.ai/docs/02-customization/scopes) - Complete scopes documentation
 - [STRUCTURE.md](./STRUCTURE.md) - Architecture explanation
-- [Team repo example](../team-repo/) - Team workflows with scopes
+- [Golden repo example](../golden-repo/) - Basic example to start with

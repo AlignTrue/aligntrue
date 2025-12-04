@@ -1,3 +1,9 @@
+---
+id: "multi-file-rules/security"
+version: "1.0.0"
+summary: "Security best practices for authentication, authorization, and data protection"
+---
+
 # Security Best Practices
 
 ## Authentication and Authorization

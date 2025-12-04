@@ -16,10 +16,10 @@ Every such PR must pass this checklist before merge.
 Required (unless using the internal code exception below):
 
 - [ ] **API docs** for public APIs  
-       `apps/docs/content/reference/{feature-slug}.md`
+       `apps/docs/content/04-reference/{feature-slug}.md`
 - [ ] **User guide** if users must learn new workflows  
-       `apps/docs/content/guides/{feature-slug}.md` or `apps/docs/content/concepts/{feature-slug}.md`
-- [ ] **Example** in `examples/{feature-slug}.md` (or `.ipynb`) with a runnable smoke block
+       `apps/docs/content/01-guides/{feature-slug}.md` or `apps/docs/content/03-concepts/{feature-slug}.md`
+- [ ] **Example** in `examples/{feature-slug}/README.md` with a runnable smoke block
 - [ ] **CHANGELOG.md** updated with a concise entry in the correct section
 - [ ] **Temp docs deleted**  
        No `*_STATUS.md`, `*_CHECKLIST.md`, `*_SUMMARY.md`, `*_PHASE*.md`, `*_IMPLEMENTATION.md`, or similar
@@ -60,7 +60,7 @@ All public symbols affected by the PR must have:
 Before merge:
 
 - [ ] Docs site builds clean  
-       `pnpm --filter docs build` (or equivalent for the docs app)
+       `pnpm --filter @aligntrue/docs build` (or equivalent for the docs app)
 - [ ] All cross links between examples, API docs, and guides resolve
 - [ ] No references to deleted or renamed files
 - [ ] Type checks pass on changed packages  
@@ -82,9 +82,9 @@ If the PR touches `packages/ui/src/**`:
 - [ ] SVGs are inline JSX or data URIs only
 - [ ] Linter passes `no-asset-imports-in-ui`
 - [ ] All consuming apps build clean  
-       for example `pnpm --filter docs build`
+       for example `pnpm --filter @aligntrue/docs build`
 - [ ] Theming uses CSS variables, not hardcoded colors
-- [ ] Constraints match `implementation_specs.mdc` Section 14
+- [ ] Constraints match `implementation_specs.md` Section 12
 
 ---
 
@@ -157,7 +157,7 @@ If any single item fails, the feature is not done.
 ```bash
 TZ=UTC pnpm test
 pnpm lint
-pnpm --filter docs build
+pnpm --filter @aligntrue/docs build
 ```
 
 ### Determinism spot check for an export

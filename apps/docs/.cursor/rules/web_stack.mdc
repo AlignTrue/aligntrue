@@ -194,9 +194,8 @@ apps/docs/
     03-concepts/
     04-reference/
     05-troubleshooting/
-    07-contributing/
-    07-policies/
     06-development/
+    07-contributing/
   mdx-components.tsx            # Shared MDX components
   theme.config.tsx              # Nextra theme config
   next.config.mjs

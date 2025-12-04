@@ -1,3 +1,9 @@
+---
+id: "multi-file-rules/coding-standards"
+version: "1.0.0"
+summary: "Coding standards for style, naming conventions, comments, and error handling"
+---
+
 # Coding Standards
 
 ## Code Style
