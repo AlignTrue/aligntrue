@@ -865,6 +865,10 @@ aligntrue sync
 .rules.yaml
 .last-sync
 
+# User-specific runtime state (not for source control)
+privacy-consent.json
+.drift-log.json
+
 # Backup directory (created during sync operations)
 .backups/
 

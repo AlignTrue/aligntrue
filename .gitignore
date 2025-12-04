@@ -53,6 +53,8 @@ next-env.d.ts
 
 # aligntrue local data (user-specific, never commit)
 .aligntrue/.cache/
+.aligntrue/privacy-consent.json
+.aligntrue/.drift-log.json
 
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
