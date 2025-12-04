@@ -7,7 +7,7 @@ import type { Align } from "@aligntrue/schema";
 
 describe("lockfile I/O", () => {
   const testDir = join(process.cwd(), "packages/core/tests/lockfile/temp");
-  const lockfilePath = join(testDir, ".aligntrue.lock.json");
+  const lockfilePath = join(testDir, ".aligntrue/lock.json");
 
   const mockAlign: Align = {
     id: "test.align",
@@ -52,7 +52,7 @@ describe("lockfile I/O", () => {
     });
 
     it("creates parent directory if missing", () => {
-      const nestedPath = join(testDir, "nested/dir/.aligntrue.lock.json");
+      const nestedPath = join(testDir, "nested/dir/.aligntrue/lock.json");
       const lockfile = generateLockfile(mockAlign, "team");
 
       writeLockfile(nestedPath, lockfile);
@@ -197,8 +197,8 @@ describe("lockfile I/O", () => {
       // On Windows: invalid drive letter, On Unix: root with no permissions
       const invalidPath =
         process.platform === "win32"
-          ? "Z:\\nonexistent\\path\\.aligntrue.lock.json"
-          : "/root/nonexistent/.aligntrue.lock.json";
+          ? "Z:\\nonexistent\\path\\.aligntrue/lock.json"
+          : "/root/nonexistent/.aligntrue/lock.json";
 
       expect(() => {
         writeLockfile(invalidPath, lockfile);

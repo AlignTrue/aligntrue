@@ -164,7 +164,7 @@ AlignTrue synchronizes rules between three locations:
 
 1. **Rules Directory** - `.aligntrue/rules/*.md` (your editable source, natural markdown with YAML frontmatter)
 2. **Intermediate Representation (IR)** - `.aligntrue/rules` (internal, auto-generated, pure YAML format with section fingerprints)
-3. **Team Lockfile** - `.aligntrue.lock.json` (team mode only, tracks section fingerprints for approval)
+3. **Team Lockfile** - `.aligntrue/lock.json` (team mode only, tracks section fingerprints for approval)
 
 The sync engine maintains consistency with one-way flow from rules directory to all exports.
 

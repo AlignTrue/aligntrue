@@ -121,7 +121,7 @@ Team guidance here.
       }
 
       // Lockfile should be created after sync
-      const lockfilePath = join(env1, ".aligntrue.lock.json");
+      const lockfilePath = join(env1, ".aligntrue/lock.json");
       expect(existsSync(lockfilePath)).toBe(true);
 
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
@@ -168,7 +168,7 @@ This is a team-wide rule.
       }
 
       // Verify lockfile was created
-      expect(existsSync(join(env1, ".aligntrue.lock.json"))).toBe(true);
+      expect(existsSync(join(env1, ".aligntrue/lock.json"))).toBe(true);
 
       // User B: "Clone" by copying shared files
       process.chdir(env2);
@@ -176,8 +176,8 @@ This is a team-wide rule.
         recursive: true,
       });
       cpSync(
-        join(env1, ".aligntrue.lock.json"),
-        join(env2, ".aligntrue.lock.json"),
+        join(env1, ".aligntrue/lock.json"),
+        join(env2, ".aligntrue/lock.json"),
       );
 
       // User B syncs - should work with existing team config
@@ -189,10 +189,10 @@ This is a team-wide rule.
 
       // Both users should have same lockfile hash
       const lockfile1 = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
       const lockfile2 = JSON.parse(
-        readFileSync(join(env2, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env2, ".aligntrue/lock.json"), "utf-8"),
       );
       expect(lockfile2.bundle_hash).toBe(lockfile1.bundle_hash);
     });
@@ -228,7 +228,7 @@ Original content.
       }
 
       const originalLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
       const originalHash = originalLockfile.bundle_hash;
 
@@ -254,7 +254,7 @@ MODIFIED content - not yet approved!
       }
 
       const updatedLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // Hash should be different - drift detected
@@ -296,12 +296,12 @@ Version 1.
         recursive: true,
       });
       cpSync(
-        join(env1, ".aligntrue.lock.json"),
-        join(env2, ".aligntrue.lock.json"),
+        join(env1, ".aligntrue/lock.json"),
+        join(env2, ".aligntrue/lock.json"),
       );
 
       const userBOriginalLockfile = JSON.parse(
-        readFileSync(join(env2, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env2, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // User A: Make a change
@@ -326,7 +326,7 @@ Version 2 - updated by User A.
       }
 
       const userAUpdatedLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // User B's lockfile is now outdated
@@ -375,7 +375,7 @@ Shared team guidance.
       }
 
       const lockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // Lockfile should contain team rules
@@ -414,7 +414,7 @@ Version 1.
       }
 
       const originalLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
       const originalHash = originalLockfile.bundle_hash;
 
@@ -439,7 +439,7 @@ Version 2 - MODIFIED team rule.
       }
 
       const updatedLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // Team lockfile hash SHOULD change when team rule changes
@@ -457,7 +457,7 @@ Version 2 - MODIFIED team rule.
         readFileSync(join(env1, ".aligntrue/config.yaml"), "utf-8"),
       );
       expect(config.mode).not.toBe("team");
-      expect(existsSync(join(env1, ".aligntrue.lock.json"))).toBe(false);
+      expect(existsSync(join(env1, ".aligntrue/lock.json"))).toBe(false);
 
       // Enable team mode
       await team(["enable", "--yes"]);
@@ -519,7 +519,7 @@ Content.
       }
 
       const originalLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
       const originalHash = originalLockfile.bundle_hash;
 
@@ -536,7 +536,7 @@ Content.
       }
 
       const newLockfile = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // Hash should be same since content hasn't changed
@@ -573,7 +573,7 @@ This content should hash identically.
       }
 
       const lockfile1 = JSON.parse(
-        readFileSync(join(env1, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // User B: Initialize fresh with same content
@@ -593,7 +593,7 @@ This content should hash identically.
       }
 
       const lockfile2 = JSON.parse(
-        readFileSync(join(env2, ".aligntrue.lock.json"), "utf-8"),
+        readFileSync(join(env2, ".aligntrue/lock.json"), "utf-8"),
       );
 
       // Same content should produce identical hashes

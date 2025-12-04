@@ -44,7 +44,7 @@ export function validateAndEnforceLockfile(
 ): LockfileOperationResult {
   const auditTrail: AuditEntry[] = [];
   const warnings: string[] = [];
-  const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
+  const lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
   const lockfileMode = config.lockfile?.mode || "off";
   const isTeamMode = config.mode === "team" || config.mode === "enterprise";
 
@@ -104,7 +104,7 @@ export function generateAndWriteLockfile(
   const auditTrail: AuditEntry[] = [];
   const warnings: string[] = [];
   const written: string[] = [];
-  const lockfilePath = resolve(cwd, ".aligntrue.lock.json");
+  const lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
   const isTeamMode = config.mode === "team" || config.mode === "enterprise";
 
   if (!isTeamMode || !config.modules?.lockfile || dryRun) {

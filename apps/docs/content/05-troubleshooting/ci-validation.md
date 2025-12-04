@@ -97,7 +97,7 @@ Exit code: 1
 aligntrue sync --force
 
 # Commit updated lockfile
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: update lockfile after rule changes"
 git push
 ```

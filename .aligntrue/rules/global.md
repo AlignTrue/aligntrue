@@ -71,7 +71,7 @@ AlignTrue is an AI-native alignment platform to manage AI directives (rules, ski
   - Agent files (including `AGENTS.md`) are read-only exports
 - Hierarchical scopes: path based rules for monorepos
 - Bundles and lockfiles:
-  - Team mode writes `.aligntrue.lock.json` with pinned hashes (`.aligntrue.bundle.yaml` is forward-compatible but not yet written)
+  - Team mode writes `.aligntrue/lock.json` with pinned hashes (`.aligntrue.bundle.yaml` is forward-compatible but not yet written)
 - Examples:
   - Small, deterministic
   - No network dependencies

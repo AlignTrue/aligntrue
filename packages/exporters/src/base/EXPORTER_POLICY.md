@@ -40,7 +40,7 @@ This file contains rules and guidance for AI coding agents.
 **Rationale:** Content hashes are for verification and drift detection, not for end users. They belong in:
 
 - CLI output (displayed after sync)
-- Lockfiles (`.aligntrue.lock.json`)
+- Lockfiles (`.aligntrue/lock.json`)
 - `ExportResult.contentHash` (for programmatic use)
 
 **Example - Bad:**

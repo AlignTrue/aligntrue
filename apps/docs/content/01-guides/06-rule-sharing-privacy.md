@@ -609,7 +609,7 @@ Then sync and verify:
 
 ```bash
 aligntrue sync
-cat .aligntrue.lock.json | grep rulename  # Should NOT appear
+cat .aligntrue/lock.json | grep rulename  # Should NOT appear
 ```
 
 ### Rules not syncing to remotes

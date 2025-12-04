@@ -235,7 +235,7 @@ export async function check(args: string[]): Promise<void> {
       config.mode === "team" && config.modules?.lockfile === true;
 
     if (shouldCheckLockfile) {
-      const lockfilePath = resolve(".aligntrue.lock.json");
+      const lockfilePath = resolve(".aligntrue", "lock.json");
 
       // Check if lockfile exists
       if (!existsSync(lockfilePath)) {
@@ -385,7 +385,7 @@ export async function check(args: string[]): Promise<void> {
       if (shouldCheckLockfile) {
         result.lockfile = {
           valid: true,
-          file: ".aligntrue.lock.json",
+          file: ".aligntrue/lock.json",
         };
       }
 
@@ -410,7 +410,7 @@ export async function check(args: string[]): Promise<void> {
       console.log(`  Schema: ${rulesPath} is valid`);
 
       if (shouldCheckLockfile) {
-        console.log("  Lockfile: .aligntrue.lock.json matches current rules");
+        console.log("  Lockfile: .aligntrue/lock.json matches current rules");
       } else if (config.mode === "solo") {
         console.log("  Lockfile: skipped (solo mode)");
       }

@@ -54,7 +54,7 @@ modules:
     // Write lockfile with OLD bundle hash (from different content)
     // The hash computed from current IR will differ, triggering drift detection
     writeFileSync(
-      join(testDir, ".aligntrue.lock.json"),
+      join(testDir, ".aligntrue/lock.json"),
       JSON.stringify(
         {
           version: "1",
@@ -180,7 +180,7 @@ Modified in AGENTS.md
 
     // Write lockfile
     writeFileSync(
-      join(testDir, ".aligntrue.lock.json"),
+      join(testDir, ".aligntrue/lock.json"),
       JSON.stringify(
         {
           version: "1",
@@ -258,7 +258,7 @@ modules:
 
     // Write lockfile with OLD bundle hash (from different content)
     writeFileSync(
-      join(testDir, ".aligntrue.lock.json"),
+      join(testDir, ".aligntrue/lock.json"),
       JSON.stringify(
         {
           version: "1",
@@ -342,7 +342,7 @@ modules:
 
     // Write lockfile with OLD bundle hash (from different content)
     writeFileSync(
-      join(testDir, ".aligntrue.lock.json"),
+      join(testDir, ".aligntrue/lock.json"),
       JSON.stringify(
         {
           version: "1",

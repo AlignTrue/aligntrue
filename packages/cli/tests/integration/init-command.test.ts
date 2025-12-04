@@ -205,7 +205,7 @@ describeSkipWindows("Init Command Integration", () => {
         rules: [],
       };
       writeFileSync(
-        join(TEST_DIR, ".aligntrue.lock.json"),
+        join(TEST_DIR, ".aligntrue/lock.json"),
         JSON.stringify(lockfile, null, 2),
         "utf-8",
       );
@@ -249,7 +249,7 @@ describeSkipWindows("Init Command Integration", () => {
       const config = yaml.parse(configContent);
 
       expect(config.mode).toBe("team");
-      expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+      expect(existsSync(join(TEST_DIR, ".aligntrue/lock.json"))).toBe(true);
     });
 
     it("detects team mode from lockfile even if config is missing mode field", async () => {
@@ -276,7 +276,7 @@ describeSkipWindows("Init Command Integration", () => {
         rules: [],
       };
       writeFileSync(
-        join(TEST_DIR, ".aligntrue.lock.json"),
+        join(TEST_DIR, ".aligntrue/lock.json"),
         JSON.stringify(lockfile, null, 2),
         "utf-8",
       );
@@ -315,7 +315,7 @@ describeSkipWindows("Init Command Integration", () => {
       expect(exitCode).toBe(0);
 
       // Verify lockfile still exists (not deleted)
-      expect(existsSync(join(TEST_DIR, ".aligntrue.lock.json"))).toBe(true);
+      expect(existsSync(join(TEST_DIR, ".aligntrue/lock.json"))).toBe(true);
     });
 
     it("treats standalone lockfile as already initialized", async () => {
@@ -323,7 +323,7 @@ describeSkipWindows("Init Command Integration", () => {
       rmSync(join(TEST_DIR, ".aligntrue"), { recursive: true, force: true });
 
       writeFileSync(
-        join(TEST_DIR, ".aligntrue.lock.json"),
+        join(TEST_DIR, ".aligntrue/lock.json"),
         JSON.stringify(
           {
             bundle_hash: "standalone-hash",

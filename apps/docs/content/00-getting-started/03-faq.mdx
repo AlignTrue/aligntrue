@@ -145,7 +145,7 @@ See [Git workflows](/docs/03-concepts/git-workflows).
 
 ### What's a lockfile?
 
-A lockfile (`.aligntrue.lock.json`) pins rule versions with SHA-256 hashes. Teams use lockfiles to ensure everyone has identical rules.
+A lockfile (`.aligntrue/lock.json`) pins rule versions with SHA-256 hashes. Teams use lockfiles to ensure everyone has identical rules.
 
 ### What's drift detection?
 
@@ -216,7 +216,7 @@ You'll be prompted for consent before any network operation.
 - **Config:** `.aligntrue/config.yaml`
 - **Rules (internal):** `.aligntrue/rules` (auto-generated)
 - **Rules (user-editable):** `AGENTS.md` or agent files
-- **Lockfile:** `.aligntrue.lock.json` (team mode)
+- **Lockfile:** `.aligntrue/lock.json` (team mode)
 - **Cache:** `.aligntrue/.cache/` (git sources)
 
 ### Can I use AlignTrue in CI?

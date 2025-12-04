@@ -137,7 +137,7 @@ async function teamStatus(): Promise<void> {
           lockfileMode !== "off" ? ` (${lockfileMode})` : ""
         }`,
       );
-      const lockfilePath = ".aligntrue.lock.json";
+      const lockfilePath = ".aligntrue/lock.json";
       const lockfileExists = existsSync(lockfilePath);
       if (lockfileExists) {
         console.log(`  File: ${lockfilePath} (exists)`);
@@ -168,7 +168,7 @@ async function teamStatus(): Promise<void> {
     console.log(`Config: ${configPath}`);
 
     if (lockfileEnabled) {
-      console.log("Lockfile: .aligntrue.lock.json");
+      console.log("Lockfile: .aligntrue/lock.json");
     }
 
     // Sources
@@ -367,7 +367,7 @@ async function teamEnable(
       "Team mode enabled",
       "",
       "Config updated: .aligntrue/config.yaml",
-      `Lockfile: .aligntrue.lock.json (${lockfileMode} mode, ready)`,
+      `Lockfile: .aligntrue/lock.json (${lockfileMode} mode, ready)`,
       "",
       "Helpful commands:",
       "  aligntrue sync   Sync rules and update lockfile",
@@ -400,7 +400,7 @@ async function teamDisable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
-  const lockfilePath = ".aligntrue.lock.json";
+  const lockfilePath = ".aligntrue/lock.json";
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -436,7 +436,7 @@ async function teamDisable(
       "mode: team → solo",
       "modules.lockfile: true → false",
       "modules.bundle: true → false",
-      "Delete .aligntrue.lock.json (no purpose in solo mode)",
+      "Delete .aligntrue/lock.json (no purpose in solo mode)",
       "Preserve .aligntrue/rules/ (team rules become solo public rules)",
     ];
 
@@ -512,9 +512,9 @@ async function teamDisable(
       const { unlinkSync } = await import("fs");
       unlinkSync(lockfilePath);
       if (!nonInteractive) {
-        clack.log.info("Deleted .aligntrue.lock.json");
+        clack.log.info("Deleted .aligntrue/lock.json");
       } else {
-        console.log("Deleted .aligntrue.lock.json");
+        console.log("Deleted .aligntrue/lock.json");
       }
     } catch {
       // File may not exist, that's fine

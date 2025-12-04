@@ -89,7 +89,7 @@ describe("drift command", () => {
       );
 
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -117,7 +117,7 @@ describe("drift command", () => {
       );
 
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -142,7 +142,7 @@ describe("drift command", () => {
 
     it("exits 0 with --gates when no drift", async () => {
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -189,7 +189,7 @@ describe("drift command", () => {
 
     it("shows success message", async () => {
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -207,7 +207,7 @@ describe("drift command", () => {
 
     it("includes mode in output", async () => {
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -235,7 +235,7 @@ describe("drift command", () => {
       );
 
       writeFileSync(
-        ".aligntrue.lock.json",
+        ".aligntrue/lock.json",
         JSON.stringify({
           version: "1",
           generated_at: "2025-10-29T12:00:00Z",
@@ -268,7 +268,7 @@ describe("drift command", () => {
 
       const output = consoleLogSpy.mock.calls[0][0];
       const parsed = JSON.parse(output);
-      expect(parsed.lockfile_path).toBe(".aligntrue.lock.json");
+      expect(parsed.lockfile_path).toBe(".aligntrue/lock.json");
     });
 
     it("includes summary by category in JSON", async () => {

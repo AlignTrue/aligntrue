@@ -104,7 +104,7 @@ Team-wide guidance.
       }
 
       // Verify lockfile created
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       expect(existsSync(lockfilePath)).toBe(true);
 
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
@@ -152,7 +152,7 @@ Personal guidance.
       }
 
       // Verify no lockfile in solo mode
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       expect(existsSync(lockfilePath)).toBe(false);
     });
   });
@@ -196,7 +196,7 @@ Original content.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
       const originalHash = originalLockfile.bundle_hash;
 
@@ -264,7 +264,7 @@ First rule.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
       const originalRuleCount = originalLockfile.rules.length;
 
@@ -348,7 +348,7 @@ Will be deleted.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
       const originalRuleCount = originalLockfile.rules.length;
 
@@ -436,7 +436,7 @@ Content C.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalHash = JSON.parse(
         readFileSync(lockfilePath, "utf-8"),
       ).bundle_hash;
@@ -504,7 +504,7 @@ Unchanged content.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const firstHash = JSON.parse(
         readFileSync(lockfilePath, "utf-8"),
       ).bundle_hash;
@@ -578,7 +578,7 @@ Personal guidance.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
 
       // Verify lockfile was created with rules
@@ -633,7 +633,7 @@ This rule tests fingerprint consistency between sync and drift detection.
         // May throw from process.exit
       }
 
-      const lockfilePath = join(TEST_DIR, ".aligntrue.lock.json");
+      const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       expect(existsSync(lockfilePath)).toBe(true);
 
       const lockfileAfterFirstSync = JSON.parse(
@@ -727,7 +727,7 @@ This rule tests that drift detection passes after sync.
       const driftResult = await detectDriftForConfig({
         mode: "team",
         rootDir: TEST_DIR,
-        lockfilePath: join(TEST_DIR, ".aligntrue.lock.json"),
+        lockfilePath: join(TEST_DIR, ".aligntrue/lock.json"),
       });
 
       // Filter out agent_file drift which can be flaky in tests due to timing

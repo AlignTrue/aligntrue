@@ -545,7 +545,7 @@ git commit -m "chore: Add AlignTrue rules"
 
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/privacy-consent.json` - Per-machine consent
-- `.aligntrue.lock.json` - Only needed in team mode
+- `.aligntrue/lock.json` - Only needed in team mode
 
 ## Common pitfalls and solutions
 
@@ -711,10 +711,10 @@ If you start collaborating, upgrade to team mode:
 aligntrue team enable
 
 # Creates:
-# - .aligntrue.lock.json (lockfile for reproducibility)
+# - .aligntrue/lock.json (lockfile for reproducibility)
 
 # Commit team files
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "Enable AlignTrue team mode"
 ```
 

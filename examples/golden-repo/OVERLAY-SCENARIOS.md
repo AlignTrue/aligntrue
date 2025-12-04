@@ -36,7 +36,7 @@ overlays:
 aln sync
 
 # Check lockfile contains overlay hash
-cat .aligntrue.lock.json | jq '.dependencies[] | select(.overlay_hash != null)'
+cat .aligntrue/lock.json | jq '.dependencies[] | select(.overlay_hash != null)'
 ```
 
 **Expected lockfile structure:**
@@ -99,7 +99,7 @@ aln override status
 
 ```bash
 # Compare hashes
-git diff .aligntrue.lock.json
+git diff .aligntrue/lock.json
 
 # New content_hash (upstream changed)
 # Same overlay_hash (overlay unchanged)
@@ -155,7 +155,7 @@ cat .aligntrue/rules | grep -A10 "code.review.no.todos" > /tmp/original-upstream
 
 # Sync and record lockfile
 aln sync
-cp .aligntrue.lock.json /tmp/lockfile-with-overlay.json
+cp .aligntrue/lock.json /tmp/lockfile-with-overlay.json
 ```
 
 ### Simulate Conflicting Upstream Update
@@ -241,7 +241,7 @@ aln override remove --check code.review.no.todos
 aln sync
 
 # Check lockfile (no overlay_hash for this check)
-cat .aligntrue.lock.json | jq '.dependencies[]'
+cat .aligntrue/lock.json | jq '.dependencies[]'
 
 # Output shows only content_hash and final_hash (no overlay)
 ```
@@ -446,7 +446,7 @@ EOF
 aln sync > /dev/null
 
 # Verify overlay hash exists
-if cat .aligntrue.lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null; then
+if cat .aligntrue/lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null; then
   echo "✓ Overlay hash present in lockfile"
 else
   echo "✗ Overlay hash missing"
@@ -515,7 +515,7 @@ echo
 echo "Scenario 3: Lockfile Triple Hash"
 
 # Verify triple hash structure
-HASHES=$(cat .aligntrue.lock.json | jq '[.dependencies[] | select(.overlay_hash != null) | {content_hash, overlay_hash, final_hash}]')
+HASHES=$(cat .aligntrue/lock.json | jq '[.dependencies[] | select(.overlay_hash != null) | {content_hash, overlay_hash, final_hash}]')
 
 if echo "$HASHES" | jq -e '.[0] | .content_hash and .overlay_hash and .final_hash' > /dev/null; then
   echo "✓ Triple hash present (content, overlay, final)"

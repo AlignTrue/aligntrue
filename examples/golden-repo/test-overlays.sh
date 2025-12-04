@@ -122,9 +122,9 @@ else
 fi
 
 # Verify lockfile exists (team mode only)
-if [ -f ".aligntrue.lock.json" ]; then
+if [ -f ".aligntrue/lock.json" ]; then
   # Check for overlay hash in lockfile
-  if cat .aligntrue.lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null 2>&1; then
+  if cat .aligntrue/lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null 2>&1; then
     pass "Overlay hash present in lockfile"
   else
     fail "Overlay hash missing from lockfile"
@@ -162,8 +162,8 @@ fi
 
 # Verify overlay still applies (requires CLI support for override status)
 # For now, verify lockfile updated
-if [ -f ".aligntrue.lock.json" ]; then
-  if cat .aligntrue.lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null 2>&1; then
+if [ -f ".aligntrue/lock.json" ]; then
+  if cat .aligntrue/lock.json | jq -e '.dependencies[] | select(.overlay_hash != null)' > /dev/null 2>&1; then
     pass "Overlay survived upstream update"
   else
     fail "Overlay lost after upstream update"
@@ -204,11 +204,11 @@ echo
 echo "Scenario 3: Lockfile Triple Hash"
 echo "---------------------------------"
 
-if [ ! -f ".aligntrue.lock.json" ]; then
+if [ ! -f ".aligntrue/lock.json" ]; then
   info "Lockfile not present (solo mode), skipping triple hash test"
 else
   # Verify triple hash structure
-  HASHES=$(cat .aligntrue.lock.json | jq '[.dependencies[] | select(.overlay_hash != null) | {content_hash, overlay_hash, final_hash}]')
+  HASHES=$(cat .aligntrue/lock.json | jq '[.dependencies[] | select(.overlay_hash != null) | {content_hash, overlay_hash, final_hash}]')
 
   if echo "$HASHES" | jq -e '.[0] | .content_hash and .overlay_hash and .final_hash' > /dev/null 2>&1; then
     pass "Triple hash present (content, overlay, final)"

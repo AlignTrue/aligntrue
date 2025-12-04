@@ -25,7 +25,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 **When to use:** Learning AlignTrue basics, solo developer workflow
 
-**Files:** YAML format (`.aligntrue.yaml`, `.aligntrue.lock.json`)
+**Files:** YAML format (`.aligntrue.yaml`, `.aligntrue/lock.json`)
 
 ### Overlays demo
 

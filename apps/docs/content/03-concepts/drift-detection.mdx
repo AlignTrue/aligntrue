@@ -135,7 +135,7 @@ aligntrue drift --json
 # {
 #   "driftDetected": true,
 #   "mode": "team",
-#   "lockfilePath": ".aligntrue.lock.json",
+#   "lockfilePath": ".aligntrue/lock.json",
 #   "summary": "2 drift findings across 2 categories",
 #   "driftByCategory": {
 #     "lockfile": [...],
@@ -220,7 +220,7 @@ drift-detection:
 # .git/hooks/pre-commit
 
 # Check for drift before committing lockfile changes
-if git diff --cached --name-only | grep -q ".aligntrue.lock.json"; then
+if git diff --cached --name-only | grep -q ".aligntrue/lock.json"; then
   echo "Lockfile changed, checking for drift..."
   aligntrue drift --gates
 fi
@@ -261,7 +261,7 @@ aligntrue sync
 
 ```bash
 # After syncing with rule changes
-git add .aligntrue.lock.json
+git add .aligntrue/lock.json
 git commit -m "chore: Update rules (team approval via PR)"
 git push
 ```
@@ -350,5 +350,5 @@ performance:
 
 ## See also
 
-- **Lockfile**: `.aligntrue.lock.json` generation and validation
+- **Lockfile**: `.aligntrue/lock.json` generation and validation
 - **Team mode**: Enabling and configuring team collaboration

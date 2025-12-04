@@ -50,7 +50,7 @@ File: `packages/schema/src/canonicalize.ts`
 
 ### Used by
 
-- `.aligntrue.lock.json`
+- `.aligntrue/lock.json`
 - `.aligntrue.bundle.yaml` normalized JSON views in tests
 - `manifest.json`
 - `versions.json`
@@ -92,7 +92,7 @@ Teams need deterministic align composition.
 ### Outputs
 
 - `.aligntrue.bundle.yaml` merged rules
-- `.aligntrue.lock.json` pins:
+- `.aligntrue/lock.json` pins:
   - align hashes
   - bundle hash
   - relevant tool versions

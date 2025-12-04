@@ -220,7 +220,7 @@ Complete each area sequentially. After finishing each area, record findings befo
    $CLI team enable --yes
    ```
 
-   - Does `.aligntrue.lock.json` get created?
+   - Does `.aligntrue/lock.json` get created?
    - Is mode set to `team` in config?
    - Lockfile has content hashes?
 

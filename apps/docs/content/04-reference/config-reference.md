@@ -177,8 +177,8 @@ Feature flags for optional modules.
 
 ```yaml
 modules:
-  lockfile: false # Generate .aligntrue.lock.json
-  bundle: false # Generate .aligntrue.bundle.yaml
+  lockfile: false # Generate .aligntrue/lock.json
+  bundle: false # Generate .aligntrue/bundle.yaml
   checks: true # Enable machine-checkable rules
   mcp: false # Enable MCP server
 ```

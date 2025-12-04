@@ -342,7 +342,7 @@ export async function detectDriftForConfig(
   const lockfilePath =
     typeof configRecord["lockfilePath"] === "string"
       ? configRecord["lockfilePath"]
-      : ".aligntrue.lock.json";
+      : ".aligntrue/lock.json";
 
   try {
     // Load lockfile to get personal rules count

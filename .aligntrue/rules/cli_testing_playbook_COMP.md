@@ -1233,7 +1233,7 @@ aligntrue sync  # Generates lockfile
 mkdir /tmp/team-user-b && cd /tmp/team-user-b
 cp -r /tmp/team-user-a/.aligntrue .
 cp /tmp/team-user-a/AGENTS.md .
-cp /tmp/team-user-a/.aligntrue.lock.json .
+cp /tmp/team-user-a/.aligntrue/lock.json .
 aligntrue init --yes  # Detects existing team setup
 aligntrue sync
 ```
@@ -1278,7 +1278,7 @@ aligntrue team enable
 
 # Verify backups created during team transition
 ls -la .aligntrue/.backups/
-test -f .aligntrue.lock.json || echo "FAIL: lockfile not created"
+test -f .aligntrue/lock.json || echo "FAIL: lockfile not created"
 
 # Verify ignore files managed correctly in team mode
 aligntrue sync
@@ -1303,7 +1303,7 @@ grep "### Team Rule" AGENTS.md && echo "FAIL: revert didn't work" || echo "PASS:
 cd /tmp/team-user-b
 cp -r /tmp/team-user-a/.aligntrue .
 cp /tmp/team-user-a/AGENTS.md .
-cp /tmp/team-user-a/.aligntrue.lock.json .
+cp /tmp/team-user-a/.aligntrue/lock.json .
 
 # Init detects team mode
 aligntrue init --yes
@@ -1361,7 +1361,7 @@ aligntrue init --yes --mode team
 aligntrue sync  # Generates lockfile
 
 # Commit and push team configuration
-git add .aligntrue/ .aligntrue.lock.json
+git add .aligntrue/ .aligntrue/lock.json
 git commit -m "Enable team mode"
 git branch -M main
 git push -u origin main
@@ -1379,7 +1379,7 @@ aligntrue init --yes  # Detects existing team setup
 aligntrue sync
 
 # Verify lockfile and config are shared correctly
-test -f .aligntrue.lock.json || echo "FAIL: lockfile missing"
+test -f .aligntrue/lock.json || echo "FAIL: lockfile missing"
 test -f .aligntrue/config.yaml || echo "FAIL: config missing"
 grep "mode: team" .aligntrue/config.yaml || echo "FAIL: team mode not detected"
 ```
@@ -1484,7 +1484,7 @@ git push origin main  # Should succeed or show conflict
 # Test lockfile conflict handling
 cd /tmp/team-user-b
 git pull  # Should merge cleanly or show conflict
-test -f .aligntrue.lock.json || echo "FAIL: lockfile missing after merge"
+test -f .aligntrue/lock.json || echo "FAIL: lockfile missing after merge"
 aligntrue drift --gates  # Should validate lockfile integrity
 ```
 
@@ -2341,7 +2341,7 @@ Comprehensive coverage for these commands is provided by dedicated integration t
 
 **Validate:**
 
-- State is stored in documented locations (.aligntrue/, .aligntrue.lock.json, .aligntrue/.backups/)
+- State is stored in documented locations (.aligntrue/, .aligntrue/lock.json, .aligntrue/.backups/)
 - Cache invalidation works correctly
 - Backup system maintains file integrity
 - Restore operations recover proper state
@@ -2787,7 +2787,7 @@ grep -q "profile:" .aligntrue/config.yaml || echo "FAIL: profile field missing i
 grep -q "sections:" .aligntrue/rules || echo "FAIL: sections missing in IR"
 
 # Verify JSON structure
-jq -e '.version' .aligntrue.lock.json || echo "FAIL: lockfile missing version"
+jq -e '.version' .aligntrue/lock.json || echo "FAIL: lockfile missing version"
 ```
 
 **Large Rule Set Testing:**
