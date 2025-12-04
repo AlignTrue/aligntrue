@@ -6,18 +6,14 @@
  */
 
 import { join } from "path";
-import type { RemotesConfig, RemoteBackupConfig } from "../config/types.js";
+import type { RemotesConfig } from "../config/types.js";
 import type {
   RemotesSyncResult,
   RemotesOptions,
   RemoteStatus,
   RemotePushResult,
 } from "./types.js";
-import {
-  resolveFileAssignments,
-  getRemotesStatus,
-  convertLegacyConfig,
-} from "./file-resolver.js";
+import { resolveFileAssignments, getRemotesStatus } from "./file-resolver.js";
 import { pushToRemote, getLastRemoteInfo } from "./git-pusher.js";
 
 /**
@@ -327,22 +323,3 @@ export function createRemotesManager(
 ): RemotesManager {
   return new RemotesManager(config, options);
 }
-
-/**
- * Create a remotes manager from legacy remote_backup config
- * @deprecated Use createRemotesManager with RemotesConfig instead
- */
-export function createRemotesManagerFromLegacy(
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  legacyConfig: RemoteBackupConfig,
-  options: { cwd?: string; rulesDir?: string } = {},
-): RemotesManager {
-  const config = convertLegacyConfig(legacyConfig);
-  return new RemotesManager(config, options);
-}
-
-// Legacy exports for backward compatibility
-export {
-  RemotesManager as RemoteBackupManager,
-  createRemotesManager as createRemoteBackupManager,
-};

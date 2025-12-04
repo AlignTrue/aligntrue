@@ -19,7 +19,6 @@ import {
   privacy,
   backup,
   revert,
-  link,
   drift,
   plugs,
   onboard,
@@ -90,7 +89,6 @@ async function main() {
     console.log(
       "  team           Team mode management (enable, disable, status)",
     );
-    console.log("  link           Vendor rules with git submodule/subtree");
     console.log("  drift          Detect drift from allowed sources");
     console.log("  onboard        Generate developer onboarding checklist");
     console.log(
@@ -136,7 +134,6 @@ async function main() {
     ["backup", backup],
     ["revert", revert],
     ["plugs", plugs],
-    ["link", link],
     ["drift", drift],
     ["onboard", onboard],
     ["override", override],

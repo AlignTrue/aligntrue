@@ -26,7 +26,6 @@ aligntrue init [options]
 | `--mode`            |       | Operating mode: `solo` or `team`                                | `solo`      |
 | `--exporters`       |       | Comma-separated list of exporters (skips interactive selection) | Auto-detect |
 | `--source`          |       | Import rules from URL or path (skips auto-detect)               | Auto-detect |
-| `--link`            |       | Keep source connected for ongoing updates (use with --source)   | `false`     |
 | `--ref`             |       | Git ref (branch/tag/commit) for git sources                     | `main`      |
 
 **What it does:**
@@ -49,9 +48,6 @@ aligntrue init --yes
 
 # Initialize with external rules
 aligntrue init --source https://github.com/org/rules
-
-# Import and keep source connected
-aligntrue init --source https://github.com/org/rules --link
 
 # Team mode with lockfile
 aligntrue init --mode team --yes

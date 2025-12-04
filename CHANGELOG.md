@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`aligntrue add source` subcommand** - Add sources via CLI with `aligntrue add source <url>`. Replaces `--link` flag for the `add` command. Use `--personal` to mark source as personal scope
 - **`aligntrue add remote` subcommand** - Add push destinations via CLI with `aligntrue add remote <url>`. Use `--personal` or `--shared` to configure scope routing
+- **`aligntrue backup --yes` flag** - Skip confirmation prompts for restore and cleanup subcommands. Useful for CI/scripts
 
 ### Changed
 
-- **BREAKING: Removed `--link` flag from `aligntrue add`** - Use `aligntrue add source <url>` instead of `aligntrue add <url> --link`. The `--link` flag is still supported for `aligntrue init --source <url> --link`
+- **BREAKING: Removed `--link` flag from `aligntrue add` and `aligntrue init`** - Use `aligntrue add source <url>` instead. For init, first run `aligntrue init` then `aligntrue add source <url>` to add connected sources
 - **BREAKING: GitProvider default path changed** - Git source provider now defaults to `"."` (directory scan) instead of `.aligntrue.yaml`. Remote rule repos should contain markdown rules in directories, not single YAML files
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
 - **Internal: ResolvedSource returns Align directly** - Source resolver no longer serializes to YAML and re-parses. Simpler data flow, fewer allocations
@@ -22,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - **BREAKING: Watch mode command (`aligntrue watch`)** - Removed vestigial feature from bidirectional sync era. Rules change infrequently, making continuous file watching unnecessary. Replaced with pre-commit hook guidance and editor integration patterns in [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration). Schema fields `watch_enabled`, `watch_debounce`, `watch_files` removed from config
+- **BREAKING: `aligntrue link` command removed** - The incomplete vendoring feature has been removed. For rules stored in git submodules or subtrees, use `type: local` sources instead with the path to the vendored directory. This is simpler and already works
+- **BREAKING: `vendor_path` and `vendor_type` fields removed** - Vendoring metadata removed from lockfile entries, drift detection, and schema. The "vendorized" drift category no longer exists
 - **BREAKING: `keep_count` backup config** - Removed deprecated count-based backup retention. Use `retention_days` (default: 30) and `minimum_keep` (default: 3) instead
 - **Deprecated frontmatter fields** - Removed `private` (use `gitignore`), `source`, `source_added`, `original_path`, and `original_source` from RuleFrontmatter. Provenance tracking moved to audit log (`.aligntrue/.history`)
 - **Legacy drift category `local_overlay`** - Use `overlay` instead. The category was never produced by any code path
@@ -30,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`rules` field from ScopedExportRequest** - Exporters now use `align.sections` exclusively. The field was never populated
 - **Telemetry feature** - Removed local-only telemetry system that collected data with no transmission mechanism. Feature was not delivering value without collection infrastructure
 - **URL source provider** - Removed deprecated `type: "url"` source provider. The JSON schema already rejected this type, and the provider was never instantiated. Use git repositories instead for remote rule sources
+- **BREAKING: `remote-backup` module removed from `@aligntrue/core`** - Use the `remotes` module instead. Legacy aliases removed: `RemoteBackupManager` → `RemotesManager`, `createRemoteBackupManager` → `createRemotesManager`, `createRemotesManagerFromLegacy` (use `convertLegacyConfig` + `createRemotesManager`), `pushToBackup` → `pushToRemote`, `getLastBackupInfo` → `getLastRemoteInfo`, `cleanBackupCache` → `cleanRemoteCache`, `cleanAllBackupCaches` → `cleanAllRemoteCaches`. Deprecated types also removed: `RemoteBackupConfig`, `RemoteBackupDestination`, `AdditionalBackupDestination`
 
 ### Fixed
 

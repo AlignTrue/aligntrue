@@ -270,7 +270,41 @@ export async function saveMinimalConfig(
     minimalConfig.lockfile = { mode: config.lockfile.mode };
   }
 
-  // Note: sync section serialization has been removed (watch mode deprecated)
+  // Build sync section only if there are non-default values
+  const syncSection: Partial<typeof config.sync> = {};
+  let hasSyncChanges = false;
+
+  if (config.sync?.source_markers !== undefined) {
+    syncSection.source_markers = config.sync.source_markers;
+    hasSyncChanges = true;
+  }
+  if (config.sync?.content_mode !== undefined) {
+    syncSection.content_mode = config.sync.content_mode;
+    hasSyncChanges = true;
+  }
+  if (config.sync?.auto_manage_ignore_files !== undefined) {
+    syncSection.auto_manage_ignore_files = config.sync.auto_manage_ignore_files;
+    hasSyncChanges = true;
+  }
+  if (config.sync?.ignore_file_priority !== undefined) {
+    syncSection.ignore_file_priority = config.sync.ignore_file_priority;
+    hasSyncChanges = true;
+  }
+  if (
+    config.sync?.custom_format_priority !== undefined &&
+    Object.keys(config.sync.custom_format_priority).length > 0
+  ) {
+    syncSection.custom_format_priority = config.sync.custom_format_priority;
+    hasSyncChanges = true;
+  }
+  if (config.sync?.cleanup !== undefined) {
+    syncSection.cleanup = config.sync.cleanup;
+    hasSyncChanges = true;
+  }
+
+  if (hasSyncChanges) {
+    minimalConfig.sync = syncSection;
+  }
 
   // Sources: only if not default (now defaults to rules directory)
   const defaultSources = JSON.stringify([

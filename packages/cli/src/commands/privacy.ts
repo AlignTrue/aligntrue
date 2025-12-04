@@ -22,6 +22,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Revoke all consents (for revoke subcommand)",
   },
   {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Skip confirmation prompts (for revoke --all)",
+  },
+  {
     flag: "--help",
     alias: "-h",
     hasValue: false,
@@ -47,6 +53,7 @@ export async function privacyCommand(args: string[]): Promise<void> {
         "aligntrue privacy grant git",
         "aligntrue privacy revoke git",
         "aligntrue privacy revoke --all",
+        "aligntrue privacy revoke --all --yes",
       ],
       notes: [
         "Subcommands:",
@@ -54,6 +61,7 @@ export async function privacyCommand(args: string[]): Promise<void> {
         "  grant <operation>  Grant consent for operation (git)",
         "  revoke <operation> Revoke specific consent (git)",
         "  revoke --all       Revoke all consents",
+        "  revoke --all --yes Revoke all consents without confirmation",
       ],
     });
     return;
@@ -70,6 +78,7 @@ export async function privacyCommand(args: string[]): Promise<void> {
       await revokeCommand(
         parsed.positional.slice(1),
         parsed.flags["all"] as boolean | undefined,
+        parsed.flags["yes"] as boolean | undefined,
       );
       break;
     default:
@@ -188,6 +197,7 @@ async function grantCommand(operations: string[]): Promise<void> {
 async function revokeCommand(
   operations: string[],
   all?: boolean,
+  yes?: boolean,
 ): Promise<void> {
   const manager = createConsentManager();
 
@@ -204,8 +214,11 @@ async function revokeCommand(
       return;
     }
 
-    // Confirm before revoking all
-    if (isTTY()) {
+    // Skip confirmation if --yes flag provided
+    if (yes) {
+      // Proceed without confirmation
+    } else if (isTTY()) {
+      // Confirm before revoking all
       const confirmed = await clack.confirm({
         message: `Revoke all ${consents.length} consent(s)?`,
       });
@@ -215,12 +228,12 @@ async function revokeCommand(
         return;
       }
     } else {
-      // Non-interactive mode - require explicit confirmation
+      // Non-interactive mode without --yes flag
       console.error(
-        "Error: Cannot revoke all consents in non-interactive mode",
+        "Error: Cannot revoke all consents in non-interactive mode without --yes flag",
       );
       console.error(
-        "Please run this command in an interactive terminal or revoke consents individually.",
+        "Use --yes to skip confirmation, or run in an interactive terminal.",
       );
       process.exit(1);
     }

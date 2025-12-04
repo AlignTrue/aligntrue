@@ -5,15 +5,7 @@
  * with scope-based and pattern-based routing.
  */
 
-export {
-  RemotesManager,
-  createRemotesManager,
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  createRemotesManagerFromLegacy,
-  // Legacy aliases
-  RemoteBackupManager,
-  createRemoteBackupManager,
-} from "./manager.js";
+export { RemotesManager, createRemotesManager } from "./manager.js";
 
 export {
   resolveFileAssignments,
@@ -26,23 +18,12 @@ export {
   getLastRemoteInfo,
   cleanRemoteCache,
   cleanAllRemoteCaches,
-  // Legacy aliases
-  pushToBackup,
-  getLastBackupInfo,
-  cleanBackupCache,
-  cleanAllBackupCaches,
 } from "./git-pusher.js";
 
 export type {
   RemotesConfig,
   RemoteDestination,
   CustomRemoteDestination,
-  // Legacy types
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  RemoteBackupConfig,
-  RemoteBackupDestination,
-  AdditionalBackupDestination,
-  // Result types
   RuleScope,
   ScopedFile,
   FileAssignment,

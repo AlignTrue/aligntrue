@@ -386,12 +386,6 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Import rules from URL or path (skips auto-detect)",
   },
   {
-    flag: "--link",
-    hasValue: false,
-    description:
-      "Keep source connected for ongoing updates (use with --source)",
-  },
-  {
     flag: "--ref",
     hasValue: true,
     description: "Git ref (branch/tag/commit) for git sources",
@@ -430,14 +424,13 @@ export async function init(args: string[] = []): Promise<void> {
         "aligntrue init",
         "aligntrue init --yes",
         "aligntrue init --source https://github.com/org/rules",
-        "aligntrue init --source https://github.com/org/rules --link",
         "aligntrue init --source ./path/to/rules",
         "aligntrue init --non-interactive --exporters cursor,agents",
       ],
       notes: [
         "- Without --source: auto-detects existing rules and imports them",
         "- With --source: imports from URL/path (skips auto-detect)",
-        "- With --link: keeps source connected for ongoing updates",
+        "- To keep sources connected for updates, use 'aligntrue add source <url>'",
         "- Creates .aligntrue/rules/ directory as the single source of truth",
       ],
     });
@@ -460,18 +453,11 @@ export async function init(args: string[] = []): Promise<void> {
     : undefined;
   const noSync = (parsed.flags["no-sync"] as boolean | undefined) || false;
   const sourceArg = parsed.flags["source"] as string | undefined;
-  const linkFlag = (parsed.flags["link"] as boolean | undefined) || false;
   const refArg = parsed.flags["ref"] as string | undefined;
 
   // Validate mode if provided
   if (mode && mode !== "solo" && mode !== "team") {
     console.error(`Error: Invalid mode "${mode}". Must be "solo" or "team".`);
-    process.exit(2);
-  }
-
-  // Validate --link requires --source
-  if (linkFlag && !sourceArg) {
-    console.error("Error: --link requires --source");
     process.exit(2);
   }
 
@@ -512,7 +498,6 @@ export async function init(args: string[] = []): Promise<void> {
   let rulesToWrite: RuleFile[] = [];
   let isFreshStart = false;
   let isFromExternalSource = false;
-  let linkedSource: { type: "git"; url: string; ref?: string } | undefined;
 
   if (sourceArg) {
     // Import from specified source (skip auto-detect)
@@ -617,15 +602,6 @@ export async function init(args: string[] = []): Promise<void> {
       logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
       isFreshStart = true;
       rulesToWrite = createStarterTemplates();
-    }
-
-    // If --link flag, prepare linked source config
-    if (linkFlag) {
-      linkedSource = {
-        type: result.sourceType === "local" ? "git" : result.sourceType,
-        url: sourceArg,
-        ...(refArg && { ref: refArg }),
-      };
     }
   } else {
     // Auto-detect existing rules with overlap detection
@@ -793,15 +769,6 @@ export async function init(args: string[] = []): Promise<void> {
     },
   ];
 
-  // Add linked source if --link was used
-  if (linkedSource) {
-    sources.push({
-      type: linkedSource.type,
-      url: linkedSource.url,
-      ...(linkedSource.ref && { ref: linkedSource.ref }),
-    });
-  }
-
   // Generate config
   const config: Partial<AlignTrueConfig> = {
     sources,
@@ -934,11 +901,7 @@ aligntrue sync
   const outroLines = [
     completionStatus,
     "",
-    ...(isFromExternalSource
-      ? [
-          `Rules imported from ${sourceArg}${linkFlag ? " (linked for updates)" : ""}.`,
-        ]
-      : []),
+    ...(isFromExternalSource ? [`Rules imported from ${sourceArg}.`] : []),
     "Your rules are in .aligntrue/rules/ - edit them any time.",
     "Customize config in .aligntrue/config.yaml",
     "Agent files are gitignored by default (change with git.mode in config).",

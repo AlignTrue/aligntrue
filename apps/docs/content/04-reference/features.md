@@ -178,7 +178,7 @@ See [Scopes](/docs/02-customization/scopes) for details.
 
 - **Git provider** - Pull rules from remote repositories with caching
 - **Vendoring** - Git submodule/subtree support via `aligntrue link`
-- **Vendor validation** - Align integrity checks for vendored sources
+- **Source validation** - Align integrity checks for external sources
 - **Privacy consent** - Respects user consent for network operations
 
 See [Git Workflows](/docs/03-concepts/git-workflows) for details.

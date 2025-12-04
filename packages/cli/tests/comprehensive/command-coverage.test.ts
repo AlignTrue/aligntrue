@@ -23,7 +23,6 @@ const ALL_COMMANDS = [
   "sources",
   "scopes",
   "team",
-  "link",
   "drift",
   "onboard",
   "override",

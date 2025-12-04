@@ -26,7 +26,7 @@ Browse commands by category:
 - **[Exporters](./exporters)** - Manage agents (list, enable, disable, detect, ignore)
 - **[Plugs](./plugs)** - Stack-agnostic variable management (list, resolve, set)
 - **[Overlays](./overlays)** - Customize rules without forking (add, status, diff, remove)
-- **[Team mode](./team)** - Collaboration and governance (drift, onboard, team, scopes, link)
+- **[Team mode](./team)** - Collaboration and governance (drift, onboard, team, scopes)
 - **[Backups](./backup)** - Backup and recovery (create, list, restore, cleanup, revert)
 - **[Settings](./settings)** - Configuration and privacy (config, privacy)
 - **[Migration](./migrate)** - Schema migration and imports (migrate)
@@ -43,7 +43,7 @@ Browse commands by category:
 | `aligntrue status`          | Show current status and exporters       | [Core](./core#aligntrue-status)                      |
 | `aligntrue doctor`          | Run health checks and verification      | [Core](./core#aligntrue-doctor)                      |
 | `aligntrue add`             | Add rules from URL or path              | [Sources](./sources#aligntrue-add)                   |
-| `aligntrue remove`          | Remove a linked source                  | [Sources](./sources#aligntrue-remove)                |
+| `aligntrue remove`          | Remove a source                         | [Sources](./sources#aligntrue-remove)                |
 | `aligntrue sources`         | Manage rule sources                     | [Sources](./sources#aligntrue-sources)               |
 | `aligntrue exporters`       | Manage exporters                        | [Exporters](./exporters#aligntrue-exporters)         |
 | `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                |
@@ -57,7 +57,6 @@ Browse commands by category:
 | `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                     |
 | `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                 |
 | `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                      |
-| `aligntrue link`            | Vendor rules                            | [Team](./team#aligntrue-link)                        |
 | `aligntrue backup`          | Backup management                       | [Backups](./backup#aligntrue-backup)                 |
 | `aligntrue revert`          | Restore files from backup               | [Backups](./backup#aligntrue-revert)                 |
 | `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)     |

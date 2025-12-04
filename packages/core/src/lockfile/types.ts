@@ -16,9 +16,6 @@ export interface LockfileEntry {
   base_hash?: string;
   overlay_hash?: string;
   result_hash?: string;
-  // Vendoring provenance (Team mode)
-  vendor_path?: string; // Path where align is vendored
-  vendor_type?: "submodule" | "subtree" | "manual"; // Git vendoring method
   // Plugs tracking (Plugs system)
   pre_resolution_hash?: string; // Hash before plug resolution (template)
   post_resolution_hash?: string; // Hash after plug resolution (with fills)

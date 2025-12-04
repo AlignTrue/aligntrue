@@ -39,7 +39,7 @@ pnpm test:local
 
 Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_testing_playbook.mdc` for details.
 
-## Commands (26 total)
+## Commands (25 total)
 
 | Command   | Happy Path | Error Cases | Exit Codes | Help Text | Integration Tests |
 | --------- | ---------- | ----------- | ---------- | --------- | ----------------- |
@@ -55,7 +55,6 @@ Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_tes
 | plugs     | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
 | scopes    | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
 | pull      | ⚠️         | ⚠️          | ✅         | ✅        | ⚠️                |
-| link      | ⚠️         | ⚠️          | ✅         | ✅        | ⚠️                |
 | md        | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
 | migrate   | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |
 | onboard   | ⚠️         | ⚠️          | ✅         | ✅        | ❌                |

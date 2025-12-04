@@ -272,18 +272,19 @@ export async function executeSyncWorkflow(
     (config.remotes || config.remote_backup)
   ) {
     try {
-      const { createRemotesManager, createRemotesManagerFromLegacy } =
-        await import("@aligntrue/core");
+      const { createRemotesManager, convertLegacyConfig } = await import(
+        "@aligntrue/core"
+      );
       const rulesDir = join(cwd, ".aligntrue", "rules");
 
       // Use new config if available, otherwise convert legacy
-      const remotesManager = config.remotes
-        ? createRemotesManager(config.remotes, { cwd, rulesDir })
-        : // eslint-disable-next-line @typescript-eslint/no-deprecated
-          createRemotesManagerFromLegacy(config.remote_backup!, {
-            cwd,
-            rulesDir,
-          });
+      const remotesConfig =
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        config.remotes || convertLegacyConfig(config.remote_backup!);
+      const remotesManager = createRemotesManager(remotesConfig, {
+        cwd,
+        rulesDir,
+      });
 
       // Only push if auto is enabled
       if (remotesManager.isAutoEnabled()) {

@@ -74,91 +74,6 @@ describe("drift command", () => {
     });
   });
 
-  describe("vendorized drift detection", () => {
-    beforeEach(() => {
-      mkdirSync(".aligntrue", { recursive: true });
-      writeFileSync(".aligntrue/config.yaml", "mode: team");
-    });
-
-    it("detects vendorized drift", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "vendored-align",
-              content_hash: "abc123",
-              vendor_path: "vendor/missing",
-              vendor_type: "submodule",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      await drift([]);
-
-      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("VENDORIZED DRIFT");
-      expect(output).toContain("vendored-align");
-      expect(output).toContain("vendor/missing");
-      expect(output).toContain("submodule");
-    });
-
-    it("shows vendor update suggestion", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "vendored-align",
-              content_hash: "abc123",
-              vendor_path: "vendor/align",
-              vendor_type: "subtree",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      await drift([]);
-
-      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("vendor/align");
-    });
-
-    it("shows correct vendor type in output", async () => {
-      writeFileSync(
-        ".aligntrue.lock.json",
-        JSON.stringify({
-          version: "1",
-          generated_at: "2025-10-29T12:00:00Z",
-          mode: "team",
-          rules: [
-            {
-              rule_id: "vendored-align",
-              content_hash: "abc123",
-              vendor_path: "vendor/align",
-              vendor_type: "subtree",
-            },
-          ],
-          bundle_hash: "xyz789",
-        }),
-      );
-
-      await drift([]);
-
-      const output = consoleLogSpy.mock.calls.map((call) => call[0]).join("\n");
-      expect(output).toContain("Vendor type: subtree");
-    });
-  });
-
   describe("--gates flag", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
@@ -166,6 +81,13 @@ describe("drift command", () => {
     });
 
     it("exits 0 by default when drift detected", async () => {
+      // Create rules directory with different content than lockfile expects
+      mkdirSync(".aligntrue/rules", { recursive: true });
+      writeFileSync(
+        ".aligntrue/rules/test.md",
+        "# Test Rule\n\nThis content differs from lockfile.",
+      );
+
       writeFileSync(
         ".aligntrue.lock.json",
         JSON.stringify({
@@ -176,11 +98,9 @@ describe("drift command", () => {
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              vendor_path: "vendor/missing",
-              vendor_type: "submodule",
             },
           ],
-          bundle_hash: "xyz789",
+          bundle_hash: "different-hash-to-trigger-drift",
         }),
       );
 
@@ -189,6 +109,13 @@ describe("drift command", () => {
     });
 
     it("exits 2 with --gates when drift detected", async () => {
+      // Create rules directory with different content than lockfile expects
+      mkdirSync(".aligntrue/rules", { recursive: true });
+      writeFileSync(
+        ".aligntrue/rules/test.md",
+        "# Test Rule\n\nThis content differs from lockfile.",
+      );
+
       writeFileSync(
         ".aligntrue.lock.json",
         JSON.stringify({
@@ -199,11 +126,9 @@ describe("drift command", () => {
             {
               rule_id: "base-global",
               content_hash: "abc123",
-              vendor_path: "vendor/missing",
-              vendor_type: "submodule",
             },
           ],
-          bundle_hash: "xyz789",
+          bundle_hash: "different-hash-to-trigger-drift",
         }),
       );
 
@@ -302,7 +227,12 @@ describe("drift command", () => {
   describe("output formats", () => {
     beforeEach(() => {
       mkdirSync(".aligntrue", { recursive: true });
+      mkdirSync(".aligntrue/rules", { recursive: true });
       writeFileSync(".aligntrue/config.yaml", "mode: team");
+      writeFileSync(
+        ".aligntrue/rules/test.md",
+        "# Test Rule\n\nDifferent content.",
+      );
 
       writeFileSync(
         ".aligntrue.lock.json",
@@ -312,13 +242,11 @@ describe("drift command", () => {
           mode: "team",
           rules: [
             {
-              rule_id: "vendored-align",
+              rule_id: "test-align",
               content_hash: "abc123",
-              vendor_path: "vendor/missing",
-              vendor_type: "submodule",
             },
           ],
-          bundle_hash: "xyz789",
+          bundle_hash: "different-hash-to-trigger-drift",
         }),
       );
     });
@@ -330,9 +258,9 @@ describe("drift command", () => {
       const parsed = JSON.parse(output);
       expect(parsed.mode).toBe("team");
       expect(parsed.has_drift).toBe(true);
-      expect(parsed.findings).toHaveLength(1);
-      expect(parsed.findings[0].category).toBe("vendorized");
-      expect(parsed.summary.total).toBe(1);
+      expect(parsed.findings.length).toBeGreaterThan(0);
+      expect(parsed.findings[0].category).toBe("lockfile");
+      expect(parsed.summary.total).toBeGreaterThan(0);
     });
 
     it("includes lockfile path in JSON output", async () => {
@@ -348,7 +276,7 @@ describe("drift command", () => {
 
       const output = consoleLogSpy.mock.calls[0][0];
       const parsed = JSON.parse(output);
-      expect(parsed.summary.by_category.vendorized).toBe(1);
+      expect(parsed.summary.by_category.lockfile).toBeGreaterThan(0);
       expect(parsed.summary.by_category.upstream).toBe(0);
     });
 
@@ -371,7 +299,7 @@ describe("drift command", () => {
       const parsed = JSON.parse(output);
       expect(parsed.runs[0].tool.driver.rules).toHaveLength(1);
       expect(parsed.runs[0].tool.driver.rules[0].id).toBe(
-        "aligntrue/vendorized-drift",
+        "aligntrue/lockfile-drift",
       );
     });
 

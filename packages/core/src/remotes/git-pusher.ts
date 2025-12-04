@@ -259,11 +259,3 @@ export function cleanAllRemoteCaches(cwd: string): void {
     rmSync(cacheDir, { recursive: true, force: true });
   }
 }
-
-// Legacy exports for backward compatibility
-export {
-  pushToRemote as pushToBackup,
-  getLastRemoteInfo as getLastBackupInfo,
-  cleanRemoteCache as cleanBackupCache,
-  cleanAllRemoteCaches as cleanAllBackupCaches,
-};
