@@ -38,18 +38,19 @@ import {
 
 /**
  * Infer agent type from file path
- * Used for display purposes after scanning
+ * Used for display purposes after scanning.
+ *
+ * IMPORTANT: Check specific filenames BEFORE directory patterns.
+ * This matches detectNestedAgentFiles behavior in @aligntrue/core.
  */
 function inferAgentTypeFromPath(path: string): string {
-  if (path.includes(".cursor/rules") || path.endsWith(".mdc")) {
-    return "cursor";
-  }
-  if (path.includes("AGENTS.md") || path.endsWith("AGENTS.md")) {
-    return "agents";
-  }
-  if (path.includes("CLAUDE.md") || path.endsWith("CLAUDE.md")) {
-    return "claude";
-  }
+  // Specific filenames first (higher specificity)
+  if (path.endsWith("AGENTS.md")) return "agents";
+  if (path.endsWith("CLAUDE.md")) return "claude";
+
+  // Directory/extension patterns second
+  if (path.includes(".cursor/rules") || path.endsWith(".mdc")) return "cursor";
+
   return "other";
 }
 
