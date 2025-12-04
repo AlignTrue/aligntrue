@@ -2,7 +2,7 @@
  * Gitignore utilities for the CLI
  */
 
-import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
+import { readFileSync, writeFileSync, appendFileSync } from "fs";
 import { join } from "path";
 
 /**
@@ -29,34 +29,36 @@ export async function addToGitignore(
   }
 
   // Check if entry already exists
-  if (existsSync(gitignorePath)) {
-    const content = readFileSync(gitignorePath, "utf-8");
-    const lines = content.split("\n");
-
-    // Check for existing entry
+  let existingContent = "";
+  try {
+    existingContent = readFileSync(gitignorePath, "utf-8");
+    const lines = existingContent.split(/\r?\n/);
     if (lines.some((line) => line.trim() === normalizedEntry)) {
       return; // Already in .gitignore
+    }
+  } catch (error) {
+    // If the file does not exist yet, we'll create it below; rethrow other errors
+    if (
+      !(error instanceof Error) ||
+      (error as NodeJS.ErrnoException).code !== "ENOENT"
+    ) {
+      throw error;
     }
   }
 
   // Build the entry with optional comment
-  let entryLines = "";
+  const entryLines: string[] = [];
   if (comment) {
-    entryLines = `\n# ${comment}\n${normalizedEntry}\n`;
-  } else {
-    entryLines = `\n${normalizedEntry}\n`;
+    entryLines.push(`# ${comment}`);
   }
+  entryLines.push(normalizedEntry);
+  const needsLeadingNewline =
+    existingContent.length > 0 && !existingContent.endsWith("\n");
+  const entryText =
+    (needsLeadingNewline ? "\n" : "") + entryLines.join("\n") + "\n";
 
-  // Append to .gitignore
-  // Note: This TOCTOU pattern is acceptable for gitignore management where race
-  // conditions are low risk and don't affect correctness
-  /* eslint-disable custom-rules/no-check-then-operate */
-  if (existsSync(gitignorePath)) {
-    appendFileSync(gitignorePath, entryLines, "utf-8");
-  } else {
-    writeFileSync(gitignorePath, entryLines.trim() + "\n", "utf-8");
-  }
-  /* eslint-enable custom-rules/no-check-then-operate */
+  // Append (or create) .gitignore; appendFileSync with flag "a" is atomic per write
+  appendFileSync(gitignorePath, entryText, { encoding: "utf-8", flag: "a" });
 }
 
 /**
@@ -71,11 +73,15 @@ export async function removeFromGitignore(
 ): Promise<void> {
   const gitignorePath = join(cwd, ".gitignore");
 
-  if (!existsSync(gitignorePath)) {
-    return;
+  let content: string;
+  try {
+    content = readFileSync(gitignorePath, "utf-8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return; // Nothing to remove
+    }
+    throw error;
   }
-
-  const content = readFileSync(gitignorePath, "utf-8");
   const lines = content.split("\n");
 
   // Normalize entry path
@@ -121,11 +127,15 @@ export function isInGitignore(
 ): boolean {
   const gitignorePath = join(cwd, ".gitignore");
 
-  if (!existsSync(gitignorePath)) {
-    return false;
+  let content: string;
+  try {
+    content = readFileSync(gitignorePath, "utf-8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return false;
+    }
+    throw error;
   }
-
-  const content = readFileSync(gitignorePath, "utf-8");
   const lines = content.split("\n");
 
   // Normalize entry path

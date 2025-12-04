@@ -198,7 +198,7 @@ export async function buildSyncContext(
   }
 
   // New member flow: create empty personal config if team mode and no personal config
-  if (isTeamMode && !existsSync(paths.config) && existsSync(paths.teamConfig)) {
+  if (isTeamMode && existsSync(paths.teamConfig)) {
     const personalConfigContent = `# Personal AlignTrue configuration
 # This file is gitignored and contains your personal settings.
 #
@@ -220,13 +220,23 @@ export async function buildSyncContext(
 version: "1"
 `;
     ensureDirectoryExists(dirname(paths.config));
-    writeFileSync(paths.config, personalConfigContent, "utf-8");
-    if (!options.quiet) {
-      clack.log.info(
-        "Created personal config: .aligntrue/config.yaml\n" +
-          "  This file is for your personal settings (gitignored).\n" +
-          "  See: https://aligntrue.ai/docs/joining-a-team",
-      );
+    try {
+      writeFileSync(paths.config, personalConfigContent, {
+        encoding: "utf-8",
+        flag: "wx",
+      });
+      if (!options.quiet) {
+        clack.log.info(
+          "Created personal config: .aligntrue/config.yaml\n" +
+            "  This file is for your personal settings (gitignored).\n" +
+            "  See: https://aligntrue.ai/docs/joining-a-team",
+        );
+      }
+    } catch (error) {
+      // Ignore if another process already created the file between checks
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+        throw error;
+      }
     }
   }
 

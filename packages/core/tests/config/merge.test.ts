@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import {
@@ -19,7 +19,7 @@ describe("Mode detection", () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `merge-test-${Date.now()}`);
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-merge-"));
     mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
   });
 

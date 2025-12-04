@@ -135,8 +135,21 @@ export async function drift(args: string[]): Promise<void> {
     typeof parsedArgs.flags["config"] === "string"
       ? parsedArgs.flags["config"]
       : ".aligntrue/config.yaml";
-  const cwdForConfig = path.dirname(path.resolve(configPath));
-  const { config } = await loadMergedConfig(cwdForConfig);
+  const resolvedConfigPath = path.resolve(configPath);
+  const configDir = path.dirname(resolvedConfigPath);
+  const cwdForConfig =
+    path.basename(configDir) === ".aligntrue"
+      ? path.dirname(configDir)
+      : configDir;
+  let config;
+  try {
+    ({ config } = await loadMergedConfig(cwdForConfig));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to load config";
+    console.error(message);
+    process.exit(2);
+  }
 
   // Must be in team mode
   if (config.mode !== "team") {
