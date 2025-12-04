@@ -25,6 +25,23 @@ import {
 // Re-export types
 export * from "./types.js";
 
+// Re-export merge functions for two-file config system
+export {
+  TEAM_MODE_OFF_MARKER,
+  FIELD_OWNERSHIP,
+  getFieldOwnership,
+  isTeamModeActive,
+  hasTeamModeOffMarker,
+  isLegacyTeamConfig,
+  mergeConfigs,
+  loadMergedConfig,
+  getConfigSource,
+  type FieldOwnership,
+  type ConfigMergeResult,
+  type ConfigSources,
+  type ConfigWarning,
+} from "./merge.js";
+
 // Re-export ExporterFormat from plugin-contracts for convenience
 export type { ExporterFormat } from "@aligntrue/plugin-contracts";
 

@@ -35,8 +35,11 @@ export {
  */
 export function getAlignTruePaths(cwd: string = process.cwd()) {
   return {
-    /** Path to main config file: .aligntrue/config.yaml */
+    /** Path to main config file (personal): .aligntrue/config.yaml */
     config: join(cwd, ".aligntrue", "config.yaml"),
+
+    /** Path to team config file: .aligntrue/config.team.yaml */
+    teamConfig: join(cwd, ".aligntrue", "config.team.yaml"),
 
     /** Path to rules directory (internal): .aligntrue/rules */
     rules: join(cwd, ".aligntrue", "rules"),

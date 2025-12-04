@@ -13,6 +13,9 @@ import {
   type AlignTrueConfig,
   patchConfig,
   getExporterNames,
+  loadMergedConfig,
+  isLegacyTeamConfig,
+  type ConfigWarning,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
@@ -135,7 +138,7 @@ export async function buildSyncContext(
     throw ErrorFactory.configNotFound(configPath);
   }
 
-  // Step 2: Load config
+  // Step 2: Load config (with two-file config support)
   const spinnerOpts: { disabled?: boolean } = {};
   if (options.quiet !== undefined) {
     spinnerOpts.disabled = options.quiet;
@@ -145,9 +148,86 @@ export async function buildSyncContext(
     spinner.start("Loading configuration");
   }
 
-  let config: AlignTrueConfig = await loadConfigWithValidation(configPath);
+  // Use merged config loader for two-file config support
+  let config: AlignTrueConfig;
+  let configWarnings: ConfigWarning[] = [];
+  let isTeamMode = false;
+
+  try {
+    const mergeResult = await loadMergedConfig(cwd);
+    config = mergeResult.config;
+    configWarnings = mergeResult.warnings;
+    isTeamMode = mergeResult.isTeamMode;
+
+    // Check for missing team config (team artifacts exist but config.team.yaml is missing)
+    if (!isTeamMode && existsSync(paths.lockfile)) {
+      // Lockfile exists but not in team mode - might be missing team config
+      if (!existsSync(paths.teamConfig) && !isLegacyTeamConfig(cwd)) {
+        configWarnings.push({
+          field: "config.team.yaml",
+          message:
+            "Team config file missing (.aligntrue/config.team.yaml)\n" +
+            "  This project has team artifacts but no team config.\n" +
+            "  To recover:\n" +
+            "  - Check git: git checkout -- .aligntrue/config.team.yaml\n" +
+            "  - Ask a teammate to share their copy\n" +
+            "  - Re-create: aligntrue team enable\n" +
+            "  Continuing in solo mode...",
+          level: "warn",
+        });
+      }
+    }
+  } catch {
+    // Fall back to single config if merge fails
+    config = await loadConfigWithValidation(configPath);
+  }
+
   if (options.verbose) {
     spinner.stop("Configuration loaded");
+  }
+
+  // Display config warnings (non-blocking)
+  if (configWarnings.length > 0 && !options.quiet) {
+    for (const warning of configWarnings) {
+      if (warning.level === "warn") {
+        clack.log.warn(warning.message);
+      } else {
+        clack.log.info(warning.message);
+      }
+    }
+  }
+
+  // New member flow: create empty personal config if team mode and no personal config
+  if (isTeamMode && !existsSync(paths.config) && existsSync(paths.teamConfig)) {
+    const personalConfigContent = `# Personal AlignTrue configuration
+# This file is gitignored and contains your personal settings.
+#
+# Your team uses AlignTrue to sync AI rules. This file is for YOUR settings only.
+# Learn more: https://aligntrue.ai/docs/joining-a-team
+#
+# Example personal settings:
+#   remotes:
+#     personal: git@github.com:you/personal-rules.git
+#   
+#   sources:
+#     - type: git
+#       url: git@github.com:you/personal-rules.git
+#       personal: true
+#
+#   git:
+#     mode: ignore  # Override team's git mode locally
+
+version: "1"
+`;
+    ensureDirectoryExists(dirname(paths.config));
+    writeFileSync(paths.config, personalConfigContent, "utf-8");
+    if (!options.quiet) {
+      clack.log.info(
+        "Created personal config: .aligntrue/config.yaml\n" +
+          "  This file is for your personal settings (gitignored).\n" +
+          "  See: https://aligntrue.ai/docs/joining-a-team",
+      );
+    }
   }
 
   const spinnerWithMessage = spinner as SpinnerLike & {

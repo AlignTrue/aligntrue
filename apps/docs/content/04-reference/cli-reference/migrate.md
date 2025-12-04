@@ -70,6 +70,73 @@ Migration complete! Run "aligntrue sync" to export your rules to configured agen
 - Existing files in `.aligntrue/rules/` are preserved; review for duplicates
 - The `.ruler/` directory can be kept for reference or removed
 
+### `config` - Migrate from legacy single-file team config
+
+Migrate from the legacy team configuration format (single `config.yaml` with `mode: team`) to the new two-file system (`config.team.yaml` + `config.yaml`).
+
+**When to use:**
+
+- You have an existing `.aligntrue/config.yaml` with `mode: team` (legacy team config)
+- You want to upgrade to the new two-file configuration system
+- Personal settings should be separated from team settings
+
+**What it does:**
+
+1. Detects legacy team configuration (`.aligntrue/config.yaml` with `mode: team` and no `config.team.yaml`)
+2. Splits configuration into two files:
+   - `.aligntrue/config.team.yaml` - Team settings (committed to git)
+   - `.aligntrue/config.yaml` - Personal settings (gitignored)
+3. Adds `config.yaml` to `.gitignore` under "AlignTrue Personal Config"
+4. Moves team-only fields to `config.team.yaml`
+5. Keeps shared and personal fields in `config.yaml`
+
+**Examples:**
+
+```bash
+# Migrate legacy config
+aligntrue migrate config
+
+# Migrate without prompts
+aligntrue migrate config --yes
+
+# Preview changes without applying
+aligntrue migrate config --dry-run
+```
+
+**Example output:**
+
+```
+Detected legacy team configuration
+
+This will:
+  1. Create .aligntrue/config.team.yaml with team settings
+  2. Create .aligntrue/config.yaml with personal settings
+  3. Add config.yaml to .gitignore
+
+Continue? (y/N)
+
+Migration complete!
+  ✓ .aligntrue/config.team.yaml created
+  ✓ .aligntrue/config.yaml updated
+  ✓ .gitignore updated
+```
+
+**Configuration file mapping:**
+
+| Setting                 | Destination        | Reason                                |
+| ----------------------- | ------------------ | ------------------------------------- |
+| `mode`, `modules.*`     | `config.team.yaml` | Team-only settings                    |
+| `lockfile.*`            | `config.team.yaml` | Team-only settings                    |
+| `remotes.personal`      | `config.yaml`      | Personal-only settings                |
+| `sources`, `exporters`  | `config.yaml`      | Shared (both files merged additively) |
+| `git`, `overlays`, etc. | `config.yaml`      | Shared settings (personal overrides)  |
+
+**Notes:**
+
+- The migration is non-destructive and preserves all settings
+- Can be re-enabled later without re-running migration
+- Team members can run this command independently
+
 ---
 
 ## Flags

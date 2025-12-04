@@ -322,6 +322,9 @@ describeSkipWindows("Init Command Integration", () => {
       // Remove .aligntrue directory to simulate clone missing config files
       rmSync(join(TEST_DIR, ".aligntrue"), { recursive: true, force: true });
 
+      // Recreate directory for lockfile
+      mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
       writeFileSync(
         join(TEST_DIR, ".aligntrue/lock.json"),
         JSON.stringify(
