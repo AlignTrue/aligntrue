@@ -8,7 +8,7 @@ import {
   parseSelector,
   validateSelector,
   loadConfig,
-  saveConfigAuto,
+  patchConfig,
   getAlignTruePaths,
   loadIR,
   evaluateSelector,
@@ -278,11 +278,19 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     overlay.remove = removeOperations;
   }
 
-  // Add to config
-  config.overlays.overrides.push(overlay);
+  // Build updated overlays with new override
+  const updatedOverrides = [...config.overlays.overrides, overlay];
 
-  // Save config
-  await saveConfigAuto(config, configPath);
+  // Patch config - only update overlays, preserve everything else
+  await patchConfig(
+    {
+      overlays: {
+        ...config.overlays,
+        overrides: updatedOverrides,
+      },
+    },
+    configPath,
+  );
 
   // Success output
   clack.log.success("Overlay added to config");

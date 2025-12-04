@@ -7,7 +7,7 @@ import * as clack from "@clack/prompts";
 import { join } from "path";
 import {
   BackupManager,
-  saveConfigAuto,
+  patchConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
 
@@ -59,17 +59,19 @@ export async function runSoloMigrationWizard(
     // Step 3: Update config
     spinner.start("Updating configuration");
 
-    const updatedConfig: AlignTrueConfig = {
-      ...config,
-      mode: "solo",
-      modules: {
-        ...config.modules,
-        lockfile: false,
-      },
-    };
-
     const configPath = join(cwd, ".aligntrue", "config.yaml");
-    await saveConfigAuto(updatedConfig, configPath, cwd);
+    // Patch only the mode and modules.lockfile settings
+    await patchConfig(
+      {
+        mode: "solo",
+        modules: {
+          ...config.modules,
+          lockfile: false,
+        },
+      },
+      configPath,
+      cwd,
+    );
 
     spinner.stop("Configuration updated");
 

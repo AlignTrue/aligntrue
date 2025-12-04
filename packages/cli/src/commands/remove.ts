@@ -12,7 +12,7 @@
 
 import { existsSync } from "fs";
 import * as clack from "@clack/prompts";
-import { saveConfigAuto, type AlignTrueConfig } from "@aligntrue/core";
+import { patchConfig, type AlignTrueConfig } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -141,8 +141,8 @@ export async function remove(args: string[]): Promise<void> {
       return;
     }
 
-    // Save updated config
-    await saveConfigAuto(config, configPath);
+    // Patch config - only update sources, preserve everything else
+    await patchConfig({ sources: config.sources }, configPath);
 
     spinner.stop("Align source removed");
 

@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Config bloat in solo mode** - CLI commands that update config no longer write all default values. Commands now use `saveConfigAuto` which auto-selects minimal save for solo mode, keeping config files clean and readable. Also fixes `saveMinimalConfig` to preserve user-configured `remotes`, `plugs`, `mcp`, `merge`, `export`, and `git.per_exporter` fields
+- **CRITICAL: Config data loss when adding remotes or sources** - Fixed destructive bug where `aligntrue add remote` and other CLI commands would delete user configuration (sources, exporters, plugs, etc.) when updating config. The old `saveMinimalConfig` function incorrectly dropped user values that matched defaults. Replaced with `patchConfig` which surgically updates only the specified keys, preserving all other user configuration exactly as written
 - **`enabled: false` frontmatter now prevents rule export** - Rules with `enabled: false` in frontmatter are now correctly excluded from all agent exports. Previously the field existed in schema but was not enforced
 - **Lockfile creation timing in team mode** - Lockfile is now created immediately when team mode is enabled, rather than waiting for first sync. Provides immediate feedback and allows git tracking from the start
 - **Sources split non-interactive mode** - `aligntrue sources split --yes` now fully suppresses intro/outro messages for better CI/automation support
@@ -153,8 +153,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Section extraction utility** (`extract-rules.ts`) - Dead code for drift detection from agent file edits
 - **recommendEditSource function** - Edit source recommendation for bidirectional sync
 - **Skipped and placeholder tests** - Removed obsolete test stubs for bidirectional workflows
-
-**Watch mode fix** - Changed default watch files from agent exports (read-only) to `.aligntrue/rules/**/*.md` (source of truth)
 
 **Impact:** ~1000-1500 lines of code removed, simpler codebase, cleaner mental model for unidirectional sync
 

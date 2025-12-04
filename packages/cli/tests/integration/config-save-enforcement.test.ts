@@ -1,21 +1,23 @@
 /**
- * Enforcement test: ensure CLI commands use saveConfigAuto instead of saveConfig
+ * Enforcement test: ensure CLI commands use patchConfig for updates
  *
- * This test scans all CLI command files to ensure they don't use saveConfig directly.
- * Using saveConfig directly can cause config bloat in solo mode by writing all default values.
+ * This test scans all CLI command files to ensure they use the correct config save pattern:
+ * - patchConfig: For surgical updates (add/remove/modify specific keys)
+ * - saveConfig: Only for full config writes (init, migrate)
+ *
+ * Using saveConfig for updates can cause data loss by overwriting user configuration.
  *
  * Allowed patterns:
- * - saveConfigAuto (auto-selects minimal for solo mode)
- * - saveMinimalConfig (explicit minimal save)
- * - Dynamic imports that use saveConfigAuto
+ * - patchConfig (surgical updates, preserves other keys)
+ * - saveConfig in init.ts, migrate.ts (full config writes)
  *
  * Not allowed:
- * - Direct saveConfig( calls in command files
+ * - saveConfig in other command files (use patchConfig instead)
  */
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "fs";
-import { join } from "path";
+import { join, basename } from "path";
 
 const CLI_SRC_DIR = join(process.cwd(), "packages/cli/src");
 
@@ -41,12 +43,28 @@ function getTypeScriptFiles(dir: string): string[] {
 }
 
 /**
- * Check if a file uses saveConfig directly (not saveConfigAuto or saveMinimalConfig)
+ * Files allowed to use saveConfig (full writes)
  */
-function checkForDirectSaveConfig(filePath: string): {
+const SAVE_CONFIG_WHITELIST = [
+  "init.ts", // Creates new config from scratch
+  "migrate.ts", // Full config rewrite during migration
+  "config.ts", // Raw YAML operations for config get/set
+];
+
+/**
+ * Check if a file uses saveConfig (which should use patchConfig instead)
+ */
+function checkForSaveConfigMisuse(filePath: string): {
   hasBadPattern: boolean;
   lines: number[];
 } {
+  const fileName = basename(filePath);
+
+  // Whitelist certain files that legitimately need full saves
+  if (SAVE_CONFIG_WHITELIST.includes(fileName)) {
+    return { hasBadPattern: false, lines: [] };
+  }
+
   const content = readFileSync(filePath, "utf8");
   const lines = content.split("\n");
   const badLines: number[] = [];
@@ -60,17 +78,11 @@ function checkForDirectSaveConfig(filePath: string): {
     // Skip comment lines
     if (line.trim().startsWith("//") || line.trim().startsWith("*")) continue;
 
-    // Check for direct saveConfig( calls (not saveConfigAuto or saveMinimalConfig)
-    // This regex matches saveConfig( but not saveConfigAuto( or saveMinimalConfig(
-    const directSaveConfigPattern = /\bsaveConfig\s*\(/;
-    const autoPattern = /saveConfigAuto\s*\(/;
-    const minimalPattern = /saveMinimalConfig\s*\(/;
+    // Check for saveConfig( calls - these should be patchConfig for updates
+    const saveConfigPattern = /\bsaveConfig\s*\(/;
+    const patchConfigPattern = /patchConfig\s*\(/;
 
-    if (
-      directSaveConfigPattern.test(line) &&
-      !autoPattern.test(line) &&
-      !minimalPattern.test(line)
-    ) {
+    if (saveConfigPattern.test(line) && !patchConfigPattern.test(line)) {
       badLines.push(i + 1); // 1-indexed line numbers
     }
   }
@@ -82,7 +94,7 @@ function checkForDirectSaveConfig(filePath: string): {
 }
 
 describe("Config save enforcement", () => {
-  it("CLI commands should not use saveConfig directly", () => {
+  it("CLI commands should use patchConfig for updates, not saveConfig", () => {
     const commandsDir = join(CLI_SRC_DIR, "commands");
     const wizardsDir = join(CLI_SRC_DIR, "wizards");
 
@@ -102,11 +114,7 @@ describe("Config save enforcement", () => {
       const files = getTypeScriptFiles(dir);
 
       for (const file of files) {
-        // Whitelist: config.ts uses raw YAML read/write, not loadConfig flow
-        // This is intentional - config set/unset operates on raw YAML without applying defaults
-        if (file.endsWith("config.ts")) continue;
-
-        const result = checkForDirectSaveConfig(file);
+        const result = checkForSaveConfigMisuse(file);
         if (result.hasBadPattern) {
           violations.push({
             file: file.replace(process.cwd() + "/", ""),
@@ -122,8 +130,9 @@ describe("Config save enforcement", () => {
         .join("\n");
 
       expect.fail(
-        `Found direct saveConfig( usage in CLI commands. Use saveConfigAuto instead:\n${message}\n\n` +
-          "saveConfigAuto auto-selects minimal config for solo mode, preventing config bloat.",
+        `Found saveConfig usage in CLI commands that should use patchConfig:\n${message}\n\n` +
+          "Use patchConfig for surgical updates to preserve user configuration.\n" +
+          "saveConfig is only appropriate for full config writes (init, migrate).",
       );
     }
 

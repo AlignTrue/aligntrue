@@ -14,7 +14,8 @@ import { existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import {
-  saveConfigAuto,
+  patchConfig,
+  saveConfig,
   parseAlignUrl,
   getAlignTruePaths,
   writeRuleFile,
@@ -395,12 +396,14 @@ async function addSource(options: {
       }
     }
 
-    // Add to sources
-    const sources = config.sources!;
-    sources.push(newSource as (typeof sources)[number]);
+    // Add to sources (preserving existing sources)
+    const updatedSources = [...(config.sources || [])];
+    updatedSources.push(
+      newSource as NonNullable<AlignTrueConfig["sources"]>[number],
+    );
 
-    // Save config
-    await saveConfigAuto(config, configPath);
+    // Patch config - only update sources, preserve everything else
+    await patchConfig({ sources: updatedSources }, configPath);
 
     spinner.stop("Source added");
 
@@ -541,20 +544,19 @@ async function addRemote(options: {
       }
     }
 
-    // Set the remote
-    if (gitRef) {
-      // Use object format for branch specification
-      (config.remotes as Record<string, unknown>)[remoteKey] = {
-        url: baseUrl,
-        branch: gitRef,
-      };
-    } else {
-      // Simple string format
-      (config.remotes as Record<string, unknown>)[remoteKey] = baseUrl;
-    }
+    // Build the remote value
+    const remoteValue = gitRef ? { url: baseUrl, branch: gitRef } : baseUrl;
 
-    // Save config
-    await saveConfigAuto(config, configPath);
+    // Patch config - only update the specific remote key, preserve everything else
+    await patchConfig(
+      {
+        remotes: {
+          ...config.remotes,
+          [remoteKey]: remoteValue,
+        },
+      },
+      configPath,
+    );
 
     spinner.stop("Remote added");
 
@@ -626,15 +628,14 @@ async function copyRulesToLocal(options: {
 
     // Ensure config exists
     if (!existsSync(configPath)) {
-      // Create minimal config
-      const config: AlignTrueConfig = {
-        version: undefined,
-        mode: "solo",
-        sources: [{ type: "local", path: ".aligntrue/rules" }],
+      // Create minimal config (full save for new file)
+      // Note: version and mode will be set by defaults when loaded
+      const config = {
+        sources: [{ type: "local" as const, path: ".aligntrue/rules" }],
         exporters: ["agents"],
       };
       mkdirSync(dirname(configPath), { recursive: true });
-      await saveConfigAuto(config, configPath);
+      await saveConfig(config as AlignTrueConfig, configPath);
     }
 
     // Import rules

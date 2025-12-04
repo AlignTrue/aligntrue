@@ -4,7 +4,7 @@
  * Overlays system: Migrated to CLI framework
  */
 
-import { loadConfig, saveConfigAuto } from "@aligntrue/core";
+import { loadConfig, patchConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
 import { isTTY } from "../utils/tty-helper.js";
 import {
@@ -218,11 +218,20 @@ async function runOverrideRemove(
     }
   }
 
-  // Remove overlay
-  config.overlays!.overrides!.splice(matchIndex, 1);
+  // Build updated overrides without the removed overlay
+  const updatedOverrides = [...config.overlays!.overrides!];
+  updatedOverrides.splice(matchIndex, 1);
 
-  // Save config
-  await saveConfigAuto(config, configPath);
+  // Patch config - only update overlays, preserve everything else
+  await patchConfig(
+    {
+      overlays: {
+        ...config.overlays,
+        overrides: updatedOverrides,
+      },
+    },
+    configPath,
+  );
 
   // Success output
   clack.log.success("Overlay removed");
@@ -252,11 +261,16 @@ async function removeAllOverlays(
     }
   }
 
-  if (config.overlays?.overrides) {
-    config.overlays.overrides = [];
-  }
-
-  await saveConfigAuto(config, options.config);
+  // Patch config - set overlays.overrides to empty array
+  await patchConfig(
+    {
+      overlays: {
+        ...config.overlays,
+        overrides: [],
+      },
+    },
+    options.config,
+  );
   clack.log.success(
     `Removed all overlays${count > 0 ? ` (${count} removed)` : ""}`,
   );

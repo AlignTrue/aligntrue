@@ -10,7 +10,7 @@ import {
   validateFill,
   type PlugFormat,
   loadConfig,
-  saveConfigAuto,
+  patchConfig,
   type AlignTrueConfig,
   loadIRAndResolvePlugs,
 } from "@aligntrue/core";
@@ -652,17 +652,20 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
       }
     }
 
-    // Update config
-    if (!config.plugs) {
-      config.plugs = {};
-    }
-    if (!config.plugs.fills) {
-      config.plugs.fills = {};
-    }
-    config.plugs.fills[slotName] = fillValue;
+    // Build updated plugs.fills
+    const currentFills = config.plugs?.fills || {};
+    const updatedFills = { ...currentFills, [slotName]: fillValue };
 
-    // Save config
-    await saveConfigAuto(config, configPath);
+    // Patch config - only update plugs.fills, preserve everything else
+    await patchConfig(
+      {
+        plugs: {
+          ...config.plugs,
+          fills: updatedFills,
+        },
+      },
+      configPath,
+    );
 
     console.log(`✓ Set plug fill: ${slotName} = "${fillValue}"\n`);
     console.log("  Run 'aligntrue sync' to apply the fill\n");
@@ -706,19 +709,32 @@ async function unsetPlugFill(
       process.exit(1);
     }
 
-    // Remove fill
-    delete config.plugs.fills[slotName];
+    // Check if this is the last fill
+    const currentFills = config.plugs.fills;
+    const fillKeys = Object.keys(currentFills);
+    const isLastFill = fillKeys.length === 1 && fillKeys[0] === slotName;
 
-    // Clean up empty objects
-    if (Object.keys(config.plugs.fills).length === 0) {
-      delete config.plugs.fills;
+    if (isLastFill) {
+      // Remove the entire plugs section
+      await patchConfig(
+        { plugs: null as unknown as typeof config.plugs },
+        configPath,
+      );
+    } else {
+      // Remove just this fill key by setting it to null in the nested structure
+      await patchConfig(
+        {
+          plugs: {
+            ...config.plugs,
+            fills: {
+              ...currentFills,
+              [slotName]: null as unknown as string,
+            },
+          },
+        },
+        configPath,
+      );
     }
-    if (config.plugs && Object.keys(config.plugs).length === 0) {
-      delete config.plugs;
-    }
-
-    // Save config
-    await saveConfigAuto(config, configPath);
 
     console.log(`✓ Removed plug fill: ${slotName}\n`);
     console.log("  Run 'aligntrue sync' to apply changes\n");
