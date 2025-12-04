@@ -7,6 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { drift } from "../../src/commands/drift.js";
+import * as core from "@aligntrue/core";
+import * as teamDrift from "@aligntrue/core/team/drift.js";
 
 describe("drift command", () => {
   let tempDir: string;
@@ -71,6 +73,37 @@ describe("drift command", () => {
         expect.stringContaining("requires team mode"),
       );
       expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe("config resolution", () => {
+    it("passes project root to loadMergedConfig when using default config path", async () => {
+      mkdirSync(".aligntrue", { recursive: true });
+      writeFileSync(".aligntrue/config.yaml", "mode: team\n");
+
+      const loadMergedConfigSpy = vi
+        .spyOn(core, "loadMergedConfig")
+        .mockResolvedValue({
+          config: { mode: "team", exporters: {} },
+          warnings: [],
+          sources: { personal: true, team: false, fieldSources: new Map() },
+          isTeamMode: true,
+          isLegacyTeamConfig: false,
+        } as never);
+
+      const detectDriftSpy = vi
+        .spyOn(teamDrift, "detectDriftForConfig")
+        .mockResolvedValue({
+          driftDetected: false,
+          mode: "team",
+          lockfilePath: ".aligntrue/lock.json",
+          drift: [],
+        } as never);
+
+      await drift([]);
+
+      expect(loadMergedConfigSpy).toHaveBeenCalledWith(process.cwd());
+      expect(detectDriftSpy).toHaveBeenCalled();
     });
   });
 

@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import {
@@ -16,8 +22,7 @@ describe("gitignore-helpers", () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `gitignore-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-gitignore-"));
   });
 
   afterEach(() => {
