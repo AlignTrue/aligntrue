@@ -42,13 +42,13 @@ Use these prompts to trigger automated test execution:
 **Run all layers comprehensively:**
 
 ```
-Execute all 8 layers from .aligntrue/rules/cli_testing_playbook.mdc sequentially.
+Execute all 8 layers from .aligntrue/rules/cli_testing_playbook_COMP.md sequentially.
 ```
 
 **Run specific layer:**
 
 ```
-Execute Layer 1 (Smoke Tests) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 1 (Smoke Tests) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 ```
 
 Replace "Layer 1 (Smoke Tests)" with:

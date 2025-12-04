@@ -15,7 +15,7 @@ Use these to invoke AI-driven test execution. Each prompt triggers actual comman
 ### Layer 1: Smoke Tests
 
 ```
-Execute Layer 1 (Smoke Tests) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 1 (Smoke Tests) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp/aligntrue-test-{timestamp}
@@ -43,7 +43,7 @@ OUTPUT: Structured report in .internal_docs/TEST_LOG.md format with:
 ### Layer 2: Solo Golden Paths
 
 ```
-Execute Layer 2 (Solo Golden Paths) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 2 (Solo Golden Paths) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp/aligntrue-test-{timestamp}
@@ -74,7 +74,7 @@ OUTPUT: Structured report with workflow results and issues found.
 ### Layer 3: Team Golden Paths
 
 ```
-Execute Layer 3 (Team Golden Paths) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 3 (Team Golden Paths) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 **CURRENT IMPLEMENTATION STATUS:**
 The automated test file `packages/cli/tests/comprehensive/layers/layer-3-team.ts` currently implements basic team mode scenarios. The scenarios below (especially A-F) are documented as manual testing procedures in Section 3.1. To complete full Layer 3 testing, the automated test file should be expanded to implement all six git-based scenarios (A-F) using the `TeamScenario` interface and `execSync` for git commands.
@@ -122,7 +122,7 @@ OUTPUT: Structured report with team workflow results, git operation validation, 
 ### Layer 4: Command Coverage
 
 ```
-Execute Layer 4 (Command Coverage) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 4 (Command Coverage) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp
@@ -157,7 +157,7 @@ OUTPUT: Command coverage matrix with pass/fail status and issues per command.
 ### Layer 5: Statefulness
 
 ```
-Execute Layer 5 (Statefulness) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 5 (Statefulness) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp
@@ -187,7 +187,7 @@ OUTPUT: State management report with scenarios tested and issues found.
 ### Layer 6: Environment Matrix
 
 ```
-Execute Layer 6 (Environment Matrix) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 6 (Environment Matrix) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Identify current platform (macOS/Linux/Windows)
@@ -212,7 +212,7 @@ OUTPUT: Environment compatibility report with platform-specific findings.
 ### Layer 7: Error & UX
 
 ```
-Execute Layer 7 (Error & UX) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 7 (Error & UX) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp
@@ -241,7 +241,7 @@ OUTPUT: Error/UX report with message quality assessment and issues found.
 ### Layer 8: Exploratory
 
 ```
-Execute Layer 8 (Exploratory) from .aligntrue/rules/cli_testing_playbook.mdc.
+Execute Layer 8 (Exploratory) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp
@@ -266,7 +266,7 @@ OUTPUT: Exploratory findings report with edge cases discovered and severity.
 ### All layers: Comprehensive run
 
 ```
-Execute all layers from .aligntrue/rules/cli_testing_playbook.mdc sequentially.
+Execute all layers from .aligntrue/rules/cli_testing_playbook_COMP.md sequentially.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp
