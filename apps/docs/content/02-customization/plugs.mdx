@@ -294,7 +294,7 @@ Output: Use [[plug:key]] syntax for plugs
 
 ## CLI commands
 
-### audit - List slots and fills
+### list - List slots and fills
 
 ```bash
 aligntrue plugs list
@@ -311,7 +311,7 @@ Shows:
 **Example output:**
 
 ```
-📌 Plugs Audit
+📌 Plugs List
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -363,6 +363,28 @@ Documentation: https://docs.example.com
 Unresolved required plugs: 0
 ```
 
+### validate - Check for errors
+
+```bash
+aligntrue plugs validate
+```
+
+Validates plugs without writing changes. Fails fast on undeclared slots, missing required fills, or format errors; use it before `aligntrue sync` or in CI.
+
+**Example output:**
+
+```
+✓ All plugs valid
+```
+
+**Example failure:**
+
+```
+✗ Plugs validation failed
+- Missing required plug: test.cmd
+- Undeclared plug reference: missing.key
+```
+
 ### set - Set fill value
 
 ```bash
@@ -387,6 +409,8 @@ aligntrue plugs set test.cmd "pnpm test"
 
 The command validates the fill against the slot's format (command, file, url, text) and updates `.aligntrue/config.yaml`.
 
+> Note: `plugs set` is interactive-only and does not support `--yes`. Run it in a TTY instead of non-interactive scripts.
+
 ### unset - Remove fill value
 
 ```bash
@@ -408,6 +432,8 @@ aligntrue plugs unset test.cmd
 
   Run 'aligntrue sync' to apply changes
 ```
+
+> Note: `plugs unset` is also interactive-only (no `--yes`).
 
 See [CLI Reference](/docs/04-reference/cli-reference/plugs) for complete command documentation.
 
@@ -591,8 +617,8 @@ aligntrue plugs set docs.url "https://docs.projecta.com"
 **Solution:**
 
 ```bash
-# 1. Audit to see which plugs need fills
-aligntrue plugs list
+# 1. Validate to see missing or undeclared plugs
+aligntrue plugs validate
 
 # 2. Set missing fills
 aligntrue plugs set <key> <value>
@@ -623,7 +649,7 @@ aligntrue plugs set config.file "config/production.json"  # ✓
 
 ### Orphan fills
 
-**Problem:** Audit shows "Fills without declared slots"
+**Problem:** `plugs list` or `plugs validate` shows "Fills without declared slots"
 
 **Cause:** Fill exists but no slot declared (typo or removed slot)
 

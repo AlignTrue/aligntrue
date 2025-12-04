@@ -47,8 +47,15 @@ Plug keys should follow these patterns to maximize interoperability across templ
 
 - Use lowercase letters, numbers, dots, hyphens, underscores: `^[a-z0-9._-]+$`
 - Use dots for namespacing: `test.cmd`, `docs.url`, `author.name`
-- Do NOT start with `stack.` or `sys.` (reserved for system use)
+- Do NOT start with `stack.` or `sys.` (reserved for AlignTrue system use)
 - Be descriptive: prefer `docs.url` over just `url`
+
+### Supported plug formats
+
+- `command` — Single-line shell command; avoid pipes/`&&`. Prefer a package script (for example, `pnpm test`) over chained commands.
+- `text` — Single-line UTF-8 text
+- `file` — Repo-relative POSIX path (no `..`, no absolute paths)
+- `url` — Must start with `http://` or `https://`
 
 ## Overlay pattern conventions
 
@@ -63,6 +70,16 @@ Overlays customize upstream rules. These patterns are commonly used:
 | `prefer-const`               | Use const over let    | Keep as warning or disable autofix |
 | `max-complexity`             | Cyclomatic complexity | Adjust `check.inputs.threshold`    |
 | `max-lines`                  | File length           | Adjust `check.inputs.max`          |
+
+Example severity override:
+
+```yaml
+overlays:
+  overrides:
+    - selector: "rule[id=no-console-log]"
+      set:
+        severity: "error"
+```
 
 ### Selector naming
 
@@ -119,7 +136,7 @@ For now, following these conventions in your aligns creates an immediate benefit
 
 ```yaml
 id: my-testing-align
-version: "1.0.0"
+version: "1"
 plugs:
   slots:
     test.cmd:
@@ -132,6 +149,8 @@ plugs:
       format: url
       required: false
 ```
+
+For commands, keep the value to a single, safe invocation (for example, `pnpm test`). Use a package script for complex pipelines instead of chaining with `&&` or pipes.
 
 User configures once:
 

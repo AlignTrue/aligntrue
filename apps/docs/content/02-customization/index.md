@@ -5,9 +5,11 @@ description: Three powerful mechanisms for customizing AlignTrue rules without f
 
 # Customization overview
 
-AlignTrue provides three complementary mechanisms for customizing rules to fit your project, stack, and team needs without forking upstream aligns.
+AlignTrue provides three complementary mechanisms for customizing rules to fit your project, stack, and team needs without forking upstream aligns. Author rules in `.aligntrue/rules/*.md`; agent exports like `AGENTS.md` and `.cursor/rules/*.mdc` are generated outputs—treat them as read-only.
 
 ## The three pillars
+
+If you’re unsure where to start: use **plugs** for project-specific values, **overlays** for behavior changes, and **scopes** for monorepo or path-based splits.
 
 ### Plugs - Fill template slots
 
@@ -164,11 +166,11 @@ graph TD
 
 ## Integration and order
 
-When using multiple customization features together, they apply in this order:
+When using multiple customization features together, this is the actual pipeline AlignTrue runs:
 
-1. **Scopes** - Filter rules by path
-2. **Plugs** - Resolve template slots
-3. **Overlays** - Apply property overrides
+1. **Scopes** - Filter rules by path at load time
+2. **Plugs** - Resolve template slots before export
+3. **Overlays** - Apply property overrides before export
 
 **Example workflow:**
 
@@ -335,6 +337,7 @@ overlays:
 ## CLI commands
 
 - `aligntrue plugs list` - List slots and fills
+- `aligntrue plugs validate` - Check for undeclared/missing/invalid fills
 - `aligntrue plugs set <key> <value>` - Set fill value
 - `aligntrue override add` - Create overlay
 - `aligntrue override status` - View overlays

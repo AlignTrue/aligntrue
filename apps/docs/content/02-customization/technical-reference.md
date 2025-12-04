@@ -5,7 +5,7 @@ description: Technical details for implementing and working with AlignTrue custo
 
 # Customization technical reference
 
-This page provides technical implementation details for working with plugs, overlays, and scopes. For user-facing guides, see [Plugs](/docs/02-customization/plugs), [Overlays](/docs/02-customization/overlays), and [Scopes](/docs/02-customization/scopes).
+This page provides technical implementation details for working with plugs, overlays, and scopes. Author rules in `.aligntrue/rules/*.md`; exports (for example, `AGENTS.md`, `.cursor/rules/*.mdc`) are generated outputs and should be treated as read-only. For user-facing guides, see [Plugs](/docs/02-customization/plugs), [Overlays](/docs/02-customization/overlays), and [Scopes](/docs/02-customization/scopes).
 
 ## Where to declare features
 
@@ -38,7 +38,7 @@ This page provides technical implementation details for working with plugs, over
 
 ## Authoring formats
 
-AlignTrue supports two authoring formats:
+AlignTrue supports two authoring formats (source of truth is `.aligntrue/rules/*.md`):
 
 ### Natural markdown sections (recommended for aligns)
 
@@ -66,8 +66,9 @@ Run tests before committing: [[plug:test.cmd]]
 
 ### Direct YAML (internal IR format)
 
+AlignTrue keeps an internal IR in memory while syncing; this YAML shows the equivalent shape for reference. Your authored files stay in `.aligntrue/rules/*.md`.
+
 ```yaml
-# .aligntrue/rules (generated/maintained by system)
 id: testing-align
 version: 1.0.0
 plugs:
@@ -84,10 +85,10 @@ rules:
 ### Data flow
 
 ```
-Align files (.md) → System parses → Internal IR (.rules.yaml) → Exporters → Agent formats (AGENTS.md, .mdc)
+.aligntrue/rules/*.md → Parser → In-memory IR → Exporters → Agent exports (AGENTS.md, .cursor/rules/*.mdc, etc.)
 ```
 
-**Note:** `AGENTS.md` is an **export target**, not a primary authoring surface. Edit align files or `.aligntrue/config.yaml` instead.
+**Note:** Agent exports (including `AGENTS.md` and `.cursor/rules/*.mdc`) are generated outputs. Edit `.aligntrue/rules/*.md` or `.aligntrue/config.yaml` instead.
 
 ## Plugs resolution algorithm
 

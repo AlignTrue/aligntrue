@@ -5,7 +5,7 @@ description: Working examples and curated rule aligns for AlignTrue
 
 # Examples
 
-Learn by example with working demonstrations and 11 curated rule aligns.
+Learn by example with working demonstrations and 10 curated rule aligns.
 
 ## Working examples (GitHub)
 
@@ -25,7 +25,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 **When to use:** Learning AlignTrue basics, solo developer workflow
 
-**Files:** YAML format (`.aligntrue.yaml`, `.aligntrue/lock.json`)
+**Files:** YAML format (`.aligntrue.yaml`, `.aligntrue.lock.json`)
 
 ### Overlays demo
 
@@ -79,7 +79,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 ## Curated rule aligns
 
-11 production-ready rule aligns maintained by AlignTrue. All aligns are CC0-licensed (public domain).
+10 production-ready rule aligns maintained by AlignTrue. All aligns are CC0-licensed (public domain).
 
 ### Foundation aligns
 

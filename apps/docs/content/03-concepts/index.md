@@ -6,30 +6,34 @@ description: Core concepts behind AlignTrue - understand how rules, sync, and te
 
 AlignTrue's core concepts explained. Start with the glossary to understand terminology, then explore how sync works, backup strategies, and team collaboration features.
 
+> New here? Read the Glossary, then How sync works before diving into the other concepts.
+
 ## Quick overview
 
-- **[Glossary](/docs/03-concepts/glossary)** - Essential terminology and definitions used throughout AlignTrue
-- **[How sync works](/docs/03-concepts/sync-behavior)** - Understand the core sync mechanism that keeps your rules in sync across agents
-- **[Backup](/docs/03-concepts/backup)** - Local and remote backup strategies for your rules
-- **[Preventing duplicate rules](/docs/03-concepts/preventing-duplicate-rules)** - Manage multiple exporters without duplicate agent context
-- **[Team mode](/docs/03-concepts/team-mode)** - Collaborative rule management with lockfiles and approval workflows (team feature)
-- **[Drift detection](/docs/03-concepts/drift-detection)** - Monitor when your rules diverge from approved versions (team feature)
-- **[Git workflows](/docs/03-concepts/git-workflows)** - Use git sources, vendoring, and sharing strategies (team feature)
+Use this section to skim and jump directly to what you need.
+
+- **[Glossary](/docs/03-concepts/glossary)** - Defines core terms like scopes, exporters, bundles, and locks—start here.
+- **[How sync works](/docs/03-concepts/sync-behavior)** - Walks through the source-of-truth flow from rules to agent exports so you know what runs.
+- **[Backup](/docs/03-concepts/backup)** - Shows what to back up (rules, lockfiles) and where to store them for safety.
+- **[Preventing duplicate rules](/docs/03-concepts/preventing-duplicate-rules)** - Avoids repeating instructions across multiple exporters to keep agent context lean.
+- **[Team mode](/docs/03-concepts/team-mode)** (team) - Explains collaborative flows, lockfiles, and approval patterns before turning team mode on.
+- **[Drift detection](/docs/03-concepts/drift-detection)** (team; after team mode) - Detects when local rules diverge from approved versions and how to respond.
+- **[Git workflows](/docs/03-concepts/git-workflows)** (team; after team mode) - Covers git sources, vendoring, and sharing strategies once collaboration is enabled.
 
 ## Learning path
 
 ### Solo developers start here:
 
-1. Read [Glossary](/docs/03-concepts/glossary) - learn key terms
-2. Review [How sync works](/docs/03-concepts/sync-behavior) - understand the core flow
-3. Learn about [Backup](/docs/03-concepts/backup) - protect your work
-4. Explore [Preventing duplicate rules](/docs/03-concepts/preventing-duplicate-rules) - optimize agent context
+1. Read [Glossary](/docs/03-concepts/glossary) - learn key terms.
+2. Review [How sync works](/docs/03-concepts/sync-behavior) - understand the core flow.
+3. Learn about [Backup](/docs/03-concepts/backup) - protect your work.
+4. Explore [Preventing duplicate rules](/docs/03-concepts/preventing-duplicate-rules) - optimize agent context.
 
-### Teams add these:
+### Teams add these after enabling team mode:
 
-5. Understand [Team mode](/docs/03-concepts/team-mode) - enable collaboration
-6. Monitor with [Drift detection](/docs/03-concepts/drift-detection) - track alignment
-7. Share with [Git workflows](/docs/03-concepts/git-workflows) - manage rule sources
+5. Understand [Team mode](/docs/03-concepts/team-mode) - enable collaboration.
+6. Monitor with [Drift detection](/docs/03-concepts/drift-detection) - track alignment and remediate.
+7. Share with [Git workflows](/docs/03-concepts/git-workflows) - manage rule sources and vendoring.
 
 ## See also
 

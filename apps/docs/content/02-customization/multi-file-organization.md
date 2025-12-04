@@ -7,6 +7,8 @@ description: Organize rules across files and control how they appear in agent ex
 
 This guide covers how AlignTrue organizes your rules and how they appear in exported files. You can organize rules across multiple source files, embed them inline in exports, or link to them—giving you flexibility to match your team's workflow and agent capabilities. Whether you have one rule or dozens, these options help you manage rules effectively.
 
+Edit rules in `.aligntrue/rules/*.md`. Exports like `AGENTS.md` and `.cursor/rules/*.mdc` are generated outputs—treat them as read-only.
+
 ## Rule storage and export
 
 AlignTrue uses `.aligntrue/rules/` as your canonical source, which you organize however you want. When exporting to agents, you control how rules appear: embedded inline for simplicity, or linked for large rule sets.
@@ -35,7 +37,7 @@ Consider multi-file organization when:
 4. **You're using team mode** - Makes PR reviews easier with smaller, focused diffs
 5. **You have a monorepo** - Different scopes can have different rule files
 
-**For small projects (< 1000 lines, solo developer):** A single `AGENTS.md` file is simpler and perfectly fine.
+**For small projects (< 1000 lines, solo developer):** A single `.aligntrue/rules/base.md` file is simpler and perfectly fine.
 
 ## Where to organize your files
 
@@ -43,22 +45,25 @@ The location depends on your agent setup:
 
 ### Single agent (Cursor only)
 
-If you only use Cursor, you can organize files in Cursor's native format:
+If you only use Cursor, keep your sources in AlignTrue format and let sync generate Cursor outputs:
 
 ```
 project/
-├── .cursor/
+├── .aligntrue/
+│   ├── config.yaml
 │   └── rules/
-│       ├── architecture.mdc
-│       ├── security.mdc
-│       └── testing.mdc
+│       ├── architecture.md
+│       ├── security.md
+│       └── testing.md
+└── .cursor/
+    └── rules/  (generated, read-only)
 ```
 
 **Configuration:**
 
-Rules are stored in `.aligntrue/rules/` and synced to agent files.
+Rules are authored in `.aligntrue/rules/`; `aligntrue sync` generates `.cursor/rules/*.mdc` for Cursor.
 
-**Why:** Uses Cursor's native multi-file format with full feature support.
+**Why:** Single source of truth with Cursor's native multi-file format.
 
 ### Multiple agents
 
@@ -431,14 +436,14 @@ When migrating from single-file to multi-file:
 
 ## Comparison with single-file
 
-| Aspect              | Single File (AGENTS.md)     | Multi-File                 |
-| ------------------- | --------------------------- | -------------------------- |
-| **Setup**           | Simpler                     | Requires config            |
-| **Navigation**      | Scroll through one file     | Jump between files         |
-| **Merge Conflicts** | More frequent               | Less frequent              |
-| **Ownership**       | Shared                      | Can be per-file            |
-| **Organization**    | Sections within file        | Files and sections         |
-| **Best For**        | Small projects (< 20 rules) | Large projects (20+ rules) |
+| Aspect              | Single file (.aligntrue/rules/base.md) | Multi-File                 |
+| ------------------- | -------------------------------------- | -------------------------- |
+| **Setup**           | Simpler                                | Requires config            |
+| **Navigation**      | Scroll through one file                | Jump between files         |
+| **Merge Conflicts** | More frequent                          | Less frequent              |
+| **Ownership**       | Shared                                 | Can be per-file            |
+| **Organization**    | Sections within file                   | Files and sections         |
+| **Best For**        | Small projects (< 20 rules)            | Large projects (20+ rules) |
 
 ## Troubleshooting
 

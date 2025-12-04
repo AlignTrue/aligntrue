@@ -5,7 +5,7 @@ description: Configure native multi-file or AGENTS.md export format per agent
 
 # Export formats
 
-Some AI agents support multiple export formats. AlignTrue lets you choose between:
+Write rules in `.aligntrue/rules/*.md`—that's the source of truth. Export formats only control how AlignTrue renders agent outputs:
 
 - **Native format**: Agent-specific multi-file structure (e.g., `.cursor/rules/*.mdc`)
 - **AGENTS.md format**: Universal markdown file read by many agents
@@ -41,11 +41,13 @@ exporters:
 
 ## Default behavior
 
-When you don't specify a format:
+When you don't specify a format, AlignTrue picks the first match in this order:
 
-1. If existing agent files are detected, AlignTrue uses that format
-2. If no files exist and agent supports native, defaults to native
-3. If agent only supports AGENTS.md, uses AGENTS.md
+1. If existing agent files are detected, reuse that format (e.g., `.cursor/rules/*.mdc`)
+2. Otherwise, if the agent supports native, use native
+3. Otherwise, use AGENTS.md
+
+Example: For Cursor, if `.cursor/rules/` already exists, AlignTrue keeps using native; if not, it chooses native by default because Cursor supports it.
 
 ## Agents supporting multiple formats
 
@@ -60,16 +62,16 @@ These agents support both native and AGENTS.md:
 | Kiro         | `.kiro/steering/*.md`  | Yes       |
 | Trae AI      | `.trae/rules/*.md`     | Yes       |
 
-Agents like Copilot, Claude, and Aider only support AGENTS.md.
+Agents like Copilot, Claude, and Aider currently only support AGENTS.md. For the latest list, see the [agent support matrix](/docs/04-reference/agent-support).
 
 ## Switching formats
 
-When you change an agent's format, AlignTrue:
+When you change an agent's format, the next `aligntrue sync` will:
 
-1. Backs up old files to `.aligntrue/.backups/files/<timestamp>/`
-2. Removes old format files
-3. Generates new format files
-4. Notifies you of the backup location
+1. Back up old files to `.aligntrue/.backups/files/<timestamp>/`
+2. Remove old-format files according to your cleanup mode
+3. Generate new-format files
+4. Log the backup location
 
 ### Cleanup modes
 
@@ -85,7 +87,7 @@ Options:
 - **`all`** (default): Removes all files matching agent patterns (e.g., all `.cursor/rules/*.mdc`)
 - **`managed`**: Only removes files previously created by AlignTrue
 
-Use `managed` if you have custom agent files you want to keep.
+Use `managed` if you maintain custom agent files alongside AlignTrue outputs; keep `all` for the cleanest state.
 
 ## Example: Multi-agent setup
 
@@ -114,7 +116,7 @@ When running `aligntrue init`, AlignTrue:
 2. Sets format based on what's found
 3. Shows a message if agents support multiple formats
 
-You can then adjust formats in `config.yaml`.
+You can override the detected choice by editing `.aligntrue/config.yaml` and rerunning `aligntrue sync`.
 
 ## Troubleshooting
 

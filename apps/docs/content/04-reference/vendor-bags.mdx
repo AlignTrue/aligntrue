@@ -227,7 +227,7 @@ rules:
         session_id: "abc123" # Changes frequently
         timestamp: "2025-01-15" # Changes on every sync
       _meta:
-        volatile: ["cursor.session_id", "cursor.timestamp"]
+        volatile: ["cursor.session_id", "cursor.timestamp"] # Exact agent.field paths only
 ```
 
 **Result:**
@@ -240,9 +240,9 @@ rules:
 
 Volatile fields are excluded from lockfile hashing to prevent false drift detection.
 
-### Marking fields as volatile
+### Marking fields as volatile (exact paths only)
 
-Use `vendor._meta.volatile` to specify patterns:
+Use `vendor._meta.volatile` with **exact** `agent.field` paths. Wildcards are not supported.
 
 ```yaml
 vendor:
@@ -254,38 +254,24 @@ vendor:
     volatile: ["cursor.session_id", "cursor.timestamp"]
 ```
 
-### Pattern matching
+### Scope and limits
 
-Volatile supports wildcards:
+- Supported: exact first-level fields per agent, e.g., `cursor.session_id`, `claude.mode`.
+- Not supported: wildcards or deep paths (e.g., `cursor.session.meta.id`). To exclude a nested object from hashing, mark the entire first-level key:
 
 ```yaml
 vendor:
   _meta:
     volatile:
-      - "cursor.session_id" # Exact match
-      - "*.timestamp" # Any agent's timestamp
-      - "cursor.temp_*" # Cursor fields starting with temp_
+      - "cursor.session_meta"
 ```
 
-### Common volatile fields
+### Quick verify workflow
 
-**Session metadata:**
-
-```yaml
-volatile: ["*.session_id", "*.session_token"]
-```
-
-**Timestamps:**
-
-```yaml
-volatile: ["*.timestamp", "*.last_modified", "*.created_at"]
-```
-
-**Temporary data:**
-
-```yaml
-volatile: ["*.temp_*", "*.cache_*"]
-```
+1. Add exact paths under `vendor._meta.volatile`.
+2. Run `aligntrue sync`.
+3. Change only the volatile field (e.g., update a timestamp) and rerun `aligntrue sync`.
+4. Confirm `.aligntrue.lock.json` is unchanged (`git diff` locally or `pnpm aligntrue drift --gates` in CI).
 
 ## Round-trip preservation
 
@@ -441,12 +427,12 @@ rules:
 
 ### 4. Mark volatile fields
 
-Exclude session IDs and timestamps from hashing.
+Exclude session IDs and timestamps from hashing using exact paths.
 
 ```yaml
 vendor:
   _meta:
-    volatile: ["*.session_id", "*.timestamp"]
+    volatile: ["cursor.session_id", "cursor.timestamp"]
 ```
 
 **Why:** Prevents false drift detection.
@@ -462,6 +448,10 @@ aligntrue sync
 # Check preserved
 diff .cursor/rules/original.mdc .cursor/rules/rule1.mdc
 ```
+
+### 6. Edit sources, not exports
+
+Make changes in `.aligntrue/rules/*.md` (source of truth). Files under `.cursor/` and `AGENTS.md` are read-only exports.
 
 ## Troubleshooting
 
@@ -501,7 +491,7 @@ aligntrue exporters list | grep cursor
 ```yaml
 vendor:
   _meta:
-    volatile: ["cursor.session_id", "*.timestamp"]
+    volatile: ["cursor.session_id", "cursor.timestamp"]
 ```
 
 ### Different behavior across agents

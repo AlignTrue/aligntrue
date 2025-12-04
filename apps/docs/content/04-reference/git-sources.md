@@ -124,6 +124,18 @@ sources:
 
 Much cleaner! Each URL includes the host, org, repo, optional version (`@ref`), and optional path. No repetition.
 
+`include` parsing uses HTTPS URLs and ignores any parent `ref`/`path` keys on the same entry. SSH for include is not supported; use the legacy form when you need SSH.
+
+| Intent                    | URL example                                          | Resolved url/ref/path                                              |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Repo root, default branch | `https://github.com/org/rules`                       | url=`https://github.com/org/rules`, ref=`main`, path=`.`           |
+| Repo root, tag            | `https://github.com/org/rules@v2.0.0`                | url=`https://github.com/org/rules`, ref=`v2.0.0`, path=`.`         |
+| Directory on branch       | `https://github.com/org/rules/tree/dev/aligns`       | url=`https://github.com/org/rules`, ref=`dev`, path=`aligns`       |
+| File on branch            | `https://github.com/org/rules/blob/main/security.md` | url=`https://github.com/org/rules`, ref=`main`, path=`security.md` |
+| File with @ref shorthand  | `https://github.com/org/rules@dev/security.md`       | url=`https://github.com/org/rules`, ref=`dev`, path=`security.md`  |
+
+**Precedence:** include entries are expanded in order; first match wins on duplicates. Local rules still override everything else.
+
 ### Multiple git sources with merge order (legacy)
 
 ```yaml
@@ -221,6 +233,15 @@ aligntrue privacy grant git
 
 This stores consent in `.aligntrue/privacy-consent.json` (git-ignored).
 
+If consent is missing and no cache exists, sync fails with:
+
+```
+Network operation requires consent
+  Repository: <url>
+  Grant consent with: aligntrue privacy grant git
+  Or run with --offline to use cache only
+```
+
 ### Audit and revoke
 
 View all granted consents:
@@ -252,6 +273,8 @@ In offline mode:
 - ❌ Errors clearly if cache missing (no silent failures)
 
 Great for air-gapped environments or when network is unreliable.
+
+If cache is missing, the error includes the repository URL and instructs rerunning without `--offline` to fetch.
 
 ## Cache management
 
@@ -434,6 +457,10 @@ For HTTPS URLs, configure git credentials as shown above.
 1. **Add SSH key to GitHub/GitLab** - Upload public key to your account
 2. **Check SSH agent** - `ssh-add -l` lists loaded keys
 3. **Use HTTPS instead** - Works without SSH setup
+
+### Submodules not fetched
+
+AlignTrue uses shallow clones and does not initialize submodules. If your rules live in a submodule, point to that submodule's repository directly as its own git source or vendor the files locally with `type: local`.
 
 ### Shallow clone limitations
 

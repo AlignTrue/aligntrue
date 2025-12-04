@@ -5,7 +5,7 @@ description: Control which agents receive specific rules using frontmatter optio
 
 # Per-rule export targeting
 
-While AlignTrue syncs all your rules to all configured agents by default, you can target specific rules to specific agents using frontmatter options. This is useful for agent-specific guidance, debugging rules, or performance-critical configurations.
+While AlignTrue syncs all your rules to all enabled exporters by default, you can target specific rules to specific agents using frontmatter options. This is useful for agent-specific guidance, debugging rules, or performance-critical configurations.
 
 ## Why target rules per agent?
 
@@ -20,6 +20,9 @@ While AlignTrue syncs all your rules to all configured agents by default, you ca
 ## How it works
 
 Each rule file can specify which agents should receive it:
+
+- Use the exporter ids you have enabled in config (for example `cursor`, `agents-md`, `windsurf`, `windsurf-mcp`). Names must match exactly.
+- If you omit targeting, the rule goes to every enabled exporter.
 
 ```markdown
 ---
@@ -185,6 +188,8 @@ Cursor, Amazon Q, KiloCode, Augment Code, Kiro, Trae AI:
 - If `exclude_from: [cursor]`: Rule is skipped, `.cursor/rules/rule.mdc` is **not** written
 - Otherwise: Rule writes to `.cursor/rules/rule.mdc`
 
+Targets must match enabled exporters. If a rule only targets exporters that are not enabled, it is skipped and `aligntrue sync` logs a warning.
+
 ### For AGENTS.md
 
 Copilot, GitHub Copilot, Aider, Claude, etc.:
@@ -220,6 +225,8 @@ Rules by agent:
     - architecture.md
     - security.md
 ```
+
+If you see a warning about rules targeting disabled exporters, enable the exporter in config or remove `export_only_to` from that rule.
 
 ## Sync behavior
 
@@ -327,15 +334,16 @@ Result: Only Cursor gets this rule, and only for the `apps/web` scope.
 
 1. Check `export_only_to`: Is the agent listed?
 2. Check `exclude_from`: Is the agent excluded?
-3. Check `enabled`: Is the rule enabled? (defaults to true)
-4. Check `scope`: Does the scope match your project structure?
-5. Run `aligntrue rules list --by-agent` to see actual targeting
+3. Check that the exporter is enabled in your config (run `aligntrue rules list --by-agent` to confirm names).
+4. Check `enabled`: Is the rule enabled? (defaults to true)
+5. Check `scope`: Does the scope match your project structure?
+6. Run `aligntrue sync` and look for warnings about skipped targets.
 
 ### Rule appearing where it shouldn't
 
 1. Verify `export_only_to` is set correctly
 2. Verify `exclude_from` doesn't have typos
-3. Check agent names in targeting match config exactly
+3. Check agent/exporter names in targeting match config exactly
 4. Run `aligntrue sync --verbose` to see targeting decisions
 
 ## Related documentation

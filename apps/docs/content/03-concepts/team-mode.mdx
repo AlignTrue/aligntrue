@@ -1,3 +1,7 @@
+---
+description: Team mode concepts, lockfiles, and workflows for collaborative repos.
+---
+
 # Team mode
 
 <Callout type="info">
@@ -19,11 +23,11 @@ Team mode enables collaborative rule management with:
 
 ## Team mode vs solo mode
 
-||| Feature | Solo mode | Team mode |
-||| --------------------- | --------- | --------- |
-||| Lockfile generation | ❌ | ✅ |
-||| Bundle generation | ❌ | ✅ |
-||| Drift detection | ❌ | ✅ |
+| Feature             | Solo mode | Team mode |
+| ------------------- | --------- | --------- |
+| Lockfile generation | ❌        | ✅        |
+| Bundle generation   | ❌        | ✅        |
+| Drift detection     | ❌        | ✅        |
 
 <Callout type="warning" title=".aligntrue/bundle.yaml status">
   `modules.bundle` enables multi-source merging in memory, but the CLI does
@@ -45,13 +49,13 @@ This creates two configuration files:
 - **`.aligntrue/config.team.yaml`** (new, committed) - Team settings: `mode: team`, lockfile, bundle, shared sources and exporters
 - **`.aligntrue/config.yaml`** (updated, gitignored) - Personal settings: personal remotes, local overrides
 
-### 2. Generate lockfile
+### 2. Sync to generate lockfile
 
 ```bash
 aligntrue sync
 ```
 
-This generates `.aligntrue/lock.json` with deterministic bundle hash.
+This writes `.aligntrue/lock.json` with a deterministic bundle hash. Use `aligntrue sync --dry-run` to preview changes before updating the lockfile.
 
 ### Lockfile with sections
 
@@ -80,7 +84,7 @@ Lockfile entries intentionally capture vendor metadata so they describe the exac
 - Non-volatile vendor fields such as `vendor.aligntrue.last_modified` are hashed. Accepting agent edits updates these timestamps, so a new sync normally produces a new lockfile hash even if the prose looks identical.
 - Fields under `vendor.*.volatile` are ignored during hashing. You can stash diagnostics (e.g., last detection run) there without tripping lockfile drift.
 
-If you need to preview the impact of a change, run `aligntrue sync --dry-run` first. Otherwise commit the regenerated lockfile whenever hashes change—this is the expected signal that your IR evolved.
+Use `aligntrue sync --dry-run` to preview the impact of a change. Otherwise commit the regenerated lockfile whenever hashes change—this is the expected signal that your IR evolved.
 
 ### 3. Commit lockfile
 
@@ -90,12 +94,6 @@ git commit -m "chore: Enable team mode"
 ```
 
 Approval happens via standard git PR review workflow.
-
-### 4. Sync with validation
-
-```bash
-aligntrue sync
-```
 
 ## CLI commands
 
@@ -122,7 +120,7 @@ aligntrue team disable
 1. Adds a `# TEAM MODE OFF` marker to `.aligntrue/config.team.yaml` (non-destructive)
 2. Personal settings in `.aligntrue/config.yaml` remain unchanged
 3. The marker prevents team settings from being loaded
-4. Can be re-enabled later by removing the marker (via `aligntrue team enable`)
+4. Re-enable by running `aligntrue team enable` (removes the marker automatically)
 
 **Note:** Your personal configuration is preserved, so you can re-enable team mode without losing local overrides.
 
