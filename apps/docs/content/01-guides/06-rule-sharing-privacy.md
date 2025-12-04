@@ -632,4 +632,4 @@ aligntrue sync --verbose
 - [Team Mode](/docs/03-concepts/team-mode) - How approval scopes work in team workflows
 - [Working with external sources](/docs/01-guides/04-external-sources) - Adding and customizing external rules
 - [Personal Repository Setup](/docs/04-reference/personal-repo-setup) - SSH and HTTPS configuration
-- [Remote Access Troubleshooting](/docs/05-troubleshooting/remote-access) - Resolving connection issues
+- [Source and remote issues](/docs/05-troubleshooting/source-remote-issues) - Resolving connection issues

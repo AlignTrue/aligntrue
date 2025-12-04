@@ -205,4 +205,4 @@ git config --global credential.helper store
 
 - [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Complete guide to rule privacy, scoping, and remote synchronization
 - [Working with external sources](/docs/01-guides/04-external-sources) - Adding and customizing external rules
-- [Troubleshooting Remote Access](/docs/05-troubleshooting/remote-access) - Solutions for SSH and connection issues
+- [Source and remote issues](/docs/05-troubleshooting/source-remote-issues) - Solutions for SSH and connection issues
