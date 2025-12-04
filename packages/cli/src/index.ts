@@ -19,7 +19,6 @@ import {
   privacy,
   backup,
   revert,
-  watch,
   link,
   drift,
   plugs,
@@ -68,7 +67,6 @@ async function main() {
     console.log(
       "  sync           Sync rules to agents (always backs up first)",
     );
-    console.log("  watch          Watch files and auto-sync on changes");
     console.log("  check          Validate rules and configuration\n");
     console.log("Diagnostics:");
     console.log(
@@ -129,7 +127,6 @@ async function main() {
     ["init", init],
     ["migrate", migrate],
     ["sync", sync],
-    ["watch", watch],
     ["team", team],
     ["scopes", scopes],
     ["check", check],

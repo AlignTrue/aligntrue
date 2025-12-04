@@ -77,37 +77,6 @@ export function saveDriftLog(cwd: string, log: DriftLog): void {
 }
 
 /**
- * Add new file detection to drift log
- */
-export function addDriftDetection(
-  cwd: string,
-  file: string,
-  sections: number,
-  status: DriftStatus = "pending_review",
-): void {
-  const log = loadDriftLog(cwd);
-
-  // Check if file already in log
-  const existing = log.detections.find((d) => d.file === file);
-  if (existing) {
-    // Update existing entry
-    existing.timestamp = new Date().toISOString();
-    existing.sections = sections;
-    existing.status = status;
-  } else {
-    // Add new entry
-    log.detections.push({
-      timestamp: new Date().toISOString(),
-      file,
-      sections,
-      status,
-    });
-  }
-
-  saveDriftLog(cwd, log);
-}
-
-/**
  * Update status of a detected file
  */
 export function updateDriftStatus(

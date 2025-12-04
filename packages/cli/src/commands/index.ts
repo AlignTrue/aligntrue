@@ -12,7 +12,6 @@ export { exporters } from "./exporters.js";
 export { privacyCommand as privacy } from "./privacy.js";
 export { backupCommand as backup } from "./backup.js";
 export { revert } from "./revert.js";
-export { watch } from "./watch.js";
 export { plugsCommand as plugs } from "./plugs.js";
 export { link } from "./link.js";
 export { drift } from "./drift.js";

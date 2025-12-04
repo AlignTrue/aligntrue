@@ -23,7 +23,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
 - Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
-## CLI (24 commands)
+## CLI (23 commands)
 
 **Diagnostics:**
 
@@ -33,10 +33,9 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 **Basic:**
 
 - `init` — 60-second setup with agent auto-detection
-- `sync` — Export rules to agents with watch mode and dry-run
+- `sync` — Export rules to agents with dry-run
 - `check` — Rule and config validation
 - `config` — View/edit configuration
-- `watch` — Watch files and auto-sync on changes
 
 **Development:**
 
@@ -149,7 +148,6 @@ See [Agent Support](/docs/04-reference/agent-support) for complete compatibility
 
 - **Unidirectional sync** - Rules → IR → agents (one-way export)
 - **Section-based organization** - Sections matched by heading/content hash
-- **Watch mode** - Continuous file watching with configurable debouncing
 - **Agent detection** - Detect new agents in workspace and prompt to enable
 - **Atomic file operations** - Temp file + rename pattern with checksum tracking
 - **Dry-run mode** - Preview changes without writing files

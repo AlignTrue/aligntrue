@@ -271,32 +271,6 @@ See the [agent verification guide](/docs/04-reference/agent-verification) for ag
 
    If the file is empty or has no headings, AlignTrue won't detect sections.
 
-3. **For watch mode**, new files are logged but may require a manual sync:
-
-```bash
-# Stop watch
-Ctrl+C
-
-# Run sync to pick up new files
-aligntrue sync
-
-# Restart watch
-aligntrue watch
-```
-
-**Example:**
-
-```bash
-# 1. Create new rule file
-echo "## Testing rules" > .aligntrue/rules/testing.md
-
-# 2. Run sync to detect and merge
-aligntrue sync
-
-# 3. Verify rules are exported to all agents
-cat AGENTS.md | grep -A 5 "Testing rules"
-```
-
 ## Missing sections after sync
 
 **Symptom:** After syncing, some sections from your files are missing in the output.
@@ -411,23 +385,6 @@ cat AGENTS.md | grep -A 5 "Testing rules"
    touch .aligntrue/rules/global.md
    aligntrue sync
    ```
-
-## Watch mode not detecting new files
-
-**Symptom:** You added a new file while `aligntrue watch` is running, but no sync triggered.
-
-**Expected behavior:** Watch mode logs new files but doesn't auto-import them by default.
-
-**Fix:**
-
-Stop watch and run sync manually:
-
-```bash
-# In watch terminal: Ctrl+C
-aligntrue sync
-# Review import changes
-aligntrue watch  # Restart
-```
 
 ## Formatting issues in exported files
 

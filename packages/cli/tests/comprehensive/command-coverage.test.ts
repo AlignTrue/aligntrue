@@ -18,7 +18,6 @@ const CLI_PATH = join(__dirname, "../../dist/index.js");
 const ALL_COMMANDS = [
   "init",
   "sync",
-  "watch",
   "check",
   "exporters",
   "sources",

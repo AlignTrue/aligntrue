@@ -171,9 +171,6 @@ async function showConfig(configPath: string): Promise<void> {
       console.log(`\n🔄 Sync:`);
       console.log(`  Source: .aligntrue/rules/*.md`);
       console.log(`  Direction: Outward to agents (unidirectional)`);
-      if (cfg.sync.watch_enabled) {
-        console.log(`  Watch mode: enabled`);
-      }
     }
 
     if (cfg.modules) {
@@ -364,13 +361,7 @@ async function configSet(
       clack.log.error(`Invalid config key: ${key}`);
       clack.log.info("\nValid keys:");
       // Show some common valid keys
-      const commonKeys = [
-        "mode",
-        "sync.watch_enabled",
-        "exporters",
-        "git.mode",
-        "modules.lockfile",
-      ];
+      const commonKeys = ["mode", "exporters", "git.mode", "modules.lockfile"];
       commonKeys.forEach((k) => clack.log.info(`  ${k}`));
       clack.log.info(`  ... and others`);
       clack.log.info("\nVendor keys (vendor.*) are also allowed");

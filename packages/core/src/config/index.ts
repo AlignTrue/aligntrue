@@ -270,29 +270,7 @@ export async function saveMinimalConfig(
     minimalConfig.lockfile = { mode: config.lockfile.mode };
   }
 
-  // Build sync section only if there are non-default values
-  const syncSection: Partial<typeof config.sync> = {};
-  let hasSyncChanges = false;
-
-  if (
-    config.sync?.watch_enabled !== undefined &&
-    config.sync?.watch_enabled !== false
-  ) {
-    syncSection.watch_enabled = config.sync.watch_enabled;
-    hasSyncChanges = true;
-  }
-  if (config.sync?.watch_debounce !== undefined) {
-    syncSection.watch_debounce = config.sync.watch_debounce;
-    hasSyncChanges = true;
-  }
-  if (config.sync?.watch_files && config.sync.watch_files.length > 0) {
-    syncSection.watch_files = config.sync.watch_files;
-    hasSyncChanges = true;
-  }
-
-  if (hasSyncChanges) {
-    minimalConfig.sync = syncSection;
-  }
+  // Note: sync section serialization has been removed (watch mode deprecated)
 
   // Sources: only if not default (now defaults to rules directory)
   const defaultSources = JSON.stringify([

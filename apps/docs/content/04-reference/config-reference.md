@@ -79,37 +79,10 @@ Controls sync behavior and optional features.
 ```yaml
 sync:
   scope_prefixing: "auto" # Scope prefixes in exports (off/auto/always)
-  watch_enabled: true # Enable watch mode
-  watch_debounce: 500 # Debounce time in milliseconds
-  watch_files: [] # Specific files to watch (if omitted, watches rules directory)
   auto_manage_ignore_files: "prompt" # Auto-manage .gitignore and ignore files
   ignore_file_priority: "native" # How to prioritize ignore files
   custom_format_priority: {} # Custom format priorities for conflict resolution
 ```
-
-#### sync.watch_enabled
-
-**Type:** `boolean`
-
-**Default:** `false`
-
-Enable watch mode for continuous file monitoring and automatic syncing.
-
-#### sync.watch_debounce
-
-**Type:** `number`
-
-**Default:** `500`
-
-Debounce time in milliseconds for file watching. Prevents multiple syncs from rapid file changes.
-
-#### sync.watch_files
-
-**Type:** `array of strings`
-
-**Default:** `[]` (watch rules directory)
-
-Specific files to watch for changes. If empty, watches the entire rules directory.
 
 #### sync.auto_manage_ignore_files
 
