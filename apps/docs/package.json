@@ -24,14 +24,12 @@
     "nextra": "4.6.0",
     "nextra-theme-docs": "4.6.0",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "simple-icons": "^16.0.0"
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
     "@pagefind/default-ui": "^1.1.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "baseline-browser-mapping": "^2.8.32",
     "fast-xml-parser": "^5.3.1",
     "pagefind": "^1.1.0"
   }

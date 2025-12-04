@@ -40,8 +40,8 @@
     "gray-matter": "^4.0.3",
     "ignore": "^7.0.5",
     "micromatch": "^4.0.8",
-    "simple-git": "^3.27.0",
-    "yaml": "^2.6.1"
+    "simple-git": "^3.30.0",
+    "yaml": "^2.8.2"
   },
   "peerDependencies": {
     "@aligntrue/exporters": "workspace:*"
