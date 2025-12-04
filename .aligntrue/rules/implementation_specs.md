@@ -36,10 +36,9 @@ Lockfiles and manifests must hash identically across machines.
 ### Requirements
 
 - Canonicalization uses JSON Canonicalization Scheme JCS (RFC 8785)
-- Floats rounded to 6 decimal places before JCS
-- Reject `NaN` and `Infinity`
 - UTF-8 without BOM
 - No trailing spaces, exactly one trailing newline
+- Number serialization handled by JCS specification
 
 ### API
 
@@ -72,7 +71,7 @@ Teams need deterministic align composition.
 
 ### Requirements
 
-- Merging happens in memory; `.aligntrue.bundle.yaml` is not yet written to disk
+- Merging happens in memory; `.aligntrue.bundle.yaml` is a forward-compatible placeholder not yet persisted to disk
 - Dependency order from a topological sort of the align DAG
 - **Precedence (first-wins):**
   - Local project rules (`.aligntrue/rules/`) ALWAYS FIRST, ALWAYS WINS
@@ -130,11 +129,15 @@ Stable file targeting across OS and tools.
 
 ---
 
-## 4) Telemetry privacy (opt in only)
+## 4) Telemetry (not currently implemented)
 
 ### Why
 
 Collect coarse usage signals without leaking data.
+
+### Status
+
+This feature was removed in favor of a simpler approach. See CHANGELOG.md for details on removal.
 
 ---
 
@@ -154,12 +157,7 @@ Includes: `.mdc`, `AGENTS.md`, and other markdown based agent formats.
 - `\n` line endings
 - Exactly one trailing newline
 - No timestamps or UUIDs
-- Required footer:
-
-```
-Content-Hash: <sha256-of-IR>
-Fidelity: <notes or "OK">
-```
+- No content hash or fidelity footers in exported files (see note below)
 
 ### AGENTS.md exporter
 
@@ -183,16 +181,30 @@ Single-file exporters (AGENTS.md, CLAUDE.md, etc.) support content mode control:
 - Deterministic output regardless of mode
 - Links mode preserves relative paths to source files
 
+### Content hash and fidelity handling
+
+**Important:** Content hashes and fidelity notes are NOT embedded in exported files.
+
+**Instead:**
+
+- Content hash is returned in `ExportResult.contentHash` for programmatic use
+- Fidelity notes are returned in `ExportResult.fidelityNotes` and displayed by CLI
+- Agent files themselves remain clean, user-editable markdown/JSON without AlignTrue metadata
+
+See `packages/exporters/src/base/EXPORTER_POLICY.md` for complete policy.
+
 ### MCP and config exporters
 
 - Write deterministic JSON or YAML
 - Stable key ordering
 - No volatile fields that change per run
+- Content hash returned in `ExportResult`, not embedded in file
 
 ### Acceptance
 
 - Same IR yields identical bytes across runs and OSes
-- When mapping is partial, emit stable fidelity notes
+- When mapping is partial, fidelity notes are returned in `ExportResult.fidelityNotes`
+- Exported files are clean and user-editable without AlignTrue metadata
 
 ---
 
@@ -226,9 +238,8 @@ Catch errors early.
 ### Exit codes
 
 - `0` success
-- `1` validation error
-- `2` user error (missing files, bad flags)
-- `3` system error
+- `1` validation error (validation failures, sync errors, etc.)
+- `2` user error (missing files, bad flags, config errors)
 
 ### Error format
 
@@ -241,6 +252,7 @@ Each error must state:
 ### Acceptance
 
 - Contract tests cover `validate`, `bundle`, `export`, `align` exit codes and messages
+- Exit codes follow the two-tier system (1 for data/logic errors, 2 for input/config errors)
 
 ---
 
@@ -257,13 +269,14 @@ IR is canonical. Vendor bags enable lossless multi agent support.
 - Vendor bags:
   - Use `vendor.<agent>` namespaces
 - Volatile fields:
-  - `vendor.*.volatile` excluded from hashing
+  - Stored in `vendor._meta.volatile` array (list of dot-notation paths to exclude from hashing)
+  - Example: `vendor._meta.volatile: ["cursor.session_id", "claude.temp_token"]`
 - Round trip:
   - IR → agent → IR keeps semantics
 
 ### Hashing
 
-- Compute hash on IR with volatile fields removed
+- Compute hash on IR with volatile fields removed (via `filterVolatileVendorFields`)
 - Use `canonicalJson` then `stableHash`
 
 ### Acceptance
@@ -419,12 +432,11 @@ Zero build ESM package must work across apps without special loaders.
 Before merging a feature that touches determinism, sync, or exports:
 
 - Uses `canonicalJson` and `stableHash` where required (Section 1)
-- IR first: IR remains the canonical source (Section 10)
-- Vendor bags used and volatile fields excluded correctly (Section 10)
-- Unidirectional sync follows precedence and atomicity rules (Section 11)
+- IR first: IR remains the canonical source (Section 8)
+- Vendor bags used and volatile fields excluded correctly (Section 8)
+- Unidirectional sync follows precedence and atomicity rules (Section 9)
 - Merge order and precedence follow Section 2 in team mode
-- Scope behavior matches Sections 3 and 12
-- Export bytes are stable and include required footer (Section 7)
-- CLI exit codes and messages follow Section 9
-- Telemetry is opt in and PII free (Section 4)
+- Scope behavior matches Sections 3 and 10
+- Export bytes are stable and do NOT include content hash or fidelity footers in files (Section 5)
+- CLI exit codes and messages follow Section 7
 - `@aligntrue/ui` obeys zero build rules if touched (Section 12)

@@ -3,7 +3,5 @@ sources:
     path: .aligntrue/rules
 exporters:
   - cursor
-  - agents
-  - claude
 remotes:
   personal: https://github.com/gmays/aligntrue-private-rules

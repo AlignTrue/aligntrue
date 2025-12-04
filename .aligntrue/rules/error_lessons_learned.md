@@ -1,6 +1,6 @@
 ---
 description: Lessons learned from resolving errors and issues
-private: true
+gitignore: true
 scope: personal
 content_hash: 4038c034f6eccd2e092bf58075c4d81f90f2f54a00e89b25093185c932a0715b
 ---

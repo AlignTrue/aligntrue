@@ -288,7 +288,7 @@ This checks:
 
 ## See also
 
-- [Multi-agent workflows guide](../../apps/docs/content/01-guides/05-multi-agent-workflows.md) - Complete multi-agent documentation
-- [Vendor bags reference](../../apps/docs/content/04-reference/vendor-bags.md) - Agent-specific metadata
+- [Multi-agent workflows guide](https://aligntrue.ai/docs/01-guides/05-multi-agent-workflows) - Complete multi-agent documentation
+- [Vendor bags reference](https://aligntrue.ai/docs/04-reference/vendor-bags) - Agent-specific metadata
 - [COMPARISON.md](./COMPARISON.md) - Detailed agent comparison
 - [Golden repo example](../golden-repo/) - Solo developer workflow

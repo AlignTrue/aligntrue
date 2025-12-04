@@ -1,3 +1,9 @@
+---
+id: "multi-file-rules/architecture"
+version: "1.0.0"
+summary: "Architecture guidelines for system design and module organization"
+---
+
 # Architecture Guidelines
 
 ## System Design Principles

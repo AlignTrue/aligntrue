@@ -110,7 +110,7 @@ CLAUDE.md
 # END AlignTrue Generated Files
 
 # START AlignTrue Private Rules
-# Source: git@github.com:gmays/aligntrue-private-rules (private: true)
+# Source: git@github.com:gmays/aligntrue-private-rules (gitignore: true)
 .aligntrue/rules/error_lessons_learned.md
 .aligntrue/rules/guardrails.md
 .aligntrue/rules/potential_future_features.md

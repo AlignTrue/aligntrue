@@ -178,6 +178,6 @@ This checks:
 
 ## See also
 
-- [Overlays guide](../../apps/docs/content/02-customization/overlays.md) - Complete overlay documentation
+- [Overlays guide](https://aligntrue.ai/docs/02-customization/overlays) - Complete overlay documentation
 - [SCENARIOS.md](./SCENARIOS.md) - Detailed scenarios with outputs
-- [Golden repo example](../golden-repo/) - Basic example with overlays scenarios
+- [Golden repo example](../golden-repo/) - Basic example to start with

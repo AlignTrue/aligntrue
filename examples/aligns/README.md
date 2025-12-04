@@ -13,19 +13,19 @@ Reference aligns directly from this repository:
 sources:
   - type: git
     url: https://github.com/AlignTrue/aligntrue
-    path: examples/aligns/testing.yaml
+    path: examples/aligns/testing.md
 ```
 
 Or use raw GitHub URLs:
 
 ```bash
-curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/AlignTrue/aligntrue/main/examples/aligns/global.yaml
+curl -o .aligntrue/rules.md https://raw.githubusercontent.com/AlignTrue/aligntrue/main/examples/aligns/global.md
 ```
 
 ### Copy locally
 
 ```bash
-cp examples/aligns/testing.yaml .aligntrue/rules.yaml
+cp examples/aligns/testing.md .aligntrue/rules.md
 aligntrue sync
 ```
 
@@ -34,47 +34,45 @@ aligntrue sync
 ```yaml
 sources:
   - type: local
-    path: examples/aligns/testing.yaml
+    path: examples/aligns/testing.md
 ```
 
 ## Available Aligns
 
 ### Base Aligns (Universal)
 
-- `global.yaml` - Universal baseline rules for all projects
-- `docs.yaml` - Documentation standards and README requirements
-- `typescript.yaml` - TypeScript strict mode and conventions
-- `testing.yaml` - Testing best practices and determinism
-- `tdd.yaml` - Test-driven development workflow
-- `debugging.yaml` - Systematic debugging practices
-- `security.yaml` - Security, secrets scanning, and supply chain
-- `rule-authoring.yaml` - Best practices for writing AlignTrue rules
+- `global.md` - Universal baseline rules for all projects
+- `docs.md` - Documentation standards and README requirements
+- `typescript.md` - TypeScript strict mode and conventions
+- `testing.md` - Testing best practices and determinism
+- `tdd.md` - Test-driven development workflow
+- `debugging.md` - Systematic debugging practices
+- `security.md` - Security, secrets scanning, and supply chain
 
 ### Stack-Specific Aligns
 
-- `nextjs_app_router.yaml` - Next.js App Router patterns and best practices
-- `vercel_deployments.yaml` - Vercel deployment configuration and environment management
-- `web_quality.yaml` - Web performance, Core Web Vitals, and accessibility standards
+- `nextjs_app_router.md` - Next.js App Router patterns and best practices
+- `vercel_deployments.md` - Vercel deployment configuration and environment management
+- `web_quality.md` - Web performance, Core Web Vitals, and accessibility standards
 
 ## Align Format
 
-All examples use YAML format with the following structure:
+All examples use markdown with YAML frontmatter:
 
-```yaml
+```markdown
+---
 id: "aligns/namespace/align-name"
 version: "1.0.0"
-profile: "align"
-spec_version: "1"
 summary: "Brief description"
 tags: ["tag1", "tag2"]
-rules:
-  - id: "category.subcategory.rule-name"
-    severity: "error"
-    applies_to:
-      - "**/*.ts"
-    guidance: |
-      Clear guidance for AI assistants
+---
+
+# Align Title
+
+Markdown content with guidance for AI assistants.
 ```
+
+Each align file contains its own metadata in YAML frontmatter with sections organized as markdown headings.
 
 ## Sharing Your Own Aligns
 

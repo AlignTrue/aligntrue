@@ -238,17 +238,22 @@ Each package maintains its own `tests/` directory with subfolders that align wit
 
 ```
 packages/cli/tests/
-  commands/           # CLI command smoke and unit tests
-  comprehensive/      # Charter layers and command coverage helpers
-  integration/        # Real workflows and git-backed scenarios
-  helpers/            # Reusable fixtures and utilities
-  fixtures/           # Static files consumed by tests
-  scripts/            # Shell helpers for local runs
-  unit/               # Focused parsing/unit tests
-  utils/              # Supporting utilities and their tests
-  drift.test.ts
-  workflow-detection.test.ts
-  version.test.ts
+  check-empty-yaml.test.ts  # YAML validation tests
+  commands/                 # CLI command smoke and unit tests
+  comprehensive/            # Charter layers and command coverage helpers
+  COVERAGE.md               # Test coverage documentation
+  drift.test.ts             # Drift detection tests
+  e2e/                      # End-to-end workflow tests
+    sync-workflow.test.ts
+  fixtures/                 # Static files consumed by tests
+  helpers/                  # Reusable fixtures and utilities
+  integration/              # Real workflows and git-backed scenarios
+  scripts/                  # Shell helpers for local runs
+  TESTING.md                # Testing documentation
+  tmp/                      # Temporary test outputs (gitignored)
+  unit/                     # Focused parsing/unit tests
+  utils/                    # Supporting utilities and their tests
+  version-sync.test.ts      # Version sync tests
 ```
 
 Other packages follow the same principle (`packages/core/tests/`, `packages/exporters/tests/`, `packages/schema/tests/`, etc.), so new packages should adopt a similar layout that reflects their needs.
@@ -464,6 +469,6 @@ CI should enforce:
 
 ## Related rules
 
-- `debugging.mdc` for systematic debugging
-- `implementation_specs.mdc` for determinism rules and IR data flow
-- `security_linting_policy.mdc` for security linting policy
+- `debugging.md` for systematic debugging
+- `implementation_specs.md` for determinism rules and IR data flow
+- `security_linting_policy.md` for security linting policy
