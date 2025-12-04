@@ -82,6 +82,7 @@ packages/**/.test-output*/
 packages/**/.test-*/
 packages/**/test-*/
 **/tests/tmp/
+**/.backups/
 
 # Turborepo cache (generated during build)
 .turbo/
