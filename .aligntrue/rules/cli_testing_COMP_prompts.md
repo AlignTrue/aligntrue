@@ -3,7 +3,7 @@ description: Test prompts for the COMP plan
 enabled: false
 ---
 
-DO NOT edit any code, except in your own test env for testing ourposes. DO NOT try to fix any code. Your job is just to test thoroughly and report issues you find with recommendations.
+DO NOT edit any code, except in your own test env for testing purposes. DO NOT try to fix any code. Your job is just to test thoroughly and report issues you find with recommendations.
 
 ## Kick-Off Prompts
 
