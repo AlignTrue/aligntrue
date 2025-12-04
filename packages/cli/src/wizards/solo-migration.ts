@@ -10,6 +10,7 @@ import {
   patchConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 export interface SoloMigrationResult {
   success: boolean;
@@ -29,7 +30,7 @@ export async function runSoloMigrationWizard(
   clack.intro("Disabling Team Mode");
 
   // Step 1: Create backup
-  const spinner = clack.spinner();
+  const spinner = createManagedSpinner();
   spinner.start("Creating backup");
 
   try {

@@ -22,7 +22,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { exitWithError } from "../utils/error-formatter.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 /**
  * Argument definitions for onboard command
@@ -464,7 +464,7 @@ export async function onboard(args: string[]): Promise<void> {
 
   try {
     // Analyze git history
-    const spinner = createSpinner();
+    const spinner = createManagedSpinner();
     spinner.start("Analyzing recent work...");
 
     const gitAnalysis = analyzeGitHistory();

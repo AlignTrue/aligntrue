@@ -13,8 +13,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { isTTY } from "../utils/tty-helper.js";
-import { applyDefaults, getExporterNames } from "@aligntrue/core";
-import { createManagedSpinner, type SpinnerLike } from "../utils/spinner.js";
+import { applyDefaults, getExporterNames, patchConfig } from "@aligntrue/core";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -210,7 +209,6 @@ async function teamEnable(
   flags: Record<string, string | boolean | undefined>,
 ): Promise<void> {
   const configPath = ".aligntrue/config.yaml";
-  let spinner: SpinnerLike | null = null;
 
   // Check for non-interactive mode
   const nonInteractive =
@@ -289,14 +287,6 @@ async function teamEnable(
       clack.log.success(`Backup created: ${backup.timestamp}`);
     }
 
-    // Update config
-    config.mode = "team";
-    config.modules = {
-      ...config.modules,
-      lockfile: true,
-      bundle: true,
-    };
-
     // Prompt for lockfile mode (interactive only)
     let lockfileMode: "soft" | "strict" = "soft";
     if (!nonInteractive) {
@@ -333,48 +323,26 @@ async function teamEnable(
       lockfileMode = lockfileModeResponse as "soft" | "strict";
     }
 
-    // Ensure lockfile config exists and set chosen mode
-    config.lockfile = {
-      mode: lockfileMode,
-    };
-
-    // Preserve user-defined sources before defaults reapply
-    const existingSources =
-      config.sources && config.sources.length > 0
-        ? config.sources.map((source) => ({ ...source }))
-        : undefined;
-
-    // Apply defaults to fill in other missing fields
-    const configWithDefaults = applyDefaults(config);
-
-    if (existingSources) {
-      configWithDefaults.sources = existingSources;
-    }
-
-    spinner = createManagedSpinner();
-    spinner.start("Writing team configuration");
-
-    // Write config back atomically
-    const yamlContent = stringifyYaml(configWithDefaults);
-    const tempPath = `${configPath}.tmp`;
-
-    // Ensure directory exists
-    mkdirSync(dirname(configPath), { recursive: true });
-
-    // Write to temp file first
-    writeFileSync(tempPath, yamlContent, "utf-8");
-
-    // Atomic rename (OS-level guarantee)
-    renameSync(tempPath, configPath);
+    // Use patchConfig to only update the specific fields (keeps config clean)
+    await patchConfig(
+      {
+        mode: "team",
+        modules: {
+          lockfile: true,
+          bundle: true,
+        },
+        lockfile: {
+          mode: lockfileMode,
+        },
+      },
+      configPath,
+    );
 
     // Create empty lockfile immediately
     const { createEmptyLockfile } = await import(
       "../utils/lockfile-helpers.js"
     );
-    const lockfileResult = await createEmptyLockfile(
-      process.cwd(),
-      configWithDefaults.mode as "team" | "enterprise",
-    );
+    const lockfileResult = await createEmptyLockfile(process.cwd(), "team");
 
     if (!lockfileResult.success && lockfileResult.error) {
       // Log warning but don't fail - lockfile will be created on first sync
@@ -389,22 +357,16 @@ async function teamEnable(
       }
     }
 
-    // Run migration wizard for personal rules (interactive only)
     if (!nonInteractive) {
-      const { runTeamMigrationWizard } = await import(
-        "../wizards/team-migration.js"
-      );
-      await runTeamMigrationWizard(config, process.cwd());
+      clack.log.success("Team configuration updated");
     }
-
-    spinner.stop("Team configuration updated");
 
     // Consolidated outro
     const outroLines = [
       "Team mode enabled",
       "",
       "Config updated: .aligntrue/config.yaml",
-      `Lockfile: .aligntrue.lock.json (${config.lockfile?.mode || "soft"} mode, ready)`,
+      `Lockfile: .aligntrue.lock.json (${lockfileMode} mode, ready)`,
       "",
       "Helpful commands:",
       "  aligntrue sync   Sync rules and update lockfile",
@@ -420,9 +382,6 @@ async function teamEnable(
       console.log("\n" + outroLines.join("\n"));
     }
   } catch (err) {
-    if (spinner) {
-      spinner.stop("Team mode enable failed", 1);
-    }
     // Re-throw process.exit errors (for testing)
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
