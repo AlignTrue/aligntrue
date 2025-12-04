@@ -51,7 +51,7 @@ File: `packages/schema/src/canonicalize.ts`
 ### Used by
 
 - `.aligntrue/lock.json`
-- `.aligntrue.bundle.yaml` normalized JSON views in tests
+- `.aligntrue/bundle.yaml` normalized JSON views in tests
 - `manifest.json`
 - `versions.json`
 
@@ -71,7 +71,7 @@ Teams need deterministic align composition.
 
 ### Requirements
 
-- Merging happens in memory; `.aligntrue.bundle.yaml` is a forward-compatible placeholder not yet persisted to disk
+- Merging happens in memory; `.aligntrue/bundle.yaml` is a forward-compatible placeholder not yet persisted to disk
 - Dependency order from a topological sort of the align DAG
 - **Precedence (first-wins):**
   - Local project rules (`.aligntrue/rules/`) ALWAYS FIRST, ALWAYS WINS
@@ -91,7 +91,7 @@ Teams need deterministic align composition.
 
 ### Outputs
 
-- `.aligntrue.bundle.yaml` merged rules
+- `.aligntrue/bundle.yaml` merged rules
 - `.aligntrue/lock.json` pins:
   - align hashes
   - bundle hash

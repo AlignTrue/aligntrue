@@ -57,7 +57,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 **Goal:** Test basic solo developer setup and sync.
 
-**Commands:** `init`, `sync`, `check`, `status`, `watch`
+**Commands:** `init`, `sync`, `check`, `status`
 
 **What to try:**
 
@@ -102,17 +102,7 @@ Complete each area sequentially. After finishing each area, record findings befo
    - Does it show sync health?
    - Are exporters listed correctly?
 
-5. Watch mode:
-
-   ```bash
-   echo "## New Rule" > .aligntrue/rules/another.md
-   $CLI watch &
-   sleep 2
-   kill %1  # Stop watch
-   ```
-
-   - Did files get synced automatically?
-   - Did watch detect changes?
+5. REMOVED COMMAND
 
 6. Content modes (if multiple exporters):
 
@@ -128,7 +118,6 @@ Complete each area sequentially. After finishing each area, record findings befo
 - [ ] All files created correctly
 - [ ] Backups created on sync
 - [ ] Status shows accurate info
-- [ ] Watch mode works
 - [ ] Any errors or unexpected behaviors?
 
 ---
@@ -579,7 +568,6 @@ Mark each command as tested:
 | sync      | [ ]    |       |
 | check     | [ ]    |       |
 | status    | [ ]    |       |
-| watch     | [ ]    |       |
 | add       | [ ]    |       |
 | remove    | [ ]    |       |
 | sources   | [ ]    |       |
