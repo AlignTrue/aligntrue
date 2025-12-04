@@ -200,12 +200,14 @@ describe("saveMinimalConfig", () => {
           exclude: ["**/*.test.ts"],
         },
       ],
-      overlays: [
-        {
-          selector: "rule[id=test-rule]",
-          operations: [{ set: { severity: "error" } }],
-        },
-      ],
+      overlays: {
+        overrides: [
+          {
+            selector: "rule[id=test-rule]",
+            operations: [{ set: { severity: "error" } }],
+          },
+        ],
+      },
       performance: {
         max_file_size_mb: 10,
         max_directory_depth: 10,
@@ -230,12 +232,14 @@ describe("saveMinimalConfig", () => {
         exclude: ["**/*.test.ts"],
       },
     ]);
-    expect(parsed.overlays).toEqual([
-      {
-        selector: "rule[id=test-rule]",
-        operations: [{ set: { severity: "error" } }],
-      },
-    ]);
+    expect(parsed.overlays).toEqual({
+      overrides: [
+        {
+          selector: "rule[id=test-rule]",
+          operations: [{ set: { severity: "error" } }],
+        },
+      ],
+    });
   });
 
   it("roundtrip: load(saveMinimal(config)) preserves semantics", async () => {

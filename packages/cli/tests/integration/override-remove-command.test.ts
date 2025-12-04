@@ -173,7 +173,13 @@ describeSkipWindows("Override Remove Command Integration", () => {
         readFileSync(join(TEST_DIR, ".aligntrue", "config.yaml"), "utf-8"),
       );
 
-      expect(updatedConfig.overlays.overrides).toHaveLength(0);
+      // When all overlays are removed, the overlays key may be omitted from minimal config
+      // (since there are no overrides), or present but empty
+      expect(
+        !updatedConfig.overlays ||
+          (Array.isArray(updatedConfig.overlays.overrides) &&
+            updatedConfig.overlays.overrides.length === 0),
+      ).toBe(true);
     });
   });
 

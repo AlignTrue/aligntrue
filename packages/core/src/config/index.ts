@@ -315,16 +315,20 @@ export async function saveMinimalConfig(
     minimalConfig.sources = config.sources;
   }
 
-  // Scopes, overlays: always include if present (not defaults)
+  // Scopes: always include if present (not defaults)
   if (config.scopes && config.scopes.length > 0) {
     minimalConfig.scopes = config.scopes;
   }
-  if (
-    config.overlays &&
-    Array.isArray(config.overlays) &&
-    config.overlays.length > 0
-  ) {
-    minimalConfig.overlays = config.overlays;
+
+  // Overlays: preserve if present with overrides or limits (user-configured)
+  if (config.overlays) {
+    const hasOverrides =
+      Array.isArray(config.overlays.overrides) &&
+      config.overlays.overrides.length > 0;
+    const hasLimits = config.overlays.limits !== undefined;
+    if (hasOverrides || hasLimits) {
+      minimalConfig.overlays = config.overlays;
+    }
   }
 
   // Detection: include if non-default values
