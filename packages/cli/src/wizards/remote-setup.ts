@@ -6,7 +6,7 @@
 import { execFileSync } from "child_process";
 import * as clack from "@clack/prompts";
 import { DOCS_REMOTE_SETUP } from "../constants.js";
-import { createSpinner } from "../utils/spinner.js";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 export interface RemoteSetupResult {
   success: boolean;
@@ -218,7 +218,7 @@ export async function runRemoteSetupWizard(
   }
 
   // Step 3: Test connection
-  const spinner = createSpinner();
+  const spinner = createManagedSpinner();
   spinner.start("Testing connection");
 
   const result = await testRemoteAccess(url);

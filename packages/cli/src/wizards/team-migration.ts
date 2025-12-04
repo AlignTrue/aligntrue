@@ -10,6 +10,7 @@ import {
   patchConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import { createManagedSpinner } from "../utils/spinner.js";
 
 export interface MigrationResult {
   success: boolean;
@@ -29,7 +30,7 @@ export async function runTeamMigrationWizard(
   clack.intro("Converting to Team Mode");
 
   // Step 1: Create backup
-  const spinner = clack.spinner();
+  const spinner = createManagedSpinner();
   spinner.start("Creating backup");
 
   try {
