@@ -9,8 +9,10 @@ cd "$(dirname "$0")"
 # Check required files exist
 echo "✓ Checking files..."
 test -f .aligntrue/config.yaml || { echo "✗ config.yaml missing"; exit 1; }
-test -f .aligntrue/rules || { echo "✗ .rules.yaml missing"; exit 1; }
-test -f upstream-align.yaml || { echo "✗ upstream-align.yaml missing"; exit 1; }
+test -d .aligntrue/rules || { echo "✗ .aligntrue/rules directory missing"; exit 1; }
+test -f .aligntrue/rules/no-console-log.md || { echo "✗ no-console-log.md missing"; exit 1; }
+test -f .aligntrue/rules/max-complexity.md || { echo "✗ max-complexity.md missing"; exit 1; }
+test -f .aligntrue/rules/prefer-const.md || { echo "✗ prefer-const.md missing"; exit 1; }
 test -f SCENARIOS.md || { echo "✗ SCENARIOS.md missing"; exit 1; }
 
 # Check overlays section exists in config.yaml
@@ -45,4 +47,3 @@ echo "  cd examples/overlays-demo"
 echo "  node ../../packages/cli/dist/index.js sync"
 echo ""
 echo "✓ Overlays demo validation complete"
-

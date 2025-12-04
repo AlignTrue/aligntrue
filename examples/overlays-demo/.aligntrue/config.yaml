@@ -1,14 +1,14 @@
-mode: solo
 version: "1"
+mode: solo
 
 sources:
   - type: local
-    path: ".aligntrue/rules"
+    path: .aligntrue/rules
 
 exporters:
-  - type: cursor
-  - type: agents
-  - type: vscode-mcp
+  - cursor
+  - agents
+  - vscode-mcp
 
 overlays:
   overrides:

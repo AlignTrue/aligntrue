@@ -19,15 +19,21 @@ Instead of maintaining all rules in a single `AGENTS.md` file, you can split the
 
 ## Configuration
 
-The `.aligntrue/config.yaml` file specifies the source files:
+The `.aligntrue/config.yaml` file specifies the source directory:
 
 ```yaml
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: rules
+
 exporters:
   - cursor
   - agents
 
 sync:
-  source_files: "rules/*.md"
   source_order:
     - architecture.md
     - security.md
@@ -36,25 +42,22 @@ sync:
 
 ## How It Works
 
-1. **Source Files**: AlignTrue reads all `.md` files in the `rules/` directory
+1. **Source Directory**: AlignTrue reads all `.md` files in the `rules/` directory
 2. **Ordering**: Files are merged in the order specified by `source_order` (or alphabetically if not specified)
 3. **Provenance**: Each section tracks which source file it came from
-4. **Unidirectional Sync**: Edit rules in `.aligntrue/rules/`, sync flows to all agents
+4. **Unidirectional Sync**: Edit rules in `rules/`, sync flows to all agents
 
 ## Usage
 
 ```bash
-# Initialize AlignTrue
-aligntrue init
-
-# List source files
-aligntrue sources list
+# From aligntrue repo root
+cd examples/multi-file-rules
 
 # Sync rules to all agents
-aligntrue sync
+node ../../packages/cli/dist/index.js sync
 
-# Split an existing AGENTS.md into multiple files
-aligntrue sources split
+# List source files
+node ../../packages/cli/dist/index.js sources list
 ```
 
 ## Migrating from Single File
@@ -100,10 +103,7 @@ project/
 └── AGENTS.md  (generated)
 ```
 
-## Comparison with Ruler
+## See also
 
-This feature provides similar functionality to Ruler's nested directory support, but with:
-
-- **Unidirectional sync**: Edit rules in `.aligntrue/rules/`, sync to all agents
-- **Team mode**: Lockfile validation and drift detection
-- **Agent parity**: Consistent behavior across all 50+ supported agents
+- [Golden repo example](../golden-repo/) - Basic single-directory example
+- [Monorepo scopes example](../monorepo-scopes/) - Path-based rule scoping

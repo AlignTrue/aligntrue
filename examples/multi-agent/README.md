@@ -24,7 +24,7 @@ You'll see multiple exporters:
 
 - `cursor` - Cursor IDE
 - `agents` - Universal format (Copilot, Claude Code, Aider)
-- `github-copilot` - GitHub Copilot specific
+- `copilot` - GitHub Copilot specific
 - `vscode-mcp` - VS Code MCP config
 
 ### 2. View rules with vendor bags

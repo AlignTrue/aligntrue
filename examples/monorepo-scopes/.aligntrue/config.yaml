@@ -9,9 +9,5 @@ exporters:
   - cursor
   - agents
 
-sync:
-  workflow_mode: "ir_source"
-  auto_pull: false
-
 git:
   mode: ignore
