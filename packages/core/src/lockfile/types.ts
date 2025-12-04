@@ -42,6 +42,11 @@ export interface Lockfile {
    * Personal sections can change freely without triggering drift detection
    */
   personal_rules_count?: number;
+  /**
+   * Indicates this is an initial/empty lockfile created during team enable
+   * Drift detection should not report false positives for initial lockfiles
+   */
+  is_initial?: boolean;
 }
 
 export type LockfileMode = "off" | "soft" | "strict";

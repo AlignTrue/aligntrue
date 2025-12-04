@@ -61,7 +61,7 @@ Lockfiles track section fingerprints for natural markdown aligns:
 {
   "rules": [
     {
-      "rule_id": "fp:code-quality-a1b2c3", // Section fingerprint
+      "rule_id": "code-quality-a1b2c3",
       "content_hash": "sha256:...",
       "source": "..."
     }
@@ -69,7 +69,7 @@ Lockfiles track section fingerprints for natural markdown aligns:
 }
 ```
 
-For rule-based aligns, `rule_id` contains the explicit rule ID. For section-based aligns, it contains the section fingerprint (prefixed with `fp:`).
+For rule-based aligns, `rule_id` contains the explicit rule ID. For section-based aligns, it contains the section fingerprint (e.g., `code-quality-a1b2c3`).
 
 Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
 
@@ -323,24 +323,37 @@ sources:
 
 ## Personal rules
 
-In team mode, rules can be marked as "personal" (using `scope: personal`) to exclude them from lockfile validation and team approval workflows.
+In team mode, rules can be marked as "personal" (using `scope: personal` in frontmatter) to exclude them from lockfile validation and team approval workflows.
 
 **What it does:**
 
-```yaml
-sections:
-  - heading: "My Personal Shortcuts"
-    content: "..."
-    scope: personal # Excluded from lockfile
+Create a markdown rule file with `scope: personal` in the frontmatter:
 
-  - heading: "Team Standards"
-    content: "..."
-    scope: team # Default: included in lockfile
+```markdown
+---
+scope: personal
+---
+
+# My Personal Shortcuts
+
+Personal coding shortcuts and reminders...
+```
+
+Rules without the scope frontmatter default to `scope: team` and are included in lockfile validation:
+
+```markdown
+---
+scope: team
+---
+
+# Team Standards
+
+Team coding standards and guidelines...
 ```
 
 Personal sections are excluded from lockfile generation and validation:
 
-- **Team sections**: Validated against lockfile (triggers drift on changes)
+- **Team sections** (default): Validated against lockfile (triggers drift on changes)
 - **Personal sections**: Not validated (can change freely)
 
 **Use cases:**

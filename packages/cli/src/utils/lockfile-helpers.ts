@@ -152,6 +152,9 @@ export async function createEmptyLockfile(
       mode,
       rules: [],
       bundle_hash: emptyBundleHash,
+      // Mark as initial lockfile - drift detection will skip this
+      // until first sync populates it with actual rules
+      is_initial: true,
     };
 
     writeLockfile(lockfilePath, emptyLockfile, { silent: true });
