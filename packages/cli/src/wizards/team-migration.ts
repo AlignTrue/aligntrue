@@ -7,7 +7,7 @@ import { join } from "path";
 import * as clack from "@clack/prompts";
 import {
   BackupManager,
-  saveConfigAuto,
+  patchConfig,
   type AlignTrueConfig,
 } from "@aligntrue/core";
 
@@ -60,17 +60,19 @@ export async function runTeamMigrationWizard(
     // Step 3: Update config
     spinner.start("Updating configuration");
 
-    const updatedConfig: AlignTrueConfig = {
-      ...config,
-      mode: "team",
-      modules: {
-        ...config.modules,
-        lockfile: true,
-      },
-    };
-
     const configPath = join(cwd, ".aligntrue", "config.yaml");
-    await saveConfigAuto(updatedConfig, configPath, cwd);
+    // Patch only the mode and modules.lockfile settings
+    await patchConfig(
+      {
+        mode: "team",
+        modules: {
+          ...config.modules,
+          lockfile: true,
+        },
+      },
+      configPath,
+      cwd,
+    );
 
     spinner.stop("Configuration updated");
 

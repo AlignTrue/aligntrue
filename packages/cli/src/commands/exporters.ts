@@ -3,7 +3,7 @@
  */
 
 import {
-  saveConfigAuto,
+  patchConfig,
   type AlignTrueConfig,
   getExporterNames,
 } from "@aligntrue/core";
@@ -396,11 +396,11 @@ async function enableExporters(
   }
 
   // Always use array format for simplicity in exporters command
-  config.exporters = Array.from(currentExporters).sort();
+  const updatedExporters = Array.from(currentExporters).sort();
 
-  // Save config (auto-selects minimal for solo mode)
+  // Patch config - only update exporters, preserve everything else
   try {
-    await saveConfigAuto(config);
+    await patchConfig({ exporters: updatedExporters });
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
@@ -459,11 +459,13 @@ async function disableExporter(args: string[]): Promise<void> {
   }
 
   // Remove exporter and always use array format for simplicity
-  config.exporters = currentExporters.filter((e: string) => e !== exporterName);
+  const updatedExporters = currentExporters.filter(
+    (e: string) => e !== exporterName,
+  );
 
-  // Save config (auto-selects minimal for solo mode)
+  // Patch config - only update exporters, preserve everything else
   try {
-    await saveConfigAuto(config);
+    await patchConfig({ exporters: updatedExporters });
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
@@ -528,14 +530,18 @@ async function ignoreAgent(args: string[]): Promise<void> {
     return;
   }
 
-  // Add to ignored list
-  if (!config.detection) config.detection = {};
-  if (!config.detection.ignored_agents) config.detection.ignored_agents = [];
-  config.detection.ignored_agents.push(agentName);
+  // Build updated ignored_agents list
+  const currentIgnored = config.detection?.ignored_agents || [];
+  const updatedIgnored = [...currentIgnored, agentName];
 
-  // Save config (auto-selects minimal for solo mode)
+  // Patch config - only update detection.ignored_agents, preserve everything else
   try {
-    await saveConfigAuto(config);
+    await patchConfig({
+      detection: {
+        ...config.detection,
+        ignored_agents: updatedIgnored,
+      },
+    });
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(

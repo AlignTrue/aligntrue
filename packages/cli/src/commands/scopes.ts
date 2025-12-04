@@ -4,7 +4,7 @@
 
 import {
   loadConfig,
-  saveConfigAuto,
+  patchConfig,
   discoverScopes,
   convertDiscoveredToScopes,
 } from "@aligntrue/core";
@@ -188,9 +188,11 @@ async function discoverSubcommand(
   const config = await loadConfig(configPath, cwd);
   const newScopes = convertDiscoveredToScopes(discovered);
 
-  config.scopes = [...(config.scopes || []), ...newScopes];
+  // Merge new scopes with existing
+  const updatedScopes = [...(config.scopes || []), ...newScopes];
 
-  await saveConfigAuto(config, configPath, cwd);
+  // Patch config - only update scopes, preserve everything else
+  await patchConfig({ scopes: updatedScopes }, configPath, cwd);
   clack.log.success("Updated config with discovered scopes");
 
   clack.outro("Discovery complete");

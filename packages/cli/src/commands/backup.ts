@@ -611,7 +611,7 @@ async function handleRemoteStatus(cwd: string): Promise<void> {
 }
 
 async function handleRemoteSetup(cwd: string): Promise<void> {
-  const { loadConfig, saveMinimalConfig, getAlignTruePaths } = await import(
+  const { loadConfig, patchConfig, getAlignTruePaths } = await import(
     "@aligntrue/core"
   );
   const paths = getAlignTruePaths(cwd);
@@ -677,17 +677,20 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
     return;
   }
 
-  // Update config
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  config.remote_backup = {
-    default: {
-      url: url as string,
-      branch: (branch as string) || "main",
-      auto: auto as boolean,
-    },
-  };
+  // Patch config - only update remote_backup, preserve everything else
 
-  await saveMinimalConfig(config, paths.config);
+  await patchConfig(
+    {
+      remote_backup: {
+        default: {
+          url: url as string,
+          branch: (branch as string) || "main",
+          auto: auto as boolean,
+        },
+      },
+    },
+    paths.config,
+  );
 
   clack.log.success("Remote backup configured");
   clack.log.info(`Repository: ${url}`);

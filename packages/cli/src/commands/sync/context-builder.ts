@@ -11,7 +11,7 @@ import {
   getAlignTruePaths,
   SyncEngine,
   type AlignTrueConfig,
-  saveMinimalConfig,
+  patchConfig,
   getExporterNames,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
@@ -586,8 +586,9 @@ async function _enableExporters(
 
   // Always use array format for simplicity
   const currentExporters = getExporterNames(config.exporters);
-  config.exporters = [...currentExporters, ...toAdd];
-  await saveMinimalConfig(config, configPath);
+  const updatedExporters = [...currentExporters, ...toAdd];
+  // Patch config - only update exporters, preserve everything else
+  await patchConfig({ exporters: updatedExporters }, configPath);
 
   if (!options.quiet) {
     clack.log.success(
@@ -639,11 +640,12 @@ async function checkAgentsWithCache(
 
       if (shouldAdd) {
         // Always use array format for simplicity
-        config.exporters = [
+        const updatedExporters = [
           ...getExporterNames(config.exporters),
           ...detection.missing,
         ];
-        await saveMinimalConfig(config, configPath, cwd);
+        // Patch config - only update exporters, preserve everything else
+        await patchConfig({ exporters: updatedExporters }, configPath, cwd);
         clack.log.success("Updated exporters in config");
       }
     }
