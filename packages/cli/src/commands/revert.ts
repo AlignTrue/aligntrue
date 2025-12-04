@@ -23,6 +23,7 @@ export async function revert(args: string[]): Promise<void> {
     console.log("Usage: aligntrue revert [file] [options]\n");
     console.log("Options:");
     console.log("  -t, --timestamp <id>  Backup timestamp to restore from");
+    console.log("      --latest          Restore the most recent backup");
     console.log(
       "  -y, --yes             Skip confirmation prompts (restore immediately)",
     );
@@ -45,6 +46,7 @@ export async function revert(args: string[]): Promise<void> {
   let targetFile: string | undefined;
   let timestamp: string | undefined;
   let yes = false;
+  let latest = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -54,6 +56,8 @@ export async function revert(args: string[]): Promise<void> {
       timestamp = args[++i];
     } else if (arg === "-y" || arg === "--yes") {
       yes = true;
+    } else if (arg === "--latest") {
+      latest = true;
     } else if (!arg.startsWith("-")) {
       targetFile = arg;
     }
@@ -82,7 +86,14 @@ export async function revert(args: string[]): Promise<void> {
 
     let selectedTimestamp: string;
 
-    if (timestamp) {
+    if (latest) {
+      const newest = backups[0];
+      if (!newest) {
+        console.error("Error: No backups found to restore");
+        process.exit(1);
+      }
+      selectedTimestamp = newest.timestamp;
+    } else if (timestamp) {
       // Use provided timestamp
       const backup = backups.find((b) => b.timestamp === timestamp);
       if (!backup) {
@@ -104,8 +115,11 @@ export async function revert(args: string[]): Promise<void> {
       selectedTimestamp = timestamp;
     } else {
       if (!isTTY()) {
-        console.error("Error: --timestamp required in non-interactive mode");
+        console.error(
+          "Error: --timestamp or --latest required in non-interactive mode",
+        );
         console.error("Usage: aligntrue revert --timestamp <timestamp>");
+        console.error("   or: aligntrue revert --latest");
         console.log("\nAvailable backups:");
         backups.forEach((b) => {
           console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);
@@ -142,10 +156,20 @@ export async function revert(args: string[]): Promise<void> {
     // Check for mode mismatch
     const modeMismatch = await detectModeMismatch(backup, cwd);
     if (modeMismatch) {
-      const action = await promptMigrationOnRestore(modeMismatch);
-      if (action === "cancel") {
-        clack.cancel("Revert cancelled");
-        process.exit(0);
+      if (!isTTY() || yes) {
+        const message =
+          "Mode mismatch detected. Proceeding with restore (use matching mode to avoid differences).";
+        if (isTTY()) {
+          clack.log.warn(message);
+        } else {
+          console.warn(message);
+        }
+      } else {
+        const action = await promptMigrationOnRestore(modeMismatch);
+        if (action === "cancel") {
+          clack.cancel("Revert cancelled");
+          process.exit(0);
+        }
       }
       // Mode changes are not supported in revert
     }

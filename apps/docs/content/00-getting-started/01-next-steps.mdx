@@ -2,6 +2,8 @@
 
 You've got AlignTrue set up and syncing. Here's what to explore next based on your needs.
 
+Edit rules in `.aligntrue/rules/*.md`. `aligntrue sync` writes exports (like `AGENTS.md` and `.cursor/rules/*.mdc`)—treat those as read-only.
+
 ## Essential commands
 
 These commands will be part of your daily workflow:
@@ -34,7 +36,7 @@ aligntrue md lint
 
 ## Auto-sync on save
 
-Want rules to sync automatically when you save? Set up a file watcher.
+Want rules to sync automatically when you save? Set up a file watcher on `.aligntrue/rules` (and config if needed).
 
 ### VS Code (quick option)
 
@@ -77,7 +79,7 @@ Use nodemon to watch for changes:
 **Run nodemon:**
 
 ```bash
-nodemon --watch AGENTS.md --exec "aligntrue sync"
+nodemon --watch .aligntrue/rules --watch .aligntrue/config.yaml --exec "aligntrue sync"
 ```
 
 **Learn more:** [CLI reference](/docs/04-reference/cli-reference)
@@ -236,10 +238,10 @@ Copy rules from existing agent files to AlignTrue.
 
 ### Manual migration
 
-Copy your existing rules from agent files (Cursor `.mdc`, `AGENTS.md`, etc.) and paste into your `AGENTS.md` file.
+Create or open a file under `.aligntrue/rules/` and paste your existing rules from agent files (Cursor `.mdc`, `AGENTS.md`, etc.). Keep exports read-only.
 
 ```bash
-# After copying rules to AGENTS.md
+# After copying rules into .aligntrue/rules/imported.md (for example)
 aligntrue sync
 ```
 
@@ -252,7 +254,7 @@ aligntrue sync
 ```bash
 # Daily workflow
 cd your-project
-vim AGENTS.md           # Edit rules
+vim .aligntrue/rules/base.md  # Edit rules at the source
 aligntrue sync           # Update agents
 git add .
 git commit -m "Update project rules"

@@ -206,6 +206,28 @@ export interface ResolvedSource {
 }
 
 /**
+ * Normalize a fingerprint to schema-safe format (lowercase a-z0-9- only)
+ */
+function normalizeFingerprint(raw: string): string {
+  const slug = raw
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (slug.length > 0) {
+    return slug;
+  }
+
+  // Fallback to stable hash slice if slug is empty after normalization
+  return computeHash(raw).slice(0, 16);
+}
+
+// Exported for tests only
+export const __normalizeFingerprintForTests = normalizeFingerprint;
+
+/**
  * Resolve a single source from config
  * Uses unified SourceResolver to fetch rules, converts to Align format
  */
@@ -324,9 +346,10 @@ export async function resolveSource(
       heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
       content: rule.content,
       level: 2, // Schema requires level 2-6 (## through ######)
-      fingerprint:
+      fingerprint: normalizeFingerprint(
         ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
-        rule.filename.replace(/\.md$/, ""),
+          rule.filename.replace(/\.md$/, ""),
+      ),
       source_file: rule.path,
       // Store frontmatter in vendor.aligntrue for export fidelity (not directly on section)
       vendor: {
@@ -477,9 +500,22 @@ export async function resolveAndMergeSources(
   // Resolve all sources
   const resolved = await resolveSources(config, options);
 
+  // Deduplicate identical resolved sources (same path/ref/type) to avoid
+  // self-conflict noise when the same source is listed twice
+  const resolvedUnique = resolved.filter((src, idx, arr) => {
+    return (
+      arr.findIndex(
+        (other) =>
+          other.sourcePath === src.sourcePath &&
+          other.sourceType === src.sourceType &&
+          other.commitSha === src.commitSha,
+      ) === idx
+    );
+  });
+
   // If only one source, no merging needed
-  if (resolved.length === 1) {
-    const firstSource = resolved[0];
+  if (resolvedUnique.length === 1) {
+    const firstSource = resolvedUnique[0];
     if (!firstSource) {
       throw new Error("First resolved source is undefined");
     }
@@ -498,13 +534,13 @@ export async function resolveAndMergeSources(
       align,
       conflicts: [],
       warnings: [],
-      sources: resolved,
+      sources: resolvedUnique,
     };
   }
 
   // Use aligns directly from resolved sources - no parsing needed
   const aligns: Align[] = [];
-  for (const source of resolved) {
+  for (const source of resolvedUnique) {
     const align = source.align;
     // Defensive: Initialize sections to empty array ONLY if missing or invalid
     try {
@@ -529,7 +565,7 @@ export async function resolveAndMergeSources(
 
   return {
     ...bundleResult,
-    sources: resolved,
+    sources: resolvedUnique,
   };
 }
 

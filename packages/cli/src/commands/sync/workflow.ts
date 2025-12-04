@@ -72,6 +72,39 @@ export async function executeSyncWorkflow(
     initializePrompts();
   }
 
+  // Warn when rules target exporters that are not enabled
+  const enabledExporters = new Set(getExporterNames(config.exporters));
+  const sections = context.bundleResult.align?.sections || [];
+  const skippedTargets: Array<{ heading: string; targets: string[] }> = [];
+
+  sections.forEach((section) => {
+    const targets =
+      section.vendor?.aligntrue?.frontmatter?.export_only_to || [];
+    if (targets.length === 0) return;
+    const missing = targets.filter((t) => !enabledExporters.has(t));
+    if (missing.length === targets.length) {
+      const heading =
+        section.heading ||
+        section.explicitId ||
+        section.fingerprint ||
+        "Unnamed rule";
+      skippedTargets.push({ heading, targets });
+    }
+  });
+
+  if (!options.quiet && skippedTargets.length > 0) {
+    clack.log.warn(
+      [
+        "Some rules target exporters that are not enabled. They will be skipped:",
+        ...skippedTargets.map(
+          (item) =>
+            `  - ${item.heading} (export_only_to: ${item.targets.join(", ")})`,
+        ),
+        "Enable the exporter or remove export_only_to to include these rules.",
+      ].join("\n"),
+    );
+  }
+
   if (options.verbose) {
     clack.log.info("Verbose mode enabled");
   }

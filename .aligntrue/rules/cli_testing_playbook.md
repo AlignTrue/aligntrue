@@ -23,6 +23,7 @@ enabled: false
 - AlignTrue will detect existing `.aligntrue/` config and use it
 - Testing in workspace root risks corrupting your local setup
 - Create new test dir: `mkdir /tmp/aligntrue-test-$(date +%s) && cd $_`
+- Some commands do not support `--yes` (e.g., `plugs set`, `override add`, certain revert flows). Be ready to run them interactively.
 
 ### Setup
 
@@ -102,7 +103,7 @@ Complete each area sequentially. After finishing each area, record findings befo
    - Does it show sync health?
    - Are exporters listed correctly?
 
-5. REMOVED COMMAND
+5. (Watch command removed) Skip watch; use repeat syncs to validate idempotency.
 
 6. Content modes (if multiple exporters):
 
@@ -126,7 +127,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 **Goal:** Test multi-source rules and targeting.
 
-**Commands:** `add`, `remove`, `sources`, `rules`, `link`
+**Commands:** `add`, `remove`, `sources`, `rules`
 
 **What to try:**
 
@@ -139,7 +140,7 @@ Complete each area sequentially. After finishing each area, record findings befo
    - Shows local rules directory?
    - Section counts accurate?
 
-2. Add an external source:
+2. Add an external source (one-time import; use `add source <url>` for linked sources):
 
    ```bash
    $CLI add https://github.com/AlignTrue/examples/blob/main/aligns/global.md --yes
@@ -313,10 +314,10 @@ Complete each area sequentially. After finishing each area, record findings befo
    Run: [[plug:test.cmd]]
    EOF
    $CLI sync
-   $CLI plugs audit
+   $CLI plugs validate
    ```
 
-   - Does `audit` find unresolved plugs?
+   - Does `validate` find unresolved plugs?
 
 4. Fill a plug:
 
@@ -572,7 +573,6 @@ Mark each command as tested:
 | remove    | [ ]    |       |
 | sources   | [ ]    |       |
 | rules     | [ ]    |       |
-| link      | [ ]    |       |
 | team      | [ ]    |       |
 | drift     | [ ]    |       |
 | scopes    | [ ]    |       |
@@ -593,7 +593,7 @@ Mark each command as tested:
 
 After completing all areas:
 
-1. **Commands tested:** X / 23
+1. **Commands tested:** X / 22
 2. **Issues found:** X critical, X medium, X low
 3. **Tests that failed:** (List any)
 4. **Doc mismatches:** (List any)

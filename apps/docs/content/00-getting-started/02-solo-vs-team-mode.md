@@ -48,14 +48,12 @@ graph TD
 
 ```mermaid
 graph TD
-    T1[AGENTS.md] --> T2[.aligntrue/rules]
-    T2 --> T3[.aligntrue/lock.json]
-    T3 --> T4[Agent exports]
-    T5[CI validation] -.-> T3
-    T6[Drift detection] -.-> T3
+    T1[.aligntrue/rules] --> T2[.aligntrue/lock.json]
+    T1 --> T3[Agent exports (e.g., AGENTS.md, .cursor/rules)]
+    T4[CI validation & drift detection] -.-> T2
 
+    style T1 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style T2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-    style T3 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
 ```
 
 ## Scenario-based recommendations
@@ -284,7 +282,7 @@ Not necessarily. Solo mode works fine when you want users to customize locally. 
 
 ### Can team members use different modes?
 
-No. All team members must use the same mode (team mode) for consistent behavior. The mode is set in `.aligntrue/config.yaml` which should be committed to git.
+No. Team mode is enforced by the committed `.aligntrue/config.team.yaml`. Personal settings in `.aligntrue/config.yaml` are gitignored and apply only to the individual machine.
 
 ### What's the performance difference?
 

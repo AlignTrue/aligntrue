@@ -17,7 +17,8 @@ import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { loadConfigWithValidation } from "../utils/config-loader.js";
+import { loadMergedConfig } from "@aligntrue/core";
+import path from "path";
 import {
   detectDriftForConfig,
   type DriftCategory,
@@ -134,7 +135,8 @@ export async function drift(args: string[]): Promise<void> {
     typeof parsedArgs.flags["config"] === "string"
       ? parsedArgs.flags["config"]
       : ".aligntrue/config.yaml";
-  const config = await loadConfigWithValidation(configPath);
+  const cwdForConfig = path.dirname(path.resolve(configPath));
+  const { config } = await loadMergedConfig(cwdForConfig);
 
   // Must be in team mode
   if (config.mode !== "team") {
