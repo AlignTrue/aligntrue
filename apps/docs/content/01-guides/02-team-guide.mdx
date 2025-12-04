@@ -215,13 +215,13 @@ git push
 
 **What to commit:**
 
-- `.aligntrue/rules` - Internal IR (auto-generated)
+- `.aligntrue/rules` - Source-of-truth rule files you author
 - `.aligntrue/config.team.yaml` - Team configuration
 - `.aligntrue/lock.json` - Lockfile with pinned hashes
 - `.cursor/rules/` - Exported Cursor rules (optional)
-- `AGENTS.md` - Universal agent format (optional)
+- `AGENTS.md` - Universal agent export (optional)
 
-**What NOT to commit:**
+**Also do not commit:**
 
 - `.aligntrue/config.yaml` - Personal overrides (gitignored)
 
@@ -875,7 +875,7 @@ jobs:
         run: aligntrue check --ci
 
       - name: Detect drift
-        run: aligntrue drift --ci
+        run: aligntrue drift --gates
 ```
 
 **What it validates:**
@@ -1128,7 +1128,7 @@ Tested by: @dev1, @dev2, @dev3"
 3. **Generate lockfile** - `aligntrue sync`
 4. **Commit to git** - Share with team (approval via PR)
 5. **Onboard members** - `git clone && aligntrue sync`
-6. **Update safely** - `aligntrue drift && aligntrue update`
+6. **Update safely** - `aligntrue drift --gates && aligntrue sync`
 
 **Key principles:**
 

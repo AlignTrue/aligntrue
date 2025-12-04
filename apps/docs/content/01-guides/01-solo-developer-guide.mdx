@@ -33,7 +33,7 @@ aligntrue init
 aligntrue sync
 ```
 
-**Result:** Rules synced to Cursor and AGENTS.md. Start coding with consistent agent behavior.
+**Result:** Rules synced to Cursor and AGENTS.md. Start coding with consistent agent behavior. Edit `.aligntrue/rules/*.md` as the source; exports are read-only.
 
 ## Organizing your rules
 
@@ -43,13 +43,15 @@ As your project grows, you may want to organize rules differently:
 
 **Best for:** Solo developers, < 20 rules, getting started
 
-Store all rules in one file:
+Store all rules in one file under `.aligntrue/rules/` (source of truth):
 
 ```
 project/
 ├── .aligntrue/
-│   └── config.yaml
-└── AGENTS.md  ← Single source file
+│   ├── config.yaml
+│   └── rules/
+│       └── project-rules.md  ← Edit here
+└── AGENTS.md                 ← Export (read-only)
 ```
 
 **Setup:**
@@ -59,7 +61,7 @@ aligntrue init
 aligntrue sync
 ```
 
-Everything is simple and fast. `.aligntrue/rules/` is the source of truth (auto-generated from init), and `AGENTS.md` is the exported output.
+Everything is simple and fast. `.aligntrue/rules/` stays the source of truth (auto-generated from init), and `AGENTS.md`/.cursor exports are read-only outputs.
 
 ### Multi-file (when AGENTS.md grows large)
 
@@ -315,7 +317,8 @@ aligntrue sync
 # 1. Pull third-party align
 # .aligntrue/rules:
 sources:
-  - git: https://github.com/community/typescript-standards
+  - type: git
+    url: https://github.com/community/typescript-standards
     ref: v1.0.0
 
 # 2. Sync to see what you get
@@ -354,11 +357,14 @@ my-monorepo/
 ```yaml
 # .aligntrue/config.yaml
 sources:
-  - git: https://github.com/org/base-rules
+  - type: git
+    url: https://github.com/org/base-rules
     ref: v1.0.0
-  - git: https://github.com/org/nextjs-rules
+  - type: git
+    url: https://github.com/org/nextjs-rules
     ref: v1.0.0
-  - git: https://github.com/org/node-rules
+  - type: git
+    url: https://github.com/org/node-rules
     ref: v1.0.0
 
 scopes:
@@ -493,14 +499,14 @@ rules:
 ### Backup before major changes
 
 ```bash
-# Create backup
-aligntrue backup create "before-major-refactor"
+# Create a manual backup (includes agent exports)
+aligntrue backup create --notes "before-major-refactor"
 
 # Make changes
 # ... edit rules, add overlays, etc ...
 
 # If something breaks, restore
-aligntrue revert
+aligntrue backup restore --timestamp <backup-id>
 ```
 
 ### Document your decisions
@@ -536,16 +542,16 @@ git commit -m "chore: Add AlignTrue rules"
 
 **What to commit:**
 
-- `AGENTS.md` - Your rules (primary editing file)
+- `.aligntrue/rules` - Source of truth (edit here)
 - `.aligntrue/config.yaml` - Configuration settings
-- `.aligntrue/rules` - Internal IR (auto-generated)
-- `.cursor/rules/` - Exported Cursor rules (optional)
+- `AGENTS.md` - Exported rules for agents (read-only, optional to track)
+- `.cursor/rules/` - Exported Cursor rules (read-only, optional)
 
 **What NOT to commit:**
 
 - `.aligntrue/.cache/` - Cache directory
 - `.aligntrue/privacy-consent.json` - Per-machine consent
-- `.aligntrue/lock.json` - Only needed in team mode
+- `.aligntrue.lock.json` - Only present in team mode
 
 ## Common pitfalls and solutions
 
@@ -671,7 +677,7 @@ cursor .
 
 ```bash
 # 1. Create backup
-aligntrue backup create "before-experiment"
+aligntrue backup create --notes "before-experiment"
 
 # 2. Try different severity
 aligntrue override add \
@@ -683,7 +689,7 @@ aligntrue sync
 # ... code and see how it feels ...
 
 # 4. If you don't like it, restore
-aligntrue revert
+aligntrue backup restore --timestamp <backup-id>
 ```
 
 ### Example 3: Share rules with friend
@@ -711,10 +717,10 @@ If you start collaborating, upgrade to team mode:
 aligntrue team enable
 
 # Creates:
-# - .aligntrue/lock.json (lockfile for reproducibility)
+# - .aligntrue.lock.json (lockfile for reproducibility)
 
 # Commit team files
-git add .aligntrue/lock.json
+git add .aligntrue.lock.json
 git commit -m "Enable AlignTrue team mode"
 ```
 

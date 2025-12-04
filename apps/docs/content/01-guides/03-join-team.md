@@ -38,12 +38,12 @@ That's it for most team members. The sections below cover optional personal conf
 
 Your project has two configuration files:
 
-| File               | Purpose                                    | Git status |
-| ------------------ | ------------------------------------------ | ---------- |
-| `config.team.yaml` | Team settings (rules, exporters, lockfile) | Committed  |
-| `config.yaml`      | Your personal settings (optional)          | Gitignored |
+| File                          | Purpose                                    | Git status |
+| ----------------------------- | ------------------------------------------ | ---------- |
+| `.aligntrue/config.team.yaml` | Team settings (rules, exporters, lockfile) | Committed  |
+| `.aligntrue/config.yaml`      | Your personal settings (optional)          | Gitignored |
 
-When you first sync, AlignTrue creates an empty `config.yaml` for your personal settings. You can ignore it or use it to:
+When you first sync in a team repo, AlignTrue creates an empty `.aligntrue/config.yaml` for your personal settings and keeps it gitignored. You can ignore it or use it to:
 
 - Add personal rule sources
 - Override team settings locally (e.g., for testing)

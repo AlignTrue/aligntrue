@@ -66,7 +66,8 @@ aligntrue sync
 # Check generated files
 ls -la .cursor/rules/
 ls -la AGENTS.md
-ls -la .windsurf/
+ls -la WINDSURF.md               # windsurf exporter
+ls -la .windsurf/mcp_config.json # windsurf-mcp exporter (if enabled)
 ```
 
 ### Verification
@@ -74,9 +75,10 @@ ls -la .windsurf/
 After syncing, you should see:
 
 ```
-.cursor/rules/*.mdc            # Cursor format (one file per rule)
-AGENTS.md                       # Universal format
-.windsurf/rules.md             # Windsurf format
+.cursor/rules/*.mdc               # Cursor format (one file per rule)
+AGENTS.md                         # Universal format
+WINDSURF.md                       # Windsurf Markdown format
+.windsurf/mcp_config.json         # Windsurf MCP config (when exporter enabled)
 ```
 
 Each file contains the same rules in agent-specific format.
@@ -337,8 +339,11 @@ ls -la .cursor/rules/
 # Universal
 ls -la AGENTS.md
 
-# Windsurf
-ls -la .windsurf/
+# Windsurf Markdown exporter
+ls -la WINDSURF.md
+
+# Windsurf MCP exporter (if enabled)
+ls -la .windsurf/mcp_config.json
 ```
 
 **Fix:**
@@ -424,7 +429,8 @@ Decide whether to commit generated agent files.
 # .gitignore (if not committing)
 .cursor/rules/
 AGENTS.md
-.windsurf/
+WINDSURF.md
+.windsurf/mcp_config.json
 ```
 
 ### 5. Document your agent setup
@@ -453,6 +459,7 @@ npm install -g aligntrue && aligntrue sync
 **Agents will automatically load rules from:**
 
 - Cursor: `.cursor/rules/`
+- Windsurf: `WINDSURF.md` (or `.windsurf/mcp_config.json` if using MCP exporter)
 - Others: `AGENTS.md`
 
 ```
