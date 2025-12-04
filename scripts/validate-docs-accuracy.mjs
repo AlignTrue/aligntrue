@@ -15,7 +15,7 @@
  * - 1: One or more validations failed
  */
 
-import { readFileSync, readdirSync, statSync } from "fs";
+import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
